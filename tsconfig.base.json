@@ -17,7 +17,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@restate/libs/ui": ["libs/ui/src/index.ts"],
+      "@restate/libs/ui": ["libs/ui/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
