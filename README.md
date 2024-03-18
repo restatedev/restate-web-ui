@@ -12,11 +12,11 @@ comes with a LSP for Vim users.
 
 ## Start the application
 
-Run `npx nx serve cloud2` to start the development server. Happy coding!
+Run `npx nx serve cloud` to start the development server. Happy coding!
 
 ## Build for production
 
-Run `npx nx build cloud2` to build the application. The build artifacts are stored in the output directory (e.g. `dist/` or `build/`), ready to be deployed.
+Run `npx nx build cloud` to build the application. The build artifacts are stored in the output directory (e.g. `dist/` or `build/`), ready to be deployed.
 
 ## Running tasks
 

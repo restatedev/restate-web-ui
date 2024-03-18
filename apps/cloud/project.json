@@ -5,10 +5,10 @@
   "projectType": "application",
   "tags": [],
   "targets": {
-    "dev": {
+    "serve": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "cd apps/cloud && ../../node_modules/.bin/remix vite:dev"
+        "command": "cd apps/cloud && ../../node_modules/.bin/remix vite:dev --port=4200"
       }
     },
     "build": {
