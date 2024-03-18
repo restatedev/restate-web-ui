@@ -17,7 +17,7 @@
         "command": "cd apps/cloud && ../../node_modules/.bin/remix vite:build"
       }
     },
-    "preview": {
+    "start": {
       "executor": "nx:run-commands",
       "options": {
         "command": "cd apps/cloud && ../../node_modules/.bin/vite preview"

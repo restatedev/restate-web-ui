@@ -2,6 +2,8 @@
   "compileOnSave": false,
   "compilerOptions": {
     "rootDir": ".",
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
     "sourceMap": true,
     "declaration": false,
     "moduleResolution": "node",
@@ -14,7 +16,9 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
-    "paths": {}
+    "paths": {
+      "@restate/libs/ui": ["libs/ui/src/index.ts"],
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }
