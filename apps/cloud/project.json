@@ -1,0 +1,27 @@
+{
+  "name": "cloud",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/cloud",
+  "projectType": "application",
+  "tags": [],
+  "targets": {
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cd apps/cloud && ../../node_modules/.bin/remix vite:dev --port=4200"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cd apps/cloud && ../../node_modules/.bin/remix vite:build"
+      }
+    },
+    "start": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cd apps/cloud && ../../node_modules/.bin/vite preview"
+      }
+    }
+  }
+}
