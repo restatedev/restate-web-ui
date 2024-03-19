@@ -20,7 +20,7 @@
       "@restate/data-access/cloud-api": [
         "libs/data-access/cloud-api/src/index.ts"
       ],
-      "@restate/libs/ui": ["libs/ui/src/index.ts"]
+      "@restate/ui/button": ["libs/ui/button/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
