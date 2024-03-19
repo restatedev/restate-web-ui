@@ -1,0 +1,231 @@
+openapi: '3.0.2'
+info:
+  title: Restate Cloud API
+  version: '1.0'
+servers:
+  - url: https://api.server.test/v1
+paths:
+  /cloud/GetUserIdentity:
+    post:
+      description: Returns the user identity
+      operationId: getUserIdentity
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetUserIdentityResponse'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /cloud/CreateAccount:
+    post:
+      description: Creates a cloud account
+      operationId: createAccount
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateAccountResponse'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /cloud/ListAccounts:
+    post:
+      description: returns all cloud accounts the user has access to
+      operationId: listAccounts
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListAccountsResponse'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /cloud/{:accountId}/CreateEnvironment:
+    post:
+      description: Creates an environment
+      operationId: createEnvironment
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AccountId'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateEnvironmentResponse'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /cloud/{:accountId}/ListEnvironments:
+    post:
+      description: Returns all the environments for an account
+      operationId: listEnvironments
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AccountId'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListEnvironmentsResponse'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /cloud/{:accountId}/CreateApiKey:
+    post:
+      description: Creates an api key on an environment with the specified role
+      operationId: listEnvironments
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AccountId'
+      requestBody:
+        description: Specify the role and environment
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateApiKeyRequestBody'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateApiKeyResponse'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    GetUserIdentityResponse:
+      $ref: '#/components/schemas/User'
+    User:
+      type: object
+      required:
+        - userId
+      properties:
+        userId:
+          type: string
+          description: The user id
+    Account:
+      type: object
+      required:
+        - accountId
+      properties:
+        accountId:
+          type: string
+          description: The account id
+    Environment:
+      type: object
+      required:
+        - environmentId
+      properties:
+        environmentId:
+          type: string
+          description: The environment id
+    CreateAccountResponse:
+      $ref: '#/components/schemas/Account'
+    ListAccountsResponse:
+      type: object
+      required:
+        - accounts
+      properties:
+        accounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Account'
+    CreateEnvironmentResponse:
+      $ref: '#/components/schemas/Environment'
+    ListEnvironmentsResponse:
+      type: object
+      required:
+        - environments
+      properties:
+        environments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Environment'
+    Role:
+      type: string
+      enum: ['rst:role::FullAccess']
+    ApiKeyState:
+      type: string
+      enum: ['KEY_ACTIVE']
+    CreateApiKeyRequestBody:
+      type: object
+      required:
+        - roleId
+        - environmentId
+      properties:
+        roleId:
+          $ref: '#/components/schemas/Role'
+        environmentId:
+          type: string
+    CreateApiKeyResponse:
+      type: object
+      required:
+        - roleId
+        - environmentId
+        - state
+        - accountId
+        - apiKey
+      properties:
+        keyId:
+          type: string
+        environmentId:
+          type: string
+        roleId:
+          $ref: '#/components/schemas/Role'
+        state:
+          $ref: '#/components/schemas/ApiKeyState'
+        accountId:
+          type: string
+        apiKey:
+          type: string
+  responses:
+    UnauthorizedError:
+      description: Access token is missing or invalid
+    InternalServerError:
+      description: Access token is missing or invalid
+      content:
+        text/plain:
+          schema:
+            type: string
+  parameters:
+    AccountId:
+      name: id
+      in: path
+      description: The account id
+      required: true
+      schema:
+        type: string
