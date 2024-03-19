@@ -17,6 +17,9 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@restate/data-access/cloud-api": [
+        "libs/data-access/cloud-api/src/index.ts"
+      ],
       "@restate/libs/ui": ["libs/ui/src/index.ts"]
     }
   },
