@@ -2,12 +2,15 @@ openapi: '3.0.2'
 info:
   title: Restate Cloud API
   version: '1.0'
+  license:
+    name: Restate
+    url: https://restate.dev
 servers:
-  - url: https://api.server.test/v1
+  - url: https://api.dev.restate.cloud
 paths:
   /cloud/GetUserIdentity:
     post:
-      description: Returns the user identity
+      summary: Returns the user identity
       operationId: getUserIdentity
       security:
         - bearerAuth: []
@@ -24,7 +27,7 @@ paths:
           $ref: '#/components/responses/InternalServerError'
   /cloud/CreateAccount:
     post:
-      description: Creates a cloud account
+      summary: Creates a cloud account
       operationId: createAccount
       security:
         - bearerAuth: []
@@ -41,7 +44,7 @@ paths:
           $ref: '#/components/responses/InternalServerError'
   /cloud/ListAccounts:
     post:
-      description: returns all cloud accounts the user has access to
+      summary: returns all cloud accounts the user has access to
       operationId: listAccounts
       security:
         - bearerAuth: []
@@ -56,9 +59,9 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         500:
           $ref: '#/components/responses/InternalServerError'
-  /cloud/{:accountId}/CreateEnvironment:
+  /cloud/{accountId}/CreateEnvironment:
     post:
-      description: Creates an environment
+      summary: Creates an environment
       operationId: createEnvironment
       security:
         - bearerAuth: []
@@ -75,9 +78,9 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         500:
           $ref: '#/components/responses/InternalServerError'
-  /cloud/{:accountId}/ListEnvironments:
+  /cloud/{accountId}/ListEnvironments:
     post:
-      description: Returns all the environments for an account
+      summary: Returns all the environments for an account
       operationId: listEnvironments
       security:
         - bearerAuth: []
@@ -94,9 +97,9 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         500:
           $ref: '#/components/responses/InternalServerError'
-  /cloud/{:accountId}/CreateApiKey:
+  /cloud/{accountId}/CreateApiKey:
     post:
-      description: Creates an api key on an environment with the specified role
+      summary: Creates an api key on an environment with the specified role
       operationId: createApiKey
       security:
         - bearerAuth: []

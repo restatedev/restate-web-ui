@@ -6,27 +6,27 @@
 
 export interface paths {
   "/cloud/GetUserIdentity": {
-    /** @description Returns the user identity */
+    /** Returns the user identity */
     post: operations["getUserIdentity"];
   };
   "/cloud/CreateAccount": {
-    /** @description Creates a cloud account */
+    /** Creates a cloud account */
     post: operations["createAccount"];
   };
   "/cloud/ListAccounts": {
-    /** @description returns all cloud accounts the user has access to */
+    /** returns all cloud accounts the user has access to */
     post: operations["listAccounts"];
   };
-  "/cloud/{:accountId}/CreateEnvironment": {
-    /** @description Creates an environment */
+  "/cloud/{accountId}/CreateEnvironment": {
+    /** Creates an environment */
     post: operations["createEnvironment"];
   };
-  "/cloud/{:accountId}/ListEnvironments": {
-    /** @description Returns all the environments for an account */
+  "/cloud/{accountId}/ListEnvironments": {
+    /** Returns all the environments for an account */
     post: operations["listEnvironments"];
   };
-  "/cloud/{:accountId}/CreateApiKey": {
-    /** @description Creates an api key on an environment with the specified role */
+  "/cloud/{accountId}/CreateApiKey": {
+    /** Creates an api key on an environment with the specified role */
     post: operations["createApiKey"];
   };
 }
@@ -100,7 +100,7 @@ export type external = Record<string, never>;
 
 export interface operations {
 
-  /** @description Returns the user identity */
+  /** Returns the user identity */
   getUserIdentity: {
     responses: {
       /** @description OK */
@@ -113,7 +113,7 @@ export interface operations {
       500: components["responses"]["InternalServerError"];
     };
   };
-  /** @description Creates a cloud account */
+  /** Creates a cloud account */
   createAccount: {
     responses: {
       /** @description OK */
@@ -126,7 +126,7 @@ export interface operations {
       500: components["responses"]["InternalServerError"];
     };
   };
-  /** @description returns all cloud accounts the user has access to */
+  /** returns all cloud accounts the user has access to */
   listAccounts: {
     responses: {
       /** @description OK */
@@ -139,7 +139,7 @@ export interface operations {
       500: components["responses"]["InternalServerError"];
     };
   };
-  /** @description Creates an environment */
+  /** Creates an environment */
   createEnvironment: {
     parameters: {
       path: {
@@ -157,7 +157,7 @@ export interface operations {
       500: components["responses"]["InternalServerError"];
     };
   };
-  /** @description Returns all the environments for an account */
+  /** Returns all the environments for an account */
   listEnvironments: {
     parameters: {
       path: {
@@ -175,7 +175,7 @@ export interface operations {
       500: components["responses"]["InternalServerError"];
     };
   };
-  /** @description Creates an api key on an environment with the specified role */
+  /** Creates an api key on an environment with the specified role */
   createApiKey: {
     parameters: {
       path: {
