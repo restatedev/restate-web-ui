@@ -97,7 +97,7 @@ paths:
   /cloud/{:accountId}/CreateApiKey:
     post:
       description: Creates an api key on an environment with the specified role
-      operationId: listEnvironments
+      operationId: createApiKey
       security:
         - bearerAuth: []
       parameters:
@@ -223,7 +223,7 @@ components:
             type: string
   parameters:
     AccountId:
-      name: id
+      name: accountId
       in: path
       description: The account id
       required: true

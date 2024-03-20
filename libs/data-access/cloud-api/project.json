@@ -5,5 +5,12 @@
   "projectType": "library",
   "tags": [],
   "// targets": "to see all targets run: nx show project data-access-cloud-api --web",
-  "targets": {}
+  "targets": {
+    "generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "openapi-typescript ./libs/data-access/cloud-api/src/lib/api/schema.yaml -o ./libs/data-access/cloud-api/src/lib/api/index.d.ts"
+      }
+    }
+  }
 }

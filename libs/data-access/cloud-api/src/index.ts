@@ -1,1 +1,1 @@
-export * from './lib/data-access-cloud-api';
+export * from './lib/operations';
