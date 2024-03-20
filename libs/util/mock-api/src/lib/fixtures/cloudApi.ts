@@ -5,21 +5,21 @@ faker.seed(123);
 
 export const cloudApiDb = factory({
   user: {
-    userId: primaryKey(faker.datatype.uuid),
+    userId: primaryKey(faker.string.uuid),
   },
   account: {
-    accountId: primaryKey(faker.datatype.uuid),
+    accountId: primaryKey(faker.string.uuid),
     users: manyOf('user'),
   },
   environment: {
-    environmentId: primaryKey(faker.datatype.uuid),
+    environmentId: primaryKey(faker.string.uuid),
     account: oneOf('account'),
   },
   apiKey: {
     account: oneOf('account'),
     environment: oneOf('environment'),
-    keyId: primaryKey(faker.datatype.uuid),
-    apiKey: primaryKey(faker.datatype.uuid),
+    keyId: () => faker.string.uuid(),
+    apiKey: primaryKey(faker.string.uuid),
     roleId: () => faker.helpers.arrayElement(['rst:role::FullAccess'] as const),
     state: () => faker.helpers.arrayElement(['KEY_ACTIVE'] as const),
   },
