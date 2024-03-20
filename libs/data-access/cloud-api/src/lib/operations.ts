@@ -27,7 +27,7 @@ type b = AllParams<cloudApi.operations['listAccounts']>;
 export async function createEnvironment(
   params: AllParams<cloudApi.operations['createEnvironment']>
 ) {
-  return apiClient.POST('/cloud/{:accountId}/CreateEnvironment', {
+  return apiClient.POST('/cloud/{accountId}/CreateEnvironment', {
     params: { path: { accountId: params.accountId } },
   });
 }
@@ -35,7 +35,7 @@ export async function createEnvironment(
 export async function listEnvironments(
   params: AllParams<cloudApi.operations['listEnvironments']>
 ) {
-  return apiClient.POST('/cloud/{:accountId}/ListEnvironments', {
+  return apiClient.POST('/cloud/{accountId}/ListEnvironments', {
     params: { path: { accountId: params.accountId } },
   });
 }
@@ -43,7 +43,7 @@ export async function listEnvironments(
 export async function createApiKey(
   params: AllParams<cloudApi.operations['createApiKey']>
 ) {
-  return apiClient.POST('/cloud/{:accountId}/CreateApiKey', {
+  return apiClient.POST('/cloud/{accountId}/CreateApiKey', {
     params: { path: { accountId: params.accountId } },
     body: {
       roleId: params.roleId,
