@@ -9,6 +9,7 @@
     "moduleResolution": "node",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "noUncheckedIndexedAccess": true,
     "importHelpers": true,
     "target": "es2015",
     "module": "esnext",
@@ -17,7 +18,10 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@restate/libs/ui": ["libs/ui/src/index.ts"]
+      "@restate/data-access/cloud-api": [
+        "libs/data-access/cloud-api/src/index.ts"
+      ],
+      "@restate/ui/button": ["libs/ui/button/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

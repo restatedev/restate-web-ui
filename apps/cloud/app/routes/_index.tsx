@@ -1,5 +1,5 @@
 import type { MetaFunction } from '@remix-run/node';
-import { Button } from '@restate/libs/ui';
+import { Button } from '@restate/ui/button';
 
 export const meta: MetaFunction = () => {
   return [

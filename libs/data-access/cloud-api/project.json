@@ -1,0 +1,19 @@
+{
+  "name": "data-access-cloud-api",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/data-access/cloud-api/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project data-access-cloud-api --web",
+  "targets": {
+    "generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "redocly lint ./libs/data-access/cloud-api/src/lib/api/schema.yaml",
+          "openapi-typescript ./libs/data-access/cloud-api/src/lib/api/schema.yaml -o ./libs/data-access/cloud-api/src/lib/api/index.d.ts"
+        ]
+      }
+    }
+  }
+}
