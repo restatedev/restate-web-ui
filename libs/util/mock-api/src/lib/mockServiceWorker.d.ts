@@ -1,1 +1,1 @@
-declare module '*';
+declare module 'msw/mockServiceWorker.js?url';
