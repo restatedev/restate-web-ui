@@ -29,5 +29,6 @@ export async function enableMock() {
         scope: '/',
       },
     },
+    onUnhandledRequest: 'bypass',
   });
 }
