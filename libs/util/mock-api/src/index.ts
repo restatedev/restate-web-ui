@@ -1,1 +1,1 @@
-export * from './lib/enableMock';
+export * from './lib/enableMockApi';
