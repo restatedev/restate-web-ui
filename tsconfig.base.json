@@ -18,8 +18,8 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@restate/data-access/cloud-api": [
-        "libs/data-access/cloud-api/src/index.ts"
+      "@restate/data-access/cloud-api-client": [
+        "libs/data-access/cloud-api-client/src/index.ts"
       ],
       "@restate/data-access/cloud-api-fixtures": [
         "libs/data-access/cloud-api-fixtures/src/index.ts"

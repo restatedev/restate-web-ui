@@ -1,6 +1,9 @@
 import type { MetaFunction } from '@remix-run/node';
 import { ClientLoaderFunctionArgs, useLoaderData } from '@remix-run/react';
-import { listAccounts, listEnvironments } from '@restate/data-access/cloud-api';
+import {
+  listAccounts,
+  listEnvironments,
+} from '@restate/data-access/cloud-api-client';
 import { Button } from '@restate/ui/button';
 
 export const meta: MetaFunction = () => {

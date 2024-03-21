@@ -28,4 +28,4 @@ Details of each package's targets can be available in the `project.json` file wi
 ## Important Packages
 
 - [Cloud App](apps/cloud/README.md)
-- [Cloud Api](libs/data-access/cloud-api/README.md)
+- [Cloud Api Client](libs/data-access/cloud-api-client/README.md)

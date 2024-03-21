@@ -1,11 +1,15 @@
-# Cloud API
+# Cloud API Client
 
 This library allows access to Restate Cloud API.
 
 ### How to modify the API?
 
-- Access the OpenAPI specification of the API at `./src/lib/api/schema.yaml`.
-- Make changes to the spec, then execute `nx run data-access-cloud-api:generate` to validate and generate API types at `./src/lib/api/index.d.ts`.
+- Access the OpenAPI specification of the API at [`schema.yaml`](./src/lib/api/schema.yaml).
+- Make changes to the spec, then execute below to validate and generate API types at [`index.d.ts`](./src/lib/api/index.d.ts).
+
+```ts
+nx create cloud-api-client
+```
 
 ### How to use the API?
 
