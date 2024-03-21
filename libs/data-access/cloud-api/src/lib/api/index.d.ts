@@ -3,31 +3,30 @@
  * Do not make direct changes to the file.
  */
 
-
 export interface paths {
-  "/cloud/GetUserIdentity": {
+  '/cloud/GetUserIdentity': {
     /** Returns the user identity */
-    post: operations["getUserIdentity"];
+    post: operations['getUserIdentity'];
   };
-  "/cloud/CreateAccount": {
+  '/cloud/CreateAccount': {
     /** Creates a cloud account */
-    post: operations["createAccount"];
+    post: operations['createAccount'];
   };
-  "/cloud/ListAccounts": {
+  '/cloud/ListAccounts': {
     /** returns all cloud accounts the user has access to */
-    post: operations["listAccounts"];
+    post: operations['listAccounts'];
   };
-  "/cloud/{accountId}/CreateEnvironment": {
+  '/cloud/{accountId}/CreateEnvironment': {
     /** Creates an environment */
-    post: operations["createEnvironment"];
+    post: operations['createEnvironment'];
   };
-  "/cloud/{accountId}/ListEnvironments": {
+  '/cloud/{accountId}/ListEnvironments': {
     /** Returns all the environments for an account */
-    post: operations["listEnvironments"];
+    post: operations['listEnvironments'];
   };
-  "/cloud/{accountId}/CreateApiKey": {
+  '/cloud/{accountId}/CreateApiKey': {
     /** Creates an api key on an environment with the specified role */
-    post: operations["createApiKey"];
+    post: operations['createApiKey'];
   };
 }
 
@@ -35,7 +34,7 @@ export type webhooks = Record<string, never>;
 
 export interface components {
   schemas: {
-    GetUserIdentityResponse: components["schemas"]["User"];
+    GetUserIdentityResponse: components['schemas']['User'];
     User: {
       /** @description The user id */
       userId: string;
@@ -48,27 +47,27 @@ export interface components {
       /** @description The environment id */
       environmentId: string;
     };
-    CreateAccountResponse: components["schemas"]["Account"];
+    CreateAccountResponse: components['schemas']['Account'];
     ListAccountsResponse: {
-      accounts: components["schemas"]["Account"][];
+      accounts: components['schemas']['Account'][];
     };
-    CreateEnvironmentResponse: components["schemas"]["Environment"];
+    CreateEnvironmentResponse: components['schemas']['Environment'];
     ListEnvironmentsResponse: {
-      environments: components["schemas"]["Environment"][];
+      environments: components['schemas']['Environment'][];
     };
     /** @enum {string} */
-    Role: "rst:role::FullAccess";
+    Role: 'rst:role::FullAccess';
     /** @enum {string} */
-    ApiKeyState: "KEY_ACTIVE";
+    ApiKeyState: 'KEY_ACTIVE';
     CreateApiKeyRequestBody: {
-      roleId: components["schemas"]["Role"];
+      roleId: components['schemas']['Role'];
       environmentId: string;
     };
     CreateApiKeyResponse: {
       keyId?: string;
       environmentId: string;
-      roleId: components["schemas"]["Role"];
-      state: components["schemas"]["ApiKeyState"];
+      roleId: components['schemas']['Role'];
+      state: components['schemas']['ApiKeyState'];
       accountId: string;
       apiKey: string;
     };
@@ -81,7 +80,7 @@ export interface components {
     /** @description Access token is missing or invalid */
     InternalServerError: {
       content: {
-        "text/plain": string;
+        'text/plain': string;
       };
     };
   };
@@ -99,18 +98,17 @@ export type $defs = Record<string, never>;
 export type external = Record<string, never>;
 
 export interface operations {
-
   /** Returns the user identity */
   getUserIdentity: {
     responses: {
       /** @description OK */
       200: {
         content: {
-          "application/json": components["schemas"]["GetUserIdentityResponse"];
+          'application/json': components['schemas']['GetUserIdentityResponse'];
         };
       };
-      401: components["responses"]["UnauthorizedError"];
-      500: components["responses"]["InternalServerError"];
+      401: components['responses']['UnauthorizedError'];
+      500: components['responses']['InternalServerError'];
     };
   };
   /** Creates a cloud account */
@@ -119,11 +117,11 @@ export interface operations {
       /** @description OK */
       200: {
         content: {
-          "application/json": components["schemas"]["CreateAccountResponse"];
+          'application/json': components['schemas']['CreateAccountResponse'];
         };
       };
-      401: components["responses"]["UnauthorizedError"];
-      500: components["responses"]["InternalServerError"];
+      401: components['responses']['UnauthorizedError'];
+      500: components['responses']['InternalServerError'];
     };
   };
   /** returns all cloud accounts the user has access to */
@@ -132,71 +130,71 @@ export interface operations {
       /** @description OK */
       200: {
         content: {
-          "application/json": components["schemas"]["ListAccountsResponse"];
+          'application/json': components['schemas']['ListAccountsResponse'];
         };
       };
-      401: components["responses"]["UnauthorizedError"];
-      500: components["responses"]["InternalServerError"];
+      401: components['responses']['UnauthorizedError'];
+      500: components['responses']['InternalServerError'];
     };
   };
   /** Creates an environment */
   createEnvironment: {
     parameters: {
       path: {
-        accountId: components["parameters"]["AccountId"];
+        accountId: components['parameters']['AccountId'];
       };
     };
     responses: {
       /** @description OK */
       200: {
         content: {
-          "application/json": components["schemas"]["CreateEnvironmentResponse"];
+          'application/json': components['schemas']['CreateEnvironmentResponse'];
         };
       };
-      401: components["responses"]["UnauthorizedError"];
-      500: components["responses"]["InternalServerError"];
+      401: components['responses']['UnauthorizedError'];
+      500: components['responses']['InternalServerError'];
     };
   };
   /** Returns all the environments for an account */
   listEnvironments: {
     parameters: {
       path: {
-        accountId: components["parameters"]["AccountId"];
+        accountId: components['parameters']['AccountId'];
       };
     };
     responses: {
       /** @description OK */
       200: {
         content: {
-          "application/json": components["schemas"]["ListEnvironmentsResponse"];
+          'application/json': components['schemas']['ListEnvironmentsResponse'];
         };
       };
-      401: components["responses"]["UnauthorizedError"];
-      500: components["responses"]["InternalServerError"];
+      401: components['responses']['UnauthorizedError'];
+      500: components['responses']['InternalServerError'];
     };
   };
   /** Creates an api key on an environment with the specified role */
   createApiKey: {
     parameters: {
       path: {
-        accountId: components["parameters"]["AccountId"];
+        accountId: components['parameters']['AccountId'];
       };
     };
     /** @description Specify the role and environment */
     requestBody: {
       content: {
-        "application/json": components["schemas"]["CreateApiKeyRequestBody"];
+        'application/json': components['schemas']['CreateApiKeyRequestBody'];
       };
     };
     responses: {
       /** @description OK */
       200: {
         content: {
-          "application/json": components["schemas"]["CreateApiKeyResponse"];
+          'application/json': components['schemas']['CreateApiKeyResponse'];
         };
       };
-      401: components["responses"]["UnauthorizedError"];
-      500: components["responses"]["InternalServerError"];
+      401: components['responses']['UnauthorizedError'];
+      500: components['responses']['InternalServerError'];
     };
   };
 }

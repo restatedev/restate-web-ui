@@ -6,8 +6,3 @@ export function getAccessToken() {
 
   return null;
 }
-
-// TODO: should be env based
-export function getBaseUrl() {
-  return 'https://api.dev.restate.cloud';
-}
