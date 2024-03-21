@@ -9,6 +9,11 @@
       "executor": "nx:run-commands",
       "options": {
         "command": "cd apps/cloud && ../../node_modules/.bin/remix vite:dev --port=4200"
+      },
+      "configurations": {
+        "mock": {
+          "command": "cd apps/cloud && NX_API_URL=http://localhost:4200 ../../node_modules/.bin/remix vite:dev --port=4200"
+        }
       }
     },
     "build": {
