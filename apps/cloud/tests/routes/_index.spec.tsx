@@ -12,7 +12,5 @@ test('renders loader data', async () => {
 
   render(<RemixStub />);
 
-  await waitFor(() =>
-    screen.findByRole('heading', { name: 'Welcome to Remix (SPA Mode)' })
-  );
+  await waitFor(() => screen.findByRole('heading', { name: 'Hello restate!' }));
 });
