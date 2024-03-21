@@ -2,12 +2,18 @@ import * as cloudApi from '@restate/data-access/cloud-api';
 import { http, HttpResponse } from 'msw';
 import { cloudApiDb } from '../fixtures/cloudApi';
 
+type FormatParameterWithColon<S extends string> =
+  S extends `${infer A}{${infer P}}${infer B}` ? `${A}:${P}${B}` : S;
+type GetPath<S extends keyof cloudApi.paths> = FormatParameterWithColon<
+  keyof Pick<cloudApi.paths, S>
+>;
+
 const createApiKeyHandler = http.post<
   cloudApi.operations['createApiKey']['parameters']['path'],
   cloudApi.operations['createApiKey']['requestBody']['content']['application/json'],
   | cloudApi.operations['createApiKey']['responses']['200']['content']['application/json']
   | cloudApi.operations['createApiKey']['responses']['500']['content']['text/plain'],
-  '/cloud/:accountId/CreateApiKey'
+  GetPath<'/cloud/{accountId}/CreateApiKey'>
 >('/cloud/:accountId/CreateApiKey', async ({ params, request }) => {
   const requestBody = await request.json();
   const account = cloudApiDb.account.findFirst({
@@ -50,7 +56,7 @@ const getUserIdentityHandler = http.post<
   never,
   | cloudApi.operations['getUserIdentity']['responses']['200']['content']['application/json']
   | cloudApi.operations['getUserIdentity']['responses']['500']['content']['text/plain'],
-  '/cloud/GetUserIdentity'
+  GetPath<'/cloud/GetUserIdentity'>
 >('/cloud/GetUserIdentity', async () => {
   const user = cloudApiDb.user.getAll().at(0);
 
@@ -68,7 +74,7 @@ const createAccountHandler = http.post<
   never,
   | cloudApi.operations['createAccount']['responses']['200']['content']['application/json']
   | cloudApi.operations['createAccount']['responses']['500']['content']['text/plain'],
-  '/cloud/CreateAccount'
+  GetPath<'/cloud/CreateAccount'>
 >('/cloud/CreateAccount', async () => {
   const user = cloudApiDb.user.getAll().at(0);
 
@@ -88,7 +94,7 @@ const listAccountsHandler = http.post<
   never,
   | cloudApi.operations['listAccounts']['responses']['200']['content']['application/json']
   | cloudApi.operations['listAccounts']['responses']['500']['content']['text/plain'],
-  '/cloud/ListAccounts'
+  GetPath<'/cloud/ListAccounts'>
 >('/cloud/ListAccounts', async () => {
   const user = cloudApiDb.user.getAll().at(0);
 
@@ -116,7 +122,7 @@ const createEnvironmentHandler = http.post<
   never,
   | cloudApi.operations['createEnvironment']['responses']['200']['content']['application/json']
   | cloudApi.operations['createEnvironment']['responses']['500']['content']['text/plain'],
-  '/cloud/:accountId/CreateEnvironment'
+  GetPath<'/cloud/{accountId}/CreateEnvironment'>
 >('/cloud/:accountId/CreateEnvironment', async ({ params }) => {
   const account = cloudApiDb.account.findFirst({
     where: {
@@ -142,7 +148,7 @@ const listEnvironmentsHandler = http.post<
   never,
   | cloudApi.operations['listEnvironments']['responses']['200']['content']['application/json']
   | cloudApi.operations['listEnvironments']['responses']['500']['content']['text/plain'],
-  '/cloud/:accountId/ListEnvironments'
+  GetPath<'/cloud/{accountId}/ListEnvironments'>
 >('/cloud/:accountId/ListEnvironments', async ({ params }) => {
   const user = cloudApiDb.user.getAll().at(0);
 
