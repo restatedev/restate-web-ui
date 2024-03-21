@@ -1,0 +1,18 @@
+{
+  "name": "cloud-api-client",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/data-access/cloud-api-client/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "redocly lint ./libs/data-access/cloud-api-client/src/lib/api/schema.yaml",
+          "openapi-typescript ./libs/data-access/cloud-api-client/src/lib/api/schema.yaml -o ./libs/data-access/cloud-api-client/src/lib/api/index.d.ts"
+        ]
+      }
+    }
+  }
+}
