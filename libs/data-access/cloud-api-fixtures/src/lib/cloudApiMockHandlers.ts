@@ -1,6 +1,6 @@
 import * as cloudApi from '@restate/data-access/cloud-api';
 import { http, HttpResponse } from 'msw';
-import { cloudApiDb } from '../fixtures/cloudApi';
+import { cloudApiDb } from './cloudApiDb';
 
 type FormatParameterWithColon<S extends string> =
   S extends `${infer A}{${infer P}}${infer B}` ? `${A}:${P}${B}` : S;
@@ -171,7 +171,7 @@ const listEnvironmentsHandler = http.post<
   });
 });
 
-export const cloudApiHandlers = [
+export const cloudApiMockHandlers = [
   getUserIdentityHandler,
   createAccountHandler,
   listAccountsHandler,
