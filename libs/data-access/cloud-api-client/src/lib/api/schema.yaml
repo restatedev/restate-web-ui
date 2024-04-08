@@ -31,6 +31,12 @@ paths:
       operationId: createAccount
       security:
         - bearerAuth: []
+      requestBody:
+        description: Specify the description
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAccountRequestBody'
       responses:
         200:
           description: OK
@@ -67,6 +73,12 @@ paths:
         - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/AccountId'
+      requestBody:
+        description: Specify the description
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEnvironmentRequestBody'
       responses:
         200:
           description: OK
@@ -74,6 +86,56 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreateEnvironmentResponse'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /cloud/{accountId}/DescribeEnvironment:
+    post:
+      summary: Returns the environments details
+      operationId: describeEnvironment
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AccountId'
+      requestBody:
+        description: Specify the environment id
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DescribeEnvironmentRequestBody'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DescribeEnvironmentResponse'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /cloud/{accountId}/DestroyEnvironment:
+    post:
+      summary: Destroys an environment
+      operationId: destroyEnvironment
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AccountId'
+      requestBody:
+        description: Specify the environment id
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DestroyEnvironmentRequestBody'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DestroyEnvironmentResponse'
         401:
           $ref: '#/components/responses/UnauthorizedError'
         500:
@@ -123,6 +185,84 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         500:
           $ref: '#/components/responses/InternalServerError'
+  /cloud/{accountId}/DescribeApiKey:
+    post:
+      summary: Returns the api key details
+      operationId: describeApiKey
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AccountId'
+      requestBody:
+        description: Specify the api key
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DescribeApiKeyRequestBody'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DescribeApiKeyResponse'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /cloud/{accountId}/DeleteApiKey:
+    post:
+      summary: Deletes the api key
+      operationId: deleteApiKey
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AccountId'
+      requestBody:
+        description: Specify the api key and environment id
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteApiKeyRequestBody'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteApiKeyResponse'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /cloud/{accountId}/ListApiKeys:
+    post:
+      summary: Returns all the api keys
+      operationId: listApiKeys
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AccountId'
+      requestBody:
+        description: Specify the environment id
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListApiKeysRequestBody'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListApiKeysResponse'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        500:
+          $ref: '#/components/responses/InternalServerError'
 components:
   securitySchemes:
     bearerAuth:
@@ -148,7 +288,10 @@ components:
         accountId:
           type: string
           description: The account id
-    Environment:
+        description:
+          type: string
+          description: The account description
+    EnvironmentId:
       type: object
       required:
         - environmentId
@@ -156,8 +299,37 @@ components:
         environmentId:
           type: string
           description: The environment id
+    Environment:
+      allOf:
+        - $ref: '#/components/schemas/EnvironmentId'
+        - type: object
+          required:
+            - environmentId
+          properties:
+            description:
+              type: string
+              description: The environment description
+            status:
+              type: string
+              description: The environment status
+              enum:
+                [
+                  'PROVISIONING_NEW',
+                  'PROVISIONING_CREATING',
+                  'PROVISIONING_READY',
+                  'PROVISIONING_SHUTTING_DOWN',
+                  'PROVISIONING_DELETED',
+                  'PROVISIONING_FAILED',
+                  'UNRECOGNIZED',
+                ]
     CreateAccountResponse:
       $ref: '#/components/schemas/Account'
+    CreateAccountRequestBody:
+      type: object
+      properties:
+        description:
+          type: string
+          description: The account description
     ListAccountsResponse:
       type: object
       required:
@@ -167,7 +339,24 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Account'
+    CreateEnvironmentRequestBody:
+      type: object
+      properties:
+        description:
+          type: string
+          description: The account description
     CreateEnvironmentResponse:
+      $ref: '#/components/schemas/EnvironmentId'
+    DestroyEnvironmentRequestBody:
+      $ref: '#/components/schemas/EnvironmentId'
+    DestroyEnvironmentResponse:
+      type: object
+      properties:
+        error:
+          type: string
+    DescribeEnvironmentRequestBody:
+      $ref: '#/components/schemas/EnvironmentId'
+    DescribeEnvironmentResponse:
       $ref: '#/components/schemas/Environment'
     ListEnvironmentsResponse:
       type: object
@@ -177,13 +366,20 @@ components:
         environments:
           type: array
           items:
-            $ref: '#/components/schemas/Environment'
+            $ref: '#/components/schemas/EnvironmentId'
     Role:
       type: string
-      enum: ['rst:role::FullAccess']
+      enum:
+        [
+          'rst:role::FullAccess',
+          'rst:role::IngressAccess',
+          'rst:role::AdminAccess',
+          'rst:role::ResolveAwakeableAccess',
+        ]
     ApiKeyState:
       type: string
-      enum: ['KEY_ACTIVE']
+      enum:
+        ['KEY_NEW', 'KEY_ACTIVE', 'KEY_DISABLED', 'KEY_DELETED', 'UNRECOGNIZED']
     CreateApiKeyRequestBody:
       type: object
       required:
@@ -194,6 +390,9 @@ components:
           $ref: '#/components/schemas/Role'
         environmentId:
           type: string
+        description:
+          type: string
+          description: The environment description
     CreateApiKeyResponse:
       type: object
       required:
@@ -215,6 +414,60 @@ components:
           type: string
         apiKey:
           type: string
+    DescribeApiKeyRequestBody:
+      type: object
+      required:
+        - keyId
+      properties:
+        keyId:
+          type: string
+    DescribeApiKeyResponse:
+      allOf:
+        - $ref: '#/components/schemas/CreateApiKeyResponse'
+        - type: object
+          required:
+            - roleId
+            - environmentId
+            - state
+            - accountId
+            - apiKey
+          properties:
+            description:
+              type: string
+    DeleteApiKeyRequestBody:
+      type: object
+      required:
+        - keyId
+        - environmentId
+      properties:
+        keyId:
+          type: string
+        environmentId:
+          type: string
+    DeleteApiKeyResponse:
+      type: object
+      properties:
+        error:
+          type: string
+    ListApiKeysRequestBody:
+      type: object
+      required:
+        - keyId
+        - environmentId
+      properties:
+        keyId:
+          type: string
+        environmentId:
+          type: string
+    ListApiKeysResponse:
+      type: array
+      items:
+        type: object
+        properties:
+          keyId:
+            type: string
+          environmentId:
+            type: string
   responses:
     UnauthorizedError:
       description: Access token is missing or invalid
