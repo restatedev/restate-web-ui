@@ -3,8 +3,6 @@
  * Currently, we save the token there to enable users to authenticate across multiple sessions.
  */
 
-import { redirectDocument } from '@remix-run/react';
-
 const ACCESS_TOKEN_KEY = 'atk';
 const LOGIN_URL = 'https://restate.dev';
 
@@ -18,5 +16,5 @@ export function setAccessToken(token: string) {
 
 export function logOut() {
   localStorage.removeItem(ACCESS_TOKEN_KEY);
-  redirectDocument(LOGIN_URL);
+  window.location.assign(LOGIN_URL);
 }

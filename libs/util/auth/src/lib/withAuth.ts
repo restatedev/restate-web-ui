@@ -16,7 +16,8 @@ export function withAuth(loader: ClientLoaderFunction) {
     }
 
     if (!getAccessToken()) {
-      return logOut();
+      logOut();
+      return null;
     }
 
     return loader(args);
