@@ -2,11 +2,9 @@ import type {
   ClientLoaderFunction,
   ClientLoaderFunctionArgs,
 } from '@remix-run/react';
-import { redirectDocument } from '@remix-run/react';
-import { getAccessToken, setAccessToken } from './accessToken';
+import { getAccessToken, logOut, setAccessToken } from './accessToken';
 
 const ACCESS_TOKEN_PARAM_NAME = 'access_token';
-const LOGIN_URL = 'https://restate.dev';
 
 export function withAuth(loader: ClientLoaderFunction) {
   return async function (args: ClientLoaderFunctionArgs) {
@@ -18,7 +16,7 @@ export function withAuth(loader: ClientLoaderFunction) {
     }
 
     if (!getAccessToken()) {
-      return redirectDocument(LOGIN_URL);
+      return logOut();
     }
 
     return loader(args);
