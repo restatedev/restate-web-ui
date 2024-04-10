@@ -4,7 +4,8 @@
  */
 
 const ACCESS_TOKEN_KEY = 'atk';
-const LOGIN_URL = 'https://restate.dev';
+const LOGIN_URL =
+  'https://restate-cloud-signup-test.auth.eu-central-1.amazoncognito.com/login?response_type=token&client_id=1v1rkegmilgjlphium3ksgurek&redirect_uri=https://restate.dev/';
 
 export function getAccessToken() {
   return localStorage.getItem(ACCESS_TOKEN_KEY);
