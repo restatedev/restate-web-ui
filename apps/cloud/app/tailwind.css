@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 @layer base {
-    html {
-      font-family: "Helvetica", system-ui, sans-serif;
-    }
+  html {
+    font-family: 'Helvetica', system-ui, sans-serif;
   }
+}
