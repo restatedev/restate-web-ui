@@ -4,13 +4,11 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-} from "@remix-run/react";
-import styles from "./tailwind.css?url";
-import type { LinksFunction } from "@remix-run/node";
+} from '@remix-run/react';
+import styles from './tailwind.css?url';
+import type { LinksFunction } from '@remix-run/node';
 
-export const links: LinksFunction = () => [
-  { rel: "stylesheet", href: styles },
-];
+export const links: LinksFunction = () => [{ rel: 'stylesheet', href: styles }];
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -31,7 +29,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <div>
+      //TODO: App layout
+      <Outlet />
+    </div>
+  );
 }
 
 export function HydrateFallback() {

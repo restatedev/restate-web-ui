@@ -1,0 +1,9 @@
+{
+  "name": "routes-cloud-accounts",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/routes/cloud-accounts/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project routes-cloud-accounts --web",
+  "targets": {}
+}

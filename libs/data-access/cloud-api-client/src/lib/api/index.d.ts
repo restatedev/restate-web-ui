@@ -136,6 +136,7 @@ export interface components {
     };
     DescribeApiKeyRequestBody: {
       keyId: string;
+      environmentId: string;
     };
     DescribeApiKeyResponse: components['schemas']['CreateApiKeyResponse'] & {
       description?: string;
@@ -148,13 +149,15 @@ export interface components {
       error?: string;
     };
     ListApiKeysRequestBody: {
-      keyId: string;
       environmentId: string;
     };
     ListApiKeysResponse: {
-      keyId?: string;
-      environmentId?: string;
-    }[];
+      apiKeys?: components['schemas']['ApiKeyListEntry'][];
+    };
+    ApiKeyListEntry: {
+      keyId: string;
+      environmentId: string;
+    };
   };
   responses: {
     /** @description Access token is missing or invalid */
@@ -198,7 +201,7 @@ export interface operations {
   /** Creates a cloud account */
   createAccount: {
     /** @description Specify the description */
-    requestBody?: {
+    requestBody: {
       content: {
         'application/json': components['schemas']['CreateAccountRequestBody'];
       };
@@ -235,7 +238,7 @@ export interface operations {
       };
     };
     /** @description Specify the description */
-    requestBody?: {
+    requestBody: {
       content: {
         'application/json': components['schemas']['CreateEnvironmentRequestBody'];
       };
@@ -259,7 +262,7 @@ export interface operations {
       };
     };
     /** @description Specify the environment id */
-    requestBody?: {
+    requestBody: {
       content: {
         'application/json': components['schemas']['DescribeEnvironmentRequestBody'];
       };
@@ -283,7 +286,7 @@ export interface operations {
       };
     };
     /** @description Specify the environment id */
-    requestBody?: {
+    requestBody: {
       content: {
         'application/json': components['schemas']['DestroyEnvironmentRequestBody'];
       };

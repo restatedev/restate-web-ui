@@ -14,12 +14,38 @@ export async function getUserIdentity() {
   return apiClient.POST('/cloud/GetUserIdentity');
 }
 
-export async function createAccount() {
-  return apiClient.POST('/cloud/CreateAccount');
+export async function createAccount(
+  params: AllParams<cloudApi.operations['createAccount']>
+) {
+  return apiClient.POST('/cloud/CreateAccount', {
+    body: { description: params.description },
+  });
 }
 
 export async function listAccounts() {
   return apiClient.POST('/cloud/ListAccounts');
+}
+
+export async function describeEnvironment(
+  params: AllParams<cloudApi.operations['describeEnvironment']>
+) {
+  return apiClient.POST('/cloud/{accountId}/DescribeEnvironment', {
+    params: { path: { accountId: params.accountId } },
+    body: {
+      environmentId: params.environmentId,
+    },
+  });
+}
+
+export async function destroyEnvironment(
+  params: AllParams<cloudApi.operations['destroyEnvironment']>
+) {
+  return apiClient.POST('/cloud/{accountId}/DestroyEnvironment', {
+    params: { path: { accountId: params.accountId } },
+    body: {
+      environmentId: params.environmentId,
+    },
+  });
 }
 
 type b = AllParams<cloudApi.operations['listAccounts']>;
@@ -29,6 +55,7 @@ export async function createEnvironment(
 ) {
   return apiClient.POST('/cloud/{accountId}/CreateEnvironment', {
     params: { path: { accountId: params.accountId } },
+    body: { description: params.description },
   });
 }
 
@@ -47,6 +74,41 @@ export async function createApiKey(
     params: { path: { accountId: params.accountId } },
     body: {
       roleId: params.roleId,
+      environmentId: params.environmentId,
+    },
+  });
+}
+
+export async function describeApiKey(
+  params: AllParams<cloudApi.operations['describeApiKey']>
+) {
+  return apiClient.POST('/cloud/{accountId}/DescribeApiKey', {
+    params: { path: { accountId: params.accountId } },
+    body: {
+      keyId: params.keyId,
+      environmentId: params.environmentId,
+    },
+  });
+}
+
+export async function deleteApiKey(
+  params: AllParams<cloudApi.operations['deleteApiKey']>
+) {
+  return apiClient.POST('/cloud/{accountId}/DeleteApiKey', {
+    params: { path: { accountId: params.accountId } },
+    body: {
+      keyId: params.keyId,
+      environmentId: params.environmentId,
+    },
+  });
+}
+
+export async function listApiKeys(
+  params: AllParams<cloudApi.operations['listApiKeys']>
+) {
+  return apiClient.POST('/cloud/{accountId}/ListApiKeys', {
+    params: { path: { accountId: params.accountId } },
+    body: {
       environmentId: params.environmentId,
     },
   });
