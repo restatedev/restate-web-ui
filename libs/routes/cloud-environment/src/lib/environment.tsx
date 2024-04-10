@@ -27,7 +27,6 @@ const clientLoader = async ({ request, params }: ClientLoaderFunctionArgs) => {
     accountId,
     environmentId,
   });
-  console.log(apiKeysResponse);
 
   const apiKeys = apiKeysResponse?.apiKeys ?? [];
   const detailedApiKeys = await Promise.all(
