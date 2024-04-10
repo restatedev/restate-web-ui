@@ -16,11 +16,11 @@ import { Button } from '@restate/ui/button';
 const clientLoader = async ({ request, params }: ClientLoaderFunctionArgs) => {
   const { data: accountsList } = await listAccounts();
   const accounts = accountsList?.accounts ?? [];
-  const isAccountIdValid = accounts.some(
+  const isAccountIdParamValid = accounts.some(
     ({ accountId }) => params.accountId === accountId
   );
 
-  if (isAccountIdValid) {
+  if (isAccountIdParamValid) {
     return { accounts };
   }
 
