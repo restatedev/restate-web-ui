@@ -422,8 +422,11 @@ components:
       type: object
       required:
         - keyId
+        - environmentId
       properties:
         keyId:
+          type: string
+        environmentId:
           type: string
     DescribeApiKeyResponse:
       allOf:

@@ -136,6 +136,7 @@ export interface components {
     };
     DescribeApiKeyRequestBody: {
       keyId: string;
+      environmentId: string;
     };
     DescribeApiKeyResponse: components['schemas']['CreateApiKeyResponse'] & {
       description?: string;
