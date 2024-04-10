@@ -33,6 +33,7 @@ paths:
         - bearerAuth: []
       requestBody:
         description: Specify the description
+        required: true
         content:
           application/json:
             schema:
@@ -75,6 +76,7 @@ paths:
         - $ref: '#/components/parameters/AccountId'
       requestBody:
         description: Specify the description
+        required: true
         content:
           application/json:
             schema:
@@ -100,6 +102,7 @@ paths:
         - $ref: '#/components/parameters/AccountId'
       requestBody:
         description: Specify the environment id
+        required: true
         content:
           application/json:
             schema:
@@ -125,6 +128,7 @@ paths:
         - $ref: '#/components/parameters/AccountId'
       requestBody:
         description: Specify the environment id
+        required: true
         content:
           application/json:
             schema:

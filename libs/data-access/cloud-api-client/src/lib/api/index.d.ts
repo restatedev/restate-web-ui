@@ -198,7 +198,7 @@ export interface operations {
   /** Creates a cloud account */
   createAccount: {
     /** @description Specify the description */
-    requestBody?: {
+    requestBody: {
       content: {
         'application/json': components['schemas']['CreateAccountRequestBody'];
       };
@@ -235,7 +235,7 @@ export interface operations {
       };
     };
     /** @description Specify the description */
-    requestBody?: {
+    requestBody: {
       content: {
         'application/json': components['schemas']['CreateEnvironmentRequestBody'];
       };
@@ -259,7 +259,7 @@ export interface operations {
       };
     };
     /** @description Specify the environment id */
-    requestBody?: {
+    requestBody: {
       content: {
         'application/json': components['schemas']['DescribeEnvironmentRequestBody'];
       };
@@ -283,7 +283,7 @@ export interface operations {
       };
     };
     /** @description Specify the environment id */
-    requestBody?: {
+    requestBody: {
       content: {
         'application/json': components['schemas']['DestroyEnvironmentRequestBody'];
       };
