@@ -27,6 +27,9 @@
       "@restate/routes/cloud-accounts": [
         "libs/routes/cloud-accounts/src/index.ts"
       ],
+      "@restate/routes/cloud-environment": [
+        "libs/routes/cloud-environment/src/index.ts"
+      ],
       "@restate/routes/cloud-environments": [
         "libs/routes/cloud-environments/src/index.ts"
       ],

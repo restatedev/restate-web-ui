@@ -102,3 +102,14 @@ export async function deleteApiKey(
     },
   });
 }
+
+export async function listApiKeys(
+  params: AllParams<cloudApi.operations['listApiKeys']>
+) {
+  return apiClient.POST('/cloud/{accountId}/ListApiKeys', {
+    params: { path: { accountId: params.accountId } },
+    body: {
+      environmentId: params.environmentId,
+    },
+  });
+}

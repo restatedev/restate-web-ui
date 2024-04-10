@@ -459,6 +459,20 @@ components:
     ListApiKeysRequestBody:
       type: object
       required:
+        - environmentId
+      properties:
+        environmentId:
+          type: string
+    ListApiKeysResponse:
+      type: object
+      properties:
+        apiKeys:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApiKeyListEntry'
+    ApiKeyListEntry:
+      type: object
+      required:
         - keyId
         - environmentId
       properties:
@@ -466,15 +480,6 @@ components:
           type: string
         environmentId:
           type: string
-    ListApiKeysResponse:
-      type: array
-      items:
-        type: object
-        properties:
-          keyId:
-            type: string
-          environmentId:
-            type: string
   responses:
     UnauthorizedError:
       description: Access token is missing or invalid

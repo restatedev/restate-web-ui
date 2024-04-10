@@ -149,13 +149,15 @@ export interface components {
       error?: string;
     };
     ListApiKeysRequestBody: {
-      keyId: string;
       environmentId: string;
     };
     ListApiKeysResponse: {
-      keyId?: string;
-      environmentId?: string;
-    }[];
+      apiKeys?: components['schemas']['ApiKeyListEntry'][];
+    };
+    ApiKeyListEntry: {
+      keyId: string;
+      environmentId: string;
+    };
   };
   responses: {
     /** @description Access token is missing or invalid */
