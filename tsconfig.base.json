@@ -25,6 +25,7 @@
         "libs/data-access/cloud-api-fixtures/src/index.ts"
       ],
       "@restate/ui/button": ["libs/ui/button/src/index.ts"],
+      "@restate/util/auth": ["libs/util/auth/src/index.ts"],
       "@restate/util/mock-api": ["libs/util/mock-api/src/index.ts"]
     }
   },
