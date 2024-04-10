@@ -1,5 +1,5 @@
-import { Component, loader } from '@restate/routes/cloud-index';
+import { redirect } from '@remix-run/react';
 import { withAuth } from '@restate/util/auth';
 
-export const clientLoader = withAuth(loader);
-export default Component;
+export const clientLoader = withAuth(() => redirect('/accounts'));
+export default () => null;
