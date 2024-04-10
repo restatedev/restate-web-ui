@@ -1,17 +1,10 @@
 import {
   ClientLoaderFunctionArgs,
-  redirect,
   ClientActionFunctionArgs,
   useLoaderData,
-  useParams,
-  NavLink,
   Form,
-  Outlet,
-  useActionData,
 } from '@remix-run/react';
 import {
-  listEnvironments,
-  createEnvironment,
   isRole,
   createApiKey,
   describeEnvironment,
@@ -34,6 +27,7 @@ const clientLoader = async ({ request, params }: ClientLoaderFunctionArgs) => {
     accountId,
     environmentId,
   });
+  console.log(apiKeysResponse);
 
   const apiKeys = apiKeysResponse?.apiKeys ?? [];
   const detailedApiKeys = await Promise.all(
@@ -54,8 +48,8 @@ const clientAction = async ({ request, params }: ClientActionFunctionArgs) => {
   const body = await request.formData();
   const roleId = body.get('roleId');
   const _action = body.get('_action');
-
-  if (_action === 'createAPIKey') {
+  console.log(_action, Object.entries(body));
+  if (_action === 'createApiKey') {
     invariant(params.accountId, 'Missing accountId param');
     invariant(params.environmentId, 'Missing environmentId param');
     invariant(isRole(roleId), 'Missing roleId param');
@@ -101,7 +95,9 @@ function Component() {
               Resolve Awakeable Access
             </option>
           </select>
-          <Button type="submit">Create API Key</Button>
+          <Button type="submit" name="_action" value="createApiKey">
+            Create API Key
+          </Button>
         </div>
       </Form>
     </div>

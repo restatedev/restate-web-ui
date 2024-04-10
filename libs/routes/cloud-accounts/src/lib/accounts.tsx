@@ -33,7 +33,7 @@ const clientLoader = async ({ request, params }: ClientLoaderFunctionArgs) => {
 
 // TODO: Error handling, Pending UI
 const clientAction = async ({ request, params }: ClientActionFunctionArgs) => {
-  const { data } = await createAccount();
+  const { data } = await createAccount({});
   return redirect(`/accounts/${data?.accountId}/environments`);
 };
 
