@@ -47,7 +47,7 @@ const clientAction = async ({ request, params }: ClientActionFunctionArgs) => {
   const body = await request.formData();
   const roleId = body.get('roleId');
   const _action = body.get('_action');
-  console.log(_action, Object.entries(body));
+
   if (_action === 'createApiKey') {
     invariant(params.accountId, 'Missing accountId param');
     invariant(params.environmentId, 'Missing environmentId param');
