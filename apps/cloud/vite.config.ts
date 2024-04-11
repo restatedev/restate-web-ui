@@ -4,7 +4,6 @@ import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-
   return {
     root: __dirname,
     cacheDir: '../../node_modules/.vite/apps/cloud',
@@ -25,9 +24,18 @@ export default defineConfig(({ mode }) => {
       headers: {
         'Service-Worker-Allowed': '/',
       },
+      hmr: {
+        protocol: 'ws',
+        port: 3000,
+      },
     },
     define: {
-      'process.env.NX_API_URL': JSON.stringify(env.NX_API_URL),
+      'process.env.RESTATE_CLOUD_API_URL': JSON.stringify(
+        env.RESTATE_CLOUD_API_URL
+      ),
+      'process.env.MOCK': JSON.stringify(
+        Boolean(env.NX_TASK_TARGET_CONFIGURATION)
+      ),
     },
 
     test: {

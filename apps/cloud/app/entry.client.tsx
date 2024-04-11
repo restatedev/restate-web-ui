@@ -5,7 +5,7 @@ import { startTransition, StrictMode } from 'react';
 import { hydrateRoot } from 'react-dom/client';
 
 async function prepareApp() {
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === 'development' && process.env.MOCK) {
     return await enableMockApi(cloudApiMockHandlers);
   }
 

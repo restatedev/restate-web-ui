@@ -3,7 +3,7 @@ declare module 'process' {
     namespace NodeJS {
       interface ProcessEnv {
         [key: string]: string | undefined;
-        NX_API_URL: string;
+        RESTATE_CLOUD_API_URL: string;
       }
     }
   }
