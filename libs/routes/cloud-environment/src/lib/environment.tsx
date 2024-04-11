@@ -65,13 +65,13 @@ const clientAction = async ({ request, params }: ClientActionFunctionArgs) => {
 };
 
 function Component() {
-  const { environment, apiKeys } = useLoaderData<typeof clientLoader>();
+  const { apiKeys } = useLoaderData<typeof clientLoader>();
 
   return (
     <div>
       <ul>
         {apiKeys.map((key) => (
-          <li key={key.data?.apiKey}>{key.data?.apiKey}</li>
+          <li key={key.data?.keyId}>{key.data?.keyId}</li>
         ))}
       </ul>
       <Form method="post">
