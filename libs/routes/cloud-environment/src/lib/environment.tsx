@@ -47,7 +47,7 @@ const clientAction = async ({ request, params }: ClientActionFunctionArgs) => {
   const body = await request.formData();
   const roleId = body.get('roleId');
   const _action = body.get('_action');
-  console.log(_action, Object.entries(body));
+
   if (_action === 'createApiKey') {
     invariant(params.accountId, 'Missing accountId param');
     invariant(params.environmentId, 'Missing environmentId param');
@@ -65,13 +65,13 @@ const clientAction = async ({ request, params }: ClientActionFunctionArgs) => {
 };
 
 function Component() {
-  const { environment, apiKeys } = useLoaderData<typeof clientLoader>();
+  const { apiKeys } = useLoaderData<typeof clientLoader>();
 
   return (
     <div>
       <ul>
         {apiKeys.map((key) => (
-          <li key={key.data?.apiKey}>{key.data?.apiKey}</li>
+          <li key={key.data?.keyId}>{key.data?.keyId}</li>
         ))}
       </ul>
       <Form method="post">

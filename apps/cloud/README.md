@@ -8,6 +8,9 @@ This application is for Restate Cloud UI, developed using [`Remix SPA mode`](htt
 # Run Cloud app in dev mode with mock API
 pnpm nx serve cloud -c mock
 
+# Run Cloud app against an API
+RESTATE_CLOUD_API_URL=https://api.dev.restate.cloud pnpm nx serve cloud
+
 # Build Cloud app in prod mode
 pnpm nx build cloud
 

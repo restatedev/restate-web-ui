@@ -429,18 +429,26 @@ components:
         environmentId:
           type: string
     DescribeApiKeyResponse:
-      allOf:
-        - $ref: '#/components/schemas/CreateApiKeyResponse'
-        - type: object
-          required:
-            - roleId
-            - environmentId
-            - state
-            - accountId
-            - apiKey
-          properties:
-            description:
-              type: string
+      type: object
+      required:
+        - roleId
+        - environmentId
+        - state
+        - accountId
+        - keyId
+      properties:
+        keyId:
+          type: string
+        environmentId:
+          type: string
+        roleId:
+          $ref: '#/components/schemas/Role'
+        state:
+          $ref: '#/components/schemas/ApiKeyState'
+        accountId:
+          type: string
+        description:
+          type: string
     DeleteApiKeyRequestBody:
       type: object
       required:

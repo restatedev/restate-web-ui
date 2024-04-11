@@ -138,7 +138,12 @@ export interface components {
       keyId: string;
       environmentId: string;
     };
-    DescribeApiKeyResponse: components['schemas']['CreateApiKeyResponse'] & {
+    DescribeApiKeyResponse: {
+      keyId: string;
+      environmentId: string;
+      roleId: components['schemas']['Role'];
+      state: components['schemas']['ApiKeyState'];
+      accountId: string;
       description?: string;
     };
     DeleteApiKeyRequestBody: {

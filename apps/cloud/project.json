@@ -12,7 +12,7 @@
       },
       "configurations": {
         "mock": {
-          "command": "cd apps/cloud && NX_API_URL=http://localhost:4200 ../../node_modules/.bin/remix vite:dev --port=4200"
+          "command": "cd apps/cloud && RESTATE_CLOUD_API_URL=http://localhost:4200 ../../node_modules/.bin/remix vite:dev --port=4200"
         }
       }
     },
