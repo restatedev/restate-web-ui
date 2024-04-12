@@ -33,7 +33,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {children}
+        <LayoutProvider>{children}</LayoutProvider>
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -43,14 +43,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <LayoutProvider>
+    <>
       <LayoutOutlet zone={LayoutZone.AppBar}>Restate</LayoutOutlet>
       <LayoutOutlet zone={LayoutZone.Content}>
         <div className="mx-auto max-w-7xl py-6 sm:px-6 lg:px-8">
           <Outlet />
         </div>
       </LayoutOutlet>
-    </LayoutProvider>
+    </>
   );
 }
 

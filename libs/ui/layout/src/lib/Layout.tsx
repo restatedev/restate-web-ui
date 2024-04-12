@@ -1,10 +1,4 @@
-import {
-  ElementType,
-  PropsWithChildren,
-  createElement,
-  useEffect,
-  useState,
-} from 'react';
+import { ElementType, PropsWithChildren, createElement } from 'react';
 import { createPortal } from 'react-dom';
 
 /* eslint-disable-next-line */
@@ -41,18 +35,12 @@ const ZONE_PROPS: Record<LayoutZone, { id: string; className?: string }> = {
 const ALL_ZONES = Object.keys(ZONE_IDS) as LayoutZone[];
 
 export function LayoutProvider({ children }: PropsWithChildren<LayoutProps>) {
-  const [containersAreAttached, setContainersAreAttached] = useState(false);
-
-  useEffect(() => {
-    setContainersAreAttached(true);
-  }, []);
-
   return (
     <div>
       {ALL_ZONES.map((zone) =>
         createElement(ZONE_ELEMENT[zone], { ...ZONE_PROPS[zone], key: zone })
       )}
-      {containersAreAttached ? children : null}
+      {children}
     </div>
   );
 }
