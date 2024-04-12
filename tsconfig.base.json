@@ -35,6 +35,7 @@
       ],
       "@restate/ui/app-bar": ["libs/ui/app-bar/src/index.ts"],
       "@restate/ui/button": ["libs/ui/button/src/index.ts"],
+      "@restate/ui/layout": ["libs/ui/layout/src/index.ts"],
       "@restate/util/auth": ["libs/util/auth/src/index.ts"],
       "@restate/util/mock-api": ["libs/util/mock-api/src/index.ts"]
     }

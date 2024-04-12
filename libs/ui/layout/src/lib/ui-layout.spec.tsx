@@ -1,10 +1,10 @@
 import { render } from '@testing-library/react';
 
-import UiAppBar from './ui-app-bar';
+import UiLayout from './ui-layout';
 
-describe('UiAppBar', () => {
+describe('UiLayout', () => {
   it('should render successfully', () => {
-    const { baseElement } = render(<UiAppBar />);
+    const { baseElement } = render(<UiLayout />);
     expect(baseElement).toBeTruthy();
   });
 });
