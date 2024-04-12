@@ -7,8 +7,20 @@ import {
 } from '@remix-run/react';
 import styles from './tailwind.css?url';
 import type { LinksFunction } from '@remix-run/node';
+import { CLOUD_API_BASE_URL } from '@restate/data-access/cloud-api-client';
 
-export const links: LinksFunction = () => [{ rel: 'stylesheet', href: styles }];
+export const links: LinksFunction = () => [
+  {
+    rel: 'preconnect',
+    href: CLOUD_API_BASE_URL,
+  },
+  {
+    rel: 'preconnect',
+    href: 'https://rsms.me/',
+  },
+  { rel: 'stylesheet', href: styles },
+  { rel: 'stylesheet', href: 'https://rsms.me/inter/inter.css' },
+];
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (

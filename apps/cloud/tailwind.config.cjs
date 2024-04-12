@@ -18,5 +18,9 @@ module.exports = {
       },
     },
   },
-  plugins: [require('@tailwindcss/forms')],
+  plugins: [
+    require('tailwindcss-react-aria-components'),
+    require('tailwindcss-animate'),
+    require('@tailwindcss/forms'),
+  ],
 };
