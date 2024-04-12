@@ -8,6 +8,7 @@ import {
 import styles from './tailwind.css?url';
 import type { LinksFunction } from '@remix-run/node';
 import { CLOUD_API_BASE_URL } from '@restate/data-access/cloud-api-client';
+import { LayoutOutlet, LayoutProvider, LayoutZone } from '@restate/ui/layout';
 
 export const links: LinksFunction = () => [
   {
@@ -42,10 +43,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <div>
-      //TODO: App layout
-      <Outlet />
-    </div>
+    <LayoutProvider>
+      <LayoutOutlet zone={LayoutZone.AppBar}>Restate</LayoutOutlet>
+      <LayoutOutlet zone={LayoutZone.Content}>
+        <div className="mx-auto max-w-7xl py-6 sm:px-6 lg:px-8">
+          <Outlet />
+        </div>
+      </LayoutOutlet>
+    </LayoutProvider>
   );
 }
 
