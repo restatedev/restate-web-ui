@@ -7,8 +7,21 @@ import {
 } from '@remix-run/react';
 import styles from './tailwind.css?url';
 import type { LinksFunction } from '@remix-run/node';
+import { CLOUD_API_BASE_URL } from '@restate/data-access/cloud-api-client';
+import { LayoutOutlet, LayoutProvider, LayoutZone } from '@restate/ui/layout';
 
-export const links: LinksFunction = () => [{ rel: 'stylesheet', href: styles }];
+export const links: LinksFunction = () => [
+  {
+    rel: 'preconnect',
+    href: CLOUD_API_BASE_URL,
+  },
+  {
+    rel: 'preconnect',
+    href: 'https://rsms.me/',
+  },
+  { rel: 'stylesheet', href: styles },
+  { rel: 'stylesheet', href: 'https://rsms.me/inter/inter.css' },
+];
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -20,7 +33,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {children}
+        <LayoutProvider>{children}</LayoutProvider>
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -30,10 +43,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <div>
-      //TODO: App layout
-      <Outlet />
-    </div>
+    <>
+      <LayoutOutlet zone={LayoutZone.AppBar}>Restate</LayoutOutlet>
+      <LayoutOutlet zone={LayoutZone.Content}>
+        <div className="mx-auto max-w-7xl py-6 sm:px-6 lg:px-8">
+          <Outlet />
+        </div>
+      </LayoutOutlet>
+    </>
   );
 }
 

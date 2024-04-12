@@ -14,9 +14,13 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"Helvetica"', ...defaultTheme.fontFamily.sans],
+        sans: ['Inter var', ...defaultTheme.fontFamily.sans],
       },
     },
   },
-  plugins: [require('@tailwindcss/forms')],
+  plugins: [
+    require('tailwindcss-react-aria-components'),
+    require('tailwindcss-animate'),
+    require('@tailwindcss/forms'),
+  ],
 };
