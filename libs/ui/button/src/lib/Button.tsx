@@ -1,6 +1,7 @@
 import type { PropsWithChildren } from 'react';
 import { tv } from 'tailwind-variants';
-import { Button as RACButton } from 'react-aria-components';
+import { Button as RACButton, composeRenderProps } from 'react-aria-components';
+import { focusRing } from '@restate/ui/focus';
 
 export interface ButtonProps {
   onClick?: VoidFunction;
@@ -10,17 +11,8 @@ export interface ButtonProps {
   disabled?: boolean;
   autoFocus?: boolean;
   variant?: 'primary' | 'secondary' | 'destructive' | 'icon';
+  className?: string;
 }
-
-const focusRing = tv({
-  base: 'outline outline-blue-600 dark:outline-blue-500 forced-colors:outline-[Highlight] outline-offset-2',
-  variants: {
-    isFocusVisible: {
-      false: 'outline-0',
-      true: 'outline-2',
-    },
-  },
-});
 
 const buttonVariant = tv({
   extend: focusRing,
@@ -45,13 +37,17 @@ const buttonVariant = tv({
 export function Button({
   variant,
   onClick,
+  disabled,
   ...props
 }: PropsWithChildren<ButtonProps>) {
   return (
     <RACButton
       {...props}
-      className={buttonVariant({ variant })}
+      isDisabled={disabled}
       onPress={onClick}
+      className={composeRenderProps(props.className, (className, renderProps) =>
+        buttonVariant({ ...renderProps, variant, className })
+      )}
     />
   );
 }
