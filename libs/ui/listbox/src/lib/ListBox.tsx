@@ -4,19 +4,16 @@ import {
   ListBoxProps as AriaListBoxProps,
 } from 'react-aria-components';
 
-export function StyledListBox<T extends object>({
-  children,
-  ...props
-}: Omit<AriaListBoxProps<T>, 'layout' | 'orientation'>) {
+export function StyledListBox<T extends object>(
+  props: Omit<AriaListBoxProps<T>, 'layout' | 'orientation'>
+) {
   return (
     <AriaListBox
       {...props}
       className={
         'outline-0 p-1 border border-gray-300 dark:border-zinc-600 rounded-lg'
       }
-    >
-      {children}
-    </AriaListBox>
+    />
   );
 }
 
@@ -26,7 +23,6 @@ interface ListBoxProps {
 }
 
 export function ListBox({
-  children,
   disabledItems,
   ...props
 }: PropsWithChildren<ListBoxProps>) {
@@ -39,7 +35,6 @@ interface SelectListBoxProps extends ListBoxProps {
 }
 
 export function SelectListBoxProps({
-  children,
   multiple,
   disabledItems,
   selectedItems,

@@ -1,9 +1,8 @@
 import { focusRing } from '@restate/ui/focus';
-import { useContext, type PropsWithChildren } from 'react';
+import type { PropsWithChildren } from 'react';
 import {
   ListBoxItem as AriaListBoxItem,
   ListBoxItemProps as AriaListBoxItemProps,
-  ListBoxContext,
   composeRenderProps,
 } from 'react-aria-components';
 import { tv } from 'tailwind-variants';
@@ -27,8 +26,6 @@ function StyledListBoxItem(props: AriaListBoxItemProps) {
   const textValue =
     props.textValue ||
     (typeof props.children === 'string' ? props.children : undefined);
-  //   const aa = useContext(ListBoxContext);
-  //   const b = aa?;
 
   return (
     <AriaListBoxItem
@@ -50,7 +47,7 @@ interface ListBoxItemProps {
   children: string;
 }
 
-export function ListBoxItem({ children, ...props }: ListBoxItemProps) {
+export function ListBoxItem(props: ListBoxItemProps) {
   return <StyledListBoxItem {...props} />;
 }
 
@@ -60,7 +57,6 @@ interface ListBoxCustomItemProps
 }
 
 export function ListBoxCustomItem({
-  children,
   value,
   ...props
 }: PropsWithChildren<ListBoxCustomItemProps>) {
@@ -71,22 +67,6 @@ interface ListBoxNavItemProps extends Omit<ListBoxCustomItemProps, 'value'> {
   href: string;
 }
 
-export function ListBoxNavItem({
-  children,
-  ...props
-}: PropsWithChildren<ListBoxNavItemProps>) {
+export function ListBoxNavItem(props: PropsWithChildren<ListBoxNavItemProps>) {
   return <StyledListBoxItem {...props} />;
 }
-
-export const dropdownItemStyles = tv({
-  base: 'group flex items-center gap-4 cursor-default select-none py-2 pl-3 pr-1 rounded-lg outline outline-0 text-sm forced-color-adjust-none',
-  variants: {
-    isDisabled: {
-      false: 'text-gray-900 dark:text-zinc-100',
-      true: 'text-gray-300 dark:text-zinc-600 forced-colors:text-[GrayText]',
-    },
-    isFocused: {
-      true: 'bg-blue-600 text-white forced-colors:bg-[Highlight] forced-colors:text-[HighlightText]',
-    },
-  },
-});
