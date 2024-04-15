@@ -1,1 +1,1 @@
-export * from './lib/ui-icons';
+export * from './lib/Icons';
