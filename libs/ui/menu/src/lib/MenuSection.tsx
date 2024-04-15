@@ -1,5 +1,5 @@
-import { ListboxSectionProps, ListboxSection } from '@restate/ui/listbox';
+import { ListBoxSectionProps, ListBox } from '@restate/ui/listbox';
 
-export function MenuSection(props: ListboxSectionProps) {
-  return <ListboxSection {...props} />;
+export function MenuSection(props: ListBoxSectionProps) {
+  return <ListBox.Section {...props} />;
 }
