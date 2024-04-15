@@ -1,1 +1,1 @@
-export * from './lib/ui-menu';
+export * from './lib/Menu';
