@@ -34,6 +34,7 @@
         "libs/routes/cloud-environments/src/index.ts"
       ],
       "@restate/ui/button": ["libs/ui/button/src/index.ts"],
+      "@restate/ui/focus": ["libs/ui/focus/src/index.ts"],
       "@restate/ui/layout": ["libs/ui/layout/src/index.ts"],
       "@restate/ui/listbox": ["libs/ui/listbox/src/index.ts"],
       "@restate/ui/menu": ["libs/ui/menu/src/index.ts"],
