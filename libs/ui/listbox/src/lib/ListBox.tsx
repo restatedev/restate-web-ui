@@ -20,32 +20,35 @@ export function StyledListBox<T extends object>(
 interface ListBoxProps {
   disabledItems?: Iterable<string>;
   ['aria-label']?: string;
+  selectable?: never;
+  selectedItems?: never;
+  multiple?: never;
+}
+
+interface SelectableListBoxProps
+  extends Omit<ListBoxProps, 'selectable' | 'selectedItems' | 'multiple'> {
+  multiple?: boolean;
+  selectedItems?: Iterable<string>;
+  selectable: true;
 }
 
 export function ListBox({
-  disabledItems,
-  ...props
-}: PropsWithChildren<ListBoxProps>) {
-  return <StyledListBox {...props} disabledKeys={disabledItems} />;
-}
-
-interface SelectableListBoxProps extends ListBoxProps {
-  multiple?: boolean;
-  selectedItems?: Iterable<string>;
-}
-
-export function SelectableListBox({
   multiple,
   disabledItems,
   selectedItems,
+  selectable,
   ...props
-}: PropsWithChildren<SelectableListBoxProps>) {
-  return (
-    <StyledListBox
-      {...props}
-      selectionMode={multiple ? 'multiple' : 'single'}
-      disabledKeys={disabledItems}
-      selectedKeys={selectedItems}
-    />
-  );
+}: PropsWithChildren<ListBoxProps | SelectableListBoxProps>) {
+  if (selectable) {
+    return (
+      <StyledListBox
+        {...props}
+        selectionMode={multiple ? 'multiple' : 'single'}
+        disabledKeys={disabledItems}
+        selectedKeys={selectedItems}
+      />
+    );
+  } else {
+    return <StyledListBox {...props} disabledKeys={disabledItems} />;
+  }
 }
