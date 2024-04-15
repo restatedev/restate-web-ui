@@ -1,8 +1,9 @@
 import { focusRing } from '@restate/ui/focus';
-import type { PropsWithChildren } from 'react';
+import { useContext, type PropsWithChildren } from 'react';
 import {
   ListBoxItem as AriaListBoxItem,
   ListBoxItemProps as AriaListBoxItemProps,
+  ListBoxContext,
   composeRenderProps,
 } from 'react-aria-components';
 import { tv } from 'tailwind-variants';
@@ -26,6 +27,9 @@ function StyledListBoxItem(props: AriaListBoxItemProps) {
   const textValue =
     props.textValue ||
     (typeof props.children === 'string' ? props.children : undefined);
+  //   const aa = useContext(ListBoxContext);
+  //   const b = aa?;
+
   return (
     <AriaListBoxItem
       {...props}
