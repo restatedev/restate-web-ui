@@ -5,7 +5,7 @@ export interface ListboxSectionProps {
   title?: string;
 }
 
-export function ListboxSection({
+export function ListBoxSection({
   children,
   title,
 }: PropsWithChildren<ListboxSectionProps>) {

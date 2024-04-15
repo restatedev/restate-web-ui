@@ -1,4 +1,11 @@
-export * from './lib/Menu';
-export * from './lib/MenuItem';
-export * from './lib/MenuSection';
-export * from './lib/MenuSeparator';
+import { Menu as MenuList } from './lib/Menu';
+import { MenuItem } from './lib/MenuItem';
+import { MenuSection } from './lib/MenuSection';
+import { MenuSeparator } from './lib/MenuSeparator';
+
+export const Menu = {
+  List: MenuList,
+  Item: MenuItem,
+  Section: MenuSection,
+  Separator: MenuSeparator,
+};
