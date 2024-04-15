@@ -4,11 +4,13 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useNavigate,
 } from '@remix-run/react';
 import styles from './tailwind.css?url';
 import type { LinksFunction } from '@remix-run/node';
 import { CLOUD_API_BASE_URL } from '@restate/data-access/cloud-api-client';
 import { LayoutOutlet, LayoutProvider, LayoutZone } from '@restate/ui/layout';
+import { RouterProvider } from 'react-aria-components';
 
 export const links: LinksFunction = () => [
   {
@@ -24,6 +26,8 @@ export const links: LinksFunction = () => [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const navigate = useNavigate();
+
   return (
     <html lang="en">
       <head>
@@ -33,7 +37,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        <LayoutProvider>{children}</LayoutProvider>
+        <RouterProvider navigate={navigate}>
+          <LayoutProvider>{children}</LayoutProvider>
+        </RouterProvider>
         <ScrollRestoration />
         <Scripts />
       </body>
