@@ -29,17 +29,17 @@ export function ListBox({
   return <StyledListBox {...props} disabledKeys={disabledItems} />;
 }
 
-interface SelectListBoxProps extends ListBoxProps {
+interface SelectableListBoxProps extends ListBoxProps {
   multiple?: boolean;
   selectedItems?: Iterable<string>;
 }
 
-export function SelectListBoxProps({
+export function SelectableListBox({
   multiple,
   disabledItems,
   selectedItems,
   ...props
-}: PropsWithChildren<SelectListBoxProps>) {
+}: PropsWithChildren<SelectableListBoxProps>) {
   return (
     <StyledListBox
       {...props}

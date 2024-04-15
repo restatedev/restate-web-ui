@@ -1,5 +1,9 @@
 import { PropsWithChildren } from 'react';
-import { OverlayArrow, Popover as AriaPopover } from 'react-aria-components';
+import {
+  OverlayArrow,
+  Popover as AriaPopover,
+  composeRenderProps,
+} from 'react-aria-components';
 import { tv } from 'tailwind-variants';
 
 const styles = tv({
@@ -14,12 +18,18 @@ const styles = tv({
   },
 });
 
-export function Popover({ children, ...props }: PropsWithChildren<{}>) {
+export function Popover({
+  children,
+  className,
+  ...props
+}: PropsWithChildren<{ className?: string }>) {
   return (
     <AriaPopover
       offset={12}
       {...props}
-      className={(renderProps) => styles(renderProps)}
+      className={composeRenderProps(className, (className, renderProps) =>
+        styles({ ...renderProps, className })
+      )}
     >
       <OverlayArrow className="group">
         <svg
