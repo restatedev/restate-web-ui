@@ -45,28 +45,46 @@ function StyledListBoxItem(props: AriaListBoxItemProps) {
 
 interface ListBoxItemProps {
   children: string;
-}
-
-export function ListBoxItem(props: ListBoxItemProps) {
-  return <StyledListBoxItem {...props} />;
+  value?: never;
+  href?: never;
 }
 
 interface ListBoxCustomItemProps
-  extends PropsWithChildren<Omit<ListBoxItemProps, 'children'>> {
+  extends PropsWithChildren<
+    Omit<ListBoxItemProps, 'children' | 'href' | 'value'>
+  > {
   value: string;
+  href?: never;
 }
 
-export function ListBoxCustomItem({
-  value,
-  ...props
-}: PropsWithChildren<ListBoxCustomItemProps>) {
-  return <StyledListBoxItem {...props} id={value} textValue={value} />;
-}
-
-interface ListBoxNavItemProps extends Omit<ListBoxCustomItemProps, 'value'> {
+interface ListBoxNavItemProps
+  extends Omit<ListBoxCustomItemProps, 'value' | 'href'> {
   href: string;
+  value?: never;
 }
 
-export function ListBoxNavItem(props: PropsWithChildren<ListBoxNavItemProps>) {
+function isNavItem(
+  props: ListBoxItemProps | ListBoxCustomItemProps | ListBoxNavItemProps
+): props is ListBoxNavItemProps {
+  return Boolean(props.href);
+}
+
+function isCustomItem(
+  props: ListBoxItemProps | ListBoxCustomItemProps | ListBoxNavItemProps
+): props is ListBoxCustomItemProps {
+  return typeof props.value === 'string';
+}
+
+export function ListBoxItem(
+  props: ListBoxItemProps | ListBoxCustomItemProps | ListBoxNavItemProps
+) {
+  if (isNavItem(props)) {
+    const { href, ...rest } = props;
+    return <StyledListBoxItem {...rest} href={href} />;
+  }
+  if (isCustomItem(props)) {
+    const { value, ...rest } = props;
+    return <StyledListBoxItem id={value} textValue={value} {...rest} />;
+  }
   return <StyledListBoxItem {...props} />;
 }

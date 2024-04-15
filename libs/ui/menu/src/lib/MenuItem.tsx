@@ -2,7 +2,7 @@ import { Icon, IconName } from '@restate/ui/icons';
 import type { PropsWithChildren } from 'react';
 import {
   MenuItem as AriaMenuItem,
-  MenuItemProps as AriaMenuItemPropss,
+  MenuItemProps as AriaMenuItemProps,
   composeRenderProps,
 } from 'react-aria-components';
 import { tv } from 'tailwind-variants';
@@ -20,7 +20,7 @@ const dropdownItemStyles = tv({
   },
 });
 
-function StyledMenuItem(props: AriaMenuItemPropss) {
+function StyledMenuItem(props: AriaMenuItemProps) {
   return (
     <AriaMenuItem {...props} className={dropdownItemStyles}>
       {composeRenderProps(
@@ -44,28 +44,45 @@ function StyledMenuItem(props: AriaMenuItemPropss) {
 
 interface MenuItemProps {
   children: string;
-}
-
-export function MenuItem(props: MenuItemProps) {
-  return <StyledMenuItem {...props} />;
+  value?: never;
+  href?: never;
 }
 
 interface MenuCustomItemProps
-  extends PropsWithChildren<Omit<MenuItemProps, 'children'>> {
+  extends PropsWithChildren<
+    Omit<MenuItemProps, 'children' | 'href' | 'value'>
+  > {
   value: string;
+  href?: never;
 }
 
-export function MenuCustomItem({
-  value,
-  ...props
-}: PropsWithChildren<MenuCustomItemProps>) {
-  return <StyledMenuItem {...props} id={value} textValue={value} />;
-}
-
-interface MenuNavItemProps extends Omit<MenuCustomItemProps, 'value'> {
+interface MenuNavItemProps extends Omit<MenuCustomItemProps, 'value' | 'href'> {
   href: string;
+  value?: never;
 }
 
-export function MenuNavItem(props: PropsWithChildren<MenuNavItemProps>) {
+function isNavItem(
+  props: MenuItemProps | MenuCustomItemProps | MenuNavItemProps
+): props is MenuNavItemProps {
+  return Boolean(props.href);
+}
+
+function isCustomItem(
+  props: MenuItemProps | MenuCustomItemProps | MenuNavItemProps
+): props is MenuCustomItemProps {
+  return typeof props.value === 'string';
+}
+
+export function MenuItem(
+  props: MenuItemProps | MenuCustomItemProps | MenuNavItemProps
+) {
+  if (isNavItem(props)) {
+    const { href, ...rest } = props;
+    return <StyledMenuItem {...rest} href={href} />;
+  }
+  if (isCustomItem(props)) {
+    const { value, ...rest } = props;
+    return <StyledMenuItem id={value} textValue={value} {...rest} />;
+  }
   return <StyledMenuItem {...props} />;
 }
