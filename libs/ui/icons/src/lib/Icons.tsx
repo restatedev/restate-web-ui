@@ -1,18 +1,22 @@
-import { Check, ChevronDown, LucideIcon } from 'lucide-react';
+import { Check, ChevronDown, ChevronRight } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { tv } from 'tailwind-variants';
 
-const enum IconName {
+export const enum IconName {
   ChevronDown = 'ChevronDown',
+  ChevronRight = 'ChevronRight',
   Check = 'Check',
 }
 export interface IconsProps {
   filled?: boolean;
   name: IconName;
+  ['aria-hidden']?: boolean;
 }
 
 const ICONS: Record<IconName, LucideIcon> = {
   [IconName.ChevronDown]: ChevronDown,
   [IconName.Check]: Check,
+  [IconName.ChevronRight]: ChevronRight,
 };
 
 const icon = tv({
@@ -28,10 +32,11 @@ const icon = tv({
   },
 });
 
-export function Icon({ name, filled }: IconsProps) {
+export function Icon({ name, filled, ...props }: IconsProps) {
   const IconComponent = ICONS[name];
   return (
     <IconComponent
+      {...props}
       className={icon({ variant: filled ? 'filled' : 'stroked' })}
     />
   );
