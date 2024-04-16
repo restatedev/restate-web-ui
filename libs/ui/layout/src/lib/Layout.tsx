@@ -51,3 +51,11 @@ export function LayoutOutlet({
 }: PropsWithChildren<{ zone: LayoutZone }>) {
   return createPortal(children, document.getElementById(ZONE_IDS[zone])!);
 }
+
+export function getModalElement() {
+  const element = document.getElementById(ZONE_IDS[LayoutZone.Modal]);
+  if (element instanceof HTMLDialogElement) {
+    return element;
+  }
+  throw new Error('No element found');
+}
