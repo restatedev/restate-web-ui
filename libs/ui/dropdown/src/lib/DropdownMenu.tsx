@@ -2,10 +2,9 @@ import {
   Menu as AriaMenu,
   MenuProps as AriaMenuProps,
 } from 'react-aria-components';
-import { Popover } from '@restate/ui/popover';
 import { PropsWithChildren } from 'react';
 
-function StyledMenu<T extends object>(props: AriaMenuProps<T>) {
+function StyledDropdownMenu<T extends object>(props: AriaMenuProps<T>) {
   return (
     <AriaMenu
       {...props}
@@ -14,7 +13,7 @@ function StyledMenu<T extends object>(props: AriaMenuProps<T>) {
   );
 }
 
-interface MenuProps {
+interface DropdownMenuProps {
   disabledItems?: Iterable<string>;
   ['aria-label']?: string;
   selectable?: never;
@@ -22,23 +21,23 @@ interface MenuProps {
   multiple?: never;
 }
 
-interface SelectableMenuProps
-  extends Omit<MenuProps, 'selectable' | 'selectedItems' | 'multiple'> {
+interface SelectableDropdownMenuProps
+  extends Omit<DropdownMenuProps, 'selectable' | 'selectedItems' | 'multiple'> {
   multiple?: boolean;
   selectedItems?: Iterable<string>;
   selectable: true;
 }
 
-export function MenuList({
+export function DropdownMenu({
   multiple,
   disabledItems,
   selectedItems,
   selectable,
   ...props
-}: PropsWithChildren<MenuProps | SelectableMenuProps>) {
+}: PropsWithChildren<DropdownMenuProps | SelectableDropdownMenuProps>) {
   if (selectable) {
     return (
-      <StyledMenu
+      <StyledDropdownMenu
         {...props}
         selectionMode={multiple ? 'multiple' : 'single'}
         disabledKeys={disabledItems}
@@ -46,6 +45,6 @@ export function MenuList({
       />
     );
   } else {
-    return <StyledMenu {...props} disabledKeys={disabledItems} />;
+    return <StyledDropdownMenu {...props} disabledKeys={disabledItems} />;
   }
 }

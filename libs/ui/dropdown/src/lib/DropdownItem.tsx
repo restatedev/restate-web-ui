@@ -20,7 +20,7 @@ const dropdownItemStyles = tv({
   },
 });
 
-function StyledMenuItem(props: AriaMenuItemProps) {
+function StyledDropdownItem(props: AriaMenuItemProps) {
   return (
     <AriaMenuItem {...props} className={dropdownItemStyles}>
       {composeRenderProps(
@@ -42,47 +42,48 @@ function StyledMenuItem(props: AriaMenuItemProps) {
   );
 }
 
-interface MenuItemProps {
+interface DropdownItemProps {
   children: string;
   value?: never;
   href?: never;
 }
 
-interface MenuCustomItemProps
+interface DropdownCustomItemProps
   extends PropsWithChildren<
-    Omit<MenuItemProps, 'children' | 'href' | 'value'>
+    Omit<DropdownItemProps, 'children' | 'href' | 'value'>
   > {
   value: string;
   href?: never;
 }
 
-interface MenuNavItemProps extends Omit<MenuCustomItemProps, 'value' | 'href'> {
+interface DropdownNavItemProps
+  extends Omit<DropdownCustomItemProps, 'value' | 'href'> {
   href: string;
   value?: never;
 }
 
 function isNavItem(
-  props: MenuItemProps | MenuCustomItemProps | MenuNavItemProps
-): props is MenuNavItemProps {
+  props: DropdownItemProps | DropdownCustomItemProps | DropdownNavItemProps
+): props is DropdownNavItemProps {
   return Boolean(props.href);
 }
 
 function isCustomItem(
-  props: MenuItemProps | MenuCustomItemProps | MenuNavItemProps
-): props is MenuCustomItemProps {
+  props: DropdownItemProps | DropdownCustomItemProps | DropdownNavItemProps
+): props is DropdownCustomItemProps {
   return typeof props.value === 'string';
 }
 
-export function MenuItem(
-  props: MenuItemProps | MenuCustomItemProps | MenuNavItemProps
+export function DropdownItem(
+  props: DropdownItemProps | DropdownCustomItemProps | DropdownNavItemProps
 ) {
   if (isNavItem(props)) {
     const { href, ...rest } = props;
-    return <StyledMenuItem {...rest} href={href} />;
+    return <StyledDropdownItem {...rest} href={href} />;
   }
   if (isCustomItem(props)) {
     const { value, ...rest } = props;
-    return <StyledMenuItem id={value} textValue={value} {...rest} />;
+    return <StyledDropdownItem id={value} textValue={value} {...rest} />;
   }
-  return <StyledMenuItem {...props} />;
+  return <StyledDropdownItem {...props} />;
 }

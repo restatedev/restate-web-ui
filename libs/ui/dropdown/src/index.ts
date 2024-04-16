@@ -1,14 +1,7 @@
-export { MenuList } from './lib/MenuList';
-export { MenuItem } from './lib/MenuItem';
-export { MenuSection } from './lib/MenuSection';
-export { MenuSeparator } from './lib/MenuSeparator';
-export { MenuTrigger } from './lib/MenuTrigger';
-export { Menu } from './lib/Menu';
-
-// export const Menu = {
-//   List: MenuList,
-//   Item: MenuItem,
-//   Section: MenuSection,
-//   Separator: MenuSeparator,
-//   Trigger: MenuTrigger,
-// };
+export { DropdownMenu } from './lib/DropdownMenu';
+export { DropdownItem } from './lib/DropdownItem';
+export { DropdownSection } from './lib/DropdownSection';
+export { DropdownSeparator } from './lib/DropdownSeparator';
+export { DropdownTrigger } from './lib/DropdownTrigger';
+export { DropdownPopover } from './lib/DropdownPopover';
+export { Dropdown } from './lib/Dropdown';
