@@ -1,0 +1,9 @@
+{
+  "name": "ui-dialog",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/ui/dialog/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project ui-dialog --web",
+  "targets": {}
+}

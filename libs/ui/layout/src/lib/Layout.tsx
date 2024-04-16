@@ -8,28 +8,24 @@ export const enum LayoutZone {
   AppBar = 'AppBar',
   Nav = 'Nav',
   Content = 'Content',
-  Modal = 'Modal',
 }
 
 const ZONE_IDS: Record<LayoutZone, string> = {
   [LayoutZone.AppBar]: 'layout-app-bar',
   [LayoutZone.Nav]: 'layout-nav',
   [LayoutZone.Content]: 'layout-content',
-  [LayoutZone.Modal]: 'layout-modal',
 };
 
 const ZONE_ELEMENT: Record<LayoutZone, ElementType> = {
   [LayoutZone.AppBar]: 'header',
   [LayoutZone.Nav]: 'nav',
   [LayoutZone.Content]: 'main',
-  [LayoutZone.Modal]: 'dialog',
 };
 
 const ZONE_PROPS: Record<LayoutZone, { id: string; className?: string }> = {
   [LayoutZone.AppBar]: { id: ZONE_IDS[LayoutZone.AppBar] },
   [LayoutZone.Nav]: { id: ZONE_IDS[LayoutZone.Nav] },
   [LayoutZone.Content]: { id: ZONE_IDS[LayoutZone.Content] },
-  [LayoutZone.Modal]: { id: ZONE_IDS[LayoutZone.Modal] },
 };
 
 const ALL_ZONES = Object.keys(ZONE_IDS) as LayoutZone[];
@@ -50,12 +46,4 @@ export function LayoutOutlet({
   children,
 }: PropsWithChildren<{ zone: LayoutZone }>) {
   return createPortal(children, document.getElementById(ZONE_IDS[zone])!);
-}
-
-export function getModalElement() {
-  const element = document.getElementById(ZONE_IDS[LayoutZone.Modal]);
-  if (element instanceof HTMLDialogElement) {
-    return element;
-  }
-  throw new Error('No element found');
 }
