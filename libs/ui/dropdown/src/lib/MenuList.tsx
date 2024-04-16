@@ -7,12 +7,10 @@ import { PropsWithChildren } from 'react';
 
 function StyledMenu<T extends object>(props: AriaMenuProps<T>) {
   return (
-    <Popover className="min-w-[150px]">
-      <AriaMenu
-        {...props}
-        className="p-1 outline outline-0 max-h-[inherit] overflow-auto [clip-path:inset(0_0_0_0_round_.75rem)]"
-      />
-    </Popover>
+    <AriaMenu
+      {...props}
+      className="p-1 outline outline-0 max-h-[inherit] overflow-auto [clip-path:inset(0_0_0_0_round_.75rem)]"
+    />
   );
 }
 
@@ -31,7 +29,7 @@ interface SelectableMenuProps
   selectable: true;
 }
 
-export function Menu({
+export function MenuList({
   multiple,
   disabledItems,
   selectedItems,
@@ -39,12 +37,14 @@ export function Menu({
   ...props
 }: PropsWithChildren<MenuProps | SelectableMenuProps>) {
   if (selectable) {
-    <StyledMenu
-      {...props}
-      selectionMode={multiple ? 'multiple' : 'single'}
-      disabledKeys={disabledItems}
-      selectedKeys={selectedItems}
-    />;
+    return (
+      <StyledMenu
+        {...props}
+        selectionMode={multiple ? 'multiple' : 'single'}
+        disabledKeys={disabledItems}
+        selectedKeys={selectedItems}
+      />
+    );
   } else {
     return <StyledMenu {...props} disabledKeys={disabledItems} />;
   }
