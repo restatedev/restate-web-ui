@@ -34,7 +34,13 @@
         "libs/routes/cloud-environments/src/index.ts"
       ],
       "@restate/ui/button": ["libs/ui/button/src/index.ts"],
+      "@restate/ui/dialog": ["libs/ui/dialog/src/index.ts"],
+      "@restate/ui/dropdown": ["libs/ui/dropdown/src/index.ts"],
+      "@restate/ui/focus": ["libs/ui/focus/src/index.ts"],
+      "@restate/ui/icons": ["libs/ui/icons/src/index.ts"],
       "@restate/ui/layout": ["libs/ui/layout/src/index.ts"],
+      "@restate/ui/listbox": ["libs/ui/listbox/src/index.ts"],
+      "@restate/ui/popover": ["libs/ui/popover/src/index.ts"],
       "@restate/util/auth": ["libs/util/auth/src/index.ts"],
       "@restate/util/mock-api": ["libs/util/mock-api/src/index.ts"]
     }
