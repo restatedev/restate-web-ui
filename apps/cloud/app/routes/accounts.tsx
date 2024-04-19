@@ -1,4 +1,4 @@
-import { accounts } from '@restate/routes/cloud-accounts';
+import { accounts } from '@restate/features/cloud/accounts-route';
 
 export const clientLoader = accounts.clientLoader;
 export const clientAction = accounts.clientAction;

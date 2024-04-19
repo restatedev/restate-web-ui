@@ -24,14 +24,14 @@
       "@restate/data-access/cloud-api-fixtures": [
         "libs/data-access/cloud-api-fixtures/src/index.ts"
       ],
-      "@restate/routes/cloud-accounts": [
-        "libs/routes/cloud-accounts/src/index.ts"
+      "@restate/features/cloud/accounts-route": [
+        "libs/features/cloud-accounts-route/src/index.ts"
       ],
-      "@restate/routes/cloud-environment": [
-        "libs/routes/cloud-environment/src/index.ts"
+      "@restate/features/cloud/environment-route": [
+        "libs/features/cloud-environment-route/src/index.ts"
       ],
-      "@restate/routes/cloud-environments": [
-        "libs/routes/cloud-environments/src/index.ts"
+      "@restate/features/cloud/environments-route": [
+        "libs/features/cloud-environments-route/src/index.ts"
       ],
       "@restate/ui/button": ["libs/ui/button/src/index.ts"],
       "@restate/ui/dialog": ["libs/ui/dialog/src/index.ts"],

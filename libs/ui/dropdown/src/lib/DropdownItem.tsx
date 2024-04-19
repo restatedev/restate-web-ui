@@ -42,11 +42,11 @@ function StyledDropdownItem(props: AriaMenuItemProps) {
   );
 }
 
-interface DropdownItemProps {
-  children: string;
-  value?: never;
-  href?: never;
-}
+interface DropdownItemProps
+  extends PropsWithChildren<{
+    value?: never;
+    href?: never;
+  }> {}
 
 interface DropdownCustomItemProps
   extends PropsWithChildren<
@@ -59,7 +59,7 @@ interface DropdownCustomItemProps
 interface DropdownNavItemProps
   extends Omit<DropdownCustomItemProps, 'value' | 'href'> {
   href: string;
-  value?: never;
+  value?: string;
 }
 
 function isNavItem(
@@ -78,8 +78,10 @@ export function DropdownItem(
   props: DropdownItemProps | DropdownCustomItemProps | DropdownNavItemProps
 ) {
   if (isNavItem(props)) {
-    const { href, ...rest } = props;
-    return <StyledDropdownItem {...rest} href={href} />;
+    const { href, value, ...rest } = props;
+    return (
+      <StyledDropdownItem {...rest} href={href} id={value} textValue={value} />
+    );
   }
   if (isCustomItem(props)) {
     const { value, ...rest } = props;

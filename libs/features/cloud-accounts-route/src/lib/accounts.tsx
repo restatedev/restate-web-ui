@@ -1,8 +1,6 @@
 import {
   ClientActionFunctionArgs,
   ClientLoaderFunctionArgs,
-  Form,
-  NavLink,
   Outlet,
   redirect,
   useLoaderData,
@@ -11,7 +9,7 @@ import {
   createAccount,
   listAccounts,
 } from '@restate/data-access/cloud-api-client';
-import { Button } from '@restate/ui/button';
+import { AccountSelector } from './AccountSelector';
 
 const clientLoader = async ({ request, params }: ClientLoaderFunctionArgs) => {
   const { data: accountsList } = await listAccounts();
@@ -51,31 +49,8 @@ function Component() {
       <h1 className="text-base font-semibold leading-6 text-gray-900">
         Hello user
       </h1>
-      <hr className="my-3" />
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr' }}>
-        <div id="b">
-          <ul>
-            {accounts?.map((acc) => (
-              <li key={acc.accountId}>
-                <NavLink
-                  to={`/accounts/${acc.accountId}/environments`}
-                  className={({ isActive }) =>
-                    isActive ? 'bg-gray-50 text-indigo-600' : ''
-                  }
-                >
-                  {acc.accountId}
-                </NavLink>
-              </li>
-            ))}
-          </ul>
-          <Form method="post">
-            <Button type="submit">Create Account</Button>
-          </Form>
-        </div>
-        <div id="a">
-          <Outlet />
-        </div>
-      </div>
+      <AccountSelector accounts={accounts} />
+      <Outlet />
     </div>
   );
 }
