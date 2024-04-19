@@ -30,6 +30,9 @@
       "@restate/features/cloud/environment-route": [
         "libs/features/cloud-environment-route/src/index.ts"
       ],
+      "@restate/features/cloud/environment-selector": [
+        "libs/features/cloud-environment-selector/src/index.ts"
+      ],
       "@restate/features/cloud/environments-route": [
         "libs/features/cloud-environments-route/src/index.ts"
       ],
