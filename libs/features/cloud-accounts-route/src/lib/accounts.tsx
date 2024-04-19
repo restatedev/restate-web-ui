@@ -1,8 +1,6 @@
 import {
   ClientActionFunctionArgs,
   ClientLoaderFunctionArgs,
-  Form,
-  NavLink,
   Outlet,
   redirect,
   useLoaderData,
@@ -11,7 +9,6 @@ import {
   createAccount,
   listAccounts,
 } from '@restate/data-access/cloud-api-client';
-import { Button } from '@restate/ui/button';
 import { AccountSelector } from './AccountSelector';
 
 const clientLoader = async ({ request, params }: ClientLoaderFunctionArgs) => {

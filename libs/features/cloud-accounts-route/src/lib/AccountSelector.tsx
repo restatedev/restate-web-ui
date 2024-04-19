@@ -25,6 +25,14 @@ export function AccountSelector({ accounts = [] }: AccountSelectorProps) {
     .map(({ accountId }) => accountId);
   const fetcher = useFetcher();
 
+  if (currentAccount.length === 0) {
+    return (
+      <Form method="POST">
+        <Button type="submit">Create Account</Button>
+      </Form>
+    );
+  }
+
   return (
     <Dropdown>
       <DropdownTrigger>

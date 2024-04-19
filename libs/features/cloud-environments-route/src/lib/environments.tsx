@@ -14,6 +14,7 @@ import {
 } from '@restate/data-access/cloud-api-client';
 import { Button } from '@restate/ui/button';
 import invariant from 'tiny-invariant';
+import { EnvironmentSelector } from './EnvironmentSelector';
 
 const clientLoader = async ({ request, params }: ClientLoaderFunctionArgs) => {
   invariant(params.accountId, 'Missing accountId param');
@@ -53,34 +54,9 @@ function Component() {
   const { environments } = useLoaderData<typeof clientLoader>();
   const params = useParams();
   return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-      }}
-    >
-      <div>
-        <ul>
-          {environments.map((env) => (
-            <li key={env.environmentId}>
-              <NavLink
-                to={`/accounts/${params.accountId}/environments/${env.environmentId}`}
-                className={({ isActive }) =>
-                  isActive ? 'bg-gray-50 text-indigo-600' : ''
-                }
-              >
-                {env.environmentId}
-              </NavLink>
-            </li>
-          ))}
-        </ul>
-        <Form method="post">
-          <Button type="submit">Create Environment</Button>
-        </Form>
-      </div>
-      <div>
-        <Outlet />
-      </div>
+    <div>
+      <EnvironmentSelector environments={environments} />
+      <Outlet />
     </div>
   );
 }
