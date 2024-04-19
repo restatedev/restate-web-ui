@@ -19,6 +19,7 @@ interface DropdownMenuProps {
   selectable?: never;
   selectedItems?: never;
   multiple?: never;
+  onSelect?: (key: string) => void;
 }
 
 interface SelectableDropdownMenuProps
@@ -33,6 +34,7 @@ export function DropdownMenu({
   disabledItems,
   selectedItems,
   selectable,
+  onSelect,
   ...props
 }: PropsWithChildren<DropdownMenuProps | SelectableDropdownMenuProps>) {
   if (selectable) {
@@ -42,9 +44,16 @@ export function DropdownMenu({
         selectionMode={multiple ? 'multiple' : 'single'}
         disabledKeys={disabledItems}
         selectedKeys={selectedItems}
+        onAction={(key) => onSelect?.(String(key))}
       />
     );
   } else {
-    return <StyledDropdownMenu {...props} disabledKeys={disabledItems} />;
+    return (
+      <StyledDropdownMenu
+        {...props}
+        disabledKeys={disabledItems}
+        onAction={(key) => onSelect?.(String(key))}
+      />
+    );
   }
 }
