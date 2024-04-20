@@ -1,1 +1,2 @@
-export * from './lib/ui-radio-group';
+export * from './lib/Radio';
+export * from './lib/RadioGroup';
