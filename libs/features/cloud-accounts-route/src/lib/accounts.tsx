@@ -10,6 +10,7 @@ import {
   listAccounts,
 } from '@restate/data-access/cloud-api-client';
 import { AccountSelector } from './AccountSelector';
+import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 
 const clientLoader = async ({ request, params }: ClientLoaderFunctionArgs) => {
   const { data: accountsList } = await listAccounts();
@@ -39,19 +40,12 @@ function Component() {
   const { accounts } = useLoaderData<typeof clientLoader>();
 
   return (
-    <div
-      style={{
-        fontFamily: 'system-ui, sans-serif',
-        lineHeight: '1.8',
-        padding: '2rem',
-      }}
-    >
-      <h1 className="text-base font-semibold leading-6 text-gray-900">
-        Hello user
-      </h1>
-      <AccountSelector accounts={accounts} />
+    <>
+      <LayoutOutlet zone={LayoutZone.AppBar}>
+        <AccountSelector accounts={accounts} />
+      </LayoutOutlet>
       <Outlet />
-    </div>
+    </>
   );
 }
 
