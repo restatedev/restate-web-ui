@@ -94,4 +94,4 @@ function Component() {
   );
 }
 
-export const environment = { clientAction, clientLoader, Component };
+export const settings = { clientAction, clientLoader, Component };
