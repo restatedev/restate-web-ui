@@ -15,6 +15,7 @@ import {
 import { Button } from '@restate/ui/button';
 import invariant from 'tiny-invariant';
 import { EnvironmentSelector } from './EnvironmentSelector';
+import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 
 const clientLoader = async ({ request, params }: ClientLoaderFunctionArgs) => {
   invariant(params.accountId, 'Missing accountId param');
@@ -54,10 +55,12 @@ function Component() {
   const { environments } = useLoaderData<typeof clientLoader>();
   const params = useParams();
   return (
-    <div>
-      <EnvironmentSelector environments={environments} />
+    <>
+      <LayoutOutlet zone={LayoutZone.AppBar}>
+        <EnvironmentSelector environments={environments} />
+      </LayoutOutlet>
       <Outlet />
-    </div>
+    </>
   );
 }
 
