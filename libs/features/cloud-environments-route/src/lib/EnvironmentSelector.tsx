@@ -40,7 +40,7 @@ export function EnvironmentSelector({
   return (
     <Dropdown>
       <DropdownTrigger>
-        <Button>{currentEnvironment.at(0)}</Button>
+        <Button variant="secondary">{currentEnvironment.at(0)}</Button>
       </DropdownTrigger>
       <DropdownPopover>
         <DropdownMenu selectable selectedItems={currentEnvironment}>

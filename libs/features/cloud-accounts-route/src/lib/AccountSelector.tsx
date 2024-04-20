@@ -36,7 +36,7 @@ export function AccountSelector({ accounts = [] }: AccountSelectorProps) {
   return (
     <Dropdown>
       <DropdownTrigger>
-        <Button>{currentAccount.at(0)}</Button>
+        <Button variant="secondary">{currentAccount.at(0)}</Button>
       </DropdownTrigger>
       <DropdownPopover>
         <DropdownMenu selectable selectedItems={currentAccount}>
