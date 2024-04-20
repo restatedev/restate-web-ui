@@ -1,5 +1,6 @@
 import { ElementType, PropsWithChildren, createElement } from 'react';
 import { createPortal } from 'react-dom';
+import { AppBar } from './AppBar';
 
 /* eslint-disable-next-line */
 export interface LayoutProps {}
@@ -17,7 +18,7 @@ const ZONE_IDS: Record<LayoutZone, string> = {
 };
 
 const ZONE_ELEMENT: Record<LayoutZone, ElementType> = {
-  [LayoutZone.AppBar]: 'header',
+  [LayoutZone.AppBar]: AppBar,
   [LayoutZone.Nav]: 'nav',
   [LayoutZone.Content]: 'main',
 };
@@ -32,7 +33,7 @@ const ALL_ZONES = Object.keys(ZONE_IDS) as LayoutZone[];
 
 export function LayoutProvider({ children }: PropsWithChildren<LayoutProps>) {
   return (
-    <div>
+    <div className="flex w-full flex-col min-h-full">
       {ALL_ZONES.map((zone) =>
         createElement(ZONE_ELEMENT[zone], { ...ZONE_PROPS[zone], key: zone })
       )}
