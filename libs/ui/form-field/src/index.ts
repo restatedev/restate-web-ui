@@ -1,1 +1,3 @@
-export * from './lib/ui-form-field';
+export * from './lib/FormFieldError';
+export * from './lib/FormFieldGroup';
+export * from './lib/FormFieldLabel';
