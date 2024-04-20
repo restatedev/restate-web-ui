@@ -1,0 +1,9 @@
+{
+  "name": "cloud-environment-settings",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/features/cloud-environment-settings/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project cloud-environment-settings --web",
+  "targets": {}
+}
