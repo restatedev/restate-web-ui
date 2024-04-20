@@ -2,7 +2,7 @@ import { factory, manyOf, oneOf, primaryKey } from '@mswjs/data';
 import { faker } from '@faker-js/faker';
 import { DATABASE_INSTANCE } from '@mswjs/data/lib/glossary';
 
-faker.seed(123);
+faker.seed(Date.now());
 
 export const cloudApiDb = factory({
   user: {
