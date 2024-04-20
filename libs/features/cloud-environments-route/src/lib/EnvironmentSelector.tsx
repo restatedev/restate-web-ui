@@ -1,5 +1,5 @@
 import { Form, useFetcher } from '@remix-run/react';
-import type { Environment } from '@restate/data-access/cloud-api-client';
+import type { Environment } from '@restate/data-access/cloud/api-client';
 import { useAccountParam } from '@restate/features/cloud/accounts-route';
 import { Button } from '@restate/ui/button';
 import {

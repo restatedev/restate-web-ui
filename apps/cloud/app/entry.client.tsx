@@ -6,7 +6,7 @@ import { hydrateRoot } from 'react-dom/client';
 async function prepareApp() {
   if (process.env.NODE_ENV === 'development' && process.env.MOCK) {
     const { cloudApiMockHandlers } = await import(
-      '@restate/data-access/cloud-api-fixtures'
+      '@restate/data-access/cloud/api-fixtures'
     );
     return await enableMockApi(cloudApiMockHandlers);
   }

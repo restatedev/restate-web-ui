@@ -8,7 +8,7 @@ import {
 import {
   createAccount,
   listAccounts,
-} from '@restate/data-access/cloud-api-client';
+} from '@restate/data-access/cloud/api-client';
 import { AccountSelector } from './AccountSelector';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 

@@ -1,7 +1,7 @@
 import type {
   Account,
   Environment,
-} from '@restate/data-access/cloud-api-client';
+} from '@restate/data-access/cloud/api-client';
 
 export function toEnvironmentRoute(
   accountId: string,
