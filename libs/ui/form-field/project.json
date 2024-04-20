@@ -1,5 +1,5 @@
 {
-  "name": "ui-form-field",
+  "name": "form-field",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/ui/form-field/src",
   "projectType": "library",

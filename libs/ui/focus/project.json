@@ -1,5 +1,5 @@
 {
-  "name": "ui-focus",
+  "name": "focus",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/ui/focus/src",
   "projectType": "library",

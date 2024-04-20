@@ -1,5 +1,5 @@
 {
-  "name": "features-cloud-environment-route",
+  "name": "cloud-environment-route",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/features/cloud-environment-route/src",
   "projectType": "library",

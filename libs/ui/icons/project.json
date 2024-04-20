@@ -1,5 +1,5 @@
 {
-  "name": "ui-icons",
+  "name": "icons",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/ui/icons/src",
   "projectType": "library",

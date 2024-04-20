@@ -1,5 +1,5 @@
 {
-  "name": "ui-popover",
+  "name": "popover",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/ui/popover/src",
   "projectType": "library",
