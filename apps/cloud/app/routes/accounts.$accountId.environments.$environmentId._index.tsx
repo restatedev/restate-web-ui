@@ -1,5 +1,4 @@
-import { environment } from '@restate/features/cloud/environment-route';
+import { redirect } from '@remix-run/react';
 
-export const clientLoader = environment.clientLoader;
-export const clientAction = environment.clientAction;
-export default environment.Component;
+export const clientLoader = () => redirect('./settings');
+export default () => null;

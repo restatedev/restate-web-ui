@@ -1,4 +1,4 @@
-import * as cloudApi from '@restate/data-access/cloud-api-client';
+import * as cloudApi from '@restate/data-access/cloud/api-client';
 import { http, HttpResponse } from 'msw';
 import { cloudApiDb } from './cloudApiDb';
 

@@ -1,5 +1,5 @@
 import { Form, useFetcher } from '@remix-run/react';
-import type { Account } from '@restate/data-access/cloud-api-client';
+import type { Account } from '@restate/data-access/cloud/api-client';
 import {
   toAccountRoute,
   useAccountParam,

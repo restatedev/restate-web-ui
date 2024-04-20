@@ -10,7 +10,7 @@ import {
   describeEnvironment,
   listApiKeys,
   describeApiKey,
-} from '@restate/data-access/cloud-api-client';
+} from '@restate/data-access/cloud/api-client';
 import { Button } from '@restate/ui/button';
 import { FormFieldLabel } from '@restate/ui/form-field';
 import { Radio, RadioGroup } from '@restate/ui/radio-group';
@@ -94,4 +94,4 @@ function Component() {
   );
 }
 
-export const environment = { clientAction, clientLoader, Component };
+export const settings = { clientAction, clientLoader, Component };

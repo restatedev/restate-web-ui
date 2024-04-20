@@ -1,5 +1,5 @@
 {
-  "name": "ui-listbox",
+  "name": "listbox",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/ui/listbox/src",
   "projectType": "library",

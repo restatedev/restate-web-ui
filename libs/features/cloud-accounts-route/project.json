@@ -1,5 +1,5 @@
 {
-  "name": "features-cloud-accounts-route",
+  "name": "cloud-accounts-route",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/features/cloud-accounts-route/src",
   "projectType": "library",

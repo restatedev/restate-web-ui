@@ -1,5 +1,5 @@
 {
-  "name": "ui-radio-group",
+  "name": "radio-group",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/ui/radio-group/src",
   "projectType": "library",

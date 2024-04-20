@@ -8,7 +8,7 @@ import {
 } from '@remix-run/react';
 import styles from './tailwind.css?url';
 import type { LinksFunction } from '@remix-run/node';
-import { CLOUD_API_BASE_URL } from '@restate/data-access/cloud-api-client';
+import { CLOUD_API_BASE_URL } from '@restate/data-access/cloud/api-client';
 import { LayoutOutlet, LayoutProvider, LayoutZone } from '@restate/ui/layout';
 import { RouterProvider } from 'react-aria-components';
 

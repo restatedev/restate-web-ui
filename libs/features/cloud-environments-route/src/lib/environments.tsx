@@ -11,7 +11,7 @@ import {
 import {
   listEnvironments,
   createEnvironment,
-} from '@restate/data-access/cloud-api-client';
+} from '@restate/data-access/cloud/api-client';
 import { Button } from '@restate/ui/button';
 import invariant from 'tiny-invariant';
 import { EnvironmentSelector } from './EnvironmentSelector';
