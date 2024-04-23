@@ -1,10 +1,4 @@
-import {
-  ClientLoaderFunctionArgs,
-  redirect,
-  ClientActionFunctionArgs,
-  useLoaderData,
-  Outlet,
-} from '@remix-run/react';
+import { redirect, ClientActionFunctionArgs, Outlet } from '@remix-run/react';
 import {
   listEnvironments,
   createEnvironment,
@@ -13,34 +7,9 @@ import invariant from 'tiny-invariant';
 import { EnvironmentSelector } from './EnvironmentSelector';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import { withCache } from '@restate/util/cache';
+import { clientLoader } from './loader';
 
 const listEnvironmentsWithCache = withCache(listEnvironments);
-
-const clientLoader = async ({ request, params }: ClientLoaderFunctionArgs) => {
-  const { accountId } = params;
-  invariant(accountId, 'Missing accountId param');
-  const { data: environmentList } = await listEnvironmentsWithCache.fetch({
-    accountId,
-  });
-  const environments = environmentList?.environments ?? [];
-  const isEnvironmentIdParamValid = environments.some(
-    ({ environmentId }) => params.environmentId === environmentId
-  );
-
-  if (isEnvironmentIdParamValid) {
-    return { environments };
-  }
-
-  if (environments.length > 0) {
-    return redirect(
-      `/accounts/${params.accountId}/environments/${
-        environments.at(0)?.environmentId
-      }`
-    );
-  }
-
-  return { environments };
-};
 
 // TODO: Error handling, Pending UI
 const clientAction = async ({ request, params }: ClientActionFunctionArgs) => {
@@ -55,11 +24,10 @@ const clientAction = async ({ request, params }: ClientActionFunctionArgs) => {
 };
 
 function Component() {
-  const { environments } = useLoaderData<typeof clientLoader>();
   return (
     <>
       <LayoutOutlet zone={LayoutZone.AppBar}>
-        <EnvironmentSelector environments={environments} />
+        <EnvironmentSelector />
       </LayoutOutlet>
       <Outlet />
     </>

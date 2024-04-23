@@ -25,11 +25,6 @@ const clientLoader = async ({ request, params }: ClientLoaderFunctionArgs) => {
   invariant(accountId, 'Missing accountId param');
   invariant(environmentId, 'Missing environmentId param');
 
-  const environmentPromise = describeEnvironment({
-    accountId,
-    environmentId,
-  });
-
   const apiKeysWithDetailsPromises = listApiKeys({
     accountId,
     environmentId,
@@ -47,7 +42,6 @@ const clientLoader = async ({ request, params }: ClientLoaderFunctionArgs) => {
   });
 
   return defer({
-    environmentPromise,
     apiKeysWithDetailsPromises,
   });
 };
