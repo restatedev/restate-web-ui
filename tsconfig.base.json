@@ -27,8 +27,8 @@
       "@restate/features/cloud/accounts-route": [
         "libs/features/cloud-accounts-route/src/index.ts"
       ],
-      "@restate/features/cloud/environment-route": [
-        "libs/features/cloud-environment-route/src/index.ts"
+      "@restate/features/cloud/api-keys-route": [
+        "libs/features/cloud-api-keys-route/src/index.ts"
       ],
       "@restate/features/cloud/environments-route": [
         "libs/features/cloud-environments-route/src/index.ts"
@@ -43,8 +43,8 @@
       "@restate/ui/listbox": ["libs/ui/listbox/src/index.ts"],
       "@restate/ui/popover": ["libs/ui/popover/src/index.ts"],
       "@restate/ui/radio-group": ["libs/ui/radio-group/src/index.ts"],
-      "@restate/util/cache": ["libs/util/cache/src/index.ts"],
       "@restate/util/auth": ["libs/util/auth/src/index.ts"],
+      "@restate/util/cache": ["libs/util/cache/src/index.ts"],
       "@restate/util/mock-api": ["libs/util/mock-api/src/index.ts"]
     }
   },

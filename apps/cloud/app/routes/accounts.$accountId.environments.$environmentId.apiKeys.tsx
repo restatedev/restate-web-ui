@@ -1,4 +1,4 @@
-import { apiKeys } from '@restate/features/cloud/environment-route';
+import { apiKeys } from '@restate/features/cloud/api-keys-route';
 import { withAuth } from '@restate/util/auth';
 
 export const clientLoader = withAuth(apiKeys.clientLoader);
