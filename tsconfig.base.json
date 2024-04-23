@@ -43,6 +43,7 @@
       "@restate/ui/listbox": ["libs/ui/listbox/src/index.ts"],
       "@restate/ui/popover": ["libs/ui/popover/src/index.ts"],
       "@restate/ui/radio-group": ["libs/ui/radio-group/src/index.ts"],
+      "@restate/util/cache": ["libs/util/cache/src/index.ts"],
       "@restate/util/auth": ["libs/util/auth/src/index.ts"],
       "@restate/util/mock-api": ["libs/util/mock-api/src/index.ts"]
     }
