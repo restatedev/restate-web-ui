@@ -99,7 +99,7 @@ function Component() {
       </Suspense>
 
       <Form method="post">
-        <RadioGroup name="roleId">
+        <RadioGroup name="roleId" required>
           <FormFieldLabel>Role</FormFieldLabel>
           <Radio value="rst:role::FullAccess">Full Access</Radio>
           <Radio value="rst:role::IngressAccess">Ingress Access</Radio>
