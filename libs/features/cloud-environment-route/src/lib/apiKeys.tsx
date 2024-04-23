@@ -94,4 +94,4 @@ function Component() {
   );
 }
 
-export const settings = { clientAction, clientLoader, Component };
+export const apiKeys = { clientAction, clientLoader, Component };
