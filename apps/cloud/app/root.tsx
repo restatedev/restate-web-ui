@@ -59,6 +59,7 @@ export default function App() {
   );
 }
 
+// TODO: implement proper loader
 export function HydrateFallback() {
-  return <p>Loading...</p>;
+  return <p>Loading root...</p>;
 }

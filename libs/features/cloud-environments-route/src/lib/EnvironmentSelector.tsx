@@ -1,5 +1,4 @@
-import { Form, useFetcher } from '@remix-run/react';
-import type { Environment } from '@restate/data-access/cloud/api-client';
+import { Await, Form, useFetcher, useLoaderData } from '@remix-run/react';
 import { useAccountParam } from '@restate/features/cloud/accounts-route';
 import { Button } from '@restate/ui/button';
 import {
@@ -10,26 +9,23 @@ import {
   DropdownSeparator,
   DropdownTrigger,
 } from '@restate/ui/dropdown';
-import { useEnvironmentParam } from './useEnvironmentParam';
 import { toEnvironmentRoute } from './toEnvironmentRoute';
 import invariant from 'tiny-invariant';
+import { clientLoader } from './loader';
+import { Suspense } from 'react';
 
-interface EnvironmentSelectorProps {
-  environments?: Environment[];
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+interface EnvironmentSelectorProps {}
 
-export function EnvironmentSelector({
-  environments = [],
-}: EnvironmentSelectorProps) {
+export function EnvironmentSelector(props: EnvironmentSelectorProps) {
+  const { environments, environmentDetailsPromise } =
+    useLoaderData<typeof clientLoader>();
+
   const currentAccountId = useAccountParam();
   invariant(currentAccountId, 'Account id is missing');
-  const currentEnvironmentId = useEnvironmentParam();
-  const currentEnvironment = environments
-    .filter(({ environmentId }) => environmentId === currentEnvironmentId)
-    .map(({ environmentId }) => environmentId);
   const fetcher = useFetcher();
 
-  if (currentEnvironment.length === 0) {
+  if (!environmentDetailsPromise) {
     return (
       <Form method="POST">
         <Button type="submit">Create Environment</Button>
@@ -38,27 +34,50 @@ export function EnvironmentSelector({
   }
 
   return (
-    <Dropdown>
-      <DropdownTrigger>
-        <Button variant="secondary">{currentEnvironment.at(0)}</Button>
-      </DropdownTrigger>
-      <DropdownPopover>
-        <DropdownMenu selectable selectedItems={currentEnvironment}>
-          {environments.map((environment) => (
-            <DropdownItem
-              key={environment.environmentId}
-              href={toEnvironmentRoute(currentAccountId, environment)}
-              value={environment.environmentId}
-            >
-              {environment.environmentId}
-            </DropdownItem>
-          ))}
-        </DropdownMenu>
-        <DropdownSeparator />
-        <DropdownMenu onSelect={() => fetcher.submit({}, { method: 'POST' })}>
-          <DropdownItem>Create Environment</DropdownItem>
-        </DropdownMenu>
-      </DropdownPopover>
-    </Dropdown>
+    <Suspense
+      fallback={
+        <Button variant="secondary" disabled>
+          loading
+        </Button>
+      }
+    >
+      <Await resolve={environmentDetailsPromise}>
+        {(environmentDetails) => (
+          <Dropdown>
+            <DropdownTrigger>
+              <Button variant="secondary">
+                {environmentDetails.data?.environmentId}:
+                {environmentDetails.data?.status}
+              </Button>
+            </DropdownTrigger>
+
+            <DropdownPopover>
+              <DropdownMenu
+                selectable
+                {...(environmentDetails.data?.environmentId && {
+                  selectedItems: [environmentDetails.data?.environmentId],
+                })}
+              >
+                {environments.map((environment) => (
+                  <DropdownItem
+                    key={environment.environmentId}
+                    href={toEnvironmentRoute(currentAccountId, environment)}
+                    value={environment.environmentId}
+                  >
+                    {environment.environmentId}
+                  </DropdownItem>
+                ))}
+              </DropdownMenu>
+              <DropdownSeparator />
+              <DropdownMenu
+                onSelect={() => fetcher.submit({}, { method: 'POST' })}
+              >
+                <DropdownItem>Create Environment</DropdownItem>
+              </DropdownMenu>
+            </DropdownPopover>
+          </Dropdown>
+        )}
+      </Await>
+    </Suspense>
   );
 }

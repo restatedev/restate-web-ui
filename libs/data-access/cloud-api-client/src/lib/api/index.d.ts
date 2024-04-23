@@ -76,14 +76,7 @@ export interface components {
        * @description The environment status
        * @enum {string}
        */
-      status?:
-        | 'PROVISIONING_NEW'
-        | 'PROVISIONING_CREATING'
-        | 'PROVISIONING_READY'
-        | 'PROVISIONING_SHUTTING_DOWN'
-        | 'PROVISIONING_DELETED'
-        | 'PROVISIONING_FAILED'
-        | 'UNRECOGNIZED';
+      status?: 'PENDING' | 'ACTIVE' | 'FAILED' | 'DELETED';
     };
     CreateAccountResponse: components['schemas']['Account'];
     CreateAccountRequestBody: {
@@ -114,12 +107,7 @@ export interface components {
       | 'rst:role::AdminAccess'
       | 'rst:role::ResolveAwakeableAccess';
     /** @enum {string} */
-    ApiKeyState:
-      | 'KEY_NEW'
-      | 'KEY_ACTIVE'
-      | 'KEY_DISABLED'
-      | 'KEY_DELETED'
-      | 'UNRECOGNIZED';
+    ApiKeyState: 'ACTIVE' | 'DELETED';
     CreateApiKeyRequestBody: {
       roleId: components['schemas']['Role'];
       environmentId: string;

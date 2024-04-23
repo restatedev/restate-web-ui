@@ -3,17 +3,19 @@ import {
   ClientActionFunctionArgs,
   useLoaderData,
   Form,
+  defer,
+  Await,
 } from '@remix-run/react';
 import {
   isRole,
   createApiKey,
-  describeEnvironment,
   listApiKeys,
   describeApiKey,
 } from '@restate/data-access/cloud/api-client';
 import { Button } from '@restate/ui/button';
 import { FormFieldLabel } from '@restate/ui/form-field';
 import { Radio, RadioGroup } from '@restate/ui/radio-group';
+import { Suspense } from 'react';
 import invariant from 'tiny-invariant';
 
 const clientLoader = async ({ request, params }: ClientLoaderFunctionArgs) => {
@@ -21,36 +23,35 @@ const clientLoader = async ({ request, params }: ClientLoaderFunctionArgs) => {
   const environmentId = params.environmentId;
   invariant(accountId, 'Missing accountId param');
   invariant(environmentId, 'Missing environmentId param');
-  const { data: environment } = await describeEnvironment({
+
+  const apiKeysWithDetailsPromises = listApiKeys({
     accountId,
     environmentId,
-  });
-  const { data: apiKeysResponse } = await listApiKeys({
-    accountId,
-    environmentId,
+  }).then((response) => {
+    const apiKeys = response.data?.apiKeys ?? [];
+    return apiKeys
+      .map(({ keyId }) => ({
+        [keyId]: describeApiKey({
+          accountId,
+          environmentId,
+          keyId,
+        }),
+      }))
+      .reduce((p, c) => ({ ...p, ...c }), {});
   });
 
-  const apiKeys = apiKeysResponse?.apiKeys ?? [];
-  const detailedApiKeys = await Promise.all(
-    apiKeys.map(({ keyId }) =>
-      describeApiKey({
-        accountId,
-        environmentId,
-        keyId,
-      })
-    )
-  );
-
-  return { environment, apiKeys: detailedApiKeys };
+  return defer({
+    apiKeysWithDetailsPromises,
+  });
 };
 
 // TODO: Error handling, Pending UI
 const clientAction = async ({ request, params }: ClientActionFunctionArgs) => {
   const body = await request.formData();
-  const roleId = body.get('roleId');
-  const _action = body.get('_action');
+  const action = body.get('action');
 
-  if (_action === 'createApiKey') {
+  if (action === 'createApiKey') {
+    const roleId = body.get('roleId');
     invariant(params.accountId, 'Missing accountId param');
     invariant(params.environmentId, 'Missing environmentId param');
     invariant(isRole(roleId), 'Missing roleId param');
@@ -67,17 +68,38 @@ const clientAction = async ({ request, params }: ClientActionFunctionArgs) => {
 };
 
 function Component() {
-  const { apiKeys } = useLoaderData<typeof clientLoader>();
+  const { apiKeysWithDetailsPromises } = useLoaderData<typeof clientLoader>();
 
   return (
     <div>
-      <ul>
-        {apiKeys.map((key) => (
-          <li key={key.data?.keyId}>{key.data?.keyId}</li>
-        ))}
-      </ul>
+      <Suspense fallback={<p>loading list</p>}>
+        <Await resolve={apiKeysWithDetailsPromises}>
+          {(apiKeysWithDetails) => (
+            <ul>
+              {Object.keys(apiKeysWithDetails).map((keyId) => (
+                <li key={keyId}>
+                  <Suspense fallback={<p>loading key</p>}>
+                    <Await
+                      resolve={apiKeysWithDetails[keyId]}
+                      errorElement={<p>failed key</p>}
+                    >
+                      {(apiKeyDetails) => (
+                        <p>
+                          {apiKeyDetails?.data?.keyId}:
+                          {apiKeyDetails?.data?.roleId}
+                        </p>
+                      )}
+                    </Await>
+                  </Suspense>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Await>
+      </Suspense>
+
       <Form method="post">
-        <RadioGroup name="roleId">
+        <RadioGroup name="roleId" required>
           <FormFieldLabel>Role</FormFieldLabel>
           <Radio value="rst:role::FullAccess">Full Access</Radio>
           <Radio value="rst:role::IngressAccess">Ingress Access</Radio>
@@ -86,7 +108,7 @@ function Component() {
             Resolve Awakeable Access
           </Radio>
         </RadioGroup>
-        <Button type="submit" name="_action" value="createApiKey">
+        <Button type="submit" name="action" value="createApiKey">
           Create API Key
         </Button>
       </Form>
@@ -94,4 +116,4 @@ function Component() {
   );
 }
 
-export const settings = { clientAction, clientLoader, Component };
+export const apiKeys = { clientAction, clientLoader, Component };

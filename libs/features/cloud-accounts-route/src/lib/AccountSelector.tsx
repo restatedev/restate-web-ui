@@ -1,9 +1,4 @@
-import { Form, useFetcher } from '@remix-run/react';
-import type { Account } from '@restate/data-access/cloud/api-client';
-import {
-  toAccountRoute,
-  useAccountParam,
-} from '@restate/features/cloud/accounts-route';
+import { Form, useFetcher, useLoaderData } from '@remix-run/react';
 import { Button } from '@restate/ui/button';
 import {
   Dropdown,
@@ -13,12 +8,16 @@ import {
   DropdownSeparator,
   DropdownTrigger,
 } from '@restate/ui/dropdown';
+import { useAccountParam } from './useAccountParam';
+import { toAccountRoute } from './toAccountRoute';
+import { clientLoader } from './loader';
 
-interface AccountSelectorProps {
-  accounts?: Account[];
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+interface AccountSelectorProps {}
 
-export function AccountSelector({ accounts = [] }: AccountSelectorProps) {
+export function AccountSelector(props: AccountSelectorProps) {
+  const { accounts } = useLoaderData<typeof clientLoader>();
+
   const currentAccountId = useAccountParam();
   const currentAccount = accounts
     .filter(({ accountId }) => accountId === currentAccountId)

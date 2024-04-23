@@ -316,16 +316,7 @@ components:
             status:
               type: string
               description: The environment status
-              enum:
-                [
-                  'PROVISIONING_NEW',
-                  'PROVISIONING_CREATING',
-                  'PROVISIONING_READY',
-                  'PROVISIONING_SHUTTING_DOWN',
-                  'PROVISIONING_DELETED',
-                  'PROVISIONING_FAILED',
-                  'UNRECOGNIZED',
-                ]
+              enum: ['PENDING', 'ACTIVE', 'FAILED', 'DELETED']
     CreateAccountResponse:
       $ref: '#/components/schemas/Account'
     CreateAccountRequestBody:
@@ -382,8 +373,7 @@ components:
         ]
     ApiKeyState:
       type: string
-      enum:
-        ['KEY_NEW', 'KEY_ACTIVE', 'KEY_DISABLED', 'KEY_DELETED', 'UNRECOGNIZED']
+      enum: ['ACTIVE', 'DELETED']
     CreateApiKeyRequestBody:
       type: object
       required:

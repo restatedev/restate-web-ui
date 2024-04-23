@@ -17,6 +17,13 @@ export const cloudApiDb = factory({
     environmentId: primaryKey(faker.string.uuid),
     account: oneOf('account'),
     description: () => faker.commerce.product(),
+    status: () =>
+      faker.helpers.arrayElement([
+        'PENDING',
+        'ACTIVE',
+        'FAILED',
+        'DELETED',
+      ] as const),
   },
   apiKey: {
     account: oneOf('account'),
@@ -30,14 +37,7 @@ export const cloudApiDb = factory({
         'rst:role::AdminAccess',
         'rst:role::ResolveAwakeableAccess',
       ] as const),
-    state: () =>
-      faker.helpers.arrayElement([
-        'KEY_NEW',
-        'KEY_ACTIVE',
-        'KEY_DISABLED',
-        'KEY_DELETED',
-        'UNRECOGNIZED',
-      ] as const),
+    state: () => faker.helpers.arrayElement(['ACTIVE', 'DELETED'] as const),
   },
 });
 

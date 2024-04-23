@@ -101,6 +101,7 @@ const describeEnvironmentHandler = http.post<
     environmentId: environment.environmentId,
     accountId: environment.account?.accountId,
     description: environment.description,
+    status: environment.status,
   });
 });
 
@@ -155,6 +156,7 @@ const createEnvironmentHandler = http.post<
   const environment = cloudApiDb.environment.create({
     account,
     description: requestBody.description,
+    status: 'PENDING',
   });
 
   return HttpResponse.json({
@@ -221,6 +223,7 @@ const createApiKeyHandler = http.post<
     account,
     environment,
     roleId: requestBody.roleId,
+    state: 'ACTIVE',
   });
 
   return HttpResponse.json({
