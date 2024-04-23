@@ -9,7 +9,6 @@ import {
 import {
   isRole,
   createApiKey,
-  describeEnvironment,
   listApiKeys,
   describeApiKey,
 } from '@restate/data-access/cloud/api-client';
