@@ -3,6 +3,8 @@ import {
   ClientActionFunctionArgs,
   useLoaderData,
   Form,
+  defer,
+  Await,
 } from '@remix-run/react';
 import {
   isRole,
@@ -14,24 +16,20 @@ import {
 import { Button } from '@restate/ui/button';
 import { FormFieldLabel } from '@restate/ui/form-field';
 import { Radio, RadioGroup } from '@restate/ui/radio-group';
+import { Suspense } from 'react';
 import invariant from 'tiny-invariant';
 
-const clientLoader = async ({ request, params }: ClientLoaderFunctionArgs) => {
-  const accountId = params.accountId;
-  const environmentId = params.environmentId;
-  invariant(accountId, 'Missing accountId param');
-  invariant(environmentId, 'Missing environmentId param');
-  const { data: environment } = await describeEnvironment({
-    accountId,
-    environmentId,
-  });
-  const { data: apiKeysResponse } = await listApiKeys({
+async function listApiKeysWithDetails({
+  accountId,
+  environmentId,
+}: Parameters<typeof listApiKeys>[0]) {
+  const apiKeyList = await listApiKeys({
     accountId,
     environmentId,
   });
 
-  const apiKeys = apiKeysResponse?.apiKeys ?? [];
-  const detailedApiKeys = await Promise.all(
+  const apiKeys = apiKeyList.data?.apiKeys ?? [];
+  const apiKeysDetails = await Promise.all(
     apiKeys.map(({ keyId }) =>
       describeApiKey({
         accountId,
@@ -41,16 +39,31 @@ const clientLoader = async ({ request, params }: ClientLoaderFunctionArgs) => {
     )
   );
 
-  return { environment, apiKeys: detailedApiKeys };
+  return { ...apiKeyList, data: apiKeysDetails };
+}
+
+const clientLoader = async ({ request, params }: ClientLoaderFunctionArgs) => {
+  const accountId = params.accountId;
+  const environmentId = params.environmentId;
+  invariant(accountId, 'Missing accountId param');
+  invariant(environmentId, 'Missing environmentId param');
+
+  const environmentPromise = describeEnvironment({
+    accountId,
+    environmentId,
+  });
+  const apiKeysPromise = listApiKeysWithDetails({ accountId, environmentId });
+
+  return defer({ environmentPromise, apiKeysPromise });
 };
 
 // TODO: Error handling, Pending UI
 const clientAction = async ({ request, params }: ClientActionFunctionArgs) => {
   const body = await request.formData();
-  const roleId = body.get('roleId');
-  const _action = body.get('_action');
+  const action = body.get('action');
 
-  if (_action === 'createApiKey') {
+  if (action === 'createApiKey') {
+    const roleId = body.get('roleId');
     invariant(params.accountId, 'Missing accountId param');
     invariant(params.environmentId, 'Missing environmentId param');
     invariant(isRole(roleId), 'Missing roleId param');
@@ -67,15 +80,22 @@ const clientAction = async ({ request, params }: ClientActionFunctionArgs) => {
 };
 
 function Component() {
-  const { apiKeys } = useLoaderData<typeof clientLoader>();
+  const { apiKeysPromise, environmentPromise } =
+    useLoaderData<typeof clientLoader>();
 
   return (
     <div>
-      <ul>
-        {apiKeys.map((key) => (
-          <li key={key.data?.keyId}>{key.data?.keyId}</li>
-        ))}
-      </ul>
+      <Suspense fallback={<p>loading</p>}>
+        <Await resolve={apiKeysPromise} errorElement={<>error</>}>
+          {(apiKeys) => (
+            <ul>
+              {apiKeys.data.map((key) => (
+                <li key={key.data?.keyId}>{key.data?.keyId}</li>
+              ))}
+            </ul>
+          )}
+        </Await>
+      </Suspense>
       <Form method="post">
         <RadioGroup name="roleId">
           <FormFieldLabel>Role</FormFieldLabel>
@@ -86,7 +106,7 @@ function Component() {
             Resolve Awakeable Access
           </Radio>
         </RadioGroup>
-        <Button type="submit" name="_action" value="createApiKey">
+        <Button type="submit" name="action" value="createApiKey">
           Create API Key
         </Button>
       </Form>
