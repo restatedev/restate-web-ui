@@ -3,24 +3,24 @@ import {
   redirect,
   ClientActionFunctionArgs,
   useLoaderData,
-  useParams,
-  NavLink,
-  Form,
   Outlet,
 } from '@remix-run/react';
 import {
   listEnvironments,
   createEnvironment,
 } from '@restate/data-access/cloud/api-client';
-import { Button } from '@restate/ui/button';
 import invariant from 'tiny-invariant';
 import { EnvironmentSelector } from './EnvironmentSelector';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
+import { withCache } from '@restate/util/cache';
+
+const listEnvironmentsWithCache = withCache(listEnvironments);
 
 const clientLoader = async ({ request, params }: ClientLoaderFunctionArgs) => {
-  invariant(params.accountId, 'Missing accountId param');
-  const { data: environmentList } = await listEnvironments({
-    accountId: params.accountId,
+  const { accountId } = params;
+  invariant(accountId, 'Missing accountId param');
+  const { data: environmentList } = await listEnvironmentsWithCache.fetch({
+    accountId,
   });
   const environments = environmentList?.environments ?? [];
   const isEnvironmentIdParamValid = environments.some(
@@ -44,8 +44,11 @@ const clientLoader = async ({ request, params }: ClientLoaderFunctionArgs) => {
 
 // TODO: Error handling, Pending UI
 const clientAction = async ({ request, params }: ClientActionFunctionArgs) => {
-  invariant(params.accountId, 'Missing accountId param');
-  const { data } = await createEnvironment({ accountId: params.accountId });
+  const { accountId } = params;
+  invariant(accountId, 'Missing accountId param');
+  listEnvironmentsWithCache.invalidate({ accountId });
+
+  const { data } = await createEnvironment({ accountId });
   return redirect(
     `/accounts/${params.accountId}/environments/${data?.environmentId}`
   );
@@ -53,7 +56,6 @@ const clientAction = async ({ request, params }: ClientActionFunctionArgs) => {
 
 function Component() {
   const { environments } = useLoaderData<typeof clientLoader>();
-  const params = useParams();
   return (
     <>
       <LayoutOutlet zone={LayoutZone.AppBar}>

@@ -6,14 +6,18 @@ import {
   useLoaderData,
 } from '@remix-run/react';
 import {
+  Account,
   createAccount,
   listAccounts,
 } from '@restate/data-access/cloud/api-client';
 import { AccountSelector } from './AccountSelector';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
+import { withCache } from '@restate/util/cache';
+
+const listAccountsWithCache = withCache(listAccounts);
 
 const clientLoader = async ({ request, params }: ClientLoaderFunctionArgs) => {
-  const { data: accountsList } = await listAccounts();
+  const { data: accountsList } = await listAccountsWithCache.fetch();
   const accounts = accountsList?.accounts ?? [];
   const isAccountIdParamValid = accounts.some(
     ({ accountId }) => params.accountId === accountId
@@ -32,6 +36,7 @@ const clientLoader = async ({ request, params }: ClientLoaderFunctionArgs) => {
 
 // TODO: Error handling, Pending UI
 const clientAction = async ({ request, params }: ClientActionFunctionArgs) => {
+  listAccountsWithCache.invalidate();
   const { data } = await createAccount({});
   return redirect(`/accounts/${data?.accountId}/environments`);
 };

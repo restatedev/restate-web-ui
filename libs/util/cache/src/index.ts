@@ -1,1 +1,1 @@
-export * from './lib/util-cache';
+export * from './lib/withCache';
