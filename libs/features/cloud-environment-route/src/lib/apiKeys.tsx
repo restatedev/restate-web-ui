@@ -19,29 +19,6 @@ import { Radio, RadioGroup } from '@restate/ui/radio-group';
 import { Suspense } from 'react';
 import invariant from 'tiny-invariant';
 
-async function listApiKeysWithDetails({
-  accountId,
-  environmentId,
-}: Parameters<typeof listApiKeys>[0]) {
-  const apiKeyList = await listApiKeys({
-    accountId,
-    environmentId,
-  });
-
-  const apiKeys = apiKeyList.data?.apiKeys ?? [];
-  const apiKeysDetails = await Promise.all(
-    apiKeys.map(({ keyId }) =>
-      describeApiKey({
-        accountId,
-        environmentId,
-        keyId,
-      })
-    )
-  );
-
-  return { ...apiKeyList, data: apiKeysDetails };
-}
-
 const clientLoader = async ({ request, params }: ClientLoaderFunctionArgs) => {
   const accountId = params.accountId;
   const environmentId = params.environmentId;
@@ -52,9 +29,27 @@ const clientLoader = async ({ request, params }: ClientLoaderFunctionArgs) => {
     accountId,
     environmentId,
   });
-  const apiKeysPromise = listApiKeysWithDetails({ accountId, environmentId });
 
-  return defer({ environmentPromise, apiKeysPromise });
+  const apiKeysWithDetailsPromises = listApiKeys({
+    accountId,
+    environmentId,
+  }).then((response) => {
+    const apiKeys = response.data?.apiKeys ?? [];
+    return apiKeys
+      .map(({ keyId }) => ({
+        [keyId]: describeApiKey({
+          accountId,
+          environmentId,
+          keyId,
+        }),
+      }))
+      .reduce((p, c) => ({ ...p, ...c }), {});
+  });
+
+  return defer({
+    environmentPromise,
+    apiKeysWithDetailsPromises,
+  });
 };
 
 // TODO: Error handling, Pending UI
@@ -80,22 +75,36 @@ const clientAction = async ({ request, params }: ClientActionFunctionArgs) => {
 };
 
 function Component() {
-  const { apiKeysPromise, environmentPromise } =
-    useLoaderData<typeof clientLoader>();
+  const { apiKeysWithDetailsPromises } = useLoaderData<typeof clientLoader>();
 
   return (
     <div>
-      <Suspense fallback={<p>loading</p>}>
-        <Await resolve={apiKeysPromise} errorElement={<>error</>}>
-          {(apiKeys) => (
+      <Suspense fallback={<p>loading list</p>}>
+        <Await resolve={apiKeysWithDetailsPromises}>
+          {(apiKeysWithDetails) => (
             <ul>
-              {apiKeys.data.map((key) => (
-                <li key={key.data?.keyId}>{key.data?.keyId}</li>
+              {Object.keys(apiKeysWithDetails).map((keyId) => (
+                <li key={keyId}>
+                  <Suspense fallback={<p>loading key</p>}>
+                    <Await
+                      resolve={apiKeysWithDetails[keyId]}
+                      errorElement={<p>failed key</p>}
+                    >
+                      {(apiKeyDetails) => (
+                        <p>
+                          {apiKeyDetails?.data?.keyId}:
+                          {apiKeyDetails?.data?.roleId}
+                        </p>
+                      )}
+                    </Await>
+                  </Suspense>
+                </li>
               ))}
             </ul>
           )}
         </Await>
       </Suspense>
+
       <Form method="post">
         <RadioGroup name="roleId">
           <FormFieldLabel>Role</FormFieldLabel>
