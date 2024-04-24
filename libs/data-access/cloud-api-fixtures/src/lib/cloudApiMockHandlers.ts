@@ -1,5 +1,5 @@
 import * as cloudApi from '@restate/data-access/cloud/api-client';
-import { http, HttpResponse } from 'msw';
+import { delay, http, HttpResponse } from 'msw';
 import { cloudApiDb } from './cloudApiDb';
 
 type FormatParameterWithColon<S extends string> =
@@ -11,14 +11,17 @@ type GetPath<S extends keyof cloudApi.paths> = FormatParameterWithColon<
 const getUserIdentityHandler = http.post<
   never,
   never,
-  | cloudApi.operations['getUserIdentity']['responses']['200']['content']['application/json']
-  | cloudApi.operations['getUserIdentity']['responses']['500']['content']['text/plain'],
-  GetPath<'/cloud/GetUserIdentity'>
->('/cloud/GetUserIdentity', async () => {
+  | cloudApi.operations['GetUserIdentity']['responses']['200']['content']['application/json']
+  | cloudApi.operations['GetUserIdentity']['responses']['500']['content']['application/json'],
+  GetPath<'/GetUserIdentity'>
+>('/GetUserIdentity', async () => {
   const user = cloudApiDb.user.getAll().at(0);
 
   if (!user) {
-    return HttpResponse.text('internal server error', { status: 500 });
+    return HttpResponse.json(
+      { code: 500, message: 'Server internal error' },
+      { status: 500 }
+    );
   }
 
   return HttpResponse.json({
@@ -28,16 +31,21 @@ const getUserIdentityHandler = http.post<
 
 const createAccountHandler = http.post<
   never,
-  cloudApi.operations['createAccount']['requestBody']['content']['application/json'],
-  | cloudApi.operations['createAccount']['responses']['200']['content']['application/json']
-  | cloudApi.operations['createAccount']['responses']['500']['content']['text/plain'],
-  GetPath<'/cloud/CreateAccount'>
->('/cloud/CreateAccount', async ({ request }) => {
+  NonNullable<
+    cloudApi.operations['CreateAccount']['requestBody']
+  >['content']['application/json'],
+  | cloudApi.operations['CreateAccount']['responses']['200']['content']['application/json']
+  | cloudApi.operations['CreateAccount']['responses']['500']['content']['application/json'],
+  GetPath<'/CreateAccount'>
+>('/CreateAccount', async ({ request }) => {
   const user = cloudApiDb.user.getAll().at(0);
   const requestBody = await request.json();
 
   if (!user) {
-    return HttpResponse.text('internal server error', { status: 500 });
+    return HttpResponse.json(
+      { code: 500, message: 'Server internal error' },
+      { status: 500 }
+    );
   }
 
   const account = cloudApiDb.account.create({
@@ -53,14 +61,18 @@ const createAccountHandler = http.post<
 const listAccountsHandler = http.post<
   never,
   never,
-  | cloudApi.operations['listAccounts']['responses']['200']['content']['application/json']
-  | cloudApi.operations['listAccounts']['responses']['500']['content']['text/plain'],
-  GetPath<'/cloud/ListAccounts'>
->('/cloud/ListAccounts', async () => {
+  | cloudApi.operations['ListAccounts']['responses']['200']['content']['application/json']
+  | cloudApi.operations['ListAccounts']['responses']['500']['content']['application/json'],
+  GetPath<'/ListAccounts'>
+>('/ListAccounts', async () => {
   const user = cloudApiDb.user.getAll().at(0);
+  await delay(3000);
 
   if (!user) {
-    return HttpResponse.text('internal server error', { status: 500 });
+    return HttpResponse.json(
+      { code: 500, message: 'Server internal error' },
+      { status: 500 }
+    );
   }
 
   const accounts = cloudApiDb.account.findMany({
@@ -79,12 +91,14 @@ const listAccountsHandler = http.post<
 });
 
 const describeEnvironmentHandler = http.post<
-  cloudApi.operations['describeEnvironment']['parameters']['path'],
-  cloudApi.operations['describeEnvironment']['requestBody']['content']['application/json'],
-  | cloudApi.operations['describeEnvironment']['responses']['200']['content']['application/json']
-  | cloudApi.operations['describeEnvironment']['responses']['500']['content']['text/plain'],
-  GetPath<'/cloud/{accountId}/DescribeEnvironment'>
->('/cloud/:accountId/DescribeEnvironment', async ({ request }) => {
+  cloudApi.operations['DescribeEnvironment']['parameters']['path'],
+  NonNullable<
+    cloudApi.operations['DescribeEnvironment']['requestBody']
+  >['content']['application/json'],
+  | cloudApi.operations['DescribeEnvironment']['responses']['200']['content']['application/json']
+  | cloudApi.operations['DescribeEnvironment']['responses']['500']['content']['application/json'],
+  GetPath<'/{accountId}/DescribeEnvironment'>
+>('/:accountId/DescribeEnvironment', async ({ request }) => {
   const requestBody = await request.json();
 
   const environment = cloudApiDb.environment.findFirst({
@@ -92,9 +106,13 @@ const describeEnvironmentHandler = http.post<
       environmentId: { equals: requestBody.environmentId },
     },
   });
+  await delay(6000);
 
   if (!environment) {
-    return HttpResponse.text('internal server error', { status: 500 });
+    return HttpResponse.json(
+      { code: 500, message: 'Server internal error' },
+      { status: 500 }
+    );
   }
 
   return HttpResponse.json({
@@ -106,12 +124,14 @@ const describeEnvironmentHandler = http.post<
 });
 
 const destroyEnvironmentHandler = http.post<
-  cloudApi.operations['destroyEnvironment']['parameters']['path'],
-  cloudApi.operations['destroyEnvironment']['requestBody']['content']['application/json'],
-  | cloudApi.operations['destroyEnvironment']['responses']['200']['content']['application/json']
-  | cloudApi.operations['destroyEnvironment']['responses']['500']['content']['text/plain'],
-  GetPath<'/cloud/{accountId}/DestroyEnvironment'>
->('/cloud/:accountId/DestroyEnvironment', async ({ request }) => {
+  cloudApi.operations['DestroyEnvironment']['parameters']['path'],
+  NonNullable<
+    cloudApi.operations['DestroyEnvironment']['requestBody']
+  >['content']['application/json'],
+  | cloudApi.operations['DestroyEnvironment']['responses']['200']['content']['application/json']
+  | cloudApi.operations['DestroyEnvironment']['responses']['500']['content']['application/json'],
+  GetPath<'/{accountId}/DestroyEnvironment'>
+>('/:accountId/DestroyEnvironment', async ({ request }) => {
   const requestBody = await request.json();
 
   const environment = cloudApiDb.environment.findFirst({
@@ -121,7 +141,10 @@ const destroyEnvironmentHandler = http.post<
   });
 
   if (!environment) {
-    return HttpResponse.text('internal server error', { status: 500 });
+    return HttpResponse.json(
+      { code: 500, message: 'Server internal error' },
+      { status: 500 }
+    );
   }
 
   cloudApiDb.environment.delete({
@@ -134,12 +157,14 @@ const destroyEnvironmentHandler = http.post<
 });
 
 const createEnvironmentHandler = http.post<
-  cloudApi.operations['createEnvironment']['parameters']['path'],
-  cloudApi.operations['createEnvironment']['requestBody']['content']['application/json'],
-  | cloudApi.operations['createEnvironment']['responses']['200']['content']['application/json']
-  | cloudApi.operations['createEnvironment']['responses']['500']['content']['text/plain'],
-  GetPath<'/cloud/{accountId}/CreateEnvironment'>
->('/cloud/:accountId/CreateEnvironment', async ({ params, request }) => {
+  cloudApi.operations['CreateEnvironment']['parameters']['path'],
+  NonNullable<
+    cloudApi.operations['CreateEnvironment']['requestBody']
+  >['content']['application/json'],
+  | cloudApi.operations['CreateEnvironment']['responses']['200']['content']['application/json']
+  | cloudApi.operations['CreateEnvironment']['responses']['500']['content']['application/json'],
+  GetPath<'/{accountId}/CreateEnvironment'>
+>('/:accountId/CreateEnvironment', async ({ params, request }) => {
   const account = cloudApiDb.account.findFirst({
     where: {
       accountId: {
@@ -150,7 +175,10 @@ const createEnvironmentHandler = http.post<
   const requestBody = await request.json();
 
   if (!account) {
-    return HttpResponse.text('internal server error', { status: 500 });
+    return HttpResponse.json(
+      { code: 500, message: 'Server internal error' },
+      { status: 500 }
+    );
   }
 
   const environment = cloudApiDb.environment.create({
@@ -165,16 +193,19 @@ const createEnvironmentHandler = http.post<
 });
 
 const listEnvironmentsHandler = http.post<
-  cloudApi.operations['listEnvironments']['parameters']['path'],
+  cloudApi.operations['ListEnvironments']['parameters']['path'],
   never,
-  | cloudApi.operations['listEnvironments']['responses']['200']['content']['application/json']
-  | cloudApi.operations['listEnvironments']['responses']['500']['content']['text/plain'],
-  GetPath<'/cloud/{accountId}/ListEnvironments'>
->('/cloud/:accountId/ListEnvironments', async ({ params }) => {
+  | cloudApi.operations['ListEnvironments']['responses']['200']['content']['application/json']
+  | cloudApi.operations['ListEnvironments']['responses']['500']['content']['application/json'],
+  GetPath<'/{accountId}/ListEnvironments'>
+>('/:accountId/ListEnvironments', async ({ params }) => {
   const user = cloudApiDb.user.getAll().at(0);
 
   if (!user) {
-    return HttpResponse.text('internal server error', { status: 500 });
+    return HttpResponse.json(
+      { code: 500, message: 'Server internal error' },
+      { status: 500 }
+    );
   }
 
   const environments = cloudApiDb.environment.findMany({
@@ -193,12 +224,14 @@ const listEnvironmentsHandler = http.post<
 });
 
 const createApiKeyHandler = http.post<
-  cloudApi.operations['createApiKey']['parameters']['path'],
-  cloudApi.operations['createApiKey']['requestBody']['content']['application/json'],
-  | cloudApi.operations['createApiKey']['responses']['200']['content']['application/json']
-  | cloudApi.operations['createApiKey']['responses']['500']['content']['text/plain'],
-  GetPath<'/cloud/{accountId}/CreateApiKey'>
->('/cloud/:accountId/CreateApiKey', async ({ params, request }) => {
+  cloudApi.operations['CreateApiKey']['parameters']['path'],
+  NonNullable<
+    cloudApi.operations['CreateApiKey']['requestBody']
+  >['content']['application/json'],
+  | cloudApi.operations['CreateApiKey']['responses']['200']['content']['application/json']
+  | cloudApi.operations['CreateApiKey']['responses']['500']['content']['application/json'],
+  GetPath<'/{accountId}/CreateApiKey'>
+>('/:accountId/CreateApiKey', async ({ params, request }) => {
   const requestBody = await request.json();
   const account = cloudApiDb.account.findFirst({
     where: {
@@ -216,7 +249,10 @@ const createApiKeyHandler = http.post<
   });
 
   if (!account || !environment) {
-    return HttpResponse.text('internal server error', { status: 500 });
+    return HttpResponse.json(
+      { code: 500, message: 'Server internal error' },
+      { status: 500 }
+    );
   }
 
   const apiKey = cloudApiDb.apiKey.create({
@@ -237,12 +273,14 @@ const createApiKeyHandler = http.post<
 });
 
 const describeApiKeyHandler = http.post<
-  cloudApi.operations['describeApiKey']['parameters']['path'],
-  cloudApi.operations['describeApiKey']['requestBody']['content']['application/json'],
-  | cloudApi.operations['describeApiKey']['responses']['200']['content']['application/json']
-  | cloudApi.operations['describeApiKey']['responses']['500']['content']['text/plain'],
-  GetPath<'/cloud/{accountId}/DescribeApiKey'>
->('/cloud/:accountId/DescribeApiKey', async ({ params, request }) => {
+  cloudApi.operations['DescribeApiKey']['parameters']['path'],
+  NonNullable<
+    cloudApi.operations['DescribeApiKey']['requestBody']
+  >['content']['application/json'],
+  | cloudApi.operations['DescribeApiKey']['responses']['200']['content']['application/json']
+  | cloudApi.operations['DescribeApiKey']['responses']['500']['content']['application/json'],
+  GetPath<'/{accountId}/DescribeApiKey'>
+>('/:accountId/DescribeApiKey', async ({ params, request }) => {
   const requestBody = await request.json();
   const apiKey = cloudApiDb.apiKey.findFirst({
     where: {
@@ -251,9 +289,13 @@ const describeApiKeyHandler = http.post<
       },
     },
   });
+  await delay(Math.random() * 3000);
 
   if (!apiKey) {
-    return HttpResponse.text('internal server error', { status: 500 });
+    return HttpResponse.json(
+      { code: 500, message: 'Server internal error' },
+      { status: 500 }
+    );
   }
 
   return HttpResponse.json({
@@ -267,12 +309,14 @@ const describeApiKeyHandler = http.post<
 });
 
 const deleteApiKeyHandler = http.post<
-  cloudApi.operations['deleteApiKey']['parameters']['path'],
-  cloudApi.operations['deleteApiKey']['requestBody']['content']['application/json'],
-  | cloudApi.operations['deleteApiKey']['responses']['200']['content']['application/json']
-  | cloudApi.operations['deleteApiKey']['responses']['500']['content']['text/plain'],
-  GetPath<'/cloud/{accountId}/DeleteApiKey'>
->('/cloud/:accountId/DeleteApiKey', async ({ request }) => {
+  cloudApi.operations['DeleteApiKey']['parameters']['path'],
+  NonNullable<
+    cloudApi.operations['DeleteApiKey']['requestBody']
+  >['content']['application/json'],
+  | cloudApi.operations['DeleteApiKey']['responses']['200']['content']['application/json']
+  | cloudApi.operations['DeleteApiKey']['responses']['500']['content']['application/json'],
+  GetPath<'/{accountId}/DeleteApiKey'>
+>('/:accountId/DeleteApiKey', async ({ request }) => {
   const requestBody = await request.json();
   const apiKey = cloudApiDb.apiKey.findFirst({
     where: {
@@ -283,20 +327,26 @@ const deleteApiKeyHandler = http.post<
   });
 
   if (!apiKey) {
-    return HttpResponse.text('internal server error', { status: 500 });
+    return HttpResponse.json(
+      { code: 500, message: 'Server internal error' },
+      { status: 500 }
+    );
   }
 
   return HttpResponse.json({});
 });
 
 const listApiKeysHandler = http.post<
-  cloudApi.operations['listApiKeys']['parameters']['path'],
-  cloudApi.operations['listApiKeys']['requestBody']['content']['application/json'],
-  | cloudApi.operations['listApiKeys']['responses']['200']['content']['application/json']
-  | cloudApi.operations['listApiKeys']['responses']['500']['content']['text/plain'],
-  GetPath<'/cloud/{accountId}/ListApiKeys'>
->('/cloud/:accountId/ListApiKeys', async ({ request }) => {
+  cloudApi.operations['ListApiKeys']['parameters']['path'],
+  NonNullable<
+    cloudApi.operations['ListApiKeys']['requestBody']
+  >['content']['application/json'],
+  | cloudApi.operations['ListApiKeys']['responses']['200']['content']['application/json']
+  | cloudApi.operations['ListApiKeys']['responses']['500']['content']['application/json'],
+  GetPath<'/{accountId}/ListApiKeys'>
+>('/:accountId/ListApiKeys', async ({ request }) => {
   const requestBody = await request.json();
+  await delay(6000);
   const apiKeys = cloudApiDb.apiKey.findMany({
     where: {
       environment: {

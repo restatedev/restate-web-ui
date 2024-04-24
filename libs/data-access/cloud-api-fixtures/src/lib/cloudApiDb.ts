@@ -9,12 +9,12 @@ export const cloudApiDb = factory({
     userId: primaryKey(faker.string.uuid),
   },
   account: {
-    accountId: primaryKey(faker.string.uuid),
+    accountId: primaryKey(() => `acc_${faker.string.nanoid(23)}`),
     users: manyOf('user'),
     description: () => faker.internet.domainWord(),
   },
   environment: {
-    environmentId: primaryKey(faker.string.uuid),
+    environmentId: primaryKey(() => `env_${faker.string.nanoid(27)}`),
     account: oneOf('account'),
     description: () => faker.commerce.product(),
     status: () =>
@@ -28,8 +28,10 @@ export const cloudApiDb = factory({
   apiKey: {
     account: oneOf('account'),
     environment: oneOf('environment'),
-    keyId: () => faker.string.uuid(),
-    apiKey: primaryKey(faker.string.uuid),
+    keyId: () => `key_${faker.string.nanoid(23)}`,
+    apiKey: primaryKey(
+      () => `key_${faker.string.nanoid(23)}.${faker.string.nanoid(44)}`
+    ),
     roleId: () =>
       faker.helpers.arrayElement([
         'rst:role::FullAccess',

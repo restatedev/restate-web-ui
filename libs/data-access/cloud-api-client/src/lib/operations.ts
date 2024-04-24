@@ -11,25 +11,25 @@ type AllParams<
   NonNullable<Operation['requestBody']>['content']['application/json'];
 
 export async function getUserIdentity() {
-  return apiClient.POST('/cloud/GetUserIdentity');
+  return apiClient.POST('/GetUserIdentity');
 }
 
 export async function createAccount(
-  params: AllParams<cloudApi.operations['createAccount']>
+  params: AllParams<cloudApi.operations['CreateAccount']>
 ) {
-  return apiClient.POST('/cloud/CreateAccount', {
+  return apiClient.POST('/CreateAccount', {
     body: { description: params.description },
   });
 }
 
 export async function listAccounts() {
-  return apiClient.POST('/cloud/ListAccounts');
+  return apiClient.POST('/ListAccounts');
 }
 
 export async function describeEnvironment(
-  params: AllParams<cloudApi.operations['describeEnvironment']>
+  params: AllParams<cloudApi.operations['DescribeEnvironment']>
 ) {
-  return apiClient.POST('/cloud/{accountId}/DescribeEnvironment', {
+  return apiClient.POST('/{accountId}/DescribeEnvironment', {
     params: { path: { accountId: params.accountId } },
     body: {
       environmentId: params.environmentId,
@@ -38,9 +38,9 @@ export async function describeEnvironment(
 }
 
 export async function destroyEnvironment(
-  params: AllParams<cloudApi.operations['destroyEnvironment']>
+  params: AllParams<cloudApi.operations['DestroyEnvironment']>
 ) {
-  return apiClient.POST('/cloud/{accountId}/DestroyEnvironment', {
+  return apiClient.POST('/{accountId}/DestroyEnvironment', {
     params: { path: { accountId: params.accountId } },
     body: {
       environmentId: params.environmentId,
@@ -48,29 +48,29 @@ export async function destroyEnvironment(
   });
 }
 
-type b = AllParams<cloudApi.operations['listAccounts']>;
+type b = AllParams<cloudApi.operations['ListAccounts']>;
 
 export async function createEnvironment(
-  params: AllParams<cloudApi.operations['createEnvironment']>
+  params: AllParams<cloudApi.operations['CreateEnvironment']>
 ) {
-  return apiClient.POST('/cloud/{accountId}/CreateEnvironment', {
+  return apiClient.POST('/{accountId}/CreateEnvironment', {
     params: { path: { accountId: params.accountId } },
     body: { description: params.description },
   });
 }
 
 export async function listEnvironments(
-  params: AllParams<cloudApi.operations['listEnvironments']>
+  params: AllParams<cloudApi.operations['ListEnvironments']>
 ) {
-  return apiClient.POST('/cloud/{accountId}/ListEnvironments', {
+  return apiClient.POST('/{accountId}/ListEnvironments', {
     params: { path: { accountId: params.accountId } },
   });
 }
 
 export async function createApiKey(
-  params: AllParams<cloudApi.operations['createApiKey']>
+  params: AllParams<cloudApi.operations['CreateApiKey']>
 ) {
-  return apiClient.POST('/cloud/{accountId}/CreateApiKey', {
+  return apiClient.POST('/{accountId}/CreateApiKey', {
     params: { path: { accountId: params.accountId } },
     body: {
       roleId: params.roleId,
@@ -80,9 +80,9 @@ export async function createApiKey(
 }
 
 export async function describeApiKey(
-  params: AllParams<cloudApi.operations['describeApiKey']>
+  params: AllParams<cloudApi.operations['DescribeApiKey']>
 ) {
-  return apiClient.POST('/cloud/{accountId}/DescribeApiKey', {
+  return apiClient.POST('/{accountId}/DescribeApiKey', {
     params: { path: { accountId: params.accountId } },
     body: {
       keyId: params.keyId,
@@ -92,9 +92,9 @@ export async function describeApiKey(
 }
 
 export async function deleteApiKey(
-  params: AllParams<cloudApi.operations['deleteApiKey']>
+  params: AllParams<cloudApi.operations['DeleteApiKey']>
 ) {
-  return apiClient.POST('/cloud/{accountId}/DeleteApiKey', {
+  return apiClient.POST('/{accountId}/DeleteApiKey', {
     params: { path: { accountId: params.accountId } },
     body: {
       keyId: params.keyId,
@@ -104,9 +104,9 @@ export async function deleteApiKey(
 }
 
 export async function listApiKeys(
-  params: AllParams<cloudApi.operations['listApiKeys']>
+  params: AllParams<cloudApi.operations['ListApiKeys']>
 ) {
-  return apiClient.POST('/cloud/{accountId}/ListApiKeys', {
+  return apiClient.POST('/{accountId}/ListApiKeys', {
     params: { path: { accountId: params.accountId } },
     body: {
       environmentId: params.environmentId,
