@@ -1,6 +1,6 @@
 import { type components } from './api';
 
-type Role = components['schemas']['Role'];
+type Role = components['schemas']['RoleId'];
 export function isRole(param: any): param is Role {
   return [
     'rst:role::FullAccess',

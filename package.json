@@ -34,7 +34,7 @@
     "@nx/web": "18.1.2",
     "@nx/workspace": "18.1.2",
     "@playwright/test": "^1.36.0",
-    "@redocly/cli": "^1.10.5",
+    "@redocly/cli": "^1.11.0",
     "@remix-run/dev": "^2.8.1",
     "@remix-run/testing": "^2.8.1",
     "@swc-node/register": "~1.8.0",

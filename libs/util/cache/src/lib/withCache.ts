@@ -41,7 +41,7 @@ export function withCache<T, O, P extends Record<string, any>>(
 export function withCache<T, O, P extends Record<string, any> | undefined>(
   fetcher: (params: P) => Promise<FetchResponse<T, O>>
 ) {
-  const cache = new Map<string, FetchResponse<T, O>>();
+  const cache = new Map<string, Promise<FetchResponse<T, O>>>();
 
   return {
     invalidate: (params?: P) => {
@@ -55,11 +55,18 @@ export function withCache<T, O, P extends Record<string, any> | undefined>(
       }
 
       const promise = fetcher(params);
-      promise.then((res) => {
-        if (res.response.ok) {
-          cache.set(paramsHash, res);
-        }
-      });
+      cache.set(paramsHash, promise);
+      promise
+        .then((res) => {
+          if (res.response.ok) {
+            cache.set(paramsHash, Promise.resolve(res));
+          } else {
+            cache.delete(paramsHash);
+          }
+        })
+        .catch(() => {
+          cache.delete(paramsHash);
+        });
       return promise;
     },
   };
