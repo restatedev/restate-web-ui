@@ -1,5 +1,5 @@
 import * as cloudApi from '@restate/data-access/cloud/api-client';
-import { delay, http, HttpResponse } from 'msw';
+import { http, HttpResponse } from 'msw';
 import { cloudApiDb } from './cloudApiDb';
 
 type FormatParameterWithColon<S extends string> =
@@ -66,7 +66,6 @@ const listAccountsHandler = http.post<
   GetPath<'/ListAccounts'>
 >('/ListAccounts', async () => {
   const user = cloudApiDb.user.getAll().at(0);
-  await delay(3000);
 
   if (!user) {
     return HttpResponse.json(
@@ -106,7 +105,6 @@ const describeEnvironmentHandler = http.post<
       environmentId: { equals: requestBody.environmentId },
     },
   });
-  await delay(6000);
 
   if (!environment) {
     return HttpResponse.json(
@@ -289,7 +287,6 @@ const describeApiKeyHandler = http.post<
       },
     },
   });
-  await delay(Math.random() * 3000);
 
   if (!apiKey) {
     return HttpResponse.json(
@@ -346,7 +343,6 @@ const listApiKeysHandler = http.post<
   GetPath<'/{accountId}/ListApiKeys'>
 >('/:accountId/ListApiKeys', async ({ request }) => {
   const requestBody = await request.json();
-  await delay(6000);
   const apiKeys = cloudApiDb.apiKey.findMany({
     where: {
       environment: {
