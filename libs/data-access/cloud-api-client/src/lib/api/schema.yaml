@@ -1,497 +1,756 @@
-openapi: '3.0.2'
+openapi: 3.0.3
 info:
   title: Restate Cloud API
-  version: '1.0'
+  version: v1
   license:
     name: Restate
     url: https://restate.dev
 servers:
-  - url: https://api.dev.restate.cloud
+  - url: https://api.dev.restate.cloud/cloud
+    description: Dev Endpoint
+security:
+  - bearerAuth: []
 paths:
-  /cloud/GetUserIdentity:
+  /GetUserIdentity:
     post:
-      summary: Returns the user identity
-      operationId: getUserIdentity
-      security:
-        - bearerAuth: []
+      operationId: GetUserIdentity
+      summary: Retrieve the current user's identity
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetUserIdentityRequest'
       responses:
-        200:
-          description: OK
+        '200':
+          description: The operation completed successfully.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetUserIdentityResponse'
-        401:
-          $ref: '#/components/responses/UnauthorizedError'
-        500:
-          $ref: '#/components/responses/InternalServerError'
-  /cloud/CreateAccount:
-    post:
-      summary: Creates a cloud account
-      operationId: createAccount
-      security:
-        - bearerAuth: []
-      requestBody:
-        description: Specify the description
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateAccountRequestBody'
-      responses:
-        200:
-          description: OK
+        '400':
+          description: Client error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreateAccountResponse'
-        401:
-          $ref: '#/components/responses/UnauthorizedError'
-        500:
-          $ref: '#/components/responses/InternalServerError'
-  /cloud/ListAccounts:
+                $ref: '#/components/schemas/ClientError'
+        '401':
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '500':
+          description:
+            Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerInternalError'
+  /ListAccounts:
     post:
-      summary: returns all cloud accounts the user has access to
-      operationId: listAccounts
-      security:
-        - bearerAuth: []
+      operationId: ListAccounts
+      summary: List the accounts available to the current user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListAccountsRequest'
       responses:
-        200:
-          description: OK
+        '200':
+          description: The operation completed successfully.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListAccountsResponse'
-        401:
-          $ref: '#/components/responses/UnauthorizedError'
-        500:
-          $ref: '#/components/responses/InternalServerError'
-  /cloud/{accountId}/CreateEnvironment:
+        '400':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientError'
+        '401':
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '500':
+          description:
+            Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerInternalError'
+  /CreateAccount:
     post:
-      summary: Creates an environment
-      operationId: createEnvironment
-      security:
-        - bearerAuth: []
-      parameters:
-        - $ref: '#/components/parameters/AccountId'
+      operationId: CreateAccount
+      summary: Create a new account
       requestBody:
-        description: Specify the description
-        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateEnvironmentRequestBody'
+              $ref: '#/components/schemas/CreateAccountRequest'
       responses:
-        200:
-          description: OK
+        '200':
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateAccountResponse'
+        '400':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientError'
+        '401':
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '500':
+          description:
+            Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerInternalError'
+  /{accountId}/CreateEnvironment:
+    post:
+      operationId: CreateEnvironment
+      summary: Create a new environment
+      parameters:
+        - in: path
+          name: accountId
+          description: Unique account identifier
+          schema:
+            $ref: '#/components/schemas/AccountId'
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEnvironmentRequest'
+      responses:
+        '200':
+          description: The operation completed successfully.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreateEnvironmentResponse'
-        401:
-          $ref: '#/components/responses/UnauthorizedError'
-        500:
-          $ref: '#/components/responses/InternalServerError'
-  /cloud/{accountId}/DescribeEnvironment:
-    post:
-      summary: Returns the environments details
-      operationId: describeEnvironment
-      security:
-        - bearerAuth: []
-      parameters:
-        - $ref: '#/components/parameters/AccountId'
-      requestBody:
-        description: Specify the environment id
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DescribeEnvironmentRequestBody'
-      responses:
-        200:
-          description: OK
+        '400':
+          description: Client error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DescribeEnvironmentResponse'
-        401:
-          $ref: '#/components/responses/UnauthorizedError'
-        500:
-          $ref: '#/components/responses/InternalServerError'
-  /cloud/{accountId}/DestroyEnvironment:
-    post:
-      summary: Destroys an environment
-      operationId: destroyEnvironment
-      security:
-        - bearerAuth: []
-      parameters:
-        - $ref: '#/components/parameters/AccountId'
-      requestBody:
-        description: Specify the environment id
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DestroyEnvironmentRequestBody'
-      responses:
-        200:
-          description: OK
+                $ref: '#/components/schemas/ClientError'
+        '401':
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DestroyEnvironmentResponse'
-        401:
-          $ref: '#/components/responses/UnauthorizedError'
-        500:
-          $ref: '#/components/responses/InternalServerError'
-  /cloud/{accountId}/ListEnvironments:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '500':
+          description:
+            Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerInternalError'
+  /{accountId}/ListEnvironments:
     post:
-      summary: Returns all the environments for an account
-      operationId: listEnvironments
-      security:
-        - bearerAuth: []
+      operationId: ListEnvironments
+      summary: Retrieve an account's environments
       parameters:
-        - $ref: '#/components/parameters/AccountId'
+        - in: path
+          name: accountId
+          description: Unique account identifier
+          schema:
+            $ref: '#/components/schemas/AccountId'
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListEnvironmentsRequest'
       responses:
-        200:
-          description: OK
+        '200':
+          description: The operation completed successfully.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListEnvironmentsResponse'
-        401:
-          $ref: '#/components/responses/UnauthorizedError'
-        500:
-          $ref: '#/components/responses/InternalServerError'
-  /cloud/{accountId}/CreateApiKey:
+        '400':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientError'
+        '401':
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '500':
+          description:
+            Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerInternalError'
+  /{accountId}/DescribeEnvironment:
     post:
-      summary: Creates an api key on an environment with the specified role
-      operationId: createApiKey
-      security:
-        - bearerAuth: []
+      operationId: DescribeEnvironment
+      summary: Retrieve an environment's details
       parameters:
-        - $ref: '#/components/parameters/AccountId'
+        - in: path
+          name: accountId
+          description: Unique account identifier
+          schema:
+            $ref: '#/components/schemas/AccountId'
+          required: true
       requestBody:
-        description: Specify the role and environment
-        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateApiKeyRequestBody'
+              $ref: '#/components/schemas/DescribeEnvironmentRequest'
       responses:
-        200:
-          description: OK
+        '200':
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DescribeEnvironmentResponse'
+        '400':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientError'
+        '401':
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '500':
+          description:
+            Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerInternalError'
+  /{accountId}/DestroyEnvironment:
+    post:
+      operationId: DestroyEnvironment
+      summary: Shut down an environment and destroy all its stored metadata and state
+      parameters:
+        - in: path
+          name: accountId
+          description: Unique account identifier
+          schema:
+            $ref: '#/components/schemas/AccountId'
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DestroyEnvironmentRequest'
+      responses:
+        '200':
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DestroyEnvironmentResponse'
+        '400':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientError'
+        '401':
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '500':
+          description:
+            Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerInternalError'
+  /{accountId}/CreateApiKey:
+    post:
+      operationId: CreateApiKey
+      summary: Create a new API key for the specified environment
+      parameters:
+        - in: path
+          name: accountId
+          description: Unique account identifier
+          schema:
+            $ref: '#/components/schemas/AccountId'
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateApiKeyRequest'
+      responses:
+        '200':
+          description: The operation completed successfully.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreateApiKeyResponse'
-        401:
-          $ref: '#/components/responses/UnauthorizedError'
-        500:
-          $ref: '#/components/responses/InternalServerError'
-  /cloud/{accountId}/DescribeApiKey:
-    post:
-      summary: Returns the api key details
-      operationId: describeApiKey
-      security:
-        - bearerAuth: []
-      parameters:
-        - $ref: '#/components/parameters/AccountId'
-      requestBody:
-        description: Specify the api key
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DescribeApiKeyRequestBody'
-      responses:
-        200:
-          description: OK
+        '400':
+          description: Client error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DescribeApiKeyResponse'
-        401:
-          $ref: '#/components/responses/UnauthorizedError'
-        500:
-          $ref: '#/components/responses/InternalServerError'
-  /cloud/{accountId}/DeleteApiKey:
-    post:
-      summary: Deletes the api key
-      operationId: deleteApiKey
-      security:
-        - bearerAuth: []
-      parameters:
-        - $ref: '#/components/parameters/AccountId'
-      requestBody:
-        description: Specify the api key and environment id
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DeleteApiKeyRequestBody'
-      responses:
-        200:
-          description: OK
+                $ref: '#/components/schemas/ClientError'
+        '401':
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeleteApiKeyResponse'
-        401:
-          $ref: '#/components/responses/UnauthorizedError'
-        500:
-          $ref: '#/components/responses/InternalServerError'
-  /cloud/{accountId}/ListApiKeys:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '500':
+          description:
+            Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerInternalError'
+  /{accountId}/ListApiKeys:
     post:
-      summary: Returns all the api keys
-      operationId: listApiKeys
-      security:
-        - bearerAuth: []
+      operationId: ListApiKeys
+      summary: List the known API keys for an environment
       parameters:
-        - $ref: '#/components/parameters/AccountId'
+        - in: path
+          name: accountId
+          description: Unique account identifier
+          schema:
+            $ref: '#/components/schemas/AccountId'
+          required: true
       requestBody:
-        description: Specify the environment id
-        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ListApiKeysRequestBody'
+              $ref: '#/components/schemas/ListApiKeysRequest'
       responses:
-        200:
-          description: OK
+        '200':
+          description: The operation completed successfully.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListApiKeysResponse'
-        401:
-          $ref: '#/components/responses/UnauthorizedError'
-        500:
-          $ref: '#/components/responses/InternalServerError'
+        '400':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientError'
+        '401':
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '500':
+          description:
+            Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerInternalError'
+  /{accountId}/DescribeApiKey:
+    post:
+      operationId: DescribeApiKey
+      summary: Retrieve the details of a specific API key
+      parameters:
+        - in: path
+          name: accountId
+          description: Unique account identifier
+          schema:
+            $ref: '#/components/schemas/AccountId'
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DescribeApiKeyRequest'
+      responses:
+        '200':
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DescribeApiKeyResponse'
+        '400':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientError'
+        '401':
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '500':
+          description:
+            Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerInternalError'
+  /{accountId}/DeleteApiKey:
+    post:
+      operationId: DeleteApiKey
+      summary: Delete the specified API key
+      parameters:
+        - in: path
+          name: accountId
+          description: Unique account identifier
+          schema:
+            $ref: '#/components/schemas/AccountId'
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteApiKeyRequest'
+      responses:
+        '200':
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteApiKeyResponse'
+        '400':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientError'
+        '401':
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '500':
+          description:
+            Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerInternalError'
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
+      description: An access token from the Cloud user authentication service
   schemas:
-    GetUserIdentityResponse:
-      $ref: '#/components/schemas/User'
-    User:
+    GetUserIdentityRequest:
       type: object
-      required:
-        - userId
+    GetUserIdentityResponse:
+      type: object
       properties:
         userId:
           type: string
-          description: The user id
-    Account:
-      type: object
       required:
-        - accountId
-      properties:
-        accountId:
-          type: string
-          description: The account id
-        description:
-          type: string
-          description: The account description
-    EnvironmentId:
+        - userId
+    ClientError:
       type: object
+      properties:
+        code:
+          type: number
+        message:
+          type: string
       required:
-        - environmentId
-      properties:
-        environmentId:
-          type: string
-          description: The environment id
-    Environment:
-      allOf:
-        - $ref: '#/components/schemas/EnvironmentId'
-        - type: object
-          required:
-            - environmentId
-          properties:
-            description:
-              type: string
-              description: The environment description
-            status:
-              type: string
-              description: The environment status
-              enum: ['PENDING', 'ACTIVE', 'FAILED', 'DELETED']
-    CreateAccountResponse:
-      $ref: '#/components/schemas/Account'
-    CreateAccountRequestBody:
+        - code
+        - message
+    UnauthorizedError:
       type: object
       properties:
-        description:
+        code:
+          type: number
+        message:
           type: string
-          description: The account description
+      required:
+        - code
+        - message
+    ServerInternalError:
+      type: object
+      properties:
+        code:
+          type: number
+        message:
+          type: string
+      required:
+        - code
+        - message
+    ListAccountsRequest:
+      type: object
     ListAccountsResponse:
       type: object
-      required:
-        - accounts
       properties:
         accounts:
           type: array
           items:
-            $ref: '#/components/schemas/Account'
-    CreateEnvironmentRequestBody:
+            type: object
+            properties:
+              accountId:
+                type: string
+              description:
+                type: string
+            required:
+              - accountId
+      required:
+        - accounts
+    CreateAccountRequest:
       type: object
       properties:
         description:
           type: string
-          description: The account description
-    CreateEnvironmentResponse:
-      $ref: '#/components/schemas/EnvironmentId'
-    DestroyEnvironmentRequestBody:
-      $ref: '#/components/schemas/EnvironmentId'
-    DestroyEnvironmentResponse:
+    CreateAccountResponse:
       type: object
       properties:
-        error:
+        accountId:
           type: string
-    DescribeEnvironmentRequestBody:
-      $ref: '#/components/schemas/EnvironmentId'
-    DescribeEnvironmentResponse:
-      $ref: '#/components/schemas/Environment'
+      required:
+        - accountId
+    AccountId:
+      type: string
+      description: Unique account identifier
+      example: acc_1b2DE3f40
+    CreateEnvironmentRequest:
+      type: object
+      properties:
+        description:
+          type: string
+    CreateEnvironmentResponse:
+      type: object
+      properties:
+        environmentId:
+          type: string
+      required:
+        - environmentId
+    ListEnvironmentsRequest:
+      type: object
     ListEnvironmentsResponse:
       type: object
-      required:
-        - environments
       properties:
         environments:
           type: array
           items:
-            $ref: '#/components/schemas/EnvironmentId'
-    Role:
-      type: string
-      enum:
-        [
-          'rst:role::FullAccess',
-          'rst:role::IngressAccess',
-          'rst:role::AdminAccess',
-          'rst:role::ResolveAwakeableAccess',
-        ]
-    ApiKeyState:
-      type: string
-      enum: ['ACTIVE', 'DELETED']
-    CreateApiKeyRequestBody:
-      type: object
+            type: object
+            properties:
+              environmentId:
+                type: string
+            required:
+              - environmentId
       required:
-        - roleId
-        - environmentId
+        - environments
+    DescribeEnvironmentRequest:
+      type: object
       properties:
-        roleId:
-          $ref: '#/components/schemas/Role'
+        environmentId:
+          type: string
+      required:
+        - environmentId
+    DescribeEnvironmentResponse:
+      type: object
+      properties:
         environmentId:
           type: string
         description:
           type: string
-          description: The environment description
-    CreateApiKeyResponse:
-      type: object
-      required:
-        - roleId
-        - environmentId
-        - state
-        - accountId
-        - apiKey
-      properties:
-        keyId:
+        status:
           type: string
+          enum:
+            - PENDING
+            - ACTIVE
+            - FAILED
+            - DELETED
+      required:
+        - environmentId
+        - status
+    DestroyEnvironmentRequest:
+      type: object
+      properties:
+        environmentId:
+          type: string
+      required:
+        - environmentId
+    DestroyEnvironmentResponse:
+      type: object
+      properties:
+        result:
+          anyOf:
+            - type: object
+              properties:
+                ok:
+                  type: boolean
+              required:
+                - ok
+            - type: string
+    CreateApiKeyRequest:
+      type: object
+      properties:
         environmentId:
           type: string
         roleId:
-          $ref: '#/components/schemas/Role'
-        state:
-          $ref: '#/components/schemas/ApiKeyState'
+          $ref: '#/components/schemas/RoleId'
+        description:
+          type: string
+      required:
+        - environmentId
+        - roleId
+    RoleId:
+      type: string
+      enum:
+        - rst:role::FullAccess
+        - rst:role::IngressAccess
+        - rst:role::AdminAccess
+        - rst:role::ResolveAwakeableAccess
+      description:
+        A role identifier specifying a particular level of access for a
+        principal.
+      example: rst:role::FullAccess
+    CreateApiKeyResponse:
+      type: object
+      properties:
+        keyId:
+          type: string
+        roleId:
+          $ref: '#/components/schemas/RoleId'
+        environmentId:
+          type: string
         accountId:
           type: string
         apiKey:
           type: string
-    DescribeApiKeyRequestBody:
-      type: object
+        state:
+          type: string
+          enum:
+            - ACTIVE
+            - DELETED
       required:
         - keyId
-        - environmentId
-      properties:
-        keyId:
-          type: string
-        environmentId:
-          type: string
-    DescribeApiKeyResponse:
-      type: object
-      required:
         - roleId
         - environmentId
-        - state
         - accountId
-        - keyId
+        - apiKey
+        - state
+    ListApiKeysRequest:
+      type: object
       properties:
-        keyId:
-          type: string
         environmentId:
           type: string
-        roleId:
-          $ref: '#/components/schemas/Role'
-        state:
-          $ref: '#/components/schemas/ApiKeyState'
-        accountId:
-          type: string
-        description:
-          type: string
-    DeleteApiKeyRequestBody:
-      type: object
-      required:
-        - keyId
-        - environmentId
-      properties:
-        keyId:
-          type: string
-        environmentId:
-          type: string
-    DeleteApiKeyResponse:
-      type: object
-      properties:
-        error:
-          type: string
-    ListApiKeysRequestBody:
-      type: object
       required:
         - environmentId
-      properties:
-        environmentId:
-          type: string
     ListApiKeysResponse:
       type: object
       properties:
         apiKeys:
           type: array
           items:
-            $ref: '#/components/schemas/ApiKeyListEntry'
-    ApiKeyListEntry:
-      type: object
+            type: object
+            properties:
+              keyId:
+                type: string
+              environmentId:
+                type: string
+            required:
+              - keyId
+              - environmentId
       required:
-        - keyId
-        - environmentId
+        - apiKeys
+    DescribeApiKeyRequest:
+      type: object
       properties:
         keyId:
           type: string
         environmentId:
           type: string
-  responses:
-    UnauthorizedError:
-      description: Access token is missing or invalid
-    InternalServerError:
-      description: Access token is missing or invalid
-      content:
-        text/plain:
-          schema:
-            type: string
-  parameters:
-    AccountId:
-      name: accountId
-      in: path
-      description: The account id
-      required: true
-      schema:
-        type: string
+      required:
+        - keyId
+        - environmentId
+    DescribeApiKeyResponse:
+      type: object
+      properties:
+        keyId:
+          type: string
+        roleId:
+          $ref: '#/components/schemas/RoleId'
+        environmentId:
+          type: string
+        accountId:
+          type: string
+        state:
+          type: string
+          enum:
+            - ACTIVE
+            - DELETED
+        description:
+          type: string
+      required:
+        - keyId
+        - roleId
+        - environmentId
+        - accountId
+        - state
+    DeleteApiKeyRequest:
+      type: object
+      properties:
+        environmentId:
+          type: string
+        keyId:
+          type: string
+      required:
+        - environmentId
+        - keyId
+    DeleteApiKeyResponse:
+      type: object
+      properties:
+        result:
+          anyOf:
+            - type: object
+              properties:
+                ok:
+                  type: boolean
+              required:
+                - ok
+            - type: string
