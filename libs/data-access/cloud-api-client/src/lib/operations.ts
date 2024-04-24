@@ -1,6 +1,10 @@
 import * as cloudApi from './api';
 import apiClient from './client';
 
+type RemovePropsWithNeverType<O> = {
+  [K in keyof O as O[K] extends never ? never : K]: O[K];
+};
+
 type AllParams<
   Operation extends {
     parameters?: { path: unknown };
@@ -8,7 +12,9 @@ type AllParams<
     responses?: unknown;
   }
 > = NonNullable<Operation['parameters']>['path'] &
-  NonNullable<Operation['requestBody']>['content']['application/json'];
+  RemovePropsWithNeverType<
+    NonNullable<Operation['requestBody']>['content']['application/json']
+  >;
 
 export async function getUserIdentity() {
   return apiClient.POST('/GetUserIdentity');
@@ -47,8 +53,6 @@ export async function destroyEnvironment(
     },
   });
 }
-
-type b = AllParams<cloudApi.operations['ListAccounts']>;
 
 export async function createEnvironment(
   params: AllParams<cloudApi.operations['CreateEnvironment']>

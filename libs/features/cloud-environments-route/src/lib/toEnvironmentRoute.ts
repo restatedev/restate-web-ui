@@ -1,11 +1,8 @@
-import type {
-  Account,
-  Environment,
-} from '@restate/data-access/cloud/api-client';
+import type { Environment } from '@restate/data-access/cloud/api-client';
 
 export function toEnvironmentRoute(
   accountId: string,
-  environment: Environment
+  environment: Pick<Environment, 'environmentId'>
 ) {
   return `/accounts/${accountId}/environments/${environment.environmentId}`;
 }
