@@ -13,19 +13,21 @@ import { toEnvironmentRoute } from './toEnvironmentRoute';
 import invariant from 'tiny-invariant';
 import { clientLoader } from './loader';
 import { Suspense } from 'react';
+import { useEnvironmentParam } from './useEnvironmentParam';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface EnvironmentSelectorProps {}
 
 export function EnvironmentSelector(props: EnvironmentSelectorProps) {
-  const { environments, environmentDetailsPromise } =
+  const { environments, environmentsWithDetailsPromises } =
     useLoaderData<typeof clientLoader>();
 
   const currentAccountId = useAccountParam();
+  const currentEnvironmentParam = useEnvironmentParam();
   invariant(currentAccountId, 'Account id is missing');
   const fetcher = useFetcher();
 
-  if (!environmentDetailsPromise) {
+  if (!currentEnvironmentParam) {
     return (
       <Form method="POST">
         <Button type="submit">Create Environment</Button>
@@ -41,30 +43,46 @@ export function EnvironmentSelector(props: EnvironmentSelectorProps) {
         </Button>
       }
     >
-      <Await resolve={environmentDetailsPromise}>
+      <Await resolve={environmentsWithDetailsPromises[currentEnvironmentParam]}>
         {(environmentDetails) => (
           <Dropdown>
             <DropdownTrigger>
               <Button variant="secondary">
-                {environmentDetails.data?.environmentId}:
-                {environmentDetails.data?.status}
+                {environmentDetails?.data?.environmentId}:
+                {environmentDetails?.data?.status}
               </Button>
             </DropdownTrigger>
 
             <DropdownPopover>
               <DropdownMenu
                 selectable
-                {...(environmentDetails.data?.environmentId && {
+                {...(environmentDetails?.data?.environmentId && {
                   selectedItems: [environmentDetails.data?.environmentId],
                 })}
               >
                 {environments.map((environment) => (
                   <DropdownItem
-                    key={environment.environmentId}
                     href={toEnvironmentRoute(currentAccountId, environment)}
+                    key={environment.environmentId}
                     value={environment.environmentId}
                   >
-                    {environment.environmentId}
+                    <Suspense fallback={<p>loading env</p>}>
+                      <Await
+                        resolve={
+                          environmentsWithDetailsPromises[
+                            environment.environmentId
+                          ]
+                        }
+                        errorElement={<p>failed to load</p>}
+                      >
+                        {(environmentDetails) => (
+                          <>
+                            {environmentDetails?.data?.environmentId}:
+                            {environmentDetails?.data?.status}
+                          </>
+                        )}
+                      </Await>
+                    </Suspense>
                   </DropdownItem>
                 ))}
               </DropdownMenu>

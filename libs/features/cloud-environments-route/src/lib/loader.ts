@@ -15,20 +15,21 @@ export const clientLoader = async ({
     accountId,
   });
   const environments = environmentList?.environments ?? [];
+
+  const environmentsWithDetailsPromises = environments
+    .map((environment) => ({
+      [environment.environmentId]: describeEnvironmentWithCache.fetch({
+        environmentId: environment.environmentId,
+        accountId,
+      }),
+    }))
+    .reduce((p, c) => ({ ...p, ...c }), {});
+
   const isEnvironmentIdParamValid = environments.some(
     ({ environmentId }) => params.environmentId === environmentId
   );
 
-  if (isEnvironmentIdParamValid) {
-    invariant(params.environmentId, 'Missing environmentId param');
-    const environmentDetailsPromise = describeEnvironmentWithCache.fetch({
-      accountId,
-      environmentId: params.environmentId,
-    });
-    return defer({ environments, environmentDetailsPromise });
-  }
-
-  if (environments.length > 0) {
+  if (!isEnvironmentIdParamValid && environments.length > 0) {
     return redirect(
       `/accounts/${params.accountId}/environments/${
         environments.at(0)?.environmentId
@@ -36,5 +37,8 @@ export const clientLoader = async ({
     );
   }
 
-  return defer({ environments, environmentDetailsPromise: undefined });
+  return defer({
+    environments,
+    environmentsWithDetailsPromises,
+  });
 };
