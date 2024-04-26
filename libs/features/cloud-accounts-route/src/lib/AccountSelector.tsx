@@ -8,9 +8,11 @@ import {
   DropdownSeparator,
   DropdownTrigger,
 } from '@restate/ui/dropdown';
-import { useAccountParam } from './useAccountParam';
-import { toAccountRoute } from './toAccountRoute';
 import { clientLoader } from './loader';
+import {
+  useAccountParam,
+  toAccountRoute,
+} from '@restate/features/cloud/utils-routes';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface AccountSelectorProps {}

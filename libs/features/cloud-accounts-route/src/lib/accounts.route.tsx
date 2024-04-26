@@ -4,6 +4,7 @@ import { AccountSelector } from './AccountSelector';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import { listAccountsWithCache } from './apis';
 import { clientLoader } from './loader';
+import { useEnvironmentParam } from '@restate/features/cloud/utils-routes';
 
 // TODO: Error handling, Pending UI
 const clientAction = async ({ request, params }: ClientActionFunctionArgs) => {
@@ -13,11 +14,14 @@ const clientAction = async ({ request, params }: ClientActionFunctionArgs) => {
 };
 
 function Component() {
+  const environmentId = useEnvironmentParam();
   return (
     <>
-      <LayoutOutlet zone={LayoutZone.AppBar}>
-        <AccountSelector />
-      </LayoutOutlet>
+      {!environmentId && (
+        <LayoutOutlet zone={LayoutZone.AppBar}>
+          <AccountSelector />
+        </LayoutOutlet>
+      )}
       <Outlet />
     </>
   );

@@ -1,5 +1,4 @@
 import { Await, Form, useFetcher, useLoaderData } from '@remix-run/react';
-import { useAccountParam } from '@restate/features/cloud/accounts-route';
 import { Button } from '@restate/ui/button';
 import {
   Dropdown,
@@ -9,11 +8,14 @@ import {
   DropdownSeparator,
   DropdownTrigger,
 } from '@restate/ui/dropdown';
-import { toEnvironmentRoute } from './toEnvironmentRoute';
 import invariant from 'tiny-invariant';
 import { clientLoader } from './loader';
 import { Suspense } from 'react';
-import { useEnvironmentParam } from './useEnvironmentParam';
+import {
+  useAccountParam,
+  useEnvironmentParam,
+  toEnvironmentRoute,
+} from '@restate/features/cloud/utils-routes';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface EnvironmentSelectorProps {}

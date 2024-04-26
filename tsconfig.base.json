@@ -33,6 +33,9 @@
       "@restate/features/cloud/settings-route": [
         "libs/features/cloud-settings-route/src/index.ts"
       ],
+      "@restate/features/cloud/utils-routes": [
+        "libs/features/utils-routes/src/index.ts"
+      ],
       "@restate/ui/button": ["libs/ui/button/src/index.ts"],
       "@restate/ui/dialog": ["libs/ui/dialog/src/index.ts"],
       "@restate/ui/dropdown": ["libs/ui/dropdown/src/index.ts"],
