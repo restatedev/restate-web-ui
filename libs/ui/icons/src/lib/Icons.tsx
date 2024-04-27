@@ -1,4 +1,11 @@
-import { Check, ChevronDown, ChevronRight, ChevronsUpDown } from 'lucide-react';
+import {
+  Check,
+  ChevronDown,
+  ChevronRight,
+  ChevronsUpDown,
+  Plus,
+  LogOut,
+} from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from 'tailwind-variants';
 import { RestateEnvironment } from './custom-icons/RestateEnvironment';
@@ -9,9 +16,10 @@ export const enum IconName {
   Check = 'Check',
   RestateEnvironment = 'RestateEnvironment',
   ChevronsUpDown = 'ChevronsUpDown',
+  Plus = 'Plus',
+  LogOut = 'LogOut',
 }
 export interface IconsProps {
-  filled?: boolean;
   name: IconName;
   ['aria-hidden']?: boolean;
   className?: string;
@@ -22,28 +30,16 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Check]: Check,
   [IconName.ChevronRight]: ChevronRight,
   [IconName.ChevronsUpDown]: ChevronsUpDown,
+  [IconName.Plus]: Plus,
+  [IconName.LogOut]: LogOut,
   [IconName.RestateEnvironment]: RestateEnvironment,
 };
 
 const styles = tv({
-  base: 'w-[1.5em] h-[1.5em]',
-  variants: {
-    variant: {
-      filled: '',
-      stroked: '',
-    },
-  },
-  defaultVariants: {
-    variant: 'stroked',
-  },
+  base: 'w-[1.5em] h-[1.5em] text-current',
 });
 
-export function Icon({ name, filled, className, ...props }: IconsProps) {
+export function Icon({ name, className, ...props }: IconsProps) {
   const IconComponent = ICONS[name];
-  return (
-    <IconComponent
-      {...props}
-      className={styles({ variant: filled ? 'filled' : 'stroked', className })}
-    />
-  );
+  return <IconComponent {...props} className={styles({ className })} />;
 }

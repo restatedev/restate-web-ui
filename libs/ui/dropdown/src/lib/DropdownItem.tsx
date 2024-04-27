@@ -8,7 +8,7 @@ import {
 import { tv } from 'tailwind-variants';
 
 const dropdownItemStyles = tv({
-  base: 'group flex rounded-md items-center gap-4 cursor-default select-none py-2 pl-3 pr-1 outline outline-0 text-sm forced-color-adjust-none',
+  base: 'group flex rounded-lg items-center gap-4 cursor-default select-none py-2 pl-3 pr-1 outline outline-0 text-sm forced-color-adjust-none',
   variants: {
     isDisabled: {
       false: 'text-gray-900 dark:text-zinc-100',
@@ -27,14 +27,14 @@ function StyledDropdownItem(props: AriaMenuItemProps) {
         props.children,
         (children, { selectionMode, isSelected }) => (
           <>
+            <span className="flex items-center flex-1 gap-2 font-normal truncate group-selected:font-semibold">
+              {children}
+            </span>
             {selectionMode !== 'none' && (
               <span className="flex items-center w-4">
                 {isSelected && <Icon name={IconName.Check} aria-hidden />}
               </span>
             )}
-            <span className="flex items-center flex-1 gap-2 font-normal truncate group-selected:font-semibold">
-              {children}
-            </span>
           </>
         )
       )}
@@ -42,6 +42,7 @@ function StyledDropdownItem(props: AriaMenuItemProps) {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface DropdownItemProps
   extends PropsWithChildren<{
     value?: never;

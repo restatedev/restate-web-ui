@@ -85,7 +85,10 @@ const listAccountsHandler = http.post<
   });
 
   return HttpResponse.json({
-    accounts: accounts.map(({ accountId }) => ({ accountId })),
+    accounts: accounts.map(({ accountId, description }) => ({
+      accountId,
+      description,
+    })),
   });
 });
 

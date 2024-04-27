@@ -63,7 +63,7 @@ export function AccountSelector(props: AccountSelectorProps) {
               >
                 <div>
                   <div>{account.accountId}</div>
-                  <div>{account.description}</div>
+                  <div className="opacity-60">{account.description}</div>
                 </div>
               </DropdownItem>
             ))}
@@ -73,14 +73,24 @@ export function AccountSelector(props: AccountSelectorProps) {
           className="pt-0"
           onSelect={() => fetcher.submit({}, { method: 'POST' })}
         >
-          <DropdownItem>Create Account</DropdownItem>
+          <DropdownItem>
+            <div className="flex items-center gap-2">
+              <Icon name={IconName.Plus} className="opacity-60" />
+              Create Account
+            </div>
+          </DropdownItem>
         </DropdownMenu>
         <DropdownSeparator />
         <DropdownMenu
           className="bg-gray-100/60 dark:bg-zinc-700/60"
           onSelect={() => logOut()}
         >
-          <DropdownItem>Log out</DropdownItem>
+          <DropdownItem>
+            <div className="flex items-center gap-2">
+              <Icon name={IconName.LogOut} className="opacity-60" />
+              Log Out
+            </div>
+          </DropdownItem>
         </DropdownMenu>
       </DropdownPopover>
     </Dropdown>

@@ -6,7 +6,7 @@ import { PropsWithChildren } from 'react';
 import { tv } from 'tailwind-variants';
 
 const styles = tv({
-  base: 'p-1 outline outline-0 max-h-[inherit] overflow-auto [clip-path:inset(0_0_0_0_round_.325rem)]',
+  base: 'p-1 outline outline-0 max-h-[inherit] overflow-auto [clip-path:inset(0_0_0_0_round_.75rem)]',
 });
 function StyledDropdownMenu<T extends object>({
   className,
