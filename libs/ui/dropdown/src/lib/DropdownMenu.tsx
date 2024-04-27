@@ -3,14 +3,16 @@ import {
   MenuProps as AriaMenuProps,
 } from 'react-aria-components';
 import { PropsWithChildren } from 'react';
+import { tv } from 'tailwind-variants';
 
-function StyledDropdownMenu<T extends object>(props: AriaMenuProps<T>) {
-  return (
-    <AriaMenu
-      {...props}
-      className="p-1 outline outline-0 max-h-[inherit] overflow-auto [clip-path:inset(0_0_0_0_round_.75rem)]"
-    />
-  );
+const styles = tv({
+  base: 'p-1 outline outline-0 max-h-[inherit] overflow-auto [clip-path:inset(0_0_0_0_round_.325rem)]',
+});
+function StyledDropdownMenu<T extends object>({
+  className,
+  ...props
+}: AriaMenuProps<T>) {
+  return <AriaMenu {...props} className={styles({ className })} />;
 }
 
 interface DropdownMenuProps {
@@ -20,6 +22,7 @@ interface DropdownMenuProps {
   selectedItems?: never;
   multiple?: never;
   onSelect?: (key: string) => void;
+  className?: string;
 }
 
 interface SelectableDropdownMenuProps
@@ -35,6 +38,7 @@ export function DropdownMenu({
   selectedItems,
   selectable,
   onSelect,
+  className,
   ...props
 }: PropsWithChildren<DropdownMenuProps | SelectableDropdownMenuProps>) {
   if (selectable) {
@@ -45,6 +49,7 @@ export function DropdownMenu({
         disabledKeys={disabledItems}
         selectedKeys={selectedItems}
         onAction={(key) => onSelect?.(String(key))}
+        className={className}
       />
     );
   } else {
@@ -53,6 +58,7 @@ export function DropdownMenu({
         {...props}
         disabledKeys={disabledItems}
         onAction={(key) => onSelect?.(String(key))}
+        className={className}
       />
     );
   }

@@ -5,6 +5,7 @@ import {
   DropdownItem,
   DropdownMenu,
   DropdownPopover,
+  DropdownSection,
   DropdownSeparator,
   DropdownTrigger,
 } from '@restate/ui/dropdown';
@@ -13,6 +14,8 @@ import {
   useAccountParam,
   toAccountRoute,
 } from '@restate/features/cloud/utils-routes';
+import { Icon, IconName } from '@restate/ui/icons';
+import { logOut } from '@restate/util/auth';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface AccountSelectorProps {}
@@ -37,23 +40,47 @@ export function AccountSelector(props: AccountSelectorProps) {
   return (
     <Dropdown>
       <DropdownTrigger>
-        <Button variant="secondary">{currentAccount.at(0)}</Button>
+        <Button
+          variant="secondary"
+          className="flex gap-1 items-center backdrop-blur-xl backdrop-saturate-150 bg-white/90 h-12 px-2"
+        >
+          <Icon name={IconName.RestateEnvironment} className="text-xl" />
+          <Icon name={IconName.ChevronsUpDown} className="text-gray-400" />
+        </Button>
       </DropdownTrigger>
       <DropdownPopover>
-        <DropdownMenu selectable selectedItems={currentAccount}>
-          {accounts.map((account) => (
-            <DropdownItem
-              key={account.accountId}
-              href={toAccountRoute(account)}
-              value={account.accountId}
-            >
-              {account.accountId}
-            </DropdownItem>
-          ))}
+        <DropdownMenu
+          selectable
+          selectedItems={currentAccount}
+          className="pb-0"
+        >
+          <DropdownSection title="Switch accounts">
+            {accounts.map((account) => (
+              <DropdownItem
+                key={account.accountId}
+                href={toAccountRoute(account)}
+                value={account.accountId}
+              >
+                <div>
+                  <div>{account.accountId}</div>
+                  <div>{account.description}</div>
+                </div>
+              </DropdownItem>
+            ))}
+          </DropdownSection>
+        </DropdownMenu>
+        <DropdownMenu
+          className="pt-0"
+          onSelect={() => fetcher.submit({}, { method: 'POST' })}
+        >
+          <DropdownItem>Create Account</DropdownItem>
         </DropdownMenu>
         <DropdownSeparator />
-        <DropdownMenu onSelect={() => fetcher.submit({}, { method: 'POST' })}>
-          <DropdownItem>Create Account</DropdownItem>
+        <DropdownMenu
+          className="bg-gray-100/60 dark:bg-zinc-700/60"
+          onSelect={() => logOut()}
+        >
+          <DropdownItem>Log out</DropdownItem>
         </DropdownMenu>
       </DropdownPopover>
     </Dropdown>

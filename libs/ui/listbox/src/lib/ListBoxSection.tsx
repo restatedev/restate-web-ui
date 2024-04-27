@@ -1,7 +1,7 @@
 import type { PropsWithChildren } from 'react';
 import { Header, Section } from 'react-aria-components';
 
-export interface ListBoxSectionProps extends PropsWithChildren<{}> {
+export interface ListBoxSectionProps extends PropsWithChildren<object> {
   title?: string;
 }
 

@@ -8,7 +8,7 @@ import {
 import { tv } from 'tailwind-variants';
 
 const dropdownItemStyles = tv({
-  base: 'group flex items-center gap-4 cursor-default select-none py-2 pl-3 pr-1 rounded-lg outline outline-0 text-sm forced-color-adjust-none',
+  base: 'group flex rounded-md items-center gap-4 cursor-default select-none py-2 pl-3 pr-1 outline outline-0 text-sm forced-color-adjust-none',
   variants: {
     isDisabled: {
       false: 'text-gray-900 dark:text-zinc-100',

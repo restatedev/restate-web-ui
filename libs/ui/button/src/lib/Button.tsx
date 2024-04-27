@@ -14,7 +14,7 @@ export interface ButtonProps {
   className?: string;
 }
 
-const button = tv({
+const styles = tv({
   extend: focusRing,
   base: 'px-5 py-2 text-sm text-center transition rounded-lg border border-black/10 dark:border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)] dark:shadow-none cursor-default',
   variants: {
@@ -46,7 +46,7 @@ export function Button({
       isDisabled={disabled}
       onPress={onClick}
       className={composeRenderProps(props.className, (className, renderProps) =>
-        button({ ...renderProps, variant, className })
+        styles({ ...renderProps, variant, className })
       )}
     />
   );

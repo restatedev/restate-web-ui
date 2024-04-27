@@ -11,7 +11,7 @@ export function StyledListBox<T extends object>(
     <AriaListBox
       {...props}
       className={
-        'outline-0 p-1 border border-gray-300 dark:border-zinc-600 rounded-lg'
+        'outline-0 p-1 border border-gray-300 dark:border-zinc-600 rounded-md'
       }
     />
   );
