@@ -1,4 +1,9 @@
-import { ClientActionFunctionArgs, Outlet, redirect } from '@remix-run/react';
+import {
+  ClientActionFunctionArgs,
+  Outlet,
+  redirect,
+  useLoaderData,
+} from '@remix-run/react';
 import { createAccount } from '@restate/data-access/cloud/api-client';
 import { AccountSelector } from './AccountSelector';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
@@ -15,11 +20,19 @@ const clientAction = async ({ request, params }: ClientActionFunctionArgs) => {
 
 function Component() {
   const environmentId = useEnvironmentParam();
+  const { accounts } = useLoaderData<typeof clientLoader>();
+
+  if (environmentId) {
+    return <Outlet />;
+  }
+
   return (
     <>
       {!environmentId && (
         <LayoutOutlet zone={LayoutZone.AppBar}>
-          <AccountSelector />
+          <div className="shadow-sm rounded-xl">
+            <AccountSelector accounts={accounts} />
+          </div>
         </LayoutOutlet>
       )}
       <Outlet />

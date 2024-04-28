@@ -11,12 +11,12 @@ export const cloudApiDb = factory({
   account: {
     accountId: primaryKey(() => `acc_${faker.string.nanoid(23)}`),
     users: manyOf('user'),
-    description: () => faker.internet.domainWord(),
+    description: () => faker.lorem.words(4),
   },
   environment: {
     environmentId: primaryKey(() => `env_${faker.string.nanoid(27)}`),
     account: oneOf('account'),
-    description: () => faker.commerce.product(),
+    description: () => faker.lorem.words(4),
     status: () =>
       faker.helpers.arrayElement([
         'PENDING',

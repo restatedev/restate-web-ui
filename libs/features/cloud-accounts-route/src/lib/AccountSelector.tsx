@@ -1,4 +1,4 @@
-import { Form, useFetcher, useLoaderData } from '@remix-run/react';
+import { Form, useFetcher } from '@remix-run/react';
 import { Button } from '@restate/ui/button';
 import {
   Dropdown,
@@ -9,20 +9,19 @@ import {
   DropdownSeparator,
   DropdownTrigger,
 } from '@restate/ui/dropdown';
-import { clientLoader } from './loader';
 import {
   useAccountParam,
   toAccountRoute,
 } from '@restate/features/cloud/utils-routes';
 import { Icon, IconName } from '@restate/ui/icons';
 import { logOut } from '@restate/util/auth';
+import { Account } from '@restate/data-access/cloud/api-client';
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface AccountSelectorProps {}
+interface AccountSelectorProps {
+  accounts: Account[];
+}
 
-export function AccountSelector(props: AccountSelectorProps) {
-  const { accounts } = useLoaderData<typeof clientLoader>();
-
+export function AccountSelector({ accounts }: AccountSelectorProps) {
   const currentAccountId = useAccountParam();
   const currentAccount = accounts
     .filter(({ accountId }) => accountId === currentAccountId)
@@ -42,7 +41,7 @@ export function AccountSelector(props: AccountSelectorProps) {
       <DropdownTrigger>
         <Button
           variant="secondary"
-          className="flex gap-1 items-center backdrop-blur-xl backdrop-saturate-150 bg-white/90 h-12 px-2"
+          className="flex gap-3 items-center bg-white h-14 px-4 pr-2"
         >
           <Icon name={IconName.RestateEnvironment} className="text-xl" />
           <Icon name={IconName.ChevronsUpDown} className="text-gray-400" />
@@ -71,7 +70,9 @@ export function AccountSelector(props: AccountSelectorProps) {
         </DropdownMenu>
         <DropdownMenu
           className="pt-0"
-          onSelect={() => fetcher.submit({}, { method: 'POST' })}
+          onSelect={() =>
+            fetcher.submit({}, { action: '/accounts', method: 'POST' })
+          }
         >
           <DropdownItem>
             <div className="flex items-center gap-2">
