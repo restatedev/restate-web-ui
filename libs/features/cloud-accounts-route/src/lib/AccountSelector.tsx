@@ -48,12 +48,8 @@ export function AccountSelector({ accounts }: AccountSelectorProps) {
         </Button>
       </DropdownTrigger>
       <DropdownPopover>
-        <DropdownMenu
-          selectable
-          selectedItems={currentAccount}
-          className="pb-0"
-        >
-          <DropdownSection title="Switch accounts">
+        <DropdownSection title="Switch accounts">
+          <DropdownMenu selectable selectedItems={currentAccount}>
             {accounts.map((account) => (
               <DropdownItem
                 key={account.accountId}
@@ -66,30 +62,25 @@ export function AccountSelector({ accounts }: AccountSelectorProps) {
                 </div>
               </DropdownItem>
             ))}
-          </DropdownSection>
-        </DropdownMenu>
+          </DropdownMenu>
+        </DropdownSection>
         <DropdownMenu
-          className="pt-0"
           onSelect={() =>
             fetcher.submit({}, { action: '/accounts', method: 'POST' })
           }
         >
           <DropdownItem>
             <div className="flex items-center gap-2">
-              <Icon name={IconName.Plus} className="opacity-60" />
-              Create Account
+              <Icon name={IconName.Plus} className="opacity-80" />
+              Create account
             </div>
           </DropdownItem>
         </DropdownMenu>
-        <DropdownSeparator />
-        <DropdownMenu
-          className="bg-gray-100/60 dark:bg-zinc-700/60"
-          onSelect={() => logOut()}
-        >
-          <DropdownItem>
+        <DropdownMenu onSelect={() => logOut()}>
+          <DropdownItem destructive>
             <div className="flex items-center gap-2">
-              <Icon name={IconName.LogOut} className="opacity-60" />
-              Log Out
+              <Icon name={IconName.LogOut} className="opacity-80" />
+              Log out
             </div>
           </DropdownItem>
         </DropdownMenu>

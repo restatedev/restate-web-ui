@@ -41,7 +41,7 @@ function Component() {
   return (
     <>
       <LayoutOutlet zone={LayoutZone.AppBar}>
-        <div className="grid items-center grid-cols-2 grid-rows-1 ">
+        <div className="grid items-center auto-cols-auto grid-rows-1 ">
           {accountsData?.accounts && (
             <div className="col-start-1 col-end-2 row-start-1 z-10">
               <AccountSelector accounts={accountsData.accounts} />

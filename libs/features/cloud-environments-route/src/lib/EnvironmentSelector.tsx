@@ -6,7 +6,6 @@ import {
   DropdownMenu,
   DropdownPopover,
   DropdownSection,
-  DropdownSeparator,
   DropdownTrigger,
 } from '@restate/ui/dropdown';
 import invariant from 'tiny-invariant';
@@ -18,6 +17,7 @@ import {
   toEnvironmentRoute,
 } from '@restate/features/cloud/utils-routes';
 import { Icon, IconName } from '@restate/ui/icons';
+import { EnvironmentStatus, MiniEnvironmentStatus } from './EnvironmentStatus';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface EnvironmentSelectorProps {}
@@ -52,12 +52,19 @@ export function EnvironmentSelector(props: EnvironmentSelectorProps) {
             <DropdownTrigger>
               <Button
                 variant="secondary"
-                className="flex gap-3 items-center backdrop-blur-xl backdrop-saturate-150 h-14 pr-2 pl-28 shadow-sm bg-gray-50/90"
+                className="flex gap-4 items-center backdrop-blur-xl backdrop-saturate-150 h-14 pr-2 pl-24 shadow-sm bg-gray-50/90"
               >
                 <div className="flex flex-col items-start">
                   <div>{environmentDetails?.data?.environmentId}:</div>
-                  <div className="opacity-60  text-sm">
-                    {environmentDetails?.data?.description}
+                  <div className="inline-flex gap-2 items-center">
+                    {environmentDetails?.data?.status && (
+                      <MiniEnvironmentStatus
+                        status={environmentDetails.data.status}
+                      />
+                    )}
+                    <span className="opacity-60">
+                      {environmentDetails?.data?.description}
+                    </span>
                   </div>
                 </div>
                 <Icon
@@ -68,14 +75,13 @@ export function EnvironmentSelector(props: EnvironmentSelectorProps) {
             </DropdownTrigger>
 
             <DropdownPopover>
-              <DropdownMenu
-                className="pb-0"
-                selectable
-                {...(environmentDetails?.data?.environmentId && {
-                  selectedItems: [environmentDetails.data?.environmentId],
-                })}
-              >
-                <DropdownSection title="Switch environment">
+              <DropdownSection title="Switch environment">
+                <DropdownMenu
+                  selectable
+                  {...(environmentDetails?.data?.environmentId && {
+                    selectedItems: [environmentDetails.data?.environmentId],
+                  })}
+                >
                   {environments.map((environment) => (
                     <DropdownItem
                       href={toEnvironmentRoute(currentAccountId, environment)}
@@ -92,12 +98,19 @@ export function EnvironmentSelector(props: EnvironmentSelectorProps) {
                           errorElement={<p>failed to load</p>}
                         >
                           {(environmentDetails) => (
-                            <div>
+                            <div className="flex flex-col">
                               <div>
                                 {environmentDetails?.data?.environmentId}:
                               </div>
-                              <div className="opacity-60">
-                                {environmentDetails?.data?.description}
+                              <div className="inline-flex gap-2 items-center pt-2">
+                                {environmentDetails?.data?.status && (
+                                  <EnvironmentStatus
+                                    status={environmentDetails.data.status}
+                                  />
+                                )}
+                                <span className="opacity-60">
+                                  {environmentDetails?.data?.description}
+                                </span>
                               </div>
                             </div>
                           )}
@@ -105,11 +118,9 @@ export function EnvironmentSelector(props: EnvironmentSelectorProps) {
                       </Suspense>
                     </DropdownItem>
                   ))}
-                </DropdownSection>
-              </DropdownMenu>
-              <DropdownSeparator />
+                </DropdownMenu>
+              </DropdownSection>
               <DropdownMenu
-                className="bg-gray-100/60 dark:bg-zinc-700/60"
                 onSelect={() =>
                   fetcher.submit(
                     {},
@@ -122,8 +133,26 @@ export function EnvironmentSelector(props: EnvironmentSelectorProps) {
               >
                 <DropdownItem>
                   <div className="flex items-center gap-2">
-                    <Icon name={IconName.Plus} className="opacity-60" />
-                    Create Environment
+                    <Icon name={IconName.Plus} className="opacity-80" />
+                    Create environment
+                  </div>
+                </DropdownItem>
+              </DropdownMenu>
+              <DropdownMenu
+                onSelect={() =>
+                  fetcher.submit(
+                    {},
+                    {
+                      method: 'POST',
+                      action: `/accounts/${currentAccountId}/environments`,
+                    }
+                  )
+                }
+              >
+                <DropdownItem destructive>
+                  <div className="flex items-center gap-2">
+                    <Icon name={IconName.Trash} className="opacity-80" />
+                    Delete environment
                   </div>
                 </DropdownItem>
               </DropdownMenu>

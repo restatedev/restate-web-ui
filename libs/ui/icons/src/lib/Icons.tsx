@@ -5,6 +5,12 @@ import {
   ChevronsUpDown,
   Plus,
   LogOut,
+  Squircle,
+  Trash,
+  Circle,
+  CircleDashed,
+  CircleDotDashed,
+  TriangleAlert,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from 'tailwind-variants';
@@ -18,6 +24,12 @@ export const enum IconName {
   ChevronsUpDown = 'ChevronsUpDown',
   Plus = 'Plus',
   LogOut = 'LogOut',
+  Squircle = 'Squircle',
+  Trash = 'Trash',
+  Circle = 'Circle',
+  CircleDashed = 'CircleDashed',
+  TriangleAlert = 'TriangleAlert',
+  CircleDotDashed = 'CircleDotDashed',
 }
 export interface IconsProps {
   name: IconName;
@@ -33,6 +45,12 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Plus]: Plus,
   [IconName.LogOut]: LogOut,
   [IconName.RestateEnvironment]: RestateEnvironment,
+  [IconName.Squircle]: Squircle,
+  [IconName.Trash]: Trash,
+  [IconName.Circle]: Circle,
+  [IconName.CircleDashed]: CircleDashed,
+  [IconName.TriangleAlert]: TriangleAlert,
+  [IconName.CircleDotDashed]: CircleDotDashed,
 };
 
 const styles = tv({

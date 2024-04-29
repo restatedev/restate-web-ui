@@ -24,9 +24,14 @@ const ZONE_ELEMENT: Record<LayoutZone, ElementType> = {
 };
 
 const ZONE_PROPS: Record<LayoutZone, { id: string; className?: string }> = {
-  [LayoutZone.AppBar]: { id: ZONE_IDS[LayoutZone.AppBar] },
+  [LayoutZone.AppBar]: {
+    id: ZONE_IDS[LayoutZone.AppBar],
+  },
   [LayoutZone.Nav]: { id: ZONE_IDS[LayoutZone.Nav] },
-  [LayoutZone.Content]: { id: ZONE_IDS[LayoutZone.Content] },
+  [LayoutZone.Content]: {
+    id: ZONE_IDS[LayoutZone.Content],
+    className: 'mx-auto max-w-7xl py-6 sm:px-6 lg:px-8',
+  },
 };
 
 const ALL_ZONES = Object.keys(ZONE_IDS) as LayoutZone[];

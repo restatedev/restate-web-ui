@@ -12,6 +12,7 @@ module.exports = withTV({
     ),
     ...createGlobPatternsForDependencies(__dirname),
   ],
+  darkMode: 'selector',
   theme: {
     extend: {
       fontFamily: {

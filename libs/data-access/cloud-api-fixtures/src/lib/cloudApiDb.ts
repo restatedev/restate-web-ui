@@ -120,13 +120,14 @@ if (persistedDbData) {
   const account = cloudApiDb.account.create({
     users,
   });
-  const environments = Array(2)
-    .fill(null)
-    .map(() =>
-      cloudApiDb.environment.create({
-        account,
-      })
-    );
+  const environments = (
+    ['PENDING', 'ACTIVE', 'FAILED', 'DELETED'] as const
+  ).map((status) =>
+    cloudApiDb.environment.create({
+      account,
+      status,
+    })
+  );
   environments.forEach((environment) => {
     cloudApiDb.apiKey.create({
       environment,

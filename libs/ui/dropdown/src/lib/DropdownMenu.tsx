@@ -6,16 +6,18 @@ import { PropsWithChildren } from 'react';
 import { tv } from 'tailwind-variants';
 
 const styles = tv({
-  base: 'p-1 outline outline-0 max-h-[inherit] overflow-auto [clip-path:inset(0_0_0_0_round_.75rem)]',
+  base: 'p-1 outline outline-0 max-h-[inherit] overflow-auto [clip-path:inset(0_0_0_0_round_.75rem)] [&~.dropdown-menu]:pt-0',
 });
 function StyledDropdownMenu<T extends object>({
   className,
   ...props
 }: AriaMenuProps<T>) {
-  return <AriaMenu {...props} className={styles({ className })} />;
+  return (
+    <AriaMenu {...props} className={`${styles({ className })} dropdown-menu`} />
+  );
 }
 
-interface DropdownMenuProps {
+export interface DropdownMenuProps {
   disabledItems?: Iterable<string>;
   ['aria-label']?: string;
   selectable?: never;
@@ -25,7 +27,7 @@ interface DropdownMenuProps {
   className?: string;
 }
 
-interface SelectableDropdownMenuProps
+export interface SelectableDropdownMenuProps
   extends Omit<DropdownMenuProps, 'selectable' | 'selectedItems' | 'multiple'> {
   multiple?: boolean;
   selectedItems?: Iterable<string>;

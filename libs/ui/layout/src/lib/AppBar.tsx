@@ -7,7 +7,7 @@ export function AppBar(props: AppBarProps) {
     <header
       {...props}
       className={
-        'sticky top-0 z-50 flex flex-none flex-wrap items-center justify-between px-4 py-5  sm:px-6 lg:px-8'
+        'mx-auto max-w-7xl sticky top-0 z-50 flex flex-none flex-wrap items-center justify-between px-4 py-5  sm:px-6 lg:px-8'
       }
     />
   );
