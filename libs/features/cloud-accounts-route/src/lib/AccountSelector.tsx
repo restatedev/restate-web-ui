@@ -15,7 +15,6 @@ import {
 import { Icon, IconName } from '@restate/ui/icons';
 import { logOut } from '@restate/util/auth';
 import { Account } from '@restate/data-access/cloud/api-client';
-import { Dialog } from '@restate/ui/dialog';
 import { CreateAccount } from './CreateAccount';
 import { CREATE_ACCOUNT_PARAM_NAME } from './constants';
 
@@ -28,9 +27,7 @@ export function AccountSelector({ accounts }: AccountSelectorProps) {
   const currentAccount = accounts
     .filter(({ accountId }) => accountId === currentAccountId)
     .map(({ accountId }) => accountId);
-  const [searchParams, setSearchParams] = useSearchParams();
-  const shouldShowCreateAccount =
-    searchParams.get(CREATE_ACCOUNT_PARAM_NAME) === 'true';
+  const [, setSearchParams] = useSearchParams();
 
   if (currentAccount.length === 0) {
     return (
@@ -95,9 +92,7 @@ export function AccountSelector({ accounts }: AccountSelectorProps) {
           </DropdownMenu>
         </DropdownPopover>
       </Dropdown>
-      <Dialog open={shouldShowCreateAccount}>
-        <CreateAccount />
-      </Dialog>
+      <CreateAccount />
     </>
   );
 }
