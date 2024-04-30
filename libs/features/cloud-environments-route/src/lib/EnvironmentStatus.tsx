@@ -10,8 +10,9 @@ const miniStyles = tv({
   base: '',
   slots: {
     container: 'relative w-3 h-3 text-xs',
-    icon: 'absolute inset-0 w-3 h-3 stroke-0 fill-current',
-    animation: 'absolute inset-0 w-3 h-3 stroke-[4px] fill-current opacity-20',
+    icon: 'absolute left-0 top-[1px] w-3 h-3 stroke-0 fill-current',
+    animation:
+      'absolute inset-left-0 top-[1px] w-3 h-3 stroke-[4px] fill-current opacity-20',
   },
   variants: {
     status: {
@@ -61,7 +62,7 @@ const styles = tv({
         icon: 'text-yellow-500 stroke-[4px]',
       },
       ACTIVE: {
-        container: 'bg-green-50 text-yellow-700 ring-green-600/20',
+        container: 'bg-green-50 text-green-700 ring-green-600/20',
         icon: 'fill-green-500',
       },
       FAILED: {

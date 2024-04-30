@@ -30,7 +30,7 @@ const ZONE_PROPS: Record<LayoutZone, { id: string; className?: string }> = {
   [LayoutZone.Nav]: { id: ZONE_IDS[LayoutZone.Nav] },
   [LayoutZone.Content]: {
     id: ZONE_IDS[LayoutZone.Content],
-    className: 'mx-auto max-w-7xl py-6 sm:px-6 lg:px-8',
+    className: 'pt-14',
   },
 };
 
@@ -38,7 +38,7 @@ const ALL_ZONES = Object.keys(ZONE_IDS) as LayoutZone[];
 
 export function LayoutProvider({ children }: PropsWithChildren<LayoutProps>) {
   return (
-    <div className="flex w-full flex-col min-h-full">
+    <div className="flex w-full flex-col min-h-full mx-auto max-w-7xl py-3 sm:py-6 px-3 sm:px-6 lg:px-8">
       {ALL_ZONES.map((zone) =>
         createElement(ZONE_ELEMENT[zone], { ...ZONE_PROPS[zone], key: zone })
       )}

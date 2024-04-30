@@ -25,6 +25,7 @@ export interface DropdownMenuProps {
   multiple?: never;
   onSelect?: (key: string) => void;
   className?: string;
+  autoFocus?: boolean;
 }
 
 export interface SelectableDropdownMenuProps

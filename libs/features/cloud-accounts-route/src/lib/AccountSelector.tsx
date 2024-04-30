@@ -6,7 +6,6 @@ import {
   DropdownMenu,
   DropdownPopover,
   DropdownSection,
-  DropdownSeparator,
   DropdownTrigger,
 } from '@restate/ui/dropdown';
 import {
@@ -41,7 +40,7 @@ export function AccountSelector({ accounts }: AccountSelectorProps) {
       <DropdownTrigger>
         <Button
           variant="secondary"
-          className="flex gap-3 items-center bg-white h-14 px-4 pr-2"
+          className="flex gap-2 items-center bg-white pl-3 pr-2 shadow-sm h-full"
         >
           <Icon name={IconName.RestateEnvironment} className="text-xl" />
           <Icon name={IconName.ChevronsUpDown} className="text-gray-400" />
@@ -65,6 +64,7 @@ export function AccountSelector({ accounts }: AccountSelectorProps) {
           </DropdownMenu>
         </DropdownSection>
         <DropdownMenu
+          autoFocus={false}
           onSelect={() =>
             fetcher.submit({}, { action: '/accounts', method: 'POST' })
           }
@@ -76,7 +76,7 @@ export function AccountSelector({ accounts }: AccountSelectorProps) {
             </div>
           </DropdownItem>
         </DropdownMenu>
-        <DropdownMenu onSelect={() => logOut()}>
+        <DropdownMenu autoFocus={false} onSelect={() => logOut()}>
           <DropdownItem destructive>
             <div className="flex items-center gap-2">
               <Icon name={IconName.LogOut} className="opacity-80" />

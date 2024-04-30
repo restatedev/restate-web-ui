@@ -41,7 +41,7 @@ export function EnvironmentSelector(props: EnvironmentSelectorProps) {
   return (
     <Suspense
       fallback={
-        <Button variant="secondary" disabled className="pl-28 shadow-sm">
+        <Button variant="secondary" disabled>
           loading
         </Button>
       }
@@ -52,7 +52,7 @@ export function EnvironmentSelector(props: EnvironmentSelectorProps) {
             <DropdownTrigger>
               <Button
                 variant="secondary"
-                className="flex gap-4 items-center backdrop-blur-xl backdrop-saturate-150 h-14 pr-2 pl-24 shadow-sm bg-gray-50/90"
+                className="flex items-center gap-2 px-2 py-1 bg-transparent border-none "
               >
                 <div className="flex flex-col items-start">
                   <div>{environmentDetails?.data?.environmentId}:</div>
@@ -121,6 +121,7 @@ export function EnvironmentSelector(props: EnvironmentSelectorProps) {
                 </DropdownMenu>
               </DropdownSection>
               <DropdownMenu
+                autoFocus={false}
                 onSelect={() =>
                   fetcher.submit(
                     {},
@@ -139,6 +140,7 @@ export function EnvironmentSelector(props: EnvironmentSelectorProps) {
                 </DropdownItem>
               </DropdownMenu>
               <DropdownMenu
+                autoFocus={false}
                 onSelect={() =>
                   fetcher.submit(
                     {},

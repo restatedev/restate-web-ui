@@ -41,15 +41,11 @@ function Component() {
   return (
     <>
       <LayoutOutlet zone={LayoutZone.AppBar}>
-        <div className="grid items-center auto-cols-auto grid-rows-1 ">
+        <div className="flex items-center gap-2">
           {accountsData?.accounts && (
-            <div className="col-start-1 col-end-2 row-start-1 z-10">
-              <AccountSelector accounts={accountsData.accounts} />
-            </div>
+            <AccountSelector accounts={accountsData.accounts} />
           )}
-          <div className="col-start-1 col-end-3 row-start-1">
-            <EnvironmentSelector />
-          </div>
+          <EnvironmentSelector />
         </div>
       </LayoutOutlet>
       <Outlet />
