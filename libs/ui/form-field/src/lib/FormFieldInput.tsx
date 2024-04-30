@@ -25,6 +25,7 @@ interface InputProps
     | 'autoComplete'
     | 'validate'
     | 'pattern'
+    | 'maxLength'
   > {
   className?: string;
   required?: boolean;

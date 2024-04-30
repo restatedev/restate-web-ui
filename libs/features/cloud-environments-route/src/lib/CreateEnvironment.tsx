@@ -50,8 +50,8 @@ export function CreateEnvironment() {
             Create Environment
           </h3>
           <p className="text-sm text-gray-500">
-            Create a new account by providing a description to set up your
-            dedicated space within restate Cloud platform.
+            Please provide a brief description for your new restate Cloud
+            environment
           </p>
           <fetcher.Form
             id={formId}
@@ -64,6 +64,7 @@ export function CreateEnvironment() {
               name="description"
               className="mt-2"
               placeholder="Description"
+              maxLength={100}
             />
           </fetcher.Form>
         </div>

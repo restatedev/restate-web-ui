@@ -48,8 +48,8 @@ export function CreateAccount() {
             Create Account
           </h3>
           <p className="text-sm text-gray-500">
-            Create a new account by providing a description to set up your
-            dedicated space within restate Cloud platform.
+            Please give a short description to initialize your new account on
+            the restate Cloud platform.
           </p>
           <fetcher.Form id={formId} method="POST" action="/accounts">
             <FormFieldInput
@@ -58,6 +58,7 @@ export function CreateAccount() {
               name="description"
               className="mt-2"
               placeholder="Description"
+              maxLength={100}
             />
           </fetcher.Form>
         </div>
