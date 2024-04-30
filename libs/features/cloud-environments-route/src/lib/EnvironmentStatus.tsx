@@ -52,8 +52,8 @@ const styles = tv({
   base: '',
   slots: {
     container:
-      'inline-flex gap-1 items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset',
-    icon: 'w-3 h-3 text-xs  stroke-0 fill-current',
+      'inline-flex gap-1 items-center rounded-md px-2 py-0 text-2xs font-medium ring-1 ring-inset',
+    icon: 'w-3 h-3 text-xs stroke-0 fill-current',
   },
   variants: {
     status: {

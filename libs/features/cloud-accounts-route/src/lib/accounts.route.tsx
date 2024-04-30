@@ -14,7 +14,12 @@ import { useEnvironmentParam } from '@restate/features/cloud/utils-routes';
 // TODO: Error handling, Pending UI
 const clientAction = async ({ request, params }: ClientActionFunctionArgs) => {
   listAccountsWithCache.invalidate();
-  const { data } = await createAccount({});
+  const body = await request.formData();
+  // TODO: fix typing issue
+  const description = body.get('description') as string;
+  const { data } = await createAccount({
+    description,
+  });
   return redirect(`/accounts/${data?.accountId}/environments`);
 };
 

@@ -12,7 +12,7 @@ import {
   listApiKeys,
   describeApiKey,
 } from '@restate/data-access/cloud/api-client';
-import { Button } from '@restate/ui/button';
+import { SubmitButton } from '@restate/ui/button';
 import { FormFieldLabel } from '@restate/ui/form-field';
 import { Radio, RadioGroup } from '@restate/ui/radio-group';
 import { Suspense } from 'react';
@@ -108,9 +108,9 @@ function Component() {
             Resolve Awakeable Access
           </Radio>
         </RadioGroup>
-        <Button type="submit" name="action" value="createApiKey">
+        <SubmitButton name="action" value="createApiKey">
           Create API Key
-        </Button>
+        </SubmitButton>
       </Form>
     </div>
   );

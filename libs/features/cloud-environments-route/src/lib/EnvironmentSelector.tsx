@@ -1,5 +1,5 @@
 import { Await, Form, useFetcher, useLoaderData } from '@remix-run/react';
-import { Button } from '@restate/ui/button';
+import { Button, SubmitButton } from '@restate/ui/button';
 import {
   Dropdown,
   DropdownItem,
@@ -33,7 +33,7 @@ export function EnvironmentSelector(props: EnvironmentSelectorProps) {
   if (!currentEnvironmentParam) {
     return (
       <Form method="POST">
-        <Button type="submit">Create Environment</Button>
+        <SubmitButton>Create Environment</SubmitButton>
       </Form>
     );
   }
@@ -52,19 +52,23 @@ export function EnvironmentSelector(props: EnvironmentSelectorProps) {
             <DropdownTrigger>
               <Button
                 variant="secondary"
-                className="flex items-center gap-2 px-2 py-1 bg-transparent border-none "
+                className="flex items-center gap-2 px-2 py-1 bg-transparent border-none shadow-none"
               >
                 <div className="flex flex-col items-start">
-                  <div>{environmentDetails?.data?.environmentId}:</div>
-                  <div className="inline-flex gap-2 items-center">
+                  <div className="grid gap-x-2 auto-cols-auto items-center justify-items-start text-start">
                     {environmentDetails?.data?.status && (
-                      <MiniEnvironmentStatus
-                        status={environmentDetails.data.status}
-                      />
+                      <div className="row-start-1">
+                        <MiniEnvironmentStatus
+                          status={environmentDetails.data.status}
+                        />
+                      </div>
                     )}
-                    <span className="opacity-60">
+                    <div className="truncate row-start-1 w-full">
+                      {environmentDetails?.data?.environmentId}
+                    </div>
+                    <div className="truncate opacity-60 col-start-2 row-start-2 w-full">
                       {environmentDetails?.data?.description}
-                    </span>
+                    </div>
                   </div>
                 </div>
                 <Icon
@@ -75,7 +79,7 @@ export function EnvironmentSelector(props: EnvironmentSelectorProps) {
             </DropdownTrigger>
 
             <DropdownPopover>
-              <DropdownSection title="Switch environment">
+              <DropdownSection title="Switch environment" className="max-w-xl">
                 <DropdownMenu
                   selectable
                   {...(environmentDetails?.data?.environmentId && {
@@ -98,9 +102,9 @@ export function EnvironmentSelector(props: EnvironmentSelectorProps) {
                           errorElement={<p>failed to load</p>}
                         >
                           {(environmentDetails) => (
-                            <div className="flex flex-col">
-                              <div>
-                                {environmentDetails?.data?.environmentId}:
+                            <div className="flex flex-col w-full">
+                              <div className="truncate">
+                                {environmentDetails?.data?.environmentId}
                               </div>
                               <div className="inline-flex gap-2 items-center pt-2">
                                 {environmentDetails?.data?.status && (
@@ -108,7 +112,7 @@ export function EnvironmentSelector(props: EnvironmentSelectorProps) {
                                     status={environmentDetails.data.status}
                                   />
                                 )}
-                                <span className="opacity-60">
+                                <span className="truncate opacity-60">
                                   {environmentDetails?.data?.description}
                                 </span>
                               </div>
