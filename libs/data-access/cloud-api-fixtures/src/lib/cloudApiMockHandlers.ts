@@ -153,6 +153,11 @@ const destroyEnvironmentHandler = http.post<
       environmentId: { equals: requestBody.environmentId },
     },
   });
+  cloudApiDb.apiKey.delete({
+    where: {
+      environment: { environmentId: { equals: requestBody.environmentId } },
+    },
+  });
 
   return HttpResponse.json({});
 });

@@ -2,18 +2,20 @@ import { useFetcher, useSearchParams } from '@remix-run/react';
 import { Button, SubmitButton } from '@restate/ui/button';
 import { Dialog, DialogContent } from '@restate/ui/dialog';
 import { useId } from 'react';
-import { CREATE_ACCOUNT_PARAM_NAME } from './constants';
+import { CREATE_ENVIRONMENT_PARAM_NAME } from './constants';
 import { FormFieldInput } from '@restate/ui/form-field';
+import { useAccountParam } from '@restate/features/cloud/utils-routes';
 
-export function CreateAccount() {
+export function CreateEnvironment() {
   const fetcher = useFetcher();
   const formId = useId();
+  const accountId = useAccountParam();
   const [searchParams, setSearchParams] = useSearchParams();
   const shouldShowCreateAccount =
-    searchParams.get(CREATE_ACCOUNT_PARAM_NAME) === 'true';
+    searchParams.get(CREATE_ENVIRONMENT_PARAM_NAME) === 'true';
   const close = () =>
     setSearchParams((perv) => {
-      perv.delete(CREATE_ACCOUNT_PARAM_NAME);
+      perv.delete(CREATE_ENVIRONMENT_PARAM_NAME);
       return perv;
     });
 
@@ -45,13 +47,17 @@ export function CreateAccount() {
       >
         <div className="flex flex-col gap-2">
           <h3 className="text-lg font-medium leading-6 text-gray-900">
-            Create Account
+            Create Environment
           </h3>
           <p className="text-sm text-gray-500">
             Create a new account by providing a description to set up your
             dedicated space within restate Cloud platform.
           </p>
-          <fetcher.Form id={formId} method="POST" action="/accounts">
+          <fetcher.Form
+            id={formId}
+            method="POST"
+            action={`/accounts/${accountId}/environments`}
+          >
             <FormFieldInput
               autoFocus
               required

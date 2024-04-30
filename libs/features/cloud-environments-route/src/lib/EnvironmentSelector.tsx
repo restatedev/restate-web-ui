@@ -1,4 +1,4 @@
-import { Await, Form, useFetcher, useLoaderData } from '@remix-run/react';
+import { Await, Form, useLoaderData, useSearchParams } from '@remix-run/react';
 import { Button, SubmitButton } from '@restate/ui/button';
 import {
   Dropdown,
@@ -18,6 +18,12 @@ import {
 } from '@restate/features/cloud/utils-routes';
 import { Icon, IconName } from '@restate/ui/icons';
 import { EnvironmentStatus, MiniEnvironmentStatus } from './EnvironmentStatus';
+import { CreateEnvironment } from './CreateEnvironment';
+import {
+  CREATE_ENVIRONMENT_PARAM_NAME,
+  DELETE_ENVIRONMENT_PARAM_NAME,
+} from './constants';
+import { DeleteEnvironment } from './DeleteEnvironment';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface EnvironmentSelectorProps {}
@@ -28,7 +34,7 @@ export function EnvironmentSelector(props: EnvironmentSelectorProps) {
     useLoaderData<typeof clientLoader>();
   const currentEnvironmentParam = useEnvironmentParam();
   invariant(currentAccountId, 'Account id is missing');
-  const fetcher = useFetcher();
+  const [, setSearchParams] = useSearchParams();
 
   if (!currentEnvironmentParam) {
     return (
@@ -127,13 +133,10 @@ export function EnvironmentSelector(props: EnvironmentSelectorProps) {
               <DropdownMenu
                 autoFocus={false}
                 onSelect={() =>
-                  fetcher.submit(
-                    {},
-                    {
-                      method: 'POST',
-                      action: `/accounts/${currentAccountId}/environments`,
-                    }
-                  )
+                  setSearchParams((perv) => {
+                    perv.set(CREATE_ENVIRONMENT_PARAM_NAME, 'true');
+                    return perv;
+                  })
                 }
               >
                 <DropdownItem>
@@ -146,13 +149,10 @@ export function EnvironmentSelector(props: EnvironmentSelectorProps) {
               <DropdownMenu
                 autoFocus={false}
                 onSelect={() =>
-                  fetcher.submit(
-                    {},
-                    {
-                      method: 'POST',
-                      action: `/accounts/${currentAccountId}/environments`,
-                    }
-                  )
+                  setSearchParams((perv) => {
+                    perv.set(DELETE_ENVIRONMENT_PARAM_NAME, 'true');
+                    return perv;
+                  })
                 }
               >
                 <DropdownItem destructive>
@@ -166,6 +166,8 @@ export function EnvironmentSelector(props: EnvironmentSelectorProps) {
           </Dropdown>
         )}
       </Await>
+      <CreateEnvironment />
+      <DeleteEnvironment />
     </Suspense>
   );
 }

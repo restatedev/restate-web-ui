@@ -36,7 +36,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body className="h-full">
+      <body className="h-full font-sans">
         <RouterProvider navigate={navigate}>
           <LayoutProvider>{children}</LayoutProvider>
         </RouterProvider>

@@ -3,7 +3,6 @@ import {
   Dialog as AriaDialog,
   Modal as AriaModal,
   ModalOverlay as AriaModalOverlay,
-  Heading,
 } from 'react-aria-components';
 import { tv } from 'tailwind-variants';
 

@@ -4,7 +4,10 @@ import {
   Outlet,
   useRouteLoaderData,
 } from '@remix-run/react';
-import { createEnvironment } from '@restate/data-access/cloud/api-client';
+import {
+  createEnvironment,
+  destroyEnvironment,
+} from '@restate/data-access/cloud/api-client';
 import invariant from 'tiny-invariant';
 import { EnvironmentSelector } from './EnvironmentSelector';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
@@ -20,13 +23,34 @@ import { listEnvironmentsWithCache } from './apis';
 const clientAction = async ({ request, params }: ClientActionFunctionArgs) => {
   const { accountId } = params;
   invariant(accountId, 'Missing accountId param');
-  listEnvironmentsWithCache.invalidate({ accountId });
-  console.log('action');
 
-  const { data } = await createEnvironment({ accountId });
-  return redirect(
-    `/accounts/${params.accountId}/environments/${data?.environmentId}`
-  );
+  switch (request.method) {
+    case 'POST': {
+      listEnvironmentsWithCache.invalidate({ accountId });
+
+      const body = await request.formData();
+
+      // TODO: fix typing issue
+      const description = body.get('description') as string;
+      const { data } = await createEnvironment({ accountId, description });
+      return redirect(
+        `/accounts/${params.accountId}/environments/${data?.environmentId}`
+      );
+    }
+    case 'DELETE': {
+      listEnvironmentsWithCache.invalidate({ accountId });
+      const body = await request.formData();
+
+      // TODO: fix typing issue
+      const environmentId = body.get('environmentId') as string;
+      // TODO: fix typing issue
+      await destroyEnvironment({ accountId, environmentId });
+      return redirect(`/accounts/${params.accountId}/environments`);
+    }
+
+    default:
+      break;
+  }
 };
 
 function Component() {
