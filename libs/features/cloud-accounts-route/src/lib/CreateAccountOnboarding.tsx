@@ -10,7 +10,7 @@ export function CreateAccountOnboarding() {
   const fetcher = useFetcherWithError<typeof clientAction>({ key: action });
 
   return (
-    <div className="flex-auto flex items-center">
+    <div className="flex-auto flex items-center animate-in fade-in slide-in-from-top-6 duration-300">
       <fetcher.Form
         method="POST"
         action={action}
@@ -40,7 +40,7 @@ export function CreateAccountOnboarding() {
             To get started, kindly review and agree to our Terms and Conditions.
           </p>
           <FormFieldCheckbox name="tc" required>
-            <span>
+            <span className="text-sm text-start">
               I have read and agree to the{' '}
               <Link
                 href="https://restate.dev"

@@ -21,15 +21,6 @@ module.exports = withTV({
       fontSize: {
         '2xs': '0.6875rem',
       },
-      animation: {
-        fade: 'fadeIn .5s ease-in-out',
-      },
-      keyframes: {
-        fadeIn: {
-          from: { opacity: 0 },
-          to: { opacity: 1 },
-        },
-      },
     },
   },
   plugins: [

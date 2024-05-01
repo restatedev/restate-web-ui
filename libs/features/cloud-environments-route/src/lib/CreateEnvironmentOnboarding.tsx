@@ -1,9 +1,8 @@
 import { SubmitButton } from '@restate/ui/button';
-import { FormFieldCheckbox, FormFieldInput } from '@restate/ui/form-field';
+import { FormFieldInput } from '@restate/ui/form-field';
 import { useFetcherWithError } from '@restate/util/remix';
 import { clientAction } from './action';
 import { ErrorBanner } from '@restate/ui/error';
-import { Link } from '@restate/ui/link';
 import { useAccountParam } from '@restate/features/cloud/utils-routes';
 
 export function CreateEnvironmentOnboarding() {
@@ -12,7 +11,7 @@ export function CreateEnvironmentOnboarding() {
   const fetcher = useFetcherWithError<typeof clientAction>({ key: action });
 
   return (
-    <div className="flex-auto flex items-center">
+    <div className="flex-auto flex items-center animate-in fade-in slide-in-from-top-6 duration-300">
       <fetcher.Form
         method="POST"
         action={action}

@@ -33,7 +33,7 @@ export function FormFieldCheckbox({
 }: PropsWithChildren<FormFieldCheckboxProps>) {
   const { input } = styles();
   return (
-    <TextField className="grid auto-cols-auto items-center">
+    <TextField className="grid grid-cols-[1.25rem_1fr] gap-x-2 items-center">
       <Input {...props} type="checkbox" className={input()} />
       <Label className="col-start-2 row-start-1 text-base">{children}</Label>
       <FormFieldError
