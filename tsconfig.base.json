@@ -39,6 +39,7 @@
       "@restate/ui/button": ["libs/ui/button/src/index.ts"],
       "@restate/ui/dialog": ["libs/ui/dialog/src/index.ts"],
       "@restate/ui/dropdown": ["libs/ui/dropdown/src/index.ts"],
+      "@restate/ui/error": ["libs/ui/error/src/index.ts"],
       "@restate/ui/focus": ["libs/ui/focus/src/index.ts"],
       "@restate/ui/form-field": ["libs/ui/form-field/src/index.ts"],
       "@restate/ui/icons": ["libs/ui/icons/src/index.ts"],
