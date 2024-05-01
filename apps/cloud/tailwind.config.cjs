@@ -12,10 +12,14 @@ module.exports = withTV({
     ),
     ...createGlobPatternsForDependencies(__dirname),
   ],
+  darkMode: 'selector',
   theme: {
     extend: {
       fontFamily: {
         sans: ['Inter var', ...defaultTheme.fontFamily.sans],
+      },
+      fontSize: {
+        '2xs': '0.6875rem',
       },
     },
   },

@@ -85,7 +85,10 @@ const listAccountsHandler = http.post<
   });
 
   return HttpResponse.json({
-    accounts: accounts.map(({ accountId }) => ({ accountId })),
+    accounts: accounts.map(({ accountId, description }) => ({
+      accountId,
+      description,
+    })),
   });
 });
 
@@ -148,6 +151,11 @@ const destroyEnvironmentHandler = http.post<
   cloudApiDb.environment.delete({
     where: {
       environmentId: { equals: requestBody.environmentId },
+    },
+  });
+  cloudApiDb.apiKey.delete({
+    where: {
+      environment: { environmentId: { equals: requestBody.environmentId } },
     },
   });
 

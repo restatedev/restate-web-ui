@@ -1,9 +1,0 @@
-{
-  "name": "cloud-api-keys-route",
-  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/features/cloud-api-keys-route/src",
-  "projectType": "library",
-  "tags": [],
-  "// targets": "to see all targets run: nx show project cloud-api-keys-route --web",
-  "targets": {}
-}

@@ -11,10 +11,16 @@ export const clientLoader = async ({
 }: ClientLoaderFunctionArgs) => {
   const { accountId } = params;
   invariant(accountId, 'Missing accountId param');
-  const { data: environmentList } = await listEnvironmentsWithCache.fetch({
+  const environmentList = await listEnvironmentsWithCache.fetch({
     accountId,
   });
-  const environments = environmentList?.environments ?? [];
+
+  if (environmentList.error) {
+    throw new Response(environmentList.error.message, {
+      status: environmentList.error.code,
+    });
+  }
+  const environments = environmentList?.data?.environments ?? [];
 
   const environmentsWithDetailsPromises = environments
     .map((environment) => ({
@@ -37,8 +43,12 @@ export const clientLoader = async ({
     );
   }
 
+  if (!isEnvironmentIdParamValid && params.environmentId) {
+    return redirect(`/accounts/${params.accountId}/environments`);
+  }
+
   return defer({
-    environments,
+    environmentList,
     environmentsWithDetailsPromises,
   });
 };

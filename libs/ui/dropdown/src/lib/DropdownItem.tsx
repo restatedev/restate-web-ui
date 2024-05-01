@@ -7,8 +7,8 @@ import {
 } from 'react-aria-components';
 import { tv } from 'tailwind-variants';
 
-const dropdownItemStyles = tv({
-  base: 'group flex items-center gap-4 cursor-default select-none py-2 pl-3 pr-1 rounded-lg outline outline-0 text-sm forced-color-adjust-none',
+const styles = tv({
+  base: 'group flex rounded-xl items-center gap-4 cursor-default select-none py-2 px-3 outline outline-0 text-sm forced-color-adjust-none',
   variants: {
     isDisabled: {
       false: 'text-gray-900 dark:text-zinc-100',
@@ -20,21 +20,40 @@ const dropdownItemStyles = tv({
   },
 });
 
-function StyledDropdownItem(props: AriaMenuItemProps) {
+const destructiveStyles = tv({
+  base: 'group flex rounded-xl items-center gap-4 cursor-default select-none py-2 px-3 outline outline-0 text-sm forced-color-adjust-none',
+  variants: {
+    isDisabled: {
+      false: 'text-red-600 dark:text-zinc-100',
+      true: 'text-gray-300 dark:text-zinc-600 forced-colors:text-[GrayText]',
+    },
+    isFocused: {
+      true: 'bg-red-600 text-white forced-colors:bg-[Highlight] forced-colors:text-[HighlightText]',
+    },
+  },
+});
+
+function StyledDropdownItem({
+  destructive,
+  ...props
+}: AriaMenuItemProps & { destructive?: boolean }) {
   return (
-    <AriaMenuItem {...props} className={dropdownItemStyles}>
+    <AriaMenuItem
+      {...props}
+      className={destructive ? destructiveStyles : styles}
+    >
       {composeRenderProps(
         props.children,
         (children, { selectionMode, isSelected }) => (
           <>
+            <span className="flex items-center flex-1 gap-2 font-normal truncate group-selected:font-semibold">
+              {children}
+            </span>
             {selectionMode !== 'none' && (
               <span className="flex items-center w-4">
                 {isSelected && <Icon name={IconName.Check} aria-hidden />}
               </span>
             )}
-            <span className="flex items-center flex-1 gap-2 font-normal truncate group-selected:font-semibold">
-              {children}
-            </span>
           </>
         )
       )}
@@ -46,7 +65,10 @@ interface DropdownItemProps
   extends PropsWithChildren<{
     value?: never;
     href?: never;
-  }> {}
+  }> {
+  destructive?: boolean;
+  className?: string;
+}
 
 interface DropdownCustomItemProps
   extends PropsWithChildren<

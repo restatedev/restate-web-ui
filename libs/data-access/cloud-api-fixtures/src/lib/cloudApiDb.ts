@@ -11,12 +11,12 @@ export const cloudApiDb = factory({
   account: {
     accountId: primaryKey(() => `acc_${faker.string.nanoid(23)}`),
     users: manyOf('user'),
-    description: () => faker.internet.domainWord(),
+    description: () => faker.lorem.words(4),
   },
   environment: {
     environmentId: primaryKey(() => `env_${faker.string.nanoid(27)}`),
     account: oneOf('account'),
-    description: () => faker.commerce.product(),
+    description: () => faker.lorem.words(4),
     status: () =>
       faker.helpers.arrayElement([
         'PENDING',
@@ -120,13 +120,14 @@ if (persistedDbData) {
   const account = cloudApiDb.account.create({
     users,
   });
-  const environments = Array(2)
-    .fill(null)
-    .map(() =>
-      cloudApiDb.environment.create({
-        account,
-      })
-    );
+  const environments = (
+    ['PENDING', 'ACTIVE', 'FAILED', 'DELETED'] as const
+  ).map((status) =>
+    cloudApiDb.environment.create({
+      account,
+      status,
+    })
+  );
   environments.forEach((environment) => {
     cloudApiDb.apiKey.create({
       environment,

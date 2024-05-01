@@ -1,12 +1,16 @@
-import { FieldError as AriaFieldError } from 'react-aria-components';
+import {
+  FieldError as AriaFieldError,
+  FieldErrorProps,
+} from 'react-aria-components';
+import { tv } from 'tailwind-variants';
 
-interface FormFieldErrorProps {}
+interface FormFieldErrorProps extends Pick<FieldErrorProps, 'children'> {
+  className?: string;
+}
 
-export function FormFieldError(props: FormFieldErrorProps) {
-  return (
-    <AriaFieldError
-      {...props}
-      className="text-sm text-red-600 forced-colors:text-[Mark]"
-    />
-  );
+const styles = tv({
+  base: 'text-xs px-1 pt-0.5 text-red-600 forced-colors:text-[Mark]',
+});
+export function FormFieldError({ className, ...props }: FormFieldErrorProps) {
+  return <AriaFieldError {...props} className={styles({ className })} />;
 }

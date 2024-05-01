@@ -1,7 +1,8 @@
 import { PropsWithChildren, useContext } from 'react';
-import { OverlayTriggerStateContext, Button } from 'react-aria-components';
+import { OverlayTriggerStateContext } from 'react-aria-components';
 import { PressResponder } from '@react-aria/interactions';
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface DialogCLoseProps {}
 
 export function DialogClose({ children }: PropsWithChildren<DialogCLoseProps>) {

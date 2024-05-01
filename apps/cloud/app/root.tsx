@@ -11,6 +11,7 @@ import type { LinksFunction } from '@remix-run/node';
 import { CLOUD_API_BASE_URL } from '@restate/data-access/cloud/api-client';
 import { LayoutOutlet, LayoutProvider, LayoutZone } from '@restate/ui/layout';
 import { RouterProvider } from 'react-aria-components';
+import { Spinner } from '@restate/ui/button';
 
 export const links: LinksFunction = () => [
   {
@@ -29,14 +30,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
 
   return (
-    <html lang="en" className="h-full bg-gray-100">
+    <html lang="en" className="h-full bg-gray-100 dark:bg-gray-900">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
       </head>
-      <body className="h-full">
+      <body className="h-full font-sans">
         <RouterProvider navigate={navigate}>
           <LayoutProvider>{children}</LayoutProvider>
         </RouterProvider>
@@ -51,9 +52,7 @@ export default function App() {
   return (
     <>
       <LayoutOutlet zone={LayoutZone.Content}>
-        <div className="mx-auto max-w-7xl py-6 sm:px-6 lg:px-8">
-          <Outlet />
-        </div>
+        <Outlet />
       </LayoutOutlet>
     </>
   );
@@ -61,5 +60,10 @@ export default function App() {
 
 // TODO: implement proper loader
 export function HydrateFallback() {
-  return <p>Loading root...</p>;
+  return (
+    <p className="flex gap-2 items-center">
+      <Spinner />
+      Loading...
+    </p>
+  );
 }

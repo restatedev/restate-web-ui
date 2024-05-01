@@ -24,16 +24,21 @@ const ZONE_ELEMENT: Record<LayoutZone, ElementType> = {
 };
 
 const ZONE_PROPS: Record<LayoutZone, { id: string; className?: string }> = {
-  [LayoutZone.AppBar]: { id: ZONE_IDS[LayoutZone.AppBar] },
+  [LayoutZone.AppBar]: {
+    id: ZONE_IDS[LayoutZone.AppBar],
+  },
   [LayoutZone.Nav]: { id: ZONE_IDS[LayoutZone.Nav] },
-  [LayoutZone.Content]: { id: ZONE_IDS[LayoutZone.Content] },
+  [LayoutZone.Content]: {
+    id: ZONE_IDS[LayoutZone.Content],
+    className: 'py-14 flex-auto flex flex-col',
+  },
 };
 
 const ALL_ZONES = Object.keys(ZONE_IDS) as LayoutZone[];
 
 export function LayoutProvider({ children }: PropsWithChildren<LayoutProps>) {
   return (
-    <div className="flex w-full flex-col min-h-full">
+    <div className="flex w-full flex-col min-h-full mx-auto max-w-7xl py-3 sm:py-6 px-3 sm:px-6 lg:px-8">
       {ALL_ZONES.map((zone) =>
         createElement(ZONE_ELEMENT[zone], { ...ZONE_PROPS[zone], key: zone })
       )}
@@ -45,6 +50,16 @@ export function LayoutProvider({ children }: PropsWithChildren<LayoutProps>) {
 export function LayoutOutlet({
   zone,
   children,
-}: PropsWithChildren<{ zone: LayoutZone }>) {
-  return createPortal(children, document.getElementById(ZONE_IDS[zone])!);
+  variant = 'primary',
+}: PropsWithChildren<{
+  zone: LayoutZone;
+  variant?: 'primary' | 'secondary' | 'hidden';
+}>) {
+  return createPortal(
+    <>
+      {children}
+      <div data-variant={variant} />
+    </>,
+    document.getElementById(ZONE_IDS[zone])!
+  );
 }

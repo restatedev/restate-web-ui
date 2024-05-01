@@ -1,26 +1,26 @@
-import { ClientActionFunctionArgs, Outlet, redirect } from '@remix-run/react';
-import { createAccount } from '@restate/data-access/cloud/api-client';
-import { AccountSelector } from './AccountSelector';
-import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
-import { listAccountsWithCache } from './apis';
+import { Outlet, useLoaderData } from '@remix-run/react';
 import { clientLoader } from './loader';
-
-// TODO: Error handling, Pending UI
-const clientAction = async ({ request, params }: ClientActionFunctionArgs) => {
-  listAccountsWithCache.invalidate();
-  const { data } = await createAccount({});
-  return redirect(`/accounts/${data?.accountId}/environments`);
-};
+import { clientAction } from './action';
+import { CreateAccountOnboarding } from './CreateAccountOnboarding';
+import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 
 function Component() {
-  return (
-    <>
-      <LayoutOutlet zone={LayoutZone.AppBar}>
-        <AccountSelector />
-      </LayoutOutlet>
-      <Outlet />
-    </>
-  );
+  const loaderData = useLoaderData<typeof clientLoader>();
+
+  if (loaderData?.accountsList?.error) {
+    return null;
+  }
+  const accounts = loaderData?.accountsList?.data?.accounts ?? [];
+  if (accounts.length === 0) {
+    return (
+      <>
+        <LayoutOutlet zone={LayoutZone.AppBar} variant="hidden" />
+        <CreateAccountOnboarding />
+      </>
+    );
+  }
+
+  return <Outlet />;
 }
 
 export const accounts = { clientAction, clientLoader, Component };

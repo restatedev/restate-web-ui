@@ -1,14 +1,17 @@
+import { PropsWithChildren } from 'react';
+
 interface AppBarProps {
   id?: string;
 }
 
-export function AppBar(props: AppBarProps) {
+export function AppBar(props: PropsWithChildren<AppBarProps>) {
   return (
     <header
-      {...props}
       className={
-        'sticky top-0 z-50 flex flex-none flex-wrap items-center justify-between bg-white px-4 py-5 shadow-md shadow-slate-900/5 transition duration-500 sm:px-6 lg:px-8 dark:shadow-none dark:bg-slate-900/95 dark:backdrop-blur dark:[@supports(backdrop-filter:blur(0))]:bg-slate-900/75'
+        '[&:has(.header:empty)]:invisible [&:not(:has(.header:empty))]:animate-in [&:not(:has(.header:empty))]:slide-in-from-top duration-300 [&:has([data-variant="hidden"])]:invisible [&:has([data-variant="secondary"])]:shadow-none [&:has([data-variant="secondary"])]:border-none [&:has([data-variant="secondary"])]:bg-transparent [&:has([data-variant="secondary"])]:backdrop-blur-0 sticky top-3 sm:top-6 rounded-xl border z-40 flex flex-none flex-wrap items-stretch justify-between gap-4 backdrop-blur-xl backdrop-saturate-150 h-14 shadow-lg shadow-zinc-800/5 bg-gray-50/90'
       }
-    />
+    >
+      <div {...props} className="header m-[-1px] flex items-stretch"></div>
+    </header>
   );
 }

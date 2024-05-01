@@ -1,43 +1,75 @@
-import { Check, ChevronDown, ChevronRight } from 'lucide-react';
+import {
+  Check,
+  ChevronDown,
+  ChevronRight,
+  ChevronsUpDown,
+  Plus,
+  LogOut,
+  Squircle,
+  Trash,
+  Circle,
+  CircleDashed,
+  CircleDotDashed,
+  TriangleAlert,
+  Minus,
+} from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from 'tailwind-variants';
+import { RestateEnvironment } from './custom-icons/RestateEnvironment';
+import { CircleX } from './custom-icons/CircleX';
 
 export const enum IconName {
   ChevronDown = 'ChevronDown',
   ChevronRight = 'ChevronRight',
   Check = 'Check',
+  RestateEnvironment = 'RestateEnvironment',
+  ChevronsUpDown = 'ChevronsUpDown',
+  Plus = 'Plus',
+  LogOut = 'LogOut',
+  Squircle = 'Squircle',
+  Trash = 'Trash',
+  Circle = 'Circle',
+  CircleDashed = 'CircleDashed',
+  TriangleAlert = 'TriangleAlert',
+  CircleDotDashed = 'CircleDotDashed',
+  CircleX = 'CircleX',
+  Minus = 'Minus',
 }
 export interface IconsProps {
-  filled?: boolean;
   name: IconName;
   ['aria-hidden']?: boolean;
+  className?: string;
 }
 
 const ICONS: Record<IconName, LucideIcon> = {
   [IconName.ChevronDown]: ChevronDown,
   [IconName.Check]: Check,
   [IconName.ChevronRight]: ChevronRight,
+  [IconName.ChevronsUpDown]: ChevronsUpDown,
+  [IconName.Plus]: Plus,
+  [IconName.LogOut]: LogOut,
+  [IconName.RestateEnvironment]: RestateEnvironment,
+  [IconName.Squircle]: Squircle,
+  [IconName.Trash]: Trash,
+  [IconName.Circle]: Circle,
+  [IconName.CircleDashed]: CircleDashed,
+  [IconName.TriangleAlert]: TriangleAlert,
+  [IconName.CircleDotDashed]: CircleDotDashed,
+  [IconName.CircleX]: CircleX,
+  [IconName.Minus]: Minus,
 };
 
-const icon = tv({
-  base: 'width-[1em] height-[1em]',
-  variants: {
-    variant: {
-      filled: '',
-      stroked: '',
-    },
-  },
-  defaultVariants: {
-    variant: 'stroked',
-  },
+const styles = tv({
+  base: 'w-[1.5em] h-[1.5em] text-current',
 });
 
-export function Icon({ name, filled, ...props }: IconsProps) {
+export function Icon({ name, className, ...props }: IconsProps) {
   const IconComponent = ICONS[name];
   return (
     <IconComponent
       {...props}
-      className={icon({ variant: filled ? 'filled' : 'stroked' })}
+      className={styles({ className })}
+      aria-hidden="true"
     />
   );
 }

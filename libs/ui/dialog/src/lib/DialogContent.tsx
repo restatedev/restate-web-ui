@@ -1,4 +1,4 @@
-import { PropsWithChildren } from 'react';
+import { PropsWithChildren, ReactNode } from 'react';
 import {
   Dialog as AriaDialog,
   Modal as AriaModal,
@@ -7,7 +7,7 @@ import {
 import { tv } from 'tailwind-variants';
 
 const overlayStyles = tv({
-  base: 'fixed top-0 left-0 w-full min-h-full isolate z-20 bg-black/[15%] flex items-center justify-center p-4 text-center backdrop-blur-lg',
+  base: 'fixed top-0 left-0 w-full min-h-full isolate z-50 bg-gray-800 bg-opacity-30 transition-opacity flex items-center justify-center p-4 text-center',
   variants: {
     isEntering: {
       true: 'animate-in fade-in duration-200 ease-out',
@@ -19,7 +19,7 @@ const overlayStyles = tv({
 });
 
 const modalStyles = tv({
-  base: 'w-full max-w-md max-h-full rounded-2xl bg-white dark:bg-zinc-800/70 dark:backdrop-blur-2xl dark:backdrop-saturate-200 forced-colors:bg-[Canvas] text-left align-middle text-slate-700 dark:text-zinc-300 shadow-2xl bg-clip-padding border border-black/10 dark:border-white/10',
+  base: 'w-full max-w-sm max-h-full rounded-xl bg-white text-left align-middle text-slate-700  shadow-lg shadow-zinc-800/5 bg-clip-padding border border-black/5',
   variants: {
     isEntering: {
       true: 'animate-in zoom-in-105 ease-out duration-200',
@@ -30,16 +30,21 @@ const modalStyles = tv({
   },
 });
 
-interface DialogContentProps {}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+interface DialogContentProps {
+  footer?: ReactNode;
+}
 
 export function DialogContent({
   children,
+  footer,
 }: PropsWithChildren<DialogContentProps>) {
   return (
     <AriaModalOverlay className={overlayStyles}>
-      <AriaModal className={modalStyles}>
-        <AriaDialog className="outline outline-0 p-6 [[data-placement]>&]:p-4 max-h-[inherit] overflow-auto relative">
-          {children}
+      <AriaModal isDismissable className={modalStyles}>
+        <AriaDialog className="outline bg-gray-100 rounded-xl outline-0 p-1.5 [[data-placement]>&]:p-4 max-h-[inherit] overflow-auto relative">
+          <div className="bg-white p-6 border rounded-xl">{children}</div>
+          <div className="py-1 mt-1">{footer}</div>
         </AriaDialog>
       </AriaModal>
     </AriaModalOverlay>

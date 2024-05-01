@@ -5,19 +5,26 @@ export const clientLoader = async ({
   request,
   params,
 }: ClientLoaderFunctionArgs) => {
-  const { data: accountsList } = await listAccountsWithCache.fetch();
-  const accounts = accountsList?.accounts ?? [];
+  const accountsList = await listAccountsWithCache.fetch();
+  const accounts = accountsList.data?.accounts ?? [];
   const isAccountIdParamValid = accounts.some(
     ({ accountId }) => params.accountId === accountId
   );
 
+  if (accountsList.error) {
+    throw new Response(accountsList.error.message, {
+      status: accountsList.error.code,
+    });
+  }
   if (isAccountIdParamValid) {
-    return { accounts };
+    return { accountsList };
   }
 
   if (accounts.length > 0) {
     return redirect(`/accounts/${accounts.at(0)?.accountId}/environments`);
+  } else if (params.accountId) {
+    return redirect('/accounts');
   } else {
-    return { accounts };
+    return { accountsList };
   }
 };

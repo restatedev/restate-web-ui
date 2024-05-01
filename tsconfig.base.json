@@ -27,25 +27,31 @@
       "@restate/features/cloud/accounts-route": [
         "libs/features/cloud-accounts-route/src/index.ts"
       ],
-      "@restate/features/cloud/api-keys-route": [
-        "libs/features/cloud-api-keys-route/src/index.ts"
-      ],
       "@restate/features/cloud/environments-route": [
         "libs/features/cloud-environments-route/src/index.ts"
+      ],
+      "@restate/features/cloud/settings-route": [
+        "libs/features/cloud-settings-route/src/index.ts"
+      ],
+      "@restate/features/cloud/utils-routes": [
+        "libs/features/utils-routes/src/index.ts"
       ],
       "@restate/ui/button": ["libs/ui/button/src/index.ts"],
       "@restate/ui/dialog": ["libs/ui/dialog/src/index.ts"],
       "@restate/ui/dropdown": ["libs/ui/dropdown/src/index.ts"],
+      "@restate/ui/error": ["libs/ui/error/src/index.ts"],
       "@restate/ui/focus": ["libs/ui/focus/src/index.ts"],
       "@restate/ui/form-field": ["libs/ui/form-field/src/index.ts"],
       "@restate/ui/icons": ["libs/ui/icons/src/index.ts"],
       "@restate/ui/layout": ["libs/ui/layout/src/index.ts"],
+      "@restate/ui/link": ["libs/ui/link/src/index.ts"],
       "@restate/ui/listbox": ["libs/ui/listbox/src/index.ts"],
       "@restate/ui/popover": ["libs/ui/popover/src/index.ts"],
       "@restate/ui/radio-group": ["libs/ui/radio-group/src/index.ts"],
       "@restate/util/auth": ["libs/util/auth/src/index.ts"],
       "@restate/util/cache": ["libs/util/cache/src/index.ts"],
-      "@restate/util/mock-api": ["libs/util/mock-api/src/index.ts"]
+      "@restate/util/mock-api": ["libs/util/mock-api/src/index.ts"],
+      "@restate/util/remix": ["libs/util/remix/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
