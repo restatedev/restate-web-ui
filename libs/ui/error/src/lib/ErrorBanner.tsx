@@ -2,7 +2,6 @@ import { Icon, IconName } from '@restate/ui/icons';
 
 export interface ErrorProps {
   errors?: Error[];
-  isFetching?: boolean;
 }
 
 function SingleError({ error }: { error?: Error }) {
@@ -25,8 +24,8 @@ function SingleError({ error }: { error?: Error }) {
   );
 }
 
-export function ErrorBanner({ errors = [], isFetching }: ErrorProps) {
-  if (errors.length === 0 || isFetching) {
+export function ErrorBanner({ errors = [] }: ErrorProps) {
+  if (errors.length === 0) {
     return null;
   }
   if (errors.length === 1) {
@@ -41,7 +40,7 @@ export function ErrorBanner({ errors = [], isFetching }: ErrorProps) {
           <Icon
             className="h-5 w-5 fill-red-500 text-gray-200"
             name={IconName.CircleX}
-          />{' '}
+          />
         </div>
         <div className="ml-3 flex flex-col gap-2">
           <h3 className="text-sm font-medium text-red-800">

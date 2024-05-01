@@ -1,7 +1,6 @@
 import {
   Await,
   Form,
-  useAsyncError,
   useAsyncValue,
   useLoaderData,
   useSearchParams,
@@ -32,6 +31,7 @@ import {
 } from './constants';
 import { DeleteEnvironment } from './DeleteEnvironment';
 import { describeEnvironment } from '@restate/data-access/cloud/api-client';
+import { InlineError } from '@restate/ui/error';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface EnvironmentSelectorProps {}
@@ -52,17 +52,8 @@ export function EnvironmentSelector(props: EnvironmentSelectorProps) {
   }
 
   return (
-    <Suspense
-      fallback={
-        <Button variant="secondary" disabled>
-          loading
-        </Button>
-      }
-    >
-      <Await
-        resolve={environmentsWithDetailsPromises[currentEnvironmentParam]}
-        errorElement={<EnvironmentSelectorContent />}
-      >
+    <Suspense fallback={<EnvironmentSkeletonLoading />}>
+      <Await resolve={environmentsWithDetailsPromises[currentEnvironmentParam]}>
         <EnvironmentSelectorContent />
       </Await>
       <CreateEnvironment />
@@ -105,6 +96,11 @@ function EnvironmentSelectorContent() {
               <div className="truncate opacity-60 col-start-2 row-start-2 w-full">
                 {environmentDetails?.data?.description}
               </div>
+              {environmentDetails.error && (
+                <InlineError className="truncate row-start-2 w-full col-start-1">
+                  Failed to load environment details
+                </InlineError>
+              )}
             </div>
           </div>
           <Icon name={IconName.ChevronsUpDown} className="text-gray-400" />
@@ -124,6 +120,7 @@ function EnvironmentSelectorContent() {
                 href={toEnvironmentRoute(currentAccountId, environment)}
                 key={environment.environmentId}
                 value={environment.environmentId}
+                className="group"
               >
                 <Suspense fallback={<p>loading env</p>}>
                   <Await
@@ -188,16 +185,40 @@ function EnvironmentItem({ environmentId }: { environmentId: string }) {
       <div className="truncate">
         {environmentDetails?.data?.environmentId ?? environmentId}
       </div>
+      {environmentDetails.error && (
+        <InlineError className="group-focus:text-red-100 truncate row-start-2 w-full col-start-1">
+          Failed to load environment details
+        </InlineError>
+      )}
       {environmentDetails?.data && (
         <div className="inline-flex gap-2 items-center pt-2">
           {environmentDetails?.data?.status && (
             <EnvironmentStatus status={environmentDetails.data.status} />
           )}
-          <span className="truncate opacity-60">
+          <span className="truncate group-focus:text-gray-300">
             {environmentDetails?.data?.description}
           </span>
         </div>
       )}
     </div>
+  );
+}
+
+function EnvironmentSkeletonLoading() {
+  return (
+    <Button
+      disabled
+      variant="secondary"
+      className="flex items-center gap-2 px-2 py-1 bg-transparent border-none shadow-none"
+    >
+      <div className="flex flex-col items-start animate-pulse">
+        <div className="grid gap-x-2 gap-y-1 auto-cols-auto items-center justify-items-start text-start">
+          <div className="bg-slate-200 rounded row-start-1 w-4 h-4" />
+          <div className="bg-slate-200 rounded row-start-1 w-[20ch] h-4" />
+          <div className="bg-slate-200 rounded col-start-2 row-start-2 w-[30ch] h-4" />
+        </div>
+      </div>
+      <Icon name={IconName.ChevronsUpDown} className="text-gray-400" />
+    </Button>
   );
 }

@@ -11,11 +11,11 @@ import {
   CircleDashed,
   CircleDotDashed,
   TriangleAlert,
-  CircleX,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from 'tailwind-variants';
 import { RestateEnvironment } from './custom-icons/RestateEnvironment';
+import { CircleX } from './custom-icons/CircleX';
 
 export const enum IconName {
   ChevronDown = 'ChevronDown',
