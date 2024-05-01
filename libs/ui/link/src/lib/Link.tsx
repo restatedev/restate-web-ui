@@ -11,7 +11,7 @@ interface LinkProps
     AriaLinkProps,
     'autoFocus' | 'target' | 'rel' | 'className' | 'children' | 'href'
   > {
-  variant?: 'primary' | 'secondary';
+  variant?: 'primary' | 'secondary' | 'button';
 }
 
 const styles = tv({
@@ -19,6 +19,8 @@ const styles = tv({
   base: 'underline disabled:no-underline disabled:cursor-default forced-colors:disabled:text-[GrayText] transition rounded',
   variants: {
     variant: {
+      button:
+        'no-underline bg-blue-600 hover:bg-blue-700 pressed:bg-blue-800 text-white shadow-sm px-5 py-2 text-sm text-center transition rounded-xl border border-black/10',
       primary:
         'text-blue-600 dark:text-blue-500 underline decoration-blue-600/60 hover:decoration-blue-600 dark:decoration-blue-500/60 dark:hover:decoration-blue-500',
       secondary:

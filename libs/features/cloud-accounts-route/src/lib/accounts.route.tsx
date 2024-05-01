@@ -8,7 +8,7 @@ function Component() {
   const loaderData = useLoaderData<typeof clientLoader>();
 
   if (loaderData?.accountsList?.error) {
-    return <p>failed</p>;
+    return null;
   }
   const accounts = loaderData?.accountsList?.data?.accounts ?? [];
   if (accounts.length === 0) {

@@ -11,6 +11,7 @@ import type { LinksFunction } from '@remix-run/node';
 import { CLOUD_API_BASE_URL } from '@restate/data-access/cloud/api-client';
 import { LayoutOutlet, LayoutProvider, LayoutZone } from '@restate/ui/layout';
 import { RouterProvider } from 'react-aria-components';
+import { Spinner } from '@restate/ui/button';
 
 export const links: LinksFunction = () => [
   {
@@ -59,5 +60,10 @@ export default function App() {
 
 // TODO: implement proper loader
 export function HydrateFallback() {
-  return <p>Loading root...</p>;
+  return (
+    <p className="flex gap-2 items-center">
+      <Spinner />
+      Loading...
+    </p>
+  );
 }

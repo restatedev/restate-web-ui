@@ -11,6 +11,11 @@ export const clientLoader = async ({
     ({ accountId }) => params.accountId === accountId
   );
 
+  if (accountsList.error) {
+    throw new Response(accountsList.error.message, {
+      status: accountsList.error.code,
+    });
+  }
   if (isAccountIdParamValid) {
     return { accountsList };
   }
