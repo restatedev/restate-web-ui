@@ -11,6 +11,7 @@ import {
   CircleDashed,
   CircleDotDashed,
   TriangleAlert,
+  CircleX,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from 'tailwind-variants';
@@ -30,6 +31,7 @@ export const enum IconName {
   CircleDashed = 'CircleDashed',
   TriangleAlert = 'TriangleAlert',
   CircleDotDashed = 'CircleDotDashed',
+  CircleX = 'CircleX',
 }
 export interface IconsProps {
   name: IconName;
@@ -51,6 +53,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.CircleDashed]: CircleDashed,
   [IconName.TriangleAlert]: TriangleAlert,
   [IconName.CircleDotDashed]: CircleDotDashed,
+  [IconName.CircleX]: CircleX,
 };
 
 const styles = tv({
@@ -59,5 +62,11 @@ const styles = tv({
 
 export function Icon({ name, className, ...props }: IconsProps) {
   const IconComponent = ICONS[name];
-  return <IconComponent {...props} className={styles({ className })} />;
+  return (
+    <IconComponent
+      {...props}
+      className={styles({ className })}
+      aria-hidden="true"
+    />
+  );
 }

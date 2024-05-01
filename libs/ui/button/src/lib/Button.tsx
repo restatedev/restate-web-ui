@@ -12,6 +12,7 @@ export interface ButtonProps {
   autoFocus?: boolean;
   variant?: 'primary' | 'secondary' | 'destructive' | 'icon';
   className?: string;
+  form?: string;
 }
 
 const styles = tv({

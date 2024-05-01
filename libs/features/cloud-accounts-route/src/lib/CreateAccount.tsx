@@ -1,21 +1,26 @@
-import { useFetcher, useSearchParams } from '@remix-run/react';
+import { useSearchParams } from '@remix-run/react';
 import { Button, SubmitButton } from '@restate/ui/button';
 import { Dialog, DialogContent } from '@restate/ui/dialog';
 import { useId } from 'react';
 import { CREATE_ACCOUNT_PARAM_NAME } from './constants';
 import { FormFieldInput } from '@restate/ui/form-field';
+import { useFetcherWithError } from '@restate/util/remix';
+import { clientAction } from './action';
 
 export function CreateAccount() {
-  const fetcher = useFetcher();
+  const action = '/accounts';
+  const fetcher = useFetcherWithError<typeof clientAction>({ key: action });
   const formId = useId();
   const [searchParams, setSearchParams] = useSearchParams();
   const shouldShowCreateAccount =
     searchParams.get(CREATE_ACCOUNT_PARAM_NAME) === 'true';
-  const close = () =>
+  const close = () => {
     setSearchParams((perv) => {
       perv.delete(CREATE_ACCOUNT_PARAM_NAME);
       return perv;
     });
+    fetcher.resetErrors();
+  };
 
   return (
     <Dialog
@@ -51,7 +56,7 @@ export function CreateAccount() {
             Please give a short description to initialize your new account on
             the restate Cloud platform.
           </p>
-          <fetcher.Form id={formId} method="POST" action="/accounts">
+          <fetcher.Form id={formId} method="POST" action={action}>
             <FormFieldInput
               autoFocus
               required

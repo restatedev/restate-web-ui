@@ -1,4 +1,4 @@
-import { useFetcher, useSearchParams } from '@remix-run/react';
+import { useSearchParams } from '@remix-run/react';
 import { Button, SubmitButton } from '@restate/ui/button';
 import { Dialog, DialogContent } from '@restate/ui/dialog';
 import { useId } from 'react';
@@ -8,21 +8,25 @@ import {
   useAccountParam,
   useEnvironmentParam,
 } from '@restate/features/cloud/utils-routes';
+import { useFetcherWithError } from '@restate/util/remix';
 
 export function DeleteEnvironment() {
-  const fetcher = useFetcher();
   const formId = useId();
   const accountId = useAccountParam();
+  const action = `/accounts/${accountId}/environments`;
+  const fetcher = useFetcherWithError({ key: action });
   const environmentId = useEnvironmentParam();
   const [searchParams, setSearchParams] = useSearchParams();
   const shouldShowCreateAccount = Boolean(
     environmentId && searchParams.get(DELETE_ENVIRONMENT_PARAM_NAME) === 'true'
   );
-  const close = () =>
+  const close = () => {
     setSearchParams((perv) => {
       perv.delete(DELETE_ENVIRONMENT_PARAM_NAME);
       return perv;
     });
+    fetcher.resetErrors();
+  };
 
   return (
     <Dialog
@@ -63,11 +67,7 @@ export function DeleteEnvironment() {
             data, configurations, and resources. This action{' '}
             <span className="font-medium">cannot be undone</span>.
           </p>
-          <fetcher.Form
-            id={formId}
-            method="DELETE"
-            action={`/accounts/${accountId}/environments`}
-          >
+          <fetcher.Form id={formId} method="DELETE" action={action}>
             <input name="environmentId" type="hidden" value={environmentId} />
             <FormFieldInput
               autoFocus

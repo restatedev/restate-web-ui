@@ -1,23 +1,29 @@
-import { useFetcher, useSearchParams } from '@remix-run/react';
+import { useSearchParams } from '@remix-run/react';
 import { Button, SubmitButton } from '@restate/ui/button';
 import { Dialog, DialogContent } from '@restate/ui/dialog';
 import { useId } from 'react';
 import { CREATE_ENVIRONMENT_PARAM_NAME } from './constants';
 import { FormFieldInput } from '@restate/ui/form-field';
 import { useAccountParam } from '@restate/features/cloud/utils-routes';
+import { clientAction } from './action';
+import { Error as ErrorBanner } from '@restate/ui/error';
+import { useFetcherWithError } from '@restate/util/remix';
 
 export function CreateEnvironment() {
-  const fetcher = useFetcher();
   const formId = useId();
   const accountId = useAccountParam();
+  const action = `/accounts/${accountId}/environments`;
+  const fetcher = useFetcherWithError<typeof clientAction>({ key: action });
   const [searchParams, setSearchParams] = useSearchParams();
   const shouldShowCreateAccount =
     searchParams.get(CREATE_ENVIRONMENT_PARAM_NAME) === 'true';
-  const close = () =>
+  const close = () => {
     setSearchParams((perv) => {
       perv.delete(CREATE_ENVIRONMENT_PARAM_NAME);
       return perv;
     });
+    fetcher.resetErrors();
+  };
 
   return (
     <Dialog
@@ -30,18 +36,25 @@ export function CreateEnvironment() {
     >
       <DialogContent
         footer={
-          <div className="flex gap-2">
-            <Button
-              onClick={close}
-              variant="secondary"
-              className="flex-auto"
-              disabled={fetcher.state === 'submitting'}
-            >
-              Cancel
-            </Button>
-            <SubmitButton variant="primary" form={formId} className="flex-auto">
-              Create
-            </SubmitButton>
+          <div className="flex gap-2 flex-col">
+            <ErrorBanner errors={fetcher.errors} />
+            <div className="flex gap-2">
+              <Button
+                onClick={close}
+                variant="secondary"
+                className="flex-auto"
+                disabled={fetcher.state === 'submitting'}
+              >
+                Cancel
+              </Button>
+              <SubmitButton
+                variant="primary"
+                form={formId}
+                className="flex-auto"
+              >
+                Create
+              </SubmitButton>
+            </div>
           </div>
         }
       >
@@ -53,11 +66,7 @@ export function CreateEnvironment() {
             Please provide a brief description for your new restate Cloud
             environment
           </p>
-          <fetcher.Form
-            id={formId}
-            method="POST"
-            action={`/accounts/${accountId}/environments`}
-          >
+          <fetcher.Form id={formId} method="POST" action={action}>
             <FormFieldInput
               autoFocus
               required
