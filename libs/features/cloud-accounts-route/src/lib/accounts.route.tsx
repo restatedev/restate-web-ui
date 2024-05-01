@@ -1,30 +1,20 @@
 import { Outlet, useLoaderData } from '@remix-run/react';
-import { AccountSelector } from './AccountSelector';
-import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import { clientLoader } from './loader';
-import { useEnvironmentParam } from '@restate/features/cloud/utils-routes';
 import { clientAction } from './action';
+import { CreateAccountOnboarding } from './CreateAccountOnboarding';
 
 function Component() {
-  const environmentId = useEnvironmentParam();
-  const { accounts } = useLoaderData<typeof clientLoader>();
+  const loaderData = useLoaderData<typeof clientLoader>();
 
-  if (environmentId) {
-    return <Outlet />;
+  if (loaderData?.accountsList?.error) {
+    return <p>failed</p>;
+  }
+  const accounts = loaderData?.accountsList?.data?.accounts ?? [];
+  if (accounts.length === 0) {
+    return <CreateAccountOnboarding />;
   }
 
-  return (
-    <>
-      {!environmentId && (
-        <LayoutOutlet zone={LayoutZone.AppBar}>
-          <div className="shadow-sm rounded-xl">
-            <AccountSelector accounts={accounts} />
-          </div>
-        </LayoutOutlet>
-      )}
-      <Outlet />
-    </>
-  );
+  return <Outlet />;
 }
 
 export const accounts = { clientAction, clientLoader, Component };

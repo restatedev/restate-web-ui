@@ -61,8 +61,11 @@ export function CreateAccount() {
             Create account
           </h3>
           <p className="text-sm text-gray-500">
-            Please give a short description to initialize your new account on
-            the restate Cloud platform.
+            A restate Cloud account enables you to control resources, users, and
+            permissions.
+          </p>
+          <p className="text-sm text-gray-500 mt-2">
+            Please provide a brief description to set up your new account.
           </p>
           <fetcher.Form id={formId} method="POST" action={action}>
             <FormFieldInput

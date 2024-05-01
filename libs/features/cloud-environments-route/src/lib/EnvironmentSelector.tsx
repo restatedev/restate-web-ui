@@ -38,16 +38,20 @@ interface EnvironmentSelectorProps {}
 
 export function EnvironmentSelector(props: EnvironmentSelectorProps) {
   const currentAccountId = useAccountParam();
-  const { environmentsWithDetailsPromises } =
+  const { environmentList, environmentsWithDetailsPromises } =
     useLoaderData<typeof clientLoader>();
   const currentEnvironmentParam = useEnvironmentParam();
   invariant(currentAccountId, 'Account id is missing');
 
   if (!currentEnvironmentParam) {
+    return <CreateEnvironment />;
+  }
+
+  if (environmentList.error) {
     return (
-      <Form method="POST">
-        <SubmitButton>Create Environment</SubmitButton>
-      </Form>
+      <Await resolve={environmentList}>
+        <EnvironmentSelectorContent />
+      </Await>
     );
   }
 
@@ -66,7 +70,7 @@ function EnvironmentSelectorContent() {
   const environmentDetails = useAsyncValue() as Awaited<
     ReturnType<typeof describeEnvironment>
   >;
-  const { environments, environmentsWithDetailsPromises } =
+  const { environmentList, environmentsWithDetailsPromises } =
     useLoaderData<typeof clientLoader>();
   const [, setSearchParams] = useSearchParams();
   const currentAccountId = useAccountParam();
@@ -96,7 +100,7 @@ function EnvironmentSelectorContent() {
               <div className="truncate opacity-60 col-start-2 row-start-2 w-full">
                 {environmentDetails?.data?.description}
               </div>
-              {environmentDetails.error && (
+              {environmentDetails?.error && (
                 <InlineError className="truncate row-start-2 w-full col-start-1">
                   Failed to load environment details
                 </InlineError>
@@ -108,36 +112,40 @@ function EnvironmentSelectorContent() {
       </DropdownTrigger>
 
       <DropdownPopover>
-        <DropdownSection title="Switch environment" className="max-w-xl">
-          <DropdownMenu
-            selectable
-            {...(currentEnvironmentId && {
-              selectedItems: [currentEnvironmentId],
-            })}
-          >
-            {environments.map((environment) => (
-              <DropdownItem
-                href={toEnvironmentRoute(currentAccountId, environment)}
-                key={environment.environmentId}
-                value={environment.environmentId}
-                className="group"
-              >
-                <Suspense fallback={<p>loading env</p>}>
-                  <Await
-                    resolve={
-                      environmentsWithDetailsPromises[environment.environmentId]
-                    }
-                    errorElement={<p>failed to load</p>}
-                  >
-                    <EnvironmentItem
-                      environmentId={environment.environmentId}
-                    />
-                  </Await>
-                </Suspense>
-              </DropdownItem>
-            ))}
-          </DropdownMenu>
-        </DropdownSection>
+        {(environmentList.data?.environments ?? []).length > 0 && (
+          <DropdownSection title="Switch environment" className="max-w-xl">
+            <DropdownMenu
+              selectable
+              {...(currentEnvironmentId && {
+                selectedItems: [currentEnvironmentId],
+              })}
+            >
+              {environmentList.data?.environments.map((environment) => (
+                <DropdownItem
+                  href={toEnvironmentRoute(currentAccountId, environment)}
+                  key={environment.environmentId}
+                  value={environment.environmentId}
+                  className="group"
+                >
+                  <Suspense fallback={<p>loading env</p>}>
+                    <Await
+                      resolve={
+                        environmentsWithDetailsPromises[
+                          environment.environmentId
+                        ]
+                      }
+                      errorElement={<p>failed to load</p>}
+                    >
+                      <EnvironmentItem
+                        environmentId={environment.environmentId}
+                      />
+                    </Await>
+                  </Suspense>
+                </DropdownItem>
+              ))}
+            </DropdownMenu>
+          </DropdownSection>
+        )}
         <DropdownMenu
           autoFocus={false}
           onSelect={() =>

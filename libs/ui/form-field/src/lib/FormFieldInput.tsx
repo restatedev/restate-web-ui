@@ -9,7 +9,7 @@ import { FormFieldError } from './FormFieldError';
 import { ComponentProps } from 'react';
 
 const inputStyles = tv({
-  base: 'invalid:border-red-600 invalid:bg-red-100/70 focus:outline focus:border-gray-200 focus:shadow-none focus:outline-blue-600 focus:[box-shadow:inset_0_1px_0px_0px_rgba(0,0,0,0.03)] shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] mt-0 bg-gray-100 rounded-lg border border-gray-200 py-1.5 text-gray-900 placeholder:text-gray-500/70 px-2 w-full min-w-0 text-sm text-gray-800 disabled:text-gray-200',
+  base: 'invalid:border-red-600 invalid:bg-red-100/70 focus:outline focus:border-gray-200 disabled:text-gray-400 disabled:placeholder:text-gray-300 disabled:bg-gray-100 disabled:border-gray-100 disabled:shadow-none focus:shadow-none focus:outline-blue-600 focus:[box-shadow:inset_0_1px_0px_0px_rgba(0,0,0,0.03)] shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] mt-0 bg-gray-100 rounded-lg border border-gray-200 py-1.5 placeholder:text-gray-500/70 px-2 w-full min-w-0 text-sm text-gray-900',
 });
 const containerStyles = tv({
   base: '',

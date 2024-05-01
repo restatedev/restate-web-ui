@@ -4,6 +4,7 @@ import {
   describeEnvironmentWithCache,
   listEnvironmentsWithCache,
 } from './apis';
+import { CREATE_ENVIRONMENT_PARAM_NAME } from './constants';
 
 export const clientLoader = async ({
   request,
@@ -11,10 +12,11 @@ export const clientLoader = async ({
 }: ClientLoaderFunctionArgs) => {
   const { accountId } = params;
   invariant(accountId, 'Missing accountId param');
-  const { data: environmentList } = await listEnvironmentsWithCache.fetch({
+  const searchParams = new URL(request.url).searchParams;
+  const environmentList = await listEnvironmentsWithCache.fetch({
     accountId,
   });
-  const environments = environmentList?.environments ?? [];
+  const environments = environmentList?.data?.environments ?? [];
 
   const environmentsWithDetailsPromises = environments
     .map((environment) => ({
@@ -37,8 +39,12 @@ export const clientLoader = async ({
     );
   }
 
+  if (!isEnvironmentIdParamValid && params.environmentId) {
+    return redirect(`/accounts/${params.accountId}/environments`);
+  }
+
   return defer({
-    environments,
+    environmentList,
     environmentsWithDetailsPromises,
   });
 };

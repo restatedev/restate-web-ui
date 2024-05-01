@@ -63,19 +63,24 @@ export function CreateEnvironment() {
             Create environment
           </h3>
           <p className="text-sm text-gray-500">
-            Please provide a brief description for your new restate Cloud
-            environment
+            Setting up a restate Cloud environment is the most convenient method
+            to acquire your dedicated restate server instance.
           </p>
-          <fetcher.Form id={formId} method="POST" action={action}>
-            <FormFieldInput
-              autoFocus
-              required
-              name="description"
-              className="mt-2"
-              placeholder="Description"
-              maxLength={100}
-            />
-          </fetcher.Form>
+          <div>
+            <p className="text-sm text-gray-500 mt-2">
+              Please provide a brief description for your new environment
+            </p>
+            <fetcher.Form id={formId} method="POST" action={action}>
+              <FormFieldInput
+                autoFocus
+                required
+                name="description"
+                className="mt-2"
+                placeholder="Description"
+                maxLength={100}
+              />
+            </fetcher.Form>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
