@@ -47,7 +47,7 @@ export function CreateEnvironment() {
       >
         <div className="flex flex-col gap-2">
           <h3 className="text-lg font-medium leading-6 text-gray-900">
-            Create Environment
+            Create environment
           </h3>
           <p className="text-sm text-gray-500">
             Please provide a brief description for your new restate Cloud

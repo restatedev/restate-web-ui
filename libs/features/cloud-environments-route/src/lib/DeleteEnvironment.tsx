@@ -56,7 +56,7 @@ export function DeleteEnvironment() {
       >
         <div className="flex flex-col gap-2">
           <h3 className="text-lg font-medium leading-6 text-gray-900">
-            Delete Environment
+            Delete environment
           </h3>
           <p className="text-sm text-gray-500">
             Deleting this environment will permanently erase all associated
