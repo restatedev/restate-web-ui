@@ -2,6 +2,7 @@ import { Outlet, useLoaderData } from '@remix-run/react';
 import { clientLoader } from './loader';
 import { clientAction } from './action';
 import { CreateAccountOnboarding } from './CreateAccountOnboarding';
+import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 
 function Component() {
   const loaderData = useLoaderData<typeof clientLoader>();
@@ -11,7 +12,12 @@ function Component() {
   }
   const accounts = loaderData?.accountsList?.data?.accounts ?? [];
   if (accounts.length === 0) {
-    return <CreateAccountOnboarding />;
+    return (
+      <>
+        <LayoutOutlet zone={LayoutZone.AppBar} variant="hidden" />
+        <CreateAccountOnboarding />
+      </>
+    );
   }
 
   return <Outlet />;

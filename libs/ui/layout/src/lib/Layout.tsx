@@ -50,6 +50,16 @@ export function LayoutProvider({ children }: PropsWithChildren<LayoutProps>) {
 export function LayoutOutlet({
   zone,
   children,
-}: PropsWithChildren<{ zone: LayoutZone }>) {
-  return createPortal(children, document.getElementById(ZONE_IDS[zone])!);
+  variant = 'primary',
+}: PropsWithChildren<{
+  zone: LayoutZone;
+  variant?: 'primary' | 'secondary' | 'hidden';
+}>) {
+  return createPortal(
+    <>
+      {children}
+      <div data-variant={variant} />
+    </>,
+    document.getElementById(ZONE_IDS[zone])!
+  );
 }

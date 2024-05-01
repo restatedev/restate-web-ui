@@ -19,7 +19,7 @@ function Component() {
   if (!environmentId) {
     return (
       <>
-        <LayoutOutlet zone={LayoutZone.AppBar}>
+        <LayoutOutlet zone={LayoutZone.AppBar} variant="secondary">
           <div className="flex items-center gap-2">
             {accountsResponse?.accountsList?.data?.accounts && (
               <AccountSelector
