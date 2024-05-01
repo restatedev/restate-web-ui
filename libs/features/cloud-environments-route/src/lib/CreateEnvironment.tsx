@@ -6,7 +6,7 @@ import { CREATE_ENVIRONMENT_PARAM_NAME } from './constants';
 import { FormFieldInput } from '@restate/ui/form-field';
 import { useAccountParam } from '@restate/features/cloud/utils-routes';
 import { clientAction } from './action';
-import { Error as ErrorBanner } from '@restate/ui/error';
+import { ErrorBanner } from '@restate/ui/error';
 import { useFetcherWithError } from '@restate/util/remix';
 
 export function CreateEnvironment() {

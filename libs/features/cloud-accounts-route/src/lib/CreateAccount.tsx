@@ -6,6 +6,7 @@ import { CREATE_ACCOUNT_PARAM_NAME } from './constants';
 import { FormFieldInput } from '@restate/ui/form-field';
 import { useFetcherWithError } from '@restate/util/remix';
 import { clientAction } from './action';
+import { ErrorBanner } from '@restate/ui/error';
 
 export function CreateAccount() {
   const action = '/accounts';
@@ -33,18 +34,25 @@ export function CreateAccount() {
     >
       <DialogContent
         footer={
-          <div className="flex gap-2">
-            <Button
-              onClick={close}
-              variant="secondary"
-              className="flex-auto"
-              disabled={fetcher.state === 'submitting'}
-            >
-              Cancel
-            </Button>
-            <SubmitButton variant="primary" form={formId} className="flex-auto">
-              Create
-            </SubmitButton>
+          <div className="flex gap-2 flex-col">
+            <ErrorBanner errors={fetcher.errors} />
+            <div className="flex gap-2">
+              <Button
+                onClick={close}
+                variant="secondary"
+                className="flex-auto"
+                disabled={fetcher.state === 'submitting'}
+              >
+                Cancel
+              </Button>
+              <SubmitButton
+                variant="primary"
+                form={formId}
+                className="flex-auto"
+              >
+                Create
+              </SubmitButton>
+            </div>
           </div>
         }
       >

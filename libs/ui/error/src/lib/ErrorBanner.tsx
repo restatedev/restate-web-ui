@@ -25,7 +25,7 @@ function SingleError({ error }: { error?: Error }) {
   );
 }
 
-export function Error({ errors = [], isFetching }: ErrorProps) {
+export function ErrorBanner({ errors = [], isFetching }: ErrorProps) {
   if (errors.length === 0 || isFetching) {
     return null;
   }

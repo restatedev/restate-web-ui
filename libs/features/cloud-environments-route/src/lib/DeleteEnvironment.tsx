@@ -9,6 +9,7 @@ import {
   useEnvironmentParam,
 } from '@restate/features/cloud/utils-routes';
 import { useFetcherWithError } from '@restate/util/remix';
+import { ErrorBanner } from '@restate/ui/error';
 
 export function DeleteEnvironment() {
   const formId = useId();
@@ -39,22 +40,25 @@ export function DeleteEnvironment() {
     >
       <DialogContent
         footer={
-          <div className="flex gap-2">
-            <Button
-              onClick={close}
-              variant="secondary"
-              className="flex-auto"
-              disabled={fetcher.state === 'submitting'}
-            >
-              Cancel
-            </Button>
-            <SubmitButton
-              variant="destructive"
-              form={formId}
-              className="flex-auto"
-            >
-              Delete
-            </SubmitButton>
+          <div className="flex gap-2 flex-col">
+            <ErrorBanner errors={fetcher.errors} />
+            <div className="flex gap-2">
+              <Button
+                onClick={close}
+                variant="secondary"
+                className="flex-auto"
+                disabled={fetcher.state === 'submitting'}
+              >
+                Cancel
+              </Button>
+              <SubmitButton
+                variant="destructive"
+                form={formId}
+                className="flex-auto"
+              >
+                Delete
+              </SubmitButton>
+            </div>
           </div>
         }
       >
