@@ -4,6 +4,6 @@
 
 @layer base {
   html {
-    font-family: 'Helvetica', system-ui, sans-serif;
+    font-family: 'Inter var', 'Helvetica', system-ui, sans-serif;
   }
 }
