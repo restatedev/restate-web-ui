@@ -16,10 +16,13 @@ export function CreateAccount() {
   const shouldShowCreateAccount =
     searchParams.get(CREATE_ACCOUNT_PARAM_NAME) === 'true';
   const close = () => {
-    setSearchParams((perv) => {
-      perv.delete(CREATE_ACCOUNT_PARAM_NAME);
-      return perv;
-    });
+    setSearchParams(
+      (perv) => {
+        perv.delete(CREATE_ACCOUNT_PARAM_NAME);
+        return perv;
+      },
+      { preventScrollReset: true }
+    );
     fetcher.resetErrors();
   };
 

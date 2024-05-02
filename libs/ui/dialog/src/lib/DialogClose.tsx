@@ -7,6 +7,7 @@ interface DialogCLoseProps {}
 
 export function DialogClose({ children }: PropsWithChildren<DialogCLoseProps>) {
   const state = useContext(OverlayTriggerStateContext);
+
   return (
     <PressResponder
       onPress={() => {

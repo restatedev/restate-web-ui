@@ -39,7 +39,8 @@ export const cloudApiDb = factory({
         'rst:role::AdminAccess',
         'rst:role::ResolveAwakeableAccess',
       ] as const),
-    state: () => faker.helpers.arrayElement(['ACTIVE', 'DELETED'] as const),
+    state: () => 'ACTIVE' as 'ACTIVE' | 'DELETED',
+    description: () => faker.lorem.words(4),
   },
 });
 

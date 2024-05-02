@@ -22,10 +22,13 @@ export function DeleteEnvironment() {
     environmentId && searchParams.get(DELETE_ENVIRONMENT_PARAM_NAME) === 'true'
   );
   const close = () => {
-    setSearchParams((perv) => {
-      perv.delete(DELETE_ENVIRONMENT_PARAM_NAME);
-      return perv;
-    });
+    setSearchParams(
+      (perv) => {
+        perv.delete(DELETE_ENVIRONMENT_PARAM_NAME);
+        return perv;
+      },
+      { preventScrollReset: true }
+    );
     fetcher.resetErrors();
   };
 
@@ -77,7 +80,7 @@ export function DeleteEnvironment() {
               autoFocus
               required
               pattern="delete"
-              name="description"
+              name="confirm"
               className="mt-2"
               placeholder='Type "delete" to confirm'
               errorMessage={(errors) => {

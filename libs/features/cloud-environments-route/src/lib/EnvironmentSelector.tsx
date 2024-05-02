@@ -149,10 +149,13 @@ function EnvironmentSelectorContent() {
         <DropdownMenu
           autoFocus={false}
           onSelect={() =>
-            setSearchParams((perv) => {
-              perv.set(CREATE_ENVIRONMENT_PARAM_NAME, 'true');
-              return perv;
-            })
+            setSearchParams(
+              (perv) => {
+                perv.set(CREATE_ENVIRONMENT_PARAM_NAME, 'true');
+                return perv;
+              },
+              { preventScrollReset: true }
+            )
           }
         >
           <DropdownItem>
@@ -165,10 +168,13 @@ function EnvironmentSelectorContent() {
         <DropdownMenu
           autoFocus={false}
           onSelect={() =>
-            setSearchParams((perv) => {
-              perv.set(DELETE_ENVIRONMENT_PARAM_NAME, 'true');
-              return perv;
-            })
+            setSearchParams(
+              (perv) => {
+                perv.set(DELETE_ENVIRONMENT_PARAM_NAME, 'true');
+                return perv;
+              },
+              { preventScrollReset: true }
+            )
           }
         >
           <DropdownItem destructive>

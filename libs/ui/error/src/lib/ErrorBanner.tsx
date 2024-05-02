@@ -34,7 +34,7 @@ export function ErrorBanner({ errors = [] }: ErrorProps) {
   }
 
   return (
-    <div className="rounded-md bg-red-100 p-3">
+    <div className="rounded-xl bg-red-100 p-3">
       <div className="flex">
         <div className="flex-shrink-0">
           <Icon

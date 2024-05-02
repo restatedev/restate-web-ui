@@ -1,22 +1,21 @@
 import {
   ClientLoaderFunctionArgs,
-  ClientActionFunctionArgs,
   useLoaderData,
   Form,
   defer,
   Await,
 } from '@remix-run/react';
-import {
-  isRole,
-  createApiKey,
-  listApiKeys,
-  describeApiKey,
-} from '@restate/data-access/cloud/api-client';
+import { describeApiKey } from '@restate/data-access/cloud/api-client';
 import { SubmitButton } from '@restate/ui/button';
 import { FormFieldLabel } from '@restate/ui/form-field';
 import { Radio, RadioGroup } from '@restate/ui/radio-group';
 import { Suspense } from 'react';
 import invariant from 'tiny-invariant';
+import { clientAction } from './action';
+import { listApiKeysWithCache } from './apis';
+import { ApiKeyItem } from './ApiKeyItem';
+import { DeleteAPIKey } from './DeleteAPIKey';
+import { CreateApiKey } from './CreateApiKey';
 
 const clientLoader = async ({ request, params }: ClientLoaderFunctionArgs) => {
   const accountId = params.accountId;
@@ -24,94 +23,66 @@ const clientLoader = async ({ request, params }: ClientLoaderFunctionArgs) => {
   invariant(accountId, 'Missing accountId param');
   invariant(environmentId, 'Missing environmentId param');
 
-  const apiKeysWithDetailsPromises = listApiKeys({
-    accountId,
-    environmentId,
-  }).then((response) => {
-    const apiKeys = response.data?.apiKeys ?? [];
-    return apiKeys
-      .map(({ keyId }) => ({
-        [keyId]: describeApiKey({
-          accountId,
-          environmentId,
-          keyId,
-        }),
-      }))
-      .reduce((p, c) => ({ ...p, ...c }), {});
-  });
+  const apiKeysWithDetailsPromises = listApiKeysWithCache
+    .fetch({
+      accountId,
+      environmentId,
+    })
+    .then((response) => {
+      const apiKeys = response.data?.apiKeys ?? [];
+      return apiKeys
+        .map(({ keyId }) => ({
+          [keyId]: describeApiKey({
+            accountId,
+            environmentId,
+            keyId,
+          }),
+        }))
+        .reduce((p, c) => ({ ...p, ...c }), {});
+    });
 
   return defer({
     apiKeysWithDetailsPromises,
   });
 };
 
-// TODO: Error handling, Pending UI
-const clientAction = async ({ request, params }: ClientActionFunctionArgs) => {
-  const body = await request.formData();
-  const action = body.get('action');
-
-  if (action === 'createApiKey') {
-    const roleId = body.get('roleId');
-    invariant(params.accountId, 'Missing accountId param');
-    invariant(params.environmentId, 'Missing environmentId param');
-    invariant(isRole(roleId), 'Missing roleId param');
-
-    const { data } = await createApiKey({
-      accountId: params.accountId,
-      environmentId: params.environmentId,
-      roleId,
-    });
-    return data;
-  }
-
-  return null;
-};
-
 function Component() {
   const { apiKeysWithDetailsPromises } = useLoaderData<typeof clientLoader>();
 
   return (
-    <div>
-      <Suspense fallback={<p>loading list</p>}>
-        <Await resolve={apiKeysWithDetailsPromises}>
-          {(apiKeysWithDetails) => (
-            <ul>
-              {Object.keys(apiKeysWithDetails).map((keyId) => (
-                <li key={keyId}>
-                  <Suspense fallback={<p>loading key</p>}>
+    <div className="grid gap-x-10 gap-y-4 sm:grid-cols-[20ch_1fr]">
+      <div>
+        <h2 className="text-base font-semibold leading-7 text-gray-900">
+          API keys
+        </h2>
+        <p className="mt-1 text-sm leading-6 text-gray-600">
+          You will need an API key to interact with your restate Cloud instance.
+        </p>
+      </div>
+      <div className="flex flex-col gap-2">
+        <Suspense fallback={<p>loading list</p>}>
+          <Await resolve={apiKeysWithDetailsPromises}>
+            {(apiKeysWithDetails) => (
+              <ul className="flex flex-col gap-2">
+                {Object.keys(apiKeysWithDetails).map((keyId) => (
+                  <Suspense fallback={<p>loading key</p>} key={keyId}>
                     <Await
                       resolve={apiKeysWithDetails[keyId]}
                       errorElement={<p>failed key</p>}
                     >
-                      {(apiKeyDetails) => (
-                        <p>
-                          {apiKeyDetails?.data?.keyId}:
-                          {apiKeyDetails?.data?.roleId}
-                        </p>
-                      )}
+                      <ApiKeyItem />
                     </Await>
                   </Suspense>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Await>
-      </Suspense>
-
-      <Form method="post">
-        <RadioGroup name="roleId" required>
-          <FormFieldLabel>Role</FormFieldLabel>
-          <Radio value="rst:role::FullAccess">Full Access</Radio>
-          <Radio value="rst:role::IngressAccess">Ingress Access</Radio>
-          <Radio value="rst:role::AdminAccess">Admin Access</Radio>
-          <Radio value="rst:role::ResolveAwakeableAccess">
-            Resolve Awakeable Access
-          </Radio>
-        </RadioGroup>
-        <SubmitButton name="action" value="createApiKey">
-          Create API Key
-        </SubmitButton>
-      </Form>
+                ))}
+              </ul>
+            )}
+          </Await>
+        </Suspense>
+        <DeleteAPIKey />
+        <div>
+          <CreateApiKey />
+        </div>
+      </div>
     </div>
   );
 }

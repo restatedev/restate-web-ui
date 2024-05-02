@@ -275,6 +275,7 @@ const createApiKeyHandler = http.post<
     apiKey: apiKey.apiKey,
     state: apiKey.state,
     keyId: apiKey.keyId,
+    description: apiKey.description,
   });
 });
 
@@ -310,6 +311,7 @@ const describeApiKeyHandler = http.post<
     apiKey: apiKey.apiKey,
     state: apiKey.state,
     keyId: apiKey.keyId,
+    description: apiKey.description,
   });
 });
 
@@ -323,11 +325,14 @@ const deleteApiKeyHandler = http.post<
   GetPath<'/{accountId}/DeleteApiKey'>
 >('/:accountId/DeleteApiKey', async ({ request }) => {
   const requestBody = await request.json();
-  const apiKey = cloudApiDb.apiKey.findFirst({
+  const apiKey = cloudApiDb.apiKey.update({
     where: {
       keyId: {
         equals: requestBody.keyId,
       },
+    },
+    data: {
+      state: 'DELETED',
     },
   });
 

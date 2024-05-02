@@ -18,10 +18,13 @@ export function CreateEnvironment() {
   const shouldShowCreateAccount =
     searchParams.get(CREATE_ENVIRONMENT_PARAM_NAME) === 'true';
   const close = () => {
-    setSearchParams((perv) => {
-      perv.delete(CREATE_ENVIRONMENT_PARAM_NAME);
-      return perv;
-    });
+    setSearchParams(
+      (perv) => {
+        perv.delete(CREATE_ENVIRONMENT_PARAM_NAME);
+        return perv;
+      },
+      { preventScrollReset: true }
+    );
     fetcher.resetErrors();
   };
 
