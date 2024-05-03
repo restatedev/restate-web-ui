@@ -37,7 +37,8 @@ export function CreateApiKey() {
     fetcher.resetErrors();
   }, [fetcher, setSearchParams]);
 
-  const apiKey = fetcher.data?.apiKey;
+  const apiKey =
+    fetcher.data && 'apiKey' in fetcher.data ? fetcher.data.apiKey : undefined;
 
   return (
     <Dialog
