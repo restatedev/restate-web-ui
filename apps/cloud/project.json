@@ -12,7 +12,7 @@
       },
       "configurations": {
         "mock": {
-          "command": "cd apps/cloud && RESTATE_CLOUD_API_URL=http://localhost:4200 ../../node_modules/.bin/remix vite:dev --port=4200"
+          "command": "cd apps/cloud && RESTATE_CLOUD_LOGIN_URL='https://restate-cloud-signup-test.auth.eu-central-1.amazoncognito.com/login?response_type=token&client_id=1v1rkegmilgjlphium3ksgurek&redirect_uri=https://restate.dev/' RESTATE_CLOUD_API_URL=http://localhost:4200 ../../node_modules/.bin/remix vite:dev --port=4200"
         }
       }
     },
@@ -20,6 +20,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
+          "rm -R -f dist/apps/cloud",
           "cd apps/cloud && ../../node_modules/.bin/remix vite:build",
           "mkdir -p dist/apps/cloud",
           "mv apps/cloud/build/client/* dist/apps/cloud",
