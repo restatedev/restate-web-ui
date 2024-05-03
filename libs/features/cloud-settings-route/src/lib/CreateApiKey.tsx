@@ -1,4 +1,4 @@
-import { useFetcher, useSearchParams } from '@remix-run/react';
+import { useSearchParams } from '@remix-run/react';
 import { Button, SubmitButton } from '@restate/ui/button';
 import { Dialog, DialogContent, DialogFooter } from '@restate/ui/dialog';
 import { useCallback, useId, useState } from 'react';
