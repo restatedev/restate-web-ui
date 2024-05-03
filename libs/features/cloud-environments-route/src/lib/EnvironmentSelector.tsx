@@ -107,7 +107,10 @@ function EnvironmentSelectorContent() {
               )}
             </div>
           </div>
-          <Icon name={IconName.ChevronsUpDown} className="text-gray-400" />
+          <Icon
+            name={IconName.ChevronsUpDown}
+            className="text-gray-400 flex-shrink-0"
+          />
         </Button>
       </DropdownTrigger>
 
