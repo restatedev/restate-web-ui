@@ -169,7 +169,7 @@ function CreateApiForm({
               <CustomRadio
                 value="rst:role::ResolveAwakeableAccess"
                 label="Resolve Awakeable"
-                description="Can resolves any awakeables"
+                description="Can resolve any awakeables"
               />
               <CustomRadio
                 value="rst:role::IngressAccess"
@@ -184,7 +184,7 @@ function CreateApiForm({
               <CustomRadio
                 value="rst:role::FullAccess"
                 label="Full"
-                description="Has access to all components of the restate server."
+                description="Has access to all parts of the restate server."
               />
             </div>
           </RadioGroup>
@@ -266,7 +266,7 @@ function CreateApiResult({
                 variant="secondary"
                 className="flex-auto"
               >
-                Cancel
+                Done
               </Button>
             </div>
           </div>

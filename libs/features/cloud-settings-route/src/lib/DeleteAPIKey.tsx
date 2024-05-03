@@ -49,8 +49,7 @@ export function DeleteAPIKey() {
           <p className="text-sm text-gray-500">
             Are you sure you want to delete this API key? Deleting it will
             permanently remove access to the associated services and{' '}
-            <span className="font-medium">cannot be undone</span>. Please
-            confirm to proceed or cancel to keep the API key.
+            <span className="font-medium">cannot be undone</span>.
           </p>
           <fetcher.Form id={formId} method="DELETE" action={action}>
             <input hidden value="deleteApiKey" name="_action" />
@@ -59,6 +58,9 @@ export function DeleteAPIKey() {
               value={String(searchParams.get(DELETE_API_KEY_PARAM_NAME))}
               name="keyId"
             />
+            <p className="text-sm text-gray-500 mt-2">
+              Please confirm to proceed or cancel to keep the API key.
+            </p>
             <FormFieldInput
               autoFocus
               required

@@ -76,6 +76,9 @@ export function DeleteEnvironment() {
           </p>
           <fetcher.Form id={formId} method="DELETE" action={action}>
             <input name="environmentId" type="hidden" value={environmentId} />
+            <p className="text-sm text-gray-500 mt-2">
+              Please confirm to proceed or cancel to keep the API key.
+            </p>
             <FormFieldInput
               autoFocus
               required

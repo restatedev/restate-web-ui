@@ -4,12 +4,13 @@ import {
   defer,
   Await,
   useAsyncValue,
+  useSearchParams,
 } from '@remix-run/react';
 import {
   describeApiKey,
   listApiKeys,
 } from '@restate/data-access/cloud/api-client';
-import { Suspense } from 'react';
+import { PropsWithChildren, Suspense } from 'react';
 import invariant from 'tiny-invariant';
 import { clientAction } from './action';
 import { listApiKeysWithCache } from './apis';
@@ -17,6 +18,9 @@ import { ApiKeyItem } from './ApiKeyItem';
 import { DeleteAPIKey } from './DeleteAPIKey';
 import { CreateApiKey } from './CreateApiKey';
 import { ErrorBanner } from '@restate/ui/error';
+import { Icon, IconName } from '@restate/ui/icons';
+import { Button } from '@restate/ui/button';
+import { CREATE_API_KEY_PARAM_NAME } from './constants';
 
 const clientLoader = async ({ request, params }: ClientLoaderFunctionArgs) => {
   const accountId = params.accountId;
@@ -66,13 +70,14 @@ function Component() {
       <div className="flex flex-col gap-2">
         <Suspense fallback={<LoadingKeys />}>
           <Await resolve={apiKeysWithDetailsPromises}>
-            <APIKeys />
+            <APIKeys>
+              <div>
+                <CreateApiKey />
+              </div>
+              <DeleteAPIKey />
+            </APIKeys>
           </Await>
         </Suspense>
-        <DeleteAPIKey />
-        <div>
-          <CreateApiKey />
-        </div>
       </div>
     </div>
   );
@@ -89,7 +94,7 @@ function isLoadedKeys(
   return !response.error;
 }
 
-function APIKeys() {
+function APIKeys({ children }: PropsWithChildren<object>) {
   const apiKeysWithDetails = useAsyncValue() as
     | Record<Exclude<string, 'error'>, ReturnType<typeof describeApiKey>>
     | Pick<Awaited<ReturnType<typeof listApiKeys>>, 'error'>;
@@ -97,16 +102,23 @@ function APIKeys() {
     return <ErrorBanner errors={[new Error('Failed to load API keys.')]} />;
   }
 
+  if (Object.keys(apiKeysWithDetails).length === 0) {
+    return <NoApiKeys />;
+  }
+
   return (
-    <ul className="flex flex-col gap-2">
-      {Object.keys(apiKeysWithDetails).map((keyId) => (
-        <Suspense fallback={<LoadingKey />} key={keyId}>
-          <Await resolve={apiKeysWithDetails[keyId]}>
-            <ApiKeyItem keyId={keyId} />
-          </Await>
-        </Suspense>
-      ))}
-    </ul>
+    <>
+      {children}
+      <ul className="flex flex-col gap-2">
+        {Object.keys(apiKeysWithDetails).map((keyId) => (
+          <Suspense fallback={<LoadingKey />} key={keyId}>
+            <Await resolve={apiKeysWithDetails[keyId]}>
+              <ApiKeyItem keyId={keyId} />
+            </Await>
+          </Suspense>
+        ))}
+      </ul>
+    </>
   );
 }
 
@@ -125,4 +137,18 @@ function LoadingKey() {
     <div className="animate-pulse bg-slate-200 rounded-xl h-[4.375rem] w-full" />
   );
 }
+function NoApiKeys() {
+  return (
+    <div className="flex flex-col gap-2 items-center relative w-full rounded-xl border border-gray-200 p-8 text-center bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] ">
+      <h3 className="text-sm font-semibold text-gray-600">No API Keys</h3>
+      <p className="text-sm text-gray-500">
+        Get started by creating a new API Key
+      </p>
+      <div className="mt-4">
+        <CreateApiKey />
+      </div>
+    </div>
+  );
+}
+
 export const settings = { clientAction, clientLoader, Component };
