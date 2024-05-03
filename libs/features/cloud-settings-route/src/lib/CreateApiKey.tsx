@@ -230,9 +230,10 @@ function CreateApiResult({
         Create API key
       </h3>
       <p className="text-sm text-gray-500">
-        Your API key has been create, please make sure to make a note of it in a
-        secure place before closing the dialog. Otherwise it cannot been
-        retrieved.
+        Your API key has been successfully created. Please ensure you save it in
+        a secure location, as this{' '}
+        <span className="font-medium">key cannot be retrieved</span> once the
+        dialog is closed
       </p>
       <div>
         <div className="flex gap-2 items-start font-mono [overflow-wrap:anywhere] shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] mt-0 bg-gray-100 rounded-lg border border-gray-200 py-1.5 px-2 text-sm text-gray-900">
