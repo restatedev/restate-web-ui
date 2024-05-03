@@ -365,13 +365,15 @@ const listApiKeysHandler = http.post<
   });
 
   return HttpResponse.json({
-    apiKeys: apiKeys.map(({ state, keyId, environment, account, roleId }) => ({
-      state,
-      keyId,
-      environmentId: environment!.environmentId,
-      accountId: account?.accountId,
-      roleId,
-    })),
+    apiKeys: apiKeys
+      .filter(({ state }) => state !== 'DELETED')
+      .map(({ state, keyId, environment, account, roleId }) => ({
+        state,
+        keyId,
+        environmentId: environment!.environmentId,
+        accountId: account?.accountId,
+        roleId,
+      })),
   });
 });
 

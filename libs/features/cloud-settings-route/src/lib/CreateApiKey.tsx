@@ -1,4 +1,4 @@
-import { useSearchParams } from '@remix-run/react';
+import { useAsyncValue, useSearchParams } from '@remix-run/react';
 import { Button, SubmitButton } from '@restate/ui/button';
 import { Dialog, DialogContent, DialogFooter } from '@restate/ui/dialog';
 import { useCallback, useId, useState } from 'react';
@@ -14,8 +14,14 @@ import { useFetcherWithError } from '@restate/util/remix';
 import { RadioGroup } from '@restate/ui/radio-group';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Radio } from 'react-aria-components';
+import { describeApiKey } from '@restate/data-access/cloud/api-client';
 
 export function CreateApiKey() {
+  const apiKeysWithDetails = useAsyncValue() as Record<
+    string,
+    ReturnType<typeof describeApiKey>
+  >;
+  const hasAnyKeys = Object.keys(apiKeysWithDetails).length > 0;
   const formId = useId();
   const [count, setCount] = useState(0);
   const accountId = useAccountParam();
@@ -40,6 +46,25 @@ export function CreateApiKey() {
   const apiKey =
     fetcher.data && 'apiKey' in fetcher.data ? fetcher.data.apiKey : undefined;
 
+  const createKeyButton = (
+    <Button
+      onClick={() => {
+        setCount((c) => c + 1);
+        setSearchParams(
+          (perv) => {
+            perv.set(CREATE_API_KEY_PARAM_NAME, 'true');
+            return perv;
+          },
+          { preventScrollReset: true }
+        );
+      }}
+      variant="secondary"
+      className="flex gap-2 items-center"
+    >
+      <Icon name={IconName.Plus} /> Create API Key
+    </Button>
+  );
+
   return (
     <Dialog
       open={shouldShowCreateApiKey}
@@ -49,22 +74,18 @@ export function CreateApiKey() {
         }
       }}
     >
-      <Button
-        onClick={() => {
-          setCount((c) => c + 1);
-          setSearchParams(
-            (perv) => {
-              perv.set(CREATE_API_KEY_PARAM_NAME, 'true');
-              return perv;
-            },
-            { preventScrollReset: true }
-          );
-        }}
-        variant="secondary"
-        className="flex gap-2 items-center"
-      >
-        <Icon name={IconName.Plus} /> Create API Key
-      </Button>
+      {hasAnyKeys ? (
+        createKeyButton
+      ) : (
+        <div className="flex flex-col gap-2 items-center relative w-full rounded-xl border border-gray-200 p-8 text-center bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] ">
+          <h3 className="text-sm font-semibold text-gray-600">No API Keys</h3>
+          <p className="text-sm text-gray-500">
+            Get started by creating a new API Key
+          </p>
+          <div className="mt-4">{createKeyButton}</div>
+        </div>
+      )}
+
       <DialogContent className="max-w-md">
         {!apiKey ? (
           <CreateApiForm formId={formId} action={action} onClose={onClose} />
