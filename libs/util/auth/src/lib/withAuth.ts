@@ -1,8 +1,10 @@
-import type {
-  ClientLoaderFunction,
-  ClientLoaderFunctionArgs,
+import {
+  redirect,
+  type ClientLoaderFunction,
+  type ClientLoaderFunctionArgs,
 } from '@remix-run/react';
 import { getAccessToken, logOut, setAccessToken } from './accessToken';
+import { getRedirectUrl, removeRedirectUrl } from './redirectUrl';
 
 const ACCESS_TOKEN_PARAM_NAME = 'access_token';
 
@@ -22,8 +24,14 @@ export function withAuth(loader: ClientLoaderFunction) {
     }
 
     if (!getAccessToken()) {
-      logOut();
+      logOut({ persistRedirectUrl: true });
       return null;
+    }
+
+    const redirectUrl = getRedirectUrl();
+    if (redirectUrl) {
+      removeRedirectUrl();
+      return redirect(redirectUrl);
     }
 
     return loader(args);

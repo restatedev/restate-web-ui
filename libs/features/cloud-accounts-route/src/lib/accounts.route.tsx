@@ -6,8 +6,7 @@ import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 
 function Component() {
   const loaderData = useLoaderData<typeof clientLoader>();
-
-  if (loaderData?.accountsList?.error) {
+  if (loaderData?.accountsList?.error || !loaderData) {
     return null;
   }
   const accounts = loaderData?.accountsList?.data?.accounts ?? [];

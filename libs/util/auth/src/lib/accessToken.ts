@@ -3,6 +3,8 @@
  * Currently, we save the token there to enable users to authenticate across multiple sessions.
  */
 
+import { setRedirectUrl } from './redirectUrl';
+
 const ACCESS_TOKEN_KEY = 'atk';
 const LOGIN_URL =
   'https://restate-cloud-signup-test.auth.eu-central-1.amazoncognito.com/login?response_type=token&client_id=1v1rkegmilgjlphium3ksgurek&redirect_uri=https://restate.dev/';
@@ -15,7 +17,14 @@ export function setAccessToken(token: string) {
   localStorage.setItem(ACCESS_TOKEN_KEY, token);
 }
 
-export function logOut() {
+export function logOut({
+  persistRedirectUrl,
+}: {
+  persistRedirectUrl?: boolean;
+} = {}) {
+  if (persistRedirectUrl) {
+    setRedirectUrl();
+  }
   localStorage.removeItem(ACCESS_TOKEN_KEY);
   window.location.assign(LOGIN_URL);
 }
