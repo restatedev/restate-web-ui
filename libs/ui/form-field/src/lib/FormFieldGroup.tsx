@@ -2,6 +2,8 @@ import { focusRing } from '@restate/ui/focus';
 import { tv } from 'tailwind-variants';
 import { Group as AriaGroup } from 'react-aria-components';
 import { PropsWithChildren } from 'react';
+
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface FormFieldGroupProps {}
 
 const fieldBorderStyles = tv({

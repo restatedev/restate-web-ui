@@ -6,6 +6,7 @@ import { tv } from 'tailwind-variants';
 interface RadioProps {
   value: string;
   disabled?: boolean;
+  className?: string;
 }
 
 const styles = tv({
@@ -29,6 +30,7 @@ const styles = tv({
 export function Radio({
   children,
   disabled,
+  className,
   ...props
 }: PropsWithChildren<RadioProps>) {
   return (

@@ -14,7 +14,7 @@ function SingleError({ error }: { error?: Error }) {
       <div className="flex items-center gap-2">
         <div className="flex-shrink-0">
           <Icon
-            className="h-5 w-5 fill-red-500 text-gray-200"
+            className="h-5 w-5 fill-red-500 text-red-500"
             name={IconName.CircleX}
           />
         </div>
@@ -34,11 +34,11 @@ export function ErrorBanner({ errors = [] }: ErrorProps) {
   }
 
   return (
-    <div className="rounded-md bg-red-100 p-3">
+    <div className="rounded-xl bg-red-100 p-3">
       <div className="flex">
         <div className="flex-shrink-0">
           <Icon
-            className="h-5 w-5 fill-red-500 text-gray-200"
+            className="h-5 w-5 fill-red-500 text-red-500"
             name={IconName.CircleX}
           />
         </div>

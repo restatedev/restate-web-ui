@@ -69,10 +69,13 @@ export function AccountSelector({ accounts }: AccountSelectorProps) {
           <DropdownMenu
             autoFocus={false}
             onSelect={() =>
-              setSearchParams((perv) => {
-                perv.set(CREATE_ACCOUNT_PARAM_NAME, 'true');
-                return perv;
-              })
+              setSearchParams(
+                (perv) => {
+                  perv.set(CREATE_ACCOUNT_PARAM_NAME, 'true');
+                  return perv;
+                },
+                { preventScrollReset: true }
+              )
             }
           >
             <DropdownItem>

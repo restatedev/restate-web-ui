@@ -1,6 +1,7 @@
 import { PropsWithChildren } from 'react';
 import { Label as AriaLabel } from 'react-aria-components';
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface FormFieldLabelProps {}
 
 export function FormFieldLabel(props: PropsWithChildren<FormFieldLabelProps>) {

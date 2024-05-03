@@ -1,8 +1,8 @@
 import { useSearchParams } from '@remix-run/react';
 import { Button, SubmitButton } from '@restate/ui/button';
-import { Dialog, DialogContent } from '@restate/ui/dialog';
+import { Dialog, DialogContent, DialogFooter } from '@restate/ui/dialog';
 import { useId } from 'react';
-import { DELETE_ENVIRONMENT_PARAM_NAME } from './constants';
+import { DELETE_API_KEY_PARAM_NAME } from './constants';
 import { FormFieldInput } from '@restate/ui/form-field';
 import {
   useAccountParam,
@@ -11,20 +11,20 @@ import {
 import { useFetcherWithError } from '@restate/util/remix';
 import { ErrorBanner } from '@restate/ui/error';
 
-export function DeleteEnvironment() {
+export function DeleteAPIKey() {
   const formId = useId();
   const accountId = useAccountParam();
-  const action = `/accounts/${accountId}/environments`;
-  const fetcher = useFetcherWithError({ key: action });
   const environmentId = useEnvironmentParam();
+  const action = `/accounts/${accountId}/environments/${environmentId}/settings`;
+  const fetcher = useFetcherWithError({ key: action });
   const [searchParams, setSearchParams] = useSearchParams();
-  const shouldShowCreateAccount = Boolean(
-    environmentId && searchParams.get(DELETE_ENVIRONMENT_PARAM_NAME) === 'true'
+  const shouldShowDeleteApiKey = Boolean(
+    environmentId && accountId && searchParams.has(DELETE_API_KEY_PARAM_NAME)
   );
   const close = () => {
     setSearchParams(
       (perv) => {
-        perv.delete(DELETE_ENVIRONMENT_PARAM_NAME);
+        perv.delete(DELETE_API_KEY_PARAM_NAME);
         return perv;
       },
       { preventScrollReset: true }
@@ -34,48 +34,30 @@ export function DeleteEnvironment() {
 
   return (
     <Dialog
-      open={shouldShowCreateAccount}
+      open={shouldShowDeleteApiKey}
       onOpenChange={(isOpen) => {
-        if (!isOpen && shouldShowCreateAccount) {
+        if (!isOpen && shouldShowDeleteApiKey) {
           close();
         }
       }}
     >
-      <DialogContent
-        footer={
-          <div className="flex gap-2 flex-col">
-            <ErrorBanner errors={fetcher.errors} />
-            <div className="flex gap-2">
-              <Button
-                onClick={close}
-                variant="secondary"
-                className="flex-auto"
-                disabled={fetcher.state === 'submitting'}
-              >
-                Cancel
-              </Button>
-              <SubmitButton
-                variant="destructive"
-                form={formId}
-                className="flex-auto"
-              >
-                Delete
-              </SubmitButton>
-            </div>
-          </div>
-        }
-      >
+      <DialogContent>
         <div className="flex flex-col gap-2">
           <h3 className="text-lg font-medium leading-6 text-gray-900">
-            Delete environment
+            Delete API key
           </h3>
           <p className="text-sm text-gray-500">
-            Deleting this environment will permanently erase all associated
-            data, configurations, and resources. This action{' '}
+            Are you sure you want to delete this API key? Deleting it will
+            permanently remove access to the associated services and{' '}
             <span className="font-medium">cannot be undone</span>.
           </p>
           <fetcher.Form id={formId} method="DELETE" action={action}>
-            <input name="environmentId" type="hidden" value={environmentId} />
+            <input hidden defaultValue="deleteApiKey" name="_action" />
+            <input
+              hidden
+              defaultValue={String(searchParams.get(DELETE_API_KEY_PARAM_NAME))}
+              name="keyId"
+            />
             <p className="text-sm text-gray-500 mt-2">
               Please confirm to proceed or cancel to keep the API key.
             </p>
@@ -96,6 +78,28 @@ export function DeleteEnvironment() {
                 return errors.validationErrors;
               }}
             />
+            <DialogFooter>
+              <div className="flex gap-2 flex-col">
+                <ErrorBanner errors={fetcher.errors} />
+                <div className="flex gap-2">
+                  <Button
+                    onClick={close}
+                    variant="secondary"
+                    className="flex-auto"
+                    disabled={fetcher.state === 'submitting'}
+                  >
+                    Cancel
+                  </Button>
+                  <SubmitButton
+                    variant="destructive"
+                    form={formId}
+                    className="flex-auto"
+                  >
+                    Delete
+                  </SubmitButton>
+                </div>
+              </div>
+            </DialogFooter>
           </fetcher.Form>
         </div>
       </DialogContent>
