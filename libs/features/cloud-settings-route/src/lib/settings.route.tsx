@@ -1,14 +1,14 @@
 import {
   ClientLoaderFunctionArgs,
   useLoaderData,
-  Form,
   defer,
   Await,
+  useAsyncValue,
 } from '@remix-run/react';
-import { describeApiKey } from '@restate/data-access/cloud/api-client';
-import { SubmitButton } from '@restate/ui/button';
-import { FormFieldLabel } from '@restate/ui/form-field';
-import { Radio, RadioGroup } from '@restate/ui/radio-group';
+import {
+  describeApiKey,
+  listApiKeys,
+} from '@restate/data-access/cloud/api-client';
 import { Suspense } from 'react';
 import invariant from 'tiny-invariant';
 import { clientAction } from './action';
@@ -16,6 +16,7 @@ import { listApiKeysWithCache } from './apis';
 import { ApiKeyItem } from './ApiKeyItem';
 import { DeleteAPIKey } from './DeleteAPIKey';
 import { CreateApiKey } from './CreateApiKey';
+import { ErrorBanner } from '@restate/ui/error';
 
 const clientLoader = async ({ request, params }: ClientLoaderFunctionArgs) => {
   const accountId = params.accountId;
@@ -29,6 +30,9 @@ const clientLoader = async ({ request, params }: ClientLoaderFunctionArgs) => {
       environmentId,
     })
     .then((response) => {
+      if (response.error) {
+        return response;
+      }
       const apiKeys = response.data?.apiKeys ?? [];
       return apiKeys
         .map(({ keyId }) => ({
@@ -60,22 +64,9 @@ function Component() {
         </p>
       </div>
       <div className="flex flex-col gap-2">
-        <Suspense fallback={<p>loading list</p>}>
+        <Suspense fallback={<LoadingKeys />}>
           <Await resolve={apiKeysWithDetailsPromises}>
-            {(apiKeysWithDetails) => (
-              <ul className="flex flex-col gap-2">
-                {Object.keys(apiKeysWithDetails).map((keyId) => (
-                  <Suspense fallback={<p>loading key</p>} key={keyId}>
-                    <Await
-                      resolve={apiKeysWithDetails[keyId]}
-                      errorElement={<p>failed key</p>}
-                    >
-                      <ApiKeyItem />
-                    </Await>
-                  </Suspense>
-                ))}
-              </ul>
-            )}
+            <APIKeys />
           </Await>
         </Suspense>
         <DeleteAPIKey />
@@ -87,4 +78,51 @@ function Component() {
   );
 }
 
+function isLoadedKeys(
+  response:
+    | Record<Exclude<string, 'error'>, ReturnType<typeof describeApiKey>>
+    | Pick<Awaited<ReturnType<typeof listApiKeys>>, 'error'>
+): response is Record<
+  Exclude<string, 'error'>,
+  ReturnType<typeof describeApiKey>
+> {
+  return !response.error;
+}
+
+function APIKeys() {
+  const apiKeysWithDetails = useAsyncValue() as
+    | Record<Exclude<string, 'error'>, ReturnType<typeof describeApiKey>>
+    | Pick<Awaited<ReturnType<typeof listApiKeys>>, 'error'>;
+  if (!isLoadedKeys(apiKeysWithDetails)) {
+    return <ErrorBanner errors={[new Error('Failed to load API keys.')]} />;
+  }
+
+  return (
+    <ul className="flex flex-col gap-2">
+      {Object.keys(apiKeysWithDetails).map((keyId) => (
+        <Suspense fallback={<LoadingKey />} key={keyId}>
+          <Await resolve={apiKeysWithDetails[keyId]}>
+            <ApiKeyItem keyId={keyId} />
+          </Await>
+        </Suspense>
+      ))}
+    </ul>
+  );
+}
+
+function LoadingKeys() {
+  return (
+    <div className="flex flex-col gap-2">
+      <LoadingKey />
+      <LoadingKey />
+      <LoadingKey />
+      <LoadingKey />
+    </div>
+  );
+}
+function LoadingKey() {
+  return (
+    <div className="animate-pulse bg-slate-200 rounded-xl h-[4.375rem] w-full" />
+  );
+}
 export const settings = { clientAction, clientLoader, Component };

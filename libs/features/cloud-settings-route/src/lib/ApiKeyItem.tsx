@@ -5,6 +5,7 @@ import { RoleId } from './RoleId';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import { DELETE_API_KEY_PARAM_NAME } from './constants';
+import { ErrorBanner } from '@restate/ui/error';
 
 const styles = tv({
   base: 'bg-white border shadow-sm rounded-xl px-4 py-3',
@@ -31,14 +32,18 @@ const keyStyles = tv({
     state: 'ACTIVE',
   },
 });
-export function ApiKeyItem() {
+export function ApiKeyItem({ keyId }: { keyId: string }) {
   const apiKeyDetails = useAsyncValue() as Awaited<
     ReturnType<typeof describeApiKey>
   >;
   const [, setSearchParams] = useSearchParams();
 
   if (apiKeyDetails.error) {
-    return <li>failed</li>;
+    return (
+      <ErrorBanner
+        errors={[new Error(`Failed to load details for ${keyId}.`)]}
+      />
+    );
   }
   const isActive = apiKeyDetails.data.state === 'ACTIVE';
 
