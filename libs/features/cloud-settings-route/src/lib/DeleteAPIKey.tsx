@@ -52,10 +52,10 @@ export function DeleteAPIKey() {
             <span className="font-medium">cannot be undone</span>.
           </p>
           <fetcher.Form id={formId} method="DELETE" action={action}>
-            <input hidden value="deleteApiKey" name="_action" />
+            <input hidden defaultValue="deleteApiKey" name="_action" />
             <input
               hidden
-              value={String(searchParams.get(DELETE_API_KEY_PARAM_NAME))}
+              defaultValue={String(searchParams.get(DELETE_API_KEY_PARAM_NAME))}
               name="keyId"
             />
             <p className="text-sm text-gray-500 mt-2">

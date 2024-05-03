@@ -11,8 +11,11 @@ export const clientAction = async ({
   const body = await request.formData();
   // TODO: fix typing issue
   const description = body.get('description') as string;
-  const { data } = await createAccount({
+  const { data, error } = await createAccount({
     description,
   });
+  if (error) {
+    return { errors: [new Error(error.message)] };
+  }
   return redirect(`/accounts/${data?.accountId}/environments`);
 };

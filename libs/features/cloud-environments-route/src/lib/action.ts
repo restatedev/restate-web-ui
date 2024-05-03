@@ -45,7 +45,10 @@ export const clientAction = async ({
       // TODO: fix typing issue
       const environmentId = body.get('environmentId') as string;
       // TODO: fix typing issue
-      await destroyEnvironment({ accountId, environmentId });
+      const { error } = await destroyEnvironment({ accountId, environmentId });
+      if (error) {
+        return { errors: [new Error(error.message)] };
+      }
       return redirect(`/accounts/${params.accountId}/environments`);
     }
 

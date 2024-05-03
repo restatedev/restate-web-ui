@@ -25,11 +25,14 @@ export const clientAction = async ({
     const roleId = body.get('roleId');
     invariant(isRole(roleId), 'Missing roleId param');
 
-    const { data } = await createApiKey({
+    const { data, error } = await createApiKey({
       accountId: params.accountId,
       environmentId: params.environmentId,
       roleId,
     });
+    if (error) {
+      return { errors: [new Error(error.message)] };
+    }
     return data;
   }
   if (action === 'deleteApiKey') {
@@ -42,7 +45,7 @@ export const clientAction = async ({
       keyId,
     });
     if (error) {
-      return null;
+      return { errors: [new Error(error.message)] };
     } else {
       return redirect(
         `/accounts/${params.accountId}/environments/${params.environmentId}/settings`

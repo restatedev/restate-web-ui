@@ -1,4 +1,4 @@
-import { useSearchParams } from '@remix-run/react';
+import { useFetcher, useSearchParams } from '@remix-run/react';
 import { Button, SubmitButton } from '@restate/ui/button';
 import { Dialog, DialogContent, DialogFooter } from '@restate/ui/dialog';
 import { useCallback, useId, useState } from 'react';
@@ -17,9 +17,10 @@ import { Radio } from 'react-aria-components';
 
 export function CreateApiKey() {
   const formId = useId();
+  const [count, setCount] = useState(0);
   const accountId = useAccountParam();
   const environmentId = useEnvironmentParam();
-  const action = `/accounts/${accountId}/environments/${environmentId}/settings`;
+  const action = `/accounts/${accountId}/environments/${environmentId}/settings#${count}`;
   const fetcher = useFetcherWithError<typeof clientAction>({ key: action });
   const [searchParams, setSearchParams] = useSearchParams();
   const shouldShowCreateApiKey =
@@ -32,6 +33,7 @@ export function CreateApiKey() {
       },
       { preventScrollReset: true }
     );
+
     fetcher.resetErrors();
   }, [fetcher, setSearchParams]);
 
@@ -47,15 +49,16 @@ export function CreateApiKey() {
       }}
     >
       <Button
-        onClick={() =>
+        onClick={() => {
+          setCount((c) => c + 1);
           setSearchParams(
             (perv) => {
               perv.set(CREATE_API_KEY_PARAM_NAME, 'true');
               return perv;
             },
             { preventScrollReset: true }
-          )
-        }
+          );
+        }}
         variant="secondary"
         className="flex gap-2 items-center"
       >
@@ -143,7 +146,7 @@ function CreateApiForm({
           action={action}
           className="flex flex-col gap-4"
         >
-          <input hidden value="createApiKey" name="_action" />
+          <input hidden defaultValue="createApiKey" name="_action" />
           <div>
             <p className="text-sm text-gray-500 mt-2">
               Please provide a brief description for your new API Key
@@ -248,6 +251,7 @@ function CreateApiResult({
                 setIsCopied(false);
               }, 1000);
             }}
+            autoFocus
           >
             <span className="min-w-[5ch] inline-flex justify-center">
               {isCopied ? (
