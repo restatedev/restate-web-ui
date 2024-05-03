@@ -16,7 +16,7 @@ const authMiddleware: Middleware = {
   async onResponse(res, options) {
     // User is not authenticated
     if (res.status === 401) {
-      logOut();
+      logOut({ persistRedirectUrl: true });
     }
     return res;
   },
