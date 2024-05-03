@@ -3,7 +3,7 @@ declare module 'process' {
     namespace NodeJS {
       interface ProcessEnv {
         [key: string]: string | undefined;
-        RESTATE_LOGIN_URL: string;
+        RESTATE_CLOUD_LOGIN_URL: string;
       }
     }
   }
