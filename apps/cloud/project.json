@@ -20,7 +20,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "rm -R dist/apps/cloud",
+          "rm -R -f dist/apps/cloud",
           "cd apps/cloud && ../../node_modules/.bin/remix vite:build",
           "mkdir -p dist/apps/cloud",
           "mv apps/cloud/build/client/* dist/apps/cloud",
