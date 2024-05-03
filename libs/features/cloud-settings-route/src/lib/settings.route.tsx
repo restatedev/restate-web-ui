@@ -98,12 +98,9 @@ function APIKeys({ children }: PropsWithChildren<object>) {
   const apiKeysWithDetails = useAsyncValue() as
     | Record<Exclude<string, 'error'>, ReturnType<typeof describeApiKey>>
     | Pick<Awaited<ReturnType<typeof listApiKeys>>, 'error'>;
+
   if (!isLoadedKeys(apiKeysWithDetails)) {
     return <ErrorBanner errors={[new Error('Failed to load API keys.')]} />;
-  }
-
-  if (Object.keys(apiKeysWithDetails).length === 0) {
-    return <NoApiKeys />;
   }
 
   return (
@@ -135,19 +132,6 @@ function LoadingKeys() {
 function LoadingKey() {
   return (
     <div className="animate-pulse bg-slate-200 rounded-xl h-[4.375rem] w-full" />
-  );
-}
-function NoApiKeys() {
-  return (
-    <div className="flex flex-col gap-2 items-center relative w-full rounded-xl border border-gray-200 p-8 text-center bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] ">
-      <h3 className="text-sm font-semibold text-gray-600">No API Keys</h3>
-      <p className="text-sm text-gray-500">
-        Get started by creating a new API Key
-      </p>
-      <div className="mt-4">
-        <CreateApiKey />
-      </div>
-    </div>
   );
 }
 
