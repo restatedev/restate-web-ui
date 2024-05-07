@@ -1,1 +1,2 @@
-export * from './lib/nav';
+export * from './lib/Nav';
+export * from './lib/NavItem';
