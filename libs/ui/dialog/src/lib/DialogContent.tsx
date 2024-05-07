@@ -1,4 +1,4 @@
-import { PropsWithChildren, ReactNode } from 'react';
+import type { PropsWithChildren } from 'react';
 import {
   Dialog as AriaDialog,
   Modal as AriaModal,
@@ -6,7 +6,7 @@ import {
   composeRenderProps,
 } from 'react-aria-components';
 import { tv } from 'tailwind-variants';
-import { DialogFooter, DialogFooterContainer } from './DialogFooter';
+import { DialogFooterContainer } from './DialogFooter';
 
 const overlayStyles = tv({
   base: 'fixed top-0 left-0 w-full min-h-full isolate z-50 bg-gray-800 bg-opacity-30 transition-opacity flex items-center justify-center p-4 text-center',
@@ -32,15 +32,12 @@ const modalStyles = tv({
   },
 });
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface DialogContentProps {
-  footer?: ReactNode;
   className?: string;
 }
 
 export function DialogContent({
   children,
-  footer,
   className,
 }: PropsWithChildren<DialogContentProps>) {
   return (
@@ -54,7 +51,6 @@ export function DialogContent({
         <AriaDialog className="outline bg-gray-100 rounded-xl outline-0 p-1.5 [[data-placement]>&]:p-4 max-h-[inherit] overflow-auto relative">
           <DialogFooterContainer>
             <div className="bg-white p-6 border rounded-xl">{children}</div>
-            {footer && <DialogFooter>{footer}</DialogFooter>}
           </DialogFooterContainer>
         </AriaDialog>
       </AriaModal>
