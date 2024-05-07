@@ -60,7 +60,9 @@ export function AccountSelector({ accounts }: AccountSelectorProps) {
                 >
                   <div>
                     <div>{account.accountId}</div>
-                    <div className="opacity-60">{account.description}</div>
+                    <div className="text-gray-500 group-focus:text-gray-300">
+                      {account.description}
+                    </div>
                   </div>
                 </DropdownItem>
               ))}

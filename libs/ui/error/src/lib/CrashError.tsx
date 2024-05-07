@@ -1,9 +1,14 @@
-import { useRouteError } from '@remix-run/react';
+import { isRouteErrorResponse, useRouteError } from '@remix-run/react';
 import { Link } from '@restate/ui/link';
 
 export function CrashError() {
   const error = useRouteError();
   console.error(error);
+
+  if (isRouteErrorResponse(error) && error.status === 401) {
+    return null;
+  }
+
   return (
     <div className="text-center">
       <h1 className="mt-4 text-3xl font-bold tracking-tight text-gray-900 sm:text-5xl">

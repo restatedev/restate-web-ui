@@ -1,6 +1,6 @@
 import { useSearchParams } from '@remix-run/react';
 import { Button, SubmitButton } from '@restate/ui/button';
-import { Dialog, DialogContent } from '@restate/ui/dialog';
+import { Dialog, DialogContent, DialogFooter } from '@restate/ui/dialog';
 import { useId } from 'react';
 import { DELETE_ENVIRONMENT_PARAM_NAME } from './constants';
 import { FormFieldInput } from '@restate/ui/form-field';
@@ -41,30 +41,7 @@ export function DeleteEnvironment() {
         }
       }}
     >
-      <DialogContent
-        footer={
-          <div className="flex gap-2 flex-col">
-            <ErrorBanner errors={fetcher.errors} />
-            <div className="flex gap-2">
-              <Button
-                onClick={close}
-                variant="secondary"
-                className="flex-auto"
-                disabled={fetcher.state === 'submitting'}
-              >
-                Cancel
-              </Button>
-              <SubmitButton
-                variant="destructive"
-                form={formId}
-                className="flex-auto"
-              >
-                Delete
-              </SubmitButton>
-            </div>
-          </div>
-        }
-      >
+      <DialogContent>
         <div className="flex flex-col gap-2">
           <h3 className="text-lg font-medium leading-6 text-gray-900">
             Delete environment
@@ -96,6 +73,28 @@ export function DeleteEnvironment() {
                 return errors.validationErrors;
               }}
             />
+            <DialogFooter>
+              <div className="flex gap-2 flex-col">
+                <ErrorBanner errors={fetcher.errors} />
+                <div className="flex gap-2">
+                  <Button
+                    onClick={close}
+                    variant="secondary"
+                    className="flex-auto"
+                    disabled={fetcher.state === 'submitting'}
+                  >
+                    Cancel
+                  </Button>
+                  <SubmitButton
+                    variant="destructive"
+                    form={formId}
+                    className="flex-auto"
+                  >
+                    Delete
+                  </SubmitButton>
+                </div>
+              </div>
+            </DialogFooter>
           </fetcher.Form>
         </div>
       </DialogContent>

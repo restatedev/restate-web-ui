@@ -7,15 +7,20 @@ import {
   AccountSelector,
   accounts,
 } from '@restate/features/cloud/accounts-route';
-import { useEnvironmentParam } from '@restate/features/cloud/utils-routes';
+import {
+  toEnvironmentRoute,
+  useAccountParam,
+  useEnvironmentParam,
+} from '@restate/features/cloud/utils-routes';
 import { clientAction } from './action';
 import { CreateEnvironmentOnboarding } from './CreateEnvironmentOnboarding';
-import { Button } from '@restate/ui/button';
+import { Nav, NavItem } from '@restate/ui/nav';
 
 function Component() {
   const accountsResponse =
     useRouteLoaderData<typeof accounts.clientLoader>('routes/accounts');
   const environmentId = useEnvironmentParam();
+  const accountId = useAccountParam();
 
   if (!environmentId) {
     return (
@@ -44,17 +49,24 @@ function Component() {
             />
           )}
           <EnvironmentSelector />
-          <div className="ml-auto pr-4 flex gap-2 items-center">
-            <Button variant="secondary" className="py-1.5 px-2.5">
-              Settings
-            </Button>
-            <Button
-              variant="secondary"
-              className="bg-transparent border-none shadow-none py-1.5 px-2.5"
-            >
-              Logs
-            </Button>
-          </div>
+          <LayoutOutlet zone={LayoutZone.Nav}>
+            <Nav ariaCurrentValue="page">
+              <NavItem
+                href={`${toEnvironmentRoute(accountId!, {
+                  environmentId,
+                })}/settings`}
+              >
+                Settings
+              </NavItem>
+              <NavItem
+                href={`${toEnvironmentRoute(accountId!, {
+                  environmentId,
+                })}/logs`}
+              >
+                Logs
+              </NavItem>
+            </Nav>
+          </LayoutOutlet>
         </div>
       </LayoutOutlet>
       <Outlet />

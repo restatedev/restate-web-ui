@@ -1,11 +1,10 @@
 import {
   Await,
-  Form,
   useAsyncValue,
   useLoaderData,
   useSearchParams,
 } from '@remix-run/react';
-import { Button, SubmitButton } from '@restate/ui/button';
+import { Button } from '@restate/ui/button';
 import {
   Dropdown,
   DropdownItem,
@@ -97,7 +96,7 @@ function EnvironmentSelectorContent() {
                 {environmentDetails?.data?.environmentId ??
                   currentEnvironmentId}
               </div>
-              <div className="truncate opacity-60 col-start-2 row-start-2 w-full">
+              <div className="truncate text-gray-500 col-start-2 row-start-2 w-full">
                 {environmentDetails?.data?.description}
               </div>
               {environmentDetails?.error && (
@@ -212,7 +211,7 @@ function EnvironmentItem({ environmentId }: { environmentId: string }) {
           {environmentDetails?.data?.status && (
             <EnvironmentStatus status={environmentDetails.data.status} />
           )}
-          <span className="truncate group-focus:text-gray-300">
+          <span className="truncate text-gray-500 group-focus:text-gray-300">
             {environmentDetails?.data?.description}
           </span>
         </div>

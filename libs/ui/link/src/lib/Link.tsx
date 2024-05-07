@@ -1,4 +1,5 @@
 import { focusRing } from '@restate/ui/focus';
+import { AriaAttributes, forwardRef } from 'react';
 import {
   Link as AriaLink,
   LinkProps as AriaLinkProps,
@@ -8,9 +9,10 @@ import { tv } from 'tailwind-variants';
 
 interface LinkProps
   extends Pick<
-    AriaLinkProps,
-    'autoFocus' | 'target' | 'rel' | 'className' | 'children' | 'href'
-  > {
+      AriaLinkProps,
+      'autoFocus' | 'target' | 'rel' | 'className' | 'children' | 'href'
+    >,
+    Pick<AriaAttributes, 'aria-current'> {
   variant?: 'primary' | 'secondary' | 'button';
 }
 
@@ -32,13 +34,14 @@ const styles = tv({
   },
 });
 
-export function Link(props: LinkProps) {
+export const Link = forwardRef<HTMLAnchorElement, LinkProps>((props, ref) => {
   return (
     <AriaLink
       {...props}
+      ref={ref}
       className={composeRenderProps(props.className, (className, renderProps) =>
         styles({ ...renderProps, className, variant: props.variant })
       )}
     />
   );
-}
+});

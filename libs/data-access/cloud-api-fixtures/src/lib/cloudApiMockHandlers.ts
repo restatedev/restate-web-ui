@@ -116,11 +116,25 @@ const describeEnvironmentHandler = http.post<
     );
   }
 
+  const apiKeys = cloudApiDb.apiKey.findMany({
+    where: {
+      environment: {
+        environmentId: { equals: requestBody.environmentId },
+      },
+    },
+  });
+
   return HttpResponse.json({
     environmentId: environment.environmentId,
     accountId: environment.account?.accountId,
     description: environment.description,
     status: environment.status,
+    apiKeys: apiKeys
+      .filter(({ state }) => state !== 'DELETED')
+      .map(({ keyId, environment }) => ({
+        keyId,
+        environmentId: environment!.environmentId,
+      })),
   });
 });
 
