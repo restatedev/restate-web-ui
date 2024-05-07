@@ -7,7 +7,7 @@ interface DropdownPopoverProps {
 }
 
 const styles = tv({
-  base: 'min-w-[150px] bg-gray-100/90 backdrop-blur-xl backdrop-saturate-250',
+  base: 'min-w-[150px]',
 });
 
 export function DropdownPopover({
