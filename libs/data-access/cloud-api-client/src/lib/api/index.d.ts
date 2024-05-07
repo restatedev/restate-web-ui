@@ -16,6 +16,10 @@ export interface paths {
     /** Create a new account */
     post: operations['CreateAccount'];
   };
+  '/UpdateAccount': {
+    /** Update account details */
+    post: operations['UpdateAccount'];
+  };
   '/{accountId}/CreateEnvironment': {
     /** Create a new environment */
     post: operations['CreateEnvironment'];
@@ -47,6 +51,10 @@ export interface paths {
   '/{accountId}/DeleteApiKey': {
     /** Delete the specified API key */
     post: operations['DeleteApiKey'];
+  };
+  '/{accountId}/GetEnvironmentLogs': {
+    /** Retrieve environments logs */
+    post: operations['GetEnvironmentLogs'];
   };
 }
 
@@ -83,6 +91,14 @@ export interface components {
     CreateAccountResponse: {
       accountId: string;
     };
+    UpdateAccountRequest: {
+      accountId: string;
+      description?: string | null;
+    };
+    UpdateAccountResponse: {
+      accountId: string;
+      description?: string;
+    };
     /**
      * @description Unique account identifier
      * @example acc_1b2DE3f40
@@ -108,6 +124,11 @@ export interface components {
       description?: string;
       /** @enum {string} */
       status: 'PENDING' | 'ACTIVE' | 'FAILED' | 'DELETED';
+      signingPublicKey?: string;
+      apiKeys: {
+        keyId: string;
+        environmentId: string;
+      }[];
     };
     DestroyEnvironmentRequest: {
       environmentId: string;
@@ -175,6 +196,17 @@ export interface components {
             ok: boolean;
           }
         | string;
+    };
+    GetEnvironmentLogsRequest: {
+      environmentId: string;
+      start: number;
+      end: number;
+    };
+    GetEnvironmentLogsResponse: {
+      lines: {
+        unixNanos: string;
+        line: string;
+      }[];
     };
   };
   responses: never;
@@ -291,6 +323,40 @@ export interface operations {
       };
     };
   };
+  /** Update account details */
+  UpdateAccount: {
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdateAccountRequest'];
+      };
+    };
+    responses: {
+      /** @description The operation completed successfully. */
+      200: {
+        content: {
+          'application/json': components['schemas']['UpdateAccountResponse'];
+        };
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['ClientError'];
+        };
+      };
+      /** @description The client has not provided a valid token for a principal authorized to make the requested operation. */
+      401: {
+        content: {
+          'application/json': components['schemas']['UnauthorizedError'];
+        };
+      };
+      /** @description Indicates a failure on the service-side. Generally this type of error is retryable. */
+      500: {
+        content: {
+          'application/json': components['schemas']['ServerInternalError'];
+        };
+      };
+    };
+  };
   /** Create a new environment */
   CreateEnvironment: {
     parameters: {
@@ -379,7 +445,7 @@ export interface operations {
         accountId: components['schemas']['AccountId'];
       };
     };
-    requestBody?: {
+    requestBody: {
       content: {
         'application/json': components['schemas']['DescribeEnvironmentRequest'];
       };
@@ -419,7 +485,7 @@ export interface operations {
         accountId: components['schemas']['AccountId'];
       };
     };
-    requestBody?: {
+    requestBody: {
       content: {
         'application/json': components['schemas']['DestroyEnvironmentRequest'];
       };
@@ -459,7 +525,7 @@ export interface operations {
         accountId: components['schemas']['AccountId'];
       };
     };
-    requestBody?: {
+    requestBody: {
       content: {
         'application/json': components['schemas']['CreateApiKeyRequest'];
       };
@@ -499,7 +565,7 @@ export interface operations {
         accountId: components['schemas']['AccountId'];
       };
     };
-    requestBody?: {
+    requestBody: {
       content: {
         'application/json': components['schemas']['ListApiKeysRequest'];
       };
@@ -539,7 +605,7 @@ export interface operations {
         accountId: components['schemas']['AccountId'];
       };
     };
-    requestBody?: {
+    requestBody: {
       content: {
         'application/json': components['schemas']['DescribeApiKeyRequest'];
       };
@@ -579,7 +645,7 @@ export interface operations {
         accountId: components['schemas']['AccountId'];
       };
     };
-    requestBody?: {
+    requestBody: {
       content: {
         'application/json': components['schemas']['DeleteApiKeyRequest'];
       };
@@ -589,6 +655,46 @@ export interface operations {
       200: {
         content: {
           'application/json': components['schemas']['DeleteApiKeyResponse'];
+        };
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['ClientError'];
+        };
+      };
+      /** @description The client has not provided a valid token for a principal authorized to make the requested operation. */
+      401: {
+        content: {
+          'application/json': components['schemas']['UnauthorizedError'];
+        };
+      };
+      /** @description Indicates a failure on the service-side. Generally this type of error is retryable. */
+      500: {
+        content: {
+          'application/json': components['schemas']['ServerInternalError'];
+        };
+      };
+    };
+  };
+  /** Retrieve environments logs */
+  GetEnvironmentLogs: {
+    parameters: {
+      path: {
+        /** @description Unique account identifier */
+        accountId: components['schemas']['AccountId'];
+      };
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['GetEnvironmentLogsRequest'];
+      };
+    };
+    responses: {
+      /** @description The operation completed successfully. */
+      200: {
+        content: {
+          'application/json': components['schemas']['GetEnvironmentLogsResponse'];
         };
       };
       /** @description Client error */

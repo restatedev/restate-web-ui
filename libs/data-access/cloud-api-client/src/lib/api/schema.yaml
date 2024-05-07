@@ -2,9 +2,6 @@ openapi: 3.0.3
 info:
   title: Restate Cloud API
   version: v1
-  license:
-    name: Restate
-    url: https://restate.dev
 servers:
   - url: https://api.dev.restate.cloud/cloud
     description: Dev Endpoint
@@ -16,6 +13,7 @@ paths:
       operationId: GetUserIdentity
       summary: Retrieve the current user's identity
       requestBody:
+        required: false
         content:
           application/json:
             schema:
@@ -53,6 +51,7 @@ paths:
       operationId: ListAccounts
       summary: List the accounts available to the current user
       requestBody:
+        required: false
         content:
           application/json:
             schema:
@@ -90,6 +89,7 @@ paths:
       operationId: CreateAccount
       summary: Create a new account
       requestBody:
+        required: false
         content:
           application/json:
             schema:
@@ -101,6 +101,44 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreateAccountResponse'
+        '400':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientError'
+        '401':
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '500':
+          description:
+            Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerInternalError'
+  /UpdateAccount:
+    post:
+      operationId: UpdateAccount
+      summary: Update account details
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAccountRequest'
+      responses:
+        '200':
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateAccountResponse'
         '400':
           description: Client error
           content:
@@ -134,6 +172,7 @@ paths:
             $ref: '#/components/schemas/AccountId'
           required: true
       requestBody:
+        required: false
         content:
           application/json:
             schema:
@@ -178,6 +217,7 @@ paths:
             $ref: '#/components/schemas/AccountId'
           required: true
       requestBody:
+        required: false
         content:
           application/json:
             schema:
@@ -222,6 +262,7 @@ paths:
             $ref: '#/components/schemas/AccountId'
           required: true
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -266,6 +307,7 @@ paths:
             $ref: '#/components/schemas/AccountId'
           required: true
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -310,6 +352,7 @@ paths:
             $ref: '#/components/schemas/AccountId'
           required: true
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -354,6 +397,7 @@ paths:
             $ref: '#/components/schemas/AccountId'
           required: true
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -398,6 +442,7 @@ paths:
             $ref: '#/components/schemas/AccountId'
           required: true
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -442,6 +487,7 @@ paths:
             $ref: '#/components/schemas/AccountId'
           required: true
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -453,6 +499,51 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DeleteApiKeyResponse'
+        '400':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientError'
+        '401':
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '500':
+          description:
+            Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerInternalError'
+  /{accountId}/GetEnvironmentLogs:
+    post:
+      operationId: GetEnvironmentLogs
+      summary: Retrieve environments logs
+      parameters:
+        - in: path
+          name: accountId
+          description: Unique account identifier
+          schema:
+            $ref: '#/components/schemas/AccountId'
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetEnvironmentLogsRequest'
+      responses:
+        '200':
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetEnvironmentLogsResponse'
         '400':
           description: Client error
           content:
@@ -551,6 +642,25 @@ components:
           type: string
       required:
         - accountId
+    UpdateAccountRequest:
+      type: object
+      properties:
+        accountId:
+          type: string
+        description:
+          type: string
+          nullable: true
+      required:
+        - accountId
+    UpdateAccountResponse:
+      type: object
+      properties:
+        accountId:
+          type: string
+        description:
+          type: string
+      required:
+        - accountId
     AccountId:
       type: string
       description: Unique account identifier
@@ -604,9 +714,24 @@ components:
             - ACTIVE
             - FAILED
             - DELETED
+        signingPublicKey:
+          type: string
+        apiKeys:
+          type: array
+          items:
+            type: object
+            properties:
+              keyId:
+                type: string
+              environmentId:
+                type: string
+            required:
+              - keyId
+              - environmentId
       required:
         - environmentId
         - status
+        - apiKeys
     DestroyEnvironmentRequest:
       type: object
       properties:
@@ -754,3 +879,37 @@ components:
               required:
                 - ok
             - type: string
+    GetEnvironmentLogsRequest:
+      type: object
+      properties:
+        environmentId:
+          type: string
+        start:
+          type: number
+          minimum: 1700000000
+          maximum: 2000000000
+        end:
+          type: number
+          minimum: 1700000000
+          maximum: 2000000000
+      required:
+        - environmentId
+        - start
+        - end
+    GetEnvironmentLogsResponse:
+      type: object
+      properties:
+        lines:
+          type: array
+          items:
+            type: object
+            properties:
+              unixNanos:
+                type: string
+              line:
+                type: string
+            required:
+              - unixNanos
+              - line
+      required:
+        - lines
