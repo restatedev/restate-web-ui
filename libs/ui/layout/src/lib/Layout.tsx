@@ -30,7 +30,7 @@ const ZONE_PROPS: Record<LayoutZone, { id: string; className?: string }> = {
   [LayoutZone.Nav]: { id: ZONE_IDS[LayoutZone.Nav] },
   [LayoutZone.Content]: {
     id: ZONE_IDS[LayoutZone.Content],
-    className: 'py-14 flex-auto flex flex-col',
+    className: 'py-14 px-4 flex-auto flex flex-col',
   },
 };
 
