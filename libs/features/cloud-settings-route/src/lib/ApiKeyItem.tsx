@@ -8,13 +8,13 @@ import { DELETE_API_KEY_PARAM_NAME } from './constants';
 import { ErrorBanner } from '@restate/ui/error';
 
 const styles = tv({
-  base: 'bg-white peer border shadow-sm px-4 py-3 first:rounded-t-xl last:rounded-b-xl border-b-0 last:border-b',
+  base: 'bg-white peer border px-4 py-3 first:rounded-t-xl last:rounded-b-xl border-b-0 last:border-b',
   variants: {
     state: {
       ERROR: '',
       ACTIVE: '',
       DELETED:
-        'shadow-none border-none opacity-70 [filter:grayscale(100%)] [&_code]:line-through decoration-gray-600/50',
+        'border-none opacity-70 [filter:grayscale(100%)] [&_code]:line-through decoration-gray-600/50',
     },
   },
   defaultVariants: {

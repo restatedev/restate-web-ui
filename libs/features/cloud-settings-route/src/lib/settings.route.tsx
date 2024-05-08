@@ -102,7 +102,7 @@ function APIKeys({ children }: PropsWithChildren<object>) {
   return (
     <>
       {children}
-      <ul className="flex flex-col gap-0">
+      <ul className="flex flex-col gap-0 shadow-sm rounded-xl">
         {Object.keys(apiKeysWithDetails).map((keyId) => (
           <Suspense fallback={<LoadingKey />} key={keyId}>
             <Await resolve={apiKeysWithDetails[keyId]}>
