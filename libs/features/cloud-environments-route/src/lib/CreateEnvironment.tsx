@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogFooter } from '@restate/ui/dialog';
 import { useId } from 'react';
 import { CREATE_ENVIRONMENT_PARAM_NAME } from './constants';
 import { FormFieldInput } from '@restate/ui/form-field';
-import { useAccountParam } from '@restate/features/cloud/utils-routes';
+import { useAccountParam } from '@restate/features/cloud/routes-utils';
 import { clientAction } from './action';
 import { ErrorBanner } from '@restate/ui/error';
 import { useFetcherWithError } from '@restate/util/remix';

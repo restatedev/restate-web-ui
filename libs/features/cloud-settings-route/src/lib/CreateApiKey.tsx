@@ -7,7 +7,7 @@ import { FormFieldInput, FormFieldLabel } from '@restate/ui/form-field';
 import {
   useAccountParam,
   useEnvironmentParam,
-} from '@restate/features/cloud/utils-routes';
+} from '@restate/features/cloud/routes-utils';
 import { clientAction } from './action';
 import { ErrorBanner } from '@restate/ui/error';
 import { useFetcherWithError } from '@restate/util/remix';

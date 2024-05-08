@@ -20,7 +20,7 @@ import {
   useAccountParam,
   useEnvironmentParam,
   toEnvironmentRoute,
-} from '@restate/features/cloud/utils-routes';
+} from '@restate/features/cloud/routes-utils';
 import { Icon, IconName } from '@restate/ui/icons';
 import { EnvironmentStatus, MiniEnvironmentStatus } from './EnvironmentStatus';
 import { CreateEnvironment } from './CreateEnvironment';

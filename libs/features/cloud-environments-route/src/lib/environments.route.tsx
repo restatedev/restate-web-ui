@@ -11,7 +11,7 @@ import {
   toEnvironmentRoute,
   useAccountParam,
   useEnvironmentParam,
-} from '@restate/features/cloud/utils-routes';
+} from '@restate/features/cloud/routes-utils';
 import { clientAction } from './action';
 import { CreateEnvironmentOnboarding } from './CreateEnvironmentOnboarding';
 import { Nav, NavItem } from '@restate/ui/nav';
