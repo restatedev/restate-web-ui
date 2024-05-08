@@ -4,7 +4,6 @@ import {
   defer,
   Await,
   useAsyncValue,
-  useSearchParams,
 } from '@remix-run/react';
 import {
   describeApiKey,
@@ -18,9 +17,6 @@ import { ApiKeyItem } from './ApiKeyItem';
 import { DeleteAPIKey } from './DeleteAPIKey';
 import { CreateApiKey } from './CreateApiKey';
 import { ErrorBanner } from '@restate/ui/error';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Button } from '@restate/ui/button';
-import { CREATE_API_KEY_PARAM_NAME } from './constants';
 
 const clientLoader = async ({ request, params }: ClientLoaderFunctionArgs) => {
   const accountId = params.accountId;
@@ -106,7 +102,7 @@ function APIKeys({ children }: PropsWithChildren<object>) {
   return (
     <>
       {children}
-      <ul className="flex flex-col gap-2">
+      <ul className="flex flex-col gap-0">
         {Object.keys(apiKeysWithDetails).map((keyId) => (
           <Suspense fallback={<LoadingKey />} key={keyId}>
             <Await resolve={apiKeysWithDetails[keyId]}>
@@ -121,8 +117,7 @@ function APIKeys({ children }: PropsWithChildren<object>) {
 
 function LoadingKeys() {
   return (
-    <div className="flex flex-col gap-2">
-      <LoadingKey />
+    <div className="flex flex-col">
       <LoadingKey />
       <LoadingKey />
       <LoadingKey />
@@ -131,7 +126,7 @@ function LoadingKeys() {
 }
 function LoadingKey() {
   return (
-    <div className="animate-pulse bg-slate-200 rounded-xl h-[4.375rem] w-full" />
+    <div className="animate-pulse bg-slate-200 h-[4.375rem] w-full first:rounded-t-xl last:rounded-b-xl border border-b-0 last:border-b border-gray-100" />
   );
 }
 
