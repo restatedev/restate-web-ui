@@ -1,11 +1,20 @@
-import { Await, useLoaderData } from '@remix-run/react';
+import { Await, useLoaderData, useNavigation } from '@remix-run/react';
 import { clientLoader } from './loader';
 import { Suspense } from 'react';
 import { LogsViewer } from './LogsViewer';
 import { GranularitySelector } from './GranularitySelector';
+import { Spinner } from '@restate/ui/button';
 
 export function Component() {
   const { logsPromise } = useLoaderData<typeof clientLoader>();
+  const { state } = useNavigation();
+
+  const loading = (
+    <p className="font-sans flex gap-2 p-3 items-center text-sm py-4">
+      <Spinner />
+      Loading logs...
+    </p>
+  );
 
   return (
     <div className="flex-auto flex flex-col">
@@ -20,11 +29,20 @@ export function Component() {
           You can access the restate server logs here.
         </p>
       </div>
-      <Suspense fallback={<p>loading</p>}>
-        <Await resolve={logsPromise}>
-          <LogsViewer />
-        </Await>
-      </Suspense>
+      <div className="overflow-auto relative flex-auto text-xs font-mono mt-4 whitespace-pre-wrap rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
+        <div className="absolute inset-4">
+          {state === 'loading' && loading}
+          {state === 'idle' && (
+            <Suspense fallback={loading}>
+              <Await resolve={logsPromise}>
+                <LogsViewer />
+              </Await>
+            </Suspense>
+          )}
+
+          <div className="h-4" />
+        </div>
+      </div>
     </div>
   );
 }
