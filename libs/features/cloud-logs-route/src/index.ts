@@ -1,1 +1,1 @@
-export * from './lib/cloud-logs-route';
+export * from './lib/logs.route';

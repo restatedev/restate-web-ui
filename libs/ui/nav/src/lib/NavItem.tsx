@@ -25,7 +25,7 @@ const styles = tv({
 
 export function NavItem({ children, href }: PropsWithChildren<NavItemProps>) {
   const location = useLocation();
-  const isActive = location.pathname + location.search === href;
+  const isActive = location.pathname === href;
   const { value } = useContext(NavContext);
 
   return (
@@ -33,6 +33,50 @@ export function NavItem({ children, href }: PropsWithChildren<NavItemProps>) {
       <Link
         className={styles}
         href={href}
+        data-active={isActive}
+        {...(isActive && { 'aria-current': value })}
+      >
+        {children}
+      </Link>
+    </li>
+  );
+}
+
+interface NavSearchItemProps {
+  search: string;
+}
+export function NavSearchItem({
+  children,
+  search,
+}: PropsWithChildren<NavSearchItemProps>) {
+  const location = useLocation();
+  const currentSearchParams = new URLSearchParams(location.search);
+  currentSearchParams.sort();
+  const targetSearchParams = new URLSearchParams(search);
+  const keys = Array.from(targetSearchParams.keys());
+  const mergedTargetSearchParams = keys.reduce((search, key) => {
+    const value = targetSearchParams.get(key);
+    if (value) {
+      search.set(key, value);
+    } else {
+      search.delete(key);
+    }
+    return search;
+  }, new URLSearchParams(currentSearchParams));
+  mergedTargetSearchParams.sort();
+
+  const isActive =
+    currentSearchParams.toString() === mergedTargetSearchParams.toString();
+  const targetSearch =
+    targetSearchParams.size > 0 ? `?${targetSearchParams.toString()}` : '';
+
+  const { value } = useContext(NavContext);
+
+  return (
+    <li>
+      <Link
+        className={styles}
+        href={`${location.pathname}${targetSearch}${location.hash}`}
         data-active={isActive}
         {...(isActive && { 'aria-current': value })}
       >

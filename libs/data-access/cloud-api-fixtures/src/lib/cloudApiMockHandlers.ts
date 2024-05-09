@@ -411,7 +411,7 @@ const getEnvironmentLogsHandler = http.post<
           requestBody.start +
           (index / (200 - 1)) * (requestBody.end - requestBody.start)
       )
-      .map((sec) => (BigInt(sec) * BigInt(1_000_000)).toString())
+      .map((sec) => (BigInt(Math.floor(sec * 1000)) * BigInt(1000)).toString())
       .map((unixNanos) => ({ unixNanos, line: faker.lorem.lines(3) })),
   });
 });
