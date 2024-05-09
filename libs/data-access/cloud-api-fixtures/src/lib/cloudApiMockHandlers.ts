@@ -1,6 +1,7 @@
 import * as cloudApi from '@restate/data-access/cloud/api-client';
 import { http, HttpResponse } from 'msw';
 import { cloudApiDb } from './cloudApiDb';
+import { faker } from '@faker-js/faker';
 
 type FormatParameterWithColon<S extends string> =
   S extends `${infer A}{${infer P}}${infer B}` ? `${A}:${P}${B}` : S;
@@ -391,6 +392,30 @@ const listApiKeysHandler = http.post<
   });
 });
 
+const getEnvironmentLogsHandler = http.post<
+  cloudApi.operations['GetEnvironmentLogs']['parameters']['path'],
+  NonNullable<
+    cloudApi.operations['GetEnvironmentLogs']['requestBody']
+  >['content']['application/json'],
+  | cloudApi.operations['GetEnvironmentLogs']['responses']['200']['content']['application/json']
+  | cloudApi.operations['GetEnvironmentLogs']['responses']['500']['content']['application/json'],
+  GetPath<'/{accountId}/GetEnvironmentLogs'>
+>('/:accountId/GetEnvironmentLogs', async ({ request }) => {
+  const requestBody = await request.json();
+
+  return HttpResponse.json({
+    lines: Array(200)
+      .fill(null)
+      .map(
+        (_, index) =>
+          requestBody.start +
+          (index / (200 - 1)) * (requestBody.end - requestBody.start)
+      )
+      .map((sec) => (BigInt(sec) * BigInt(1_000_000)).toString())
+      .map((unixNanos) => ({ unixNanos, line: faker.lorem.lines(3) })),
+  });
+});
+
 export const cloudApiMockHandlers = [
   getUserIdentityHandler,
   createAccountHandler,
@@ -403,4 +428,5 @@ export const cloudApiMockHandlers = [
   describeApiKeyHandler,
   deleteApiKeyHandler,
   listApiKeysHandler,
+  getEnvironmentLogsHandler,
 ];

@@ -117,3 +117,16 @@ export async function listApiKeys(
     },
   });
 }
+
+export async function getEnvironmentLogs(
+  params: AllParams<cloudApi.operations['GetEnvironmentLogs']>
+) {
+  return apiClient.POST('/{accountId}/GetEnvironmentLogs', {
+    params: { path: { accountId: params.accountId } },
+    body: {
+      environmentId: params.environmentId,
+      start: params.start,
+      end: params.end,
+    },
+  });
+}
