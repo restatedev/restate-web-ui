@@ -28,21 +28,52 @@ export function LogsViewer() {
   }
 
   return (
-    <table className="">
+    <table className="w-full table-fixed">
       <tbody className="">
         {logs.data?.lines.map((line) => (
-          <tr key={line.unixNanos} className="bg-transparent border-none">
-            <th className="align-baseline font-normal text-gray-600">
-              {new Date(
-                Number(BigInt(line.unixNanos) / BigInt(1000000))
-              ).toLocaleString('default', {
-                timeZoneName: 'short',
-              })}
-            </th>
-            <td className="pl-4 align-baseline pb-2">{line.line}</td>
-          </tr>
+          <LogLine
+            key={line.unixNanos}
+            line={line.line}
+            unixNanos={line.unixNanos}
+          />
         ))}
       </tbody>
     </table>
+  );
+}
+
+function LogLine({ line, unixNanos }: { line: string; unixNanos: string }) {
+  const { timestamp, level, ...logObject } = JSON.parse(line);
+
+  return (
+    <tr
+      className={`bg-transparent border-none ${
+        ['WARN', 'ERROR'].includes(level)
+          ? 'text-red-600 font-semibold'
+          : 'text-gray-800 font-normal'
+      }`}
+    >
+      <th className="align-baseline font-normal text-gray-500 whitespace-nowrap w-[25ch]">
+        {new Date(Number(BigInt(unixNanos) / BigInt(1000000))).toLocaleString(
+          'default',
+          {
+            timeZoneName: 'short',
+          }
+        )}
+      </th>
+      <td className="pl-4 align-baseline pb-2 w-[10ch]">{level}</td>
+      <td className="pl-4 align-baseline pb-2 break-all">
+        <details className="group">
+          <summary className="truncate">
+            <span className="group-open:invisible group-open:[font-size:0px]">
+              {logObject?.fields?.message ??
+                logObject?.fields?.error ??
+                JSON.stringify(logObject)}
+            </span>
+          </summary>
+          <span className="px-2">{JSON.stringify(logObject, null, 2)}</span>
+        </details>
+      </td>
+    </tr>
   );
 }
