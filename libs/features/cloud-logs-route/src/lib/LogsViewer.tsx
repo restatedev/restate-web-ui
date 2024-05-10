@@ -33,12 +33,11 @@ export function LogsViewer() {
         {logs.data?.lines.map((line) => (
           <tr key={line.unixNanos} className="bg-transparent border-none">
             <th className="align-baseline font-normal text-gray-600">
-              {new Date(Number(line.unixNanos) / 1000).toLocaleString(
-                'default',
-                {
-                  timeZoneName: 'short',
-                }
-              )}
+              {new Date(
+                Number(BigInt(line.unixNanos) / BigInt(1000000))
+              ).toLocaleString('default', {
+                timeZoneName: 'short',
+              })}
             </th>
             <td className="pl-4 align-baseline pb-2">{line.line}</td>
           </tr>

@@ -2,6 +2,7 @@ import * as cloudApi from '@restate/data-access/cloud/api-client';
 import { http, HttpResponse } from 'msw';
 import { cloudApiDb } from './cloudApiDb';
 import { faker } from '@faker-js/faker';
+import { logs } from './logs';
 
 type FormatParameterWithColon<S extends string> =
   S extends `${infer A}{${infer P}}${infer B}` ? `${A}:${P}${B}` : S;
@@ -411,8 +412,20 @@ const getEnvironmentLogsHandler = http.post<
           requestBody.start +
           (index / (200 - 1)) * (requestBody.end - requestBody.start)
       )
-      .map((sec) => (BigInt(Math.floor(sec * 1000)) * BigInt(1000)).toString())
-      .map((unixNanos) => ({ unixNanos, line: faker.lorem.lines(3) })),
+      .map((sec) =>
+        (BigInt(Math.floor(sec * 1000)) * BigInt(1000000)).toString()
+      )
+      .map((unixNanos) => {
+        const line = logs.at(Math.floor(Math.random() * logs.length))!;
+
+        return {
+          unixNanos,
+          line: JSON.stringify({
+            timestamp: new Date(Number(unixNanos) / 1000000).toISOString(),
+            ...JSON.parse(line),
+          }),
+        };
+      }),
   });
 });
 

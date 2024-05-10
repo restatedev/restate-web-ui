@@ -1,4 +1,4 @@
-import { useLocation } from '@remix-run/react';
+import { useLocation, useNavigation } from '@remix-run/react';
 import { focusRing } from '@restate/ui/focus';
 import { Link } from '@restate/ui/link';
 import { PropsWithChildren, useContext } from 'react';
@@ -49,7 +49,9 @@ export function NavSearchItem({
   children,
   search,
 }: PropsWithChildren<NavSearchItemProps>) {
-  const location = useLocation();
+  const currentLocation = useLocation();
+  const { location: nextLocation, state } = useNavigation();
+  const location = state === 'loading' ? nextLocation : currentLocation;
   const currentSearchParams = new URLSearchParams(location.search);
   currentSearchParams.sort();
   const targetSearchParams = new URLSearchParams(search);
