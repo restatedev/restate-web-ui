@@ -1,5 +1,5 @@
 import * as cloudApi from '@restate/data-access/cloud/api-client';
-import { http, HttpResponse } from 'msw';
+import { delay, http, HttpResponse } from 'msw';
 import { cloudApiDb } from './cloudApiDb';
 import { faker } from '@faker-js/faker';
 import { logs } from './logs';
@@ -403,15 +403,27 @@ const getEnvironmentLogsHandler = http.post<
   GetPath<'/{accountId}/GetEnvironmentLogs'>
 >('/:accountId/GetEnvironmentLogs', async ({ request }) => {
   const requestBody = await request.json();
+  await delay(2000);
+
+  const delta = requestBody.end - requestBody.start;
+
+  const logsLength = (delta: number) => {
+    if (delta > 45 * 60) {
+      return 200;
+    }
+    if (delta > 10 * 60) {
+      return 100;
+    }
+    if (delta > 4 * 60) {
+      return 15;
+    }
+    return 2;
+  };
 
   return HttpResponse.json({
-    lines: Array(200)
+    lines: Array(logsLength(delta))
       .fill(null)
-      .map(
-        (_, index) =>
-          requestBody.start +
-          (index / (200 - 1)) * (requestBody.end - requestBody.start)
-      )
+      .map((_, index) => requestBody.start + (index / (200 - 1)) * delta)
       .map((sec) =>
         (BigInt(Math.floor(sec * 1000)) * BigInt(1000000)).toString()
       )

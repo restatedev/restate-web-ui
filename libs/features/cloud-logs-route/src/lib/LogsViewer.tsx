@@ -3,11 +3,13 @@ import { getEnvironmentLogs } from '@restate/data-access/cloud/api-client';
 import { Button } from '@restate/ui/button';
 import { ErrorBanner } from '@restate/ui/error';
 import { Icon, IconName } from '@restate/ui/icons';
+import { useLiveLogs } from './useLiveLogs';
 
 export function LogsViewer() {
   const logs = useAsyncValue() as Awaited<
     ReturnType<typeof getEnvironmentLogs>
   >;
+  const liveLogLines = useLiveLogs();
 
   if (logs.error) {
     return (
@@ -31,6 +33,13 @@ export function LogsViewer() {
     <table className="w-full table-fixed">
       <tbody className="">
         {logs.data?.lines.map((line) => (
+          <LogLine
+            key={line.unixNanos}
+            line={line.line}
+            unixNanos={line.unixNanos}
+          />
+        ))}
+        {liveLogLines.map((line, i) => (
           <LogLine
             key={line.unixNanos}
             line={line.line}

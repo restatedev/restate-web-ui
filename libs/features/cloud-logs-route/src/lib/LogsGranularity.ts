@@ -23,14 +23,14 @@ export function isLogsGranularity(
 }
 
 export function toStartEnd(param: LogsGranularity) {
-  const end = Math.floor(Date.now() / 1000);
+  const end = Date.now();
   switch (param) {
     case LogsGranularity.PT1H:
-      return { end, start: end - 60 * 60 };
+      return { end, start: end - 60 * 60 * 1000 };
     case LogsGranularity.PT30M:
-      return { end, start: end - 30 * 60 };
+      return { end, start: end - 30 * 60 * 1000 };
     case LogsGranularity.Live:
     case LogsGranularity.PT5M:
-      return { end, start: end - 5 * 60 };
+      return { end, start: end - 5 * 60 * 1000 };
   }
 }

@@ -29,13 +29,18 @@ export const clientLoader = async ({
     return redirect(`${url.pathname}${url.search}${url.hash}`);
   }
 
+  const { start, end } = toStartEnd(logsGranularity);
+
   const logsPromise = getEnvironmentLogs({
     environmentId,
     accountId,
-    ...toStartEnd(logsGranularity),
+    start: start / 1000,
+    end: end / 1000,
   });
 
   return defer({
     logsPromise,
+    start,
+    end,
   });
 };

@@ -52,16 +52,15 @@ function Component() {
           <LayoutOutlet zone={LayoutZone.Nav}>
             <Nav ariaCurrentValue="page">
               <NavItem
-                href={`${toEnvironmentRoute(accountId!, {
-                  environmentId,
-                })}/settings`}
+                href={`${toEnvironmentRoute(
+                  accountId!,
+                  environmentId
+                )}/settings`}
               >
                 Settings
               </NavItem>
               <NavItem
-                href={`${toEnvironmentRoute(accountId!, {
-                  environmentId,
-                })}/logs`}
+                href={`${toEnvironmentRoute(accountId!, environmentId)}/logs`}
               >
                 Logs
               </NavItem>

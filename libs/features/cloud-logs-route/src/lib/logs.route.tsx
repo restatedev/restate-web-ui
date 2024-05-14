@@ -4,10 +4,12 @@ import { Suspense } from 'react';
 import { LogsViewer } from './LogsViewer';
 import { GranularitySelector } from './GranularitySelector';
 import { Spinner } from '@restate/ui/button';
+import { useEnvironmentParam } from '@restate/features/cloud/routes-utils';
 
 export function Component() {
   const { logsPromise } = useLoaderData<typeof clientLoader>();
   const { state } = useNavigation();
+  const environmentId = useEnvironmentParam();
 
   const loading = (
     <p className="font-sans flex gap-2 p-3 items-center text-sm py-4">
@@ -33,7 +35,7 @@ export function Component() {
         <div className="absolute inset-4">
           {state === 'loading' && loading}
           {state === 'idle' && (
-            <Suspense fallback={loading}>
+            <Suspense fallback={loading} key={environmentId}>
               <Await resolve={logsPromise}>
                 <LogsViewer />
               </Await>

@@ -1,4 +1,3 @@
-import type { Environment } from '@restate/data-access/cloud/api-client';
 import { useParams } from '@remix-run/react';
 
 export function useEnvironmentParam() {
@@ -8,7 +7,8 @@ export function useEnvironmentParam() {
 
 export function toEnvironmentRoute(
   accountId: string,
-  environment: Pick<Environment, 'environmentId'>
+  environmentId: string,
+  relativePath = ''
 ) {
-  return `/accounts/${accountId}/environments/${environment.environmentId}`;
+  return `/accounts/${accountId}/environments/${environmentId}${relativePath}`;
 }
