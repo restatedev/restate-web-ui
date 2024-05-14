@@ -1,7 +1,6 @@
 import * as cloudApi from '@restate/data-access/cloud/api-client';
-import { delay, http, HttpResponse } from 'msw';
+import { http, HttpResponse } from 'msw';
 import { cloudApiDb } from './cloudApiDb';
-import { faker } from '@faker-js/faker';
 import { logs } from './logs';
 
 type FormatParameterWithColon<S extends string> =
@@ -403,7 +402,6 @@ const getEnvironmentLogsHandler = http.post<
   GetPath<'/{accountId}/GetEnvironmentLogs'>
 >('/:accountId/GetEnvironmentLogs', async ({ request }) => {
   const requestBody = await request.json();
-  await delay(2000);
 
   const delta = requestBody.end - requestBody.start;
 
