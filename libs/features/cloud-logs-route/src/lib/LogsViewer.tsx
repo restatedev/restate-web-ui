@@ -1,11 +1,15 @@
-import { Form, useAsyncValue } from '@remix-run/react';
+import { Form, useAsyncValue, useSearchParams } from '@remix-run/react';
 import { getEnvironmentLogs } from '@restate/data-access/cloud/api-client';
 import { Button } from '@restate/ui/button';
 import { ErrorBanner } from '@restate/ui/error';
 import { Icon, IconName } from '@restate/ui/icons';
 import { useLiveLogs } from './useLiveLogs';
-import { useCallback, useRef } from 'react';
+import { useCallback } from 'react';
 import { LOG_CONTAINER_ID } from './constants';
+import {
+  LOGS_GRANULARITY_QUERY_PARAM_NAME,
+  LogsGranularity,
+} from './LogsGranularity';
 
 export function LogsViewer() {
   const logs = useAsyncValue() as Awaited<
@@ -29,6 +33,10 @@ export function LogsViewer() {
   }, []);
 
   const liveLogLines = useLiveLogs({ onPull });
+  const [searchParams] = useSearchParams();
+  const isLiveLogsEnabled =
+    searchParams.get(LOGS_GRANULARITY_QUERY_PARAM_NAME) ===
+    LogsGranularity.Live;
 
   if (logs.error) {
     return (
@@ -46,6 +54,10 @@ export function LogsViewer() {
         </ErrorBanner>
       </div>
     );
+  }
+
+  if (logs.data.lines.length === 0 && !isLiveLogsEnabled) {
+    return <p className="p-3 text-sm text-gray-500">No logs found</p>;
   }
 
   return (
