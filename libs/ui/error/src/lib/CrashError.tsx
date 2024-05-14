@@ -1,11 +1,12 @@
-import { isRouteErrorResponse, useRouteError } from '@remix-run/react';
+import { useRouteError } from '@remix-run/react';
+import { UnauthorizedError } from '@restate/data-access/cloud/api-client';
 import { Link } from '@restate/ui/link';
 
 export function CrashError() {
   const error = useRouteError();
   console.error(error);
 
-  if (isRouteErrorResponse(error) && error.status === 401) {
+  if (error instanceof UnauthorizedError) {
     return null;
   }
 

@@ -1,10 +1,14 @@
 import { Icon, IconName } from '@restate/ui/icons';
+import { PropsWithChildren } from 'react';
 
 export interface ErrorProps {
   errors?: Error[];
 }
 
-function SingleError({ error }: { error?: Error }) {
+function SingleError({
+  error,
+  children,
+}: PropsWithChildren<{ error?: Error }>) {
   if (!error) {
     return null;
   }
@@ -18,19 +22,25 @@ function SingleError({ error }: { error?: Error }) {
             name={IconName.CircleX}
           />
         </div>
-        <output className="text-sm text-red-700">{error.message}</output>
+        <output className="text-sm flex-auto text-red-700">
+          {error.message}
+        </output>
+        {children && <div className="flex-shrink-0">{children}</div>}
       </div>
     </div>
   );
 }
 
-export function ErrorBanner({ errors = [] }: ErrorProps) {
+export function ErrorBanner({
+  errors = [],
+  children,
+}: PropsWithChildren<ErrorProps>) {
   if (errors.length === 0) {
     return null;
   }
   if (errors.length === 1) {
     const [error] = errors;
-    return <SingleError error={error} />;
+    return <SingleError error={error} children={children} />;
   }
 
   return (
@@ -53,6 +63,7 @@ export function ErrorBanner({ errors = [] }: ErrorProps) {
               ))}
             </ul>
           </output>
+          {children}
         </div>
       </div>
     </div>

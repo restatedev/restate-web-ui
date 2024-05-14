@@ -8,3 +8,5 @@ export type Environment = NonNullable<
   Awaited<ReturnType<typeof describeEnvironment>>['data']
 >;
 export type Role = components['schemas']['RoleId'];
+export type LogLine =
+  components['schemas']['GetEnvironmentLogsResponse']['lines'][number];

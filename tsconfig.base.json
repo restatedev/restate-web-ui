@@ -30,11 +30,14 @@
       "@restate/features/cloud/environments-route": [
         "libs/features/cloud-environments-route/src/index.ts"
       ],
+      "@restate/features/cloud/logs-route": [
+        "libs/features/cloud-logs-route/src/index.ts"
+      ],
+      "@restate/features/cloud/routes-utils": [
+        "libs/features/cloud-routes-utils/src/index.ts"
+      ],
       "@restate/features/cloud/settings-route": [
         "libs/features/cloud-settings-route/src/index.ts"
-      ],
-      "@restate/features/cloud/utils-routes": [
-        "libs/features/utils-routes/src/index.ts"
       ],
       "@restate/ui/button": ["libs/ui/button/src/index.ts"],
       "@restate/ui/dialog": ["libs/ui/dialog/src/index.ts"],

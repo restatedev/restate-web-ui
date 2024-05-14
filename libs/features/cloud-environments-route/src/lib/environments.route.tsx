@@ -11,7 +11,7 @@ import {
   toEnvironmentRoute,
   useAccountParam,
   useEnvironmentParam,
-} from '@restate/features/cloud/utils-routes';
+} from '@restate/features/cloud/routes-utils';
 import { clientAction } from './action';
 import { CreateEnvironmentOnboarding } from './CreateEnvironmentOnboarding';
 import { Nav, NavItem } from '@restate/ui/nav';
@@ -52,16 +52,15 @@ function Component() {
           <LayoutOutlet zone={LayoutZone.Nav}>
             <Nav ariaCurrentValue="page">
               <NavItem
-                href={`${toEnvironmentRoute(accountId!, {
-                  environmentId,
-                })}/settings`}
+                href={`${toEnvironmentRoute(
+                  accountId!,
+                  environmentId
+                )}/settings`}
               >
                 Settings
               </NavItem>
               <NavItem
-                href={`${toEnvironmentRoute(accountId!, {
-                  environmentId,
-                })}/logs`}
+                href={`${toEnvironmentRoute(accountId!, environmentId)}/logs`}
               >
                 Logs
               </NavItem>

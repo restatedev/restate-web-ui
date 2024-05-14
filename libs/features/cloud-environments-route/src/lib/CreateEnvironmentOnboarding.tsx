@@ -3,7 +3,7 @@ import { FormFieldInput } from '@restate/ui/form-field';
 import { useFetcherWithError } from '@restate/util/remix';
 import { clientAction } from './action';
 import { ErrorBanner } from '@restate/ui/error';
-import { useAccountParam } from '@restate/features/cloud/utils-routes';
+import { useAccountParam } from '@restate/features/cloud/routes-utils';
 
 export function CreateEnvironmentOnboarding() {
   const accountId = useAccountParam();

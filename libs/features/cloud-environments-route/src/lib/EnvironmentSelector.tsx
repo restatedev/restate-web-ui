@@ -2,6 +2,7 @@ import {
   Await,
   useAsyncValue,
   useLoaderData,
+  useLocation,
   useSearchParams,
 } from '@remix-run/react';
 import { Button } from '@restate/ui/button';
@@ -20,7 +21,7 @@ import {
   useAccountParam,
   useEnvironmentParam,
   toEnvironmentRoute,
-} from '@restate/features/cloud/utils-routes';
+} from '@restate/features/cloud/routes-utils';
 import { Icon, IconName } from '@restate/ui/icons';
 import { EnvironmentStatus, MiniEnvironmentStatus } from './EnvironmentStatus';
 import { CreateEnvironment } from './CreateEnvironment';
@@ -75,6 +76,11 @@ function EnvironmentSelectorContent() {
   const currentAccountId = useAccountParam();
   const currentEnvironmentId = useEnvironmentParam();
   invariant(currentAccountId, 'Account id is missing');
+  const location = useLocation();
+
+  const relativePath = location.pathname
+    .split(toEnvironmentRoute(currentAccountId, currentEnvironmentId!))
+    .at(-1);
 
   return (
     <Dropdown>
@@ -124,7 +130,11 @@ function EnvironmentSelectorContent() {
             >
               {environmentList.data?.environments.map((environment) => (
                 <DropdownItem
-                  href={toEnvironmentRoute(currentAccountId, environment)}
+                  href={toEnvironmentRoute(
+                    currentAccountId,
+                    environment.environmentId,
+                    relativePath + location.search
+                  )}
                   key={environment.environmentId}
                   value={environment.environmentId}
                   className="group"

@@ -11,7 +11,7 @@ import {
 import {
   useAccountParam,
   toAccountRoute,
-} from '@restate/features/cloud/utils-routes';
+} from '@restate/features/cloud/routes-utils';
 import { Icon, IconName } from '@restate/ui/icons';
 import { logOut } from '@restate/util/auth';
 import { Account } from '@restate/data-access/cloud/api-client';

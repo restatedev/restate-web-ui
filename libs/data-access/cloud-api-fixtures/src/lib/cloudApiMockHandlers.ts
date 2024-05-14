@@ -1,6 +1,7 @@
 import * as cloudApi from '@restate/data-access/cloud/api-client';
-import { http, HttpResponse } from 'msw';
+import { delay, http, HttpResponse } from 'msw';
 import { cloudApiDb } from './cloudApiDb';
+import { logs } from './logs';
 
 type FormatParameterWithColon<S extends string> =
   S extends `${infer A}{${infer P}}${infer B}` ? `${A}:${P}${B}` : S;
@@ -391,6 +392,54 @@ const listApiKeysHandler = http.post<
   });
 });
 
+const getEnvironmentLogsHandler = http.post<
+  cloudApi.operations['GetEnvironmentLogs']['parameters']['path'],
+  NonNullable<
+    cloudApi.operations['GetEnvironmentLogs']['requestBody']
+  >['content']['application/json'],
+  | cloudApi.operations['GetEnvironmentLogs']['responses']['200']['content']['application/json']
+  | cloudApi.operations['GetEnvironmentLogs']['responses']['500']['content']['application/json'],
+  GetPath<'/{accountId}/GetEnvironmentLogs'>
+>('/:accountId/GetEnvironmentLogs', async ({ request }) => {
+  const requestBody = await request.json();
+  await delay(2000);
+
+  const delta = requestBody.end - requestBody.start;
+
+  const logsLength = (delta: number) => {
+    if (delta > 45 * 60) {
+      return 200;
+    }
+    if (delta > 10 * 60) {
+      return 100;
+    }
+    if (delta > 4 * 60) {
+      return 15;
+    }
+    return 2;
+  };
+
+  return HttpResponse.json({
+    lines: Array(logsLength(delta))
+      .fill(null)
+      .map((_, index) => requestBody.start + (index / (200 - 1)) * delta)
+      .map((sec) =>
+        (BigInt(Math.floor(sec * 1000)) * BigInt(1000000)).toString()
+      )
+      .map((unixNanos) => {
+        const line = logs.at(Math.floor(Math.random() * logs.length))!;
+
+        return {
+          unixNanos,
+          line: JSON.stringify({
+            timestamp: new Date(Number(unixNanos) / 1000000).toISOString(),
+            ...JSON.parse(line),
+          }),
+        };
+      }),
+  });
+});
+
 export const cloudApiMockHandlers = [
   getUserIdentityHandler,
   createAccountHandler,
@@ -403,4 +452,5 @@ export const cloudApiMockHandlers = [
   describeApiKeyHandler,
   deleteApiKeyHandler,
   listApiKeysHandler,
+  getEnvironmentLogsHandler,
 ];
