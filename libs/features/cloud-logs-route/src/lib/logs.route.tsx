@@ -14,6 +14,7 @@ import {
   LOGS_GRANULARITY_QUERY_PARAM_NAME,
   LogsGranularity,
 } from './LogsGranularity';
+import { LOG_CONTAINER_ID } from './constants';
 
 export function Component() {
   const { logsPromise } = useLoaderData<typeof clientLoader>();
@@ -44,7 +45,10 @@ export function Component() {
           You can access the restate server logs here.
         </p>
       </div>
-      <div className="overflow-auto relative flex-auto text-xs font-mono mt-4 whitespace-pre-wrap rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
+      <div
+        id={LOG_CONTAINER_ID}
+        className="overflow-auto relative flex-auto text-xs font-mono mt-4 whitespace-pre-wrap rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]"
+      >
         <div className="absolute inset-4">
           {state === 'loading' && loading}
           {state === 'idle' && (

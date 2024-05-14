@@ -4,12 +4,31 @@ import { Button } from '@restate/ui/button';
 import { ErrorBanner } from '@restate/ui/error';
 import { Icon, IconName } from '@restate/ui/icons';
 import { useLiveLogs } from './useLiveLogs';
+import { useCallback, useRef } from 'react';
+import { LOG_CONTAINER_ID } from './constants';
 
 export function LogsViewer() {
   const logs = useAsyncValue() as Awaited<
     ReturnType<typeof getEnvironmentLogs>
   >;
-  const liveLogLines = useLiveLogs();
+  const onPull = useCallback(() => {
+    const logsContainer = document.getElementById(LOG_CONTAINER_ID);
+
+    if (logsContainer instanceof HTMLElement) {
+      const distanceFromBottom =
+        logsContainer.scrollHeight -
+        logsContainer.scrollTop -
+        logsContainer.clientHeight;
+      const isAtBottom = distanceFromBottom < 50;
+
+      isAtBottom &&
+        requestAnimationFrame(() => {
+          logsContainer.scrollTo(0, logsContainer.scrollHeight + 100);
+        });
+    }
+  }, []);
+
+  const liveLogLines = useLiveLogs({ onPull });
 
   if (logs.error) {
     return (

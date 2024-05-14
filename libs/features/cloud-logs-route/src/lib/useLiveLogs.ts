@@ -32,7 +32,7 @@ async function wait(ms: number) {
   );
 }
 
-export function useLiveLogs() {
+export function useLiveLogs({ onPull }: { onPull: VoidFunction }) {
   const accountId = useAccountParam();
   const environmentId = useEnvironmentParam();
   invariant(accountId, 'Missing accountId param');
@@ -67,6 +67,7 @@ export function useLiveLogs() {
             ).then((result) => {
               if (!ignore && result.data) {
                 setResults((lines) => [...lines, ...result.data.lines]);
+                onPull();
                 pullLogs(end);
               }
             });
@@ -84,7 +85,7 @@ export function useLiveLogs() {
       abortController.abort();
       setResults([]);
     };
-  }, [accountId, environmentId, shouldStartPullingLogs, end]);
+  }, [accountId, environmentId, shouldStartPullingLogs, end, onPull]);
 
   return results;
 }
