@@ -1,15 +1,28 @@
-import { Await, useLoaderData, useNavigation } from '@remix-run/react';
+import {
+  Await,
+  useLoaderData,
+  useNavigation,
+  useSearchParams,
+} from '@remix-run/react';
 import { clientLoader } from './loader';
 import { Suspense } from 'react';
 import { LogsViewer } from './LogsViewer';
 import { GranularitySelector } from './GranularitySelector';
 import { Spinner } from '@restate/ui/button';
 import { useEnvironmentParam } from '@restate/features/cloud/routes-utils';
+import {
+  LOGS_GRANULARITY_QUERY_PARAM_NAME,
+  LogsGranularity,
+} from './LogsGranularity';
 
 export function Component() {
   const { logsPromise } = useLoaderData<typeof clientLoader>();
   const { state } = useNavigation();
   const environmentId = useEnvironmentParam();
+  const [searchParams] = useSearchParams();
+  const isLiveLogsEnabled =
+    searchParams.get(LOGS_GRANULARITY_QUERY_PARAM_NAME) ===
+    LogsGranularity.Live;
 
   const loading = (
     <p className="font-sans flex gap-2 p-3 items-center text-sm py-4">
@@ -39,9 +52,14 @@ export function Component() {
               <Await resolve={logsPromise}>
                 <LogsViewer />
               </Await>
+              {isLiveLogsEnabled && (
+                <p className="font-sans flex gap-2 p-3 items-center text-sm py-4 text-gray-400">
+                  <Spinner />
+                  Waiting for logs...
+                </p>
+              )}
             </Suspense>
           )}
-
           <div className="h-4" />
         </div>
       </div>

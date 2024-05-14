@@ -1,5 +1,5 @@
 import * as cloudApi from '@restate/data-access/cloud/api-client';
-import { http, HttpResponse } from 'msw';
+import { delay, http, HttpResponse } from 'msw';
 import { cloudApiDb } from './cloudApiDb';
 import { logs } from './logs';
 
@@ -402,6 +402,7 @@ const getEnvironmentLogsHandler = http.post<
   GetPath<'/{accountId}/GetEnvironmentLogs'>
 >('/:accountId/GetEnvironmentLogs', async ({ request }) => {
   const requestBody = await request.json();
+  await delay(2000);
 
   const delta = requestBody.end - requestBody.start;
 
