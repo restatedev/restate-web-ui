@@ -11,7 +11,7 @@ interface NavItemProps {
 
 const styles = tv({
   extend: focusRing,
-  base: 'no-underline isolate flex py-1.5 px-3 text-sm text-center transition rounded-xl cursor-default hover:bg-black/[0.03] pressed:bg-gray-200',
+  base: 'group no-underline isolate flex py-1.5 px-3 text-sm text-center transition rounded-xl cursor-default hover:bg-black/[0.03] pressed:bg-gray-200',
   variants: {
     isCurrent: {
       true: 'text-gray-800',

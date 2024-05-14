@@ -3,8 +3,14 @@ import {
   LOGS_GRANULARITY_QUERY_PARAM_NAME,
   LogsGranularity,
 } from './LogsGranularity';
+import { Icon, IconName } from '@restate/ui/icons';
+import { useSearchParams } from '@remix-run/react';
 
 export function GranularitySelector() {
+  const [searchParams] = useSearchParams();
+  const isLiveLogsEnabled =
+    searchParams.get(LOGS_GRANULARITY_QUERY_PARAM_NAME) ===
+    LogsGranularity.Live;
   return (
     <Nav ariaCurrentValue="time">
       <NavSearchItem
@@ -25,7 +31,21 @@ export function GranularitySelector() {
       <NavSearchItem
         search={`${LOGS_GRANULARITY_QUERY_PARAM_NAME}=${LogsGranularity.Live}`}
       >
-        Live
+        <div className="flex items-center gap-1">
+          <div
+            className={`relative w-3 h-3 text-xs text-gray-500 hidden group-current:block`}
+          >
+            <Icon
+              name={IconName.Circle}
+              className="absolute left-0 top-0 w-3 h-3 stroke-0 fill-current"
+            />
+            <Icon
+              name={IconName.Circle}
+              className="animate-ping absolute inset-left-0 top-0 w-3 h-3 stroke-[4px] fill-current opacity-20"
+            />
+          </div>
+          Live
+        </div>
       </NavSearchItem>
     </Nav>
   );
