@@ -67,28 +67,32 @@ function Component() {
         </p>
       </div>
       <div className="flex flex-col gap-2">
-        <div className="flex gap-2 items-start font-mono [overflow-wrap:anywhere] shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] mt-0 bg-gray-800 rounded-xl border border-gray-200 py-2 px-2 text-xs text-gray-100">
+        <div className="flex gap-2 items-start font-mono [overflow-wrap:anywhere] rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] text-xs p-2">
           <code className="flex-auto px-2 flex gap-2 flex-col py-2">
-            <span className="text-green-500">
+            <span className="text-green-800">
               # npm install --global @restatedev/restate
             </span>
             <span>
-              <span className="text-blue-500">export</span>{' '}
-              <span className="text-blue-300">RESTATE_HOST</span>=
-              {environmentId!.split('env_')[1]}
-              .env.dev.restate.cloud
+              <span className="text-blue-700">export</span>{' '}
+              <span className="">RESTATE_HOST</span>=
+              <span className="text-red-700">
+                {environmentId!.split('env_')[1]}
+                .env.dev.restate.cloud
+              </span>
             </span>
             <span>
-              <span className="text-blue-500">export</span>{' '}
-              <span className="text-blue-300">RESTATE_HOST_SCHEME</span>=https
+              <span className="text-blue-700">export</span>{' '}
+              <span className="">RESTATE_HOST_SCHEME</span>=
+              <span className="text-red-700">https</span>
             </span>
             <span>
-              <span className="text-yellow-300">restate</span> whoami
+              <span className="">restate</span>{' '}
+              <span className="text-red-700">whoami</span>
             </span>
           </code>
           <Button
             variant="icon"
-            className="flex-shrink-0 flex items-center gap-1 text-gray-100 hover:bg-gray-700 pressed:bg-gray-600 text-xs p-2"
+            className="flex-shrink-0 flex items-center gap-1 p-2"
             onClick={() => {
               navigator.clipboard.writeText(
                 `export RESTATE_HOST=${
