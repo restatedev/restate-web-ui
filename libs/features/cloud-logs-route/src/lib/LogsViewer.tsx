@@ -7,7 +7,7 @@ import { Button, Spinner } from '@restate/ui/button';
 import { ErrorBanner } from '@restate/ui/error';
 import { Icon, IconName } from '@restate/ui/icons';
 import { useLiveLogs } from './useLiveLogs';
-import { useCallback, useState } from 'react';
+import { ReactNode, memo, useCallback, useState } from 'react';
 import { LOG_CONTAINER_ID } from './constants';
 import { GridList, GridListItem } from './GridList';
 import {
@@ -15,6 +15,7 @@ import {
   LogsGranularity,
 } from './LogsGranularity';
 import { Key } from 'react-aria-components';
+import { Link } from '@restate/ui/link';
 
 export function LogsViewer() {
   const logs = useAsyncValue() as Awaited<
@@ -116,19 +117,17 @@ export function LogsViewer() {
           )}
         >
           {logs.data?.lines.map((line) => (
-            <LogLine
+            <OptimizedLogLine
               key={line.unixNanos}
               line={line.line}
               unixNanos={line.unixNanos}
-              isSelectable={isSelectionEnabled}
             />
           ))}
           {liveLogLines.map((line, i) => (
-            <LogLine
+            <OptimizedLogLine
               key={line.unixNanos}
               line={line.line}
               unixNanos={line.unixNanos}
-              isSelectable={isSelectionEnabled}
             />
           ))}
         </GridList>
@@ -143,16 +142,26 @@ export function LogsViewer() {
   );
 }
 
-function LogLine({
-  line,
-  unixNanos,
-  isSelectable,
-}: {
-  line: string;
-  unixNanos: string;
-  isSelectable?: boolean;
-}) {
+const DOCS_REGEXP = /https:\/\/docs\.restate\.dev[^\s"]*/gm;
+function LogLine({ line, unixNanos }: { line: string; unixNanos: string }) {
   const { timestamp, level, ...logObject } = JSON.parse(line);
+
+  // TODO: refactor
+  const stringifiedLog = JSON.stringify(logObject, null, 2);
+  const match = stringifiedLog.match(DOCS_REGEXP);
+  let stringifiedLogElement: ReactNode = stringifiedLog;
+  if (match) {
+    const [start, end] = stringifiedLog.split(match[0]);
+    stringifiedLogElement = (
+      <>
+        {start}
+        <Link href={match[0]} target="_blank" rel="noreferrer noopener">
+          {match[0]}
+        </Link>
+        {end}
+      </>
+    );
+  }
 
   return (
     <GridListItem
@@ -173,20 +182,18 @@ function LogLine({
         )}
       </div>
       <div className="flex-shrink-0 flex-grow-0 basis-[7ch]">{level}</div>
-      <details
-        className={`group flex-auto min-w-0 ${
-          isSelectable ? 'pointer-events-none2' : ''
-        }`}
-      >
+      <details className={`group flex-auto min-w-0`}>
         <summary className="truncate">
           <span className="group-open:invisible group-open:[font-size:0px]">
             {logObject?.fields?.message ??
               logObject?.fields?.error ??
-              JSON.stringify(logObject)}
+              stringifiedLog}
           </span>
         </summary>
-        <span className="px-2">{JSON.stringify(logObject, null, 2)}</span>
+        <span className="px-2">{stringifiedLogElement}</span>
       </details>
     </GridListItem>
   );
 }
+
+const OptimizedLogLine = memo(LogLine);
