@@ -9,7 +9,7 @@ import {
   describeApiKey,
   listApiKeys,
 } from '@restate/data-access/cloud/api-client';
-import { PropsWithChildren, Suspense } from 'react';
+import { PropsWithChildren, Suspense, useState } from 'react';
 import invariant from 'tiny-invariant';
 import { clientAction } from './action';
 import { listApiKeysWithCache } from './apis';
@@ -17,6 +17,9 @@ import { ApiKeyItem } from './ApiKeyItem';
 import { DeleteAPIKey } from './DeleteAPIKey';
 import { CreateApiKey } from './CreateApiKey';
 import { ErrorBanner } from '@restate/ui/error';
+import { Button } from '@restate/ui/button';
+import { Icon, IconName } from '@restate/ui/icons';
+import { useEnvironmentParam } from '@restate/features/cloud/routes-utils';
 
 const clientLoader = async ({ request, params }: ClientLoaderFunctionArgs) => {
   const accountId = params.accountId;
@@ -52,9 +55,61 @@ const clientLoader = async ({ request, params }: ClientLoaderFunctionArgs) => {
 
 function Component() {
   const { apiKeysWithDetailsPromises } = useLoaderData<typeof clientLoader>();
+  const [isCopied, setIsCopied] = useState(false);
+  const environmentId = useEnvironmentParam();
 
   return (
-    <div className="grid gap-x-10 gap-y-4 sm:grid-cols-[20ch_1fr]">
+    <div className="grid gap-x-10 gap-y-16 sm:grid-cols-[20ch_1fr]">
+      <div>
+        <h2 className="text-base font-semibold leading-7 text-gray-900">CLI</h2>
+        <p className="mt-1 text-sm leading-6 text-gray-600">
+          Connect restate CLI to your restate cloud environment.
+        </p>
+      </div>
+      <div className="flex flex-col gap-2">
+        <div className="flex gap-2 items-start font-mono [overflow-wrap:anywhere] shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] mt-0 bg-gray-800 rounded-xl border border-gray-200 py-2 px-2 text-xs text-gray-100">
+          <code className="flex-auto p-2 flex gap-2 flex-col">
+            <span className="text-green-500">
+              # npm install --global @restatedev/restate
+            </span>
+            <span>
+              <span className="text-blue-500">export</span>{' '}
+              <span className="text-blue-300">RESTATE_HOST</span>=
+              {environmentId!.split('env_')[1]}
+              .env.dev.restate.cloud
+            </span>
+            <span>
+              <span className="text-blue-500">export</span>{' '}
+              <span className="text-blue-300">RESTATE_HOST_SCHEME</span>=https
+            </span>
+            <span>
+              <span className="text-yellow-300">restate</span> whoami
+            </span>
+          </code>
+          <Button
+            variant="icon"
+            className="flex-shrink-0 flex items-center gap-1 px-2 text-gray-100"
+            onClick={() => {
+              navigator.clipboard.writeText(
+                `export RESTATE_HOST=${
+                  environmentId!.split('env_')[1]
+                }.env.dev.restate.cloud\nexport RESTATE_HOST_SCHEME=https\nrestate whoami`
+              );
+              setIsCopied(true);
+              setTimeout(() => {
+                setIsCopied(false);
+              }, 1000);
+            }}
+            autoFocus
+          >
+            {isCopied ? (
+              <Icon name={IconName.Check} />
+            ) : (
+              <Icon name={IconName.Copy} />
+            )}
+          </Button>
+        </div>
+      </div>
       <div>
         <h2 className="text-base font-semibold leading-7 text-gray-900">
           API keys
