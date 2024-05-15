@@ -1,5 +1,8 @@
 import { Form, useAsyncValue, useSearchParams } from '@remix-run/react';
-import { getEnvironmentLogs } from '@restate/data-access/cloud/api-client';
+import {
+  LogLine,
+  getEnvironmentLogs,
+} from '@restate/data-access/cloud/api-client';
 import { Button, Spinner } from '@restate/ui/button';
 import { ErrorBanner } from '@restate/ui/error';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -11,6 +14,7 @@ import {
   LOGS_GRANULARITY_QUERY_PARAM_NAME,
   LogsGranularity,
 } from './LogsGranularity';
+import { Key } from 'react-aria-components';
 
 export function LogsViewer() {
   const logs = useAsyncValue() as Awaited<
@@ -41,6 +45,9 @@ export function LogsViewer() {
   }, []);
 
   const liveLogLines = useLiveLogs({ onPull });
+  const [selectedKeys, setSelectedKeys] = useState<'all' | Set<Key>>(
+    new Set<Key>()
+  );
 
   if (logs.error) {
     return (
@@ -76,7 +83,19 @@ export function LogsViewer() {
           <Button
             variant="secondary"
             className="px-2"
-            onClick={() => setIsSelectionEnabled(false)}
+            onClick={() => {
+              setIsSelectionEnabled(false);
+              setSelectedKeys(new Set());
+              if (selectedKeys instanceof Set) {
+                const selectedLogs = [
+                  ...(logs.data?.lines ?? []),
+                  ...(isLiveLogsEnabled ? liveLogLines : []),
+                ]
+                  .filter(({ unixNanos }) => selectedKeys.has(unixNanos))
+                  .map(({ line }) => JSON.stringify(line));
+                navigator.clipboard.writeText(selectedLogs.join('\n'));
+              }
+            }}
           >
             <Icon name={IconName.Copy} />
           </Button>
@@ -86,8 +105,10 @@ export function LogsViewer() {
         className="py-6 absolute inset-0 overflow-auto"
         id={LOG_CONTAINER_ID}
       >
-        <GridList
-          aria-label="Favorite pokemon"
+        <GridList<LogLine>
+          selectedKeys={selectedKeys}
+          onSelectionChange={setSelectedKeys}
+          aria-label="Logs"
           selectionMode={isSelectionEnabled ? 'multiple' : 'none'}
           className="w-full"
           renderEmptyState={() => (
@@ -135,13 +156,13 @@ function LogLine({
 
   return (
     <GridListItem
+      value={{ unixNanos, line }}
       id={unixNanos}
       className={`text-xs border-none ${
         ['WARN', 'ERROR'].includes(level)
           ? 'text-red-600 font-semibold'
           : 'text-gray-800 font-normal'
       }`}
-      textValue={line}
     >
       <div className="flex-shrink-0 flex-grow-0 basis-[25ch] text-gray-500 font-normal">
         {new Date(Number(BigInt(unixNanos) / BigInt(1000000))).toLocaleString(
