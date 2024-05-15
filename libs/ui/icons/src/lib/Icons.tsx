@@ -14,6 +14,7 @@ import {
   Minus,
   Copy,
   RotateCw,
+  SquareCheckBig,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from 'tailwind-variants';
@@ -38,6 +39,7 @@ export const enum IconName {
   Minus = 'Minus',
   Copy = 'Copy',
   Retry = 'Retry',
+  SquareCheckBig = 'SquareCheckBig',
 }
 export interface IconsProps {
   name: IconName;
@@ -62,6 +64,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.CircleX]: CircleX,
   [IconName.Minus]: Minus,
   [IconName.Copy]: Copy,
+  [IconName.SquareCheckBig]: SquareCheckBig,
   [IconName.Retry]: RotateCw,
 };
 

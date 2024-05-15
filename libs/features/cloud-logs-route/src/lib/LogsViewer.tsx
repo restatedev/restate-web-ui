@@ -1,22 +1,35 @@
 import { Form, useAsyncValue, useSearchParams } from '@remix-run/react';
-import { getEnvironmentLogs } from '@restate/data-access/cloud/api-client';
-import { Button } from '@restate/ui/button';
+import {
+  LogLine,
+  getEnvironmentLogs,
+} from '@restate/data-access/cloud/api-client';
+import { Button, Spinner } from '@restate/ui/button';
 import { ErrorBanner } from '@restate/ui/error';
 import { Icon, IconName } from '@restate/ui/icons';
 import { useLiveLogs } from './useLiveLogs';
-import { useCallback } from 'react';
+import { ReactNode, memo, useCallback, useState } from 'react';
 import { LOG_CONTAINER_ID } from './constants';
+import { GridList, GridListItem } from './GridList';
 import {
   LOGS_GRANULARITY_QUERY_PARAM_NAME,
   LogsGranularity,
 } from './LogsGranularity';
+import { Key } from 'react-aria-components';
+import { Link } from '@restate/ui/link';
 
 export function LogsViewer() {
   const logs = useAsyncValue() as Awaited<
     ReturnType<typeof getEnvironmentLogs>
   >;
+  const [isSelectionEnabled, setIsSelectionEnabled] = useState(false);
+  const [searchParams] = useSearchParams();
+  const isLiveLogsEnabled =
+    searchParams.get(LOGS_GRANULARITY_QUERY_PARAM_NAME) ===
+    LogsGranularity.Live;
+
   const onPull = useCallback(() => {
     const logsContainer = document.getElementById(LOG_CONTAINER_ID);
+    // eslint-disable-next-line react-hooks/rules-of-hooks
 
     if (logsContainer instanceof HTMLElement) {
       const distanceFromBottom =
@@ -33,10 +46,9 @@ export function LogsViewer() {
   }, []);
 
   const liveLogLines = useLiveLogs({ onPull });
-  const [searchParams] = useSearchParams();
-  const isLiveLogsEnabled =
-    searchParams.get(LOGS_GRANULARITY_QUERY_PARAM_NAME) ===
-    LogsGranularity.Live;
+  const [selectedKeys, setSelectedKeys] = useState<'all' | Set<Key>>(
+    new Set<Key>()
+  );
 
   if (logs.error) {
     return (
@@ -56,64 +68,132 @@ export function LogsViewer() {
     );
   }
 
-  if (logs.data.lines.length === 0 && !isLiveLogsEnabled) {
-    return <p className="p-3 text-sm text-gray-500">No logs found</p>;
-  }
-
   return (
-    <table className="w-full table-fixed">
-      <tbody className="">
-        {logs.data?.lines.map((line) => (
-          <LogLine
-            key={line.unixNanos}
-            line={line.line}
-            unixNanos={line.unixNanos}
-          />
-        ))}
-        {liveLogLines.map((line, i) => (
-          <LogLine
-            key={line.unixNanos}
-            line={line.line}
-            unixNanos={line.unixNanos}
-          />
-        ))}
-      </tbody>
-    </table>
+    <>
+      <div className="absolute z-30 top-2 flex-col flex items-end  right-2">
+        {!isSelectionEnabled && (
+          <Button
+            variant="secondary"
+            className="px-2"
+            onClick={() => setIsSelectionEnabled(true)}
+          >
+            <Icon name={IconName.SquareCheckBig} />
+          </Button>
+        )}
+        {isSelectionEnabled && (
+          <Button
+            variant="secondary"
+            className="px-2"
+            onClick={() => {
+              setIsSelectionEnabled(false);
+              setSelectedKeys(new Set());
+              if (selectedKeys instanceof Set) {
+                const selectedLogs = [
+                  ...(logs.data?.lines ?? []),
+                  ...(isLiveLogsEnabled ? liveLogLines : []),
+                ]
+                  .filter(({ unixNanos }) => selectedKeys.has(unixNanos))
+                  .map(({ line }) => JSON.stringify(line));
+                navigator.clipboard.writeText(selectedLogs.join('\n'));
+              }
+            }}
+          >
+            <Icon name={IconName.Copy} />
+          </Button>
+        )}
+      </div>
+      <div
+        className="py-6 absolute inset-0 overflow-auto"
+        id={LOG_CONTAINER_ID}
+      >
+        <GridList<LogLine>
+          selectedKeys={selectedKeys}
+          onSelectionChange={setSelectedKeys}
+          aria-label="Logs"
+          selectionMode={isSelectionEnabled ? 'multiple' : 'none'}
+          className="w-full"
+          renderEmptyState={() => (
+            <p className="p-3 text-sm text-gray-500">No logs found</p>
+          )}
+        >
+          {logs.data?.lines.map((line) => (
+            <OptimizedLogLine
+              key={line.unixNanos}
+              line={line.line}
+              unixNanos={line.unixNanos}
+            />
+          ))}
+          {liveLogLines.map((line, i) => (
+            <OptimizedLogLine
+              key={line.unixNanos}
+              line={line.line}
+              unixNanos={line.unixNanos}
+            />
+          ))}
+        </GridList>
+        {isLiveLogsEnabled && (
+          <p className="font-sans flex gap-2 px-8 items-center text-sm py-4 text-gray-400">
+            <Spinner />
+            Waiting for logs...
+          </p>
+        )}
+      </div>
+    </>
   );
 }
 
+const DOCS_REGEXP = /https:\/\/docs\.restate\.dev[^\s"]*/gm;
 function LogLine({ line, unixNanos }: { line: string; unixNanos: string }) {
   const { timestamp, level, ...logObject } = JSON.parse(line);
 
+  // TODO: refactor
+  const stringifiedLog = JSON.stringify(logObject, null, 2);
+  const match = stringifiedLog.match(DOCS_REGEXP);
+  let stringifiedLogElement: ReactNode = stringifiedLog;
+  if (match) {
+    const [start, end] = stringifiedLog.split(match[0]);
+    stringifiedLogElement = (
+      <>
+        {start}
+        <Link href={match[0]} target="_blank" rel="noreferrer noopener">
+          {match[0]}
+        </Link>
+        {end}
+      </>
+    );
+  }
+
   return (
-    <tr
-      className={`bg-transparent border-none ${
+    <GridListItem
+      value={{ unixNanos, line }}
+      id={unixNanos}
+      className={`text-xs border-none ${
         ['WARN', 'ERROR'].includes(level)
           ? 'text-red-600 font-semibold'
           : 'text-gray-800 font-normal'
       }`}
     >
-      <th className="align-baseline font-normal text-gray-500 whitespace-nowrap w-[25ch]">
+      <div className="flex-shrink-0 flex-grow-0 basis-[25ch] text-gray-500 font-normal">
         {new Date(Number(BigInt(unixNanos) / BigInt(1000000))).toLocaleString(
           'default',
           {
             timeZoneName: 'short',
           }
         )}
-      </th>
-      <td className="pl-4 align-baseline pb-2 w-[10ch]">{level}</td>
-      <td className="pl-4 align-baseline pb-2 break-all">
-        <details className="group">
-          <summary className="truncate">
-            <span className="group-open:invisible group-open:[font-size:0px]">
-              {logObject?.fields?.message ??
-                logObject?.fields?.error ??
-                JSON.stringify(logObject)}
-            </span>
-          </summary>
-          <span className="px-2">{JSON.stringify(logObject, null, 2)}</span>
-        </details>
-      </td>
-    </tr>
+      </div>
+      <div className="flex-shrink-0 flex-grow-0 basis-[7ch]">{level}</div>
+      <details className={`group flex-auto min-w-0`}>
+        <summary className="truncate">
+          <span className="group-open:invisible group-open:[font-size:0px]">
+            {logObject?.fields?.message ??
+              logObject?.fields?.error ??
+              stringifiedLog}
+          </span>
+        </summary>
+        <span className="px-2">{stringifiedLogElement}</span>
+      </details>
+    </GridListItem>
   );
 }
+
+const OptimizedLogLine = memo(LogLine);
