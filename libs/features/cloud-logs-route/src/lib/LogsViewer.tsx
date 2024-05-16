@@ -49,10 +49,11 @@ export function LogsViewer() {
   const [selectedKeys, setSelectedKeys] = useState<'all' | Set<Key>>(
     new Set<Key>()
   );
+  const hasAnyLogs = (logs.data?.lines ?? []).length + liveLogLines.length > 0;
 
   if (logs.error) {
     return (
-      <div className="font-sans">
+      <div className="font-sans p-2">
         <ErrorBanner errors={[new Error(`Failed to load logs.`)]}>
           <Form method="GET">
             <Button
@@ -70,38 +71,40 @@ export function LogsViewer() {
 
   return (
     <>
-      <div className="absolute z-30 top-2 flex-col flex items-end  right-2">
-        {!isSelectionEnabled && (
-          <Button
-            variant="secondary"
-            className="px-2"
-            onClick={() => setIsSelectionEnabled(true)}
-          >
-            <Icon name={IconName.SquareCheckBig} />
-          </Button>
-        )}
-        {isSelectionEnabled && (
-          <Button
-            variant="secondary"
-            className="px-2"
-            onClick={() => {
-              setIsSelectionEnabled(false);
-              setSelectedKeys(new Set());
-              if (selectedKeys instanceof Set) {
-                const selectedLogs = [
-                  ...(logs.data?.lines ?? []),
-                  ...(isLiveLogsEnabled ? liveLogLines : []),
-                ]
-                  .filter(({ unixNanos }) => selectedKeys.has(unixNanos))
-                  .map(({ line }) => JSON.stringify(line));
-                navigator.clipboard.writeText(selectedLogs.join('\n'));
-              }
-            }}
-          >
-            <Icon name={IconName.Copy} />
-          </Button>
-        )}
-      </div>
+      {hasAnyLogs && (
+        <div className="absolute z-30 top-2 flex-col flex items-end  right-2">
+          {!isSelectionEnabled && (
+            <Button
+              variant="secondary"
+              className="px-2"
+              onClick={() => setIsSelectionEnabled(true)}
+            >
+              <Icon name={IconName.SquareCheckBig} />
+            </Button>
+          )}
+          {isSelectionEnabled && (
+            <Button
+              variant="secondary"
+              className="px-2"
+              onClick={() => {
+                setIsSelectionEnabled(false);
+                setSelectedKeys(new Set());
+                if (selectedKeys instanceof Set) {
+                  const selectedLogs = [
+                    ...(logs.data?.lines ?? []),
+                    ...(isLiveLogsEnabled ? liveLogLines : []),
+                  ]
+                    .filter(({ unixNanos }) => selectedKeys.has(unixNanos))
+                    .map(({ line }) => JSON.stringify(line));
+                  navigator.clipboard.writeText(selectedLogs.join('\n'));
+                }
+              }}
+            >
+              <Icon name={IconName.Copy} />
+            </Button>
+          )}
+        </div>
+      )}
       <div
         className="py-6 absolute inset-0 overflow-auto"
         id={LOG_CONTAINER_ID}
@@ -113,7 +116,7 @@ export function LogsViewer() {
           selectionMode={isSelectionEnabled ? 'multiple' : 'none'}
           className="w-full"
           renderEmptyState={() => (
-            <p className="p-3 text-sm text-gray-500">No logs found</p>
+            <p className="px-6 text-sm text-gray-500">No logs found</p>
           )}
         >
           {logs.data?.lines.map((line) => (
