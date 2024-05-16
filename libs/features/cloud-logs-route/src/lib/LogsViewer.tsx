@@ -146,7 +146,7 @@ export function LogsViewer() {
           ))}
         </GridList>
         {isLiveLogsEnabled && (
-          <p className="font-sans flex gap-2 px-8 items-center text-sm py-4 text-gray-400">
+          <p className="font-sans flex gap-2 px-8 py-2 items-center text-sm text-gray-400">
             <Spinner />
             Waiting for logs...
           </p>

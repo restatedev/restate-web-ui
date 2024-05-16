@@ -12,7 +12,7 @@ export function Component() {
   const environmentId = useEnvironmentParam();
 
   const loading = (
-    <p className="font-sans flex gap-2 p-6 items-center text-sm">
+    <p className="font-sans flex gap-2 p-8 items-center text-sm">
       <Spinner />
       Loading logs...
     </p>
