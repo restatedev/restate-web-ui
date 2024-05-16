@@ -159,19 +159,21 @@ export function LogsViewer() {
 const DOCS_REGEXP = /https:\/\/docs\.restate\.dev[^\s"]*/gm;
 // TODO: refactor
 function addDocLink(message: string): ReactNode {
-  const match = message.match(DOCS_REGEXP);
   let element: ReactNode = message;
-  if (match) {
-    const [start, end] = message.split(match[0]);
-    element = (
-      <>
-        {start}
-        <Link href={match[0]} target="_blank" rel="noreferrer noopener">
-          {match[0]}
-        </Link>
-        {end}
-      </>
-    );
+  if (typeof message === 'string') {
+    const match = message.match(DOCS_REGEXP);
+    if (match) {
+      const [start, end] = message.split(match[0]);
+      element = (
+        <>
+          {start}
+          <Link href={match[0]} target="_blank" rel="noreferrer noopener">
+            {match[0]}
+          </Link>
+          {end}
+        </>
+      );
+    }
   }
 
   return element;
@@ -183,6 +185,10 @@ function LogLine({ line, unixNanos }: { line: string; unixNanos: string }) {
   const hasMessageField = Boolean(logObject?.fields?.message);
   const hasErrorField = !hasMessageField && Boolean(logObject?.fields?.error);
   const allFields = { ...logObject?.fields, ...logObject?.span };
+
+  if (level === 'DEBUG') {
+    return null;
+  }
 
   return (
     <GridListItem
