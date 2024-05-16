@@ -59,9 +59,9 @@ export function AccountSelector({ accounts }: AccountSelectorProps) {
                   value={account.accountId}
                 >
                   <div>
-                    <div>{account.accountId}</div>
+                    <div>{account.name}</div>
                     <div className="text-gray-500 group-focus:text-gray-300">
-                      {account.description}
+                      {account.accountId}
                     </div>
                   </div>
                 </DropdownItem>

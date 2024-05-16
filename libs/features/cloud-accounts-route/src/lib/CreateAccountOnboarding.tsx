@@ -22,18 +22,22 @@ export function CreateAccountOnboarding() {
         <div>
           <p className="text-sm text-gray-500">
             You'll need an account to manage resources, users, and permissions.
-            Help us tailor your experience by providing a brief description of
-            your account. We're thrilled to have you on board!
+            Help us tailor your experience by providing a name of your account.
+            We're thrilled to have you on board!
           </p>
-
           <FormFieldInput
             autoFocus
             required
-            name="description"
+            name="name"
             className="mt-2"
-            placeholder="Description"
-            maxLength={100}
+            placeholder="Name"
+            pattern="[a-z0-9][a-z0-9\-]{0,61}[a-z0-9]"
           />
+          <p className="text-xs text-gray-500 mt-2">
+            Choose a DNS-compatible name: lowercase letters, numbers, and
+            hyphens only. Must start/end with a letter or number (3-63
+            characters).
+          </p>
         </div>
         <div>
           <p className="text-sm text-gray-500 mb-1">

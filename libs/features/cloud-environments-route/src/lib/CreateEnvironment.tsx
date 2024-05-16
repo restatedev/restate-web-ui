@@ -47,18 +47,23 @@ export function CreateEnvironment() {
             to acquire your dedicated restate server instance.
           </p>
           <div>
-            <p className="text-sm text-gray-500 mt-2">
-              Please provide a brief description for your new environment
+            <p className="text-sm text-gray-500">
+              Please provide a name for your new environment.
             </p>
             <fetcher.Form id={formId} method="POST" action={action}>
               <FormFieldInput
                 autoFocus
                 required
-                name="description"
+                name="name"
                 className="mt-2"
-                placeholder="Description"
-                maxLength={100}
+                placeholder="Name"
+                pattern="[a-z0-9][a-z0-9\-]{0,61}[a-z0-9]"
               />
+              <p className="text-xs text-gray-500 mt-2">
+                Choose a DNS-compatible name: lowercase letters, numbers, and
+                hyphens only. Must start/end with a letter or number (3-63
+                characters).
+              </p>
               <DialogFooter>
                 <div className="flex gap-2 flex-col">
                   <ErrorBanner errors={fetcher.errors} />

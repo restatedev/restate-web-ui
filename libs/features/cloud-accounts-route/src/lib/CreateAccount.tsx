@@ -44,18 +44,23 @@ export function CreateAccount() {
             A restate Cloud account enables you to control resources, users, and
             permissions.
           </p>
-          <p className="text-sm text-gray-500 mt-2">
-            Please provide a brief description to set up your new account.
-          </p>
           <fetcher.Form id={formId} method="POST" action={action}>
+            <p className="text-sm text-gray-500 mt-1">
+              Please provide a name for your new account.
+            </p>
             <FormFieldInput
               autoFocus
               required
-              name="description"
+              name="name"
               className="mt-2"
-              placeholder="Description"
-              maxLength={100}
+              placeholder="Name"
+              pattern="[a-z0-9][a-z0-9\-]{0,61}[a-z0-9]"
             />
+            <p className="text-xs text-gray-500 mt-2">
+              Choose a DNS-compatible name: lowercase letters, numbers, and
+              hyphens only. Must start/end with a letter or number (3-63
+              characters).
+            </p>
             <DialogFooter>
               <div className="flex gap-2 flex-col">
                 <ErrorBanner errors={fetcher.errors} />

@@ -22,10 +22,10 @@ export const clientAction = async ({
         const body = await request.formData();
 
         // TODO: fix typing issue
-        const description = body.get('description') as string;
+        const name = body.get('name') as string;
         const { data, error } = await createEnvironment({
           accountId,
-          description,
+          name,
         });
 
         if (error) {
