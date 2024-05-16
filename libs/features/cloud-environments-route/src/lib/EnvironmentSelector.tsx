@@ -99,11 +99,10 @@ function EnvironmentSelectorContent() {
                 </div>
               )}
               <div className="truncate row-start-1 w-full">
-                {environmentDetails?.data?.environmentId ??
-                  currentEnvironmentId}
+                {environmentDetails?.data?.name ?? currentEnvironmentId}
               </div>
               <div className="truncate text-gray-500 col-start-2 row-start-2 w-full">
-                {environmentDetails?.data?.description}
+                {environmentDetails?.data?.environmentId}
               </div>
               {environmentDetails?.error && (
                 <InlineError className="truncate row-start-2 w-full col-start-1">
@@ -209,7 +208,7 @@ function EnvironmentItem({ environmentId }: { environmentId: string }) {
   return (
     <div className="flex flex-col w-full">
       <div className="truncate">
-        {environmentDetails?.data?.environmentId ?? environmentId}
+        {environmentDetails?.data?.name ?? environmentId}
       </div>
       {environmentDetails.error && (
         <InlineError className="group-focus:text-red-100 truncate row-start-2 w-full col-start-1">
@@ -222,7 +221,7 @@ function EnvironmentItem({ environmentId }: { environmentId: string }) {
             <EnvironmentStatus status={environmentDetails.data.status} />
           )}
           <span className="truncate text-gray-500 group-focus:text-gray-300">
-            {environmentDetails?.data?.description}
+            {environmentDetails?.data?.environmentId}
           </span>
         </div>
       )}

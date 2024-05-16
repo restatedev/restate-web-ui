@@ -24,7 +24,7 @@ export async function createAccount(
   params: AllParams<cloudApi.operations['CreateAccount']>
 ) {
   return apiClient.POST('/CreateAccount', {
-    body: { description: params.description },
+    body: { name: params.name },
   });
 }
 
@@ -59,7 +59,7 @@ export async function createEnvironment(
 ) {
   return apiClient.POST('/{accountId}/CreateEnvironment', {
     params: { path: { accountId: params.accountId } },
-    body: { description: params.description },
+    body: { name: params.name },
   });
 }
 

@@ -10,9 +10,9 @@ export const clientAction = async ({
   listAccountsWithCache.invalidate();
   const body = await request.formData();
   // TODO: fix typing issue
-  const description = body.get('description') as string;
+  const name = body.get('name') as string;
   const { data, error } = await createAccount({
-    description,
+    name,
   });
   if (error) {
     return { errors: [new Error(error.message)] };

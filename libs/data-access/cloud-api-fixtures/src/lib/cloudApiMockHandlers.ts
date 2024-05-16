@@ -51,11 +51,12 @@ const createAccountHandler = http.post<
 
   const account = cloudApiDb.account.create({
     users: [user],
-    description: requestBody.description,
+    name: requestBody.name,
   });
 
   return HttpResponse.json({
     accountId: account.accountId,
+    name: account.name,
   });
 });
 
@@ -86,9 +87,9 @@ const listAccountsHandler = http.post<
   });
 
   return HttpResponse.json({
-    accounts: accounts.map(({ accountId, description }) => ({
+    accounts: accounts.map(({ accountId, name }) => ({
       accountId,
-      description,
+      name,
     })),
   });
 });
@@ -128,7 +129,7 @@ const describeEnvironmentHandler = http.post<
   return HttpResponse.json({
     environmentId: environment.environmentId,
     accountId: environment.account?.accountId,
-    description: environment.description,
+    name: environment.name,
     status: environment.status,
     apiKeys: apiKeys
       .filter(({ state }) => state !== 'DELETED')
@@ -136,6 +137,9 @@ const describeEnvironmentHandler = http.post<
         keyId,
         environmentId: environment!.environmentId,
       })),
+    signingPublicKey: environment.signingPublicKey,
+    ingressBaseUrl: environment.ingressBaseUrl,
+    adminBaseUrl: environment.adminBaseUrl,
   });
 });
 
@@ -204,12 +208,13 @@ const createEnvironmentHandler = http.post<
 
   const environment = cloudApiDb.environment.create({
     account,
-    description: requestBody.description,
+    name: requestBody.name,
     status: 'PENDING',
   });
 
   return HttpResponse.json({
     environmentId: environment.environmentId,
+    name: environment.name,
   });
 });
 
@@ -240,7 +245,10 @@ const listEnvironmentsHandler = http.post<
   });
 
   return HttpResponse.json({
-    environments: environments.map(({ environmentId }) => ({ environmentId })),
+    environments: environments.map(({ environmentId, name }) => ({
+      environmentId,
+      name,
+    })),
   });
 });
 

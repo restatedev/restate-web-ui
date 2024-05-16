@@ -89,7 +89,7 @@ paths:
       operationId: CreateAccount
       summary: Create a new account
       requestBody:
-        required: false
+        required: true
         content:
           application/json:
             schema:
@@ -172,7 +172,7 @@ paths:
             $ref: '#/components/schemas/AccountId'
           required: true
       requestBody:
-        required: false
+        required: true
         content:
           application/json:
             schema:
@@ -624,32 +624,41 @@ components:
             properties:
               accountId:
                 type: string
-              description:
+              name:
                 type: string
+                pattern: ^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$
             required:
               - accountId
+              - name
       required:
         - accounts
     CreateAccountRequest:
       type: object
       properties:
-        description:
+        name:
           type: string
+          pattern: ^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$
+      required:
+        - name
     CreateAccountResponse:
       type: object
       properties:
         accountId:
           type: string
+        name:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$
       required:
         - accountId
+        - name
     UpdateAccountRequest:
       type: object
       properties:
         accountId:
           type: string
-        description:
+        name:
           type: string
-          nullable: true
+          pattern: ^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$
       required:
         - accountId
     UpdateAccountResponse:
@@ -657,10 +666,12 @@ components:
       properties:
         accountId:
           type: string
-        description:
+        name:
           type: string
+          pattern: ^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$
       required:
         - accountId
+        - name
     AccountId:
       type: string
       description: Unique account identifier
@@ -668,15 +679,22 @@ components:
     CreateEnvironmentRequest:
       type: object
       properties:
-        description:
+        name:
           type: string
+          pattern: ^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$
+      required:
+        - name
     CreateEnvironmentResponse:
       type: object
       properties:
         environmentId:
           type: string
+        name:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$
       required:
         - environmentId
+        - name
     ListEnvironmentsRequest:
       type: object
     ListEnvironmentsResponse:
@@ -689,8 +707,12 @@ components:
             properties:
               environmentId:
                 type: string
+              name:
+                type: string
+                pattern: ^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$
             required:
               - environmentId
+              - name
       required:
         - environments
     DescribeEnvironmentRequest:
@@ -705,8 +727,9 @@ components:
       properties:
         environmentId:
           type: string
-        description:
+        name:
           type: string
+          pattern: ^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$
         status:
           type: string
           enum:
@@ -728,10 +751,17 @@ components:
             required:
               - keyId
               - environmentId
+        ingressBaseUrl:
+          type: string
+        adminBaseUrl:
+          type: string
       required:
         - environmentId
+        - name
         - status
         - apiKeys
+        - ingressBaseUrl
+        - adminBaseUrl
     DestroyEnvironmentRequest:
       type: object
       properties:

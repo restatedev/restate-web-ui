@@ -3,58 +3,59 @@
  * Do not make direct changes to the file.
  */
 
+
 export interface paths {
-  '/GetUserIdentity': {
+  "/GetUserIdentity": {
     /** Retrieve the current user's identity */
-    post: operations['GetUserIdentity'];
+    post: operations["GetUserIdentity"];
   };
-  '/ListAccounts': {
+  "/ListAccounts": {
     /** List the accounts available to the current user */
-    post: operations['ListAccounts'];
+    post: operations["ListAccounts"];
   };
-  '/CreateAccount': {
+  "/CreateAccount": {
     /** Create a new account */
-    post: operations['CreateAccount'];
+    post: operations["CreateAccount"];
   };
-  '/UpdateAccount': {
+  "/UpdateAccount": {
     /** Update account details */
-    post: operations['UpdateAccount'];
+    post: operations["UpdateAccount"];
   };
-  '/{accountId}/CreateEnvironment': {
+  "/{accountId}/CreateEnvironment": {
     /** Create a new environment */
-    post: operations['CreateEnvironment'];
+    post: operations["CreateEnvironment"];
   };
-  '/{accountId}/ListEnvironments': {
+  "/{accountId}/ListEnvironments": {
     /** Retrieve an account's environments */
-    post: operations['ListEnvironments'];
+    post: operations["ListEnvironments"];
   };
-  '/{accountId}/DescribeEnvironment': {
+  "/{accountId}/DescribeEnvironment": {
     /** Retrieve an environment's details */
-    post: operations['DescribeEnvironment'];
+    post: operations["DescribeEnvironment"];
   };
-  '/{accountId}/DestroyEnvironment': {
+  "/{accountId}/DestroyEnvironment": {
     /** Shut down an environment and destroy all its stored metadata and state */
-    post: operations['DestroyEnvironment'];
+    post: operations["DestroyEnvironment"];
   };
-  '/{accountId}/CreateApiKey': {
+  "/{accountId}/CreateApiKey": {
     /** Create a new API key for the specified environment */
-    post: operations['CreateApiKey'];
+    post: operations["CreateApiKey"];
   };
-  '/{accountId}/ListApiKeys': {
+  "/{accountId}/ListApiKeys": {
     /** List the known API keys for an environment */
-    post: operations['ListApiKeys'];
+    post: operations["ListApiKeys"];
   };
-  '/{accountId}/DescribeApiKey': {
+  "/{accountId}/DescribeApiKey": {
     /** Retrieve the details of a specific API key */
-    post: operations['DescribeApiKey'];
+    post: operations["DescribeApiKey"];
   };
-  '/{accountId}/DeleteApiKey': {
+  "/{accountId}/DeleteApiKey": {
     /** Delete the specified API key */
-    post: operations['DeleteApiKey'];
+    post: operations["DeleteApiKey"];
   };
-  '/{accountId}/GetEnvironmentLogs': {
+  "/{accountId}/GetEnvironmentLogs": {
     /** Retrieve environments logs */
-    post: operations['GetEnvironmentLogs'];
+    post: operations["GetEnvironmentLogs"];
   };
 }
 
@@ -81,23 +82,24 @@ export interface components {
     ListAccountsRequest: Record<string, never>;
     ListAccountsResponse: {
       accounts: {
-        accountId: string;
-        description?: string;
-      }[];
+          accountId: string;
+          name: string;
+        }[];
     };
     CreateAccountRequest: {
-      description?: string;
+      name: string;
     };
     CreateAccountResponse: {
       accountId: string;
+      name: string;
     };
     UpdateAccountRequest: {
       accountId: string;
-      description?: string | null;
+      name?: string;
     };
     UpdateAccountResponse: {
       accountId: string;
-      description?: string;
+      name: string;
     };
     /**
      * @description Unique account identifier
@@ -105,44 +107,46 @@ export interface components {
      */
     AccountId: string;
     CreateEnvironmentRequest: {
-      description?: string;
+      name: string;
     };
     CreateEnvironmentResponse: {
       environmentId: string;
+      name: string;
     };
     ListEnvironmentsRequest: Record<string, never>;
     ListEnvironmentsResponse: {
       environments: {
-        environmentId: string;
-      }[];
+          environmentId: string;
+          name: string;
+        }[];
     };
     DescribeEnvironmentRequest: {
       environmentId: string;
     };
     DescribeEnvironmentResponse: {
       environmentId: string;
-      description?: string;
+      name: string;
       /** @enum {string} */
-      status: 'PENDING' | 'ACTIVE' | 'FAILED' | 'DELETED';
+      status: "PENDING" | "ACTIVE" | "FAILED" | "DELETED";
       signingPublicKey?: string;
       apiKeys: {
-        keyId: string;
-        environmentId: string;
-      }[];
+          keyId: string;
+          environmentId: string;
+        }[];
+      ingressBaseUrl: string;
+      adminBaseUrl: string;
     };
     DestroyEnvironmentRequest: {
       environmentId: string;
     };
     DestroyEnvironmentResponse: {
-      result?:
-        | {
-            ok: boolean;
-          }
-        | string;
+      result?: {
+        ok: boolean;
+      } | string;
     };
     CreateApiKeyRequest: {
       environmentId: string;
-      roleId: components['schemas']['RoleId'];
+      roleId: components["schemas"]["RoleId"];
       description?: string;
     };
     /**
@@ -150,28 +154,24 @@ export interface components {
      * @example rst:role::FullAccess
      * @enum {string}
      */
-    RoleId:
-      | 'rst:role::FullAccess'
-      | 'rst:role::IngressAccess'
-      | 'rst:role::AdminAccess'
-      | 'rst:role::ResolveAwakeableAccess';
+    RoleId: "rst:role::FullAccess" | "rst:role::IngressAccess" | "rst:role::AdminAccess" | "rst:role::ResolveAwakeableAccess";
     CreateApiKeyResponse: {
       keyId: string;
-      roleId: components['schemas']['RoleId'];
+      roleId: components["schemas"]["RoleId"];
       environmentId: string;
       accountId: string;
       apiKey: string;
       /** @enum {string} */
-      state: 'ACTIVE' | 'DELETED';
+      state: "ACTIVE" | "DELETED";
     };
     ListApiKeysRequest: {
       environmentId: string;
     };
     ListApiKeysResponse: {
       apiKeys: {
-        keyId: string;
-        environmentId: string;
-      }[];
+          keyId: string;
+          environmentId: string;
+        }[];
     };
     DescribeApiKeyRequest: {
       keyId: string;
@@ -179,11 +179,11 @@ export interface components {
     };
     DescribeApiKeyResponse: {
       keyId: string;
-      roleId: components['schemas']['RoleId'];
+      roleId: components["schemas"]["RoleId"];
       environmentId: string;
       accountId: string;
       /** @enum {string} */
-      state: 'ACTIVE' | 'DELETED';
+      state: "ACTIVE" | "DELETED";
       description?: string;
     };
     DeleteApiKeyRequest: {
@@ -191,11 +191,9 @@ export interface components {
       keyId: string;
     };
     DeleteApiKeyResponse: {
-      result?:
-        | {
-            ok: boolean;
-          }
-        | string;
+      result?: {
+        ok: boolean;
+      } | string;
     };
     GetEnvironmentLogsRequest: {
       environmentId: string;
@@ -204,9 +202,9 @@ export interface components {
     };
     GetEnvironmentLogsResponse: {
       lines: {
-        unixNanos: string;
-        line: string;
-      }[];
+          unixNanos: string;
+          line: string;
+        }[];
     };
   };
   responses: never;
@@ -221,36 +219,37 @@ export type $defs = Record<string, never>;
 export type external = Record<string, never>;
 
 export interface operations {
+
   /** Retrieve the current user's identity */
   GetUserIdentity: {
     requestBody?: {
       content: {
-        'application/json': components['schemas']['GetUserIdentityRequest'];
+        "application/json": components["schemas"]["GetUserIdentityRequest"];
       };
     };
     responses: {
       /** @description The operation completed successfully. */
       200: {
         content: {
-          'application/json': components['schemas']['GetUserIdentityResponse'];
+          "application/json": components["schemas"]["GetUserIdentityResponse"];
         };
       };
       /** @description Client error */
       400: {
         content: {
-          'application/json': components['schemas']['ClientError'];
+          "application/json": components["schemas"]["ClientError"];
         };
       };
       /** @description The client has not provided a valid token for a principal authorized to make the requested operation. */
       401: {
         content: {
-          'application/json': components['schemas']['UnauthorizedError'];
+          "application/json": components["schemas"]["UnauthorizedError"];
         };
       };
       /** @description Indicates a failure on the service-side. Generally this type of error is retryable. */
       500: {
         content: {
-          'application/json': components['schemas']['ServerInternalError'];
+          "application/json": components["schemas"]["ServerInternalError"];
         };
       };
     };
@@ -259,66 +258,66 @@ export interface operations {
   ListAccounts: {
     requestBody?: {
       content: {
-        'application/json': components['schemas']['ListAccountsRequest'];
+        "application/json": components["schemas"]["ListAccountsRequest"];
       };
     };
     responses: {
       /** @description The operation completed successfully. */
       200: {
         content: {
-          'application/json': components['schemas']['ListAccountsResponse'];
+          "application/json": components["schemas"]["ListAccountsResponse"];
         };
       };
       /** @description Client error */
       400: {
         content: {
-          'application/json': components['schemas']['ClientError'];
+          "application/json": components["schemas"]["ClientError"];
         };
       };
       /** @description The client has not provided a valid token for a principal authorized to make the requested operation. */
       401: {
         content: {
-          'application/json': components['schemas']['UnauthorizedError'];
+          "application/json": components["schemas"]["UnauthorizedError"];
         };
       };
       /** @description Indicates a failure on the service-side. Generally this type of error is retryable. */
       500: {
         content: {
-          'application/json': components['schemas']['ServerInternalError'];
+          "application/json": components["schemas"]["ServerInternalError"];
         };
       };
     };
   };
   /** Create a new account */
   CreateAccount: {
-    requestBody?: {
+    requestBody: {
       content: {
-        'application/json': components['schemas']['CreateAccountRequest'];
+        "application/json": components["schemas"]["CreateAccountRequest"];
       };
     };
     responses: {
       /** @description The operation completed successfully. */
       200: {
         content: {
-          'application/json': components['schemas']['CreateAccountResponse'];
+          "application/json": components["schemas"]["CreateAccountResponse"];
         };
       };
       /** @description Client error */
       400: {
         content: {
-          'application/json': components['schemas']['ClientError'];
+          "application/json": components["schemas"]["ClientError"];
         };
       };
       /** @description The client has not provided a valid token for a principal authorized to make the requested operation. */
       401: {
         content: {
-          'application/json': components['schemas']['UnauthorizedError'];
+          "application/json": components["schemas"]["UnauthorizedError"];
         };
       };
       /** @description Indicates a failure on the service-side. Generally this type of error is retryable. */
       500: {
         content: {
-          'application/json': components['schemas']['ServerInternalError'];
+          "application/json": components["schemas"]["ServerInternalError"];
         };
       };
     };
@@ -327,32 +326,32 @@ export interface operations {
   UpdateAccount: {
     requestBody: {
       content: {
-        'application/json': components['schemas']['UpdateAccountRequest'];
+        "application/json": components["schemas"]["UpdateAccountRequest"];
       };
     };
     responses: {
       /** @description The operation completed successfully. */
       200: {
         content: {
-          'application/json': components['schemas']['UpdateAccountResponse'];
+          "application/json": components["schemas"]["UpdateAccountResponse"];
         };
       };
       /** @description Client error */
       400: {
         content: {
-          'application/json': components['schemas']['ClientError'];
+          "application/json": components["schemas"]["ClientError"];
         };
       };
       /** @description The client has not provided a valid token for a principal authorized to make the requested operation. */
       401: {
         content: {
-          'application/json': components['schemas']['UnauthorizedError'];
+          "application/json": components["schemas"]["UnauthorizedError"];
         };
       };
       /** @description Indicates a failure on the service-side. Generally this type of error is retryable. */
       500: {
         content: {
-          'application/json': components['schemas']['ServerInternalError'];
+          "application/json": components["schemas"]["ServerInternalError"];
         };
       };
     };
@@ -362,37 +361,37 @@ export interface operations {
     parameters: {
       path: {
         /** @description Unique account identifier */
-        accountId: components['schemas']['AccountId'];
+        accountId: components["schemas"]["AccountId"];
       };
     };
-    requestBody?: {
+    requestBody: {
       content: {
-        'application/json': components['schemas']['CreateEnvironmentRequest'];
+        "application/json": components["schemas"]["CreateEnvironmentRequest"];
       };
     };
     responses: {
       /** @description The operation completed successfully. */
       200: {
         content: {
-          'application/json': components['schemas']['CreateEnvironmentResponse'];
+          "application/json": components["schemas"]["CreateEnvironmentResponse"];
         };
       };
       /** @description Client error */
       400: {
         content: {
-          'application/json': components['schemas']['ClientError'];
+          "application/json": components["schemas"]["ClientError"];
         };
       };
       /** @description The client has not provided a valid token for a principal authorized to make the requested operation. */
       401: {
         content: {
-          'application/json': components['schemas']['UnauthorizedError'];
+          "application/json": components["schemas"]["UnauthorizedError"];
         };
       };
       /** @description Indicates a failure on the service-side. Generally this type of error is retryable. */
       500: {
         content: {
-          'application/json': components['schemas']['ServerInternalError'];
+          "application/json": components["schemas"]["ServerInternalError"];
         };
       };
     };
@@ -402,37 +401,37 @@ export interface operations {
     parameters: {
       path: {
         /** @description Unique account identifier */
-        accountId: components['schemas']['AccountId'];
+        accountId: components["schemas"]["AccountId"];
       };
     };
     requestBody?: {
       content: {
-        'application/json': components['schemas']['ListEnvironmentsRequest'];
+        "application/json": components["schemas"]["ListEnvironmentsRequest"];
       };
     };
     responses: {
       /** @description The operation completed successfully. */
       200: {
         content: {
-          'application/json': components['schemas']['ListEnvironmentsResponse'];
+          "application/json": components["schemas"]["ListEnvironmentsResponse"];
         };
       };
       /** @description Client error */
       400: {
         content: {
-          'application/json': components['schemas']['ClientError'];
+          "application/json": components["schemas"]["ClientError"];
         };
       };
       /** @description The client has not provided a valid token for a principal authorized to make the requested operation. */
       401: {
         content: {
-          'application/json': components['schemas']['UnauthorizedError'];
+          "application/json": components["schemas"]["UnauthorizedError"];
         };
       };
       /** @description Indicates a failure on the service-side. Generally this type of error is retryable. */
       500: {
         content: {
-          'application/json': components['schemas']['ServerInternalError'];
+          "application/json": components["schemas"]["ServerInternalError"];
         };
       };
     };
@@ -442,37 +441,37 @@ export interface operations {
     parameters: {
       path: {
         /** @description Unique account identifier */
-        accountId: components['schemas']['AccountId'];
+        accountId: components["schemas"]["AccountId"];
       };
     };
     requestBody: {
       content: {
-        'application/json': components['schemas']['DescribeEnvironmentRequest'];
+        "application/json": components["schemas"]["DescribeEnvironmentRequest"];
       };
     };
     responses: {
       /** @description The operation completed successfully. */
       200: {
         content: {
-          'application/json': components['schemas']['DescribeEnvironmentResponse'];
+          "application/json": components["schemas"]["DescribeEnvironmentResponse"];
         };
       };
       /** @description Client error */
       400: {
         content: {
-          'application/json': components['schemas']['ClientError'];
+          "application/json": components["schemas"]["ClientError"];
         };
       };
       /** @description The client has not provided a valid token for a principal authorized to make the requested operation. */
       401: {
         content: {
-          'application/json': components['schemas']['UnauthorizedError'];
+          "application/json": components["schemas"]["UnauthorizedError"];
         };
       };
       /** @description Indicates a failure on the service-side. Generally this type of error is retryable. */
       500: {
         content: {
-          'application/json': components['schemas']['ServerInternalError'];
+          "application/json": components["schemas"]["ServerInternalError"];
         };
       };
     };
@@ -482,37 +481,37 @@ export interface operations {
     parameters: {
       path: {
         /** @description Unique account identifier */
-        accountId: components['schemas']['AccountId'];
+        accountId: components["schemas"]["AccountId"];
       };
     };
     requestBody: {
       content: {
-        'application/json': components['schemas']['DestroyEnvironmentRequest'];
+        "application/json": components["schemas"]["DestroyEnvironmentRequest"];
       };
     };
     responses: {
       /** @description The operation completed successfully. */
       200: {
         content: {
-          'application/json': components['schemas']['DestroyEnvironmentResponse'];
+          "application/json": components["schemas"]["DestroyEnvironmentResponse"];
         };
       };
       /** @description Client error */
       400: {
         content: {
-          'application/json': components['schemas']['ClientError'];
+          "application/json": components["schemas"]["ClientError"];
         };
       };
       /** @description The client has not provided a valid token for a principal authorized to make the requested operation. */
       401: {
         content: {
-          'application/json': components['schemas']['UnauthorizedError'];
+          "application/json": components["schemas"]["UnauthorizedError"];
         };
       };
       /** @description Indicates a failure on the service-side. Generally this type of error is retryable. */
       500: {
         content: {
-          'application/json': components['schemas']['ServerInternalError'];
+          "application/json": components["schemas"]["ServerInternalError"];
         };
       };
     };
@@ -522,37 +521,37 @@ export interface operations {
     parameters: {
       path: {
         /** @description Unique account identifier */
-        accountId: components['schemas']['AccountId'];
+        accountId: components["schemas"]["AccountId"];
       };
     };
     requestBody: {
       content: {
-        'application/json': components['schemas']['CreateApiKeyRequest'];
+        "application/json": components["schemas"]["CreateApiKeyRequest"];
       };
     };
     responses: {
       /** @description The operation completed successfully. */
       200: {
         content: {
-          'application/json': components['schemas']['CreateApiKeyResponse'];
+          "application/json": components["schemas"]["CreateApiKeyResponse"];
         };
       };
       /** @description Client error */
       400: {
         content: {
-          'application/json': components['schemas']['ClientError'];
+          "application/json": components["schemas"]["ClientError"];
         };
       };
       /** @description The client has not provided a valid token for a principal authorized to make the requested operation. */
       401: {
         content: {
-          'application/json': components['schemas']['UnauthorizedError'];
+          "application/json": components["schemas"]["UnauthorizedError"];
         };
       };
       /** @description Indicates a failure on the service-side. Generally this type of error is retryable. */
       500: {
         content: {
-          'application/json': components['schemas']['ServerInternalError'];
+          "application/json": components["schemas"]["ServerInternalError"];
         };
       };
     };
@@ -562,37 +561,37 @@ export interface operations {
     parameters: {
       path: {
         /** @description Unique account identifier */
-        accountId: components['schemas']['AccountId'];
+        accountId: components["schemas"]["AccountId"];
       };
     };
     requestBody: {
       content: {
-        'application/json': components['schemas']['ListApiKeysRequest'];
+        "application/json": components["schemas"]["ListApiKeysRequest"];
       };
     };
     responses: {
       /** @description The operation completed successfully. */
       200: {
         content: {
-          'application/json': components['schemas']['ListApiKeysResponse'];
+          "application/json": components["schemas"]["ListApiKeysResponse"];
         };
       };
       /** @description Client error */
       400: {
         content: {
-          'application/json': components['schemas']['ClientError'];
+          "application/json": components["schemas"]["ClientError"];
         };
       };
       /** @description The client has not provided a valid token for a principal authorized to make the requested operation. */
       401: {
         content: {
-          'application/json': components['schemas']['UnauthorizedError'];
+          "application/json": components["schemas"]["UnauthorizedError"];
         };
       };
       /** @description Indicates a failure on the service-side. Generally this type of error is retryable. */
       500: {
         content: {
-          'application/json': components['schemas']['ServerInternalError'];
+          "application/json": components["schemas"]["ServerInternalError"];
         };
       };
     };
@@ -602,37 +601,37 @@ export interface operations {
     parameters: {
       path: {
         /** @description Unique account identifier */
-        accountId: components['schemas']['AccountId'];
+        accountId: components["schemas"]["AccountId"];
       };
     };
     requestBody: {
       content: {
-        'application/json': components['schemas']['DescribeApiKeyRequest'];
+        "application/json": components["schemas"]["DescribeApiKeyRequest"];
       };
     };
     responses: {
       /** @description The operation completed successfully. */
       200: {
         content: {
-          'application/json': components['schemas']['DescribeApiKeyResponse'];
+          "application/json": components["schemas"]["DescribeApiKeyResponse"];
         };
       };
       /** @description Client error */
       400: {
         content: {
-          'application/json': components['schemas']['ClientError'];
+          "application/json": components["schemas"]["ClientError"];
         };
       };
       /** @description The client has not provided a valid token for a principal authorized to make the requested operation. */
       401: {
         content: {
-          'application/json': components['schemas']['UnauthorizedError'];
+          "application/json": components["schemas"]["UnauthorizedError"];
         };
       };
       /** @description Indicates a failure on the service-side. Generally this type of error is retryable. */
       500: {
         content: {
-          'application/json': components['schemas']['ServerInternalError'];
+          "application/json": components["schemas"]["ServerInternalError"];
         };
       };
     };
@@ -642,37 +641,37 @@ export interface operations {
     parameters: {
       path: {
         /** @description Unique account identifier */
-        accountId: components['schemas']['AccountId'];
+        accountId: components["schemas"]["AccountId"];
       };
     };
     requestBody: {
       content: {
-        'application/json': components['schemas']['DeleteApiKeyRequest'];
+        "application/json": components["schemas"]["DeleteApiKeyRequest"];
       };
     };
     responses: {
       /** @description The operation completed successfully. */
       200: {
         content: {
-          'application/json': components['schemas']['DeleteApiKeyResponse'];
+          "application/json": components["schemas"]["DeleteApiKeyResponse"];
         };
       };
       /** @description Client error */
       400: {
         content: {
-          'application/json': components['schemas']['ClientError'];
+          "application/json": components["schemas"]["ClientError"];
         };
       };
       /** @description The client has not provided a valid token for a principal authorized to make the requested operation. */
       401: {
         content: {
-          'application/json': components['schemas']['UnauthorizedError'];
+          "application/json": components["schemas"]["UnauthorizedError"];
         };
       };
       /** @description Indicates a failure on the service-side. Generally this type of error is retryable. */
       500: {
         content: {
-          'application/json': components['schemas']['ServerInternalError'];
+          "application/json": components["schemas"]["ServerInternalError"];
         };
       };
     };
@@ -682,37 +681,37 @@ export interface operations {
     parameters: {
       path: {
         /** @description Unique account identifier */
-        accountId: components['schemas']['AccountId'];
+        accountId: components["schemas"]["AccountId"];
       };
     };
     requestBody: {
       content: {
-        'application/json': components['schemas']['GetEnvironmentLogsRequest'];
+        "application/json": components["schemas"]["GetEnvironmentLogsRequest"];
       };
     };
     responses: {
       /** @description The operation completed successfully. */
       200: {
         content: {
-          'application/json': components['schemas']['GetEnvironmentLogsResponse'];
+          "application/json": components["schemas"]["GetEnvironmentLogsResponse"];
         };
       };
       /** @description Client error */
       400: {
         content: {
-          'application/json': components['schemas']['ClientError'];
+          "application/json": components["schemas"]["ClientError"];
         };
       };
       /** @description The client has not provided a valid token for a principal authorized to make the requested operation. */
       401: {
         content: {
-          'application/json': components['schemas']['UnauthorizedError'];
+          "application/json": components["schemas"]["UnauthorizedError"];
         };
       };
       /** @description Indicates a failure on the service-side. Generally this type of error is retryable. */
       500: {
         content: {
-          'application/json': components['schemas']['ServerInternalError'];
+          "application/json": components["schemas"]["ServerInternalError"];
         };
       };
     };

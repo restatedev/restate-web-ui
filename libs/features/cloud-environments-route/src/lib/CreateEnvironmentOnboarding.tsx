@@ -21,24 +21,28 @@ export function CreateEnvironmentOnboarding() {
           <h3 className="text-lg font-medium leading-6 text-gray-900">
             Create environment
           </h3>
-          <p className="text-sm text-gray-500">
-            Setting up a restate Cloud environment is the most convenient method
-            to acquire your dedicated restate server instance.
-          </p>
         </div>
+        <p className="text-sm text-gray-500">
+          Setting up a restate Cloud environment is the most convenient method
+          to acquire your dedicated restate server instance.
+        </p>
         <div>
           <p className="text-sm text-gray-500">
-            Please provide a brief description for your new environment
+            Please provide a name for your new environment
           </p>
-
           <FormFieldInput
             autoFocus
             required
-            name="description"
+            name="name"
             className="mt-2"
-            placeholder="Description"
-            maxLength={100}
+            placeholder="Name"
+            pattern="[a-z0-9][a-z0-9\-]{0,61}[a-z0-9]"
           />
+          <p className="text-xs text-gray-500 mt-2">
+            Choose a DNS-compatible name: lowercase letters, numbers, and
+            hyphens only. Must start/end with a letter or number (3-63
+            characters).
+          </p>
         </div>
         <ErrorBanner errors={fetcher.errors} />
         <SubmitButton variant="primary" className="flex-auto">
