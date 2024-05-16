@@ -96,9 +96,11 @@ function CLI() {
                 return (
                   <>
                     <code className="flex-auto px-2 flex gap-2 flex-col py-2">
-                      <span>
-                        <span className="">restate</span>{' '}
-                        <span className="text-red-700">cloud login</span>
+                      <span className="text-green-800">
+                        # brew install restatedev/tap/restate-server
+                      </span>
+                      <span className="text-green-800">
+                        # restate cloud login
                       </span>
                       <span>
                         <span className="">restate</span>{' '}
@@ -113,7 +115,7 @@ function CLI() {
                       className="flex-shrink-0 flex items-center gap-1 p-2"
                       onClick={() => {
                         navigator.clipboard.writeText(
-                          `restate cloud login\nrestate cloud env configure ${accountName}/${environmentName}`
+                          `restate cloud env configure ${accountName}/${environmentName}`
                         );
                         setIsCopied(true);
                         setTimeout(() => {
