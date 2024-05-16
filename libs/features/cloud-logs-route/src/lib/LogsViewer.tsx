@@ -184,10 +184,6 @@ function LogLine({ line, unixNanos }: { line: string; unixNanos: string }) {
   const hasErrorField = !hasMessageField && Boolean(logObject?.fields?.error);
   const allFields = { ...logObject?.fields, ...logObject?.span };
 
-  if (level === 'DEBUG') {
-    return null;
-  }
-
   return (
     <GridListItem
       value={{ unixNanos, line }}
