@@ -11,12 +11,12 @@ export const cloudApiDb = factory({
   account: {
     accountId: primaryKey(() => `acc_${faker.string.nanoid(23)}`),
     users: manyOf('user'),
-    description: () => faker.lorem.words(4),
+    name: () => faker.internet.domainWord(),
   },
   environment: {
     environmentId: primaryKey(() => `env_${faker.string.nanoid(27)}`),
     account: oneOf('account'),
-    description: () => faker.lorem.words(4),
+    name: () => faker.internet.domainWord(),
     status: () =>
       faker.helpers.arrayElement([
         'PENDING',
@@ -24,6 +24,9 @@ export const cloudApiDb = factory({
         'FAILED',
         'DELETED',
       ] as const),
+    signingPublicKey: () => faker.string.nanoid(23),
+    ingressBaseUrl: () => faker.internet.url(),
+    adminBaseUrl: () => faker.internet.url(),
   },
   apiKey: {
     account: oneOf('account'),
@@ -69,7 +72,7 @@ if (persistedDbData) {
   accounts.map((account) =>
     cloudApiDb.account.create({
       accountId: account.accountId,
-      description: account.description,
+      name: account.name,
       users: cloudApiDb.user.findMany({
         where: {
           userId: {
@@ -82,7 +85,7 @@ if (persistedDbData) {
   environments.map((environment) =>
     cloudApiDb.environment.create({
       environmentId: environment.environmentId,
-      description: environment.description,
+      name: environment.name,
       account: cloudApiDb.account.findFirst({
         where: {
           accountId: {
