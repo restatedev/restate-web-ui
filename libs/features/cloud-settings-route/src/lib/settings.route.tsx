@@ -155,7 +155,7 @@ function Http() {
                         (example use case):
                       </span>
                       <span>
-                        {`curl ${environmentDetails?.data?.ingressBaseUrl}/MyService/MyHandler -H "Authorization: Bearer $My_API_KEY"`}
+                        {`curl ${environmentDetails?.data?.ingressBaseUrl}/MyService/MyHandler -H "Authorization: Bearer $MY_API_KEY"`}
                       </span>
                     </code>
                     <Button
@@ -185,7 +185,7 @@ function Http() {
                         deployments and invocations (example use case):
                       </span>
                       <span>
-                        {`curl ${environmentDetails?.data?.adminBaseUrl}/deployments -H "Authorization: Bearer $My_API_KEY"`}
+                        {`curl ${environmentDetails?.data?.adminBaseUrl}/deployments -H "Authorization: Bearer $MY_API_KEY"`}
                       </span>
                     </code>
                     <Button
