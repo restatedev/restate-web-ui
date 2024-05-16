@@ -118,7 +118,8 @@ function Component() {
           API keys
         </h2>
         <p className="mt-1 text-sm leading-6 text-gray-600">
-          You will need an API key to interact with your restate Cloud instance.
+          To interact with your restate Cloud instance using methods other than
+          the restate CLI, you will need an API key.
         </p>
       </div>
       <div className="flex flex-col gap-2 sm:mt-10">
