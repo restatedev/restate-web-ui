@@ -20,8 +20,12 @@ import { CreateApiKey } from './CreateApiKey';
 import { ErrorBanner } from '@restate/ui/error';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
-import { useEnvironmentParam } from '@restate/features/cloud/routes-utils';
+import {
+  useAccountParam,
+  useEnvironmentParam,
+} from '@restate/features/cloud/routes-utils';
 import { environments } from '@restate/features/cloud/environments-route';
+import { accounts } from '@restate/features/cloud/accounts-route';
 
 const clientLoader = async ({ request, params }: ClientLoaderFunctionArgs) => {
   const accountId = params.accountId;
@@ -58,8 +62,15 @@ const clientLoader = async ({ request, params }: ClientLoaderFunctionArgs) => {
 function CLI() {
   const [isCopied, setIsCopied] = useState(false);
   const environmentId = useEnvironmentParam();
+  const accountId = useAccountParam();
   invariant(environmentId, 'Missing environmentId param');
-
+  const environmentsResponse = useRouteLoaderData<
+    typeof environments.clientLoader
+  >('routes/accounts.$accountId.environments');
+  const accountsResponse =
+    useRouteLoaderData<typeof accounts.clientLoader>('routes/accounts');
+  const environmentDetailsPromise =
+    environmentsResponse?.environmentsWithDetailsPromises[environmentId];
   return (
     <>
       <div>
@@ -70,49 +81,55 @@ function CLI() {
       </div>
       <div className="flex flex-col gap-2">
         <div className="flex gap-2 items-start font-mono [overflow-wrap:anywhere] rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] text-xs p-2">
-          <code className="flex-auto px-2 flex gap-2 flex-col py-2">
-            <span className="text-green-800">
-              # npm install --global @restatedev/restate
-            </span>
-            <span>
-              <span className="text-blue-700">export</span>{' '}
-              <span className="">RESTATE_HOST</span>=
-              <span className="text-red-700">
-                {environmentId.split('env_')[1]}
-                .env.dev.restate.cloud
-              </span>
-            </span>
-            <span>
-              <span className="text-blue-700">export</span>{' '}
-              <span className="">RESTATE_HOST_SCHEME</span>=
-              <span className="text-red-700">https</span>
-            </span>
-            <span>
-              <span className="">restate</span>{' '}
-              <span className="text-red-700">whoami</span>
-            </span>
-          </code>
-          <Button
-            variant="icon"
-            className="flex-shrink-0 flex items-center gap-1 p-2"
-            onClick={() => {
-              navigator.clipboard.writeText(
-                `export RESTATE_HOST=${
-                  environmentId.split('env_')[1]
-                }.env.dev.restate.cloud\nexport RESTATE_HOST_SCHEME=https\nrestate whoami`
-              );
-              setIsCopied(true);
-              setTimeout(() => {
-                setIsCopied(false);
-              }, 1000);
-            }}
-          >
-            {isCopied ? (
-              <Icon name={IconName.Check} />
-            ) : (
-              <Icon name={IconName.Copy} />
-            )}
-          </Button>
+          <Suspense>
+            <Await resolve={environmentDetailsPromise}>
+              {(environmentDetails) => {
+                const accountName =
+                  accountsResponse?.accountsList?.data.accounts.find(
+                    (account) => account.accountId === accountId
+                  )?.name;
+                const environmentName = environmentDetails?.data?.name;
+                return (
+                  <>
+                    <code className="flex-auto px-2 flex gap-2 flex-col py-2">
+                      <span className="text-green-800">
+                        # brew install restatedev/tap/restate-server
+                      </span>
+                      <span className="text-green-800">
+                        # restate cloud login
+                      </span>
+                      <span>
+                        <span className="">restate</span>{' '}
+                        <span className="text-red-700">
+                          cloud env configure {accountName}/{environmentName}
+                        </span>
+                        <span>{}</span>
+                      </span>
+                    </code>
+                    <Button
+                      variant="icon"
+                      className="flex-shrink-0 flex items-center gap-1 p-2"
+                      onClick={() => {
+                        navigator.clipboard.writeText(
+                          `restate cloud env configure ${accountName}/${environmentName}`
+                        );
+                        setIsCopied(true);
+                        setTimeout(() => {
+                          setIsCopied(false);
+                        }, 1000);
+                      }}
+                    >
+                      {isCopied ? (
+                        <Icon name={IconName.Check} />
+                      ) : (
+                        <Icon name={IconName.Copy} />
+                      )}
+                    </Button>
+                  </>
+                );
+              }}
+            </Await>
+          </Suspense>
         </div>
       </div>
     </>
@@ -128,7 +145,7 @@ function Http() {
   >('routes/accounts.$accountId.environments');
   const environmentDetailsPromise =
     environmentsResponse?.environmentsWithDetailsPromises[environmentId];
-  const [isIngressopied, setIngressIsCopied] = useState(false);
+  const [isIngressCopied, setIngressIsCopied] = useState(false);
   const [isAdminCopied, setAdminIsCopied] = useState(false);
 
   return (
@@ -171,7 +188,7 @@ function Http() {
                         }, 1000);
                       }}
                     >
-                      {isIngressopied ? (
+                      {isIngressCopied ? (
                         <Icon name={IconName.Check} />
                       ) : (
                         <Icon name={IconName.Copy} />
