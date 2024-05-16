@@ -82,16 +82,12 @@ function CLI() {
       <div className="flex flex-col gap-2">
         <div className="flex gap-2 items-start font-mono [overflow-wrap:anywhere] rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] text-xs p-2">
           <Suspense>
-            <Await
-              resolve={Promise.all([
-                accountsResponse?.accountsList,
-                environmentDetailsPromise,
-              ])}
-            >
-              {([accountsList, environmentDetails]) => {
-                const accountName = accountsList?.data.accounts.find(
-                  (account) => account.accountId === accountId
-                )?.name;
+            <Await resolve={environmentDetailsPromise}>
+              {(environmentDetails) => {
+                const accountName =
+                  accountsResponse?.accountsList?.data.accounts.find(
+                    (account) => account.accountId === accountId
+                  )?.name;
                 const environmentName = environmentDetails?.data?.name;
                 return (
                   <>
