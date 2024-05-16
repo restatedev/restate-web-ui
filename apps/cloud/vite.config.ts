@@ -37,7 +37,7 @@ export default defineConfig(({ mode }) => {
         env.RESTATE_CLOUD_LOGIN_URL
       ),
       'process.env.MOCK': JSON.stringify(
-        Boolean(env.NX_TASK_TARGET_CONFIGURATION)
+        Boolean(env.NX_TASK_TARGET_CONFIGURATION === 'mock')
       ),
     },
 

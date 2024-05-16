@@ -17,6 +17,15 @@ import {
 import { Key } from 'react-aria-components';
 import { Link } from '@restate/ui/link';
 
+function sortLogLine(a: LogLine, b: LogLine) {
+  if (a.unixNanos > b.unixNanos) {
+    return 1;
+  }
+  if (a.unixNanos < b.unixNanos) {
+    return -1;
+  }
+  return 0;
+}
 export function LogsViewer() {
   const logs = useAsyncValue() as Awaited<
     ReturnType<typeof getEnvironmentLogs>
@@ -115,18 +124,20 @@ export function LogsViewer() {
           aria-label="Logs"
           selectionMode={isSelectionEnabled ? 'multiple' : 'none'}
           className="w-full"
-          renderEmptyState={() => (
-            <p className="px-6 text-sm text-gray-500">No logs found</p>
-          )}
+          renderEmptyState={() =>
+            isLiveLogsEnabled ? null : (
+              <p className="px-6 text-sm text-gray-500">No logs found</p>
+            )
+          }
         >
-          {logs.data?.lines.map((line) => (
+          {logs.data?.lines.sort(sortLogLine).map((line) => (
             <OptimizedLogLine
               key={line.unixNanos}
               line={line.line}
               unixNanos={line.unixNanos}
             />
           ))}
-          {liveLogLines.map((line, i) => (
+          {liveLogLines.sort(sortLogLine).map((line, i) => (
             <OptimizedLogLine
               key={line.unixNanos}
               line={line.line}
@@ -146,16 +157,13 @@ export function LogsViewer() {
 }
 
 const DOCS_REGEXP = /https:\/\/docs\.restate\.dev[^\s"]*/gm;
-function LogLine({ line, unixNanos }: { line: string; unixNanos: string }) {
-  const { timestamp, level, ...logObject } = JSON.parse(line);
-
-  // TODO: refactor
-  const stringifiedLog = JSON.stringify(logObject, null, 2);
-  const match = stringifiedLog.match(DOCS_REGEXP);
-  let stringifiedLogElement: ReactNode = stringifiedLog;
+// TODO: refactor
+function addDocLink(message: string): ReactNode {
+  const match = message.match(DOCS_REGEXP);
+  let element: ReactNode = message;
   if (match) {
-    const [start, end] = stringifiedLog.split(match[0]);
-    stringifiedLogElement = (
+    const [start, end] = message.split(match[0]);
+    element = (
       <>
         {start}
         <Link href={match[0]} target="_blank" rel="noreferrer noopener">
@@ -164,6 +172,20 @@ function LogLine({ line, unixNanos }: { line: string; unixNanos: string }) {
         {end}
       </>
     );
+  }
+
+  return element;
+}
+
+function LogLine({ line, unixNanos }: { line: string; unixNanos: string }) {
+  const { timestamp, level, ...logObject } = JSON.parse(line);
+  const stringifiedLog = JSON.stringify(logObject, null, 2);
+  const hasMessageField = Boolean(logObject?.fields?.message);
+  const hasErrorField = !hasMessageField && Boolean(logObject?.fields?.error);
+  const allFields = { ...logObject?.fields, ...logObject?.span };
+
+  if (level === 'DEBUG') {
+    return null;
   }
 
   return (
@@ -186,14 +208,33 @@ function LogLine({ line, unixNanos }: { line: string; unixNanos: string }) {
       </div>
       <div className="flex-shrink-0 flex-grow-0 basis-[7ch]">{level}</div>
       <details className={`group flex-auto min-w-0`}>
-        <summary className="truncate">
+        <summary className="">
           <span className="group-open:invisible group-open:[font-size:0px]">
-            {logObject?.fields?.message ??
-              logObject?.fields?.error ??
-              stringifiedLog}
+            <span>
+              {addDocLink(
+                logObject?.fields?.message ??
+                  logObject?.fields?.error ??
+                  stringifiedLog
+              )}
+            </span>
+            <br className="group-open:hidden" />
+            <span>
+              {Object.keys(allFields)
+                .filter(
+                  (key) =>
+                    (hasMessageField && key !== 'message') ||
+                    (hasErrorField && key !== 'error')
+                )
+                .map((key) => (
+                  <span className="ml-4" key={key}>
+                    {key}: {addDocLink(allFields[key])}
+                    <br className="group-open:hidden" />
+                  </span>
+                ))}
+            </span>
           </span>
         </summary>
-        <span className="px-2">{stringifiedLogElement}</span>
+        <span className="px-2">{addDocLink(stringifiedLog)}</span>
       </details>
     </GridListItem>
   );
