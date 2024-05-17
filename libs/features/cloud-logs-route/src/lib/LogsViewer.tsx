@@ -190,7 +190,7 @@ function LogLine({ line, unixNanos }: { line: string; unixNanos: string }) {
     <GridListItem
       value={{ unixNanos, line }}
       id={unixNanos}
-      className={`text-xs border-none ${
+      className={`text-code border-none ${
         ['WARN', 'ERROR'].includes(level)
           ? 'text-red-600 font-semibold'
           : 'text-gray-800 font-normal'

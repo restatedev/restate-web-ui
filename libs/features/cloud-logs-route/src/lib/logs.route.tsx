@@ -32,7 +32,7 @@ export function Component() {
         </p>
       </div>
 
-      <div className="relative flex-auto text-xs font-mono mt-4 whitespace-pre-wrap rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
+      <div className="relative flex-auto text-code font-mono mt-4 whitespace-pre-wrap rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
         {state === 'loading' && loading}
         {state === 'idle' && (
           <Suspense fallback={loading} key={environmentId}>

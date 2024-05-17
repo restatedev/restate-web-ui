@@ -20,6 +20,7 @@ module.exports = withTV({
       },
       fontSize: {
         '2xs': '0.6875rem',
+        code: '0.8125rem',
       },
     },
   },

@@ -80,7 +80,7 @@ function CLI() {
         </p>
       </div>
       <div className="flex flex-col gap-2">
-        <div className="flex gap-2 items-start font-mono [overflow-wrap:anywhere] rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] text-xs p-2">
+        <div className="flex gap-2 items-start font-mono [overflow-wrap:anywhere] rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] text-code p-2">
           <Suspense>
             <Await resolve={environmentDetailsPromise}>
               {(environmentDetails) => {
@@ -93,7 +93,7 @@ function CLI() {
                   <>
                     <code className="flex-auto px-2 flex gap-2 flex-col py-2">
                       <span className="text-green-800">
-                        # brew install restatedev/tap/restate-server
+                        # brew install restatedev/tap/restate
                       </span>
                       <span className="text-green-800">
                         # restate cloud login
@@ -160,7 +160,7 @@ function Http() {
         </p>
       </div>
       <div className="flex flex-col gap-2 sm:mt-10">
-        <div className="flex flex-col gap-2 items-stretch font-mono [overflow-wrap:anywhere] rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] text-xs p-2">
+        <div className="flex flex-col gap-2 items-stretch font-mono [overflow-wrap:anywhere] rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] p-2 text-code">
           <Suspense>
             <Await resolve={environmentDetailsPromise}>
               {(environmentDetails) => (
