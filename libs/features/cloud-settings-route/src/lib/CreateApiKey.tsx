@@ -192,9 +192,9 @@ function CreateApiForm({
             </FormFieldLabel>
             <div className="flex flex-col gap-1 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] mt-0 bg-gray-100 rounded-lg border border-gray-200 py-1.5 px-1 text-sm text-gray-900">
               <CustomRadio
-                value="rst:role::ResolveAwakeableAccess"
-                label="Resolve Awakeable"
-                description="Can resolve any awakeables"
+                value="rst:role::CompleteAwakeableAccess"
+                label="Complete Awakeable"
+                description="Can complete any awakeables"
               />
               <CustomRadio
                 value="rst:role::IngressAccess"

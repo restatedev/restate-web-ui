@@ -40,7 +40,7 @@ export const cloudApiDb = factory({
         'rst:role::FullAccess',
         'rst:role::IngressAccess',
         'rst:role::AdminAccess',
-        'rst:role::ResolveAwakeableAccess',
+        'rst:role::CompleteAwakeableAccess',
       ] as const),
     state: () => 'ACTIVE' as 'ACTIVE' | 'DELETED',
     description: () => faker.lorem.words(4),

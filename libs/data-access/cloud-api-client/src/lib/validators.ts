@@ -5,6 +5,6 @@ export function isRole(param: any): param is Role {
     'rst:role::FullAccess',
     'rst:role::IngressAccess',
     'rst:role::AdminAccess',
-    'rst:role::ResolveAwakeableAccess',
+    'rst:role::CompleteAwakeableAccess',
   ].includes(param);
 }

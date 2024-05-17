@@ -9,7 +9,7 @@ const DESCRIPTIONS: Record<Role, string> = {
   'rst:role::FullAccess': 'Full',
   'rst:role::IngressAccess': 'Ingress',
   'rst:role::AdminAccess': 'Admin',
-  'rst:role::ResolveAwakeableAccess': 'Resolve Awakeable',
+  'rst:role::CompleteAwakeableAccess': 'Complete Awakeable',
 };
 
 export function RoleId({ roleId }: { roleId: Role }) {
