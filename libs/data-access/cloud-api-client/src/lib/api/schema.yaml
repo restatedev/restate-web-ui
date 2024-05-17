@@ -799,7 +799,7 @@ components:
         - rst:role::FullAccess
         - rst:role::IngressAccess
         - rst:role::AdminAccess
-        - rst:role::ResolveAwakeableAccess
+        - rst:role::CompleteAwakeableAccess
       description:
         A role identifier specifying a particular level of access for a
         principal.
