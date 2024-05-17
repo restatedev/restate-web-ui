@@ -101,7 +101,7 @@ function EnvironmentSelectorContent() {
               <div className="truncate row-start-1 w-full">
                 {environmentDetails?.data?.name ?? currentEnvironmentId}
               </div>
-              <div className="truncate text-gray-500 col-start-2 row-start-2 w-full">
+              <div className="truncate text-gray-500 col-start-2 row-start-2 w-full text-code">
                 {environmentDetails?.data?.environmentId}
               </div>
               {environmentDetails?.error && (
@@ -145,7 +145,7 @@ function EnvironmentSelectorContent() {
                           environment.environmentId
                         ]
                       }
-                      errorElement={<p>failed to load</p>}
+                      errorElement={<p>Failed to load</p>}
                     >
                       <EnvironmentItem
                         environmentId={environment.environmentId}
@@ -220,7 +220,7 @@ function EnvironmentItem({ environmentId }: { environmentId: string }) {
           {environmentDetails?.data?.status && (
             <EnvironmentStatus status={environmentDetails.data.status} />
           )}
-          <span className="truncate text-gray-500 group-focus:text-gray-300">
+          <span className="truncate text-gray-500 group-focus:text-gray-300 text-code">
             {environmentDetails?.data?.environmentId}
           </span>
         </div>

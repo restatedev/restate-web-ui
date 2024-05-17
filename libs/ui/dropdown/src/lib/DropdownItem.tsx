@@ -8,7 +8,7 @@ import {
 import { tv } from 'tailwind-variants';
 
 const styles = tv({
-  base: 'group flex rounded-xl items-center gap-4 cursor-default select-none py-2 px-3 outline outline-0 text-sm forced-color-adjust-none',
+  base: 'group flex rounded-lg items-center gap-4 cursor-default select-none py-2 px-3 outline outline-0 text-sm forced-color-adjust-none',
   variants: {
     isDisabled: {
       false: 'text-gray-900 dark:text-zinc-100',
@@ -21,7 +21,7 @@ const styles = tv({
 });
 
 const destructiveStyles = tv({
-  base: 'group flex rounded-xl items-center gap-4 cursor-default select-none py-2 px-3 outline outline-0 text-sm forced-color-adjust-none',
+  base: 'group flex rounded-lg items-center gap-4 cursor-default select-none py-2 px-3 outline outline-0 text-sm forced-color-adjust-none',
   variants: {
     isDisabled: {
       false: 'text-red-600 dark:text-zinc-100',
