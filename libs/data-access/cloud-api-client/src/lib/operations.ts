@@ -79,6 +79,7 @@ export async function createApiKey(
     body: {
       roleId: params.roleId,
       environmentId: params.environmentId,
+      description: params.description,
     },
   });
 }

@@ -126,7 +126,7 @@ export function LogsViewer() {
           className="w-full"
           renderEmptyState={() =>
             isLiveLogsEnabled ? null : (
-              <p className="px-6 text-sm text-gray-500">No logs found</p>
+              <p className="px-8 py-2 text-sm text-gray-500">No logs found</p>
             )
           }
         >

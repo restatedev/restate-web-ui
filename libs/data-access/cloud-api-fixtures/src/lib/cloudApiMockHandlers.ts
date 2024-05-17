@@ -289,6 +289,7 @@ const createApiKeyHandler = http.post<
     environment,
     roleId: requestBody.roleId,
     state: 'ACTIVE',
+    description: requestBody.description,
   });
 
   return HttpResponse.json({

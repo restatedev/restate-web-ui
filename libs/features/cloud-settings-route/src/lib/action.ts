@@ -23,12 +23,14 @@ export const clientAction = async ({
 
   if (action === 'createApiKey') {
     const roleId = body.get('roleId');
+    const description = body.get('description');
     invariant(isRole(roleId), 'Missing roleId param');
 
     const { data, error } = await createApiKey({
       accountId: params.accountId,
       environmentId: params.environmentId,
       roleId,
+      ...(typeof description === 'string' && { description }),
     });
     if (error) {
       return { errors: [new Error(error.message)] };
