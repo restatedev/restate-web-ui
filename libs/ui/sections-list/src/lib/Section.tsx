@@ -6,7 +6,7 @@ interface SectionProps {
 }
 
 const styles = tv({
-  base: 'grid gap-x-10 gap-y-4 sm:grid-cols-[20ch_1fr]',
+  base: 'grid gap-x-10 gap-y-4 grid-cols-1 sm:grid-cols-[20ch_1fr]',
 });
 export function Section({
   children,
@@ -30,7 +30,7 @@ export function SectionTitle({
 }
 
 const stylesSectionContent = tv({
-  base: 'col-start-2',
+  base: 'col-start-1 sm:col-start-2',
 });
 export function SectionContent({
   children,

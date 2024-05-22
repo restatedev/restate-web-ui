@@ -8,7 +8,7 @@ interface SnippetProps {
 }
 
 const snippetStyles = tv({
-  base: 'flex gap-2 items-start p-2 pb-0 [&:not(:has(.copy))]:group-has-[.copy]:pr-20 [&_.copy]:-mt-2 [&_[data-comment]]:text-green-800 [&_[data-shell-command]]:text-red-700',
+  base: 'flex gap-2 items-start p-2 pb-0 [&:not(:has(.copy))]:group-has-[.copy]:pr-16 [&_.copy]:-mt-2 [&_.copy]:-mr-2 [&_[data-comment]]:text-green-800 [&_[data-shell-command]]:text-red-700',
 });
 export function Snippet({
   children,
