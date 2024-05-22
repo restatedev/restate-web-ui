@@ -1,1 +1,2 @@
-export * from './lib/code';
+export * from './lib/Code';
+export * from './lib/Snippet';

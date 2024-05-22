@@ -10,7 +10,7 @@ import {
   describeApiKey,
   listApiKeys,
 } from '@restate/data-access/cloud/api-client';
-import { PropsWithChildren, Suspense, useState } from 'react';
+import { PropsWithChildren, Suspense } from 'react';
 import invariant from 'tiny-invariant';
 import { clientAction } from './action';
 import { listApiKeysWithCache } from './apis';
@@ -18,14 +18,13 @@ import { ApiKeyItem } from './ApiKeyItem';
 import { DeleteAPIKey } from './DeleteAPIKey';
 import { CreateApiKey } from './CreateApiKey';
 import { ErrorBanner } from '@restate/ui/error';
-import { Button } from '@restate/ui/button';
-import { Icon, IconName } from '@restate/ui/icons';
 import {
   useAccountParam,
   useEnvironmentParam,
 } from '@restate/features/cloud/routes-utils';
 import { environments } from '@restate/features/cloud/environments-route';
 import { accounts } from '@restate/features/cloud/accounts-route';
+import { Code, Snippet, SnippetCopy } from '@restate/ui/code';
 
 const clientLoader = async ({ request, params }: ClientLoaderFunctionArgs) => {
   const accountId = params.accountId;
@@ -60,7 +59,6 @@ const clientLoader = async ({ request, params }: ClientLoaderFunctionArgs) => {
 };
 
 function CLI() {
-  const [isCopied, setIsCopied] = useState(false);
   const environmentId = useEnvironmentParam();
   const accountId = useAccountParam();
   invariant(environmentId, 'Missing environmentId param');
@@ -80,57 +78,41 @@ function CLI() {
         </p>
       </div>
       <div className="flex flex-col gap-2">
-        <div className="flex gap-2 items-start font-mono [overflow-wrap:anywhere] rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] text-code p-2">
-          <Suspense>
-            <Await resolve={environmentDetailsPromise}>
-              {(environmentDetails) => {
-                const accountName =
-                  accountsResponse?.accountsList?.data.accounts.find(
-                    (account) => account.accountId === accountId
-                  )?.name;
-                const environmentName = environmentDetails?.data?.name;
-                return (
-                  <>
-                    <code className="flex-auto px-2 flex gap-2 flex-col py-2">
-                      <span className="text-green-800">
-                        # brew install restatedev/tap/restate
+        <Suspense>
+          <Await resolve={environmentDetailsPromise}>
+            {(environmentDetails) => {
+              const accountName =
+                accountsResponse?.accountsList?.data.accounts.find(
+                  (account) => account.accountId === accountId
+                )?.name;
+              const environmentName = environmentDetails?.data?.name;
+              return (
+                <Code>
+                  <Snippet>
+                    <span data-comment>
+                      # brew install restatedev/tap/restate
+                    </span>
+                  </Snippet>
+                  <Snippet>
+                    <span data-comment># restate cloud login</span>
+                  </Snippet>
+                  <Snippet>
+                    <span>
+                      <span>restate</span>{' '}
+                      <span data-shell-command>
+                        cloud env configure {accountName}/{environmentName}
                       </span>
-                      <span className="text-green-800">
-                        # restate cloud login
-                      </span>
-                      <span>
-                        <span className="">restate</span>{' '}
-                        <span className="text-red-700">
-                          cloud env configure {accountName}/{environmentName}
-                        </span>
-                        <span>{}</span>
-                      </span>
-                    </code>
-                    <Button
-                      variant="icon"
-                      className="flex-shrink-0 flex items-center gap-1 p-2"
-                      onClick={() => {
-                        navigator.clipboard.writeText(
-                          `restate cloud env configure ${accountName}/${environmentName}`
-                        );
-                        setIsCopied(true);
-                        setTimeout(() => {
-                          setIsCopied(false);
-                        }, 1000);
-                      }}
-                    >
-                      {isCopied ? (
-                        <Icon name={IconName.Check} />
-                      ) : (
-                        <Icon name={IconName.Copy} />
-                      )}
-                    </Button>
-                  </>
-                );
-              }}
-            </Await>
-          </Suspense>
-        </div>
+                      <span>{}</span>
+                    </span>
+                    <SnippetCopy
+                      copyText={`restate cloud env configure ${accountName}/${environmentName}`}
+                    />
+                  </Snippet>
+                </Code>
+              );
+            }}
+          </Await>
+        </Suspense>
       </div>
     </>
   );
@@ -145,8 +127,6 @@ function Http() {
   >('routes/accounts.$accountId.environments');
   const environmentDetailsPromise =
     environmentsResponse?.environmentsWithDetailsPromises[environmentId];
-  const [isIngressCopied, setIngressIsCopied] = useState(false);
-  const [isAdminCopied, setAdminIsCopied] = useState(false);
 
   return (
     <>
@@ -160,76 +140,42 @@ function Http() {
         </p>
       </div>
       <div className="flex flex-col gap-2 sm:mt-10">
-        <div className="flex flex-col gap-2 items-stretch font-mono [overflow-wrap:anywhere] rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] p-2 text-code">
-          <Suspense>
-            <Await resolve={environmentDetailsPromise}>
-              {(environmentDetails) => (
-                <>
-                  <div className="flex gap-2 items-start">
-                    <code className="flex-auto px-2 self-center flex gap-2 flex-col py-2">
-                      <span className="text-green-800">
-                        # Here is your ingress URL for invoking your handlers
-                        (example use case):
-                      </span>
-                      <span>
-                        {`curl ${environmentDetails?.data?.ingressBaseUrl}/MyService/MyHandler -H "Authorization: Bearer $MY_API_KEY"`}
-                      </span>
-                    </code>
-                    <Button
-                      variant="icon"
-                      className="flex-shrink-0 flex items-center gap-1 p-2"
-                      onClick={() => {
-                        navigator.clipboard.writeText(
-                          environmentDetails?.data?.ingressBaseUrl ?? ''
-                        );
-                        setIngressIsCopied(true);
-                        setTimeout(() => {
-                          setIngressIsCopied(false);
-                        }, 1000);
-                      }}
-                    >
-                      {isIngressCopied ? (
-                        <Icon name={IconName.Check} />
-                      ) : (
-                        <Icon name={IconName.Copy} />
-                      )}
-                    </Button>
-                  </div>
-                  <div className="flex gap-2 items-start">
-                    <code className="flex-auto px-2 self-center flex gap-2 flex-col py-2">
-                      <span className="text-green-800">
-                        # Here is your Admin API URL for managing services,
-                        deployments and invocations (example use case):
-                      </span>
-                      <span>
-                        {`curl ${environmentDetails?.data?.adminBaseUrl}/deployments -H "Authorization: Bearer $MY_API_KEY"`}
-                      </span>
-                    </code>
-                    <Button
-                      variant="icon"
-                      className="flex-shrink-0 flex items-center gap-1 p-2"
-                      onClick={() => {
-                        navigator.clipboard.writeText(
-                          environmentDetails?.data?.adminBaseUrl ?? ''
-                        );
-                        setAdminIsCopied(true);
-                        setTimeout(() => {
-                          setAdminIsCopied(false);
-                        }, 1000);
-                      }}
-                    >
-                      {isAdminCopied ? (
-                        <Icon name={IconName.Check} />
-                      ) : (
-                        <Icon name={IconName.Copy} />
-                      )}
-                    </Button>
-                  </div>
-                </>
-              )}
-            </Await>
-          </Suspense>
-        </div>
+        <Suspense>
+          <Await resolve={environmentDetailsPromise}>
+            {(environmentDetails) => (
+              <>
+                <Code>
+                  <Snippet>
+                    <span data-comment>
+                      # Here is your ingress URL for invoking your handlers
+                      (example use case):
+                    </span>
+                  </Snippet>
+                  <Snippet>
+                    {`curl ${environmentDetails?.data?.ingressBaseUrl}/MyService/MyHandler -H "Authorization: Bearer $MY_API_KEY"`}
+                    <SnippetCopy
+                      copyText={environmentDetails?.data?.ingressBaseUrl ?? ''}
+                    />
+                  </Snippet>
+                </Code>
+                <Code>
+                  <Snippet>
+                    <span data-comment>
+                      # Here is your Admin API URL for managing services,
+                      deployments and invocations (example use case):
+                    </span>
+                  </Snippet>
+                  <Snippet>
+                    {`curl ${environmentDetails?.data?.adminBaseUrl}/deployments -H "Authorization: Bearer $MY_API_KEY"`}
+                    <SnippetCopy
+                      copyText={environmentDetails?.data?.adminBaseUrl ?? ''}
+                    />
+                  </Snippet>
+                </Code>
+              </>
+            )}
+          </Await>
+        </Suspense>
       </div>
     </>
   );
