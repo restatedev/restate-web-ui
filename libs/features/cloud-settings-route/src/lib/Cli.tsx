@@ -53,10 +53,10 @@ export function CLI() {
                   <Snippet>
                     <span>
                       <span>restate</span>{' '}
-                      <span data-shell-command>
-                        cloud env configure {accountName}/{environmentName}
+                      <span data-shell-command>cloud env configure </span>
+                      <span>
+                        {accountName}/{environmentName}
                       </span>
-                      <span>{}</span>
                     </span>
                     <SnippetCopy
                       copyText={`restate cloud env configure ${accountName}/${environmentName}`}
