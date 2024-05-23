@@ -2,11 +2,7 @@ import { useRouteLoaderData, Await } from '@remix-run/react';
 import { environments } from '@restate/features/cloud/environments-route';
 import { useEnvironmentParam } from '@restate/features/cloud/routes-utils';
 import { Code, Snippet, SnippetCopy } from '@restate/ui/code';
-import {
-  Section,
-  SectionContent,
-  SectionTitle,
-} from '@restate/ui/sections-list';
+import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { Suspense } from 'react';
 import invariant from 'tiny-invariant';
 

@@ -4,11 +4,7 @@ import {
   listApiKeys,
 } from '@restate/data-access/cloud/api-client';
 import { ErrorBanner } from '@restate/ui/error';
-import {
-  Section,
-  SectionContent,
-  SectionTitle,
-} from '@restate/ui/sections-list';
+import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { Suspense, PropsWithChildren } from 'react';
 import { ApiKeyItem } from './ApiKeyItem';
 import { CreateApiKey } from './CreateApiKey';

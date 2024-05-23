@@ -53,7 +53,7 @@
       "@restate/ui/nav": ["libs/ui/nav/src/index.ts"],
       "@restate/ui/popover": ["libs/ui/popover/src/index.ts"],
       "@restate/ui/radio-group": ["libs/ui/radio-group/src/index.ts"],
-      "@restate/ui/sections-list": ["libs/ui/sections-list/src/index.ts"],
+      "@restate/ui/section": ["libs/ui/section/src/index.ts"],
       "@restate/util/auth": ["libs/util/auth/src/index.ts"],
       "@restate/util/cache": ["libs/util/cache/src/index.ts"],
       "@restate/util/mock-api": ["libs/util/mock-api/src/index.ts"],
