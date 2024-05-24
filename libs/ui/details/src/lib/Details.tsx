@@ -12,11 +12,11 @@ interface DetailsProps {
 }
 
 const styles = tv({
-  base: 'group bg-white rounded-xl border text-gray-800 shadow-sm p-1',
+  base: 'group bg-white rounded-xl border text-gray-800 shadow-sm p-1 has-[+details]:rounded-b-none has-[+details]:border-b-0 [&+details]:rounded-t-none [&:not([open]):has(+details)>summary]:rounded-b-none [&+details>summary]:rounded-t-none',
 });
 const summaryStyles = tv({
   extend: focusRing,
-  base: 'flex gap-2 px-3 py-2 pressed:bg-gray-200 hover:bg-gray-100 [clip-path2:inset(0_0_0_0_round_calc(.75rem_-_2px))] group-open:[clip-path2:inset(0_0_0_0_round_calc(.75rem_-_1px_-.25rem)_calc(.75rem_-_1px_-.25rem)_0_0)] rounded-[calc(.75rem_-_1px_-.25rem)] list-none group-open:mb-3 pr-2',
+  base: 'flex gap-2 px-3 py-2 pressed:bg-gray-200 hover:bg-gray-100 rounded-[calc(.75rem_-_1px_-.25rem)] list-none group-open:mb-3 pr-2.5',
 });
 
 export function Details({
@@ -48,7 +48,7 @@ export function Details({
           <div id={id} />
           <Icon
             name={IconName.ChevronDown}
-            className="flex-shrink-0 group-open:rotate-180 text-gray-500 ml-auto"
+            className="flex-shrink-0 group-open:rotate-180 text-gray-500 ml-auto text-sm"
           />
         </summary>
         <div className="px-3 my-3">{children}</div>
