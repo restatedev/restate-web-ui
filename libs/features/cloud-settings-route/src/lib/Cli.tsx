@@ -38,22 +38,10 @@ export function CLI() {
               const environmentName = environmentDetails?.data?.name;
               return (
                 <Code>
+                  <Snippet># brew install restatedev/tap/restate</Snippet>
+                  <Snippet># restate cloud login</Snippet>
                   <Snippet>
-                    <span data-comment>
-                      # brew install restatedev/tap/restate
-                    </span>
-                  </Snippet>
-                  <Snippet>
-                    <span data-comment># restate cloud login</span>
-                  </Snippet>
-                  <Snippet>
-                    <span>
-                      <span>restate</span>{' '}
-                      <span data-shell-command>cloud env configure </span>
-                      <span>
-                        {accountName}/{environmentName}
-                      </span>
-                    </span>
+                    restate cloud env configure {accountName}/{environmentName}
                     <SnippetCopy
                       copyText={`restate cloud env configure ${accountName}/${environmentName}`}
                     />

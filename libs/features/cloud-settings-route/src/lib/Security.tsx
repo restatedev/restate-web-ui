@@ -7,23 +7,24 @@ import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { Suspense } from 'react';
 import invariant from 'tiny-invariant';
 
-const AWS_IDENTITY = JSON.stringify(
-  {
-    Sid: 'AllowRestateCloudToAssumeRole',
-    Effect: 'Allow',
-    Principal: {
-      AWS: 'AROAZQ3DNV5IY6KP4ODO4',
-    },
-    Action: ['sts:AssumeRole', 'sts:TagSession'],
-    Condition: {
-      StringEquals: {
-        'sts:ExternalId': '$ENVIRONMENT_ID',
+const awsIdentityRole = (id: string) =>
+  JSON.stringify(
+    {
+      Sid: 'AllowRestateCloudToAssumeRole',
+      Effect: 'Allow',
+      Principal: {
+        AWS: 'AROAZQ3DNV5IY6KP4ODO4',
+      },
+      Action: ['sts:AssumeRole', 'sts:TagSession'],
+      Condition: {
+        StringEquals: {
+          'sts:ExternalId': id,
+        },
       },
     },
-  },
-  null,
-  4
-);
+    null,
+    4
+  );
 
 export function Security() {
   const environmentId = useEnvironmentParam();
@@ -40,8 +41,8 @@ export function Security() {
       <SectionTitle>
         Security
         <p>
-          To invoke your handlers or manage your services, deployments, and
-          invocations in this environment over HTTP, please use this URLs.
+          For secure and reliable interactions between your services and restate
+          Cloud, please follow these guidelines.
         </p>
       </SectionTitle>
       <SectionContent className="flex flex-col">
@@ -53,7 +54,7 @@ export function Security() {
                   <Summary>
                     AWS Lambda
                     <span className="text-gray-500 text-sm block mt-2">
-                      To invoke services running on AWS Lambda, Restate Cloud
+                      To invoke services running on AWS Lambda, restate Cloud
                       must assume an AWS identity within the same account that
                       the Lambda is deployed.
                     </span>
@@ -61,19 +62,19 @@ export function Security() {
                   <div className="text-sm flex flex-col gap-2">
                     Create a new role that has permission to invoke your Lambda
                     and give it this trust policy:
-                    <Code className="whitespace-pre">
-                      <Snippet>
-                        {AWS_IDENTITY}
-                        <SnippetCopy copyText={AWS_IDENTITY} />
+                    <Code>
+                      <Snippet language="json">
+                        {awsIdentityRole(environmentId)}
+                        <SnippetCopy
+                          copyText={awsIdentityRole(environmentId)}
+                        />
                       </Snippet>
                     </Code>
-                    You can register Lambdas with
-                    <Code className="whitespace-pre">
+                    <br />
+                    You can register Lambdas with:
+                    <Code>
                       <Snippet>
                         {`restate dp add <LAMBDA_FUNCTION_ARN> --assume-role-arn <ROLE_ARN>`}
-                        <SnippetCopy
-                          copyText={`restate dp add <LAMBDA_FUNCTION_ARN> --assume-role-arn <ROLE_ARN>`}
-                        />
                       </Snippet>
                     </Code>
                   </div>
@@ -99,6 +100,14 @@ export function Security() {
                           }
                         />
                       </Snippet>
+                    </Code>
+                    <Code>
+                      <Snippet language="typescript">
+                        {`restate.endpoint()\n.bind(myService)\n.withIdentityV1("${environmentDetails?.data?.signingPublicKey}")\n.listen();`}
+                      </Snippet>
+                    </Code>
+                    <Code>
+                      <Snippet language="java">{`RestateHttpEndpointBuilder.builder()\n.bind(new MyService())\n.withRequestIdentityVerifier(RequestIdentityVerifier.fromKey("${environmentDetails?.data?.signingPublicKey}"))\n.buildAndListen();`}</Snippet>
                     </Code>
                   </div>
                 </Details>

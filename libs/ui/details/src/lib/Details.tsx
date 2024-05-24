@@ -12,11 +12,11 @@ interface DetailsProps {
 }
 
 const styles = tv({
-  base: 'group bg-white rounded-xl border text-gray-800 shadow-sm p-1 has-[+details]:rounded-b-none has-[+details]:border-b-0 [&+details]:rounded-t-none [&:not([open]):has(+details)>summary]:rounded-b-none [&+details>summary]:rounded-t-none',
+  base: 'group bg-white rounded-xl border text-gray-800 shadow-sm p-1 has-[+details]:rounded-b-none has-[+details]:border-b-0 [&+details]:rounded-t-none [&:not([open]):has(+details)>summary]:rounded-b-none [&[open]>summary]:rounded-b-none [&+details>summary]:rounded-t-none',
 });
 const summaryStyles = tv({
   extend: focusRing,
-  base: 'flex gap-2 px-3 py-2 pressed:bg-gray-200 hover:bg-gray-100 rounded-[calc(.75rem_-_1px_-.25rem)] list-none group-open:mb-3 pr-2.5',
+  base: 'flex gap-2 px-3 py-2 pressed:bg-gray-200 hover:bg-gray-100 rounded-[calc(.75rem_-_1px_-.25rem)] list-none group-open:mb-2 pr-2.5 [&::-webkit-details-marker]:hidden',
 });
 
 export function Details({
@@ -51,7 +51,7 @@ export function Details({
             className="flex-shrink-0 group-open:rotate-180 text-gray-500 ml-auto text-sm"
           />
         </summary>
-        <div className="px-4 py-3 border-t bg-gray-50 -m-1 rounded-b-xl group-has-[+details]:rounded-b-none">
+        <div className="px-4 py-6 border-t bg-gray-50 -m-1 rounded-b-xl group-has-[+details]:rounded-b-none">
           {children}
         </div>
       </details>

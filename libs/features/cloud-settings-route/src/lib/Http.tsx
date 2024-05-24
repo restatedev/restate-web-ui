@@ -31,27 +31,25 @@ export function Http() {
             {(environmentDetails) => (
               <Code>
                 <Snippet>
-                  <span data-comment>
-                    # Here is your ingress URL for invoking your handlers
-                    (example use case):
-                  </span>
+                  # Here is your ingress URL for invoking your handlers (example
+                  use case):
                 </Snippet>
 
                 <Snippet>
-                  {`curl ${environmentDetails?.data?.ingressBaseUrl}/MyService/MyHandler -H "Authorization: Bearer $MY_API_KEY"`}
+                  curl {environmentDetails?.data?.ingressBaseUrl}
+                  /MyService/MyHandler -H "Authorization: Bearer $API_KEY"
                   <SnippetCopy
                     copyText={environmentDetails?.data?.ingressBaseUrl ?? ''}
                   />
                 </Snippet>
 
                 <Snippet className="mt-4">
-                  <span data-comment>
-                    # Here is your Admin API URL for managing services,
-                    deployments and invocations (example use case):
-                  </span>
+                  # Here is your Admin API URL for managing services,
+                  deployments and invocations (example use case):
                 </Snippet>
                 <Snippet>
-                  {`curl ${environmentDetails?.data?.adminBaseUrl}/deployments -H "Authorization: Bearer $MY_API_KEY"`}
+                  curl {environmentDetails?.data?.adminBaseUrl}/deployments -H
+                  "Authorization: Bearer $API_KEY"
                   <SnippetCopy
                     copyText={environmentDetails?.data?.adminBaseUrl ?? ''}
                   />

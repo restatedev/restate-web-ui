@@ -30,7 +30,7 @@ export function SectionTitle({
 }
 
 const stylesSectionContent = tv({
-  base: 'col-start-1 sm:col-start-2',
+  base: 'col-start-1 sm:col-start-2 min-w-0',
 });
 export function SectionContent({
   children,
