@@ -51,7 +51,9 @@ export function Details({
             className="flex-shrink-0 group-open:rotate-180 text-gray-500 ml-auto text-sm"
           />
         </summary>
-        <div className="px-3 my-3">{children}</div>
+        <div className="px-4 py-3 border-t bg-gray-50 -m-1 rounded-b-xl group-has-[+details]:rounded-b-none">
+          {children}
+        </div>
       </details>
     </DetailsProvider>
   );
