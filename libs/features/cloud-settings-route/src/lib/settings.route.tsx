@@ -5,6 +5,7 @@ import { CLI } from './Cli';
 import { Http } from './Http';
 import { ApiKeys } from './ApiKeys';
 import { clientLoader } from './loader';
+import { Security } from './Security';
 
 function Component() {
   const environmentId = useEnvironmentParam();
@@ -15,6 +16,7 @@ function Component() {
       <CLI />
       <Http />
       <ApiKeys />
+      <Security />
     </div>
   );
 }

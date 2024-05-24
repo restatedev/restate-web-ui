@@ -1,16 +1,11 @@
 import { PropsWithChildren } from 'react';
-import { tv } from 'tailwind-variants';
+import { useSummaryElement } from './DetailsContext';
+import { createPortal } from 'react-dom';
 
-interface SummaryProps {
-  className?: string;
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+interface SummaryProps {}
 
-const styles = tv({
-  base: '',
-});
-export function Summary({
-  children,
-  className,
-}: PropsWithChildren<SummaryProps>) {
-  return <summary className={styles({ className })}>{children}</summary>;
+export function Summary({ children }: PropsWithChildren<SummaryProps>) {
+  const element = useSummaryElement();
+  return element ? createPortal(children, element) : null;
 }
