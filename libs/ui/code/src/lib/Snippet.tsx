@@ -18,7 +18,7 @@ function SyntaxHighlighter({
 }) {
   return (
     <span
-      className="py-1 group-has-[.copy]:py-2"
+      className="py-1 group-has-[.copy]/snippet:py-2"
       dangerouslySetInnerHTML={{
         __html: syntaxHighlighter.highlight(code, {
           language,
@@ -32,7 +32,7 @@ function SyntaxHighlighter({
 const OptimizedSyntaxHighlighter = memo(SyntaxHighlighter);
 
 const snippetStyles = tv({
-  base: 'flex gap-2 gap-x-2 items-start group p-2 py-0 has-[.copy]:-my-1 has-[.copy]:pr-1 [&:not(:has(.copy))]:group-has-[.copy]/code:pr-16 [&_.copy2]:-mt-2 [&_.copy]:-mr-2',
+  base: 'flex gap-2 gap-x-2 items-start group/snippet p-2 py-0 has-[.copy]:-my-1 has-[.copy]:pr-1 [&:not(:has(.copy))]:group-has-[.copy]/code:pr-16 [&_.copy]:-mr-2',
 });
 export function Snippet({
   children,
@@ -62,7 +62,7 @@ interface SnippetCopyProps {
 }
 
 const snippetCopyStyles = tv({
-  base: 'copy flex-shrink-0 flex items-center gap-1 ml-auto p-2 ',
+  base: 'copy flex-shrink-0 flex items-center gap-1 ml-auto p-2',
 });
 export function SnippetCopy({
   className,

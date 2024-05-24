@@ -41,8 +41,8 @@ export function Security() {
       <SectionTitle>
         Security
         <p>
-          For secure and reliable interactions between your services and restate
-          Cloud, please follow these guidelines.
+          For secure and reliable communications between your services and
+          restate Cloud, please follow these guidelines.
         </p>
       </SectionTitle>
       <SectionContent className="flex flex-col">
