@@ -16,7 +16,7 @@ const styles = tv({
 });
 const summaryStyles = tv({
   extend: focusRing,
-  base: 'flex gap-2 px-3 py-2 pressed:bg-gray-200 hover:bg-gray-100 rounded-[calc(.75rem_-_1px_-.25rem)] list-none group-open:mb-2 pr-2.5 [&::-webkit-details-marker]:hidden',
+  base: 'flex gap-2 px-3 py-2 pressed:bg-gray-200 hover:bg-gray-100 rounded-[calc(.75rem_-_1px_-.25rem)] list-none group-open:mb-2 pr-2.5 [&::-webkit-details-marker]:hidden cursor-default',
 });
 
 export function Details({

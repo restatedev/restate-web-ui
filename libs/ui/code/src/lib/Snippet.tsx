@@ -3,12 +3,22 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { Children, PropsWithChildren, ReactNode, memo, useState } from 'react';
 import { tv } from 'tailwind-variants';
 import { syntaxHighlighter } from './SyntaxHighlighter';
-import { Nav, NavButtonItem, NavSearchItem } from '@restate/ui/nav';
+import { Nav, NavButtonItem } from '@restate/ui/nav';
 
 interface SnippetProps {
   className?: string;
   language?: 'typescript' | 'java' | 'json' | 'bash';
 }
+
+const LANGUAGE_LABEL: Record<
+  Exclude<SnippetProps['language'], undefined>,
+  string
+> = {
+  typescript: 'Typescript',
+  java: 'Java',
+  json: 'json',
+  bash: 'bash',
+};
 
 function SyntaxHighlighter({
   code,
@@ -93,7 +103,7 @@ export function SnippetCopy({
 }
 
 const snippetTabsStyles = tv({
-  base: 'relative',
+  base: 'relative @container',
 });
 export function SnippetTabs({
   children,
@@ -117,19 +127,19 @@ export function SnippetTabs({
       })}
     >
       <div className="absolute top-0 right-0 bg-black/[0.03] rounded-xl">
-        <Nav ariaCurrentValue="true">
+        <Nav ariaCurrentValue="true" className="gap-0">
           {languages.map((language) => (
             <NavButtonItem
               key={language}
               isActive={language === currentLanguage}
               onClick={() => setCurrentLanguage(language)}
             >
-              {language}
+              {LANGUAGE_LABEL[language]}
             </NavButtonItem>
           ))}
         </Nav>
       </div>
-      <div className="pt-2">{children(currentLanguage)}</div>
+      <div className="pt-8 @sm:pt-4 @lg:pt-0">{children(currentLanguage)}</div>
     </div>
   );
 }

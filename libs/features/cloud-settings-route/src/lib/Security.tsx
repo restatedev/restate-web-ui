@@ -53,7 +53,7 @@ export function Security() {
                 <Details>
                   <Summary>
                     AWS Lambda
-                    <span className="text-gray-500 text-sm block mt-2">
+                    <span className="text-gray-500 text-sm block mt-2 pointer-events-none">
                       To invoke services running on AWS Lambda, restate Cloud
                       must assume an AWS identity within the same account that
                       the Lambda is deployed.
@@ -82,11 +82,11 @@ export function Security() {
                 <Details>
                   <Summary>
                     HTTP services{' '}
-                    <span className="text-gray-500 text-sm block mt-2">
+                    <div className="text-gray-500 text-sm block mt-2 pointer-events-none">
                       restate Cloud signs all of its requests to your services,
                       allowing you to confirm that the requests are coming from
                       this environment.
-                    </span>
+                    </div>
                   </Summary>
                   <div className="text-sm flex flex-col gap-2">
                     You can verify requests coming from this environment using
@@ -101,6 +101,9 @@ export function Security() {
                         />
                       </Snippet>
                     </Code>
+                    <br />
+                    You must provide the public key to the restate SDK to ensure
+                    it only accepts requests from this environment:
                     <Code>
                       <SnippetTabs
                         languages={['typescript', 'java']}
@@ -109,13 +112,19 @@ export function Security() {
                         {(language) => {
                           if (language === 'typescript') {
                             return (
-                              <Snippet language="typescript">
+                              <Snippet
+                                language="typescript"
+                                className="ml-2 -indent-2"
+                              >
                                 {`restate.endpoint()\n.bind(myService)\n.withIdentityV1("${environmentDetails?.data?.signingPublicKey}")\n.listen();`}
                               </Snippet>
                             );
                           } else
                             return (
-                              <Snippet language="java">{`RestateHttpEndpointBuilder.builder()\n.bind(new MyService())\n.withRequestIdentityVerifier(RequestIdentityVerifier.fromKey("${environmentDetails?.data?.signingPublicKey}"))\n.buildAndListen();`}</Snippet>
+                              <Snippet
+                                language="java"
+                                className="ml-2 -indent-2"
+                              >{`RestateHttpEndpointBuilder.builder()\n.bind(new MyService())\n.withRequestIdentityVerifier(RequestIdentityVerifier.fromKey("${environmentDetails?.data?.signingPublicKey}"))\n.buildAndListen();`}</Snippet>
                             );
                         }}
                       </SnippetTabs>
