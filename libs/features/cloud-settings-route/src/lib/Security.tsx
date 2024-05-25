@@ -1,7 +1,7 @@
 import { useRouteLoaderData, Await } from '@remix-run/react';
 import { environments } from '@restate/features/cloud/environments-route';
 import { useEnvironmentParam } from '@restate/features/cloud/routes-utils';
-import { Code, Snippet, SnippetCopy } from '@restate/ui/code';
+import { Code, Snippet, SnippetCopy, SnippetTabs } from '@restate/ui/code';
 import { Details, Summary } from '@restate/ui/details';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { Suspense } from 'react';
@@ -102,12 +102,23 @@ export function Security() {
                       </Snippet>
                     </Code>
                     <Code>
-                      <Snippet language="typescript">
-                        {`restate.endpoint()\n.bind(myService)\n.withIdentityV1("${environmentDetails?.data?.signingPublicKey}")\n.listen();`}
-                      </Snippet>
-                    </Code>
-                    <Code>
-                      <Snippet language="java">{`RestateHttpEndpointBuilder.builder()\n.bind(new MyService())\n.withRequestIdentityVerifier(RequestIdentityVerifier.fromKey("${environmentDetails?.data?.signingPublicKey}"))\n.buildAndListen();`}</Snippet>
+                      <SnippetTabs
+                        languages={['typescript', 'java']}
+                        defaultLanguage="typescript"
+                      >
+                        {(language) => {
+                          if (language === 'typescript') {
+                            return (
+                              <Snippet language="typescript">
+                                {`restate.endpoint()\n.bind(myService)\n.withIdentityV1("${environmentDetails?.data?.signingPublicKey}")\n.listen();`}
+                              </Snippet>
+                            );
+                          } else
+                            return (
+                              <Snippet language="java">{`RestateHttpEndpointBuilder.builder()\n.bind(new MyService())\n.withRequestIdentityVerifier(RequestIdentityVerifier.fromKey("${environmentDetails?.data?.signingPublicKey}"))\n.buildAndListen();`}</Snippet>
+                            );
+                        }}
+                      </SnippetTabs>
                     </Code>
                   </div>
                 </Details>

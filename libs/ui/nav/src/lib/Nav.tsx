@@ -47,7 +47,9 @@ export function Nav({
         attributeFilter: ['data-active'],
       });
       updateStyle(
-        containerElement.current.querySelector('a[data-active=true]')
+        containerElement.current.querySelector(
+          'a[data-active=true],button[data-active=true]'
+        )
       );
     }
     return () => {
