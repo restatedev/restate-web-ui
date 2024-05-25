@@ -1,7 +1,9 @@
 import {
   Links,
   Meta,
+  NavigateFunction,
   Outlet,
+  Path,
   Scripts,
   ScrollRestoration,
   useNavigate,
@@ -12,6 +14,7 @@ import { CLOUD_API_BASE_URL } from '@restate/data-access/cloud/api-client';
 import { LayoutOutlet, LayoutProvider, LayoutZone } from '@restate/ui/layout';
 import { RouterProvider } from 'react-aria-components';
 import { Spinner } from '@restate/ui/button';
+import { useCallback } from 'react';
 
 export const links: LinksFunction = () => [
   {
@@ -27,7 +30,14 @@ export const links: LinksFunction = () => [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const navigate = useNavigate();
+  const remixNavigate = useNavigate();
+
+  const navigate = useCallback(
+    (to: string | Partial<Path>) => {
+      remixNavigate(to, { preventScrollReset: true });
+    },
+    [remixNavigate]
+  );
 
   return (
     <html lang="en" className="h-full bg-gray-100 dark:bg-gray-900">
