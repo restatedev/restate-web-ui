@@ -29,7 +29,7 @@ function SyntaxHighlighter({
 }) {
   return (
     <span
-      className="py-1 group-has-[.copy]/snippet:py-2"
+      className="group-has-[.copy]/snippet:py-1.5"
       dangerouslySetInnerHTML={{
         __html: syntaxHighlighter.highlight(code, {
           language,
@@ -73,7 +73,7 @@ interface SnippetCopyProps {
 }
 
 const snippetCopyStyles = tv({
-  base: 'copy flex-shrink-0 flex items-center gap-1 ml-auto p-2',
+  base: 'copy flex-shrink-0 flex items-center gap-1 ml-auto p-2 text-xs',
 });
 export function SnippetCopy({
   className,

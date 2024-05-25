@@ -21,8 +21,8 @@ export function Http() {
       <SectionTitle>
         HTTP
         <p>
-          To invoke your handlers or manage your services, deployments, and
-          invocations in this environment over HTTP, please use this URLs.
+          To invoke your handlers or manage your services over HTTP, simply
+          include an API key with your instance URLs.
         </p>
       </SectionTitle>
       <SectionContent className="flex flex-col gap-2">

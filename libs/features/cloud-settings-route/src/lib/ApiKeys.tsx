@@ -19,8 +19,8 @@ export function ApiKeys() {
       <SectionTitle>
         API keys
         <p>
-          To interact with your restate Cloud instance using methods other than
-          the restate CLI, you will need an API key.
+          To interact with your restate Cloud environment programmatically, you
+          will need an API key.
         </p>
       </SectionTitle>
       <SectionContent className="flex flex-col gap-2">
