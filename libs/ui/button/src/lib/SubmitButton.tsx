@@ -13,9 +13,12 @@ export interface SubmitButtonProps {
   className?: string;
 }
 
-export const Spinner = () => (
+const spinnerStyles = tv({
+  base: 'animate-spin h-5 w-5',
+});
+export const Spinner = ({ className }: { className?: string }) => (
   <svg
-    className="animate-spin h-5 w-5 "
+    className={spinnerStyles({ className })}
     xmlns="http://www.w3.org/2000/svg"
     fill="none"
     viewBox="0 0 24 24"
