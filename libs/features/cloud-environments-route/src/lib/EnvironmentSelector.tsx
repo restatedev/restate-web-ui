@@ -243,13 +243,13 @@ function EnvironmentSkeletonLoading() {
     <Button
       disabled
       variant="secondary"
-      className="flex items-center gap-2 px-2 py-1 bg-transparent border-none shadow-none"
+      className="flex flex-auto items-center gap-2 px-2 py-1 bg-transparent border-none shadow-none max-w-[calc(30ch_+_1.5rem)]"
     >
-      <div className="flex flex-col items-start animate-pulse">
-        <div className="grid gap-x-2 gap-y-1 auto-cols-auto items-center justify-items-start text-start">
-          <div className="bg-slate-200 rounded row-start-1 w-4 h-4" />
-          <div className="bg-slate-200 rounded row-start-1 w-[20ch] h-4" />
-          <div className="bg-slate-200 rounded col-start-2 row-start-2 w-[30ch] h-4" />
+      <div className="flex w-full flex-col items-start animate-pulse">
+        <div className="grid w-full gap-x-2 gap-y-1 [grid-template-columns:1rem_1fr] items-center justify-items-start text-start">
+          <div className="bg-slate-200 rounded row-start-1 w-4 h-4 min-w-0" />
+          <div className="bg-slate-200 rounded row-start-1 max-w-[20ch] w-[80%] h-4 min-w-0" />
+          <div className="bg-slate-200 rounded col-start-2 row-start-2 w-full max-w-[30ch] h-4 min-w-0" />
         </div>
       </div>
       <Icon name={IconName.ChevronsUpDown} className="text-gray-400" />
