@@ -6,17 +6,20 @@ import { Http } from './Http';
 import { ApiKeys } from './ApiKeys';
 import { clientLoader } from './loader';
 import { Security } from './Security';
+import { ErrorFetchingEnvironmentDetails } from './ErrorFetchingEnvironmentDetails';
+import { useNavigation } from '@remix-run/react';
 
 function Component() {
-  const environmentId = useEnvironmentParam();
-  invariant(environmentId, 'Missing environmentId param');
+  const { state } = useNavigation();
+  const isLoading = state === 'loading';
 
   return (
     <div className="flex flex-col gap-10">
-      <CLI />
-      <Http />
-      <ApiKeys />
-      <Security />
+      <ErrorFetchingEnvironmentDetails isLoading={isLoading} />
+      <CLI isLoading={isLoading} />
+      <Http isLoading={isLoading} />
+      <ApiKeys isLoading={isLoading} />
+      <Security isLoading={isLoading} />
     </div>
   );
 }

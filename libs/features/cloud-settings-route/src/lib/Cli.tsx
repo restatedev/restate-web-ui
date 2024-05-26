@@ -10,7 +10,7 @@ import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { Suspense } from 'react';
 import invariant from 'tiny-invariant';
 
-export function CLI() {
+export function CLI({ isLoading }: { isLoading: boolean }) {
   const environmentId = useEnvironmentParam();
   const accountId = useAccountParam();
   invariant(environmentId, 'Missing environmentId param');

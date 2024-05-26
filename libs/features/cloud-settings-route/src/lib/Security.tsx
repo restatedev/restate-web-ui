@@ -26,7 +26,7 @@ const awsIdentityRole = (id: string) =>
     4
   );
 
-export function Security() {
+export function Security({ isLoading }: { isLoading: boolean }) {
   const environmentId = useEnvironmentParam();
 
   invariant(environmentId, 'Missing environmentId param');

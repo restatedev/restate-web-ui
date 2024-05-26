@@ -6,7 +6,7 @@ import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { Suspense } from 'react';
 import invariant from 'tiny-invariant';
 
-export function Http() {
+export function Http({ isLoading }: { isLoading: boolean }) {
   const environmentId = useEnvironmentParam();
 
   invariant(environmentId, 'Missing environmentId param');

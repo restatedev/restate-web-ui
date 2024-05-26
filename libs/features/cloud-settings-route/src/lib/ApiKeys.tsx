@@ -11,7 +11,7 @@ import { CreateApiKey } from './CreateApiKey';
 import { DeleteAPIKey } from './DeleteAPIKey';
 import { clientLoader } from './loader';
 
-export function ApiKeys() {
+export function ApiKeys({ isLoading }: { isLoading: boolean }) {
   const { apiKeysWithDetailsPromises } = useLoaderData<typeof clientLoader>();
 
   return (
