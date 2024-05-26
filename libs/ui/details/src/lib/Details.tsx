@@ -9,10 +9,20 @@ import { Icon, IconName } from '@restate/ui/icons';
 interface DetailsProps {
   open?: boolean;
   className?: string;
+  disabled?: boolean;
 }
 
 const styles = tv({
   base: 'group bg-white rounded-xl border text-gray-800 shadow-sm p-1 has-[+details]:rounded-b-none has-[+details]:border-b-0 [&+details]:rounded-t-none [&:not([open]):has(+details)>summary]:rounded-b-none [&[open]>summary]:rounded-b-none [&+details>summary]:rounded-t-none',
+  variants: {
+    isDisabled: {
+      false: '',
+      true: '[&>summary]:pointer-events-none cursor-not-allowed',
+    },
+  },
+  defaultVariants: {
+    isDisabled: false,
+  },
 });
 const summaryStyles = tv({
   extend: focusRing,
@@ -23,6 +33,7 @@ export function Details({
   children,
   open,
   className,
+  disabled,
 }: PropsWithChildren<DetailsProps>) {
   const id = useId();
   const { pressProps, isPressed } = usePress({
@@ -38,7 +49,10 @@ export function Details({
   const { isFocusVisible, focusProps } = useFocusRing();
   return (
     <DetailsProvider id={id}>
-      <details className={styles({ className })} open={open}>
+      <details
+        className={styles({ className, isDisabled: Boolean(disabled) })}
+        open={open}
+      >
         <summary
           {...pressProps}
           {...focusProps}

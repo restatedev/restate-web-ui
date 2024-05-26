@@ -1,20 +1,27 @@
 import { Icon, IconName } from '@restate/ui/icons';
 import { PropsWithChildren } from 'react';
+import { tv } from 'tailwind-variants';
 
 export interface ErrorProps {
   errors?: Error[];
+  className?: string;
 }
+
+const styles = tv({
+  base: 'rounded-xl bg-red-100 p-3',
+});
 
 function SingleError({
   error,
   children,
-}: PropsWithChildren<{ error?: Error }>) {
+  className,
+}: PropsWithChildren<{ error?: Error; className?: string }>) {
   if (!error) {
     return null;
   }
 
   return (
-    <div className="rounded-xl bg-red-100 p-3">
+    <div className={styles({ className })}>
       <div className="flex items-center gap-2">
         <div className="flex-shrink-0">
           <Icon
@@ -34,17 +41,20 @@ function SingleError({
 export function ErrorBanner({
   errors = [],
   children,
+  className,
 }: PropsWithChildren<ErrorProps>) {
   if (errors.length === 0) {
     return null;
   }
   if (errors.length === 1) {
     const [error] = errors;
-    return <SingleError error={error} children={children} />;
+    return (
+      <SingleError error={error} children={children} className={className} />
+    );
   }
 
   return (
-    <div className="rounded-xl bg-red-100 p-3">
+    <div className={styles({ className })}>
       <div className="flex">
         <div className="flex-shrink-0">
           <Icon

@@ -82,7 +82,7 @@ export function Security({ isLoading }: { isLoading: boolean }) {
                       </Code>
                     </div>
                   </Details>
-                  <Details>
+                  <Details disabled={!environmentDetails?.data}>
                     <Summary>
                       HTTP services{' '}
                       <div className="text-gray-500 text-sm block mt-2 pointer-events-none">

@@ -115,7 +115,7 @@ function EnvironmentSelectorContent() {
               </div>
               {environmentDetails?.error && (
                 <InlineError className="truncate row-start-2 w-full col-start-1">
-                  Failed to load environment
+                  Failed to load the environment
                 </InlineError>
               )}
             </div>
@@ -221,7 +221,7 @@ function EnvironmentItem({ environmentId }: { environmentId: string }) {
       </div>
       {environmentDetails.error && (
         <InlineError className="group-focus:text-red-100 truncate row-start-2 w-full col-start-1">
-          Failed to load environment
+          Failed to load the environment
         </InlineError>
       )}
       {environmentDetails?.data && (
