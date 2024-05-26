@@ -6,10 +6,6 @@ import { ErrorBanner } from '@restate/ui/error';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Suspense } from 'react';
 import invariant from 'tiny-invariant';
-import { ApiKeys } from './ApiKeys';
-import { CLI } from './Cli';
-import { Http } from './Http';
-import { Security } from './Security';
 
 export function ErrorFetchingEnvironmentDetails({
   isLoading,
