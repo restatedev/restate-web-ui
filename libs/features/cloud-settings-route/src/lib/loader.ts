@@ -1,7 +1,8 @@
 import { ClientLoaderFunctionArgs, defer } from '@remix-run/react';
 import { describeApiKey } from '@restate/data-access/cloud/api-client';
 import invariant from 'tiny-invariant';
-import { listApiKeysWithCache } from './apis';
+import { describeEnvironmentWithCache } from '@restate/features/cloud/environments-route';
+import { describeApiKeyWithCache } from './apis';
 
 export const clientLoader = async ({
   request,
@@ -12,28 +13,30 @@ export const clientLoader = async ({
   invariant(accountId, 'Missing accountId param');
   invariant(environmentId, 'Missing environmentId param');
 
-  const apiKeysWithDetailsPromises = listApiKeysWithCache
+  const apiKeysWithDetailsPromise = describeEnvironmentWithCache
     .fetch({
       accountId,
       environmentId,
     })
     .then((response) => {
       if (response.error) {
-        return response;
+        return {} as Record<string, Awaited<ReturnType<typeof describeApiKey>>>;
       }
       const apiKeys = response.data?.apiKeys ?? [];
-      return apiKeys
-        .map(({ keyId }) => ({
-          [keyId]: describeApiKey({
-            accountId,
-            environmentId,
-            keyId,
-          }),
-        }))
-        .reduce((p, c) => ({ ...p, ...c }), {});
+      return Promise.all(
+        apiKeys.map(({ keyId }) =>
+          describeApiKeyWithCache
+            .fetch({
+              accountId,
+              environmentId,
+              keyId,
+            })
+            .then((response) => ({ [keyId]: response }))
+        )
+      ).then((response) => response.reduce((p, c) => ({ ...p, ...c }), {}));
     });
 
   return defer({
-    apiKeysWithDetailsPromises,
+    apiKeysWithDetailsPromise,
   });
 };

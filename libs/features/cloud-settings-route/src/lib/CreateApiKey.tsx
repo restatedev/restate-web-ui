@@ -14,15 +14,9 @@ import { useFetcherWithError } from '@restate/util/remix';
 import { RadioGroup } from '@restate/ui/radio-group';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Radio } from 'react-aria-components';
-import { describeApiKey } from '@restate/data-access/cloud/api-client';
 import { Link } from '@restate/ui/link';
 
-export function CreateApiKey() {
-  const apiKeysWithDetails = useAsyncValue() as Record<
-    string,
-    ReturnType<typeof describeApiKey>
-  >;
-  const hasAnyKeys = Object.keys(apiKeysWithDetails).length > 0;
+export function CreateApiKey({ hasAnyKeys }: { hasAnyKeys: boolean }) {
   const formId = useId();
   const [count, setCount] = useState(0);
   const accountId = useAccountParam();

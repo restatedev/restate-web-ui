@@ -9,6 +9,7 @@ import { Code, Snippet, SnippetCopy } from '@restate/ui/code';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { Suspense } from 'react';
 import invariant from 'tiny-invariant';
+import { Loading } from './Loading';
 
 export function CLI({ isLoading }: { isLoading: boolean }) {
   const environmentId = useEnvironmentParam();
@@ -26,45 +27,50 @@ export function CLI({ isLoading }: { isLoading: boolean }) {
         CLI
         <p>Connect restate CLI to your restate cloud environment.</p>
       </SectionTitle>
-      <SectionContent className="flex flex-col gap-2">
-        <Suspense>
-          <Await resolve={environmentDetailsPromise}>
-            {(environmentDetails) => {
-              const accountName =
-                accountsResponse?.accountsList?.data.accounts.find(
-                  (account) => account.accountId === accountId
-                )?.name;
-              const environmentName = environmentDetails?.data?.name;
-              return (
-                <Code>
-                  <Snippet># brew install restatedev/tap/restate</Snippet>
-                  <Snippet>
-                    restate cloud login
-                    <SnippetCopy copyText="restate cloud login" />
-                  </Snippet>
-                  <br />
-                  <Snippet>
-                    restate cloud env configure {accountName}/{environmentName}
-                    <SnippetCopy
-                      copyText={`restate cloud env configure ${accountName}/${environmentName}`}
-                    />
-                  </Snippet>
-                  <br />
-                  <Snippet>
-                    # You can also do local development against an
-                    authenticating proxy
-                  </Snippet>
-                  <Snippet>
-                    restate cloud env proxy
-                    <SnippetCopy copyText="restate cloud env proxy curl" />
-                  </Snippet>
-                  <Snippet>
-                    # curl http://localhost:8080/MyService/MyHandler
-                  </Snippet>
-                </Code>
-              );
-            }}
-          </Await>
+      <SectionContent className="flex flex-col gap-2 relative min-h-[12rem]">
+        <Suspense fallback={<Loading className="rounded-xl" />}>
+          {isLoading ? (
+            <Loading className="rounded-xl" />
+          ) : (
+            <Await resolve={environmentDetailsPromise}>
+              {(environmentDetails) => {
+                const accountName =
+                  accountsResponse?.accountsList?.data.accounts.find(
+                    (account) => account.accountId === accountId
+                  )?.name;
+                const environmentName = environmentDetails?.data?.name;
+                return (
+                  <Code>
+                    <Snippet># brew install restatedev/tap/restate</Snippet>
+                    <Snippet>
+                      restate cloud login
+                      <SnippetCopy copyText="restate cloud login" />
+                    </Snippet>
+                    <br />
+                    <Snippet>
+                      restate cloud env configure {accountName}/
+                      {environmentName}
+                      <SnippetCopy
+                        copyText={`restate cloud env configure ${accountName}/${environmentName}`}
+                      />
+                    </Snippet>
+                    <br />
+                    <Snippet>
+                      # You can also do local development against an
+                      authenticating proxy
+                    </Snippet>
+                    <Snippet>
+                      restate cloud env proxy
+                      <SnippetCopy copyText="restate cloud env proxy curl" />
+                    </Snippet>
+                    <Snippet>
+                      # curl http://localhost:8080/MyService/MyHandler
+                    </Snippet>
+                  </Code>
+                );
+              }}
+            </Await>
+          )}
         </Suspense>
       </SectionContent>
     </Section>

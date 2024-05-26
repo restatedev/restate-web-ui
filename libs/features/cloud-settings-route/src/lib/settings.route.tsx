@@ -1,21 +1,22 @@
-import invariant from 'tiny-invariant';
 import { clientAction } from './action';
-import { useEnvironmentParam } from '@restate/features/cloud/routes-utils';
 import { CLI } from './Cli';
 import { Http } from './Http';
 import { ApiKeys } from './ApiKeys';
 import { clientLoader } from './loader';
 import { Security } from './Security';
 import { ErrorFetchingEnvironmentDetails } from './ErrorFetchingEnvironmentDetails';
-import { useNavigation } from '@remix-run/react';
+import { useRevalidator } from '@remix-run/react';
 
 function Component() {
-  const { state } = useNavigation();
+  const { state, revalidate } = useRevalidator();
   const isLoading = state === 'loading';
 
   return (
     <div className="flex flex-col gap-10">
-      <ErrorFetchingEnvironmentDetails isLoading={isLoading} />
+      <ErrorFetchingEnvironmentDetails
+        isLoading={isLoading}
+        retry={revalidate}
+      />
       <CLI isLoading={isLoading} />
       <Http isLoading={isLoading} />
       <ApiKeys isLoading={isLoading} />

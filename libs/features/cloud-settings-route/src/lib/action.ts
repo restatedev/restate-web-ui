@@ -4,8 +4,9 @@ import {
   createApiKey,
   deleteApiKey,
 } from '@restate/data-access/cloud/api-client';
+import { describeEnvironmentWithCache } from '@restate/features/cloud/environments-route';
 import invariant from 'tiny-invariant';
-import { listApiKeysWithCache } from './apis';
+import { describeApiKeyWithCache } from './apis';
 
 // TODO: Error handling, Pending UI
 export const clientAction = async ({
@@ -16,7 +17,7 @@ export const clientAction = async ({
   const action = body.get('_action');
   invariant(params.accountId, 'Missing accountId param');
   invariant(params.environmentId, 'Missing environmentId param');
-  listApiKeysWithCache.invalidate({
+  describeEnvironmentWithCache.invalidate({
     accountId: params.accountId,
     environmentId: params.environmentId,
   });
@@ -40,6 +41,11 @@ export const clientAction = async ({
   if (action === 'deleteApiKey') {
     const keyId = body.get('keyId');
     invariant(typeof keyId === 'string', 'Missing keyId');
+    describeApiKeyWithCache.invalidate({
+      accountId: params.accountId,
+      environmentId: params.environmentId,
+      keyId,
+    });
 
     const { error } = await deleteApiKey({
       accountId: params.accountId,

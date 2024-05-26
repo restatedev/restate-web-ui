@@ -1,5 +1,5 @@
-import { useAsyncValue, useSearchParams } from '@remix-run/react';
-import { describeApiKey } from '@restate/data-access/cloud/api-client';
+import { useSearchParams } from '@remix-run/react';
+import { ApiKeyDetails } from '@restate/data-access/cloud/api-client';
 import { tv } from 'tailwind-variants';
 import { RoleId } from './RoleId';
 import { Button } from '@restate/ui/button';
@@ -33,13 +33,16 @@ const keyStyles = tv({
     state: 'ACTIVE',
   },
 });
-export function ApiKeyItem({ keyId }: { keyId: string }) {
-  const apiKeyDetails = useAsyncValue() as Awaited<
-    ReturnType<typeof describeApiKey>
-  >;
+export function ApiKeyItem({
+  keyId,
+  apiKeyDetails,
+}: {
+  keyId: string;
+  apiKeyDetails?: ApiKeyDetails;
+}) {
   const [, setSearchParams] = useSearchParams();
 
-  if (apiKeyDetails.error) {
+  if (!apiKeyDetails) {
     return (
       <li className={styles({ state: 'ERROR' })}>
         <ErrorBanner
@@ -48,20 +51,18 @@ export function ApiKeyItem({ keyId }: { keyId: string }) {
       </li>
     );
   }
-  const isActive = apiKeyDetails.data.state === 'ACTIVE';
+  const isActive = apiKeyDetails.state === 'ACTIVE';
 
   return (
-    <li className={styles({ state: apiKeyDetails.data.state })}>
-      <div className={keyStyles({ state: apiKeyDetails.data.state })}>
+    <li className={styles({ state: apiKeyDetails.state })}>
+      <div className={keyStyles({ state: apiKeyDetails.state })}>
         <div className="flex flex-col gap-1">
           <div className="flex gap-x-2 flex-wrap gap-y-1">
-            <code className="text-sm text-gray-600">
-              {apiKeyDetails.data.keyId}
-            </code>
-            <RoleId roleId={apiKeyDetails.data.roleId} />
+            <code className="text-sm text-gray-600">{apiKeyDetails.keyId}</code>
+            <RoleId roleId={apiKeyDetails.roleId} />
           </div>
           <div className="text-gray-500 flex gap-2 text-sm">
-            {apiKeyDetails.data.description}
+            {apiKeyDetails.description}
           </div>
         </div>
         {isActive && (
@@ -71,7 +72,7 @@ export function ApiKeyItem({ keyId }: { keyId: string }) {
             onClick={() =>
               setSearchParams(
                 (perv) => {
-                  perv.set(DELETE_API_KEY_PARAM_NAME, apiKeyDetails.data.keyId);
+                  perv.set(DELETE_API_KEY_PARAM_NAME, apiKeyDetails.keyId);
                   return perv;
                 },
                 { preventScrollReset: true }

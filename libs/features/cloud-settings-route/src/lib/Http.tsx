@@ -5,6 +5,7 @@ import { Code, Snippet, SnippetCopy } from '@restate/ui/code';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { Suspense } from 'react';
 import invariant from 'tiny-invariant';
+import { Loading } from './Loading';
 
 export function Http({ isLoading }: { isLoading: boolean }) {
   const environmentId = useEnvironmentParam();
@@ -24,38 +25,42 @@ export function Http({ isLoading }: { isLoading: boolean }) {
           include an API key with your instance URLs.
         </p>
       </SectionTitle>
-      <SectionContent className="flex flex-col gap-2">
-        <Suspense>
-          <Await resolve={environmentDetailsPromise}>
-            {(environmentDetails) => (
-              <Code>
-                <Snippet>
-                  # Here is your ingress URL for invoking your handlers (example
-                  use case):
-                </Snippet>
+      <SectionContent className="flex flex-col gap-2 relative min-h-[10rem]">
+        <Suspense fallback={<Loading className="rounded-xl" />}>
+          {isLoading ? (
+            <Loading className="rounded-xl" />
+          ) : (
+            <Await resolve={environmentDetailsPromise}>
+              {(environmentDetails) => (
+                <Code>
+                  <Snippet>
+                    # Here is your ingress URL for invoking your handlers
+                    (example use case):
+                  </Snippet>
 
-                <Snippet>
-                  curl {environmentDetails?.data?.ingressBaseUrl}
-                  /MyService/MyHandler -H "Authorization: Bearer $API_KEY"
-                  <SnippetCopy
-                    copyText={environmentDetails?.data?.ingressBaseUrl ?? ''}
-                  />
-                </Snippet>
+                  <Snippet>
+                    curl {environmentDetails?.data?.ingressBaseUrl}
+                    /MyService/MyHandler -H "Authorization: Bearer $API_KEY"
+                    <SnippetCopy
+                      copyText={environmentDetails?.data?.ingressBaseUrl ?? ''}
+                    />
+                  </Snippet>
 
-                <Snippet className="mt-4">
-                  # Here is your Admin API URL for managing services,
-                  deployments and invocations (example use case):
-                </Snippet>
-                <Snippet>
-                  curl {environmentDetails?.data?.adminBaseUrl}/deployments -H
-                  "Authorization: Bearer $API_KEY"
-                  <SnippetCopy
-                    copyText={environmentDetails?.data?.adminBaseUrl ?? ''}
-                  />
-                </Snippet>
-              </Code>
-            )}
-          </Await>
+                  <Snippet className="mt-4">
+                    # Here is your Admin API URL for managing services,
+                    deployments and invocations (example use case):
+                  </Snippet>
+                  <Snippet>
+                    curl {environmentDetails?.data?.adminBaseUrl}/deployments -H
+                    "Authorization: Bearer $API_KEY"
+                    <SnippetCopy
+                      copyText={environmentDetails?.data?.adminBaseUrl ?? ''}
+                    />
+                  </Snippet>
+                </Code>
+              )}
+            </Await>
+          )}
         </Suspense>
       </SectionContent>
     </Section>

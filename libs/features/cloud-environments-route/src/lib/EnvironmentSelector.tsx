@@ -3,6 +3,7 @@ import {
   useAsyncValue,
   useLoaderData,
   useLocation,
+  useRevalidator,
   useSearchParams,
 } from '@remix-run/react';
 import { Button } from '@restate/ui/button';
@@ -42,6 +43,8 @@ export function EnvironmentSelector(props: EnvironmentSelectorProps) {
     useLoaderData<typeof clientLoader>();
   const currentEnvironmentParam = useEnvironmentParam();
   invariant(currentAccountId, 'Account id is missing');
+  const { state } = useRevalidator();
+  const isLoading = state === 'loading';
 
   if (!currentEnvironmentParam) {
     return <CreateEnvironment />;
@@ -57,9 +60,15 @@ export function EnvironmentSelector(props: EnvironmentSelectorProps) {
 
   return (
     <Suspense fallback={<EnvironmentSkeletonLoading />}>
-      <Await resolve={environmentsWithDetailsPromises[currentEnvironmentParam]}>
-        <EnvironmentSelectorContent />
-      </Await>
+      {isLoading ? (
+        <EnvironmentSkeletonLoading />
+      ) : (
+        <Await
+          resolve={environmentsWithDetailsPromises[currentEnvironmentParam]}
+        >
+          <EnvironmentSelectorContent />
+        </Await>
+      )}
       <CreateEnvironment />
       <DeleteEnvironment />
     </Suspense>

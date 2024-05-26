@@ -1,5 +1,4 @@
 import { Outlet, useRouteLoaderData } from '@remix-run/react';
-
 import { EnvironmentSelector } from './EnvironmentSelector';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import { clientLoader } from './loader';

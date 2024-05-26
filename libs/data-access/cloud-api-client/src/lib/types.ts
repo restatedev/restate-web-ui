@@ -1,5 +1,9 @@
 import { components } from './api';
-import { describeEnvironment, listAccounts } from './operations';
+import {
+  describeApiKey,
+  describeEnvironment,
+  listAccounts,
+} from './operations';
 
 export type Account = NonNullable<
   Awaited<ReturnType<typeof listAccounts>>['data']
@@ -10,3 +14,6 @@ export type Environment = NonNullable<
 export type Role = components['schemas']['RoleId'];
 export type LogLine =
   components['schemas']['GetEnvironmentLogsResponse']['lines'][number];
+export type ApiKeyDetails = NonNullable<
+  Awaited<ReturnType<typeof describeApiKey>>['data']
+>;
