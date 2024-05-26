@@ -4,16 +4,32 @@ import {
   describeEnvironmentWithCache,
   listEnvironmentsWithCache,
 } from './apis';
+import {
+  describeEnvironment,
+  listEnvironments,
+} from '@restate/data-access/cloud/api-client';
 
+type DescribeEnvironmentDetails = {
+  [key: string]: Awaited<ReturnType<typeof describeEnvironment>>;
+};
+type LoaderResponse = Omit<DescribeEnvironmentDetails, 'environmentList'> & {
+  environmentList: Awaited<ReturnType<typeof listEnvironments>>;
+};
 export const clientLoader = async ({
   request,
   params,
 }: ClientLoaderFunctionArgs) => {
-  const { accountId } = params;
+  const { accountId, environmentId } = params;
   invariant(accountId, 'Missing accountId param');
   const environmentList = await listEnvironmentsWithCache.fetch({
     accountId,
   });
+  const isDescribeEnvFetched = environmentId
+    ? describeEnvironmentWithCache.isFetched({
+        environmentId,
+        accountId,
+      })
+    : false;
 
   if (environmentList.error) {
     throw new Response(environmentList.error.message, {
@@ -49,6 +65,10 @@ export const clientLoader = async ({
 
   return defer({
     environmentList,
-    environmentsWithDetailsPromises,
-  });
+    ...environmentsWithDetailsPromises,
+    ...(environmentId &&
+      isDescribeEnvFetched && {
+        [environmentId]: await environmentsWithDetailsPromises[environmentId],
+      }),
+  } as LoaderResponse);
 };

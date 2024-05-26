@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { FetchResponse } from 'openapi-fetch';
 
 const hashTable = new WeakMap<object, string>();
@@ -30,22 +31,27 @@ export function withCache<T, O, P extends undefined>(
   fetcher: (params?: undefined) => Promise<FetchResponse<T, O>>
 ): {
   invalidate: (params?: undefined) => void;
+  isFetched: (params: P) => boolean;
   fetch: (params?: undefined) => Promise<FetchResponse<T, O>>;
 };
 export function withCache<T, O, P extends Record<string, any>>(
   fetcher: (params: P) => Promise<FetchResponse<T, O>>
 ): {
   invalidate: (params: P) => void;
+  isFetched: (params: P) => boolean;
   fetch: (params: P) => Promise<FetchResponse<T, O>>;
 };
 export function withCache<T, O, P extends Record<string, any> | undefined>(
   fetcher: (params: P) => Promise<FetchResponse<T, O>>
 ) {
-  const cache = new Map<string, Promise<FetchResponse<T, O>>>();
+  const cache = new Map<string, Promise<FetchResponse<T, O>> | null>();
 
   return {
     invalidate: (params?: P) => {
       cache.delete(stableHash(params));
+    },
+    isFetched: (params?: P) => {
+      return cache.has(stableHash(params));
     },
     fetch: (params: P) => {
       const paramsHash = stableHash(params);
@@ -61,11 +67,11 @@ export function withCache<T, O, P extends Record<string, any> | undefined>(
           if (res.response.ok) {
             cache.set(paramsHash, Promise.resolve(res));
           } else {
-            cache.delete(paramsHash);
+            cache.set(paramsHash, null);
           }
         })
         .catch(() => {
-          cache.delete(paramsHash);
+          cache.set(paramsHash, null);
         });
       return promise;
     },
