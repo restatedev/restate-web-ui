@@ -19,8 +19,7 @@ export function CLI() {
   >('routes/accounts.$accountId.environments');
   const accountsResponse =
     useRouteLoaderData<typeof accounts.clientLoader>('routes/accounts');
-  const environmentDetailsPromise =
-    environmentsResponse?.environmentsWithDetailsPromises[environmentId];
+  const environmentDetailsPromise = environmentsResponse?.[environmentId];
   return (
     <Section>
       <SectionTitle>

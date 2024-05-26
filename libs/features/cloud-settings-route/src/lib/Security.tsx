@@ -33,8 +33,7 @@ export function Security() {
   const environmentsResponse = useRouteLoaderData<
     typeof environments.clientLoader
   >('routes/accounts.$accountId.environments');
-  const environmentDetailsPromise =
-    environmentsResponse?.environmentsWithDetailsPromises[environmentId];
+  const environmentDetailsPromise = environmentsResponse?.[environmentId];
 
   return (
     <Section>

@@ -38,7 +38,7 @@ interface EnvironmentSelectorProps {}
 
 export function EnvironmentSelector(props: EnvironmentSelectorProps) {
   const currentAccountId = useAccountParam();
-  const { environmentList, environmentsWithDetailsPromises } =
+  const { environmentList, ...environmentsWithDetailsPromises } =
     useLoaderData<typeof clientLoader>();
   const currentEnvironmentParam = useEnvironmentParam();
   invariant(currentAccountId, 'Account id is missing');
@@ -70,7 +70,7 @@ function EnvironmentSelectorContent() {
   const environmentDetails = useAsyncValue() as Awaited<
     ReturnType<typeof describeEnvironment>
   >;
-  const { environmentList, environmentsWithDetailsPromises } =
+  const { environmentList, ...environmentsWithDetailsPromises } =
     useLoaderData<typeof clientLoader>();
   const [, setSearchParams] = useSearchParams();
   const currentAccountId = useAccountParam();
