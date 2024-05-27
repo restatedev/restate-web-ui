@@ -1,9 +1,9 @@
 import {
   Await,
   useAsyncValue,
+  useFetcher,
   useLoaderData,
   useLocation,
-  useRevalidator,
   useSearchParams,
 } from '@remix-run/react';
 import { Button } from '@restate/ui/button';
@@ -43,7 +43,7 @@ export function EnvironmentSelector(props: EnvironmentSelectorProps) {
     useLoaderData<typeof clientLoader>();
   const currentEnvironmentParam = useEnvironmentParam();
   invariant(currentAccountId, 'Account id is missing');
-  const { state } = useRevalidator();
+  const { state } = useFetcher({ key: 'describeEnvironment' });
   const isLoading = state === 'loading';
 
   if (!currentEnvironmentParam) {

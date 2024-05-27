@@ -5,17 +5,19 @@ import { ApiKeys } from './ApiKeys';
 import { clientLoader } from './loader';
 import { Security } from './Security';
 import { ErrorFetchingEnvironmentDetails } from './ErrorFetchingEnvironmentDetails';
-import { useRevalidator } from '@remix-run/react';
+import { useFetcher } from '@remix-run/react';
+import { useAccountParam } from '@restate/features/cloud/routes-utils';
 
 function Component() {
-  const { state, revalidate } = useRevalidator();
+  const accountId = useAccountParam();
+  const { load, state } = useFetcher({ key: 'describeEnvironment' });
   const isLoading = state === 'loading';
 
   return (
     <div className="flex flex-col gap-10">
       <ErrorFetchingEnvironmentDetails
         isLoading={isLoading}
-        retry={revalidate}
+        retry={() => load(`/accounts/${accountId}/environments`)}
       />
       <CLI isLoading={isLoading} />
       <Http isLoading={isLoading} />

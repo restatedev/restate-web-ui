@@ -2,7 +2,6 @@ import {
   Await,
   useAsyncValue,
   useLoaderData,
-  useNavigation,
   useRouteLoaderData,
 } from '@remix-run/react';
 import { describeEnvironment } from '@restate/data-access/cloud/api-client';
@@ -19,8 +18,6 @@ import { Loading } from './Loading';
 
 export function ApiKeys({ isLoading }: { isLoading: boolean }) {
   const environmentId = useEnvironmentParam();
-  const navigation = useNavigation();
-  console.log(navigation);
 
   invariant(environmentId, 'Missing environmentId param');
   const environmentsResponse = useRouteLoaderData<

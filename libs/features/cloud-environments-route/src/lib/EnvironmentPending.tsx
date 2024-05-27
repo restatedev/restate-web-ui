@@ -17,7 +17,7 @@ import {
 } from '@restate/ui/dropdown';
 import invariant from 'tiny-invariant';
 import { clientLoader } from './loader';
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 import {
   useAccountParam,
   useEnvironmentParam,
@@ -34,6 +34,7 @@ import { DeleteEnvironment } from './DeleteEnvironment';
 import { describeEnvironment } from '@restate/data-access/cloud/api-client';
 import { InlineError } from '@restate/ui/error';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
+import { describeEnvironmentWithCache } from './apis';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface EnvironmentPendingProps {}
@@ -64,7 +65,23 @@ function EnvironmentPendingContent() {
   const environmentDetails = useAsyncValue() as Awaited<
     ReturnType<typeof describeEnvironment>
   >;
+  const environmentId = useEnvironmentParam();
+  const accountId = useAccountParam();
   const isPending = environmentDetails.data?.status === 'PENDING';
+  const { revalidate } = useRevalidator();
+  useEffect(() => {
+    let id: ReturnType<typeof setInterval> | null = null;
+    if (isPending && accountId && environmentId) {
+      id = setInterval(() => {
+        describeEnvironmentWithCache.invalidate({ accountId, environmentId });
+        revalidate();
+      }, 3000);
+    }
+
+    return () => {
+      id && clearInterval(id);
+    };
+  }, [isPending, revalidate, accountId, environmentId]);
 
   if (isPending) {
     return (
