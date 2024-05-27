@@ -16,11 +16,16 @@ export function Nav({
   className,
   ariaCurrentValue,
 }: PropsWithChildren<NavProps>) {
-  const containerElement = useRef<HTMLDivElement | null>(null);
+  const containerElementRef = useRef<HTMLDivElement | null>(null);
   const activeIndicatorElement = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const updateStyle = (activeElement: Node | null) => {
+      console.log(
+        activeIndicatorElement.current,
+        (activeElement as HTMLElement)?.innerHTML,
+        (activeElement as any)?.clientWidth
+      );
       if (
         activeElement instanceof HTMLElement &&
         activeElement.dataset.active === 'true' &&
@@ -39,15 +44,27 @@ export function Nav({
     };
 
     const observer = new MutationObserver(callback);
-    if (containerElement.current) {
-      observer.observe(containerElement.current, {
+    if (containerElementRef.current) {
+      const containerElement = containerElementRef.current;
+      observer.observe(containerElement, {
         attributes: true,
         childList: true,
         subtree: true,
         attributeFilter: ['data-active'],
       });
+      const detailsElement = containerElement.closest('details');
+      detailsElement?.addEventListener(
+        'toggle',
+        () =>
+          updateStyle(
+            containerElement.querySelector(
+              'a[data-active=true],button[data-active=true]'
+            )
+          ),
+        { once: true }
+      );
       updateStyle(
-        containerElement.current.querySelector(
+        containerElement.querySelector(
           'a[data-active=true],button[data-active=true]'
         )
       );
@@ -59,7 +76,7 @@ export function Nav({
 
   return (
     <NavContext.Provider value={{ value: ariaCurrentValue }}>
-      <div className="relative" ref={containerElement}>
+      <div className="relative" ref={containerElementRef}>
         <div
           className="h-full bg-white absolute top-0 transition-all ease-in-out duration-300 border border-black/10 shadow-sm rounded-xl"
           ref={activeIndicatorElement}

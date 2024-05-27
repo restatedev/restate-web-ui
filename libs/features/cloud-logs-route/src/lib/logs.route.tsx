@@ -25,7 +25,7 @@ export function Component() {
         <h2 className="text-base font-semibold leading-7 text-gray-900 inline-flex items-center gap-2">
           <Icon
             name={IconName.Log}
-            className="w-[1.25em] h-[1.25em] text-gray-700"
+            className="w-[1.125em] h-[1.125em] text-gray-700"
           />
           Logs
         </h2>

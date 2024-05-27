@@ -24,7 +24,7 @@ export function Http({ isLoading }: { isLoading: boolean }) {
         <span className="inline-flex items-center gap-2">
           <Icon
             name={IconName.Http}
-            className="w-[1.25em] h-[1.25em] text-gray-700"
+            className="w-[1.125em] h-[1.125em] text-gray-700"
           />
           HTTP
         </span>
