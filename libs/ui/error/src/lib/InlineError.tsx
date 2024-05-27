@@ -7,7 +7,7 @@ export interface InlineErrorProps {
 }
 
 const styles = tv({
-  base: 'inline-flex gap-1 items-center text-start text-red-700',
+  base: 'inline-flex gap-1 items-center text-start text-red-600',
 });
 export function InlineError({
   children,
@@ -16,7 +16,7 @@ export function InlineError({
   return (
     <output className={styles({ className })}>
       <Icon
-        className="group-focus:text-current text-red-500 w-[1em] h-[1em]"
+        className="group-focus:text-current text-red-500 w-[0.85em] h-[0.85em]"
         name={IconName.CircleX}
       />
       {children}

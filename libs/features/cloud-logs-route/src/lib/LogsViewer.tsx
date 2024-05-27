@@ -68,7 +68,7 @@ export function LogsViewer() {
             <Button
               type="submit"
               variant="secondary"
-              className="flex items-center px-3 py-1"
+              className="flex gap-2 items-center px-3 py-1"
             >
               <Icon name={IconName.Retry} className="w-[1.125em]" /> Retry
             </Button>

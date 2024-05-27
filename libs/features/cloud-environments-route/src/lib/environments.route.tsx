@@ -1,5 +1,4 @@
 import { Outlet, useRouteLoaderData } from '@remix-run/react';
-
 import { EnvironmentSelector } from './EnvironmentSelector';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import { clientLoader } from './loader';
@@ -15,6 +14,7 @@ import {
 import { clientAction } from './action';
 import { CreateEnvironmentOnboarding } from './CreateEnvironmentOnboarding';
 import { Nav, NavItem } from '@restate/ui/nav';
+import { EnvironmentPending } from './EnvironmentPending';
 
 function Component() {
   const accountsResponse =
@@ -41,6 +41,7 @@ function Component() {
 
   return (
     <>
+      <EnvironmentPending />
       <LayoutOutlet zone={LayoutZone.AppBar}>
         <div className="flex items-center gap-2 flex-1">
           {accountsResponse?.accountsList?.data?.accounts && (

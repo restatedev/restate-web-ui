@@ -4,6 +4,7 @@ import { Link } from '@restate/ui/link';
 import { PropsWithChildren, useContext } from 'react';
 import { tv } from 'tailwind-variants';
 import { NavContext } from './NavContext';
+import { Button } from '@restate/ui/button';
 
 interface NavItemProps {
   href: string;
@@ -84,6 +85,42 @@ export function NavSearchItem({
       >
         {children}
       </Link>
+    </li>
+  );
+}
+
+interface NavButtonItemProps {
+  isActive: boolean;
+  onClick?: VoidFunction;
+}
+const buttonStyles = tv({
+  base: 'group no-underline font-sans bg-transparent border-none shadow-none isolate flex py-1.5 px-3 text-xs text-center transition rounded-xl cursor-default hover:bg-black/[0.03] pressed:bg-black/[0.06]',
+  variants: {
+    isActive: {
+      true: 'text-gray-800',
+      false: ' text-gray-600',
+    },
+  },
+  defaultVariants: {
+    isActive: false,
+  },
+});
+export function NavButtonItem({
+  children,
+  isActive,
+  onClick,
+}: PropsWithChildren<NavButtonItemProps>) {
+  return (
+    <li>
+      <Button
+        variant="secondary"
+        className={buttonStyles({ isActive })}
+        onClick={onClick}
+        data-active={isActive}
+        {...(isActive && { 'aria-pressed': true })}
+      >
+        {children}
+      </Button>
     </li>
   );
 }

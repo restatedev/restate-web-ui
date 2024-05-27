@@ -1,7 +1,7 @@
 import { useAsyncValue, useSearchParams } from '@remix-run/react';
 import { Button, SubmitButton } from '@restate/ui/button';
 import { Dialog, DialogContent, DialogFooter } from '@restate/ui/dialog';
-import { useCallback, useId, useState } from 'react';
+import { ReactNode, useCallback, useId, useState } from 'react';
 import { CREATE_API_KEY_PARAM_NAME } from './constants';
 import { FormFieldInput, FormFieldLabel } from '@restate/ui/form-field';
 import {
@@ -14,14 +14,9 @@ import { useFetcherWithError } from '@restate/util/remix';
 import { RadioGroup } from '@restate/ui/radio-group';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Radio } from 'react-aria-components';
-import { describeApiKey } from '@restate/data-access/cloud/api-client';
+import { Link } from '@restate/ui/link';
 
-export function CreateApiKey() {
-  const apiKeysWithDetails = useAsyncValue() as Record<
-    string,
-    ReturnType<typeof describeApiKey>
-  >;
-  const hasAnyKeys = Object.keys(apiKeysWithDetails).length > 0;
+export function CreateApiKey({ hasAnyKeys }: { hasAnyKeys: boolean }) {
   const formId = useId();
   const [count, setCount] = useState(0);
   const accountId = useAccountParam();
@@ -104,7 +99,7 @@ function CustomRadio({
 }: {
   value: string;
   label: string;
-  description: string;
+  description: ReactNode;
 }) {
   return (
     <Radio
@@ -159,7 +154,8 @@ function CreateApiForm({
         Create API key
       </h3>
       <p className="text-sm text-gray-500">
-        API keys are essential for accessing and interacting with restate Cloud.
+        API keys serve as long-lived credentials that allow machines to
+        programmatically access restate Cloud environments.
       </p>
       <div>
         <fetcher.Form
@@ -194,22 +190,55 @@ function CreateApiForm({
               <CustomRadio
                 value="rst:role::CompleteAwakeableAccess"
                 label="Complete Awakeable"
-                description="Can complete any awakeables"
+                description={
+                  <>
+                    Can complete any{' '}
+                    <Link
+                      href="https://docs.restate.dev/develop/ts/awakeables/"
+                      target="_blank"
+                      rel="noreferrer noopener"
+                    >
+                      awakeables
+                    </Link>
+                  </>
+                }
               />
               <CustomRadio
                 value="rst:role::IngressAccess"
                 label="Ingress"
-                description="Can make invocations through ingress"
+                description={
+                  <>
+                    Can make{' '}
+                    <Link
+                      href="https://docs.restate.dev/concepts/invocations"
+                      target="_blank"
+                      rel="noreferrer noopener"
+                    >
+                      invocations
+                    </Link>
+                  </>
+                }
               />
               <CustomRadio
                 value="rst:role::AdminAccess"
                 label="Admin"
-                description="Has access to Admin API of the restate server."
+                description={
+                  <>
+                    Has access to{' '}
+                    <Link
+                      href="https://docs.restate.dev/references/admin-api/"
+                      target="_blank"
+                      rel="noreferrer noopener"
+                    >
+                      Admin operations
+                    </Link>
+                  </>
+                }
               />
               <CustomRadio
                 value="rst:role::FullAccess"
                 label="Full"
-                description="Has access to all parts of the restate server."
+                description={<>Has access to all operations</>}
               />
             </div>
           </RadioGroup>

@@ -1,6 +1,7 @@
 import {
   Await,
   useAsyncValue,
+  useFetcher,
   useLoaderData,
   useLocation,
   useSearchParams,
@@ -38,10 +39,12 @@ interface EnvironmentSelectorProps {}
 
 export function EnvironmentSelector(props: EnvironmentSelectorProps) {
   const currentAccountId = useAccountParam();
-  const { environmentList, environmentsWithDetailsPromises } =
+  const { environmentList, ...environmentsWithDetailsPromises } =
     useLoaderData<typeof clientLoader>();
   const currentEnvironmentParam = useEnvironmentParam();
   invariant(currentAccountId, 'Account id is missing');
+  const { state } = useFetcher({ key: 'describeEnvironment' });
+  const isLoading = state === 'loading';
 
   if (!currentEnvironmentParam) {
     return <CreateEnvironment />;
@@ -57,9 +60,15 @@ export function EnvironmentSelector(props: EnvironmentSelectorProps) {
 
   return (
     <Suspense fallback={<EnvironmentSkeletonLoading />}>
-      <Await resolve={environmentsWithDetailsPromises[currentEnvironmentParam]}>
-        <EnvironmentSelectorContent />
-      </Await>
+      {isLoading ? (
+        <EnvironmentSkeletonLoading />
+      ) : (
+        <Await
+          resolve={environmentsWithDetailsPromises[currentEnvironmentParam]}
+        >
+          <EnvironmentSelectorContent />
+        </Await>
+      )}
       <CreateEnvironment />
       <DeleteEnvironment />
     </Suspense>
@@ -70,7 +79,7 @@ function EnvironmentSelectorContent() {
   const environmentDetails = useAsyncValue() as Awaited<
     ReturnType<typeof describeEnvironment>
   >;
-  const { environmentList, environmentsWithDetailsPromises } =
+  const { environmentList, ...environmentsWithDetailsPromises } =
     useLoaderData<typeof clientLoader>();
   const [, setSearchParams] = useSearchParams();
   const currentAccountId = useAccountParam();
@@ -106,7 +115,7 @@ function EnvironmentSelectorContent() {
               </div>
               {environmentDetails?.error && (
                 <InlineError className="truncate row-start-2 w-full col-start-1">
-                  Failed to load environment details
+                  Failed to load the environment
                 </InlineError>
               )}
             </div>
@@ -212,7 +221,7 @@ function EnvironmentItem({ environmentId }: { environmentId: string }) {
       </div>
       {environmentDetails.error && (
         <InlineError className="group-focus:text-red-100 truncate row-start-2 w-full col-start-1">
-          Failed to load environment details
+          Failed to load the environment
         </InlineError>
       )}
       {environmentDetails?.data && (
@@ -234,13 +243,13 @@ function EnvironmentSkeletonLoading() {
     <Button
       disabled
       variant="secondary"
-      className="flex items-center gap-2 px-2 py-1 bg-transparent border-none shadow-none"
+      className="flex flex-auto items-center gap-2 px-2 py-1 bg-transparent border-none shadow-none max-w-[calc(30ch_+_1.5rem)]"
     >
-      <div className="flex flex-col items-start animate-pulse">
-        <div className="grid gap-x-2 gap-y-1 auto-cols-auto items-center justify-items-start text-start">
-          <div className="bg-slate-200 rounded row-start-1 w-4 h-4" />
-          <div className="bg-slate-200 rounded row-start-1 w-[20ch] h-4" />
-          <div className="bg-slate-200 rounded col-start-2 row-start-2 w-[30ch] h-4" />
+      <div className="flex w-full flex-col items-start animate-pulse">
+        <div className="grid w-full gap-x-2 gap-y-1 [grid-template-columns:1rem_1fr] items-center justify-items-start text-start">
+          <div className="bg-slate-200 rounded row-start-1 w-4 h-4 min-w-0" />
+          <div className="bg-slate-200 rounded row-start-1 max-w-[20ch] w-[80%] h-4 min-w-0" />
+          <div className="bg-slate-200 rounded col-start-2 row-start-2 w-full max-w-[30ch] h-4 min-w-0" />
         </div>
       </div>
       <Icon name={IconName.ChevronsUpDown} className="text-gray-400" />
