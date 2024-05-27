@@ -1,6 +1,7 @@
 import { PropsWithChildren } from 'react';
 import { createPortal } from 'react-dom';
 import { AppBar } from './AppBar';
+import { Notification } from './Notification';
 import { ZONE_IDS, LayoutZone } from './LayoutZone';
 
 /* eslint-disable-next-line */
@@ -10,6 +11,7 @@ export function LayoutProvider({ children }: PropsWithChildren<LayoutProps>) {
   return (
     <div className="flex w-full flex-col min-h-full mx-auto max-w-6xl py-3 sm:py-6 px-3 sm:px-6 lg:px-8">
       <AppBar id={ZONE_IDS[LayoutZone.AppBar]} />
+      <Notification id={ZONE_IDS[LayoutZone.Notification]} />
       <main
         id={ZONE_IDS[LayoutZone.Content]}
         className="py-14 px-4 flex-auto flex flex-col"
