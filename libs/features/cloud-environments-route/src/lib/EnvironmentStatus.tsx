@@ -1,5 +1,4 @@
 import { Environment } from '@restate/data-access/cloud/api-client';
-import { Spinner } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from 'tailwind-variants';
 
@@ -43,7 +42,7 @@ export function MiniEnvironmentStatus({ status }: EnvironmentStatusProps) {
   const { container, icon, animation } = miniStyles();
 
   return (
-    <div className={container({ status })}>
+    <div className={container({ status })} role="status" aria-label={status}>
       <Icon name={ICON_NAMES[status]} className={icon({ status })} />
       <Icon name={ICON_NAMES[status]} className={animation({ status })} />
     </div>
@@ -87,7 +86,7 @@ export function EnvironmentStatus({ status }: EnvironmentStatusProps) {
   const { container, icon } = styles();
 
   return (
-    <div className={container({ status })}>
+    <div className={container({ status })} role="status">
       <Icon name={ICON_NAMES[status]} className={icon({ status })} />
       {status}
     </div>
