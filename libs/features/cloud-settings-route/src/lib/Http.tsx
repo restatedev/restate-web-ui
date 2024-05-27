@@ -7,6 +7,7 @@ import { Suspense } from 'react';
 import invariant from 'tiny-invariant';
 import { Loading } from './Loading';
 import { Icon, IconName } from '@restate/ui/icons';
+import { LearnMore } from './LearnMore';
 
 export function Http({ isLoading }: { isLoading: boolean }) {
   const environmentId = useEnvironmentParam();
@@ -29,7 +30,8 @@ export function Http({ isLoading }: { isLoading: boolean }) {
         </span>
         <p>
           To invoke your handlers or manage your services over HTTP, simply
-          include an API key with your instance URLs.
+          include an API key with your instance URLs.{' '}
+          <LearnMore href="https://docs.restate.dev" />
         </p>
       </SectionTitle>
       <SectionContent className="flex flex-col gap-2 relative min-h-[10rem]">

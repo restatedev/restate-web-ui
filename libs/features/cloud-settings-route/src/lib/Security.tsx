@@ -8,6 +8,7 @@ import { Suspense } from 'react';
 import invariant from 'tiny-invariant';
 import { Loading } from './Loading';
 import { Icon, IconName } from '@restate/ui/icons';
+import { LearnMore } from './LearnMore';
 
 const awsIdentityRole = (id: string) =>
   JSON.stringify(
@@ -49,7 +50,8 @@ export function Security({ isLoading }: { isLoading: boolean }) {
         </span>
         <p>
           For secure and reliable communications between your services and
-          restate Cloud, please follow these guidelines.
+          restate Cloud, please follow these guidelines.{' '}
+          <LearnMore href="https://docs.restate.dev" />
         </p>
       </SectionTitle>
       <SectionContent className="flex flex-col relative min-h-[12rem]">

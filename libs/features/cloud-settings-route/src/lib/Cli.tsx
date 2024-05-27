@@ -11,6 +11,7 @@ import { Suspense } from 'react';
 import invariant from 'tiny-invariant';
 import { Loading } from './Loading';
 import { Icon, IconName } from '@restate/ui/icons';
+import { LearnMore } from './LearnMore';
 
 export function CLI({ isLoading }: { isLoading: boolean }) {
   const environmentId = useEnvironmentParam();
@@ -32,7 +33,10 @@ export function CLI({ isLoading }: { isLoading: boolean }) {
           />
           CLI
         </span>
-        <p>Connect restate CLI to your restate cloud environment.</p>
+        <p>
+          Connect restate CLI to your restate cloud environment.{' '}
+          <LearnMore href="https://docs.restate.dev" />
+        </p>
       </SectionTitle>
       <SectionContent className="flex flex-col gap-2 relative min-h-[12rem]">
         <Suspense fallback={<Loading className="rounded-xl" />}>
