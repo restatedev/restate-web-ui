@@ -18,7 +18,7 @@ const miniStyles = tv({
   variants: {
     status: {
       PENDING: {
-        icon: 'text-yellow-500 stroke-[2px]',
+        container: 'text-yellow-500',
         animation: 'animate-ping',
       },
       ACTIVE: { container: 'text-green-500', animation: 'animate-ping' },
@@ -29,7 +29,7 @@ const miniStyles = tv({
 });
 
 const ICON_NAMES: Record<Environment['status'], IconName> = {
-  PENDING: IconName.CircleDotDashed,
+  PENDING: IconName.Circle,
   ACTIVE: IconName.Circle,
   FAILED: IconName.TriangleAlert,
   DELETED: IconName.Circle,
@@ -39,9 +39,7 @@ export function MiniEnvironmentStatus({ status }: EnvironmentStatusProps) {
   if (!status) {
     return null;
   }
-  if (status === 'PENDING') {
-    return <Spinner className="w-3 h-3 text-yellow-500" />;
-  }
+
   const { container, icon, animation } = miniStyles();
 
   return (
@@ -63,7 +61,7 @@ const styles = tv({
     status: {
       PENDING: {
         container: 'bg-yellow-50 text-yellow-800 ring-yellow-600/20',
-        icon: 'text-yellow-500 stroke-[2px]',
+        icon: 'text-yellow-500',
       },
       ACTIVE: {
         container: 'bg-green-50 text-green-700 ring-green-600/20',
@@ -85,9 +83,7 @@ export function EnvironmentStatus({ status }: EnvironmentStatusProps) {
   if (!status) {
     return null;
   }
-  if (status === 'PENDING') {
-    return <Spinner className="w-4 h-4 text-yellow-500" />;
-  }
+
   const { container, icon } = styles();
 
   return (
