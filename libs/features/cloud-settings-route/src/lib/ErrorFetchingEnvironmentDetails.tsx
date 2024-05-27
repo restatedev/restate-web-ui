@@ -4,6 +4,7 @@ import { useEnvironmentParam } from '@restate/features/cloud/routes-utils';
 import { Button } from '@restate/ui/button';
 import { ErrorBanner } from '@restate/ui/error';
 import { Icon, IconName } from '@restate/ui/icons';
+import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import { Suspense } from 'react';
 import invariant from 'tiny-invariant';
 
@@ -32,24 +33,24 @@ export function ErrorFetchingEnvironmentDetails({
         {(environmentDetails) => {
           if (environmentDetails?.error) {
             return (
-              <div className="sticky top-24 z-30 -mt-12">
+              <LayoutOutlet zone={LayoutZone.Notification}>
                 <ErrorBanner
                   errors={[
                     new Error(
                       'Failed to load the environment. Please try again.'
                     ),
                   ]}
-                  className="backdrop-blur-xl backdrop-saturate-200 bg-red-200/60 shadow-lg shadow-zinc-800/5 border border-red-200"
+                  className="flex [&>*]:flex-auto backdrop-blur-xl backdrop-saturate-200 bg-red-200/60 border border-red-200 py-0"
                 >
                   <Button
                     variant="secondary"
-                    className="flex items-center gap-2 px-3 py-1"
+                    className="flex items-center gap-2 px-3 py-0.5 text-sm"
                     onClick={retry}
                   >
-                    <Icon name={IconName.Retry} className="w-[1.125em]" /> Retry
+                    <Icon name={IconName.Retry} className="w-[1em]" /> Retry
                   </Button>
                 </ErrorBanner>
-              </div>
+              </LayoutOutlet>
             );
           } else {
             return null;

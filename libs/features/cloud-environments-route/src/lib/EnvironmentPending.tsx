@@ -69,8 +69,9 @@ function EnvironmentPendingContent() {
   if (isPending) {
     return (
       <LayoutOutlet zone={LayoutZone.Notification}>
-        <div className="flex items-center gap-2 bg-orange-100 rounded-xl bg-orange-200/60 shadow-lg shadow-zinc-800/5 border border-orange-200 text-orange-800 px-3">
-          <Spinner /> Please bear with us until we create your environment.
+        <div className="flex items-center gap-2 bg-orange-100 rounded-xl bg-orange-200/60 shadow-lg shadow-zinc-800/5 border border-orange-200 text-orange-800 px-3 text-sm">
+          <Spinner /> Your restate environment is being created and will be
+          ready shortly.
         </div>
       </LayoutOutlet>
     );
