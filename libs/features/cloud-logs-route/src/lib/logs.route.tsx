@@ -5,6 +5,7 @@ import { LogsViewer } from './LogsViewer';
 import { GranularitySelector } from './GranularitySelector';
 import { Spinner } from '@restate/ui/button';
 import { useEnvironmentParam } from '@restate/features/cloud/routes-utils';
+import { Icon, IconName } from '@restate/ui/icons';
 
 export function Component() {
   const { logsPromise } = useLoaderData<typeof clientLoader>();
@@ -21,7 +22,11 @@ export function Component() {
   return (
     <div className="flex-auto flex flex-col">
       <div className="grid sm:auto-cols-auto sm:[grid-template-columns:1fr_auto] grid-cols-1 items-start sm:items-center flex-wrap gap-x-2">
-        <h2 className="text-base font-semibold leading-7 text-gray-900">
+        <h2 className="text-base font-semibold leading-7 text-gray-900 inline-flex items-center gap-2">
+          <Icon
+            name={IconName.Log}
+            className="w-[1.25em] h-[1.25em] text-gray-700"
+          />
           Logs
         </h2>
         <div className="mt-2 sm:mt-0">

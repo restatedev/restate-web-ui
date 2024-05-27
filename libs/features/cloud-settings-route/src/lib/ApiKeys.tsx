@@ -15,6 +15,7 @@ import { useEnvironmentParam } from '@restate/features/cloud/routes-utils';
 import invariant from 'tiny-invariant';
 import { environments } from '@restate/features/cloud/environments-route';
 import { Loading } from './Loading';
+import { Icon, IconName } from '@restate/ui/icons';
 
 export function ApiKeys({ isLoading }: { isLoading: boolean }) {
   const environmentId = useEnvironmentParam();
@@ -28,7 +29,13 @@ export function ApiKeys({ isLoading }: { isLoading: boolean }) {
   return (
     <Section>
       <SectionTitle>
-        API keys
+        <span className="inline-flex items-center gap-2">
+          <Icon
+            name={IconName.ApiKey}
+            className="w-[1.25em] h-[1.25em] text-gray-700"
+          />
+          API keys
+        </span>
         <p>
           To interact with your restate Cloud environment programmatically, you
           will need an API key.

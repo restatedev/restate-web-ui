@@ -7,6 +7,7 @@ import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { Suspense } from 'react';
 import invariant from 'tiny-invariant';
 import { Loading } from './Loading';
+import { Icon, IconName } from '@restate/ui/icons';
 
 const awsIdentityRole = (id: string) =>
   JSON.stringify(
@@ -39,7 +40,13 @@ export function Security({ isLoading }: { isLoading: boolean }) {
   return (
     <Section>
       <SectionTitle>
-        Security
+        <span className="inline-flex items-center gap-2">
+          <Icon
+            name={IconName.Security}
+            className="w-[1.25em] h-[1.25em] text-gray-700"
+          />
+          Security
+        </span>
         <p>
           For secure and reliable communications between your services and
           restate Cloud, please follow these guidelines.

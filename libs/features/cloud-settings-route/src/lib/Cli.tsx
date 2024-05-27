@@ -10,6 +10,7 @@ import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { Suspense } from 'react';
 import invariant from 'tiny-invariant';
 import { Loading } from './Loading';
+import { Icon, IconName } from '@restate/ui/icons';
 
 export function CLI({ isLoading }: { isLoading: boolean }) {
   const environmentId = useEnvironmentParam();
@@ -24,7 +25,13 @@ export function CLI({ isLoading }: { isLoading: boolean }) {
   return (
     <Section>
       <SectionTitle>
-        CLI
+        <span className="inline-flex items-center gap-2">
+          <Icon
+            name={IconName.Cli}
+            className="w-[1.25em] h-[1.25em] text-gray-700"
+          />
+          CLI
+        </span>
         <p>Connect restate CLI to your restate cloud environment.</p>
       </SectionTitle>
       <SectionContent className="flex flex-col gap-2 relative min-h-[12rem]">

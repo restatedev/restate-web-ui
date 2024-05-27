@@ -15,6 +15,11 @@ import {
   Copy,
   RotateCw,
   SquareCheckBig,
+  Terminal,
+  Lock,
+  FileKey,
+  Globe,
+  FileClock,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from 'tailwind-variants';
@@ -40,6 +45,11 @@ export const enum IconName {
   Copy = 'Copy',
   Retry = 'Retry',
   SquareCheckBig = 'SquareCheckBig',
+  Http = 'Http',
+  Security = 'Security',
+  ApiKey = 'ApiKey',
+  Cli = 'Cli',
+  Log = 'Log',
 }
 export interface IconsProps {
   name: IconName;
@@ -66,6 +76,11 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Copy]: Copy,
   [IconName.SquareCheckBig]: SquareCheckBig,
   [IconName.Retry]: RotateCw,
+  [IconName.Security]: Lock,
+  [IconName.Cli]: Terminal,
+  [IconName.ApiKey]: FileKey,
+  [IconName.Http]: Globe,
+  [IconName.Log]: FileClock,
 };
 
 const styles = tv({

@@ -6,6 +6,7 @@ import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { Suspense } from 'react';
 import invariant from 'tiny-invariant';
 import { Loading } from './Loading';
+import { Icon, IconName } from '@restate/ui/icons';
 
 export function Http({ isLoading }: { isLoading: boolean }) {
   const environmentId = useEnvironmentParam();
@@ -19,7 +20,13 @@ export function Http({ isLoading }: { isLoading: boolean }) {
   return (
     <Section>
       <SectionTitle>
-        HTTP
+        <span className="inline-flex items-center gap-2">
+          <Icon
+            name={IconName.Http}
+            className="w-[1.25em] h-[1.25em] text-gray-700"
+          />
+          HTTP
+        </span>
         <p>
           To invoke your handlers or manage your services over HTTP, simply
           include an API key with your instance URLs.
