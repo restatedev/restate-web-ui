@@ -212,6 +212,13 @@ const createEnvironmentHandler = http.post<
     status: 'PENDING',
   });
 
+  setTimeout(() => {
+    cloudApiDb.environment.update({
+      where: { environmentId: { equals: environment.environmentId } },
+      data: { status: 'ACTIVE' },
+    });
+  }, 10000);
+
   return HttpResponse.json({
     environmentId: environment.environmentId,
     name: environment.name,
