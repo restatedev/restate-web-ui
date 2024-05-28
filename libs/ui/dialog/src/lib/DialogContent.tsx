@@ -9,7 +9,7 @@ import { tv } from 'tailwind-variants';
 import { DialogFooterContainer } from './DialogFooter';
 
 const overlayStyles = tv({
-  base: 'fixed top-0 left-0 w-full min-h-full isolate z-50 bg-gray-800 bg-opacity-30 transition-opacity flex items-center justify-center p-4 text-center',
+  base: 'fixed top-0 left-0 w-full isolate z-50 bg-gray-800 bg-opacity-30 transition-opacity flex items-center justify-center p-4 text-center [height:100vh] [min-height:100vh]',
   variants: {
     isEntering: {
       true: 'animate-in fade-in duration-200 ease-out',
@@ -21,7 +21,7 @@ const overlayStyles = tv({
 });
 
 const modalStyles = tv({
-  base: 'w-full max-w-sm max-h-full rounded-xl bg-white text-left align-middle text-slate-700  shadow-lg shadow-zinc-800/5 bg-clip-padding border border-black/5',
+  base: 'w-full max-w-sm max-h-full overflow-auto rounded-xl [clip-path:inset(0_0_0_0_round_.75rem)] bg-white text-left align-middle text-slate-700  shadow-lg shadow-zinc-800/5 bg-clip-padding border border-black/5',
   variants: {
     isEntering: {
       true: 'animate-in zoom-in-105 ease-out duration-200',

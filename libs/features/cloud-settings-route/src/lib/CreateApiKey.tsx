@@ -197,6 +197,7 @@ function CreateApiForm({
                       href="https://docs.restate.dev/develop/ts/awakeables/"
                       target="_blank"
                       rel="noreferrer noopener"
+                      variant="secondary"
                     >
                       awakeables
                     </Link>
@@ -213,6 +214,7 @@ function CreateApiForm({
                       href="https://docs.restate.dev/concepts/invocations"
                       target="_blank"
                       rel="noreferrer noopener"
+                      variant="secondary"
                     >
                       invocations
                     </Link>
@@ -229,6 +231,7 @@ function CreateApiForm({
                       href="https://docs.restate.dev/references/admin-api/"
                       target="_blank"
                       rel="noreferrer noopener"
+                      variant="secondary"
                     >
                       Admin operations
                     </Link>
