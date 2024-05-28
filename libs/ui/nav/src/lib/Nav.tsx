@@ -39,25 +39,24 @@ export function Nav({
     };
 
     const observer = new MutationObserver(callback);
-    if (containerElementRef.current) {
-      const containerElement = containerElementRef.current;
+    const containerElement = containerElementRef.current;
+    const detailsElement = containerElement?.closest('details');
+    const updateStyleWithDetails = () =>
+      updateStyle(
+        containerElement?.querySelector(
+          'a[data-active=true],button[data-active=true]'
+        ) ?? null
+      );
+    if (containerElement) {
       observer.observe(containerElement, {
         attributes: true,
         childList: true,
         subtree: true,
         attributeFilter: ['data-active'],
       });
-      const detailsElement = containerElement.closest('details');
-      detailsElement?.addEventListener(
-        'toggle',
-        () =>
-          updateStyle(
-            containerElement.querySelector(
-              'a[data-active=true],button[data-active=true]'
-            )
-          ),
-        { once: true }
-      );
+      detailsElement?.addEventListener('toggle', updateStyleWithDetails, {
+        once: true,
+      });
       updateStyle(
         containerElement.querySelector(
           'a[data-active=true],button[data-active=true]'
@@ -66,6 +65,7 @@ export function Nav({
     }
     return () => {
       observer.disconnect();
+      detailsElement?.removeEventListener('toggle', updateStyleWithDetails);
     };
   }, []);
 

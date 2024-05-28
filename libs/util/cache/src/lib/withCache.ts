@@ -31,14 +31,12 @@ export function withCache<T, O, P extends undefined>(
   fetcher: (params?: undefined) => Promise<FetchResponse<T, O>>
 ): {
   invalidate: (params?: undefined) => void;
-  isFetched: (params: P) => boolean;
   fetch: (params?: undefined) => Promise<FetchResponse<T, O>>;
 };
 export function withCache<T, O, P extends Record<string, any>>(
   fetcher: (params: P) => Promise<FetchResponse<T, O>>
 ): {
   invalidate: (params: P) => void;
-  isFetched: (params: P) => boolean;
   fetch: (params: P) => Promise<FetchResponse<T, O>>;
 };
 export function withCache<T, O, P extends Record<string, any> | undefined>(
@@ -49,9 +47,6 @@ export function withCache<T, O, P extends Record<string, any> | undefined>(
   return {
     invalidate: (params?: P) => {
       cache.delete(stableHash(params));
-    },
-    isFetched: (params?: P) => {
-      return cache.has(stableHash(params));
     },
     fetch: (params: P) => {
       const paramsHash = stableHash(params);
@@ -67,11 +62,11 @@ export function withCache<T, O, P extends Record<string, any> | undefined>(
           if (res.response.ok) {
             cache.set(paramsHash, Promise.resolve(res));
           } else {
-            cache.set(paramsHash, null);
+            cache.delete(paramsHash);
           }
         })
         .catch(() => {
-          cache.set(paramsHash, null);
+          cache.delete(paramsHash);
         });
       return promise;
     },

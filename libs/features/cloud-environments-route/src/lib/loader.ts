@@ -19,17 +19,11 @@ export const clientLoader = async ({
   request,
   params,
 }: ClientLoaderFunctionArgs) => {
-  const { accountId, environmentId } = params;
+  const { accountId } = params;
   invariant(accountId, 'Missing accountId param');
   const environmentList = await listEnvironmentsWithCache.fetch({
     accountId,
   });
-  const isDescribeEnvFetched = environmentId
-    ? describeEnvironmentWithCache.isFetched({
-        environmentId,
-        accountId,
-      })
-    : false;
 
   if (environmentList.error) {
     throw new Response(environmentList.error.message, {
@@ -65,9 +59,5 @@ export const clientLoader = async ({
   return defer({
     environmentList,
     ...environmentsWithDetailsPromises,
-    ...(environmentId &&
-      isDescribeEnvFetched && {
-        [environmentId]: await environmentsWithDetailsPromises[environmentId],
-      }),
   } as LoaderResponse);
 };
