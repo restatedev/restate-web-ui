@@ -104,6 +104,7 @@ const describeEnvironmentHandler = http.post<
   GetPath<'/{accountId}/DescribeEnvironment'>
 >('/:accountId/DescribeEnvironment', async ({ request }) => {
   const requestBody = await request.json();
+  await delay(300);
 
   const environment = cloudApiDb.environment.findFirst({
     where: {
@@ -198,7 +199,7 @@ const createEnvironmentHandler = http.post<
     },
   });
   const requestBody = await request.json();
-
+  await delay(300);
   if (!account) {
     return HttpResponse.json(
       { code: 500, message: 'Server internal error' },

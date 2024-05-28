@@ -21,11 +21,6 @@ export function Nav({
 
   useEffect(() => {
     const updateStyle = (activeElement: Node | null) => {
-      console.log(
-        activeIndicatorElement.current,
-        (activeElement as HTMLElement)?.innerHTML,
-        (activeElement as any)?.clientWidth
-      );
       if (
         activeElement instanceof HTMLElement &&
         activeElement.dataset.active === 'true' &&

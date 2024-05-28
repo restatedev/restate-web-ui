@@ -1,4 +1,4 @@
-import { useRef, type PropsWithChildren } from 'react';
+import { useRef, type PropsWithChildren, useDeferredValue } from 'react';
 import { useFetchers } from '@remix-run/react';
 import { Button } from './Button';
 import { tv } from 'tailwind-variants';
@@ -63,15 +63,16 @@ export function SubmitButton({
     return false;
   });
   const isSubmitting = submitFetcher?.state === 'submitting';
+  const deferredIsSubmitting = useDeferredValue(isSubmitting);
 
   return (
     <Button
       {...props}
       type="submit"
       ref={ref}
-      disabled={isSubmitting || disabled}
+      disabled={deferredIsSubmitting || disabled}
     >
-      {isSubmitting ? (
+      {deferredIsSubmitting ? (
         <div className={styles({})}>
           <Spinner />
           {children}
