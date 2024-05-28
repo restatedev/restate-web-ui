@@ -216,8 +216,13 @@ function EnvironmentItem({ environmentId }: { environmentId: string }) {
 
   return (
     <div className="flex flex-col w-full">
-      <div className="truncate">
-        {environmentDetails?.data?.name ?? environmentId}
+      <div className="inline-flex gap-2 items-center pt-2 truncate">
+        {environmentDetails?.data?.status && (
+          <EnvironmentStatus status={environmentDetails.data.status} />
+        )}
+        <span className="truncate text-gray-600 group-focus:text-gray-300 text-sm">
+          {environmentDetails?.data?.name ?? environmentId}
+        </span>
       </div>
       {environmentDetails.error && (
         <InlineError className="group-focus:text-red-100 truncate row-start-2 w-full col-start-1">
@@ -226,9 +231,6 @@ function EnvironmentItem({ environmentId }: { environmentId: string }) {
       )}
       {environmentDetails?.data && (
         <div className="inline-flex gap-2 items-center pt-2">
-          {environmentDetails?.data?.status && (
-            <EnvironmentStatus status={environmentDetails.data.status} />
-          )}
           <span className="truncate text-gray-500 group-focus:text-gray-300 text-code">
             {environmentDetails?.data?.environmentId}
           </span>
