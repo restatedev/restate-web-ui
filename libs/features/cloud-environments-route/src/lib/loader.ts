@@ -38,15 +38,6 @@ export const clientLoader = async ({
   }
   const environments = environmentList?.data?.environments ?? [];
 
-  const environmentsWithDetailsPromises = environments
-    .map((environment) => ({
-      [environment.environmentId]: describeEnvironmentWithCache.fetch({
-        environmentId: environment.environmentId,
-        accountId,
-      }),
-    }))
-    .reduce((p, c) => ({ ...p, ...c }), {});
-
   const isEnvironmentIdParamValid = environments.some(
     ({ environmentId }) => params.environmentId === environmentId
   );
@@ -63,6 +54,14 @@ export const clientLoader = async ({
     return redirect(`/accounts/${params.accountId}/environments`);
   }
 
+  const environmentsWithDetailsPromises = environments
+    .map((environment) => ({
+      [environment.environmentId]: describeEnvironmentWithCache.fetch({
+        environmentId: environment.environmentId,
+        accountId,
+      }),
+    }))
+    .reduce((p, c) => ({ ...p, ...c }), {});
   return defer({
     environmentList,
     ...environmentsWithDetailsPromises,
