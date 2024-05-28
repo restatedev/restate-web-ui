@@ -4,8 +4,8 @@ import { useEnvironmentParam } from '@restate/features/cloud/routes-utils';
 import { Button } from '@restate/ui/button';
 import { ErrorBanner } from '@restate/ui/error';
 import { Icon, IconName } from '@restate/ui/icons';
-import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
-import { Suspense } from 'react';
+import { HideNotification, LayoutOutlet, LayoutZone } from '@restate/ui/layout';
+import { Suspense, useState } from 'react';
 import invariant from 'tiny-invariant';
 
 export function ErrorFetchingEnvironmentDetails({
@@ -22,6 +22,7 @@ export function ErrorFetchingEnvironmentDetails({
     typeof environments.clientLoader
   >('routes/accounts.$accountId.environments');
   const environmentDetailsPromise = environmentsResponse?.[environmentId];
+  const [willStartLoading, setWillStartLoading] = useState(false);
 
   if (isLoading) {
     return null;
@@ -45,11 +46,18 @@ export function ErrorFetchingEnvironmentDetails({
                   <Button
                     variant="secondary"
                     className="flex items-center gap-2 px-3 py-0.5 text-sm"
-                    onClick={retry}
+                    onClick={() => {
+                      setWillStartLoading(true);
+                      setTimeout(() => {
+                        retry();
+                        setWillStartLoading(false);
+                      }, 100);
+                    }}
                   >
                     <Icon name={IconName.Retry} className="w-[1em]" /> Retry
                   </Button>
                 </ErrorBanner>
+                {willStartLoading && <HideNotification />}
               </LayoutOutlet>
             );
           } else {
