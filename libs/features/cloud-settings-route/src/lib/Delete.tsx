@@ -38,7 +38,7 @@ export function Delete({ isLoading }: { isLoading: boolean }) {
                 </p>
               </div>
               <Button
-                className="self-start"
+                className="self-start flex gap-2 items-center"
                 variant="destructive"
                 onClick={() =>
                   setSearchParams(
@@ -50,6 +50,7 @@ export function Delete({ isLoading }: { isLoading: boolean }) {
                   )
                 }
               >
+                <Icon name={IconName.Trash} className="w-[1.25em] h-[1.25em]" />
                 Delete environment
               </Button>
             </div>

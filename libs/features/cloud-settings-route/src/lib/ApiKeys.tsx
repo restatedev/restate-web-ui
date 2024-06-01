@@ -65,12 +65,6 @@ function APIKeysList({ children }: PropsWithChildren<object>) {
 
   return (
     <>
-      <div>
-        <CreateApiKey
-          hasAnyKeys={(environmentDetails.data?.apiKeys ?? []).length > 0}
-        />
-      </div>
-      <DeleteAPIKey />
       <Suspense fallback={<LoadingKey />}>
         <Await resolve={apiKeysWithDetailsPromise}>
           {(apiKeysWithDetails) => (
@@ -86,6 +80,12 @@ function APIKeysList({ children }: PropsWithChildren<object>) {
           )}
         </Await>
       </Suspense>
+      <div>
+        <CreateApiKey
+          hasAnyKeys={(environmentDetails.data?.apiKeys ?? []).length > 0}
+        />
+      </div>
+      <DeleteAPIKey />
     </>
   );
 }
@@ -93,12 +93,12 @@ function APIKeysList({ children }: PropsWithChildren<object>) {
 function LoadingKeys() {
   return (
     <div className="flex flex-col gap-2">
-      <div className="relative h-[2.4rem] w-[10.5rem]">
-        <Loading className="rounded-xl" />
-      </div>
       <div className="flex flex-col">
         <LoadingKey />
         <LoadingKey />
+      </div>
+      <div className="relative h-[2.4rem] w-[10.5rem]">
+        <Loading className="rounded-xl" />
       </div>
     </div>
   );
