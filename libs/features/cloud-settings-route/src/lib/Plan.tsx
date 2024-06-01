@@ -40,6 +40,7 @@ export function Plan({ isLoading }: { isLoading: boolean }) {
                   href="https://restate.dev/get-restate-cloud/"
                   rel="noreferrer noopener"
                   className="inline"
+                  variant="secondary"
                 >
                   register your interest.
                 </Link>
