@@ -26,7 +26,7 @@ export function Plan({ isLoading }: { isLoading: boolean }) {
             <Loading className="rounded-xl" />
           ) : (
             <div className="bg-white rounded-xl border px-4 py-3 shadow-sm">
-              <h6 className="inline-flex items-center gap-2 font-medium">
+              <h6 className="inline-flex items-center gap-2 font-normal">
                 Free tier{' '}
                 <span className="font-medium leading-snug text-2xs inline-flex gap-1 items-center rounded-md px-2 py-0.5  bg-gray-50 ring-1 ring-inset ring-gray-500/30 text-gray-600">
                   BETA

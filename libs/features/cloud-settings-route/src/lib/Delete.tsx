@@ -28,7 +28,7 @@ export function Delete({ isLoading }: { isLoading: boolean }) {
           ) : (
             <div className="flex flex-col gap-2">
               <div className="bg-white rounded-xl border px-4 py-3 shadow-sm ">
-                <h6 className="inline-flex items-center gap-2 font-medium">
+                <h6 className="inline-flex items-center gap-2 font-normal">
                   Caution
                 </h6>
                 <p className="text-sm text-gray-500 mt-2">
