@@ -45,7 +45,10 @@ export function AccountSelector({ accounts }: AccountSelectorProps) {
             variant="secondary"
             className="flex gap-2 items-center bg-white pl-3 pr-2 shadow-sm h-full"
           >
-            <Icon name={IconName.RestateEnvironment} className="text-xl" />
+            <Icon
+              name={IconName.RestateEnvironment}
+              className="text-xl text-[#222452]"
+            />
             <Icon name={IconName.ChevronsUpDown} className="text-gray-400" />
           </Button>
         </DropdownTrigger>

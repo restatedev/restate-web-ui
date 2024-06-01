@@ -2,6 +2,7 @@ import {
   Await,
   useAsyncValue,
   useLoaderData,
+  useMatches,
   useRevalidator,
 } from '@remix-run/react';
 import { Spinner } from '@restate/ui/button';
@@ -34,9 +35,40 @@ export function EnvironmentPending(props: EnvironmentPendingProps) {
     <Suspense>
       <Await resolve={environmentsWithDetailsPromises[currentEnvironmentParam]}>
         <EnvironmentPendingContent />
+        <Title />
       </Await>
     </Suspense>
   );
+}
+
+function Title() {
+  const environmentDetails = useAsyncValue() as Awaited<
+    ReturnType<typeof describeEnvironment>
+  >;
+  const matches = useMatches();
+  const name = environmentDetails.data?.name;
+  const isInSettingsPage = matches.some(
+    ({ id }) =>
+      id === 'routes/accounts.$accountId.environments.$environmentId.settings'
+  );
+  const isInLogsPage = matches.some(
+    ({ id }) =>
+      id === 'routes/accounts.$accountId.environments.$environmentId.logs'
+  );
+
+  const title = [
+    isInSettingsPage ? 'Settings' : isInLogsPage ? 'Logs' : '',
+    name,
+    'restate Cloud',
+  ]
+    .filter(Boolean)
+    .join(' - ');
+
+  useEffect(() => {
+    document.title = title;
+  }, [title]);
+
+  return null;
 }
 
 function EnvironmentPendingContent() {

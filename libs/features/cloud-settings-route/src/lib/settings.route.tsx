@@ -7,6 +7,8 @@ import { Security } from './Security';
 import { ErrorFetchingEnvironmentDetails } from './ErrorFetchingEnvironmentDetails';
 import { useFetcher } from '@remix-run/react';
 import { useAccountParam } from '@restate/features/cloud/routes-utils';
+import { Plan } from './Plan';
+import { Delete } from './Delete';
 
 function Component() {
   const accountId = useAccountParam();
@@ -23,6 +25,8 @@ function Component() {
       <Http isLoading={isLoading} />
       <ApiKeys isLoading={isLoading} />
       <Security isLoading={isLoading} />
+      <Plan isLoading={isLoading} />
+      <Delete isLoading={isLoading} />
     </div>
   );
 }

@@ -20,7 +20,7 @@ interface SectionTitleProps {
 }
 
 const stylesSectionTitle = tv({
-  base: 'flex flex-col gap-1 col-start-1 text-base font-semibold leading-7 text-gray-900 [&_p]:text-sm [&_p]:leading-6 [&_p]:text-gray-600 [&_p]:font-normal',
+  base: 'flex flex-col gap-1 col-start-1 text-base sm:pt-3 font-semibold leading-7 text-gray-900 [&_p]:text-sm [&_p]:leading-6 [&_p]:text-gray-600 [&_p]:font-normal',
 });
 export function SectionTitle({
   children,

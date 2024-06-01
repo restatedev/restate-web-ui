@@ -21,11 +21,11 @@ export function CreateEnvironmentOnboarding() {
           <h3 className="text-lg font-medium leading-6 text-gray-900">
             Create environment
           </h3>
+          <p className="text-sm text-gray-500 mt-1">
+            Creating a restate Cloud environment is the quickest path to
+            securing a dedicated, fully managed restate instance.
+          </p>
         </div>
-        <p className="text-sm text-gray-500">
-          Setting up a restate Cloud environment is the most convenient method
-          to acquire your dedicated restate server instance.
-        </p>
         <div>
           <p className="text-sm text-gray-500">
             Please provide a name for your new environment

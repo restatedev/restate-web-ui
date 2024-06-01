@@ -166,7 +166,7 @@ function CreateApiForm({
         >
           <input hidden defaultValue="createApiKey" name="_action" />
           <div>
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="text-sm text-gray-500 mt-3">
               Please provide a brief description for your new API Key
             </p>
             <FormFieldInput
@@ -178,7 +178,7 @@ function CreateApiForm({
               maxLength={100}
             />
           </div>
-          <RadioGroup name="roleId" required>
+          <RadioGroup name="roleId" required className="mt-2">
             <FormFieldLabel>
               <span className="font-medium text-gray-800 text-base">Role</span>
               <span className="inline-block text-sm font-normal text-gray-500 mt-2">
@@ -206,7 +206,7 @@ function CreateApiForm({
               />
               <CustomRadio
                 value="rst:role::IngressAccess"
-                label="Ingress"
+                label="Invoke"
                 description={
                   <>
                     Can make{' '}
