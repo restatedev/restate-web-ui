@@ -38,7 +38,7 @@ export function CLI({ isLoading }: { isLoading: boolean }) {
           <LearnMore href="https://docs.restate.dev" />
         </p>
       </SectionTitle>
-      <SectionContent className="flex flex-col gap-2 relative min-h-[13.3rem]">
+      <SectionContent className="flex flex-col gap-2 relative min-h-[12rem]">
         <Suspense fallback={<Loading className="rounded-xl" />}>
           {isLoading ? (
             <Loading className="rounded-xl" />
