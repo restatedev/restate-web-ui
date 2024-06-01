@@ -1,7 +1,6 @@
 import {
   Links,
   Meta,
-  NavigateFunction,
   Outlet,
   Path,
   Scripts,
@@ -44,6 +43,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>restate Cloud</title>
         <Meta />
         <Links />
       </head>

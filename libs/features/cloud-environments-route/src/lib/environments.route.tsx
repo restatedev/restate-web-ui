@@ -15,7 +15,6 @@ import { clientAction } from './action';
 import { CreateEnvironmentOnboarding } from './CreateEnvironmentOnboarding';
 import { Nav, NavItem } from '@restate/ui/nav';
 import { EnvironmentPending } from './EnvironmentPending';
-import { Icon, IconName } from '@restate/ui/icons';
 
 function Component() {
   const accountsResponse =
