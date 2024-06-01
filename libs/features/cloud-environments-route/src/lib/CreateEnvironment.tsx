@@ -43,11 +43,11 @@ export function CreateEnvironment() {
             Create environment
           </h3>
           <p className="text-sm text-gray-500">
-            Setting up a restate Cloud environment is the most convenient method
-            to acquire your dedicated restate server instance.
+            Creating a restate Cloud environment is the quickest path to
+            securing a dedicated, fully managed restate instance.
           </p>
           <div>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 mt-4">
               Please provide a name for your new environment.
             </p>
             <fetcher.Form id={formId} method="POST" action={action}>

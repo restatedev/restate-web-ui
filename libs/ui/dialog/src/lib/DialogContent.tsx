@@ -21,7 +21,7 @@ const overlayStyles = tv({
 });
 
 const modalStyles = tv({
-  base: 'w-full max-w-sm max-h-full overflow-auto rounded-xl [clip-path:inset(0_0_0_0_round_.75rem)] bg-white text-left align-middle text-slate-700  shadow-lg shadow-zinc-800/5 bg-clip-padding border border-black/5',
+  base: 'w-full max-w-sm max-h-full overflow-auto rounded-[1.125rem] [clip-path:inset(0_0_0_0_round_1.125rem)] bg-white text-left align-middle text-slate-700  shadow-lg shadow-zinc-800/5 border border-black/5',
   variants: {
     isEntering: {
       true: 'animate-in zoom-in-105 ease-out duration-200',
@@ -48,7 +48,7 @@ export function DialogContent({
           modalStyles({ ...renderProps, className })
         )}
       >
-        <AriaDialog className="outline bg-gray-100 rounded-xl outline-0 p-1.5 [[data-placement]>&]:p-4 max-h-[inherit] overflow-auto relative">
+        <AriaDialog className="outline bg-gray-100 rounded-[1.125rem] outline-0 p-1.5 [[data-placement]>&]:p-4 max-h-[inherit] overflow-auto relative">
           <DialogFooterContainer>
             <div className="bg-white p-6 border rounded-xl">{children}</div>
           </DialogFooterContainer>
