@@ -26,10 +26,7 @@ import {
 import { Icon, IconName } from '@restate/ui/icons';
 import { EnvironmentStatus, MiniEnvironmentStatus } from './EnvironmentStatus';
 import { CreateEnvironment } from './CreateEnvironment';
-import {
-  CREATE_ENVIRONMENT_PARAM_NAME,
-  DELETE_ENVIRONMENT_PARAM_NAME,
-} from './constants';
+import { CREATE_ENVIRONMENT_PARAM_NAME } from './constants';
 import { DeleteEnvironment } from './DeleteEnvironment';
 import { describeEnvironment } from '@restate/data-access/cloud/api-client';
 import { InlineError } from '@restate/ui/error';
@@ -182,25 +179,6 @@ function EnvironmentSelectorContent() {
             <div className="flex items-center gap-2">
               <Icon name={IconName.Plus} className="opacity-80" />
               Create environment
-            </div>
-          </DropdownItem>
-        </DropdownMenu>
-        <DropdownMenu
-          autoFocus={false}
-          onSelect={() =>
-            setSearchParams(
-              (perv) => {
-                perv.set(DELETE_ENVIRONMENT_PARAM_NAME, 'true');
-                return perv;
-              },
-              { preventScrollReset: true }
-            )
-          }
-        >
-          <DropdownItem destructive>
-            <div className="flex items-center gap-2">
-              <Icon name={IconName.Trash} className="opacity-80" />
-              Delete environment
             </div>
           </DropdownItem>
         </DropdownMenu>

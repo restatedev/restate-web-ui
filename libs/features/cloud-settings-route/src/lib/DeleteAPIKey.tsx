@@ -44,7 +44,7 @@ export function DeleteAPIKey() {
       <DialogContent>
         <div className="flex flex-col gap-2">
           <h3 className="text-lg font-medium leading-6 text-gray-900">
-            Delete API key
+            Confirm API key deletion
           </h3>
           <p className="text-sm text-gray-500">
             Are you sure you want to delete this API key? Deleting it will

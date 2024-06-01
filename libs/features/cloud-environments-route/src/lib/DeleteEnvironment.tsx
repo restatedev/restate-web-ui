@@ -44,7 +44,7 @@ export function DeleteEnvironment() {
       <DialogContent>
         <div className="flex flex-col gap-2">
           <h3 className="text-lg font-medium leading-6 text-gray-900">
-            Delete environment
+            Confirm environment deletion
           </h3>
           <p className="text-sm text-gray-500">
             Deleting this environment will permanently erase all associated
@@ -54,7 +54,7 @@ export function DeleteEnvironment() {
           <fetcher.Form id={formId} method="DELETE" action={action}>
             <input name="environmentId" type="hidden" value={environmentId} />
             <p className="text-sm text-gray-500 mt-2">
-              Please confirm to proceed or cancel to keep the API key.
+              Please confirm to proceed or cancel to keep the environment.
             </p>
             <FormFieldInput
               autoFocus
