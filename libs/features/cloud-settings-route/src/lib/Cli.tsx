@@ -71,8 +71,8 @@ export function CLI({ isLoading }: { isLoading: boolean }) {
                       authenticating proxy
                     </Snippet>
                     <Snippet>
-                      restate cloud env proxy
-                      <SnippetCopy copyText="restate cloud env proxy curl" />
+                      restate cloud env tunnel
+                      <SnippetCopy copyText="restate cloud env tunnel" />
                     </Snippet>
                     <Snippet>
                       # curl http://localhost:8080/MyService/MyHandler
