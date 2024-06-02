@@ -22,8 +22,8 @@ function Component() {
         retry={() => load(`/accounts/${accountId}/environments`)}
       />
       <CLI isLoading={isLoading} />
-      <Http isLoading={isLoading} />
       <ApiKeys isLoading={isLoading} />
+      <Http isLoading={isLoading} />
       <Security isLoading={isLoading} />
       <Plan isLoading={isLoading} />
       <Delete isLoading={isLoading} />

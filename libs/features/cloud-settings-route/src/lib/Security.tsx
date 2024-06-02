@@ -51,7 +51,7 @@ export function Security({ isLoading }: { isLoading: boolean }) {
         <p>
           For secure and reliable communications between your services and
           restate Cloud, please follow these guidelines.{' '}
-          <LearnMore href="https://docs.restate.dev" />
+          <LearnMore href="https://docs.restate.dev/deploy/cloud#securing-your-services" />
         </p>
       </SectionTitle>
       <SectionContent className="flex flex-col relative min-h-[12rem]">
@@ -67,8 +67,8 @@ export function Security({ isLoading }: { isLoading: boolean }) {
                       AWS Lambda
                       <span className="text-gray-500 text-sm block mt-2 pointer-events-none">
                         To invoke services running on AWS Lambda, restate Cloud
-                        must assume an AWS identity within the same account that
-                        the Lambda is deployed.
+                        must assume an AWS identity that has permission to call
+                        the Lambda.
                       </span>
                     </Summary>
                     <div className="text-sm flex flex-col gap-2">

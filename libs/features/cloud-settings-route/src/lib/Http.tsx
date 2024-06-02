@@ -29,9 +29,9 @@ export function Http({ isLoading }: { isLoading: boolean }) {
           HTTP
         </span>
         <p>
-          To invoke your handlers or manage your services over HTTP, simply
-          include an API key with your instance URLs.{' '}
-          <LearnMore href="https://docs.restate.dev" />
+          To invoke your handlers over HTTP, simply include an API key with your
+          instance URLs.{' '}
+          <LearnMore href="https://docs.restate.dev/deploy/cloud#api-tokens" />
         </p>
       </SectionTitle>
       <SectionContent className="flex flex-col gap-2 relative min-h-[10rem]">
@@ -43,8 +43,7 @@ export function Http({ isLoading }: { isLoading: boolean }) {
               {(environmentDetails) => (
                 <Code>
                   <Snippet>
-                    # Here is your ingress URL for invoking your handlers
-                    (example use case):
+                    # Here is your Ingress URL for invoking your handlers:
                   </Snippet>
 
                   <Snippet>
@@ -57,10 +56,10 @@ export function Http({ isLoading }: { isLoading: boolean }) {
 
                   <Snippet className="mt-4">
                     # Here is your Admin API URL for managing services,
-                    deployments and invocations (example use case):
+                    deployments and invocations:
                   </Snippet>
                   <Snippet>
-                    curl {environmentDetails?.data?.adminBaseUrl}/deployments -H
+                    curl {environmentDetails?.data?.adminBaseUrl}/health -H
                     "Authorization: Bearer $API_KEY"
                     <SnippetCopy
                       copyText={environmentDetails?.data?.adminBaseUrl ?? ''}
