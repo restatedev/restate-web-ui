@@ -31,6 +31,7 @@ export async function authWithCode(url: URL) {
     return getLoginUrl(url).href;
   }
   const redirectUrl = getRedirectUrl();
+
   if (redirectUrl) {
     removeRedirectUrl();
     return redirectUrl;
