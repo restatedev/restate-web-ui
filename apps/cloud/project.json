@@ -12,13 +12,13 @@
       },
       "configurations": {
         "mock": {
-          "command": "cd apps/cloud && RESTATE_CLOUD_LOGIN_URL='https://restate-cloud-signup-test.auth.eu-central-1.amazoncognito.com/login?response_type=token&client_id=1v1rkegmilgjlphium3ksgurek&redirect_uri=https://restate-web-ui.pages.dev' RESTATE_CLOUD_API_URL=http://localhost:4200 ../../node_modules/.bin/remix vite:dev --port=4200"
+          "command": "cd apps/cloud && RESTATE_AUTH_URL=https://auth.dev.restate.cloud RESTATE_AUTH_CLIENT_ID=1v1rkegmilgjlphium3ksgurek RESTATE_CLOUD_API_URL=http://localhost:4200 ../../node_modules/.bin/remix vite:dev --port=4200"
         },
         "local-prod": {
-          "command": "cd apps/cloud && RESTATE_CLOUD_LOGIN_URL='https://restate-cloud.auth.us-east-2.amazoncognito.com/login?response_type=token&client_id=5q3dsdnrr5r400jvibd8d3k66l&redirect_uri=https://restate-web-ui.pages.dev' RESTATE_CLOUD_API_URL=https://api.us.restate.cloud/cloud ../../node_modules/.bin/remix vite:dev --port=4200"
+          "command": "cd apps/cloud && RESTATE_AUTH_URL=https://auth.restate.cloud RESTATE_AUTH_CLIENT_ID=5q3dsdnrr5r400jvibd8d3k66l RESTATE_CLOUD_API_URL=https://api.us.restate.cloud/cloud ../../node_modules/.bin/remix vite:dev --port=4200"
         },
         "local-dev": {
-          "command": "cd apps/cloud && RESTATE_CLOUD_LOGIN_URL='https://auth.dev.restate.cloud/login?client_id=1v1rkegmilgjlphium3ksgurek&response_type=token&scope=aws.cognito.signin.user.admin+email+openid+phone+profile&redirect_uri=https://restate-web-ui.pages.dev' RESTATE_CLOUD_API_URL=https://api.dev.restate.cloud/cloud ../../node_modules/.bin/remix vite:dev --port=4200"
+          "command": "cd apps/cloud && RESTATE_AUTH_URL=https://auth.dev.restate.cloud RESTATE_AUTH_CLIENT_ID=1v1rkegmilgjlphium3ksgurek RESTATE_CLOUD_API_URL=https://api.dev.restate.cloud/cloud ../../node_modules/.bin/remix vite:dev --port=4200"
         }
       }
     },

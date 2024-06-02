@@ -3,7 +3,7 @@
  * Currently, we save the token there to enable users to authenticate across multiple sessions.
  */
 
-import { LOGIN_URL } from './loginUrl';
+import { getLoginUrl } from './loginUrl';
 import { setRedirectUrl } from './redirectUrl';
 
 const ACCESS_TOKEN_KEY = 'atk';
@@ -25,5 +25,5 @@ export function logOut({
     setRedirectUrl();
   }
   localStorage.removeItem(ACCESS_TOKEN_KEY);
-  window.location.assign(LOGIN_URL);
+  window.location.assign(getLoginUrl(new URL(window.location.href)));
 }

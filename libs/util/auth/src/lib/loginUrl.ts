@@ -1,9 +1,16 @@
-let url: URL | null = null;
-try {
-  url = new URL(process.env.RESTATE_CLOUD_LOGIN_URL);
-} catch (error) {
-  throw new Error(
-    'Please provide a valid login url via RESTATE_CLOUD_LOGIN_URL'
+import { getAuthRedirectUri } from './authRedirectUri';
+
+export function getLoginUrl(url: URL) {
+  const redirectUrl = new URL(window.location.href);
+  redirectUrl.pathname = '/auth';
+  redirectUrl.search = '';
+  url = new URL(
+    `${process.env.RESTATE_AUTH_URL}/login?client_id=${
+      process.env.RESTATE_AUTH_CLIENT_ID
+    }&response_type=code&redirect_uri=${
+      getAuthRedirectUri(new URL(window.location.href)).href
+    }`
   );
+
+  return url;
 }
-export const LOGIN_URL = url.href;
