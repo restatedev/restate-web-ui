@@ -16,7 +16,7 @@ const awsIdentityRole = (id: string) =>
       Sid: 'AllowRestateCloudToAssumeRole',
       Effect: 'Allow',
       Principal: {
-        AWS: 'AROAZQ3DNV5IY6KP4ODO4',
+        AWS: 'arn:aws:iam::654654156625:role/RestateCloud',
       },
       Action: ['sts:AssumeRole', 'sts:TagSession'],
       Condition: {
