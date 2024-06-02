@@ -34,8 +34,8 @@ export function CLI({ isLoading }: { isLoading: boolean }) {
           CLI
         </span>
         <p>
-          Connect restate CLI to your restate cloud environment.{' '}
-          <LearnMore href="https://docs.restate.dev" />
+          Connect restate CLI to your restate Cloud environment.{' '}
+          <LearnMore href="https://docs.restate.dev/deploy/cloud#creating-your-first-environment" />
         </p>
       </SectionTitle>
       <SectionContent className="flex flex-col gap-2 relative min-h-[12rem]">
@@ -71,8 +71,8 @@ export function CLI({ isLoading }: { isLoading: boolean }) {
                       authenticating proxy
                     </Snippet>
                     <Snippet>
-                      restate cloud env proxy
-                      <SnippetCopy copyText="restate cloud env proxy curl" />
+                      restate cloud env tunnel
+                      <SnippetCopy copyText="restate cloud env tunnel" />
                     </Snippet>
                     <Snippet>
                       # curl http://localhost:8080/MyService/MyHandler

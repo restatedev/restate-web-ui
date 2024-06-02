@@ -39,7 +39,8 @@ export function ApiKeys({ isLoading }: { isLoading: boolean }) {
         </span>
         <p>
           To interact with your restate Cloud environment programmatically, you
-          will need an API key. <LearnMore href="https://docs.restate.dev" />
+          will need an API key.{' '}
+          <LearnMore href="https://docs.restate.dev/deploy/cloud#api-tokens" />
         </p>
       </SectionTitle>
       <SectionContent className="flex flex-col gap-2 relative">
