@@ -30,6 +30,8 @@ import { CREATE_ENVIRONMENT_PARAM_NAME } from './constants';
 import { DeleteEnvironment } from './DeleteEnvironment';
 import { describeEnvironment } from '@restate/data-access/cloud/api-client';
 import { InlineError } from '@restate/ui/error';
+import { Version } from './Version';
+import { EnvironmentStatusProvider } from './EnvironmentStatusContext';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface EnvironmentSelectorProps {}
@@ -89,101 +91,106 @@ function EnvironmentSelectorContent() {
     .at(-1);
 
   return (
-    <Dropdown>
-      <DropdownTrigger>
-        <Button
-          variant="secondary"
-          className="flex items-center gap-2 px-2 py-1 bg-transparent border-none shadow-none"
-        >
-          <div className="flex flex-col items-start">
-            <div className="grid gap-x-2 auto-cols-auto items-center justify-items-start text-start">
-              {environmentDetails?.data?.status && (
-                <div className="row-start-1">
-                  <MiniEnvironmentStatus
-                    status={environmentDetails.data.status}
-                  />
+    <EnvironmentStatusProvider>
+      <Dropdown>
+        <DropdownTrigger>
+          <Button
+            variant="secondary"
+            className="flex items-center gap-2 px-2 py-1 bg-transparent border-none shadow-none"
+          >
+            <div className="flex flex-col items-start">
+              <div className="grid gap-x-2 [grid-template-columns:12px_1fr] items-center justify-items-start text-start">
+                {environmentDetails?.data?.status && (
+                  <div className="row-start-1">
+                    <MiniEnvironmentStatus
+                      environmentId={environmentDetails.data.environmentId}
+                    />
+                  </div>
+                )}
+                <div className="truncate row-start-1 col-start-2 w-full flex items-center">
+                  <span className="flex-auto">
+                    {environmentDetails?.data?.name ?? currentEnvironmentId}
+                  </span>
+                  <Version />
                 </div>
-              )}
-              <div className="truncate row-start-1 w-full">
-                {environmentDetails?.data?.name ?? currentEnvironmentId}
+                <div className="truncate font-mono text-gray-500 col-start-1 col-span-2 row-start-2 w-full text-code flex items-center gap-1">
+                  {environmentDetails?.data?.environmentId}
+                </div>
+                {environmentDetails?.error && (
+                  <InlineError className="truncate row-start-2 w-full col-start-1">
+                    Failed to load the environment
+                  </InlineError>
+                )}
               </div>
-              <div className="truncate text-gray-500 col-start-2 row-start-2 w-full text-code">
-                {environmentDetails?.data?.environmentId}
-              </div>
-              {environmentDetails?.error && (
-                <InlineError className="truncate row-start-2 w-full col-start-1">
-                  Failed to load the environment
-                </InlineError>
-              )}
             </div>
-          </div>
-          <Icon
-            name={IconName.ChevronsUpDown}
-            className="text-gray-400 flex-shrink-0"
-          />
-        </Button>
-      </DropdownTrigger>
+            <Icon
+              name={IconName.ChevronsUpDown}
+              className="text-gray-400 flex-shrink-0"
+            />
+          </Button>
+        </DropdownTrigger>
 
-      <DropdownPopover>
-        {(environmentList.data?.environments ?? []).length > 0 && (
-          <DropdownSection title="Switch environment" className="max-w-xl">
-            <DropdownMenu
-              selectable
-              {...(currentEnvironmentId && {
-                selectedItems: [currentEnvironmentId],
-              })}
-            >
-              {environmentList.data?.environments.map((environment) => (
-                <DropdownItem
-                  href={toEnvironmentRoute(
-                    currentAccountId,
-                    environment.environmentId,
-                    relativePath + location.search
-                  )}
-                  key={environment.environmentId}
-                  value={environment.environmentId}
-                  className="group"
-                >
-                  <Suspense fallback={<p>loading env</p>}>
-                    <Await
-                      resolve={
-                        environmentsWithDetailsPromises[
-                          environment.environmentId
-                        ]
-                      }
-                      errorElement={<p>Failed to load</p>}
-                    >
-                      <EnvironmentItem
-                        environmentId={environment.environmentId}
-                      />
-                    </Await>
-                  </Suspense>
-                </DropdownItem>
-              ))}
-            </DropdownMenu>
-          </DropdownSection>
-        )}
-        <DropdownMenu
-          autoFocus={false}
-          onSelect={() =>
-            setSearchParams(
-              (perv) => {
-                perv.set(CREATE_ENVIRONMENT_PARAM_NAME, 'true');
-                return perv;
-              },
-              { preventScrollReset: true }
-            )
-          }
-        >
-          <DropdownItem>
-            <div className="flex items-center gap-2">
-              <Icon name={IconName.Plus} className="opacity-80" />
-              Create environment
-            </div>
-          </DropdownItem>
-        </DropdownMenu>
-      </DropdownPopover>
-    </Dropdown>
+        <DropdownPopover>
+          {(environmentList.data?.environments ?? []).length > 0 && (
+            <DropdownSection title="Switch environment" className="max-w-xl">
+              <DropdownMenu
+                selectable
+                {...(currentEnvironmentId && {
+                  selectedItems: [currentEnvironmentId],
+                })}
+              >
+                {environmentList.data?.environments.map((environment) => (
+                  <DropdownItem
+                    href={toEnvironmentRoute(
+                      currentAccountId,
+                      environment.environmentId,
+                      relativePath + location.search
+                    )}
+                    key={environment.environmentId}
+                    value={environment.environmentId}
+                    className="group"
+                  >
+                    <Suspense fallback={<p>Loading environment details</p>}>
+                      <Await
+                        resolve={
+                          environmentsWithDetailsPromises[
+                            environment.environmentId
+                          ]
+                        }
+                        errorElement={<p>Failed to load</p>}
+                      >
+                        <EnvironmentItem
+                          environmentId={environment.environmentId}
+                        />
+                      </Await>
+                    </Suspense>
+                  </DropdownItem>
+                ))}
+              </DropdownMenu>
+            </DropdownSection>
+          )}
+          <DropdownMenu
+            autoFocus={false}
+            onSelect={() =>
+              setSearchParams(
+                (perv) => {
+                  perv.set(CREATE_ENVIRONMENT_PARAM_NAME, 'true');
+                  return perv;
+                },
+                { preventScrollReset: true }
+              )
+            }
+          >
+            <DropdownItem>
+              <div className="flex items-center gap-2">
+                <Icon name={IconName.Plus} className="opacity-80" />
+                Create environment
+              </div>
+            </DropdownItem>
+          </DropdownMenu>
+        </DropdownPopover>
+      </Dropdown>
+    </EnvironmentStatusProvider>
   );
 }
 
@@ -196,7 +203,9 @@ function EnvironmentItem({ environmentId }: { environmentId: string }) {
     <div className="flex flex-col w-full">
       <div className="inline-flex gap-2 items-center pt-2 truncate">
         {environmentDetails?.data?.status && (
-          <EnvironmentStatus status={environmentDetails.data.status} />
+          <EnvironmentStatus
+            environmentId={environmentDetails.data.environmentId}
+          />
         )}
         <span className="truncate text-gray-600 group-focus:text-gray-50 text-sm">
           {environmentDetails?.data?.name ?? environmentId}

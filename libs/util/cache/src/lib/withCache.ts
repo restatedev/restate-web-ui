@@ -14,7 +14,7 @@ function stableHash(params?: undefined | Record<string, any>) {
   }
 
   const hash = JSON.stringify(params, (_, value) =>
-    value.constructor === Object
+    value?.constructor === Object
       ? Object.keys(value)
           .sort()
           .reduce((result, key) => {
@@ -28,19 +28,34 @@ function stableHash(params?: undefined | Record<string, any>) {
 }
 
 export function withCache<T, O, P extends undefined>(
-  fetcher: (params?: undefined) => Promise<FetchResponse<T, O>>
+  fetcher: (
+    params?: undefined,
+    options?: Pick<RequestInit, 'signal' | 'mode'>
+  ) => Promise<FetchResponse<T, O>>
 ): {
   invalidate: (params?: undefined) => void;
-  fetch: (params?: undefined) => Promise<FetchResponse<T, O>>;
+  fetch: (
+    params?: undefined,
+    options?: Pick<RequestInit, 'signal' | 'mode'>
+  ) => Promise<FetchResponse<T, O>>;
 };
 export function withCache<T, O, P extends Record<string, any>>(
-  fetcher: (params: P) => Promise<FetchResponse<T, O>>
+  fetcher: (
+    params: P,
+    options?: Pick<RequestInit, 'signal' | 'mode'>
+  ) => Promise<FetchResponse<T, O>>
 ): {
   invalidate: (params: P) => void;
-  fetch: (params: P) => Promise<FetchResponse<T, O>>;
+  fetch: (
+    params: P,
+    options?: Pick<RequestInit, 'signal' | 'mode'>
+  ) => Promise<FetchResponse<T, O>>;
 };
 export function withCache<T, O, P extends Record<string, any> | undefined>(
-  fetcher: (params: P) => Promise<FetchResponse<T, O>>
+  fetcher: (
+    params: P,
+    options?: Pick<RequestInit, 'signal' | 'mode'>
+  ) => Promise<FetchResponse<T, O>>
 ) {
   const cache = new Map<string, Promise<FetchResponse<T, O>> | null>();
 
@@ -48,14 +63,15 @@ export function withCache<T, O, P extends Record<string, any> | undefined>(
     invalidate: (params?: P) => {
       cache.delete(stableHash(params));
     },
-    fetch: (params: P) => {
+    fetch: (params: P, options?: Pick<RequestInit, 'signal' | 'mode'>) => {
       const paramsHash = stableHash(params);
       const cachedResponse = cache.get(paramsHash);
+
       if (cachedResponse) {
         return cachedResponse;
       }
 
-      const promise = fetcher(params);
+      const promise = fetcher(params, options);
       cache.set(paramsHash, promise);
       promise
         .then((res) => {

@@ -1,10 +1,10 @@
 import { Environment } from '@restate/data-access/cloud/api-client';
 import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from 'tailwind-variants';
+import { Status, useEnvironmentStatus } from './EnvironmentStatusContext';
 
-interface EnvironmentStatusProps {
-  status?: Environment['status'];
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+interface EnvironmentStatusProps extends Pick<Environment, 'environmentId'> {}
 
 const miniStyles = tv({
   base: '',
@@ -20,21 +20,30 @@ const miniStyles = tv({
         container: 'text-yellow-500',
         animation: 'animate-ping',
       },
+      DEGRADED: {
+        container: 'text-yellow-500',
+        animation: 'animate-ping',
+      },
       ACTIVE: { container: 'text-green-500', animation: 'animate-ping' },
+      HEALTHY: { container: 'text-green-500', animation: 'animate-ping' },
       FAILED: { container: 'text-red-500', animation: 'animate-ping' },
       DELETED: { container: 'text-gray-400', animation: 'hidden' },
     },
   },
 });
 
-const ICON_NAMES: Record<Environment['status'], IconName> = {
+const ICON_NAMES: Record<Status, IconName> = {
   PENDING: IconName.Circle,
+  HEALTHY: IconName.Circle,
   ACTIVE: IconName.Circle,
   FAILED: IconName.TriangleAlert,
+  DEGRADED: IconName.TriangleAlert,
   DELETED: IconName.Circle,
 };
 
-export function MiniEnvironmentStatus({ status }: EnvironmentStatusProps) {
+export function MiniEnvironmentStatus(props: EnvironmentStatusProps) {
+  const status = useEnvironmentStatus(props.environmentId);
+
   if (!status) {
     return null;
   }
@@ -62,7 +71,15 @@ const styles = tv({
         container: 'bg-yellow-50 text-yellow-800 ring-yellow-600/20',
         icon: 'text-yellow-500',
       },
+      DEGRADED: {
+        container: 'bg-yellow-50 text-yellow-800 ring-yellow-600/20',
+        icon: 'text-yellow-500',
+      },
       ACTIVE: {
+        container: 'bg-green-50 text-green-700 ring-green-600/20',
+        icon: 'fill-green-500',
+      },
+      HEALTHY: {
         container: 'bg-green-50 text-green-700 ring-green-600/20',
         icon: 'fill-green-500',
       },
@@ -78,7 +95,8 @@ const styles = tv({
   },
 });
 
-export function EnvironmentStatus({ status }: EnvironmentStatusProps) {
+export function EnvironmentStatus(props: EnvironmentStatusProps) {
+  const status = useEnvironmentStatus(props.environmentId);
   if (!status) {
     return null;
   }
