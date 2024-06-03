@@ -28,4 +28,5 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           projectName: 'restate-web-ui'
           directory: 'dist/apps/cloud'
+          branch: prod
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
