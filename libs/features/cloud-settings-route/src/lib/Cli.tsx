@@ -48,7 +48,7 @@ export function CLI({ isLoading }: { isLoading: boolean }) {
           <LearnMore href="https://docs.restate.dev/deploy/cloud#creating-your-first-environment" />
         </p>
       </SectionTitle>
-      <SectionContent className="flex flex-col gap-2 relative min-h-[12rem]">
+      <SectionContent className="flex flex-col gap-2 relative min-h-[11.375rem]">
         <Suspense fallback={<Loading className="rounded-xl" />}>
           {isLoading ? (
             <Loading className="rounded-xl" />
