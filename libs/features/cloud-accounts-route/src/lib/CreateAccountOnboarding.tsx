@@ -17,11 +17,11 @@ export function CreateAccountOnboarding() {
         action={action}
         className="flex flex-col  max-w-md mx-auto"
       >
-        <h3 className="pl-5 mb-4 text-xl font-medium leading-6 text-gray-800 flex items-center gap-2">
+        <h3 className="pl-5 mb-4 text-[#222452] text-xl font-medium leading-6 flex items-center gap-2">
           Welcome to
           <Icon
             name={IconName.RestateEnvironment}
-            className="inline-block text-[#222452] drop-shadow-sm"
+            className="inline-block drop-shadow-sm"
           />
           Cloud!
         </h3>
