@@ -107,13 +107,13 @@ function EnvironmentSelectorContent() {
                     />
                   </div>
                 )}
-                <div className="truncate row-start-1 col-start-2 w-full flex items-center">
-                  <span className="flex-auto">
+                <div className="truncate row-start-1 col-start-2 w-full flex items-center gap-2">
+                  <span className="flex-auto truncate">
                     {environmentDetails?.data?.name ?? currentEnvironmentId}
                   </span>
                   <Version />
                 </div>
-                <div className="truncate font-mono text-gray-500 col-start-1 col-span-2 row-start-2 w-full text-code flex items-center gap-1">
+                <div className="truncate font-mono text-gray-500 inline-block col-start-2 col-span-1 row-start-2 w-full text-code items-center gap-1">
                   {environmentDetails?.data?.environmentId}
                 </div>
                 {environmentDetails?.error && (

@@ -42,9 +42,9 @@ export function Delete({ isLoading }: { isLoading: boolean }) {
               {(environmentDetails) => (
                 <div className="flex flex-col gap-2">
                   <div className="bg-white rounded-xl border px-4 py-3 shadow-sm ">
-                    <h6 className="inline-flex items-center gap-2 font-normal text-red-800">
+                    <h6 className="inline font-normal text-red-800">
                       Delete{' '}
-                      <span className="font-mono leading-snug text-sm inline-flex gap-1 items-center rounded-lg px-2 py-0.5 bg-red-50 text-red-600">
+                      <span className="font-mono leading-snug text-sm inline-flex gap-1 items-center rounded-lg px-1 py-0.5 bg-red-50 text-red-600">
                         {environmentDetails?.data?.name}
                       </span>
                     </h6>

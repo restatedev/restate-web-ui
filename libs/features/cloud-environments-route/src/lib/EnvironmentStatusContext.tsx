@@ -35,16 +35,18 @@ export function EnvironmentStatusProvider({
         ({ data }) => {
           if (data) {
             setAllStatus((s) => ({ ...s, [data.environmentId]: data.status }));
-            fetch(`${data.adminBaseUrl}/health`, {
-              headers: {
-                Authorization: `Bearer ${getAccessToken()}`,
-              },
-            }).then((res) => {
-              setAllStatus((s) => ({
-                ...s,
-                [data.environmentId]: res.ok ? 'HEALTHY' : 'DEGRADED',
-              }));
-            });
+            if (data.status === 'ACTIVE') {
+              fetch(`${data.adminBaseUrl}/health`, {
+                headers: {
+                  Authorization: `Bearer ${getAccessToken()}`,
+                },
+              }).then((res) => {
+                setAllStatus((s) => ({
+                  ...s,
+                  [data.environmentId]: res.ok ? 'HEALTHY' : 'DEGRADED',
+                }));
+              });
+            }
           }
         }
       );
@@ -64,7 +66,11 @@ export function EnvironmentStatusProvider({
 
     if (currentEnvironmentDetailsPromise) {
       currentEnvironmentDetailsPromise.then(({ data }) => {
-        if (data) {
+        if (
+          data &&
+          data.status === 'ACTIVE' &&
+          currentEnvironmentId === data.environmentId
+        ) {
           intervalId = setInterval(() => {
             fetch(`${data.adminBaseUrl}/health`, {
               headers: {
@@ -79,7 +85,7 @@ export function EnvironmentStatusProvider({
                 }));
               }
             });
-          }, 10000);
+          }, 60000);
         }
       });
     }
