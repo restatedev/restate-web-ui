@@ -12,6 +12,7 @@ import invariant from 'tiny-invariant';
 import { Loading } from './Loading';
 import { Icon, IconName } from '@restate/ui/icons';
 import { LearnMore } from './LearnMore';
+import { Link } from '@restate/ui/link';
 
 export function CLI({ isLoading }: { isLoading: boolean }) {
   const environmentId = useEnvironmentParam();
@@ -34,7 +35,16 @@ export function CLI({ isLoading }: { isLoading: boolean }) {
           CLI
         </span>
         <p>
-          Connect restate CLI to your restate Cloud environment.{' '}
+          <Link
+            href="https://docs.restate.dev/operate/cli#installation"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="inline"
+            variant="secondary"
+          >
+            Install the restate CLI
+          </Link>{' '}
+          and connect it to your restate Cloud environment.{' '}
           <LearnMore href="https://docs.restate.dev/deploy/cloud#creating-your-first-environment" />
         </p>
       </SectionTitle>
@@ -52,12 +62,10 @@ export function CLI({ isLoading }: { isLoading: boolean }) {
                 const environmentName = environmentDetails?.data?.name;
                 return (
                   <Code>
-                    <Snippet># brew install restatedev/tap/restate</Snippet>
                     <Snippet>
                       restate cloud login
                       <SnippetCopy copyText="restate cloud login" />
                     </Snippet>
-                    <br />
                     <Snippet>
                       restate cloud env configure {accountName}/
                       {environmentName}
