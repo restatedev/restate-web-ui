@@ -198,7 +198,7 @@ function EnvironmentItem({ environmentId }: { environmentId: string }) {
         {environmentDetails?.data?.status && (
           <EnvironmentStatus status={environmentDetails.data.status} />
         )}
-        <span className="truncate text-gray-600 group-focus:text-gray-300 text-sm">
+        <span className="truncate text-gray-600 group-focus:text-gray-50 text-sm">
           {environmentDetails?.data?.name ?? environmentId}
         </span>
       </div>
@@ -209,7 +209,7 @@ function EnvironmentItem({ environmentId }: { environmentId: string }) {
       )}
       {environmentDetails?.data && (
         <div className="inline-flex gap-2 items-center pt-2">
-          <span className="truncate text-gray-500 group-focus:text-gray-300 text-code">
+          <span className="truncate font-mono text-gray-500 group-selected:font-medium group-focus:text-gray-200 text-xs pl-1">
             {environmentDetails?.data?.environmentId}
           </span>
         </div>

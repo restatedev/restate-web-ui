@@ -62,8 +62,10 @@ export function AccountSelector({ accounts }: AccountSelectorProps) {
                   value={account.accountId}
                 >
                   <div>
-                    <div>{account.name}</div>
-                    <div className="text-gray-500 group-focus:text-gray-300 text-code">
+                    <div className="truncate text-gray-600 group-focus:text-gray-50 text-sm">
+                      {account.name}
+                    </div>
+                    <div className="text-gray-500 group-selected:font-medium group-focus:text-gray-200 text-xs">
                       {account.accountId}
                     </div>
                   </div>
