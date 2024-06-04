@@ -58,7 +58,9 @@ export function ApiKeyItem({
       <div className={keyStyles({ state: apiKeyDetails.state })}>
         <div className="flex flex-col gap-1">
           <div className="flex gap-x-2 flex-wrap gap-y-1">
-            <code className="text-sm text-gray-600">{apiKeyDetails.keyId}</code>
+            <code className="text-sm text-gray-600 inline-flex items-center">
+              {apiKeyDetails.keyId}
+            </code>
             <RoleId roleId={apiKeyDetails.roleId} />
           </div>
           <div className="text-gray-500 flex gap-2 text-sm">

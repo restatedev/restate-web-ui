@@ -140,7 +140,7 @@ const describeEnvironmentHandler = http.post<
       })),
     signingPublicKey: environment.signingPublicKey,
     ingressBaseUrl: environment.ingressBaseUrl,
-    adminBaseUrl: environment.adminBaseUrl,
+    adminBaseUrl: environment.adminBaseUrl + `/${environment.environmentId}`,
   });
 });
 
@@ -457,6 +457,27 @@ const getEnvironmentLogsHandler = http.post<
   });
 });
 
+const openApiHandler = http.get(
+  '/admin/:envId/openapi',
+  async ({ request }) => {
+    return HttpResponse.json({
+      openapi: '3.0.0',
+      info: {
+        title: 'Admin API',
+        version: '0.9.2',
+      },
+    });
+  }
+);
+
+const healthHandler = http.get('/admin/:envId/health', async ({ request }) => {
+  if (Math.random() < 0.5) {
+    return HttpResponse.json({}, { status: 500 });
+  } else {
+    return HttpResponse.json({}, { status: 200 });
+  }
+});
+
 export const cloudApiMockHandlers = [
   getUserIdentityHandler,
   createAccountHandler,
@@ -470,4 +491,6 @@ export const cloudApiMockHandlers = [
   deleteApiKeyHandler,
   listApiKeysHandler,
   getEnvironmentLogsHandler,
+  openApiHandler,
+  healthHandler,
 ];

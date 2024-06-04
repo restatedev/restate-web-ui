@@ -22,6 +22,7 @@ import {
   FileClock,
   ExternalLink,
   Wallet,
+  X,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from 'tailwind-variants';
@@ -54,6 +55,7 @@ export const enum IconName {
   Log = 'Log',
   ExternalLink = 'ExternalLink',
   Wallet = 'Wallet',
+  X = 'X',
 }
 export interface IconsProps {
   name: IconName;
@@ -87,6 +89,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Log]: FileClock,
   [IconName.ExternalLink]: ExternalLink,
   [IconName.Wallet]: Wallet,
+  [IconName.X]: X,
 };
 
 const styles = tv({

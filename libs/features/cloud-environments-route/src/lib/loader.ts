@@ -10,7 +10,7 @@ import {
 } from '@restate/data-access/cloud/api-client';
 
 type DescribeEnvironmentDetails = {
-  [key: string]: Awaited<ReturnType<typeof describeEnvironment>>;
+  [key: string]: ReturnType<typeof describeEnvironment>;
 };
 type LoaderResponse = Omit<DescribeEnvironmentDetails, 'environmentList'> & {
   environmentList: Awaited<ReturnType<typeof listEnvironments>>;
