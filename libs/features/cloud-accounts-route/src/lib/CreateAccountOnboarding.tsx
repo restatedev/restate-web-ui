@@ -57,7 +57,7 @@ export function CreateAccountOnboarding() {
               <span className="text-sm text-start">
                 I have read and agree to the{' '}
                 <Link
-                  href="https://restate.dev"
+                  href="https://restate.dev/terms-and-conditions"
                   target="_blank"
                   rel="noreferrer noopener"
                 >
