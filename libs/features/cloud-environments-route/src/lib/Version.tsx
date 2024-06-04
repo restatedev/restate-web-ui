@@ -5,6 +5,8 @@ import { Suspense, useEffect, useState } from 'react';
 import { describeEnvironment } from '@restate/data-access/cloud/api-client';
 import { getAccessToken } from '@restate/util/auth';
 
+const IS_VERSION_ACTIVE = false;
+
 export function Version() {
   const { environmentList, ...environmentsWithDetailsPromises } =
     useLoaderData<typeof clientLoader>();
@@ -13,6 +15,11 @@ export function Version() {
   const environmentDetailsPromise = environmentId
     ? environmentsWithDetailsPromises[environmentId]
     : null;
+
+  if (!IS_VERSION_ACTIVE) {
+    return null;
+  }
+
   return (
     <Suspense>
       <Await resolve={environmentDetailsPromise}>

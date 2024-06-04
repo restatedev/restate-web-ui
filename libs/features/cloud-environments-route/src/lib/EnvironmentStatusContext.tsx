@@ -19,60 +19,76 @@ export type Status =
   | 'DELETED'
   | 'DEGRADED';
 
+const IS_HEALTH_CHECK_ACTIVE = false;
+
 export function EnvironmentStatusProvider({
   children,
 }: PropsWithChildren<NonNullable<unknown>>) {
   const loaderResponse = useLoaderData<typeof clientLoader>();
   const [allStatus, setAllStatus] = useState<Record<string, Status>>({});
   const currentEnvironmentId = useEnvironmentParam();
+  const currentStatus = currentEnvironmentId
+    ? allStatus[currentEnvironmentId]
+    : undefined;
+  const [currentAdminBaseUrl, setCurrentAdminBaseUrl] = useState<string>();
 
   useEffect(() => {
     const { environmentList, ...environmentsWithDetailsPromises } =
       loaderResponse;
+    const abortController = new AbortController();
+    let cancelled = false;
 
     environmentList.data?.environments.forEach((environment) => {
       environmentsWithDetailsPromises[environment.environmentId]?.then(
         ({ data }) => {
           if (data) {
             setAllStatus((s) => ({ ...s, [data.environmentId]: data.status }));
-            if (data.status === 'ACTIVE') {
+            if (data.status === 'ACTIVE' && IS_HEALTH_CHECK_ACTIVE) {
               fetch(`${data.adminBaseUrl}/health`, {
                 headers: {
                   Authorization: `Bearer ${getAccessToken()}`,
                 },
+                signal: abortController.signal,
               }).then((res) => {
-                setAllStatus((s) => ({
-                  ...s,
-                  [data.environmentId]: res.ok ? 'HEALTHY' : 'DEGRADED',
-                }));
+                if (!cancelled) {
+                  setAllStatus((s) => ({
+                    ...s,
+                    [data.environmentId]: res.ok ? 'HEALTHY' : 'DEGRADED',
+                  }));
+                  if (currentEnvironmentId === data.environmentId) {
+                    setCurrentAdminBaseUrl(data.adminBaseUrl);
+                  }
+                }
               });
             }
           }
         }
       );
     });
-  }, [loaderResponse]);
+    return () => {
+      cancelled = true;
+      abortController.abort();
+    };
+  }, [currentEnvironmentId, loaderResponse]);
 
   useEffect(() => {
     let cancelled = false;
-    const abortController = new AbortController();
-    let intervalId: ReturnType<typeof setInterval> | null = null;
-    const { environmentList, ...environmentsWithDetailsPromises } =
-      loaderResponse;
+    let abortController = new AbortController();
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
-    const currentEnvironmentDetailsPromise = currentEnvironmentId
-      ? environmentsWithDetailsPromises[currentEnvironmentId]
-      : undefined;
-
-    if (currentEnvironmentDetailsPromise) {
-      currentEnvironmentDetailsPromise.then(({ data }) => {
-        if (
-          data &&
-          data.status === 'ACTIVE' &&
-          currentEnvironmentId === data.environmentId
-        ) {
-          intervalId = setInterval(() => {
-            fetch(`${data.adminBaseUrl}/health`, {
+    if (
+      currentEnvironmentId &&
+      currentStatus &&
+      (['HEALTHY', 'DEGRADED'] as Status[]).includes(currentStatus)
+    ) {
+      const healthCheck = () => {
+        if (!abortController.signal.aborted) {
+          abortController.abort();
+        }
+        abortController = new AbortController();
+        return setTimeout(
+          () => {
+            fetch(`${currentAdminBaseUrl}/health`, {
               headers: {
                 Authorization: `Bearer ${getAccessToken()}`,
               },
@@ -81,21 +97,29 @@ export function EnvironmentStatusProvider({
               if (!cancelled) {
                 setAllStatus((s) => ({
                   ...s,
-                  [data.environmentId]: res.ok ? 'HEALTHY' : 'DEGRADED',
+                  [currentEnvironmentId]: res.ok ? 'HEALTHY' : 'DEGRADED',
                 }));
+                timeoutId = healthCheck();
               }
             });
-          }, 60000);
-        }
-      });
+          },
+          currentStatus === 'HEALTHY' ? 60000 : 10000
+        );
+      };
+      timeoutId = healthCheck();
     }
 
     return () => {
       cancelled = true;
       abortController.abort();
-      intervalId && clearInterval(intervalId);
+      timeoutId && clearTimeout(timeoutId);
     };
-  }, [currentEnvironmentId, loaderResponse]);
+  }, [
+    currentEnvironmentId,
+    loaderResponse,
+    currentStatus,
+    currentAdminBaseUrl,
+  ]);
 
   return (
     <EnvironmentStatusContext.Provider value={allStatus}>
