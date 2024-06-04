@@ -1,10 +1,17 @@
 import { forwardRef, type PropsWithChildren } from 'react';
 import { tv } from 'tailwind-variants';
-import { Button as RACButton, composeRenderProps } from 'react-aria-components';
+import {
+  PressEvent,
+  Button as RACButton,
+  composeRenderProps,
+} from 'react-aria-components';
 import { focusRing } from '@restate/ui/focus';
+import { PressEvents } from '@react-aria/interactions';
 
 export interface ButtonProps {
-  onClick?: VoidFunction;
+  onClick?: (
+    event: Omit<PressEvent, 'target'> & { target: HTMLButtonElement }
+  ) => void;
   type?: 'button' | 'submit' | 'reset';
   name?: string;
   value?: string;
@@ -45,7 +52,7 @@ export const Button = forwardRef<
       {...props}
       ref={ref}
       isDisabled={disabled}
-      onPress={onClick}
+      onPress={onClick as PressEvents['onPress']}
       className={composeRenderProps(props.className, (className, renderProps) =>
         styles({ ...renderProps, variant, className })
       )}
