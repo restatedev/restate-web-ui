@@ -7,7 +7,7 @@ const styles = tv({
 
 const DESCRIPTIONS: Record<Role, string> = {
   'rst:role::FullAccess': 'Full',
-  'rst:role::IngressAccess': 'Ingress',
+  'rst:role::IngressAccess': 'Invoke',
   'rst:role::AdminAccess': 'Admin',
   'rst:role::CompleteAwakeableAccess': 'Complete Awakeable',
 };
