@@ -15,6 +15,7 @@ import { clientAction } from './action';
 import { CreateEnvironmentOnboarding } from './CreateEnvironmentOnboarding';
 import { Nav, NavItem } from '@restate/ui/nav';
 import { EnvironmentPending } from './EnvironmentPending';
+import { Support } from '@restate/features/cloud/support';
 
 function Component() {
   const accountsResponse =
@@ -42,6 +43,7 @@ function Component() {
   return (
     <>
       <EnvironmentPending />
+      <Support />
       <LayoutOutlet zone={LayoutZone.AppBar}>
         <div className="flex items-center gap-2 flex-1">
           {accountsResponse?.accountsList?.data?.accounts && (

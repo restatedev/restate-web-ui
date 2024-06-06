@@ -1,1 +1,1 @@
-export * from './lib/cloud-support';
+export * from './lib/Support';

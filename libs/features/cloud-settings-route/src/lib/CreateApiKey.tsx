@@ -1,4 +1,4 @@
-import { useAsyncValue, useSearchParams } from '@remix-run/react';
+import { useSearchParams } from '@remix-run/react';
 import { Button, SubmitButton } from '@restate/ui/button';
 import { Dialog, DialogContent, DialogFooter } from '@restate/ui/dialog';
 import { ReactNode, useCallback, useId, useState } from 'react';
@@ -166,9 +166,6 @@ function CreateApiForm({
         >
           <input hidden defaultValue="createApiKey" name="_action" />
           <div>
-            <p className="text-sm text-gray-500 mt-3">
-              Please provide a brief description for your new API Key
-            </p>
             <FormFieldInput
               autoFocus
               required
@@ -176,12 +173,19 @@ function CreateApiForm({
               className="mt-2"
               placeholder="Description"
               maxLength={100}
+              label={
+                <span slot="description">
+                  Please provide a brief description for your new API Key
+                </span>
+              }
             />
           </div>
           <RadioGroup name="roleId" required className="mt-2">
             <FormFieldLabel>
-              <span className="font-medium text-gray-800 text-base">Role</span>
-              <span className="inline-block text-sm font-normal text-gray-500 mt-2">
+              <span slot="title" className=" text-base">
+                Role
+              </span>
+              <span slot="description">
                 Choose the appropriate role to specify access levels and
                 permissions
               </span>

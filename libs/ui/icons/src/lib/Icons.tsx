@@ -27,13 +27,20 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { tv } from 'tailwind-variants';
 import { RestateEnvironment } from './custom-icons/RestateEnvironment';
+import { Restate } from './custom-icons/Restate';
 import { CircleX } from './custom-icons/CircleX';
+import { Docs } from './custom-icons/Docs';
+import { Github } from './custom-icons/Github';
+import { Discord } from './custom-icons/Discord';
+import { SupportTicket } from './custom-icons/SupportTicket';
+import { Help } from './custom-icons/Help';
 
 export const enum IconName {
   ChevronDown = 'ChevronDown',
   ChevronRight = 'ChevronRight',
   Check = 'Check',
   RestateEnvironment = 'RestateEnvironment',
+  Restate = 'Restate',
   ChevronsUpDown = 'ChevronsUpDown',
   Plus = 'Plus',
   LogOut = 'LogOut',
@@ -56,6 +63,11 @@ export const enum IconName {
   ExternalLink = 'ExternalLink',
   Wallet = 'Wallet',
   X = 'X',
+  Docs = 'Docs',
+  Discord = 'Discord',
+  Github = 'Github',
+  SupportTicket = 'SupportTicket',
+  Help = 'Help',
 }
 export interface IconsProps {
   name: IconName;
@@ -90,6 +102,12 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.ExternalLink]: ExternalLink,
   [IconName.Wallet]: Wallet,
   [IconName.X]: X,
+  [IconName.Restate]: Restate,
+  [IconName.Docs]: Docs,
+  [IconName.Github]: Github,
+  [IconName.Discord]: Discord,
+  [IconName.SupportTicket]: SupportTicket,
+  [IconName.Help]: Help,
 };
 
 const styles = tv({

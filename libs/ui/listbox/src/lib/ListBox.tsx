@@ -3,18 +3,19 @@ import {
   ListBox as AriaListBox,
   ListBoxProps as AriaListBoxProps,
 } from 'react-aria-components';
+import { tv } from 'tailwind-variants';
 
-export function StyledListBox<T extends object>(
-  props: Omit<AriaListBoxProps<T>, 'layout' | 'orientation'>
-) {
-  return (
-    <AriaListBox
-      {...props}
-      className={
-        'outline-0 p-1 border border-gray-300 dark:border-zinc-600 rounded-md'
-      }
-    />
-  );
+const styles = tv({
+  base: 'outline-0 p-1 border border-gray-300 flex flex-col gap-1 rounded-md',
+});
+
+export function StyledListBox<T extends object>({
+  className,
+  ...props
+}: Omit<AriaListBoxProps<T>, 'layout' | 'orientation' | 'className'> & {
+  className?: string;
+}) {
+  return <AriaListBox {...props} className={styles({ className })} />;
 }
 
 interface ListBoxProps {
@@ -23,6 +24,7 @@ interface ListBoxProps {
   selectable?: never;
   selectedItems?: never;
   multiple?: never;
+  className?: string;
 }
 
 interface SelectableListBoxProps

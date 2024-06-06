@@ -1,4 +1,4 @@
-import { Popover } from '@restate/ui/popover';
+import { PopoverContent } from '@restate/ui/popover';
 import type { PropsWithChildren } from 'react';
 import { tv } from 'tailwind-variants';
 
@@ -14,5 +14,9 @@ export function DropdownPopover({
   children,
   className,
 }: PropsWithChildren<DropdownPopoverProps>) {
-  return <Popover className={styles({ className })}>{children}</Popover>;
+  return (
+    <PopoverContent className={styles({ className })}>
+      {children}
+    </PopoverContent>
+  );
 }
