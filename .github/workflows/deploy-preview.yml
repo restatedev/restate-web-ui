@@ -12,9 +12,9 @@ jobs:
       deployments: write
     name: Deploy to Cloudflare Pages
     env:
-      RESTATE_AUTH_URL: 'https://auth.restate.cloud'
-      RESTATE_AUTH_CLIENT_ID: '5q3dsdnrr5r400jvibd8d3k66l'
-      RESTATE_CLOUD_API_URL: 'https://api.us.restate.cloud/cloud'
+      RESTATE_AUTH_URL: 'https://auth.dev.restate.cloud'
+      RESTATE_AUTH_CLIENT_ID: '1v1rkegmilgjlphium3ksgurek'
+      RESTATE_CLOUD_API_URL: 'https://api.dev.restate.cloud/cloud'
     steps:
       - uses: pnpm/action-setup@v4
         with:
@@ -26,9 +26,9 @@ jobs:
       - name: Publish
         uses: cloudflare/pages-action@v1
         with:
-          workingDirectory: apps/cloud
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           projectName: 'restate-web-ui'
           directory: '../../dist/apps/cloud/client'
+          workingDirectory: apps/cloud
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
