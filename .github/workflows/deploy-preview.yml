@@ -1,7 +1,9 @@
 on:
   push:
     branches:
-      - main
+      - '**'
+      - '!master'
+      - '!dev'
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -24,9 +26,9 @@ jobs:
       - name: Publish
         uses: cloudflare/pages-action@v1
         with:
+          workingDirectory: apps/cloud
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           projectName: 'restate-web-ui'
           directory: 'dist/apps/cloud'
-          branch: dev
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
