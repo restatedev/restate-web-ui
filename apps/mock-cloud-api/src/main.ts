@@ -1,8 +1,7 @@
-import { setupServer } from 'msw/node';
+import { createServer } from '@mswjs/http-middleware';
 import { cloudApiMockHandlers } from '@restate/data-access/cloud/api-fixtures';
 
-const server = setupServer(...cloudApiMockHandlers);
-server.events.on('request:start', ({ request }) => {
-  console.log('MSW intercepted:', request.method, request.url);
-});
-server.listen();
+const httpServer = createServer(...cloudApiMockHandlers);
+
+const port = process.env.PORT ? Number(process.env.PORT) : 3000;
+httpServer.listen(port);
