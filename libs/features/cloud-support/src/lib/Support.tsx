@@ -23,7 +23,7 @@ import { useId } from 'react';
 import { Header } from 'react-aria-components';
 
 const SUPPORT_QUERY_PARAM = 'support-ticket';
-const SUPPORT_TICKET_ENABLED = true;
+const SUPPORT_TICKET_ENABLED = false;
 
 export function Support() {
   const [searchParams, setSearchParams] = useSearchParams();
