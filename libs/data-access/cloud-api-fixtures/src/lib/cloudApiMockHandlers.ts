@@ -129,7 +129,6 @@ const describeEnvironmentHandler = http.post<
 
   return HttpResponse.json({
     environmentId: environment.environmentId,
-    accountId: environment.account?.accountId,
     name: environment.name,
     status: environment.status,
     apiKeys: apiKeys
@@ -307,7 +306,6 @@ const createApiKeyHandler = http.post<
     apiKey: apiKey.apiKey,
     state: apiKey.state,
     keyId: apiKey.keyId,
-    description: apiKey.description,
   });
 });
 
@@ -340,7 +338,6 @@ const describeApiKeyHandler = http.post<
     accountId: params.accountId,
     environmentId: requestBody.environmentId,
     roleId: apiKey.roleId,
-    apiKey: apiKey.apiKey,
     state: apiKey.state,
     keyId: apiKey.keyId,
     description: apiKey.description,
