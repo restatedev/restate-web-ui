@@ -1,7 +1,7 @@
 {
   "name": "mock-cloud-api",
-  "$schema": "../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "mock-cloud-api/src",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/mock-cloud-api/src",
   "projectType": "application",
   "targets": {
     "build": {
@@ -10,12 +10,12 @@
       "defaultConfiguration": "production",
       "options": {
         "platform": "node",
-        "outputPath": "dist/mock-cloud-api",
+        "outputPath": "dist/apps/mock-cloud-api",
         "format": ["cjs"],
         "bundle": false,
-        "main": "mock-cloud-api/src/main.ts",
-        "tsConfig": "mock-cloud-api/tsconfig.app.json",
-        "assets": ["mock-cloud-api/src/assets"],
+        "main": "apps/mock-cloud-api/src/main.ts",
+        "tsConfig": "apps/mock-cloud-api/tsconfig.app.json",
+        "assets": ["apps/mock-cloud-api/src/assets"],
         "generatePackageJson": true,
         "esbuildOptions": {
           "sourcemap": true,
