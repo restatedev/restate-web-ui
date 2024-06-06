@@ -1,6 +1,4 @@
 import { Children, PropsWithChildren } from 'react';
-import { useSummaryElement } from './DetailsContext';
-import { createPortal } from 'react-dom';
 import { usePress } from '@react-aria/interactions';
 import { useFocusRing } from 'react-aria';
 import { focusRing } from '@restate/ui/focus';
