@@ -18,7 +18,11 @@ export function DialogFooterContainer({ children }: PropsWithChildren<object>) {
   return (
     <DialogFooterContext.Provider value={{ container }}>
       {children}
-      <div id={id} ref={setContainer} className="py-1 pb-0 mt-1" />
+      <div
+        id={id}
+        ref={setContainer}
+        className="has-[*]:py-1 has-[*]:pb-0 has-[*]:mt-1"
+      />
     </DialogFooterContext.Provider>
   );
 }

@@ -1,4 +1,5 @@
 import { focusRing } from '@restate/ui/focus';
+import { Icon, IconName } from '@restate/ui/icons';
 import type { PropsWithChildren } from 'react';
 import {
   ListBoxItem as AriaListBoxItem,
@@ -9,20 +10,25 @@ import { tv } from 'tailwind-variants';
 
 export const listBoxItemStyles = tv({
   extend: focusRing,
-  base: 'group relative flex items-center gap-8 cursor-default select-none py-1.5 px-2.5 rounded-md will-change-transform text-sm forced-color-adjust-none',
+  base: 'peer relative flex items-center gap-8 cursor-default select-none py-1.5 px-2.5 rounded-md will-change-transform text-sm',
   variants: {
     isSelected: {
-      false:
-        'text-slate-700 dark:text-zinc-300 hover:bg-slate-200 dark:hover:bg-zinc-700 -outline-offset-2',
-      true: 'bg-blue-600 text-white forced-colors:bg-[Highlight] forced-colors:text-[HighlightText] [&:has(+[data-selected])]:rounded-b-none [&+[data-selected]]:rounded-t-none -outline-offset-4 outline-white dark:outline-white forced-colors:outline-[HighlightText]',
+      false: 'text-gray-700 hover:bg-blue-600 hover:text-white',
+      true: 'peer-focus:bg-transparent peer-hover:bg-transparent peer-focus:text-gray-700 peer-hover:text-gray-700 focus:bg-blue-600 hover:text-white focus:bg-blue-600 hover:text-white',
     },
     isDisabled: {
-      true: 'text-slate-300 dark:text-zinc-600 forced-colors:text-[GrayText]',
+      true: 'text-slate-300',
+    },
+    isFocused: {
+      true: 'bg-blue-600 text-white',
     },
   },
 });
 
-function StyledListBoxItem(props: AriaListBoxItemProps) {
+function StyledListBoxItem({
+  className,
+  ...props
+}: Omit<AriaListBoxItemProps, 'className'> & { className?: string }) {
   const textValue =
     props.textValue ||
     (typeof props.children === 'string' ? props.children : undefined);
@@ -31,14 +37,25 @@ function StyledListBoxItem(props: AriaListBoxItemProps) {
     <AriaListBoxItem
       {...props}
       textValue={textValue}
-      className={listBoxItemStyles}
+      className={composeRenderProps(className, (className, renderProps) =>
+        listBoxItemStyles({ ...renderProps, className })
+      )}
     >
-      {composeRenderProps(props.children, (children) => (
-        <>
-          {children}
-          <div className="absolute left-4 right-4 bottom-0 h-px bg-white/20 forced-colors:bg-[HighlightText] hidden [.group[data-selected]:has(+[data-selected])_&]:block" />
-        </>
-      ))}
+      {composeRenderProps(
+        props.children,
+        (children, { selectionMode, isSelected }) => (
+          <>
+            <span className="flex items-center flex-1 gap-2 font-normal truncate group-selected:font-semibold">
+              {children}
+            </span>
+            {selectionMode !== 'none' && (
+              <span className="flex items-center w-4">
+                {isSelected && <Icon name={IconName.Check} aria-hidden />}
+              </span>
+            )}
+          </>
+        )
+      )}
     </AriaListBoxItem>
   );
 }
@@ -47,6 +64,7 @@ interface ListBoxItemProps {
   children: string;
   value?: never;
   href?: never;
+  className?: string;
 }
 
 interface ListBoxCustomItemProps

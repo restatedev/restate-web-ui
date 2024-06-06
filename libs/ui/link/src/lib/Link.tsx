@@ -13,7 +13,7 @@ interface LinkProps
       'autoFocus' | 'target' | 'rel' | 'className' | 'children' | 'href'
     >,
     Pick<AriaAttributes, 'aria-current'> {
-  variant?: 'primary' | 'secondary' | 'button';
+  variant?: 'primary' | 'secondary' | 'button' | 'secondary-button';
 }
 
 const styles = tv({
@@ -23,6 +23,8 @@ const styles = tv({
     variant: {
       button:
         'no-underline bg-blue-600 hover:bg-blue-700 pressed:bg-blue-800 text-white shadow-sm px-5 py-2 text-sm text-center transition rounded-xl border border-black/10',
+      'secondary-button':
+        'bg-white hover:bg-gray-100 pressed:bg-gray-200 text-gray-800 no-underline shadow-sm px-5 py-2 text-sm text-center transition rounded-xl border',
       primary:
         'text-blue-600 dark:text-blue-500 underline decoration-blue-600/60 hover:decoration-blue-600 dark:decoration-blue-500/60 dark:hover:decoration-blue-500',
       secondary:

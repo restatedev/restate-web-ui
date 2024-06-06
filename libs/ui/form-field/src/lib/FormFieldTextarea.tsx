@@ -1,6 +1,6 @@
 import {
-  TextFieldProps as AriaTextFieldProps,
-  Input as AriaInput,
+  TextAreaProps as AriaTextAreaProps,
+  TextArea as AriaTextArea,
   TextField,
   Label,
 } from 'react-aria-components';
@@ -10,23 +10,16 @@ import { ComponentProps, ReactNode } from 'react';
 import { FormFieldLabel } from './FormFieldLabel';
 
 const inputStyles = tv({
-  base: 'invalid:border-red-600 invalid:bg-red-100/70 focus:outline focus:border-gray-200 disabled:text-gray-500/80 disabled:placeholder:text-gray-300 disabled:bg-gray-100 disabled:border-gray-100 disabled:shadow-none focus:shadow-none focus:outline-blue-600 focus:[box-shadow:inset_0_1px_0px_0px_rgba(0,0,0,0.03)] shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] mt-0 bg-gray-100 rounded-lg border border-gray-200 py-1.5 placeholder:text-gray-500/70 px-2 w-full min-w-0 text-sm text-gray-900',
+  base: 'flex-1 invalid:border-red-600 invalid:bg-red-100/70 focus:outline focus:border-gray-200 disabled:text-gray-500/80 disabled:placeholder:text-gray-300 disabled:bg-gray-100 disabled:border-gray-100 disabled:shadow-none focus:shadow-none focus:outline-blue-600 focus:[box-shadow:inset_0_1px_0px_0px_rgba(0,0,0,0.03)] shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] mt-0 bg-gray-100 rounded-lg border border-gray-200 py-1.5 placeholder:text-gray-500/70 px-2 w-full min-w-0 text-sm text-gray-900',
 });
 const containerStyles = tv({
-  base: '',
+  base: 'flex flex-col',
 });
 
-interface InputProps
+interface FormFieldTextarea
   extends Pick<
-    AriaTextFieldProps,
-    | 'name'
-    | 'value'
-    | 'defaultValue'
-    | 'autoFocus'
-    | 'autoComplete'
-    | 'validate'
-    | 'pattern'
-    | 'maxLength'
+    AriaTextAreaProps,
+    'name' | 'autoFocus' | 'autoComplete' | 'maxLength' | 'rows'
   > {
   className?: string;
   required?: boolean;
@@ -34,8 +27,10 @@ interface InputProps
   placeholder?: string;
   label?: ReactNode;
   errorMessage?: ComponentProps<typeof FormFieldError>['children'];
+  value?: string;
+  defaultValue?: string;
 }
-export function FormFieldInput({
+export function FormFieldTextarea({
   className,
   required,
   disabled,
@@ -44,7 +39,7 @@ export function FormFieldInput({
   errorMessage,
   label,
   ...props
-}: InputProps) {
+}: FormFieldTextarea) {
   return (
     <TextField
       {...props}
@@ -55,7 +50,7 @@ export function FormFieldInput({
     >
       {!label && <Label className="sr-only">{placeholder}</Label>}
       {label && <FormFieldLabel>{label}</FormFieldLabel>}
-      <AriaInput
+      <AriaTextArea
         className={inputStyles}
         placeholder={placeholder}
         aria-label={placeholder}
