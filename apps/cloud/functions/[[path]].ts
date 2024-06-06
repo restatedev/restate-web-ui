@@ -5,4 +5,4 @@ import { createPagesFunctionHandler } from '@remix-run/cloudflare-pages';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import * as build from '../../../dist/apps/cloud/server';
 
-export const onRequest = createPagesFunctionHandler({ build: build as any });
+export const onRequest = createPagesFunctionHandler({ build });
