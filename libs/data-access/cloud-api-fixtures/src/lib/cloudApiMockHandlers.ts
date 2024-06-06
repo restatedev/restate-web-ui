@@ -478,7 +478,7 @@ const healthHandler = http.get('/admin/:envId/health', async ({ request }) => {
   }
 });
 
-const tokenHandler = http.get('/oauth2/token', async ({ request }) => {
+const tokenHandler = http.post('/oauth2/token', async ({ request }) => {
   return HttpResponse.json({ access_token: '1234' }, { status: 200 });
 });
 
