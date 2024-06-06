@@ -8,12 +8,11 @@
     "serve": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "cd apps/cloud && ../../node_modules/.bin/remix vite:dev --port=4200",
-        "proxyConfig": "apps/cloud/proxy.conf.json"
+        "command": "cd apps/cloud && ../../node_modules/.bin/remix vite:dev --port=4200"
       },
       "configurations": {
         "mock": {
-          "command": "cd apps/cloud && RESTATE_AUTH_URL=http://localhost:3000 RESTATE_AUTH_CLIENT_ID=1v1rkegmilgjlphium3ksgurek RESTATE_CLOUD_API_URL=http://localhost:4200 ../../node_modules/.bin/remix vite:dev --port=4200"
+          "command": "cd apps/cloud && RESTATE_AUTH_URL=http://localhost:4000 RESTATE_AUTH_CLIENT_ID=1v1rkegmilgjlphium3ksgurek RESTATE_CLOUD_API_URL=http://localhost:4000 ../../node_modules/.bin/remix vite:dev --port=4200"
         },
         "local-prod": {
           "command": "cd apps/cloud && RESTATE_AUTH_URL=https://auth.restate.cloud RESTATE_AUTH_CLIENT_ID=5q3dsdnrr5r400jvibd8d3k66l RESTATE_CLOUD_API_URL=https://api.us.restate.cloud/cloud ../../node_modules/.bin/remix vite:dev --port=4200"
