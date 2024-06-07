@@ -62,15 +62,15 @@ export const action = async ({
                   elements: [
                     {
                       type: 'mrkdwn',
-                      text: `*User:* ${response.data?.userId}\n`,
+                      text: `*User:* ${response.data?.userId}`,
                     },
                     {
                       type: 'mrkdwn',
-                      text: `*Account:* ${accountId}\n`,
+                      text: `*Account:* ${accountId}`,
                     },
                     {
                       type: 'mrkdwn',
-                      text: `*Environment:* ${environmentId}\n`,
+                      text: `*Environment:* ${environmentId}`,
                     },
                     {
                       type: 'mrkdwn',
