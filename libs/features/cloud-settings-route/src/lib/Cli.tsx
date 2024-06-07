@@ -74,10 +74,7 @@ export function CLI({ isLoading }: { isLoading: boolean }) {
                       />
                     </Snippet>
                     <br />
-                    <Snippet>
-                      # You can also do local development against an
-                      authenticating proxy
-                    </Snippet>
+                    <Snippet># Use tunnel to expose Cloud locally</Snippet>
                     <Snippet>
                       restate cloud env tunnel
                       <SnippetCopy copyText="restate cloud env tunnel" />
