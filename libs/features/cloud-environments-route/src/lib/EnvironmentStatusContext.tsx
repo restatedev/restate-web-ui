@@ -53,14 +53,16 @@ export function EnvironmentStatusProvider({
                   Authorization: `Bearer ${getAccessToken()}`,
                 },
                 signal: abortController.signal,
-              }).then((res) => {
-                if (!cancelled) {
-                  setAllStatus((s) => ({
-                    ...s,
-                    [data.environmentId]: res.ok ? 'HEALTHY' : 'DEGRADED',
-                  }));
-                }
-              });
+              })
+                .then((res) => {
+                  if (!cancelled) {
+                    setAllStatus((s) => ({
+                      ...s,
+                      [data.environmentId]: res.ok ? 'HEALTHY' : 'DEGRADED',
+                    }));
+                  }
+                }) // eslint-disable-next-line @typescript-eslint/no-empty-function
+                .catch(() => {});
             }
           }
         }
@@ -115,15 +117,17 @@ export function EnvironmentStatusProvider({
                 Authorization: `Bearer ${getAccessToken()}`,
               },
               signal: abortController.signal,
-            }).then((res) => {
-              if (!cancelled) {
-                setAllStatus((s) => ({
-                  ...s,
-                  [currentEnvironmentId]: res.ok ? 'HEALTHY' : 'DEGRADED',
-                }));
-                timeoutId = healthCheck();
-              }
-            });
+            })
+              .then((res) => {
+                if (!cancelled) {
+                  setAllStatus((s) => ({
+                    ...s,
+                    [currentEnvironmentId]: res.ok ? 'HEALTHY' : 'DEGRADED',
+                  }));
+                  timeoutId = healthCheck();
+                }
+              }) // eslint-disable-next-line @typescript-eslint/no-empty-function
+              .catch(() => {});
           },
           currentStatus === 'HEALTHY' ? 60000 : 10000
         );
