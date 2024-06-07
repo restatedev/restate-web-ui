@@ -23,7 +23,7 @@ export type Status =
   | 'DELETED'
   | 'DEGRADED';
 
-const IS_HEALTH_CHECK_ACTIVE = false;
+const IS_HEALTH_CHECK_ACTIVE = true;
 
 export function EnvironmentStatusProvider({
   children,
@@ -53,14 +53,16 @@ export function EnvironmentStatusProvider({
                   Authorization: `Bearer ${getAccessToken()}`,
                 },
                 signal: abortController.signal,
-              }).then((res) => {
-                if (!cancelled) {
-                  setAllStatus((s) => ({
-                    ...s,
-                    [data.environmentId]: res.ok ? 'HEALTHY' : 'DEGRADED',
-                  }));
-                }
-              });
+              })
+                .then((res) => {
+                  if (!cancelled) {
+                    setAllStatus((s) => ({
+                      ...s,
+                      [data.environmentId]: res.ok ? 'HEALTHY' : 'DEGRADED',
+                    }));
+                  }
+                }) // eslint-disable-next-line @typescript-eslint/no-empty-function
+                .catch(() => {});
             }
           }
         }
@@ -115,15 +117,17 @@ export function EnvironmentStatusProvider({
                 Authorization: `Bearer ${getAccessToken()}`,
               },
               signal: abortController.signal,
-            }).then((res) => {
-              if (!cancelled) {
-                setAllStatus((s) => ({
-                  ...s,
-                  [currentEnvironmentId]: res.ok ? 'HEALTHY' : 'DEGRADED',
-                }));
-                timeoutId = healthCheck();
-              }
-            });
+            })
+              .then((res) => {
+                if (!cancelled) {
+                  setAllStatus((s) => ({
+                    ...s,
+                    [currentEnvironmentId]: res.ok ? 'HEALTHY' : 'DEGRADED',
+                  }));
+                  timeoutId = healthCheck();
+                }
+              }) // eslint-disable-next-line @typescript-eslint/no-empty-function
+              .catch(() => {});
           },
           currentStatus === 'HEALTHY' ? 60000 : 10000
         );
@@ -173,7 +177,7 @@ function EnvironmentDegraded({ status }: { status?: Status }) {
             name={IconName.TriangleAlert}
             className="w-4 h-4 fill-current2"
           />{' '}
-          Your restate environment is currently experiencing issues.
+          Your Restate environment is currently experiencing issues.
           <Button
             variant="icon"
             className="ml-auto"

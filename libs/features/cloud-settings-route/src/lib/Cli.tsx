@@ -42,9 +42,9 @@ export function CLI({ isLoading }: { isLoading: boolean }) {
             className="inline"
             variant="secondary"
           >
-            Install the restate CLI
+            Install the Restate CLI
           </Link>{' '}
-          and connect it to your restate Cloud environment.{' '}
+          and connect it to your Restate Cloud environment.{' '}
           <LearnMore href="https://docs.restate.dev/deploy/cloud#creating-your-first-environment" />
         </p>
       </SectionTitle>

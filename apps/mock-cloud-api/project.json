@@ -1,0 +1,56 @@
+{
+  "name": "mock-cloud-api",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/mock-cloud-api/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/apps/mock-cloud-api",
+        "format": ["cjs"],
+        "bundle": false,
+        "main": "apps/mock-cloud-api/src/main.ts",
+        "tsConfig": "apps/mock-cloud-api/tsconfig.app.json",
+        "assets": ["apps/mock-cloud-api/src/assets"],
+        "generatePackageJson": true,
+        "esbuildOptions": {
+          "sourcemap": true,
+          "outExtension": {
+            ".js": ".js"
+          }
+        }
+      },
+      "configurations": {
+        "development": {},
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false,
+            "outExtension": {
+              ".js": ".js"
+            }
+          }
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "mock-cloud-api:build"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "mock-cloud-api:build:development"
+        },
+        "production": {
+          "buildTarget": "mock-cloud-api:build:production"
+        }
+      }
+    }
+  },
+  "tags": []
+}
