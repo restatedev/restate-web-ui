@@ -26,7 +26,7 @@ import { useCallback, useEffect, useId, useState } from 'react';
 import { Header } from 'react-aria-components';
 
 const SUPPORT_QUERY_PARAM = 'support-ticket';
-const SUPPORT_TICKET_ENABLED = false;
+const SUPPORT_TICKET_ENABLED = true;
 
 export function Support() {
   const [searchParams, setSearchParams] = useSearchParams();

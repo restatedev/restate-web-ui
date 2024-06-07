@@ -5,7 +5,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { describeEnvironment } from '@restate/data-access/cloud/api-client';
 import { getAccessToken } from '@restate/util/auth';
 
-const IS_VERSION_ACTIVE = false;
+const IS_VERSION_ACTIVE = true;
 
 export function Version() {
   const { environmentList, ...environmentsWithDetailsPromises } =
