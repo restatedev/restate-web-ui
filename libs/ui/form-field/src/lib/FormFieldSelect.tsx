@@ -82,5 +82,9 @@ export function FormFieldSelect({
 }
 
 export function Option({ children }: { children: string }) {
-  return <ListBoxItem className="px-2 rounded-lg">{children}</ListBoxItem>;
+  return (
+    <ListBoxItem className="px-2 rounded-lg" value={children}>
+      {children}
+    </ListBoxItem>
+  );
 }

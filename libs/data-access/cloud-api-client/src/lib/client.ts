@@ -11,7 +11,9 @@ const client = createClient<paths>({
 
 const authMiddleware: Middleware = {
   async onRequest(req, options) {
-    req.headers.set('Authorization', `Bearer ${getAccessToken()}`);
+    if (typeof window !== 'undefined') {
+      req.headers.set('Authorization', `Bearer ${getAccessToken()}`);
+    }
     return req;
   },
   async onResponse(res, options) {
