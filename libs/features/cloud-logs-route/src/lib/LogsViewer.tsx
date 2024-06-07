@@ -179,8 +179,28 @@ function addDocLink(message: string): ReactNode {
   return element;
 }
 
+function parse(line: string): {
+  logObject: any;
+  level: string;
+  isObject: boolean;
+} {
+  try {
+    const { timestamp, level, ...logObject } = JSON.parse(line);
+    return { level, logObject, isObject: true };
+  } catch (error) {
+    return {
+      logObject: { fields: { message: line } },
+      level: 'INFO',
+      isObject: false,
+    };
+  }
+}
+
 function LogLine({ line, unixNanos }: { line: string; unixNanos: string }) {
-  const { timestamp, level, ...logObject } = JSON.parse(line);
+  if (!line) {
+    return null;
+  }
+  const { level, logObject, isObject } = parse(line);
   const stringifiedLog = JSON.stringify(logObject, null, 2);
   const hasMessageField = Boolean(logObject?.fields?.message);
   const hasErrorField = !hasMessageField && Boolean(logObject?.fields?.error);
@@ -205,35 +225,38 @@ function LogLine({ line, unixNanos }: { line: string; unixNanos: string }) {
         )}
       </div>
       <div className="flex-shrink-0 flex-grow-0 basis-[7ch]">{level}</div>
-      <details className={`group flex-auto min-w-0`}>
-        <summary className="">
-          <span className="group-open:invisible group-open:[font-size:0px]">
-            <span>
-              {addDocLink(
-                logObject?.fields?.message ??
-                  logObject?.fields?.error ??
-                  stringifiedLog
-              )}
+      {!isObject && <div>{line}</div>}
+      {isObject && (
+        <details className={`group flex-auto min-w-0`}>
+          <summary className="">
+            <span className="group-open:invisible group-open:[font-size:0px]">
+              <span>
+                {addDocLink(
+                  logObject?.fields?.message ??
+                    logObject?.fields?.error ??
+                    stringifiedLog
+                )}
+              </span>
+              <br className="group-open:hidden" />
+              <span>
+                {Object.keys(allFields)
+                  .filter(
+                    (key) =>
+                      (hasMessageField && key !== 'message') ||
+                      (hasErrorField && key !== 'error')
+                  )
+                  .map((key) => (
+                    <span className="ml-4" key={key}>
+                      {key}: {addDocLink(allFields[key])}
+                      <br className="group-open:hidden" />
+                    </span>
+                  ))}
+              </span>
             </span>
-            <br className="group-open:hidden" />
-            <span>
-              {Object.keys(allFields)
-                .filter(
-                  (key) =>
-                    (hasMessageField && key !== 'message') ||
-                    (hasErrorField && key !== 'error')
-                )
-                .map((key) => (
-                  <span className="ml-4" key={key}>
-                    {key}: {addDocLink(allFields[key])}
-                    <br className="group-open:hidden" />
-                  </span>
-                ))}
-            </span>
-          </span>
-        </summary>
-        <span className="px-2">{addDocLink(stringifiedLog)}</span>
-      </details>
+          </summary>
+          <span className="px-2">{addDocLink(stringifiedLog)}</span>
+        </details>
+      )}
     </GridListItem>
   );
 }
