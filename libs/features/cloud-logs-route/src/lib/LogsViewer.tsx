@@ -182,16 +182,20 @@ function addDocLink(message: string): ReactNode {
 function parse(line: string): {
   logObject: any;
   level: string;
-  isObject: boolean;
+  stringifiedLog: string;
 } {
   try {
     const { timestamp, level, ...logObject } = JSON.parse(line);
-    return { level, logObject, isObject: true };
+    return {
+      level,
+      logObject,
+      stringifiedLog: JSON.stringify(logObject, null, 2),
+    };
   } catch (error) {
     return {
-      logObject: { fields: { message: line } },
+      logObject: undefined,
       level: '',
-      isObject: false,
+      stringifiedLog: line,
     };
   }
 }
@@ -200,8 +204,7 @@ function LogLine({ line, unixNanos }: { line: string; unixNanos: string }) {
   if (!line) {
     return null;
   }
-  const { level, logObject, isObject } = parse(line);
-  const stringifiedLog = JSON.stringify(logObject, null, 2);
+  const { level, logObject, stringifiedLog } = parse(line);
   const hasMessageField = Boolean(logObject?.fields?.message);
   const hasErrorField = !hasMessageField && Boolean(logObject?.fields?.error);
   const allFields = { ...logObject?.fields, ...logObject?.span };
@@ -225,8 +228,8 @@ function LogLine({ line, unixNanos }: { line: string; unixNanos: string }) {
         )}
       </div>
       <div className="flex-shrink-0 flex-grow-0 basis-[7ch]">{level}</div>
-      {!isObject && <div>{line}</div>}
-      {isObject && (
+      {!logObject && <div>{stringifiedLog}</div>}
+      {logObject && (
         <details className={`group flex-auto min-w-0`}>
           <summary className="">
             <span className="group-open:invisible group-open:[font-size:0px]">
