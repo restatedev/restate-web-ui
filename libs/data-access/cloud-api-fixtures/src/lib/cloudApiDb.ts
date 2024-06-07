@@ -1,7 +1,6 @@
 import { factory, manyOf, oneOf, primaryKey } from '@mswjs/data';
 import { faker } from '@faker-js/faker';
 import { DATABASE_INSTANCE } from '@mswjs/data/lib/glossary';
-import { readFileSync, writeFileSync } from 'fs';
 
 faker.seed(Date.now());
 
@@ -27,7 +26,7 @@ export const cloudApiDb = factory({
       ] as const),
     signingPublicKey: () => faker.string.nanoid(23),
     ingressBaseUrl: () => faker.internet.url(),
-    adminBaseUrl: () => 'http://localhost:4000/admin',
+    adminBaseUrl: () => 'http://localhost:4200/admin',
   },
   apiKey: {
     account: oneOf('account'),
@@ -48,6 +47,7 @@ export const cloudApiDb = factory({
   },
 });
 
+const DB_DATA = 'db';
 const getRawDbData = () => ({
   users: cloudApiDb.user.getAll(),
   accounts: cloudApiDb.account.getAll(),
@@ -56,19 +56,14 @@ const getRawDbData = () => ({
 });
 const persistDbData = () => {
   setTimeout(() => {
-    writeFileSync('db.json', JSON.stringify(getRawDbData()));
+    localStorage.setItem(DB_DATA, JSON.stringify(getRawDbData()));
   });
 };
 
 type RawDbData = ReturnType<typeof getRawDbData>;
 const dbInstance = cloudApiDb[DATABASE_INSTANCE];
 
-let persistedDbData: string | null = null;
-try {
-  persistedDbData = readFileSync('db.json').toString();
-  // eslint-disable-next-line no-empty
-} catch (_) {}
-
+const persistedDbData = localStorage.getItem(DB_DATA);
 if (persistedDbData) {
   const { users, accounts, environments, apiKeys } = JSON.parse(
     persistedDbData

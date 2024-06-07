@@ -1,11 +1,10 @@
-import { useSearchParams } from '@remix-run/react';
+import { Form, useSearchParams } from '@remix-run/react';
 import {
   useAccountParam,
   useEnvironmentParam,
 } from '@restate/features/cloud/routes-utils';
 import { Button, SubmitButton } from '@restate/ui/button';
 import { Dialog, DialogContent, DialogFooter } from '@restate/ui/dialog';
-import { ErrorBanner } from '@restate/ui/error';
 import {
   FormFieldInput,
   FormFieldSelect,
@@ -20,13 +19,11 @@ import {
   PopoverTrigger,
   usePopover,
 } from '@restate/ui/popover';
-import { getAccessToken } from '@restate/util/auth';
-import { useFetcherWithError } from '@restate/util/remix';
-import { useCallback, useEffect, useId, useState } from 'react';
+import { useId } from 'react';
 import { Header } from 'react-aria-components';
 
 const SUPPORT_QUERY_PARAM = 'support-ticket';
-const SUPPORT_TICKET_ENABLED = true;
+const SUPPORT_TICKET_ENABLED = false;
 
 export function Support() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -34,31 +31,19 @@ export function Support() {
   const accountId = useAccountParam();
   const environmentId = useEnvironmentParam();
   const formId = useId();
-  const [count, setCount] = useState(0);
-  const action = `/api/support#${count}`;
-  const fetcher = useFetcherWithError({ key: action });
 
-  const close = useCallback(
-    () =>
-      setSearchParams(
-        (perv) => {
-          perv.delete(SUPPORT_QUERY_PARAM);
-          return perv;
-        },
-        { preventScrollReset: true }
-      ),
-    [setSearchParams]
-  );
-
-  useEffect(() => {
-    if (fetcher.data?.ok && iOpen) {
-      close();
-    }
-  }, [close, fetcher.data?.ok, iOpen]);
-
+  const close = () =>
+    setSearchParams(
+      (perv) => {
+        perv.delete(SUPPORT_QUERY_PARAM);
+        return perv;
+      },
+      { preventScrollReset: true }
+    );
   if (!SUPPORT_TICKET_ENABLED) {
     return null;
   }
+
   return (
     <>
       <Popover>
@@ -109,16 +94,15 @@ export function Support() {
                 Open Github issue…
               </Link>
               <SupportFormLink
-                onClick={() => {
-                  setCount((c) => c + 1);
+                onClick={() =>
                   setSearchParams(
                     (perv) => {
                       perv.set(SUPPORT_QUERY_PARAM, 'true');
                       return perv;
                     },
                     { preventScrollReset: true }
-                  );
-                }}
+                  )
+                }
               />
             </div>
           </div>
@@ -142,7 +126,7 @@ export function Support() {
               the form below to create a support ticket. Our team will review
               your submission and assist you promptly.
             </p>
-            <fetcher.Form action={action} method="POST" id={formId}>
+            <Form>
               <div className="flex flex-col gap-4">
                 <FormFieldInput
                   required
@@ -150,7 +134,7 @@ export function Support() {
                   className="[&_input]:font-mono [&_input]:text-code"
                   placeholder="Account Id"
                   defaultValue={accountId}
-                  readonly
+                  disabled
                   label="Account"
                 />
                 <FormFieldInput
@@ -159,7 +143,7 @@ export function Support() {
                   className="[&_input]:font-mono [&_input]:text-code"
                   placeholder="Environment Id"
                   defaultValue={environmentId}
-                  readonly
+                  disabled
                   label="Environment"
                 />
                 <FormFieldSelect
@@ -167,12 +151,10 @@ export function Support() {
                   placeholder="Select your issue"
                   required
                   autoFocus
-                  name="issue"
                 >
                   <Option>Performance & reliability</Option>
-                  <Option>Integration (CLI, HTTP, AWS Lambda, etc.)</Option>
-                  <Option>Security</Option>
-                  <Option>Networking</Option>
+                  <Option>CLI</Option>
+                  <Option>AWS Lambda</Option>
                   <Option>Other</Option>
                 </FormFieldSelect>
                 <FormFieldTextarea
@@ -190,21 +172,16 @@ export function Support() {
                     </>
                   }
                 />
-                <input
-                  type="hidden"
-                  value={getAccessToken() ?? ''}
-                  name="access_token"
-                />
               </div>
               <DialogFooter>
                 <div className="flex gap-2 flex-col">
-                  <ErrorBanner errors={fetcher.errors} />
+                  {/* <ErrorBanner errors={fetcher.errors} /> */}
                   <div className="flex gap-2">
                     <Button
                       onClick={close}
                       variant="secondary"
                       className="flex-auto"
-                      disabled={fetcher.state === 'submitting'}
+                      // disabled={fetcher.state === 'submitting'}
                     >
                       Cancel
                     </Button>
@@ -218,7 +195,7 @@ export function Support() {
                   </div>
                 </div>
               </DialogFooter>
-            </fetcher.Form>
+            </Form>
           </div>
         </DialogContent>
       </Dialog>

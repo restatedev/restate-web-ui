@@ -59,7 +59,7 @@ function Title() {
   const title = [
     isInSettingsPage ? 'Settings' : isInLogsPage ? 'Logs' : '',
     name,
-    'Restate Cloud',
+    'restate Cloud',
   ]
     .filter(Boolean)
     .join(' - ');
@@ -99,7 +99,7 @@ function EnvironmentPendingContent() {
     return (
       <LayoutOutlet zone={LayoutZone.Notification}>
         <div className="flex items-center gap-2 bg-orange-100 rounded-xl bg-orange-200/60 shadow-lg shadow-zinc-800/5 border border-orange-200 text-orange-800 px-3 text-sm">
-          <Spinner /> Your Restate environment is being created and will be
+          <Spinner /> Your restate environment is being created and will be
           ready shortly.
         </div>
         {!isPending && <HideNotification />}

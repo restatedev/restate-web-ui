@@ -155,7 +155,7 @@ function CreateApiForm({
       </h3>
       <p className="text-sm text-gray-500">
         API keys serve as long-lived credentials that allow machines to
-        programmatically access Restate Cloud environments.
+        programmatically access restate Cloud environments.
       </p>
       <div>
         <fetcher.Form

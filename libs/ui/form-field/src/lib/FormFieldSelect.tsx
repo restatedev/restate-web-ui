@@ -64,7 +64,7 @@ export function FormFieldSelect({
           />
           <Icon
             name={IconName.ChevronsUpDown}
-            className="w-[1.25em] h-[1.25em] text-gray-500"
+            className="w-[1.25em] h-[1.25em] text-gray-600"
           />
         </Button>
       </div>
@@ -82,9 +82,5 @@ export function FormFieldSelect({
 }
 
 export function Option({ children }: { children: string }) {
-  return (
-    <ListBoxItem className="px-2 rounded-lg" value={children}>
-      {children}
-    </ListBoxItem>
-  );
+  return <ListBoxItem className="px-2 rounded-lg">{children}</ListBoxItem>;
 }

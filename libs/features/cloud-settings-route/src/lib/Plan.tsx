@@ -17,7 +17,7 @@ export function Plan({ isLoading }: { isLoading: boolean }) {
         </span>
         <p>
           View and manage your{' '}
-          <span className="whitespace-nowrap">Restate Cloud</span> plan
+          <span className="whitespace-nowrap">restate Cloud</span> plan
         </p>
       </SectionTitle>
       <SectionContent className="flex flex-col gap-2 relative min-h-[6rem]">

@@ -16,10 +16,8 @@ type AllParams<
     NonNullable<Operation['requestBody']>['content']['application/json']
   >;
 
-export async function getUserIdentity({
-  headers,
-}: { headers?: HeadersInit } = {}) {
-  return apiClient.POST('/GetUserIdentity', { headers });
+export async function getUserIdentity() {
+  return apiClient.POST('/GetUserIdentity');
 }
 
 export async function createAccount(

@@ -50,7 +50,7 @@ export function Security({ isLoading }: { isLoading: boolean }) {
         </span>
         <p>
           For secure and reliable communications between your services and
-          Restate Cloud, please follow these guidelines.{' '}
+          restate Cloud, please follow these guidelines.{' '}
           <LearnMore href="https://docs.restate.dev/deploy/cloud#securing-your-services" />
         </p>
       </SectionTitle>
@@ -66,7 +66,7 @@ export function Security({ isLoading }: { isLoading: boolean }) {
                     <Summary>
                       AWS Lambda
                       <span className="text-gray-500 text-sm block mt-2 pointer-events-none">
-                        To invoke services running on AWS Lambda, Restate Cloud
+                        To invoke services running on AWS Lambda, restate Cloud
                         must assume an AWS identity that has permission to call
                         the Lambda.
                       </span>
@@ -95,7 +95,7 @@ export function Security({ isLoading }: { isLoading: boolean }) {
                     <Summary>
                       HTTP services{' '}
                       <div className="text-gray-500 text-sm block mt-2 pointer-events-none">
-                        Restate Cloud signs all of its requests to your
+                        restate Cloud signs all of its requests to your
                         services, allowing you to confirm that the requests are
                         coming from this environment.
                       </div>
@@ -114,7 +114,7 @@ export function Security({ isLoading }: { isLoading: boolean }) {
                         </Snippet>
                       </Code>
                       <br />
-                      You must provide the public key to the Restate SDK to
+                      You must provide the public key to the restate SDK to
                       ensure it only accepts requests from this environment:
                       <Code>
                         <SnippetTabs

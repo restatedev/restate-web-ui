@@ -3,7 +3,7 @@ import { PropsWithChildren } from 'react';
 import { tv } from 'tailwind-variants';
 
 export interface ErrorProps {
-  errors?: Error[] | string[];
+  errors?: Error[];
   className?: string;
 }
 
@@ -15,7 +15,7 @@ function SingleError({
   error,
   children,
   className,
-}: PropsWithChildren<{ error?: Error | string; className?: string }>) {
+}: PropsWithChildren<{ error?: Error; className?: string }>) {
   if (!error) {
     return null;
   }
@@ -30,7 +30,7 @@ function SingleError({
           />
         </div>
         <output className="text-sm flex-auto text-red-700">
-          {typeof error === 'string' ? error : error.message}
+          {error.message}
         </output>
         {children && <div className="flex-shrink-0">{children}</div>}
       </div>
@@ -69,9 +69,7 @@ export function ErrorBanner({
           <output className="text-sm text-red-700">
             <ul className="list-disc space-y-1 pl-5">
               {errors.map((error) => (
-                <li key={typeof error === 'string' ? error : error.message}>
-                  {typeof error === 'string' ? error : error.message}
-                </li>
+                <li key={error.message}>{error.message}</li>
               ))}
             </ul>
           </output>

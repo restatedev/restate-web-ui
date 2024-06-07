@@ -43,8 +43,8 @@ export function CreateEnvironment() {
             Create environment
           </h3>
           <p className="text-sm text-gray-500">
-            Creating a Restate Cloud environment is the quickest path to
-            securing a dedicated, fully managed Restate instance.
+            Creating a restate Cloud environment is the quickest path to
+            securing a dedicated, fully managed restate instance.
           </p>
           <div>
             <p className="text-sm text-gray-500 mt-4">

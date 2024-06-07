@@ -13,7 +13,6 @@ jobs:
       RESTATE_AUTH_URL: 'https://auth.restate.cloud'
       RESTATE_AUTH_CLIENT_ID: '5q3dsdnrr5r400jvibd8d3k66l'
       RESTATE_CLOUD_API_URL: 'https://api.us.restate.cloud/cloud'
-      SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
     steps:
       - uses: pnpm/action-setup@v4
         with:
@@ -23,10 +22,17 @@ jobs:
       - name: Build
         run: pnpm i && pnpm nx build cloud
       - name: Publish
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/pages-action@v1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+<<<<<<< HEAD
           wranglerVersion: 3.59.0
           workingDirectory: apps/cloud
           command: pages deploy ../../dist/apps/cloud/client --project-name=restate-web-ui
+=======
+          projectName: 'restate-web-ui'
+          directory: 'dist/apps/cloud'
+          branch: main
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+>>>>>>> parent of b2655be (Add SSR (#41))

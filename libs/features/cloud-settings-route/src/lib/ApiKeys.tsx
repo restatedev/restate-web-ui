@@ -38,7 +38,7 @@ export function ApiKeys({ isLoading }: { isLoading: boolean }) {
           API keys
         </span>
         <p>
-          To interact with your Restate Cloud environment programmatically, you
+          To interact with your restate Cloud environment programmatically, you
           will need an API key.{' '}
           <LearnMore href="https://docs.restate.dev/deploy/cloud#api-tokens" />
         </p>
