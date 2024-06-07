@@ -53,7 +53,9 @@ function VersionFetcher() {
           if (!cancelled) {
             setVersion(res?.info?.version ?? '');
           }
-        });
+        })
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        .catch(() => {});
     }
 
     return () => {
