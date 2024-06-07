@@ -17,6 +17,7 @@ function Component() {
 
   return (
     <div className="flex flex-col gap-10">
+      <h1>test</h1>
       <ErrorFetchingEnvironmentDetails
         isLoading={isLoading}
         retry={() => load(`/accounts/${accountId}/environments`)}
