@@ -170,8 +170,9 @@ export function Support() {
                   name="issue"
                 >
                   <Option>Performance & reliability</Option>
-                  <Option>CLI</Option>
-                  <Option>AWS Lambda</Option>
+                  <Option>Integration (CLI, HTTP, AWS Lambda, etc.)</Option>
+                  <Option>Security</Option>
+                  <Option>Networking</Option>
                   <Option>Other</Option>
                 </FormFieldSelect>
                 <FormFieldTextarea
