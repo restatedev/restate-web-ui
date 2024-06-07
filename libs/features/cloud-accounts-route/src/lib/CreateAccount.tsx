@@ -41,7 +41,7 @@ export function CreateAccount() {
             Create account
           </h3>
           <p className="text-sm text-gray-500">
-            A restate Cloud account enables you to control resources, users, and
+            A Restate Cloud account enables you to control resources, users, and
             permissions.
           </p>
           <fetcher.Form id={formId} method="POST" action={action}>

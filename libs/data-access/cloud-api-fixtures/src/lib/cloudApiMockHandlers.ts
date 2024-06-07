@@ -1,4 +1,4 @@
-import * as cloudApi from '@restate/data-access/cloud/api-client';
+import type * as cloudApi from '@restate/data-access/cloud/api-client/spec';
 import { delay, http, HttpResponse } from 'msw';
 import { cloudApiDb } from './cloudApiDb';
 import { logs } from './logs';
@@ -129,7 +129,6 @@ const describeEnvironmentHandler = http.post<
 
   return HttpResponse.json({
     environmentId: environment.environmentId,
-    accountId: environment.account?.accountId,
     name: environment.name,
     status: environment.status,
     apiKeys: apiKeys
@@ -307,7 +306,6 @@ const createApiKeyHandler = http.post<
     apiKey: apiKey.apiKey,
     state: apiKey.state,
     keyId: apiKey.keyId,
-    description: apiKey.description,
   });
 });
 
@@ -340,7 +338,6 @@ const describeApiKeyHandler = http.post<
     accountId: params.accountId,
     environmentId: requestBody.environmentId,
     roleId: apiKey.roleId,
-    apiKey: apiKey.apiKey,
     state: apiKey.state,
     keyId: apiKey.keyId,
     description: apiKey.description,
@@ -478,6 +475,14 @@ const healthHandler = http.get('/admin/:envId/health', async ({ request }) => {
   }
 });
 
+const tokenHandler = http.post('/oauth2/token', async ({ request }) => {
+  return HttpResponse.json({ access_token: '1234' }, { status: 200 });
+});
+
+const loginHandler = http.get('/login', async ({ request }) => {
+  return HttpResponse.redirect('http://localhost:4200/auth?code=1234');
+});
+
 export const cloudApiMockHandlers = [
   getUserIdentityHandler,
   createAccountHandler,
@@ -493,4 +498,6 @@ export const cloudApiMockHandlers = [
   getEnvironmentLogsHandler,
   openApiHandler,
   healthHandler,
+  tokenHandler,
+  loginHandler,
 ];

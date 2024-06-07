@@ -31,7 +31,7 @@ export function Delete({ isLoading }: { isLoading: boolean }) {
           />
           Delete
         </span>
-        <p>Delete your restate environment</p>
+        <p>Delete your Restate environment</p>
       </SectionTitle>
       <SectionContent className="flex flex-col gap-2 relative min-h-[6rem]">
         <Suspense fallback={<Loading className="rounded-xl" />}>
