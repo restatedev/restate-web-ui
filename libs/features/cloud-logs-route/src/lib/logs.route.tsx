@@ -33,7 +33,7 @@ export function Component() {
           <GranularitySelector />
         </div>
         <p className="mt-1 flex-auto w-full text-sm leading-6 text-gray-600 row-start-2">
-          You can access the restate server logs here.
+          You can access the Restate server logs here.
         </p>
       </div>
 

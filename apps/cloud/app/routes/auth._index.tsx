@@ -4,5 +4,5 @@ import { authenticate } from '@restate/util/auth';
 export const clientLoader = authenticate;
 export default () => null;
 export const meta: MetaFunction = () => {
-  return [{ title: 'Logging in… - restate Cloud' }];
+  return [{ title: 'Logging in… - Restate Cloud' }];
 };
