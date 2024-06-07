@@ -29,4 +29,4 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: 3.59.0
           workingDirectory: apps/cloud
-          command: pages deploy ../../dist/apps/cloud/client --project-name=restate-web-ui --branch=dev
+          command: pages deploy ../../dist/apps/cloud/client --project-name=restate-web-ui --branch=prod
