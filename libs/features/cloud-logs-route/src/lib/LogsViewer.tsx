@@ -190,7 +190,7 @@ function parse(line: string): {
   } catch (error) {
     return {
       logObject: { fields: { message: line } },
-      level: 'INFO',
+      level: '',
       isObject: false,
     };
   }
