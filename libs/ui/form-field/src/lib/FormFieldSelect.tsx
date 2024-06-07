@@ -64,7 +64,7 @@ export function FormFieldSelect({
           />
           <Icon
             name={IconName.ChevronsUpDown}
-            className="w-[1.25em] h-[1.25em] text-gray-600"
+            className="w-[1.25em] h-[1.25em] text-gray-500"
           />
         </Button>
       </div>
