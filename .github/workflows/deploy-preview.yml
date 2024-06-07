@@ -20,9 +20,9 @@ jobs:
         with:
           version: 8
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Build
-        run: pnpm i && pnpm nx build cloud
+        run: pnpm i && pnpm nx build cloud --skip-nx-cache
       - name: Publish
         uses: cloudflare/wrangler-action@v3
         with:
@@ -30,4 +30,4 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: 3.59.0
           workingDirectory: apps/cloud
-          command: pages deploy ../../dist/apps/cloud/client --project-name=${{ vars.CLOUDFLARE_PROJECT_NAME }} --commit-dirty=true
+          command: pages deploy ../../dist/apps/cloud/client --project-name=restate-web-ui --commit-dirty=true
