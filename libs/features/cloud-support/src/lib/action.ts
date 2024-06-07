@@ -4,7 +4,13 @@ import { getUserIdentity } from '@restate/data-access/cloud/api-client';
 import invariant from 'tiny-invariant';
 
 // TODO: Error handling, Pending UI
-export const action = async ({ request, params }: ActionFunctionArgs) => {
+export const action = async ({
+  request,
+  params,
+  context,
+}: ActionFunctionArgs) => {
+  const { env } = context.cloudflare;
+
   const body = await request.formData();
   const accountId = body.get('accountId');
   const environmentId = body.get('environmentId');
@@ -28,8 +34,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json; charset=utf-8',
-          Authorization:
-            'Bearer xoxb-2925455214002-7225924032935-6DqdjiJheKeyS5o3zjI4zzIE',
+          Authorization: `Bearer ${env.SLACK_TOKEN}`,
           Accept: 'application/json',
         },
         body: JSON.stringify({
