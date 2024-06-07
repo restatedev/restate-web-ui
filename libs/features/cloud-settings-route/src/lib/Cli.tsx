@@ -36,7 +36,7 @@ export function CLI({ isLoading }: { isLoading: boolean }) {
         </span>
         <p>
           <Link
-            href="https://docs.restate.dev/operate/cli#installation"
+            href="https://docs.restate.dev/develop/local_dev#running-restate-server--cli-locally"
             target="_blank"
             rel="noreferrer noopener"
             className="inline"
