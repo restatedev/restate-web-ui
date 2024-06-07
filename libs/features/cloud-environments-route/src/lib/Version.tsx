@@ -49,7 +49,7 @@ function VersionFetcher() {
         signal: abortController.signal,
       })
         .then((res) => res.json())
-        .then((res) => {
+        .then((res: any) => {
           if (!cancelled) {
             setVersion(res?.info?.version ?? '');
           }
