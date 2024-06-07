@@ -86,11 +86,11 @@ export default function App() {
 }
 
 // TODO: implement proper loader
-export function HydrateFallback() {
-  return (
-    <p className="flex gap-2 items-center">
-      <Spinner />
-      Loading...
-    </p>
-  );
-}
+// export function HydrateFallback() {
+//   return (
+//     <p className="flex gap-2 items-center">
+//       <Spinner />
+//       Loading...
+//     </p>
+//   );
+// }
