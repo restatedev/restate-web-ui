@@ -177,7 +177,7 @@ function EnvironmentDegraded({ status }: { status?: Status }) {
             name={IconName.TriangleAlert}
             className="w-4 h-4 fill-current2"
           />{' '}
-          Your restate environment is currently experiencing issues.
+          Your Restate environment is currently experiencing issues.
           <Button
             variant="icon"
             className="ml-auto"
