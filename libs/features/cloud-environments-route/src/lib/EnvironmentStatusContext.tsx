@@ -23,7 +23,7 @@ export type Status =
   | 'DELETED'
   | 'DEGRADED';
 
-const IS_HEALTH_CHECK_ACTIVE = false;
+const IS_HEALTH_CHECK_ACTIVE = true;
 
 export function EnvironmentStatusProvider({
   children,
