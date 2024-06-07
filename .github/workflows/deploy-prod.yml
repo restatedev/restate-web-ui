@@ -13,6 +13,7 @@ jobs:
       RESTATE_AUTH_URL: 'https://auth.restate.cloud'
       RESTATE_AUTH_CLIENT_ID: '5q3dsdnrr5r400jvibd8d3k66l'
       RESTATE_CLOUD_API_URL: 'https://api.us.restate.cloud/cloud'
+      SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
     steps:
       - uses: pnpm/action-setup@v4
         with:
