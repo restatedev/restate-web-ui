@@ -22,12 +22,10 @@ jobs:
       - name: Build
         run: pnpm i && pnpm nx build cloud
       - name: Publish
-        uses: cloudflare/pages-action@v1
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: 'restate-web-ui'
-          directory: '../../dist/apps/cloud/client'
+          wranglerVersion: 3.59.0
           workingDirectory: apps/cloud
-          branch: main
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          command: pages deploy ../../dist/apps/cloud/client --project-name=restate-web-ui --branch=dev
