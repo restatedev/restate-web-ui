@@ -72,7 +72,7 @@ export function Nav({
   return (
     <NavContext.Provider value={{ value: ariaCurrentValue }}>
       <div
-        className="relative  [&:has(a:hover)]:bg-gray-100 [&:has(a:focus)]:bg-gray-100 [&:has(a:hover)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] [&:has(a:focus)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] border-[0.5px] border-transparent [&:has(a:focus)]:border-zinc-800/5 [&:has(a:hover)]:border-zinc-800/5 [&:has(a:hover)]:border-[0.5px] [&:has(a:focus)]:border-[0.5px] rounded-xl"
+        className="relative  [&:has(a:hover)]:bg-black/[.03] [&:has(a:focus)]:bg-black/[.03] [&:has(a:hover)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] [&:has(a:focus)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] border-[0.5px] border-transparent [&:has(a:focus)]:border-zinc-800/5 [&:has(a:hover)]:border-zinc-800/5 [&:has(a:hover)]:border-[0.5px] [&:has(a:focus)]:border-[0.5px] rounded-xl"
         ref={containerElementRef}
       >
         <div
