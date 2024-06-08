@@ -8,7 +8,7 @@ interface NavProps {
 }
 
 const styles = tv({
-  base: 'flex items-center gap-2',
+  base: 'flex items-center gap-0',
 });
 
 export function Nav({
@@ -71,7 +71,10 @@ export function Nav({
 
   return (
     <NavContext.Provider value={{ value: ariaCurrentValue }}>
-      <div className="relative" ref={containerElementRef}>
+      <div
+        className="relative  [&:has(a:hover)]:bg-gray-100 [&:has(a:focus)]:bg-gray-100 [&:has(a:hover)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] [&:has(a:focus)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]  border-zinc-800/5 [&:has(a:hover)]:border-[0.5px] [&:has(a:focus)]:border-[0.5px] rounded-xl"
+        ref={containerElementRef}
+      >
         <div
           className="h-full bg-white absolute top-0 transition-all ease-in-out duration-300 border border-black/10 shadow-sm rounded-xl"
           ref={activeIndicatorElement}

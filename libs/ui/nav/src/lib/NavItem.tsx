@@ -16,7 +16,7 @@ const styles = tv({
   variants: {
     isCurrent: {
       true: 'text-gray-800',
-      false: ' text-gray-600',
+      false: ' text-gray-500',
     },
   },
   defaultVariants: {
