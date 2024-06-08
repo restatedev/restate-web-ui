@@ -89,7 +89,7 @@ export default function App() {
 export function HydrateFallback() {
   return (
     <p className="flex gap-2 items-center">
-      <Spinner />
+      <Spinner style={{ width: '1.25rem', height: '1.25rem' }} />
       Loading...
     </p>
   );
