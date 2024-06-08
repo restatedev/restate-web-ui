@@ -34,7 +34,7 @@ export function Plan({ isLoading }: { isLoading: boolean }) {
               </h6>
               <p className="text-sm mt-2 text-gray-600">
                 You are currently enrolled in our beta free tier plan. If you're
-                interested in upcoming premium tiers, please{' '}
+                interested in upcoming premium offerings, please{' '}
                 <Link
                   target="_blank"
                   href="https://restate.dev/get-restate-cloud/"

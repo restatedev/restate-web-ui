@@ -44,9 +44,12 @@ export function EnvironmentSelector(props: EnvironmentSelectorProps) {
   invariant(currentAccountId, 'Account id is missing');
   const { state } = useFetcher({ key: 'describeEnvironment' });
   const isLoading = state === 'loading';
+  const numOfEnvironments = environmentList.data?.environments.length ?? 0;
 
   if (!currentEnvironmentParam) {
-    return <CreateEnvironment />;
+    return (
+      <CreateEnvironment currentNumberOfEnvironments={numOfEnvironments} />
+    );
   }
 
   if (environmentList.error) {
@@ -68,7 +71,7 @@ export function EnvironmentSelector(props: EnvironmentSelectorProps) {
           <EnvironmentSelectorContent />
         </Await>
       )}
-      <CreateEnvironment />
+      <CreateEnvironment currentNumberOfEnvironments={numOfEnvironments} />
       <DeleteEnvironment />
     </Suspense>
   );

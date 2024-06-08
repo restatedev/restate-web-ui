@@ -102,7 +102,7 @@ export function AccountSelector({ accounts }: AccountSelectorProps) {
           </DropdownMenu>
         </DropdownPopover>
       </Dropdown>
-      <CreateAccount />
+      <CreateAccount currentNumberOfAccounts={accounts.length} />
     </>
   );
 }

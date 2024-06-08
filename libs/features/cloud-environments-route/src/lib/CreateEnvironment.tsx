@@ -8,8 +8,16 @@ import { useAccountParam } from '@restate/features/cloud/routes-utils';
 import { clientAction } from './action';
 import { ErrorBanner } from '@restate/ui/error';
 import { useFetcherWithError } from '@restate/util/remix';
+import { Link } from '@restate/ui/link';
+import { Icon, IconName } from '@restate/ui/icons';
 
-export function CreateEnvironment() {
+const NUMBER_OF_ENVIRONMENT_LIMIT = 2;
+
+export function CreateEnvironment({
+  currentNumberOfEnvironments,
+}: {
+  currentNumberOfEnvironments: number;
+}) {
   const formId = useId();
   const accountId = useAccountParam();
   const action = `/accounts/${accountId}/environments`;
@@ -27,6 +35,9 @@ export function CreateEnvironment() {
     );
     fetcher.resetErrors();
   };
+
+  const canCreateEnvironment =
+    currentNumberOfEnvironments < NUMBER_OF_ENVIRONMENT_LIMIT;
 
   return (
     <Dialog
@@ -58,6 +69,7 @@ export function CreateEnvironment() {
                 className="mt-2"
                 placeholder="Name"
                 pattern="[a-z0-9][a-z0-9\-]{0,61}[a-z0-9]"
+                disabled={!canCreateEnvironment}
               />
               <p className="text-xs text-gray-500 mt-2">
                 Choose a DNS-compatible name: lowercase letters, numbers, and
@@ -67,6 +79,32 @@ export function CreateEnvironment() {
               <DialogFooter>
                 <div className="flex gap-2 flex-col">
                   <ErrorBanner errors={fetcher.errors} />
+                  {!canCreateEnvironment && (
+                    <div className="rounded-xl bg-sky-100 p-3">
+                      <div className="flex items-center gap-2">
+                        <div className="flex-shrink-0 self-baseline">
+                          <Icon
+                            className="h-5 w-5  text-sky-600"
+                            name={IconName.Wallet}
+                          />
+                        </div>
+                        <output className="text-sm flex-auto text-sky-700">
+                          Your current plan offers up to{' '}
+                          {NUMBER_OF_ENVIRONMENT_LIMIT} environments. For
+                          additional capacity,{' '}
+                          <Link
+                            target="_blank"
+                            href="https://restate.dev/get-restate-cloud/"
+                            rel="noreferrer noopener"
+                            className="inline"
+                          >
+                            please register
+                          </Link>{' '}
+                          for our upcoming premium offerings.
+                        </output>
+                      </div>
+                    </div>
+                  )}
                   <div className="flex gap-2">
                     <Button
                       onClick={close}
@@ -80,6 +118,7 @@ export function CreateEnvironment() {
                       variant="primary"
                       form={formId}
                       className="flex-auto"
+                      disabled={!canCreateEnvironment}
                     >
                       Create
                     </SubmitButton>

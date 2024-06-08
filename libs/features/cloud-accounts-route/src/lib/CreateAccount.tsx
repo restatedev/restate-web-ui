@@ -7,8 +7,16 @@ import { FormFieldInput } from '@restate/ui/form-field';
 import { useFetcherWithError } from '@restate/util/remix';
 import { clientAction } from './action';
 import { ErrorBanner } from '@restate/ui/error';
+import { Icon, IconName } from '@restate/ui/icons';
+import { Link } from '@restate/ui/link';
 
-export function CreateAccount() {
+const NUMBER_OF_ACCOUNT_LIMIT = 1;
+
+export function CreateAccount({
+  currentNumberOfAccounts,
+}: {
+  currentNumberOfAccounts: number;
+}) {
   const action = '/accounts';
   const fetcher = useFetcherWithError<typeof clientAction>({ key: action });
   const formId = useId();
@@ -25,6 +33,7 @@ export function CreateAccount() {
     );
     fetcher.resetErrors();
   };
+  const canCreateAccount = currentNumberOfAccounts < NUMBER_OF_ACCOUNT_LIMIT;
 
   return (
     <Dialog
@@ -55,6 +64,7 @@ export function CreateAccount() {
               className="mt-2"
               placeholder="Name"
               pattern="[a-z0-9][a-z0-9\-]{0,61}[a-z0-9]"
+              disabled={!canCreateAccount}
             />
             <p className="text-xs text-gray-500 mt-2">
               Choose a DNS-compatible name: lowercase letters, numbers, and
@@ -64,6 +74,31 @@ export function CreateAccount() {
             <DialogFooter>
               <div className="flex gap-2 flex-col">
                 <ErrorBanner errors={fetcher.errors} />
+                {!canCreateAccount && (
+                  <div className="rounded-xl bg-sky-100 p-3">
+                    <div className="flex items-center gap-2">
+                      <div className="flex-shrink-0 self-baseline">
+                        <Icon
+                          className="h-5 w-5  text-sky-600"
+                          name={IconName.Wallet}
+                        />
+                      </div>
+                      <output className="text-sm flex-auto text-sky-700">
+                        Your plan currently includes one account. To access
+                        more,{' '}
+                        <Link
+                          target="_blank"
+                          href="https://restate.dev/get-restate-cloud/"
+                          rel="noreferrer noopener"
+                          className="inline"
+                        >
+                          please register
+                        </Link>{' '}
+                        your interest in our upcoming premium offerings.
+                      </output>
+                    </div>
+                  </div>
+                )}
                 <div className="flex gap-2">
                   <Button
                     onClick={close}
@@ -77,6 +112,7 @@ export function CreateAccount() {
                     variant="primary"
                     form={formId}
                     className="flex-auto"
+                    disabled={!canCreateAccount}
                   >
                     Create
                   </SubmitButton>

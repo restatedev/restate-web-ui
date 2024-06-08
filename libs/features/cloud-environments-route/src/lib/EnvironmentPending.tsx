@@ -77,7 +77,7 @@ function EnvironmentPendingContent() {
   >;
   const environmentId = useEnvironmentParam();
   const accountId = useAccountParam();
-  const isPending = environmentDetails.data?.status === 'PENDING';
+  const isPending = environmentDetails?.data?.status === 'PENDING';
   const deferredIsPending = useDeferredValue(isPending);
 
   const { revalidate } = useRevalidator();
