@@ -1,4 +1,9 @@
-import { ClientLoaderFunctionArgs, defer, redirect } from '@remix-run/react';
+import {
+  ClientLoaderFunctionArgs,
+  ShouldRevalidateFunction,
+  defer,
+  redirect,
+} from '@remix-run/react';
 import { getEnvironmentLogs } from '@restate/data-access/cloud/api-client';
 import invariant from 'tiny-invariant';
 import {
@@ -7,6 +12,28 @@ import {
   isLogsGranularity,
   toStartEnd,
 } from './LogsGranularity';
+
+export const shouldRevalidate: ShouldRevalidateFunction = ({
+  actionResult,
+  currentParams,
+  currentUrl,
+  defaultShouldRevalidate,
+  formAction,
+  formData,
+  formEncType,
+  formMethod,
+  nextParams,
+  nextUrl,
+}) => {
+  const currentGranularity = currentUrl.searchParams.get(
+    LOGS_GRANULARITY_QUERY_PARAM_NAME
+  );
+  const nextGranularity = nextUrl.searchParams.get(
+    LOGS_GRANULARITY_QUERY_PARAM_NAME
+  );
+
+  return currentGranularity !== nextGranularity;
+};
 
 export const clientLoader = async ({
   request,

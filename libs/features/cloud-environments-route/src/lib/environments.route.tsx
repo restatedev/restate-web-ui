@@ -1,7 +1,7 @@
 import { Outlet, useRouteLoaderData } from '@remix-run/react';
 import { EnvironmentSelector } from './EnvironmentSelector';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
-import { clientLoader } from './loader';
+import { clientLoader, shouldRevalidate } from './loader';
 import {
   AccountSelector,
   accounts,
@@ -80,4 +80,5 @@ export const environments = {
   clientAction,
   clientLoader,
   Component,
+  shouldRevalidate,
 };

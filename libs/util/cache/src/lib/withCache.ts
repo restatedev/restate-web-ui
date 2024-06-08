@@ -31,33 +31,36 @@ export function withCache<T, O, P extends undefined>(
   fetcher: (
     params?: undefined,
     options?: Pick<RequestInit, 'signal' | 'mode'>
-  ) => Promise<FetchResponse<T, O>>
+  ) => Promise<FetchResponse<T, O, 'application/json'>>
 ): {
   invalidate: (params?: undefined) => void;
   fetch: (
     params?: undefined,
     options?: Pick<RequestInit, 'signal' | 'mode'>
-  ) => Promise<FetchResponse<T, O>>;
+  ) => Promise<FetchResponse<T, O, 'application/json'>>;
 };
 export function withCache<T, O, P extends Record<string, any>>(
   fetcher: (
     params: P,
     options?: Pick<RequestInit, 'signal' | 'mode'>
-  ) => Promise<FetchResponse<T, O>>
+  ) => Promise<FetchResponse<T, O, 'application/json'>>
 ): {
   invalidate: (params: P) => void;
   fetch: (
     params: P,
     options?: Pick<RequestInit, 'signal' | 'mode'>
-  ) => Promise<FetchResponse<T, O>>;
+  ) => Promise<FetchResponse<T, O, 'application/json'>>;
 };
 export function withCache<T, O, P extends Record<string, any> | undefined>(
   fetcher: (
     params: P,
     options?: Pick<RequestInit, 'signal' | 'mode'>
-  ) => Promise<FetchResponse<T, O>>
+  ) => Promise<FetchResponse<T, O, 'application/json'>>
 ) {
-  const cache = new Map<string, Promise<FetchResponse<T, O>> | null>();
+  const cache = new Map<
+    string,
+    Promise<FetchResponse<T, O, 'application/json'>> | null
+  >();
 
   return {
     invalidate: (params?: P) => {

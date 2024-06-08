@@ -1,5 +1,5 @@
 import { Await, useLoaderData, useNavigation } from '@remix-run/react';
-import { clientLoader } from './loader';
+import { clientLoader, shouldRevalidate } from './loader';
 import { Suspense } from 'react';
 import { LogsViewer } from './LogsViewer';
 import { GranularitySelector } from './GranularitySelector';
@@ -52,4 +52,4 @@ export function Component() {
   );
 }
 
-export const logs = { clientLoader, Component };
+export const logs = { clientLoader, Component, shouldRevalidate };

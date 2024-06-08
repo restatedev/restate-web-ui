@@ -1,4 +1,9 @@
-import { ClientLoaderFunctionArgs, defer, redirect } from '@remix-run/react';
+import {
+  ClientLoaderFunctionArgs,
+  ShouldRevalidateFunction,
+  defer,
+  redirect,
+} from '@remix-run/react';
 import invariant from 'tiny-invariant';
 import {
   describeEnvironmentWithCache,
@@ -15,6 +20,24 @@ type DescribeEnvironmentDetails = {
 type LoaderResponse = Omit<DescribeEnvironmentDetails, 'environmentList'> & {
   environmentList: Awaited<ReturnType<typeof listEnvironments>>;
 };
+
+export const shouldRevalidate: ShouldRevalidateFunction = ({
+  actionResult,
+  currentParams,
+  currentUrl,
+  defaultShouldRevalidate,
+  formAction,
+  formData,
+  formEncType,
+  formMethod,
+  nextParams,
+  nextUrl,
+}) => {
+  console.log(currentUrl.pathname, nextUrl.pathname);
+
+  return currentUrl.pathname !== nextUrl.pathname;
+};
+
 export const clientLoader = async ({
   request,
   params,
