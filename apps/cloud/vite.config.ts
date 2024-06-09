@@ -47,6 +47,7 @@ export default defineConfig(({ mode }) => {
       'process.env.MOCK': JSON.stringify(
         Boolean(env.NX_TASK_TARGET_CONFIGURATION === 'mock')
       ),
+      'process.env.VERSION': JSON.stringify(env.VERSION ?? 'dev'),
     },
 
     test: {
