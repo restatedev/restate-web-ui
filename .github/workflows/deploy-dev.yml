@@ -31,3 +31,9 @@ jobs:
           wranglerVersion: 3.59.0
           workingDirectory: apps/cloud
           command: pages deploy ../../dist/apps/cloud/client --project-name=restate-web-ui --branch=dev --commit-hash=${{ github.sha }}
+      - name: Cloudflare Purge Cache
+        uses: jakejarvis/cloudflare-purge-action@v0.3.0
+        env:
+          CLOUDFLARE_ZONE: ${{ secrets.CLOUDFLARE_ZONE }}
+          CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          PURGE_URLS: '["https://dev.cloud.restate.dev"]'
