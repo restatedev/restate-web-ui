@@ -33,8 +33,6 @@ export const shouldRevalidate: ShouldRevalidateFunction = ({
   nextParams,
   nextUrl,
 }) => {
-  console.log(currentUrl.pathname, nextUrl.pathname);
-
   return currentUrl.pathname !== nextUrl.pathname;
 };
 

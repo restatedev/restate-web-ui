@@ -1,4 +1,8 @@
-import { Outlet, useRouteLoaderData } from '@remix-run/react';
+import {
+  Outlet,
+  PrefetchPageLinks,
+  useRouteLoaderData,
+} from '@remix-run/react';
 import { EnvironmentSelector } from './EnvironmentSelector';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import { clientLoader, shouldRevalidate } from './loader';
@@ -42,6 +46,12 @@ function Component() {
 
   return (
     <>
+      <PrefetchPageLinks
+        page={`${toEnvironmentRoute(accountId!, environmentId)}/settings`}
+      />
+      <PrefetchPageLinks
+        page={`${toEnvironmentRoute(accountId!, environmentId)}/logs`}
+      />
       <EnvironmentPending />
       <Support />
       <LayoutOutlet zone={LayoutZone.AppBar}>
