@@ -61,7 +61,12 @@ export function CreateEnvironment({
             <p className="text-sm text-gray-500 mt-4">
               Please provide a name for your new environment.
             </p>
-            <fetcher.Form id={formId} method="POST" action={action}>
+            <fetcher.Form
+              id={formId}
+              method="POST"
+              action={action}
+              name="createEnvironment"
+            >
               <FormFieldInput
                 autoFocus
                 required

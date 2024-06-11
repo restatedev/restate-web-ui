@@ -163,6 +163,7 @@ function CreateApiForm({
           method="POST"
           action={action}
           className="flex flex-col gap-4"
+          name="createApiKey"
         >
           <input hidden defaultValue="createApiKey" name="_action" />
           <div>

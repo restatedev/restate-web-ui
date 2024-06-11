@@ -14,6 +14,7 @@ export function CreateEnvironmentOnboarding() {
     <div className="flex-auto flex items-center animate-in fade-in slide-in-from-top-6 duration-300">
       <fetcher.Form
         method="POST"
+        name="createEnvironment"
         action={action}
         className="flex flex-col gap-4 bg-white rounded-xl border p-5 max-w-md mx-auto"
       >

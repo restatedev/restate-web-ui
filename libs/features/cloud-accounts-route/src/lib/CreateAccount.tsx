@@ -53,7 +53,12 @@ export function CreateAccount({
             A Restate Cloud account enables you to control resources, users, and
             permissions.
           </p>
-          <fetcher.Form id={formId} method="POST" action={action}>
+          <fetcher.Form
+            id={formId}
+            name="createAccount"
+            method="POST"
+            action={action}
+          >
             <p className="text-sm text-gray-500 mt-1">
               Please provide a name for your new account.
             </p>

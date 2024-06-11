@@ -16,6 +16,7 @@ export function CreateAccountOnboarding() {
         method="POST"
         action={action}
         className="flex flex-col  max-w-md mx-auto"
+        name="createAccount"
       >
         <h3 className="pl-5 mb-4 text-[#222452] text-xl font-medium leading-6 flex items-center gap-2">
           Welcome to

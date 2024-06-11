@@ -51,7 +51,12 @@ export function DeleteAPIKey() {
             permanently remove access to the associated services and{' '}
             <span className="font-medium">cannot be undone</span>.
           </p>
-          <fetcher.Form id={formId} method="DELETE" action={action}>
+          <fetcher.Form
+            id={formId}
+            method="DELETE"
+            action={action}
+            name="deleteApiKey"
+          >
             <input hidden defaultValue="deleteApiKey" name="_action" />
             <input
               hidden

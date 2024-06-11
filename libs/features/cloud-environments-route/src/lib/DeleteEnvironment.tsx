@@ -51,7 +51,12 @@ export function DeleteEnvironment() {
             data, configurations, and resources. This action{' '}
             <span className="font-medium">cannot be undone</span>.
           </p>
-          <fetcher.Form id={formId} method="DELETE" action={action}>
+          <fetcher.Form
+            id={formId}
+            method="DELETE"
+            action={action}
+            name="deleteEnvironment"
+          >
             <input name="environmentId" type="hidden" value={environmentId} />
             <p className="text-sm text-gray-500 mt-2">
               Please confirm to proceed or cancel to keep the environment.

@@ -13,7 +13,7 @@ import { CLOUD_API_BASE_URL } from '@restate/data-access/cloud/api-client';
 import { LayoutOutlet, LayoutProvider, LayoutZone } from '@restate/ui/layout';
 import { RouterProvider } from 'react-aria-components';
 import { Spinner } from '@restate/ui/button';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 
 export const links: LinksFunction = () => [
   {
@@ -77,6 +77,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  useEffect(() => {
+    const _mtm = ((window as any)._mtm = (window as any)._mtm || []);
+    _mtm.push({ 'mtm.startTime': new Date().getTime(), event: 'mtm.Start' });
+    const d = document,
+      g = d.createElement('script'),
+      s = d.getElementsByTagName('script')[0];
+    g.async = true;
+    g.src =
+      'https://cdn.matomo.cloud/restatedev.matomo.cloud/container_W6OTDw83.js';
+    s?.parentNode?.insertBefore(g, s);
+  }, []);
+
   return (
     <>
       <LayoutOutlet zone={LayoutZone.Content}>

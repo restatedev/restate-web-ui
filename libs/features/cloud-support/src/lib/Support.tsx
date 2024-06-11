@@ -142,7 +142,12 @@ export function Support() {
               the form below to create a support ticket. Our team will review
               your submission and assist you promptly.
             </p>
-            <fetcher.Form action={action} method="POST" id={formId}>
+            <fetcher.Form
+              action={action}
+              method="POST"
+              id={formId}
+              name="createSupportTicket"
+            >
               <div className="flex flex-col gap-4">
                 <FormFieldInput
                   required
