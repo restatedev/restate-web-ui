@@ -4,6 +4,5 @@ import { withAuth } from '@restate/util/auth';
 
 export const clientLoader = withAuth(environments.clientLoader);
 export const clientAction = environments.clientAction;
-export const shouldRevalidate = environments.shouldRevalidate;
 export const ErrorBoundary = CrashError;
 export default environments.Component;

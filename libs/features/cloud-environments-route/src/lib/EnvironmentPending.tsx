@@ -46,7 +46,7 @@ function Title() {
     ReturnType<typeof describeEnvironment>
   >;
   const matches = useMatches();
-  const name = environmentDetails.data?.name;
+  const name = environmentDetails?.data?.name;
   const isInSettingsPage = matches.some(
     ({ id }) =>
       id === 'routes/accounts.$accountId.environments.$environmentId.settings'
