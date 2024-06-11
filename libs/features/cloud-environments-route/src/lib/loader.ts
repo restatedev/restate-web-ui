@@ -33,7 +33,7 @@ export const shouldRevalidate: ShouldRevalidateFunction = ({
   nextParams,
   nextUrl,
 }) => {
-  return currentUrl.pathname !== nextUrl.pathname;
+  return defaultShouldRevalidate && nextUrl.search === currentUrl.search;
 };
 
 export const clientLoader = async ({
