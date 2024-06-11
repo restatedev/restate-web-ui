@@ -38,8 +38,9 @@ function VersionFetcher() {
   useEffect(() => {
     let cancelled = false;
     const url = environmentDetails?.data?.adminBaseUrl;
+    const isActive = environmentDetails?.data?.status === 'ACTIVE';
     const abortController = new AbortController();
-    if (url) {
+    if (url && isActive) {
       fetch(`${url}/openapi`, {
         headers: {
           'Content-Type': 'application/json',
