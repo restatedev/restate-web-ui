@@ -80,7 +80,10 @@ export function CLI({ isLoading }: { isLoading: boolean }) {
                       <SnippetCopy copyText="restate cloud env tunnel" />
                     </Snippet>
                     <Snippet>
-                      # curl http://localhost:8080/MyService/MyHandler
+                      # Now you're ready to run and register your first service
+                    </Snippet>
+                    <Snippet>
+                      # Check https://docs.restate.dev/get_started/quickstart/
                     </Snippet>
                   </Code>
                 );
