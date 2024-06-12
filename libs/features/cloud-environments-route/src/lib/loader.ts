@@ -33,6 +33,9 @@ export const shouldRevalidate: ShouldRevalidateFunction = ({
   nextParams,
   nextUrl,
 }) => {
+  if (!nextParams.environmentId) {
+    return true;
+  }
   return defaultShouldRevalidate;
 };
 
