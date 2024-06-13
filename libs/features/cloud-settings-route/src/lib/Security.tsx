@@ -10,20 +10,32 @@ import { Loading } from './Loading';
 import { Icon, IconName } from '@restate/ui/icons';
 import { LearnMore } from './LearnMore';
 
-const awsIdentityRole = (id: string) =>
+const awsRoleTrustPolicy = (environmentId: string) =>
   JSON.stringify(
     {
-      Sid: 'AllowRestateCloudToAssumeRole',
-      Effect: 'Allow',
-      Principal: {
-        AWS: 'arn:aws:iam::654654156625:role/RestateCloud',
-      },
-      Action: ['sts:AssumeRole', 'sts:TagSession'],
-      Condition: {
-        StringEquals: {
-          'sts:ExternalId': id,
+      Version: '2012-10-17',
+      Statement: [
+        {
+          Effect: 'Allow',
+          Principal: {
+            AWS: 'arn:aws:iam::654654156625:root'
+          },
+          Action: 'sts:AssumeRole',
+          Condition: {
+            StringEquals: {
+              'aws:PrincipalArn': 'arn:aws:iam::654654156625:role/RestateCloud',
+              'sts:ExternalId': environmentId
+            }
+          }
         },
-      },
+        {
+          Effect: 'Allow',
+          Principal: {
+            AWS: 'arn:aws:iam::654654156625:root'
+          },
+          Action: 'sts:TagSession'
+        }
+      ]
     },
     null,
     4
@@ -76,9 +88,9 @@ export function Security({ isLoading }: { isLoading: boolean }) {
                       Lambda and give it this trust policy:
                       <Code>
                         <Snippet language="json">
-                          {awsIdentityRole(environmentId)}
+                          {awsRoleTrustPolicy(environmentId)}
                           <SnippetCopy
-                            copyText={awsIdentityRole(environmentId)}
+                            copyText={awsRoleTrustPolicy(environmentId)}
                           />
                         </Snippet>
                       </Code>
