@@ -39,6 +39,7 @@ testem.log
 Thumbs.db
 
 .nx/cache
+.nx/workspace-data
 /.editorconfig
 /.vscode
 /db.json
