@@ -66,7 +66,15 @@ function APIKeysList({ children }: PropsWithChildren<object>) {
 
   return (
     <>
-      <Suspense fallback={<LoadingKey />}>
+      <Suspense
+        fallback={
+          <div>
+            {environmentDetails.data?.apiKeys.map(({ keyId }) => (
+              <LoadingKey key={keyId} />
+            ))}
+          </div>
+        }
+      >
         <Await resolve={apiKeysWithDetailsPromise}>
           {(apiKeysWithDetails) => (
             <ul className="flex flex-col gap-0 shadow-sm rounded-xl">
@@ -106,6 +114,6 @@ function LoadingKeys() {
 }
 function LoadingKey() {
   return (
-    <Loading className="h-[4.375rem] w-full first:rounded-t-xl last:rounded-b-xl  border-b-0 last:border-b border-gray-100 relative" />
+    <Loading className="h-[4.625rem] w-full first:rounded-t-xl last:rounded-b-xl border-b-0 last:border-b border-gray-100 relative" />
   );
 }
