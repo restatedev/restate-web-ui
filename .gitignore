@@ -43,3 +43,4 @@ Thumbs.db
 /.editorconfig
 /.vscode
 /db.json
+.wrangler
