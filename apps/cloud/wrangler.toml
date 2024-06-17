@@ -1,0 +1,4 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "restate-web-ui"
+[vars]
+SLACK_TOKEN = "test"

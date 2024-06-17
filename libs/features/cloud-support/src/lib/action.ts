@@ -28,62 +28,59 @@ export const action = async ({
   });
 
   if (response.data?.userId) {
-    const slackResponse = await fetch(
-      'https://slack.com/api/chat.postMessage',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json; charset=utf-8',
-          Authorization: `Bearer ${env.SLACK_TOKEN}`,
-          Accept: 'application/json',
-        },
-        body: JSON.stringify({
-          channel: 'cloud-support',
-          attachments: [
-            {
-              color: '#222452',
-              blocks: [
-                {
-                  type: 'section',
-                  text: {
+    const slackResponse = await fetch(process.env.SLACK_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        Authorization: `Bearer ${env.SLACK_TOKEN}`,
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({
+        channel: 'cloud-support',
+        attachments: [
+          {
+            color: '#222452',
+            blocks: [
+              {
+                type: 'section',
+                text: {
+                  type: 'mrkdwn',
+                  text: '*Support ticket*',
+                },
+              },
+              {
+                type: 'section',
+                text: {
+                  type: 'mrkdwn',
+                  text: description,
+                },
+              },
+              {
+                type: 'context',
+                elements: [
+                  {
                     type: 'mrkdwn',
-                    text: '*Support ticket*',
+                    text: `*User:* ${response.data?.userId}`,
                   },
-                },
-                {
-                  type: 'section',
-                  text: {
+                  {
                     type: 'mrkdwn',
-                    text: description,
+                    text: `*Account:* ${accountId}`,
                   },
-                },
-                {
-                  type: 'context',
-                  elements: [
-                    {
-                      type: 'mrkdwn',
-                      text: `*User:* ${response.data?.userId}`,
-                    },
-                    {
-                      type: 'mrkdwn',
-                      text: `*Account:* ${accountId}`,
-                    },
-                    {
-                      type: 'mrkdwn',
-                      text: `*Environment:* ${environmentId}`,
-                    },
-                    {
-                      type: 'mrkdwn',
-                      text: `*Issue:* ${issue}`,
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        }),
-      }
-    );
+                  {
+                    type: 'mrkdwn',
+                    text: `*Environment:* ${environmentId}`,
+                  },
+                  {
+                    type: 'mrkdwn',
+                    text: `*Issue:* ${issue}`,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      }),
+    });
     const res: any = await slackResponse.json();
     if (res?.ok) {
       return json({ ok: true });
