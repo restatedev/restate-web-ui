@@ -103,6 +103,11 @@
     "overrides": {
       "@types/react": "npm:types-react@rc",
       "@types/react-dom": "npm:types-react-dom@rc"
+    },
+    "peerDependencyRules": {
+      "allowedVersions": {
+        "react": "19"
+      }
     }
   },
   "packageManager": "pnpm@9.3.0"
