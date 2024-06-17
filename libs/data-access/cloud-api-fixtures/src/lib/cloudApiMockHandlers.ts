@@ -483,6 +483,10 @@ const loginHandler = http.get('/login', async ({ request }) => {
   return HttpResponse.redirect('http://localhost:4200/auth?code=1234');
 });
 
+const slackHandler = http.post('/slack', async ({ request }) => {
+  return HttpResponse.json({ ok: true }, { status: 200 });
+});
+
 export const cloudApiMockHandlers = [
   getUserIdentityHandler,
   createAccountHandler,
@@ -500,4 +504,5 @@ export const cloudApiMockHandlers = [
   healthHandler,
   tokenHandler,
   loginHandler,
+  slackHandler,
 ];

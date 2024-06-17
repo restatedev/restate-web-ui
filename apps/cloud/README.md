@@ -1,6 +1,6 @@
 # Cloud App
 
-This application is for Restate Cloud UI, developed using [`Remix`](https://remix.run/), and deployed in [Cloud Flare]().
+This application is for Restate Cloud UI, developed using [`Remix`](https://remix.run/), and deployed in [Cloudflare](https://developers.cloudflare.com/pages/framework-guides/deploy-a-remix-site/).
 
 ### Commands
 
@@ -17,7 +17,7 @@ pnpm nx serve cloud -c prod
 # Build Cloud app in prod mode
 pnpm nx build cloud
 
-# Start the Cloud app with Cloud Flare setup
+# Start the Cloud app with Cloudflare setup
 pnpm nx start cloud -c mock|dev|prod
 
 # Run unit tests for Cloud app
@@ -36,7 +36,7 @@ These env variables/secrets need to be setup:
   - `RESTATE_AUTH_CLIENT_ID`: The client id for AWS Cognito
   - `RESTATE_CLOUD_API_URL`: The Restate Cloud base url
   - `SLACK_API_URL`: The Slack API url
-- **Secrets**: The secrets are set in Cloud Flare dashboard.
+- **Secrets**: The secrets are set in Cloudflare dashboard.
   - `SLACK_TOKEN`: The slack token for `restate-cloud-support` app
 
 ### Deployments
