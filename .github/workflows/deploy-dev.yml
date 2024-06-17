@@ -18,7 +18,7 @@ jobs:
     steps:
       - uses: pnpm/action-setup@v4
         with:
-          version: 8
+          version: 9
       - name: Checkout
         uses: actions/checkout@v3
       - name: Build
@@ -28,7 +28,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          wranglerVersion: 3.59.0
+          wranglerVersion: 3.60.3
           workingDirectory: apps/cloud
           command: pages deploy ../../dist/apps/cloud/client --project-name=restate-web-ui --branch=dev --commit-hash=${{ github.sha }}
       - name: Cloudflare Purge Cache
