@@ -4,6 +4,7 @@ import {
 } from '@remix-run/dev';
 import { defineConfig, loadEnv } from 'vite';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
+import { remixDevTools } from 'remix-development-tools';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
@@ -11,6 +12,7 @@ export default defineConfig(({ mode }) => {
     root: __dirname,
     cacheDir: '../../node_modules/.vite/apps/cloud',
     plugins: [
+      remixDevTools(),
       remixCloudflareDevProxy(),
       remix({
         future: {
