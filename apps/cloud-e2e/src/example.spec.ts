@@ -5,6 +5,6 @@ test('has title', async ({ page }) => {
 
   await page.waitForURL((url) => {
     console.log(url.href);
-    return url.pathname.startsWith('/accounts');
+    return url.pathname.startsWith('/auth');
   });
 });
