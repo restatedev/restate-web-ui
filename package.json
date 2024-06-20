@@ -106,7 +106,10 @@
       "@types/react-dom": "npm:types-react-dom@rc"
     },
     "peerDependencyRules": {
-      "allowAny": ["@types/react", "@types/react-dom"],
+      "allowAny": [
+        "@types/react",
+        "@types/react-dom"
+      ],
       "allowedVersions": {
         "react": "19.0.0-rc-dfd30974ab-20240613",
         "react-dom": "19.0.0-rc-dfd30974ab-20240613"
