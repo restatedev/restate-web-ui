@@ -9,7 +9,7 @@ export async function authWithCode(url: URL) {
   try {
     const searchParams = url.searchParams;
     const response = await fetch(
-      `${process.env.RESTATE_AUTH_URL}/oauth2/token`,
+      `${process.env['RESTATE_AUTH_URL']}/oauth2/token`,
       {
         method: 'POST',
         headers: {
@@ -17,7 +17,7 @@ export async function authWithCode(url: URL) {
         },
         body: new URLSearchParams({
           grant_type: 'authorization_code',
-          client_id: process.env.RESTATE_AUTH_CLIENT_ID,
+          client_id: String(process.env['RESTATE_AUTH_CLIENT_ID']),
           code: String(searchParams.get(CODE_PARAM_NAME)),
           redirect_uri: getAuthRedirectUri(url).href,
         }),

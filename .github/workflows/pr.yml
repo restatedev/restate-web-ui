@@ -1,0 +1,34 @@
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/checkout@v4
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm nx affected --targets=build --base=main --head=HEAD
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/checkout@v4
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm nx affected --targets=test --base=main --head=HEAD --passWithNoTests --watch=false
+      - run: pnpm nx affected --targets=e2e --base=main --head=HEAD
+  static-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/checkout@v4
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm nx affected --targets=lint --base=main --head=HEAD
+      - run: ./scripts/typecheck.js
+      - run: pnpm nx format:check

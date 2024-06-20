@@ -4,7 +4,7 @@ import {
 } from '@remix-run/dev';
 import { defineConfig, loadEnv } from 'vite';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
-import { remixDevTools } from 'remix-development-tools';
+import react from '@vitejs/plugin-react';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
@@ -12,15 +12,16 @@ export default defineConfig(({ mode }) => {
     root: __dirname,
     cacheDir: '../../node_modules/.vite/apps/cloud',
     plugins: [
-      remixDevTools(),
-      remixCloudflareDevProxy(),
-      remix({
-        future: {
-          v3_fetcherPersist: true,
-          v3_relativeSplatPath: true,
-          v3_throwAbortReason: true,
-        },
-      }),
+      !process.env.VITEST && remixCloudflareDevProxy(),
+      !process.env.VITEST
+        ? remix({
+            future: {
+              v3_fetcherPersist: true,
+              v3_relativeSplatPath: true,
+              v3_throwAbortReason: true,
+            },
+          })
+        : react(),
       nxViteTsPaths(),
     ],
 
@@ -40,13 +41,15 @@ export default defineConfig(({ mode }) => {
     },
     define: {
       'process.env.RESTATE_CLOUD_API_URL': JSON.stringify(
-        env.RESTATE_CLOUD_API_URL
+        env.RESTATE_CLOUD_API_URL ?? ''
       ),
-      'process.env.RESTATE_AUTH_URL': JSON.stringify(env.RESTATE_AUTH_URL),
+      'process.env.RESTATE_AUTH_URL': JSON.stringify(
+        env.RESTATE_AUTH_URL ?? ''
+      ),
       'process.env.RESTATE_AUTH_CLIENT_ID': JSON.stringify(
-        env.RESTATE_AUTH_CLIENT_ID
+        env.RESTATE_AUTH_CLIENT_ID ?? ''
       ),
-      'process.env.SLACK_API_URL': JSON.stringify(env.SLACK_API_URL),
+      'process.env.SLACK_API_URL': JSON.stringify(env.SLACK_API_URL ?? ''),
       'process.env.MOCK': JSON.stringify(
         Boolean(env.NX_TASK_TARGET_CONFIGURATION === 'mock')
       ),
