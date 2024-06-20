@@ -24,6 +24,7 @@ jobs:
           fetch-depth: 0
       - run: pnpm install --frozen-lockfile
       - run: pnpm nx affected --targets=test --base=origin/main --head=HEAD --passWithNoTests --watch=false
+      - run: npx playwright install --with-deps
       - run: pnpm nx affected --targets=e2e --base=origin/main --head=HEAD
   static-analysis:
     runs-on: ubuntu-latest
