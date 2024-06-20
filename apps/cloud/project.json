@@ -90,7 +90,24 @@
     "start": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "cd apps/cloud && wrangler pages dev ../../dist/apps/cloud/client --port=4200"
+        "commands": [
+          {
+            "command": "cd apps/cloud && wrangler pages dev ../../dist/apps/cloud/client --port=4200"
+          }
+        ]
+      },
+      "configurations": {
+        "mock": {
+          "commands": [
+            {
+              "command": "nx serve mock-cloud-api"
+            },
+            {
+              "command": "cd apps/cloud && wrangler pages dev ../../dist/apps/cloud/client --port=4200"
+            }
+          ],
+          "parallel": true
+        }
       },
       "dependsOn": ["build"]
     }
