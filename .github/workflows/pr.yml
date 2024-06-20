@@ -37,4 +37,4 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm nx affected --targets=lint --base=origin/main --head=HEAD
       - run: NX_BASE=origin/main NX_HEAD=HEAD ./scripts/typecheck.js
-      - run: pnpm nx format:check
+      - run: NX_BASE=origin/main NX_HEAD=HEAD pnpm nx format:check

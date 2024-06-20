@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { execSync } from 'child_process';
+const { execSync } = require('child_process');
 
 const projects = execSync('pnpm nx show projects --affected --json');
 for (const project of JSON.parse(projects)) {
