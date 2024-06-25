@@ -1,6 +1,6 @@
 import { Form, useAsyncValue, useSearchParams } from '@remix-run/react';
 import {
-  LogLine,
+  LogLine as LogLineI,
   getEnvironmentLogs,
 } from '@restate/data-access/cloud/api-client';
 import { Button, Spinner } from '@restate/ui/button';
@@ -17,7 +17,7 @@ import {
 import { Key } from 'react-aria-components';
 import { Link } from '@restate/ui/link';
 
-function sortLogLine(a: LogLine, b: LogLine) {
+function sortLogLine(a: LogLineI, b: LogLineI) {
   if (a.unixNanos > b.unixNanos) {
     return 1;
   }
@@ -118,7 +118,7 @@ export function LogsViewer() {
         className="py-6 absolute inset-0 overflow-auto"
         id={LOG_CONTAINER_ID}
       >
-        <GridList<LogLine>
+        <GridList<LogLineI>
           selectedKeys={selectedKeys}
           onSelectionChange={setSelectedKeys}
           aria-label="Logs"

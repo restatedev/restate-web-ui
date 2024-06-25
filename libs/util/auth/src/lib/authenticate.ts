@@ -1,4 +1,5 @@
-import { ClientLoaderFunctionArgs, redirect } from '@remix-run/react';
+import type { ClientLoaderFunctionArgs } from '@remix-run/react';
+import { redirect } from '@remix-run/cloudflare';
 import { authWithAccessToken } from './authWithAccessToken';
 import { authWithCode } from './authWithCode';
 import { CODE_PARAM_NAME } from './constants';

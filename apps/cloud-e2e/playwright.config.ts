@@ -15,6 +15,7 @@ const baseURL = process.env['BASE_URL'] || 'http://localhost:4200';
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
+
 export default defineConfig({
   ...nxE2EPreset(__filename, { testDir: './src' }),
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -25,7 +26,7 @@ export default defineConfig({
   },
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'pnpm exec nx serve cloud',
+    command: 'pnpm nx start cloud -c mock',
     url: 'http://localhost:4200',
     reuseExistingServer: !process.env.CI,
     cwd: workspaceRoot,

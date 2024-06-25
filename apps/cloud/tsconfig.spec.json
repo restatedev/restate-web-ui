@@ -7,7 +7,9 @@
       "vitest/importMeta",
       "vite/client",
       "node",
-      "vitest"
+      "vitest",
+      "../../@types/vite.d.ts",
+      "../../@types/load-context.d.ts"
     ]
   },
   "include": [

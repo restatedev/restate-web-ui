@@ -58,10 +58,7 @@ export function FormFieldSelect({
           variant="secondary"
           className="group-invalid:border-red-600 group-invalid:bg-red-100/70 flex items-center gap-2 px-2 pt-1.5 text-sm w-full rounded-[0.625rem]"
         >
-          <SelectValue
-            className="flex-auto text-left placeholder-shown:text-gray-500"
-            placeholder={placeholder}
-          />
+          <SelectValue className="flex-auto text-left placeholder-shown:text-gray-500" />
           <Icon
             name={IconName.ChevronsUpDown}
             className="w-[1.25em] h-[1.25em] text-gray-500"

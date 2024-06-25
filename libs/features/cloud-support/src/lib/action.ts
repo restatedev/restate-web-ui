@@ -1,5 +1,5 @@
-import { ActionFunctionArgs } from '@remix-run/cloudflare';
-import { json } from '@remix-run/react';
+import type { ActionFunctionArgs } from '@remix-run/cloudflare';
+import { json } from '@remix-run/cloudflare';
 import { getUserIdentity } from '@restate/data-access/cloud/api-client';
 import invariant from 'tiny-invariant';
 
@@ -27,7 +27,7 @@ export const action = async ({
     headers: { Authorization: `Bearer ${access_token}` },
   });
 
-  if (response.data?.userId) {
+  if (response.data?.userId && process.env.SLACK_API_URL) {
     const slackResponse = await fetch(process.env.SLACK_API_URL, {
       method: 'POST',
       headers: {

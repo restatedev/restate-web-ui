@@ -1,0 +1,72 @@
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build
+    steps:
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm nx affected --targets=build --base=origin/main --head=HEAD
+  test:
+    runs-on: ubuntu-latest
+    name: Test
+    steps:
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm nx affected --targets=test --base=origin/main --head=HEAD --passWithNoTests --watch=false
+      - run: npx playwright install --with-deps
+      - run: pnpm nx affected --targets=e2e --base=origin/main --head=HEAD
+  static-analysis:
+    runs-on: ubuntu-latest
+    name: Static Analyzis
+    steps:
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm nx affected --targets=lint --base=origin/main --head=HEAD
+      - run: NX_BASE=origin/main NX_HEAD=HEAD ./scripts/typecheck.js
+      - run: NX_BASE=origin/main NX_HEAD=HEAD pnpm nx format:check
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    name: Deploy to Cloudflare Pages
+    env:
+      RESTATE_AUTH_URL: 'https://auth-dev.restate.cloud'
+      RESTATE_AUTH_CLIENT_ID: '1v1rkegmilgjlphium3ksgurek'
+      RESTATE_CLOUD_API_URL: 'https://api.dev.restate.cloud/cloud'
+      SLACK_API_URL: 'https://slack.com/api/chat.postMessage'
+      VERSION: ${{ github.sha }}
+    steps:
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build
+        run: pnpm i && pnpm nx build cloud --skip-nx-cache
+      - name: Publish
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: 3.60.3
+          workingDirectory: apps/cloud
+          command: pages deploy ../../dist/apps/cloud/client --project-name=restate-web-ui --commit-dirty=true --commit-hash=${{ github.sha }}
