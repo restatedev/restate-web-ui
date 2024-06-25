@@ -4,6 +4,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    name: Build
     steps:
       - uses: pnpm/action-setup@v4
         with:
@@ -15,6 +16,7 @@ jobs:
       - run: pnpm nx affected --targets=build --base=origin/main --head=HEAD
   test:
     runs-on: ubuntu-latest
+    name: Test
     steps:
       - uses: pnpm/action-setup@v4
         with:
@@ -28,6 +30,7 @@ jobs:
       - run: pnpm nx affected --targets=e2e --base=origin/main --head=HEAD
   static-analysis:
     runs-on: ubuntu-latest
+    name: Static Analyzis
     steps:
       - uses: pnpm/action-setup@v4
         with:
