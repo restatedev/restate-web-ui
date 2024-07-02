@@ -16,7 +16,7 @@ jobs:
       - run: pnpm nx affected --targets=build --base=origin/main --head=HEAD
   test:
     runs-on: ubuntu-latest
-    name: Test
+    name: Unit tests
     steps:
       - uses: pnpm/action-setup@v4
         with:
@@ -45,7 +45,7 @@ jobs:
     permissions:
       contents: read
       deployments: write
-    name: Run e2e tests
+    name: E2E tests
     env:
       RESTATE_AUTH_URL: 'https://auth-dev.restate.cloud'
       RESTATE_AUTH_CLIENT_ID: '1v1rkegmilgjlphium3ksgurek'
@@ -56,10 +56,10 @@ jobs:
       - uses: pnpm/action-setup@v4
         with:
           version: 9
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Build
-        run: pnpm i && pnpm nx build cloud --skip-nx-cache
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: pnpm i && pnpm nx build cloud --skip-nx-cache
       - run: npx playwright install --with-deps
       - name: Cloud Deploy
         id: deploy
