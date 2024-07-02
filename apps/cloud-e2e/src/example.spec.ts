@@ -1,7 +1,6 @@
-import { test } from '@playwright/test';
+import { test } from '@restate/util/playwright';
 
-test('has title', async ({ page }) => {
+test('has title', async ({ page, baseURL }) => {
   await page.goto('/');
-
-  await page.waitForURL('/accounts/**');
+  await page.waitForURL(`**/login**&redirect_uri=${baseURL}/auth`);
 });
