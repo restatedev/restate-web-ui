@@ -1,0 +1,9 @@
+{
+  "name": "util-playwright",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/util/playwright/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project util-playwright --web",
+  "targets": {}
+}

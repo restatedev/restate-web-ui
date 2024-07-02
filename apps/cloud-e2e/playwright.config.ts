@@ -1,10 +1,12 @@
 import { defineConfig, devices } from '@playwright/test';
 import { nxE2EPreset } from '@nx/playwright/preset';
-
-import { workspaceRoot } from '@nx/devkit';
-
-// For CI, you may want to set BASE_URL to the deployed application.
-const baseURL = process.env['BASE_URL'] || 'http://localhost:4200';
+const appEnv = process.env['APP_ENV'] || 'mock';
+const BASE_URL: Record<string, string> = {
+  dev: 'https://dev.cloud.restate.dev',
+  prod: 'https://cloud.restate.dev',
+  mock: 'http://localhost:4200',
+};
+export const baseURL = BASE_URL[appEnv] || 'http://localhost:4200';
 
 /**
  * Read environment variables from file.
@@ -25,12 +27,12 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   /* Run your local dev server before starting the tests */
-  webServer: {
-    command: 'pnpm nx start cloud -c mock',
-    url: 'http://localhost:4200',
-    reuseExistingServer: !process.env.CI,
-    cwd: workspaceRoot,
-  },
+  // webServer: {
+  //   command: `pnpm nx start cloud -c ${appEnv}`,
+  //   url: baseURL,
+  //   reuseExistingServer: !process.env.CI,
+  //   cwd: workspaceRoot,
+  // },
   projects: [
     {
       name: 'chromium',

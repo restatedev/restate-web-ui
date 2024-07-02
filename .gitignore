@@ -44,3 +44,4 @@ Thumbs.db
 /.vscode
 /db.json
 .wrangler
+.nx
