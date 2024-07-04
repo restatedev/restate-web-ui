@@ -1,13 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 import { nxE2EPreset } from '@nx/playwright/preset';
-const appEnv = process.env['APP_ENV'] || 'mock';
-const BASE_URL: Record<string, string> = {
-  dev: 'https://dev.cloud.restate.dev',
-  prod: 'https://cloud.restate.dev',
-  mock: 'http://localhost:4200',
-};
-export const baseURL = BASE_URL[appEnv] || 'http://localhost:4200';
 
+export const baseURL = process.env['BASE_URL'] || 'http://localhost:4200';
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
@@ -34,19 +28,33 @@ export default defineConfig({
   //   cwd: workspaceRoot,
   // },
   projects: [
+    { name: 'auth', testMatch: 'auth.setup.ts' },
+
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'playwright/.auth/user.json',
+      },
+      dependencies: ['auth'],
     },
 
     {
       name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
+      use: {
+        ...devices['Desktop Firefox'],
+        storageState: 'playwright/.auth/user.json',
+      },
+      dependencies: ['auth'],
     },
 
     {
       name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
+      use: {
+        ...devices['Desktop Safari'],
+        storageState: 'playwright/.auth/user.json',
+      },
+      dependencies: ['auth'],
     },
 
     // Uncomment for mobile browsers support

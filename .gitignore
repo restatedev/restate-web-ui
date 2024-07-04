@@ -45,3 +45,5 @@ Thumbs.db
 /db.json
 .wrangler
 .nx
+**/playwright/.auth
+test-results

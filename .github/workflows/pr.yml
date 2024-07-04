@@ -52,6 +52,8 @@ jobs:
       RESTATE_CLOUD_API_URL: 'https://api.dev.restate.cloud/cloud'
       SLACK_API_URL: 'https://slack.com/api/chat.postMessage'
       VERSION: ${{ github.sha }}
+      APP_USERNAME: ${{ vars.DEV_USERNAME }}
+      APP_PASSWORD: ${{ secrets.DEV_PASSWORD }}
     steps:
       - uses: pnpm/action-setup@v4
         with:
@@ -73,5 +75,5 @@ jobs:
       - name: Cloud E2E
         env:
           DEPLOYMENT_URL: ${{ steps.deploy.outputs.deployment-url }}
-          APP_ENV: dev
+          BASE_URL: https://dev.cloud.restate.dev
         run: pnpm nx affected --targets=e2e --base=origin/main --head=HEAD
