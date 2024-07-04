@@ -2,7 +2,7 @@ import { test as setup } from '@restate/util/playwright';
 
 const authFile = 'playwright/.auth/user.json';
 
-setup('authenticate', async ({ baseURL, browser, page }) => {
+setup('authenticate', async ({ baseURL, page }) => {
   // Redirects to login page.
   await page.goto('/');
   await page.waitForURL(`**/login**&redirect_uri=${baseURL}/auth`);
