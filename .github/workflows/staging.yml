@@ -36,10 +36,10 @@ jobs:
           CLOUDFLARE_ZONE: ${{ secrets.CLOUDFLARE_ZONE }}
           CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           PURGE_URLS: '["https://dev.cloud.restate.dev"]'
-  e2e:
+  e2e-staging:
     runs-on: ubuntu-latest
     concurrency:
-      group: staging-environment
+      group: e2e-staging
       cancel-in-progress: false
     permissions:
       contents: read
