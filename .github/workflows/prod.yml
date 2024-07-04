@@ -8,7 +8,7 @@ jobs:
     permissions:
       contents: read
       deployments: write
-    name: Deploy to Cloudflare Pages
+    name: Deploy to Prod
     env:
       RESTATE_AUTH_URL: 'https://auth.restate.cloud'
       RESTATE_AUTH_CLIENT_ID: '5q3dsdnrr5r400jvibd8d3k66l'
