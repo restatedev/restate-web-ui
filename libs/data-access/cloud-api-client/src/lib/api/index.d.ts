@@ -16,6 +16,10 @@ export interface paths {
     /** Create a new account */
     post: operations['CreateAccount'];
   };
+  '/DeleteAccount': {
+    /** Delete an account */
+    post: operations['DeleteAccount'];
+  };
   '/UpdateAccount': {
     /** Update account details */
     post: operations['UpdateAccount'];
@@ -92,6 +96,16 @@ export interface components {
       accountId: string;
       name: string;
     };
+    DeleteAccountRequest: {
+      accountId: string;
+    };
+    DeleteAccountResponse: {
+      result?:
+        | {
+            ok: boolean;
+          }
+        | string;
+    };
     UpdateAccountRequest: {
       accountId: string;
       name?: string;
@@ -127,7 +141,7 @@ export interface components {
       name: string;
       /** @enum {string} */
       status: 'PENDING' | 'ACTIVE' | 'FAILED' | 'DELETED';
-      signingPublicKey?: string;
+      signingPublicKey: string;
       apiKeys: {
         keyId: string;
         environmentId: string;
@@ -306,6 +320,40 @@ export interface operations {
       200: {
         content: {
           'application/json': components['schemas']['CreateAccountResponse'];
+        };
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['ClientError'];
+        };
+      };
+      /** @description The client has not provided a valid token for a principal authorized to make the requested operation. */
+      401: {
+        content: {
+          'application/json': components['schemas']['UnauthorizedError'];
+        };
+      };
+      /** @description Indicates a failure on the service-side. Generally this type of error is retryable. */
+      500: {
+        content: {
+          'application/json': components['schemas']['ServerInternalError'];
+        };
+      };
+    };
+  };
+  /** Delete an account */
+  DeleteAccount: {
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['DeleteAccountRequest'];
+      };
+    };
+    responses: {
+      /** @description The operation completed successfully. */
+      200: {
+        content: {
+          'application/json': components['schemas']['DeleteAccountResponse'];
         };
       };
       /** @description Client error */

@@ -122,6 +122,44 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ServerInternalError'
+  /DeleteAccount:
+    post:
+      operationId: DeleteAccount
+      summary: Delete an account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteAccountRequest'
+      responses:
+        '200':
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteAccountResponse'
+        '400':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientError'
+        '401':
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '500':
+          description:
+            Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerInternalError'
   /UpdateAccount:
     post:
       operationId: UpdateAccount
@@ -651,6 +689,25 @@ components:
       required:
         - accountId
         - name
+    DeleteAccountRequest:
+      type: object
+      properties:
+        accountId:
+          type: string
+      required:
+        - accountId
+    DeleteAccountResponse:
+      type: object
+      properties:
+        result:
+          anyOf:
+            - type: object
+              properties:
+                ok:
+                  type: boolean
+              required:
+                - ok
+            - type: string
     UpdateAccountRequest:
       type: object
       properties:
@@ -759,6 +816,7 @@ components:
         - environmentId
         - name
         - status
+        - signingPublicKey
         - apiKeys
         - ingressBaseUrl
         - adminBaseUrl
