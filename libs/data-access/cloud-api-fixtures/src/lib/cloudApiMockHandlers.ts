@@ -60,6 +60,27 @@ const createAccountHandler = http.post<
   });
 });
 
+const deleteAccountHandler = http.post<
+  never,
+  NonNullable<
+    cloudApi.operations['DeleteAccount']['requestBody']
+  >['content']['application/json'],
+  | cloudApi.operations['DeleteAccount']['responses']['200']['content']['application/json']
+  | cloudApi.operations['DeleteAccount']['responses']['500']['content']['application/json'],
+  GetPath<'/DeleteAccount'>
+>('/DeleteAccount', async ({ request }) => {
+  const requestBody = await request.json();
+  cloudApiDb.account.delete({
+    where: {
+      accountId: {
+        equals: requestBody.accountId,
+      },
+    },
+  });
+
+  return HttpResponse.json({});
+});
+
 const listAccountsHandler = http.post<
   never,
   never,
