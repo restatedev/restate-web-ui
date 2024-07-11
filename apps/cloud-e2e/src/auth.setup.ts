@@ -19,7 +19,7 @@ setup('authenticate', async ({ baseURL, page }) => {
   // Sometimes login flow sets cookies in the process of several redirects.
   // Wait for the final URL to ensure that the cookies are actually set.
   await page.waitForURL(`${baseURL}/auth?code=**`);
-  await page.waitForURL(`${baseURL}/accounts**`);
+  await page.waitForURL(`${baseURL}/accounts`);
 
   // End of authentication steps.
   await page.context().storageState({ path: authFile });
