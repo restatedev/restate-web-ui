@@ -513,16 +513,15 @@ const loginPageHandler = http.get('/login', async ({ request }) => {
       <body>
         <form action="/login" method="POST" name="cognitoSignInForm">
           <label for="signInFormUsername" class="label-customizable">Email</label>
-          <div>
-            <input
-              id="signInFormUsername"
-              name="username"
-              type="text"
-              placeholder="name@host.com"
-              autocapitalize="none"
-              required=""
-            />
-          </div>
+          <input
+            id="signInFormUsername"
+            name="username"
+            type="text"
+            placeholder="name@host.com"
+            autocapitalize="none"
+            required=""
+            aria-label="name@host.com"
+          />
     
           <label for="signInFormPassword">Password</label>
           <input
