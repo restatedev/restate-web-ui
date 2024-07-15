@@ -3,7 +3,9 @@ const deploymentURL = process.env['DEPLOYMENT_URL'];
 
 export const test = base.extend<{ targetURL: string }>({
   targetURL: async ({ baseURL }, use) => {
-    await use(String(deploymentURL ?? baseURL));
+    await use(
+      new URL(String(deploymentURL ?? baseURL)).href.replace(/\/$/, '')
+    );
   },
   page: async ({ baseURL, page }, use) => {
     if (deploymentURL) {
