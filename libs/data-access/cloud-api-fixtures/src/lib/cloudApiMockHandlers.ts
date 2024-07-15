@@ -60,6 +60,27 @@ const createAccountHandler = http.post<
   });
 });
 
+const deleteAccountHandler = http.post<
+  never,
+  NonNullable<
+    cloudApi.operations['DeleteAccount']['requestBody']
+  >['content']['application/json'],
+  | cloudApi.operations['DeleteAccount']['responses']['200']['content']['application/json']
+  | cloudApi.operations['DeleteAccount']['responses']['500']['content']['application/json'],
+  GetPath<'/DeleteAccount'>
+>('/DeleteAccount', async ({ request }) => {
+  const requestBody = await request.json();
+  cloudApiDb.account.delete({
+    where: {
+      accountId: {
+        equals: requestBody.accountId,
+      },
+    },
+  });
+
+  return HttpResponse.json({});
+});
+
 const listAccountsHandler = http.post<
   never,
   never,
@@ -153,7 +174,6 @@ const destroyEnvironmentHandler = http.post<
   GetPath<'/{accountId}/DestroyEnvironment'>
 >('/:accountId/DestroyEnvironment', async ({ request }) => {
   const requestBody = await request.json();
-
   const environment = cloudApiDb.environment.findFirst({
     where: {
       environmentId: { equals: requestBody.environmentId },
@@ -479,7 +499,57 @@ const tokenHandler = http.post('/oauth2/token', async ({ request }) => {
   return HttpResponse.json({ access_token: '1234' }, { status: 200 });
 });
 
-const loginHandler = http.get('/login', async ({ request }) => {
+const loginPageHandler = http.get('/login', async ({ request }) => {
+  return new HttpResponse(
+    `
+    <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+      </head>
+      <body>
+        <form action="/login" method="POST" name="cognitoSignInForm">
+          <label for="signInFormUsername" class="label-customizable">Email</label>
+          <input
+            id="signInFormUsername"
+            name="username"
+            type="text"
+            placeholder="name@host.com"
+            autocapitalize="none"
+            required=""
+            aria-label="name@host.com"
+          />
+    
+          <label for="signInFormPassword">Password</label>
+          <input
+            id="signInFormPassword"
+            name="password"
+            type="password"
+            placeholder="Password"
+            required=""
+          />
+          <input
+            name="signInSubmitButton"
+            type="Submit"
+            value="Sign in"
+            aria-label="submit"
+          />
+        </form>
+      </body>
+    </html>    
+`,
+    {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/html',
+      },
+    }
+  );
+});
+
+const loginHandler = http.post('/login', async ({ request }) => {
   return HttpResponse.redirect('http://localhost:4200/auth?code=1234');
 });
 
@@ -505,4 +575,6 @@ export const cloudApiMockHandlers = [
   tokenHandler,
   loginHandler,
   slackHandler,
+  loginPageHandler,
+  deleteAccountHandler,
 ];

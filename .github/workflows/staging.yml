@@ -2,15 +2,49 @@ on:
   push:
     branches: [main]
 jobs:
-  e2e:
+  deploy-dev:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    name: Deploy to Dev environment
+    env:
+      RESTATE_AUTH_URL: 'https://auth-dev.restate.cloud'
+      RESTATE_AUTH_CLIENT_ID: '1v1rkegmilgjlphium3ksgurek'
+      RESTATE_CLOUD_API_URL: 'https://api.dev.restate.cloud/cloud'
+      SLACK_API_URL: 'https://slack.com/api/chat.postMessage'
+      VERSION: ${{ github.sha }}
+    steps:
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Build
+        run: pnpm i && pnpm nx build cloud
+      - name: Publish
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: 3.60.3
+          workingDirectory: apps/cloud
+          command: pages deploy ../../dist/apps/cloud/client --project-name=restate-web-ui --branch=dev --commit-hash=${{ github.sha }}
+      - name: Cloudflare Purge Cache
+        uses: jakejarvis/cloudflare-purge-action@v0.3.0
+        env:
+          CLOUDFLARE_ZONE: ${{ secrets.CLOUDFLARE_ZONE }}
+          CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          PURGE_URLS: '["https://dev.cloud.restate.dev"]'
+  e2e-staging:
     runs-on: ubuntu-latest
     concurrency:
-      group: staging-environment
+      group: e2e-staging
       cancel-in-progress: false
     permissions:
       contents: read
       deployments: write
-    name: E2E tests
+    name: E2E tests against main
     env:
       RESTATE_AUTH_URL: 'https://auth.restate.cloud'
       RESTATE_AUTH_CLIENT_ID: '5q3dsdnrr5r400jvibd8d3k66l'

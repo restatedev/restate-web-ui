@@ -6,6 +6,5 @@ export function getLoginUrl(url: URL) {
       process.env['RESTATE_AUTH_CLIENT_ID']
     }&response_type=code&redirect_uri=${getAuthRedirectUri(url).href}`
   );
-
   return url;
 }

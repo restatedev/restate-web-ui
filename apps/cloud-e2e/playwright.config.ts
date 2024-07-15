@@ -28,7 +28,23 @@ export default defineConfig({
   //   cwd: workspaceRoot,
   // },
   projects: [
-    { name: 'auth', testMatch: 'auth.setup.ts' },
+    { name: 'auth', testMatch: 'auth.setup.ts', retries: 3 },
+    {
+      name: 'cleanup',
+      testMatch: 'cleanup.teardown.ts',
+      use: {
+        storageState: 'playwright/.auth/user.json',
+      },
+    },
+    {
+      name: 'onboarding',
+      testMatch: 'onboarding.setup.ts',
+      dependencies: ['auth'],
+      teardown: 'cleanup',
+      use: {
+        storageState: 'playwright/.auth/user.json',
+      },
+    },
 
     {
       name: 'chromium',
@@ -36,7 +52,7 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         storageState: 'playwright/.auth/user.json',
       },
-      dependencies: ['auth'],
+      dependencies: ['onboarding'],
     },
 
     {
@@ -45,7 +61,7 @@ export default defineConfig({
         ...devices['Desktop Firefox'],
         storageState: 'playwright/.auth/user.json',
       },
-      dependencies: ['auth'],
+      dependencies: ['onboarding'],
     },
 
     {
@@ -54,7 +70,7 @@ export default defineConfig({
         ...devices['Desktop Safari'],
         storageState: 'playwright/.auth/user.json',
       },
-      dependencies: ['auth'],
+      dependencies: ['onboarding'],
     },
 
     // Uncomment for mobile browsers support

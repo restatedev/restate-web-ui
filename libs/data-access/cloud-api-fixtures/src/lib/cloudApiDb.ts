@@ -62,6 +62,7 @@ const persistDbData = () => {
 
 type RawDbData = ReturnType<typeof getRawDbData>;
 const dbInstance = cloudApiDb[DATABASE_INSTANCE];
+const isE2E = process.env['SCENARIO'] === 'E2E';
 
 let persistedDbData: string | null = null;
 try {
@@ -69,80 +70,84 @@ try {
   // eslint-disable-next-line no-empty
 } catch (_) {}
 
-if (persistedDbData) {
-  const { users, accounts, environments, apiKeys } = JSON.parse(
-    persistedDbData
-  ) as RawDbData;
-  users.map((user) => cloudApiDb.user.create({ userId: user.userId }));
-  accounts.map((account) =>
-    cloudApiDb.account.create({
-      accountId: account.accountId,
-      name: account.name,
-      users: cloudApiDb.user.findMany({
-        where: {
-          userId: {
-            in: account.users.map(({ userId }) => userId),
-          },
-        },
-      }),
-    })
-  );
-  environments.map((environment) =>
-    cloudApiDb.environment.create({
-      environmentId: environment.environmentId,
-      name: environment.name,
-      account: cloudApiDb.account.findFirst({
-        where: {
-          accountId: {
-            equals: environment.account?.accountId,
-          },
-        },
-      })!,
-    })
-  );
-  apiKeys.map((apiKey) =>
-    cloudApiDb.apiKey.create({
-      roleId: apiKey.roleId,
-      keyId: apiKey.keyId,
-      apiKey: apiKey.apiKey,
-      state: apiKey.state,
-      account: cloudApiDb.account.findFirst({
-        where: {
-          accountId: {
-            equals: apiKey.account?.accountId,
-          },
-        },
-      })!,
-      environment: cloudApiDb.environment.findFirst({
-        where: {
-          environmentId: {
-            equals: apiKey.environment?.environmentId,
-          },
-        },
-      })!,
-    })
-  );
+if (isE2E) {
+  cloudApiDb.user.create();
 } else {
-  const users = Array(5)
-    .fill(null)
-    .map(() => cloudApiDb.user.create());
-  const account = cloudApiDb.account.create({
-    users,
-  });
-  const environments = (
-    ['PENDING', 'ACTIVE', 'FAILED', 'DELETED'] as const
-  ).map((status) =>
-    cloudApiDb.environment.create({
-      account,
-      status,
-    })
-  );
-  environments.forEach((environment) => {
-    cloudApiDb.apiKey.create({
-      environment,
-      account: environment.account,
+  if (persistedDbData) {
+    const { users, accounts, environments, apiKeys } = JSON.parse(
+      persistedDbData
+    ) as RawDbData;
+    users.map((user) => cloudApiDb.user.create({ userId: user.userId }));
+    accounts.map((account) =>
+      cloudApiDb.account.create({
+        accountId: account.accountId,
+        name: account.name,
+        users: cloudApiDb.user.findMany({
+          where: {
+            userId: {
+              in: account.users.map(({ userId }) => userId),
+            },
+          },
+        }),
+      })
+    );
+    environments.map((environment) =>
+      cloudApiDb.environment.create({
+        environmentId: environment.environmentId,
+        name: environment.name,
+        account: cloudApiDb.account.findFirst({
+          where: {
+            accountId: {
+              equals: environment.account?.accountId,
+            },
+          },
+        })!,
+      })
+    );
+    apiKeys.map((apiKey) =>
+      cloudApiDb.apiKey.create({
+        roleId: apiKey.roleId,
+        keyId: apiKey.keyId,
+        apiKey: apiKey.apiKey,
+        state: apiKey.state,
+        account: cloudApiDb.account.findFirst({
+          where: {
+            accountId: {
+              equals: apiKey.account?.accountId,
+            },
+          },
+        })!,
+        environment: cloudApiDb.environment.findFirst({
+          where: {
+            environmentId: {
+              equals: apiKey.environment?.environmentId,
+            },
+          },
+        })!,
+      })
+    );
+  } else {
+    const users = Array(5)
+      .fill(null)
+      .map(() => cloudApiDb.user.create());
+    const account = cloudApiDb.account.create({
+      users,
     });
-  });
+    const environments = (
+      ['PENDING', 'ACTIVE', 'FAILED', 'DELETED'] as const
+    ).map((status) =>
+      cloudApiDb.environment.create({
+        account,
+        status,
+      })
+    );
+    environments.forEach((environment) => {
+      cloudApiDb.apiKey.create({
+        environment,
+        account: environment.account,
+      });
+    });
+  }
 }
 
 dbInstance.events.removeAllListeners();

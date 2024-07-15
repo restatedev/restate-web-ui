@@ -14,11 +14,11 @@ type AllParams<
 > = NonNullable<Operation['parameters']>['path'] &
   RemovePropsWithNeverType<
     NonNullable<Operation['requestBody']>['content']['application/json']
-  >;
+  > & { headers?: HeadersInit };
 
 export async function getUserIdentity({
   headers,
-}: { headers?: HeadersInit } = {}) {
+}: AllParams<cloudApi.operations['GetUserIdentity']> = {}) {
   return apiClient.POST('/GetUserIdentity', { headers });
 }
 
@@ -27,11 +27,23 @@ export async function createAccount(
 ) {
   return apiClient.POST('/CreateAccount', {
     body: { name: params.name },
+    headers: params?.headers,
   });
 }
 
-export async function listAccounts() {
-  return apiClient.POST('/ListAccounts');
+export async function deleteAccount(
+  params: AllParams<cloudApi.operations['DeleteAccount']>
+) {
+  return apiClient.POST('/DeleteAccount', {
+    body: { accountId: params.accountId },
+    headers: params?.headers,
+  });
+}
+
+export async function listAccounts(
+  params: AllParams<cloudApi.operations['ListAccounts']>
+) {
+  return apiClient.POST('/ListAccounts', { headers: params?.headers });
 }
 
 export async function describeEnvironment(
@@ -42,6 +54,7 @@ export async function describeEnvironment(
     body: {
       environmentId: params.environmentId,
     },
+    headers: params?.headers,
   });
 }
 
@@ -53,6 +66,7 @@ export async function destroyEnvironment(
     body: {
       environmentId: params.environmentId,
     },
+    headers: params?.headers,
   });
 }
 
@@ -62,6 +76,7 @@ export async function createEnvironment(
   return apiClient.POST('/{accountId}/CreateEnvironment', {
     params: { path: { accountId: params.accountId } },
     body: { name: params.name },
+    headers: params?.headers,
   });
 }
 
@@ -70,6 +85,7 @@ export async function listEnvironments(
 ) {
   return apiClient.POST('/{accountId}/ListEnvironments', {
     params: { path: { accountId: params.accountId } },
+    headers: params?.headers,
   });
 }
 
@@ -83,6 +99,7 @@ export async function createApiKey(
       environmentId: params.environmentId,
       description: params.description,
     },
+    headers: params?.headers,
   });
 }
 
@@ -95,6 +112,7 @@ export async function describeApiKey(
       keyId: params.keyId,
       environmentId: params.environmentId,
     },
+    headers: params?.headers,
   });
 }
 
@@ -107,6 +125,7 @@ export async function deleteApiKey(
       keyId: params.keyId,
       environmentId: params.environmentId,
     },
+    headers: params?.headers,
   });
 }
 
@@ -118,6 +137,7 @@ export async function listApiKeys(
     body: {
       environmentId: params.environmentId,
     },
+    headers: params?.headers,
   });
 }
 
@@ -132,6 +152,7 @@ export async function getEnvironmentLogs(
       start: params.start,
       end: params.end,
     },
+    headers: params?.headers,
     ...options,
   });
 }

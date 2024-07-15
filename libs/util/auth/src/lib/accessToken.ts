@@ -24,6 +24,8 @@ export function logOut({
   if (persistRedirectUrl) {
     setRedirectUrl();
   }
-  localStorage.removeItem(ACCESS_TOKEN_KEY);
-  window.location.assign(getLoginUrl(new URL(window.location.href)));
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
+    window.location.assign(getLoginUrl(new URL(window.location.href)));
+  }
 }

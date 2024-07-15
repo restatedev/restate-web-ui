@@ -9,6 +9,8 @@ export function removeRedirectUrl() {
 }
 
 export function setRedirectUrl() {
-  const redirectUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-  sessionStorage.setItem(REDIRECT_KEY, redirectUrl);
+  if (typeof window !== 'undefined') {
+    const redirectUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    sessionStorage.setItem(REDIRECT_KEY, redirectUrl);
+  }
 }

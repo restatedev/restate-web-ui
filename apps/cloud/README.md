@@ -41,6 +41,8 @@ These env variables/secrets need to be setup:
 
 ### Deployments
 
-**Dev**: Commits pushed to the `main` branch are automatically deployed to our development environment, which can be accessed at `https://dev.cloud.restate.dev`.
+**Dev**: Commits pushed to the `main` branch are automatically deployed to our development environment (dev AWS Cognito + dev API), which can be accessed at `https://dev.cloud.restate.dev`.
+
+**Staging**: Commits pushed to the `main` branch are automatically deployed to our staging environment (prod AWS Cognito + prod API), which can be accessed at `https://staging.cloud.restate.dev`.
 
 **Prod**: Commits that are tagged with version numbers will automatically trigger deployments to our production environment at `https://cloud.restate.dev`.

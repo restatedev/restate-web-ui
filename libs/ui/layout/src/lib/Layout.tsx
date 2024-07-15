@@ -29,11 +29,15 @@ export function LayoutOutlet({
   zone: LayoutZone;
   variant?: 'primary' | 'secondary' | 'hidden';
 }>) {
-  return createPortal(
-    <>
-      {children}
-      <div data-variant={variant} />
-    </>,
-    document.getElementById(ZONE_IDS[zone])!
-  );
+  if (typeof document !== 'undefined') {
+    return createPortal(
+      <>
+        {children}
+        <div data-variant={variant} />
+      </>,
+      document.getElementById(ZONE_IDS[zone])!
+    );
+  } else {
+    return null;
+  }
 }

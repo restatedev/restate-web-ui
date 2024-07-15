@@ -1,7 +1,12 @@
 import { test as base } from '@playwright/test';
 const deploymentURL = process.env['DEPLOYMENT_URL'];
 
-export const test = base.extend({
+export const test = base.extend<{ targetURL: string }>({
+  targetURL: async ({ baseURL }, use) => {
+    await use(
+      new URL(String(deploymentURL ?? baseURL)).href.replace(/\/$/, '')
+    );
+  },
   page: async ({ baseURL, page }, use) => {
     if (deploymentURL) {
       await page.route('**', async (route, request) => {
