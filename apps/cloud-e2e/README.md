@@ -30,3 +30,14 @@ To proxy the Cloud UI to your local environment (or any other environment), set 
 # and runs E2E tests on your local machine.
 APP_USERNAME="my-account@restate.dev" APP_PASSWORD=some-password DEPLOYMENT_URL=http://localhost:4200 BASE_URL=https://dev.cloud.restate.dev pnpm nx e2e cloud-e2
 ```
+
+### Environments
+
+You can run the e2e tests against different environments
+
+```sh
+SCENARIO=E2E nx start cloud -c mock && APP_USERNAME="mock@restate.dev" APP_PASSWORD="123456" BASE_URL=http://localhost:4200 nx e2e cloud-e2e
+APP_USERNAME="{DEV_USERNAME}" APP_PASSWORD={DEV_PASSWORD} BASE_URL=https://dev.cloud.restate.dev nx e2e cloud-e2e
+APP_USERNAME="{PROD_USERNAME}" APP_PASSWORD={PROD_PASSWORD} BASE_URL=https://staging.cloud.restate.dev nx e2e cloud-e2e
+APP_USERNAME="{PROD_USERNAME}" APP_PASSWORD={PROD_PASSWORD} BASE_URL=https://cloud.restate.dev nx e2e cloud-e2e
+```
