@@ -1,24 +1,24 @@
-import { ActionFunctionArgs, json } from '@remix-run/cloudflare';
-import { deleteAccount } from '@restate/data-access/cloud/api-client';
+import { LoaderFunctionArgs, json } from '@remix-run/cloudflare';
+import { listEnvironments } from '@restate/data-access/cloud/api-client';
 import invariant from 'tiny-invariant';
 
-export const action = async ({
+export const loader = async ({
   request,
   params,
   context,
-}: ActionFunctionArgs) => {
+}: LoaderFunctionArgs) => {
   const accountId = params.accountId;
   invariant(accountId, 'Missing accountId param');
 
   switch (request.method) {
-    case 'DELETE': {
-      const response = await deleteAccount({
+    case 'GET': {
+      const response = await listEnvironments({
         accountId: accountId as string,
         headers: request.headers,
       });
 
       if (response.data) {
-        return json({});
+        return json({ environments: response.data.environments });
       } else {
         return json({ error: response.error }, { status: 500 });
       }

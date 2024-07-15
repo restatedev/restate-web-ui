@@ -1,5 +1,5 @@
 import { ActionFunctionArgs, json } from '@remix-run/cloudflare';
-import { deleteAccount } from '@restate/data-access/cloud/api-client';
+import { destroyEnvironment } from '@restate/data-access/cloud/api-client';
 import invariant from 'tiny-invariant';
 
 export const action = async ({
@@ -8,12 +8,15 @@ export const action = async ({
   context,
 }: ActionFunctionArgs) => {
   const accountId = params.accountId;
+  const environmentId = params.environmentId;
   invariant(accountId, 'Missing accountId param');
+  invariant(environmentId, 'Missing environmentId param');
 
   switch (request.method) {
     case 'DELETE': {
-      const response = await deleteAccount({
+      const response = await destroyEnvironment({
         accountId: accountId as string,
+        environmentId: environmentId as string,
         headers: request.headers,
       });
 

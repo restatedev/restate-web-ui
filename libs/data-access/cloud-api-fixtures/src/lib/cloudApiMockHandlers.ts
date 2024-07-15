@@ -174,7 +174,6 @@ const destroyEnvironmentHandler = http.post<
   GetPath<'/{accountId}/DestroyEnvironment'>
 >('/:accountId/DestroyEnvironment', async ({ request }) => {
   const requestBody = await request.json();
-
   const environment = cloudApiDb.environment.findFirst({
     where: {
       environmentId: { equals: requestBody.environmentId },
