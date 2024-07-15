@@ -9,7 +9,7 @@
       "!{projectRoot}/.eslintrc.json",
       "!{projectRoot}/eslint.config.js"
     ],
-    "sharedGlobals": []
+    "sharedGlobals": ["{projectRoot}/project.json"]
   },
   "plugins": [
     {
