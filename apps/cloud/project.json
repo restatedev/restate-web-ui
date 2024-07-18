@@ -21,7 +21,7 @@
               "command": "nx serve mock-cloud-api"
             },
             {
-              "command": "cd apps/cloud && SLACK_API_URL=http://localhost:4000/slack RESTATE_AUTH_URL=http://localhost:4000 RESTATE_AUTH_CLIENT_ID=1v1rkegmilgjlphium3ksgurek RESTATE_CLOUD_API_URL=http://localhost:4000 ../../node_modules/.bin/remix vite:dev --port=4200"
+              "command": "cd apps/cloud && SLACK_API_URL=http://localhost:4000/slack RESTATE_AUTH_URL=http://localhost:4000 RESTATE_AUTH_CLIENT_ID=cua6drm2md11pur6d5blnj9d4 RESTATE_CLOUD_API_URL=http://localhost:4000 ../../node_modules/.bin/remix vite:dev --port=4200"
             }
           ],
           "parallel": true
@@ -36,7 +36,7 @@
         "dev": {
           "commands": [
             {
-              "command": "cd apps/cloud && SLACK_API_URL=https://slack.com/api/chat.postMessage RESTATE_AUTH_URL=https://auth-dev.restate.cloud RESTATE_AUTH_CLIENT_ID=1v1rkegmilgjlphium3ksgurek RESTATE_CLOUD_API_URL=https://api.dev.restate.cloud/cloud ../../node_modules/.bin/remix vite:dev --port=4200"
+              "command": "cd apps/cloud && SLACK_API_URL=https://slack.com/api/chat.postMessage RESTATE_AUTH_URL=https://auth-dev.restate.cloud RESTATE_AUTH_CLIENT_ID=cua6drm2md11pur6d5blnj9d4 RESTATE_CLOUD_API_URL=https://api.dev.restate.cloud/cloud ../../node_modules/.bin/remix vite:dev --port=4200"
             }
           ]
         }
@@ -58,7 +58,7 @@
         "mock": {
           "commands": [
             "rm -R -f dist/apps/cloud",
-            "cd apps/cloud && SLACK_API_URL=http://localhost:4000/slack RESTATE_AUTH_URL=http://localhost:4000 RESTATE_AUTH_CLIENT_ID=1v1rkegmilgjlphium3ksgurek RESTATE_CLOUD_API_URL=http://localhost:4000 ../../node_modules/.bin/remix vite:build",
+            "cd apps/cloud && SLACK_API_URL=http://localhost:4000/slack RESTATE_AUTH_URL=http://localhost:4000 RESTATE_AUTH_CLIENT_ID=cua6drm2md11pur6d5blnj9d4 RESTATE_CLOUD_API_URL=http://localhost:4000 ../../node_modules/.bin/remix vite:build",
             "mkdir -p dist/apps/cloud",
             "mv apps/cloud/build/* dist/apps/cloud",
             "rm -R apps/cloud/build"
@@ -78,7 +78,7 @@
         "dev": {
           "commands": [
             "rm -R -f dist/apps/cloud",
-            "cd apps/cloud && SLACK_API_URL=https://slack.com/api/chat.postMessage RESTATE_AUTH_URL=https://auth-dev.restate.cloud RESTATE_AUTH_CLIENT_ID=1v1rkegmilgjlphium3ksgurek RESTATE_CLOUD_API_URL=https://api.dev.restate.cloud/cloud ../../node_modules/.bin/remix vite:build",
+            "cd apps/cloud && SLACK_API_URL=https://slack.com/api/chat.postMessage RESTATE_AUTH_URL=https://auth-dev.restate.cloud RESTATE_AUTH_CLIENT_ID=cua6drm2md11pur6d5blnj9d4 RESTATE_CLOUD_API_URL=https://api.dev.restate.cloud/cloud ../../node_modules/.bin/remix vite:build",
             "mkdir -p dist/apps/cloud",
             "mv apps/cloud/build/* dist/apps/cloud",
             "rm -R apps/cloud/build"
