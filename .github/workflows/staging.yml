@@ -9,7 +9,7 @@ jobs:
       deployments: write
     name: Deploy to Dev environment
     env:
-      RESTATE_AUTH_URL: 'https://auth.dev.restate.cloud'
+      RESTATE_AUTH_URL: 'https://auth-dev.restate.cloud'
       RESTATE_AUTH_CLIENT_ID: 'cua6drm2md11pur6d5blnj9d4'
       RESTATE_CLOUD_API_URL: 'https://api.dev.restate.cloud/cloud'
       SLACK_API_URL: 'https://slack.com/api/chat.postMessage'
