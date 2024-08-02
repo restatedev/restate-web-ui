@@ -48,6 +48,9 @@ export default defineConfig(({ mode }) => {
       'process.env.RESTATE_AUTH_URL': JSON.stringify(
         env.RESTATE_AUTH_URL ?? ''
       ),
+      'process.env.RESTATE_AUTH_REDIRECT_URL': JSON.stringify(
+        env.RESTATE_AUTH_REDIRECT_URL ?? ''
+      ),
       'process.env.RESTATE_AUTH_CLIENT_ID': JSON.stringify(
         env.RESTATE_AUTH_CLIENT_ID ?? ''
       ),
