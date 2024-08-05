@@ -1,6 +1,7 @@
 declare module 'process' {
   global {
     namespace NodeJS {
+      // TODO: remove process.env
       interface ProcessEnv {
         [key: string]: string | undefined;
         RESTATE_AUTH_URL: string;

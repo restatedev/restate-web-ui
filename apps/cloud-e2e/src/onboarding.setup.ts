@@ -1,8 +1,7 @@
-import { test as setup } from '@restate/util/playwright';
+import { test as setup } from '@playwright/test';
 import { expect } from '@playwright/test';
 
 setup('onboarding', async ({ page }) => {
-  // Redirects to login page.
   await page.goto('/');
   await page.waitForURL('/accounts');
 
