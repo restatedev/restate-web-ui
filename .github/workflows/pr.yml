@@ -77,3 +77,9 @@ jobs:
         env:
           BASE_URL: ${{ steps.deploy.outputs.deployment-url }}
         run: pnpm nx affected --targets=e2e --base=origin/main --head=HEAD
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: dist/.playwright/
+          retention-days: 3

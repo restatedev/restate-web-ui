@@ -55,7 +55,7 @@ setup('Login', async ({ page }) => {
 
   // Wait until the page receives the cookies.
   await authTokenResponse;
-
+  await page.waitForResponse(`/api/auth`);
   await page.waitForURL(`/accounts`);
   // End of authentication steps.
   await page.context().storageState({ path: authFile });
