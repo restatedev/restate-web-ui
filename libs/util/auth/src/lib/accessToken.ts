@@ -3,10 +3,13 @@
  * Currently, we save the token there to enable users to authenticate across multiple sessions.
  */
 
-import { getLoginUrl } from './loginUrl';
-import { setRedirectUrl } from './redirectUrl';
+import { getLoginURL } from './loginUrl';
+import { json, redirect, type LoaderFunctionArgs } from '@remix-run/cloudflare';
+import { clearAuthCookie, getAuthCookie } from './authCookie';
 
 const ACCESS_TOKEN_KEY = 'atk';
+
+// TODO: remove this file
 
 export function getAccessToken() {
   return localStorage.getItem(ACCESS_TOKEN_KEY);
@@ -21,11 +24,33 @@ export function logOut({
 }: {
   persistRedirectUrl?: boolean;
 } = {}) {
-  if (persistRedirectUrl) {
-    setRedirectUrl();
-  }
   if (typeof window !== 'undefined') {
-    localStorage.removeItem(ACCESS_TOKEN_KEY);
-    window.location.assign(getLoginUrl(new URL(window.location.href)));
+    const returnUrl = persistRedirectUrl
+      ? `${window.location.pathname}${window.location.search}${window.location.hash}`
+      : '/';
+    const searchParams = new URLSearchParams({ returnUrl });
+    window.location.assign(`/logout?${searchParams}`);
   }
+}
+
+export async function accessTokenLoader(args: LoaderFunctionArgs) {
+  const accessToken = await getAuthCookie(args.request);
+  if (!accessToken) {
+    return json({}, { status: 401 });
+  }
+  return json({ accessToken });
+}
+
+export async function logoutLoader(args: LoaderFunctionArgs) {
+  const url = new URL(args.request.url);
+
+  return redirect(
+    getLoginURL({
+      ...args.context.cloudflare.env,
+      returnUrl: url.searchParams.get('returnUrl'),
+    }),
+    {
+      headers: await clearAuthCookie(url.protocol === 'https:'),
+    }
+  );
 }
