@@ -19,7 +19,7 @@ const getTokenWithCache = withCache<
       };
       401: {
         content: {
-          'application/json': {};
+          'application/json': object;
         };
       };
     };
