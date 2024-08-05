@@ -31,7 +31,7 @@ pnpm nx e2e cloud-e2e
 
 These env variables/secrets need to be setup:
 
-- **Variables**: The variables are set in `.github/workflows/[ENV].yml` and Cloudflare dashboard:
+- **Variables**: The variables are set in `.github/workflows/[ENV].yml`:
   - `RESTATE_AUTH_URL`: The URL where AWS Cognito is hosted
   - `RESTATE_AUTH_CLIENT_ID`: The client id for AWS Cognito
   - `RESTATE_AUTH_REDIRECT_URL`: The redirect url for AWS Cognito

@@ -27,8 +27,8 @@ export const action = async ({
     headers: { Authorization: `Bearer ${access_token}` },
   });
 
-  if (response.data?.userId && process.env.SLACK_API_URL) {
-    const slackResponse = await fetch(process.env.SLACK_API_URL, {
+  if (response.data?.userId && globalThis.env.SLACK_API_URL) {
+    const slackResponse = await fetch(globalThis.env.SLACK_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json; charset=utf-8',

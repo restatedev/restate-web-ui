@@ -42,23 +42,15 @@ export default defineConfig(({ mode }) => {
       },
     },
     define: {
-      'process.env.RESTATE_CLOUD_API_URL': JSON.stringify(
-        env.RESTATE_CLOUD_API_URL ?? ''
-      ),
-      'process.env.RESTATE_AUTH_URL': JSON.stringify(
-        env.RESTATE_AUTH_URL ?? ''
-      ),
-      'process.env.RESTATE_AUTH_REDIRECT_URL': JSON.stringify(
-        env.RESTATE_AUTH_REDIRECT_URL ?? ''
-      ),
-      'process.env.RESTATE_AUTH_CLIENT_ID': JSON.stringify(
-        env.RESTATE_AUTH_CLIENT_ID ?? ''
-      ),
-      'process.env.SLACK_API_URL': JSON.stringify(env.SLACK_API_URL ?? ''),
-      'process.env.MOCK': JSON.stringify(
-        Boolean(env.NX_TASK_TARGET_CONFIGURATION === 'mock')
-      ),
-      'process.env.VERSION': JSON.stringify(env.VERSION ?? 'dev'),
+      'globalThis.env': {
+        RESTATE_CLOUD_API_URL: env.RESTATE_CLOUD_API_URL ?? '',
+        RESTATE_AUTH_URL: env.RESTATE_AUTH_URL ?? '',
+        RESTATE_AUTH_REDIRECT_URL: env.RESTATE_AUTH_REDIRECT_URL ?? '',
+        RESTATE_AUTH_CLIENT_ID: env.RESTATE_AUTH_CLIENT_ID ?? '',
+        SLACK_API_URL: env.SLACK_API_URL ?? '',
+        MOCK: Boolean(env.NX_TASK_TARGET_CONFIGURATION === 'mock'),
+        VERSION: env.VERSION ?? 'dev',
+      },
     },
 
     test: {

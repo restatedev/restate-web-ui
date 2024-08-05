@@ -9,7 +9,8 @@
       "node",
       "vitest",
       "../../@types/vite.d.ts",
-      "../../@types/load-context.d.ts"
+      "../../@types/load-context.d.ts",
+      "../../@types/global-env.d.ts"
     ]
   },
   "include": [
