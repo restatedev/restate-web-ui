@@ -41,7 +41,7 @@ export async function deleteAccount(
 }
 
 export async function listAccounts(
-  params: AllParams<cloudApi.operations['ListAccounts']>
+  params: AllParams<cloudApi.operations['ListAccounts']> = {}
 ) {
   return apiClient.POST('/ListAccounts', { headers: params?.headers });
 }

@@ -11,6 +11,7 @@ jobs:
     name: Deploy to Prod
     env:
       RESTATE_AUTH_URL: 'https://auth.restate.cloud'
+      RESTATE_AUTH_REDIRECT_URL: 'https://cloud.restate.dev/auth'
       RESTATE_AUTH_CLIENT_ID: '5q3dsdnrr5r400jvibd8d3k66l'
       RESTATE_CLOUD_API_URL: 'https://api.us.restate.cloud/cloud'
       SLACK_API_URL: 'https://slack.com/api/chat.postMessage'

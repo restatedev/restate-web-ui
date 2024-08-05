@@ -8,6 +8,11 @@ import { type PlatformProxy } from 'wrangler';
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface Env {
   SLACK_TOKEN: string;
+  SLACK_API_URL: string;
+  RESTATE_AUTH_URL: string;
+  RESTATE_AUTH_REDIRECT_URL: string;
+  RESTATE_AUTH_CLIENT_ID: string;
+  RESTATE_CLOUD_API_URL: string;
 }
 
 type Cloudflare = Omit<PlatformProxy<Env>, 'dispose'>;

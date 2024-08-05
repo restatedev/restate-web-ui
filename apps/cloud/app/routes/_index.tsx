@@ -1,5 +1,5 @@
-import { redirect } from '@remix-run/react';
-import { withAuth } from '@restate/util/auth';
+import { redirect } from '@remix-run/cloudflare';
+import { withCookieAuth } from '@restate/util/auth';
 
-export const clientLoader = withAuth(() => redirect('/accounts'));
+export const loader = withCookieAuth(() => redirect('/accounts'));
 export default () => null;

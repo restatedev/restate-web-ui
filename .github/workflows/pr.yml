@@ -48,6 +48,7 @@ jobs:
     name: E2E tests
     env:
       RESTATE_AUTH_URL: 'https://auth-dev.restate.cloud'
+      RESTATE_AUTH_REDIRECT_URL: 'https://dev.cloud.restate.dev/auth'
       RESTATE_AUTH_CLIENT_ID: 'cua6drm2md11pur6d5blnj9d4'
       RESTATE_CLOUD_API_URL: 'https://api.dev.restate.cloud/cloud'
       SLACK_API_URL: 'https://slack.com/api/chat.postMessage'
@@ -74,6 +75,5 @@ jobs:
           command: pages deploy ../../dist/apps/cloud/client --project-name=restate-web-ui --commit-dirty=true --commit-hash=${{ github.sha }}
       - name: Cloud E2E
         env:
-          DEPLOYMENT_URL: ${{ steps.deploy.outputs.deployment-url }}
-          BASE_URL: https://dev.cloud.restate.dev
+          BASE_URL: ${{ steps.deploy.outputs.deployment-url }}
         run: pnpm nx affected --targets=e2e --base=origin/main --head=HEAD
