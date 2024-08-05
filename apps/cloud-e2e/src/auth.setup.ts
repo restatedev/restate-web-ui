@@ -1,26 +1,62 @@
-import { test as setup } from '@restate/util/playwright';
+import { test as base } from '@playwright/test';
 
 const authFile = 'playwright/.auth/user.json';
 
-setup('authenticate', async ({ baseURL, page }) => {
+const setup = base.extend({
+  page: async ({ baseURL, page }, use) => {
+    await page.route(
+      (url) => {
+        if (url.pathname === '/login') {
+          const redirectParam = url.searchParams.get('redirect_uri');
+          try {
+            const redirectURL = new URL(String(redirectParam));
+            const _baseURL = new URL(String(baseURL));
+            return redirectURL.host !== _baseURL.host;
+          } catch (error) {
+            return false;
+          }
+        }
+        return false;
+      },
+      async (route, request) => {
+        const resp = await route.fetch({ maxRedirects: 0 });
+        const headers = resp.headers();
+        const location = headers['location'];
+        const locationURL = new URL(location!);
+        return route.fulfill({
+          status: 302,
+          headers: {
+            ...resp.headers(),
+            location: `${baseURL}${locationURL.pathname}${locationURL.search}`,
+          },
+        });
+      }
+    );
+    await use(page);
+  },
+});
+
+setup('Login', async ({ page }) => {
   // Redirects to login page.
   await page.goto('/');
-  await page.waitForURL(`**/login**&redirect_uri=${baseURL}/auth`);
+  // Wait for login page
+  await page.waitForURL(
+    /\/login\?client_id=[^&]+&response_type=code&redirect_uri=[^&]+cloud\.restate\.dev\/auth&state=\//
+  );
   await page
     .getByRole('textbox', { name: 'name@host.com' })
     .fill(String(process.env['APP_USERNAME']));
   await page
     .getByRole('textbox', { name: 'Password' })
     .fill(String(process.env['APP_PASSWORD']));
+
+  const authTokenResponse = page.waitForResponse(`/auth?code=**&state=/`);
   await page.getByRole('button', { name: 'submit' }).click();
 
   // Wait until the page receives the cookies.
-  //
-  // Sometimes login flow sets cookies in the process of several redirects.
-  // Wait for the final URL to ensure that the cookies are actually set.
-  await page.waitForURL(`${baseURL}/auth?code=**`);
-  await page.waitForURL(`${baseURL}/accounts`);
+  await authTokenResponse;
 
+  await page.waitForURL(`/accounts`);
   // End of authentication steps.
   await page.context().storageState({ path: authFile });
 });

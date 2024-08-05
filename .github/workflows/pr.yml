@@ -75,6 +75,5 @@ jobs:
           command: pages deploy ../../dist/apps/cloud/client --project-name=restate-web-ui --commit-dirty=true --commit-hash=${{ github.sha }}
       - name: Cloud E2E
         env:
-          DEPLOYMENT_URL: ${{ steps.deploy.outputs.deployment-url }}
-          BASE_URL: https://dev.cloud.restate.dev
+          BASE_URL: ${{ steps.deploy.outputs.deployment-url }}
         run: pnpm nx affected --targets=e2e --base=origin/main --head=HEAD

@@ -21,16 +21,6 @@ For the development, staging, and production environments, provide account detai
 APP_USERNAME="some-account@restate.dev" APP_PASSWORD="some-password" BASE_URL=https://staging.cloud.restate.dev pnpm nx e2e cloud-e2
 ```
 
-### Proxy
-
-To proxy the Cloud UI to your local environment (or any other environment), set `DEPLOYMENT_URL`:
-
-```sh
-# This proxies https://dev.cloud.restate.dev to your local environment
-# and runs E2E tests on your local machine.
-APP_USERNAME="my-account@restate.dev" APP_PASSWORD=some-password DEPLOYMENT_URL=http://localhost:4200 BASE_URL=https://dev.cloud.restate.dev pnpm nx e2e cloud-e2
-```
-
 ### Environments
 
 You can run the e2e tests against different environments
