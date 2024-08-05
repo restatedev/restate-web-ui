@@ -60,7 +60,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="msapplication-TileColor" content="#222452" />
         <meta name="theme-color" content="#f3f4f6"></meta>
-        <meta name="version" content={process.env.VERSION} />
+        <meta name="version" content={globalThis.env.VERSION} />
         <title>Restate Cloud</title>
         <Meta />
         <Links />

@@ -36,6 +36,7 @@ const getTokenWithCache = withCache<
 export function withAuth(loader: ClientLoaderFunction) {
   return async function (args: ClientLoaderFunctionArgs) {
     const url = new URL(window.location.href);
+
     // TODO: remove saving token in local storage
     const { data } = await getTokenWithCache.fetch();
     if (data) {
@@ -45,9 +46,6 @@ export function withAuth(loader: ClientLoaderFunction) {
       return redirect(
         getLoginURL({
           returnUrl: `${url.pathname}${url.search}`,
-          RESTATE_AUTH_CLIENT_ID: process.env.RESTATE_AUTH_CLIENT_ID,
-          RESTATE_AUTH_URL: process.env.RESTATE_AUTH_URL,
-          RESTATE_AUTH_REDIRECT_URL: process.env.RESTATE_AUTH_REDIRECT_URL,
         })
       );
     }
@@ -63,7 +61,6 @@ export function withCookieAuth(loader: LoaderFunction) {
     if (!authCookie) {
       return redirect(
         getLoginURL({
-          ...args.context.cloudflare.env,
           returnUrl: `${url.pathname}${url.search}`,
         })
       );

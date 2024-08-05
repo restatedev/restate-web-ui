@@ -46,7 +46,6 @@ export async function logoutLoader(args: LoaderFunctionArgs) {
 
   return redirect(
     getLoginURL({
-      ...args.context.cloudflare.env,
       returnUrl: url.searchParams.get('returnUrl'),
     }),
     {
