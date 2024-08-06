@@ -10,19 +10,19 @@ const client = createClient<paths>({
 });
 
 const authMiddleware: Middleware = {
-  async onRequest(req, options) {
+  async onRequest({ request }) {
     if (typeof window !== 'undefined') {
-      req.headers.set('Authorization', `Bearer ${getAccessToken()}`);
+      request.headers.set('Authorization', `Bearer ${getAccessToken()}`);
     }
-    return req;
+    return request;
   },
-  async onResponse(res, options) {
+  async onResponse({ response }) {
     // User is not authenticated
-    if (res.status === 401) {
+    if (response.status === 401) {
       logOut({ persistRedirectUrl: true });
       throw new UnauthorizedError();
     }
-    return res;
+    return response;
   },
 };
 
