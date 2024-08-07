@@ -28,7 +28,8 @@
     "react-dom": "19.0.0-rc-65903583-20240805",
     "tailwind-variants": "^0.2.1",
     "tiny-invariant": "^1.3.3",
-    "tslib": "^2.6.3"
+    "tslib": "^2.6.3",
+    "use-dehydrated-state": "^0.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.24.7",
@@ -68,8 +69,8 @@
     "@types/jest": "^29.5.12",
     "@types/koa": "~2.13.12",
     "@types/node": "18.16.9",
-    "@types/react": "npm:types-react@rc",
-    "@types/react-dom": "npm:types-react-dom@rc",
+    "@types/react": "18.3.1",
+    "@types/react-dom": "18.3.0",
     "@typescript-eslint/eslint-plugin": "7.18.0",
     "@typescript-eslint/parser": "7.18.0",
     "@vitejs/plugin-react": "^4.3.1",
@@ -121,5 +122,5 @@
       }
     }
   },
-  "packageManager": "pnpm@9.3.0"
+  "packageManager": "pnpm@9.7.0"
 }
