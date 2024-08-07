@@ -13,7 +13,7 @@ import { CLOUD_API_BASE_URL } from '@restate/data-access/cloud/api-client';
 import { LayoutOutlet, LayoutProvider, LayoutZone } from '@restate/ui/layout';
 import { RouterProvider } from 'react-aria-components';
 import { Spinner } from '@restate/ui/button';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 import { QueryProvider } from '@restate/util/react-query';
 
 export const links: LinksFunction = () => [
