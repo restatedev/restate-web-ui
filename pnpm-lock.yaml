@@ -61,8 +61,14 @@ importers:
         specifier: ^0.424.0
         version: 0.424.0(react@19.0.0-rc-65903583-20240805)
       openapi-fetch:
-        specifier: ^0.10.5
-        version: 0.10.5
+        specifier: ^0.10.6
+        version: 0.10.6
+      openapi-react-query:
+        specifier: ^0.1.0
+        version: 0.1.0(@tanstack/react-query@5.51.21(react@19.0.0-rc-65903583-20240805))(openapi-fetch@0.10.6)
+      openapi-typescript-helpers:
+        specifier: ^0.0.11
+        version: 0.0.11
       react:
         specifier: 19.0.0-rc-65903583-20240805
         version: 19.0.0-rc-65903583-20240805
@@ -11027,11 +11033,20 @@ packages:
       }
     engines: { node: '>=12' }
 
-  openapi-fetch@0.10.5:
+  openapi-fetch@0.10.6:
     resolution:
       {
-        integrity: sha512-lOHWzQDYrMakHSqAOqJJGawitSGQzLM8w8zXTrpffe7u9aWqzFvhdJJNqfcW1EzaXtNNdPdMzXaFLdrjgn68ow==,
+        integrity: sha512-6xXfvIEL/POtLGOaFPsp3O+pDe+J3DZYxbD9BrsQHXOTeNK8z/gsWHT6adUy1KcpQOhmkerMzlQrJM6DbN55dQ==,
       }
+
+  openapi-react-query@0.1.0:
+    resolution:
+      {
+        integrity: sha512-dkrPQ29AJk0xGRZI8UL/Cis1bMLTssRMUbg+dhFs7o3pFLv7az16jwOmOHsJ+rZhDbAUyhkwYKYg2jaeSIuJQg==,
+      }
+    peerDependencies:
+      '@tanstack/react-query': ^5.0.0
+      openapi-fetch: ^0.10.6
 
   openapi-sampler@1.5.1:
     resolution:
@@ -17608,7 +17623,7 @@ snapshots:
       pluralize: 8.0.0
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-      redoc: 2.1.5(core-js@3.37.1)(enzyme@3.11.0)(mobx@6.12.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.1.11(react-dom@19.0.0-rc-65903583-20240805(react@19.0.0-rc-65903583-20240805))(react@19.0.0-rc-65903583-20240805))
+      redoc: 2.1.5(core-js@3.37.1)(enzyme@3.11.0)(mobx@6.12.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.1.11(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       semver: 7.6.2
       simple-websocket: 9.1.0
       styled-components: 6.1.11(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -22668,8 +22683,14 @@ snapshots:
       is-docker: 2.2.1
       is-wsl: 2.2.0
 
-  openapi-fetch@0.10.5:
+  openapi-fetch@0.10.6:
     dependencies:
+      openapi-typescript-helpers: 0.0.11
+
+  openapi-react-query@0.1.0(@tanstack/react-query@5.51.21(react@19.0.0-rc-65903583-20240805))(openapi-fetch@0.10.6):
+    dependencies:
+      '@tanstack/react-query': 5.51.21(react@19.0.0-rc-65903583-20240805)
+      openapi-fetch: 0.10.6
       openapi-typescript-helpers: 0.0.11
 
   openapi-sampler@1.5.1:
@@ -23285,7 +23306,7 @@ snapshots:
       indent-string: 4.0.0
       strip-indent: 3.0.0
 
-  redoc@2.1.5(core-js@3.37.1)(enzyme@3.11.0)(mobx@6.12.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.1.11(react-dom@19.0.0-rc-65903583-20240805(react@19.0.0-rc-65903583-20240805))(react@19.0.0-rc-65903583-20240805)):
+  redoc@2.1.5(core-js@3.37.1)(enzyme@3.11.0)(mobx@6.12.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.1.11(react-dom@18.3.1(react@18.3.1))(react@18.3.1)):
     dependencies:
       '@cfaester/enzyme-adapter-react-18': 0.8.0(enzyme@3.11.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@redocly/openapi-core': 1.19.0(supports-color@9.4.0)
