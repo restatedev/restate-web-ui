@@ -14,16 +14,16 @@ export const action = async ({
 
   switch (request.method) {
     case 'DELETE': {
-      const response = await destroyEnvironment({
-        accountId: accountId as string,
-        environmentId: environmentId as string,
+      const { data, error, response } = await destroyEnvironment({
+        accountId,
+        environmentId,
         headers: request.headers,
       });
 
-      if (response.data) {
+      if (data) {
         return json({});
       } else {
-        return json({ error: response.error }, { status: 500 });
+        return new Response(JSON.stringify(error), { status: response.status });
       }
     }
 

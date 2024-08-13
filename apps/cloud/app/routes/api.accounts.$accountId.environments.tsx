@@ -12,15 +12,15 @@ export const loader = async ({
 
   switch (request.method) {
     case 'GET': {
-      const response = await listEnvironments({
+      const { data, response, error } = await listEnvironments({
         accountId: accountId as string,
         headers: request.headers,
       });
 
-      if (response.data) {
-        return json({ environments: response.data.environments });
+      if (data) {
+        return json({ environments: data.environments });
       } else {
-        return json({ error: response.error }, { status: 500 });
+        return new Response(JSON.stringify(error), { status: response.status });
       }
     }
 

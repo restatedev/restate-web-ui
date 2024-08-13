@@ -1,9 +1,9 @@
 import { json } from '@remix-run/cloudflare';
 import { describeEnvironment } from '@restate/data-access/cloud/api-client';
+import { adminUrlCookie } from '@restate/features/admin-api';
 import { settings } from '@restate/features/cloud/settings-route';
 import { withCookieAuth } from '@restate/util/auth';
 import invariant from 'tiny-invariant';
-import { adminUrlCookie } from './adminCookie';
 
 export const loader = withCookieAuth(async ({ params, authToken }) => {
   const { accountId, environmentId } = params;
