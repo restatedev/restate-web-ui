@@ -1,1 +1,2 @@
-export * from './lib/features-cloud-environment-route';
+import { loader } from './lib/loader';
+export const environment = { loader };
