@@ -30,6 +30,7 @@
       "@restate/datat-access/admin-api": [
         "libs/data-access/admin-api/src/index.ts"
       ],
+      "@restate/features/admin-api": ["libs/features/admin-api/src/index.ts"],
       "@restate/features/cloud/accounts-route": [
         "libs/features/cloud-accounts-route/src/index.ts"
       ],
