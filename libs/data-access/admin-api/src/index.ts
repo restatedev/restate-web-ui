@@ -1,1 +1,1 @@
-export * from './lib/data-access-admin-api';
+export * from './lib/api/client';

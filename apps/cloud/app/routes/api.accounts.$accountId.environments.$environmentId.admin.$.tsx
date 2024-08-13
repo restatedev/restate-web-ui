@@ -10,17 +10,18 @@ export const loader = withCookieAuth(
     invariant(environmentId, 'Missing environmentId param');
     let adminURL = await getAdminUrl(request);
     if (!adminURL) {
-      const { data } = await describeEnvironment({
+      const { data, error, response } = await describeEnvironment({
         accountId,
         environmentId,
         headers: {
           Authorization: `Bearer ${authToken}`,
         },
       });
+
       if (data?.adminBaseUrl) {
         adminURL = data?.adminBaseUrl;
       } else {
-        throw new Response('', { status: 500 });
+        return new Response(JSON.stringify(error), { status: response.status });
       }
     }
     const path = request.url.split(`${environmentId}/admin`).at(1);
