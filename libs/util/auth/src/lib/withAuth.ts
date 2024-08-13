@@ -8,6 +8,7 @@ import { getAuthCookie } from './authCookie';
 import { getLoginURL } from './loginUrl';
 import { setAccessToken } from './accessToken';
 import { withCache } from '@restate/util/cache';
+import { UnauthorizedError } from '@restate/data-access/cloud/api-client';
 
 const getTokenWithCache = withCache<
   {
@@ -71,6 +72,17 @@ export function withCookieAuth(
       );
     }
 
-    return loader({ ...args, authToken });
+    try {
+      return await loader({ ...args, authToken });
+    } catch (error) {
+      if (error instanceof UnauthorizedError) {
+        return redirect(
+          getLoginURL({
+            returnUrl: `${url.pathname}${url.search}`,
+          })
+        );
+      }
+      throw error;
+    }
   };
 }
