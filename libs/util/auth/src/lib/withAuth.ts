@@ -52,13 +52,18 @@ export function withAuth(loader: ClientLoaderFunction) {
   };
 }
 
-export function withCookieAuth(loader: LoaderFunction) {
+export type LoaderFunctionArgsWithAuth = LoaderFunctionArgs & {
+  authToken: string;
+};
+export function withCookieAuth(
+  loader: (args: LoaderFunctionArgsWithAuth) => ReturnType<LoaderFunction>
+) {
   return async function (args: LoaderFunctionArgs) {
-    const authCookie = await getAuthCookie(args.request);
+    const authToken = await getAuthCookie(args.request);
     const url = new URL(args.request.url);
 
     // If there is no cookie, redirect to login
-    if (!authCookie) {
+    if (!authToken) {
       return redirect(
         getLoginURL({
           returnUrl: `${url.pathname}${url.search}`,
@@ -66,6 +71,6 @@ export function withCookieAuth(loader: LoaderFunction) {
       );
     }
 
-    return loader(args);
+    return loader({ ...args, authToken });
   };
 }
