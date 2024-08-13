@@ -13,6 +13,9 @@ export const loader = withCookieAuth(
       const { data } = await describeEnvironment({
         accountId,
         environmentId,
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
       });
       if (data?.adminBaseUrl) {
         adminURL = data?.adminBaseUrl;
