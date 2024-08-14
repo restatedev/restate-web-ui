@@ -32,8 +32,9 @@ export async function authenticate(args: LoaderFunctionArgs) {
     }: {
       access_token: string;
     } = await response.json();
+
     return redirect(decodeURI(searchParams.get('state') ?? '/'), {
-      headers: await setAuthCookie(access_token, url.host !== 'localhost'),
+      headers: await setAuthCookie(access_token, url.hostname !== 'localhost'),
     });
   } catch (error) {
     return getLoginURL({
