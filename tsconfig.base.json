@@ -27,7 +27,7 @@
       "@restate/data-access/cloud/api-fixtures": [
         "libs/data-access/cloud-api-fixtures/src/index.ts"
       ],
-      "@restate/datat-access/admin-api": [
+      "@restate/data-access/admin-api": [
         "libs/data-access/admin-api/src/index.ts"
       ],
       "@restate/features/admin-api": ["libs/features/admin-api/src/index.ts"],

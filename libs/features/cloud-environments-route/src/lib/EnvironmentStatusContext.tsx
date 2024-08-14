@@ -16,7 +16,7 @@ import {
 import { HideNotification, LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
-import { adminApi } from '@restate/datat-access/admin-api';
+import { adminApi } from '@restate/data-access/admin-api';
 import { useQueries, useQuery } from '@tanstack/react-query';
 
 const EnvironmentStatusContext = createContext<Record<string, Status>>({});
