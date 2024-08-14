@@ -16,8 +16,8 @@ import {
 import { HideNotification, LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
-import { describeEnvironment } from '@restate/data-access/cloud/api-client';
-import { useHealthQuery } from '@restate/datat-access/admin-api';
+import { adminApi } from '@restate/datat-access/admin-api';
+import { useQueries, useQuery } from '@tanstack/react-query';
 
 const EnvironmentStatusContext = createContext<Record<string, Status>>({});
 export type Status =
@@ -33,9 +33,6 @@ export function EnvironmentStatusProvider({
 }: PropsWithChildren<NonNullable<unknown>>) {
   const loaderResponse = useLoaderData<typeof clientLoader>();
   const [allStatus, setAllStatus] = useState<Record<string, Status>>({});
-  const [allEnvironmentDetails, setAllEnvironmentDetails] = useState<
-    Record<string, Awaited<ReturnType<typeof describeEnvironment>>['data']>
-  >({});
   const currentEnvironmentId = useEnvironmentParam();
   const currentAccountId = useAccountParam();
   const currentStatus = currentEnvironmentId
@@ -48,12 +45,47 @@ export function EnvironmentStatusProvider({
       [environmentId]: status,
     }));
   }, []);
+  const results = useQueries({
+    queries: (loaderResponse.environmentList.data?.environments ?? []).map(
+      ({ environmentId }) => ({
+        ...adminApi(
+          '/health',
+          'get',
+          `/api/accounts/${currentAccountId}/environments/${environmentId}/admin`
+        ),
+        refetchOnMount: false,
+        enabled: allStatus[environmentId] === 'ACTIVE',
+      })
+    ),
+    combine(result) {
+      return result.reduce((p, c, i) => {
+        const environmentId =
+          loaderResponse.environmentList.data!.environments.at(
+            i
+          )?.environmentId;
+        if (environmentId && c.isFetched) {
+          const status: Status = c.isSuccess ? 'HEALTHY' : 'DEGRADED';
+          return {
+            ...p,
+            [environmentId]: status,
+          };
+        }
+        return p;
+      }, allStatus as Record<string, Status>);
+    },
+  });
 
-  const { isSuccess, isError } = useHealthQuery({
+  const { isSuccess, isError } = useQuery({
+    ...adminApi(
+      '/health',
+      'get',
+      `/api/accounts/${currentAccountId}/environments/${currentEnvironmentId}/admin`
+    ),
     refetchOnMount: false,
-    enabled: !!currentStatus && ['HEALTHY', 'DEGRADED'].includes(currentStatus),
+    enabled:
+      !!currentStatus &&
+      ['ACTIVE', 'HEALTHY', 'DEGRADED'].includes(currentStatus),
     refetchInterval: currentStatus === 'HEALTHY' ? 60000 : 10000,
-    baseUrl: `/api/accounts/${currentAccountId}/environments/${currentEnvironmentId}/admin`,
   });
 
   const newStatus = isSuccess ? 'HEALTHY' : isError ? 'DEGRADED' : undefined;
@@ -81,10 +113,6 @@ export function EnvironmentStatusProvider({
                 return s;
               }
             });
-            setAllEnvironmentDetails((s) => ({
-              ...s,
-              [data.environmentId]: data,
-            }));
           }
         }
       );
@@ -95,62 +123,14 @@ export function EnvironmentStatusProvider({
   }, [loaderResponse]);
 
   return (
-    <EnvironmentStatusContext.Provider value={allStatus}>
+    <EnvironmentStatusContext.Provider value={results}>
       {children}
       <EnvironmentDegraded
         status={currentStatus}
         key={`${currentStatus}${currentEnvironmentId}`}
       />
-      {loaderResponse.environmentList.data?.environments.map(
-        ({ environmentId }) => (
-          <EnvironmentStatusFetcher
-            environmentId={environmentId}
-            adminBaseUrl={allEnvironmentDetails[environmentId]?.adminBaseUrl}
-            currentStatus={allStatus[environmentId]}
-            setStatus={setStatus}
-            key={environmentId}
-          />
-        )
-      )}
     </EnvironmentStatusContext.Provider>
   );
-}
-
-function EnvironmentStatusFetcher({
-  environmentId,
-  currentStatus,
-  setStatus,
-  adminBaseUrl,
-}: {
-  environmentId: string;
-  adminBaseUrl?: string;
-  currentStatus?: Status;
-  setStatus: (environmentId: string, status: Status) => void;
-}) {
-  const currentAccountId = useAccountParam();
-
-  const { isSuccess, isError, status, error } = useHealthQuery({
-    enabled: currentStatus === 'ACTIVE',
-    refetchOnMount: false,
-    baseUrl: `/api/accounts/${currentAccountId}/environments/${environmentId}/admin`,
-  });
-  const newStatus = isSuccess ? 'HEALTHY' : isError ? 'DEGRADED' : undefined;
-  console.log(
-    environmentId,
-    currentStatus,
-    status,
-    isSuccess,
-    isError,
-    newStatus,
-    error
-  );
-  useEffect(() => {
-    newStatus &&
-      newStatus !== currentStatus &&
-      setStatus(environmentId, newStatus);
-  }, [newStatus, environmentId, setStatus]);
-
-  return null;
 }
 
 export function useEnvironmentStatus(environmentId: string) {
