@@ -9,12 +9,15 @@ import {
 } from 'react';
 import { clientLoader } from './loader';
 import { useLoaderData } from '@remix-run/react';
-import { useEnvironmentParam } from '@restate/features/cloud/routes-utils';
-import { getAccessToken } from '@restate/util/auth';
+import {
+  useAccountParam,
+  useEnvironmentParam,
+} from '@restate/features/cloud/routes-utils';
 import { HideNotification, LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import { describeEnvironment } from '@restate/data-access/cloud/api-client';
+import { useHealthQuery } from '@restate/datat-access/admin-api';
 
 const EnvironmentStatusContext = createContext<Record<string, Status>>({});
 export type Status =
@@ -34,10 +37,10 @@ export function EnvironmentStatusProvider({
     Record<string, Awaited<ReturnType<typeof describeEnvironment>>['data']>
   >({});
   const currentEnvironmentId = useEnvironmentParam();
+  const currentAccountId = useAccountParam();
   const currentStatus = currentEnvironmentId
     ? allStatus[currentEnvironmentId]
     : undefined;
-  const [currentAdminBaseUrl, setCurrentAdminBaseUrl] = useState<string>();
 
   const setStatus = useCallback((environmentId: string, status: Status) => {
     setAllStatus((s) => ({
@@ -45,6 +48,18 @@ export function EnvironmentStatusProvider({
       [environmentId]: status,
     }));
   }, []);
+
+  const { isSuccess, isError } = useHealthQuery({
+    refetchOnMount: false,
+    enabled: !!currentStatus && ['HEALTHY', 'DEGRADED'].includes(currentStatus),
+    refetchInterval: currentStatus === 'HEALTHY' ? 60000 : 10000,
+    baseUrl: `/api/accounts/${currentAccountId}/environments/${currentEnvironmentId}/admin`,
+  });
+
+  const newStatus = isSuccess ? 'HEALTHY' : isError ? 'DEGRADED' : undefined;
+  if (newStatus && newStatus !== currentStatus && currentEnvironmentId) {
+    setStatus(currentEnvironmentId, newStatus);
+  }
 
   useEffect(() => {
     const { environmentList, ...environmentsWithDetailsPromises } =
@@ -79,74 +94,6 @@ export function EnvironmentStatusProvider({
     };
   }, [loaderResponse]);
 
-  useEffect(() => {
-    const { environmentList, ...environmentsWithDetailsPromises } =
-      loaderResponse;
-    const abortController = new AbortController();
-    let cancelled = false;
-    if (currentEnvironmentId) {
-      environmentsWithDetailsPromises[currentEnvironmentId]?.then(
-        ({ data }) => {
-          if (data && !cancelled) {
-            setCurrentAdminBaseUrl(data.adminBaseUrl);
-          }
-        }
-      );
-    }
-
-    return () => {
-      cancelled = true;
-      abortController.abort();
-    };
-  }, [currentEnvironmentId, loaderResponse]);
-
-  useEffect(() => {
-    let cancelled = false;
-    let abortController = new AbortController();
-    let timeoutId: ReturnType<typeof setTimeout> | null = null;
-
-    if (
-      currentEnvironmentId &&
-      currentStatus &&
-      (['HEALTHY', 'DEGRADED'] as Status[]).includes(currentStatus)
-    ) {
-      const healthCheck = () => {
-        if (!abortController.signal.aborted) {
-          abortController.abort();
-        }
-        abortController = new AbortController();
-        return setTimeout(
-          () => {
-            fetch(`${currentAdminBaseUrl}/health`, {
-              headers: {
-                Authorization: `Bearer ${getAccessToken()}`,
-              },
-              signal: abortController.signal,
-            })
-              .then((res) => {
-                if (!cancelled) {
-                  setAllStatus((s) => ({
-                    ...s,
-                    [currentEnvironmentId]: res.ok ? 'HEALTHY' : 'DEGRADED',
-                  }));
-                  timeoutId = healthCheck();
-                }
-              }) // eslint-disable-next-line @typescript-eslint/no-empty-function
-              .catch(() => {});
-          },
-          currentStatus === 'HEALTHY' ? 60000 : 10000
-        );
-      };
-      timeoutId = healthCheck();
-    }
-
-    return () => {
-      cancelled = true;
-      abortController.abort();
-      timeoutId && clearTimeout(timeoutId);
-    };
-  }, [currentEnvironmentId, currentStatus, currentAdminBaseUrl]);
-
   return (
     <EnvironmentStatusContext.Provider value={allStatus}>
       {children}
@@ -159,7 +106,7 @@ export function EnvironmentStatusProvider({
           <EnvironmentStatusFetcher
             environmentId={environmentId}
             adminBaseUrl={allEnvironmentDetails[environmentId]?.adminBaseUrl}
-            currentStatus={allEnvironmentDetails[environmentId]?.status}
+            currentStatus={allStatus[environmentId]}
             setStatus={setStatus}
             key={environmentId}
           />
@@ -180,30 +127,28 @@ function EnvironmentStatusFetcher({
   currentStatus?: Status;
   setStatus: (environmentId: string, status: Status) => void;
 }) {
+  const currentAccountId = useAccountParam();
+
+  const { isSuccess, isError, status, error } = useHealthQuery({
+    enabled: currentStatus === 'ACTIVE',
+    refetchOnMount: false,
+    baseUrl: `/api/accounts/${currentAccountId}/environments/${environmentId}/admin`,
+  });
+  const newStatus = isSuccess ? 'HEALTHY' : isError ? 'DEGRADED' : undefined;
+  console.log(
+    environmentId,
+    currentStatus,
+    status,
+    isSuccess,
+    isError,
+    newStatus,
+    error
+  );
   useEffect(() => {
-    const abortController = new AbortController();
-    let cancelled = false;
-
-    if (currentStatus === 'ACTIVE' && adminBaseUrl) {
-      fetch(`${adminBaseUrl}/health`, {
-        headers: {
-          Authorization: `Bearer ${getAccessToken()}`,
-        },
-        signal: abortController.signal,
-      })
-        .then((res) => {
-          if (!cancelled) {
-            setStatus(environmentId, res.ok ? 'HEALTHY' : 'DEGRADED');
-          }
-        }) // eslint-disable-next-line @typescript-eslint/no-empty-function
-        .catch(() => {});
-    }
-
-    return () => {
-      cancelled = true;
-      abortController.abort();
-    };
-  }, [adminBaseUrl, currentStatus, environmentId, setStatus]);
+    newStatus &&
+      newStatus !== currentStatus &&
+      setStatus(environmentId, newStatus);
+  }, [newStatus, environmentId, setStatus]);
 
   return null;
 }
