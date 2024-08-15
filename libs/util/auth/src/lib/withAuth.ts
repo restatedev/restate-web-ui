@@ -42,7 +42,18 @@ export function withAuth(loader: ClientLoaderFunction) {
     const { data } = await getTokenWithCache.fetch();
     if (data) {
       setAccessToken(data.accessToken);
-      return loader(args);
+      try {
+        return await loader(args);
+      } catch (error) {
+        if (error instanceof UnauthorizedError) {
+          return redirect(
+            getLoginURL({
+              returnUrl: `${url.pathname}${url.search}`,
+            })
+          );
+        }
+        throw error;
+      }
     } else {
       return redirect(
         getLoginURL({
