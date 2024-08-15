@@ -7,7 +7,7 @@ import {
   useEnvironmentParam,
 } from '@restate/features/cloud/routes-utils';
 import { HideNotification, LayoutOutlet, LayoutZone } from '@restate/ui/layout';
-import { useEnvironmentDetails } from './useEnvironmnetDetails';
+import { useEnvironmentDetails } from './useEnvironmentDetails';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface EnvironmentPendingProps {}

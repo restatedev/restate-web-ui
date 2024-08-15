@@ -25,7 +25,7 @@ import { InlineError } from '@restate/ui/error';
 import { Version } from './Version';
 import { EnvironmentStatusProvider } from './EnvironmentStatusContext';
 import { useQuery } from '@tanstack/react-query';
-import { useEnvironmentDetails } from './useEnvironmnetDetails';
+import { useEnvironmentDetails } from './useEnvironmentDetails';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface EnvironmentSelectorProps {}
