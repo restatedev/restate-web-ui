@@ -54,7 +54,6 @@ export const clientLoader = withAuth(
     }
 
     return json({
-      environmentList,
       dehydratedState: dehydrate(queryClient),
     });
   }

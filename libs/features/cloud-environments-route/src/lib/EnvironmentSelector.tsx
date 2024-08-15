@@ -1,11 +1,4 @@
-import {
-  Await,
-  useAsyncValue,
-  useFetcher,
-  useLoaderData,
-  useLocation,
-  useSearchParams,
-} from '@remix-run/react';
+import { useLocation, useSearchParams } from '@remix-run/react';
 import { Button } from '@restate/ui/button';
 import {
   Dropdown,
@@ -16,7 +9,6 @@ import {
   DropdownTrigger,
 } from '@restate/ui/dropdown';
 import invariant from 'tiny-invariant';
-import { clientLoader } from './loader';
 import { Suspense } from 'react';
 import {
   useAccountParam,
@@ -28,70 +20,54 @@ import { EnvironmentStatus, MiniEnvironmentStatus } from './EnvironmentStatus';
 import { CreateEnvironment } from './CreateEnvironment';
 import { CREATE_ENVIRONMENT_PARAM_NAME } from './constants';
 import { DeleteEnvironment } from './DeleteEnvironment';
-import { describeEnvironment } from '@restate/data-access/cloud/api-client';
+import { cloudApi } from '@restate/data-access/cloud/api-client';
 import { InlineError } from '@restate/ui/error';
 import { Version } from './Version';
 import { EnvironmentStatusProvider } from './EnvironmentStatusContext';
+import { useQuery } from '@tanstack/react-query';
+import { useEnvironmentDetails } from './useEnvironmnetDetails';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface EnvironmentSelectorProps {}
 
 export function EnvironmentSelector(props: EnvironmentSelectorProps) {
   const currentAccountId = useAccountParam();
-  const { environmentList, ...environmentsWithDetailsPromises } =
-    useLoaderData<typeof clientLoader>();
-  const currentEnvironmentParam = useEnvironmentParam();
   invariant(currentAccountId, 'Account id is missing');
-  const { state } = useFetcher({ key: 'describeEnvironment' });
-  const isLoading = state === 'loading';
-  const numOfEnvironments = environmentList.data?.environments.length ?? 0;
+  const currentEnvironmentParam = useEnvironmentParam();
 
   if (!currentEnvironmentParam) {
-    return (
-      <CreateEnvironment currentNumberOfEnvironments={numOfEnvironments} />
-    );
-  }
-
-  if (environmentList.error) {
-    return (
-      <Await resolve={environmentList}>
-        <EnvironmentSelectorContent />
-      </Await>
-    );
+    return <CreateEnvironment />;
   }
 
   return (
     <Suspense fallback={<EnvironmentSkeletonLoading />}>
-      {isLoading ? (
-        <EnvironmentSkeletonLoading />
-      ) : (
-        <Await
-          resolve={environmentsWithDetailsPromises[currentEnvironmentParam]}
-        >
-          <EnvironmentSelectorContent />
-        </Await>
-      )}
-      <CreateEnvironment currentNumberOfEnvironments={numOfEnvironments} />
+      <EnvironmentSelectorContent />
+      <CreateEnvironment />
       <DeleteEnvironment />
     </Suspense>
   );
 }
 
 function EnvironmentSelectorContent() {
-  const environmentDetails = useAsyncValue() as Awaited<
-    ReturnType<typeof describeEnvironment>
-  >;
-  const { environmentList, ...environmentsWithDetailsPromises } =
-    useLoaderData<typeof clientLoader>();
-  const [, setSearchParams] = useSearchParams();
   const currentAccountId = useAccountParam();
   const currentEnvironmentId = useEnvironmentParam();
   invariant(currentAccountId, 'Account id is missing');
+  invariant(currentEnvironmentId, 'Environment id is missing');
+  const { data: environmentList } = useQuery({
+    ...cloudApi.listEnvironments({ accountId: currentAccountId }),
+    refetchOnMount: false,
+  });
+  const environmentDetails = useEnvironmentDetails();
+  const [, setSearchParams] = useSearchParams();
   const location = useLocation();
 
   const relativePath = location.pathname
     .split(toEnvironmentRoute(currentAccountId, currentEnvironmentId!))
     .at(-1);
+
+  if (environmentDetails.isLoading) {
+    return <EnvironmentSkeletonLoading />;
+  }
 
   return (
     <EnvironmentStatusProvider>
@@ -134,7 +110,7 @@ function EnvironmentSelectorContent() {
         </DropdownTrigger>
 
         <DropdownPopover>
-          {(environmentList.data?.environments ?? []).length > 0 && (
+          {(environmentList?.environments ?? []).length > 0 && (
             <DropdownSection title="Switch environment" className="max-w-xl">
               <DropdownMenu
                 selectable
@@ -142,7 +118,7 @@ function EnvironmentSelectorContent() {
                   selectedItems: [currentEnvironmentId],
                 })}
               >
-                {environmentList.data?.environments.map((environment) => (
+                {environmentList?.environments.map((environment) => (
                   <DropdownItem
                     href={toEnvironmentRoute(
                       currentAccountId,
@@ -154,18 +130,9 @@ function EnvironmentSelectorContent() {
                     className="group"
                   >
                     <Suspense fallback={<p>Loading environment details</p>}>
-                      <Await
-                        resolve={
-                          environmentsWithDetailsPromises[
-                            environment.environmentId
-                          ]
-                        }
-                        errorElement={<p>Failed to load</p>}
-                      >
-                        <EnvironmentItem
-                          environmentId={environment.environmentId}
-                        />
-                      </Await>
+                      <EnvironmentItem
+                        environmentId={environment.environmentId}
+                      />
                     </Suspense>
                   </DropdownItem>
                 ))}
@@ -198,9 +165,7 @@ function EnvironmentSelectorContent() {
 }
 
 function EnvironmentItem({ environmentId }: { environmentId: string }) {
-  const environmentDetails = useAsyncValue() as Awaited<
-    ReturnType<typeof describeEnvironment>
-  >;
+  const environmentDetails = useEnvironmentDetails({ environmentId });
 
   return (
     <div className="flex flex-col w-full">

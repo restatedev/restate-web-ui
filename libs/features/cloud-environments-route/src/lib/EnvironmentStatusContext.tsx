@@ -4,11 +4,8 @@ import {
   useCallback,
   useContext,
   useDeferredValue,
-  useEffect,
   useState,
 } from 'react';
-import { clientLoader } from './loader';
-import { useLoaderData } from '@remix-run/react';
 import {
   useAccountParam,
   useEnvironmentParam,
@@ -17,7 +14,14 @@ import { HideNotification, LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import { adminApi } from '@restate/data-access/admin-api';
-import { useQueries, useQuery } from '@tanstack/react-query';
+import {
+  Query,
+  useQueries,
+  useQuery,
+  UseQueryResult,
+} from '@tanstack/react-query';
+import { cloudApi, Environment } from '@restate/data-access/cloud/api-client';
+import invariant from 'tiny-invariant';
 
 const EnvironmentStatusContext = createContext<Record<string, Status>>({});
 export type Status =
@@ -28,102 +32,88 @@ export type Status =
   | 'DELETED'
   | 'DEGRADED';
 
+function toAllEnvironmentsStatus(result: UseQueryResult<Environment, Error>[]) {
+  return result.reduce((allStatus, envDetails) => {
+    if (envDetails.data) {
+      return {
+        ...allStatus,
+        [envDetails.data?.environmentId]: envDetails.data?.status,
+      };
+    }
+    return allStatus;
+  }, {} as Record<string, Status>);
+}
+
 export function EnvironmentStatusProvider({
   children,
 }: PropsWithChildren<NonNullable<unknown>>) {
-  const loaderResponse = useLoaderData<typeof clientLoader>();
-  const [allStatus, setAllStatus] = useState<Record<string, Status>>({});
+  const accountId = useAccountParam();
+  invariant(accountId, 'Missing accountId');
   const currentEnvironmentId = useEnvironmentParam();
-  const currentAccountId = useAccountParam();
-  const currentStatus = currentEnvironmentId
-    ? allStatus[currentEnvironmentId]
-    : undefined;
+  const { data: environmentList } = useQuery({
+    ...cloudApi.listEnvironments({ accountId: accountId! }),
+    refetchOnMount: false,
+  });
+  const environments = environmentList?.environments ?? [];
 
-  const setStatus = useCallback((environmentId: string, status: Status) => {
-    setAllStatus((s) => ({
-      ...s,
-      [environmentId]: status,
-    }));
-  }, []);
-  const results = useQueries({
-    queries: (loaderResponse.environmentList.data?.environments ?? []).map(
-      ({ environmentId }) => ({
-        ...adminApi(
-          '/health',
-          'get',
-          `/api/accounts/${currentAccountId}/environments/${environmentId}/admin`
-        ),
-        refetchOnMount: false,
-        enabled: allStatus[environmentId] === 'ACTIVE',
-      })
-    ),
-    combine(result) {
-      return result.reduce((p, c, i) => {
-        const environmentId =
-          loaderResponse.environmentList.data!.environments.at(
-            i
-          )?.environmentId;
-        if (environmentId && c.isFetched) {
-          const status: Status = c.isSuccess ? 'HEALTHY' : 'DEGRADED';
+  const allEnvironmentsStatus = useQueries({
+    queries: environments.map(({ environmentId }) => ({
+      ...cloudApi.describeEnvironment({
+        accountId,
+        environmentId,
+      }),
+      refetchOnMount: false,
+    })),
+    combine: toAllEnvironmentsStatus,
+  });
+
+  const toAllEnvironmentsStatusWithHealth = useCallback(
+    (result: UseQueryResult<unknown, unknown>[]) => {
+      return result.reduce((allHealthStatus, healthResponse, i) => {
+        const environmentId = environments.at(i)?.environmentId;
+        if (environmentId && healthResponse.isFetched) {
+          const status: Status = healthResponse.isSuccess
+            ? 'HEALTHY'
+            : 'DEGRADED';
           return {
-            ...p,
+            ...allHealthStatus,
             [environmentId]: status,
           };
         }
-        return p;
-      }, allStatus as Record<string, Status>);
+        return allHealthStatus;
+      }, allEnvironmentsStatus as Record<string, Status>);
     },
-  });
+    [environments, allEnvironmentsStatus]
+  );
 
-  const { isSuccess, isError } = useQuery({
-    ...adminApi(
-      '/health',
-      'get',
-      `/api/accounts/${currentAccountId}/environments/${currentEnvironmentId}/admin`
-    ),
-    refetchOnMount: false,
-    enabled:
-      !!currentStatus &&
-      ['ACTIVE', 'HEALTHY', 'DEGRADED'].includes(currentStatus),
-    refetchInterval: currentStatus === 'HEALTHY' ? 60000 : 10000,
-  });
+  const allEnvironmentsStatusWithHealth = useQueries({
+    queries: environments.map(({ environmentId }) => ({
+      ...adminApi(
+        '/health',
+        'get',
+        `/api/accounts/${accountId}/environments/${environmentId}/admin`
+      ),
+      refetchOnMount: false,
+      enabled: allEnvironmentsStatus[environmentId] === 'ACTIVE',
+      refetchInterval: (query: Query) => {
+        const url = query.queryKey.at(0);
+        const isCurrentEnvQuery =
+          typeof url === 'string' && url.includes(environmentId);
 
-  const newStatus = isSuccess ? 'HEALTHY' : isError ? 'DEGRADED' : undefined;
-  if (newStatus && newStatus !== currentStatus && currentEnvironmentId) {
-    setStatus(currentEnvironmentId, newStatus);
-  }
-
-  useEffect(() => {
-    const { environmentList, ...environmentsWithDetailsPromises } =
-      loaderResponse;
-    let cancelled = false;
-
-    environmentList.data?.environments.forEach((environment) => {
-      environmentsWithDetailsPromises[environment.environmentId]?.then(
-        ({ data }) => {
-          if (data && !cancelled) {
-            setAllStatus((s) => {
-              const currentValue = s[data.environmentId];
-              if (!currentValue) {
-                return {
-                  ...s,
-                  [data.environmentId]: data.status,
-                };
-              } else {
-                return s;
-              }
-            });
-          }
+        if (isCurrentEnvQuery) {
+          return query.state.status === 'success' ? 60000 : 10000;
         }
-      );
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [loaderResponse]);
+        return false;
+      },
+    })),
+    combine: toAllEnvironmentsStatusWithHealth,
+  });
+  const currentStatus = currentEnvironmentId
+    ? allEnvironmentsStatusWithHealth[currentEnvironmentId]
+    : undefined;
 
   return (
-    <EnvironmentStatusContext.Provider value={results}>
+    <EnvironmentStatusContext.Provider value={allEnvironmentsStatusWithHealth}>
       {children}
       <EnvironmentDegraded
         status={currentStatus}
