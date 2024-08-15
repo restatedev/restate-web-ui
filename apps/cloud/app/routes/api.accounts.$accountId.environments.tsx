@@ -25,6 +25,6 @@ export const loader = async ({
     }
 
     default:
-      return json({}, { status: 501 });
+      return new Response('', { status: 501 });
   }
 };

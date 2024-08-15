@@ -10,16 +10,21 @@ import { ErrorBanner } from '@restate/ui/error';
 import { useFetcherWithError } from '@restate/util/remix';
 import { Link } from '@restate/ui/link';
 import { Icon, IconName } from '@restate/ui/icons';
+import { useQuery } from '@tanstack/react-query';
+import invariant from 'tiny-invariant';
+import { cloudApi } from '@restate/data-access/cloud/api-client';
 
 const NUMBER_OF_ENVIRONMENT_LIMIT = 2;
 
-export function CreateEnvironment({
-  currentNumberOfEnvironments,
-}: {
-  currentNumberOfEnvironments: number;
-}) {
+export function CreateEnvironment() {
   const formId = useId();
   const accountId = useAccountParam();
+  invariant(accountId, 'Account id is missing');
+  const { data: environmentList } = useQuery({
+    ...cloudApi.listEnvironments({ accountId }),
+    refetchOnMount: false,
+  });
+  const currentNumberOfEnvironments = environmentList?.environments.length ?? 0;
   const action = `/accounts/${accountId}/environments`;
   const fetcher = useFetcherWithError<typeof clientAction>({ key: action });
   const [searchParams, setSearchParams] = useSearchParams();

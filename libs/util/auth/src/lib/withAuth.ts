@@ -3,7 +3,11 @@ import {
   type ClientLoaderFunction,
   type ClientLoaderFunctionArgs,
 } from '@remix-run/react';
-import type { LoaderFunction, LoaderFunctionArgs } from '@remix-run/cloudflare';
+import type {
+  LoaderFunction,
+  LoaderFunctionArgs,
+  TypedResponse,
+} from '@remix-run/cloudflare';
 import { getAuthCookie } from './authCookie';
 import { getLoginURL } from './loginUrl';
 import { setAccessToken } from './accessToken';
@@ -34,8 +38,10 @@ const getTokenWithCache = withCache<
   }))
 );
 
-export function withAuth(loader: ClientLoaderFunction) {
-  return async function (args: ClientLoaderFunctionArgs) {
+export function withAuth<L extends ClientLoaderFunction>(
+  loader: L
+): (...args: Parameters<L>) => Promise<ReturnType<L> | TypedResponse<never>> {
+  return async function (...args: Parameters<L>) {
     const url = new URL(window.location.href);
 
     // TODO: remove saving token in local storage
@@ -43,7 +49,7 @@ export function withAuth(loader: ClientLoaderFunction) {
     if (data) {
       setAccessToken(data.accessToken);
       try {
-        return await loader(args);
+        return await (loader(args[0]) as ReturnType<L>);
       } catch (error) {
         if (error instanceof UnauthorizedError) {
           return redirect(
