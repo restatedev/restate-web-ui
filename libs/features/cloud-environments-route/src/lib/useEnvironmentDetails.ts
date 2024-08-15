@@ -20,7 +20,6 @@ export function useEnvironmentDetails({
       accountId: String(accountId),
       environmentId: String(queryEnvironmentParam),
     }),
-    refetchOnMount: false,
     enabled: Boolean(accountId && queryEnvironmentParam),
     ...options,
   });

@@ -64,7 +64,6 @@ export function adminApi<
     FetchResponse<paths[Path][Method], {}, 'application/json'>['data'],
     FetchResponse<paths[Path][Method], {}, 'application/json'>['error']
   >['queryKey'];
-  retry: boolean;
 } {
   return {
     queryKey: [`${baseUrl}${path}`],
@@ -80,6 +79,5 @@ export function adminApi<
       );
       return data;
     },
-    retry: false,
   };
 }

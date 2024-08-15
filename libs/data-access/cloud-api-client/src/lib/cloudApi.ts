@@ -26,7 +26,6 @@ function listEnvironments({ accountId }: { accountId: string }) {
         }
       }
     },
-    retry: false,
   };
 }
 
@@ -62,7 +61,6 @@ function describeEnvironment({
         }
       }
     },
-    retry: false,
   };
 }
 

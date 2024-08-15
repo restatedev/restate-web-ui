@@ -22,7 +22,6 @@ export function CreateEnvironment() {
   invariant(accountId, 'Account id is missing');
   const { data: environmentList } = useQuery({
     ...cloudApi.listEnvironments({ accountId }),
-    refetchOnMount: false,
   });
   const currentNumberOfEnvironments = environmentList?.environments.length ?? 0;
   const action = `/accounts/${accountId}/environments`;

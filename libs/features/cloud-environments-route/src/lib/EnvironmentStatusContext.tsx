@@ -52,7 +52,6 @@ export function EnvironmentStatusProvider({
   const currentEnvironmentId = useEnvironmentParam();
   const { data: environmentList } = useQuery({
     ...cloudApi.listEnvironments({ accountId: accountId! }),
-    refetchOnMount: false,
   });
   const environments = environmentList?.environments ?? [];
 
@@ -62,7 +61,6 @@ export function EnvironmentStatusProvider({
         accountId,
         environmentId,
       }),
-      refetchOnMount: false,
     })),
     combine: toAllEnvironmentsStatus,
   });
@@ -93,7 +91,6 @@ export function EnvironmentStatusProvider({
         'get',
         `/api/accounts/${accountId}/environments/${environmentId}/admin`
       ),
-      refetchOnMount: false,
       enabled: allEnvironmentsStatus[environmentId] === 'ACTIVE',
       refetchInterval: (query: Query) => {
         const url = query.queryKey.at(0);

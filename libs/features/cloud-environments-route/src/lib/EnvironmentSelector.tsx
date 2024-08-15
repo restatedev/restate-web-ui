@@ -55,7 +55,6 @@ function EnvironmentSelectorContent() {
   invariant(currentEnvironmentId, 'Environment id is missing');
   const { data: environmentList } = useQuery({
     ...cloudApi.listEnvironments({ accountId: currentAccountId }),
-    refetchOnMount: false,
   });
   const environmentDetails = useEnvironmentDetails();
   const [, setSearchParams] = useSearchParams();
