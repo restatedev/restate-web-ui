@@ -1,7 +1,8 @@
 import { describeEnvironment } from '@restate/data-access/cloud/api-client';
 import { getAdminUrl } from './adminCookie';
 import invariant from 'tiny-invariant';
-import { LoaderFunction } from '@remix-run/cloudflare';
+import { LoaderFunction, redirect } from '@remix-run/cloudflare';
+import { getAuthCookie } from '@restate/util/auth';
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const { accountId, environmentId } = params;
@@ -22,9 +23,13 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     }
   }
   const path = request.url.split(`${environmentId}/admin`).at(1);
+
   const response = await fetch(`${adminURL}${path}`, {
     method: request.method,
-    headers: request.headers,
+    headers: {
+      Accept: 'json',
+      Authorization: `Bearer ${await getAuthCookie(request)}`,
+    },
   });
 
   return response;

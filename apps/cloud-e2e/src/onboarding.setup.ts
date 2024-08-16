@@ -34,4 +34,7 @@ setup('onboarding', async ({ page }) => {
   await page.getByLabel('Name').fill('e2e-env');
   await page.getByRole('button', { name: 'Create' }).click();
   await page.waitForURL('/accounts/*/environments/*/settings');
+  await page
+    .getByRole('status', { name: 'HEALTHY' })
+    .waitFor({ state: 'attached', timeout: 2 * 60 * 1000 });
 });

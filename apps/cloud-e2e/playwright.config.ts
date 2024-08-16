@@ -27,6 +27,7 @@ export default defineConfig({
   //   reuseExistingServer: !process.env.CI,
   //   cwd: workspaceRoot,
   // },
+  workers: 1,
   projects: [
     { name: 'auth', testMatch: 'auth.setup.ts', retries: 3 },
     {

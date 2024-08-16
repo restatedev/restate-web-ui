@@ -8,6 +8,7 @@ type FormatParameterWithColon<S extends string> =
 type GetPath<S extends keyof cloudApi.paths> = FormatParameterWithColon<
   keyof Pick<cloudApi.paths, S>
 >;
+const isE2E = process.env['SCENARIO'] === 'E2E';
 
 const getUserIdentityHandler = http.post<
   never,
@@ -488,7 +489,7 @@ const openApiHandler = http.get(
 );
 
 const healthHandler = http.get('/admin/:envId/health', async ({ request }) => {
-  if (Math.random() < 0.5) {
+  if (Math.random() < 0.5 && !isE2E) {
     return HttpResponse.json({}, { status: 500 });
   } else {
     return HttpResponse.json({}, { status: 200 });
