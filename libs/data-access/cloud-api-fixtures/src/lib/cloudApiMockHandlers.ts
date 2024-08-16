@@ -510,7 +510,7 @@ const loginPageHandler = http.get('/login', async ({ request }) => {
         <title>Document</title>
       </head>
       <body>
-        <form action="/login" method="POST" name="cognitoSignInForm">
+        <form method="POST" name="cognitoSignInForm">
           <label for="signInFormUsername" class="label-customizable">Email</label>
           <input
             id="signInFormUsername"
@@ -550,7 +550,12 @@ const loginPageHandler = http.get('/login', async ({ request }) => {
 });
 
 const loginHandler = http.post('/login', async ({ request }) => {
-  return HttpResponse.redirect('http://localhost:4200/auth?code=1234');
+  const url = new URL(request.url);
+  return HttpResponse.redirect(
+    `http://localhost:4200/auth?code=1234&state=${
+      decodeURIComponent(url.searchParams.get('state')!) ?? '/'
+    }`
+  );
 });
 
 const slackHandler = http.post('/slack', async ({ request }) => {
