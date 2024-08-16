@@ -64,4 +64,45 @@ function describeEnvironment({
   };
 }
 
-export const cloudApi = { listEnvironments, describeEnvironment };
+function describeApiKey({
+  accountId,
+  environmentId,
+  keyId,
+}: {
+  accountId: string;
+  environmentId: string;
+  keyId: string;
+}) {
+  return {
+    queryKey: [
+      'describeApiKey',
+      `/api/accounts/${accountId}/environments/${environmentId}/keys/${keyId}`,
+    ],
+    queryFn: async ({
+      queryKey,
+      signal,
+    }: {
+      queryKey: QueryKey;
+      signal: AbortSignal;
+    }) => {
+      const [_, url] = queryKey;
+      try {
+        return await ky
+          .get(String(url), { signal })
+          .json<components['schemas']['DescribeApiKeyResponse']>();
+      } catch (error) {
+        if (error instanceof HTTPError && error.response.status === 401) {
+          throw new UnauthorizedError();
+        } else {
+          throw error;
+        }
+      }
+    },
+  };
+}
+
+export const cloudApi = {
+  listEnvironments,
+  describeEnvironment,
+  describeApiKey,
+};
