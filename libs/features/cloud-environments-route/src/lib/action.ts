@@ -4,7 +4,6 @@ import {
   destroyEnvironment,
 } from '@restate/data-access/cloud/api-client';
 import invariant from 'tiny-invariant';
-import { listEnvironmentsWithCache } from './apis';
 
 // TODO: Error handling, Pending UI
 export const clientAction = async ({
@@ -17,8 +16,6 @@ export const clientAction = async ({
   switch (request.method) {
     case 'POST': {
       try {
-        listEnvironmentsWithCache.invalidate({ accountId });
-
         const body = await request.formData();
 
         // TODO: fix typing issue
@@ -39,7 +36,6 @@ export const clientAction = async ({
       }
     }
     case 'DELETE': {
-      listEnvironmentsWithCache.invalidate({ accountId });
       const body = await request.formData();
 
       // TODO: fix typing issue

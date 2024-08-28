@@ -1,23 +1,27 @@
-import { ClientLoaderFunctionArgs, redirect } from '@remix-run/react';
-import { listAccountsWithCache } from './apis';
+import {
+  ClientLoaderFunctionArgs,
+  redirect,
+  ShouldRevalidateFunction,
+} from '@remix-run/react';
+import { cloudApi } from '@restate/data-access/cloud/api-client';
+import { dehydrate, QueryClient } from '@tanstack/react-query';
+import { json } from '@remix-run/cloudflare';
 
 export const clientLoader = async ({
   request,
   params,
 }: ClientLoaderFunctionArgs) => {
-  const accountsList = await listAccountsWithCache.fetch();
-  const accounts = accountsList.data?.accounts ?? [];
+  const queryClient = new QueryClient();
+  const accountsList = await queryClient.fetchQuery(cloudApi.listAccounts());
+  const { accounts } = accountsList;
   const isAccountIdParamValid = accounts.some(
     ({ accountId }) => params.accountId === accountId
   );
 
-  if (accountsList.error) {
-    throw new Response(accountsList.error.message, {
-      status: accountsList.error.code,
-    });
-  }
   if (isAccountIdParamValid) {
-    return { accountsList };
+    return json({
+      dehydratedState: dehydrate(queryClient),
+    });
   }
 
   if (accounts.length > 0) {
@@ -25,6 +29,10 @@ export const clientLoader = async ({
   } else if (params.accountId) {
     return redirect('/accounts');
   } else {
-    return { accountsList };
+    return json({
+      dehydratedState: dehydrate(queryClient),
+    });
+  }
+};
   }
 };

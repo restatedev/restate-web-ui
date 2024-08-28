@@ -3,6 +3,32 @@ import { QueryKey } from '@tanstack/react-query';
 import ky, { HTTPError } from 'ky';
 import { UnauthorizedError } from './UnauthorizedError';
 
+function listAccounts() {
+  return {
+    queryKey: ['listAccounts', '/api/accounts'],
+    queryFn: async ({
+      queryKey,
+      signal,
+    }: {
+      queryKey: QueryKey;
+      signal: AbortSignal;
+    }) => {
+      const [_, url] = queryKey;
+      try {
+        return await ky
+          .get(String(url), { signal })
+          .json<components['schemas']['ListAccountsResponse']>();
+      } catch (error) {
+        if (error instanceof HTTPError && error.response.status === 401) {
+          throw new UnauthorizedError();
+        } else {
+          throw error;
+        }
+      }
+    },
+  };
+}
+
 function listEnvironments({ accountId }: { accountId: string }) {
   return {
     queryKey: ['listEnvironments', `/api/accounts/${accountId}/environments`],
@@ -103,6 +129,7 @@ function describeApiKey({
 
 export const cloudApi = {
   listEnvironments,
+  listAccounts,
   describeEnvironment,
   describeApiKey,
 };
