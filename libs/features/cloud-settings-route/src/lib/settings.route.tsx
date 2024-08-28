@@ -1,8 +1,6 @@
-import { clientAction } from './action';
 import { CLI } from './Cli';
 import { Http } from './Http';
 import { ApiKeys } from './ApiKeys';
-import { clientLoader } from './loader';
 import { Security } from './Security';
 import { ErrorFetchingEnvironmentDetails } from './ErrorFetchingEnvironmentDetails';
 import { useFetcher } from '@remix-run/react';
@@ -31,4 +29,4 @@ function Component() {
   );
 }
 
-export const settings = { clientAction, clientLoader, Component };
+export const settings = { Component };
