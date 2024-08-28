@@ -24,9 +24,6 @@ export function CLI({ isLoading }: { isLoading: boolean }) {
   )?.name;
   const environmentName = environmentDetails?.data?.name;
 
-  if (environmentDetails.isLoading) {
-  }
-
   return (
     <Section>
       <SectionTitle>

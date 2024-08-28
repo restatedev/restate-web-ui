@@ -1,4 +1,4 @@
-import { UnauthorizedError } from '@restate/data-access/cloud/api-client';
+import { UnauthorizedError } from '@restate/util/auth';
 import { logOut } from '@restate/util/auth';
 import {
   QueryClient,

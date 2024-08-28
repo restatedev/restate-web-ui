@@ -1,7 +1,7 @@
 import { describeEnvironment } from '@restate/data-access/cloud/api-client';
 import { getAdminUrl } from './adminCookie';
 import invariant from 'tiny-invariant';
-import { LoaderFunction, redirect } from '@remix-run/cloudflare';
+import { LoaderFunction } from '@remix-run/cloudflare';
 import { getAuthCookie } from '@restate/util/auth';
 
 export const loader: LoaderFunction = async ({ request, params }) => {

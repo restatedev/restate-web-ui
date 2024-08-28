@@ -7,8 +7,8 @@ import type {
 import { getAuthCookie } from './authCookie';
 import { getLoginURL } from './loginUrl';
 import { setAccessToken } from './accessToken';
-import { UnauthorizedError } from '@restate/data-access/cloud/api-client';
 import ky from 'ky';
+import { UnauthorizedError } from './UnauthorizedError';
 
 let cachedToken: string | null = null;
 
@@ -22,6 +22,7 @@ export function withAuth<L extends ClientLoaderFunction>(
     const accessToken = cachedToken
       ? cachedToken
       : (await ky.get('/api/auth').json<{ accessToken: string }>()).accessToken;
+    cachedToken = accessToken;
 
     if (accessToken) {
       setAccessToken(accessToken);

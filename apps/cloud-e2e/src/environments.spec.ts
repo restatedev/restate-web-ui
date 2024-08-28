@@ -20,14 +20,16 @@ test('should create and delete an environment', async ({ page, baseURL }) => {
   await page.waitForResponse(`/api/accounts/*/environments/${newEnvId}`);
   await page.getByRole('dialog').waitFor({ state: 'detached' });
   await page.waitForURL(`/accounts/*/environments/${newEnvId}/settings`);
-  expect(
-    await page.getByRole('button', { name: new RegExp(envName) })
+  await expect(
+    page.getByRole('button', { name: new RegExp(envName) })
   ).toBeVisible();
 
   // Check the environment is finished setting up
-  await page.getByText(
-    /Your Restate environment is being created and will be ready shortly\./
-  );
+  await page
+    .getByText(
+      /Your Restate environment is being created and will be ready shortly\./
+    )
+    .waitFor();
   await page
     .getByText(
       /Your Restate environment is being created and will be ready shortly\./
@@ -36,7 +38,7 @@ test('should create and delete an environment', async ({ page, baseURL }) => {
   await page
     .getByRole('status', { name: 'HEALTHY' })
     .waitFor({ state: 'attached' });
-  expect(await page.getByRole('status', { name: 'HEALTHY' })).toBeVisible();
+  await expect(page.getByRole('status', { name: 'HEALTHY' })).toBeVisible();
 
   // Delete the environment
   await page.getByRole('button', { name: /Delete environment/ }).click();
@@ -45,7 +47,7 @@ test('should create and delete an environment', async ({ page, baseURL }) => {
     .getByRole('button', { name: 'Delete' })
     .click();
   await expect(
-    await page.getByLabel('Type "delete" to confirm')
+    page.getByLabel('Type "delete" to confirm')
   ).toHaveAccessibleDescription(/fill out this field/i);
   await page
     .getByRole('textbox', { name: 'Type "delete" to confirm' })

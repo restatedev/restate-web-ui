@@ -1,5 +1,5 @@
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
-import { Suspense, PropsWithChildren } from 'react';
+import { Suspense } from 'react';
 import { ApiKeyItem } from './ApiKeyItem';
 import { CreateApiKey } from './CreateApiKey';
 import { DeleteAPIKey } from './DeleteAPIKey';
@@ -39,7 +39,7 @@ export function ApiKeys({ isLoading }: { isLoading: boolean }) {
   );
 }
 
-function APIKeysList({}: PropsWithChildren<object>) {
+function APIKeysList() {
   const environmentDetails = useEnvironmentDetails();
 
   if (environmentDetails.isLoading) {
