@@ -37,6 +37,7 @@ export function CreateEnvironment() {
       },
       { preventScrollReset: true }
     );
+    // TODO Optimistic update and pending ui
     fetcher.resetErrors();
   };
 
@@ -119,7 +120,9 @@ export function CreateEnvironment() {
                       onClick={close}
                       variant="secondary"
                       className="flex-auto"
-                      disabled={fetcher.state === 'submitting'}
+                      disabled={['submitting', 'loading'].includes(
+                        fetcher.state
+                      )}
                     >
                       Cancel
                     </Button>

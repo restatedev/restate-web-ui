@@ -9,6 +9,7 @@ import { dehydrate, QueryClient } from '@tanstack/react-query';
 import { json } from '@remix-run/cloudflare';
 import { withAuth } from '@restate/util/auth';
 
+// TODO
 export const shouldRevalidate: ShouldRevalidateFunction = ({
   actionResult,
   currentParams,
@@ -23,6 +24,20 @@ export const shouldRevalidate: ShouldRevalidateFunction = ({
 }) => {
   if (!nextParams.environmentId) {
     return true;
+  }
+  if (
+    currentUrl.searchParams.get('createApiKey') !==
+      nextUrl.searchParams.get('createApiKey') ||
+    currentUrl.searchParams.get('deleteApiKey') !==
+      nextUrl.searchParams.get('deleteApiKey') ||
+    (!currentUrl.searchParams.get('createEnvironment') &&
+      nextUrl.searchParams.get('createEnvironment')) ||
+    (!currentUrl.searchParams.get('deleteEnvironment') &&
+      nextUrl.searchParams.get('deleteEnvironment')) ||
+    (!currentUrl.searchParams.get('createAccount') &&
+      nextUrl.searchParams.get('createAccount'))
+  ) {
+    return false;
   }
   return defaultShouldRevalidate;
 };
