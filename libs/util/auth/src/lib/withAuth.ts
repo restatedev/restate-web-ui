@@ -1,8 +1,4 @@
-import {
-  redirect,
-  type ClientLoaderFunction,
-  type ClientLoaderFunctionArgs,
-} from '@remix-run/react';
+import { redirect, type ClientLoaderFunction } from '@remix-run/react';
 import type {
   LoaderFunction,
   LoaderFunctionArgs,
@@ -11,32 +7,10 @@ import type {
 import { getAuthCookie } from './authCookie';
 import { getLoginURL } from './loginUrl';
 import { setAccessToken } from './accessToken';
-import { withCache } from '@restate/util/cache';
 import { UnauthorizedError } from '@restate/data-access/cloud/api-client';
+import ky from 'ky';
 
-const getTokenWithCache = withCache<
-  {
-    responses: {
-      200: {
-        content: {
-          'application/json': { accessToken: string };
-        };
-      };
-      401: {
-        content: {
-          'application/json': object;
-        };
-      };
-    };
-  },
-  undefined,
-  undefined
->(() =>
-  fetch('/api/auth').then(async (response) => ({
-    response,
-    data: (await response.json()) as { accessToken: string },
-  }))
-);
+let cachedToken: string | null = null;
 
 export function withAuth<L extends ClientLoaderFunction>(
   loader: L
@@ -45,9 +19,12 @@ export function withAuth<L extends ClientLoaderFunction>(
     const url = new URL(window.location.href);
 
     // TODO: remove saving token in local storage
-    const { data } = await getTokenWithCache.fetch();
-    if (data) {
-      setAccessToken(data.accessToken);
+    const accessToken = cachedToken
+      ? cachedToken
+      : (await ky.get('/api/auth').json<{ accessToken: string }>()).accessToken;
+
+    if (accessToken) {
+      setAccessToken(accessToken);
       try {
         return await (loader(args[0]) as ReturnType<L>);
       } catch (error) {

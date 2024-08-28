@@ -69,7 +69,6 @@
       "@restate/ui/radio-group": ["libs/ui/radio-group/src/index.ts"],
       "@restate/ui/section": ["libs/ui/section/src/index.ts"],
       "@restate/util/auth": ["libs/util/auth/src/index.ts"],
-      "@restate/util/cache": ["libs/util/cache/src/index.ts"],
       "@restate/util/mock-api": ["libs/util/mock-api/src/index.ts"],
       "@restate/util/playwright": ["libs/util/playwright/src/index.ts"],
       "@restate/util/react-query": ["libs/util/react-query/src/index.ts"],

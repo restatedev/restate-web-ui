@@ -1,9 +1,0 @@
-{
-  "name": "util-cache",
-  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/util/cache/src",
-  "projectType": "library",
-  "tags": [],
-  "// targets": "to see all targets run: nx show project util-cache --web",
-  "targets": {}
-}
