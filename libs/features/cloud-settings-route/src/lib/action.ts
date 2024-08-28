@@ -17,10 +17,6 @@ export const clientAction = async ({
   const action = body.get('_action');
   invariant(params.accountId, 'Missing accountId param');
   invariant(params.environmentId, 'Missing environmentId param');
-  describeEnvironmentWithCache.invalidate({
-    accountId: params.accountId,
-    environmentId: params.environmentId,
-  });
 
   if (action === 'createApiKey') {
     const roleId = body.get('roleId');
@@ -41,11 +37,6 @@ export const clientAction = async ({
   if (action === 'deleteApiKey') {
     const keyId = body.get('keyId');
     invariant(typeof keyId === 'string', 'Missing keyId');
-    describeApiKeyWithCache.invalidate({
-      accountId: params.accountId,
-      environmentId: params.environmentId,
-      keyId,
-    });
 
     const { error } = await deleteApiKey({
       accountId: params.accountId,

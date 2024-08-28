@@ -4,16 +4,19 @@ import {
 } from '@restate/features/cloud/routes-utils';
 import { useQuery } from '@tanstack/react-query';
 import { adminApi } from '@restate/data-access/admin-api';
+import { useEnvironmentStatus } from './EnvironmentStatusContext';
 
 export function Version() {
   const accountId = useAccountParam();
   const environmentId = useEnvironmentParam();
+  const status = useEnvironmentStatus(environmentId);
   const { data: version } = useQuery({
     ...adminApi(
       '/openapi',
       'get',
       `/api/accounts/${accountId}/environments/${environmentId}/admin`
     ),
+    enabled: Boolean(status && status !== 'PENDING'),
     select(data) {
       return (data?.info as unknown as { version: string })?.version;
     },

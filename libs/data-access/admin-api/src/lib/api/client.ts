@@ -75,6 +75,7 @@ export function adminApi<
           headers: {
             baseUrl,
           },
+          ...(path === '/health' && { parseAs: 'stream' }),
         }
       );
       return data;

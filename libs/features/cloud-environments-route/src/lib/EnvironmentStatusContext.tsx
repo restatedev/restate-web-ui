@@ -120,9 +120,9 @@ export function EnvironmentStatusProvider({
   );
 }
 
-export function useEnvironmentStatus(environmentId: string) {
+export function useEnvironmentStatus(environmentId?: string) {
   const statues = useContext(EnvironmentStatusContext);
-  return statues[environmentId];
+  return environmentId ? statues[environmentId] : undefined;
 }
 
 function EnvironmentDegraded({ status }: { status?: Status }) {

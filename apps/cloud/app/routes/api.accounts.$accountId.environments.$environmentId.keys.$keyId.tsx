@@ -27,7 +27,9 @@ export const action = async ({
         accountId,
         environmentId,
         keyId,
-        headers: request.headers,
+        headers: {
+          cookie: request.headers.get('cookie')!,
+        },
       });
 
       if (data) {
