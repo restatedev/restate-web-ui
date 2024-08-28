@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 
-test('should create and delete an account', async ({ page, baseURL }) => {
+test.setTimeout(120000);
+test('should create and delete an environment', async ({ page, baseURL }) => {
   await page.goto('/');
   await page.waitForURL(`${baseURL}/accounts/**`);
 
@@ -32,6 +33,9 @@ test('should create and delete an account', async ({ page, baseURL }) => {
       /Your Restate environment is being created and will be ready shortly\./
     )
     .waitFor({ state: 'detached', timeout: 60 * 1000 });
+  await page
+    .getByRole('status', { name: 'HEALTHY' })
+    .waitFor({ state: 'attached' });
   expect(await page.getByRole('status', { name: 'HEALTHY' })).toBeVisible();
 
   // Delete the environment
@@ -46,11 +50,14 @@ test('should create and delete an account', async ({ page, baseURL }) => {
   await page
     .getByRole('textbox', { name: 'Type "delete" to confirm' })
     .fill('delete');
+  const destroyEnvironmentResponse = page.waitForResponse(
+    /.*DestroyEnvironment$/
+  );
   await page
     .getByRole('dialog')
     .getByRole('button', { name: 'Delete' })
     .click();
-  await page.waitForResponse(/.*DestroyEnvironment$/);
+  await destroyEnvironmentResponse;
   await page.getByRole('dialog').waitFor({ state: 'detached' });
   await page
     .getByRole('button', { name: /e2e-env/ })
