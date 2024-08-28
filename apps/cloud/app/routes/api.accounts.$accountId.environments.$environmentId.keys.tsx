@@ -24,11 +24,13 @@ export const action = async ({
         environmentId,
         roleId,
         ...(typeof description === 'string' && { description }),
-        headers: request.headers,
+        headers: {
+          cookie: request.headers.get('cookie')!,
+        },
       });
 
       if (data) {
-        return json({});
+        return json({ ...data, description });
       } else {
         return new Response(JSON.stringify(error), { status: response.status });
       }

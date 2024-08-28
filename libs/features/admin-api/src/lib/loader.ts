@@ -8,8 +8,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const { accountId, environmentId } = params;
   invariant(accountId, 'Missing accountId param');
   invariant(environmentId, 'Missing environmentId param');
-  let adminURL = await getAdminUrl(request);
-  if (!adminURL) {
+  let adminBaseUrl = await getAdminUrl(request);
+  if (!adminBaseUrl) {
     const { data, error, response } = await describeEnvironment({
       accountId,
       environmentId,
@@ -17,20 +17,31 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     });
 
     if (data?.adminBaseUrl) {
-      adminURL = data?.adminBaseUrl;
+      adminBaseUrl = data?.adminBaseUrl;
     } else {
       return new Response(JSON.stringify(error), { status: response.status });
     }
   }
+  const adminURL = new URL(adminBaseUrl);
+
+  // Remove port for hosted environments
+  if (adminURL.hostname.includes('restate.cloud')) {
+    adminURL.port = '';
+  }
   const path = request.url.split(`${environmentId}/admin`).at(1);
 
-  const response = await fetch(`${adminURL}${path}`, {
-    method: request.method,
-    headers: {
-      Accept: 'json',
-      Authorization: `Bearer ${await getAuthCookie(request)}`,
-    },
-  });
+  const response = await fetch(
+    `${adminURL.href.replace(/\/$/, '')}${path?.substring(0)}`,
+    {
+      method: request.method,
+      headers: {
+        Accept: 'json',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${await getAuthCookie(request)}`,
+        'x-restate-target': 'admin',
+      },
+    }
+  );
 
   return response;
 };
