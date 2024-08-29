@@ -82,4 +82,6 @@ jobs:
       - name: Cloud E2E
         env:
           BASE_URL: https://staging.cloud.restate.dev
-        run: pnpm nx affected --targets=e2e --base=HEAD~1 --head=HEAD
+        run: pnpm nx affected --targets=e2e --exclude='web-ui-e2e' --base=HEAD~1 --head=HEAD
+      - name: Web UI E2E
+        run: pnpm nx affected --targets=e2e --exclude='cloud-e2e' --base=HEAD~1 --head=HEAD
