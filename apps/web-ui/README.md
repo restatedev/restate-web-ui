@@ -1,54 +1,22 @@
-# Welcome to Nx + Remix!
+# Web UI App
 
-- [Remix Docs](https://remix.run/docs)
-- [Nx Docs](https://nx.dev)
+This application is for Restate Web UI, developed using [`Remix`](https://remix.run/), and served as a [SPA](https://remix.run/docs/en/main/guides/spa-mode).
 
-## Development
-
-From your terminal:
+### Commands
 
 ```sh
-npx nx dev web-ui
-```
+# Run Web UI app in dev mode
+pnpm nx serve web-ui -c mock
 
-This starts your app in development mode, rebuilding assets on file changes.
+# Build Web UI app in prod mode
+pnpm nx build web-ui
 
-## Deployment
+# Start the Web UI app in prod mode
+pnpm nx start web-ui -c mock|dev|prod
 
-First, build your app for production:
+# Run unit tests for Web UI app
+pnpm nx test web-ui
 
-```sh
-npx nx build web-ui
-```
-
-Then run the app in production mode:
-
-```sh
-npx nx start web-ui
-```
-
-Now you'll need to pick a host to deploy it to.
-
-### DIY
-
-If you're familiar with deploying node applications, the built-in Remix app server is production-ready.
-
-Make sure to deploy the output of `remix build`
-
-- `packages/web-ui/build/`
-- `packages/web-ui/public/build/`
-
-### Using a Template
-
-When you ran `npx create-remix@latest` there were a few choices for hosting. You can run that again to create a new project, then copy over your `app/` folder to the new project that's pre-configured for your target server.
-
-```sh
-cd ..
-# create a new project, and pick a pre-configured host
-npx create-remix@latest
-cd my-new-remix-app
-# remove the new project's app (not the old one!)
-rm -rf app
-# copy your app over
-cp -R ../my-old-remix-app/app app
+# Run end-to-end tests for Web UI app
+pnpm nx e2e web-ui-e2e
 ```
