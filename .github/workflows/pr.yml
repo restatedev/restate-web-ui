@@ -76,7 +76,9 @@ jobs:
       - name: Cloud E2E
         env:
           BASE_URL: ${{ steps.deploy.outputs.deployment-url }}
-        run: pnpm nx affected --targets=e2e --base=origin/main --head=HEAD
+        run: pnpm nx affected --targets=e2e --exclude='web-ui-e2e' --base=origin/main --head=HEAD
+      - name: Web UI E2E
+        run: pnpm nx affected --targets=e2e --exclude='cloud-e2e' --base=origin/main --head=HEAD
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
