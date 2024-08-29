@@ -1,9 +1,7 @@
-import NxWelcome from '../nx-welcome';
-
 export default function Index() {
   return (
     <div>
-      <NxWelcome title={'web-ui'} />
+      <h1 className="red-500">Web UI</h1>
     </div>
   );
 }
