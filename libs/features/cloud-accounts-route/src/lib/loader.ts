@@ -48,7 +48,7 @@ export const shouldRevalidate: ShouldRevalidateFunction = ({
   nextParams,
   nextUrl,
 }) => {
-  if (!nextParams.environmentId) {
+  if (!nextParams.accountId) {
     return true;
   }
   if (
