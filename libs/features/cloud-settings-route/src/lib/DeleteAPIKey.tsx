@@ -1,7 +1,7 @@
 import { useSearchParams } from '@remix-run/react';
 import { Button, SubmitButton } from '@restate/ui/button';
 import { Dialog, DialogContent, DialogFooter } from '@restate/ui/dialog';
-import { useId } from 'react';
+import { useId, useEffect, useCallback } from 'react';
 import { DELETE_API_KEY_PARAM_NAME } from './constants';
 import { FormFieldInput } from '@restate/ui/form-field';
 import {
@@ -10,18 +10,21 @@ import {
 } from '@restate/features/cloud/routes-utils';
 import { useFetcherWithError } from '@restate/util/remix';
 import { ErrorBanner } from '@restate/ui/error';
+import { useQueryClient } from '@tanstack/react-query';
 
 export function DeleteAPIKey() {
   const formId = useId();
   const accountId = useAccountParam();
   const environmentId = useEnvironmentParam();
-  const action = `/accounts/${accountId}/environments/${environmentId}/settings`;
-  const fetcher = useFetcherWithError({ key: action });
   const [searchParams, setSearchParams] = useSearchParams();
+  const action = `/api/accounts/${accountId}/environments/${environmentId}/keys/${searchParams.get(
+    DELETE_API_KEY_PARAM_NAME
+  )}`;
+  const fetcher = useFetcherWithError({ key: action });
   const shouldShowDeleteApiKey = Boolean(
     environmentId && accountId && searchParams.has(DELETE_API_KEY_PARAM_NAME)
   );
-  const close = () => {
+  const close = useCallback(() => {
     setSearchParams(
       (perv) => {
         perv.delete(DELETE_API_KEY_PARAM_NAME);
@@ -30,7 +33,20 @@ export function DeleteAPIKey() {
       { preventScrollReset: true }
     );
     fetcher.resetErrors();
-  };
+  }, [fetcher]);
+
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    if (fetcher.data) {
+      queryClient.invalidateQueries({
+        queryKey: [
+          'describeEnvironment',
+          `/api/accounts/${accountId}/environments/${environmentId}`,
+        ],
+      });
+      close();
+    }
+  }, [fetcher, environmentId, accountId, queryClient, close]);
 
   return (
     <Dialog

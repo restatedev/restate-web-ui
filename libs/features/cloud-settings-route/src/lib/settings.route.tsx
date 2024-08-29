@@ -1,26 +1,18 @@
-import { clientAction } from './action';
 import { CLI } from './Cli';
 import { Http } from './Http';
 import { ApiKeys } from './ApiKeys';
-import { clientLoader } from './loader';
 import { Security } from './Security';
 import { ErrorFetchingEnvironmentDetails } from './ErrorFetchingEnvironmentDetails';
-import { useFetcher } from '@remix-run/react';
-import { useAccountParam } from '@restate/features/cloud/routes-utils';
 import { Plan } from './Plan';
 import { Delete } from './Delete';
+import { useEnvironmentDetails } from '@restate/features/cloud/environments-route';
 
 function Component() {
-  const accountId = useAccountParam();
-  const { load, state } = useFetcher({ key: 'describeEnvironment' });
-  const isLoading = state === 'loading';
+  const { isLoading, refetch } = useEnvironmentDetails();
 
   return (
     <div className="flex flex-col gap-10">
-      <ErrorFetchingEnvironmentDetails
-        isLoading={isLoading}
-        retry={() => load(`/accounts/${accountId}/environments`)}
-      />
+      <ErrorFetchingEnvironmentDetails isLoading={isLoading} retry={refetch} />
       <CLI isLoading={isLoading} />
       <ApiKeys isLoading={isLoading} />
       <Http isLoading={isLoading} />
@@ -31,4 +23,4 @@ function Component() {
   );
 }
 
-export const settings = { clientAction, clientLoader, Component };
+export const settings = { Component };

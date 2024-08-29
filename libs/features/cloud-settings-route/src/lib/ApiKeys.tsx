@@ -1,31 +1,18 @@
-import {
-  Await,
-  useAsyncValue,
-  useLoaderData,
-  useRouteLoaderData,
-} from '@remix-run/react';
-import { describeEnvironment } from '@restate/data-access/cloud/api-client';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
-import { Suspense, PropsWithChildren } from 'react';
+import { Suspense } from 'react';
 import { ApiKeyItem } from './ApiKeyItem';
 import { CreateApiKey } from './CreateApiKey';
 import { DeleteAPIKey } from './DeleteAPIKey';
-import { clientLoader } from './loader';
 import { useEnvironmentParam } from '@restate/features/cloud/routes-utils';
 import invariant from 'tiny-invariant';
-import { environments } from '@restate/features/cloud/environments-route';
 import { Loading } from './Loading';
 import { Icon, IconName } from '@restate/ui/icons';
 import { LearnMore } from './LearnMore';
+import { useEnvironmentDetails } from '@restate/features/cloud/environments-route';
 
 export function ApiKeys({ isLoading }: { isLoading: boolean }) {
   const environmentId = useEnvironmentParam();
-
   invariant(environmentId, 'Missing environmentId param');
-  const environmentsResponse = useRouteLoaderData<
-    typeof environments.clientLoader
-  >('routes/accounts.$accountId.environments');
-  const environmentDetailsPromise = environmentsResponse?.[environmentId];
 
   return (
     <Section>
@@ -45,50 +32,27 @@ export function ApiKeys({ isLoading }: { isLoading: boolean }) {
       </SectionTitle>
       <SectionContent className="flex flex-col gap-2 relative">
         <Suspense fallback={<LoadingKeys />}>
-          {isLoading ? (
-            <LoadingKeys />
-          ) : (
-            <Await resolve={environmentDetailsPromise}>
-              <APIKeysList />
-            </Await>
-          )}
+          {isLoading ? <LoadingKeys /> : <APIKeysList />}
         </Suspense>
       </SectionContent>
     </Section>
   );
 }
 
-function APIKeysList({ children }: PropsWithChildren<object>) {
-  const environmentDetails = useAsyncValue() as Awaited<
-    ReturnType<typeof describeEnvironment>
-  >;
-  const { apiKeysWithDetailsPromise } = useLoaderData<typeof clientLoader>();
+function APIKeysList() {
+  const environmentDetails = useEnvironmentDetails();
+
+  if (environmentDetails.isLoading) {
+    return <LoadingKeys />;
+  }
 
   return (
     <>
-      <Suspense
-        fallback={
-          <div>
-            {environmentDetails.data?.apiKeys.map(({ keyId }) => (
-              <LoadingKey key={keyId} />
-            ))}
-          </div>
-        }
-      >
-        <Await resolve={apiKeysWithDetailsPromise}>
-          {(apiKeysWithDetails) => (
-            <ul className="flex flex-col gap-0 shadow-sm rounded-xl">
-              {(environmentDetails.data?.apiKeys ?? []).map(({ keyId }) => (
-                <ApiKeyItem
-                  keyId={keyId}
-                  key={keyId}
-                  apiKeyDetails={apiKeysWithDetails[keyId]?.data}
-                />
-              ))}
-            </ul>
-          )}
-        </Await>
-      </Suspense>
+      <ul className="flex flex-col gap-0 shadow-sm rounded-xl">
+        {(environmentDetails.data?.apiKeys ?? []).map(({ keyId }) => (
+          <ApiKeyItem keyId={keyId} key={keyId} />
+        ))}
+      </ul>
       <div>
         <CreateApiKey
           hasAnyKeys={(environmentDetails.data?.apiKeys ?? []).length > 0}

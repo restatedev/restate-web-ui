@@ -9,6 +9,7 @@ import { clientLoader, shouldRevalidate } from './loader';
 import {
   AccountSelector,
   accounts,
+  useListAccounts,
 } from '@restate/features/cloud/accounts-route';
 import {
   toEnvironmentRoute,
@@ -22,8 +23,7 @@ import { EnvironmentPending } from './EnvironmentPending';
 import { Support } from '@restate/features/cloud/support';
 
 function Component() {
-  const accountsResponse =
-    useRouteLoaderData<typeof accounts.clientLoader>('routes/accounts');
+  const { data: accountsList } = useListAccounts();
   const environmentId = useEnvironmentParam();
   const accountId = useAccountParam();
 
@@ -32,10 +32,8 @@ function Component() {
       <>
         <LayoutOutlet zone={LayoutZone.AppBar} variant="secondary">
           <div className="flex items-center gap-2">
-            {accountsResponse?.accountsList?.data?.accounts && (
-              <AccountSelector
-                accounts={accountsResponse?.accountsList?.data?.accounts}
-              />
+            {accountsList?.accounts && (
+              <AccountSelector accounts={accountsList?.accounts} />
             )}
           </div>
         </LayoutOutlet>
@@ -56,10 +54,8 @@ function Component() {
       <Support />
       <LayoutOutlet zone={LayoutZone.AppBar}>
         <div className="flex items-center gap-2 flex-1">
-          {accountsResponse?.accountsList?.data?.accounts && (
-            <AccountSelector
-              accounts={accountsResponse?.accountsList?.data?.accounts}
-            />
+          {accountsList?.accounts && (
+            <AccountSelector accounts={accountsList?.accounts} />
           )}
           <EnvironmentSelector />
           <LayoutOutlet zone={LayoutZone.Nav}>

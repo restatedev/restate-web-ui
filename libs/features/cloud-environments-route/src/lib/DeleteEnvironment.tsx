@@ -86,7 +86,7 @@ export function DeleteEnvironment() {
                     onClick={close}
                     variant="secondary"
                     className="flex-auto"
-                    disabled={fetcher.state === 'submitting'}
+                    disabled={['submitting', 'loading'].includes(fetcher.state)}
                   >
                     Cancel
                   </Button>

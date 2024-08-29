@@ -18,7 +18,9 @@ export default defineConfig({
   use: {
     baseURL,
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
+    trace: 'retain-on-failure',
+    video: 'retain-on-failure',
+    // permissions: ['clipboard-read', 'clipboard-write'],
   },
   /* Run your local dev server before starting the tests */
   // webServer: {
@@ -27,6 +29,7 @@ export default defineConfig({
   //   reuseExistingServer: !process.env.CI,
   //   cwd: workspaceRoot,
   // },
+  workers: 1,
   projects: [
     { name: 'auth', testMatch: 'auth.setup.ts', retries: 3 },
     {
@@ -51,6 +54,10 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome'],
         storageState: 'playwright/.auth/user.json',
+        contextOptions: {
+          // chromium-specific permissions
+          permissions: ['clipboard-read', 'clipboard-write'],
+        },
       },
       dependencies: ['onboarding'],
     },
@@ -60,6 +67,12 @@ export default defineConfig({
       use: {
         ...devices['Desktop Firefox'],
         storageState: 'playwright/.auth/user.json',
+        launchOptions: {
+          firefoxUserPrefs: {
+            'dom.events.asyncClipboard.readText': true,
+            'dom.events.testing.asyncClipboard': true,
+          },
+        },
       },
       dependencies: ['onboarding'],
     },

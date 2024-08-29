@@ -11,13 +11,16 @@
     "experimentalDecorators": true,
     "noUncheckedIndexedAccess": true,
     "importHelpers": true,
-    "target": "es2015",
+    "target": "es2018",
     "module": "esnext",
     "lib": ["es2020", "dom"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@restate/data-access/admin-api": [
+        "libs/data-access/admin-api/src/index.ts"
+      ],
       "@restate/data-access/cloud/api-client": [
         "libs/data-access/cloud-api-client/src/index.ts"
       ],
@@ -27,8 +30,12 @@
       "@restate/data-access/cloud/api-fixtures": [
         "libs/data-access/cloud-api-fixtures/src/index.ts"
       ],
+      "@restate/features/admin-api": ["libs/features/admin-api/src/index.ts"],
       "@restate/features/cloud/accounts-route": [
         "libs/features/cloud-accounts-route/src/index.ts"
+      ],
+      "@restate/features/cloud/environment-route": [
+        "libs/features/cloud-environment-route/src/index.ts"
       ],
       "@restate/features/cloud/environments-route": [
         "libs/features/cloud-environments-route/src/index.ts"
@@ -62,9 +69,9 @@
       "@restate/ui/radio-group": ["libs/ui/radio-group/src/index.ts"],
       "@restate/ui/section": ["libs/ui/section/src/index.ts"],
       "@restate/util/auth": ["libs/util/auth/src/index.ts"],
-      "@restate/util/cache": ["libs/util/cache/src/index.ts"],
       "@restate/util/mock-api": ["libs/util/mock-api/src/index.ts"],
       "@restate/util/playwright": ["libs/util/playwright/src/index.ts"],
+      "@restate/util/react-query": ["libs/util/react-query/src/index.ts"],
       "@restate/util/remix": ["libs/util/remix/src/index.ts"]
     }
   },

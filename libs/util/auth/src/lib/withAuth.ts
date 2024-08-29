@@ -1,47 +1,42 @@
-import {
-  redirect,
-  type ClientLoaderFunction,
-  type ClientLoaderFunctionArgs,
-} from '@remix-run/react';
-import type { LoaderFunction, LoaderFunctionArgs } from '@remix-run/cloudflare';
+import { redirect, type ClientLoaderFunction } from '@remix-run/react';
+import type {
+  LoaderFunction,
+  LoaderFunctionArgs,
+  TypedResponse,
+} from '@remix-run/cloudflare';
 import { getAuthCookie } from './authCookie';
 import { getLoginURL } from './loginUrl';
 import { setAccessToken } from './accessToken';
-import { withCache } from '@restate/util/cache';
+import ky from 'ky';
+import { UnauthorizedError } from './UnauthorizedError';
 
-const getTokenWithCache = withCache<
-  {
-    responses: {
-      200: {
-        content: {
-          'application/json': { accessToken: string };
-        };
-      };
-      401: {
-        content: {
-          'application/json': object;
-        };
-      };
-    };
-  },
-  undefined,
-  undefined
->(() =>
-  fetch('/api/auth').then(async (response) => ({
-    response,
-    data: (await response.json()) as { accessToken: string },
-  }))
-);
+let cachedTokenPromise: Promise<{ accessToken: string }> | null = null;
 
-export function withAuth(loader: ClientLoaderFunction) {
-  return async function (args: ClientLoaderFunctionArgs) {
+export function withAuth<L extends ClientLoaderFunction>(
+  loader: L
+): (...args: Parameters<L>) => Promise<ReturnType<L> | TypedResponse<never>> {
+  return async function (...args: Parameters<L>) {
     const url = new URL(window.location.href);
 
+    cachedTokenPromise =
+      cachedTokenPromise ?? ky.get('/api/auth').json<{ accessToken: string }>();
     // TODO: remove saving token in local storage
-    const { data } = await getTokenWithCache.fetch();
-    if (data) {
-      setAccessToken(data.accessToken);
-      return loader(args);
+    const accessToken = (await cachedTokenPromise).accessToken;
+
+    if (accessToken) {
+      setAccessToken(accessToken);
+      try {
+        return await (loader(args[0]) as ReturnType<L>);
+      } catch (error) {
+        if (error instanceof UnauthorizedError) {
+          return redirect(
+            getLoginURL({
+              returnUrl: `${url.pathname}${url.search}`,
+            })
+          );
+        }
+        throw error;
+      }
     } else {
       return redirect(
         getLoginURL({
@@ -52,13 +47,18 @@ export function withAuth(loader: ClientLoaderFunction) {
   };
 }
 
-export function withCookieAuth(loader: LoaderFunction) {
+export type LoaderFunctionArgsWithAuth = LoaderFunctionArgs & {
+  authToken: string;
+};
+export function withCookieAuth(
+  loader: (args: LoaderFunctionArgsWithAuth) => ReturnType<LoaderFunction>
+) {
   return async function (args: LoaderFunctionArgs) {
-    const authCookie = await getAuthCookie(args.request);
+    const authToken = await getAuthCookie(args.request);
     const url = new URL(args.request.url);
 
     // If there is no cookie, redirect to login
-    if (!authCookie) {
+    if (!authToken) {
       return redirect(
         getLoginURL({
           returnUrl: `${url.pathname}${url.search}`,
@@ -66,6 +66,17 @@ export function withCookieAuth(loader: LoaderFunction) {
       );
     }
 
-    return loader(args);
+    try {
+      return await loader({ ...args, authToken });
+    } catch (error) {
+      if (error instanceof UnauthorizedError) {
+        return redirect(
+          getLoginURL({
+            returnUrl: `${url.pathname}${url.search}`,
+          })
+        );
+      }
+      throw error;
+    }
   };
 }

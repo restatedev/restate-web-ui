@@ -4,17 +4,24 @@ import {
   useCallback,
   useContext,
   useDeferredValue,
-  useEffect,
   useState,
 } from 'react';
-import { clientLoader } from './loader';
-import { useLoaderData } from '@remix-run/react';
-import { useEnvironmentParam } from '@restate/features/cloud/routes-utils';
-import { getAccessToken } from '@restate/util/auth';
+import {
+  useAccountParam,
+  useEnvironmentParam,
+} from '@restate/features/cloud/routes-utils';
 import { HideNotification, LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
-import { describeEnvironment } from '@restate/data-access/cloud/api-client';
+import { adminApi } from '@restate/data-access/admin-api';
+import {
+  Query,
+  useQueries,
+  useQuery,
+  UseQueryResult,
+} from '@tanstack/react-query';
+import { cloudApi, Environment } from '@restate/data-access/cloud/api-client';
+import invariant from 'tiny-invariant';
 
 const EnvironmentStatusContext = createContext<Record<string, Status>>({});
 export type Status =
@@ -25,192 +32,97 @@ export type Status =
   | 'DELETED'
   | 'DEGRADED';
 
+function toAllEnvironmentsStatus(result: UseQueryResult<Environment, Error>[]) {
+  return result.reduce((allStatus, envDetails) => {
+    if (envDetails.data) {
+      return {
+        ...allStatus,
+        [envDetails.data?.environmentId]: envDetails.data?.status,
+      };
+    }
+    return allStatus;
+  }, {} as Record<string, Status>);
+}
+
 export function EnvironmentStatusProvider({
   children,
 }: PropsWithChildren<NonNullable<unknown>>) {
-  const loaderResponse = useLoaderData<typeof clientLoader>();
-  const [allStatus, setAllStatus] = useState<Record<string, Status>>({});
-  const [allEnvironmentDetails, setAllEnvironmentDetails] = useState<
-    Record<string, Awaited<ReturnType<typeof describeEnvironment>>['data']>
-  >({});
+  const accountId = useAccountParam();
+  invariant(accountId, 'Missing accountId');
   const currentEnvironmentId = useEnvironmentParam();
+  const { data: environmentList } = useQuery({
+    ...cloudApi.listEnvironments({ accountId: accountId! }),
+  });
+  const environments = environmentList?.environments ?? [];
+
+  const allEnvironmentsStatus = useQueries({
+    queries: environments.map(({ environmentId }) => ({
+      ...cloudApi.describeEnvironment({
+        accountId,
+        environmentId,
+      }),
+    })),
+    combine: toAllEnvironmentsStatus,
+  });
+
+  const toAllEnvironmentsStatusWithHealth = useCallback(
+    (result: UseQueryResult<unknown, unknown>[]) => {
+      return result.reduce((allHealthStatus, healthResponse, i) => {
+        const environmentId = environments.at(i)?.environmentId;
+        if (environmentId && healthResponse.isFetched) {
+          const status: Status = healthResponse.isSuccess
+            ? 'HEALTHY'
+            : 'DEGRADED';
+          return {
+            ...allHealthStatus,
+            [environmentId]: status,
+          };
+        }
+        return allHealthStatus;
+      }, allEnvironmentsStatus as Record<string, Status>);
+    },
+    [environments, allEnvironmentsStatus]
+  );
+
+  const allEnvironmentsStatusWithHealth = useQueries({
+    queries: environments.map(({ environmentId }) => ({
+      ...adminApi(
+        '/health',
+        'get',
+        `/api/accounts/${accountId}/environments/${environmentId}/admin`
+      ),
+      enabled: allEnvironmentsStatus[environmentId] === 'ACTIVE',
+      refetchInterval: (query: Query) => {
+        const url = query.queryKey.at(0);
+        const isCurrentEnvQuery =
+          typeof url === 'string' && url.includes(environmentId);
+
+        if (isCurrentEnvQuery) {
+          return query.state.status === 'success' ? 60000 : 10000;
+        }
+        return false;
+      },
+    })),
+    combine: toAllEnvironmentsStatusWithHealth,
+  });
   const currentStatus = currentEnvironmentId
-    ? allStatus[currentEnvironmentId]
+    ? allEnvironmentsStatusWithHealth[currentEnvironmentId]
     : undefined;
-  const [currentAdminBaseUrl, setCurrentAdminBaseUrl] = useState<string>();
-
-  const setStatus = useCallback((environmentId: string, status: Status) => {
-    setAllStatus((s) => ({
-      ...s,
-      [environmentId]: status,
-    }));
-  }, []);
-
-  useEffect(() => {
-    const { environmentList, ...environmentsWithDetailsPromises } =
-      loaderResponse;
-    let cancelled = false;
-
-    environmentList.data?.environments.forEach((environment) => {
-      environmentsWithDetailsPromises[environment.environmentId]?.then(
-        ({ data }) => {
-          if (data && !cancelled) {
-            setAllStatus((s) => {
-              const currentValue = s[data.environmentId];
-              if (!currentValue) {
-                return {
-                  ...s,
-                  [data.environmentId]: data.status,
-                };
-              } else {
-                return s;
-              }
-            });
-            setAllEnvironmentDetails((s) => ({
-              ...s,
-              [data.environmentId]: data,
-            }));
-          }
-        }
-      );
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [loaderResponse]);
-
-  useEffect(() => {
-    const { environmentList, ...environmentsWithDetailsPromises } =
-      loaderResponse;
-    const abortController = new AbortController();
-    let cancelled = false;
-    if (currentEnvironmentId) {
-      environmentsWithDetailsPromises[currentEnvironmentId]?.then(
-        ({ data }) => {
-          if (data && !cancelled) {
-            setCurrentAdminBaseUrl(data.adminBaseUrl);
-          }
-        }
-      );
-    }
-
-    return () => {
-      cancelled = true;
-      abortController.abort();
-    };
-  }, [currentEnvironmentId, loaderResponse]);
-
-  useEffect(() => {
-    let cancelled = false;
-    let abortController = new AbortController();
-    let timeoutId: ReturnType<typeof setTimeout> | null = null;
-
-    if (
-      currentEnvironmentId &&
-      currentStatus &&
-      (['HEALTHY', 'DEGRADED'] as Status[]).includes(currentStatus)
-    ) {
-      const healthCheck = () => {
-        if (!abortController.signal.aborted) {
-          abortController.abort();
-        }
-        abortController = new AbortController();
-        return setTimeout(
-          () => {
-            fetch(`${currentAdminBaseUrl}/health`, {
-              headers: {
-                Authorization: `Bearer ${getAccessToken()}`,
-              },
-              signal: abortController.signal,
-            })
-              .then((res) => {
-                if (!cancelled) {
-                  setAllStatus((s) => ({
-                    ...s,
-                    [currentEnvironmentId]: res.ok ? 'HEALTHY' : 'DEGRADED',
-                  }));
-                  timeoutId = healthCheck();
-                }
-              }) // eslint-disable-next-line @typescript-eslint/no-empty-function
-              .catch(() => {});
-          },
-          currentStatus === 'HEALTHY' ? 60000 : 10000
-        );
-      };
-      timeoutId = healthCheck();
-    }
-
-    return () => {
-      cancelled = true;
-      abortController.abort();
-      timeoutId && clearTimeout(timeoutId);
-    };
-  }, [currentEnvironmentId, currentStatus, currentAdminBaseUrl]);
 
   return (
-    <EnvironmentStatusContext.Provider value={allStatus}>
+    <EnvironmentStatusContext.Provider value={allEnvironmentsStatusWithHealth}>
       {children}
       <EnvironmentDegraded
         status={currentStatus}
         key={`${currentStatus}${currentEnvironmentId}`}
       />
-      {loaderResponse.environmentList.data?.environments.map(
-        ({ environmentId }) => (
-          <EnvironmentStatusFetcher
-            environmentId={environmentId}
-            adminBaseUrl={allEnvironmentDetails[environmentId]?.adminBaseUrl}
-            currentStatus={allEnvironmentDetails[environmentId]?.status}
-            setStatus={setStatus}
-            key={environmentId}
-          />
-        )
-      )}
     </EnvironmentStatusContext.Provider>
   );
 }
 
-function EnvironmentStatusFetcher({
-  environmentId,
-  currentStatus,
-  setStatus,
-  adminBaseUrl,
-}: {
-  environmentId: string;
-  adminBaseUrl?: string;
-  currentStatus?: Status;
-  setStatus: (environmentId: string, status: Status) => void;
-}) {
-  useEffect(() => {
-    const abortController = new AbortController();
-    let cancelled = false;
-
-    if (currentStatus === 'ACTIVE' && adminBaseUrl) {
-      fetch(`${adminBaseUrl}/health`, {
-        headers: {
-          Authorization: `Bearer ${getAccessToken()}`,
-        },
-        signal: abortController.signal,
-      })
-        .then((res) => {
-          if (!cancelled) {
-            setStatus(environmentId, res.ok ? 'HEALTHY' : 'DEGRADED');
-          }
-        }) // eslint-disable-next-line @typescript-eslint/no-empty-function
-        .catch(() => {});
-    }
-
-    return () => {
-      cancelled = true;
-      abortController.abort();
-    };
-  }, [adminBaseUrl, currentStatus, environmentId, setStatus]);
-
-  return null;
-}
-
-export function useEnvironmentStatus(environmentId: string) {
+export function useEnvironmentStatus(environmentId?: string) {
   const statues = useContext(EnvironmentStatusContext);
-  return statues[environmentId];
+  return environmentId ? statues[environmentId] : undefined;
 }
 
 function EnvironmentDegraded({ status }: { status?: Status }) {

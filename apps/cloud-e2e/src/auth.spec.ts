@@ -7,7 +7,7 @@ test.describe('Not authenticated', () => {
     await page.goto('/');
     // Wait for login page
     await page.waitForURL(
-      /\/login\?client_id=[^&]+&response_type=code&redirect_uri=[^&]+cloud\.restate\.dev\/auth&state=\//
+      /\/login\?client_id=[^&]+&response_type=code&redirect_uri=[^&]+&state=\//
     );
   });
 });

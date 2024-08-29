@@ -1,15 +1,16 @@
-import { Outlet, useLoaderData } from '@remix-run/react';
-import { clientLoader } from './loader';
+import { Outlet } from '@remix-run/react';
+import { clientLoader, shouldRevalidate } from './loader';
 import { clientAction } from './action';
 import { CreateAccountOnboarding } from './CreateAccountOnboarding';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
+import { useListAccounts } from './useListAccounts';
 
 function Component() {
-  const loaderData = useLoaderData<typeof clientLoader>();
-  if (loaderData?.accountsList?.error || !loaderData) {
+  const { data: accountsList, error } = useListAccounts();
+  if (error) {
     return null;
   }
-  const accounts = loaderData?.accountsList?.data?.accounts ?? [];
+  const accounts = accountsList?.accounts ?? [];
   if (accounts.length === 0) {
     return (
       <>
@@ -22,4 +23,9 @@ function Component() {
   return <Outlet />;
 }
 
-export const accounts = { clientAction, clientLoader, Component };
+export const accounts = {
+  clientAction,
+  clientLoader,
+  Component,
+  shouldRevalidate,
+};

@@ -8,6 +8,7 @@ type FormatParameterWithColon<S extends string> =
 type GetPath<S extends keyof cloudApi.paths> = FormatParameterWithColon<
   keyof Pick<cloudApi.paths, S>
 >;
+const isE2E = process.env['SCENARIO'] === 'E2E';
 
 const getUserIdentityHandler = http.post<
   never,
@@ -488,7 +489,7 @@ const openApiHandler = http.get(
 );
 
 const healthHandler = http.get('/admin/:envId/health', async ({ request }) => {
-  if (Math.random() < 0.5) {
+  if (Math.random() < 0.5 && !isE2E) {
     return HttpResponse.json({}, { status: 500 });
   } else {
     return HttpResponse.json({}, { status: 200 });
@@ -510,7 +511,7 @@ const loginPageHandler = http.get('/login', async ({ request }) => {
         <title>Document</title>
       </head>
       <body>
-        <form action="/login" method="POST" name="cognitoSignInForm">
+        <form method="POST" name="cognitoSignInForm">
           <label for="signInFormUsername" class="label-customizable">Email</label>
           <input
             id="signInFormUsername"
@@ -550,7 +551,12 @@ const loginPageHandler = http.get('/login', async ({ request }) => {
 });
 
 const loginHandler = http.post('/login', async ({ request }) => {
-  return HttpResponse.redirect('http://localhost:4200/auth?code=1234');
+  const url = new URL(request.url);
+  return HttpResponse.redirect(
+    `http://localhost:4200/auth?code=1234&state=${
+      decodeURIComponent(url.searchParams.get('state')!) ?? '/'
+    }`
+  );
 });
 
 const slackHandler = http.post('/slack', async ({ request }) => {

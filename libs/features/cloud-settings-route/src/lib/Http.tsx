@@ -1,9 +1,7 @@
-import { useRouteLoaderData, Await } from '@remix-run/react';
-import { environments } from '@restate/features/cloud/environments-route';
+import { useEnvironmentDetails } from '@restate/features/cloud/environments-route';
 import { useEnvironmentParam } from '@restate/features/cloud/routes-utils';
 import { Code, Snippet, SnippetCopy } from '@restate/ui/code';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
-import { Suspense } from 'react';
 import invariant from 'tiny-invariant';
 import { Loading } from './Loading';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -13,10 +11,7 @@ export function Http({ isLoading }: { isLoading: boolean }) {
   const environmentId = useEnvironmentParam();
 
   invariant(environmentId, 'Missing environmentId param');
-  const environmentsResponse = useRouteLoaderData<
-    typeof environments.clientLoader
-  >('routes/accounts.$accountId.environments');
-  const environmentDetailsPromise = environmentsResponse?.[environmentId];
+  const environmentDetails = useEnvironmentDetails();
 
   return (
     <Section>
@@ -35,41 +30,35 @@ export function Http({ isLoading }: { isLoading: boolean }) {
         </p>
       </SectionTitle>
       <SectionContent className="flex flex-col gap-2 relative min-h-[10rem]">
-        <Suspense fallback={<Loading className="rounded-xl" />}>
-          {isLoading ? (
-            <Loading className="rounded-xl" />
-          ) : (
-            <Await resolve={environmentDetailsPromise}>
-              {(environmentDetails) => (
-                <Code>
-                  <Snippet>
-                    # Here is your Ingress URL for invoking your handlers:
-                  </Snippet>
+        {environmentDetails.isLoading || isLoading ? (
+          <Loading className="rounded-xl" />
+        ) : (
+          <Code>
+            <Snippet>
+              # Here is your Ingress URL for invoking your handlers:
+            </Snippet>
 
-                  <Snippet>
-                    curl {environmentDetails?.data?.ingressBaseUrl}
-                    /MyService/MyHandler -H "Authorization: Bearer $API_KEY"
-                    <SnippetCopy
-                      copyText={environmentDetails?.data?.ingressBaseUrl ?? ''}
-                    />
-                  </Snippet>
+            <Snippet>
+              curl {environmentDetails?.data?.ingressBaseUrl}
+              /MyService/MyHandler -H "Authorization: Bearer $API_KEY"
+              <SnippetCopy
+                copyText={environmentDetails?.data?.ingressBaseUrl ?? ''}
+              />
+            </Snippet>
 
-                  <Snippet className="mt-4">
-                    # Here is your Admin API URL for managing services,
-                    deployments and invocations:
-                  </Snippet>
-                  <Snippet>
-                    curl {environmentDetails?.data?.adminBaseUrl}/health -H
-                    "Authorization: Bearer $API_KEY"
-                    <SnippetCopy
-                      copyText={environmentDetails?.data?.adminBaseUrl ?? ''}
-                    />
-                  </Snippet>
-                </Code>
-              )}
-            </Await>
-          )}
-        </Suspense>
+            <Snippet className="mt-4">
+              # Here is your Admin API URL for managing services, deployments
+              and invocations:
+            </Snippet>
+            <Snippet>
+              curl {environmentDetails?.data?.adminBaseUrl}/health -H
+              "Authorization: Bearer $API_KEY"
+              <SnippetCopy
+                copyText={environmentDetails?.data?.adminBaseUrl ?? ''}
+              />
+            </Snippet>
+          </Code>
+        )}
       </SectionContent>
     </Section>
   );

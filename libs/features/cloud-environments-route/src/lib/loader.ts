@@ -1,26 +1,15 @@
 import {
   ClientLoaderFunctionArgs,
   ShouldRevalidateFunction,
-  defer,
   redirect,
 } from '@remix-run/react';
 import invariant from 'tiny-invariant';
-import {
-  describeEnvironmentWithCache,
-  listEnvironmentsWithCache,
-} from './apis';
-import {
-  describeEnvironment,
-  listEnvironments,
-} from '@restate/data-access/cloud/api-client';
+import { cloudApi } from '@restate/data-access/cloud/api-client';
+import { dehydrate, QueryClient } from '@tanstack/react-query';
+import { json } from '@remix-run/cloudflare';
+import { withAuth } from '@restate/util/auth';
 
-type DescribeEnvironmentDetails = {
-  [key: string]: ReturnType<typeof describeEnvironment>;
-};
-type LoaderResponse = Omit<DescribeEnvironmentDetails, 'environmentList'> & {
-  environmentList: Awaited<ReturnType<typeof listEnvironments>>;
-};
-
+// TODO
 export const shouldRevalidate: ShouldRevalidateFunction = ({
   actionResult,
   currentParams,
@@ -36,52 +25,51 @@ export const shouldRevalidate: ShouldRevalidateFunction = ({
   if (!nextParams.environmentId) {
     return true;
   }
+  if (
+    currentUrl.searchParams.get('createApiKey') !==
+      nextUrl.searchParams.get('createApiKey') ||
+    currentUrl.searchParams.get('deleteApiKey') !==
+      nextUrl.searchParams.get('deleteApiKey') ||
+    (!currentUrl.searchParams.get('createEnvironment') &&
+      nextUrl.searchParams.get('createEnvironment')) ||
+    (!currentUrl.searchParams.get('deleteEnvironment') &&
+      nextUrl.searchParams.get('deleteEnvironment')) ||
+    (!currentUrl.searchParams.get('createAccount') &&
+      nextUrl.searchParams.get('createAccount'))
+  ) {
+    return false;
+  }
   return defaultShouldRevalidate;
 };
 
-export const clientLoader = async ({
-  request,
-  params,
-}: ClientLoaderFunctionArgs) => {
-  const { accountId } = params;
-  invariant(accountId, 'Missing accountId param');
-  const environmentList = await listEnvironmentsWithCache.fetch({
-    accountId,
-  });
+export const clientLoader = withAuth(
+  async ({ request, params }: ClientLoaderFunctionArgs) => {
+    const { accountId } = params;
+    invariant(accountId, 'Missing accountId param');
+    const queryClient = new QueryClient();
+    const environmentList = await queryClient.fetchQuery(
+      cloudApi.listEnvironments({ accountId })
+    );
+    const environments = environmentList?.environments ?? [];
 
-  if (environmentList.error) {
-    throw new Response(environmentList.error.message, {
-      status: environmentList.error.code,
+    const isEnvironmentIdParamValid = environments.some(
+      ({ environmentId }) => params.environmentId === environmentId
+    );
+
+    if (!isEnvironmentIdParamValid && environments.length > 0) {
+      return redirect(
+        `/accounts/${params.accountId}/environments/${
+          environments.at(0)?.environmentId
+        }`
+      );
+    }
+
+    if (!isEnvironmentIdParamValid && params.environmentId) {
+      return redirect(`/accounts/${params.accountId}/environments`);
+    }
+
+    return json({
+      dehydratedState: dehydrate(queryClient),
     });
   }
-  const environments = environmentList?.data?.environments ?? [];
-
-  const isEnvironmentIdParamValid = environments.some(
-    ({ environmentId }) => params.environmentId === environmentId
-  );
-
-  if (!isEnvironmentIdParamValid && environments.length > 0) {
-    return redirect(
-      `/accounts/${params.accountId}/environments/${
-        environments.at(0)?.environmentId
-      }`
-    );
-  }
-
-  if (!isEnvironmentIdParamValid && params.environmentId) {
-    return redirect(`/accounts/${params.accountId}/environments`);
-  }
-
-  const environmentsWithDetailsPromises = environments
-    .map((environment) => ({
-      [environment.environmentId]: describeEnvironmentWithCache.fetch({
-        environmentId: environment.environmentId,
-        accountId,
-      }),
-    }))
-    .reduce((p, c) => ({ ...p, ...c }), {});
-  return defer({
-    environmentList,
-    ...environmentsWithDetailsPromises,
-  } as LoaderResponse);
-};
+);

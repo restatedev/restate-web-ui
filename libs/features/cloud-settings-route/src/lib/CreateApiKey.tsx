@@ -1,28 +1,47 @@
-import { useSearchParams } from '@remix-run/react';
+import { ClientActionFunctionArgs, useSearchParams } from '@remix-run/react';
 import { Button, SubmitButton } from '@restate/ui/button';
 import { Dialog, DialogContent, DialogFooter } from '@restate/ui/dialog';
-import { ReactNode, useCallback, useId, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useId, useState } from 'react';
 import { CREATE_API_KEY_PARAM_NAME } from './constants';
 import { FormFieldInput, FormFieldLabel } from '@restate/ui/form-field';
 import {
   useAccountParam,
   useEnvironmentParam,
 } from '@restate/features/cloud/routes-utils';
-import { clientAction } from './action';
 import { ErrorBanner } from '@restate/ui/error';
 import { useFetcherWithError } from '@restate/util/remix';
 import { RadioGroup } from '@restate/ui/radio-group';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Radio } from 'react-aria-components';
 import { Link } from '@restate/ui/link';
+import { useQueryClient } from '@tanstack/react-query';
+import { components } from '@restate/data-access/cloud/api-client';
+import { TypedResponse } from '@remix-run/cloudflare';
+
+// TODO remove type
+type Action = ({ request, params }: ClientActionFunctionArgs) => Promise<
+  | {
+      keyId: string;
+      roleId: components['schemas']['RoleId'];
+      environmentId: string;
+      accountId: string;
+      apiKey: string;
+      state: 'ACTIVE' | 'DELETED';
+    }
+  | TypedResponse<never>
+  | {
+      errors: Error[];
+    }
+  | null
+>;
 
 export function CreateApiKey({ hasAnyKeys }: { hasAnyKeys: boolean }) {
   const formId = useId();
   const [count, setCount] = useState(0);
   const accountId = useAccountParam();
   const environmentId = useEnvironmentParam();
-  const action = `/accounts/${accountId}/environments/${environmentId}/settings#${count}`;
-  const fetcher = useFetcherWithError<typeof clientAction>({ key: action });
+  const action = `/api/accounts/${accountId}/environments/${environmentId}/keys#${count}`;
+  const fetcher = useFetcherWithError<Action>({ key: action });
   const [searchParams, setSearchParams] = useSearchParams();
   const shouldShowCreateApiKey =
     searchParams.get(CREATE_API_KEY_PARAM_NAME) === 'true';
@@ -40,6 +59,32 @@ export function CreateApiKey({ hasAnyKeys }: { hasAnyKeys: boolean }) {
 
   const apiKey =
     fetcher.data && 'apiKey' in fetcher.data ? fetcher.data.apiKey : undefined;
+
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    if (fetcher.data) {
+      const data: any = fetcher.data;
+      queryClient.setQueryData(
+        [
+          'describeApiKey',
+          `/api/accounts/${accountId}/environments/${environmentId}/keys/${data.keyId}`,
+        ],
+        data
+      );
+      queryClient.invalidateQueries({
+        queryKey: [
+          'describeApiKey',
+          `/api/accounts/${accountId}/environments/${environmentId}/keys/${data.keyId}`,
+        ],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [
+          'describeEnvironment',
+          `/api/accounts/${accountId}/environments/${environmentId}`,
+        ],
+      });
+    }
+  }, [fetcher, environmentId, accountId, queryClient]);
 
   const createKeyButton = (
     <Button
@@ -146,7 +191,7 @@ function CreateApiForm({
   formId: string;
   onClose: VoidFunction;
 }) {
-  const fetcher = useFetcherWithError<typeof clientAction>({ key: action });
+  const fetcher = useFetcherWithError<Action>({ key: action });
 
   return (
     <div className="flex flex-col gap-2">

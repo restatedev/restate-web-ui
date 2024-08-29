@@ -19,6 +19,9 @@ const setup = base.extend({
         return false;
       },
       async (route, request) => {
+        if (request.method() !== 'POST') {
+          return route.continue();
+        }
         const resp = await route.fetch({ maxRedirects: 0 });
         const headers = resp.headers();
         const location = headers['location'];
@@ -41,7 +44,7 @@ setup('Login', async ({ page }) => {
   await page.goto('/');
   // Wait for login page
   await page.waitForURL(
-    /\/login\?client_id=[^&]+&response_type=code&redirect_uri=[^&]+cloud\.restate\.dev\/auth&state=\//
+    /\/login\?client_id=[^&]+&response_type=code&redirect_uri=[^&]+&state=\//
   );
   await page
     .getByRole('textbox', { name: 'name@host.com' })

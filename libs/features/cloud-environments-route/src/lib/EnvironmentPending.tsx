@@ -1,29 +1,19 @@
-import {
-  Await,
-  useAsyncValue,
-  useLoaderData,
-  useMatches,
-  useRevalidator,
-} from '@remix-run/react';
+import { useMatches } from '@remix-run/react';
 import { Spinner } from '@restate/ui/button';
 import invariant from 'tiny-invariant';
-import { clientLoader } from './loader';
 import { Suspense, useDeferredValue, useEffect } from 'react';
 import {
   useAccountParam,
   useEnvironmentParam,
 } from '@restate/features/cloud/routes-utils';
-import { describeEnvironment } from '@restate/data-access/cloud/api-client';
 import { HideNotification, LayoutOutlet, LayoutZone } from '@restate/ui/layout';
-import { describeEnvironmentWithCache } from './apis';
+import { useEnvironmentDetails } from './useEnvironmentDetails';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface EnvironmentPendingProps {}
 
 export function EnvironmentPending(props: EnvironmentPendingProps) {
   const currentAccountId = useAccountParam();
-  const { environmentList, ...environmentsWithDetailsPromises } =
-    useLoaderData<typeof clientLoader>();
   const currentEnvironmentParam = useEnvironmentParam();
   invariant(currentAccountId, 'Account id is missing');
 
@@ -33,18 +23,14 @@ export function EnvironmentPending(props: EnvironmentPendingProps) {
 
   return (
     <Suspense>
-      <Await resolve={environmentsWithDetailsPromises[currentEnvironmentParam]}>
-        <EnvironmentPendingContent />
-        <Title />
-      </Await>
+      <EnvironmentPendingContent />
+      <Title />
     </Suspense>
   );
 }
 
 function Title() {
-  const environmentDetails = useAsyncValue() as Awaited<
-    ReturnType<typeof describeEnvironment>
-  >;
+  const environmentDetails = useEnvironmentDetails();
   const matches = useMatches();
   const name = environmentDetails?.data?.name;
   const isInSettingsPage = matches.some(
@@ -72,28 +58,12 @@ function Title() {
 }
 
 function EnvironmentPendingContent() {
-  const environmentDetails = useAsyncValue() as Awaited<
-    ReturnType<typeof describeEnvironment>
-  >;
-  const environmentId = useEnvironmentParam();
-  const accountId = useAccountParam();
+  const environmentDetails = useEnvironmentDetails({
+    refetchInterval: (query) =>
+      query.state.data?.status === 'PENDING' ? 3000 : false,
+  });
   const isPending = environmentDetails?.data?.status === 'PENDING';
   const deferredIsPending = useDeferredValue(isPending);
-
-  const { revalidate } = useRevalidator();
-  useEffect(() => {
-    let id: ReturnType<typeof setInterval> | null = null;
-    if (isPending && accountId && environmentId) {
-      id = setInterval(() => {
-        describeEnvironmentWithCache.invalidate({ accountId, environmentId });
-        revalidate();
-      }, 3000);
-    }
-
-    return () => {
-      id && clearInterval(id);
-    };
-  }, [isPending, revalidate, accountId, environmentId]);
 
   if (deferredIsPending) {
     return (

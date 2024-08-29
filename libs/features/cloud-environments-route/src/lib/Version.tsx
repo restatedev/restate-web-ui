@@ -1,69 +1,26 @@
-import { Await, useAsyncValue, useLoaderData } from '@remix-run/react';
-import { clientLoader } from './loader';
-import { useEnvironmentParam } from '@restate/features/cloud/routes-utils';
-import { Suspense, useEffect, useState } from 'react';
-import { describeEnvironment } from '@restate/data-access/cloud/api-client';
-import { getAccessToken } from '@restate/util/auth';
-
-const IS_VERSION_ACTIVE = true;
+import {
+  useAccountParam,
+  useEnvironmentParam,
+} from '@restate/features/cloud/routes-utils';
+import { useQuery } from '@tanstack/react-query';
+import { adminApi } from '@restate/data-access/admin-api';
+import { useEnvironmentStatus } from './EnvironmentStatusContext';
 
 export function Version() {
-  const { environmentList, ...environmentsWithDetailsPromises } =
-    useLoaderData<typeof clientLoader>();
+  const accountId = useAccountParam();
   const environmentId = useEnvironmentParam();
-
-  const environmentDetailsPromise = environmentId
-    ? environmentsWithDetailsPromises[environmentId]
-    : null;
-
-  if (!IS_VERSION_ACTIVE) {
-    return null;
-  }
-
-  return (
-    <Suspense>
-      <Await resolve={environmentDetailsPromise}>
-        <VersionFetcher />
-      </Await>
-    </Suspense>
-  );
-}
-
-function VersionFetcher() {
-  const environmentDetails = useAsyncValue() as Awaited<
-    ReturnType<typeof describeEnvironment>
-  >;
-  const [version, setVersion] = useState('');
-
-  useEffect(() => {
-    let cancelled = false;
-    const url = environmentDetails?.data?.adminBaseUrl;
-    const isActive = environmentDetails?.data?.status === 'ACTIVE';
-    const abortController = new AbortController();
-    if (url && isActive) {
-      fetch(`${url}/openapi`, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getAccessToken()}`,
-          Accept: 'application/json',
-        },
-        signal: abortController.signal,
-      })
-        .then((res) => res.json())
-        .then((res: any) => {
-          if (!cancelled) {
-            setVersion(res?.info?.version ?? '');
-          }
-        })
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        .catch(() => {});
-    }
-
-    return () => {
-      cancelled = true;
-      abortController.abort();
-    };
-  }, [environmentDetails]);
+  const status = useEnvironmentStatus(environmentId);
+  const { data: version } = useQuery({
+    ...adminApi(
+      '/openapi',
+      'get',
+      `/api/accounts/${accountId}/environments/${environmentId}/admin`
+    ),
+    enabled: Boolean(status && status !== 'PENDING'),
+    select(data) {
+      return (data?.info as unknown as { version: string })?.version;
+    },
+  });
 
   if (!version) {
     return null;
