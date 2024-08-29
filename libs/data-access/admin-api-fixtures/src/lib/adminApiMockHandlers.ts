@@ -24,4 +24,17 @@ const listDeploymentsHandler = http.get<
   });
 });
 
-export const cloudApiMockHandlers = [listDeploymentsHandler];
+const healthHandler = http.get<
+  never,
+  never,
+  adminApi.operations['health']['responses']['200']['content'],
+  GetPath<'/health'>
+>('/health', async () => {
+  if (Math.random() < 0.5) {
+    return new HttpResponse(null, { status: 500 });
+  } else {
+    return new HttpResponse(null, { status: 200 });
+  }
+});
+
+export const cloudApiMockHandlers = [listDeploymentsHandler, healthHandler];
