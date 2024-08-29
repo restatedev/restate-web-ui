@@ -18,7 +18,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@restate/data-access-admin-api-fixtures": [
+      "@restate/data-access/admin-api-fixtures": [
         "libs/data-access/admin-api-fixtures/src/index.ts"
       ],
       "@restate/data-access/admin-api": [

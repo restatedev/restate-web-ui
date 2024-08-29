@@ -37,4 +37,4 @@ const healthHandler = http.get<
   }
 });
 
-export const cloudApiMockHandlers = [listDeploymentsHandler, healthHandler];
+export const adminApiMockHandlers = [listDeploymentsHandler, healthHandler];
