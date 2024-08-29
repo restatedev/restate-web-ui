@@ -23,17 +23,21 @@ export const loader: LoaderFunction = async ({ params, request }) => {
       }).then((response) => response.data),
   });
 
-  return json({
-    dehydratedState: dehydrate(queryClient),
-    ...(environmentDetails?.adminBaseUrl && {
-      headers: {
-        'Set-Cookie': await adminUrlCookie.serialize(
-          environmentDetails?.adminBaseUrl,
-          {
-            path: `/api/accounts/${accountId}/environments/${environmentId}/admin`,
-          }
-        ),
-      },
-    }),
-  });
+  return json(
+    {
+      dehydratedState: dehydrate(queryClient),
+    },
+    {
+      ...(environmentDetails?.adminBaseUrl && {
+        headers: {
+          'Set-Cookie': await adminUrlCookie.serialize(
+            environmentDetails?.adminBaseUrl,
+            {
+              path: `/api/accounts/${accountId}/environments/${environmentId}/admin`,
+            }
+          ),
+        },
+      }),
+    }
+  );
 };

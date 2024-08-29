@@ -10,7 +10,7 @@ import { setAccessToken } from './accessToken';
 import ky from 'ky';
 import { UnauthorizedError } from './UnauthorizedError';
 
-let cachedToken: string | null = null;
+let cachedTokenPromise: Promise<{ accessToken: string }> | null = null;
 
 export function withAuth<L extends ClientLoaderFunction>(
   loader: L
@@ -18,11 +18,10 @@ export function withAuth<L extends ClientLoaderFunction>(
   return async function (...args: Parameters<L>) {
     const url = new URL(window.location.href);
 
+    cachedTokenPromise =
+      cachedTokenPromise ?? ky.get('/api/auth').json<{ accessToken: string }>();
     // TODO: remove saving token in local storage
-    const accessToken = cachedToken
-      ? cachedToken
-      : (await ky.get('/api/auth').json<{ accessToken: string }>()).accessToken;
-    cachedToken = accessToken;
+    const accessToken = (await cachedTokenPromise).accessToken;
 
     if (accessToken) {
       setAccessToken(accessToken);
