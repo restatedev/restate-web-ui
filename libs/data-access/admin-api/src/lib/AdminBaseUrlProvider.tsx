@@ -1,4 +1,4 @@
-import { createContext, PropsWithChildren, useContext } from 'react';
+import { createContext, PropsWithChildren, useContext, useState } from 'react';
 
 const AdminBaseURLContext = createContext<{ baseUrl: string }>({ baseUrl: '' });
 
@@ -20,13 +20,19 @@ export function CloudAdminBaseURLProvider({
     </AdminBaseURLContext.Provider>
   );
 }
+function getCookieValue(name: string) {
+  const cookies = document.cookie
+    .split(';')
+    .map((cookie) => cookie.trim().split('='));
+  const cookieValue = cookies.find(([key]) => key === name)?.at(1);
+  return cookieValue ? decodeURIComponent(cookieValue) : null;
+}
 
 export function AdminBaseURLProvider({
-  baseUrl,
   children,
-}: PropsWithChildren<{
-  baseUrl: string;
-}>) {
+}: PropsWithChildren<NonNullable<unknown>>) {
+  const [baseUrl] = useState(() => getCookieValue('adminBaseUrl') ?? '');
+
   return (
     <AdminBaseURLContext.Provider
       value={{

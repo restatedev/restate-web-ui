@@ -25,14 +25,20 @@ export default defineConfig(({ mode }) => {
     // },
 
     server: {
-      headers: {},
+      headers: {
+        'Set-Cookie':
+          'adminBaseUrl=http://localhost:4001; SameSite=Strict; Path=/',
+      },
       hmr: {
         protocol: 'ws',
         port: 3001,
       },
     },
     preview: {
-      headers: {},
+      headers: {
+        'Set-Cookie':
+          'adminBaseUrl=http://localhost:4001; SameSite=Strict; Path=/',
+      },
     },
     define: {
       'globalThis.env': {},
