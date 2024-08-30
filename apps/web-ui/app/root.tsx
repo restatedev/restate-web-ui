@@ -75,7 +75,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <QueryProvider>
-      <AdminBaseURLProvider baseUrl="">
+      <AdminBaseURLProvider>
         <LayoutOutlet zone={LayoutZone.Content}>
           <Outlet />
         </LayoutOutlet>
