@@ -1,6 +1,12 @@
-import { ShouldRevalidateFunction } from '@remix-run/react';
+import { Outlet, ShouldRevalidateFunction } from '@remix-run/react';
+import { CloudAdminBaseURLProvider } from '@restate/data-access/admin-api';
 import { environment } from '@restate/features/cloud/environment-route';
+import {
+  useEnvironmentParam,
+  useAccountParam,
+} from '@restate/features/cloud/routes-utils';
 import { withCookieAuth } from '@restate/util/auth';
+import invariant from 'tiny-invariant';
 
 // TODO
 export const loader = withCookieAuth(environment.loader);
@@ -36,3 +42,19 @@ export const shouldRevalidate: ShouldRevalidateFunction = ({
   }
   return defaultShouldRevalidate;
 };
+
+export default function Component() {
+  const environmentId = useEnvironmentParam();
+  const accountId = useAccountParam();
+  invariant(accountId, 'Missing accountId param');
+  invariant(environmentId, 'Missing environmentId param');
+
+  return (
+    <CloudAdminBaseURLProvider
+      environmentId={environmentId}
+      accountId={accountId}
+    >
+      <Outlet />
+    </CloudAdminBaseURLProvider>
+  );
+}

@@ -21,6 +21,12 @@
       "@restate/data-access/admin-api": [
         "libs/data-access/admin-api/src/index.ts"
       ],
+      "@restate/data-access/admin-api-fixtures": [
+        "libs/data-access/admin-api-fixtures/src/index.ts"
+      ],
+      "@restate/data-access/admin-api/spec": [
+        "libs/data-access/admin-api/src/api.ts"
+      ],
       "@restate/data-access/cloud/api-client": [
         "libs/data-access/cloud-api-client/src/index.ts"
       ],
@@ -51,6 +57,9 @@
       ],
       "@restate/features/cloud/support": [
         "libs/features/cloud-support/src/index.ts"
+      ],
+      "@restate/features/overview-route": [
+        "libs/features/overview-route/src/index.ts"
       ],
       "@restate/ui/button": ["libs/ui/button/src/index.ts"],
       "@restate/ui/code": ["libs/ui/code/src/index.ts"],
