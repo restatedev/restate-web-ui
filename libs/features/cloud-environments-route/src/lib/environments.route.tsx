@@ -1,14 +1,9 @@
-import {
-  Outlet,
-  PrefetchPageLinks,
-  useRouteLoaderData,
-} from '@remix-run/react';
+import { Outlet, PrefetchPageLinks } from '@remix-run/react';
 import { EnvironmentSelector } from './EnvironmentSelector';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import { clientLoader, shouldRevalidate } from './loader';
 import {
   AccountSelector,
-  accounts,
   useListAccounts,
 } from '@restate/features/cloud/accounts-route';
 import {

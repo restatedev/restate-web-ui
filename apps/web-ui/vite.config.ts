@@ -34,7 +34,9 @@ export default defineConfig(({ mode }) => {
     preview: {
       headers: {},
     },
-    define: {},
+    define: {
+      'globalThis.env': {},
+    },
 
     test: {
       setupFiles: ['test-setup.ts'],

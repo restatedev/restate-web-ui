@@ -13,6 +13,7 @@ import { LayoutOutlet, LayoutProvider, LayoutZone } from '@restate/ui/layout';
 import { RouterProvider } from 'react-aria-components';
 import { Spinner } from '@restate/ui/button';
 import { useCallback } from 'react';
+import { QueryProvider } from '@restate/util/react-query';
 
 export const links: LinksFunction = () => [
   {
@@ -72,11 +73,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <>
+    <QueryProvider>
       <LayoutOutlet zone={LayoutZone.Content}>
         <Outlet />
       </LayoutOutlet>
-    </>
+    </QueryProvider>
   );
 }
 

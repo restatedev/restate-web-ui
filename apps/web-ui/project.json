@@ -9,7 +9,14 @@
     "serve": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "cd apps/web-ui && ../../node_modules/.bin/remix vite:dev --port=4300"
+        "commands": [
+          {
+            "command": "nx serve mock-admin-api"
+          },
+          {
+            "command": "cd apps/web-ui && ../../node_modules/.bin/remix vite:dev --port=4300"
+          }
+        ]
       }
     },
     "build": {
