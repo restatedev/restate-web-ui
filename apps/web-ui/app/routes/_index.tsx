@@ -1,7 +1,4 @@
-export default function Index() {
-  return (
-    <div>
-      <h1 className="red-500">Web UI</h1>
-    </div>
-  );
-}
+import { redirect } from '@remix-run/react';
+
+export const clientLoader = () => redirect('/overview');
+export default () => null;
