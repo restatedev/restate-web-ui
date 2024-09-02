@@ -13,7 +13,7 @@
         "platform": "node",
         "outputPath": "dist/apps/mock-admin-api",
         "format": ["cjs"],
-        "bundle": false,
+        "bundle": true,
         "main": "apps/mock-admin-api/src/main.ts",
         "tsConfig": "apps/mock-admin-api/tsconfig.app.json",
         "assets": ["apps/mock-admin-api/src/assets"],
@@ -42,6 +42,7 @@
       "defaultConfiguration": "development",
       "dependsOn": ["build"],
       "options": {
+        "port": 0,
         "buildTarget": "mock-admin-api:build",
         "runBuildTargetDependencies": false
       },

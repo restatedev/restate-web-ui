@@ -18,6 +18,9 @@
         "mock": {
           "commands": [
             {
+              "command": "nx serve mock-admin-api"
+            },
+            {
               "command": "nx serve mock-cloud-api"
             },
             {
@@ -99,6 +102,9 @@
       "configurations": {
         "mock": {
           "commands": [
+            {
+              "command": "nx serve mock-admin-api"
+            },
             {
               "command": "nx serve mock-cloud-api"
             },

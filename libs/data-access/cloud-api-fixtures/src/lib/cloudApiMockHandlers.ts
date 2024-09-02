@@ -161,7 +161,7 @@ const describeEnvironmentHandler = http.post<
       })),
     signingPublicKey: environment.signingPublicKey,
     ingressBaseUrl: environment.ingressBaseUrl,
-    adminBaseUrl: environment.adminBaseUrl + `/${environment.environmentId}`,
+    adminBaseUrl: environment.adminBaseUrl,
   });
 });
 
@@ -576,8 +576,6 @@ export const cloudApiMockHandlers = [
   deleteApiKeyHandler,
   listApiKeysHandler,
   getEnvironmentLogsHandler,
-  openApiHandler,
-  healthHandler,
   tokenHandler,
   loginHandler,
   slackHandler,
