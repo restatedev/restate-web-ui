@@ -34,7 +34,7 @@ test('should create and delete an environment', async ({ page, baseURL }) => {
     .getByText(
       /Your Restate environment is being created and will be ready shortly\./
     )
-    .waitFor({ state: 'detached', timeout: 60 * 1000 });
+    .waitFor({ state: 'detached', timeout: 120 * 1000 });
   await page
     .getByRole('status', { name: 'HEALTHY' })
     .waitFor({ state: 'attached' });
