@@ -16,6 +16,7 @@ jobs:
       RESTATE_CLOUD_API_URL: 'https://api.us.restate.cloud/cloud'
       SLACK_API_URL: 'https://slack.com/api/chat.postMessage'
       VERSION: ${{ github.sha }}
+      FEATURE_OVERVIEW_PAGE: false
     steps:
       - uses: pnpm/action-setup@v4
         with:

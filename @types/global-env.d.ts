@@ -5,6 +5,7 @@ interface Env {
   RESTATE_CLOUD_API_URL: string;
   SLACK_API_URL: string;
   VERSION: string;
+  [key: string]: string & {};
 }
 
 declare module globalThis {
