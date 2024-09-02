@@ -1,0 +1,9 @@
+{
+  "name": "util-feature-flag",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/util/feature-flag/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project util-feature-flag --web",
+  "targets": {}
+}
