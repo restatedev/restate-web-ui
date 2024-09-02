@@ -16,6 +16,7 @@ import { CreateEnvironmentOnboarding } from './CreateEnvironmentOnboarding';
 import { Nav, NavItem } from '@restate/ui/nav';
 import { EnvironmentPending } from './EnvironmentPending';
 import { Support } from '@restate/features/cloud/support';
+import { FeatureFlag } from '@restate/util/feature-flag';
 
 function Component() {
   const { data: accountsList } = useListAccounts();
@@ -55,6 +56,16 @@ function Component() {
           <EnvironmentSelector />
           <LayoutOutlet zone={LayoutZone.Nav}>
             <Nav ariaCurrentValue="page">
+              <FeatureFlag featureFlag="FEATURE_OVERVIEW_PAGE">
+                <NavItem
+                  href={`${toEnvironmentRoute(
+                    accountId!,
+                    environmentId
+                  )}/overview`}
+                >
+                  Overview
+                </NavItem>
+              </FeatureFlag>
               <NavItem
                 href={`${toEnvironmentRoute(
                   accountId!,
