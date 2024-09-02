@@ -1,4 +1,4 @@
-import type * as adminApi from '@restate/data-access/admin-api/spec';
+import * as adminApi from '@restate/data-access/admin-api/spec';
 import { http, HttpResponse } from 'msw';
 import { adminApiDb } from './adminApiDb';
 
@@ -37,4 +37,17 @@ const healthHandler = http.get<
   }
 });
 
-export const adminApiMockHandlers = [listDeploymentsHandler, healthHandler];
+const openApiHandler = http.get<
+  never,
+  never,
+  adminApi.operations['openapi_spec']['responses']['200']['content']['application/json'],
+  GetPath<'/openapi'>
+>('/openapi', async () => {
+  return HttpResponse.json(adminApi.spec as any);
+});
+
+export const adminApiMockHandlers = [
+  listDeploymentsHandler,
+  healthHandler,
+  openApiHandler,
+];

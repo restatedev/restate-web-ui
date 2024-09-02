@@ -48,6 +48,7 @@ export default defineConfig(({ mode }) => {
         SLACK_API_URL: env.SLACK_API_URL ?? '',
         MOCK: Boolean(env.NX_TASK_TARGET_CONFIGURATION === 'mock'),
         VERSION: env.VERSION ?? 'dev',
+        FEATURE_OVERVIEW_PAGE: env.FEATURE_OVERVIEW_PAGE,
       },
     },
 

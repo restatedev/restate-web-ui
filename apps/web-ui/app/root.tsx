@@ -11,10 +11,12 @@ import styles from './tailwind.css?url';
 import type { LinksFunction } from '@remix-run/node';
 import { LayoutOutlet, LayoutProvider, LayoutZone } from '@restate/ui/layout';
 import { RouterProvider } from 'react-aria-components';
-import { Spinner } from '@restate/ui/button';
+import { Button, Spinner } from '@restate/ui/button';
 import { useCallback } from 'react';
 import { QueryProvider } from '@restate/util/react-query';
 import { AdminBaseURLProvider } from '@restate/data-access/admin-api';
+import { Nav, NavItem } from '@restate/ui/nav';
+import { Icon, IconName } from '@restate/ui/icons';
 
 export const links: LinksFunction = () => [
   {
@@ -74,13 +76,32 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <QueryProvider>
-      <AdminBaseURLProvider>
+    <AdminBaseURLProvider>
+      <QueryProvider>
         <LayoutOutlet zone={LayoutZone.Content}>
           <Outlet />
         </LayoutOutlet>
-      </AdminBaseURLProvider>
-    </QueryProvider>
+        <LayoutOutlet zone={LayoutZone.AppBar}>
+          <div className="flex items-center gap-2 flex-1">
+            <Button
+              variant="secondary"
+              className="flex gap-2 items-center bg-white pl-3 pr-2 shadow-sm h-full"
+            >
+              <Icon
+                name={IconName.RestateEnvironment}
+                className="text-xl text-[#222452]"
+              />
+              <Icon name={IconName.ChevronsUpDown} className="text-gray-400" />
+            </Button>
+            <LayoutOutlet zone={LayoutZone.Nav}>
+              <Nav ariaCurrentValue="page">
+                <NavItem href={'/overview'}>Overview</NavItem>
+              </Nav>
+            </LayoutOutlet>
+          </div>
+        </LayoutOutlet>
+      </QueryProvider>
+    </AdminBaseURLProvider>
   );
 }
 

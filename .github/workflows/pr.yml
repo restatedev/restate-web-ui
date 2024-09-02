@@ -55,6 +55,7 @@ jobs:
       VERSION: ${{ github.sha }}
       APP_USERNAME: ${{ vars.DEV_USERNAME }}
       APP_PASSWORD: ${{ secrets.DEV_PASSWORD }}
+      FEATURE_OVERVIEW_PAGE: true
     steps:
       - uses: pnpm/action-setup@v4
         with:
