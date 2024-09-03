@@ -11,12 +11,22 @@
       "options": {
         "commands": [
           {
-            "command": "nx serve mock-admin-api"
-          },
-          {
             "command": "cd apps/web-ui && ../../node_modules/.bin/remix vite:dev --port=4300"
           }
         ]
+      },
+      "configurations": {
+        "mock": {
+          "commands": [
+            {
+              "command": "nx serve mock-admin-api"
+            },
+            {
+              "command": "cd apps/web-ui && ../../node_modules/.bin/remix vite:dev --port=4300"
+            }
+          ],
+          "parallel": true
+        }
       }
     },
     "build": {

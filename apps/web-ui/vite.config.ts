@@ -27,7 +27,7 @@ export default defineConfig(({ mode }) => {
     server: {
       headers: {
         'Set-Cookie':
-          'adminBaseUrl=http://localhost:4001; SameSite=Strict; Path=/',
+          'adminBaseUrl=http://localhost:9070; SameSite=Strict; Path=/',
       },
       hmr: {
         protocol: 'ws',
@@ -37,7 +37,7 @@ export default defineConfig(({ mode }) => {
     preview: {
       headers: {
         'Set-Cookie':
-          'adminBaseUrl=http://localhost:4001; SameSite=Strict; Path=/',
+          'adminBaseUrl=http://localhost:9070; SameSite=Strict; Path=/',
       },
     },
     define: {
