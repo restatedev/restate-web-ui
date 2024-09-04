@@ -29,8 +29,7 @@ const styles = tv({
     variant: {
       primary:
         'bg-blue-600 hover:bg-blue-700 pressed:bg-blue-800 text-white shadow-sm',
-      secondary:
-        'bg-white hover:bg-gray-100 pressed:bg-gray-200 text-gray-800 dark:bg-zinc-600 dark:hover:bg-zinc-500 dark:pressed:bg-zinc-400 dark:text-zinc-100',
+      secondary: 'bg-white hover:bg-gray-100 pressed:bg-gray-200 text-gray-800',
       destructive: 'bg-red-700 hover:bg-red-800 pressed:bg-red-900 text-white',
       icon: 'shadow-none border-0 p-1 flex items-center justify-center text-gray-600 hover:bg-black/[5%] pressed:bg-black/10 disabled:bg-transparent',
     },
