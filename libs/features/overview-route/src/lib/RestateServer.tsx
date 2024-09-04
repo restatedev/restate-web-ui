@@ -1,9 +1,13 @@
 import { Button } from '@restate/ui/button';
+import { PropsWithChildren } from 'react';
 
-export function RestateServer({ className }: { className?: string }) {
+export function RestateServer({
+  className,
+  children,
+}: PropsWithChildren<{ className?: string }>) {
   return (
     <div className={className}>
-      <Button className="w-full h-full focus:outline-none bg-transparent group hover:bg-transparent pressed:bg-transparent shadow-none py-0 px-0 border-none hover:scale-105 pressed:scale-95 pressed:drop-shadow-md">
+      <Button className="hidden md:flex w-[150px] h-[150px] focus:outline-none bg-transparent group hover:bg-transparent pressed:bg-transparent shadow-none py-0 px-0 border-none hover:scale-105 pressed:scale-95 pressed:drop-shadow-md">
         <svg
           viewBox="0 0 120 120"
           fill="none"
@@ -20,6 +24,7 @@ export function RestateServer({ className }: { className?: string }) {
           />
         </svg>
       </Button>
+      {children}
     </div>
   );
 }
