@@ -20,6 +20,9 @@ const listDeploymentsHandler = http.get<
     deployments: deployments.map((deployment) => ({
       id: deployment.id,
       services: deployment.services,
+      uri: '',
+      protocol_type: 'RequestResponse',
+      created_at: '',
     })),
   });
 });

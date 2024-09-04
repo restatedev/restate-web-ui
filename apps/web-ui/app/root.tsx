@@ -83,16 +83,12 @@ export default function App() {
         </LayoutOutlet>
         <LayoutOutlet zone={LayoutZone.AppBar}>
           <div className="flex items-center gap-2 flex-1">
-            <Button
-              variant="secondary"
-              className="flex gap-2 items-center bg-white pl-3 pr-2 shadow-sm h-full"
-            >
+            <div className="flex gap-2 items-center rounded-xl border bg-white px-3 shadow-sm h-full">
               <Icon
                 name={IconName.RestateEnvironment}
                 className="text-xl text-[#222452]"
               />
-              <Icon name={IconName.ChevronsUpDown} className="text-gray-400" />
-            </Button>
+            </div>
             <LayoutOutlet zone={LayoutZone.Nav}>
               <Nav ariaCurrentValue="page">
                 <NavItem href={'/overview'}>Overview</NavItem>

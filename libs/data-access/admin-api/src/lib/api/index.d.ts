@@ -293,15 +293,14 @@ export interface components {
     ListDeploymentsResponse: {
       deployments: components['schemas']['DeploymentResponse'][];
     };
-    DeploymentResponse:
-      | {
-          id: components['schemas']['String'];
-          /**
-           * Services
-           * @description List of services exposed by this deployment.
-           */
-          services: components['schemas']['ServiceNameRevPair'][];
-        }
+    DeploymentResponse: {
+      id: components['schemas']['String'];
+      /**
+       * Services
+       * @description List of services exposed by this deployment.
+       */
+      services: components['schemas']['ServiceNameRevPair'][];
+    } & (
       | {
           uri: string;
           protocol_type: components['schemas']['ProtocolType'];
@@ -317,7 +316,8 @@ export interface components {
             [key: string]: string;
           };
           created_at: string;
-        };
+        }
+    );
     String: string;
     ServiceNameRevPair: {
       name: string;
@@ -492,15 +492,14 @@ export interface components {
       id: components['schemas']['String'];
       services: components['schemas']['ServiceMetadata'][];
     };
-    DetailedDeploymentResponse:
-      | {
-          id: components['schemas']['String'];
-          /**
-           * Services
-           * @description List of services exposed by this deployment.
-           */
-          services: components['schemas']['ServiceMetadata'][];
-        }
+    DetailedDeploymentResponse: {
+      id: components['schemas']['String'];
+      /**
+       * Services
+       * @description List of services exposed by this deployment.
+       */
+      services: components['schemas']['ServiceMetadata'][];
+    } & (
       | {
           uri: string;
           protocol_type: components['schemas']['ProtocolType'];
@@ -516,7 +515,8 @@ export interface components {
             [key: string]: string;
           };
           created_at: string;
-        };
+        }
+    );
     CreateSubscriptionRequest: {
       /**
        * Source
