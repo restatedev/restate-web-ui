@@ -4,10 +4,16 @@ import invariant from 'tiny-invariant';
 import { LoaderFunction } from '@remix-run/cloudflare';
 import { getAuthCookie } from '@restate/util/auth';
 
-export const loader: LoaderFunction = async ({ request, params }) => {
+const adminApiProxy = async ({
+  request,
+  params,
+}: {
+  request: Request;
+  params: Params;
+}) => {
   const { accountId, environmentId } = params;
-  invariant(accountId, 'Missing accountId param');
-  invariant(environmentId, 'Missing environmentId param');
+  invariant(typeof accountId === 'string', 'Missing accountId param');
+  invariant(typeof environmentId === 'string', 'Missing environmentId param');
   let adminBaseUrl = await getAdminUrl(request);
   if (!adminBaseUrl) {
     const { data, error, response } = await describeEnvironment({
@@ -45,3 +51,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   return response;
 };
+
+export const loader = adminApiProxy;
+export const action = adminApiProxy;

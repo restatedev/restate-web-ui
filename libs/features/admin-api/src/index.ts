@@ -1,3 +1,3 @@
-import { loader } from './lib/loader';
+import { action, loader } from './lib/loader';
 export * from './lib/adminCookie';
-export const adminApi = { loader };
+export const adminApi = { loader, action };
