@@ -26,6 +26,17 @@
             }
           ],
           "parallel": true
+        },
+        "local": {
+          "commands": [
+            {
+              "command": "nx serve mock-admin-api -c proxy"
+            },
+            {
+              "command": "cd apps/web-ui && ../../node_modules/.bin/remix vite:dev --port=4300"
+            }
+          ],
+          "parallel": true
         }
       }
     },

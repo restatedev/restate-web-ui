@@ -26,6 +26,9 @@
         }
       },
       "configurations": {
+        "proxy": {
+          "main": "apps/mock-admin-api/src/proxy.ts"
+        },
         "development": {},
         "production": {
           "esbuildOptions": {
@@ -49,6 +52,9 @@
       "configurations": {
         "development": {
           "buildTarget": "mock-admin-api:build:development"
+        },
+        "proxy": {
+          "buildTarget": "mock-admin-api:build:proxy"
         },
         "production": {
           "buildTarget": "mock-admin-api:build:production"

@@ -1,6 +1,6 @@
 import { adminApiMockHandlers } from '@restate/data-access/admin-api-fixtures';
 
-const port = process.env.PORT ? Number(process.env.PORT) : 9070;
+const port = process.env.PORT ? Number(process.env.PORT) : 4001;
 
 import { createMiddleware } from '@mswjs/http-middleware';
 import express from 'express';
