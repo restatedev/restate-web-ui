@@ -11,7 +11,6 @@ export const loader = async ({
       const response = await listAccounts({
         headers: request.headers,
       });
-
       if (response.data) {
         return json({ accounts: response.data.accounts });
       } else {
