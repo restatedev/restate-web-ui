@@ -27,7 +27,7 @@ export const cloudApiDb = factory({
       ] as const),
     signingPublicKey: () => faker.string.nanoid(23),
     ingressBaseUrl: () => faker.internet.url(),
-    adminBaseUrl: () => 'http://localhost:9070',
+    adminBaseUrl: () => 'http://localhost:4001',
   },
   apiKey: {
     account: oneOf('account'),

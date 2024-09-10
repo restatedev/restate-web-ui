@@ -28,4 +28,6 @@ export const adminApiDb = factory({
 const services = Array(3)
   .fill(null)
   .map(() => adminApiDb.service.create());
-adminApiDb.deployment.create({ services });
+Array(100)
+  .fill(null)
+  .map(() => adminApiDb.deployment.create({ services }));

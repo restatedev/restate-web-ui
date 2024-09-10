@@ -27,6 +27,21 @@ const listDeploymentsHandler = http.get<
   });
 });
 
+const registerDeploymentHandler = http.post<
+  never,
+  adminApi.operations['create_deployment']['requestBody']['content']['application/json'],
+  adminApi.operations['create_deployment']['responses']['201']['content']['application/json'],
+  GetPath<'/deployments'>
+>('/deployments', async ({ request }) => {
+  const requestBody = await request.json();
+  const newDeployment = adminApiDb.deployment.create({});
+
+  return HttpResponse.json({
+    id: newDeployment.id,
+    services: [],
+  });
+});
+
 const healthHandler = http.get<
   never,
   never,
@@ -53,4 +68,5 @@ export const adminApiMockHandlers = [
   listDeploymentsHandler,
   healthHandler,
   openApiHandler,
+  registerDeploymentHandler,
 ];
