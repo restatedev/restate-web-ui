@@ -5,6 +5,12 @@ import { UseMutationOptions, UseQueryOptions } from '@tanstack/react-query';
 import type { FetchResponse, Middleware } from 'openapi-fetch';
 import createClient from 'openapi-fetch';
 
+class RestateError extends Error {
+  constructor(message: string, public restate_code?: string) {
+    super(message);
+  }
+}
+
 const client = createClient<paths>({});
 const errorMiddleware: Middleware = {
   async onResponse({ response }) {
@@ -13,11 +19,18 @@ const errorMiddleware: Middleware = {
         // TODO: change import
         throw new UnauthorizedError();
       }
-      const body: string = response.headers
-        .get('content-type')
-        ?.includes('json')
+      const body:
+        | string
+        | {
+            message: string;
+            restate_code?: string | null;
+          } = response.headers.get('content-type')?.includes('json')
         ? await response.clone().json()
         : await response.clone().text();
+
+      if (typeof body === 'object') {
+        throw new RestateError(body.message, body.restate_code ?? '');
+      }
       throw new Error(body);
     }
     return response;
