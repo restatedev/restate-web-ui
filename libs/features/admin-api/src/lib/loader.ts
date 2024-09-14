@@ -25,7 +25,10 @@ const adminApiProxy = async ({
     if (data?.adminBaseUrl) {
       adminBaseUrl = data?.adminBaseUrl;
     } else {
-      return new Response(JSON.stringify(error), { status: response.status });
+      return new Response(JSON.stringify({ errors: [error] }), {
+        status: response.status,
+        headers: { 'content-type': 'application/json' },
+      });
     }
   }
   const adminURL = new URL(adminBaseUrl);
