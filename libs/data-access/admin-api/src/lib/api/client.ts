@@ -7,30 +7,6 @@ import createClient from 'openapi-fetch';
 
 const client = createClient<paths>({});
 const errorMiddleware: Middleware = {
-  async onRequest({ request, options }) {
-    const baseUrl = request.headers.get('baseUrl');
-    if (baseUrl) {
-      const { url, headers, ...requestInit } = request;
-      const _url = new URL(request.url);
-      headers.delete('baseUrl');
-      const bodyP = request.headers.get('Content-Type')
-        ? request.blob()
-        : Promise.resolve(undefined);
-      return bodyP.then((body) => {
-        return new Request(`${baseUrl}${_url.pathname}${_url.search}`, {
-          ...requestInit,
-          headers,
-          method: request.method,
-          ...(body &&
-            body?.size > 0 && {
-              body,
-            }),
-        });
-      });
-    }
-
-    return request;
-  },
   async onResponse({ response }) {
     if (!response.ok) {
       if (response.status === 401) {
@@ -212,9 +188,9 @@ export function adminApi<
         const { data } = await (client as any)[String(method).toUpperCase()](
           path,
           {
+            baseUrl: init.baseUrl,
             signal,
             headers: {
-              baseUrl: init.baseUrl,
               Accept: 'json',
             },
             body: init.body,
@@ -235,9 +211,7 @@ export function adminApi<
         const { data } = await (client as any)[String(method).toUpperCase()](
           path,
           {
-            headers: {
-              baseUrl: init.baseUrl,
-            },
+            baseUrl: init.baseUrl,
             body: variables.body,
             params: variables.parameters,
           }
