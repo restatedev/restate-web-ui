@@ -11,11 +11,9 @@ export function Version() {
   const environmentId = useEnvironmentParam();
   const status = useEnvironmentStatus(environmentId);
   const { data: version } = useQuery({
-    ...adminApi(
-      '/openapi',
-      'get',
-      `/api/accounts/${accountId}/environments/${environmentId}/admin`
-    ),
+    ...adminApi('query', '/openapi', 'get', {
+      baseUrl: `/api/accounts/${accountId}/environments/${environmentId}/admin`,
+    }),
     enabled: Boolean(status && status !== 'PENDING'),
     select(data) {
       return (data?.info as unknown as { version: string })?.version;

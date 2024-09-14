@@ -12,7 +12,7 @@ export function RestateServer({
           viewBox="0 0 120 120"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className="w-dull -h-full group-hover: drop-shadow-xl shadow-zinc-800/5 backdrop-blur-xl backdrop-saturate-200"
+          className="w-full h-full group-hover: drop-shadow-xl shadow-zinc-800/5 backdrop-blur-xl backdrop-saturate-200"
         >
           <path
             fillRule="evenodd"
