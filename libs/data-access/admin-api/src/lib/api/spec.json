@@ -1,7 +1,708 @@
 {
   "openapi": "3.0.0",
-  "info": { "title": "Admin API", "version": "0.9.1" },
+  "info": {
+    "title": "Admin API",
+    "version": "1.1.0"
+  },
   "paths": {
+    "/services/{service}/state": {
+      "post": {
+        "tags": ["service"],
+        "summary": "Modify a service state",
+        "description": "Modify service state",
+        "operationId": "modify_service_state",
+        "parameters": [
+          {
+            "name": "service",
+            "in": "path",
+            "description": "Fully qualified service name.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModifyServiceStateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted"
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/services/{service}": {
+      "get": {
+        "tags": ["service"],
+        "summary": "Get service",
+        "description": "Get a registered service.",
+        "operationId": "get_service",
+        "parameters": [
+          {
+            "name": "service",
+            "in": "path",
+            "description": "Fully qualified service name.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceMetadata"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["service"],
+        "summary": "Modify a service",
+        "description": "Modify a registered service.",
+        "operationId": "modify_service",
+        "parameters": [
+          {
+            "name": "service",
+            "in": "path",
+            "description": "Fully qualified service name.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModifyServiceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceMetadata"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/subscriptions": {
+      "get": {
+        "tags": ["subscription"],
+        "summary": "List subscriptions",
+        "description": "List all subscriptions.",
+        "operationId": "list_subscriptions",
+        "parameters": [
+          {
+            "name": "sink",
+            "in": "query",
+            "description": "Filter by the exact specified sink.",
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "description": "Filter by the exact specified source.",
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListSubscriptionsResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["subscription"],
+        "summary": "Create subscription",
+        "description": "Create subscription.",
+        "operationId": "create_subscription",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSubscriptionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubscriptionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/invocations/{invocation_id}": {
+      "delete": {
+        "tags": ["invocation"],
+        "summary": "Delete an invocation",
+        "description": "Delete the given invocation. By default, an invocation is terminated by gracefully cancelling it. This ensures virtual object state consistency. Alternatively, an invocation can be killed which does not guarantee consistency for virtual object instance state, in-flight invocations to other services, etc. A stored completed invocation can also be purged",
+        "operationId": "delete_invocation",
+        "parameters": [
+          {
+            "name": "invocation_id",
+            "in": "path",
+            "description": "Invocation identifier.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "description": "If cancel, it will gracefully terminate the invocation. If kill, it will terminate the invocation with a hard stop. If purge, it will only cleanup the response for completed invocations, and leave unaffected an in-flight invocation.",
+            "style": "simple",
+            "schema": {
+              "$ref": "#/components/schemas/DeletionMode"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Accepted"
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/subscriptions/{subscription}": {
+      "get": {
+        "tags": ["subscription"],
+        "summary": "Get subscription",
+        "description": "Get subscription",
+        "operationId": "get_subscription",
+        "parameters": [
+          {
+            "name": "subscription",
+            "in": "path",
+            "description": "Subscription identifier",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubscriptionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["subscription"],
+        "summary": "Delete subscription",
+        "description": "Delete subscription.",
+        "operationId": "delete_subscription",
+        "parameters": [
+          {
+            "name": "subscription",
+            "in": "path",
+            "description": "Subscription identifier",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Accepted"
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/version": {
+      "get": {
+        "tags": ["version"],
+        "summary": "Admin version information",
+        "description": "Obtain admin version information.",
+        "operationId": "version",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionInformation"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/services/{service}/handlers": {
       "get": {
         "tags": ["service_handler"],
@@ -14,7 +715,9 @@
             "in": "path",
             "description": "Fully qualified service name.",
             "required": true,
-            "schema": { "type": "string" }
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -91,30 +794,23 @@
         }
       }
     },
-    "/invocations/{invocation_id}": {
-      "delete": {
-        "tags": ["invocation"],
-        "summary": "Terminate an invocation",
-        "description": "Terminate the given invocation. By default, an invocation is terminated by gracefully cancelling it. This ensures virtual object state consistency. Alternatively, an invocation can be killed which does not guarantee consistency for virtual object instance state, in-flight invocations to other services, etc.",
-        "operationId": "terminate_invocation",
-        "parameters": [
-          {
-            "name": "invocation_id",
-            "in": "path",
-            "description": "Invocation identifier.",
-            "required": true,
-            "schema": { "type": "string" }
-          },
-          {
-            "name": "mode",
-            "in": "query",
-            "description": "If cancel, it will gracefully terminate the invocation. If kill, it will terminate the invocation with a hard stop.",
-            "style": "simple",
-            "schema": { "$ref": "#/components/schemas/TerminationMode" }
-          }
-        ],
+    "/services": {
+      "get": {
+        "tags": ["service"],
+        "summary": "List services",
+        "description": "List all registered services.",
+        "operationId": "list_services",
         "responses": {
-          "202": { "description": "Accepted" },
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListServicesResponse"
+                }
+              }
+            }
+          },
           "400": {
             "description": "",
             "content": {
@@ -286,493 +982,6 @@
         }
       }
     },
-    "/health": {
-      "get": {
-        "tags": ["health"],
-        "summary": "Health check",
-        "description": "Check REST API Health.",
-        "operationId": "health",
-        "responses": { "200": { "description": "OK" } }
-      }
-    },
-    "/services/{service}/handlers/{handler}": {
-      "get": {
-        "tags": ["service_handler"],
-        "summary": "Get service handler",
-        "description": "Get the handler of a service",
-        "operationId": "get_service_handler",
-        "parameters": [
-          {
-            "name": "service",
-            "in": "path",
-            "description": "Fully qualified service name.",
-            "required": true,
-            "schema": { "type": "string" }
-          },
-          {
-            "name": "handler",
-            "in": "path",
-            "description": "Handler name.",
-            "required": true,
-            "schema": { "type": "string" }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/HandlerMetadata" }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/subscriptions": {
-      "get": {
-        "tags": ["subscription"],
-        "summary": "List subscriptions",
-        "description": "List all subscriptions.",
-        "operationId": "list_subscriptions",
-        "parameters": [
-          {
-            "name": "sink",
-            "in": "query",
-            "description": "Filter by the exact specified sink.",
-            "style": "simple",
-            "schema": { "type": "string" }
-          },
-          {
-            "name": "source",
-            "in": "query",
-            "description": "Filter by the exact specified source.",
-            "style": "simple",
-            "schema": { "type": "string" }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ListSubscriptionsResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": ["subscription"],
-        "summary": "Create subscription",
-        "description": "Create subscription.",
-        "operationId": "create_subscription",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateSubscriptionRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": "Created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SubscriptionResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/services": {
-      "get": {
-        "tags": ["service"],
-        "summary": "List services",
-        "description": "List all registered services.",
-        "operationId": "list_services",
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ListServicesResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/services/{service}": {
-      "get": {
-        "tags": ["service"],
-        "summary": "Get service",
-        "description": "Get a registered service.",
-        "operationId": "get_service",
-        "parameters": [
-          {
-            "name": "service",
-            "in": "path",
-            "description": "Fully qualified service name.",
-            "required": true,
-            "schema": { "type": "string" }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ServiceMetadata" }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "patch": {
-        "tags": ["service"],
-        "summary": "Modify a service",
-        "description": "Modify a registered service.",
-        "operationId": "modify_service",
-        "parameters": [
-          {
-            "name": "service",
-            "in": "path",
-            "description": "Fully qualified service name.",
-            "required": true,
-            "schema": { "type": "string" }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/ModifyServiceRequest" }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ServiceMetadata" }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/deployments/{deployment}": {
       "get": {
         "tags": ["deployment"],
@@ -785,7 +994,9 @@
             "in": "path",
             "description": "Deployment identifier",
             "required": true,
-            "schema": { "type": "string" }
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -872,18 +1083,24 @@
             "in": "path",
             "description": "Deployment identifier",
             "required": true,
-            "schema": { "type": "string" }
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "force",
             "in": "query",
             "description": "If true, the deployment will be forcefully deleted. This might break in-flight invocations, use with caution.",
             "style": "simple",
-            "schema": { "type": "boolean" }
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
-          "202": { "description": "Accepted" },
+          "202": {
+            "description": "Accepted"
+          },
           "501": {
             "description": "Not implemented. Only using the force flag is supported at the moment."
           },
@@ -950,19 +1167,43 @@
         }
       }
     },
-    "/subscriptions/{subscription}": {
+    "/health": {
       "get": {
-        "tags": ["subscription"],
-        "summary": "Get subscription",
-        "description": "Get subscription",
-        "operationId": "get_subscription",
+        "tags": ["health"],
+        "summary": "Health check",
+        "description": "Check REST API Health.",
+        "operationId": "health",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/services/{service}/handlers/{handler}": {
+      "get": {
+        "tags": ["service_handler"],
+        "summary": "Get service handler",
+        "description": "Get the handler of a service",
+        "operationId": "get_service_handler",
         "parameters": [
           {
-            "name": "subscription",
+            "name": "service",
             "in": "path",
-            "description": "Subscription identifier",
+            "description": "Fully qualified service name.",
             "required": true,
-            "schema": { "type": "string" }
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "handler",
+            "in": "path",
+            "description": "Handler name.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -971,179 +1212,11 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SubscriptionResponse"
+                  "$ref": "#/components/schemas/HandlerMetadata"
                 }
               }
             }
           },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "tags": ["subscription"],
-        "summary": "Delete subscription",
-        "description": "Delete subscription.",
-        "operationId": "delete_subscription",
-        "parameters": [
-          {
-            "name": "subscription",
-            "in": "path",
-            "description": "Subscription identifier",
-            "required": true,
-            "schema": { "type": "string" }
-          }
-        ],
-        "responses": {
-          "202": { "description": "Accepted" },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/services/{service}/state": {
-      "post": {
-        "tags": ["service"],
-        "summary": "Modify a service state",
-        "description": "Modify service state",
-        "operationId": "modify_service_state",
-        "parameters": [
-          {
-            "name": "service",
-            "in": "path",
-            "description": "Fully qualified service name.",
-            "required": true,
-            "schema": { "type": "string" }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ModifyServiceStateRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "202": { "description": "Accepted" },
           "400": {
             "description": "",
             "content": {
@@ -1211,7 +1284,9 @@
       "get": {
         "tags": ["openapi"],
         "summary": "OpenAPI specification",
-        "externalDocs": { "url": "https://swagger.io/specification/" },
+        "externalDocs": {
+          "url": "https://swagger.io/specification/"
+        },
         "operationId": "openapi_spec",
         "responses": {
           "200": {
@@ -1220,7 +1295,9 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "additionalProperties": { "type": "string" }
+                  "additionalProperties": {
+                    "type": "string"
+                  }
                 }
               }
             }
@@ -1231,29 +1308,35 @@
   },
   "components": {
     "schemas": {
-      "ListServiceHandlersResponse": {
+      "ModifyServiceStateRequest": {
         "type": "object",
-        "required": ["handlers"],
+        "required": ["new_state", "object_key"],
         "properties": {
-          "handlers": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/HandlerMetadata" }
+          "version": {
+            "title": "Version",
+            "description": "If set, the latest version of the state is compared with this value and the operation will fail when the versions differ.",
+            "type": "string",
+            "nullable": true
+          },
+          "object_key": {
+            "title": "Service key",
+            "description": "To what virtual object key to apply this change",
+            "type": "string"
+          },
+          "new_state": {
+            "title": "New State",
+            "description": "The new state to replace the previous state with",
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "uint8",
+                "minimum": 0.0
+              }
+            }
           }
         }
-      },
-      "HandlerMetadata": {
-        "type": "object",
-        "required": ["input_description", "name", "output_description", "ty"],
-        "properties": {
-          "name": { "type": "string" },
-          "ty": { "$ref": "#/components/schemas/HandlerMetadataType" },
-          "input_description": { "type": "string" },
-          "output_description": { "type": "string" }
-        }
-      },
-      "HandlerMetadataType": {
-        "type": "string",
-        "enum": ["Exclusive", "Shared", "Workflow"]
       },
       "ErrorDescriptionResponse": {
         "title": "Error description response",
@@ -1261,111 +1344,14 @@
         "type": "object",
         "required": ["message"],
         "properties": {
-          "message": { "type": "string" },
+          "message": {
+            "type": "string"
+          },
           "restate_code": {
             "title": "Restate code",
             "description": "Restate error code describing this error",
             "type": "string",
             "nullable": true
-          }
-        }
-      },
-      "TerminationMode": { "type": "string", "enum": ["Cancel", "Kill"] },
-      "ListDeploymentsResponse": {
-        "type": "object",
-        "required": ["deployments"],
-        "properties": {
-          "deployments": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/DeploymentResponse" }
-          }
-        }
-      },
-      "DeploymentResponse": {
-        "type": "object",
-        "anyOf": [
-          {
-            "type": "object",
-            "required": ["created_at", "protocol_type", "uri"],
-            "properties": {
-              "uri": { "type": "string" },
-              "protocol_type": { "$ref": "#/components/schemas/ProtocolType" },
-              "additional_headers": {
-                "type": "object",
-                "additionalProperties": { "type": "string" }
-              },
-              "created_at": { "type": "string" }
-            }
-          },
-          {
-            "type": "object",
-            "required": ["arn", "created_at"],
-            "properties": {
-              "arn": { "$ref": "#/components/schemas/LambdaARN" },
-              "assume_role_arn": { "type": "string", "nullable": true },
-              "additional_headers": {
-                "type": "object",
-                "additionalProperties": { "type": "string" }
-              },
-              "created_at": { "type": "string" }
-            }
-          }
-        ],
-        "required": ["id", "services"],
-        "properties": {
-          "id": { "$ref": "#/components/schemas/String" },
-          "services": {
-            "title": "Services",
-            "description": "List of services exposed by this deployment.",
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/ServiceNameRevPair" }
-          }
-        }
-      },
-      "String": { "type": "string" },
-      "ServiceNameRevPair": {
-        "type": "object",
-        "required": ["name", "revision"],
-        "properties": {
-          "name": { "type": "string" },
-          "revision": { "type": "integer", "format": "uint32", "minimum": 0.0 }
-        }
-      },
-      "ProtocolType": {
-        "type": "string",
-        "enum": ["RequestResponse", "BidiStream"]
-      },
-      "LambdaARN": { "type": "string", "format": "arn" },
-      "ListSubscriptionsResponse": {
-        "type": "object",
-        "required": ["subscriptions"],
-        "properties": {
-          "subscriptions": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/SubscriptionResponse" }
-          }
-        }
-      },
-      "SubscriptionResponse": {
-        "type": "object",
-        "required": ["id", "options", "sink", "source"],
-        "properties": {
-          "id": { "$ref": "#/components/schemas/String" },
-          "source": { "type": "string" },
-          "sink": { "type": "string" },
-          "options": {
-            "type": "object",
-            "additionalProperties": { "type": "string" }
-          }
-        }
-      },
-      "ListServicesResponse": {
-        "type": "object",
-        "required": ["services"],
-        "properties": {
-          "services": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/ServiceMetadata" }
           }
         }
       },
@@ -1388,9 +1374,13 @@
           },
           "handlers": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/HandlerMetadata" }
+            "items": {
+              "$ref": "#/components/schemas/HandlerMetadata"
+            }
           },
-          "ty": { "$ref": "#/components/schemas/ServiceType" },
+          "ty": {
+            "$ref": "#/components/schemas/ServiceType"
+          },
           "deployment_id": {
             "title": "Deployment Id",
             "description": "Deployment exposing the latest revision of the service.",
@@ -1421,9 +1411,67 @@
           }
         }
       },
+      "HandlerMetadata": {
+        "type": "object",
+        "required": ["input_description", "name", "output_description", "ty"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "ty": {
+            "$ref": "#/components/schemas/HandlerMetadataType"
+          },
+          "input_description": {
+            "type": "string"
+          },
+          "output_description": {
+            "type": "string"
+          }
+        }
+      },
+      "HandlerMetadataType": {
+        "type": "string",
+        "enum": ["Exclusive", "Shared", "Workflow"]
+      },
       "ServiceType": {
         "type": "string",
         "enum": ["Service", "VirtualObject", "Workflow"]
+      },
+      "ListSubscriptionsResponse": {
+        "type": "object",
+        "required": ["subscriptions"],
+        "properties": {
+          "subscriptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SubscriptionResponse"
+            }
+          }
+        }
+      },
+      "SubscriptionResponse": {
+        "type": "object",
+        "required": ["id", "options", "sink", "source"],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/String"
+          },
+          "source": {
+            "type": "string"
+          },
+          "sink": {
+            "type": "string"
+          },
+          "options": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "String": {
+        "type": "string"
       },
       "ModifyServiceRequest": {
         "type": "object",
@@ -1431,49 +1479,102 @@
           "public": {
             "title": "Public",
             "description": "If true, the service can be invoked through the ingress. If false, the service can be invoked only from another Restate service.",
-            "default": null,
             "type": "boolean",
             "nullable": true
           },
           "idempotency_retention": {
             "title": "Idempotency retention",
-            "description": "Modify the retention of idempotent requests for this service.\n\nCan be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format.",
-            "default": null,
+            "description": "Modify the retention of idempotent requests for this service.\n\nCan be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format or the ISO8601.",
             "type": "string",
             "nullable": true
           },
           "workflow_completion_retention": {
             "title": "Workflow completion retention",
-            "description": "Modify the retention of the workflow completion. This can be modified only for workflow services!\n\nCan be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format.",
-            "default": null,
+            "description": "Modify the retention of the workflow completion. This can be modified only for workflow services!\n\nCan be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format or the ISO8601.",
             "type": "string",
             "nullable": true
           }
         }
       },
-      "ModifyServiceStateRequest": {
+      "DeletionMode": {
+        "type": "string",
+        "enum": ["Cancel", "Kill", "Purge"]
+      },
+      "VersionInformation": {
         "type": "object",
-        "required": ["new_state", "object_key"],
+        "required": [
+          "max_admin_api_version",
+          "min_admin_api_version",
+          "version"
+        ],
         "properties": {
           "version": {
-            "title": "Version",
-            "description": "If set, the latest version of the state is compared with this value and the operation will fail when the versions differ.",
-            "type": "string",
-            "nullable": true
-          },
-          "object_key": {
-            "title": "Service key",
-            "description": "To what virtual object key to apply this change",
+            "title": "Admin server version",
+            "description": "Version of the admin server",
             "type": "string"
           },
-          "new_state": {
-            "title": "New State",
-            "description": "The new state to replace the previous state with",
+          "min_admin_api_version": {
+            "title": "Min admin API version",
+            "description": "Minimum supported admin API version by the admin server",
+            "type": "integer",
+            "format": "uint16",
+            "minimum": 0.0
+          },
+          "max_admin_api_version": {
+            "title": "Max admin API version",
+            "description": "Maximum supported admin API version by the admin server",
+            "type": "integer",
+            "format": "uint16",
+            "minimum": 0.0
+          }
+        }
+      },
+      "ListServiceHandlersResponse": {
+        "type": "object",
+        "required": ["handlers"],
+        "properties": {
+          "handlers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HandlerMetadata"
+            }
+          }
+        }
+      },
+      "ListServicesResponse": {
+        "type": "object",
+        "required": ["services"],
+        "properties": {
+          "services": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceMetadata"
+            }
+          }
+        }
+      },
+      "CreateSubscriptionRequest": {
+        "type": "object",
+        "required": ["sink", "source"],
+        "properties": {
+          "source": {
+            "title": "Source",
+            "description": "Source uri. Accepted forms:\n\n* `kafka://<cluster_name>/<topic_name>`, e.g. `kafka://my-cluster/my-topic`",
+            "type": "string"
+          },
+          "sink": {
+            "title": "Sink",
+            "description": "Sink uri. Accepted forms:\n\n* `service://<service_name>/<service_name>`, e.g. `service://Counter/count`",
+            "type": "string"
+          },
+          "options": {
+            "title": "Options",
+            "description": "Additional options to apply to the subscription.",
             "type": "object",
             "additionalProperties": {
-              "type": "array",
-              "items": { "type": "integer", "format": "uint8", "minimum": 0.0 }
-            }
+              "type": "string"
+            },
+            "nullable": true
           }
         }
       },
@@ -1492,8 +1593,16 @@
                 "title": "Additional headers",
                 "description": "Additional headers added to the discover/invoke requests to the deployment.",
                 "type": "object",
-                "additionalProperties": { "type": "string" },
+                "additionalProperties": {
+                  "type": "string"
+                },
                 "nullable": true
+              },
+              "use_http_11": {
+                "title": "Use http1.1",
+                "description": "If `true`, discovery will be attempted using a client that defaults to HTTP1.1 instead of a prior-knowledge HTTP2 client. HTTP2 may still be used for TLS servers that advertise HTTP2 support via ALPN. HTTP1.1 deployments will only work in request-response mode.",
+                "default": false,
+                "type": "boolean"
               },
               "force": {
                 "title": "Force",
@@ -1528,7 +1637,9 @@
                 "title": "Additional headers",
                 "description": "Additional headers added to the discover/invoke requests to the deployment.",
                 "type": "object",
-                "additionalProperties": { "type": "string" },
+                "additionalProperties": {
+                  "type": "string"
+                },
                 "nullable": true
               },
               "force": {
@@ -1551,10 +1662,14 @@
         "type": "object",
         "required": ["id", "services"],
         "properties": {
-          "id": { "$ref": "#/components/schemas/String" },
+          "id": {
+            "$ref": "#/components/schemas/String"
+          },
           "services": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/ServiceMetadata" }
+            "items": {
+              "$ref": "#/components/schemas/ServiceMetadata"
+            }
           }
         }
       },
@@ -1563,62 +1678,218 @@
         "anyOf": [
           {
             "type": "object",
-            "required": ["created_at", "protocol_type", "uri"],
+            "required": [
+              "created_at",
+              "http_version",
+              "max_protocol_version",
+              "min_protocol_version",
+              "protocol_type",
+              "uri"
+            ],
             "properties": {
-              "uri": { "type": "string" },
-              "protocol_type": { "$ref": "#/components/schemas/ProtocolType" },
+              "uri": {
+                "type": "string"
+              },
+              "protocol_type": {
+                "$ref": "#/components/schemas/ProtocolType"
+              },
+              "http_version": {
+                "type": "string"
+              },
               "additional_headers": {
                 "type": "object",
-                "additionalProperties": { "type": "string" }
+                "additionalProperties": {
+                  "type": "string"
+                }
               },
-              "created_at": { "type": "string" }
+              "created_at": {
+                "type": "string"
+              },
+              "min_protocol_version": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "max_protocol_version": {
+                "type": "integer",
+                "format": "int32"
+              }
             }
           },
           {
             "type": "object",
-            "required": ["arn", "created_at"],
+            "required": [
+              "arn",
+              "created_at",
+              "max_protocol_version",
+              "min_protocol_version"
+            ],
             "properties": {
-              "arn": { "$ref": "#/components/schemas/LambdaARN" },
-              "assume_role_arn": { "type": "string", "nullable": true },
+              "arn": {
+                "$ref": "#/components/schemas/LambdaARN"
+              },
+              "assume_role_arn": {
+                "type": "string",
+                "nullable": true
+              },
               "additional_headers": {
                 "type": "object",
-                "additionalProperties": { "type": "string" }
+                "additionalProperties": {
+                  "type": "string"
+                }
               },
-              "created_at": { "type": "string" }
+              "created_at": {
+                "type": "string"
+              },
+              "min_protocol_version": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "max_protocol_version": {
+                "type": "integer",
+                "format": "int32"
+              }
             }
           }
         ],
         "required": ["id", "services"],
         "properties": {
-          "id": { "$ref": "#/components/schemas/String" },
+          "id": {
+            "$ref": "#/components/schemas/String"
+          },
           "services": {
             "title": "Services",
             "description": "List of services exposed by this deployment.",
             "type": "array",
-            "items": { "$ref": "#/components/schemas/ServiceMetadata" }
+            "items": {
+              "$ref": "#/components/schemas/ServiceMetadata"
+            }
           }
         }
       },
-      "CreateSubscriptionRequest": {
+      "ProtocolType": {
+        "type": "string",
+        "enum": ["RequestResponse", "BidiStream"]
+      },
+      "LambdaARN": {
+        "type": "string",
+        "format": "arn"
+      },
+      "ListDeploymentsResponse": {
         "type": "object",
-        "required": ["sink", "source"],
+        "required": ["deployments"],
         "properties": {
-          "source": {
-            "title": "Source",
-            "description": "Source uri. Accepted forms:\n\n* `kafka://<cluster_name>/<topic_name>`, e.g. `kafka://my-cluster/my-topic`",
-            "type": "string"
-          },
-          "sink": {
-            "title": "Sink",
-            "description": "Sink uri. Accepted forms:\n\n* `service://<service_name>/<service_name>`, e.g. `service://Counter/count`",
-            "type": "string"
-          },
-          "options": {
-            "title": "Options",
-            "description": "Additional options to apply to the subscription.",
+          "deployments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeploymentResponse"
+            }
+          }
+        }
+      },
+      "DeploymentResponse": {
+        "type": "object",
+        "anyOf": [
+          {
             "type": "object",
-            "additionalProperties": { "type": "string" },
-            "nullable": true
+            "required": [
+              "created_at",
+              "http_version",
+              "max_protocol_version",
+              "min_protocol_version",
+              "protocol_type",
+              "uri"
+            ],
+            "properties": {
+              "uri": {
+                "type": "string"
+              },
+              "protocol_type": {
+                "$ref": "#/components/schemas/ProtocolType"
+              },
+              "http_version": {
+                "type": "string"
+              },
+              "additional_headers": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "created_at": {
+                "type": "string"
+              },
+              "min_protocol_version": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "max_protocol_version": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "arn",
+              "created_at",
+              "max_protocol_version",
+              "min_protocol_version"
+            ],
+            "properties": {
+              "arn": {
+                "$ref": "#/components/schemas/LambdaARN"
+              },
+              "assume_role_arn": {
+                "type": "string",
+                "nullable": true
+              },
+              "additional_headers": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "created_at": {
+                "type": "string"
+              },
+              "min_protocol_version": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "max_protocol_version": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          }
+        ],
+        "required": ["id", "services"],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/String"
+          },
+          "services": {
+            "title": "Services",
+            "description": "List of services exposed by this deployment.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceNameRevPair"
+            }
+          }
+        }
+      },
+      "ServiceNameRevPair": {
+        "type": "object",
+        "required": ["name", "revision"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "integer",
+            "format": "uint32",
+            "minimum": 0.0
           }
         }
       }
