@@ -27,6 +27,8 @@ interface InputProps
     | 'validate'
     | 'pattern'
     | 'maxLength'
+    | 'type'
+    | 'onChange'
   > {
   className?: string;
   required?: boolean;

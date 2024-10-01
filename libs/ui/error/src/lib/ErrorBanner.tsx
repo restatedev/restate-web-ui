@@ -37,7 +37,7 @@ function SingleError({
 
   return (
     <div className={styles({ className })}>
-      <div className="flex items-center gap-2">
+      <div className="flex items-start gap-2">
         <div className="flex-shrink-0">
           <Icon
             className="h-5 w-5 fill-red-500 text-red-500"
