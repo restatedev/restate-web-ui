@@ -1,6 +1,7 @@
 import * as adminApi from '@restate/data-access/admin-api/spec';
 import { http, HttpResponse } from 'msw';
 import { adminApiDb } from './adminApiDb';
+import { faker } from '@faker-js/faker';
 
 type FormatParameterWithColon<S extends string> =
   S extends `${infer A}{${infer P}}${infer B}` ? `${A}:${P}${B}` : S;
@@ -15,14 +16,16 @@ const listDeploymentsHandler = http.get<
   GetPath<'/deployments'>
 >('/deployments', async () => {
   const deployments = adminApiDb.deployment.getAll();
-
   return HttpResponse.json({
     deployments: deployments.map((deployment) => ({
       id: deployment.id,
       services: deployment.services,
-      uri: '',
+      uri: faker.internet.url(),
       protocol_type: 'RequestResponse',
-      created_at: '',
+      created_at: new Date().toISOString(),
+      http_version: 'HTTP/2.0',
+      min_protocol_version: 1,
+      max_protocol_version: 1,
     })),
   });
 });
@@ -35,10 +38,27 @@ const registerDeploymentHandler = http.post<
 >('/deployments', async ({ request }) => {
   const requestBody = await request.json();
   const newDeployment = adminApiDb.deployment.create({});
+  const services = Array(3)
+    .fill(null)
+    .map(() => adminApiDb.service.create({ deployment: newDeployment }));
 
   return HttpResponse.json({
     id: newDeployment.id,
-    services: [],
+    services: services.map((service) => ({
+      name: service.name,
+      deployment_id: service.deployment!.id,
+      public: service.public,
+      revision: service.revision,
+      ty: service.ty,
+      idempotency_retention: service.idempotency_retention,
+      workflow_completion_retention: service.idempotency_retention,
+      handlers: service.handlers.map((handler) => ({
+        name: handler.name,
+        ty: handler.ty,
+        input_description: handler.input_description,
+        output_description: handler.output_description,
+      })),
+    })),
   });
 });
 
