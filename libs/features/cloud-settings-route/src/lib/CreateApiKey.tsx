@@ -228,7 +228,7 @@ function CreateApiForm({
           </div>
           <RadioGroup name="roleId" required className="mt-2">
             <FormFieldLabel>
-              <span slot="title" className=" text-base">
+              <span slot="title" className="text-base">
                 Role
               </span>
               <span slot="description">
