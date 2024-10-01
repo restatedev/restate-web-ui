@@ -58,15 +58,12 @@ export function useOpenApi(options?: HookQueryOptions<'/openapi', 'get'>) {
   });
 }
 
-export function useVersion(options?: HookQueryOptions<'/openapi', 'get'>) {
+export function useVersion(options?: HookQueryOptions<'/version', 'get'>) {
   const baseUrl = useAdminBaseUrl();
 
   return useQuery({
-    ...adminApi('query', '/openapi', 'get', { baseUrl }),
+    ...adminApi('query', '/version', 'get', { baseUrl }),
     ...options,
-    select(data) {
-      return (data?.info as unknown as { version: string })?.version;
-    },
   });
 }
 
