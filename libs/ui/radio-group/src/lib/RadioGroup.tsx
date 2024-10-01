@@ -1,12 +1,18 @@
 import { FormFieldError } from '@restate/ui/form-field';
 import { PropsWithChildren } from 'react';
-import { RadioGroup as AriaRadioGroup } from 'react-aria-components';
+import {
+  RadioGroup as AriaRadioGroup,
+  RadioGroupProps as AriaRadioGroupProps,
+} from 'react-aria-components';
 import { tv } from 'tailwind-variants';
 
 interface RadioGroupProps {
   name: string;
   required?: boolean;
   className?: string;
+  defaultValue?: string;
+  value?: string;
+  onChange?: AriaRadioGroupProps['onChange'];
 }
 
 const styles = tv({
