@@ -23,6 +23,8 @@ import {
   ExternalLink,
   Wallet,
   X,
+  Box,
+  SquareFunction,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from 'tailwind-variants';
@@ -70,6 +72,8 @@ export const enum IconName {
   SupportTicket = 'SupportTicket',
   Help = 'Help',
   Lambda = 'Lambda',
+  Box = 'Box',
+  Function = 'SquareFunction',
 }
 export interface IconsProps {
   name: IconName;
@@ -111,6 +115,8 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.SupportTicket]: SupportTicket,
   [IconName.Help]: Help,
   [IconName.Lambda]: Lambda,
+  [IconName.Box]: Box,
+  [IconName.Function]: SquareFunction,
 };
 
 const styles = tv({
