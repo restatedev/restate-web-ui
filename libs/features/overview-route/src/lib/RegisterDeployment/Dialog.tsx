@@ -63,7 +63,7 @@ function RegisterDeploymentFooter({
   );
 }
 
-export function RegisterDeploymentDialog({
+export function TriggerRegisterDeploymentDialog({
   children = 'Register deployment',
 }: PropsWithChildren<NonNullable<unknown>>) {
   return (

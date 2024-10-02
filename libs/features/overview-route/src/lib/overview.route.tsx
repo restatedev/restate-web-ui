@@ -2,9 +2,7 @@ import { useListDeployments } from '@restate/data-access/admin-api';
 import { RestateServer } from './RestateServer';
 import { Deployment } from './Deployment';
 import { tv } from 'tailwind-variants';
-import { Button } from '@restate/ui/button';
-import { Icon, IconName } from '@restate/ui/icons';
-import { PropsWithChildren } from 'react';
+import { TriggerRegisterDeploymentDialog } from './RegisterDeployment/Dialog';
 
 const deploymentsStyles = tv({
   base: 'w-full md:row-start-1 md:col-start-1 grid gap-8 gap-x-[calc(2rem+150px)] [grid-template-columns:1fr] md:[grid-template-columns:1fr_1fr] ',
@@ -31,22 +29,13 @@ const reactServerStyles = tv({
   },
 });
 
-function RegisterDeployment({
-  children = 'Register deployment',
-}: PropsWithChildren<NonNullable<unknown>>) {
-  return (
-    <Button variant="secondary" className="flex gap-2 items-center px-3">
-      <Icon name={IconName.Plus} />
-      {children}
-    </Button>
-  );
-}
-
 function MultipleDeploymentsPlaceholder() {
   return (
     <div className="flex flex-col gap-2 items-center relative w-full text-center mt-6">
       <div className="mt-4">
-        <RegisterDeployment>Deployment</RegisterDeployment>
+        <TriggerRegisterDeploymentDialog>
+          Deployment
+        </TriggerRegisterDeploymentDialog>
       </div>
     </div>
   );
@@ -60,7 +49,7 @@ function OneDeploymentPlaceholder() {
         register your services and handlers
       </p>
       <div className="mt-4">
-        <RegisterDeployment />
+        <TriggerRegisterDeploymentDialog />
       </div>
     </div>
   );
@@ -75,7 +64,7 @@ function NoDeploymentPlaceholder() {
         register your services and handlers
       </p>
       <div className="mt-4">
-        <RegisterDeployment />
+        <TriggerRegisterDeploymentDialog />
       </div>
     </div>
   );
@@ -85,7 +74,7 @@ function Component() {
   const { data, isError, isLoading, isSuccess } = useListDeployments();
 
   // Handle isLoading & isError
-  const deployments = data?.deployments.slice(0, 4) ?? [];
+  const deployments = data?.deployments ?? [];
   const hasNoDeployment = isSuccess && deployments.length === 0;
 
   return (
