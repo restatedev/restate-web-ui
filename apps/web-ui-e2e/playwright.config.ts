@@ -26,10 +26,10 @@ export default defineConfig({
   },
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'pnpm exec nx serve web-ui',
-    url: 'http://localhost:4300',
+    command: 'SCENARIO=E2E pnpm exec nx serve web-ui -c mock',
     reuseExistingServer: !process.env.CI,
     cwd: workspaceRoot,
+    url: 'http://localhost:4001/version',
   },
   projects: [
     {

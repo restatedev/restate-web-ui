@@ -84,9 +84,23 @@ const openApiHandler = http.get<
   return HttpResponse.json(adminApi.spec as any);
 });
 
+const versionHandler = http.get<
+  never,
+  never,
+  adminApi.operations['version']['responses']['200']['content']['application/json'],
+  GetPath<'/version'>
+>('/version', async () => {
+  return HttpResponse.json({
+    version: '1.1.1',
+    max_admin_api_version: 1,
+    min_admin_api_version: 1,
+  });
+});
+
 export const adminApiMockHandlers = [
   listDeploymentsHandler,
   healthHandler,
   openApiHandler,
   registerDeploymentHandler,
+  versionHandler,
 ];
