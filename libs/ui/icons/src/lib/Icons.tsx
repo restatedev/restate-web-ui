@@ -23,12 +23,15 @@ import {
   ExternalLink,
   Wallet,
   X,
+  Box,
+  SquareFunction,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from 'tailwind-variants';
 import { RestateEnvironment } from './custom-icons/RestateEnvironment';
 import { Restate } from './custom-icons/Restate';
 import { CircleX } from './custom-icons/CircleX';
+import { Lambda } from './custom-icons/Lambda';
 import { Docs } from './custom-icons/Docs';
 import { Github } from './custom-icons/Github';
 import { Discord } from './custom-icons/Discord';
@@ -68,6 +71,9 @@ export const enum IconName {
   Github = 'Github',
   SupportTicket = 'SupportTicket',
   Help = 'Help',
+  Lambda = 'Lambda',
+  Box = 'Box',
+  Function = 'SquareFunction',
 }
 export interface IconsProps {
   name: IconName;
@@ -108,6 +114,9 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Discord]: Discord,
   [IconName.SupportTicket]: SupportTicket,
   [IconName.Help]: Help,
+  [IconName.Lambda]: Lambda,
+  [IconName.Box]: Box,
+  [IconName.Function]: SquareFunction,
 };
 
 const styles = tv({

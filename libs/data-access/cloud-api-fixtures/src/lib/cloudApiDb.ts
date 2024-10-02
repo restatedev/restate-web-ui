@@ -134,7 +134,7 @@ if (isE2E) {
       users,
     });
     const environments = (
-      ['PENDING', 'ACTIVE', 'FAILED', 'DELETED'] as const
+      ['ACTIVE', 'ACTIVE', 'PENDING', 'ACTIVE'] as const
     ).map((status) =>
       cloudApiDb.environment.create({
         account,

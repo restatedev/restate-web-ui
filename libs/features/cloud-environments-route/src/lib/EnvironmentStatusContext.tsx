@@ -4,6 +4,7 @@ import {
   useCallback,
   useContext,
   useDeferredValue,
+  useMemo,
   useState,
 } from 'react';
 import {
@@ -49,11 +50,15 @@ export function EnvironmentStatusProvider({
 }: PropsWithChildren<NonNullable<unknown>>) {
   const accountId = useAccountParam();
   invariant(accountId, 'Missing accountId');
+
   const currentEnvironmentId = useEnvironmentParam();
   const { data: environmentList } = useQuery({
-    ...cloudApi.listEnvironments({ accountId: accountId! }),
+    ...cloudApi.listEnvironments({ accountId }),
   });
-  const environments = environmentList?.environments ?? [];
+  const environments = useMemo(
+    () => environmentList?.environments ?? [],
+    [environmentList?.environments]
+  );
 
   const allEnvironmentsStatus = useQueries({
     queries: environments.map(({ environmentId }) => ({
@@ -86,17 +91,12 @@ export function EnvironmentStatusProvider({
 
   const allEnvironmentsStatusWithHealth = useQueries({
     queries: environments.map(({ environmentId }) => ({
-      ...adminApi(
-        '/health',
-        'get',
-        `/api/accounts/${accountId}/environments/${environmentId}/admin`
-      ),
+      ...adminApi('query', '/health', 'get', {
+        baseUrl: `/api/accounts/${accountId}/environments/${environmentId}/admin`,
+      }),
       enabled: allEnvironmentsStatus[environmentId] === 'ACTIVE',
       refetchInterval: (query: Query) => {
-        const url = query.queryKey.at(0);
-        const isCurrentEnvQuery =
-          typeof url === 'string' && url.includes(environmentId);
-
+        const isCurrentEnvQuery = environmentId === currentEnvironmentId;
         if (isCurrentEnvQuery) {
           return query.state.status === 'success' ? 60000 : 10000;
         }

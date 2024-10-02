@@ -3,15 +3,15 @@ import { tv } from 'tailwind-variants';
 import { Group as AriaGroup } from 'react-aria-components';
 import { PropsWithChildren } from 'react';
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface FormFieldGroupProps {}
+interface FormFieldGroupProps {
+  className?: string;
+}
 
 const fieldBorderStyles = tv({
   variants: {
     isFocusWithin: {
-      false:
-        'border-gray-300 dark:border-zinc-500 forced-colors:border-[ButtonBorder]',
-      true: 'border-gray-600 dark:border-zinc-300 forced-colors:border-[Highlight]',
+      false: 'border-gray-300 dark:border-zinc-500',
+      true: 'border-gray-600 dark:border-zinc-300 rounded-[0.625rem] outline-offset-8',
     },
     isInvalid: {
       true: 'border-red-600 dark:border-red-600 forced-colors:border-[Mark]',
@@ -24,15 +24,20 @@ const fieldBorderStyles = tv({
 
 const fieldGroupStyles = tv({
   extend: focusRing,
-  base: 'group flex items-center h-9 bg-white dark:bg-zinc-900 forced-colors:bg-[Field] border-2 rounded-lg overflow-hidden',
+  base: 'group flex items-start flex-col',
   variants: fieldBorderStyles.variants,
 });
 
-export function FormFieldGroup(props: PropsWithChildren<FormFieldGroupProps>) {
+export function FormFieldGroup({
+  className,
+  ...props
+}: PropsWithChildren<FormFieldGroupProps>) {
   return (
     <AriaGroup
       {...props}
-      className={(renderProps) => fieldGroupStyles({ ...renderProps })}
+      className={(renderProps) =>
+        fieldGroupStyles({ ...renderProps, className })
+      }
     />
   );
 }

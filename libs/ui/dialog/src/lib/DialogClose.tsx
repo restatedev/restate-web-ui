@@ -1,13 +1,14 @@
-import { PropsWithChildren, useContext } from 'react';
+import { ComponentProps, useContext } from 'react';
 import { OverlayTriggerStateContext } from 'react-aria-components';
-import { PressResponder } from '@react-aria/interactions';
+import { Pressable, PressResponder } from '@react-aria/interactions';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface DialogCLoseProps {}
+interface DialogCLoseProps {
+  children: ComponentProps<typeof Pressable>['children'];
+}
 
-export function DialogClose({ children }: PropsWithChildren<DialogCLoseProps>) {
+export function DialogClose({ children }: DialogCLoseProps) {
   const state = useContext(OverlayTriggerStateContext);
-
   return (
     <PressResponder
       onPress={() => {

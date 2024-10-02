@@ -68,7 +68,10 @@ export const loader = async ({
       if (data) {
         return json(data);
       } else {
-        return new Response(JSON.stringify(error), { status: response.status });
+        return new Response(JSON.stringify({ errors: [error] }), {
+          status: response.status,
+          headers: { 'content-type': 'application/json' },
+        });
       }
     }
 

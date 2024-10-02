@@ -3,7 +3,13 @@ import { PropsWithChildren } from 'react';
 import { tv } from 'tailwind-variants';
 
 export interface ErrorProps {
-  errors?: Error[] | string[];
+  errors?:
+    | Error[]
+    | string[]
+    | {
+        message: string;
+        restate_code?: string | null;
+      }[];
   className?: string;
 }
 
@@ -15,14 +21,23 @@ function SingleError({
   error,
   children,
   className,
-}: PropsWithChildren<{ error?: Error | string; className?: string }>) {
+}: PropsWithChildren<{
+  error?:
+    | Error
+    | string
+    | {
+        message: string;
+        restate_code?: string | null;
+      };
+  className?: string;
+}>) {
   if (!error) {
     return null;
   }
 
   return (
     <div className={styles({ className })}>
-      <div className="flex items-center gap-2">
+      <div className="flex items-start gap-2">
         <div className="flex-shrink-0">
           <Icon
             className="h-5 w-5 fill-red-500 text-red-500"

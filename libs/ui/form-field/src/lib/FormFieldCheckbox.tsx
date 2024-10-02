@@ -19,32 +19,54 @@ interface FormFieldCheckboxProps
   errorMessage?: ComponentProps<typeof FormFieldError>['children'];
   slot?: string;
   checked?: boolean;
+  direction?: 'left' | 'right';
 }
 
 const styles = tv({
   slots: {
+    label: 'row-start-1 text-base',
+    container: 'grid gap-x-2 items-center',
     input:
-      'disabled:text-gray-100 hover:disabled:text-gray-100 focus:disabled:text-gray-100 disabled:bg-gray-100 disabled:border-gray-100 disabled:shadow-none invalid:bg-red-100 invalid:border-red-600 text-blue-600 checked:focus:text-blue-800 bg-gray-100 col-start-1 row-start-1 min-w-0 rounded-md w-5 h-5 border-gray-200 focus:bg-gray-300 hover:bg-gray-300 shadow-[inset_0_0.5px_0.5px_0px_rgba(0,0,0,0.08)]',
+      'disabled:text-gray-100 hover:disabled:text-gray-100 focus:disabled:text-gray-100 disabled:bg-gray-100 disabled:border-gray-100 disabled:shadow-none invalid:bg-red-100 invalid:border-red-600 text-blue-600 checked:focus:text-blue-800 bg-gray-100  row-start-1 min-w-0 rounded-md w-5 h-5 border-gray-200 focus:bg-gray-300 hover:bg-gray-300 shadow-[inset_0_0.5px_0.5px_0px_rgba(0,0,0,0.08)]',
+  },
+  variants: {
+    direction: {
+      left: {
+        container: 'grid-cols-[1.25rem_1fr]',
+        input: 'col-start-1',
+        label: 'col-start-2',
+      },
+      right: {
+        container: 'grid-cols-[1fr_1.25rem]',
+        input: 'col-start-2',
+        label: 'col-start-1',
+      },
+    },
   },
 });
 export const FormFieldCheckbox = forwardRef<
   HTMLInputElement,
   PropsWithChildren<FormFieldCheckboxProps>
->(({ className, errorMessage, children, ...props }, ref) => {
-  const { input } = styles();
-  return (
-    <TextField className="grid grid-cols-[1.25rem_1fr] gap-x-2 items-center">
-      <Input
-        {...props}
-        type="checkbox"
-        className={input({ className })}
-        ref={ref}
-      />
-      <Label className="col-start-2 row-start-1 text-base">{children}</Label>
-      <FormFieldError
-        children={errorMessage}
-        className="col-start-2 row-start-2 px-0"
-      />
-    </TextField>
-  );
-});
+>(
+  (
+    { className, errorMessage, children, direction = 'left', ...props },
+    ref
+  ) => {
+    const { input, container, label } = styles({ direction });
+    return (
+      <TextField className={container()}>
+        <Input
+          {...props}
+          type="checkbox"
+          className={input({ className })}
+          ref={ref}
+        />
+        <Label className={label()}>{children}</Label>
+        <FormFieldError
+          children={errorMessage}
+          className="col-start-2 row-start-2 px-0"
+        />
+      </TextField>
+    );
+  }
+);

@@ -33,7 +33,7 @@ export function DeleteAPIKey() {
       { preventScrollReset: true }
     );
     fetcher.resetErrors();
-  }, [fetcher]);
+  }, [fetcher, setSearchParams]);
 
   const queryClient = useQueryClient();
   useEffect(() => {

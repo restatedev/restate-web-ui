@@ -7,6 +7,7 @@ import {
 import { useFetchers } from '@remix-run/react';
 import { Button } from './Button';
 import { tv } from 'tailwind-variants';
+import { useIsMutating } from '@tanstack/react-query';
 
 export interface SubmitButtonProps {
   onClick?: VoidFunction;
@@ -55,26 +56,37 @@ const styles = tv({
   base: 'flex items-center justify-center gap-2',
 });
 
+function useIsSubmitting(action?: string) {
+  let actionUrl: URL | null = null;
+  try {
+    actionUrl = new URL(String(action));
+  } catch {
+    actionUrl = null;
+  }
+
+  const fetchers = useFetchers();
+  const submitFetcher = fetchers.find(
+    (fetcher) => fetcher.formAction === actionUrl?.pathname
+  );
+
+  const isMutating = useIsMutating({
+    predicate: (mutation) => {
+      const [pathName] = mutation.options.mutationKey ?? [];
+      return actionUrl?.pathname === pathName;
+    },
+  });
+
+  return submitFetcher?.state === 'submitting' || isMutating > 0;
+}
+
 export function SubmitButton({
   disabled,
   children,
   ...props
 }: PropsWithChildren<SubmitButtonProps>) {
-  const fetchers = useFetchers();
   const ref = useRef<HTMLButtonElement | null>(null);
   const formElement = ref.current?.form;
-  const submitFetcher = fetchers.find((fetcher) => {
-    if (formElement?.action) {
-      try {
-        const actionUrl = new URL(formElement.action);
-        return fetcher.formAction === actionUrl.pathname;
-      } catch (error) {
-        return false;
-      }
-    }
-    return false;
-  });
-  const isSubmitting = submitFetcher?.state === 'submitting';
+  const isSubmitting = useIsSubmitting(formElement?.action);
   const deferredIsSubmitting = useDeferredValue(isSubmitting);
 
   return (
