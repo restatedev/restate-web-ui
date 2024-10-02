@@ -15,11 +15,14 @@ const adminApiProxy = async ({
   invariant(typeof accountId === 'string', 'Missing accountId param');
   invariant(typeof environmentId === 'string', 'Missing environmentId param');
   let adminBaseUrl = await getAdminUrl(request);
+  const headers = request.headers;
+  headers.set('Content-Type', 'application/json');
+
   if (!adminBaseUrl) {
     const { data, error, response } = await describeEnvironment({
       accountId,
       environmentId,
-      headers: request.headers,
+      headers,
     });
 
     if (data?.adminBaseUrl) {

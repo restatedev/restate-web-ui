@@ -11,6 +11,8 @@ export const loader: LoaderFunction = async ({ params, request }) => {
   const { accountId, environmentId } = params;
   invariant(accountId, 'Missing accountId param');
   invariant(environmentId, 'Missing environmentId param');
+  const headers = request.headers;
+  headers.set('Content-Type', 'application/json');
 
   const queryClient = new QueryClient();
   const environmentDetails = await queryClient.fetchQuery({
@@ -19,7 +21,7 @@ export const loader: LoaderFunction = async ({ params, request }) => {
       describeEnvironment({
         accountId,
         environmentId,
-        headers: request.headers,
+        headers,
       }).then((response) => response.data),
   });
 

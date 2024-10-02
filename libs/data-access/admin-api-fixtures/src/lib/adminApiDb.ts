@@ -33,16 +33,20 @@ export const adminApiDb = factory({
   },
 });
 
-const services = Array(3)
-  .fill(null)
-  .map(() => adminApiDb.service.create());
-Array(30)
-  .fill(null)
-  .map(() =>
-    adminApiDb.deployment.create({
-      services: services.slice(
-        0,
-        Math.floor(Math.random() * services.length + 1)
-      ),
-    })
-  );
+const isE2E = process.env['SCENARIO'] === 'E2E';
+
+if (!isE2E) {
+  const services = Array(3)
+    .fill(null)
+    .map(() => adminApiDb.service.create());
+  Array(30)
+    .fill(null)
+    .map(() =>
+      adminApiDb.deployment.create({
+        services: services.slice(
+          0,
+          Math.floor(Math.random() * services.length + 1)
+        ),
+      })
+    );
+}

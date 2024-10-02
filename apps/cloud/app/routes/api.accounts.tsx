@@ -6,10 +6,12 @@ export const loader = async ({
   params,
   context,
 }: LoaderFunctionArgs) => {
+  const headers = request.headers;
+  headers.set('Content-Type', 'application/json');
   switch (request.method) {
     case 'GET': {
       const response = await listAccounts({
-        headers: request.headers,
+        headers,
       });
       if (response.data) {
         return json({ accounts: response.data.accounts });

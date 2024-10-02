@@ -9,12 +9,14 @@ export const loader = async ({
 }: LoaderFunctionArgs) => {
   const accountId = params.accountId;
   invariant(accountId, 'Missing accountId param');
+  const headers = request.headers;
+  headers.set('Content-Type', 'application/json');
 
   switch (request.method) {
     case 'GET': {
       const { data, response, error } = await listEnvironments({
         accountId: accountId as string,
-        headers: request.headers,
+        headers,
       });
 
       if (data) {
