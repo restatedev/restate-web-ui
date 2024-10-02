@@ -14,9 +14,13 @@ import { RouterProvider } from 'react-aria-components';
 import { Button, Spinner } from '@restate/ui/button';
 import { useCallback } from 'react';
 import { QueryProvider } from '@restate/util/react-query';
-import { AdminBaseURLProvider } from '@restate/data-access/admin-api';
+import {
+  AdminBaseURLProvider,
+  useVersion,
+} from '@restate/data-access/admin-api';
 import { Nav, NavItem } from '@restate/ui/nav';
 import { Icon, IconName } from '@restate/ui/icons';
+import { tv } from 'tailwind-variants';
 
 export const links: LinksFunction = () => [
   {
@@ -74,7 +78,49 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
+const miniStyles = tv({
+  base: '',
+  slots: {
+    container: 'relative w-3 h-3 text-xs',
+    icon: 'absolute left-0 top-[1px] w-3 h-3 stroke-0 fill-current',
+    animation:
+      'absolute inset-left-0 top-[1px] w-3 h-3 stroke-[4px] fill-current opacity-20',
+  },
+  variants: {
+    status: {
+      PENDING: {
+        container: 'text-yellow-500',
+        animation: 'animate-ping',
+      },
+      DEGRADED: {
+        container: 'text-yellow-500',
+        animation: 'animate-ping',
+      },
+      ACTIVE: { container: 'text-green-500', animation: 'animate-ping' },
+      HEALTHY: { container: 'text-green-500', animation: 'animate-ping' },
+      FAILED: { container: 'text-red-500', animation: 'animate-ping' },
+      DELETED: { container: 'text-gray-400', animation: 'hidden' },
+    },
+  },
+});
+// TODO
+function Version() {
+  const { data } = useVersion();
+
+  if (!data?.version) {
+    return null;
+  }
+
+  return (
+    <span className="text-2xs font-mono items-center rounded-xl px-2 leading-4 bg-white/50 ring-1 ring-inset ring-gray-500/20 text-gray-500 mt-0.5">
+      v{data?.version}
+    </span>
+  );
+}
+
 export default function App() {
+  const { container, icon, animation } = miniStyles();
+
   return (
     <AdminBaseURLProvider>
       <QueryProvider>
@@ -89,9 +135,38 @@ export default function App() {
                 className="text-xl text-[#222452]"
               />
             </div>
+            <Button
+              variant="secondary"
+              className="flex items-center gap-2 px-2 py-1 bg-transparent border-none shadow-none"
+            >
+              <div
+                className={container({ status: 'HEALTHY' })}
+                role="status"
+                aria-label={'HEALTHY'}
+              >
+                <Icon
+                  name={IconName.Circle}
+                  className={icon({ status: 'HEALTHY' })}
+                />
+                <Icon
+                  name={IconName.Circle}
+                  className={animation({ status: 'HEALTHY' })}
+                />
+              </div>
+              <div className="truncate row-start-1 col-start-2 w-full flex items-center gap-2">
+                <span className="flex-auto truncate">Restate server</span>
+                <Version />
+              </div>
+              <Icon
+                name={IconName.ChevronsUpDown}
+                className="text-gray-400 flex-shrink-0"
+              />
+            </Button>
             <LayoutOutlet zone={LayoutZone.Nav}>
               <Nav ariaCurrentValue="page">
                 <NavItem href={'/overview'}>Overview</NavItem>
+                <NavItem href={'/invocations'}>Invocations</NavItem>
+                <NavItem href={'/workflows'}>Workflows</NavItem>
               </Nav>
             </LayoutOutlet>
           </div>

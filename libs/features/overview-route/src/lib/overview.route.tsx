@@ -70,6 +70,7 @@ function NoDeploymentPlaceholder() {
   );
 }
 
+// TODO: refactor layout
 function Component() {
   const { data, isError, isLoading, isSuccess } = useListDeployments();
 
@@ -86,7 +87,11 @@ function Component() {
         {deployments.length > 1 && <MultipleDeploymentsPlaceholder />}
       </RestateServer>
       <div className={deploymentsStyles({ isEmpty: hasNoDeployment })}>
-        <div className="flex flex-col gap-2 justify-center">
+        <div
+          className={`flex flex-col min-w-0 gap-6 ${
+            deployments.length < 5 ? 'justify-center' : 'justify-start'
+          }`}
+        >
           {deployments.map((deployment, i) => (
             <Deployment
               key={deployment.id}
@@ -95,7 +100,11 @@ function Component() {
             />
           ))}
         </div>
-        <div className="flex flex-col gap-2 justify-center">
+        <div
+          className={`flex flex-col min-w-0 gap-6 ${
+            deployments.length < 5 ? 'justify-center' : 'justify-start'
+          }`}
+        >
           {deployments.map((deployment, i) => (
             <Deployment
               key={deployment.id}
