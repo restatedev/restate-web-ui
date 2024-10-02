@@ -55,7 +55,8 @@ function CustomRadio({
     </Radio>
   );
 }
-
+// TODO: change type on paste
+// fix autofocus
 function RegistrationFormFields({
   children,
   className = '',
