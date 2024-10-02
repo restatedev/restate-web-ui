@@ -55,6 +55,8 @@ export const loader = async ({
   invariant(accountId, 'Missing accountId param');
   invariant(environmentId, 'Missing environmentId param');
   invariant(keyId, 'Missing keyId param');
+  const headers = request.headers;
+  headers.set('Content-Type', 'application/json');
 
   switch (request.method) {
     case 'GET': {
@@ -62,7 +64,7 @@ export const loader = async ({
         accountId,
         environmentId,
         keyId,
-        headers: request.headers,
+        headers,
       });
 
       if (data) {

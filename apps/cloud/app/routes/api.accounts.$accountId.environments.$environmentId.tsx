@@ -18,13 +18,15 @@ export const action = async ({
   const environmentId = params.environmentId;
   invariant(accountId, 'Missing accountId param');
   invariant(environmentId, 'Missing environmentId param');
+  const headers = request.headers;
+  headers.set('Content-Type', 'application/json');
 
   switch (request.method) {
     case 'DELETE': {
       const { data, error, response } = await destroyEnvironment({
         accountId,
         environmentId,
-        headers: request.headers,
+        headers,
       });
 
       if (data) {
@@ -51,13 +53,15 @@ export const loader = async ({
   const environmentId = params.environmentId;
   invariant(accountId, 'Missing accountId param');
   invariant(environmentId, 'Missing environmentId param');
+  const headers = request.headers;
+  headers.set('Content-Type', 'application/json');
 
   switch (request.method) {
     case 'GET': {
       const { data, response, error } = await describeEnvironment({
         accountId,
         environmentId,
-        headers: request.headers,
+        headers,
       });
 
       if (data) {

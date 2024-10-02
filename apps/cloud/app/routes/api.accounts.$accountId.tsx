@@ -9,12 +9,14 @@ export const action = async ({
 }: ActionFunctionArgs) => {
   const accountId = params.accountId;
   invariant(accountId, 'Missing accountId param');
+  const headers = request.headers;
+  headers.set('Content-Type', 'application/json');
 
   switch (request.method) {
     case 'DELETE': {
       const response = await deleteAccount({
         accountId: accountId as string,
-        headers: request.headers,
+        headers,
       });
 
       if (response.data) {
