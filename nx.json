@@ -9,10 +9,7 @@
       "!{projectRoot}/.eslintrc.json",
       "!{projectRoot}/eslint.config.js"
     ],
-    "sharedGlobals": [
-      "{projectRoot}/package.json",
-      { "runtime": "echo $VERSION" }
-    ]
+    "sharedGlobals": ["{projectRoot}/package.json"]
   },
   "plugins": [
     {
