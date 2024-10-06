@@ -1,5 +1,4 @@
 import { PropsWithChildren } from 'react';
-// import styles from './AppBar.module.css';
 
 interface NotificationProps {
   id?: string;

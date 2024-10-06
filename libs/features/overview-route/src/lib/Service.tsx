@@ -14,7 +14,7 @@ export function Service({
         </div>
       </div>
       <div className="text-code">{service.name}</div>
-      <div className="rounded-full text-xs bg-white border px-2 py-0.5 ring-1 ring-inset ring-gray-100 text-gray-500">
+      <div className="truncate rounded-full text-xs bg-white border px-2 py-0.5 ring-1 ring-inset ring-gray-100 text-gray-500">
         rev. {service.revision}
       </div>
     </div>

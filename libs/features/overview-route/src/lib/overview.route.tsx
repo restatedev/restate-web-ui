@@ -3,9 +3,11 @@ import { RestateServer } from './RestateServer';
 import { Deployment } from './Deployment';
 import { tv } from 'tailwind-variants';
 import { TriggerRegisterDeploymentDialog } from './RegisterDeployment/Dialog';
+import { Complementary, LayoutOutlet, LayoutZone } from '@restate/ui/layout';
+import { Button } from '@restate/ui/button';
 
 const deploymentsStyles = tv({
-  base: 'w-full md:row-start-1 md:col-start-1 grid gap-8 gap-x-[calc(2rem+150px)] [grid-template-columns:1fr] md:[grid-template-columns:1fr_1fr] ',
+  base: 'w-full md:row-start-1 md:col-start-1 grid gap-8 gap-x-[calc(8rem+150px)] [grid-template-columns:1fr] md:[grid-template-columns:1fr_1fr] ',
   variants: {
     isEmpty: {
       true: '',

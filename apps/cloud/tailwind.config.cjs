@@ -22,6 +22,9 @@ module.exports = withTV({
         '2xs': '0.6875rem',
         code: '0.8125rem',
       },
+      screens: {
+        '3xl': '1850px',
+      },
     },
   },
   plugins: [
