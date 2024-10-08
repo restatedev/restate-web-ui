@@ -3,15 +3,16 @@ import { RestateServer } from './RestateServer';
 import { Deployment } from './Deployment';
 import { tv } from 'tailwind-variants';
 import { TriggerRegisterDeploymentDialog } from './RegisterDeployment/Dialog';
-import { Complementary, LayoutOutlet, LayoutZone } from '@restate/ui/layout';
-import { Button } from '@restate/ui/button';
+import { ServiceDetails } from './Details.tsx/Service';
+import { DeploymentDetails } from './Details.tsx/Deployment';
 
 const deploymentsStyles = tv({
-  base: 'w-full md:row-start-1 md:col-start-1 grid gap-8 gap-x-[calc(8rem+150px)] [grid-template-columns:1fr] md:[grid-template-columns:1fr_1fr] ',
+  base: 'w-full md:row-start-1 md:col-start-1 grid gap-8 gap-x-20 gap2-x-[calc(8rem+150px)]',
   variants: {
     isEmpty: {
-      true: '',
-      false: '',
+      true: 'gap-0 h-full [grid-template-columns:1fr]',
+      false:
+        'h-fit [grid-template-columns:1fr] md:[grid-template-columns:1fr_150px_1fr]',
     },
   },
   defaultVariants: {
@@ -19,11 +20,12 @@ const deploymentsStyles = tv({
   },
 });
 const reactServerStyles = tv({
-  base: 'md:row-start-1 md:col-start-1 flex md:sticky md:top-[calc(50%-75px+3rem)] flex-col items-center w-fit',
+  base: 'justify-center flex md:sticky md:top-[11rem] flex-col items-center w-fit',
   variants: {
     isEmpty: {
-      true: 'flex-auto w-full justify-center rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]',
-      false: 'md:h-[150px]',
+      true: 'md:h-[calc(100vh-150px-6rem)] py-8 flex-auto w-full justify-center rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]',
+      false:
+        'h-fit md:max-h-[calc(100vh-150px-6rem)] min-h-[min(100%,calc(100vh-150px-6rem))]',
     },
   },
   defaultVariants: {
@@ -77,47 +79,43 @@ function Component() {
   const { data, isError, isLoading, isSuccess } = useListDeployments();
 
   // Handle isLoading & isError
-  const deployments = data?.deployments ?? [];
+  const deployments = data?.deployments.slice(0, 60) ?? [];
   const hasNoDeployment = isSuccess && deployments.length === 0;
 
   return (
-    <div className="flex-auto flex flex-col gap-2 md:grid relative grid-cols-1 grid-rows-1 justify-items-center">
-      <RestateServer
-        className={reactServerStyles({ isEmpty: hasNoDeployment })}
-      >
-        {hasNoDeployment && <NoDeploymentPlaceholder />}
-        {deployments.length > 1 && <MultipleDeploymentsPlaceholder />}
-      </RestateServer>
-      <div className={deploymentsStyles({ isEmpty: hasNoDeployment })}>
-        <div
-          className={`flex flex-col min-w-0 gap-6 ${
-            deployments.length < 5 ? 'justify-center' : 'justify-start'
-          }`}
-        >
-          {deployments.map((deployment, i) => (
-            <Deployment
-              key={deployment.id}
-              deployment={deployment}
-              className={i % 2 === 1 ? 'md:hidden' : 'md:block'}
-            />
-          ))}
-        </div>
-        <div
-          className={`flex flex-col min-w-0 gap-6 ${
-            deployments.length < 5 ? 'justify-center' : 'justify-start'
-          }`}
-        >
-          {deployments.map((deployment, i) => (
-            <Deployment
-              key={deployment.id}
-              deployment={deployment}
-              className={i % 2 === 0 ? 'hidden' : 'hidden md:block'}
-            />
-          ))}
-          {deployments.length === 1 && <OneDeploymentPlaceholder />}
+    <>
+      <div className="flex flex-col gap-2 relative justify-items-center">
+        <div className={deploymentsStyles({ isEmpty: hasNoDeployment })}>
+          <div className="flex flex-col min-w-0 gap-6 justify-start">
+            {deployments.map((deployment, i) => (
+              <Deployment
+                key={deployment.id}
+                deployment={deployment}
+                className={i % 2 === 1 ? 'md:hidden' : 'md:block'}
+              />
+            ))}
+          </div>
+          <RestateServer
+            className={reactServerStyles({ isEmpty: hasNoDeployment })}
+          >
+            {hasNoDeployment && <NoDeploymentPlaceholder />}
+            {deployments.length > 1 && <MultipleDeploymentsPlaceholder />}
+          </RestateServer>
+          <div className="flex flex-col min-w-0 gap-6 justify-start">
+            {deployments.map((deployment, i) => (
+              <Deployment
+                key={deployment.id}
+                deployment={deployment}
+                className={i % 2 === 0 ? 'hidden' : 'hidden md:block'}
+              />
+            ))}
+            {deployments.length === 1 && <OneDeploymentPlaceholder />}
+          </div>
         </div>
       </div>
-    </div>
+      <ServiceDetails />
+      <DeploymentDetails />
+    </>
   );
 }
 
