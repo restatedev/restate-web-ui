@@ -31,7 +31,7 @@
         "libs/data-access/cloud-api-client-tmp/src/index.ts"
       ],
       "@restate/data-access/cloud/api-client/spec": [
-        "libs/data-access/cloud-api-client/src/api.ts"
+        "libs/data-access/cloud-api-client-tmp/src/api.ts"
       ],
       "@restate/data-access/cloud/api-fixtures": [
         "libs/data-access/cloud-api-fixtures-tmp/src/index.ts"
