@@ -1,0 +1,9 @@
+{
+  "name": "data-access-cloud-api-fixtures-tmp",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/data-access/cloud-api-fixtures-tmp/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project data-access-cloud-api-fixtures-tmp --web",
+  "targets": {}
+}

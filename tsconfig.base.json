@@ -28,35 +28,35 @@
         "libs/data-access/admin-api/src/api.ts"
       ],
       "@restate/data-access/cloud/api-client": [
-        "libs/data-access/cloud-api-client/src/index.ts"
+        "libs/data-access/cloud-api-client-tmp/src/index.ts"
       ],
       "@restate/data-access/cloud/api-client/spec": [
-        "libs/data-access/cloud-api-client/src/api.ts"
+        "libs/data-access/cloud-api-client-tmp/src/api.ts"
       ],
       "@restate/data-access/cloud/api-fixtures": [
-        "libs/data-access/cloud-api-fixtures/src/index.ts"
+        "libs/data-access/cloud-api-fixtures-tmp/src/index.ts"
       ],
       "@restate/features/admin-api": ["libs/features/admin-api/src/index.ts"],
       "@restate/features/cloud/accounts-route": [
-        "libs/features/cloud-accounts-route/src/index.ts"
+        "libs/features/cloud-accounts-route-tmp/src/index.ts"
       ],
       "@restate/features/cloud/environment-route": [
-        "libs/features/cloud-environment-route/src/index.ts"
+        "libs/features/cloud-environment-route-tmp/src/index.ts"
       ],
       "@restate/features/cloud/environments-route": [
-        "libs/features/cloud-environments-route/src/index.ts"
+        "libs/features/cloud-environments-route-tmp/src/index.ts"
       ],
       "@restate/features/cloud/logs-route": [
-        "libs/features/cloud-logs-route/src/index.ts"
+        "libs/features/cloud-logs-route-tmp/src/index.ts"
       ],
       "@restate/features/cloud/routes-utils": [
-        "libs/features/cloud-routes-utils/src/index.ts"
+        "libs/features/cloud-routes-utils-tmp/src/index.ts"
       ],
       "@restate/features/cloud/settings-route": [
-        "libs/features/cloud-settings-route/src/index.ts"
+        "libs/features/cloud-settings-route-tmp/src/index.ts"
       ],
       "@restate/features/cloud/support": [
-        "libs/features/cloud-support/src/index.ts"
+        "libs/features/cloud-support-tmp/src/index.ts"
       ],
       "@restate/features/overview-route": [
         "libs/features/overview-route/src/index.ts"
