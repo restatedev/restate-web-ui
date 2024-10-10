@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   return {
     root: __dirname,
-    cacheDir: '../../node_modules/.vite/apps/cloud',
+    cacheDir: '../../node_modules/.vite/apps/cloud-tmp',
     plugins: [
       !process.env.VITEST && remixCloudflareDevProxy(),
       !process.env.VITEST
@@ -63,7 +63,7 @@ export default defineConfig(({ mode }) => {
 
       reporters: ['default'],
       coverage: {
-        reportsDirectory: '../../coverage/apps/cloud',
+        reportsDirectory: '../../coverage/apps/cloud-tmp',
         provider: 'v8',
       },
     },
