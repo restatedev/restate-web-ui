@@ -1,9 +1,0 @@
-{
-  "name": "cloud-environments-route",
-  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/features/cloud-environments-route/src",
-  "projectType": "library",
-  "tags": [],
-  "// targets": "to see all targets run: nx show project features-cloud-environments-route --web",
-  "targets": {}
-}
