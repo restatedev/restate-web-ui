@@ -21,7 +21,7 @@
               "command": "nx serve mock-admin-api"
             },
             {
-              "command": "nx serve mock-cloud-api"
+              "command": "nx serve mock-cloud-api-tmp"
             },
             {
               "command": "cd apps/cloud-tmp && FEATURE_OVERVIEW_PAGE=true SLACK_API_URL=http://localhost:4000/slack RESTATE_AUTH_URL=http://localhost:4000 RESTATE_AUTH_REDIRECT_URL=http://localhost:4200/auth RESTATE_AUTH_CLIENT_ID=cua6drm2md11pur6d5blnj9d4 RESTATE_CLOUD_API_URL=http://localhost:4000 ../../node_modules/.bin/remix vite:dev --port=4200"
@@ -106,7 +106,7 @@
               "command": "nx serve mock-admin-api"
             },
             {
-              "command": "nx serve mock-cloud-api"
+              "command": "nx serve mock-cloud-api-tmp"
             },
             {
               "command": "cd apps/cloud-tmp && wrangler pages dev ../../dist/apps/cloud-tmp/client --port=4200"
