@@ -118,11 +118,19 @@ function Version() {
   );
 }
 
+function getCookieValue(name: string) {
+  const cookies = document.cookie
+    .split(';')
+    .map((cookie) => cookie.trim().split('='));
+  const cookieValue = cookies.find(([key]) => key === name)?.at(1);
+  return cookieValue ? decodeURIComponent(cookieValue) : null;
+}
+
 export default function App() {
   const { container, icon, animation } = miniStyles();
 
   return (
-    <AdminBaseURLProvider>
+    <AdminBaseURLProvider baseUrl={getCookieValue('adminBaseUrl') ?? ''}>
       <QueryProvider>
         <LayoutOutlet zone={LayoutZone.Content}>
           <Outlet />

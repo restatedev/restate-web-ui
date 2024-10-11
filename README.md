@@ -16,8 +16,8 @@ pnpm install
 ```sh
 # pnpm nx <target> <project> <...options>
 
-# Run the cloud web app in dev mode with mock configuration
-pnpm nx serve cloud --configuration=mock
+# Run the web ui app in dev mode with mock configuration
+pnpm nx serve web-ui --configuration=mock
 
 # Run the ui-button unit tests in watch mode
 pnpm nx run test ui-button --watch
@@ -27,5 +27,5 @@ Details of each package's targets can be available in the `project.json` file wi
 
 ## Important Packages
 
-- [Cloud App](apps/cloud/README.md)
-- [Cloud Api Client](libs/data-access/cloud-api-client/README.md)
+- [Web UI App](apps/web-ui/README.md)
+- [Admin Api Client](libs/data-access/admin-api/README.md)
