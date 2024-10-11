@@ -1,5 +1,5 @@
 import { useRouteError } from '@remix-run/react';
-import { UnauthorizedError } from '@restate/util/auth';
+import { UnauthorizedError } from '@restate/util/errors';
 import { Link } from '@restate/ui/link';
 
 export function CrashError() {
