@@ -1,9 +1,0 @@
-{
-  "name": "cloud-accounts-route-tmp",
-  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/features/cloud-accounts-route-tmp/src",
-  "projectType": "library",
-  "tags": [],
-  "// targets": "to see all targets run: nx show project cloud-accounts-route-tmp --web",
-  "targets": {}
-}

@@ -1,9 +1,0 @@
-{
-  "name": "cloud-settings-route-tmp",
-  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/features/cloud-settings-route-tmp/src",
-  "projectType": "library",
-  "tags": [],
-  "// targets": "to see all targets run: nx show project cloud-settings-route-tmp --web",
-  "targets": {}
-}
