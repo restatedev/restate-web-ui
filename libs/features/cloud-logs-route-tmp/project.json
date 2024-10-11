@@ -1,9 +1,0 @@
-{
-  "name": "cloud-logs-route-tmp",
-  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/features/cloud-logs-route-tmp/src",
-  "projectType": "library",
-  "tags": [],
-  "// targets": "to see all targets run: nx show project cloud-logs-route-tmp --web",
-  "targets": {}
-}

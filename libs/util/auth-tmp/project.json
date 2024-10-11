@@ -1,9 +1,0 @@
-{
-  "name": "util-auth-tmp",
-  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/util/auth-tmp/src",
-  "projectType": "library",
-  "tags": [],
-  "// targets": "to see all targets run: nx show project util-auth-tmp --web",
-  "targets": {}
-}

@@ -1,5 +1,4 @@
-import { UnauthorizedError } from '@restate/util/auth';
-import { logOut } from '@restate/util/auth';
+import { UnauthorizedError } from '@restate/util/errors';
 import {
   QueryClient,
   QueryClientProvider,
@@ -11,14 +10,17 @@ import { useDehydratedState } from 'use-dehydrated-state';
 
 export function QueryProvider({
   children,
-}: PropsWithChildren<NonNullable<unknown>>) {
+  logOut,
+}: PropsWithChildren<{
+  logOut?: (params: { persistRedirectUrl?: boolean }) => void;
+}>) {
   const [queryClient] = useState(
     () =>
       new QueryClient({
         queryCache: new QueryCache({
           onError: (error) => {
             if (error instanceof UnauthorizedError) {
-              logOut({ persistRedirectUrl: true });
+              logOut?.({ persistRedirectUrl: true });
             }
           },
         }),
