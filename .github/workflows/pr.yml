@@ -47,15 +47,7 @@ jobs:
       deployments: write
     name: E2E tests
     env:
-      RESTATE_AUTH_URL: 'https://auth-dev.restate.cloud'
-      RESTATE_AUTH_REDIRECT_URL: 'https://dev.cloud.restate.dev/auth'
-      RESTATE_AUTH_CLIENT_ID: 'cua6drm2md11pur6d5blnj9d4'
-      RESTATE_CLOUD_API_URL: 'https://api.dev.restate.cloud/cloud'
-      SLACK_API_URL: 'https://slack.com/api/chat.postMessage'
       VERSION: ${{ github.sha }}
-      APP_USERNAME: ${{ vars.DEV_USERNAME }}
-      APP_PASSWORD: ${{ secrets.DEV_PASSWORD }}
-      FEATURE_OVERVIEW_PAGE: true
     steps:
       - uses: pnpm/action-setup@v4
         with:
@@ -63,23 +55,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - run: pnpm i && pnpm nx build cloud-tmp --skip-nx-cache
       - run: npx playwright install --with-deps
-      - name: Cloud Deploy
-        id: deploy
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          wranglerVersion: 3.60.3
-          workingDirectory: apps/cloud-tmp
-          command: pages deploy ../../dist/apps/cloud-tmp/client --project-name=restate-web-ui --commit-dirty=true --commit-hash=${{ github.sha }}
-      - name: Cloud E2E
-        env:
-          BASE_URL: ${{ steps.deploy.outputs.deployment-url }}
-        run: pnpm nx affected --targets=e2e --exclude='web-ui-e2e' --base=origin/main --head=HEAD
-      - name: Web UI E2E
-        run: pnpm nx affected --targets=e2e --exclude='cloud-e2e-tmp' --base=origin/main --head=HEAD
+      - name: E2E
+        run: pnpm nx affected --targets=e2e --base=origin/main --head=HEAD
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
