@@ -19,6 +19,9 @@ pnpm install
 # Run the web ui app in dev mode with mock configuration
 pnpm nx serve web-ui --configuration=mock
 
+# Run the web ui app in dev mode against a local restate server
+pnpm nx serve web-ui --configuration=local
+
 # Run the ui-button unit tests in watch mode
 pnpm nx run test ui-button --watch
 ```

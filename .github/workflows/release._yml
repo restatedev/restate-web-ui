@@ -43,7 +43,7 @@ jobs:
           fetch-depth: 0
       - run: pnpm install --frozen-lockfile
       - run: pnpm nx build web-ui --skip-nx-cache
-      - run: touch ui-v0.0.0.zip
+      - run: cd dist/apps/web-ui && zip -r ../../../ui-v${{ needs.check-version.outputs.version }}.zip .
       - name: Create a release
         id: create-release
         uses: ncipollo/release-action@v1
