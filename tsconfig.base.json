@@ -1,0 +1,58 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "noUncheckedIndexedAccess": true,
+    "importHelpers": true,
+    "target": "es2018",
+    "module": "esnext",
+    "lib": ["es2020", "dom"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@restate/data-access/admin-api": [
+        "libs/data-access/admin-api/src/index.ts"
+      ],
+      "@restate/data-access/admin-api-fixtures": [
+        "libs/data-access/admin-api-fixtures/src/index.ts"
+      ],
+      "@restate/data-access/admin-api/spec": [
+        "libs/data-access/admin-api/src/api.ts"
+      ],
+      "@restate/features/overview-route": [
+        "libs/features/overview-route/src/index.ts"
+      ],
+      "@restate/ui/button": ["libs/ui/button/src/index.ts"],
+      "@restate/ui/code": ["libs/ui/code/src/index.ts"],
+      "@restate/ui/details": ["libs/ui/details/src/index.ts"],
+      "@restate/ui/dialog": ["libs/ui/dialog/src/index.ts"],
+      "@restate/ui/dropdown": ["libs/ui/dropdown/src/index.ts"],
+      "@restate/ui/error": ["libs/ui/error/src/index.ts"],
+      "@restate/ui/focus": ["libs/ui/focus/src/index.ts"],
+      "@restate/ui/form-field": ["libs/ui/form-field/src/index.ts"],
+      "@restate/ui/icons": ["libs/ui/icons/src/index.ts"],
+      "@restate/ui/layout": ["libs/ui/layout/src/index.ts"],
+      "@restate/ui/link": ["libs/ui/link/src/index.ts"],
+      "@restate/ui/listbox": ["libs/ui/listbox/src/index.ts"],
+      "@restate/ui/nav": ["libs/ui/nav/src/index.ts"],
+      "@restate/ui/popover": ["libs/ui/popover/src/index.ts"],
+      "@restate/ui/radio-group": ["libs/ui/radio-group/src/index.ts"],
+      "@restate/ui/section": ["libs/ui/section/src/index.ts"],
+      "@restate/util/errors": ["libs/util/errors/src/index.ts"],
+      "@restate/util/feature-flag": ["libs/util/feature-flag/src/index.ts"],
+      "@restate/util/mock-api": ["libs/util/mock-api/src/index.ts"],
+      "@restate/util/playwright": ["libs/util/playwright/src/index.ts"],
+      "@restate/util/react-query": ["libs/util/react-query/src/index.ts"],
+      "@restate/util/remix": ["libs/util/remix/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "tmp"]
+}

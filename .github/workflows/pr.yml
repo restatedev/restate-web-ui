@@ -1,0 +1,67 @@
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build
+    steps:
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm nx affected --targets=build --base=origin/main --head=HEAD
+  test:
+    runs-on: ubuntu-latest
+    name: Unit tests
+    steps:
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm nx affected --targets=test --base=origin/main --head=HEAD --passWithNoTests --watch=false
+  static-analysis:
+    runs-on: ubuntu-latest
+    name: Static Analyzis
+    steps:
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm nx affected --targets=lint --base=origin/main --head=HEAD
+      - run: NX_BASE=origin/main NX_HEAD=HEAD ./scripts/typecheck.js
+      - run: NX_BASE=origin/main NX_HEAD=HEAD pnpm nx format:check
+  e2e:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    name: E2E tests
+    env:
+      VERSION: ${{ github.sha }}
+    steps:
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: pnpm install --frozen-lockfile
+      - run: npx playwright install --with-deps
+      - name: E2E
+        run: pnpm nx affected --targets=e2e --base=origin/main --head=HEAD
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: dist/.playwright/
+          retention-days: 3

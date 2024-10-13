@@ -1,0 +1,26 @@
+on:
+  push:
+    tags:
+      - 'v**'
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    name: Release
+    steps:
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm nx build web-ui --skip-nx-cache
+      - run: cd dist/apps/web-ui && zip -r ../../../ui-${{ github.ref_name }}.zip .
+      - name: Create a release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: ui-${{ github.ref_name }}.zip
+          generateReleaseNotes: true

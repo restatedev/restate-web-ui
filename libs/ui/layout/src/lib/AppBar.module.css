@@ -1,0 +1,12 @@
+.header {
+  visibility: visible;
+}
+
+@supports selector(:has(*)) {
+  .header {
+    visibility: hidden;
+  }
+  .header:has(> * > *) {
+    visibility: visible;
+  }
+}
