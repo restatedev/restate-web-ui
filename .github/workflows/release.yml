@@ -86,7 +86,6 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.TOKEN_FOR_RESTATE_REPO }}
-          draft: true
           branch: update-ui-${{needs.release.outputs.tag}}
           title: '[Restate UI] Update to ${{ needs.release.outputs.tag }}'
           commit-message: |
