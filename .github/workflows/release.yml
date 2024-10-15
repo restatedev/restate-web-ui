@@ -75,9 +75,6 @@ jobs:
           file: ${{ needs.release.outputs.artifact-name }}
           target: ./crates/web-ui/assets/${{ needs.release.outputs.artifact-name }}
           token: ${{ secrets.TOKEN_FOR_RESTATE_REPO }}
-      - name: Update lib.rs
-        run: |
-          echo 'pub const UI_ASSETS: &[u8] = include_bytes!("../assets/${{ needs.release.outputs.artifact-name }}");' > ./crates/web-ui/src/lib.rs
       - name: Calculate SHA256 checksum and set as env var
         run: |
           echo "FILE_SHA256=$(sha256sum ./crates/web-ui/assets/${{ needs.release.outputs.artifact-name }} | awk '{print $1}')" >> $GITHUB_ENV
