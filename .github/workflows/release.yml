@@ -89,13 +89,11 @@ jobs:
           branch: update-ui-${{needs.release.outputs.tag}}
           title: '[Restate UI] Update to ${{ needs.release.outputs.tag }}'
           sign-commits: true
-          committer: Restate Web UI <engineering@restate.dev>
-          author: Restate Web UI <engineering@restate.dev>
           commit-message: |
             [UI] Updating UI assets to ${{ needs.release.outputs.tag }}
             ${{ needs.release.outputs.artifact-name }} published at https://github.com/restatedev/restate-web-ui/releases/download/${{ needs.release.outputs.tag }}/${{ needs.release.outputs.artifact-name }}
             sha256: ${{ env.FILE_SHA256 }}
           body: |
-            [UI] Updating UI assets to ${{ needs.release.outputs.tag }}
+            ### [UI] Updating UI assets to ${{ needs.release.outputs.tag }}
             ${{ needs.release.outputs.artifact-name }} published at https://github.com/restatedev/restate-web-ui/releases/download/${{ needs.release.outputs.tag }}/${{ needs.release.outputs.artifact-name }}
             sha256: ${{ env.FILE_SHA256 }}
