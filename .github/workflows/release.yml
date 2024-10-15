@@ -43,7 +43,7 @@ jobs:
           fetch-depth: 0
       - run: pnpm install --frozen-lockfile
       - run: pnpm nx build web-ui --skip-nx-cache
-      - run: touch ui-v0.0.0.zip
+      - run: cd dist/apps/web-ui && zip -r ../../../ui-v${{ needs.check-version.outputs.version }}.zip .
       - name: Create a release
         id: create-release
         uses: ncipollo/release-action@v1
@@ -66,16 +66,21 @@ jobs:
         with:
           token: ${{ secrets.TOKEN_FOR_RESTATE_REPO }}
           repository: restatedev/restate
+      - name: Remove old artifacts
+        run: rm -f ./crates/web-ui/assets/*.zip
       - name: Download artifact
         uses: dsaltares/fetch-gh-release-asset@master
         with:
           version: tags/${{ needs.release.outputs.tag }}
           file: ${{ needs.release.outputs.artifact-name }}
-          target: ./crates/web-ui/archive.zip
+          target: ./crates/web-ui/assets/${{ needs.release.outputs.artifact-name }}
           token: ${{ secrets.TOKEN_FOR_RESTATE_REPO }}
+      - name: Update lib.rs
+        run: |
+          echo 'pub const UI_ASSETS: &[u8] = include_bytes!("../assets/${{ needs.release.outputs.artifact-name }}");' > ./crates/web-ui/src/lib.rs
       - name: Calculate SHA256 checksum and set as env var
         run: |
-          echo "FILE_SHA256=$(sha256sum ./crates/web-ui/archive.zip | awk '{print $1}')" >> $GITHUB_ENV
+          echo "FILE_SHA256=$(sha256sum ./crates/web-ui/assets/${{ needs.release.outputs.artifact-name }} | awk '{print $1}')" >> $GITHUB_ENV
         shell: bash
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
