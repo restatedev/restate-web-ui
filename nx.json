@@ -9,7 +9,7 @@
       "!{projectRoot}/.eslintrc.json",
       "!{projectRoot}/eslint.config.js"
     ],
-    "sharedGlobals": ["{projectRoot}/package.json"]
+    "sharedGlobals": [{ "runtime": "pnpm pkg get version" }]
   },
   "plugins": [
     {
