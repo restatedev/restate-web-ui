@@ -20,10 +20,10 @@
     "ky": "1.5.0",
     "lucide-react": "0.424.0",
     "openapi-fetch": "0.12.0",
-    "react": "19.0.0-rc-65903583-20240805",
+    "react": "19.0.0-rc-83825814-20241015",
     "react-aria": "3.34.3",
     "react-aria-components": "1.3.3",
-    "react-dom": "19.0.0-rc-65903583-20240805",
+    "react-dom": "19.0.0-rc-83825814-20241015",
     "react-stately": "3.32.2",
     "tailwind-variants": "0.2.1",
     "tiny-invariant": "1.3.3",
@@ -114,8 +114,8 @@
         "@types/react-dom"
       ],
       "allowedVersions": {
-        "react": "19.0.0-rc-65903583-20240805",
-        "react-dom": "19.0.0-rc-65903583-20240805"
+        "react": "19.0.0-rc-83825814-20241015",
+        "react-dom": "19.0.0-rc-83825814-20241015"
       }
     }
   },
