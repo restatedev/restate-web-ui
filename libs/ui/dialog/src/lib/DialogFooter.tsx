@@ -27,8 +27,7 @@ export function DialogFooterContainer({ children }: PropsWithChildren<object>) {
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface DialogFooterProps {}
+type DialogFooterProps = unknown;
 export function DialogFooter({
   children,
 }: PropsWithChildren<DialogFooterProps>) {
