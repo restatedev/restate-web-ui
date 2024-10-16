@@ -7357,13 +7357,6 @@ packages:
       }
     engines: { node: '>= 0.6' }
 
-  cookie@1.0.1:
-    resolution:
-      {
-        integrity: sha512-Xd8lFX4LM9QEEwxQpF9J9NTUh8pmdJO0cyRJhFiDoLTk2eH8FXlRv2IFGYVadZpqI3j8fhNrSdKCeYPxiAhLXw==,
-      }
-    engines: { node: '>=18' }
-
   cookies@0.8.0:
     resolution:
       {
@@ -17078,7 +17071,7 @@ snapshots:
 
   '@bundled-es-modules/cookie@2.0.0':
     dependencies:
-      cookie: 1.0.1
+      cookie: 0.7.2
 
   '@bundled-es-modules/statuses@1.0.1':
     dependencies:
@@ -20185,7 +20178,7 @@ snapshots:
       '@remix-run/router': 1.20.0
       '@types/cookie': 0.6.0
       '@web3-storage/multipart-parser': 1.0.0
-      cookie: 1.0.1
+      cookie: 0.7.2
       set-cookie-parser: 2.6.0
       source-map: 0.7.4
       turbo-stream: 2.4.0
@@ -21931,10 +21924,7 @@ snapshots:
 
   cookie-signature@1.2.1: {}
 
-  cookie@0.7.2:
-    optional: true
-
-  cookie@1.0.1: {}
+  cookie@0.7.2: {}
 
   cookies@0.8.0:
     dependencies:
@@ -23024,7 +23014,7 @@ snapshots:
       body-parser: 1.20.3
       content-disposition: 0.5.4
       content-type: 1.0.5
-      cookie: 1.0.1
+      cookie: 0.7.2
       cookie-signature: 1.0.6
       debug: 2.6.9
       depd: 2.0.0
