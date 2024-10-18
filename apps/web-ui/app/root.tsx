@@ -137,8 +137,8 @@ export default function App() {
           <Outlet />
         </LayoutOutlet>
         <LayoutOutlet zone={LayoutZone.AppBar}>
-          <div className="flex items-center gap-2 flex-1">
-            <div className="flex gap-2 items-center rounded-xl border bg-white px-3 shadow-sm h-full">
+          <div className="flex items-stretch gap-2 flex-1">
+            <div className="flex gap-2 items-center rounded-xl border bg-white p-3 shadow-sm h-full">
               <Icon
                 name={IconName.RestateEnvironment}
                 className="text-xl text-[#222452]"
@@ -146,7 +146,7 @@ export default function App() {
             </div>
             <Button
               variant="secondary"
-              className="flex items-center gap-2 px-2 py-1 bg-transparent border-none shadow-none"
+              className="flex items-center gap-2 px-2 my-1 bg-transparent border-none shadow-none"
             >
               <div
                 className={container({ status: 'HEALTHY' })}
@@ -166,10 +166,6 @@ export default function App() {
                 <span className="flex-auto truncate">Restate server</span>
                 <Version />
               </div>
-              <Icon
-                name={IconName.ChevronsUpDown}
-                className="text-gray-400 flex-shrink-0"
-              />
             </Button>
             <LayoutOutlet zone={LayoutZone.Nav}>
               <Nav ariaCurrentValue="page">
