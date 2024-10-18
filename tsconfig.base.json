@@ -27,6 +27,9 @@
       "@restate/data-access/admin-api/spec": [
         "libs/data-access/admin-api/src/api.ts"
       ],
+      "@restate/features/invocations-route": [
+        "libs/features/invocations-route/src/index.ts"
+      ],
       "@restate/features/overview-route": [
         "libs/features/overview-route/src/index.ts"
       ],
