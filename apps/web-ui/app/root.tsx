@@ -175,7 +175,6 @@ export default function App() {
               <Nav ariaCurrentValue="page">
                 <NavItem href={'/overview'}>Overview</NavItem>
                 <NavItem href={'/invocations'}>Invocations</NavItem>
-                <NavItem href={'/workflows'}>Workflows</NavItem>
               </Nav>
             </LayoutOutlet>
           </div>
