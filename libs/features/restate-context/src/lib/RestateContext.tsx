@@ -5,7 +5,7 @@ import {
 } from '@restate/data-access/admin-api';
 import { createContext, PropsWithChildren, useContext } from 'react';
 
-type Status = 'HEALTHY' | 'DEGRADED' | (string & {});
+type Status = 'HEALTHY' | 'DEGRADED' | 'PENDING' | (string & {});
 type RestateContext = {
   status?: Status;
   version?: string;
@@ -15,14 +15,14 @@ const InternalRestateContext = createContext<RestateContext>({});
 
 function InternalRestateContextProvider({
   children,
-  status: overriddenStatus,
-}: PropsWithChildren<{ status?: Status }>) {
-  const { data } = useVersion();
+  isPending,
+}: PropsWithChildren<{ isPending?: boolean }>) {
+  const { data } = useVersion({ enabled: !isPending });
   const version = data?.version;
 
-  const { isSuccess, isError } = useHealth({ enabled: !overriddenStatus });
-  const status: Status | undefined = overriddenStatus
-    ? overriddenStatus
+  const { isSuccess, isError } = useHealth({ enabled: !isPending });
+  const status: Status | undefined = isPending
+    ? 'PENDING'
     : isSuccess
     ? 'HEALTHY'
     : isError
