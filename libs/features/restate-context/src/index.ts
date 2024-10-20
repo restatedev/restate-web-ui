@@ -1,1 +1,1 @@
-export * from './lib/restate-context';
+export * from './lib/RestateContext';

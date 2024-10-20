@@ -14,13 +14,11 @@ import { RouterProvider } from 'react-aria-components';
 import { Button, Spinner } from '@restate/ui/button';
 import { useCallback } from 'react';
 import { QueryProvider } from '@restate/util/react-query';
-import {
-  AdminBaseURLProvider,
-  useVersion,
-} from '@restate/data-access/admin-api';
+import { useVersion } from '@restate/data-access/admin-api';
 import { Nav, NavItem } from '@restate/ui/nav';
 import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from 'tailwind-variants';
+import { RestateContextProvider } from '@restate/features/restate-context';
 
 export const links: LinksFunction = () => [
   {
@@ -124,14 +122,16 @@ function getCookieValue(name: string) {
     .split(';')
     .map((cookie) => cookie.trim().split('='));
   const cookieValue = cookies.find(([key]) => key === name)?.at(1);
-  return cookieValue ? decodeURIComponent(cookieValue) : null;
+  return cookieValue && decodeURIComponent(cookieValue);
 }
 
 export default function App() {
   const { container, icon, animation } = miniStyles();
 
   return (
-    <AdminBaseURLProvider baseUrl={getCookieValue('adminBaseUrl') ?? ''}>
+    <RestateContextProvider
+      context={{ adminBaseUrl: getCookieValue('adminBaseUrl') }}
+    >
       <QueryProvider>
         <LayoutOutlet zone={LayoutZone.Content}>
           <Outlet />
@@ -176,7 +176,7 @@ export default function App() {
           </div>
         </LayoutOutlet>
       </QueryProvider>
-    </AdminBaseURLProvider>
+    </RestateContextProvider>
   );
 }
 
