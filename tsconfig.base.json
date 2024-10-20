@@ -36,6 +36,7 @@
       "@restate/features/restate-context": [
         "libs/features/restate-context/src/index.ts"
       ],
+      "@restate/features/version": ["libs/features/version/src/index.ts"],
       "@restate/ui/button": ["libs/ui/button/src/index.ts"],
       "@restate/ui/code": ["libs/ui/code/src/index.ts"],
       "@restate/ui/details": ["libs/ui/details/src/index.ts"],
