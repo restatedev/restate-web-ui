@@ -1,58 +1,56 @@
 import {
-  createContext,
-  PropsWithChildren,
-  useCallback,
-  useContext,
-  useState,
-} from 'react';
+  AdminBaseURLProvider,
+  useHealth,
+  useVersion,
+} from '@restate/data-access/admin-api';
+import { createContext, PropsWithChildren, useContext } from 'react';
 
 type Status = 'HEALTHY' | 'DEGRADED' | (string & {});
-type Context = {
+type RestateContext = {
   status?: Status;
   version?: string;
-  adminBaseUrl?: string;
 };
-interface RestateContextInterface extends Context {
-  setVersion: (value: string) => void;
-  setStatus: (value: Status) => void;
-  setAdminBaseUrl: (value: string) => void;
-}
 
-const NoOp = () => undefined;
-const RestateContext = createContext<RestateContextInterface>({
-  setVersion: NoOp,
-  setStatus: NoOp,
-  setAdminBaseUrl: NoOp,
-});
+const InternalRestateContext = createContext<RestateContext>({});
 
-export function RestateContextProvider({
+function InternalRestateContextProvider({
   children,
-  context: initialContext,
-}: PropsWithChildren<{
-  context: Partial<Context>;
-}>) {
-  const [context, setContext] = useState<Context>(initialContext);
+  status: overriddenStatus,
+}: PropsWithChildren<{ status?: Status }>) {
+  const { data } = useVersion();
+  const version = data?.version;
 
-  const setVersion = useCallback((version: string) => {
-    setContext((old) => ({ ...old, version }));
-  }, []);
-  const setStatus = useCallback((status: Status) => {
-    setContext((old) => ({ ...old, status }));
-  }, []);
-  const setAdminBaseUrl = useCallback((adminBaseUrl: string) => {
-    setContext((old) => ({ ...old, adminBaseUrl }));
-  }, []);
+  const { isSuccess, isError } = useHealth({ enabled: !overriddenStatus });
+  const status: Status | undefined = overriddenStatus
+    ? overriddenStatus
+    : isSuccess
+    ? 'HEALTHY'
+    : isError
+    ? 'DEGRADED'
+    : undefined;
 
   return (
-    <RestateContext.Provider
-      value={{ ...context, setVersion, setAdminBaseUrl, setStatus }}
-    >
+    <InternalRestateContext.Provider value={{ version, status }}>
       {children}
-    </RestateContext.Provider>
+    </InternalRestateContext.Provider>
   );
 }
 
-export function useAdminBaseUrl() {
-  const { adminBaseUrl } = useContext(RestateContext);
-  return adminBaseUrl ?? '';
+export function RestateContextProvider({
+  children,
+  adminBaseUrl,
+}: PropsWithChildren<{
+  adminBaseUrl?: string;
+}>) {
+  return (
+    <AdminBaseURLProvider baseUrl={adminBaseUrl}>
+      <InternalRestateContextProvider>
+        {children}
+      </InternalRestateContextProvider>
+    </AdminBaseURLProvider>
+  );
+}
+
+export function useRestateContext() {
+  return useContext(InternalRestateContext);
 }

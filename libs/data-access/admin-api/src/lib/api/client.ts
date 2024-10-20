@@ -153,6 +153,7 @@ export function adminApi<
 ): {
   queryFn: QueryFn<Path, Method>;
   queryKey: QueryKey<Path, Method>;
+  meta: Record<string, unknown>;
 };
 export function adminApi<
   Path extends keyof paths,
@@ -169,6 +170,7 @@ export function adminApi<
 ): {
   mutationFn: MutationFn<Path, Method, Parameters, Body>;
   mutationKey: MutationKey<Path, Method, Parameters, Body>;
+  meta: Record<string, unknown>;
 };
 export function adminApi<
   Path extends keyof paths,
@@ -188,16 +190,19 @@ export function adminApi<
   | {
       queryFn: QueryFn<Path, Method>;
       queryKey: QueryKey<Path, Method>;
+      meta: Record<string, unknown>;
     }
   | {
       mutationFn: MutationFn<Path, Method, Parameters, Body>;
       mutationKey: MutationKey<Path, Method, Parameters, Body>;
+      meta: Record<string, unknown>;
     } {
   const key = [path, { ...init, method }];
 
   if (type === 'query') {
     return {
       queryKey: key,
+      meta: { path, method, isAdmin: true },
       queryFn: async ({ signal }: { signal: AbortSignal }) => {
         const { data } = await (client as any)[String(method).toUpperCase()](
           path,
@@ -218,6 +223,7 @@ export function adminApi<
   } else {
     return {
       mutationKey: key,
+      meta: { path, method, isAdmin: true },
       mutationFn: async (variables: {
         parameters?: Parameters;
         body?: Body;

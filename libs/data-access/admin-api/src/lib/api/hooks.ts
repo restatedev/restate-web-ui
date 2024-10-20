@@ -8,7 +8,7 @@ import {
   QueryOptions,
   SupportedMethods,
 } from './client';
-import { useAdminBaseUrl } from '@restate/features/restate-context';
+import { useAdminBaseUrl } from '../AdminBaseUrlProvider';
 
 type HookQueryOptions<
   Path extends keyof paths,
