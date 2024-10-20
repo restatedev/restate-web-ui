@@ -17,10 +17,8 @@ import { QueryProvider } from '@restate/util/react-query';
 import { Nav, NavItem } from '@restate/ui/nav';
 import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from 'tailwind-variants';
-import {
-  RestateContextProvider,
-  useRestateContext,
-} from '@restate/features/restate-context';
+import { RestateContextProvider } from '@restate/features/restate-context';
+import { Version } from '@restate/features/version';
 
 export const links: LinksFunction = () => [
   {
@@ -104,20 +102,6 @@ const miniStyles = tv({
     },
   },
 });
-// TODO
-function Version() {
-  const { version } = useRestateContext();
-
-  if (!version) {
-    return null;
-  }
-
-  return (
-    <span className="text-2xs font-mono items-center rounded-xl px-2 leading-4 bg-white/50 ring-1 ring-inset ring-gray-500/20 text-gray-500 mt-0.5">
-      v{version}
-    </span>
-  );
-}
 
 function getCookieValue(name: string) {
   const cookies = document.cookie
