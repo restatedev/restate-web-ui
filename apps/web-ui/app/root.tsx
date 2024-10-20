@@ -14,11 +14,13 @@ import { RouterProvider } from 'react-aria-components';
 import { Button, Spinner } from '@restate/ui/button';
 import { useCallback } from 'react';
 import { QueryProvider } from '@restate/util/react-query';
-import { useVersion } from '@restate/data-access/admin-api';
 import { Nav, NavItem } from '@restate/ui/nav';
 import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from 'tailwind-variants';
-import { RestateContextProvider } from '@restate/features/restate-context';
+import {
+  RestateContextProvider,
+  useRestateContext,
+} from '@restate/features/restate-context';
 
 export const links: LinksFunction = () => [
   {
@@ -104,15 +106,15 @@ const miniStyles = tv({
 });
 // TODO
 function Version() {
-  const { data } = useVersion();
+  const { version } = useRestateContext();
 
-  if (!data?.version) {
+  if (!version) {
     return null;
   }
 
   return (
     <span className="text-2xs font-mono items-center rounded-xl px-2 leading-4 bg-white/50 ring-1 ring-inset ring-gray-500/20 text-gray-500 mt-0.5">
-      v{data?.version}
+      v{version}
     </span>
   );
 }
@@ -129,10 +131,8 @@ export default function App() {
   const { container, icon, animation } = miniStyles();
 
   return (
-    <RestateContextProvider
-      context={{ adminBaseUrl: getCookieValue('adminBaseUrl') }}
-    >
-      <QueryProvider>
+    <QueryProvider>
+      <RestateContextProvider adminBaseUrl={getCookieValue('adminBaseUrl')}>
         <LayoutOutlet zone={LayoutZone.Content}>
           <Outlet />
         </LayoutOutlet>
@@ -175,8 +175,8 @@ export default function App() {
             </LayoutOutlet>
           </div>
         </LayoutOutlet>
-      </QueryProvider>
-    </RestateContextProvider>
+      </RestateContextProvider>
+    </QueryProvider>
   );
 }
 
