@@ -56,7 +56,33 @@
     "start": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "cd apps/web-ui && ../../node_modules/.bin/remix vite:build && ../../node_modules/.bin/vite preview --port=4300"
+        "commands": [
+          "cd apps/web-ui && ../../node_modules/.bin/remix vite:build && ../../node_modules/.bin/vite preview --port=4300"
+        ]
+      },
+      "configurations": {
+        "mock": {
+          "commands": [
+            {
+              "command": "nx serve mock-admin-api"
+            },
+            {
+              "command": "cd apps/web-ui && ../../node_modules/.bin/remix vite:build && ADMIN_BASE_URL=http://localhost:4001 ../../node_modules/.bin/vite preview --port=4300"
+            }
+          ],
+          "parallel": true
+        },
+        "local": {
+          "commands": [
+            {
+              "command": "nx serve mock-admin-api -c proxy"
+            },
+            {
+              "command": "cd apps/web-ui && ../../node_modules/.bin/remix vite:build && ADMIN_BASE_URL=http://localhost:4001 ../../node_modules/.bin/vite preview --port=4300"
+            }
+          ],
+          "parallel": true
+        }
       }
     }
   }

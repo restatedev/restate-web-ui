@@ -21,14 +21,14 @@ function Component() {
         </p>
         <Code className="bg-black/80 py-4 pr-8 pl-4 text-code mt-4">
           <Snippet language="bash">#List the invocations</Snippet>
-          <Snippet className="[filter:invert(1)] -mt-2" language="bash">
+          <Snippet className="[filter:invert(1)]" language="bash">
             restate invocations list
           </Snippet>
-          <Snippet className="" language="bash">
+          <Snippet className="mt-2" language="bash">
             #Cancel an invocation
           </Snippet>
           <Snippet
-            className="[filter:invert(1)] -mt-2"
+            className="[filter:invert(1)]"
             language="bash"
           >{`restate invocation cancel <INVOCATION_ID>`}</Snippet>
         </Code>

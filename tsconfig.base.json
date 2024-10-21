@@ -27,12 +27,17 @@
       "@restate/data-access/admin-api/spec": [
         "libs/data-access/admin-api/src/api.ts"
       ],
+      "@restate/features/health": ["libs/features/health/src/index.ts"],
       "@restate/features/invocations-route": [
         "libs/features/invocations-route/src/index.ts"
       ],
       "@restate/features/overview-route": [
         "libs/features/overview-route/src/index.ts"
       ],
+      "@restate/features/restate-context": [
+        "libs/features/restate-context/src/index.ts"
+      ],
+      "@restate/features/version": ["libs/features/version/src/index.ts"],
       "@restate/ui/button": ["libs/ui/button/src/index.ts"],
       "@restate/ui/code": ["libs/ui/code/src/index.ts"],
       "@restate/ui/details": ["libs/ui/details/src/index.ts"],

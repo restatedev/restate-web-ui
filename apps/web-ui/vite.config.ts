@@ -3,13 +3,13 @@ import { defineConfig, loadEnv } from 'vite';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 
 const BASE_URL = '/ui/';
-const ADMIN_BASE_URL = process.env['ADMIN_BASE_URL'] || '';
-const SERVER_HEADERS = {
-  'Set-Cookie': `adminBaseUrl=${ADMIN_BASE_URL}; SameSite=Strict; Path=/`,
-};
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
+  const ADMIN_BASE_URL = env['ADMIN_BASE_URL'] || '';
+  const SERVER_HEADERS = {
+    'Set-Cookie': `adminBaseUrl=${ADMIN_BASE_URL}; SameSite=Strict; Path=/`,
+  };
 
   return {
     base: BASE_URL,

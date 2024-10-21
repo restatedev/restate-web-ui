@@ -19,5 +19,5 @@ export function AdminBaseURLProvider({
 
 export function useAdminBaseUrl() {
   const { baseUrl } = useContext(AdminBaseURLContext);
-  return baseUrl;
+  return baseUrl ?? '';
 }
