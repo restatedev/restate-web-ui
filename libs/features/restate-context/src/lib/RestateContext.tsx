@@ -22,12 +22,16 @@ function InternalRestateContextProvider({
   const { data } = useVersion({ enabled: !isPending });
   const version = data?.version;
 
-  const { isSuccess, isError } = useHealth({ enabled: !isPending });
+  const { isSuccess, failureCount } = useHealth({
+    enabled: !isPending,
+    retry: true,
+    refetchInterval: 1000 * 60,
+  });
   const status: Status | undefined = isPending
     ? 'PENDING'
     : isSuccess
     ? 'HEALTHY'
-    : isError
+    : failureCount > 0
     ? 'DEGRADED'
     : 'PENDING';
 
