@@ -1,1 +1,2 @@
-export * from './lib/Health';
+export * from './lib/HealthIndicator';
+export * from './lib/HealthCheckNotification';

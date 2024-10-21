@@ -5,13 +5,15 @@ import {
 } from '@restate/data-access/admin-api';
 import { createContext, PropsWithChildren, useContext } from 'react';
 
-type Status = 'HEALTHY' | 'DEGRADED' | 'PENDING' | (string & {});
+export type Status = 'HEALTHY' | 'DEGRADED' | 'PENDING' | (string & {});
 type RestateContext = {
-  status?: Status;
+  status: Status;
   version?: string;
 };
 
-const InternalRestateContext = createContext<RestateContext>({});
+const InternalRestateContext = createContext<RestateContext>({
+  status: 'PENDING',
+});
 
 function InternalRestateContextProvider({
   children,
@@ -27,7 +29,7 @@ function InternalRestateContextProvider({
     ? 'HEALTHY'
     : isError
     ? 'DEGRADED'
-    : undefined;
+    : 'PENDING';
 
   return (
     <InternalRestateContext.Provider value={{ version, status }}>
