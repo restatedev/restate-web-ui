@@ -5,11 +5,14 @@ import {
   DialogContent,
   DialogFooter,
   DialogTrigger,
+  DialogWithQuery,
 } from '@restate/ui/dialog';
 import { Icon, IconName } from '@restate/ui/icons';
 import { PropsWithChildren } from 'react';
 import { ErrorBanner } from '@restate/ui/error';
 import { RegistrationForm } from './Form';
+import { REGISTER_DEPLOYMENT_QUERY } from './constant';
+import { Link } from '@restate/ui/link';
 
 function RegisterDeploymentFooter({
   isDryRun,
@@ -67,16 +70,20 @@ export function TriggerRegisterDeploymentDialog({
   children = 'Register deployment',
 }: PropsWithChildren<NonNullable<unknown>>) {
   return (
-    <Dialog>
+    <DialogWithQuery query={REGISTER_DEPLOYMENT_QUERY}>
       <DialogTrigger>
-        <Button variant="secondary" className="flex gap-2 items-center px-3">
+        <Link
+          variant="secondary-button"
+          className="flex gap-2 items-center px-3"
+          href={`?${REGISTER_DEPLOYMENT_QUERY}=true`}
+        >
           <Icon name={IconName.Plus} />
           {children}
-        </Button>
+        </Link>
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <RegistrationForm>{RegisterDeploymentFooter}</RegistrationForm>
       </DialogContent>
-    </Dialog>
+    </DialogWithQuery>
   );
 }
