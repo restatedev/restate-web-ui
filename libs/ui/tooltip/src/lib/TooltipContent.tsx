@@ -1,7 +1,8 @@
-import { PropsWithChildren } from 'react';
+import { ComponentProps, PropsWithChildren } from 'react';
 import {
   Tooltip as AriaTooltip,
   composeRenderProps,
+  Tooltip,
 } from 'react-aria-components';
 import { tv } from 'tailwind-variants';
 
@@ -21,10 +22,10 @@ const styles = tv({
   },
 });
 
-export function TooltipContent({
+export function InternalTooltipContent({
   children,
   ...props
-}: PropsWithChildren<TooltipContentProps>) {
+}: PropsWithChildren<ComponentProps<typeof Tooltip>>) {
   return (
     <AriaTooltip
       {...props}
@@ -36,4 +37,8 @@ export function TooltipContent({
       {children}
     </AriaTooltip>
   );
+}
+
+export function TooltipContent(props: PropsWithChildren<TooltipContentProps>) {
+  return <InternalTooltipContent {...props} />;
 }
