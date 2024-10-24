@@ -25,11 +25,18 @@ export function InlineTooltip({
       <TooltipTrigger ref={triggerRef}>{children}</TooltipTrigger>
       <InternalTooltipContent triggerRef={triggerRef}>
         <div className="flex flex-col gap-2 items-start">
-          <h6>{title}</h6>
+          <h6 className="text-base font-semibold">{title}</h6>
           {description}
           {learnMoreHref && (
-            <Link variant="button" rel="noopener noreferrer" target="_blank">
+            <Link
+              className="mt-2 bg-gray-100 hover:bg-gray-200 pressed:bg-gray-300 text-gray-800 px-2 py-1 text-sm rounded-lg inline-flex items-center gap-2"
+              rel="noopener noreferrer"
+              target="_blank"
+              variant="button"
+              href={learnMoreHref}
+            >
               Learn more
+              <Icon name={IconName.ExternalLink} className="w-[1em] h-[1em]" />
             </Link>
           )}
         </div>
