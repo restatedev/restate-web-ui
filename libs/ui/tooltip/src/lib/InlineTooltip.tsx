@@ -29,7 +29,7 @@ export function InlineTooltip({
           {description}
           {learnMoreHref && (
             <Link
-              className="mt-2 bg-gray-100 hover:bg-gray-200 pressed:bg-gray-300 text-gray-800 px-2 py-1 text-sm rounded-lg inline-flex items-center gap-2"
+              className="mt-2 bg-zinc-500/80 hover:bg-zinc-500 pressed:bg-zinc-400 text-gray-100 px-2 py-1 text-sm rounded-lg inline-flex items-center gap-2"
               rel="noopener noreferrer"
               target="_blank"
               variant="button"
