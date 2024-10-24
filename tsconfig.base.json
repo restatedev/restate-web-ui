@@ -27,6 +27,7 @@
       "@restate/data-access/admin-api/spec": [
         "libs/data-access/admin-api/src/api.ts"
       ],
+      "@restate/features/explainers": ["libs/features/explainers/src/index.ts"],
       "@restate/features/health": ["libs/features/health/src/index.ts"],
       "@restate/features/invocations-route": [
         "libs/features/invocations-route/src/index.ts"
