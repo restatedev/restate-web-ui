@@ -5,5 +5,7 @@ test('has title', async ({ page }) => {
   await page.goto('/');
   await listDeployment;
   // Expect h3 to contain a substring.
-  expect(await page.locator('h3').innerText()).toContain('No deployment');
+  expect((await page.locator('h3').innerText()).replace(/\n/g, '')).toContain(
+    'No service deployments'
+  );
 });
