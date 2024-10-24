@@ -27,6 +27,7 @@
       "@restate/data-access/admin-api/spec": [
         "libs/data-access/admin-api/src/api.ts"
       ],
+      "@restate/features/explainers": ["libs/features/explainers/src/index.ts"],
       "@restate/features/health": ["libs/features/health/src/index.ts"],
       "@restate/features/invocations-route": [
         "libs/features/invocations-route/src/index.ts"
@@ -54,6 +55,7 @@
       "@restate/ui/popover": ["libs/ui/popover/src/index.ts"],
       "@restate/ui/radio-group": ["libs/ui/radio-group/src/index.ts"],
       "@restate/ui/section": ["libs/ui/section/src/index.ts"],
+      "@restate/ui/tooltip": ["libs/ui/tooltip/src/index.ts"],
       "@restate/util/errors": ["libs/util/errors/src/index.ts"],
       "@restate/util/feature-flag": ["libs/util/feature-flag/src/index.ts"],
       "@restate/util/mock-api": ["libs/util/mock-api/src/index.ts"],
