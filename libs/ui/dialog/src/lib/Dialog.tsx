@@ -19,11 +19,10 @@ export function Dialog({
   );
 }
 
-export function DialogWithQuery({
+export function QueryDialog({
   children,
   query,
-  onOpenChange,
-}: PropsWithChildren<Pick<DialogProps, 'onOpenChange'> & { query: string }>) {
+}: PropsWithChildren<{ query: string }>) {
   const [searchParams, setSearchParams] = useSearchParams();
   const isOpen = Boolean(searchParams.has(query));
 
@@ -41,7 +40,6 @@ export function DialogWithQuery({
     <DialogTrigger
       isOpen={isOpen}
       onOpenChange={(isOpen) => {
-        onOpenChange?.(isOpen);
         if (!isOpen) {
           close();
         }

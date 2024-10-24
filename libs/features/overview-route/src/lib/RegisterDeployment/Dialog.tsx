@@ -1,11 +1,10 @@
 import { Button, SubmitButton } from '@restate/ui/button';
 import {
-  Dialog,
   DialogClose,
   DialogContent,
   DialogFooter,
   DialogTrigger,
-  DialogWithQuery,
+  QueryDialog,
 } from '@restate/ui/dialog';
 import { Icon, IconName } from '@restate/ui/icons';
 import { PropsWithChildren } from 'react';
@@ -70,7 +69,7 @@ export function TriggerRegisterDeploymentDialog({
   children = 'Register deployment',
 }: PropsWithChildren<NonNullable<unknown>>) {
   return (
-    <DialogWithQuery query={REGISTER_DEPLOYMENT_QUERY}>
+    <QueryDialog query={REGISTER_DEPLOYMENT_QUERY}>
       <DialogTrigger>
         <Link
           variant="secondary-button"
@@ -84,6 +83,6 @@ export function TriggerRegisterDeploymentDialog({
       <DialogContent className="max-w-lg">
         <RegistrationForm>{RegisterDeploymentFooter}</RegistrationForm>
       </DialogContent>
-    </DialogWithQuery>
+    </QueryDialog>
   );
 }
