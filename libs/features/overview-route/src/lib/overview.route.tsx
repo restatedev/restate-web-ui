@@ -73,7 +73,7 @@ function NoDeploymentPlaceholder() {
       <h3 className="text-sm font-semibold text-gray-600">
         No{' '}
         <ServiceDeploymentExplainer>
-          service deployment
+          service deployments
         </ServiceDeploymentExplainer>
       </h3>
       <p className="text-sm text-gray-500 px-4 max-w-md">
