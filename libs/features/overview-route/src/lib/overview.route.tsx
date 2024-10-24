@@ -5,6 +5,10 @@ import { tv } from 'tailwind-variants';
 import { TriggerRegisterDeploymentDialog } from './RegisterDeployment/Dialog';
 import { ServiceDetails } from './Details.tsx/Service';
 import { DeploymentDetails } from './Details.tsx/Deployment';
+import {
+  ServiceDeploymentExplainer,
+  ServiceExplainer,
+} from '@restate/features/explainers';
 
 const deploymentsStyles = tv({
   base: 'w-full md:row-start-1 md:col-start-1 grid gap-8 gap-x-20 gap2-x-[calc(8rem+150px)]',
@@ -49,8 +53,12 @@ function OneDeploymentPlaceholder() {
   return (
     <div className="flex p-4 flex-col gap-2 items-center relative w-full text-center rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
       <p className="text-sm text-gray-500 max-w-md">
-        Point Restate to your deployed services so Restate can discover and
-        register your services and handlers
+        Point Restate to your{' '}
+        <ServiceDeploymentExplainer>
+          service deployments
+        </ServiceDeploymentExplainer>{' '}
+        so Restate can discover and register your{' '}
+        <ServiceExplainer>services</ServiceExplainer> and handlers
       </p>
       <div className="mt-4">
         <TriggerRegisterDeploymentDialog />
@@ -62,10 +70,15 @@ function OneDeploymentPlaceholder() {
 function NoDeploymentPlaceholder() {
   return (
     <div className="flex flex-col gap-2 items-center relative w-full text-center mt-6">
-      <h3 className="text-sm font-semibold text-gray-600">No deployments</h3>
+      <h3 className="text-sm font-semibold text-gray-600">
+        No{' '}
+        <ServiceDeploymentExplainer>
+          service deployment
+        </ServiceDeploymentExplainer>
+      </h3>
       <p className="text-sm text-gray-500 px-4 max-w-md">
         Point Restate to your deployed services so Restate can discover and
-        register your services and handlers
+        register your <ServiceExplainer>services</ServiceExplainer> and handlers
       </p>
       <div className="mt-4">
         <TriggerRegisterDeploymentDialog />
