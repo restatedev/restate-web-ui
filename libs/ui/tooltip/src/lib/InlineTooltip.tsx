@@ -25,11 +25,11 @@ export function InlineTooltip({
       <TooltipTrigger ref={triggerRef}>{children}</TooltipTrigger>
       <InternalTooltipContent triggerRef={triggerRef}>
         <div className="flex flex-col gap-2 items-start">
-          <h6 className="text-base font-semibold">{title}</h6>
+          <h6 className="text-sm font-semibold text-gray-100">{title}</h6>
           {description}
           {learnMoreHref && (
             <Link
-              className="mt-2 bg-zinc-500/80 hover:bg-zinc-500 pressed:bg-zinc-400 text-gray-100 px-2 py-1 text-sm rounded-lg inline-flex items-center gap-2"
+              className="mt-2 bg-zinc-600 hover:bg-zinc-500 pressed:bg-zinc-400 text-gray-100 px-2 py-1 text-sm rounded-lg inline-flex items-center gap-2"
               rel="noopener noreferrer"
               target="_blank"
               variant="button"
