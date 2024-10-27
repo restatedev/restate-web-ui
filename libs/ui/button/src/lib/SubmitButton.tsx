@@ -17,6 +17,7 @@ export interface SubmitButtonProps {
   value?: string;
   variant?: 'primary' | 'secondary' | 'destructive' | 'icon';
   className?: string;
+  autoFocus?: boolean;
 }
 
 const spinnerStyles = tv({
