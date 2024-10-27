@@ -26,6 +26,8 @@ import {
   Box,
   SquareFunction,
   Info,
+  ArrowRight,
+  ArrowLeft,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from 'tailwind-variants';
@@ -76,6 +78,8 @@ export const enum IconName {
   Box = 'Box',
   Function = 'SquareFunction',
   Info = 'Info',
+  ArrowRight = 'ArrowRight',
+  ArrowLeft = 'ArrowLeft',
 }
 export interface IconsProps {
   name: IconName;
@@ -120,6 +124,8 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Box]: Box,
   [IconName.Function]: SquareFunction,
   [IconName.Info]: Info,
+  [IconName.ArrowLeft]: ArrowLeft,
+  [IconName.ArrowRight]: ArrowRight,
 };
 
 const styles = tv({
