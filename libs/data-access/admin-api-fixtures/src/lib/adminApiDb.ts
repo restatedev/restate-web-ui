@@ -2,10 +2,16 @@ import { factory, manyOf, oneOf, primaryKey } from '@mswjs/data';
 import { faker } from '@faker-js/faker';
 
 faker.seed(Date.now());
+const names = faker.helpers.uniqueArray(faker.word.noun, 1000);
+console.log(names);
+let index = 0;
+export function getName() {
+  return names[index++];
+}
 
 export const adminApiDb = factory({
   handler: {
-    name: primaryKey(() => `${faker.hacker.noun()}`),
+    name: primaryKey(() => `${getName()}`),
     ty: () =>
       faker.helpers.arrayElement(['Exclusive', 'Shared', 'Workflow'] as const),
     input_description: () =>
@@ -13,7 +19,7 @@ export const adminApiDb = factory({
     output_description: () => "value of content-type 'application/json'",
   },
   service: {
-    name: primaryKey(() => `${faker.hacker.noun()}Service`),
+    name: primaryKey<string>(() => `${getName()}Service`),
     handlers: manyOf('handler'),
     deployment: oneOf('deployment'),
     ty: () =>
@@ -30,6 +36,8 @@ export const adminApiDb = factory({
   deployment: {
     id: primaryKey(() => `dp_${faker.string.nanoid(27)}`),
     services: manyOf('service'),
+    dryRun: Boolean,
+    endpoint: String,
   },
 });
 
