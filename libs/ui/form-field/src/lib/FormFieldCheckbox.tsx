@@ -19,6 +19,7 @@ interface FormFieldCheckboxProps
   errorMessage?: ComponentProps<typeof FormFieldError>['children'];
   slot?: string;
   checked?: boolean;
+  onChange?: (checked: boolean) => void;
   direction?: 'left' | 'right';
 }
 
@@ -49,7 +50,14 @@ export const FormFieldCheckbox = forwardRef<
   PropsWithChildren<FormFieldCheckboxProps>
 >(
   (
-    { className, errorMessage, children, direction = 'left', ...props },
+    {
+      onChange,
+      className,
+      errorMessage,
+      children,
+      direction = 'left',
+      ...props
+    },
     ref
   ) => {
     const { input, container, label } = styles({ direction });
@@ -60,6 +68,7 @@ export const FormFieldCheckbox = forwardRef<
           type="checkbox"
           className={input({ className })}
           ref={ref}
+          onChange={(event) => onChange?.(event.currentTarget.checked)}
         />
         <Label className={label()}>{children}</Label>
         <FormFieldError
