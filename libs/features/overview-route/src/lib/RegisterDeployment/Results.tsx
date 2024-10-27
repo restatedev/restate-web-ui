@@ -1,11 +1,9 @@
 import * as adminApi from '@restate/data-access/admin-api/spec';
 import { Icon, IconName } from '@restate/ui/icons';
+import { useRegisterDeploymentContext } from './Context';
 
-export function RegisterDeploymentResults({
-  services,
-}: {
-  services: adminApi.components['schemas']['ServiceMetadata'][];
-}) {
+export function RegisterDeploymentResults() {
+  const { services = [] } = useRegisterDeploymentContext();
   if (services.length === 0) {
     return (
       <div className="p-4 flex flex-col gap-2 items-center relative w-full text-center mt-6 justify-center rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
@@ -46,14 +44,16 @@ function Service({
           {service.ty}
         </div>
       </div>
-      <div className="flex flex-col mt-2">
-        <div className="ml-4 uppercase text-xs font-semibold text-gray-400 mt-2">
-          Handlers
+      {service.handlers.length > 0 && (
+        <div className="flex flex-col mt-2">
+          <div className="ml-4 uppercase text-xs font-semibold text-gray-400 mt-2">
+            Handlers
+          </div>
+          {service.handlers.map((handler) => (
+            <ServiceHandler handler={handler} key={handler.name} />
+          ))}
         </div>
-        {service.handlers.map((handler) => (
-          <ServiceHandler handler={handler} key={handler.name} />
-        ))}
-      </div>
+      )}
     </div>
   );
 }
