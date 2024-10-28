@@ -3,7 +3,7 @@ import { faker } from '@faker-js/faker';
 
 faker.seed(Date.now());
 const names = faker.helpers.uniqueArray(faker.word.noun, 1000);
-console.log(names);
+
 let index = 0;
 export function getName() {
   return names[index++];
