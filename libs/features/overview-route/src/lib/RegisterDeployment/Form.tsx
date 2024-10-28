@@ -1,6 +1,6 @@
 import { FormFieldInput } from '@restate/ui/form-field';
 import { Icon, IconName } from '@restate/ui/icons';
-import { PropsWithChildren } from 'react';
+import { PropsWithChildren, ReactNode } from 'react';
 import { Radio } from 'react-aria-components';
 import { RadioGroup } from '@restate/ui/radio-group';
 import { RegisterDeploymentResults } from './Results';
@@ -9,6 +9,7 @@ import { UseHTTP11 } from '../RegisterDeployment/UseHTTP11';
 import { AssumeARNRole } from '../RegisterDeployment/AssumeARNRole';
 import { useRegisterDeploymentContext } from './Context';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@restate/ui/tooltip';
+import { ServiceDeploymentExplainer } from '@restate/features/explainers';
 
 function CustomRadio({
   value,
@@ -50,22 +51,61 @@ function CustomRadio({
   );
 }
 
+function Container({
+  title,
+  description,
+  children,
+}: PropsWithChildren<{
+  title: ReactNode;
+  description?: ReactNode;
+}>) {
+  return (
+    <div className="flex flex-col gap-2">
+      <h3 className="text-lg font-medium leading-6 text-gray-900">{title}</h3>
+      {description ? (
+        <p className="text-sm text-gray-500">{description}</p>
+      ) : (
+        <div className="mt-2" />
+      )}
+      <div className="flex flex-col gap-4">{children}</div>
+    </div>
+  );
+}
+
 export function RegistrationForm() {
   const { isEndpoint, isAdvanced, isConfirm } = useRegisterDeploymentContext();
 
   return (
-    <div className="flex flex-col gap-2">
-      <h3 className="text-lg font-medium leading-6 text-gray-900">
-        Register deployment
-      </h3>
-      <p className="text-sm text-gray-500">
-        Point Restate to your deployed services so Restate can discover and
-        register your services and handlers
-      </p>
-      {isEndpoint && <EndpointForm />}
-      {isAdvanced && <AdvancedForm />}
-      {isConfirm && <RegisterDeploymentResults />}
-    </div>
+    <>
+      {isEndpoint && (
+        <Container
+          title={
+            <>
+              Register{' '}
+              <ServiceDeploymentExplainer className="decoration-gray-400">
+                service deployment
+              </ServiceDeploymentExplainer>
+            </>
+          }
+          description="Please provide the HTTP endpoint or Lambda ARN where your service is running:"
+        >
+          <EndpointForm />
+        </Container>
+      )}
+      {isAdvanced && (
+        <Container title="Advanced configurations">
+          <AdvancedForm />
+        </Container>
+      )}
+      {isConfirm && (
+        <Container
+          title="Services"
+          description="Please confirm the list of services discovered in the deployment."
+        >
+          <RegisterDeploymentResults />
+        </Container>
+      )}
+    </>
   );
 }
 
@@ -84,17 +124,13 @@ function EndpointForm() {
           '^arn:aws:lambda:[a-z0-9\\-]+:\\d+:function:[a-zA-Z0-9\\-_]+:\\d+$',
       })}
       name="endpoint"
-      className="[&_.error]:absolute [&_input:not([type=radio])]:absolute left-0 right-0 my-2 [&_input:not([type=radio])]:pr-[4.75rem]"
+      className="[&_.error]:absolute [&_.error]:pt-1 [&_input:not([type=radio])]:absolute left-0 right-0 my-2 [&_input:not([type=radio])]:pr-[4.75rem]"
       placeholder={
         isLambda
           ? 'arn:aws:lambda:{reg}:{acc}:function:{func}:{version}'
           : 'http://localhost:9080'
       }
-      label={
-        <span slot="description" className="leading-5 text-code block">
-          Please specify the HTTP endpoint or Lambda identifier:
-        </span>
-      }
+      label={isLambda ? 'Lambda ARN' : 'HTTP endpoint'}
       onChange={(value) => {
         updateEndpoint?.({
           isLambda: value.startsWith('arn')

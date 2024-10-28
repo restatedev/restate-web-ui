@@ -3,9 +3,11 @@ import { PropsWithChildren } from 'react';
 
 export function ServiceDeploymentExplainer({
   children,
-}: PropsWithChildren<unknown>) {
+  className,
+}: PropsWithChildren<{ className?: string }>) {
   return (
     <InlineTooltip
+      className={className}
       title="Service Deployment"
       description={
         <p>

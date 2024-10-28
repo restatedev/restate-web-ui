@@ -43,18 +43,18 @@ function RegisterDeploymentFooter() {
                 variant="primary"
                 form={formId}
                 className="flex gap-1 pr-3.5"
-                name="_action"
+                name="action"
                 value="dryRun"
               >
                 Next
-                <Icon name={IconName.ArrowRight} className="w-[1.125em]" />
+                <Icon name={IconName.ChevronRight} className="w-[1.25em]" />
               </SubmitButton>
             )}
             {isConfirm && (
               <SubmitButton
                 variant="primary"
                 form={formId}
-                name="_action"
+                name="action"
                 value="register"
                 autoFocus
               >
@@ -65,12 +65,14 @@ function RegisterDeploymentFooter() {
               <SubmitButton
                 variant="secondary"
                 disabled={isPending}
-                name="_action"
+                name="action"
                 value="advanced"
                 form={formId}
                 hideSpinner
+                className="flex gap-1 pr-3.5"
               >
                 Advanced
+                <Icon name={IconName.ChevronRight} className="w-[1.25em]" />
               </SubmitButton>
             )}
             {isAdvanced && (
@@ -80,7 +82,7 @@ function RegisterDeploymentFooter() {
                 onClick={goToEndpoint}
                 className="flex gap-1 pl-3.5"
               >
-                <Icon name={IconName.ArrowLeft} className="w-[1.125em]" />
+                <Icon name={IconName.ChevronLeft} className="w-[1.25em]" />
                 Back
               </Button>
             )}

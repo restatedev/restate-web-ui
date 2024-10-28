@@ -21,10 +21,7 @@ export function UseHTTP11() {
         slot="description"
         className="leading-5 text-code block text-gray-500"
       >
-        If selected, discovery will use a client defaulting to{' '}
-        <code>HTTP1.1</code>. <code>HTTP2</code> may be used for{' '}
-        <code>TLS</code> servers advertising <code>HTTP2</code> support via
-        ALPN. HTTP1.1 will work only in request-response mode.
+        <code>HTTP1.1</code> will be used for service registration.
       </span>
     </FormFieldCheckbox>
   );
