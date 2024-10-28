@@ -4,7 +4,7 @@ import {
   useDeferredValue,
   ComponentProps,
 } from 'react';
-import { useFetchers } from '@remix-run/react';
+import { useFetchers, useHref } from '@remix-run/react';
 import { Button } from './Button';
 import { tv } from 'tailwind-variants';
 import { useIsMutating } from '@tanstack/react-query';
@@ -18,6 +18,7 @@ export interface SubmitButtonProps {
   variant?: 'primary' | 'secondary' | 'destructive' | 'icon';
   className?: string;
   autoFocus?: boolean;
+  hideSpinner?: boolean;
 }
 
 const spinnerStyles = tv({
@@ -58,22 +59,23 @@ const styles = tv({
 });
 
 function useIsSubmitting(action?: string) {
+  const basename = useHref('/');
   let actionUrl: URL | null = null;
   try {
     actionUrl = new URL(String(action));
   } catch {
     actionUrl = null;
   }
-
+  const formActionPathname = actionUrl?.pathname.split(basename).at(-1);
   const fetchers = useFetchers();
   const submitFetcher = fetchers.find(
-    (fetcher) => fetcher.formAction === actionUrl?.pathname
+    (fetcher) => fetcher.formAction === formActionPathname
   );
 
   const isMutating = useIsMutating({
     predicate: (mutation) => {
       const [pathName] = mutation.options.mutationKey ?? [];
-      return actionUrl?.pathname === pathName;
+      return formActionPathname === pathName;
     },
   });
 
@@ -83,6 +85,7 @@ function useIsSubmitting(action?: string) {
 export function SubmitButton({
   disabled,
   children,
+  hideSpinner = false,
   ...props
 }: PropsWithChildren<SubmitButtonProps>) {
   const ref = useRef<HTMLButtonElement | null>(null);
@@ -97,7 +100,7 @@ export function SubmitButton({
       ref={ref}
       disabled={deferredIsSubmitting || disabled}
     >
-      {deferredIsSubmitting ? (
+      {deferredIsSubmitting && !hideSpinner ? (
         <div className={styles({})}>
           <Spinner />
           {children}
