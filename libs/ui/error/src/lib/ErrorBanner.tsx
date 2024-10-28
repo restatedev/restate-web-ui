@@ -44,7 +44,7 @@ function SingleError({
             name={IconName.CircleX}
           />
         </div>
-        <output className="text-sm flex-auto text-red-700">
+        <output className="text-sm flex-auto text-red-700 [word-break:break-word] max-h-28 overflow-auto">
           {typeof error === 'string' ? error : error.message}
         </output>
         {children && <div className="flex-shrink-0">{children}</div>}
@@ -81,7 +81,7 @@ export function ErrorBanner({
           <h3 className="text-sm font-medium text-red-800">
             There were {errors.length} errors:
           </h3>
-          <output className="text-sm text-red-700">
+          <output className="text-sm text-red-700 [word-break:break-word] max-h-20 overflow-auto">
             <ul className="list-disc space-y-1 pl-5">
               {errors.map((error) => (
                 <li key={typeof error === 'string' ? error : error.message}>
