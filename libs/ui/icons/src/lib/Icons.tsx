@@ -28,6 +28,8 @@ import {
   Info,
   ArrowRight,
   ArrowLeft,
+  ChevronLeft,
+  ChevronsRight,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from 'tailwind-variants';
@@ -80,6 +82,7 @@ export const enum IconName {
   Info = 'Info',
   ArrowRight = 'ArrowRight',
   ArrowLeft = 'ArrowLeft',
+  ChevronLeft = 'ChevronLeft',
 }
 export interface IconsProps {
   name: IconName;
@@ -126,6 +129,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Info]: Info,
   [IconName.ArrowLeft]: ArrowLeft,
   [IconName.ArrowRight]: ArrowRight,
+  [IconName.ChevronLeft]: ChevronLeft,
 };
 
 const styles = tv({
