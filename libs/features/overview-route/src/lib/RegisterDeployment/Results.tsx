@@ -37,7 +37,7 @@ function Service({
           </div>
         </div>
         <div className="font-medium">{service.name}</div>
-        <div className="rounded-full text-xs bg-gray-50 border px-2 py-0.5 ring-1 ring-inset ring-gray-100">
+        <div className="rounded-full text-xs bg-gray-50 border px-2 py-0.5 ring-gray-100">
           rev. {service.revision}
         </div>
         <div className="ml-auto text-xs bg-blue-50 text-blue-800 ring-blue-600/20 inline-flex gap-1 items-center rounded-lg px-2 py-0.5 text-sm font-medium ring-1 ring-inset">
@@ -46,7 +46,7 @@ function Service({
       </div>
       {service.handlers.length > 0 && (
         <div className="flex flex-col mt-2">
-          <div className="ml-4 uppercase text-xs font-semibold text-gray-400 mt-2">
+          <div className="ml-4 uppercase text-xs font-semibold text-gray-400 mt-2 mb-1">
             Handlers
           </div>
           {service.handlers.map((handler) => (
