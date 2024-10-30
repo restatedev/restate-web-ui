@@ -16,6 +16,7 @@ import {
   useRegisterDeployment,
 } from '@restate/data-access/admin-api';
 import { useDialog } from '@restate/ui/dialog';
+import { getEndpoint } from '../types';
 
 type NavigateToAdvancedAction = {
   type: 'NavigateToAdvancedAction';
@@ -32,7 +33,7 @@ type UpdateEndpointAction = {
   type: 'UpdateEndpointAction';
   payload: Pick<
     DeploymentRegistrationContextInterface,
-    'endpoint' | 'isLambda'
+    'endpoint' | 'isLambda' | 'isDuplicate'
   >;
 };
 type UpdateRoleArnAction = {
@@ -47,6 +48,10 @@ type UpdateServicesActions = {
   type: 'UpdateServicesActions';
   payload: Pick<DeploymentRegistrationContextInterface, 'services'>;
 };
+type UpdateShouldForce = {
+  type: 'UpdateShouldForce';
+  payload: Pick<DeploymentRegistrationContextInterface, 'shouldForce'>;
+};
 
 type Action =
   | NavigateToAdvancedAction
@@ -55,7 +60,8 @@ type Action =
   | UpdateEndpointAction
   | UpdateRoleArnAction
   | UpdateUseHttp11Action
-  | UpdateServicesActions;
+  | UpdateServicesActions
+  | UpdateShouldForce;
 
 interface DeploymentRegistrationContextInterface {
   endpoint?: string;
@@ -70,6 +76,8 @@ interface DeploymentRegistrationContextInterface {
     index: number;
   }>;
   isPending?: boolean;
+  isDuplicate?: boolean;
+  shouldForce?: boolean;
   services?: adminApi.components['schemas']['ServiceMetadata'][];
   goToEndpoint?: VoidFunction;
   goToAdvanced?: VoidFunction;
@@ -78,6 +86,7 @@ interface DeploymentRegistrationContextInterface {
   register?: (isDryRun: boolean) => void;
   updateAssumeRoleArn?: (value: string) => void;
   updateUseHttp11Arn?: (value: boolean) => void;
+  updateShouldForce?: (value: boolean) => void;
   error:
     | {
         message: string;
@@ -89,7 +98,14 @@ interface DeploymentRegistrationContextInterface {
 
 type State = Pick<
   DeploymentRegistrationContextInterface,
-  'endpoint' | 'isLambda' | 'stage' | 'services' | 'assumeRoleArn' | 'useHttp11'
+  | 'endpoint'
+  | 'isLambda'
+  | 'stage'
+  | 'services'
+  | 'assumeRoleArn'
+  | 'useHttp11'
+  | 'shouldForce'
+  | 'isDuplicate'
 >;
 
 function reducer(state: State, action: Action): State {
@@ -156,22 +172,32 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
     },
     []
   );
+  const updateShouldForce = useCallback(
+    (shouldForce: DeploymentRegistrationContextInterface['shouldForce']) => {
+      dispatch({ type: 'UpdateShouldForce', payload: { shouldForce } });
+    },
+    []
+  );
+  const { refetch, data: listDeployments } = useListDeployments();
   const updateEndpoint = useCallback(
     (value: UpdateEndpointAction['payload']) => {
       if (state.isLambda !== value.isLambda) {
         formRef.current?.reset();
       }
+      const isDuplicate = listDeployments?.deployments.some(
+        (deployment) => getEndpoint(deployment) === value.endpoint
+      );
       dispatch({
         type: 'UpdateEndpointAction',
         payload: {
           isLambda: value.isLambda,
           endpoint: value.endpoint,
+          isDuplicate,
         },
       });
     },
-    [state.isLambda]
+    [listDeployments?.deployments, state.isLambda]
   );
-  const { refetch } = useListDeployments();
   const { mutate, isPending, error } = useRegisterDeployment({
     onSuccess(data) {
       updateServices(data?.services);
@@ -232,6 +258,7 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
         additionalHeaders,
         updateAssumeRoleArn,
         updateUseHttp11Arn,
+        updateShouldForce,
         error,
         isPending,
       }}
@@ -263,10 +290,13 @@ export function useRegisterDeploymentContext() {
     services,
     updateAssumeRoleArn,
     updateUseHttp11Arn,
+    updateShouldForce,
+    shouldForce,
     useHttp11,
     assumeRoleArn,
     error,
     isPending,
+    isDuplicate,
   } = useContext(DeploymentRegistrationContext);
   const isEndpoint = stage === 'endpoint';
   const isAdvanced = stage === 'advanced';
@@ -277,6 +307,7 @@ export function useRegisterDeploymentContext() {
     isEndpoint,
     isConfirm,
     isLambda,
+    isDuplicate,
     endpoint,
     goToAdvanced,
     goToConfirm,
@@ -288,6 +319,8 @@ export function useRegisterDeploymentContext() {
     services,
     updateAssumeRoleArn,
     updateUseHttp11Arn,
+    updateShouldForce,
+    shouldForce,
     useHttp11,
     assumeRoleArn,
     error,
