@@ -37,24 +37,20 @@ export const adminApiDb = factory({
     id: primaryKey(() => `dp_${faker.string.nanoid(27)}`),
     services: manyOf('service'),
     dryRun: Boolean,
-    endpoint: String,
+    endpoint: () => faker.internet.url(),
   },
 });
 
 const isE2E = process.env['SCENARIO'] === 'E2E';
 
 if (!isE2E) {
-  const services = Array(3)
-    .fill(null)
-    .map(() => adminApiDb.service.create());
   Array(30)
     .fill(null)
-    .map(() =>
-      adminApiDb.deployment.create({
-        services: services.slice(
-          0,
-          Math.floor(Math.random() * services.length + 1)
-        ),
-      })
-    );
+    .map(() => {
+      const deployment = adminApiDb.deployment.create();
+      Array(Math.floor(Math.random() * 3 + 1))
+        .fill(null)
+        .map(() => adminApiDb.service.create({ deployment }));
+      return deployment;
+    });
 }
