@@ -66,12 +66,12 @@ const TooltipTrigger = forwardRef<
       <span className="group-hover:bg-black/5 rounded-sm mx-[-0.1em] px-[0.1em] ">
         {children}{' '}
       </span>
-      <sup className="-mr-[0.2em]">
+      <sup className="-ml-[0.4em] -mr-[0.4em]">
         <Button
           variant="icon"
-          className="p-0.5 inline [&_svg]:w-[0.85em] [&_svg]:h-[0.85em] [&_svg]:stroke-[0.18em] text-current opacity-80"
+          className="[font-size:inherit] -outline-offset-2 p-0 inline [&_svg]:w-[1.65em] [&_svg]:h-[1.65em] [&_svg]:stroke-[0.18em] text-current opacity-80"
         >
-          <Icon name={IconName.Info} />
+          <Icon name={IconName.Question} />
         </Button>
       </sup>
     </span>
