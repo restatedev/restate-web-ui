@@ -51,7 +51,7 @@ export function InlineTooltip({
 }
 
 const styles = tv({
-  base: 'group underline-offset-4 decoration-from-font decoration-dashed underline inline-flex items-center',
+  base: 'cursor-help group underline-offset-4 decoration-from-font decoration-dashed underline inline-flex items-center',
 });
 
 const TooltipTrigger = forwardRef<
@@ -69,7 +69,7 @@ const TooltipTrigger = forwardRef<
       <sup className="-ml-[0.4em] -mr-[0.4em]">
         <Button
           variant="icon"
-          className="[font-size:inherit] -outline-offset-2 p-0 inline [&_svg]:w-[1.65em] [&_svg]:h-[1.65em] [&_svg]:stroke-[0.18em] text-current opacity-80"
+          className="[font-size:inherit] -outline-offset-2 p-0 -mb-[0.4em] inline [&_svg]:w-[1.65em] [&_svg]:h-[1.65em] [&_svg]:stroke-[0.18em] text-current opacity-80"
         >
           <Icon name={IconName.Question} />
         </Button>
