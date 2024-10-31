@@ -29,7 +29,7 @@ const styles = tv({
     container: 'grid gap-x-2 items-center',
     input:
       'disabled:text-gray-100 hover:disabled:text-gray-100 focus:disabled:text-gray-100 disabled:bg-gray-100 disabled:border-gray-100 disabled:shadow-none invalid:bg-red-100 invalid:border-red-600 text-blue-600 checked:focus:text-blue-800 bg-gray-100  row-start-1 min-w-0 rounded-md w-5 h-5 border-gray-200 focus:bg-gray-300 hover:bg-gray-300 shadow-[inset_0_0.5px_0.5px_0px_rgba(0,0,0,0.08)]',
-    error: 'row-start-2 px-0',
+    error: 'error row-start-2 px-0',
   },
   variants: {
     direction: {
@@ -41,7 +41,7 @@ const styles = tv({
       },
       right: {
         container: 'grid-cols-[1fr_1.25rem]',
-        input: 'col-start-2',
+        input: 'self-baseline col-start-2',
         label: 'col-start-1',
         error: 'col-start-1',
       },
@@ -65,11 +65,11 @@ export const FormFieldCheckbox = forwardRef<
   ) => {
     const { input, container, label, error } = styles({ direction });
     return (
-      <TextField className={container()}>
+      <TextField className={container({ className })}>
         <Input
           {...props}
           type="checkbox"
-          className={input({ className })}
+          className={input()}
           ref={ref}
           onChange={(event) => onChange?.(event.currentTarget.checked)}
         />

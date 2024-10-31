@@ -194,41 +194,35 @@ function EndpointForm() {
         </div>
       </FormFieldInput>
       {isDuplicate && (
-        <div className="rounded-xl bg-orange-100 p-3">
-          <div className="flex items-center gap-2">
-            <div className="flex-shrink-0 self-baseline">
-              <Icon
-                className="h-5 w-5  text-orange-600"
-                name={IconName.TriangleAlert}
-              />
-            </div>
-
-            <FormFieldCheckbox
-              name="force"
-              className="self-baseline mt2-0.5 text-inherit bg-white"
-              value="true"
-              checked={shouldForce}
-              onChange={updateShouldForce}
-              required={isDuplicate}
-              direction="right"
-              autoFocus
-            >
-              <div slot="title" className="text-orange-700">
-                Override existing deployments
-              </div>
-              <span
-                slot="description"
-                className="leading-5 text-sm mt-2 block text-orange-600"
-              >
-                An existing deployment with the same {isLambda ? 'ARN' : 'URL'}{' '}
-                already exists. Would you like to override it?
-                <br />
-                Please note that this may cause{' '}
-                <strong>unrecoverable errors</strong> in active invocations.
-              </span>
-            </FormFieldCheckbox>
+        <FormFieldCheckbox
+          name="force"
+          className="mb-2 rounded-xl bg-orange-100 p-3 relative [&_.error]:absolute [&_.error]:bottom-[-1.5em] [&_input]:bg-white"
+          value="true"
+          checked={shouldForce}
+          onChange={updateShouldForce}
+          required={isDuplicate}
+          direction="right"
+          autoFocus
+        >
+          <div slot="title" className="flex gap-2 items-center text-orange-600">
+            <Icon
+              className="h-5 w-5  text-orange-600"
+              name={IconName.TriangleAlert}
+            />
+            Override existing deployments
           </div>
-        </div>
+
+          <span
+            slot="description"
+            className="leading-5 text-sm mt-2 block text-orange-600"
+          >
+            An existing deployment with the same {isLambda ? 'ARN' : 'URL'}{' '}
+            already exists. Would you like to override it?
+            <br />
+            Please note that this may cause{' '}
+            <strong>unrecoverable errors</strong> in active invocations.
+          </span>
+        </FormFieldCheckbox>
       )}
     </>
   );

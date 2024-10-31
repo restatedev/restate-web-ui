@@ -124,6 +124,8 @@ function reducer(state: State, action: Action): State {
       return { ...state, useHttp11: action.payload.useHttp11 };
     case 'UpdateServicesActions':
       return { ...state, services: action.payload.services };
+    case 'UpdateShouldForce':
+      return { ...state, shouldForce: action.payload.shouldForce };
 
     default:
       return state;
@@ -137,6 +139,10 @@ const initialState: DeploymentRegistrationContextInterface = {
 };
 const DeploymentRegistrationContext =
   createContext<DeploymentRegistrationContextInterface>(initialState);
+
+function withoutTrailingSlash(url?: string) {
+  return url?.endsWith('/') ? url.slice(0, -1) : url;
+}
 
 export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
   const id = useId();
@@ -185,7 +191,9 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
         formRef.current?.reset();
       }
       const isDuplicate = listDeployments?.deployments.some(
-        (deployment) => getEndpoint(deployment) === value.endpoint
+        (deployment) =>
+          withoutTrailingSlash(getEndpoint(deployment)) ===
+          withoutTrailingSlash(value.endpoint)
       );
       dispatch({
         type: 'UpdateEndpointAction',
@@ -216,7 +224,13 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
     const submitter = (event.nativeEvent as SubmitEvent)
       .submitter as HTMLButtonElement;
     const action = submitter.value;
-    const { endpoint = '', isLambda, assumeRoleArn, useHttp11 } = state;
+    const {
+      endpoint = '',
+      isLambda,
+      assumeRoleArn,
+      useHttp11,
+      shouldForce,
+    } = state;
 
     if (action === 'advanced') {
       goToAdvanced();
@@ -239,7 +253,7 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
               uri: endpoint,
               use_http_11: Boolean(useHttp11),
             }),
-        force: false,
+        force: Boolean(shouldForce),
         dry_run: action === 'dryRun',
         additional_headers,
       },
