@@ -10,8 +10,7 @@ export function AssumeARNRole() {
         <>
           <span slot="title">Assume role ARN</span>
           <span slot="description" className="leading-5 text-code block">
-            Optional ARN of a role to assume when invoking the addressed Lambda,
-            to support role chaining
+            ARN of a role to use when invoking the Lambda
           </span>
         </>
       }

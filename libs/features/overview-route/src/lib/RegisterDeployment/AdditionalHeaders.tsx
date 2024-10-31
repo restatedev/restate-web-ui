@@ -5,13 +5,10 @@ import {
   FormFieldInput,
 } from '@restate/ui/form-field';
 import { IconName, Icon } from '@restate/ui/icons';
-import { useListData } from 'react-stately';
+import { useRegisterDeploymentContext } from './Context';
 
 export function AdditionalHeaders() {
-  const list = useListData<{ key: string; value: string; index: number }>({
-    initialItems: [{ key: '', value: '', index: 0 }],
-    getKey: (item) => item.index,
-  });
+  const { additionalHeaders: list } = useRegisterDeploymentContext();
 
   return (
     <FormFieldGroup className="h-auto flex gap-1 flex-col items-start">
@@ -23,7 +20,7 @@ export function AdditionalHeaders() {
           Headers added to the discover/invoke requests to the deployment.
         </span>
       </FormFieldLabel>
-      {list.items.map((item) => (
+      {list?.items.map((item) => (
         <div key={item.index} className="flex gap-1.5 items-center w-full">
           <FormFieldInput
             name="key"
@@ -80,7 +77,7 @@ export function AdditionalHeaders() {
       ))}
       <Button
         onClick={() =>
-          list.append({
+          list?.append({
             key: '',
             value: '',
             index: Math.floor(Math.random() * 1000000),

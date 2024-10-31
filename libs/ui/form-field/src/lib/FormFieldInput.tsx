@@ -6,7 +6,12 @@ import {
 } from 'react-aria-components';
 import { tv } from 'tailwind-variants';
 import { FormFieldError } from './FormFieldError';
-import { ComponentProps, ReactNode } from 'react';
+import {
+  ComponentProps,
+  forwardRef,
+  PropsWithChildren,
+  ReactNode,
+} from 'react';
 import { FormFieldLabel } from './FormFieldLabel';
 
 const inputStyles = tv({
@@ -38,34 +43,47 @@ interface InputProps
   label?: ReactNode;
   errorMessage?: ComponentProps<typeof FormFieldError>['children'];
 }
-export function FormFieldInput({
-  className,
-  required,
-  disabled,
-  autoComplete = 'off',
-  placeholder,
-  errorMessage,
-  label,
-  readonly,
-  ...props
-}: InputProps) {
-  return (
-    <TextField
-      {...props}
-      autoComplete={autoComplete}
-      isRequired={required}
-      isDisabled={disabled}
-      isReadOnly={readonly}
-      className={containerStyles({ className })}
-    >
-      {!label && <Label className="sr-only">{placeholder}</Label>}
-      {label && <FormFieldLabel>{label}</FormFieldLabel>}
-      <AriaInput
-        className={inputStyles}
-        placeholder={placeholder}
-        aria-label={placeholder}
-      />
-      <FormFieldError children={errorMessage} />
-    </TextField>
-  );
-}
+export const FormFieldInput = forwardRef<
+  HTMLInputElement,
+  PropsWithChildren<InputProps>
+>(
+  (
+    {
+      className,
+      required,
+      disabled,
+      autoComplete = 'off',
+      placeholder,
+      errorMessage,
+      label,
+      readonly,
+      children,
+      ...props
+    },
+    ref
+  ) => {
+    return (
+      <TextField
+        {...props}
+        autoComplete={autoComplete}
+        isRequired={required}
+        isDisabled={disabled}
+        isReadOnly={readonly}
+        className={containerStyles({ className })}
+      >
+        {!label && <Label className="sr-only">{placeholder}</Label>}
+        {label && <FormFieldLabel>{label}</FormFieldLabel>}
+        <div className="relative min-h-[2.125rem]">
+          <AriaInput
+            className={inputStyles}
+            placeholder={placeholder}
+            aria-label={placeholder}
+            ref={ref}
+          />
+          {children}
+        </div>
+        <FormFieldError children={errorMessage} />
+      </TextField>
+    );
+  }
+);

@@ -48,7 +48,7 @@ export function DialogContent({
           modalStyles({ ...renderProps, className })
         )}
       >
-        <AriaDialog className="flex flex-col outline bg-gray-100 rounded-[1.125rem] outline-0 p-1.5 [[data-placement]>&]:p-4 max-h-full relative">
+        <AriaDialog className="flex flex-col outline bg-gray-100 rounded-[1.125rem] outline-0 p-1.5 [[data-placement]>&]:p-4 max-h-full w-full relative">
           <DialogFooterContainer>
             <div className="bg-white p-6 border rounded-xl max-h-[inherit] overflow-auto">
               {children}

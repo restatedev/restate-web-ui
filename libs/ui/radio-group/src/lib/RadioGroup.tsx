@@ -12,6 +12,7 @@ interface RadioGroupProps {
   className?: string;
   defaultValue?: string;
   value?: string;
+  disabled?: boolean;
   onChange?: AriaRadioGroupProps['onChange'];
 }
 
@@ -22,6 +23,7 @@ export function RadioGroup({
   children,
   required,
   className,
+  disabled,
   ...props
 }: PropsWithChildren<RadioGroupProps>) {
   return (
@@ -29,6 +31,7 @@ export function RadioGroup({
       {...props}
       isRequired={required}
       className={styles({ className })}
+      isDisabled={disabled}
     >
       {children}
       <FormFieldError />

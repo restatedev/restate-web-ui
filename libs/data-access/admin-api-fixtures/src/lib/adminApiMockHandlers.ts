@@ -1,7 +1,6 @@
 import * as adminApi from '@restate/data-access/admin-api/spec';
 import { http, HttpResponse } from 'msw';
-import { adminApiDb } from './adminApiDb';
-import { faker } from '@faker-js/faker';
+import { adminApiDb, getName } from './adminApiDb';
 
 type FormatParameterWithColon<S extends string> =
   S extends `${infer A}{${infer P}}${infer B}` ? `${A}:${P}${B}` : S;
@@ -15,12 +14,26 @@ const listDeploymentsHandler = http.get<
   adminApi.operations['list_deployments']['responses']['200']['content']['application/json'],
   GetPath<'/deployments'>
 >('/deployments', async () => {
-  const deployments = adminApiDb.deployment.getAll();
+  const deployments = adminApiDb.deployment
+    .getAll()
+    .filter(({ dryRun }) => !dryRun);
   return HttpResponse.json({
     deployments: deployments.map((deployment) => ({
       id: deployment.id,
-      services: deployment.services,
-      uri: faker.internet.url(),
+      services: adminApiDb.service
+        .findMany({
+          where: { deployment: { id: { equals: deployment.id } } },
+        })
+        .map((service) => ({
+          name: service.name,
+          deployment_id: deployment.id,
+          public: service.public,
+          revision: service.revision,
+          ty: service.ty,
+          idempotency_retention: service.idempotency_retention,
+          workflow_completion_retention: service.idempotency_retention,
+        })),
+      uri: deployment.endpoint,
       protocol_type: 'RequestResponse',
       created_at: new Date().toISOString(),
       http_version: 'HTTP/2.0',
@@ -37,10 +50,68 @@ const registerDeploymentHandler = http.post<
   GetPath<'/deployments'>
 >('/deployments', async ({ request }) => {
   const requestBody = await request.json();
-  const newDeployment = adminApiDb.deployment.create({});
+  const requestEndpoint =
+    'uri' in requestBody ? requestBody.uri : requestBody.arn;
+  const existingDeployment = adminApiDb.deployment.findFirst({
+    where: {
+      endpoint: {
+        equals: requestEndpoint,
+      },
+      dryRun: {
+        equals: true,
+      },
+    },
+  });
+
+  if (existingDeployment) {
+    adminApiDb.deployment.update({
+      where: {
+        id: {
+          equals: existingDeployment.id,
+        },
+      },
+      data: { dryRun: false },
+    });
+
+    return HttpResponse.json({
+      id: existingDeployment.id,
+      services: adminApiDb.service
+        .findMany({
+          where: { deployment: { id: { equals: existingDeployment.id } } },
+        })
+        .map((service) => ({
+          name: service.name,
+          deployment_id: service.deployment!.id,
+          public: service.public,
+          revision: service.revision,
+          ty: service.ty,
+          idempotency_retention: service.idempotency_retention,
+          workflow_completion_retention: service.idempotency_retention,
+          handlers: service.handlers.map((handler) => ({
+            name: handler.name,
+            ty: handler.ty,
+            input_description: handler.input_description,
+            output_description: handler.output_description,
+          })),
+        })),
+    });
+  }
+
+  const newDeployment = adminApiDb.deployment.create({
+    dryRun: requestBody.dry_run,
+    endpoint: requestEndpoint,
+  });
   const services = Array(3)
     .fill(null)
-    .map(() => adminApiDb.service.create({ deployment: newDeployment }));
+    .map(() =>
+      adminApiDb.service.create({
+        deployment: newDeployment,
+        name: `${getName()}Service`,
+        handlers: Array(Math.floor(Math.random() * 6))
+          .fill(null)
+          .map(() => adminApiDb.handler.create({ name: getName() })),
+      })
+    );
 
   return HttpResponse.json({
     id: newDeployment.id,

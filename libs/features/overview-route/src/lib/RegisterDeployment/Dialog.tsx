@@ -12,53 +12,81 @@ import { ErrorBanner } from '@restate/ui/error';
 import { RegistrationForm } from './Form';
 import { REGISTER_DEPLOYMENT_QUERY } from './constant';
 import { Link } from '@restate/ui/link';
+import {
+  DeploymentRegistrationState,
+  useRegisterDeploymentContext,
+} from './Context';
 
-function RegisterDeploymentFooter({
-  isDryRun,
-  setIsDryRun,
-  error,
-  isPending,
-  formId,
-}: {
-  isDryRun: boolean;
-  formId: string;
-  isPending: boolean;
-  setIsDryRun: (value: boolean) => void;
-  error?: {
-    message: string;
-    restate_code?: string | null;
-  } | null;
-}) {
+function RegisterDeploymentFooter() {
+  const {
+    isAdvanced,
+    isEndpoint,
+    isConfirm,
+    isPending,
+    goToEndpoint,
+    error,
+    formId,
+  } = useRegisterDeploymentContext();
   return (
     <DialogFooter>
       <div className="flex gap-2 flex-col">
         {error && <ErrorBanner errors={[error]} />}
         <div className="flex gap-2">
-          {isDryRun ? (
-            <DialogClose>
+          <DialogClose>
+            <Button variant="secondary" disabled={isPending}>
+              Cancel
+            </Button>
+          </DialogClose>
+          <div className="flex-auto flex flex-row-reverse gap-2">
+            {(isEndpoint || isAdvanced) && (
+              <SubmitButton
+                variant="primary"
+                form={formId}
+                className="flex gap-1 pr-3.5"
+                name="_action"
+                value="dryRun"
+              >
+                Next
+                <Icon name={IconName.ChevronRight} className="w-[1.25em]" />
+              </SubmitButton>
+            )}
+            {isConfirm && (
+              <SubmitButton
+                variant="primary"
+                form={formId}
+                name="_action"
+                value="register"
+                autoFocus
+              >
+                Confirm
+              </SubmitButton>
+            )}
+            {isEndpoint && (
+              <SubmitButton
+                variant="secondary"
+                disabled={isPending}
+                name="_action"
+                value="advanced"
+                form={formId}
+                hideSpinner
+                className="flex gap-1 pr-3.5"
+              >
+                Advanced
+                <Icon name={IconName.ChevronRight} className="w-[1.25em]" />
+              </SubmitButton>
+            )}
+            {isAdvanced && (
               <Button
                 variant="secondary"
-                className="flex-auto"
                 disabled={isPending}
+                onClick={goToEndpoint}
+                className="flex gap-1 pl-3.5"
               >
-                Cancel
+                <Icon name={IconName.ChevronLeft} className="w-[1.25em]" />
+                Back
               </Button>
-            </DialogClose>
-          ) : (
-            <Button
-              variant="secondary"
-              className="flex-auto"
-              disabled={isPending}
-              onClick={() => {
-                setIsDryRun(true);
-              }}
-            >
-              Back
-            </Button>
-          )}
-          <SubmitButton variant="primary" form={formId} className="flex-auto">
-            {isDryRun ? 'Next' : 'Confirm'}
-          </SubmitButton>
+            )}
+          </div>
         </div>
       </div>
     </DialogFooter>
@@ -80,8 +108,11 @@ export function TriggerRegisterDeploymentDialog({
           {children}
         </Link>
       </DialogTrigger>
-      <DialogContent className="max-w-lg">
-        <RegistrationForm>{RegisterDeploymentFooter}</RegistrationForm>
+      <DialogContent className="max-w-2xl">
+        <DeploymentRegistrationState>
+          <RegistrationForm />
+          <RegisterDeploymentFooter />
+        </DeploymentRegistrationState>
       </DialogContent>
     </QueryDialog>
   );

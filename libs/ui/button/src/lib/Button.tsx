@@ -20,6 +20,7 @@ export interface ButtonProps {
   variant?: 'primary' | 'secondary' | 'destructive' | 'icon';
   className?: string;
   form?: string;
+  slot?: string;
 }
 
 const styles = tv({

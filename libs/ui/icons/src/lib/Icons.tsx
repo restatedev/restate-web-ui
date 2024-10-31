@@ -26,6 +26,9 @@ import {
   Box,
   SquareFunction,
   Info,
+  ArrowRight,
+  ArrowLeft,
+  ChevronLeft,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from 'tailwind-variants';
@@ -38,6 +41,8 @@ import { Github } from './custom-icons/Github';
 import { Discord } from './custom-icons/Discord';
 import { SupportTicket } from './custom-icons/SupportTicket';
 import { Help } from './custom-icons/Help';
+import { Question } from './custom-icons/Question';
+import { Function } from './custom-icons/Function';
 
 export const enum IconName {
   ChevronDown = 'ChevronDown',
@@ -76,6 +81,10 @@ export const enum IconName {
   Box = 'Box',
   Function = 'SquareFunction',
   Info = 'Info',
+  ArrowRight = 'ArrowRight',
+  ArrowLeft = 'ArrowLeft',
+  ChevronLeft = 'ChevronLeft',
+  Question = 'Question',
 }
 export interface IconsProps {
   name: IconName;
@@ -118,8 +127,12 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Help]: Help,
   [IconName.Lambda]: Lambda,
   [IconName.Box]: Box,
-  [IconName.Function]: SquareFunction,
+  [IconName.Function]: Function,
   [IconName.Info]: Info,
+  [IconName.ArrowLeft]: ArrowLeft,
+  [IconName.ArrowRight]: ArrowRight,
+  [IconName.ChevronLeft]: ChevronLeft,
+  [IconName.Question]: Question,
 };
 
 const styles = tv({
