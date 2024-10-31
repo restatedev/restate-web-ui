@@ -12,6 +12,7 @@ interface InlineTooltipProps {
   description: ReactNode;
   learnMoreHref?: string;
   className?: string;
+  variant?: 'inline-help' | 'indicator-button';
 }
 
 export function InlineTooltip({
@@ -20,14 +21,17 @@ export function InlineTooltip({
   description,
   learnMoreHref,
   className,
+  variant = 'inline-help',
 }: PropsWithChildren<InlineTooltipProps>) {
   const triggerRef = useRef<HTMLDivElement>(null);
+  const Trigger =
+    variant === 'inline-help' ? HelpTooltipTrigger : InfoTooltipTrigger;
 
   return (
     <AriaTooltip delay={250}>
-      <TooltipTrigger ref={triggerRef} className={className}>
+      <Trigger ref={triggerRef} className={className}>
         {children}
-      </TooltipTrigger>
+      </Trigger>
       <InternalTooltipContent triggerRef={triggerRef}>
         <div className="flex flex-col gap-2 items-start">
           <h6 className="text-sm font-semibold text-gray-100">{title}</h6>
@@ -50,11 +54,11 @@ export function InlineTooltip({
   );
 }
 
-const styles = tv({
+const helpStyles = tv({
   base: 'cursor-help group underline-offset-4 decoration-from-font decoration-dashed underline inline-flex items-center',
 });
 
-const TooltipTrigger = forwardRef<
+const HelpTooltipTrigger = forwardRef<
   HTMLElement,
   PropsWithChildren<{ className?: string }>
 >(({ children, className }, ref) => {
@@ -62,7 +66,11 @@ const TooltipTrigger = forwardRef<
   const { focusableProps } = useFocusable({}, refObject);
 
   return (
-    <span ref={refObject} {...focusableProps} className={styles({ className })}>
+    <span
+      ref={refObject}
+      {...focusableProps}
+      className={helpStyles({ className })}
+    >
       <span className="group-hover:bg-black/5 rounded-sm mx-[-0.1em] px-[0.1em] ">
         {children}{' '}
       </span>
@@ -71,9 +79,37 @@ const TooltipTrigger = forwardRef<
           variant="icon"
           className="[font-size:inherit] -outline-offset-2 p-0 -mb-[0.4em] inline [&_svg]:w-[1.65em] [&_svg]:h-[1.65em] [&_svg]:stroke-[0.18em] text-current opacity-80"
         >
-          <Icon name={IconName.Question} />
+          <Icon name={IconName.Help} />
         </Button>
       </sup>
+    </span>
+  );
+});
+
+const infoStyles = tv({
+  base: 'group inline-flex items-center gap-1',
+});
+
+const InfoTooltipTrigger = forwardRef<
+  HTMLElement,
+  PropsWithChildren<{ className?: string }>
+>(({ children, className }, ref) => {
+  const refObject = useObjectRef(ref);
+  const { focusableProps } = useFocusable({}, refObject);
+
+  return (
+    <span
+      ref={refObject}
+      {...focusableProps}
+      className={infoStyles({ className })}
+    >
+      {children}
+      <Button
+        variant="icon"
+        className="[font-size:inherit] p-0 inline [&_svg]:w-[1em] [&_svg]:h-[1em] [&_svg]:stroke-[0.18em] text-current"
+      >
+        <Icon name={IconName.Info} />
+      </Button>
     </span>
   );
 });

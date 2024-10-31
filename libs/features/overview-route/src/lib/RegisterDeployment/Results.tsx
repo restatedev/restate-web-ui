@@ -6,6 +6,8 @@ import {
   UNSTABLE_DisclosurePanel as DisclosurePanel,
 } from 'react-aria-components';
 import { Button } from '@restate/ui/button';
+import { InlineTooltip } from '@restate/ui/tooltip';
+import { ServiceTypeExplainer } from '@restate/features/explainers';
 
 export function RegisterDeploymentResults() {
   const { services = [] } = useRegisterDeploymentContext();
@@ -68,7 +70,12 @@ function Service({
             <div className="flex items-center gap-2">
               <div className="font-medium">{service.name}</div>
               <div className="ml-auto text-xs bg-blue-50 text-blue-800 ring-blue-600/20 inline-flex gap-1 items-center rounded-md px-2 py-0.5 font-medium ring-1 ring-inset">
-                {service.ty}
+                <ServiceTypeExplainer
+                  type={service.ty}
+                  variant="indicator-button"
+                >
+                  {service.ty}
+                </ServiceTypeExplainer>
               </div>
             </div>
           </div>
