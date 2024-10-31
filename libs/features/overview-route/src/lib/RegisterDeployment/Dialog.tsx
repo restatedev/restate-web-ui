@@ -43,7 +43,7 @@ function RegisterDeploymentFooter() {
                 variant="primary"
                 form={formId}
                 className="flex gap-1 pr-3.5"
-                name="action"
+                name="_action"
                 value="dryRun"
               >
                 Next
@@ -54,7 +54,7 @@ function RegisterDeploymentFooter() {
               <SubmitButton
                 variant="primary"
                 form={formId}
-                name="action"
+                name="_action"
                 value="register"
                 autoFocus
               >
@@ -65,7 +65,7 @@ function RegisterDeploymentFooter() {
               <SubmitButton
                 variant="secondary"
                 disabled={isPending}
-                name="action"
+                name="_action"
                 value="advanced"
                 form={formId}
                 hideSpinner
