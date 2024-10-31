@@ -29,24 +29,36 @@ function Service({
   service: adminApi.components['schemas']['ServiceMetadata'];
 }) {
   return (
-    <div className="w-full rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
-      <div className="rounded-[calc(0.75rem-1px)] bg-white shadow-lg shadow-zinc-800/5 border flex gap-2 items-center flex-row m-[1px] pr-4 text-sm">
-        <div className="h-10 aspect-square p-[2px]">
-          <div className="rounded-[calc(0.75rem-2px)] bg-blue-50 h-full w-full flex items-center justify-center text-blue-500">
-            <Icon name={IconName.Box} className="w-5 h-5" />
+    <div className="w-full rounded-xl p-0.5 border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
+      <div className="rounded-[calc(0.75rem-1px)] bg-white border shadow-sm flex  items-center flex-row pr-2 text-sm">
+        <div className="h-14 aspect-square p-1">
+          <div className="rounded-lg text-blue-400 h-full w-full flex items-center justify-center">
+            <div className="p-1 w-8 h-8">
+              <Icon
+                name={IconName.Box}
+                className="w-full h-full fill-blue-50 text-blue-400 drop-shadow-md"
+              />
+            </div>
           </div>
         </div>
-        <div className="font-medium">{service.name}</div>
-        <div className="rounded-full text-xs bg-gray-50 border px-2 py-0.5 ring-gray-100">
-          rev. {service.revision}
+        <div className="flex flex-col gap-1 items-start">
+          <div className="flex items-center gap-2">
+            <div className="font-medium">{service.name}</div>
+            <div
+              className="uppercase font-semibold text-2xs font-mono items-center rounded-xl px-2 leading-4 bg-gray-50 ring-1 ring-inset ring-gray-500/20 text-gray-500"
+              data-className="rounded-full text-xs bg-zinc-100 text-zinc-700 border px-2 py-0.5 ring-white/80"
+            >
+              rev. {service.revision}
+            </div>
+          </div>
         </div>
-        <div className="ml-auto text-xs bg-blue-50 text-blue-800 ring-blue-600/20 inline-flex gap-1 items-center rounded-lg px-2 py-0.5 text-sm font-medium ring-1 ring-inset">
+        <div className="ml-auto text-xs bg-blue-50 text-blue-800 ring-blue-600/20 inline-flex gap-1 items-center rounded-md px-2 py-0.5 font-medium ring-1 ring-inset">
           {service.ty}
         </div>
       </div>
       {service.handlers.length > 0 && (
-        <div className="flex flex-col mt-2">
-          <div className="ml-4 uppercase text-xs font-semibold text-gray-400 mt-2 mb-1">
+        <div className="flex flex-col mt-2 mx-1.5 mb-1.5">
+          <div className="ml-4 uppercase text-xs font-semibold text-gray-400 mt-2 mb-1 flex gap-2 items-center">
             Handlers
           </div>
           {service.handlers.map((handler) => (
@@ -64,14 +76,19 @@ function ServiceHandler({
   handler: adminApi.components['schemas']['ServiceMetadata']['handlers'][number];
 }) {
   return (
-    <div className="flex flex-row items-center gap-2 pr-4 bg-gray-50 shadow-sm border rounded-[calc(0.75rem-1px)]">
-      <div className="h-9 aspect-square p-[2px]">
-        <div className="rounded-[calc(0.75rem-2px)] bg-gray-200/40 h-full w-full flex items-center justify-center text-gray-400">
-          <Icon name={IconName.Function} className="w-5 h-5" />
+    <div className="flex flex-row items-center gap-2 pr-2 bg-white shadow-sm border [&:has(+*)]:rounded-b-none [&+*]:rounded-t-none [&+*]:border-t-0 rounded-[calc(0.75rem-0.5rem)]">
+      <div className="h-9 aspect-square p-1">
+        <div className="rounded bg-zinc-100 h-full w-full flex items-center justify-center text-gray-400">
+          <div className="bg-white border shadow-sm rounded-sm w-6 h-6">
+            <Icon
+              name={IconName.Function}
+              className="w-full h-full text-zinc-400"
+            />
+          </div>
         </div>
       </div>
-      <div className="text-code">{handler.name}</div>
-      <div className="ml-auto text-xs bg-gray-100 text-gray-500 ring-gray-500/20 inline-flex gap-1 items-center rounded-lg px-2 py-0.5 text-sm font-medium ring-1 ring-inset">
+      <div className="text-code text-zinc-600">{handler.name}</div>
+      <div className="ml-auto text-xs bg-zinc-100 text-zinc-600 ring-gray-500/20 inline-flex gap-1 items-center rounded-md px-2 py-0.5 font-medium ring-1 ring-inset">
         {handler.ty}
       </div>
     </div>
