@@ -29,7 +29,6 @@ import {
   ArrowRight,
   ArrowLeft,
   ChevronLeft,
-  Ques,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from 'tailwind-variants';
@@ -43,6 +42,7 @@ import { Discord } from './custom-icons/Discord';
 import { SupportTicket } from './custom-icons/SupportTicket';
 import { Help } from './custom-icons/Help';
 import { Question } from './custom-icons/Question';
+import { Function } from './custom-icons/Function';
 
 export const enum IconName {
   ChevronDown = 'ChevronDown',
@@ -127,7 +127,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Help]: Help,
   [IconName.Lambda]: Lambda,
   [IconName.Box]: Box,
-  [IconName.Function]: SquareFunction,
+  [IconName.Function]: Function,
   [IconName.Info]: Info,
   [IconName.ArrowLeft]: ArrowLeft,
   [IconName.ArrowRight]: ArrowRight,
