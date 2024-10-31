@@ -74,10 +74,10 @@ const HelpTooltipTrigger = forwardRef<
       <span className="group-hover:bg-black/5 rounded-sm mx-[-0.1em] px-[0.1em] ">
         {children}{' '}
       </span>
-      <sup className="-ml-[0.4em] -mr-[0.4em]">
+      <sup className="-ml-[0.1em] -mr-[0.4em]">
         <Button
           variant="icon"
-          className="[font-size:inherit] -outline-offset-2 p-0 -mb-[0.4em] inline [&_svg]:w-[1.65em] [&_svg]:h-[1.65em] [&_svg]:stroke-[0.18em] text-current opacity-80"
+          className="[font-size:inherit] -outline-offset-2 p-0 -mb-[0.4em] inline [&_svg]:w-[1em] [&_svg]:h-[1em] [&_svg]:stroke-[0.18em] text-current opacity-80"
         >
           <Icon name={IconName.Help} />
         </Button>
