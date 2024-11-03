@@ -6,12 +6,17 @@ import { tv } from 'tailwind-variants';
 interface CopyProps {
   className?: string;
   copyText: string;
+  onClick?: VoidFunction;
 }
 
 const copyStyles = tv({
   base: 'copy flex-shrink-0 flex items-center gap-1 ml-auto p-2 text-xs',
 });
-export function Copy({ className, copyText }: PropsWithChildren<CopyProps>) {
+export function Copy({
+  className,
+  copyText,
+  onClick,
+}: PropsWithChildren<CopyProps>) {
   const [isCopied, setIsCopied] = useState(false);
 
   return (
@@ -24,6 +29,7 @@ export function Copy({ className, copyText }: PropsWithChildren<CopyProps>) {
         setTimeout(() => {
           setIsCopied(false);
         }, 1000);
+        onClick?.();
       }}
     >
       {isCopied ? (
