@@ -83,7 +83,7 @@ export function TruncateWithTooltip({ children }: PropsWithChildren<unknown>) {
             {children}
             <Copy
               copyText={copyText}
-              className="p-1 [&_svg]:w-3 [&_svg]:h-3 [&_svg]:text-gray-200 bg-transparent hover:bg-zinc-600 pressed:bg-zinc-500 rounded-sm"
+              className="p-1 -m-1 [&_svg]:w-3 [&_svg]:h-3 [&_svg]:text-gray-200 bg-transparent hover:bg-zinc-600 pressed:bg-zinc-500 rounded-sm"
             />
           </div>
         </TooltipContent>
