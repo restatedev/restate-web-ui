@@ -6,7 +6,6 @@ import {
   UNSTABLE_DisclosurePanel as DisclosurePanel,
 } from 'react-aria-components';
 import { Button } from '@restate/ui/button';
-import { InlineTooltip } from '@restate/ui/tooltip';
 import { ServiceTypeExplainer } from '@restate/features/explainers';
 
 export function RegisterDeploymentResults() {
