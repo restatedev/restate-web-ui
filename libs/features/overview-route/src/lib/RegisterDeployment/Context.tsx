@@ -190,7 +190,9 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
       if (state.isLambda !== value.isLambda) {
         formRef.current?.reset();
       }
-      const isDuplicate = listDeployments?.deployments.some(
+      const isDuplicate = Array.from(
+        listDeployments?.deployments.values() ?? []
+      ).some(
         (deployment) =>
           withoutTrailingSlash(getEndpoint(deployment)) ===
           withoutTrailingSlash(value.endpoint)
@@ -204,7 +206,7 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
         },
       });
     },
-    [listDeployments?.deployments, state.isLambda]
+    [listDeployments, state.isLambda]
   );
   const { mutate, isPending, error } = useRegisterDeployment({
     onSuccess(data) {
