@@ -136,6 +136,7 @@ const initialState: DeploymentRegistrationContextInterface = {
   stage: 'endpoint',
   isLambda: false,
   error: null,
+  endpoint: '',
 };
 const DeploymentRegistrationContext =
   createContext<DeploymentRegistrationContextInterface>(initialState);
