@@ -76,12 +76,12 @@ export function TruncateWithTooltip({
   return (
     <Tooltip disabled={tooltipIsDisabled} delay={250}>
       <TooltipTriggerStateContext.Provider value={{ isOpen, open, close }}>
-        <span className="block truncate" ref={containerRef}>
+        <span className="block truncate max-w-full" ref={containerRef}>
           <TooltipTrigger disabled={tooltipIsDisabled} ref={triggerRef}>
             {children}
           </TooltipTrigger>
         </span>
-        <TooltipContent small offset={0} triggerRef={containerRef}>
+        <TooltipContent small offset={5} triggerRef={containerRef}>
           <div className="flex items-center gap-4">
             {children}
             <Copy

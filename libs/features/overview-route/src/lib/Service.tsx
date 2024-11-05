@@ -2,6 +2,7 @@ import { useListDeployments } from '@restate/data-access/admin-api';
 import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from 'tailwind-variants';
 import { Deployment } from './Deployment';
+import { TruncateWithTooltip } from '@restate/ui/tooltip';
 
 const styles = tv({
   base: 'w-full rounded-2xl p2-0.5 pt2-1 border bg-gradient-to-b to-gray-50/50 from-gray-50 shadow-sm shadow-zinc-800/[0.03]',
@@ -22,7 +23,7 @@ export function Service({
   return (
     <div className={styles({ className })}>
       <div className="p-2 w-full rounded-[calc(0.75rem-0.125rem)] flex items-center gap-2 flex-row text-sm">
-        <div className="h-8 w-8">
+        <div className="h-8 w-8 shrink-0">
           <div className="rounded-lg bg-white border shadow-sm text-blue-400 h-full w-full flex items-center justify-center">
             <Icon
               name={IconName.Box}
@@ -30,8 +31,10 @@ export function Service({
             />
           </div>
         </div>
-        <div className="flex flex-col gap-1 items-start font-medium text-sm text-zinc-600">
-          {serviceName}
+        <div className="flex flex-col gap-1 items-start font-medium text-sm text-zinc-600 min-w-0">
+          <TruncateWithTooltip copyText={serviceName}>
+            {serviceName}
+          </TruncateWithTooltip>
         </div>
       </div>
       {revisions.length > 0 && (

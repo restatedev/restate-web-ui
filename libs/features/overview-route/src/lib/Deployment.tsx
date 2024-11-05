@@ -29,7 +29,7 @@ export function Deployment({
 
   return (
     <div className={styles({ className })}>
-      <div className="h-6 w-6 bg-white border shadow-sm rounded-md">
+      <div className="shrink-0 h-6 w-6 bg-white border shadow-sm rounded-md">
         <Icon
           name={isHttpDeployment(deployment) ? IconName.Http : IconName.Lambda}
           className="w-full h-full text-zinc-400 p-1"
@@ -37,7 +37,9 @@ export function Deployment({
       </div>
 
       <div className="text-code text-zinc-600 truncate">
-        <TruncateWithTooltip>{getEndpoint(deployment)}</TruncateWithTooltip>
+        <TruncateWithTooltip copyText={getEndpoint(deployment)}>
+          {getEndpoint(deployment)}
+        </TruncateWithTooltip>
       </div>
       <div className="uppercase max-w-[12ch] truncate shrink-0 ml-auto font-semibold text-2xs font-mono items-center rounded-xl px-2 leading-4 bg-white/50 ring-1 ring-inset ring-zinc-500/20 text-zinc-500">
         <TruncateWithTooltip copyText={String(revision)}>
