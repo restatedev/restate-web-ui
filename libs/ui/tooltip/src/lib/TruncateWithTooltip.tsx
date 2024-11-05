@@ -33,11 +33,14 @@ const TooltipTrigger = forwardRef<
   );
 });
 
-export function TruncateWithTooltip({ children }: PropsWithChildren<unknown>) {
+export function TruncateWithTooltip({
+  children,
+  copyText: copyTextProp,
+}: PropsWithChildren<{ copyText?: string }>) {
   const triggerRef = useRef<HTMLElement>(null);
   const containerRef = useRef<HTMLElement>(null);
   const [tooltipIsDisabled, setTooltipIsDisabled] = useState(false);
-  const [copyText, setCopyText] = useState('');
+  const [copyText, setCopyText] = useState(copyTextProp ?? '');
   const [isOpen, setIsOpen] = useState(false);
   const open = useCallback(() => {
     setIsOpen(true);
@@ -59,7 +62,7 @@ export function TruncateWithTooltip({ children }: PropsWithChildren<unknown>) {
     const resizeObserver = new ResizeObserver(() => {
       if (!isCanceled) {
         setTooltipIsDisabled(!calculateShouldDisplayTooltip());
-        setCopyText(triggerRef.current?.textContent ?? '');
+        !copyTextProp && setCopyText(triggerRef.current?.textContent ?? '');
       }
     });
     containerElement && resizeObserver.observe(containerElement);
@@ -68,7 +71,7 @@ export function TruncateWithTooltip({ children }: PropsWithChildren<unknown>) {
       isCanceled = true;
       containerElement && resizeObserver.unobserve(containerElement);
     };
-  }, []);
+  }, [copyTextProp]);
 
   return (
     <Tooltip disabled={tooltipIsDisabled} delay={250}>
