@@ -45,9 +45,7 @@ function Service({
       <Disclosure
         defaultExpanded={defaultExpanded}
         className={({ isExpanded }) =>
-          isExpanded
-            ? '[&_.disclosure-icon]:rotate-180 [&>button]:shadow-lg [&>button]:shadow-zinc-800/5'
-            : ''
+          isExpanded ? '[&_.disclosure-icon]:rotate-180' : ''
         }
       >
         <Button
@@ -110,10 +108,10 @@ function ServiceHandler({
   handler: adminApi.components['schemas']['ServiceMetadata']['handlers'][number];
 }) {
   return (
-    <div className="flex flex-row items-center gap-2 bg-gray-50 shadow-sm shadow-zinc-700/5 border [&:has(+*)]:rounded-b-none [&+*]:rounded-t-none [&+*]:border-t-0 rounded-[calc(0.75rem-0.5rem)]">
+    <div className="flex flex-row items-center gap-2 [&:has(+*)]:rounded-b-none [&+*]:rounded-t-none [&+*]:border-t-0 rounded-[calc(0.75rem-0.5rem)]">
       <div className="h-9 aspect-square p-1">
         <div className="rounded h-full w-full flex items-center justify-center text-gray-400">
-          <div className="bg-white border shadow-sm rounded-sm w-6 h-6">
+          <div className="bg-white border shadow-sm rounded-md w-6 h-6">
             <Icon
               name={IconName.Function}
               className="w-full h-full text-zinc-400"
