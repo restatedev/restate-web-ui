@@ -1,6 +1,5 @@
 import { useListDeployments } from '@restate/data-access/admin-api';
 import { RestateServer } from './RestateServer';
-import { Deployment } from './Deployment';
 import { tv } from 'tailwind-variants';
 import { TriggerRegisterDeploymentDialog } from './RegisterDeployment/Dialog';
 import { ServiceDetails } from './Details.tsx/Service';
@@ -9,6 +8,7 @@ import {
   ServiceDeploymentExplainer,
   ServiceExplainer,
 } from '@restate/features/explainers';
+import { Service } from './Service';
 
 const deploymentsStyles = tv({
   base: 'w-full md:row-start-1 md:col-start-1 grid gap-8 gap-x-20 gap2-x-[calc(8rem+150px)]',
@@ -89,40 +89,41 @@ function NoDeploymentPlaceholder() {
 
 // TODO: refactor layout
 function Component() {
-  const { data, isError, isLoading, isSuccess } = useListDeployments();
-
+  const {
+    data: { services, sortedServiceNames, deployments } = {},
+    isPending,
+    isSuccess,
+  } = useListDeployments();
+  const size = services ? services.size : 0;
+  const isEmpty = isSuccess && (!deployments || deployments.size === 0);
   // Handle isLoading & isError
-  const deployments = data?.deployments.slice(0, 60) ?? [];
-  const hasNoDeployment = isSuccess && deployments.length === 0;
 
   return (
     <>
       <div className="flex flex-col gap-2 relative justify-items-center">
-        <div className={deploymentsStyles({ isEmpty: hasNoDeployment })}>
+        <div className={deploymentsStyles({ isEmpty })}>
           <div className="flex flex-col min-w-0 gap-6 justify-start">
-            {deployments.map((deployment, i) => (
-              <Deployment
-                key={deployment.id}
-                deployment={deployment}
+            {sortedServiceNames?.map((serviceName, i) => (
+              <Service
+                key={serviceName}
+                serviceName={serviceName}
                 className={i % 2 === 1 ? 'md:hidden' : 'md:block'}
               />
             ))}
           </div>
-          <RestateServer
-            className={reactServerStyles({ isEmpty: hasNoDeployment })}
-          >
-            {hasNoDeployment && <NoDeploymentPlaceholder />}
-            {deployments.length > 1 && <MultipleDeploymentsPlaceholder />}
+          <RestateServer className={reactServerStyles({ isEmpty })}>
+            {isEmpty && <NoDeploymentPlaceholder />}
+            {size > 1 && <MultipleDeploymentsPlaceholder />}
           </RestateServer>
           <div className="flex flex-col min-w-0 gap-6 justify-start">
-            {deployments.map((deployment, i) => (
-              <Deployment
-                key={deployment.id}
-                deployment={deployment}
+            {sortedServiceNames?.map((serviceName, i) => (
+              <Service
+                key={serviceName}
+                serviceName={serviceName}
                 className={i % 2 === 0 ? 'hidden' : 'hidden md:block'}
               />
             ))}
-            {deployments.length === 1 && <OneDeploymentPlaceholder />}
+            {size === 1 && <OneDeploymentPlaceholder />}
           </div>
         </div>
       </div>

@@ -1,28 +1,56 @@
-import type { Deployment } from '@restate/data-access/admin-api';
+import { useListDeployments } from '@restate/data-access/admin-api';
 import { Icon, IconName } from '@restate/ui/icons';
-import { Link } from '@restate/ui/link';
+import { tv } from 'tailwind-variants';
+import { Deployment } from './Deployment';
+import { TruncateWithTooltip } from '@restate/ui/tooltip';
+
+const styles = tv({
+  base: 'w-full rounded-2xl p2-0.5 pt2-1 border bg-gradient-to-b to-gray-50/50 from-gray-50 shadow-sm shadow-zinc-800/[0.03]',
+});
 
 export function Service({
-  service,
+  className,
+  serviceName,
 }: {
-  service: Deployment['services'][number];
+  serviceName: string;
+  className?: string;
 }) {
+  const { data: { services } = {} } = useListDeployments();
+  const service = services?.get(serviceName);
+  const serviceDeployments = service?.deployments;
+  const revisions = service?.sortedRevisions ?? [];
+
   return (
-    <Link
-      href={`?service=${service.name}`}
-      className="[text-decoration:inherit] [color:inherit]"
-    >
-      <div className="flex flex-row items-center gap-2 pr-4 bg-gray-50 shadow-sm border rounded-[calc(0.75rem-1px)]">
-        <div className="h-9 aspect-square p-[2px]">
-          <div className="rounded-[calc(0.75rem-2px)] bg-gray-200/40 h-full w-full flex items-center justify-center text-gray-400">
-            <Icon name={IconName.Box} className="w-5 h-5" />
+    <div className={styles({ className })}>
+      <div className="p-2 w-full rounded-[calc(0.75rem-0.125rem)] flex items-center gap-2 flex-row text-sm">
+        <div className="h-8 w-8 shrink-0">
+          <div className="rounded-lg bg-white border shadow-sm text-blue-400 h-full w-full flex items-center justify-center">
+            <Icon
+              name={IconName.Box}
+              className="w-full h-full p-1.5 fill-blue-50 text-blue-400 drop-shadow-md"
+            />
           </div>
         </div>
-        <div className="text-code">{service.name}</div>
-        <div className="truncate rounded-full text-xs bg-white border px-2 py-0.5 ring-1 ring-inset ring-gray-100 text-gray-500">
-          rev. {service.revision}
+        <div className="flex flex-col gap-1 items-start font-medium text-sm text-zinc-600 min-w-0">
+          <TruncateWithTooltip copyText={serviceName}>
+            {serviceName}
+          </TruncateWithTooltip>
         </div>
       </div>
-    </Link>
+      {revisions.length > 0 && (
+        <div className="px-3 pb-3 pt-1 flex flex-col rounded-md rounded-t-sm gap-1">
+          <div className="pl-1 uppercase text-2xs font-semibold text-gray-400 flex gap-2 items-center">
+            Deployments
+          </div>
+          {revisions.map((revision) => (
+            <Deployment
+              deploymentId={serviceDeployments?.[revision]}
+              revision={revision}
+              key={revision}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

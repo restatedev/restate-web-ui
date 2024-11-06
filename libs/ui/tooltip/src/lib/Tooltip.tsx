@@ -1,8 +1,21 @@
 import { PropsWithChildren } from 'react';
 import { TooltipTrigger } from 'react-aria-components';
 
-type TooltipProps = unknown;
+interface TooltipProps {
+  disabled?: boolean;
+  delay?: number;
+  closeDelay?: number;
+}
 
-export function Tooltip({ children }: PropsWithChildren<TooltipProps>) {
-  return <TooltipTrigger delay={0}>{children}</TooltipTrigger>;
+export function Tooltip({
+  children,
+  disabled,
+  delay = 0,
+  closeDelay,
+}: PropsWithChildren<TooltipProps>) {
+  return (
+    <TooltipTrigger delay={delay} closeDelay={closeDelay} isDisabled={disabled}>
+      {children}
+    </TooltipTrigger>
+  );
 }

@@ -9,9 +9,10 @@ export function TooltipTrigger({
   const state = useContext(TooltipTriggerStateContext);
   const { hoverProps } = useHover({
     onHoverChange(isHovering) {
-      isHovering ? state.open(true) : state.close();
+      isHovering ? state.open(false) : state.close();
     },
   });
+
   return (
     <PressResponder
       onPress={() => {

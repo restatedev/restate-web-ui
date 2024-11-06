@@ -1,6 +1,10 @@
-import { FormFieldCheckbox, FormFieldInput } from '@restate/ui/form-field';
+import {
+  FormFieldCheckbox,
+  FormFieldInput,
+  FormFieldLabel,
+} from '@restate/ui/form-field';
 import { Icon, IconName } from '@restate/ui/icons';
-import { PropsWithChildren, ReactNode } from 'react';
+import { ComponentProps, PropsWithChildren, ReactNode } from 'react';
 import { Radio } from 'react-aria-components';
 import { RadioGroup } from '@restate/ui/radio-group';
 import { RegisterDeploymentResults } from './Results';
@@ -15,12 +19,16 @@ function CustomRadio({
   value,
   children,
   className,
-}: PropsWithChildren<{
-  value: string;
-  className?: string;
-}>) {
+  ...props
+}: PropsWithChildren<
+  {
+    value: string;
+    className?: string;
+  } & Pick<ComponentProps<typeof Radio>, 'aria-label'>
+>) {
   return (
     <Radio
+      {...props}
       value={value}
       className={({
         isFocusVisible,
@@ -164,11 +172,13 @@ function EndpointForm() {
             }
             disabled={isPending}
           >
+            <FormFieldLabel className="sr-only">Endpoint type</FormFieldLabel>
             <Tooltip>
               <TooltipTrigger>
                 <CustomRadio
                   value="false"
                   className="p-1.5 aspect-square items-center rounded-[0.4rem]"
+                  aria-label="Http endpoint"
                 >
                   <Icon name={IconName.Http} className="h-4 w-4" />
                 </CustomRadio>
@@ -182,6 +192,7 @@ function EndpointForm() {
                 <CustomRadio
                   value="true"
                   className="p-1.5 aspect-square items-center rounded-[0.4rem]"
+                  aria-label="AWS lambda"
                 >
                   <Icon name={IconName.Lambda} className="h-4 w-4" />
                 </CustomRadio>

@@ -11,6 +11,7 @@ interface TooltipContentProps {
   className?: string;
   small?: boolean;
   offset?: number;
+  triggerRef?: ComponentProps<typeof AriaTooltip>['triggerRef'];
 }
 
 const styles = tv({
