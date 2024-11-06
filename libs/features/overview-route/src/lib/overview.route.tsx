@@ -57,7 +57,7 @@ function OneDeploymentPlaceholder() {
         <ServiceDeploymentExplainer>
           service deployments
         </ServiceDeploymentExplainer>{' '}
-        so Restate can discover and register your{' '}
+        so Restate can register your{' '}
         <ServiceExplainer>services</ServiceExplainer> and handlers
       </p>
       <div className="mt-4">
@@ -77,8 +77,8 @@ function NoDeploymentPlaceholder() {
         </ServiceDeploymentExplainer>
       </h3>
       <p className="text-sm text-gray-500 px-4 max-w-md">
-        Point Restate to your deployed services so Restate can discover and
-        register your <ServiceExplainer>services</ServiceExplainer> and handlers
+        Point Restate to your deployed services so Restate can register your{' '}
+        <ServiceExplainer>services</ServiceExplainer> and handlers
       </p>
       <div className="mt-4">
         <TriggerRegisterDeploymentDialog />

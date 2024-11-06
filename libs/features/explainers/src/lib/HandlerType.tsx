@@ -11,7 +11,7 @@ const TITLES: Record<HandlerType, string> = {
 
 const DESCRIPTIONS: Record<HandlerType, string> = {
   Exclusive:
-    'A handler with exclusive access to state during execution. For any object, only one exclusive handler can run at a time, giving that handler exclusive ownership of the object and state. Invocations are queued into infinitely fine-grained virtual queues.',
+    "A handler with exclusive access to a Virtual Object's state while it executes. For any specific object, only one exclusive handler can operate concurrently, granting it exclusive control over the object and its state. If multiple invocations target the same Virtual Object key, they will be queued by Restate.",
   Shared:
     "Handler that executes concurrently to the others and doesn't have write access to the K/V state",
   Workflow:
