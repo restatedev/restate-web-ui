@@ -11,7 +11,7 @@ const TITLES: Record<ServiceType, string> = {
 
 const DESCRIPTIONS: Record<ServiceType, string> = {
   Service:
-    'Services expose a collection of durably executed handlers. They do not have any concurrency limits nor K/V store.',
+    'Services expose a collection of durably executed handlers. They are stateless functions that can run with high parallelism.',
   VirtualObject:
     'Virtual objects expose a set of durably executed handlers with access to K/V state stored in Restate. To ensure consistent writes to the state, Restate provides concurrency guarantees for Virtual Objects.',
   Workflow:
