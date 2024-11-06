@@ -108,7 +108,7 @@ export function RegistrationForm() {
       {isConfirm && (
         <Container
           title="Services"
-          description="Please confirm the list of services discovered in the deployment."
+          description="Please confirm the list of registered services in this deployment."
         >
           <RegisterDeploymentResults />
         </Container>
