@@ -9,6 +9,7 @@ import {
   ServiceExplainer,
 } from '@restate/features/explainers';
 import { Service } from './Service';
+import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 
 const deploymentsStyles = tv({
   base: 'w-full md:row-start-1 md:col-start-1 grid gap-8 gap-x-20 gap2-x-[calc(8rem+150px)]',
@@ -100,9 +101,33 @@ function Component() {
 
   return (
     <>
-      <div className="flex flex-col gap-2 relative justify-items-center">
-        <div className={deploymentsStyles({ isEmpty })}>
-          <div className="flex flex-col min-w-0 gap-6 justify-start">
+      <div className="flex flex-col gap-2 relative justify-items-center min-h-full">
+        {/* <div className={deploymentsStyles({ isEmpty })}> */}
+        <ResponsiveMasonry
+          columnsCountBreakPoints={{ 750: 1, 900: 2 }}
+          className="min-h-full"
+        >
+          <Masonry
+            gutter="1.5rem"
+            style={{ gap: 'calc(8rem + 150px)' }}
+            className="items-center min-h-full"
+          >
+            {sortedServiceNames?.map((serviceName, i) => (
+              <Service
+                key={serviceName}
+                serviceName={serviceName}
+                // className="md:max-w-[calc(50%-75px)]"
+                // className={i % 2 === 1 ? 'md:hidden' : 'md:block'}
+              />
+            ))}
+            {size === 1 && <OneDeploymentPlaceholder />}
+          </Masonry>
+        </ResponsiveMasonry>
+        <RestateServer className={reactServerStyles({ isEmpty })}>
+          {isEmpty && <NoDeploymentPlaceholder />}
+          {size > 1 && <MultipleDeploymentsPlaceholder />}
+        </RestateServer>
+        {/* <div className="flex flex-col min-w-0 gap-6 justify-start">
             {sortedServiceNames?.map((serviceName, i) => (
               <Service
                 key={serviceName}
@@ -124,8 +149,8 @@ function Component() {
               />
             ))}
             {size === 1 && <OneDeploymentPlaceholder />}
-          </div>
-        </div>
+          </div> */}
+        {/* </div> */}
       </div>
       <ServiceDetails />
       <DeploymentDetails />
