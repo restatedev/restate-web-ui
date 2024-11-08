@@ -3,11 +3,12 @@ import {
   ComplementaryWithSearchParam,
   ComplementaryClose,
 } from '@restate/ui/layout';
+import { SERVICE_QUERY_PARAM } from '../constants';
 
 export function ServiceDetails() {
   return (
     <ComplementaryWithSearchParam
-      paramName="service"
+      paramName={SERVICE_QUERY_PARAM}
       footer={
         <>
           <ComplementaryClose>
