@@ -11,7 +11,7 @@ const styles = tv({
   base: 'w-full rounded-2xl p2-0.5 pt2-1 border shadow-zinc-800/[0.03] transform transition',
   variants: {
     isSelected: {
-      true: 'bg-white shadow-md scale-105',
+      true: 'bg-white shadow-md scale-110',
       false: 'bg-gradient-to-b to-gray-50/50 from-gray-50 shadow-sm scale-100',
     },
   },
