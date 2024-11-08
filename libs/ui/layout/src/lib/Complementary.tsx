@@ -35,7 +35,7 @@ export function Complementary({
       <LayoutOutlet zone={LayoutZone.Complementary}>
         <div
           data-complementary-content
-          className="min-h-[50vh] bg-white p-6 border rounded-xl max-h-[inherit] overflow-auto relative"
+          className="min-h-[50vh] bg-white p-6 border rounded-xl max-h-[inherit] overflow-auto relative flex-auto"
         >
           {children}
         </div>
