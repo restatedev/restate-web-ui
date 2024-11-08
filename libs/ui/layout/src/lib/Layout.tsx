@@ -20,7 +20,14 @@ export function LayoutProvider({ children }: PropsWithChildren<LayoutProps>) {
         ></main>
         <ComplementaryOutlet id={ZONE_IDS[LayoutZone.Complementary]} />
       </div>
+
       {children}
+      <div className="hidden [&:has(>*>*)]:block z-0 h-20 fixed left-0 right-0 bottom-0 bg-gradient-to-b from-transparent to-gray-100">
+        <div
+          id={ZONE_IDS[LayoutZone.Toolbar]}
+          className="absolute top-0 left-[50vw] -translate-x-1/2"
+        />
+      </div>
     </div>
   );
 }

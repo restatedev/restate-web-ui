@@ -9,14 +9,17 @@ import {
 import { Service } from './Service';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 import { useLayoutEffect, useState } from 'react';
+import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 
 function MultipleDeploymentsPlaceholder() {
   return (
-    <div className="[&_a]:px-5 [&_a]:py-1.5 [&_a]:rounded-xl [&_a]:shadow-[inset_0_1px_0_0_theme(colors.gray.500)] [&_a]:[filter:drop-shadow(0_8px_6px_rgb(39_39_42/0.15))_drop-shadow(0_4px_3px_rgb(39_39_42/0.2))] [&_a:hover]:[filter:drop-shadow(0_12px_9px_rgb(39_39_42/0.15))_drop-shadow(0_8px_6px_rgb(39_39_42/0.2))] [&_a]:backdrop-blur-xl [&_a]:text-zinc-200 [&_a]:border-zinc-900/80 [&_a]:bg-zinc-900/90 [&_a:hover]:bg-zinc-900/85 [&_a[data-pressed=true]]:bg-zinc-900/80 fixed bottom-[2.5rem] left-[50vw] -translate-x-1/2 flex flex-col gap-2 items-center text-center [&_a:hover]:scale-105 [&_a[data-pressed=true]]:scale-100 will-change-transform">
-      <TriggerRegisterDeploymentDialog>
-        Deployment
-      </TriggerRegisterDeploymentDialog>
-    </div>
+    <LayoutOutlet zone={LayoutZone.Toolbar}>
+      <div className="[&_a]:px-5 [&_a]:py-1.5 [&_a]:rounded-xl [&_a]:shadow-[inset_0_1px_0_0_theme(colors.gray.500)] [&_a]:[filter:drop-shadow(0_8px_6px_rgb(39_39_42/0.15))_drop-shadow(0_4px_3px_rgb(39_39_42/0.2))] [&_a:hover]:[filter:drop-shadow(0_12px_9px_rgb(39_39_42/0.15))_drop-shadow(0_8px_6px_rgb(39_39_42/0.2))] [&_a]:backdrop-blur-xl [&_a]:text-zinc-200 [&_a]:border-zinc-900/80 [&_a]:bg-zinc-900/90 [&_a:hover]:bg-zinc-900/85 [&_a[data-pressed=true]]:bg-zinc-900/80 flex flex-col gap-2 items-center text-center [&_a:hover]:scale-105 [&_a[data-pressed=true]]:scale-100 will-change-transform">
+        <TriggerRegisterDeploymentDialog>
+          Deployment
+        </TriggerRegisterDeploymentDialog>
+      </div>
+    </LayoutOutlet>
   );
 }
 

@@ -4,6 +4,7 @@ export const enum LayoutZone {
   Content = 'Content',
   Notification = 'Notification',
   Complementary = 'Complementary',
+  Toolbar = 'Toolbar',
 }
 
 export const ZONE_IDS: Record<LayoutZone, string> = {
@@ -12,4 +13,5 @@ export const ZONE_IDS: Record<LayoutZone, string> = {
   [LayoutZone.Content]: 'layout-content',
   [LayoutZone.Notification]: 'layout-notification',
   [LayoutZone.Complementary]: 'layout-complementary',
+  [LayoutZone.Toolbar]: 'layout-toolbar',
 };
