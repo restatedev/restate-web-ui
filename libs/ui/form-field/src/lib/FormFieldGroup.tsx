@@ -1,13 +1,14 @@
 import { focusRing } from '@restate/ui/focus';
 import { tv } from 'tailwind-variants';
 import { Group as AriaGroup } from 'react-aria-components';
-import { PropsWithChildren } from 'react';
+import { ComponentProps } from 'react';
 
-interface FormFieldGroupProps {
+interface FormFieldGroupProps
+  extends Pick<ComponentProps<typeof AriaGroup>, 'children'> {
   className?: string;
 }
 
-const fieldBorderStyles = tv({
+export const fieldBorderStyles = tv({
   variants: {
     isFocusWithin: {
       false: 'border-gray-300 dark:border-zinc-500',
@@ -28,10 +29,7 @@ const fieldGroupStyles = tv({
   variants: fieldBorderStyles.variants,
 });
 
-export function FormFieldGroup({
-  className,
-  ...props
-}: PropsWithChildren<FormFieldGroupProps>) {
+export function FormFieldGroup({ className, ...props }: FormFieldGroupProps) {
   return (
     <AriaGroup
       {...props}
