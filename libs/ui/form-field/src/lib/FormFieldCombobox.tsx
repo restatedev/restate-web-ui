@@ -30,6 +30,10 @@ export interface ComboBoxProps<T extends object> {
   errorMessage?: ComponentProps<typeof FormFieldError>['children'];
   value?: AriaComboBoxProps<T>['inputValue'];
   onChange?: AriaComboBoxProps<T>['onInputChange'];
+  allowsCustomValue?: AriaComboBoxProps<T>['allowsCustomValue'];
+  name?: AriaComboBoxProps<T>['name'];
+  defaultValue?: AriaComboBoxProps<T>['defaultInputValue'];
+  pattern?: string;
 }
 
 const inputStyles = tv({
@@ -49,10 +53,20 @@ export function FormFieldCombobox<T extends object>({
   label,
   readonly,
   children,
+  pattern,
+  defaultValue,
   ...props
 }: PropsWithChildren<ComboBoxProps<T>>) {
   return (
-    <AriaComboBox {...props} className={containerStyles({ className })}>
+    <AriaComboBox
+      isRequired={required}
+      isDisabled={disabled}
+      menuTrigger="focus"
+      defaultInputValue={defaultValue}
+      defaultSelectedKey={defaultValue}
+      {...props}
+      className={containerStyles({ className })}
+    >
       {!label && <Label className="sr-only">{placeholder}</Label>}
       {label && <FormFieldLabel>{label}</FormFieldLabel>}
       <Group className="relative">
@@ -60,18 +74,22 @@ export function FormFieldCombobox<T extends object>({
           className={inputStyles}
           placeholder={placeholder}
           aria-label={placeholder}
+          pattern={pattern}
         />
         <div className="absolute right-1 top-0 bottom-0 flex items-center">
           <Button
             variant="secondary"
             className="rounded-lg p-1 outline-offset-0"
           >
-            <Icon name={IconName.ChevronDown} aria-hidden className="w-4 h-4" />
+            <Icon
+              name={IconName.ChevronsUpDown}
+              className="w-[1.25em] h-[1.25em] text-gray-500"
+            />
           </Button>
         </div>
       </Group>
       <FormFieldError>{errorMessage}</FormFieldError>
-      <PopoverOverlay data-className="w-[--trigger-width]">
+      <PopoverOverlay className="w-[--trigger-width]">
         <ListBox className="outline-0 p-1 max-h-[inherit] overflow-auto border-none">
           {children}
         </ListBox>
