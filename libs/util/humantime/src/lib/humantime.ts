@@ -1,13 +1,17 @@
-import { serialize, Duration } from 'tinyduration';
+interface Duration {
+  years?: number;
+  months?: number;
+  days?: number;
+  h?: number;
+  m?: number;
+  s?: number;
+  ms?: number;
+}
 
 const HUMANTIME_REGEXP =
-  /(?<unitValue>\d+)\s*(?<unit>nsec|ns|usec|us|msec|ms|seconds|second|sec|minute|minutes|hours|hour|days|day|months|month|years|year|y|min|M|m|s|h|d)/gm;
+  /(?<unitValue>\d+)\s*(?<unit>msec|ms|seconds|second|sec|minute|minutes|hours|hour|days|day|months|month|years|year|y|min|M|m|s|h|d)/gm;
 
 const HUMANTIME_UNITS_VALUES = [
-  'nsec',
-  'ns',
-  'usec',
-  'us',
   'msec',
   'ms',
   'seconds',
@@ -40,23 +44,19 @@ const UNIT_MAPS: Record<
   HUMANTIME_UNITS,
   Exclude<keyof Duration, 'negative'>
 > = {
-  nsec: 'seconds',
-  ns: 'seconds',
-  usec: 'seconds',
-  us: 'seconds',
-  msec: 'seconds',
-  ms: 'seconds',
-  seconds: 'seconds',
-  second: 'seconds',
-  sec: 'seconds',
-  s: 'seconds',
-  minute: 'minutes',
-  minutes: 'minutes',
-  min: 'minutes',
-  m: 'minutes',
-  hours: 'hours',
-  hour: 'hours',
-  h: 'hours',
+  msec: 'ms',
+  ms: 'ms',
+  seconds: 's',
+  second: 's',
+  sec: 's',
+  s: 's',
+  minute: 'm',
+  minutes: 'm',
+  min: 'm',
+  m: 'm',
+  hours: 'h',
+  hour: 'h',
+  h: 'h',
   days: 'days',
   day: 'days',
   d: 'days',
@@ -67,16 +67,8 @@ const UNIT_MAPS: Record<
   year: 'years',
   y: 'years',
 };
-const UNIT_FACTOR: Partial<Record<HUMANTIME_UNITS, number>> = {
-  nsec: 0.000000001,
-  ns: 0.000000001,
-  usec: 0.000001,
-  us: 0.000001,
-  msec: 0.001,
-  ms: 0.001,
-};
 
-export function parseHumantime(value: string) {
+export function formatHumantime(value: string) {
   const matches = Array.from(value.matchAll(HUMANTIME_REGEXP));
 
   const isoDuration = matches.reduce((result, match) => {
@@ -91,11 +83,11 @@ export function parseHumantime(value: string) {
 
     return {
       ...result,
-      [isoUnit]:
-        (result[isoUnit] ?? 0) +
-        unitValueAsNumber * (UNIT_FACTOR[unit as HUMANTIME_UNITS] ?? 1),
+      [isoUnit]: unitValueAsNumber,
     };
   }, {} as Duration);
 
-  return serialize(isoDuration);
+  return Object.entries(isoDuration)
+    .map((unit, value) => `${value}${unit}`)
+    .join(' ');
 }
