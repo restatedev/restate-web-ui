@@ -6,7 +6,7 @@ interface SectionProps {
 }
 
 const styles = tv({
-  base: 'grid gap-x-10 gap-y-4 grid-cols-1 sm:grid-cols-[20ch_1fr]',
+  base: 'flex flex-col bg-gray-100 rounded-xl p-0.5 border2 shadow2-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]',
 });
 export function Section({
   children,
@@ -20,7 +20,7 @@ interface SectionTitleProps {
 }
 
 const stylesSectionTitle = tv({
-  base: 'flex flex-col gap-1 col-start-1 text-base sm:pt-3 font-semibold leading-7 text-gray-900 [&_p]:text-sm [&_p]:leading-6 [&_p]:text-gray-600 [&_p]:font-normal',
+  base: 'text-xs uppercase font-semibold text-gray-400 px-2 pt-2 pb-1',
 });
 export function SectionTitle({
   children,
@@ -30,7 +30,7 @@ export function SectionTitle({
 }
 
 const stylesSectionContent = tv({
-  base: 'col-start-1 sm:col-start-2 min-w-0',
+  base: 'bg-white shadow-sm border p-2 rounded-[calc(0.75rem-0.125rem)] text-sm',
 });
 export function SectionContent({
   children,
