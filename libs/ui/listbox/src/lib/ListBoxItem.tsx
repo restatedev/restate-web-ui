@@ -60,7 +60,7 @@ function StyledListBoxItem({
   );
 }
 
-interface ListBoxItemProps {
+interface BaseListBoxItemProps {
   children: string;
   value?: never;
   href?: never;
@@ -69,7 +69,7 @@ interface ListBoxItemProps {
 
 interface ListBoxCustomItemProps
   extends PropsWithChildren<
-    Omit<ListBoxItemProps, 'children' | 'href' | 'value'>
+    Omit<BaseListBoxItemProps, 'children' | 'href' | 'value'>
   > {
   value: string;
   href?: never;
@@ -82,20 +82,23 @@ interface ListBoxNavItemProps
 }
 
 function isNavItem(
-  props: ListBoxItemProps | ListBoxCustomItemProps | ListBoxNavItemProps
+  props: BaseListBoxItemProps | ListBoxCustomItemProps | ListBoxNavItemProps
 ): props is ListBoxNavItemProps {
   return Boolean(props.href);
 }
 
 function isCustomItem(
-  props: ListBoxItemProps | ListBoxCustomItemProps | ListBoxNavItemProps
+  props: BaseListBoxItemProps | ListBoxCustomItemProps | ListBoxNavItemProps
 ): props is ListBoxCustomItemProps {
   return typeof props.value === 'string';
 }
 
-export function ListBoxItem(
-  props: ListBoxItemProps | ListBoxCustomItemProps | ListBoxNavItemProps
-) {
+export type ListBoxItemProps =
+  | BaseListBoxItemProps
+  | ListBoxCustomItemProps
+  | ListBoxNavItemProps;
+
+export function ListBoxItem(props: ListBoxItemProps) {
   if (isNavItem(props)) {
     const { href, ...rest } = props;
     return <StyledListBoxItem {...rest} href={href} />;

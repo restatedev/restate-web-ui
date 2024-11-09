@@ -1,16 +1,31 @@
 import type { PropsWithChildren } from 'react';
 import { Header, Section } from 'react-aria-components';
+import { tv } from 'tailwind-variants';
 
 export interface ListBoxSectionProps extends PropsWithChildren<object> {
   title?: string;
+  className?: string;
 }
 
-export function ListBoxSection({ children, title }: ListBoxSectionProps) {
+const styles = tv({
+  slots: {
+    container:
+      'px-1 py-1 bg-white relative mt-8 rounded-xl border [&_.dropdown-item]:rounded-lg',
+    header:
+      'text-sm absolute -top-8 font-semibold text-gray-400 px-2 py-1 pt-2 truncate',
+  },
+});
+
+export function ListBoxSection({
+  children,
+  title,
+  className,
+}: ListBoxSectionProps) {
+  const { container, header } = styles();
+
   return (
-    <Section className="first:-mt-[5px] after:content-[''] after:block after:h-[5px]">
-      <Header className="text-sm font-semibold text-gray-500 dark:text-zinc-300 px-4 py-1 truncate sticky -top-[5px] -mt-px -mx-1 z-10 bg-gray-100/60 dark:bg-zinc-700/60 backdrop-blur-md supports-[-moz-appearance:none]:bg-gray-100 border-y dark:border-y-zinc-700 [&+*]:mt-1">
-        {title}
-      </Header>
+    <Section className={container()}>
+      {title && <Header className={header()}>{title}</Header>}
       {children}
     </Section>
   );
