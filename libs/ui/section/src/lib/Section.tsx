@@ -30,7 +30,7 @@ export function SectionTitle({
 }
 
 const stylesSectionContent = tv({
-  base: 'bg-white shadow-sm border p-2 rounded-[calc(0.75rem-0.125rem)] text-sm',
+  base: 'bg-white shadow-sm border p-3 rounded-[calc(0.75rem-0.125rem)] text-sm',
 });
 export function SectionContent({
   children,
