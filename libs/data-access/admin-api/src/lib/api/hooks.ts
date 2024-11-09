@@ -139,3 +139,18 @@ export function useRegisterDeployment(
     ...options,
   });
 }
+
+export function useServiceDetails(
+  service: string,
+  options?: HookQueryOptions<'/services/{service}', 'get'>
+) {
+  const baseUrl = useAdminBaseUrl();
+
+  return useQuery({
+    ...adminApi('query', '/services/{service}', 'get', {
+      baseUrl,
+      parameters: { path: { service } },
+    }),
+    ...options,
+  });
+}
