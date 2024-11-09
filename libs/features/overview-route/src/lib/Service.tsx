@@ -48,6 +48,7 @@ export function Service({
             {serviceName}
           </TruncateWithTooltip>
           <Link
+            aria-label={serviceName}
             variant="secondary"
             href={`?${SERVICE_QUERY_PARAM}=${serviceName}`}
             className="rounded-full before:absolute before:inset-0 before:content-[''] before:rounded-t-[0.9rem] hover:before:bg-black/[0.03] pressed:before:bg-black/5"
