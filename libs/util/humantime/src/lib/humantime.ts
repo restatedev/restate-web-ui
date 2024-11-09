@@ -1,35 +1,41 @@
 import { serialize, Duration } from 'tinyduration';
 
-export const HUMANTIME_PATTERN_REGEXP =
+const HUMANTIME_REGEXP =
   /(?<unitValue>\d+)\s*(?<unit>nsec|ns|usec|us|msec|ms|seconds|second|sec|minute|minutes|hours|hour|days|day|months|month|years|year|y|min|M|m|s|h|d)/gm;
 
-type HUMANTIME_UNITS =
-  | 'nsec'
-  | 'ns'
-  | 'usec'
-  | 'us'
-  | 'msec'
-  | 'ms'
-  | 'seconds'
-  | 'second'
-  | 'sec'
-  | 's'
-  | 'minute'
-  | 'minutes'
-  | 'min'
-  | 'm'
-  | 'hours'
-  | 'hour'
-  | 'h'
-  | 'days'
-  | 'day'
-  | 'd'
-  | 'months'
-  | 'month'
-  | 'M'
-  | 'years'
-  | 'year'
-  | 'y';
+const HUMANTIME_UNITS_VALUES = [
+  'nsec',
+  'ns',
+  'usec',
+  'us',
+  'msec',
+  'ms',
+  'seconds',
+  'second',
+  'sec',
+  's',
+  'minute',
+  'minutes',
+  'min',
+  'm',
+  'hours',
+  'hour',
+  'h',
+  'days',
+  'day',
+  'd',
+  'months',
+  'month',
+  'M',
+  'years',
+  'year',
+  'y',
+] as const;
+
+export const HUMANTIME_PATTERN_INPUT = HUMANTIME_UNITS_VALUES.map(
+  () => `(\\d+\\s*(${HUMANTIME_UNITS_VALUES.join('|')}))?`
+).join('\\s*');
+type HUMANTIME_UNITS = (typeof HUMANTIME_UNITS_VALUES)[number];
 const UNIT_MAPS: Record<
   HUMANTIME_UNITS,
   Exclude<keyof Duration, 'negative'>
@@ -71,7 +77,7 @@ const UNIT_FACTOR: Partial<Record<HUMANTIME_UNITS, number>> = {
 };
 
 export function parseHumantime(value: string) {
-  const matches = Array.from(value.matchAll(HUMANTIME_PATTERN_REGEXP));
+  const matches = Array.from(value.matchAll(HUMANTIME_REGEXP));
 
   const isoDuration = matches.reduce((result, match) => {
     const { groups = {} } = match;
