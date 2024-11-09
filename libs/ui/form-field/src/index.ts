@@ -5,3 +5,4 @@ export * from './lib/FormFieldInput';
 export * from './lib/FormFieldTextarea';
 export * from './lib/FormFieldCheckbox';
 export * from './lib/FormFieldSelect';
+export * from './lib/FormFieldNumberInput';
