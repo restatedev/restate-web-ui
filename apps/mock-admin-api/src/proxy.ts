@@ -9,11 +9,16 @@ app.use(cors());
 app.use(express.json());
 
 const proxyHandler: RequestHandler = async (req, res) => {
+  await new Promise((r) => {
+    setTimeout(() => {
+      r({});
+    }, 5000);
+  });
   const response = await fetch(`${ADMIN_ENDPOINT}${req.url}`, {
     method: req.method,
     headers: new Headers(req.headers as Record<string, string>),
     ...(req.body &&
-      ['POST', 'PUT'].includes(req.method) && {
+      ['POST', 'PUT', 'PATCH'].includes(req.method) && {
         body: JSON.stringify(req.body),
       }),
   });

@@ -68,7 +68,10 @@ const UNIT_MAPS: Record<
   y: 'years',
 };
 
-export function formatHumantime(value: string) {
+export function formatHumantime(value?: string | null) {
+  if (!value) {
+    return value;
+  }
   const matches = Array.from(value.matchAll(HUMANTIME_REGEXP));
 
   const isoDuration = matches.reduce((result, match) => {
@@ -88,6 +91,6 @@ export function formatHumantime(value: string) {
   }, {} as Duration);
 
   return Object.entries(isoDuration)
-    .map((unit, value) => `${value}${unit}`)
+    .map(([unit, value]) => `${value}${unit}`)
     .join(' ');
 }

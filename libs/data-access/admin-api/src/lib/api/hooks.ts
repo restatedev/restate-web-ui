@@ -145,11 +145,29 @@ export function useServiceDetails(
   options?: HookQueryOptions<'/services/{service}', 'get'>
 ) {
   const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi('query', '/services/{service}', 'get', {
+    baseUrl,
+    parameters: { path: { service } },
+  });
 
-  return useQuery({
-    ...adminApi('query', '/services/{service}', 'get', {
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+  });
+
+  return { ...results, queryKey: queryOptions.queryKey };
+}
+
+export function useModifyDetails(
+  service: string,
+  options?: HookMutationOptions<'/services/{service}', 'patch'>
+) {
+  const baseUrl = useAdminBaseUrl();
+
+  return useMutation({
+    ...adminApi('mutate', '/services/{service}', 'patch', {
       baseUrl,
-      parameters: { path: { service } },
+      resolvedPath: `/services/${service}`,
     }),
     ...options,
   });
