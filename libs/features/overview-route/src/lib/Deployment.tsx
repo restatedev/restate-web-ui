@@ -10,9 +10,16 @@ import {
 import { Revision } from './Revision';
 import { DEPLOYMENT_QUERY_PARAM } from './constants';
 import { Link } from '@restate/ui/link';
+import { useSearchParams } from '@remix-run/react';
 
 const styles = tv({
   base: 'flex flex-row items-center gap-2 relative -m-1 p-1',
+  variants: {
+    isSelected: {
+      true: 'bg-white shadow-sm scale2-110 rounded-lg border -mx-5 px-[1.2rem]',
+      false: '',
+    },
+  },
 });
 
 export function Deployment({
@@ -26,6 +33,9 @@ export function Deployment({
 }) {
   const { data: { deployments } = {} } = useListDeployments();
   const deployment = deploymentId ? deployments?.get(deploymentId) : undefined;
+  const [searchParams] = useSearchParams();
+  const isSelected = searchParams.get(DEPLOYMENT_QUERY_PARAM) === deploymentId;
+
   if (!deployment) {
     return null;
   }
@@ -33,7 +43,7 @@ export function Deployment({
   const deploymentEndpoint = getEndpoint(deployment);
 
   return (
-    <div className={styles({ className })}>
+    <div className={styles({ className, isSelected })}>
       <div className="shrink-0 h-6 w-6 bg-white border shadow-sm rounded-md">
         <Icon
           name={isHttpDeployment(deployment) ? IconName.Http : IconName.Lambda}

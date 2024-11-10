@@ -62,7 +62,7 @@ export function Service({
           <div className="pl-1 uppercase text-2xs font-semibold text-gray-400 flex gap-2 items-center">
             Deployments
           </div>
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1.5">
             {revisions.map((revision) => (
               <Deployment
                 deploymentId={serviceDeployments?.[revision]}
