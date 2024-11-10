@@ -30,8 +30,11 @@ export function ServiceTypeExplainer({
 }: PropsWithChildren<{
   className?: string;
   variant?: ComponentProps<typeof InlineTooltip>['variant'];
-  type: ServiceType;
+  type?: ServiceType;
 }>) {
+  if (!type) {
+    return children;
+  }
   return (
     <InlineTooltip
       variant={variant}

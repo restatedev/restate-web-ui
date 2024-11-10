@@ -9,7 +9,7 @@ export function ServiceType({
   type,
   className,
 }: {
-  type: ServiceType;
+  type?: ServiceType;
   className?: string;
 }) {
   return (

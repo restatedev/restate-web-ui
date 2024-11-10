@@ -19,6 +19,7 @@ export interface SubmitButtonProps {
   className?: string;
   autoFocus?: boolean;
   hideSpinner?: boolean;
+  isPending?: boolean;
 }
 
 const spinnerStyles = tv({
@@ -88,11 +89,13 @@ export function SubmitButton({
   disabled,
   children,
   hideSpinner = false,
+  isPending,
   ...props
 }: PropsWithChildren<SubmitButtonProps>) {
   const ref = useRef<HTMLButtonElement | null>(null);
   const formElement = ref.current?.form;
-  const isSubmitting = useIsSubmitting(formElement?.action);
+  const isSubmitting =
+    useIsSubmitting(formElement?.action) || Boolean(isPending);
   const deferredIsSubmitting = useDeferredValue(isSubmitting);
 
   return (

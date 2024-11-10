@@ -7,6 +7,7 @@ import { SERVICE_QUERY_PARAM } from '../constants';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import {
   useListDeployments,
+  useModifyDetails,
   useServiceDetails,
 } from '@restate/data-access/admin-api';
 import { Form, useSearchParams } from '@remix-run/react';
@@ -21,50 +22,128 @@ import {
   FormFieldCombobox,
 } from '@restate/ui/form-field';
 import { InlineTooltip } from '@restate/ui/tooltip';
-import { HUMANTIME_PATTERN_INPUT } from '@restate/humantime';
-import { useId } from 'react';
+import { formatHumantime, HUMANTIME_PATTERN_INPUT } from '@restate/humantime';
+import { FormEvent, useEffect, useId, useState } from 'react';
 import { Link } from '@restate/ui/link';
+import { useQueryClient } from '@tanstack/react-query';
+import { ErrorBanner } from '@restate/ui/error';
 
 export function ServiceDetails() {
   const formId = useId();
+  const [searchParams] = useSearchParams();
+  const service = searchParams.get(SERVICE_QUERY_PARAM);
+  const [key, setKey] = useState(0);
+  const {
+    data,
+    queryKey,
+    error: fetchError,
+    isPending,
+  } = useServiceDetails(String(service), {
+    ...(!service && { enabled: false }),
+  });
+  useEffect(() => {
+    setKey((k) => k + 1);
+  }, [data]);
+
+  const queryClient = useQueryClient();
+  const {
+    mutate,
+    error: mutationError,
+    isPending: isSubmitting,
+  } = useModifyDetails(String(service), {
+    onSuccess(data) {
+      queryClient.setQueryData(queryKey, data);
+      setKey((k) => k + 1);
+    },
+  });
+  const error = fetchError ?? mutationError;
+
+  if (!service) {
+    return null;
+  }
+
+  const submitHandler = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const isPublic = formData.get('public') === 'true';
+    const idempotency_retention = formData.get('idempotency_retention') as
+      | string
+      | null;
+    const workflow_completion_retention = formData.get(
+      'workflow_completion_retention'
+    ) as string | null;
+
+    mutate({
+      parameters: {
+        path: { service: String(service) },
+      },
+      body: {
+        public: isPublic,
+        idempotency_retention: formatHumantime(idempotency_retention),
+        workflow_completion_retention: formatHumantime(
+          workflow_completion_retention
+        ),
+      },
+    });
+  };
+
   return (
     <ComplementaryWithSearchParam
       paramName={SERVICE_QUERY_PARAM}
       footer={
-        <>
-          <ComplementaryClose>
-            <Button className="flex-auto" variant="secondary">
-              Cancel
-            </Button>
-          </ComplementaryClose>
-          <SubmitButton form={formId} className="flex-auto">
-            Save
-          </SubmitButton>
-        </>
+        <div className="flex gap-2 flex-col flex-auto">
+          {error && <ErrorBanner errors={[error]} />}
+          <div className="flex gap-2">
+            <ComplementaryClose>
+              <Button
+                className="flex-auto"
+                variant="secondary"
+                disabled={isPending || isSubmitting}
+              >
+                Cancel
+              </Button>
+            </ComplementaryClose>
+            <SubmitButton
+              form={formId}
+              className="flex-auto"
+              isPending={isPending}
+            >
+              Save
+            </SubmitButton>
+          </div>
+        </div>
       }
     >
-      <ServiceForm id={formId} />
+      <Form
+        className="flex [&_section+section]:mt-2 flex-col"
+        id={formId}
+        method="patch"
+        action={`/services/${String(service)}`}
+        onSubmit={submitHandler}
+        key={key}
+      >
+        <ServiceForm service={service} />
+      </Form>
     </ComplementaryWithSearchParam>
   );
 }
 
-function ServiceForm({ id }: { id: string }) {
-  const [searchParams] = useSearchParams();
-  const service = searchParams.get(SERVICE_QUERY_PARAM);
+function ServiceForm({
+  service,
+  isSubmitting,
+}: {
+  service: string;
+  isSubmitting?: boolean;
+}) {
   const { data: listDeploymentsData } = useListDeployments();
-  const { data } = useServiceDetails(service ?? '', {
-    enabled: Boolean(service),
-  });
+  const { data, isPending } = useServiceDetails(service);
   const handlers = data?.handlers ?? [];
   const { deployments, sortedRevisions = [] } =
     listDeploymentsData?.services.get(String(service)) ?? {};
-
-  if (!data) {
-    return null;
-  }
+  const isPendingOrSubmitting = isPending || isSubmitting;
 
   return (
-    <Form className="flex [&_section+section]:mt-2 flex-col" id={id}>
+    <>
       <h2 className="mb-3 text-lg font-medium leading-6 text-gray-900 flex gap-2 items-center">
         <div className="h-10 w-10 shrink-0 text-blue-400">
           <Icon
@@ -93,9 +172,10 @@ function ServiceForm({ id }: { id: string }) {
           <FormFieldCheckbox
             name="public"
             value="true"
-            defaultChecked={data.public}
+            defaultChecked={data?.public}
             direction="right"
             className="[&_input]:self-center"
+            disabled={isPendingOrSubmitting}
           >
             <span className="text-zinc-500 font-medium text-sm">Public</span>
           </FormFieldCheckbox>
@@ -113,6 +193,7 @@ function ServiceForm({ id }: { id: string }) {
             allowsCustomValue
             required
             defaultValue={data?.idempotency_retention}
+            disabled={isPendingOrSubmitting}
             label={
               <InlineTooltip
                 variant="indicator-button"
@@ -154,6 +235,7 @@ function ServiceForm({ id }: { id: string }) {
               pattern={HUMANTIME_PATTERN_INPUT}
               allowsCustomValue
               required
+              disabled={isPendingOrSubmitting}
               className="[&_label]:text-zinc-500"
               defaultValue={data?.workflow_completion_retention ?? undefined}
               label={
@@ -161,14 +243,30 @@ function ServiceForm({ id }: { id: string }) {
                   variant="indicator-button"
                   title="Workflow completion"
                   description="Modify the retention of the workflow completion. This
-                          can be modified only for workflow services"
+                          can be modified only for workflow services."
                 >
                   <span slot="title">Workflow completion</span>
                 </InlineTooltip>
               }
               name="workflow_completion_retention"
             >
-              <ComboBoxSection title="Examples">
+              <ComboBoxSection
+                title="Examples"
+                description={
+                  <>
+                    Choose from the example options above, or enter a custom
+                    value in the{' '}
+                    <Link
+                      href="https://docs.rs/humantime/latest/humantime/fn.parse_duration.html#examples"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      humantime
+                    </Link>{' '}
+                    format.
+                  </>
+                }
+              >
                 <ComboBoxItem value="1h 30m">1h 30m</ComboBoxItem>
                 <ComboBoxItem value="12h">12h</ComboBoxItem>
                 <ComboBoxItem value="1day">1day</ComboBoxItem>
@@ -204,6 +302,6 @@ function ServiceForm({ id }: { id: string }) {
           </div>
         </SectionContent>
       </Section>
-    </Form>
+    </>
   );
 }
