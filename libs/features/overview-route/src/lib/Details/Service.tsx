@@ -152,18 +152,35 @@ function ServiceForm({
           />
         </div>{' '}
         <div className="flex flex-col items-start gap-1">
-          {data?.name}
-          <ServiceType type={data?.ty} className="self-start" />
+          {isPendingOrSubmitting ? (
+            <>
+              <div className="w-[16ch] h-5 animate-pulse rounded-md bg-gray-200 mt-1" />
+              <div className="w-[8ch] h-5 animate-pulse rounded-md bg-gray-200" />
+            </>
+          ) : (
+            <>
+              {data?.name}
+              <ServiceType type={data?.ty} className="self-start" />
+            </>
+          )}
         </div>
       </h2>
       <Section className="mt-4">
         <SectionTitle>Handlers</SectionTitle>
         <SectionContent className="bg-transparent shadow-none border-none">
-          <div className="flex flex-col gap-2">
-            {handlers.map((handler) => (
-              <Handler handler={handler} key={handler.name} className="pl-0" />
-            ))}
-          </div>
+          {isPendingOrSubmitting ? (
+            <div className="w-full h-6 animate-pulse rounded-md bg-white" />
+          ) : (
+            <div className="flex flex-col gap-2">
+              {handlers.map((handler) => (
+                <Handler
+                  handler={handler}
+                  key={handler.name}
+                  className="pl-0"
+                />
+              ))}
+            </div>
+          )}
         </SectionContent>
       </Section>
       <Section>
@@ -291,15 +308,19 @@ function ServiceForm({
       <Section>
         <SectionTitle>Deployments</SectionTitle>
         <SectionContent className="bg-transparent shadow-none border-none">
-          <div className="flex flex-col gap-2">
-            {sortedRevisions.map((revision) => (
-              <Deployment
-                deploymentId={deployments?.[revision]}
-                revision={revision}
-                key={revision}
-              />
-            ))}
-          </div>
+          {isPendingOrSubmitting ? (
+            <div className="w-full h-6 animate-pulse rounded-md bg-white" />
+          ) : (
+            <div className="flex flex-col gap-2">
+              {sortedRevisions.map((revision) => (
+                <Deployment
+                  deploymentId={deployments?.[revision]}
+                  revision={revision}
+                  key={revision}
+                />
+              ))}
+            </div>
+          )}
         </SectionContent>
       </Section>
     </>
