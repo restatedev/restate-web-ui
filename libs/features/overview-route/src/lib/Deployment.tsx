@@ -16,7 +16,7 @@ const styles = tv({
   base: 'flex flex-row items-center gap-2 relative -m-1 p-1',
   variants: {
     isSelected: {
-      true: 'bg-white shadow-sm scale2-110 rounded-lg border -mx-5 px-[1.2rem]',
+      true: 'bg-white shadow-sm scale2-110 rounded-lg border -mx-5 px-[1.2rem] z-10',
       false: '',
     },
   },
