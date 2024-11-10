@@ -139,3 +139,36 @@ export function useRegisterDeployment(
     ...options,
   });
 }
+
+export function useServiceDetails(
+  service: string,
+  options?: HookQueryOptions<'/services/{service}', 'get'>
+) {
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi('query', '/services/{service}', 'get', {
+    baseUrl,
+    parameters: { path: { service } },
+  });
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+  });
+
+  return { ...results, queryKey: queryOptions.queryKey };
+}
+
+export function useModifyDetails(
+  service: string,
+  options?: HookMutationOptions<'/services/{service}', 'patch'>
+) {
+  const baseUrl = useAdminBaseUrl();
+
+  return useMutation({
+    ...adminApi('mutate', '/services/{service}', 'patch', {
+      baseUrl,
+      resolvedPath: `/services/${service}`,
+    }),
+    ...options,
+  });
+}

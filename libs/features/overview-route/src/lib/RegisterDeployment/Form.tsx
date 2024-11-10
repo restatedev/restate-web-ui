@@ -132,6 +132,7 @@ function EndpointForm() {
       <FormFieldInput
         autoFocus
         required
+        autoComplete="url"
         value={endpoint}
         disabled={isPending}
         type={isLambda ? 'text' : 'url'}
@@ -172,7 +173,9 @@ function EndpointForm() {
             }
             disabled={isPending}
           >
-            <FormFieldLabel className="sr-only">Endpoint type</FormFieldLabel>
+            <FormFieldLabel className="sr-only w-[1px]">
+              Endpoint type
+            </FormFieldLabel>
             <Tooltip>
               <TooltipTrigger>
                 <CustomRadio

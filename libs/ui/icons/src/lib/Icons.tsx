@@ -24,7 +24,7 @@ import {
   Wallet,
   X,
   Box,
-  SquareFunction,
+  ChevronUp,
   Info,
   ArrowRight,
   ArrowLeft,
@@ -84,6 +84,7 @@ export const enum IconName {
   ArrowRight = 'ArrowRight',
   ArrowLeft = 'ArrowLeft',
   ChevronLeft = 'ChevronLeft',
+  ChevronUp = 'ChevronUp',
   Question = 'Question',
 }
 export interface IconsProps {
@@ -132,6 +133,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.ArrowLeft]: ArrowLeft,
   [IconName.ArrowRight]: ArrowRight,
   [IconName.ChevronLeft]: ChevronLeft,
+  [IconName.ChevronUp]: ChevronUp,
   [IconName.Question]: Question,
 };
 

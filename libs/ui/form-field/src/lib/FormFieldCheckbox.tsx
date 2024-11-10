@@ -19,6 +19,7 @@ interface FormFieldCheckboxProps
   errorMessage?: ComponentProps<typeof FormFieldError>['children'];
   slot?: string;
   checked?: boolean;
+  defaultChecked?: boolean;
   onChange?: (checked: boolean) => void;
   direction?: 'left' | 'right';
 }

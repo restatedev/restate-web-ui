@@ -22,6 +22,10 @@ import {
   HealthCheckNotification,
   HealthIndicator,
 } from '@restate/features/health';
+import {
+  DeploymentDetails,
+  ServiceDetails,
+} from '@restate/features/overview-route';
 
 export const links: LinksFunction = () => [
   {
@@ -122,6 +126,8 @@ export default function App() {
             </LayoutOutlet>
           </div>
         </LayoutOutlet>
+        <DeploymentDetails />
+        <ServiceDetails />
       </RestateContextProvider>
     </QueryProvider>
   );

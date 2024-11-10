@@ -8,3 +8,4 @@ export type Revision = components['schemas']['ServiceMetadata']['revision'];
 export type Service = components['schemas']['ServiceMetadata'];
 export type ServiceName = Service['name'];
 export type DeploymentId = Deployment['id'];
+export type ServiceType = Service['ty'];

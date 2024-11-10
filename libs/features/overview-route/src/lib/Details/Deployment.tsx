@@ -3,11 +3,12 @@ import {
   ComplementaryWithSearchParam,
   ComplementaryClose,
 } from '@restate/ui/layout';
+import { DEPLOYMENT_QUERY_PARAM } from '../constants';
 
 export function DeploymentDetails() {
   return (
     <ComplementaryWithSearchParam
-      paramName="deployment"
+      paramName={DEPLOYMENT_QUERY_PARAM}
       footer={
         <>
           <ComplementaryClose>
@@ -19,11 +20,11 @@ export function DeploymentDetails() {
         </>
       }
     >
-      {DeploymentForm}
+      <DeploymentForm />
     </ComplementaryWithSearchParam>
   );
 }
 
-function DeploymentForm({ paramValue }: { paramValue: string }) {
-  return <div>{paramValue}</div>;
+function DeploymentForm() {
+  return <div>deployment</div>;
 }

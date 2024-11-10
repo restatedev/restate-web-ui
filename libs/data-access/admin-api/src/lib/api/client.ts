@@ -166,6 +166,7 @@ export function adminApi<
   method: Method,
   init: {
     baseUrl: string;
+    resolvedPath?: string;
   }
 ): {
   mutationFn: MutationFn<Path, Method, Parameters, Body>;
@@ -185,6 +186,7 @@ export function adminApi<
     baseUrl: string;
     parameters?: Parameters;
     body?: Body;
+    resolvedPath?: string;
   }
 ):
   | {
@@ -197,7 +199,7 @@ export function adminApi<
       mutationKey: MutationKey<Path, Method, Parameters, Body>;
       meta: Record<string, unknown>;
     } {
-  const key = [path, { ...init, method }];
+  const key = [init.resolvedPath ?? path, { ...init, method }];
 
   if (type === 'query') {
     return {

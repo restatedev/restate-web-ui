@@ -4,9 +4,10 @@ import { getEndpoint, isHttpDeployment } from './types';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import {
   DeploymentId,
-  Revision,
+  Revision as ServiceRevision,
   useListDeployments,
 } from '@restate/data-access/admin-api';
+import { Revision } from './Revision';
 
 const styles = tv({
   base: 'flex flex-row items-center gap-2',
@@ -17,7 +18,7 @@ export function Deployment({
   revision,
   deploymentId,
 }: {
-  revision: Revision;
+  revision: ServiceRevision;
   className?: string;
   deploymentId?: DeploymentId;
 }) {
@@ -41,11 +42,7 @@ export function Deployment({
           {getEndpoint(deployment)}
         </TruncateWithTooltip>
       </div>
-      <div className="uppercase max-w-[12ch] truncate shrink-0 ml-auto font-semibold text-2xs font-mono items-center rounded-xl px-2 leading-4 bg-white/50 ring-1 ring-inset ring-zinc-500/20 text-zinc-500">
-        <TruncateWithTooltip copyText={String(revision)}>
-          <span className="uppercase">rev. {revision}</span>
-        </TruncateWithTooltip>
-      </div>
+      <Revision revision={revision} className="ml-auto" />
     </div>
   );
 }

@@ -35,7 +35,7 @@ export function Complementary({
       <LayoutOutlet zone={LayoutZone.Complementary}>
         <div
           data-complementary-content
-          className="min-h-[50vh] bg-white p-6 border rounded-xl max-h-[inherit] overflow-auto relative"
+          className="overflow-y-auto min-h-[50vh] bg-white p-3 pt-5 border rounded-xl max-h-[inherit] overflow-auto relative flex-auto"
         >
           {children}
         </div>
@@ -70,10 +70,11 @@ export function ComplementaryWithSearchParam({
   children,
   footer,
   paramName,
-}: Pick<ComplementaryProps, 'footer'> & {
-  paramName: string;
-  children: (args: { paramValue: string }) => ReactNode;
-}) {
+}: PropsWithChildren<
+  Pick<ComplementaryProps, 'footer'> & {
+    paramName: string;
+  }
+>) {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const paramValue = searchParams.get(paramName);
@@ -81,7 +82,7 @@ export function ComplementaryWithSearchParam({
     if (!paramValue) {
       return null;
     }
-    return children({ paramValue });
+    return children;
   }, [children, paramValue]);
 
   const onClose = useCallback(() => {

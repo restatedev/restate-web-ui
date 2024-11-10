@@ -10,7 +10,13 @@ import { tv } from 'tailwind-variants';
 interface LinkProps
   extends Pick<
       AriaLinkProps,
-      'autoFocus' | 'target' | 'rel' | 'className' | 'children' | 'href'
+      | 'autoFocus'
+      | 'target'
+      | 'rel'
+      | 'className'
+      | 'children'
+      | 'href'
+      | 'aria-label'
     >,
     Pick<AriaAttributes, 'aria-current'> {
   variant?: 'primary' | 'secondary' | 'button' | 'secondary-button';

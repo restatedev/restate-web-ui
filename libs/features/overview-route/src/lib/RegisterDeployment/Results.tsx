@@ -6,10 +6,9 @@ import {
   UNSTABLE_DisclosurePanel as DisclosurePanel,
 } from 'react-aria-components';
 import { Button } from '@restate/ui/button';
-import {
-  HandlerTypeExplainer,
-  ServiceTypeExplainer,
-} from '@restate/features/explainers';
+import { ServiceTypeExplainer } from '@restate/features/explainers';
+import { Handler } from '../Handler';
+import { ServiceType } from '../ServiceType';
 
 export function RegisterDeploymentResults() {
   const { services = [] } = useRegisterDeploymentContext();
@@ -72,15 +71,7 @@ function Service({
           <div className="flex flex-col gap-1 items-start">
             <div className="flex items-center gap-2">
               <div className="font-medium">{service.name}</div>
-              <div className="ml-auto text-xs bg-blue-50 text-blue-800 ring-blue-600/20 inline-flex gap-1 items-center rounded-md px-2 py-0.5 font-medium ring-1 ring-inset">
-                <ServiceTypeExplainer
-                  type={service.ty}
-                  variant="indicator-button"
-                  className="z-10"
-                >
-                  {service.ty}
-                </ServiceTypeExplainer>
-              </div>
+              <ServiceType type={service.ty} className="ml-auto" />
             </div>
           </div>
           <div className="ml-auto mr-7 uppercase font-semibold text-2xs font-mono items-center rounded-xl px-2 leading-4 bg-gray-50 ring-1 ring-inset ring-zinc-500/20 text-zinc-500">
@@ -93,41 +84,15 @@ function Service({
               <div className="ml-2 uppercase text-xs font-semibold text-gray-400 mt-2 mb-1 flex gap-2 items-center">
                 Handlers
               </div>
-              {service.handlers.map((handler) => (
-                <ServiceHandler handler={handler} key={handler.name} />
-              ))}
+              <div className="flex flex-col gap-2 pl-1.5 mt-2">
+                {service.handlers.map((handler) => (
+                  <Handler handler={handler} key={handler.name} />
+                ))}
+              </div>
             </div>
           )}
         </DisclosurePanel>
       </Disclosure>
-    </div>
-  );
-}
-
-function ServiceHandler({
-  handler,
-}: {
-  handler: adminApi.components['schemas']['ServiceMetadata']['handlers'][number];
-}) {
-  return (
-    <div className="flex flex-row items-center gap-2 [&:has(+*)]:rounded-b-none [&+*]:rounded-t-none [&+*]:border-t-0 rounded-[calc(0.75rem-0.5rem)]">
-      <div className="h-9 aspect-square p-1">
-        <div className="rounded h-full w-full flex items-center justify-center text-gray-400">
-          <div className="bg-white border shadow-sm rounded-md w-6 h-6">
-            <Icon
-              name={IconName.Function}
-              className="w-full h-full text-zinc-400"
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="text-code text-zinc-600">{handler.name}</div>
-      <div className="ml-auto mr-1.5 text-2xs font-medium bg-white text-zinc-500 ring-zinc-500/20 inline-flex gap-1 items-center rounded-md px-2 py-0 ring-1 ring-inset">
-        <HandlerTypeExplainer type={handler.ty} variant="indicator-button">
-          {handler.ty}
-        </HandlerTypeExplainer>
-      </div>
     </div>
   );
 }

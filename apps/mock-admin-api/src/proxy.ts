@@ -13,7 +13,7 @@ const proxyHandler: RequestHandler = async (req, res) => {
     method: req.method,
     headers: new Headers(req.headers as Record<string, string>),
     ...(req.body &&
-      ['POST', 'PUT'].includes(req.method) && {
+      ['POST', 'PUT', 'PATCH'].includes(req.method) && {
         body: JSON.stringify(req.body),
       }),
   });

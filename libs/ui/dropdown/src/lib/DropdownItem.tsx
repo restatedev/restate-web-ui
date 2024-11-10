@@ -61,7 +61,7 @@ function StyledDropdownItem({
   );
 }
 
-interface DropdownItemProps
+interface BaseDropdownItemProps
   extends PropsWithChildren<{
     value?: never;
     href?: never;
@@ -72,7 +72,7 @@ interface DropdownItemProps
 
 interface DropdownCustomItemProps
   extends PropsWithChildren<
-    Omit<DropdownItemProps, 'children' | 'href' | 'value'>
+    Omit<BaseDropdownItemProps, 'children' | 'href' | 'value'>
   > {
   value: string;
   href?: never;
@@ -85,20 +85,23 @@ interface DropdownNavItemProps
 }
 
 function isNavItem(
-  props: DropdownItemProps | DropdownCustomItemProps | DropdownNavItemProps
+  props: BaseDropdownItemProps | DropdownCustomItemProps | DropdownNavItemProps
 ): props is DropdownNavItemProps {
   return Boolean(props.href);
 }
 
 function isCustomItem(
-  props: DropdownItemProps | DropdownCustomItemProps | DropdownNavItemProps
+  props: BaseDropdownItemProps | DropdownCustomItemProps | DropdownNavItemProps
 ): props is DropdownCustomItemProps {
   return typeof props.value === 'string';
 }
 
-export function DropdownItem(
-  props: DropdownItemProps | DropdownCustomItemProps | DropdownNavItemProps
-) {
+export type DropdownItemProps =
+  | BaseDropdownItemProps
+  | DropdownCustomItemProps
+  | DropdownNavItemProps;
+
+export function DropdownItem(props: DropdownItemProps) {
   if (isNavItem(props)) {
     const { href, value, ...rest } = props;
     return (

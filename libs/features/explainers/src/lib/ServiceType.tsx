@@ -1,7 +1,6 @@
 import { InlineTooltip } from '@restate/ui/tooltip';
 import { ComponentProps, PropsWithChildren } from 'react';
-import * as adminApi from '@restate/data-access/admin-api/spec';
-type ServiceType = adminApi.components['schemas']['ServiceMetadata']['ty'];
+import type { ServiceType } from '@restate/data-access/admin-api';
 
 const TITLES: Record<ServiceType, string> = {
   Service: 'Service',
@@ -31,8 +30,11 @@ export function ServiceTypeExplainer({
 }: PropsWithChildren<{
   className?: string;
   variant?: ComponentProps<typeof InlineTooltip>['variant'];
-  type: ServiceType;
+  type?: ServiceType;
 }>) {
+  if (!type) {
+    return children;
+  }
   return (
     <InlineTooltip
       variant={variant}
