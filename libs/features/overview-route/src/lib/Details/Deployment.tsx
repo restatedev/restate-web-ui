@@ -20,11 +20,11 @@ export function DeploymentDetails() {
         </>
       }
     >
-      {DeploymentForm}
+      <DeploymentForm />
     </ComplementaryWithSearchParam>
   );
 }
 
-function DeploymentForm({ paramValue }: { paramValue: string }) {
-  return <div>{paramValue}</div>;
+function DeploymentForm() {
+  return <div>deployment</div>;
 }
