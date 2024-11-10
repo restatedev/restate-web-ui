@@ -8,9 +8,11 @@ import {
   useListDeployments,
 } from '@restate/data-access/admin-api';
 import { Revision } from './Revision';
+import { DEPLOYMENT_QUERY_PARAM } from './constants';
+import { Link } from '@restate/ui/link';
 
 const styles = tv({
-  base: 'flex flex-row items-center gap-2',
+  base: 'flex flex-row items-center gap-2 relative -m-1 p-1',
 });
 
 export function Deployment({
@@ -28,6 +30,8 @@ export function Deployment({
     return null;
   }
 
+  const deploymentEndpoint = getEndpoint(deployment);
+
   return (
     <div className={styles({ className })}>
       <div className="shrink-0 h-6 w-6 bg-white border shadow-sm rounded-md">
@@ -37,10 +41,18 @@ export function Deployment({
         />
       </div>
 
-      <div className="text-code text-zinc-600 truncate">
-        <TruncateWithTooltip copyText={getEndpoint(deployment)}>
-          {getEndpoint(deployment)}
+      <div className="flex flex-row gap-1 items-center text-code text-zinc-600 truncate">
+        <TruncateWithTooltip copyText={deploymentEndpoint}>
+          {deploymentEndpoint}
         </TruncateWithTooltip>
+        <Link
+          aria-label={deploymentEndpoint}
+          variant="secondary"
+          href={`?${DEPLOYMENT_QUERY_PARAM}=${deployment.id}`}
+          className="outline-offset-0 m-1 ml-0 rounded-full before:absolute before:inset-0 before:content-[''] before:rounded-lg hover:before:bg-black/[0.03] pressed:before:bg-black/5"
+        >
+          <Icon name={IconName.ChevronRight} className="w-4 h-4" />
+        </Link>
       </div>
       <Revision revision={revision} className="ml-auto" />
     </div>

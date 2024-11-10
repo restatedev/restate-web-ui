@@ -51,7 +51,7 @@ export function Service({
             aria-label={serviceName}
             variant="secondary"
             href={`?${SERVICE_QUERY_PARAM}=${serviceName}`}
-            className="rounded-full before:absolute before:inset-0 before:content-[''] before:rounded-t-[0.9rem] hover:before:bg-black/[0.03] pressed:before:bg-black/5"
+            className="outline-offset-0 rounded-full before:absolute before:inset-0 before:content-[''] before:rounded-t-[0.9rem] hover:before:bg-black/[0.03] pressed:before:bg-black/5"
           >
             <Icon name={IconName.ChevronRight} className="w-4 h-4" />
           </Link>
@@ -62,13 +62,15 @@ export function Service({
           <div className="pl-1 uppercase text-2xs font-semibold text-gray-400 flex gap-2 items-center">
             Deployments
           </div>
-          {revisions.map((revision) => (
-            <Deployment
-              deploymentId={serviceDeployments?.[revision]}
-              revision={revision}
-              key={revision}
-            />
-          ))}
+          <div className="flex flex-col gap-1">
+            {revisions.map((revision) => (
+              <Deployment
+                deploymentId={serviceDeployments?.[revision]}
+                revision={revision}
+                key={revision}
+              />
+            ))}
+          </div>
         </div>
       )}
     </div>
