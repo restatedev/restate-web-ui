@@ -53,7 +53,10 @@ export function Service({
             href={`?${SERVICE_QUERY_PARAM}=${serviceName}`}
             className="outline-offset-0 rounded-full before:absolute before:inset-0 before:content-[''] before:rounded-t-[0.9rem] hover:before:bg-black/[0.03] pressed:before:bg-black/5"
           >
-            <Icon name={IconName.ChevronRight} className="w-4 h-4" />
+            <Icon
+              name={IconName.ChevronRight}
+              className="w-4 h-4 text-gray-500"
+            />
           </Link>
         </div>
       </div>

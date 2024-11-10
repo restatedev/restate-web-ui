@@ -13,11 +13,11 @@ import { Link } from '@restate/ui/link';
 import { useSearchParams } from '@remix-run/react';
 
 const styles = tv({
-  base: 'flex flex-row items-center gap-2 relative -m-1 p-1',
+  base: 'flex flex-row items-center gap-2 relative border -m-1 p-1 transition-all ease-in-out',
   variants: {
     isSelected: {
-      true: 'bg-white shadow-sm scale2-110 rounded-lg border -mx-5 px-[1.2rem] z-10',
-      false: '',
+      true: 'bg-white shadow-sm rounded-lg border -mx-5 px-[1.25rem] z-10 font-medium',
+      false: 'border-transparent',
     },
   },
 });
@@ -61,7 +61,10 @@ export function Deployment({
           href={`?${DEPLOYMENT_QUERY_PARAM}=${deployment.id}`}
           className="outline-offset-0 m-1 ml-0 rounded-full before:absolute before:inset-0 before:content-[''] before:rounded-lg hover:before:bg-black/[0.03] pressed:before:bg-black/5"
         >
-          <Icon name={IconName.ChevronRight} className="w-4 h-4" />
+          <Icon
+            name={IconName.ChevronRight}
+            className="w-4 h-4 text-gray-500"
+          />
         </Link>
       </div>
       <Revision revision={revision} className="ml-auto" />
