@@ -158,7 +158,25 @@ export function useServiceDetails(
   return { ...results, queryKey: queryOptions.queryKey };
 }
 
-export function useModifyDetails(
+export function useDeploymentDetails(
+  deployment: string,
+  options?: HookQueryOptions<'/deployments/{deployment}', 'get'>
+) {
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi('query', '/deployments/{deployment}', 'get', {
+    baseUrl,
+    parameters: { path: { deployment } },
+  });
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+  });
+
+  return { ...results, queryKey: queryOptions.queryKey };
+}
+
+export function useModifyService(
   service: string,
   options?: HookMutationOptions<'/services/{service}', 'patch'>
 ) {
@@ -168,6 +186,21 @@ export function useModifyDetails(
     ...adminApi('mutate', '/services/{service}', 'patch', {
       baseUrl,
       resolvedPath: `/services/${service}`,
+    }),
+    ...options,
+  });
+}
+
+export function useDeleteDeployment(
+  deployment: string,
+  options?: HookMutationOptions<'/deployments/{deployment}', 'delete'>
+) {
+  const baseUrl = useAdminBaseUrl();
+
+  return useMutation({
+    ...adminApi('mutate', '/deployments/{deployment}', 'delete', {
+      baseUrl,
+      resolvedPath: `/deployments/${deployment}`,
     }),
     ...options,
   });

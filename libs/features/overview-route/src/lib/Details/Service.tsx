@@ -7,7 +7,7 @@ import { SERVICE_QUERY_PARAM } from '../constants';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import {
   useListDeployments,
-  useModifyDetails,
+  useModifyService,
   useServiceDetails,
 } from '@restate/data-access/admin-api';
 import { Form, useSearchParams } from '@remix-run/react';
@@ -50,7 +50,7 @@ export function ServiceDetails() {
     mutate,
     error: mutationError,
     isPending: isSubmitting,
-  } = useModifyDetails(String(service), {
+  } = useModifyService(String(service), {
     onSuccess(data) {
       queryClient.setQueryData(queryKey, data);
       setKey((k) => k + 1);
