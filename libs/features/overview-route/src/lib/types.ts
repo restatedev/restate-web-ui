@@ -13,7 +13,10 @@ export function isLambdaDeployment(
 ): deployment is LambdaDeployment {
   return 'arn' in deployment;
 }
-export function getEndpoint(deployment: Deployment) {
+export function getEndpoint(deployment?: Deployment) {
+  if (!deployment) {
+    return undefined;
+  }
   if (isHttpDeployment(deployment)) {
     return deployment.uri;
   } else {

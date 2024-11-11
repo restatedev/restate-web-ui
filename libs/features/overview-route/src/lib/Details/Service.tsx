@@ -21,7 +21,7 @@ import {
   FormFieldCheckbox,
   FormFieldCombobox,
 } from '@restate/ui/form-field';
-import { InlineTooltip } from '@restate/ui/tooltip';
+import { InlineTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
 import { formatHumantime, HUMANTIME_PATTERN_INPUT } from '@restate/humantime';
 import { FormEvent, useEffect, useId, useState } from 'react';
 import { Link } from '@restate/ui/link';
@@ -96,7 +96,7 @@ export function ServiceDetails() {
           <div className="flex gap-2">
             <ComplementaryClose>
               <Button
-                className="flex-auto"
+                className="flex-auto w-1/2 grow-0"
                 variant="secondary"
                 disabled={isPending || isSubmitting}
               >
@@ -105,7 +105,7 @@ export function ServiceDetails() {
             </ComplementaryClose>
             <SubmitButton
               form={formId}
-              className="flex-auto"
+              className="flex-auto w-1/2 grow-0"
               isPending={isPending}
             >
               Save
@@ -151,7 +151,7 @@ function ServiceForm({
             className="w-full h-full p-1.5 fill-blue-50 text-blue-400 drop-shadow-md"
           />
         </div>{' '}
-        <div className="flex flex-col items-start gap-1">
+        <div className="flex flex-col items-start gap-1 min-w-0">
           {isPendingOrSubmitting ? (
             <>
               <div className="w-[16ch] h-5 animate-pulse rounded-md bg-gray-200 mt-1" />
@@ -159,7 +159,7 @@ function ServiceForm({
             </>
           ) : (
             <>
-              {data?.name}
+              <TruncateWithTooltip>{data?.name}</TruncateWithTooltip>
               <ServiceType type={data?.ty} className="self-start" />
             </>
           )}
@@ -167,7 +167,7 @@ function ServiceForm({
       </h2>
       <Section className="mt-4">
         <SectionTitle>Handlers</SectionTitle>
-        <SectionContent className="bg-transparent shadow-none border-none">
+        <SectionContent className="bg-transparent shadow-none border-none px-2">
           {isPendingOrSubmitting ? (
             <div className="w-full h-6 animate-pulse rounded-md bg-white" />
           ) : (
@@ -307,7 +307,7 @@ function ServiceForm({
       </Section>
       <Section>
         <SectionTitle>Deployments</SectionTitle>
-        <SectionContent className="bg-transparent shadow-none border-none">
+        <SectionContent className="bg-transparent shadow-none border-none px-2">
           {isPendingOrSubmitting ? (
             <div className="w-full h-6 animate-pulse rounded-md bg-white" />
           ) : (
