@@ -7,7 +7,7 @@ import { SERVICE_QUERY_PARAM } from '../constants';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import {
   useListDeployments,
-  useModifyDetails,
+  useModifyService,
   useServiceDetails,
 } from '@restate/data-access/admin-api';
 import { Form, useSearchParams } from '@remix-run/react';
@@ -21,7 +21,7 @@ import {
   FormFieldCheckbox,
   FormFieldCombobox,
 } from '@restate/ui/form-field';
-import { InlineTooltip } from '@restate/ui/tooltip';
+import { InlineTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
 import { formatHumantime, HUMANTIME_PATTERN_INPUT } from '@restate/humantime';
 import { FormEvent, useEffect, useId, useState } from 'react';
 import { Link } from '@restate/ui/link';
@@ -50,7 +50,7 @@ export function ServiceDetails() {
     mutate,
     error: mutationError,
     isPending: isSubmitting,
-  } = useModifyDetails(String(service), {
+  } = useModifyService(String(service), {
     onSuccess(data) {
       queryClient.setQueryData(queryKey, data);
       setKey((k) => k + 1);
@@ -72,6 +72,10 @@ export function ServiceDetails() {
     const workflow_completion_retention = formData.get(
       'workflow_completion_retention'
     ) as string | null;
+    const inactivity_timeout = formData.get('inactivity_timeout') as
+      | string
+      | null;
+    const abort_timeout = formData.get('abort_timeout') as string | null;
 
     mutate({
       parameters: {
@@ -83,6 +87,8 @@ export function ServiceDetails() {
         workflow_completion_retention: formatHumantime(
           workflow_completion_retention
         ),
+        inactivity_timeout,
+        abort_timeout,
       },
     });
   };
@@ -96,7 +102,7 @@ export function ServiceDetails() {
           <div className="flex gap-2">
             <ComplementaryClose>
               <Button
-                className="flex-auto"
+                className="flex-auto w-1/2 grow-0"
                 variant="secondary"
                 disabled={isPending || isSubmitting}
               >
@@ -105,7 +111,7 @@ export function ServiceDetails() {
             </ComplementaryClose>
             <SubmitButton
               form={formId}
-              className="flex-auto"
+              className="flex-auto w-1/2 grow-0"
               isPending={isPending}
             >
               Save
@@ -151,7 +157,7 @@ function ServiceForm({
             className="w-full h-full p-1.5 fill-blue-50 text-blue-400 drop-shadow-md"
           />
         </div>{' '}
-        <div className="flex flex-col items-start gap-1">
+        <div className="flex flex-col items-start gap-1 min-w-0">
           {isPendingOrSubmitting ? (
             <>
               <div className="w-[16ch] h-5 animate-pulse rounded-md bg-gray-200 mt-1" />
@@ -159,7 +165,7 @@ function ServiceForm({
             </>
           ) : (
             <>
-              {data?.name}
+              <TruncateWithTooltip>{data?.name}</TruncateWithTooltip>
               <ServiceType type={data?.ty} className="self-start" />
             </>
           )}
@@ -167,7 +173,7 @@ function ServiceForm({
       </h2>
       <Section className="mt-4">
         <SectionTitle>Handlers</SectionTitle>
-        <SectionContent className="bg-transparent shadow-none border-none">
+        <SectionContent className="bg-transparent shadow-none border-none px-2">
           {isPendingOrSubmitting ? (
             <div className="w-full h-6 animate-pulse rounded-md bg-white" />
           ) : (
@@ -254,7 +260,7 @@ function ServiceForm({
               required
               disabled={isPendingOrSubmitting}
               className="[&_label]:text-zinc-500"
-              defaultValue={data?.workflow_completion_retention ?? undefined}
+              defaultValue={data?.workflow_completion_retention ?? ''}
               label={
                 <InlineTooltip
                   variant="indicator-button"
@@ -306,19 +312,119 @@ function ServiceForm({
         </span>
       </Section>
       <Section>
+        <SectionTitle>Timeouts</SectionTitle>
+        <SectionContent className="flex flex-col gap-4">
+          <FormFieldCombobox
+            pattern={HUMANTIME_PATTERN_INPUT}
+            allowsCustomValue
+            required
+            defaultValue={data?.inactivity_timeout ?? ''}
+            disabled={isPendingOrSubmitting}
+            label={
+              <InlineTooltip
+                variant="indicator-button"
+                title="Inactivity timeout"
+                description="This timer guards against stalled service/handler invocations. Once it expires, Restate triggers a graceful termination by asking the service invocation to suspend (which preserves intermediate progress)"
+              >
+                <span slot="title">Inactivity</span>
+              </InlineTooltip>
+            }
+            name="inactivity_timeout"
+            className="[&_label]:text-zinc-500"
+            placeholder="1m"
+          >
+            <ComboBoxSection
+              title="Examples"
+              description={
+                <>
+                  Choose from the example options above, or enter a custom value
+                  in the{' '}
+                  <Link
+                    href="https://docs.rs/humantime/latest/humantime/fn.parse_duration.html#examples"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    humantime
+                  </Link>{' '}
+                  format.
+                </>
+              }
+            >
+              <ComboBoxItem value="1m">1m</ComboBoxItem>
+              <ComboBoxItem value="5m">5m</ComboBoxItem>
+              <ComboBoxItem value="30m">30m</ComboBoxItem>
+              <ComboBoxItem value="1h 30m">1h 30m</ComboBoxItem>
+              <ComboBoxItem value="1day">1day</ComboBoxItem>
+            </ComboBoxSection>
+          </FormFieldCombobox>
+          <FormFieldCombobox
+            pattern={HUMANTIME_PATTERN_INPUT}
+            allowsCustomValue
+            required
+            disabled={isPendingOrSubmitting}
+            className="[&_label]:text-zinc-500"
+            defaultValue={data?.abort_timeout ?? ''}
+            placeholder="1m"
+            label={
+              <InlineTooltip
+                variant="indicator-button"
+                title="Abort timeout"
+                description="This timer guards against stalled service/handler invocations that are supposed to terminate. The abort timeout is started after the 'inactivity timeout' has expired and the service/handler invocation has been asked to gracefully terminate. Once the timer expires, it will abort the service/handler invocation."
+              >
+                <span slot="title">Abort</span>
+              </InlineTooltip>
+            }
+            name="abort_timeout"
+          >
+            <ComboBoxSection
+              title="Examples"
+              description={
+                <>
+                  Choose from the example options above, or enter a custom value
+                  in the{' '}
+                  <Link
+                    href="https://docs.rs/humantime/latest/humantime/fn.parse_duration.html#examples"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    humantime
+                  </Link>{' '}
+                  format.
+                </>
+              }
+            >
+              <ComboBoxItem value="1m">1m</ComboBoxItem>
+              <ComboBoxItem value="5m">5m</ComboBoxItem>
+              <ComboBoxItem value="30m">30m</ComboBoxItem>
+              <ComboBoxItem value="1h 30m">1h 30m</ComboBoxItem>
+              <ComboBoxItem value="1day">1day</ComboBoxItem>
+            </ComboBoxSection>
+          </FormFieldCombobox>
+        </SectionContent>
+        <span className="text-gray-500 px-4 pb-2 block text-xs normal-case font-normal mt-2">
+          Configured using the{' '}
+          <Link
+            href="https://docs.rs/humantime/latest/humantime/fn.parse_duration.html#examples"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            humantime
+          </Link>{' '}
+          format.
+        </span>
+      </Section>
+      <Section>
         <SectionTitle>Deployments</SectionTitle>
-        <SectionContent className="bg-transparent shadow-none border-none">
+        <SectionContent className="bg-transparent shadow-none border-none px-2">
           {isPendingOrSubmitting ? (
             <div className="w-full h-6 animate-pulse rounded-md bg-white" />
           ) : (
             <div className="flex flex-col gap-2">
-              {sortedRevisions.map((revision) => (
-                <Deployment
-                  deploymentId={deployments?.[revision]}
-                  revision={revision}
-                  key={revision}
-                />
-              ))}
+              {sortedRevisions.map((revision) =>
+                deployments?.[revision]?.map((id) => (
+                  <Deployment deploymentId={id} revision={revision} key={id} />
+                ))
+              )}
             </div>
           )}
         </SectionContent>

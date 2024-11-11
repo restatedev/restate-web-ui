@@ -26,6 +26,7 @@ function RegisterDeploymentFooter() {
     goToEndpoint,
     error,
     formId,
+    canSkipAdvanced,
   } = useRegisterDeploymentContext();
   return (
     <DialogFooter>
@@ -44,7 +45,7 @@ function RegisterDeploymentFooter() {
                 form={formId}
                 className="flex gap-1 pr-3.5"
                 name="_action"
-                value="dryRun"
+                value={canSkipAdvanced || isAdvanced ? 'dryRun' : 'advanced'}
               >
                 Next
                 <Icon name={IconName.ChevronRight} className="w-[1.25em]" />
@@ -61,7 +62,7 @@ function RegisterDeploymentFooter() {
                 Confirm
               </SubmitButton>
             )}
-            {isEndpoint && (
+            {isEndpoint && canSkipAdvanced && (
               <SubmitButton
                 variant="secondary"
                 disabled={isPending}

@@ -2,6 +2,7 @@ import { useHover } from '@react-aria/interactions';
 import {
   forwardRef,
   PropsWithChildren,
+  RefObject,
   useCallback,
   useContext,
   useEffect,
@@ -19,10 +20,9 @@ const TooltipTrigger = forwardRef<
 >(({ children, disabled = false }, ref) => {
   const state = useContext(TooltipTriggerStateContext);
   const { hoverProps } = useHover({
+    isDisabled: disabled,
     onHoverChange(isHovering) {
-      if (!disabled) {
-        isHovering ? state.open(false) : state.close();
-      }
+      isHovering ? state.open(false) : state.close();
     },
   });
 
@@ -36,7 +36,11 @@ const TooltipTrigger = forwardRef<
 export function TruncateWithTooltip({
   children,
   copyText: copyTextProp,
-}: PropsWithChildren<{ copyText?: string }>) {
+  triggerRef: additionalTriggerRef,
+}: PropsWithChildren<{
+  copyText?: string;
+  triggerRef?: RefObject<HTMLElement | null>;
+}>) {
   const triggerRef = useRef<HTMLElement>(null);
   const containerRef = useRef<HTMLElement>(null);
   const [tooltipIsDisabled, setTooltipIsDisabled] = useState(false);
@@ -73,6 +77,37 @@ export function TruncateWithTooltip({
     };
   }, [copyTextProp]);
 
+  useEffect(() => {
+    const el = additionalTriggerRef?.current;
+    let timeout: ReturnType<typeof setTimeout> | null = null;
+    const enterHandler = () => {
+      timeout && clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        if (!tooltipIsDisabled) {
+          open();
+        }
+      }, 250);
+    };
+    const leaveHandler = (e: MouseEvent) => {
+      const hoveredElement = e.relatedTarget as HTMLElement;
+      const isHoverElementTooltip = hoveredElement?.role === 'tooltip';
+      if (!isHoverElementTooltip) {
+        timeout && clearTimeout(timeout);
+        timeout = setTimeout(() => {
+          close();
+        }, 250);
+      }
+    };
+    el?.addEventListener('mouseenter', enterHandler);
+    el?.addEventListener('mouseleave', leaveHandler);
+
+    return () => {
+      timeout && clearTimeout(timeout);
+      el?.removeEventListener('mouseenter', enterHandler);
+      el?.removeEventListener('mouseleave', leaveHandler);
+    };
+  }, [additionalTriggerRef, close, open, tooltipIsDisabled]);
+
   return (
     <Tooltip disabled={tooltipIsDisabled} delay={250}>
       <TooltipTriggerStateContext.Provider value={{ isOpen, open, close }}>
@@ -82,11 +117,11 @@ export function TruncateWithTooltip({
           </TooltipTrigger>
         </span>
         <TooltipContent small offset={5} triggerRef={containerRef}>
-          <div className="flex items-center gap-4">
+          <div className="flex items-start gap-4 [&_*]:text-gray-200 [&_*]:text-xs break-all">
             {children}
             <Copy
               copyText={copyText}
-              className="p-1 -m-1 [&_svg]:w-3 [&_svg]:h-3 [&_svg]:text-gray-200 bg-transparent hover:bg-zinc-600 pressed:bg-zinc-500 rounded-sm"
+              className="p-1 -m-1 -mt-0.5 [&_svg]:w-3 [&_svg]:h-3  [&_svg]:text-gray-200 bg-transparent hover:bg-zinc-600 pressed:bg-zinc-500 rounded-sm"
             />
           </div>
         </TooltipContent>

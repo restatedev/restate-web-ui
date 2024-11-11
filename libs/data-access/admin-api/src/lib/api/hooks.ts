@@ -44,19 +44,23 @@ function listDeploymentsSelector(
   const { services, deployments } = deploymentsFromApi.reduce(
     (results, deployment) => {
       const { services, deployments } = results;
+      // TODO: refactor sorting of revisions
       deployment.services.forEach((service) => {
+        // eslint-disable-next-line prefer-const
         let { deployments: serviceDeployments, sortedRevisions } =
           services.get(service.name) ?? {};
+        const currentRevisionsDeployments: DeploymentId[] =
+          serviceDeployments?.[service.revision] ?? [];
+        const sortedRevisionsSet = new Set<number>(sortedRevisions);
+        sortedRevisionsSet.add(service.revision);
+
         serviceDeployments = {
           ...serviceDeployments,
-          [service.revision]: deployment.id,
+          [service.revision]: [...currentRevisionsDeployments, deployment.id],
         };
-        sortedRevisions = [...(sortedRevisions ?? []), service.revision].sort(
-          (a, b) => b - a
-        );
         services.set(service.name, {
           deployments: serviceDeployments,
-          sortedRevisions,
+          sortedRevisions: Array.from(sortedRevisionsSet).sort((a, b) => b - a),
         });
 
         deployments.set(deployment.id, deployment);
@@ -67,7 +71,7 @@ function listDeploymentsSelector(
       services: new Map<
         ServiceName,
         {
-          deployments: Record<Revision, DeploymentId>;
+          deployments: Record<Revision, DeploymentId[]>;
           sortedRevisions: number[];
         }
       >(),
@@ -158,7 +162,25 @@ export function useServiceDetails(
   return { ...results, queryKey: queryOptions.queryKey };
 }
 
-export function useModifyDetails(
+export function useDeploymentDetails(
+  deployment: string,
+  options?: HookQueryOptions<'/deployments/{deployment}', 'get'>
+) {
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi('query', '/deployments/{deployment}', 'get', {
+    baseUrl,
+    parameters: { path: { deployment } },
+  });
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+  });
+
+  return { ...results, queryKey: queryOptions.queryKey };
+}
+
+export function useModifyService(
   service: string,
   options?: HookMutationOptions<'/services/{service}', 'patch'>
 ) {
@@ -168,6 +190,21 @@ export function useModifyDetails(
     ...adminApi('mutate', '/services/{service}', 'patch', {
       baseUrl,
       resolvedPath: `/services/${service}`,
+    }),
+    ...options,
+  });
+}
+
+export function useDeleteDeployment(
+  deployment: string,
+  options?: HookMutationOptions<'/deployments/{deployment}', 'delete'>
+) {
+  const baseUrl = useAdminBaseUrl();
+
+  return useMutation({
+    ...adminApi('mutate', '/deployments/{deployment}', 'delete', {
+      baseUrl,
+      resolvedPath: `/deployments/${deployment}`,
     }),
     ...options,
   });

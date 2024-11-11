@@ -319,6 +319,13 @@ export function useRegisterDeploymentContext() {
   const isAdvanced = stage === 'advanced';
   const isConfirm = stage === 'confirm';
 
+  const hasAdditionalHeaders = Boolean(
+    additionalHeaders &&
+      additionalHeaders.items &&
+      additionalHeaders.items.some(({ key, value }) => key && value)
+  );
+  const canSkipAdvanced = !hasAdditionalHeaders && !useHttp11 && !assumeRoleArn;
+
   return {
     isAdvanced,
     isEndpoint,
@@ -341,5 +348,6 @@ export function useRegisterDeploymentContext() {
     useHttp11,
     assumeRoleArn,
     error,
+    canSkipAdvanced,
   };
 }
