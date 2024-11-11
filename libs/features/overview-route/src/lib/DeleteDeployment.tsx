@@ -15,7 +15,6 @@ import { FormFieldInput } from '@restate/ui/form-field';
 import { FormEvent, useId } from 'react';
 import {
   useDeleteDeployment,
-  useDeploymentDetails,
   useListDeployments,
 } from '@restate/data-access/admin-api';
 import { getEndpoint } from './types';
