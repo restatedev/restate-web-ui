@@ -72,6 +72,10 @@ export function ServiceDetails() {
     const workflow_completion_retention = formData.get(
       'workflow_completion_retention'
     ) as string | null;
+    const inactivity_timeout = formData.get('inactivity_timeout') as
+      | string
+      | null;
+    const abort_timeout = formData.get('abort_timeout') as string | null;
 
     mutate({
       parameters: {
@@ -83,6 +87,8 @@ export function ServiceDetails() {
         workflow_completion_retention: formatHumantime(
           workflow_completion_retention
         ),
+        inactivity_timeout,
+        abort_timeout,
       },
     });
   };
@@ -254,7 +260,7 @@ function ServiceForm({
               required
               disabled={isPendingOrSubmitting}
               className="[&_label]:text-zinc-500"
-              defaultValue={data?.workflow_completion_retention ?? undefined}
+              defaultValue={data?.workflow_completion_retention ?? ''}
               label={
                 <InlineTooltip
                   variant="indicator-button"
@@ -292,6 +298,108 @@ function ServiceForm({
               </ComboBoxSection>
             </FormFieldCombobox>
           )}
+        </SectionContent>
+        <span className="text-gray-500 px-4 pb-2 block text-xs normal-case font-normal mt-2">
+          Configured using the{' '}
+          <Link
+            href="https://docs.rs/humantime/latest/humantime/fn.parse_duration.html#examples"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            humantime
+          </Link>{' '}
+          format.
+        </span>
+      </Section>
+      <Section>
+        <SectionTitle>Timeouts</SectionTitle>
+        <SectionContent className="flex flex-col gap-4">
+          <FormFieldCombobox
+            pattern={HUMANTIME_PATTERN_INPUT}
+            allowsCustomValue
+            required
+            defaultValue={data?.inactivity_timeout ?? ''}
+            disabled={isPendingOrSubmitting}
+            label={
+              <InlineTooltip
+                variant="indicator-button"
+                title="Inactivity timeout"
+                description="This timer guards against stalled service/handler invocations. Once it expires, Restate triggers a graceful termination by asking the service invocation to suspend (which preserves intermediate progress)"
+              >
+                <span slot="title">Inactivity</span>
+              </InlineTooltip>
+            }
+            name="inactivity_timeout"
+            className="[&_label]:text-zinc-500"
+            placeholder="1m"
+          >
+            <ComboBoxSection
+              title="Examples"
+              description={
+                <>
+                  Choose from the example options above, or enter a custom value
+                  in the{' '}
+                  <Link
+                    href="https://docs.rs/humantime/latest/humantime/fn.parse_duration.html#examples"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    humantime
+                  </Link>{' '}
+                  format.
+                </>
+              }
+            >
+              <ComboBoxItem value="1m">1m</ComboBoxItem>
+              <ComboBoxItem value="5m">5m</ComboBoxItem>
+              <ComboBoxItem value="30m">30m</ComboBoxItem>
+              <ComboBoxItem value="1h 30m">1h 30m</ComboBoxItem>
+              <ComboBoxItem value="1day">1day</ComboBoxItem>
+            </ComboBoxSection>
+          </FormFieldCombobox>
+          <FormFieldCombobox
+            pattern={HUMANTIME_PATTERN_INPUT}
+            allowsCustomValue
+            required
+            disabled={isPendingOrSubmitting}
+            className="[&_label]:text-zinc-500"
+            defaultValue={data?.abort_timeout ?? ''}
+            placeholder="1m"
+            label={
+              <InlineTooltip
+                variant="indicator-button"
+                title="Abort timeout"
+                description="This timer guards against stalled service/handler invocations that are supposed to terminate. The abort timeout is started after the 'inactivity timeout' has expired and the service/handler invocation has been asked to gracefully terminate. Once the timer expires, it will abort the service/handler invocation."
+              >
+                <span slot="title">Abort</span>
+              </InlineTooltip>
+            }
+            name="abort_timeout"
+          >
+            <ComboBoxSection
+              title="Examples"
+              description={
+                <>
+                  Choose from the example options above, or enter a custom value
+                  in the{' '}
+                  <Link
+                    href="https://docs.rs/humantime/latest/humantime/fn.parse_duration.html#examples"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    humantime
+                  </Link>{' '}
+                  format.
+                </>
+              }
+            >
+              <ComboBoxItem value="1m">1m</ComboBoxItem>
+              <ComboBoxItem value="5m">5m</ComboBoxItem>
+              <ComboBoxItem value="30m">30m</ComboBoxItem>
+              <ComboBoxItem value="1h 30m">1h 30m</ComboBoxItem>
+              <ComboBoxItem value="1day">1day</ComboBoxItem>
+            </ComboBoxSection>
+          </FormFieldCombobox>
         </SectionContent>
         <span className="text-gray-500 px-4 pb-2 block text-xs normal-case font-normal mt-2">
           Configured using the{' '}
