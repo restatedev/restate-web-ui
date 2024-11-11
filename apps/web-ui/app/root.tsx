@@ -23,6 +23,7 @@ import {
   HealthIndicator,
 } from '@restate/features/health';
 import {
+  DeleteDeployment,
   DeploymentDetails,
   ServiceDetails,
 } from '@restate/features/overview-route';
@@ -128,6 +129,7 @@ export default function App() {
         </LayoutOutlet>
         <DeploymentDetails />
         <ServiceDetails />
+        <DeleteDeployment />
       </RestateContextProvider>
     </QueryProvider>
   );
