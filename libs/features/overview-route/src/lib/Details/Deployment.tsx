@@ -4,27 +4,136 @@ import {
   ComplementaryClose,
 } from '@restate/ui/layout';
 import { DEPLOYMENT_QUERY_PARAM } from '../constants';
+import { useSearchParams } from '@remix-run/react';
+import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
+import { Icon, IconName } from '@restate/ui/icons';
+import { useDeploymentDetails } from '@restate/data-access/admin-api';
+import { getEndpoint, isHttpDeployment } from '../types';
+import { TruncateWithTooltip } from '@restate/ui/tooltip';
+import { MiniService } from '../MiniService';
 
 export function DeploymentDetails() {
+  const [searchParams] = useSearchParams();
+  const deployment = searchParams.get(DEPLOYMENT_QUERY_PARAM);
+
+  if (!deployment) {
+    return null;
+  }
+
   return (
     <ComplementaryWithSearchParam
       paramName={DEPLOYMENT_QUERY_PARAM}
       footer={
         <>
           <ComplementaryClose>
-            <Button className="flex-auto" variant="secondary">
+            <Button className="flex-auto grow-0 w-1/2" variant="secondary">
               Cancel
             </Button>
           </ComplementaryClose>
-          <Button className="flex-auto">Submit</Button>
+          <Button className="flex-auto grow-0 w-1/2" variant="destructive">
+            Delete
+          </Button>
         </>
       }
     >
-      <DeploymentForm />
+      <DeploymentContent deployment={deployment} />
     </ComplementaryWithSearchParam>
   );
 }
 
-function DeploymentForm() {
-  return <div>deployment</div>;
+function DeploymentContent({ deployment }: { deployment: string }) {
+  const { data, isPending } = useDeploymentDetails(deployment);
+  const services = data?.services ?? [];
+  const additionalHeaders = Object.entries(data?.additional_headers ?? {});
+  return (
+    <>
+      <h2 className="mb-3 text-lg font-medium leading-6 text-gray-900 flex gap-2 items-center">
+        <div className="h-10 w-10 shrink-0 text-blue-400">
+          <Icon
+            name={
+              data
+                ? isHttpDeployment(data)
+                  ? IconName.Http
+                  : IconName.Lambda
+                : IconName.Http
+            }
+            className="w-full h-full p-1.5 fill-blue-50 text-blue-400 drop-shadow-md"
+          />
+        </div>{' '}
+        <div className="flex flex-col items-start gap-1 min-w-0">
+          {isPending ? (
+            <>
+              <div className="w-[16ch] h-5 animate-pulse rounded-md bg-gray-200 mt-1" />
+              <div className="w-[8ch] h-5 animate-pulse rounded-md bg-gray-200" />
+            </>
+          ) : (
+            <>
+              Deployment
+              <span className="text-sm text-gray-500 contents">
+                <TruncateWithTooltip>{getEndpoint(data)}</TruncateWithTooltip>
+              </span>
+            </>
+          )}
+        </div>
+      </h2>
+      <Section className="mt-5">
+        <SectionTitle>Services</SectionTitle>
+        <SectionContent className="bg-transparent shadow-none border-none px-2">
+          {isPending ? (
+            <div className="flex flex-col gap-2">
+              <div className="w-full h-6 animate-pulse rounded-md bg-white" />
+              <div className="w-full h-6 animate-pulse rounded-md bg-white" />
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {services.map((service) => (
+                <MiniService service={service} key={service.name} />
+              ))}
+            </div>
+          )}
+        </SectionContent>
+      </Section>
+      {additionalHeaders.length > 0 && (
+        <Section className="mt-4">
+          <SectionTitle>Additional headers</SectionTitle>
+          <SectionContent className="bg-transparent shadow-none border-none p-0">
+            <>
+              <div className="mt-2 grid [grid-template-columns:1fr_2fr] text-xs font-medium text-gray-400">
+                <div className="pl-2">Name</div>
+                <div className="pl-2">Value</div>
+              </div>
+              {isPending ? (
+                <div className="flex flex-col border-transparent rounded-[calc(0.75rem-0.125rem)]">
+                  <div className="w-full h-6 animate-pulse border-b duration2-250 rounded-t-[calc(0.75rem-0.125rem)] bg-white" />
+                  <div className="w-full h-6 animate-pulse delay-200 duration2-350 rounded-b-[calc(0.75rem-0.125rem)] bg-white" />
+                </div>
+              ) : (
+                <div className="flex flex-col shadow-sm border rounded-[calc(0.75rem-0.125rem)]">
+                  {additionalHeaders.map(([name, value]) => (
+                    <Header name={name} value={value} key={name} />
+                  ))}
+                </div>
+              )}
+            </>
+          </SectionContent>
+          <span className="px-3 py-2 text-xs text-gray-500 leading-1">
+            Headers added to the register/invoke requests to the deployment.
+          </span>
+        </Section>
+      )}
+    </>
+  );
+}
+
+function Header({ name, value }: { name: string; value: string }) {
+  return (
+    <div className="bg-white [&:not(:last-child)]:border-b [&:first-child]:rounded-t-[calc(0.75rem-0.125rem)] [&:last-child]:rounded-b-[calc(0.75rem-0.125rem)] gap-1 px-2 py-0 items-center text-code text-zinc-600 truncate grid [grid-template-columns:1fr_2fr]">
+      <div className="items-start flex min-w-0 border-r py-1 pr-1 relative">
+        <TruncateWithTooltip copyText={name}>{name}</TruncateWithTooltip>
+      </div>
+      <div className="min-w-0 flex py-1 pl-1">
+        <TruncateWithTooltip copyText={value}>{value}</TruncateWithTooltip>
+      </div>
+    </div>
+  );
 }
