@@ -6,6 +6,7 @@ import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Link } from '@restate/ui/link';
 import { SERVICE_QUERY_PARAM } from './constants';
 import { useSearchParams } from '@remix-run/react';
+import { useRef } from 'react';
 
 const styles = tv({
   base: 'w-full rounded-2xl p2-0.5 pt2-1 border shadow-zinc-800/[0.03] transform transition',
@@ -31,6 +32,7 @@ export function Service({
 
   const [searchParams] = useSearchParams();
   const isSelected = searchParams.get(SERVICE_QUERY_PARAM) === serviceName;
+  const linkRef = useRef<HTMLAnchorElement>(null);
 
   return (
     <div className={styles({ className, isSelected })}>
@@ -44,10 +46,11 @@ export function Service({
           </div>
         </div>
         <div className="flex flex-row gap-1 items-center font-medium text-sm text-zinc-600 min-w-0">
-          <TruncateWithTooltip copyText={serviceName}>
+          <TruncateWithTooltip copyText={serviceName} triggerRef={linkRef}>
             {serviceName}
           </TruncateWithTooltip>
           <Link
+            ref={linkRef}
             aria-label={serviceName}
             variant="secondary"
             href={`?${SERVICE_QUERY_PARAM}=${serviceName}`}

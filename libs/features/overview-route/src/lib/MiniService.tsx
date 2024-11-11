@@ -5,6 +5,7 @@ import { Service } from '@restate/data-access/admin-api';
 import { Revision } from './Revision';
 import { SERVICE_QUERY_PARAM } from './constants';
 import { Link } from '@restate/ui/link';
+import { useRef } from 'react';
 
 const styles = tv({
   base: 'flex flex-row items-center gap-2 relative -m-1 p-1',
@@ -17,6 +18,8 @@ export function MiniService({
   className?: string;
   service: Service;
 }) {
+  const linkRef = useRef<HTMLAnchorElement>(null);
+
   return (
     <div className={styles({ className })}>
       <div className="shrink-0 h-6 w-6 bg-white border shadow-sm rounded-md">
@@ -24,10 +27,11 @@ export function MiniService({
       </div>
 
       <div className="flex flex-row gap-1 items-center text-code text-zinc-600 truncate">
-        <TruncateWithTooltip copyText={service.name}>
+        <TruncateWithTooltip copyText={service.name} triggerRef={linkRef}>
           {service.name}
         </TruncateWithTooltip>
         <Link
+          ref={linkRef}
           aria-label={service.name}
           variant="secondary"
           href={`?${SERVICE_QUERY_PARAM}=${service.name}`}
