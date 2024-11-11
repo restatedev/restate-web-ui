@@ -503,15 +503,14 @@ export interface components {
     ListDeploymentsResponse: {
       deployments: components['schemas']['DeploymentResponse'][];
     };
-    DeploymentResponse:
-      | {
-          id: components['schemas']['String'];
-          /**
-           * Services
-           * @description List of services exposed by this deployment.
-           */
-          services: components['schemas']['ServiceNameRevPair'][];
-        }
+    DeploymentResponse: {
+      id: components['schemas']['String'];
+      /**
+       * Services
+       * @description List of services exposed by this deployment.
+       */
+      services: components['schemas']['ServiceNameRevPair'][];
+    } & (
       | {
           uri: string;
           protocol_type: components['schemas']['ProtocolType'];
@@ -536,7 +535,8 @@ export interface components {
           min_protocol_version: number;
           /** Format: int32 */
           max_protocol_version: number;
-        };
+        }
+    );
     ServiceNameRevPair: {
       name: string;
       /** Format: uint32 */
@@ -648,15 +648,14 @@ export interface components {
       id: components['schemas']['String'];
       services: components['schemas']['ServiceMetadata'][];
     };
-    DetailedDeploymentResponse:
-      | {
-          id: components['schemas']['String'];
-          /**
-           * Services
-           * @description List of services exposed by this deployment.
-           */
-          services: components['schemas']['ServiceMetadata'][];
-        }
+    DetailedDeploymentResponse: {
+      id: components['schemas']['String'];
+      /**
+       * Services
+       * @description List of services exposed by this deployment.
+       */
+      services: components['schemas']['ServiceMetadata'][];
+    } & (
       | {
           uri: string;
           protocol_type: components['schemas']['ProtocolType'];
@@ -681,7 +680,8 @@ export interface components {
           min_protocol_version: number;
           /** Format: int32 */
           max_protocol_version: number;
-        };
+        }
+    );
   };
   responses: never;
   parameters: never;
