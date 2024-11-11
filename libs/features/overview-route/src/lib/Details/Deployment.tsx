@@ -3,7 +3,10 @@ import {
   ComplementaryWithSearchParam,
   ComplementaryClose,
 } from '@restate/ui/layout';
-import { DEPLOYMENT_QUERY_PARAM } from '../constants';
+import {
+  DELETE_DEPLOYMENT_QUERY_PARAM,
+  DEPLOYMENT_QUERY_PARAM,
+} from '../constants';
 import { useSearchParams } from '@remix-run/react';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -20,7 +23,7 @@ import {
 } from '@restate/features/explainers';
 
 export function DeploymentDetails() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const deployment = searchParams.get(DEPLOYMENT_QUERY_PARAM);
 
   if (!deployment) {
@@ -37,7 +40,16 @@ export function DeploymentDetails() {
               Cancel
             </Button>
           </ComplementaryClose>
-          <Button className="flex-auto grow-0 w-1/2" variant="destructive">
+          <Button
+            className="flex-auto grow-0 w-1/2"
+            variant="destructive"
+            onClick={() =>
+              setSearchParams((old) => {
+                old.set(DELETE_DEPLOYMENT_QUERY_PARAM, deployment);
+                return old;
+              })
+            }
+          >
             Delete
           </Button>
         </>
