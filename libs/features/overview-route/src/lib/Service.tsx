@@ -69,13 +69,11 @@ export function Service({
             Deployments
           </div>
           <div className="flex flex-col gap-1.5">
-            {revisions.map((revision) => (
-              <Deployment
-                deploymentId={serviceDeployments?.[revision]}
-                revision={revision}
-                key={revision}
-              />
-            ))}
+            {revisions.map((revision) =>
+              serviceDeployments?.[revision]?.map((id) => (
+                <Deployment deploymentId={id} revision={revision} key={id} />
+              ))
+            )}
           </div>
         </div>
       )}

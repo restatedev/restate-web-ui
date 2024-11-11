@@ -312,13 +312,11 @@ function ServiceForm({
             <div className="w-full h-6 animate-pulse rounded-md bg-white" />
           ) : (
             <div className="flex flex-col gap-2">
-              {sortedRevisions.map((revision) => (
-                <Deployment
-                  deploymentId={deployments?.[revision]}
-                  revision={revision}
-                  key={revision}
-                />
-              ))}
+              {sortedRevisions.map((revision) =>
+                deployments?.[revision]?.map((id) => (
+                  <Deployment deploymentId={id} revision={revision} key={id} />
+                ))
+              )}
             </div>
           )}
         </SectionContent>
