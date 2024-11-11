@@ -11,8 +11,8 @@ import {
   Deployment,
   useDeploymentDetails,
 } from '@restate/data-access/admin-api';
-import { getEndpoint, isHttpDeployment } from '../types';
-import { TruncateWithTooltip } from '@restate/ui/tooltip';
+import { getEndpoint, isHttpDeployment, isLambdaDeployment } from '../types';
+import { InlineTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
 import { MiniService } from '../MiniService';
 import {
   ProtocolTypeExplainer,
@@ -135,14 +135,24 @@ function DeploymentContent({ deployment }: { deployment: string }) {
           </ProtocolTypeExplainer>
         </SectionTitle>
         <SectionContent className="p-0">
-          <div className="flex px-1.5 py-1 items-center">
+          <div className="flex px-1.5 py-1 items-center [&:not(:last-child)]:border-b">
             <div className="flex-auto pl-1 text-code text-gray-500 font-medium">
               Type
             </div>
-            <div className="self-end bg-zinc-50 text-zinc-600 ring-zinc-600/20 inline-flex text-xs gap-1 items-center rounded-md px-2 py-0.5 font-medium ring-1 ring-inset">
+            <div className="h-5 min-w-5 self-end bg-zinc-50 text-zinc-600 ring-zinc-600/20 inline-flex text-xs gap-1 items-center rounded-md px-2 py-0.5 font-medium ring-1 ring-inset">
               {getProtocolType(data)}
             </div>
           </div>
+          {data && isHttpDeployment(data) && (
+            <div className="flex px-1.5 py-1 items-center">
+              <div className="flex-auto pl-1 text-code text-gray-500 font-medium">
+                <code>HTTP</code> version
+              </div>
+              <div className="h-5 min-w-5 self-end bg-zinc-50 text-zinc-600 ring-zinc-600/20 inline-flex text-xs gap-1 items-center rounded-md px-2 py-0.5 font-medium ring-1 ring-inset">
+                {data.http_version}
+              </div>
+            </div>
+          )}
         </SectionContent>
         <SectionTitle className="mt-2">
           <ServiceCompatibility variant="indicator-button">
@@ -154,7 +164,7 @@ function DeploymentContent({ deployment }: { deployment: string }) {
             <div className="flex-auto pl-1 text-code text-gray-500 font-medium">
               Min protocol version
             </div>
-            <div className="self-end  bg-zinc-50 text-zinc-600 ring-zinc-600/20 inline-flex text-xs gap-1 items-center rounded-md px-2 py-0.5 font-medium ring-1 ring-inset">
+            <div className="h-5 min-w-5 self-end  bg-zinc-50 text-zinc-600 ring-zinc-600/20 inline-flex text-xs gap-1 items-center rounded-md px-2 py-0.5 font-medium ring-1 ring-inset">
               {data?.min_protocol_version}
             </div>
           </div>
@@ -162,11 +172,29 @@ function DeploymentContent({ deployment }: { deployment: string }) {
             <div className="flex-auto pl-1 text-code text-gray-500 font-medium">
               Max protocol version
             </div>
-            <div className="self-end  bg-zinc-50 text-zinc-600 ring-zinc-600/20 inline-flex text-xs gap-1 items-center rounded-md px-2 py-0.5 font-medium ring-1 ring-inset">
+            <div className="h-5 min-w-5 self-end  bg-zinc-50 text-zinc-600 ring-zinc-600/20 inline-flex text-xs gap-1 items-center rounded-md px-2 py-0.5 font-medium ring-1 ring-inset">
               {data?.max_protocol_version}
             </div>
           </div>
         </SectionContent>
+        {data && isLambdaDeployment(data) && data.assume_role_arn && (
+          <>
+            <SectionTitle className="mt-2">
+              <InlineTooltip
+                title="Assume role ARN"
+                description="ARN of a role to use when invoking the Lambda"
+                variant="indicator-button"
+              >
+                Assume role ARN
+              </InlineTooltip>
+            </SectionTitle>
+            <SectionContent className="px-2 py-1 text-code text-gray-500 font-medium">
+              <TruncateWithTooltip copyText={data.assume_role_arn}>
+                {data.assume_role_arn}
+              </TruncateWithTooltip>
+            </SectionContent>
+          </>
+        )}
       </Section>
     </>
   );
