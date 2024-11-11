@@ -21,10 +21,14 @@ import {
   ProtocolTypeExplainer,
   ServiceCompatibility,
 } from '@restate/features/explainers';
+import { ErrorBanner } from '@restate/ui/error';
 
 export function DeploymentDetails() {
   const [searchParams, setSearchParams] = useSearchParams();
   const deployment = searchParams.get(DEPLOYMENT_QUERY_PARAM);
+  const { error } = useDeploymentDetails(String(deployment), {
+    ...(!deployment && { enabled: false }),
+  });
 
   if (!deployment) {
     return null;
@@ -34,25 +38,28 @@ export function DeploymentDetails() {
     <ComplementaryWithSearchParam
       paramName={DEPLOYMENT_QUERY_PARAM}
       footer={
-        <>
-          <ComplementaryClose>
-            <Button className="flex-auto grow-0 w-1/2" variant="secondary">
-              Cancel
+        <div className="flex gap-2 flex-col flex-auto">
+          {error && <ErrorBanner errors={[error]} />}
+          <div className="flex gap-2">
+            <ComplementaryClose>
+              <Button className="flex-auto grow-0 w-1/2" variant="secondary">
+                Cancel
+              </Button>
+            </ComplementaryClose>
+            <Button
+              className="flex-auto grow-0 w-1/2"
+              variant="destructive"
+              onClick={() =>
+                setSearchParams((old) => {
+                  old.set(DELETE_DEPLOYMENT_QUERY_PARAM, deployment);
+                  return old;
+                })
+              }
+            >
+              Delete
             </Button>
-          </ComplementaryClose>
-          <Button
-            className="flex-auto grow-0 w-1/2"
-            variant="destructive"
-            onClick={() =>
-              setSearchParams((old) => {
-                old.set(DELETE_DEPLOYMENT_QUERY_PARAM, deployment);
-                return old;
-              })
-            }
-          >
-            Delete
-          </Button>
-        </>
+          </div>
+        </div>
       }
     >
       <DeploymentContent deployment={deployment} />
