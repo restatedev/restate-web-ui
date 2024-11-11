@@ -7,10 +7,17 @@ import { DEPLOYMENT_QUERY_PARAM } from '../constants';
 import { useSearchParams } from '@remix-run/react';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { Icon, IconName } from '@restate/ui/icons';
-import { useDeploymentDetails } from '@restate/data-access/admin-api';
+import {
+  Deployment,
+  useDeploymentDetails,
+} from '@restate/data-access/admin-api';
 import { getEndpoint, isHttpDeployment } from '../types';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { MiniService } from '../MiniService';
+import {
+  ProtocolTypeExplainer,
+  ServiceCompatibility,
+} from '@restate/features/explainers';
 
 export function DeploymentDetails() {
   const [searchParams] = useSearchParams();
@@ -121,6 +128,46 @@ function DeploymentContent({ deployment }: { deployment: string }) {
           </span>
         </Section>
       )}
+      <Section className="mt-4">
+        <SectionTitle>
+          <ProtocolTypeExplainer variant="indicator-button">
+            Protocol
+          </ProtocolTypeExplainer>
+        </SectionTitle>
+        <SectionContent className="p-0">
+          <div className="flex px-1.5 py-1 items-center">
+            <div className="flex-auto pl-1 text-code text-gray-500 font-medium">
+              Type
+            </div>
+            <div className="self-end bg-zinc-50 text-zinc-600 ring-zinc-600/20 inline-flex text-xs gap-1 items-center rounded-md px-2 py-0.5 font-medium ring-1 ring-inset">
+              {getProtocolType(data)}
+            </div>
+          </div>
+        </SectionContent>
+        <SectionTitle className="mt-2">
+          <ServiceCompatibility variant="indicator-button">
+            Service compatibility
+          </ServiceCompatibility>
+        </SectionTitle>
+        <SectionContent className="p-0">
+          <div className="flex border-b px-1.5 py-1">
+            <div className="flex-auto pl-1 text-code text-gray-500 font-medium">
+              Min protocol version
+            </div>
+            <div className="self-end  bg-zinc-50 text-zinc-600 ring-zinc-600/20 inline-flex text-xs gap-1 items-center rounded-md px-2 py-0.5 font-medium ring-1 ring-inset">
+              {data?.min_protocol_version}
+            </div>
+          </div>
+          <div className="flex px-1.5 py-1">
+            <div className="flex-auto pl-1 text-code text-gray-500 font-medium">
+              Max protocol version
+            </div>
+            <div className="self-end  bg-zinc-50 text-zinc-600 ring-zinc-600/20 inline-flex text-xs gap-1 items-center rounded-md px-2 py-0.5 font-medium ring-1 ring-inset">
+              {data?.max_protocol_version}
+            </div>
+          </div>
+        </SectionContent>
+      </Section>
     </>
   );
 }
@@ -136,4 +183,14 @@ function Header({ name, value }: { name: string; value: string }) {
       </div>
     </div>
   );
+}
+
+function getProtocolType(deployment?: Deployment) {
+  if (!deployment) {
+    return undefined;
+  }
+  if (isHttpDeployment(deployment)) {
+    return deployment.protocol_type;
+  }
+  return 'RequestResponse';
 }
