@@ -173,7 +173,7 @@ function ServiceForm({
       </h2>
       <Section className="mt-4">
         <SectionTitle>Handlers</SectionTitle>
-        <SectionContent className="bg-transparent shadow-none border-none px-2">
+        <SectionContent className="bg-transparent shadow-none border-none px-2 pt-2">
           {isPendingOrSubmitting ? (
             <div className="w-full h-6 animate-pulse rounded-md bg-white" />
           ) : (
@@ -222,7 +222,9 @@ function ServiceForm({
                 title="Idempotency completion"
                 description="Modify the retention of idempotent requests for this service."
               >
-                <span slot="title">Idempotency completion</span>
+                <span slot="title" className="text-code">
+                  Idempotency completion
+                </span>
               </InlineTooltip>
             }
             name="idempotency_retention"
@@ -266,7 +268,9 @@ function ServiceForm({
                   description="Modify the retention of the workflow completion. This
                           can be modified only for workflow services."
                 >
-                  <span slot="title">Workflow completion</span>
+                  <span slot="title" className="text-code">
+                    Workflow completion
+                  </span>
                 </InlineTooltip>
               }
               name="workflow_completion_retention"
@@ -323,7 +327,9 @@ function ServiceForm({
                 title="Inactivity timeout"
                 description="This timer guards against stalled service/handler invocations. Once it expires, Restate triggers a graceful termination by asking the service invocation to suspend (which preserves intermediate progress)"
               >
-                <span slot="title">Inactivity</span>
+                <span slot="title" className="text-code">
+                  Inactivity
+                </span>
               </InlineTooltip>
             }
             name="inactivity_timeout"
@@ -367,7 +373,9 @@ function ServiceForm({
                 title="Abort timeout"
                 description="This timer guards against stalled service/handler invocations that are supposed to terminate. The abort timeout is started after the 'inactivity timeout' has expired and the service/handler invocation has been asked to gracefully terminate. Once the timer expires, it will abort the service/handler invocation."
               >
-                <span slot="title">Abort</span>
+                <span slot="title" className="text-code">
+                  Abort
+                </span>
               </InlineTooltip>
             }
             name="abort_timeout"
@@ -411,7 +419,7 @@ function ServiceForm({
       </Section>
       <Section>
         <SectionTitle>Deployments</SectionTitle>
-        <SectionContent className="bg-transparent shadow-none border-none px-2">
+        <SectionContent className="bg-transparent shadow-none border-none px-2 pt-2">
           {isPendingOrSubmitting ? (
             <div className="w-full h-6 animate-pulse rounded-md bg-white" />
           ) : (

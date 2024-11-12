@@ -108,7 +108,7 @@ function DeploymentContent({ deployment }: { deployment: string }) {
       </h2>
       <Section className="mt-5">
         <SectionTitle>Services</SectionTitle>
-        <SectionContent className="bg-transparent shadow-none border-none px-2">
+        <SectionContent className="bg-transparent shadow-none border-none px-2 pt-2">
           {isPending ? (
             <div className="flex flex-col gap-2">
               <div className="w-full h-6 animate-pulse rounded-md bg-white" />
