@@ -87,8 +87,8 @@ export function ServiceDetails() {
         workflow_completion_retention: formatHumantime(
           workflow_completion_retention
         ),
-        inactivity_timeout,
-        abort_timeout,
+        inactivity_timeout: formatHumantime(inactivity_timeout),
+        abort_timeout: formatHumantime(abort_timeout),
       },
     });
   };
@@ -317,7 +317,6 @@ function ServiceForm({
           <FormFieldCombobox
             pattern={HUMANTIME_PATTERN_INPUT}
             allowsCustomValue
-            required
             defaultValue={data?.inactivity_timeout ?? ''}
             disabled={isPendingOrSubmitting}
             label={
@@ -360,7 +359,6 @@ function ServiceForm({
           <FormFieldCombobox
             pattern={HUMANTIME_PATTERN_INPUT}
             allowsCustomValue
-            required
             disabled={isPendingOrSubmitting}
             className="[&_label]:text-zinc-500"
             defaultValue={data?.abort_timeout ?? ''}

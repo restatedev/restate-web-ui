@@ -70,7 +70,7 @@ const UNIT_MAPS: Record<
 
 export function formatHumantime(value?: string | null) {
   if (!value) {
-    return value;
+    return undefined;
   }
   const matches = Array.from(value.matchAll(HUMANTIME_REGEXP));
 
