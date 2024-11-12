@@ -214,7 +214,6 @@ function ServiceForm({
           <FormFieldCombobox
             pattern={HUMANTIME_PATTERN_INPUT}
             allowsCustomValue
-            required
             defaultValue={data?.idempotency_retention}
             disabled={isPendingOrSubmitting}
             label={
@@ -257,7 +256,6 @@ function ServiceForm({
             <FormFieldCombobox
               pattern={HUMANTIME_PATTERN_INPUT}
               allowsCustomValue
-              required
               disabled={isPendingOrSubmitting}
               className="[&_label]:text-zinc-500"
               defaultValue={data?.workflow_completion_retention ?? ''}
