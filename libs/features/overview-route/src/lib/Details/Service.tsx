@@ -87,8 +87,8 @@ export function ServiceDetails() {
         workflow_completion_retention: formatHumantime(
           workflow_completion_retention
         ),
-        inactivity_timeout,
-        abort_timeout,
+        inactivity_timeout: formatHumantime(inactivity_timeout),
+        abort_timeout: formatHumantime(abort_timeout),
       },
     });
   };
@@ -173,7 +173,7 @@ function ServiceForm({
       </h2>
       <Section className="mt-4">
         <SectionTitle>Handlers</SectionTitle>
-        <SectionContent className="bg-transparent shadow-none border-none px-2">
+        <SectionContent className="bg-transparent shadow-none border-none px-2 pt-2">
           {isPendingOrSubmitting ? (
             <div className="w-full h-6 animate-pulse rounded-md bg-white" />
           ) : (
@@ -214,7 +214,6 @@ function ServiceForm({
           <FormFieldCombobox
             pattern={HUMANTIME_PATTERN_INPUT}
             allowsCustomValue
-            required
             defaultValue={data?.idempotency_retention}
             disabled={isPendingOrSubmitting}
             label={
@@ -223,7 +222,9 @@ function ServiceForm({
                 title="Idempotency completion"
                 description="Modify the retention of idempotent requests for this service."
               >
-                <span slot="title">Idempotency completion</span>
+                <span slot="title" className="text-code">
+                  Idempotency completion
+                </span>
               </InlineTooltip>
             }
             name="idempotency_retention"
@@ -257,7 +258,6 @@ function ServiceForm({
             <FormFieldCombobox
               pattern={HUMANTIME_PATTERN_INPUT}
               allowsCustomValue
-              required
               disabled={isPendingOrSubmitting}
               className="[&_label]:text-zinc-500"
               defaultValue={data?.workflow_completion_retention ?? ''}
@@ -268,7 +268,9 @@ function ServiceForm({
                   description="Modify the retention of the workflow completion. This
                           can be modified only for workflow services."
                 >
-                  <span slot="title">Workflow completion</span>
+                  <span slot="title" className="text-code">
+                    Workflow completion
+                  </span>
                 </InlineTooltip>
               }
               name="workflow_completion_retention"
@@ -317,7 +319,6 @@ function ServiceForm({
           <FormFieldCombobox
             pattern={HUMANTIME_PATTERN_INPUT}
             allowsCustomValue
-            required
             defaultValue={data?.inactivity_timeout ?? ''}
             disabled={isPendingOrSubmitting}
             label={
@@ -326,7 +327,9 @@ function ServiceForm({
                 title="Inactivity timeout"
                 description="This timer guards against stalled service/handler invocations. Once it expires, Restate triggers a graceful termination by asking the service invocation to suspend (which preserves intermediate progress)"
               >
-                <span slot="title">Inactivity</span>
+                <span slot="title" className="text-code">
+                  Inactivity
+                </span>
               </InlineTooltip>
             }
             name="inactivity_timeout"
@@ -360,7 +363,6 @@ function ServiceForm({
           <FormFieldCombobox
             pattern={HUMANTIME_PATTERN_INPUT}
             allowsCustomValue
-            required
             disabled={isPendingOrSubmitting}
             className="[&_label]:text-zinc-500"
             defaultValue={data?.abort_timeout ?? ''}
@@ -371,7 +373,9 @@ function ServiceForm({
                 title="Abort timeout"
                 description="This timer guards against stalled service/handler invocations that are supposed to terminate. The abort timeout is started after the 'inactivity timeout' has expired and the service/handler invocation has been asked to gracefully terminate. Once the timer expires, it will abort the service/handler invocation."
               >
-                <span slot="title">Abort</span>
+                <span slot="title" className="text-code">
+                  Abort
+                </span>
               </InlineTooltip>
             }
             name="abort_timeout"
@@ -415,7 +419,7 @@ function ServiceForm({
       </Section>
       <Section>
         <SectionTitle>Deployments</SectionTitle>
-        <SectionContent className="bg-transparent shadow-none border-none px-2">
+        <SectionContent className="bg-transparent shadow-none border-none px-2 pt-2">
           {isPendingOrSubmitting ? (
             <div className="w-full h-6 animate-pulse rounded-md bg-white" />
           ) : (
