@@ -35,21 +35,25 @@ export const links: LinksFunction = () => [
   },
   { rel: 'stylesheet', href: styles },
   { rel: 'stylesheet', href: 'https://rsms.me/inter/inter.css' },
-  { rel: 'apple-touch-icon', href: '/apple-touch-icon.png', sizes: '180x180' },
+  {
+    rel: 'apple-touch-icon',
+    href: '/ui/apple-touch-icon.png',
+    sizes: '180x180',
+  },
   {
     rel: 'icon',
     type: 'image/png',
-    href: '/favicon-32x32.png',
+    href: '/ui/favicon-32x32.png',
     sizes: '32x32',
   },
   {
     rel: 'icon',
     type: 'image/png',
-    href: '/favicon-16x16.png',
+    href: '/ui/favicon-16x16.png',
     sizes: '16x16',
   },
-  { rel: 'manifest', href: '/site.webmanifest' },
-  { rel: 'mask-icon', href: '/safari-pinned-tab.svg', color: '#222452' },
+  { rel: 'manifest', href: '/ui/site.webmanifest' },
+  { rel: 'mask-icon', href: '/ui/safari-pinned-tab.svg', color: '#222452' },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {

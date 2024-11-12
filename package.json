@@ -34,7 +34,7 @@
   "devDependencies": {
     "@babel/core": "7.24.7",
     "@babel/preset-react": "7.24.7",
-    "@eslint/eslintrc": "^2.1.1",
+    "@eslint/eslintrc": "2.1.1",
     "@eslint/js": "~8.57.0",
     "@faker-js/faker": "8.4.1",
     "@mswjs/data": "0.16.1",
@@ -97,6 +97,7 @@
     "openapi-typescript": "7.4.0",
     "postcss": "8.4.38",
     "prettier": "2.8.8",
+    "rollup-plugin-license": "3.5.3",
     "tailwindcss": "3.4.3",
     "tailwindcss-animate": "1.0.7",
     "tailwindcss-react-aria-components": "1.1.6",
