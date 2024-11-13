@@ -12,7 +12,7 @@ import { Form, useSearchParams } from '@remix-run/react';
 import { Button, SubmitButton } from '@restate/ui/button';
 import { ErrorBanner } from '@restate/ui/error';
 import { FormFieldInput } from '@restate/ui/form-field';
-import { FormEvent, useId } from 'react';
+import { FormEvent, useId, useState } from 'react';
 import {
   useDeleteDeployment,
   useListDeployments,
@@ -27,7 +27,12 @@ export function DeleteDeployment() {
   const deployment = deploymentId
     ? data?.deployments.get(deploymentId)
     : undefined;
-
+  const [deploymentEndpoint, setDeploymentEndpoint] = useState(
+    getEndpoint(deployment)
+  );
+  if (deployment && !deploymentEndpoint) {
+    setDeploymentEndpoint(getEndpoint(deployment));
+  }
   const { mutate, isPending, error } = useDeleteDeployment(
     String(deploymentId),
     {
@@ -63,7 +68,7 @@ export function DeleteDeployment() {
           <p className="text-sm text-gray-500">
             Are you sure you want to delete{' '}
             <code className="bg-red-50 text-red-700 ring-red-600/10 p-0.5 inline-block rounded-md">
-              {getEndpoint(deployment)}
+              {deploymentEndpoint}
             </code>
             ? This might break in-flight invocations, use with{' '}
             <span className="font-medium">caution</span>.

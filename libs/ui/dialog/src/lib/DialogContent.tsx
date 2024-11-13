@@ -9,7 +9,7 @@ import { tv } from 'tailwind-variants';
 import { DialogFooterContainer } from './DialogFooter';
 
 const overlayStyles = tv({
-  base: 'fixed top-0 left-0 w-full isolate z-50 bg-gray-800 bg-opacity-30 transition-opacity flex items-center justify-center p-4 text-center [height:100vh] [min-height:100vh]',
+  base: 'fixed top-0 left-0 w-full isolate z-50 bg-gray-800 bg-opacity-30 transition-opacity flex text-center [height:100vh] [min-height:100vh]',
   variants: {
     isEntering: {
       true: 'animate-in fade-in duration-200 ease-out',
@@ -17,42 +17,97 @@ const overlayStyles = tv({
     isExiting: {
       true: 'animate-out fade-out duration-200 ease-in',
     },
+    variant: {
+      sheet: 'pb-0 px-4 pt-4 items-end justify-center',
+      modal: 'p-4 items-center justify-center',
+    },
   },
+  defaultVariants: { variant: 'modal' },
 });
 
 const modalStyles = tv({
-  base: 'flex w-full max-w-sm max-h-full overflow-auto rounded-[1.125rem] [clip-path:inset(0_0_0_0_round_1.125rem)] bg-white text-left align-middle text-slate-700  shadow-lg shadow-zinc-800/5 border border-black/5',
+  base: 'flex max-h-full overflow-auto  bg-white text-left align-middle text-slate-700  shadow-lg shadow-zinc-800/5 border border-black/5',
   variants: {
     isEntering: {
-      true: 'animate-in zoom-in-105 ease-out duration-200',
+      true: 'animate-in ease-out duration-200',
     },
     isExiting: {
-      true: 'animate-out zoom-out-95 ease-in duration-200',
+      true: 'animate-out ease-in duration-200',
+    },
+    variant: {
+      sheet: 'w-[95vw] h-[95vh] rounded-t-[1.125rem] border-b-0',
+      modal:
+        'w-full max-w-sm [clip-path:inset(0_0_0_0_round_1.125rem)] rounded-[1.125rem]',
     },
   },
+  compoundVariants: [
+    {
+      isEntering: true,
+      variant: 'sheet',
+      className: 'slide-in-from-bottom',
+    },
+    {
+      isExiting: true,
+      variant: 'sheet',
+      className: 'slide-out-from-top',
+    },
+    {
+      isEntering: true,
+      variant: 'modal',
+      className: 'zoom-in-105',
+    },
+    {
+      isExiting: true,
+      variant: 'modal',
+      className: 'zoom-out-95 ',
+    },
+  ],
+  defaultVariants: { variant: 'modal' },
+});
+
+const dialogStyles = tv({
+  base: 'flex flex-col outline bg-gray-100 outline-0 p-1.5 [[data-placement]>&]:p-4 max-h-full w-full relative',
+  variants: {
+    variant: {
+      sheet: 'rounded-t-[1.125rem] pb-0',
+      modal: 'rounded-[1.125rem]',
+    },
+  },
+  defaultVariants: { variant: 'modal' },
+});
+
+const contentStyles = tv({
+  base: 'bg-white  border max-h-[inherit] overflow-auto',
+  variants: {
+    variant: {
+      sheet: 'rounded-t-xl border-b-0 h-full',
+      modal: 'rounded-xl p-6',
+    },
+  },
+  defaultVariants: { variant: 'modal' },
 });
 
 interface DialogContentProps {
   className?: string;
+  variant?: 'modal' | 'sheet';
 }
 
 export function DialogContent({
   children,
   className,
+  variant = 'modal',
 }: PropsWithChildren<DialogContentProps>) {
   return (
-    <AriaModalOverlay className={overlayStyles}>
+    <AriaModalOverlay className={overlayStyles({ variant })}>
       <AriaModal
         isDismissable
         className={composeRenderProps(className, (className, renderProps) =>
-          modalStyles({ ...renderProps, className })
+          modalStyles({ ...renderProps, className, variant })
         )}
       >
-        <AriaDialog className="flex flex-col outline bg-gray-100 rounded-[1.125rem] outline-0 p-1.5 [[data-placement]>&]:p-4 max-h-full w-full relative">
+        <AriaDialog className={dialogStyles({ variant })}>
           <DialogFooterContainer>
-            <div className="bg-white p-6 border rounded-xl max-h-[inherit] overflow-auto">
-              {children}
-            </div>
+            <div className={contentStyles({ variant })}>{children}</div>
           </DialogFooterContainer>
         </AriaDialog>
       </AriaModal>

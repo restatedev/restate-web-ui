@@ -1,9 +1,9 @@
-import { PropsWithChildren } from 'react';
+import { PropsWithChildren, ReactNode } from 'react';
 import { Header } from 'react-aria-components';
 import { tv } from 'tailwind-variants';
 
 export interface DropdownSectionProps extends PropsWithChildren<object> {
-  title?: string;
+  title?: ReactNode;
   className?: string;
 }
 

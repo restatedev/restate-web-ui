@@ -8,6 +8,7 @@ import {
   useNavigate,
 } from '@remix-run/react';
 import styles from './tailwind.css?url';
+import '@stoplight/elements/styles.min.css';
 import type { LinksFunction } from '@remix-run/node';
 import { LayoutOutlet, LayoutProvider, LayoutZone } from '@restate/ui/layout';
 import { RouterProvider } from 'react-aria-components';
@@ -25,6 +26,7 @@ import {
 import {
   DeleteDeployment,
   DeploymentDetails,
+  ServicePlayground,
   ServiceDetails,
 } from '@restate/features/overview-route';
 
@@ -100,7 +102,10 @@ function getCookieValue(name: string) {
 export default function App() {
   return (
     <QueryProvider>
-      <RestateContextProvider adminBaseUrl={getCookieValue('adminBaseUrl')}>
+      <RestateContextProvider
+        adminBaseUrl={getCookieValue('adminBaseUrl')}
+        ingressUrl="http://localhost:8080"
+      >
         <LayoutOutlet zone={LayoutZone.Content}>
           <Outlet />
         </LayoutOutlet>
@@ -134,6 +139,7 @@ export default function App() {
         <DeploymentDetails />
         <ServiceDetails />
         <DeleteDeployment />
+        <ServicePlayground />
       </RestateContextProvider>
     </QueryProvider>
   );

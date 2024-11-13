@@ -9,16 +9,19 @@ export type Status = 'HEALTHY' | 'DEGRADED' | 'PENDING' | (string & {});
 type RestateContext = {
   status: Status;
   version?: string;
+  ingressUrl: string;
 };
 
 const InternalRestateContext = createContext<RestateContext>({
   status: 'PENDING',
+  ingressUrl: '',
 });
 
 function InternalRestateContextProvider({
   children,
   isPending,
-}: PropsWithChildren<{ isPending?: boolean }>) {
+  ingressUrl,
+}: PropsWithChildren<{ isPending?: boolean; ingressUrl: string }>) {
   const { data } = useVersion({ enabled: !isPending });
   const version = data?.version;
 
@@ -36,7 +39,7 @@ function InternalRestateContextProvider({
     : 'PENDING';
 
   return (
-    <InternalRestateContext.Provider value={{ version, status }}>
+    <InternalRestateContext.Provider value={{ version, status, ingressUrl }}>
       {children}
     </InternalRestateContext.Provider>
   );
@@ -45,12 +48,14 @@ function InternalRestateContextProvider({
 export function RestateContextProvider({
   children,
   adminBaseUrl,
+  ingressUrl,
 }: PropsWithChildren<{
   adminBaseUrl?: string;
+  ingressUrl: string;
 }>) {
   return (
     <AdminBaseURLProvider baseUrl={adminBaseUrl}>
-      <InternalRestateContextProvider>
+      <InternalRestateContextProvider ingressUrl={ingressUrl}>
         {children}
       </InternalRestateContextProvider>
     </AdminBaseURLProvider>

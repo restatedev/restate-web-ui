@@ -1,5 +1,5 @@
 import { useSearchParams } from '@remix-run/react';
-import { PropsWithChildren, useCallback } from 'react';
+import { PropsWithChildren } from 'react';
 import { DialogTrigger } from 'react-aria-components';
 
 interface DialogProps {
@@ -26,22 +26,18 @@ export function QueryDialog({
   const [searchParams, setSearchParams] = useSearchParams();
   const isOpen = Boolean(searchParams.has(query));
 
-  const close = useCallback(() => {
-    setSearchParams(
-      (perv) => {
-        perv.delete(query);
-        return perv;
-      },
-      { preventScrollReset: true }
-    );
-  }, [query, setSearchParams]);
-
   return (
     <DialogTrigger
       isOpen={isOpen}
       onOpenChange={(isOpen) => {
         if (!isOpen) {
-          close();
+          setSearchParams(
+            (perv) => {
+              perv.delete(query);
+              return perv;
+            },
+            { preventScrollReset: true }
+          );
         }
       }}
     >
