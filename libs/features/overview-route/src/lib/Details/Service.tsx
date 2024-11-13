@@ -177,12 +177,14 @@ function ServiceForm({
           {isPendingOrSubmitting ? (
             <div className="w-full h-6 animate-pulse rounded-md bg-white" />
           ) : (
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-4">
               {handlers.map((handler) => (
                 <Handler
                   handler={handler}
                   key={handler.name}
                   className="pl-0"
+                  service={service}
+                  withPlayground
                 />
               ))}
             </div>
