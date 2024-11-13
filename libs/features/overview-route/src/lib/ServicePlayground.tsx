@@ -3,27 +3,40 @@ import { useServiceOpenApi } from '@restate/data-access/admin-api';
 import { Button } from '@restate/ui/button';
 import { QueryDialog, DialogContent, DialogClose } from '@restate/ui/dialog';
 import { Icon, IconName } from '@restate/ui/icons';
-import { usePopover } from '@restate/ui/popover';
 import { API } from '@stoplight/elements';
 import { SERVICE_PLAYGROUND_QUERY_PARAM } from './constants';
-import { useMemo } from 'react';
+import { ComponentProps, useMemo } from 'react';
 import { useRestateContext } from '@restate/features/restate-context';
+import { tv } from 'tailwind-variants';
 
+const styles = tv({
+  base: 'px-1.5 py-0.5 text-xs text-gray-600 font-normal rounded-md flex items-center gap-1',
+});
 export function ServicePlaygroundTrigger({
   service,
   handler,
+  onClick,
+  className,
+  variant = 'icon',
 }: {
   service: string;
   handler?: string;
+  className?: string;
+  onClick?: VoidFunction;
+  variant?: ComponentProps<typeof Button>['variant'];
 }) {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { close } = usePopover();
+  const { data } = useServiceOpenApi(service);
+
+  if (!data) {
+    return null;
+  }
 
   return (
     <Button
       onClick={() => {
-        close();
+        onClick?.();
         const searchParamsClone = new URLSearchParams(searchParams);
         searchParamsClone.set(SERVICE_PLAYGROUND_QUERY_PARAM, service);
 
@@ -32,8 +45,8 @@ export function ServicePlaygroundTrigger({
           hash: handler ? `/operations/${service}-${handler}` : undefined,
         });
       }}
-      variant="icon"
-      className="px-1.5 py-0.5 text-xs text-gray-600 font-normal rounded-md flex items-center gap-1"
+      variant={variant}
+      className={styles({ className })}
     >
       Playground
       <Icon name={IconName.ExternalLink} className="w-3 h-3" />

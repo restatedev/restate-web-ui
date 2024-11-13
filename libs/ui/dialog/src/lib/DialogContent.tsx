@@ -80,7 +80,7 @@ const contentStyles = tv({
   base: 'bg-white  border max-h-[inherit] overflow-auto',
   variants: {
     variant: {
-      sheet: 'rounded-t-xl border-b-0',
+      sheet: 'rounded-t-xl border-b-0 h-full',
       modal: 'rounded-xl p-6',
     },
   },

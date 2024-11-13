@@ -5,8 +5,14 @@ import { DropdownSection } from '@restate/ui/dropdown';
 import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from 'tailwind-variants';
 import { JsonSchemaViewer } from '@stoplight/json-schema-viewer';
-import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  usePopover,
+} from '@restate/ui/popover';
 import { ServicePlaygroundTrigger } from './ServicePlayground';
+import { ComponentProps } from 'react';
 
 const styles = tv({
   base: 'flex flex-col gap-0.5 relative',
@@ -136,7 +142,7 @@ function HandlerInputOutput({
                     <span>{schema.title}</span>
                     {withPlayground && (
                       <div className="ml-auto">
-                        <ServicePlaygroundTrigger
+                        <ServicePlaygroundTriggerWithClosePopover
                           service={service}
                           handler={handler}
                         />
@@ -160,4 +166,12 @@ function HandlerInputOutput({
       </span>
     </div>
   );
+}
+
+function ServicePlaygroundTriggerWithClosePopover(
+  props: ComponentProps<typeof ServicePlaygroundTrigger>
+) {
+  const { close } = usePopover();
+
+  return <ServicePlaygroundTrigger {...props} onClick={close} />;
 }

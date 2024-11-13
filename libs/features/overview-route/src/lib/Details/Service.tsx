@@ -27,6 +27,7 @@ import { FormEvent, useEffect, useId, useState } from 'react';
 import { Link } from '@restate/ui/link';
 import { useQueryClient } from '@tanstack/react-query';
 import { ErrorBanner } from '@restate/ui/error';
+import { ServicePlaygroundTrigger } from '../ServicePlayground';
 
 export function ServiceDetails() {
   const formId = useId();
@@ -157,7 +158,7 @@ function ServiceForm({
             className="w-full h-full p-1.5 fill-blue-50 text-blue-400 drop-shadow-md"
           />
         </div>{' '}
-        <div className="flex flex-col items-start gap-1 min-w-0">
+        <div className="flex flex-col flex-auto items-start gap-1 min-w-0">
           {isPendingOrSubmitting ? (
             <>
               <div className="w-[16ch] h-5 animate-pulse rounded-md bg-gray-200 mt-1" />
@@ -166,7 +167,16 @@ function ServiceForm({
           ) : (
             <>
               <TruncateWithTooltip>{data?.name}</TruncateWithTooltip>
-              <ServiceType type={data?.ty} className="self-start" />
+              <div className="flex items-center w-full gap-2">
+                <ServiceType type={data?.ty} className="" />
+                {data?.name && (
+                  <ServicePlaygroundTrigger
+                    service={data?.name}
+                    className=""
+                    variant="secondary"
+                  />
+                )}
+              </div>
             </>
           )}
         </div>
