@@ -209,3 +209,21 @@ export function useDeleteDeployment(
     ...options,
   });
 }
+
+export function useServiceOpenApi(
+  service: string,
+  options?: HookQueryOptions<'/services/{service}/openapi', 'get'>
+) {
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi('query', '/services/{service}/openapi', 'get', {
+    baseUrl,
+    parameters: { path: { service } },
+  });
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+  });
+
+  return { ...results, queryKey: queryOptions.queryKey };
+}
