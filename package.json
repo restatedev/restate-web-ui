@@ -117,7 +117,8 @@
       "@types/react-dom": "npm:types-react-dom@rc",
       "send@<0.19.0": ">=0.19.0",
       "cookie@<0.7.0": ">=0.7.0",
-      "@stoplight/json-schema-viewer": "4.16.2"
+      "@stoplight/json-schema-viewer": "4.16.2",
+      "@sentry/browser@<7.119.1": ">=7.119.1"
     },
     "peerDependencyRules": {
       "allowAny": [
