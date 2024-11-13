@@ -21,6 +21,7 @@ export interface ButtonProps {
   className?: string;
   form?: string;
   slot?: string;
+  onHover?: VoidFunction;
 }
 
 const styles = tv({
@@ -46,10 +47,11 @@ const styles = tv({
 export const Button = forwardRef<
   HTMLButtonElement,
   PropsWithChildren<ButtonProps>
->(({ variant, onClick, disabled, ...props }, ref) => {
+>(({ variant, onClick, disabled, onHover, ...props }, ref) => {
   return (
     <RACButton
       {...props}
+      onHoverStart={onHover}
       ref={ref}
       isDisabled={disabled}
       onPress={onClick as PressEvents['onPress']}

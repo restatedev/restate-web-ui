@@ -3,14 +3,14 @@ import { useServiceOpenApi } from '@restate/data-access/admin-api';
 import { Button } from '@restate/ui/button';
 import { QueryDialog, DialogContent, DialogClose } from '@restate/ui/dialog';
 import { Icon, IconName } from '@restate/ui/icons';
-import { API } from '@stoplight/elements';
 import { SERVICE_PLAYGROUND_QUERY_PARAM } from './constants';
 import { ComponentProps, useMemo } from 'react';
 import { useRestateContext } from '@restate/features/restate-context';
 import { tv } from 'tailwind-variants';
+import { API } from './StopLight';
 
 const styles = tv({
-  base: 'px-1.5 py-0.5 text-xs text-gray-600 font-normal rounded-md flex items-center gap-1',
+  base: 'px-1.5 py-0.5 text-xs text-gray-600 font-normal font-sans rounded-md flex items-center gap-1',
 });
 export function ServicePlaygroundTrigger({
   service,
@@ -47,6 +47,7 @@ export function ServicePlaygroundTrigger({
       }}
       variant={variant}
       className={styles({ className })}
+      onHover={() => import('@stoplight/elements')}
     >
       Playground
       <Icon name={IconName.ExternalLink} className="w-3 h-3" />
@@ -72,10 +73,18 @@ export function ServicePlayground() {
 
   return (
     <QueryDialog query={SERVICE_PLAYGROUND_QUERY_PARAM}>
-      <DialogContent variant="sheet">
+      <DialogContent
+        variant="sheet"
+        className='[&_*:has(>[data-test="mobile-top-nav"])]:w-[calc(100vw-1rem)] [&_*:has(>[data-test="mobile-top-nav"])]:rounded-t-[0.7rem]'
+      >
         {apiSpec ? (
           <>
-            <API apiDescriptionDocument={apiSpec} router="hash" hideExport />
+            <API
+              apiDescriptionDocument={apiSpec}
+              router="hash"
+              hideExport
+              layout="responsive"
+            />
             <DialogClose>
               <Button variant="icon" className="absolute right-3 top-3">
                 <Icon name={IconName.X} className="w-5 h-5" />

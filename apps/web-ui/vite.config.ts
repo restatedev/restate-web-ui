@@ -19,7 +19,6 @@ export default defineConfig(({ mode }) => {
     root: __dirname,
     cacheDir: '../../node_modules/.vite/apps/web-ui',
     plugins: [
-      nodePolyfills(),
       {
         ...license({
           cwd: path.join(__dirname, '../..'),
@@ -48,12 +47,18 @@ export default defineConfig(({ mode }) => {
           },
         }),
       nxViteTsPaths(),
+      nodePolyfills(),
     ],
 
     // Uncomment this if you are using workers.
     // worker: {
     //  plugins: [ nxViteTsPaths() ],
     // },
+    build: {
+      commonjsOptions: {
+        transformMixedEsModules: true,
+      },
+    },
 
     server: {
       headers: SERVER_HEADERS,

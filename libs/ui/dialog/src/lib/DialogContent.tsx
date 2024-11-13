@@ -18,7 +18,7 @@ const overlayStyles = tv({
       true: 'animate-out fade-out duration-200 ease-in',
     },
     variant: {
-      sheet: 'pb-0 px-4 pt-4 items-end justify-center',
+      sheet: 'pb-0 px-0 lg:px-4 pt-4 items-end justify-center',
       modal: 'p-4 items-center justify-center',
     },
   },
@@ -35,7 +35,7 @@ const modalStyles = tv({
       true: 'animate-out ease-in duration-200',
     },
     variant: {
-      sheet: 'w-[95vw] h-[95vh] rounded-t-[1.125rem] border-b-0',
+      sheet: 'w-[100vw] lg:w-[95vw] h-[95vh] rounded-t-[1.125rem] border-b-0',
       modal:
         'w-full max-w-sm [clip-path:inset(0_0_0_0_round_1.125rem)] rounded-[1.125rem]',
     },
