@@ -858,7 +858,10 @@ export interface operations {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        /** @description Fully qualified service name. */
+        service: string;
+      };
       cookie?: never;
     };
     requestBody?: never;
