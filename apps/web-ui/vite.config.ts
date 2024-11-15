@@ -12,6 +12,7 @@ export default defineConfig(({ mode }) => {
   const ADMIN_BASE_URL = env['ADMIN_BASE_URL'] || '';
   const SERVER_HEADERS = {
     'Set-Cookie': `adminBaseUrl=${ADMIN_BASE_URL}; SameSite=Strict; Path=/`,
+    'Service-Worker-Allowed': '/',
   };
 
   return {
