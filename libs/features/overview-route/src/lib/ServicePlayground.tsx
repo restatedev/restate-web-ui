@@ -42,7 +42,7 @@ export function ServicePlaygroundTrigger({
 
         navigate({
           search: searchParamsClone.toString(),
-          hash: handler ? `/operations/${service}-${handler}` : undefined,
+          hash: handler ? `/operations/${handler}` : undefined,
         });
       }}
       variant={variant}

@@ -31,8 +31,12 @@ import {
 } from '@restate/features/overview-route';
 
 export const links: LinksFunction = () => [
+  {
+    rel: 'preconnect',
+    href: 'https://rsms.me/',
+  },
   { rel: 'stylesheet', href: styles },
-  { rel: 'stylesheet', href: '/ui/inter.css' },
+  { rel: 'stylesheet', href: 'https://rsms.me/inter/inter.css' },
   {
     rel: 'apple-touch-icon',
     href: '/ui/apple-touch-icon.png',

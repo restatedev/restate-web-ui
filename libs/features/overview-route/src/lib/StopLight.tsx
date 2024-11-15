@@ -3,6 +3,8 @@ import { lazy } from 'react';
 
 if (typeof window !== 'undefined') {
   (window as any).Prism = Prism;
+  import('@stoplight/elements');
+  import('@stoplight/json-schema-viewer');
 }
 
 export const API = lazy(() =>
