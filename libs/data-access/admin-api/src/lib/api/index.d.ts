@@ -301,6 +301,46 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/query': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Query journal
+     * @description Query journal
+     */
+    post: operations['query'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/invocations': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List invocations
+     * @description List invocations
+     */
+    get: operations['list_invocations'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -503,15 +543,14 @@ export interface components {
     ListDeploymentsResponse: {
       deployments: components['schemas']['DeploymentResponse'][];
     };
-    DeploymentResponse: {
-      id: components['schemas']['String'];
-      /**
-       * Services
-       * @description List of services exposed by this deployment.
-       */
-      services: components['schemas']['ServiceNameRevPair'][];
-    } & (
+    DeploymentResponse:
       | {
+          id: components['schemas']['String'];
+          /**
+           * Services
+           * @description List of services exposed by this deployment.
+           */
+          services: components['schemas']['ServiceNameRevPair'][];
           uri: string;
           protocol_type: components['schemas']['ProtocolType'];
           http_version: string;
@@ -525,6 +564,12 @@ export interface components {
           max_protocol_version: number;
         }
       | {
+          id: components['schemas']['String'];
+          /**
+           * Services
+           * @description List of services exposed by this deployment.
+           */
+          services: components['schemas']['ServiceNameRevPair'][];
           arn: components['schemas']['LambdaARN'];
           assume_role_arn?: string | null;
           additional_headers?: {
@@ -535,8 +580,7 @@ export interface components {
           min_protocol_version: number;
           /** Format: int32 */
           max_protocol_version: number;
-        }
-    );
+        };
     ServiceNameRevPair: {
       name: string;
       /** Format: uint32 */
@@ -648,14 +692,7 @@ export interface components {
       id: components['schemas']['String'];
       services: components['schemas']['ServiceMetadata'][];
     };
-    DetailedDeploymentResponse: {
-      id: components['schemas']['String'];
-      /**
-       * Services
-       * @description List of services exposed by this deployment.
-       */
-      services: components['schemas']['ServiceMetadata'][];
-    } & (
+    DetailedDeploymentResponse:
       | {
           uri: string;
           protocol_type: components['schemas']['ProtocolType'];
@@ -668,6 +705,12 @@ export interface components {
           min_protocol_version: number;
           /** Format: int32 */
           max_protocol_version: number;
+          id: components['schemas']['String'];
+          /**
+           * Services
+           * @description List of services exposed by this deployment.
+           */
+          services: components['schemas']['ServiceMetadata'][];
         }
       | {
           arn: components['schemas']['LambdaARN'];
@@ -680,8 +723,13 @@ export interface components {
           min_protocol_version: number;
           /** Format: int32 */
           max_protocol_version: number;
-        }
-    );
+          id?: components['schemas']['String'];
+          /**
+           * Services
+           * @description List of services exposed by this deployment.
+           */
+          services: components['schemas']['ServiceMetadata'][];
+        };
   };
   responses: never;
   parameters: never;
@@ -1789,6 +1837,146 @@ export interface operations {
           'application/json': {
             [key: string]: string;
           };
+        };
+      };
+    };
+  };
+  query: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          query: string;
+        };
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': Record<string, never>;
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  list_invocations: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': Record<string, never>;
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
         };
       };
     };

@@ -10,9 +10,12 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "redocly lint ./libs/data-access/admin-api/src/lib/api/spec.json || true",
-          "openapi-typescript ./libs/data-access/admin-api/src/lib/api/spec.json -o ./libs/data-access/admin-api/src/lib/api/index.d.ts"
-        ]
+          "./libs/data-access/admin-api/src/merge.mjs",
+          "redocly lint ./libs/data-access/admin-api/src/lib/api/output.json || true",
+          "openapi-typescript ./libs/data-access/admin-api/src/lib/api/output.json -o ./libs/data-access/admin-api/src/lib/api/index.d.ts",
+          "nx format"
+        ],
+        "parallel": false
       }
     }
   }

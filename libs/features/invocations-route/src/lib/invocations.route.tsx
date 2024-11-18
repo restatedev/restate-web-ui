@@ -1,7 +1,11 @@
+import { useListInvocations } from '@restate/data-access/admin-api';
 import { Code, Snippet } from '@restate/ui/code';
 import { Link } from '@restate/ui/link';
 
 function Component() {
+  const { data } = useListInvocations();
+  console.log(data);
+
   return (
     <div className="flex md:sticky md:top-[11rem] flex-col items-center md:h-[calc(100vh-150px-6rem)] py-8 flex-auto w-full justify-center rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
       <div className="flex flex-col gap-2 items-center relative w-full text-center mt-6">
