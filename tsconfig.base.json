@@ -27,6 +27,9 @@
       "@restate/data-access/admin-api/spec": [
         "libs/data-access/admin-api/src/api.ts"
       ],
+      "@restate/data-access/middleware-service-worker": [
+        "libs/data-access/middleware-service-worker/src/index.ts"
+      ],
       "@restate/features/explainers": ["libs/features/explainers/src/index.ts"],
       "@restate/features/health": ["libs/features/health/src/index.ts"],
       "@restate/features/invocations-route": [
@@ -40,9 +43,6 @@
       ],
       "@restate/features/version": ["libs/features/version/src/index.ts"],
       "@restate/humantime": ["libs/util/humantime/src/index.ts"],
-      "@restate/middleware-service-worker": [
-        "libs/data-access/middleware-service-worker/src/index.ts"
-      ],
       "@restate/ui/button": ["libs/ui/button/src/index.ts"],
       "@restate/ui/code": ["libs/ui/code/src/index.ts"],
       "@restate/ui/copy": ["libs/ui/copy/src/index.ts"],

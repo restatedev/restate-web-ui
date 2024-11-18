@@ -1,4 +1,7 @@
-export async function register(url: string) {
+/// <reference types="vite/client" />
+import workerUrl from './middleware?worker&url';
+
+export async function register() {
   if ('serviceWorker' in navigator) {
     try {
       const registrations = await navigator.serviceWorker.getRegistrations();
@@ -15,7 +18,7 @@ export async function register(url: string) {
         })
       );
 
-      const registration = await navigator.serviceWorker.register(url, {
+      await navigator.serviceWorker.register(workerUrl, {
         scope: '/',
         type: 'module',
       });
