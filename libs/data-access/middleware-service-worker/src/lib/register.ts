@@ -7,14 +7,10 @@ export async function register() {
       const registrations = await navigator.serviceWorker.getRegistrations();
       await Promise.all(
         registrations.map((registration) => {
-          if (navigator.serviceWorker.controller) {
-            // Force update service worker if it exists
-            return registration.update();
-          } else {
-            // This is the work around for hard reload
-            // Unregister service worker that triggers a registration
-            return registration.unregister();
-          }
+          // Unregister service worker that triggers a registration
+          // This will make sure always the updated worker gets registered
+          // Also works with hard reload
+          return registration.unregister();
         })
       );
 
