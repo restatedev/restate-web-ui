@@ -1,1 +1,1 @@
-export * from './lib/middleware-service-worker';
+export * from './lib/register';
