@@ -1,0 +1,392 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Query API",
+    "version": "1.1.3"
+  },
+  "paths": {
+    "/services/{service}/openapi": {
+      "get": {
+        "tags": ["service"],
+        "summary": "Get service OpenAPI",
+        "description": "Get the service OpenAPI 3.1 contract.",
+        "operationId": "get_service_openapi",
+        "parameters": [
+          {
+            "name": "service",
+            "in": "path",
+            "description": "Fully qualified service name.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OpenAPI 3.1 of the service",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query/invocations": {
+      "get": {
+        "tags": ["query-invocation"],
+        "summary": "List invocations",
+        "description": "List invocations",
+        "operationId": "list_invocations",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DetailedDeploymentResponse": {
+        "type": "object",
+        "anyOf": [
+          {
+            "type": "object",
+            "required": [
+              "created_at",
+              "http_version",
+              "max_protocol_version",
+              "min_protocol_version",
+              "protocol_type",
+              "uri",
+              "id",
+              "services"
+            ],
+            "properties": {
+              "uri": {
+                "type": "string"
+              },
+              "protocol_type": {
+                "$ref": "#/components/schemas/ProtocolType"
+              },
+              "http_version": {
+                "type": "string"
+              },
+              "additional_headers": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "created_at": {
+                "type": "string"
+              },
+              "min_protocol_version": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "max_protocol_version": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "id": {
+                "$ref": "#/components/schemas/String"
+              },
+              "services": {
+                "title": "Services",
+                "description": "List of services exposed by this deployment.",
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ServiceMetadata"
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "arn",
+              "created_at",
+              "max_protocol_version",
+              "min_protocol_version",
+              "ide",
+              "services"
+            ],
+            "properties": {
+              "arn": {
+                "$ref": "#/components/schemas/LambdaARN"
+              },
+              "assume_role_arn": {
+                "type": "string",
+                "nullable": true
+              },
+              "additional_headers": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "created_at": {
+                "type": "string"
+              },
+              "min_protocol_version": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "max_protocol_version": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "id": {
+                "$ref": "#/components/schemas/String"
+              },
+              "services": {
+                "title": "Services",
+                "description": "List of services exposed by this deployment.",
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ServiceMetadata"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "DeploymentResponse": {
+        "type": "object",
+        "anyOf": [
+          {
+            "type": "object",
+            "required": [
+              "created_at",
+              "http_version",
+              "max_protocol_version",
+              "min_protocol_version",
+              "protocol_type",
+              "uri",
+              "id",
+              "services"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/components/schemas/String"
+              },
+              "services": {
+                "title": "Services",
+                "description": "List of services exposed by this deployment.",
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ServiceNameRevPair"
+                }
+              },
+              "uri": {
+                "type": "number"
+              },
+              "protocol_type": {
+                "$ref": "#/components/schemas/ProtocolType"
+              },
+              "http_version": {
+                "type": "string"
+              },
+              "additional_headers": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "created_at": {
+                "type": "string"
+              },
+              "min_protocol_version": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "max_protocol_version": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "arn",
+              "created_at",
+              "max_protocol_version",
+              "min_protocol_version",
+              "id",
+              "services"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/components/schemas/String"
+              },
+              "services": {
+                "title": "Services",
+                "description": "List of services exposed by this deployment.",
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ServiceNameRevPair"
+                }
+              },
+              "arn": {
+                "$ref": "#/components/schemas/LambdaARN"
+              },
+              "assume_role_arn": {
+                "type": "string",
+                "nullable": true
+              },
+              "additional_headers": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "created_at": {
+                "type": "string"
+              },
+              "min_protocol_version": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "max_protocol_version": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
