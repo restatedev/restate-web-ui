@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-import workerUrl from './middleware?worker&url';
+import workerUrl from './worker?worker&url';
 
 export async function register() {
   if ('serviceWorker' in navigator) {
