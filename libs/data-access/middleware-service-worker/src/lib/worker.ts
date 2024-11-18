@@ -15,7 +15,7 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   // You can intercept network requests here
-  if (event.request.url.endsWith('/deployments')) {
+  if (event.request.url.endsWith('/deployments2')) {
     const r = new Response(JSON.stringify({ deployments: [] }), {
       status: 200,
       headers: {
