@@ -1,4 +1,7 @@
 /// <reference lib="WebWorker" />
+
+import { queryMiddlerWare } from './query';
+
 export type {};
 declare const self: ServiceWorkerGlobalScope;
 
@@ -14,14 +17,8 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // You can intercept network requests here
-  if (event.request.url.endsWith('/deployments2')) {
-    const r = new Response(JSON.stringify({ deployments: [] }), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    event.respondWith(r);
+  const response = queryMiddlerWare(event.request);
+  if (response) {
+    event.respondWith(response);
   }
 });
