@@ -227,3 +227,14 @@ export function useServiceOpenApi(
 
   return { ...results, queryKey: queryOptions.queryKey };
 }
+
+export function useListInvocations(
+  options?: HookQueryOptions<'/query/invocations', 'get'>
+) {
+  const baseUrl = useAdminBaseUrl();
+
+  return useQuery({
+    ...adminApi('query', '/query/invocations', 'get', { baseUrl }),
+    ...options,
+  });
+}
