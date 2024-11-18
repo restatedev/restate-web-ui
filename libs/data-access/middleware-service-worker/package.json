@@ -1,0 +1,6 @@
+{
+  "name": "@restate/middleware-service-worker",
+  "version": "0.0.1",
+  "dependencies": {},
+  "private": true
+}
