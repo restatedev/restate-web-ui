@@ -4,6 +4,14 @@ import { AppBar } from './AppBar';
 import { Notification } from './Notification';
 import { ZONE_IDS, LayoutZone } from './LayoutZone';
 import { ComplementaryOutlet } from './ComplementaryOutlet';
+import { defaultConfig } from 'tailwind-variants';
+
+// TODO: refactor to a separate pacakge
+defaultConfig.twMergeConfig = {
+  classGroups: {
+    'font-size': [{ text: ['code', '2xs'] }],
+  },
+};
 
 /* eslint-disable-next-line */
 export interface LayoutProps {}

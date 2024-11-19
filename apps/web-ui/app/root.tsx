@@ -8,7 +8,6 @@ import {
   useNavigate,
 } from '@remix-run/react';
 import styles from './tailwind.css?url';
-import '@stoplight/elements/styles.min.css';
 import type { LinksFunction } from '@remix-run/node';
 import { LayoutOutlet, LayoutProvider, LayoutZone } from '@restate/ui/layout';
 import { RouterProvider } from 'react-aria-components';
