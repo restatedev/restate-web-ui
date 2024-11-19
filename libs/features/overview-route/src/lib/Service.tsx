@@ -18,6 +18,8 @@ const styles = tv({
   },
 });
 
+const MAX_NUMBER_OF_DEPLOYMENTS = 5;
+
 export function Service({
   className,
   serviceName,
@@ -33,6 +35,16 @@ export function Service({
   const [searchParams] = useSearchParams();
   const isSelected = searchParams.get(SERVICE_QUERY_PARAM) === serviceName;
   const linkRef = useRef<HTMLAnchorElement>(null);
+
+  const deploymentRevisionPairs = revisions
+    .map((revision) =>
+      serviceDeployments?.[revision]?.map((id) => ({ id, revision }))
+    )
+    .flat()
+    .filter(Boolean) as {
+    id: string;
+    revision: number;
+  }[];
 
   return (
     <div className={styles({ className, isSelected })}>
@@ -69,10 +81,26 @@ export function Service({
             Deployments
           </div>
           <div className="flex flex-col gap-1.5">
-            {revisions.map((revision) =>
-              serviceDeployments?.[revision]?.map((id) => (
+            {deploymentRevisionPairs
+              .slice(0, MAX_NUMBER_OF_DEPLOYMENTS)
+              .map(({ id, revision }) => (
                 <Deployment deploymentId={id} revision={revision} key={id} />
-              ))
+              ))}
+
+            {deploymentRevisionPairs.length > MAX_NUMBER_OF_DEPLOYMENTS && (
+              <Link
+                href={`?${SERVICE_QUERY_PARAM}=${serviceName}`}
+                variant="secondary"
+                aria-label={serviceName}
+                className="text-gray-500 text-code bg-transparent no-underline border-none shadow-none text-left px-8 py-1 cursor-pointer rounded-lg  hover:bg-black/[0.03] pressed:bg-black/5"
+              >
+                +{deploymentRevisionPairs.length - MAX_NUMBER_OF_DEPLOYMENTS}{' '}
+                deployment
+                {deploymentRevisionPairs.length - MAX_NUMBER_OF_DEPLOYMENTS > 1
+                  ? 's'
+                  : ''}
+                …
+              </Link>
             )}
           </div>
         </div>

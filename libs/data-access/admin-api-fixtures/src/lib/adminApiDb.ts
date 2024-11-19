@@ -19,7 +19,8 @@ export const adminApiDb = factory({
     output_description: () => "value of content-type 'application/json'",
   },
   service: {
-    name: primaryKey<string>(() => `${getName()}Service`),
+    id: primaryKey<number>(() => faker.number.int()),
+    name: () => `${getName()}Service`,
     handlers: manyOf('handler'),
     deployment: oneOf('deployment'),
     ty: () =>
@@ -44,13 +45,21 @@ export const adminApiDb = factory({
 const isE2E = process.env['SCENARIO'] === 'E2E';
 
 if (!isE2E) {
-  Array(30)
+  const deployments = Array(30)
     .fill(null)
     .map(() => {
       const deployment = adminApiDb.deployment.create();
-      Array(Math.floor(Math.random() * 3 + 1))
-        .fill(null)
-        .map(() => adminApiDb.service.create({ deployment }));
       return deployment;
     });
+
+  const serviceNames = Array(10)
+    .fill(null)
+    .map(() => `${getName()}Service`);
+  serviceNames.forEach((name) => {
+    deployments.forEach((deployment) => {
+      if (Math.random() < 0.5) {
+        adminApiDb.service.create({ deployment, name });
+      }
+    });
+  });
 }

@@ -19,6 +19,7 @@ interface LinkProps
       | 'aria-label'
     >,
     Pick<AriaAttributes, 'aria-current'> {
+  className?: string;
   variant?: 'primary' | 'secondary' | 'button' | 'secondary-button';
 }
 
