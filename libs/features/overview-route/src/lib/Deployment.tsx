@@ -70,7 +70,7 @@ export function Deployment({
           />
         </Link>
       </div>
-      <Revision revision={revision} className="ml-auto z-[2]" />
+      <Revision revision={revision} className="ml-auto" />
     </div>
   );
 }

@@ -32,7 +32,7 @@ export function NavItem({ children, href }: PropsWithChildren<NavItemProps>) {
   return (
     <li>
       <Link
-        className={styles}
+        className={styles()}
         href={href}
         data-active={isActive}
         {...(isActive && { 'aria-current': value })}
@@ -78,7 +78,7 @@ export function NavSearchItem({
   return (
     <li>
       <Link
-        className={styles}
+        className={styles()}
         href={`${location.pathname}${targetSearch}${location.hash}`}
         data-active={isActive}
         {...(isActive && { 'aria-current': value })}
