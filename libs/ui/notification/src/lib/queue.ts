@@ -7,7 +7,7 @@ export interface NotificationContent {
 }
 
 export const notificationQueue = new ToastQueue<NotificationContent>({
-  maxVisibleToasts: 3,
+  maxVisibleToasts: 99999999,
   hasExitAnimation: true,
 });
 
@@ -24,7 +24,7 @@ function showNotificationWithType(type: NotificationContent['type']) {
     const id = notificationQueue.add(
       { content: message, type },
       {
-        priority: PRIORITIES[type],
+        priority: PRIORITIES[type] + notificationQueue.visibleToasts.length,
       }
     );
 

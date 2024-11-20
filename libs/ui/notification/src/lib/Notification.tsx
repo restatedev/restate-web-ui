@@ -14,7 +14,7 @@ interface ToastProps extends AriaToastProps<NotificationContent> {
 }
 
 const styles = tv({
-  base: 'absolute peer z-30 [&:first-child+*]:scale-95 [&:first-child+*]:z-20 [&:first-child+*+*]:scale-90 [&:first-child+*+*]:z-10 top-0 [&:first-child+*]:-translate-y-1 [&:first-child+*+*]:-translate-y-1.5 left-0 bottom-0 right-0 flex shrink-0 duration-300 items-center gap-2 flex-auto pl-3 pr-1 text-sm border rounded-xl backdrop-blur-xl backdrop-saturate-200 min-h-10 shadow-lg shadow-zinc-800/5 transform transition',
+  base: 'absolute peer z-30 [&:first-child+*]:scale-95 [&:first-child+*]:z-20 [&:first-child+*+*]:scale-90 [&:first-child+*+*~*]:scale-50 [&:first-child+*+*~*]:z-10 [&:first-child+*+*]:z-10 top-0 [&:first-child+*]:-translate-y-1 [&:first-child+*+*]:-translate-y-1.5 left-0 bottom-0 right-0 flex shrink-0 duration-300 items-center gap-2 flex-auto pl-3 pr-1 text-sm border rounded-xl backdrop-blur-xl backdrop-saturate-200 min-h-10 shadow-lg shadow-zinc-800/5 transform transition',
   slots: {
     content: 'flex-auto',
     close: 'ml-auto text-inherit',
@@ -29,7 +29,7 @@ const styles = tv({
         base: 'animate-in fade-in slide-in-from-top-16 zoom-in-95',
       },
       exiting: {
-        base: 'animate-out fade-out slide-out-to-top-16 [&:first-child+*]:scale-100 [&:first-child+*]:translate-y-0',
+        base: 'z-0 animate-out fade-out slide-out-to-top-16 [&:first-child+*]:scale-100 [&:first-child+*]:translate-y-0',
       },
     },
     type: {
