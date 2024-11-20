@@ -4,14 +4,7 @@ import { AppBar } from './AppBar';
 import { ZONE_IDS, LayoutZone } from './LayoutZone';
 import { ComplementaryOutlet } from './ComplementaryOutlet';
 import { defaultConfig } from 'tailwind-variants';
-import {
-  NotificationRegion,
-  showErrorNotification,
-  showInfoNotification,
-  showPendingNotification,
-  showSuccessNotification,
-  showWarningNotification,
-} from '@restate/ui/notification';
+import { NotificationRegion } from '@restate/ui/notification';
 
 // TODO: refactor to a separate pacakge
 defaultConfig.twMergeConfig = {
