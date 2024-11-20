@@ -723,7 +723,7 @@ export interface components {
           min_protocol_version: number;
           /** Format: int32 */
           max_protocol_version: number;
-          id?: components['schemas']['String'];
+          id: components['schemas']['String'];
           /**
            * Services
            * @description List of services exposed by this deployment.

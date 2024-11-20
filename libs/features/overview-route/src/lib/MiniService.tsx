@@ -43,7 +43,7 @@ export function MiniService({
           />
         </Link>
       </div>
-      <Revision revision={service.revision} className="ml-auto" />
+      <Revision revision={service.revision} className="ml-auto z-[2]" />
     </div>
   );
 }

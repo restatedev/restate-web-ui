@@ -28,6 +28,7 @@ import { Link } from '@restate/ui/link';
 import { useQueryClient } from '@tanstack/react-query';
 import { ErrorBanner } from '@restate/ui/error';
 import { ServicePlaygroundTrigger } from '../ServicePlayground';
+import { showSuccessNotification } from '@restate/ui/notification';
 
 export function ServiceDetails() {
   const formId = useId();
@@ -52,8 +53,13 @@ export function ServiceDetails() {
     error: mutationError,
     isPending: isSubmitting,
   } = useModifyService(String(service), {
-    onSuccess(data) {
+    onSuccess(data, variables) {
       queryClient.setQueryData(queryKey, data);
+      showSuccessNotification(
+        <>
+          "{variables.parameters?.path.service}" has been successfully updated.
+        </>
+      );
       setKey((k) => k + 1);
     },
   });

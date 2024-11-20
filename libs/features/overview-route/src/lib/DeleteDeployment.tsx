@@ -18,6 +18,7 @@ import {
   useListDeployments,
 } from '@restate/data-access/admin-api';
 import { getEndpoint } from './types';
+import { showSuccessNotification } from '@restate/ui/notification';
 
 export function DeleteDeployment() {
   const formId = useId();
@@ -36,12 +37,18 @@ export function DeleteDeployment() {
   const { mutate, isPending, error } = useDeleteDeployment(
     String(deploymentId),
     {
-      onSuccess() {
+      onSuccess(data, variables) {
         setSearchParams((old) => {
           old.delete(DELETE_DEPLOYMENT_QUERY_PARAM);
           old.delete(DEPLOYMENT_QUERY_PARAM);
           return old;
         });
+        showSuccessNotification(
+          <>
+            <code>{variables.parameters?.path.deployment}</code> has been
+            successfully deleted.
+          </>
+        );
         refetch();
       },
     }

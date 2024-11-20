@@ -8,7 +8,7 @@ import {
 } from '@restate/features/explainers';
 import { Service } from './Service';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
-import { useLayoutEffect, useState } from 'react';
+import { useId, useLayoutEffect, useState } from 'react';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 
 function MultipleDeploymentsPlaceholder() {
@@ -66,7 +66,7 @@ const deploymentsStyles = tv({
   variants: {
     isEmpty: {
       true: 'hidden',
-      false: 'min-h-full',
+      false: 'min-h-[calc(100vh-9rem-9rem)] sticky top-[9rem]',
     },
   },
   defaultVariants: {
@@ -110,12 +110,24 @@ function Component() {
   const size = services ? services.size : 0;
   const isEmpty = isSuccess && (!deployments || deployments.size === 0);
   const [isScrolling, setIsScrolling] = useState(false);
+  const masonryId = useId();
 
   useLayoutEffect(() => {
     let isCanceled = false;
     const resizeObserver = new ResizeObserver(() => {
       if (!isCanceled) {
-        setIsScrolling(document.body.scrollHeight > document.body.clientHeight);
+        const escapedMasonryId = masonryId.replace(/:/g, '\\:');
+        const masonryContainerHeight =
+          document.querySelector(`.${escapedMasonryId}`)?.clientHeight ?? 0;
+        const columnHeight = Math.max(
+          ...Array.from(
+            document.querySelectorAll(`.${escapedMasonryId} > *`)
+          ).map((el) => el.clientHeight)
+        );
+        setIsScrolling(
+          document.body.scrollHeight > document.body.clientHeight &&
+            masonryContainerHeight <= columnHeight
+        );
       }
     });
     resizeObserver.observe(document.body);
@@ -123,9 +135,9 @@ function Component() {
       isCanceled = true;
       resizeObserver.unobserve(document.body);
     };
-  }, [sortedServiceNames]);
+  }, [masonryId, sortedServiceNames]);
 
-  // Handle isLoading & isError
+  // TODO: Handle isLoading & isError
 
   return (
     <>
@@ -136,7 +148,7 @@ function Component() {
         <Masonry
           gutter="1.5rem"
           style={{ gap: 'calc(8rem + 150px)' }}
-          className={layoutStyles({ isScrolling })}
+          className={layoutStyles({ isScrolling, className: masonryId })}
         >
           {sortedServiceNames?.map((serviceName, i) => (
             <Service

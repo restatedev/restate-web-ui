@@ -12,6 +12,7 @@ export function getName() {
 export const adminApiDb = factory({
   handler: {
     name: primaryKey(() => `${getName()}`),
+    service: oneOf('service'),
     ty: () =>
       faker.helpers.arrayElement(['Exclusive', 'Shared', 'Workflow'] as const),
     input_description: () =>

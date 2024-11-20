@@ -1,10 +1,10 @@
 import { PropsWithChildren } from 'react';
 import { createPortal } from 'react-dom';
 import { AppBar } from './AppBar';
-import { Notification } from './Notification';
 import { ZONE_IDS, LayoutZone } from './LayoutZone';
 import { ComplementaryOutlet } from './ComplementaryOutlet';
 import { defaultConfig } from 'tailwind-variants';
+import { NotificationRegion } from '@restate/ui/notification';
 
 // TODO: refactor to a separate pacakge
 defaultConfig.twMergeConfig = {
@@ -20,7 +20,7 @@ export function LayoutProvider({ children }: PropsWithChildren<LayoutProps>) {
   return (
     <div className="flex w-full flex-col min-h-[100vh] mx-auto max-w-6xl py-3 sm:py-6 px-3 sm:px-6 lg:px-8">
       <AppBar id={ZONE_IDS[LayoutZone.AppBar]} />
-      <Notification id={ZONE_IDS[LayoutZone.Notification]} />
+      <NotificationRegion />
       <div className="flex-auto flex flex-row 3xl:w-[calc(100%+700px+4rem)] 3xl:ml-[calc(-350px-2rem)] 3xl:grid 3xl:[grid-template-columns:350px_1fr_350px] 3xl:gap-8">
         <main
           id={ZONE_IDS[LayoutZone.Content]}

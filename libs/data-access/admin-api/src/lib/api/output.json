@@ -2177,7 +2177,7 @@
               "created_at",
               "max_protocol_version",
               "min_protocol_version",
-              "ide",
+              "id",
               "services"
             ],
             "properties": {

@@ -16,6 +16,7 @@
     "lib": ["es2020", "dom"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
+    "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
       "@restate/data-access/admin-api": [
@@ -57,6 +58,7 @@
       "@restate/ui/link": ["libs/ui/link/src/index.ts"],
       "@restate/ui/listbox": ["libs/ui/listbox/src/index.ts"],
       "@restate/ui/nav": ["libs/ui/nav/src/index.ts"],
+      "@restate/ui/notification": ["libs/ui/notification/src/index.ts"],
       "@restate/ui/popover": ["libs/ui/popover/src/index.ts"],
       "@restate/ui/radio-group": ["libs/ui/radio-group/src/index.ts"],
       "@restate/ui/section": ["libs/ui/section/src/index.ts"],
