@@ -168,12 +168,7 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
   const goToConfirm = useCallback(() => {
     dispatch({ type: 'NavigateToConfirmAction' });
   }, []);
-  const updateAssumeRoleArn = useCallback((assumeRoleArn: string) => {
-    dispatch({ type: 'UpdateRoleArnAction', payload: { assumeRoleArn } });
-  }, []);
-  const updateUseHttp11Arn = useCallback((useHttp11: boolean) => {
-    dispatch({ type: 'UpdateUseHttp11Action', payload: { useHttp11 } });
-  }, []);
+
   const updateServices = useCallback(
     (services: DeploymentRegistrationContextInterface['services']) => {
       dispatch({ type: 'UpdateServicesActions', payload: { services } });
@@ -187,8 +182,28 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
     []
   );
   const { refetch, data: listDeployments } = useListDeployments();
+
+  const { mutate, isPending, error, reset } = useRegisterDeployment({
+    onSuccess(data) {
+      updateServices(data?.services);
+
+      if (state.stage === 'confirm') {
+        refetch();
+        close();
+        showSuccessNotification(
+          <>
+            <code>{data?.id}</code> has been successfully registered.
+          </>
+        );
+      } else {
+        goToConfirm();
+      }
+    },
+  });
+
   const updateEndpoint = useCallback(
     (value: UpdateEndpointAction['payload']) => {
+      reset();
       if (state.isLambda !== value.isLambda) {
         formRef.current?.reset();
       }
@@ -208,25 +223,22 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
         },
       });
     },
-    [listDeployments, state.isLambda]
+    [listDeployments, state.isLambda, reset]
   );
-  const { mutate, isPending, error } = useRegisterDeployment({
-    onSuccess(data) {
-      updateServices(data?.services);
-
-      if (state.stage === 'confirm') {
-        refetch();
-        close();
-        showSuccessNotification(
-          <>
-            <code>{data?.id}</code> has been successfully registered.
-          </>
-        );
-      } else {
-        goToConfirm();
-      }
+  const updateAssumeRoleArn = useCallback(
+    (assumeRoleArn: string) => {
+      reset();
+      dispatch({ type: 'UpdateRoleArnAction', payload: { assumeRoleArn } });
     },
-  });
+    [reset]
+  );
+  const updateUseHttp11Arn = useCallback(
+    (useHttp11: boolean) => {
+      reset();
+      dispatch({ type: 'UpdateUseHttp11Action', payload: { useHttp11 } });
+    },
+    [reset]
+  );
 
   const submitHandler = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
