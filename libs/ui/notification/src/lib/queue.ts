@@ -32,7 +32,6 @@ function showNotificationWithType(type: NotificationContent['type']) {
       id,
       hide: () => {
         notificationQueue.close(id);
-        notificationQueue.remove(id);
       },
     };
   };
