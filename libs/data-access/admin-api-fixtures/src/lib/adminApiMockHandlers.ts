@@ -168,10 +168,87 @@ const versionHandler = http.get<
   });
 });
 
+const deploymentDetailsHandler = http.get<
+  adminApi.operations['get_deployment']['parameters']['path'],
+  never,
+  adminApi.operations['get_deployment']['responses']['200']['content']['application/json'],
+  GetPath<'/deployments/{deployment}'>
+>('/deployments/:deployment', async ({ params }) => {
+  const deployment = adminApiDb.deployment.findFirst({
+    where: {
+      id: {
+        equals: params.deployment,
+      },
+    },
+  });
+
+  if (!deployment) {
+    return HttpResponse.json(
+      { code: 500, message: 'Server internal error' } as any,
+      { status: 500 }
+    );
+  }
+  return HttpResponse.json({
+    id: deployment.id,
+    services: adminApiDb.service
+      .findMany({
+        where: { deployment: { id: { equals: deployment.id } } },
+      })
+      .map((service) => ({
+        name: service.name,
+        deployment_id: deployment.id,
+        public: service.public,
+        revision: service.revision,
+        ty: service.ty,
+        idempotency_retention: service.idempotency_retention,
+        workflow_completion_retention: service.idempotency_retention,
+        handlers: adminApiDb.handler.findMany({
+          where: { service: { name: { equals: service.name } } },
+        }),
+      })),
+    uri: deployment.endpoint,
+    protocol_type: 'RequestResponse',
+    created_at: new Date().toISOString(),
+    http_version: 'HTTP/2.0',
+    min_protocol_version: 1,
+    max_protocol_version: 1,
+  });
+});
+
+const serviceDetailsHandler = http.get<
+  adminApi.operations['get_service']['parameters']['path'],
+  never,
+  adminApi.operations['get_service']['responses']['200']['content']['application/json'],
+  GetPath<'/services/{service}'>
+>('/services/:service', async ({ params }) => {
+  const service = adminApiDb.service.findFirst({
+    where: {
+      name: {
+        equals: params.service,
+      },
+    },
+  })!;
+
+  return HttpResponse.json({
+    name: service.name,
+    deployment_id: service.deployment!.id!,
+    public: service.public,
+    revision: service.revision,
+    ty: service.ty,
+    idempotency_retention: service.idempotency_retention,
+    workflow_completion_retention: service.idempotency_retention,
+    handlers: adminApiDb.handler.findMany({
+      where: { service: { name: { equals: service.name } } },
+    }),
+  });
+});
+
 export const adminApiMockHandlers = [
   listDeploymentsHandler,
   healthHandler,
   openApiHandler,
   registerDeploymentHandler,
   versionHandler,
+  deploymentDetailsHandler,
+  serviceDetailsHandler,
 ];
