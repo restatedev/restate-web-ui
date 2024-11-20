@@ -9,7 +9,7 @@ import { tv } from 'tailwind-variants';
 import { DialogFooterContainer } from './DialogFooter';
 
 const overlayStyles = tv({
-  base: 'fixed top-0 left-0 w-full isolate z-50 bg-gray-800 bg-opacity-30 transition-opacity flex text-center [height:100vh] [min-height:100vh]',
+  base: 'fixed top-0 left-0 w-full isolate z-[100] bg-gray-800 bg-opacity-30 transition-opacity flex text-center [height:100vh] [min-height:100vh]',
   variants: {
     isEntering: {
       true: 'animate-in fade-in duration-200 ease-out',

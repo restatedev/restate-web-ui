@@ -17,6 +17,7 @@ import {
 } from '@restate/data-access/admin-api';
 import { useDialog } from '@restate/ui/dialog';
 import { getEndpoint } from '../types';
+import { showSuccessNotification } from '@restate/ui/notification';
 
 type NavigateToAdvancedAction = {
   type: 'NavigateToAdvancedAction';
@@ -216,6 +217,11 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
       if (state.stage === 'confirm') {
         refetch();
         close();
+        showSuccessNotification(
+          <>
+            <code>{data?.id}</code> has been successfully registered.
+          </>
+        );
       } else {
         goToConfirm();
       }
