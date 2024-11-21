@@ -10,7 +10,7 @@ import { tv } from 'tailwind-variants';
 import { API } from './StopLight';
 
 const styles = tv({
-  base: 'px-1.5 py-0.5 text-xs text-gray-600 font-normal font-sans rounded-md flex items-center gap-1',
+  base: 'px-1.5 py-0.5 text-xs font-normal font-sans rounded-md flex items-center gap-1',
 });
 export function ServicePlaygroundTrigger({
   service,

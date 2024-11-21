@@ -155,6 +155,7 @@ export function useServiceDetails(
   });
 
   const results = useQuery({
+    staleTime: 0,
     ...queryOptions,
     ...options,
   });
@@ -173,6 +174,7 @@ export function useDeploymentDetails(
   });
 
   const results = useQuery({
+    staleTime: 0,
     ...queryOptions,
     ...options,
   });
@@ -221,6 +223,7 @@ export function useServiceOpenApi(
   });
 
   const results = useQuery({
+    staleTime: 0,
     ...queryOptions,
     ...options,
   });

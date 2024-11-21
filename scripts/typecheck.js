@@ -3,6 +3,7 @@
 const { execSync } = require('child_process');
 
 const projects = execSync('pnpm nx show projects --affected --json');
+let isFailed = false;
 for (const project of JSON.parse(projects)) {
   const projectData = execSync(`pnpm nx show project ${project} --json`);
   const path = JSON.parse(projectData).root;
@@ -14,7 +15,13 @@ for (const project of JSON.parse(projects)) {
 
     try {
       execSync(`pnpm tsc -p ${tsConfig}`, { stdio: 'inherit' });
-    } catch (error) {}
+    } catch (error) {
+      isFailed = true;
+    }
     console.groupEnd();
   }
+}
+
+if (isFailed) {
+  throw new Error('Type check has failed');
 }

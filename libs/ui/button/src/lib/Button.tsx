@@ -30,7 +30,7 @@ const styles = tv({
   variants: {
     variant: {
       primary:
-        'bg-blue-600 hover:bg-blue-700 pressed:bg-blue-800 text-white shadow-sm',
+        'bg-gradient-to-b from-blue-600/90 to-blue-600 hover:bg-blue-700 pressed:bg-blue-800 text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2)] drop-shadow-sm hover:shadow-none pressed:shadow-none',
       secondary: 'bg-white hover:bg-gray-100 pressed:bg-gray-200 text-gray-800',
       destructive: 'bg-red-700 hover:bg-red-800 pressed:bg-red-900 text-white',
       icon: 'shadow-none border-0 p-1 flex items-center justify-center text-gray-600 hover:bg-black/[5%] pressed:bg-black/10 disabled:bg-transparent',

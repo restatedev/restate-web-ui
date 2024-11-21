@@ -179,7 +179,7 @@ function ServiceForm({
                   <ServicePlaygroundTrigger
                     service={data?.name}
                     className=""
-                    variant="secondary"
+                    variant="primary"
                   />
                 )}
               </div>

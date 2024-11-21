@@ -86,7 +86,7 @@ export type QueryOptions<
   Method extends SupportedMethods<Path>
 > = UseQueryOptions<
   FetchResponse<paths[Path][Method], {}, 'application/json'>['data'],
-  FetchResponse<paths[Path][Method], {}, 'application/json'>['error']
+  RestateError | Error
 >;
 
 type QueryFn<
@@ -106,7 +106,7 @@ export type MutationOptions<
   Body extends OperationBody<Path, Method>
 > = UseMutationOptions<
   FetchResponse<paths[Path][Method], {}, 'application/json'>['data'],
-  FetchResponse<paths[Path][Method], {}, 'application/json'>['error'],
+  RestateError | Error,
   {
     parameters?: Parameters;
     body?: Body;
@@ -148,6 +148,8 @@ export function adminApi<
   queryFn: QueryFn<Path, Method>;
   queryKey: QueryKey<Path, Method>;
   meta: Record<string, unknown>;
+  refetchOnMount?: boolean;
+  staleTime?: number;
 };
 export function adminApi<
   Path extends keyof paths,
@@ -187,6 +189,8 @@ export function adminApi<
       queryFn: QueryFn<Path, Method>;
       queryKey: QueryKey<Path, Method>;
       meta: Record<string, unknown>;
+      refetchOnMount?: boolean;
+      staleTime?: number;
     }
   | {
       mutationFn: MutationFn<Path, Method, Parameters, Body>;
@@ -215,6 +219,7 @@ export function adminApi<
         );
         return data;
       },
+      refetchOnMount: true,
     };
   } else {
     return {
