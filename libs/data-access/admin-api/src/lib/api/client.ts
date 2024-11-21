@@ -148,6 +148,8 @@ export function adminApi<
   queryFn: QueryFn<Path, Method>;
   queryKey: QueryKey<Path, Method>;
   meta: Record<string, unknown>;
+  refetchOnMount?: boolean;
+  staleTime?: number;
 };
 export function adminApi<
   Path extends keyof paths,
@@ -187,6 +189,8 @@ export function adminApi<
       queryFn: QueryFn<Path, Method>;
       queryKey: QueryKey<Path, Method>;
       meta: Record<string, unknown>;
+      refetchOnMount?: boolean;
+      staleTime?: number;
     }
   | {
       mutationFn: MutationFn<Path, Method, Parameters, Body>;
@@ -215,6 +219,7 @@ export function adminApi<
         );
         return data;
       },
+      refetchOnMount: true,
     };
   } else {
     return {
