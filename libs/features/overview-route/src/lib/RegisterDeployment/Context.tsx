@@ -18,6 +18,7 @@ import {
 import { useDialog } from '@restate/ui/dialog';
 import { getEndpoint } from '../types';
 import { showSuccessNotification } from '@restate/ui/notification';
+import { RestateError } from '@restate/util/errors';
 
 type NavigateToAdvancedAction = {
   type: 'NavigateToAdvancedAction';
@@ -88,13 +89,7 @@ interface DeploymentRegistrationContextInterface {
   updateAssumeRoleArn?: (value: string) => void;
   updateUseHttp11Arn?: (value: boolean) => void;
   updateShouldForce?: (value: boolean) => void;
-  error:
-    | {
-        message: string;
-        restate_code?: string | null;
-      }
-    | null
-    | undefined;
+  error: RestateError | Error | null | undefined;
 }
 
 type State = Pick<
