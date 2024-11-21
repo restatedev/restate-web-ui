@@ -1,15 +1,12 @@
 import { Icon, IconName } from '@restate/ui/icons';
+import { RestateError } from '@restate/util/errors';
 import { PropsWithChildren } from 'react';
 import { tv } from 'tailwind-variants';
+import { RestateServerError } from './RestateServerError';
 
 export interface ErrorProps {
-  errors?:
-    | Error[]
-    | string[]
-    | {
-        message: string;
-        restate_code?: string | null;
-      }[];
+  errors?: Error[] | string[] | RestateError[];
+  error?: Error | string | RestateError;
   className?: string;
 }
 
@@ -35,6 +32,10 @@ function SingleError({
     return null;
   }
 
+  if (error instanceof RestateError) {
+    return <RestateServerError error={error} />;
+  }
+
   return (
     <div className={styles({ className })}>
       <div className="flex items-start gap-2">
@@ -55,14 +56,25 @@ function SingleError({
 
 export function ErrorBanner({
   errors = [],
+  error,
   children,
   className,
 }: PropsWithChildren<ErrorProps>) {
-  if (errors.length === 0) {
+  if (errors.length === 0 && !error) {
     return null;
   }
   if (errors.length === 1) {
-    const [error] = errors;
+    const [singleError] = errors;
+    return (
+      <SingleError
+        error={singleError}
+        children={children}
+        className={className}
+      />
+    );
+  }
+
+  if (error) {
     return (
       <SingleError error={error} children={children} className={className} />
     );

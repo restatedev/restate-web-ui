@@ -29,6 +29,7 @@
     "react-aria": "3.35.1",
     "react-aria-components": "1.4.1",
     "react-dom": "19.0.0-rc-83825814-20241015",
+    "react-markdown": "^9.0.1",
     "react-responsive-masonry": "2.2.0",
     "react-stately": "3.32.2",
     "tailwind-variants": "0.3.0",

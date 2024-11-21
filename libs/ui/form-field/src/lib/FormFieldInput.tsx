@@ -79,6 +79,7 @@ export const FormFieldInput = forwardRef<
             placeholder={placeholder}
             aria-label={placeholder}
             ref={ref}
+            spellCheck={false}
           />
           {children}
         </div>

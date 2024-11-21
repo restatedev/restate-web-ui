@@ -218,9 +218,12 @@ function EndpointForm() {
           direction="right"
           autoFocus
         >
-          <div slot="title" className="flex gap-2 items-center text-orange-600">
+          <div
+            slot="title"
+            className="flex gap-2 items-center text-orange-600 text-sm font-semibold"
+          >
             <Icon
-              className="h-5 w-5  text-orange-600"
+              className="h-5 w-5  text-orange-100 fill-orange-600"
               name={IconName.TriangleAlert}
             />
             Override existing deployments
@@ -228,13 +231,13 @@ function EndpointForm() {
 
           <span
             slot="description"
-            className="pl-7 leading-5 text-sm mt-2 block text-orange-600"
+            className="pl-7 leading-5 text-code mt-2 block text-orange-600"
           >
             An existing deployment with the same {isLambda ? 'ARN' : 'URL'}{' '}
-            already exists. Would you like to override it?
-            <br />
-            Please note that this may cause{' '}
-            <strong>unrecoverable errors</strong> in active invocations.
+            already exists. Would you like to override it? Please note that this
+            may cause{' '}
+            <strong className="font-semibold">unrecoverable errors</strong> in
+            active invocations.
           </span>
         </FormFieldCheckbox>
       )}
