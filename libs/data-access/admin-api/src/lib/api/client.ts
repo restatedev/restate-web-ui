@@ -86,7 +86,7 @@ export type QueryOptions<
   Method extends SupportedMethods<Path>
 > = UseQueryOptions<
   FetchResponse<paths[Path][Method], {}, 'application/json'>['data'],
-  FetchResponse<paths[Path][Method], {}, 'application/json'>['error']
+  RestateError | Error
 >;
 
 type QueryFn<
@@ -106,7 +106,7 @@ export type MutationOptions<
   Body extends OperationBody<Path, Method>
 > = UseMutationOptions<
   FetchResponse<paths[Path][Method], {}, 'application/json'>['data'],
-  FetchResponse<paths[Path][Method], {}, 'application/json'>['error'],
+  RestateError | Error,
   {
     parameters?: Parameters;
     body?: Body;
