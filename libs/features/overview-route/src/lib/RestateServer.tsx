@@ -7,7 +7,7 @@ export function RestateServer({
 }: PropsWithChildren<{ className?: string }>) {
   return (
     <div className={className}>
-      <Button className="hidden md:flex w-[150px] h-[150px] focus:outline-none bg-transparent group hover:bg-transparent pressed:bg-transparent shadow-none py-0 px-0 border-none hover:scale-105 pressed:scale-95 pressed:drop-shadow-md">
+      <Button className="hidden md:flex w-[150px] h-[150px] focus:outline-none bg-none group hover:bg-transparent pressed:bg-transparent shadow-none py-0 px-0 border-none hover:scale-105 pressed:scale-95 pressed:drop-shadow-md">
         <svg
           viewBox="0 0 120 120"
           fill="none"
