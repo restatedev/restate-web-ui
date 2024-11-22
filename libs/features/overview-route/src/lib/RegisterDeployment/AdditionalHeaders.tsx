@@ -62,8 +62,8 @@ export function AdditionalHeaders() {
             variant="icon"
             className={
               list.items.length === 1 &&
-              list.getItem(item.index).key === '' &&
-              list.getItem(item.index).value === ''
+              list.getItem(item.index)?.key === '' &&
+              list.getItem(item.index)?.value === ''
                 ? 'invisible p-1'
                 : ' p-1'
             }

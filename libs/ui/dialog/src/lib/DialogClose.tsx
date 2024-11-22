@@ -11,7 +11,7 @@ export function DialogClose({ children }: DialogCLoseProps) {
   return (
     <PressResponder
       onPress={() => {
-        state.close();
+        state?.close();
       }}
     >
       {children}

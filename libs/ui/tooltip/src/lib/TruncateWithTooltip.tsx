@@ -22,7 +22,7 @@ const TooltipTrigger = forwardRef<
   const { hoverProps } = useHover({
     isDisabled: disabled,
     onHoverChange(isHovering) {
-      isHovering ? state.open(false) : state.close();
+      isHovering ? state?.open(false) : state?.close();
     },
   });
 

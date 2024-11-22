@@ -75,7 +75,7 @@ export function ServicePlayground() {
     <QueryDialog query={SERVICE_PLAYGROUND_QUERY_PARAM}>
       <DialogContent
         variant="sheet"
-        className='[&_*:has(>[data-test="mobile-top-nav"])]:w-[calc(100vw-1rem)] [&_*:has(>[data-test="mobile-top-nav"])]:rounded-t-[0.7rem] [&_.sl-inverted_input]:text-gray-700'
+        className='[&_*:has(>[data-test="mobile-top-nav"])]:w-[calc(100vw-1rem)] [&_*:has(>[data-test="mobile-top-nav"])]:rounded-t-[0.7rem] [&_.sl-inverted_input]:text-gray-700 [&_input]:text-sm'
       >
         {apiSpec ? (
           <>

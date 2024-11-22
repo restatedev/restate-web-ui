@@ -184,7 +184,7 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
 
       if (state.stage === 'confirm') {
         refetch();
-        close();
+        close?.();
         showSuccessNotification(
           <>
             <code>{data?.id}</code> has been successfully registered.

@@ -42,11 +42,7 @@ export function DeploymentDetails() {
           {error && <ErrorBanner errors={[error]} />}
           <div className="flex gap-2">
             <ComplementaryClose>
-              <Button
-                autoFocus
-                className="flex-auto grow-0 w-1/2"
-                variant="secondary"
-              >
+              <Button className="flex-auto grow-0 w-1/2" variant="secondary">
                 Cancel
               </Button>
             </ComplementaryClose>

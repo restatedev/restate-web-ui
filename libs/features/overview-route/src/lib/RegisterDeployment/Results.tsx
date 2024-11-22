@@ -1,12 +1,8 @@
 import * as adminApi from '@restate/data-access/admin-api/spec';
 import { Icon, IconName } from '@restate/ui/icons';
 import { useRegisterDeploymentContext } from './Context';
-import {
-  UNSTABLE_Disclosure as Disclosure,
-  UNSTABLE_DisclosurePanel as DisclosurePanel,
-} from 'react-aria-components';
+import { Disclosure, DisclosurePanel } from 'react-aria-components';
 import { Button } from '@restate/ui/button';
-import { ServiceTypeExplainer } from '@restate/features/explainers';
 import { Handler } from '../Handler';
 import { ServiceType } from '../ServiceType';
 

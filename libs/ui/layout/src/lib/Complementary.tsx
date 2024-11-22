@@ -11,6 +11,7 @@ import { LayoutOutlet } from './Layout';
 import { LayoutZone } from './LayoutZone';
 import { useSearchParams } from '@remix-run/react';
 import { Pressable, PressResponder } from '@react-aria/interactions';
+import { FocusScope } from 'react-aria';
 
 interface ComplementaryProps {
   footer?: ReactNode;
@@ -33,17 +34,25 @@ export function Complementary({
   return (
     <ComplementaryContext.Provider value={{ onClose }}>
       <LayoutOutlet zone={LayoutZone.Complementary}>
-        <div
-          data-complementary-content
-          className="overflow-y-auto min-h-[50vh] bg-white p-3 pt-7 border rounded-xl max-h-[inherit] overflow-auto relative flex-auto"
-        >
-          {children}
-        </div>
-        {footer && (
-          <div className="flex gap-2 has-[*]:py-1 has-[*]:pb-0 has-[*]:mt-1 3xl:sticky 3xl:bottom-0 3xl:bg-gray-50/80 3xl:backdrop-blur-xl 3xl:backdrop-saturate-200 rounded-[1rem] 3xl:-mx-1.5 3xl:-mb-1.5 3xl:p-1.5 3xl:pb-1.5 z-10">
-            {footer}
+        <FocusScope restoreFocus autoFocus>
+          <div
+            data-complementary-content
+            className="overflow-y-auto min-h-[50vh] bg-white p-3 pt-7 border rounded-xl max-h-[inherit] overflow-auto relative flex-auto"
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                onClose?.();
+              }
+            }}
+          >
+            <div tabIndex={0} />
+            {children}
           </div>
-        )}
+          {footer && (
+            <div className="flex gap-2 has-[*]:py-1 has-[*]:pb-0 has-[*]:mt-1 3xl:sticky 3xl:bottom-0 3xl:bg-gray-50/80 3xl:backdrop-blur-xl 3xl:backdrop-saturate-200 rounded-[1rem] 3xl:-mx-1.5 3xl:-mb-1.5 3xl:p-1.5 3xl:pb-1.5 z-10">
+              {footer}
+            </div>
+          )}
+        </FocusScope>
       </LayoutOutlet>
     </ComplementaryContext.Provider>
   );
