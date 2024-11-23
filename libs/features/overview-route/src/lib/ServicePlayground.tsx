@@ -7,7 +7,7 @@ import { SERVICE_PLAYGROUND_QUERY_PARAM } from './constants';
 import { ComponentProps, useMemo } from 'react';
 import { useRestateContext } from '@restate/features/restate-context';
 import { tv } from 'tailwind-variants';
-import { API } from './StopLight';
+import { API } from '@restate/ui/api';
 
 const styles = tv({
   base: 'px-1.5 py-0.5 text-xs font-normal font-sans rounded-md flex items-center gap-1',
@@ -47,7 +47,6 @@ export function ServicePlaygroundTrigger({
       }}
       variant={variant}
       className={styles({ className })}
-      onHover={() => import('@stoplight/elements')}
     >
       Playground
       <Icon name={IconName.ExternalLink} className="w-3 h-3" />
@@ -79,12 +78,7 @@ export function ServicePlayground() {
       >
         {apiSpec ? (
           <>
-            <API
-              apiDescriptionDocument={apiSpec}
-              router="hash"
-              hideExport
-              layout="responsive"
-            />
+            <API apiDescriptionDocument={apiSpec} />
             <DialogClose>
               <Button variant="icon" className="absolute right-3 top-3">
                 <Icon name={IconName.X} className="w-5 h-5" />

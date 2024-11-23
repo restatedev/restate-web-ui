@@ -2,14 +2,15 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "types": [
-      "@remix-run/node",
+      "@react-router/node",
       "vite/client",
       "../../@types/vite.d.ts",
       "../../@types/global-env.d.ts"
-    ]
+    ],
+    "rootDirs": [".", "./.react-router/types"]
   },
   "include": [
-    "remix.env.d.ts",
+    ".react-router/types/**/*",
     "app/**/*.ts",
     "app/**/*.tsx",
     "app/**/*.js",

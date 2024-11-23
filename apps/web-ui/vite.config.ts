@@ -3,7 +3,6 @@ import { defineConfig, loadEnv, Plugin } from 'vite';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import license from 'rollup-plugin-license';
 import path from 'path';
-import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
 const BASE_URL = '/ui/';
 
@@ -39,7 +38,6 @@ export default defineConfig(({ mode }) => {
       },
       !process.env.VITEST && reactRouter(),
       nxViteTsPaths(),
-      nodePolyfills({ include: ['buffer'] }),
     ] as Plugin[],
 
     // Uncomment this if you are using workers.
@@ -66,7 +64,6 @@ export default defineConfig(({ mode }) => {
       'globalThis.env': {
         VERSION: env.VERSION ?? 'dev',
       },
-      global: 'globalThis',
     },
 
     test: {
