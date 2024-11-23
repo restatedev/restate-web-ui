@@ -9,7 +9,7 @@ import {
 } from 'react';
 import { LayoutOutlet } from './Layout';
 import { LayoutZone } from './LayoutZone';
-import { useSearchParams } from '@remix-run/react';
+import { useSearchParams } from 'react-router';
 import { Pressable, PressResponder } from '@react-aria/interactions';
 import { FocusScope } from 'react-aria';
 

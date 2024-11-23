@@ -4,7 +4,7 @@ import {
   useDeferredValue,
   ComponentProps,
 } from 'react';
-import { useFetchers, useHref } from '@remix-run/react';
+import { useFetchers, useHref } from 'react-router';
 import { Button } from './Button';
 import { tv } from 'tailwind-variants';
 import { useIsMutating } from '@tanstack/react-query';

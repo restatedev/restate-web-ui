@@ -1,4 +1,4 @@
-import { useRouteError } from '@remix-run/react';
+import { useRouteError } from 'react-router';
 import { UnauthorizedError } from '@restate/util/errors';
 import { Link } from '@restate/ui/link';
 

@@ -8,7 +8,7 @@ import {
   DELETE_DEPLOYMENT_QUERY_PARAM,
   DEPLOYMENT_QUERY_PARAM,
 } from './constants';
-import { Form, useSearchParams } from '@remix-run/react';
+import { Form, useSearchParams } from 'react-router';
 import { Button, SubmitButton } from '@restate/ui/button';
 import { ErrorBanner } from '@restate/ui/error';
 import { FormFieldInput } from '@restate/ui/form-field';

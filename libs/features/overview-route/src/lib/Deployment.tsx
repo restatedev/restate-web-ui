@@ -10,7 +10,7 @@ import {
 import { Revision } from './Revision';
 import { DEPLOYMENT_QUERY_PARAM } from './constants';
 import { Link } from '@restate/ui/link';
-import { useSearchParams } from '@remix-run/react';
+import { useSearchParams } from 'react-router';
 import { useRef } from 'react';
 
 const styles = tv({

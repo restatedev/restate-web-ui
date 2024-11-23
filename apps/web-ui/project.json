@@ -11,7 +11,7 @@
       "options": {
         "commands": [
           {
-            "command": "cd apps/web-ui && ../../node_modules/.bin/remix vite:dev --port=4300"
+            "command": "cd apps/web-ui && ../../node_modules/.bin/react-router dev --port=4300"
           }
         ]
       },
@@ -22,7 +22,7 @@
               "command": "nx serve mock-admin-api"
             },
             {
-              "command": "cd apps/web-ui && ADMIN_BASE_URL=http://localhost:4001 ../../node_modules/.bin/remix vite:dev --port=4300"
+              "command": "cd apps/web-ui && ADMIN_BASE_URL=http://localhost:4001 ../../node_modules/.bin/react-router dev --port=4300"
             }
           ],
           "parallel": true
@@ -33,7 +33,7 @@
               "command": "nx serve mock-admin-api -c proxy"
             },
             {
-              "command": "cd apps/web-ui && ADMIN_BASE_URL=http://localhost:4001 ../../node_modules/.bin/remix vite:dev --port=4300"
+              "command": "cd apps/web-ui && ADMIN_BASE_URL=http://localhost:4001 ../../node_modules/.bin/react-router dev --port=4300"
             }
           ],
           "parallel": true
@@ -45,7 +45,7 @@
       "options": {
         "commands": [
           "rm -R -f dist/apps/web-ui",
-          "cd apps/web-ui && ../../node_modules/.bin/remix vite:build",
+          "cd apps/web-ui && NODE_ENV=production ../../node_modules/.bin/react-router build",
           "mkdir -p dist/apps/web-ui",
           "mv apps/web-ui/build/client/* dist/apps/web-ui",
           "rm -R apps/web-ui/build"
@@ -57,7 +57,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "cd apps/web-ui && ../../node_modules/.bin/remix vite:build && ../../node_modules/.bin/vite preview --port=4300"
+          "cd apps/web-ui && NODE_ENV=production ../../node_modules/.bin/react-router build && ../../node_modules/.bin/vite preview --port=4300"
         ]
       },
       "configurations": {
@@ -67,7 +67,7 @@
               "command": "nx serve mock-admin-api"
             },
             {
-              "command": "cd apps/web-ui && ../../node_modules/.bin/remix vite:build && ADMIN_BASE_URL=http://localhost:4001 ../../node_modules/.bin/vite preview --port=4300"
+              "command": "cd apps/web-ui && NODE_ENV=production && ADMIN_BASE_URL=http://localhost:4001 ../../node_modules/.bin/vite preview --port=4300"
             }
           ],
           "parallel": true
@@ -78,7 +78,7 @@
               "command": "nx serve mock-admin-api -c proxy"
             },
             {
-              "command": "cd apps/web-ui && ../../node_modules/.bin/remix vite:build && ADMIN_BASE_URL=http://localhost:4001 ../../node_modules/.bin/vite preview --port=4300"
+              "command": "cd apps/web-ui && NODE_ENV=production ../../node_modules/.bin/react-router build && ADMIN_BASE_URL=http://localhost:4001 ../../node_modules/.bin/vite preview --port=4300"
             }
           ],
           "parallel": true

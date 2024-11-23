@@ -1,5 +1,5 @@
-import type { LoaderFunction } from '@remix-run/node';
-import { ClientLoaderFunction, redirect } from '@remix-run/react';
+import type { LoaderFunction } from 'react-router';
+import { ClientLoaderFunction, redirect } from 'react-router';
 import { hasAccessToFeature } from './hasAccessToFeature';
 import type { FeatureFlag } from './type';
 

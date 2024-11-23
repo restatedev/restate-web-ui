@@ -1,4 +1,4 @@
-import { useLocation, useNavigation } from '@remix-run/react';
+import { useLocation, useNavigation } from 'react-router';
 import { focusRing } from '@restate/ui/focus';
 import { Link } from '@restate/ui/link';
 import { PropsWithChildren, useContext } from 'react';

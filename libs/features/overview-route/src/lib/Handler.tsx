@@ -12,7 +12,7 @@ import {
 } from '@restate/ui/popover';
 import { ServicePlaygroundTrigger } from './ServicePlayground';
 import { ComponentProps } from 'react';
-import { JsonSchemaViewer } from './StopLight';
+import { JsonSchemaViewer } from '@restate/ui/api';
 
 const styles = tv({
   base: 'flex flex-col gap-0.5 relative',
@@ -154,9 +154,7 @@ function HandlerInputOutput({
               >
                 <JsonSchemaViewer
                   className="font-mono [&>*>[aria-haspopup]]:mt-2 [&>*[data-test='property-description']]:mt-2"
-                  schema={schema as any}
-                  disableCrumbs
-                  renderRootTreeLines
+                  schema={schema}
                 />
               </DropdownSection>
             </PopoverContent>

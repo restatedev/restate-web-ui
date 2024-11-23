@@ -2,11 +2,9 @@ import { UnauthorizedError } from '@restate/util/errors';
 import {
   QueryClient,
   QueryClientProvider,
-  HydrationBoundary,
   QueryCache,
 } from '@tanstack/react-query';
 import { PropsWithChildren, useState } from 'react';
-import { useDehydratedState } from 'use-dehydrated-state';
 
 export function QueryProvider({
   children,
@@ -35,11 +33,8 @@ export function QueryProvider({
         },
       })
   );
-  const dehydratedState = useDehydratedState();
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <HydrationBoundary state={dehydratedState}>{children}</HydrationBoundary>
-    </QueryClientProvider>
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
 }
