@@ -3,8 +3,7 @@ import { defineConfig, loadEnv, Plugin } from 'vite';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import license from 'rollup-plugin-license';
 import path from 'path';
-
-const BASE_URL = '/ui/';
+import { BASE_URL } from './constants';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
