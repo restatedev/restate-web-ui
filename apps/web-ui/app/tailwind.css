@@ -1,3 +1,4 @@
+/* @import 'https://unpkg.com/@stoplight/elements/styles.min.css'; */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

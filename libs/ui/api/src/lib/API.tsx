@@ -1,5 +1,16 @@
-import { useEffect, useId } from 'react';
-import { JsonSchemaViewer as JsonSchemaViewerInner } from '@stoplight/json-schema-viewer';
+import { lazy, useId } from 'react';
+import { Prism } from 'prism-react-renderer';
+
+if (typeof window !== 'undefined') {
+  (window as any).Prism = Prism;
+  import('@stoplight/json-schema-viewer');
+}
+
+const JsonSchemaViewerInner = lazy(() =>
+  import('@stoplight/json-schema-viewer').then((module) => ({
+    default: module.JsonSchemaViewer,
+  }))
+);
 
 export const API = ({
   apiDescriptionDocument,
@@ -10,17 +21,11 @@ export const API = ({
 }) => {
   const id = useId();
 
-  useEffect(() => {
-    const docs = document.getElementById(id);
-    if (apiDescriptionDocument && docs) {
-      (docs as any).apiDescriptionDocument = apiDescriptionDocument;
-    }
-  }, [apiDescriptionDocument, id]);
-
   return (
     <elements-api
       className={className}
       id={id}
+      apiDescriptionDocument={apiDescriptionDocument}
       router="hash"
       layout="responsive"
       hideExport="true"

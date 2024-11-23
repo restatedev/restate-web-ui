@@ -1,4 +1,12 @@
-import { Links, Meta, Outlet, Path, Scripts, ScrollRestoration, useNavigate } from 'react-router';
+import {
+  Links,
+  Meta,
+  Outlet,
+  Path,
+  Scripts,
+  ScrollRestoration,
+  useNavigate,
+} from 'react-router';
 import styles from './tailwind.css?url';
 import type { LinksFunction } from 'react-router';
 import { LayoutOutlet, LayoutProvider, LayoutZone } from '@restate/ui/layout';
@@ -25,6 +33,11 @@ export const links: LinksFunction = () => [
   {
     rel: 'preconnect',
     href: 'https://rsms.me/',
+  },
+  // TODO: move to the its own lib
+  {
+    rel: 'stylesheet',
+    href: 'https://unpkg.com/@stoplight/elements/styles.min.css',
   },
   { rel: 'stylesheet', href: styles },
   { rel: 'stylesheet', href: 'https://rsms.me/inter/inter.css' },
@@ -77,6 +90,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </RouterProvider>
         <ScrollRestoration />
         <Scripts />
+        {/* TODO: move to its own lib */}
+        <script
+          src="https://unpkg.com/@stoplight/elements/web-components.min.js"
+          async
+          defer
+        ></script>
       </body>
     </html>
   );

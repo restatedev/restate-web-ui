@@ -11,6 +11,7 @@ declare module 'react' {
         router?: string;
         layout?: string;
         hideExport?: string;
+        apiDescriptionDocument?: string;
       };
     }
   }
