@@ -1,14 +1,6 @@
-import {
-  Links,
-  Meta,
-  Outlet,
-  Path,
-  Scripts,
-  ScrollRestoration,
-  useNavigate,
-} from '@remix-run/react';
+import { Links, Meta, Outlet, Path, Scripts, ScrollRestoration, useNavigate } from 'react-router';
 import styles from './tailwind.css?url';
-import type { LinksFunction } from '@remix-run/node';
+import type { LinksFunction } from 'react-router';
 import { LayoutOutlet, LayoutProvider, LayoutZone } from '@restate/ui/layout';
 import { RouterProvider } from 'react-aria-components';
 import { Button, Spinner } from '@restate/ui/button';

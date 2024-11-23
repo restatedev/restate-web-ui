@@ -5,7 +5,7 @@ import { Deployment } from './Deployment';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Link } from '@restate/ui/link';
 import { SERVICE_QUERY_PARAM } from './constants';
-import { useSearchParams } from '@remix-run/react';
+import { useSearchParams } from 'react-router';
 import { useRef } from 'react';
 
 const styles = tv({

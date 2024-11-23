@@ -7,7 +7,7 @@ import {
   DELETE_DEPLOYMENT_QUERY_PARAM,
   DEPLOYMENT_QUERY_PARAM,
 } from '../constants';
-import { useSearchParams } from '@remix-run/react';
+import { useSearchParams } from 'react-router';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { Icon, IconName } from '@restate/ui/icons';
 import {

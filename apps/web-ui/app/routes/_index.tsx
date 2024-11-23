@@ -1,4 +1,4 @@
-import { redirect } from '@remix-run/react';
+import { redirect } from 'react-router';
 
 export const clientLoader = () => redirect('/overview');
 export default () => null;

@@ -1,4 +1,4 @@
-import { useSearchParams, useNavigate } from '@remix-run/react';
+import { useSearchParams, useNavigate } from 'react-router';
 import { useServiceOpenApi } from '@restate/data-access/admin-api';
 import { Button } from '@restate/ui/button';
 import { QueryDialog, DialogContent, DialogClose } from '@restate/ui/dialog';
