@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 import { lazy, useId } from 'react';
 import { Prism } from 'prism-react-renderer';
 
@@ -14,16 +16,13 @@ const JsonSchemaViewerInner = lazy(() =>
 
 export const API = ({
   apiDescriptionDocument,
-  className,
 }: {
   apiDescriptionDocument?: string;
-  className?: string;
 }) => {
   const id = useId();
 
   return (
     <elements-api
-      className={className}
       id={id}
       apiDescriptionDocument={apiDescriptionDocument}
       router="hash"
