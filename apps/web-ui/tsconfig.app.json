@@ -1,7 +1,12 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "types": ["../../@types/vite.d.ts", "../../@types/global-env.d.ts"]
+    "types": [
+      "@remix-run/node",
+      "vite/client",
+      "../../@types/vite.d.ts",
+      "../../@types/global-env.d.ts"
+    ]
   },
   "include": [
     "remix.env.d.ts",

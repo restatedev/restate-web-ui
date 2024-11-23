@@ -6,9 +6,8 @@
   "scripts": {},
   "type": "module",
   "dependencies": {
-    "@remix-run/node": "^2.8.1",
-    "@remix-run/react": "^2.8.1",
-    "@remix-run/serve": "^2.8.1",
+    "@remix-run/node": "2.15.0",
+    "@remix-run/react": "2.15.0",
     "isbot": "^4.4.0",
     "react": "19.0.0-rc-65903583-20240805",
     "react-dom": "19.0.0-rc-65903583-20240805"

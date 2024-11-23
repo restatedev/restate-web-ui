@@ -1,5 +1,5 @@
 import { vitePlugin as remix } from '@remix-run/dev';
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig, loadEnv, Plugin } from 'vite';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import license from 'rollup-plugin-license';
 import path from 'path';
@@ -45,11 +45,14 @@ export default defineConfig(({ mode }) => {
             v3_fetcherPersist: true,
             v3_relativeSplatPath: true,
             v3_throwAbortReason: true,
+            v3_lazyRouteDiscovery: true,
+            v3_singleFetch: true,
+            v3_routeConfig: true,
           },
         }),
       nxViteTsPaths(),
-      nodePolyfills(),
-    ],
+      nodePolyfills({ include: ['buffer'] }),
+    ] as Plugin[],
 
     // Uncomment this if you are using workers.
     worker: {
@@ -75,6 +78,7 @@ export default defineConfig(({ mode }) => {
       'globalThis.env': {
         VERSION: env.VERSION ?? 'dev',
       },
+      global: 'globalThis',
     },
 
     test: {
