@@ -732,19 +732,19 @@ export interface components {
         };
     Invocation: {
       /** Format: date-time */
-      created_at?: string;
+      created_at: string;
       /** Format: date-time */
-      modified_at?: string;
+      modified_at: string;
       /** Format: date-time */
-      scheduled_at?: string;
-      id?: string;
-      invoked_by?: string;
-      status?: string;
-      target?: string;
-      target_handler_name?: string;
-      target_service_key?: string;
-      target_service_name?: string;
-      target_service_ty?: string;
+      scheduled_at: string;
+      id: string;
+      invoked_by: string;
+      status: string;
+      target: string;
+      target_handler_name: string;
+      target_service_key: string;
+      target_service_name: string;
+      target_service_ty: string;
     };
   };
   responses: never;

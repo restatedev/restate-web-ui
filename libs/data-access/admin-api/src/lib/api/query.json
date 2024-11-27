@@ -278,6 +278,19 @@
     "schemas": {
       "Invocation": {
         "type": "object",
+        "required": [
+          "created_at",
+          "modified_at",
+          "scheduled_at",
+          "id",
+          "invoked_by",
+          "status",
+          "target",
+          "target_handler_name",
+          "target_service_key",
+          "target_service_name",
+          "target_service_ty"
+        ],
         "properties": {
           "created_at": {
             "type": "string",
