@@ -730,6 +730,22 @@ export interface components {
            */
           services: components['schemas']['ServiceMetadata'][];
         };
+    Invocation: {
+      /** Format: date-time */
+      created_at?: string;
+      /** Format: date-time */
+      modified_at?: string;
+      /** Format: date-time */
+      scheduled_at?: string;
+      id?: string;
+      invoked_by?: string;
+      status?: string;
+      target?: string;
+      target_handler_name?: string;
+      target_service_key?: string;
+      target_service_name?: string;
+      target_service_ty?: string;
+    };
   };
   responses: never;
   parameters: never;
@@ -1928,7 +1944,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': Record<string, never>;
+          'application/json': components['schemas']['Invocation'][];
         };
       };
       400: {

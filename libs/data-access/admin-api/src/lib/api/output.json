@@ -1502,7 +1502,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Invocation"
+                  }
                 }
               }
             }
@@ -2219,6 +2222,47 @@
             }
           }
         ]
+      },
+      "Invocation": {
+        "type": "object",
+        "properties": {
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modified_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "scheduled_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "id": {
+            "type": "string"
+          },
+          "invoked_by": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "target_handler_name": {
+            "type": "string"
+          },
+          "target_service_key": {
+            "type": "string"
+          },
+          "target_service_name": {
+            "type": "string"
+          },
+          "target_service_ty": {
+            "type": "string"
+          }
+        }
       }
     }
   }
