@@ -44,7 +44,7 @@ export function Table({ className, ...props }: PropsWithChildren<TableProps>) {
         <ResizableTableContainer>
           <AriaTable
             {...props}
-            className="border2-separate border-collapse border-spacing-0"
+            className="border-collapse border-spacing-0 rounded-xl overflow-hidden"
           />
         </ResizableTableContainer>
       </div>
@@ -63,7 +63,7 @@ const resizerStyles = tv({
 });
 
 const columnStyles = tv({
-  base: '[&:hover]:z-20 [&:focus-within]:z-20 text-start text-sm font-semibold text-gray-700 cursor-default',
+  base: 'py-2 [&:first-child]:pl-2 [&:last-child]:pr-2 [&:hover]:z-20 [&:focus-within]:z-20 text-start text-sm font-semibold text-gray-700 cursor-default',
 });
 
 interface ColumnProps
@@ -185,7 +185,7 @@ export function Row<T extends object>({
 
 const cellStyles = tv({
   extend: focusRing,
-  base: 'border-b group-last/row:border-b-0 [--selected-border:theme(colors.blue.200)] group-selected/row:border-[--selected-border] [:has(+[data-selected])_&]:border-[--selected-border] py-2 truncate -outline-offset-2',
+  base: '[&:first-child]:pl-2 [&:last-child]:pr-2 border-b group-last/row:border-b-0 [--selected-border:theme(colors.blue.200)] group-selected/row:border-[--selected-border] [:has(+[data-selected])_&]:border-[--selected-border] py-2 truncate -outline-offset-2',
 });
 
 interface CellProps extends Pick<AriaCellProps, 'id'> {
