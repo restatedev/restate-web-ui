@@ -202,9 +202,15 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Invocation"
+                  "type": "object",
+                  "required": ["rows"],
+                  "properties": {
+                    "rows": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Invocation"
+                      }
+                    }
                   }
                 }
               }

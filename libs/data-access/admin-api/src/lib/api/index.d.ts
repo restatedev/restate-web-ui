@@ -1944,7 +1944,9 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['Invocation'][];
+          'application/json': {
+            rows: components['schemas']['Invocation'][];
+          };
         };
       };
       400: {
