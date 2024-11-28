@@ -185,7 +185,7 @@ export function Row<T extends object>({
 
 const cellStyles = tv({
   extend: focusRing,
-  base: '[&:first-child]:pl-2 [&:last-child]:pr-2 border-b group-last/row:border-b-0 [--selected-border:theme(colors.blue.200)] group-selected/row:border-[--selected-border] [:has(+[data-selected])_&]:border-[--selected-border] py-2 truncate -outline-offset-2',
+  base: '[&:first-child]:pl-2 pr-2 border-b group-last/row:border-b-0 [--selected-border:theme(colors.blue.200)] group-selected/row:border-[--selected-border] [:has(+[data-selected])_&]:border-[--selected-border] py-2 truncate -outline-offset-2',
 });
 
 interface CellProps extends Pick<AriaCellProps, 'id'> {
