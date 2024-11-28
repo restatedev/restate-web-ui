@@ -118,14 +118,14 @@ const tableHeaderStyles = tv({
 });
 
 interface TableHeaderProps<T extends object>
-  extends Pick<AriaTableHeaderProps<T>, 'columns'> {
+  extends Pick<AriaTableHeaderProps<T>, 'columns' | 'children'> {
   className?: string;
 }
 
 export function TableHeader<T extends object>({
   className,
   ...props
-}: PropsWithChildren<TableHeaderProps<T>>) {
+}: TableHeaderProps<T>) {
   const { selectionBehavior, selectionMode, allowsDragging } =
     useTableOptions();
 
@@ -197,7 +197,7 @@ export function Cell({ className, ...props }: PropsWithChildren<CellProps>) {
 }
 
 interface TableBodyProps<T extends object>
-  extends Pick<AriaTableBodyProps<T>, 'items' | 'children'> {
+  extends Pick<AriaTableBodyProps<T>, 'items' | 'children' | 'dependencies'> {
   className?: string;
 }
 
