@@ -737,14 +737,53 @@ export interface components {
       modified_at: string;
       /** Format: date-time */
       scheduled_at: string;
+      /** Format: date-time */
+      inboxed_at?: string;
+      /** Format: date-time */
+      running_at?: string;
+      /** Format: date-time */
+      completed_at?: string;
+      /** Format: date-time */
+      last_start_at?: string;
+      /** Format: date-time */
+      next_retry_at?: string;
       id: string;
       invoked_by: string;
-      status: string;
+      /** @enum {string} */
+      status:
+        | 'pending'
+        | 'scheduled'
+        | 'ready'
+        | 'running'
+        | 'backing-off'
+        | 'suspended'
+        | 'completed';
       target: string;
       target_handler_name: string;
-      target_service_key: string;
+      /** @enum {string} */
+      target_service_key?: 'ingress' | 'service';
       target_service_name: string;
-      target_service_ty: string;
+      /** @enum {string} */
+      target_service_ty: 'service' | 'virtual_object' | 'workflow';
+      /** @enum {string} */
+      completion_result?: 'success' | 'failure';
+      completion_failure?: string;
+      invoked_by_service_name?: string;
+      invoked_by_target?: string;
+      pinned_deployment_id?: string;
+      trace_id?: string;
+      /** Format: uint32 */
+      journal_size?: number;
+      /** Format: uint64 */
+      retry_count?: number;
+      /** Format: uint64 */
+      last_failure_related_entry_index?: number;
+      last_failure_related_entry_name?: string;
+      last_failure_related_entry_type?: string;
+      last_attempt_deployment_id?: string;
+      last_attempt_server?: string;
+      last_failure?: string;
+      last_failure_error_code?: string;
     };
   };
   responses: never;
