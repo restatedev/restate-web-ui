@@ -59,11 +59,11 @@ const columnGroupStyles = tv({
 
 const resizerStyles = tv({
   extend: focusRing,
-  base: 'absolute right-0 w-px px-[8px] box-content py-1 h-5 bg-clip-content bg-gray-400 cursor-col-resize rounded resizing:bg-blue-600 resizing:w-[2px] resizing:pl-[7px] -outline-offset-2',
+  base: 'resizer absolute right-0 w-px px-[8px] box-content py-1 h-5 bg-clip-content bg-gray-400 cursor-col-resize rounded resizing:bg-blue-600 resizing:w-[2px] resizing:pl-[7px] -outline-offset-2',
 });
 
 const columnStyles = tv({
-  base: 'py-2 [&:first-child]:pl-2 [&:last-child]:pr-2 [&:hover]:z-20 [&:focus-within]:z-20 text-start text-sm font-semibold text-gray-700 cursor-default',
+  base: 'py-2 [&:last-child]:pr-2 pl-2 [&:not(:last-child)_.resizer]:translate-x-[10px] [&:hover]:z-20 [&:focus-within]:z-20 text-start text-sm font-semibold text-gray-700 cursor-default',
 });
 
 interface ColumnProps
@@ -185,7 +185,7 @@ export function Row<T extends object>({
 
 const cellStyles = tv({
   extend: focusRing,
-  base: '[&:first-child]:pl-2 pr-2 border-b group-last/row:border-b-0 [--selected-border:theme(colors.blue.200)] group-selected/row:border-[--selected-border] [:has(+[data-selected])_&]:border-[--selected-border] py-2 truncate -outline-offset-2',
+  base: 'pl-2 border-b group-last/row:border-b-0 [--selected-border:theme(colors.blue.200)] group-selected/row:border-[--selected-border] [:has(+[data-selected])_&]:border-[--selected-border] py-2 truncate -outline-offset-2',
 });
 
 interface CellProps extends Pick<AriaCellProps, 'id'> {
