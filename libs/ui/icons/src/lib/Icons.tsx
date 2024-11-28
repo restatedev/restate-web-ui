@@ -29,6 +29,8 @@ import {
   ArrowRight,
   ArrowLeft,
   ChevronLeft,
+  Settings,
+  TableProperties,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from 'tailwind-variants';
@@ -45,6 +47,8 @@ import { Question } from './custom-icons/Question';
 import { Function } from './custom-icons/Function';
 
 export const enum IconName {
+  Settings = 'Settings',
+  TableProperties = 'TableProperties',
   ChevronDown = 'ChevronDown',
   ChevronRight = 'ChevronRight',
   Check = 'Check',
@@ -94,6 +98,8 @@ export interface IconsProps {
 }
 
 const ICONS: Record<IconName, LucideIcon> = {
+  [IconName.Settings]: Settings,
+  [IconName.TableProperties]: TableProperties,
   [IconName.ChevronDown]: ChevronDown,
   [IconName.Check]: Check,
   [IconName.ChevronRight]: ChevronRight,
