@@ -4,6 +4,9 @@ import {
 } from 'react-aria-components';
 import { PropsWithChildren } from 'react';
 import { tv } from 'tailwind-variants';
+import type { Key, Selection } from 'react-aria-components';
+
+export type DropdownMenuSelection = Selection;
 
 const styles = tv({
   base: 'p-1 outline outline-0 max-h-[inherit] overflow-auto [clip-path:inset(0_0_0_0_round_.75rem)] [&~.dropdown-menu]:pt-0',
@@ -28,12 +31,26 @@ export interface DropdownMenuProps {
   autoFocus?: boolean;
 }
 
-export interface SelectableDropdownMenuProps
-  extends Omit<DropdownMenuProps, 'selectable' | 'selectedItems' | 'multiple'> {
-  multiple?: boolean;
-  selectedItems?: Iterable<string>;
-  selectable: true;
-}
+export type SelectableDropdownMenuProps = Omit<
+  DropdownMenuProps,
+  'selectable' | 'selectedItems' | 'multiple' | 'onSelect'
+> &
+  (
+    | {
+        selectable: true;
+
+        multiple?: false;
+        onSelect?: (key: string) => void;
+        selectedItems: Iterable<Key>;
+      }
+    | {
+        selectable: true;
+
+        multiple: true;
+        onSelect?: (keys: DropdownMenuSelection) => void;
+        selectedItems?: 'all' | Iterable<Key> | undefined;
+      }
+  );
 
 export function DropdownMenu({
   multiple,
@@ -51,7 +68,16 @@ export function DropdownMenu({
         selectionMode={multiple ? 'multiple' : 'single'}
         disabledKeys={disabledItems}
         selectedKeys={selectedItems}
-        onAction={(key) => onSelect?.(String(key))}
+        {...(multiple && {
+          onSelectionChange(keys) {
+            onSelect?.(keys);
+          },
+        })}
+        {...(!multiple && {
+          onAction(key) {
+            onSelect?.(String(key));
+          },
+        })}
         className={className}
       />
     );
