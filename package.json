@@ -103,7 +103,7 @@
     "rollup-plugin-license": "3.5.3",
     "tailwindcss": "3.4.3",
     "tailwindcss-animate": "1.0.7",
-    "tailwindcss-react-aria-components": "1.1.6",
+    "tailwindcss-react-aria-components": "1.2.0",
     "ts-jest": "29.1.5",
     "ts-node": "10.9.1",
     "typescript": "5.5.4",
