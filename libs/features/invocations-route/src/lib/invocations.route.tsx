@@ -18,20 +18,12 @@ import { InvocationCell } from './cells';
 function Component() {
   const { selectedColumns, setSelectedColumns, sortedColumnsList } =
     useColumns();
-  const { refetch } = useListInvocations({ enabled: false });
-
+  const { mutateAsync: refetch } = useListInvocations();
   const collator = useCollator();
   const invocations = useAsyncList<Invocation>({
     async load() {
-      await refetch({
-        throwOnError: false,
-        cancelRefetch: false,
-      });
-      const { data } = await refetch({
-        throwOnError: true,
-        cancelRefetch: false,
-      });
-      return { items: data?.rows ?? [] };
+      const results = await refetch({});
+      return { items: results?.rows ?? [] };
     },
     async sort({ items, sortDescriptor }) {
       return {
@@ -108,11 +100,34 @@ function Component() {
             </Column>
           )}
         </TableHeader>
-        <TableBody items={invocations.items} dependencies={[selectedColumns]}>
+        <TableBody
+          items={invocations.items}
+          dependencies={[
+            selectedColumns,
+            invocations.isLoading,
+            invocations.error,
+          ]}
+          error={invocations.error}
+          isLoading={invocations.isLoading}
+          numOfColumns={sortedColumnsList.length}
+          emptyPlaceholder={
+            <div className="flex flex-col items-center py-14 gap-4">
+              <div className="mr-1.5 shrink-0 h-12 w-12 p-1 bg-gray-100 rounded-xl">
+                <Icon
+                  name={IconName.Invocation}
+                  className="w-full h-full text-zinc-400 p-1"
+                />
+              </div>
+              <h3 className="text-sm font-semibold text-zinc-400">
+                No invocations found
+              </h3>
+            </div>
+          }
+        >
           {(row) => (
             <Row>
               {sortedColumnsList.map((col) => (
-                <InvocationCell column={col} invocation={row} />
+                <InvocationCell key={col} column={col} invocation={row} />
               ))}
             </Row>
           )}

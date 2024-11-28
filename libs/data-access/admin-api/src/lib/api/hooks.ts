@@ -232,12 +232,12 @@ export function useServiceOpenApi(
 }
 
 export function useListInvocations(
-  options?: HookQueryOptions<'/query/invocations', 'get'>
+  options?: HookMutationOptions<'/query/invocations', 'get'>
 ) {
   const baseUrl = useAdminBaseUrl();
 
-  return useQuery({
-    ...adminApi('query', '/query/invocations', 'get', { baseUrl }),
+  return useMutation({
+    ...adminApi('mutate', '/query/invocations', 'get', { baseUrl }),
     ...options,
   });
 }

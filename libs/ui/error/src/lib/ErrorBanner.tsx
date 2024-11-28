@@ -33,7 +33,7 @@ function SingleError({
   }
 
   if (error instanceof RestateError) {
-    return <RestateServerError error={error} />;
+    return <RestateServerError error={error} className={className} />;
   }
 
   return (

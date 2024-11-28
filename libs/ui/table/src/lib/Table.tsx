@@ -1,19 +1,14 @@
 import { focusRing } from '@restate/ui/focus';
 import { tv } from 'tailwind-variants';
 import {
-  Cell as AriaCell,
   Column as AriaColumn,
-  Row as AriaRow,
   Table as AriaTable,
   TableHeader as AriaTableHeader,
-  Button,
-  CellProps as AriaCellProps,
   Collection,
   ColumnProps as AriaColumnProps,
   ColumnResizer,
   Group,
   ResizableTableContainer,
-  RowProps as AriaRowProps,
   TableBodyProps as AriaTableBodyProps,
   TableHeaderProps as AriaTableHeaderProps,
   TableProps as AriaTableProps,
@@ -24,7 +19,8 @@ import {
 import { Icon, IconName } from '@restate/ui/icons';
 import { Checkbox } from '@restate/ui/form-field';
 import styles from './table.module.css';
-import { PropsWithChildren } from 'react';
+import { PropsWithChildren, ReactNode } from 'react';
+import { TableError, LoadingRows } from './Placeholder';
 
 interface TableProps
   extends Pick<
@@ -147,60 +143,37 @@ export function TableHeader<T extends object>({
   );
 }
 
-const rowStyles = tv({
-  extend: focusRing,
-  base: 'group/row relative cursor-default select-none -outline-offset-2 text-gray-900 disabled:text-gray-300 text-sm hover:bg-gray-100 selected:bg-blue-100 selected:hover:bg-blue-200',
-});
-
-interface RowProps<T extends object>
-  extends Pick<AriaRowProps<T>, 'id' | 'columns'> {
-  className?: string;
-}
-
-export function Row<T extends object>({
-  id,
-  columns,
-  children,
-  className,
-  ...otherProps
-}: PropsWithChildren<RowProps<T>>) {
-  const { selectionBehavior, allowsDragging } = useTableOptions();
-
-  return (
-    <AriaRow id={id} {...otherProps} className={rowStyles({ className })}>
-      {allowsDragging && (
-        <Cell>
-          <Button slot="drag">≡</Button>
-        </Cell>
-      )}
-      {selectionBehavior === 'toggle' && (
-        <Cell className="px-2">
-          <Checkbox slot="selection" />
-        </Cell>
-      )}
-      <Collection items={columns}>{children}</Collection>
-    </AriaRow>
-  );
-}
-
-const cellStyles = tv({
-  extend: focusRing,
-  base: 'pl-2 border-b group-last/row:border-b-0 [--selected-border:theme(colors.blue.200)] group-selected/row:border-[--selected-border] [:has(+[data-selected])_&]:border-[--selected-border] py-2 truncate -outline-offset-2',
-});
-
-interface CellProps extends Pick<AriaCellProps, 'id'> {
-  className?: string;
-}
-
-export function Cell({ className, ...props }: PropsWithChildren<CellProps>) {
-  return <AriaCell {...props} className={cellStyles({ className })} />;
-}
-
 interface TableBodyProps<T extends object>
   extends Pick<AriaTableBodyProps<T>, 'items' | 'children' | 'dependencies'> {
   className?: string;
+  isLoading?: boolean;
+  error?: Error;
+  numOfColumns: number;
+  emptyPlaceholder?: ReactNode;
 }
 
-export function TableBody<T extends object>(props: TableBodyProps<T>) {
-  return <AriaTableBody {...props} />;
+export function TableBody<T extends object>({
+  isLoading,
+  error,
+  children,
+  dependencies = [],
+  numOfColumns,
+  emptyPlaceholder,
+  ...props
+}: TableBodyProps<T>) {
+  return (
+    <AriaTableBody
+      {...props}
+      dependencies={[...dependencies, error, isLoading]}
+      renderEmptyState={() => {
+        if (error) {
+          return <TableError error={error} />;
+        } else {
+          return emptyPlaceholder;
+        }
+      }}
+    >
+      {isLoading ? <LoadingRows numOfColumns={numOfColumns} /> : children}
+    </AriaTableBody>
+  );
 }
