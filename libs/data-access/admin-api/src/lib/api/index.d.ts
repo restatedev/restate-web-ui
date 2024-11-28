@@ -772,6 +772,7 @@ export interface components {
       invoked_by_target?: string;
       pinned_deployment_id?: string;
       trace_id?: string;
+      idempotency_key?: string;
       /** Format: uint32 */
       journal_size?: number;
       /** Format: uint64 */

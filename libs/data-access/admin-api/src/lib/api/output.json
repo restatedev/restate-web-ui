@@ -2330,6 +2330,9 @@
           "trace_id": {
             "type": "string"
           },
+          "idempotency_key": {
+            "type": "string"
+          },
           "journal_size": {
             "type": "integer",
             "format": "uint32"
