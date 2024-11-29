@@ -81,13 +81,11 @@ export function TruncateWithTooltip({
       tooltipHoverRef.current?.addEventListener(
         'mouseenter',
         () => {
-          console.log('clean');
           timeout && clearTimeout(timeout);
         },
         { once: true }
       );
       if (!isHoverElementTooltip) {
-        console.log('close');
         timeout && clearTimeout(timeout);
         timeout = setTimeout(() => {
           close();
