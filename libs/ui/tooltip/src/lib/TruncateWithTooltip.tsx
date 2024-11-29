@@ -1,10 +1,9 @@
-import { useHover } from '@react-aria/interactions';
 import {
   forwardRef,
   PropsWithChildren,
+  ReactNode,
   RefObject,
   useCallback,
-  useContext,
   useEffect,
   useRef,
   useState,
@@ -14,21 +13,15 @@ import { Tooltip } from './Tooltip';
 import { TooltipContent } from './TooltipContent';
 import { Copy } from '@restate/ui/copy';
 
-const TooltipTrigger = forwardRef<
+export const TruncateTooltipTrigger = forwardRef<
   HTMLElement,
-  PropsWithChildren<{ disabled?: boolean }>
->(({ children, disabled = false }, ref) => {
-  const state = useContext(TooltipTriggerStateContext);
-  const { hoverProps } = useHover({
-    isDisabled: disabled,
-    onHoverChange(isHovering) {
-      isHovering ? state?.open(false) : state?.close();
-    },
-  });
-
+  PropsWithChildren<unknown>
+>(({ children }, ref) => {
   return (
-    <span ref={ref} {...hoverProps}>
-      {children}
+    <span className="block truncate max-w-full">
+      <span data-truncate-tooltip="true" ref={ref}>
+        {children}
+      </span>
     </span>
   );
 });
@@ -36,15 +29,16 @@ const TooltipTrigger = forwardRef<
 export function TruncateWithTooltip({
   children,
   copyText: copyTextProp,
-  triggerRef: additionalTriggerRef,
+  triggerRef: propTriggerRef,
+  tooltipContent = children,
 }: PropsWithChildren<{
   copyText?: string;
   triggerRef?: RefObject<HTMLElement | null>;
+  tooltipContent?: ReactNode;
 }>) {
   const triggerRef = useRef<HTMLElement>(null);
   const containerRef = useRef<HTMLElement>(null);
-  const [tooltipIsDisabled, setTooltipIsDisabled] = useState(false);
-  const [copyText, setCopyText] = useState(copyTextProp ?? '');
+  const tooltipHoverRef = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   const open = useCallback(() => {
     setIsOpen(true);
@@ -54,73 +48,78 @@ export function TruncateWithTooltip({
   }, []);
 
   useEffect(() => {
-    let isCanceled = false;
-    const calculateShouldDisplayTooltip = () => {
-      const containerWidth =
-        containerRef.current?.getBoundingClientRect().width ?? 0;
-      const textWidth = triggerRef.current?.getBoundingClientRect().width ?? 0;
-      return containerWidth < textWidth;
-    };
-
-    const containerElement = containerRef.current;
-    const resizeObserver = new ResizeObserver(() => {
-      if (!isCanceled) {
-        setTooltipIsDisabled(!calculateShouldDisplayTooltip());
-        !copyTextProp && setCopyText(triggerRef.current?.textContent ?? '');
-      }
-    });
-    containerElement && resizeObserver.observe(containerElement);
-
-    return () => {
-      isCanceled = true;
-      containerElement && resizeObserver.unobserve(containerElement);
-    };
-  }, [copyTextProp]);
-
-  useEffect(() => {
-    const el = additionalTriggerRef?.current;
+    const elementTriggeringHover =
+      propTriggerRef?.current ?? containerRef.current;
     let timeout: ReturnType<typeof setTimeout> | null = null;
+    const calculateShouldDisplayTooltip = () => {
+      const triggers = containerRef.current?.querySelectorAll(
+        '[data-truncate-tooltip=true]'
+      );
+      if (triggers) {
+        return Array.from(triggers).some((el) => {
+          const containerWidth =
+            el.parentElement?.getBoundingClientRect().width ?? 0;
+          const textWidth = el?.getBoundingClientRect().width ?? 0;
+          return containerWidth < textWidth;
+        });
+      }
+      return false;
+    };
     const enterHandler = () => {
+      const shouldDisplay = calculateShouldDisplayTooltip();
       timeout && clearTimeout(timeout);
       timeout = setTimeout(() => {
-        if (!tooltipIsDisabled) {
+        if (shouldDisplay) {
           open();
         }
       }, 250);
     };
+
     const leaveHandler = (e: MouseEvent) => {
       const hoveredElement = e.relatedTarget as HTMLElement;
       const isHoverElementTooltip = hoveredElement?.role === 'tooltip';
+      tooltipHoverRef.current?.addEventListener(
+        'mouseenter',
+        () => {
+          console.log('clean');
+          timeout && clearTimeout(timeout);
+        },
+        { once: true }
+      );
       if (!isHoverElementTooltip) {
+        console.log('close');
         timeout && clearTimeout(timeout);
         timeout = setTimeout(() => {
           close();
         }, 250);
       }
     };
-    el?.addEventListener('mouseenter', enterHandler);
-    el?.addEventListener('mouseleave', leaveHandler);
+    elementTriggeringHover?.addEventListener('mouseenter', enterHandler);
+    elementTriggeringHover?.addEventListener('mouseleave', leaveHandler);
 
     return () => {
       timeout && clearTimeout(timeout);
-      el?.removeEventListener('mouseenter', enterHandler);
-      el?.removeEventListener('mouseleave', leaveHandler);
+      elementTriggeringHover?.removeEventListener('mouseenter', enterHandler);
+      elementTriggeringHover?.removeEventListener('mouseleave', leaveHandler);
     };
-  }, [additionalTriggerRef, close, open, tooltipIsDisabled]);
+  }, [propTriggerRef, close, open]);
 
   return (
-    <Tooltip disabled={tooltipIsDisabled} delay={250}>
+    <Tooltip delay={250}>
       <TooltipTriggerStateContext.Provider value={{ isOpen, open, close }}>
         <span className="block truncate max-w-full" ref={containerRef}>
-          <TooltipTrigger disabled={tooltipIsDisabled} ref={triggerRef}>
+          <TruncateTooltipTrigger ref={triggerRef}>
             {children}
-          </TooltipTrigger>
+          </TruncateTooltipTrigger>
         </span>
         <TooltipContent small offset={5} triggerRef={containerRef}>
-          <div className="flex items-start gap-4 [&_*]:text-gray-200 [&_*]:text-xs break-all">
-            {children}
+          <div
+            className="flex items-start gap-4 [&_*]:text-gray-200 [&_*]:text-xs break-all"
+            ref={tooltipHoverRef}
+          >
+            {tooltipContent}
             <Copy
-              copyText={copyText}
+              copyText={copyTextProp ?? triggerRef.current?.textContent ?? ''}
               className="p-1 -m-1 -mt-0.5 [&_svg]:w-3 [&_svg]:h-3  [&_svg]:text-gray-200 bg-transparent hover:bg-zinc-600 pressed:bg-zinc-500 rounded-sm"
             />
           </div>
