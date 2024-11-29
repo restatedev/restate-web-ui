@@ -769,6 +769,7 @@ export interface components {
       completion_result?: 'success' | 'failure';
       completion_failure?: string;
       invoked_by_service_name?: string;
+      invoked_by_id?: string;
       invoked_by_target?: string;
       pinned_deployment_id?: string;
       trace_id?: string;
