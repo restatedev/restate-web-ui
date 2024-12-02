@@ -38,7 +38,9 @@ export function Handler({
             className="w-full h-full text-zinc-400"
           />
         </div>
-        <div className="text-code text-zinc-600">{handler.name}</div>
+        <div className="text-code text-zinc-600 italic font-medium">
+          {handler.name}
+        </div>
         {handler.ty && (
           <div className="ml-auto text-2xs font-medium leading-5 bg-white text-zinc-500 ring-zinc-500/20 inline-flex gap-1 items-center rounded-md px-2 py-0 ring-1 ring-inset">
             <HandlerTypeExplainer type={handler.ty} variant="indicator-button">
