@@ -11,7 +11,7 @@ import styles from './tailwind.css?url';
 import type { LinksFunction } from 'react-router';
 import { LayoutOutlet, LayoutProvider, LayoutZone } from '@restate/ui/layout';
 import { RouterProvider } from 'react-aria-components';
-import { Button, Spinner } from '@restate/ui/button';
+import { Button } from '@restate/ui/button';
 import { useCallback } from 'react';
 import { QueryProvider } from '@restate/util/react-query';
 import { Nav, NavItem } from '@restate/ui/nav';
@@ -28,6 +28,7 @@ import {
   ServicePlayground,
   ServiceDetails,
 } from '@restate/features/overview-route';
+import { Spinner } from '@restate/ui/loading';
 
 export const links: LinksFunction = () => [
   {
