@@ -8,14 +8,14 @@ interface BadgeProps {
 }
 
 const styles = tv({
-  base: 'badge inline-flex items-center font-medium ring-1 ring-inset [&_&]:rounded-md [&_&]:bg-white [&_&]:ring-zinc-600/10 [&_&]:ml-1.5 [&_&]:py-0.5 [&_&]:px-1.5 [&:has(>_.badge)]:py-0.5 [&:has(>_.badge)]:pr-0.5',
+  base: 'badge inline-flex items-center font-medium border [&_&]:rounded-md [&_&]:bg-white [&_&]:border-zinc-600/10 [&_&]:ml-1.5 [&_&]:py-0.5 [&_&]:px-1.5 [&:has(>_.badge)]:py-0.5 [&:has(>_.badge)]:pr-0.5',
   variants: {
     variant: {
-      success: 'bg-green-50 text-green-700 ring-green-600/20',
-      danger: 'bg-red-50 text-red-700 ring-red-600/10',
-      info: 'bg-blue-50 text-blue-700 ring-blue-700/10',
-      warning: 'bg-orange-50 text-orange-800 ring-orange-600/20',
-      default: 'bg-zinc-50 text-zinc-600 ring-zinc-600/10',
+      success: 'bg-green-50 text-green-700 border-green-600/20',
+      danger: 'bg-red-50 text-red-700 border-red-600/10',
+      info: 'bg-blue-50 text-blue-700 border-blue-700/10',
+      warning: 'bg-orange-50 text-orange-800 border-orange-600/20',
+      default: 'bg-zinc-50 text-zinc-600 border-zinc-600/10',
     },
     size: {
       sm: 'px-1.5 py-0.5 text-xs rounded-md',
