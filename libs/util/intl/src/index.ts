@@ -1,1 +1,1 @@
-export * from './lib/Intl';
+export * from './lib/formatOrdinals';
