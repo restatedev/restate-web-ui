@@ -68,6 +68,7 @@
       "@restate/ui/tooltip": ["libs/ui/tooltip/src/index.ts"],
       "@restate/util/errors": ["libs/util/errors/src/index.ts"],
       "@restate/util/feature-flag": ["libs/util/feature-flag/src/index.ts"],
+      "@restate/util/intl": ["libs/util/intl/src/index.ts"],
       "@restate/util/mock-api": ["libs/util/mock-api/src/index.ts"],
       "@restate/util/playwright": ["libs/util/playwright/src/index.ts"],
       "@restate/util/react-query": ["libs/util/react-query/src/index.ts"],
