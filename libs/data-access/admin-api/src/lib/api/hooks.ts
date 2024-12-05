@@ -14,7 +14,7 @@ import type {
   Revision,
   ServiceName,
   Deployment,
-  Invocation,
+  InvocationComputedStatus,
 } from './type';
 
 type HookQueryOptions<
@@ -237,19 +237,11 @@ export function useServiceOpenApi(
   return { ...results, queryKey: queryOptions.queryKey };
 }
 
-export type InvocationComputedStatus =
-  | 'succeeded'
-  | 'failed'
-  | 'cancelled'
-  | 'killed'
-  | 'retrying'
-  | 'running'
-  | 'suspended'
-  | 'scheduled'
-  | 'pending'
-  | 'ready';
+type RawInvocation = components['schemas']['Invocation'];
 
-function getComputedStatus(invocation: Invocation): InvocationComputedStatus {
+function getComputedStatus(
+  invocation: RawInvocation
+): InvocationComputedStatus {
   const isSuccessful = invocation.completion_result === 'success';
   const isCancelled = Boolean(
     invocation.completion_result === 'failure' &&

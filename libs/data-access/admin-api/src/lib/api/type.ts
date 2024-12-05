@@ -7,7 +7,22 @@ export type DetailedDeployment =
 export type Revision = components['schemas']['ServiceMetadata']['revision'];
 export type Service = components['schemas']['ServiceMetadata'];
 export type Handler = components['schemas']['HandlerMetadata'];
-export type Invocation = components['schemas']['Invocation'];
+
+export type InvocationComputedStatus =
+  | 'succeeded'
+  | 'failed'
+  | 'cancelled'
+  | 'killed'
+  | 'retrying'
+  | 'running'
+  | 'suspended'
+  | 'scheduled'
+  | 'pending'
+  | 'ready';
+
+export type Invocation = Omit<components['schemas']['Invocation'], 'status'> & {
+  status: InvocationComputedStatus;
+};
 export type ServiceName = Service['name'];
 export type DeploymentId = Deployment['id'];
 export type ServiceType = Service['ty'];
