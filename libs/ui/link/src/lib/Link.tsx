@@ -25,7 +25,7 @@ interface LinkProps
 
 const styles = tv({
   extend: focusRing,
-  base: 'underline disabled:no-underline disabled:cursor-default forced-colors:disabled:text-[GrayText] transition rounded',
+  base: 'underline disabled:no-underline disabled:cursor-default transition rounded',
   variants: {
     variant: {
       button:
@@ -33,9 +33,9 @@ const styles = tv({
       'secondary-button':
         'bg-white hover:bg-gray-100 pressed:bg-gray-200 text-gray-800 no-underline shadow-sm px-5 py-2 text-sm text-center transition rounded-xl border',
       primary:
-        'text-blue-600 dark:text-blue-500 underline decoration-blue-600/60 hover:decoration-blue-600 dark:decoration-blue-500/60 dark:hover:decoration-blue-500',
+        'text-blue-600 dark:text-blue-500 underline decoration-blue-600/60 hover:decoration-blue-600',
       secondary:
-        'text-gray-700 dark:text-zinc-300 underline decoration-gray-700/50 hover:decoration-gray-700 dark:decoration-zinc-300/70 dark:hover:decoration-zinc-300',
+        'text-gray-700 dark:text-zinc-300 underline decoration-gray-700/50 hover:decoration-gray-700',
     },
   },
   defaultVariants: {
