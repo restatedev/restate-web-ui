@@ -9,13 +9,7 @@ import {
   SupportedMethods,
 } from './client';
 import { useAdminBaseUrl } from '../AdminBaseUrlProvider';
-import type {
-  DeploymentId,
-  Revision,
-  ServiceName,
-  Deployment,
-  InvocationComputedStatus,
-} from './type';
+import type { DeploymentId, Revision, ServiceName, Deployment } from './type';
 
 type HookQueryOptions<
   Path extends keyof paths,
