@@ -7,6 +7,8 @@ import {
 } from '@restate/ui/tooltip';
 import { useRef } from 'react';
 import { CellProps } from './types';
+import { InvocationId } from './InvocationId';
+import { tv } from 'tailwind-variants';
 
 function TargetTooltipContent({
   service,
@@ -33,8 +35,16 @@ function TargetTooltipContent({
     </div>
   );
 }
-
-function TargetInner({ target = '' }: { target?: string }) {
+const styles = tv({
+  base: 'min-w-0 max-w-full [&:has([data-pressed=true])]:shadow-none transition-all inline-flex relative shadow-sm pl-2 text-xs rounded-lg bg-white ring-gray-200 text-zinc-600 font-medium ring-1 ring-inset',
+});
+function TargetInner({
+  target = '',
+  className,
+}: {
+  target?: string;
+  className?: string;
+}) {
   const results = target?.split('/');
   const linkRef = useRef<HTMLAnchorElement>(null);
 
@@ -47,7 +57,7 @@ function TargetInner({ target = '' }: { target?: string }) {
   const key = results.length === 3 ? results.at(1) : undefined;
 
   return (
-    <div className="max-w-full [&:has([data-pressed=true])]:shadow-none transition-all inline-flex relative shadow-sm pl-2 text-xs rounded-lg bg-white ring-gray-200 text-zinc-600 font-medium ring-1 ring-inset">
+    <div className={styles({ className })}>
       <TruncateWithTooltip
         tooltipContent={
           <TargetTooltipContent
@@ -113,7 +123,18 @@ export function InvokedBy({ invocation }: CellProps) {
   if (invocation.invoked_by === 'ingress') {
     return <Badge className="bg-zinc-100/80">Ingress</Badge>;
   } else if (invocation.invoked_by_target) {
-    return <TargetInner target={invocation.invoked_by_target} />;
+    return (
+      <div className="flex flex-col gap-0.5 items-start w-full">
+        <TargetInner target={invocation.invoked_by_target} />
+        {invocation.invoked_by_id && (
+          <InvocationId
+            id={invocation.invoked_by_id}
+            className="max-w-full w-[20ch]  min-w-0 text-zinc-500"
+            size="sm"
+          />
+        )}
+      </div>
+    );
   }
   return null;
 }
