@@ -4,7 +4,6 @@ import {
   ReactNode,
   RefObject,
   useCallback,
-  useEffect,
   useRef,
   useState,
 } from 'react';
@@ -12,6 +11,7 @@ import { TooltipTriggerStateContext } from 'react-aria-components';
 import { Tooltip } from './Tooltip';
 import { TooltipContent } from './TooltipContent';
 import { Copy } from '@restate/ui/copy';
+import { useTooltipWithHover } from './useTooltipWithHover';
 
 export const TruncateTooltipTrigger = forwardRef<
   HTMLElement,
@@ -47,60 +47,28 @@ export function TruncateWithTooltip({
     setIsOpen(false);
   }, []);
 
-  useEffect(() => {
-    const elementTriggeringHover =
-      propTriggerRef?.current ?? containerRef.current;
-    let timeout: ReturnType<typeof setTimeout> | null = null;
-    const calculateShouldDisplayTooltip = () => {
-      const triggers = containerRef.current?.querySelectorAll(
-        '[data-truncate-tooltip=true]'
-      );
-      if (triggers) {
-        return Array.from(triggers).some((el) => {
-          const containerWidth =
-            el.parentElement?.getBoundingClientRect().width ?? 0;
-          const textWidth = el?.getBoundingClientRect().width ?? 0;
-          return containerWidth < textWidth;
-        });
-      }
-      return false;
-    };
-    const enterHandler = () => {
-      const shouldDisplay = calculateShouldDisplayTooltip();
-      timeout && clearTimeout(timeout);
-      timeout = setTimeout(() => {
-        if (shouldDisplay) {
-          open();
-        }
-      }, 250);
-    };
+  const shouldDisplayTooltip = useCallback(() => {
+    const triggers = containerRef.current?.querySelectorAll(
+      '[data-truncate-tooltip=true]'
+    );
+    if (triggers) {
+      return Array.from(triggers).some((el) => {
+        const containerWidth =
+          el.parentElement?.getBoundingClientRect().width ?? 0;
+        const textWidth = el?.getBoundingClientRect().width ?? 0;
+        return containerWidth < textWidth;
+      });
+    }
+    return false;
+  }, []);
 
-    const leaveHandler = (e: MouseEvent) => {
-      const hoveredElement = e.relatedTarget as HTMLElement;
-      const isHoverElementTooltip = hoveredElement?.role === 'tooltip';
-      tooltipHoverRef.current?.addEventListener(
-        'mouseenter',
-        () => {
-          timeout && clearTimeout(timeout);
-        },
-        { once: true }
-      );
-      if (!isHoverElementTooltip) {
-        timeout && clearTimeout(timeout);
-        timeout = setTimeout(() => {
-          close();
-        }, 250);
-      }
-    };
-    elementTriggeringHover?.addEventListener('mouseenter', enterHandler);
-    elementTriggeringHover?.addEventListener('mouseleave', leaveHandler);
-
-    return () => {
-      timeout && clearTimeout(timeout);
-      elementTriggeringHover?.removeEventListener('mouseenter', enterHandler);
-      elementTriggeringHover?.removeEventListener('mouseleave', leaveHandler);
-    };
-  }, [propTriggerRef, close, open]);
+  useTooltipWithHover({
+    shouldDisplayTooltip,
+    open,
+    close,
+    triggerRef: propTriggerRef ?? containerRef,
+    contentRef: tooltipHoverRef,
+  });
 
   return (
     <Tooltip delay={250}>

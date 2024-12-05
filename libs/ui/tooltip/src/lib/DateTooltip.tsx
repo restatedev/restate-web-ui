@@ -3,8 +3,8 @@ import { TooltipTriggerStateContext } from 'react-aria-components';
 import { Tooltip } from './Tooltip';
 import { TooltipContent } from './TooltipContent';
 import { Copy } from '@restate/ui/copy';
-import { useHover } from 'react-aria';
 import { formatDateTime } from '@restate/util/intl';
+import { useTooltipWithHover } from './useTooltipWithHover';
 
 export function DateTooltip({
   date,
@@ -14,7 +14,8 @@ export function DateTooltip({
   date: Date;
   title: string;
 }>) {
-  const containerRef = useRef<HTMLElement>(null);
+  const triggerRef = useRef<HTMLElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const [isOpen, setIsOpen] = useState(false);
   const open = useCallback(() => {
@@ -23,24 +24,28 @@ export function DateTooltip({
   const close = useCallback(() => {
     setIsOpen(false);
   }, []);
-  const { hoverProps } = useHover({
-    onHoverChange(isHovering) {
-      isHovering ? open() : close();
-    },
+
+  useTooltipWithHover({
+    open,
+    close,
+    triggerRef,
+    contentRef,
   });
 
   return (
     <Tooltip delay={250}>
       <TooltipTriggerStateContext.Provider value={{ isOpen, open, close }}>
         <span
-          {...hoverProps}
-          ref={containerRef}
+          ref={triggerRef}
           className="hover:bg-black/5 rounded-sm mx-[-0.1em] px-[0.1em] underline-offset-4 decoration-from-font decoration-dashed underline"
         >
           {children}
         </span>
-        <TooltipContent small offset={5} triggerRef={containerRef}>
-          <div className="flex items-start gap-4 [&_*]:text-gray-200 [&_*]:text-xs break-all py-1">
+        <TooltipContent small offset={5} triggerRef={triggerRef}>
+          <div
+            ref={contentRef}
+            className="flex items-start gap-4 [&_*]:text-gray-200 [&_*]:text-xs break-all py-1"
+          >
             <div className="flex flex-col gap-1 items-start">
               <h6 className="text-sm font-semibold text-gray-100 mb-2">
                 {title}
