@@ -31,7 +31,7 @@ interface TableProps
 }
 
 const tableStyles = tv({
-  base: 'bg-gray-50 [&:has([data-table-empty=true])]:bg-gray-50/50 shadow-sm [&:has([data-table-empty=true])]:shadow-none border rounded-xl overflow-hidden',
+  base: 'bg-gray-50 [&:has([data-table-empty=true])]:bg-gray-50/50 shadow-sm shadow-zinc-800/5 [&:has([data-table-empty=true])]:shadow-none border rounded-xl overflow-hidden',
 });
 export function Table({ className, ...props }: PropsWithChildren<TableProps>) {
   return (
