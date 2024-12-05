@@ -1,13 +1,18 @@
-import { createContext, PropsWithChildren, useContext } from 'react';
+import {
+  createContext,
+  PropsWithChildren,
+  useCallback,
+  useContext,
+} from 'react';
 
 const SnapshotTimeContext = createContext({
-  lastSnapshot: new Date().toISOString(),
+  lastSnapshot: Date.now(),
 });
 
 export function SnapshotTimeProvider({
   lastSnapshot,
   children,
-}: PropsWithChildren<{ lastSnapshot?: string }>) {
+}: PropsWithChildren<{ lastSnapshot?: number }>) {
   if (!lastSnapshot) {
     return children;
   }
@@ -18,7 +23,15 @@ export function SnapshotTimeProvider({
   );
 }
 
-export function useLastSnapshot() {
+export function useDurationSinceLastSnapshot() {
   const { lastSnapshot } = useContext(SnapshotTimeContext);
-  return new Date(lastSnapshot);
+  const durationSinceLastSnapshot = useCallback(
+    (value: string | number | Date) => {
+      const date = new Date(value);
+      return date.getTime() - lastSnapshot;
+    },
+    [lastSnapshot]
+  );
+
+  return durationSinceLastSnapshot;
 }
