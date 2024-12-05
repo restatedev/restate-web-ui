@@ -3,35 +3,80 @@ import { CellProps } from './types';
 import { Icon, IconName } from '@restate/ui/icons';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Link } from '@restate/ui/link';
+import { Invocation } from '@restate/data-access/admin-api';
+import { tv } from 'tailwind-variants';
 
-export function InvocationId({ invocation }: CellProps) {
+const styles = tv({
+  base: 'relative text-zinc-600',
+  slots: {
+    icon: 'mr-1.5 shrink-0 bg-white border rounded-lg',
+    text: '',
+    container: 'inline-flex items-center w-full align-middle',
+    link: "text-zinc-500 outline-offset-0 ml-0 rounded-full  before:absolute before:inset-0 before:content-[''] hover:before:bg-black/[0.03] pressed:before:bg-black/5",
+    linkIcon: 'text-current shrink-0',
+  },
+  variants: {
+    size: {
+      sm: {
+        base: 'text-xs',
+        icon: 'h-4 w-4 rounded [&>svg]:p-px bg-transparent border-none',
+        text: 'text-2xs',
+        link: 'before:rounded',
+        container: '',
+        linkIcon: 'w-3.5 h-3.5',
+      },
+      default: {
+        base: '',
+        icon: 'h-6 w-6 rounded-lg shadow-sm',
+        text: '',
+        link: 'before:rounded-lg m-0.5',
+        container: 'p-px',
+        linkIcon: 'w-4 h-4',
+      },
+    },
+  },
+  defaultVariants: {
+    size: 'default',
+  },
+});
+export function InvocationId({
+  id,
+  className,
+  size = 'default',
+}: {
+  id: Invocation['id'];
+  className?: string;
+  size?: 'sm' | 'default';
+}) {
   const linkRef = useRef<HTMLAnchorElement>(null);
+  const { base, icon, text, link, container, linkIcon } = styles({ size });
 
   return (
-    <div className="relative ">
-      <div className="inline-flex items-center w-full align-middle text-zinc-600 p-px">
-        <div className="mr-1.5 shrink-0 h-6 w-6 bg-white border shadow-sm rounded-lg">
+    <div className={base({ className })}>
+      <div className={container({})}>
+        <div className={icon()}>
           <Icon
             name={IconName.Invocation}
             className="w-full h-full text-zinc-500 p-1"
           />
         </div>
-        <TruncateWithTooltip copyText={invocation.id} triggerRef={linkRef}>
-          {invocation.id}
+        <TruncateWithTooltip copyText={id} triggerRef={linkRef}>
+          <span className={text()}>{id}</span>
         </TruncateWithTooltip>
         <Link
           ref={linkRef}
           href="?a=b"
-          aria-label={invocation.id}
+          aria-label={id}
           variant="secondary"
-          className="outline-offset-0 m-0.5 ml-0 rounded-full before:rounded-lg before:absolute before:inset-0 before:content-[''] hover:before:bg-black/[0.03] pressed:before:bg-black/5"
+          className={link()}
         >
-          <Icon
-            name={IconName.ChevronRight}
-            className="w-4 h-4 text-gray-500 shrink-0 "
-          />
+          <Icon name={IconName.ChevronRight} className={linkIcon()} />
         </Link>
       </div>
     </div>
   );
+}
+
+export function InvocationIdCell({ invocation }: CellProps) {
+  return <InvocationId id={invocation.id} />;
 }
