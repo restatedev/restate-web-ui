@@ -80,6 +80,9 @@ function listInvocations(baseUrl: string) {
               last_start_at:
                 invocation.last_start_at && `${invocation.last_start_at}Z`,
               running_at: invocation.running_at && `${invocation.running_at}Z`,
+              modified_at:
+                invocation.modified_at && `${invocation.modified_at}Z`,
+              inboxed_at: invocation.inboxed_at && `${invocation.inboxed_at}Z`,
             })),
           }),
           {
