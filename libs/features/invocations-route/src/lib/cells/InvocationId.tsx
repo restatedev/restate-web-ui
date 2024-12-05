@@ -8,9 +8,9 @@ export function InvocationId({ invocation }: CellProps) {
   const linkRef = useRef<HTMLAnchorElement>(null);
 
   return (
-    <div className="relative p-0.5">
-      <div className="inline-flex items-center w-full align-middle text-zinc-600">
-        <div className="mr-1.5 shrink-0 h-6 w-6 bg-white border shadow-sm rounded-md">
+    <div className="relative ">
+      <div className="inline-flex items-center w-full align-middle text-zinc-600 p-px">
+        <div className="mr-1.5 shrink-0 h-6 w-6 bg-white border shadow-sm rounded-lg">
           <Icon
             name={IconName.Invocation}
             className="w-full h-full text-zinc-500 p-1"
@@ -24,7 +24,7 @@ export function InvocationId({ invocation }: CellProps) {
           href="?a=b"
           aria-label={invocation.id}
           variant="secondary"
-          className="outline-offset-0 m-1 ml-0 rounded-full before:rounded-lg before:absolute before:inset-0 before:content-[''] hover:before:bg-black/[0.03] pressed:before:bg-black/5"
+          className="outline-offset-0 m-0.5 ml-0 rounded-full before:rounded-lg before:absolute before:inset-0 before:content-[''] hover:before:bg-black/[0.03] pressed:before:bg-black/5"
         >
           <Icon
             name={IconName.ChevronRight}
