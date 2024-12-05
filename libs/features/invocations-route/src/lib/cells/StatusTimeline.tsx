@@ -28,7 +28,7 @@ function withStatusTimeline({
     return (
       <Badge
         size="sm"
-        className="text-2xs py-0 bg-transparent border-none text-zinc-500/80 font-normal w-full truncate"
+        className="text-2xs py-0 bg-transparent border-none text-zinc-500/80 font-normal max-w-full truncate"
       >
         <span className="truncate">
           {prefix && `${prefix} `}

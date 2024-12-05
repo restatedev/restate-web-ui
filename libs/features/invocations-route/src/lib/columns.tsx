@@ -11,17 +11,19 @@ const COLUMNS_KEYS = [
   'created_at',
   'modified_at',
   'scheduled_at',
+  'running_at',
 ] as const;
 export type ColumnKey = (typeof COLUMNS_KEYS)[number];
 
 export const COLUMN_NAMES: Record<ColumnKey, string> = {
   id: 'Id',
-  target: 'Service/Handler',
+  target: 'Target',
   status: 'Status',
   created_at: 'Created at',
   invoked_by: 'Invoked by',
   modified_at: 'Modified at',
   scheduled_at: 'Scheduled at',
+  running_at: 'Running since',
   type: 'Type',
 };
 
@@ -38,7 +40,7 @@ function sortColumns(a: Key, b: Key) {
 
 export function useColumns() {
   const [selectedColumns, setSelectedColumns] = useState<DropdownMenuSelection>(
-    new Set(['id', 'target', 'status', 'type'])
+    new Set(['id', 'target', 'status', 'invoked_by'])
   );
   const sortedColumnsList = useMemo(
     () => Array.from(selectedColumns).sort(sortColumns) as ColumnKey[],

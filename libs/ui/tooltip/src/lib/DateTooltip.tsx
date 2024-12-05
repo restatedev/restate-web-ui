@@ -53,10 +53,10 @@ export function DateTooltip({
               <h6 className="text-sm font-semibold text-gray-100 mb-2">
                 {title}
               </h6>
-              <div className="bg-zinc-700 rounded px-1">
+              <div className="bg-zinc-700 rounded px-1 font-mono">
                 {formatDateTime(date, 'system')}
               </div>
-              <div className="bg-zinc-700 rounded px-1">
+              <div className="bg-zinc-700 rounded px-1 font-mono">
                 {formatDateTime(date, 'UTC')}
               </div>
             </div>

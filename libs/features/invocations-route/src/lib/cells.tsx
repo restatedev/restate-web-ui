@@ -1,6 +1,6 @@
 import { Invocation, ServiceType } from '@restate/data-access/admin-api';
 import { Cell } from '@restate/ui/table';
-import { DateTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
+import { DateTooltip } from '@restate/ui/tooltip';
 import { ColumnKey } from './columns';
 import { ComponentType } from 'react';
 import { Badge } from '@restate/ui/badge';
@@ -9,7 +9,11 @@ import { Status } from './cells/Status';
 import { CellProps } from './cells/types';
 import { InvocationIdCell } from './cells/InvocationId';
 import { InvokedBy, Target } from './cells/Target';
-import { formatDateTime, formatDurations } from '@restate/util/intl';
+import {
+  formatDateTime,
+  formatDurations,
+  formatRelativeTime,
+} from '@restate/util/intl';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 
 function withDate({
@@ -19,7 +23,7 @@ function withDate({
   tooltipTitle: string;
   field: Extract<
     keyof Invocation,
-    'created_at' | 'modified_at' | 'scheduled_at'
+    'created_at' | 'modified_at' | 'scheduled_at' | 'running_at'
   >;
 }) {
   return (props: { invocation: Invocation }) => {
@@ -30,23 +34,16 @@ function withDate({
       return null;
     }
     const { isPast, ...parts } = durationSinceLastSnapshot(value);
-    const showRelativeDate = parts.days === 0;
-    const duration = showRelativeDate
-      ? formatDurations(parts)
-      : formatDateTime(new Date(value), 'system');
+    const duration = formatDurations(parts);
 
     return (
       <Badge className="bg-transparent border-none pl-0 w-full">
         <span className="w-full truncate">
-          <span className="font-normal text-zinc-500">
-            {!isPast && showRelativeDate && 'in '}
-          </span>
+          <span className="font-normal text-zinc-500">{!isPast && 'in '}</span>
           <DateTooltip date={new Date(value)} title={tooltipTitle}>
             {duration}
           </DateTooltip>
-          <span className="font-normal text-zinc-500">
-            {isPast && showRelativeDate && ' ago'}
-          </span>
+          <span className="font-normal text-zinc-500">{isPast && ' ago'}</span>
         </span>
       </Badge>
     );
@@ -62,7 +59,7 @@ const SERVICE_TYPE_NAME: Record<Invocation['target_service_ty'], ServiceType> =
 function Type({ invocation }: CellProps) {
   const type = SERVICE_TYPE_NAME[invocation.target_service_ty];
   return (
-    <Badge className="bg-zinc-100/80 w-full">
+    <Badge className="bg-zinc-100/80 max-w-full">
       <span className="truncate">{type}</span>
       <ServiceTypeExplainer
         type={type}
@@ -95,6 +92,9 @@ const CELLS: Record<ColumnKey, ComponentType<CellProps>> = {
   ),
   scheduled_at: withCell(
     withDate({ field: 'scheduled_at', tooltipTitle: 'Scheduled at' })
+  ),
+  running_at: withCell(
+    withDate({ field: 'running_at', tooltipTitle: 'Running since' })
   ),
 };
 

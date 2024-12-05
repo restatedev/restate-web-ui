@@ -87,7 +87,7 @@ export function Status({
   const error = getError(invocation);
 
   return (
-    <div className="flex items-start flex-col gap-0.5">
+    <div className="flex items-center flex-wrap flex-row gap-0.5">
       <Badge
         variant={variant}
         className={styles({
