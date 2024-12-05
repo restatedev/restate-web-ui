@@ -237,63 +237,6 @@ export function useServiceOpenApi(
   return { ...results, queryKey: queryOptions.queryKey };
 }
 
-type RawInvocation = components['schemas']['Invocation'];
-
-function getComputedStatus(
-  invocation: RawInvocation
-): InvocationComputedStatus {
-  const isSuccessful = invocation.completion_result === 'success';
-  const isCancelled = Boolean(
-    invocation.completion_result === 'failure' &&
-      invocation.completion_failure?.startsWith('[409]')
-  );
-  const isKilled = Boolean(
-    isCancelled && invocation.completion_failure?.includes('killed')
-  );
-  const isRunning = invocation.status === 'running';
-  const isCompleted = invocation.status === 'completed';
-  const isRetrying = Boolean(
-    invocation.retry_count &&
-      invocation.retry_count > 1 &&
-      (isRunning || invocation.status === 'backing-off')
-  );
-
-  if (isCompleted) {
-    if (isSuccessful) {
-      return 'succeeded';
-    }
-    if (isCancelled) {
-      return 'cancelled';
-    }
-    if (isKilled) {
-      return 'killed';
-    }
-    if (invocation.completion_result === 'failure') {
-      return 'failed';
-    }
-  }
-
-  if (isRetrying) {
-    return 'retrying';
-  }
-
-  switch (invocation.status) {
-    case 'pending':
-      return 'pending';
-    case 'ready':
-      return 'ready';
-    case 'scheduled':
-      return 'scheduled';
-    case 'running':
-      return 'running';
-    case 'suspended':
-      return 'suspended';
-
-    default:
-      throw new Error('Cannot calculate status');
-  }
-}
-
 export function useListInvocations(
   options?: HookQueryOptions<'/query/invocations', 'get'>
 ) {
@@ -305,18 +248,6 @@ export function useListInvocations(
   const results = useQuery({
     ...queryOptions,
     ...options,
-    select(data) {
-      if (!data) {
-        return data;
-      }
-      return {
-        ...data,
-        rows: data.rows.map((invocation) => ({
-          ...invocation,
-          status: getComputedStatus(invocation),
-        })),
-      };
-    },
   });
 
   return {

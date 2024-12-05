@@ -20,7 +20,9 @@ export type InvocationComputedStatus =
   | 'pending'
   | 'ready';
 
-export type Invocation = Omit<components['schemas']['Invocation'], 'status'> & {
+export type RawInvocation = components['schemas']['Invocation'];
+
+export type Invocation = Omit<RawInvocation, 'status'> & {
   status: InvocationComputedStatus;
 };
 export type ServiceName = Service['name'];
