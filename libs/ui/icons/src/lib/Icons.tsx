@@ -32,6 +32,7 @@ import {
   Settings,
   TableProperties,
   ChevronsLeftRightEllipsis,
+  Timer,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from 'tailwind-variants';
@@ -92,6 +93,7 @@ export const enum IconName {
   ChevronLeft = 'ChevronLeft',
   ChevronUp = 'ChevronUp',
   Question = 'Question',
+  Timer = 'Timer',
 }
 export interface IconsProps {
   name: IconName;
@@ -144,6 +146,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.ChevronUp]: ChevronUp,
   [IconName.Question]: Question,
   [IconName.Invocation]: ChevronsLeftRightEllipsis,
+  [IconName.Timer]: Timer,
 };
 
 const styles = tv({
