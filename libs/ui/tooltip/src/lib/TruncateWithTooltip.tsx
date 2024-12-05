@@ -31,10 +31,12 @@ export function TruncateWithTooltip({
   copyText: copyTextProp,
   triggerRef: propTriggerRef,
   tooltipContent = children,
+  hideCopy,
 }: PropsWithChildren<{
   copyText?: string;
   triggerRef?: RefObject<HTMLElement | null>;
   tooltipContent?: ReactNode;
+  hideCopy?: boolean;
 }>) {
   const triggerRef = useRef<HTMLElement>(null);
   const containerRef = useRef<HTMLElement>(null);
@@ -84,10 +86,12 @@ export function TruncateWithTooltip({
             ref={tooltipHoverRef}
           >
             {tooltipContent}
-            <Copy
-              copyText={copyTextProp ?? triggerRef.current?.textContent ?? ''}
-              className="p-1 -m-1 -mt-0.5 [&_svg]:w-3 [&_svg]:h-3  [&_svg]:text-gray-200 bg-transparent hover:bg-zinc-600 pressed:bg-zinc-500 rounded-sm"
-            />
+            {!hideCopy && (
+              <Copy
+                copyText={copyTextProp ?? triggerRef.current?.textContent ?? ''}
+                className="p-1 -m-1 -mt-0.5 [&_svg]:w-3 [&_svg]:h-3  [&_svg]:text-gray-200 bg-transparent hover:bg-zinc-600 pressed:bg-zinc-500 rounded-sm"
+              />
+            )}
           </div>
         </TooltipContent>
       </TooltipTriggerStateContext.Provider>

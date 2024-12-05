@@ -5,14 +5,20 @@ import { TooltipContent } from './TooltipContent';
 import { Copy } from '@restate/ui/copy';
 import { formatDateTime } from '@restate/util/intl';
 import { useTooltipWithHover } from './useTooltipWithHover';
+import { tv } from 'tailwind-variants';
 
+const styles = tv({
+  base: 'hover:bg-black/5 decoration-zinc-400 rounded-sm mx-[-0.1em] px-[0.1em] underline-offset-[0.2em] decoration-from-font decoration-dashed underline max-w-full truncate',
+});
 export function DateTooltip({
   date,
   children,
   title,
+  className,
 }: PropsWithChildren<{
   date: Date;
   title: string;
+  className?: string;
 }>) {
   const triggerRef = useRef<HTMLElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -35,10 +41,7 @@ export function DateTooltip({
   return (
     <Tooltip delay={250}>
       <TooltipTriggerStateContext.Provider value={{ isOpen, open, close }}>
-        <span
-          ref={triggerRef}
-          className="hover:bg-black/5 rounded-sm mx-[-0.1em] px-[0.1em] underline-offset-[0.2em] decoration-from-font decoration-dashed underline"
-        >
+        <span ref={triggerRef} className={styles({ className })}>
           {children}
         </span>
         <TooltipContent small offset={5} triggerRef={triggerRef}>

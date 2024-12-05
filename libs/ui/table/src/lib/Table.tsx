@@ -21,6 +21,7 @@ import { Checkbox } from '@restate/ui/form-field';
 import styles from './table.module.css';
 import { PropsWithChildren, ReactNode } from 'react';
 import { TableError, LoadingRows } from './Placeholder';
+import { TruncateWithTooltip } from '@restate/ui/tooltip';
 
 interface TableProps
   extends Pick<
@@ -91,7 +92,7 @@ export function Column({
               tabIndex={-1}
               className={columnGroupStyles}
             >
-              <span className="truncate">{children}</span>
+              <TruncateWithTooltip hideCopy>{children}</TruncateWithTooltip>
               {allowsSorting && (
                 <span
                   className={`w-4 h-4 flex items-center justify-center transition ${

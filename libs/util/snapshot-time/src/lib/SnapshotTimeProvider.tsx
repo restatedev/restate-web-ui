@@ -33,12 +33,14 @@ export function useDurationSinceLastSnapshot() {
     (value: string | number | Date) => {
       const date = new Date(value);
 
-      let duration = lastSnapshot - date.getTime();
+      let duration = date.getTime() - lastSnapshot;
+      const isPast = duration < 0;
+      duration = Math.abs(duration);
       let milliseconds = duration % MILLISECONDS_IN_SECOND;
       duration = (duration - milliseconds) / MILLISECONDS_IN_SECOND;
-      const seconds = duration % SECONDS_IN_MINUTE;
+      let seconds = duration % SECONDS_IN_MINUTE;
       duration = (duration - seconds) / SECONDS_IN_MINUTE;
-      const minutes = duration % MINUTES_IN_HOUR;
+      let minutes = duration % MINUTES_IN_HOUR;
       duration = (duration - minutes) / MINUTES_IN_HOUR;
       const hours = duration % HOURS_IN_DAY;
       const days = (duration - hours) / HOURS_IN_DAY;
@@ -46,8 +48,14 @@ export function useDurationSinceLastSnapshot() {
       if (days || hours || minutes || seconds) {
         milliseconds = 0;
       }
+      if (days || hours) {
+        seconds = 0;
+      }
+      if (days) {
+        minutes = 0;
+      }
 
-      return { milliseconds, seconds, minutes, hours, days };
+      return { milliseconds, seconds, minutes, hours, days, isPast };
     },
     [lastSnapshot]
   );
