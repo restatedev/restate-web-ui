@@ -11,8 +11,12 @@ const styles = tv({
 export const Ellipsis = ({
   className,
   children,
-}: PropsWithChildren<{ className?: string }>) => {
+  visible = true,
+}: PropsWithChildren<{ className?: string; visible?: boolean }>) => {
   const { base, ellipsis } = styles({ className });
+  if (!visible) {
+    return children;
+  }
   return (
     <div className={base()}>
       {children}

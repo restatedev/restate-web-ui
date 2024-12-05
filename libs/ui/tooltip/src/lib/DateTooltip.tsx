@@ -37,7 +37,7 @@ export function DateTooltip({
       <TooltipTriggerStateContext.Provider value={{ isOpen, open, close }}>
         <span
           ref={triggerRef}
-          className="hover:bg-black/5 rounded-sm mx-[-0.1em] px-[0.1em] underline-offset-4 decoration-from-font decoration-dashed underline"
+          className="hover:bg-black/5 rounded-sm mx-[-0.1em] px-[0.1em] underline-offset-[0.2em] decoration-from-font decoration-dashed underline"
         >
           {children}
         </span>

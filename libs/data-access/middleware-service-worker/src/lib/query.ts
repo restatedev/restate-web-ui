@@ -34,11 +34,11 @@ function getComputedStatus(
     if (isSuccessful) {
       return 'succeeded';
     }
-    if (isCancelled) {
-      return 'cancelled';
-    }
     if (isKilled) {
       return 'killed';
+    }
+    if (isCancelled) {
+      return 'cancelled';
     }
     if (invocation.completion_result === 'failure') {
       return 'failed';
@@ -83,6 +83,10 @@ function listInvocations(baseUrl: string) {
               modified_at:
                 invocation.modified_at && `${invocation.modified_at}Z`,
               inboxed_at: invocation.inboxed_at && `${invocation.inboxed_at}Z`,
+              scheduled_at:
+                invocation.scheduled_at && `${invocation.scheduled_at}Z`,
+              completed_at:
+                invocation.completed_at && `${invocation.completed_at}Z`,
             })),
           }),
           {
