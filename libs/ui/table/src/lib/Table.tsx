@@ -31,7 +31,7 @@ interface TableProps
 }
 
 const tableStyles = tv({
-  base: 'bg-gray-50 border rounded-xl overflow-hidden',
+  base: 'bg-gray-50 [&:has([data-table-empty=true])]:bg-gray-50/50 shadow-sm [&:has([data-table-empty=true])]:shadow-none border rounded-xl overflow-hidden',
 });
 export function Table({ className, ...props }: PropsWithChildren<TableProps>) {
   return (
@@ -40,7 +40,7 @@ export function Table({ className, ...props }: PropsWithChildren<TableProps>) {
         <ResizableTableContainer>
           <AriaTable
             {...props}
-            className="border-collapse border-spacing-0 rounded-xl overflow-hidden"
+            className="border-collapse border-spacing-0 rounded-xl"
           />
         </ResizableTableContainer>
       </div>
@@ -65,7 +65,13 @@ const columnStyles = tv({
 interface ColumnProps
   extends Pick<
     AriaColumnProps,
-    'id' | 'allowsSorting' | 'isRowHeader' | 'width' | 'maxWidth' | 'minWidth'
+    | 'id'
+    | 'allowsSorting'
+    | 'isRowHeader'
+    | 'width'
+    | 'maxWidth'
+    | 'minWidth'
+    | 'defaultWidth'
   > {
   className?: string;
 }
@@ -166,11 +172,11 @@ export function TableBody<T extends object>({
       {...props}
       dependencies={[...dependencies, error, isLoading]}
       renderEmptyState={() => {
-        if (error) {
-          return <TableError error={error} />;
-        } else {
-          return emptyPlaceholder;
-        }
+        return (
+          <div data-table-empty="true">
+            {error ? <TableError error={error} /> : emptyPlaceholder}
+          </div>
+        );
       }}
     >
       {isLoading ? <LoadingRows numOfColumns={numOfColumns} /> : children}
