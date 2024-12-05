@@ -85,7 +85,7 @@ function TargetInner({ target = '' }: { target?: string }) {
               <TruncateTooltipTrigger>{handler}</TruncateTooltipTrigger>
             </div>
           </div>
-          <div className="shrink-0 flex2-auto bg-zinc-100 h-full flex my-[1px] mr-[1px] rounded-r-[calc(0.5rem-1px)] pr-0.5">
+          <div className="shrink-0 bg-zinc-100 h-full flex my-[1px] mr-px pl-[2px] rounded-r-[calc(0.5rem-1px)] pr-0.5">
             <Link
               ref={linkRef}
               href="?a=b"
