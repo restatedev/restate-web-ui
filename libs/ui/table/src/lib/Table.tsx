@@ -153,7 +153,7 @@ interface TableBodyProps<T extends object>
   extends Pick<AriaTableBodyProps<T>, 'items' | 'children' | 'dependencies'> {
   className?: string;
   isLoading?: boolean;
-  error?: Error;
+  error?: Error | null;
   numOfColumns: number;
   emptyPlaceholder?: ReactNode;
 }
