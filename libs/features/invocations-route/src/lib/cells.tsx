@@ -1,6 +1,10 @@
 import { Invocation, ServiceType } from '@restate/data-access/admin-api';
 import { Cell } from '@restate/ui/table';
-import { DateTooltip } from '@restate/ui/tooltip';
+import {
+  DateTooltip,
+  TruncateTooltipTrigger,
+  TruncateWithTooltip,
+} from '@restate/ui/tooltip';
 import { ColumnKey } from './columns';
 import { ComponentType } from 'react';
 import { Badge } from '@restate/ui/badge';
@@ -9,12 +13,9 @@ import { Status } from './cells/Status';
 import { CellProps } from './cells/types';
 import { InvocationIdCell } from './cells/InvocationId';
 import { InvokedBy, Target } from './cells/Target';
-import {
-  formatDateTime,
-  formatDurations,
-  formatRelativeTime,
-} from '@restate/util/intl';
+import { formatDurations, formatNumber } from '@restate/util/intl';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
+import { DeploymentCell } from './cells/Deployment';
 
 function withDate({
   tooltipTitle,
@@ -50,12 +51,26 @@ function withDate({
   };
 }
 
+function withField({ field }: { field: keyof Invocation }) {
+  return (props: { invocation: Invocation }) => {
+    const value = props.invocation[field] ?? '';
+    return (
+      <Badge className="bg-transparent border-none pl-0 w-full">
+        <TruncateWithTooltip>
+          {typeof value === 'number' ? formatNumber(value) : value}
+        </TruncateWithTooltip>
+      </Badge>
+    );
+  };
+}
+
 const SERVICE_TYPE_NAME: Record<Invocation['target_service_ty'], ServiceType> =
   {
     service: 'Service',
     virtual_object: 'VirtualObject',
     workflow: 'Workflow',
   };
+
 function Type({ invocation }: CellProps) {
   const type = SERVICE_TYPE_NAME[invocation.target_service_ty];
   return (
@@ -96,6 +111,10 @@ const CELLS: Record<ColumnKey, ComponentType<CellProps>> = {
   running_at: withCell(
     withDate({ field: 'running_at', tooltipTitle: 'Running since' })
   ),
+  idempotency_key: withCell(withField({ field: 'idempotency_key' })),
+  journal_size: withCell(withField({ field: 'journal_size' })),
+  retry_count: withCell(withField({ field: 'retry_count' })),
+  last_attempt_deployment_id: withCell(DeploymentCell),
 };
 
 export function InvocationCell({

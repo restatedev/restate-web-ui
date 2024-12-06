@@ -14,33 +14,43 @@ import {
 import { Icon, IconName } from '@restate/ui/icons';
 import { COLUMN_NAMES, ColumnKey, useColumns } from './columns';
 import { InvocationCell } from './cells';
+import { useQueryClient } from '@tanstack/react-query';
+import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
+
+const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
+  id: 110,
+  created_at: 100,
+};
 
 function Component() {
   const { selectedColumns, setSelectedColumns, sortedColumnsList } =
     useColumns();
-  const { mutateAsync: refetch } = useListInvocations();
+  const { refetch, queryKey, dataUpdatedAt, error } = useListInvocations({
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    initialData: { rows: [] },
+    staleTime: Infinity,
+  });
+  const queryCLient = useQueryClient();
   const collator = useCollator();
   const invocations = useAsyncList<Invocation>({
     async load() {
-      const results = await refetch({});
-      return { items: results?.rows ?? [] };
+      await queryCLient.invalidateQueries({ queryKey });
+      const results = await refetch();
+      return { items: results.data?.rows ?? [] };
     },
     async sort({ items, sortDescriptor }) {
       return {
         items: items.sort((a, b) => {
           let cmp = 0;
-
-          if (sortDescriptor.column === 'type') {
-            cmp = collator.compare(
-              a.target_service_ty + (a.target_service_key ?? ''),
-              b.target_service_ty + (b.target_service_key ?? '')
-            );
-          } else {
-            cmp = collator.compare(
-              a[sortDescriptor.column as Exclude<ColumnKey, 'type'>],
-              b[sortDescriptor.column as Exclude<ColumnKey, 'type'>]
-            );
-          }
+          cmp = collator.compare(
+            a[
+              sortDescriptor.column as Exclude<ColumnKey, 'type'>
+            ]?.toString() ?? '',
+            b[
+              sortDescriptor.column as Exclude<ColumnKey, 'type'>
+            ]?.toString() ?? ''
+          );
 
           // Flip the direction if descending order is specified.
           if (sortDescriptor.direction === 'descending') {
@@ -57,7 +67,7 @@ function Component() {
     <div className="flex flex-col flex-auto gap-2 h-[calc(100vh-9rem-10rem)]">
       <Dropdown>
         <DropdownTrigger>
-          <Button variant="secondary" className="px-2 self-end">
+          <Button variant="icon" className="self-end rounded-lg">
             <Icon
               name={IconName.TableProperties}
               className="h-5 w-5 aspect-square text-gray-500"
@@ -81,58 +91,60 @@ function Component() {
           </DropdownSection>
         </DropdownPopover>
       </Dropdown>
-      <Table
-        aria-label="Invocations"
-        sortDescriptor={invocations.sortDescriptor}
-        onSortChange={invocations.sort}
-        className="shadow-sm"
-      >
-        <TableHeader
-          columns={sortedColumnsList.map((id, index) => ({
-            name: COLUMN_NAMES[id],
-            id,
-            isRowHeader: index === 0,
-          }))}
+      <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
+        <Table
+          aria-label="Invocations"
+          sortDescriptor={invocations.sortDescriptor}
+          onSortChange={invocations.sort}
         >
-          {(col) => (
-            <Column id={col.id} isRowHeader={col.isRowHeader} allowsSorting>
-              {col.name}
-            </Column>
-          )}
-        </TableHeader>
-        <TableBody
-          items={invocations.items}
-          dependencies={[
-            selectedColumns,
-            invocations.isLoading,
-            invocations.error,
-          ]}
-          error={invocations.error}
-          isLoading={invocations.isLoading}
-          numOfColumns={sortedColumnsList.length}
-          emptyPlaceholder={
-            <div className="flex flex-col items-center py-14 gap-4">
-              <div className="mr-1.5 shrink-0 h-12 w-12 p-1 bg-gray-100 rounded-xl">
-                <Icon
-                  name={IconName.Invocation}
-                  className="w-full h-full text-zinc-400 p-1"
-                />
+          <TableHeader
+            columns={sortedColumnsList.map((id, index) => ({
+              name: COLUMN_NAMES[id],
+              id,
+              isRowHeader: index === 0,
+            }))}
+          >
+            {(col) => (
+              <Column
+                id={col.id}
+                isRowHeader={col.isRowHeader}
+                allowsSorting
+                defaultWidth={COLUMN_WIDTH[col.id]}
+              >
+                {col.name}
+              </Column>
+            )}
+          </TableHeader>
+          <TableBody
+            items={invocations.items}
+            dependencies={[selectedColumns, invocations.isLoading, error]}
+            error={error}
+            isLoading={invocations.isLoading}
+            numOfColumns={sortedColumnsList.length}
+            emptyPlaceholder={
+              <div className="flex flex-col items-center py-14 gap-4">
+                <div className="mr-1.5 shrink-0 h-12 w-12 p-1 bg-gray-200/50  rounded-xl">
+                  <Icon
+                    name={IconName.Invocation}
+                    className="w-full h-full text-zinc-400 p-1"
+                  />
+                </div>
+                <h3 className="text-sm font-semibold text-zinc-400">
+                  No invocations found
+                </h3>
               </div>
-              <h3 className="text-sm font-semibold text-zinc-400">
-                No invocations found
-              </h3>
-            </div>
-          }
-        >
-          {(row) => (
-            <Row>
-              {sortedColumnsList.map((col) => (
-                <InvocationCell key={col} column={col} invocation={row} />
-              ))}
-            </Row>
-          )}
-        </TableBody>
-      </Table>
+            }
+          >
+            {(row) => (
+              <Row>
+                {sortedColumnsList.map((col) => (
+                  <InvocationCell key={col} column={col} invocation={row} />
+                ))}
+              </Row>
+            )}
+          </TableBody>
+        </Table>
+      </SnapshotTimeProvider>
     </div>
   );
 }

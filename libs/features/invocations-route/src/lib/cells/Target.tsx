@@ -9,6 +9,7 @@ import { useRef } from 'react';
 import { CellProps } from './types';
 import { InvocationId } from './InvocationId';
 import { tv } from 'tailwind-variants';
+import { SERVICE_QUERY_PARAM } from '@restate/features/overview-route';
 
 function TargetTooltipContent({
   service,
@@ -80,7 +81,7 @@ function TargetInner({
 
           {key && (
             <div className="basis-0 grow shrink-1 max-w-fit truncate my-px [filter:drop-shadow(-1px_0px_0px_theme(colors.zinc.200/100%))] ml-0.5">
-              <div className="font-mono text-2xs h-full [clip-path:polygon(4px_0,100%_0,calc(100%-4px)_100%,0%_100%)] bg-zinc-50 text-zinc-500 flex items-center px-2 ">
+              <div className="font-mono text-2xs h-full [clip-path:polygon(4px_0,100%_0,calc(100%-4px)_100%,0%_100%)] bg-zinc-50 text-zinc-500 flex items-center pl-1.5 pr-2">
                 <TruncateTooltipTrigger>{key}</TruncateTooltipTrigger>
               </div>
             </div>
@@ -98,7 +99,7 @@ function TargetInner({
           <div className="shrink-0 bg-zinc-100 h-full flex my-[1px] mr-px pl-[2px] rounded-r-[calc(0.5rem-1px)] pr-0.5">
             <Link
               ref={linkRef}
-              href="?a=b"
+              href={`?${SERVICE_QUERY_PARAM}=${service}`}
               aria-label={target}
               variant="secondary"
               className="outline-offset-0 my-1 rounded-full before:rounded-lg before:absolute before:inset-0 before:z-[2] before:content-[''] hover:before:bg-black/[0.03] pressed:before:bg-black/5"
@@ -121,7 +122,7 @@ export function Target({ invocation }: CellProps) {
 
 export function InvokedBy({ invocation }: CellProps) {
   if (invocation.invoked_by === 'ingress') {
-    return <Badge className="bg-zinc-100/80">Ingress</Badge>;
+    return <Badge className="border-none">Ingress</Badge>;
   } else if (invocation.invoked_by_target) {
     return (
       <div className="flex flex-col gap-0.5 items-start w-full">
