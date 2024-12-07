@@ -18,7 +18,6 @@ import {
 } from 'react-aria-components';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Checkbox } from '@restate/ui/form-field';
-import styles from './table.module.css';
 import { PropsWithChildren, ReactNode } from 'react';
 import { TableError, LoadingRows } from './Placeholder';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
@@ -37,7 +36,7 @@ const tableStyles = tv({
 export function Table({ className, ...props }: PropsWithChildren<TableProps>) {
   return (
     <div className={`${tableStyles({ className })}`}>
-      <div className={`${styles.table} relative overflow-auto h-full`}>
+      <div className="relative overflow-auto h-full [scrollbar-gutter:stable] [scrollbar-width:thin]">
         <ResizableTableContainer>
           <AriaTable
             {...props}
@@ -117,7 +116,7 @@ export function Column({
 }
 
 const tableHeaderStyles = tv({
-  base: 'sticky top-0 z-10 bg-gray-100/80 [box-shadow:0_1px_0px_0px_rgba(0,0,0,0.1)] backdrop-blur-xl backdrop-saturate-200 supports-[-moz-appearance:none]:bg-gray-100',
+  base: 'sticky top-0 z-10 bg-gray-100/80 drop-shadow-[0px_1px_0px_rgba(0,0,0,0.1)] [box-shadow2:0_1px_0px_0px_rgba(0,0,0,0.1)] backdrop-blur-xl backdrop-saturate-200 supports-[-moz-appearance:none]:bg-gray-100',
 });
 
 interface TableHeaderProps<T extends object>
