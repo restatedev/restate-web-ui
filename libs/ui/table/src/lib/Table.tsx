@@ -31,7 +31,7 @@ interface TableProps
 }
 
 const tableStyles = tv({
-  base: 'bg-gray-50 [&:has([data-table-empty=true])]:bg-gray-50/50 shadow-sm shadow-zinc-800/5 [&:has([data-table-empty=true])]:shadow-none border rounded-xl overflow-hidden',
+  base: 'to-gray-50 from-gray-100 bg-gradient-to-b [&:has([data-table-empty=true])]:bg-gray-50/50 shadow-sm shadow-zinc-800/5 [&:has([data-table-empty=true])]:shadow-none border rounded-xl overflow-hidden',
 });
 export function Table({ className, ...props }: PropsWithChildren<TableProps>) {
   return (
@@ -40,7 +40,7 @@ export function Table({ className, ...props }: PropsWithChildren<TableProps>) {
         <ResizableTableContainer>
           <AriaTable
             {...props}
-            className="border-collapse border-spacing-0 rounded-xl"
+            className="bg-gray-50 border-collapse border-spacing-0 rounded-xl"
           />
         </ResizableTableContainer>
       </div>
