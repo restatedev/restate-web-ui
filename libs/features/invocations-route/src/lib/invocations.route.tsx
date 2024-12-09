@@ -20,6 +20,7 @@ import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: 120,
   created_at: 100,
+  journal_size: 90,
 };
 
 function Component() {
@@ -40,15 +41,16 @@ function Component() {
       return { items: results.data?.rows ?? [] };
     },
     async sort({ items, sortDescriptor }) {
+      // TODO
       return {
         items: items.sort((a, b) => {
           let cmp = 0;
           cmp = collator.compare(
             a[
-              sortDescriptor.column as Exclude<ColumnKey, 'type'>
+              sortDescriptor.column as Exclude<ColumnKey, 'deployment'>
             ]?.toString() ?? '',
             b[
-              sortDescriptor.column as Exclude<ColumnKey, 'type'>
+              sortDescriptor.column as Exclude<ColumnKey, 'deployment'>
             ]?.toString() ?? ''
           );
 

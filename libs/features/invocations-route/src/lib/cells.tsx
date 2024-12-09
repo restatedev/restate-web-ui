@@ -103,7 +103,7 @@ const CELLS: Record<ColumnKey, ComponentType<CellProps>> = {
   id: withCell(InvocationIdCell),
   target: withCell(Target),
   status: withCell(Status),
-  type: withCell(Type),
+  target_service_ty: withCell(Type),
   invoked_by: withCell(InvokedBy),
   created_at: withCell(
     withDate({ field: 'created_at', tooltipTitle: 'Created at' })
@@ -122,7 +122,9 @@ const CELLS: Record<ColumnKey, ComponentType<CellProps>> = {
   ),
   journal_size: withCell(withField({ field: 'journal_size' })),
   retry_count: withCell(withField({ field: 'retry_count' })),
-  last_attempt_deployment_id: withCell(DeploymentCell),
+  deployment: withCell(DeploymentCell),
+  target_service_key: withCell(withField({ field: 'target_service_key' })),
+  target_service_name: withCell(withField({ field: 'target_service_name' })),
 };
 
 export function InvocationCell({

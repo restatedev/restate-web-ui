@@ -53,7 +53,7 @@ export function Deployment({
         />
       </div>
 
-      <div className="flex flex-row gap-1 items-center  text-zinc-600 truncate">
+      <div className="flex flex-row gap-1 items-center  text-zinc-600 truncate min-w-[6ch]">
         <TruncateWithTooltip copyText={deploymentEndpoint} triggerRef={linkRef}>
           {deploymentEndpoint}
         </TruncateWithTooltip>
