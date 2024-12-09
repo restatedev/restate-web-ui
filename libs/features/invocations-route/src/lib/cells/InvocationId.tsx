@@ -7,7 +7,7 @@ import { Invocation } from '@restate/data-access/admin-api';
 import { tv } from 'tailwind-variants';
 
 const styles = tv({
-  base: 'relative text-zinc-600',
+  base: 'relative text-zinc-600 font-mono',
   slots: {
     icon: 'mr-1.5 shrink-0 bg-white border rounded-lg',
     text: '',

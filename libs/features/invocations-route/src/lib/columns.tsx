@@ -21,9 +21,9 @@ export type ColumnKey = (typeof COLUMNS_KEYS)[number];
 
 export const COLUMN_NAMES: Record<ColumnKey, string> = {
   id: 'Id',
+  created_at: 'Created at',
   target: 'Target',
   status: 'Status',
-  created_at: 'Created at',
   invoked_by: 'Invoked by',
   modified_at: 'Modified at',
   scheduled_at: 'Scheduled at',

@@ -9,7 +9,7 @@ import { NotificationRegion } from '@restate/ui/notification';
 // TODO: refactor to a separate pacakge
 defaultConfig.twMergeConfig = {
   classGroups: {
-    'font-size': [{ text: ['code', '2xs'] }],
+    'font-size': [{ text: ['code', '2xs', '3xs'] }],
   },
 };
 

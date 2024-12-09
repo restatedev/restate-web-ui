@@ -18,7 +18,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
-  id: 110,
+  id: 120,
   created_at: 100,
 };
 

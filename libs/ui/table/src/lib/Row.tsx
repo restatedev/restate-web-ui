@@ -14,7 +14,7 @@ import { PropsWithChildren } from 'react';
 
 const rowStyles = tv({
   extend: focusRing,
-  base: 'group/row relative cursor-default select-none -outline-offset-2 text-gray-900 disabled:text-gray-300 text-sm hover:bg-gray-100 selected:bg-blue-100 selected:hover:bg-blue-200',
+  base: 'group/row relative cursor-default -outline-offset-2 text-gray-900 disabled:text-gray-300 text-sm hover:bg-gray-100 selected:bg-blue-100 selected:hover:bg-blue-200',
 });
 
 interface RowProps<T extends object>

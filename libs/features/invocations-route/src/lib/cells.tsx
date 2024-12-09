@@ -1,10 +1,6 @@
 import { Invocation, ServiceType } from '@restate/data-access/admin-api';
 import { Cell } from '@restate/ui/table';
-import {
-  DateTooltip,
-  TruncateTooltipTrigger,
-  TruncateWithTooltip,
-} from '@restate/ui/tooltip';
+import { DateTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
 import { ColumnKey } from './columns';
 import { ComponentType } from 'react';
 import { Badge } from '@restate/ui/badge';
@@ -16,6 +12,7 @@ import { InvokedBy, Target } from './cells/Target';
 import { formatDurations, formatNumber } from '@restate/util/intl';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 import { DeploymentCell } from './cells/Deployment';
+import { tv } from 'tailwind-variants';
 
 function withDate({
   tooltipTitle,
@@ -51,11 +48,20 @@ function withDate({
   };
 }
 
-function withField({ field }: { field: keyof Invocation }) {
+const withFieldStyles = tv({
+  base: 'bg-transparent border-none pl-0 w-full',
+});
+function withField({
+  field,
+  className,
+}: {
+  field: keyof Invocation;
+  className?: string;
+}) {
   return (props: { invocation: Invocation }) => {
     const value = props.invocation[field] ?? '';
     return (
-      <Badge className="bg-transparent border-none pl-0 w-full">
+      <Badge className={withFieldStyles({ className })}>
         <TruncateWithTooltip>
           {typeof value === 'number' ? formatNumber(value) : value}
         </TruncateWithTooltip>
@@ -111,7 +117,9 @@ const CELLS: Record<ColumnKey, ComponentType<CellProps>> = {
   running_at: withCell(
     withDate({ field: 'running_at', tooltipTitle: 'Running since' })
   ),
-  idempotency_key: withCell(withField({ field: 'idempotency_key' })),
+  idempotency_key: withCell(
+    withField({ field: 'idempotency_key', className: 'font-mono' })
+  ),
   journal_size: withCell(withField({ field: 'journal_size' })),
   retry_count: withCell(withField({ field: 'retry_count' })),
   last_attempt_deployment_id: withCell(DeploymentCell),
