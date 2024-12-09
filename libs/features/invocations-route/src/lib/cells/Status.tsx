@@ -176,7 +176,10 @@ function LastError({
         <DropdownSection
           title={isFailed ? 'Completion failure' : 'Last failure'}
         >
-          <ErrorBanner error={error} className="rounded-lg " />
+          <ErrorBanner
+            error={error}
+            className="rounded-lg [&_details]:max-h-[min(10rem,30vh)]"
+          />
         </DropdownSection>
       </PopoverContent>
     </Popover>
