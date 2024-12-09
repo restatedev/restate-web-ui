@@ -47,6 +47,12 @@ import { SupportTicket } from './custom-icons/SupportTicket';
 import { Help } from './custom-icons/Help';
 import { Question } from './custom-icons/Question';
 import { Function } from './custom-icons/Function';
+import { Go } from './custom-icons/Go';
+import { Java } from './custom-icons/Java';
+import { Kotlin } from './custom-icons/Kotlin';
+import { Typescript } from './custom-icons/Typescript';
+import { Rust } from './custom-icons/Rust';
+import { Python } from './custom-icons/Python';
 
 export const enum IconName {
   Settings = 'Settings',
@@ -94,6 +100,12 @@ export const enum IconName {
   ChevronUp = 'ChevronUp',
   Question = 'Question',
   Timer = 'Timer',
+  Go = 'Go',
+  Rust = 'Rust',
+  Typescript = 'Typescript',
+  Java = 'Java',
+  Python = 'Python',
+  Kotlin = 'Kotlin',
 }
 export interface IconsProps {
   name: IconName;
@@ -147,6 +159,12 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Question]: Question,
   [IconName.Invocation]: ChevronsLeftRightEllipsis,
   [IconName.Timer]: Timer,
+  [IconName.Go]: Go,
+  [IconName.Rust]: Rust,
+  [IconName.Typescript]: Typescript,
+  [IconName.Java]: Java,
+  [IconName.Python]: Python,
+  [IconName.Kotlin]: Kotlin,
 };
 
 const styles = tv({
