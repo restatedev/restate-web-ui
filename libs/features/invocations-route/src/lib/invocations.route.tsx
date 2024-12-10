@@ -20,7 +20,7 @@ import {
   useDurationSinceLastSnapshot,
 } from '@restate/util/snapshot-time';
 import { useEffect, useState } from 'react';
-import { formatDurations, formatRelativeTime } from '@restate/util/intl';
+import { formatDurations } from '@restate/util/intl';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: 120,
@@ -74,32 +74,44 @@ function Component() {
 
   return (
     <div className="flex flex-col flex-auto gap-2 h-[calc(100vh-9rem-10rem)]">
-      <Dropdown>
-        <DropdownTrigger>
-          <Button variant="icon" className="self-end rounded-lg">
-            <Icon
-              name={IconName.TableProperties}
-              className="h-5 w-5 aspect-square text-gray-500"
-            />
-          </Button>
-        </DropdownTrigger>
-        <DropdownPopover>
-          <DropdownSection title="Columns">
-            <DropdownMenu
-              multiple
-              selectable
-              selectedItems={selectedColumns}
-              onSelect={setSelectedColumns}
-            >
-              {Object.entries(COLUMN_NAMES).map(([key, name]) => (
-                <DropdownItem key={key} value={key}>
-                  {name}
-                </DropdownItem>
-              ))}
-            </DropdownMenu>
-          </DropdownSection>
-        </DropdownPopover>
-      </Dropdown>
+      <div className="flex self-end gap-2">
+        <Button
+          variant="icon"
+          className="rounded-lg"
+          onClick={() => invocations.reload()}
+        >
+          <Icon
+            name={IconName.Retry}
+            className="h-5 w-5 aspect-square text-gray-500"
+          />
+        </Button>
+        <Dropdown>
+          <DropdownTrigger>
+            <Button variant="icon" className="self-end rounded-lg">
+              <Icon
+                name={IconName.TableProperties}
+                className="h-5 w-5 aspect-square text-gray-500"
+              />
+            </Button>
+          </DropdownTrigger>
+          <DropdownPopover>
+            <DropdownSection title="Columns">
+              <DropdownMenu
+                multiple
+                selectable
+                selectedItems={selectedColumns}
+                onSelect={setSelectedColumns}
+              >
+                {Object.entries(COLUMN_NAMES).map(([key, name]) => (
+                  <DropdownItem key={key} value={key}>
+                    {name}
+                  </DropdownItem>
+                ))}
+              </DropdownMenu>
+            </DropdownSection>
+          </DropdownPopover>
+        </Dropdown>
+      </div>
       <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
         <Table
           aria-label="Invocations"
@@ -171,6 +183,8 @@ function Footnote() {
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
+    setNow(Date.now());
+
     if (data) {
       interval = setInterval(() => {
         setNow(Date.now());
