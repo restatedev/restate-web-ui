@@ -27,15 +27,19 @@ export function Deployment({
   className,
   revision,
   deploymentId,
+  highlightSelection = true,
 }: {
   revision: ServiceRevision;
   className?: string;
   deploymentId?: DeploymentId;
+  highlightSelection?: boolean;
 }) {
   const { data: { deployments } = {} } = useListDeployments();
   const deployment = deploymentId ? deployments?.get(deploymentId) : undefined;
   const [searchParams] = useSearchParams();
-  const isSelected = searchParams.get(DEPLOYMENT_QUERY_PARAM) === deploymentId;
+  const isSelected =
+    searchParams.get(DEPLOYMENT_QUERY_PARAM) === deploymentId &&
+    highlightSelection;
   const linkRef = useRef<HTMLAnchorElement>(null);
 
   if (!deployment) {

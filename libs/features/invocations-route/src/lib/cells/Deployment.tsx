@@ -104,6 +104,7 @@ export function DeploymentCell({
           deploymentId={deploymentId}
           revision={revision}
           className="text-xs p-0 pr-0.5 m-0 [&_a:before]:rounded-md max-w-full"
+          highlightSelection={false}
         />
         <div className="[font-size:85%] font-mono font-semibold text-zinc-500/80 flex items-center border border-transparent ml-7 max-w-[calc(100%-1.75rem)] -mt-0.5">
           <SDK lastAttemptServer={invocation.last_attempt_server} />
