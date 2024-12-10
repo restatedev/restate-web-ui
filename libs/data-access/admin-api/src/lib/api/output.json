@@ -1503,13 +1503,16 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "required": ["rows"],
+                  "required": ["rows", "total_count"],
                   "properties": {
                     "rows": {
                       "type": "array",
                       "items": {
                         "$ref": "#/components/schemas/Invocation"
                       }
+                    },
+                    "total_count": {
+                      "type": "integer"
                     }
                   }
                 }

@@ -2047,6 +2047,7 @@ export interface operations {
         content: {
           'application/json': {
             rows: components['schemas']['Invocation'][];
+            total_count: number;
           };
         };
       };
