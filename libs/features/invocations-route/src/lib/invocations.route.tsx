@@ -34,7 +34,7 @@ const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
 function Component() {
   const { selectedColumns, setSelectedColumns, sortedColumnsList } =
     useColumns();
-  const { refetch, queryKey, dataUpdatedAt, error, data } = useListInvocations({
+  const { refetch, queryKey, dataUpdatedAt, error } = useListInvocations({
     refetchOnMount: false,
     refetchOnReconnect: false,
     initialData: { rows: [], total_count: 0 },
@@ -74,7 +74,7 @@ function Component() {
   });
 
   return (
-    <div className="flex flex-col flex-auto gap-2 h-[calc(100vh-9rem-10rem)]">
+    <div className="flex flex-col flex-auto gap-2">
       <div className="flex self-end gap-2">
         <Tooltip>
           <TooltipTrigger>
@@ -183,7 +183,7 @@ function Component() {
 function Footnote() {
   const [now, setNow] = useState(() => Date.now());
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
-  const { data } = useListInvocations({
+  const { data, isFetching } = useListInvocations({
     refetchOnMount: false,
     refetchOnReconnect: false,
     initialData: { rows: [], total_count: 0 },
@@ -205,16 +205,16 @@ function Footnote() {
     };
   }, [data]);
 
-  if (!data) {
+  if (!data || isFetching) {
     return null;
   }
   const { isPast, ...parts } = durationSinceLastSnapshot(now);
   const duration = formatDurations(parts);
   return (
     <div className="w-full text-center text-xs text-gray-500/80">
-      Viewing <span>{data.rows.length}</span> of{' '}
+      <span>{data.rows.length}</span> of{' '}
       <span className="font-medium text-gray-500">{data.total_count}</span>{' '}
-      invocations as of{' '}
+      recently modified invocations as of{' '}
       <span className="font-medium text-gray-500">{duration} ago</span>
     </div>
   );

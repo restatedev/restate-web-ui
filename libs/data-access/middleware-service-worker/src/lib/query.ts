@@ -66,6 +66,8 @@ function getComputedStatus(
   }
 }
 
+const INVOCATIONS_LIMIT = 500;
+
 function listInvocations(baseUrl: string) {
   const totalCountPromise = query(
     'SELECT COUNT(*) AS total_count FROM sys_invocation',
@@ -74,7 +76,7 @@ function listInvocations(baseUrl: string) {
     .then((res) => res.json())
     .then(({ rows }) => rows?.at(0)?.total_count);
   return query(
-    'SELECT * FROM sys_invocation ORDER BY modified_at DESC LIMIT 1000',
+    `SELECT * FROM sys_invocation ORDER BY modified_at DESC LIMIT ${INVOCATIONS_LIMIT}`,
     {
       baseUrl,
     }
@@ -85,7 +87,7 @@ function listInvocations(baseUrl: string) {
       return new Response(
         JSON.stringify({
           ...jsonResponse,
-          limit: 1000,
+          limit: INVOCATIONS_LIMIT,
           total_count,
           rows: jsonResponse.rows.map((invocation: RawInvocation) => ({
             ...invocation,
