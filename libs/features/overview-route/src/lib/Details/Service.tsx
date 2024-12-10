@@ -189,7 +189,7 @@ function ServiceForm({
       </h2>
       <Section className="mt-4">
         <SectionTitle>Handlers</SectionTitle>
-        <SectionContent className="bg-transparent shadow-none border-none px-2 pt-2">
+        <SectionContent className="px-2 pt-2" raised={false}>
           {isPendingOrSubmitting ? (
             <div className="w-full h-6 animate-pulse rounded-md bg-white" />
           ) : (
@@ -209,7 +209,7 @@ function ServiceForm({
       </Section>
       <Section>
         <SectionTitle>Access</SectionTitle>
-        <SectionContent data-className="bg-transparent shadow-none border-none">
+        <SectionContent>
           <FormFieldCheckbox
             name="public"
             value="true"
@@ -437,7 +437,7 @@ function ServiceForm({
       </Section>
       <Section>
         <SectionTitle>Deployments</SectionTitle>
-        <SectionContent className="bg-transparent shadow-none border-none px-2 pt-2">
+        <SectionContent className="px-2 pt-2" raised={false}>
           {isPendingOrSubmitting ? (
             <div className="w-full h-6 animate-pulse rounded-md bg-white" />
           ) : (

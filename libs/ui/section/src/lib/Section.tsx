@@ -30,11 +30,28 @@ export function SectionTitle({
 }
 
 const stylesSectionContent = tv({
-  base: 'bg-white shadow-sm border p-3 rounded-[calc(0.75rem-0.125rem)] text-sm',
+  base: 'p-3 rounded-[calc(0.75rem-0.125rem)] text-sm',
+  variants: {
+    raised: {
+      true: 'bg-white shadow-sm border',
+      false: '',
+    },
+  },
+  defaultVariants: {
+    raised: true,
+  },
 });
 export function SectionContent({
   children,
   className,
-}: PropsWithChildren<SectionTitleProps>) {
-  return <div className={stylesSectionContent({ className })}>{children}</div>;
+  raised,
+}: PropsWithChildren<{
+  className?: string;
+  raised?: boolean;
+}>) {
+  return (
+    <div className={stylesSectionContent({ className, raised })}>
+      {children}
+    </div>
+  );
 }

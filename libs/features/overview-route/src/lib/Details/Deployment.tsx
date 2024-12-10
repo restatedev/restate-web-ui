@@ -104,7 +104,7 @@ function DeploymentContent({ deployment }: { deployment: string }) {
       </h2>
       <Section className="mt-5">
         <SectionTitle>Services</SectionTitle>
-        <SectionContent className="bg-transparent shadow-none border-none px-2 pt-2">
+        <SectionContent className="px-2 pt-2" raised={false}>
           {isPending ? (
             <div className="flex flex-col gap-2">
               <div className="w-full h-6 animate-pulse rounded-md bg-white" />
@@ -122,7 +122,7 @@ function DeploymentContent({ deployment }: { deployment: string }) {
       {additionalHeaders.length > 0 && (
         <Section className="mt-4">
           <SectionTitle>Additional headers</SectionTitle>
-          <SectionContent className="bg-transparent shadow-none border-none p-0">
+          <SectionContent className="p-0" raised={false}>
             <>
               <div className="mt-2 grid [grid-template-columns:1fr_2fr] text-xs font-medium text-gray-400">
                 <div className="pl-2">Name</div>
