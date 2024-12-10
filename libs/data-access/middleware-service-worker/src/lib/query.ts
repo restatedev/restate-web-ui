@@ -2,6 +2,7 @@ import {
   InvocationComputedStatus,
   RawInvocation,
 } from '@restate/data-access/admin-api';
+import { convertInvocation } from './convertInvocation';
 
 function query(query: string, { baseUrl }: { baseUrl: string }) {
   return fetch(`${baseUrl}/query`, {
@@ -9,61 +10,6 @@ function query(query: string, { baseUrl }: { baseUrl: string }) {
     body: JSON.stringify({ query }),
     headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
   });
-}
-
-function getComputedStatus(
-  invocation: RawInvocation
-): InvocationComputedStatus {
-  const isSuccessful = invocation.completion_result === 'success';
-  const isCancelled = Boolean(
-    invocation.completion_result === 'failure' &&
-      invocation.completion_failure?.startsWith('[409]')
-  );
-  const isKilled = Boolean(
-    isCancelled && invocation.completion_failure?.includes('killed')
-  );
-  const isRunning = invocation.status === 'running';
-  const isCompleted = invocation.status === 'completed';
-  const isRetrying = Boolean(
-    invocation.retry_count &&
-      invocation.retry_count > 1 &&
-      (isRunning || invocation.status === 'backing-off')
-  );
-
-  if (isCompleted) {
-    if (isSuccessful) {
-      return 'succeeded';
-    }
-    if (isKilled) {
-      return 'killed';
-    }
-    if (isCancelled) {
-      return 'cancelled';
-    }
-    if (invocation.completion_result === 'failure') {
-      return 'failed';
-    }
-  }
-
-  if (isRetrying) {
-    return 'retrying';
-  }
-
-  switch (invocation.status) {
-    case 'pending':
-      return 'pending';
-    case 'ready':
-      return 'ready';
-    case 'scheduled':
-      return 'scheduled';
-    case 'running':
-      return 'running';
-    case 'suspended':
-      return 'suspended';
-
-    default:
-      throw new Error('Cannot calculate status');
-  }
 }
 
 const INVOCATIONS_LIMIT = 500;
@@ -89,19 +35,7 @@ function listInvocations(baseUrl: string) {
           ...jsonResponse,
           limit: INVOCATIONS_LIMIT,
           total_count,
-          rows: jsonResponse.rows.map((invocation: RawInvocation) => ({
-            ...invocation,
-            status: getComputedStatus(invocation),
-            last_start_at:
-              invocation.last_start_at && `${invocation.last_start_at}Z`,
-            running_at: invocation.running_at && `${invocation.running_at}Z`,
-            modified_at: invocation.modified_at && `${invocation.modified_at}Z`,
-            inboxed_at: invocation.inboxed_at && `${invocation.inboxed_at}Z`,
-            scheduled_at:
-              invocation.scheduled_at && `${invocation.scheduled_at}Z`,
-            completed_at:
-              invocation.completed_at && `${invocation.completed_at}Z`,
-          })),
+          rows: jsonResponse.rows.map(convertInvocation),
         }),
         {
           status: res.status,
