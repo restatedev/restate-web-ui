@@ -73,9 +73,12 @@ function listInvocations(baseUrl: string) {
   )
     .then((res) => res.json())
     .then(({ rows }) => rows?.at(0)?.total_count);
-  return query('SELECT * FROM sys_invocation ORDER BY modified_at LIMIT 1000', {
-    baseUrl,
-  }).then(async (res) => {
+  return query(
+    'SELECT * FROM sys_invocation ORDER BY modified_at DESC LIMIT 1000',
+    {
+      baseUrl,
+    }
+  ).then(async (res) => {
     if (res.ok) {
       const jsonResponse = await res.json();
       const total_count = await totalCountPromise;
