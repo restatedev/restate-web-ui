@@ -1,0 +1,9 @@
+{
+  "name": "invocation-route",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/features/invocation-route/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project invocation-route --web",
+  "targets": {}
+}

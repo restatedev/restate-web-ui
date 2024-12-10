@@ -33,6 +33,9 @@
       ],
       "@restate/features/explainers": ["libs/features/explainers/src/index.ts"],
       "@restate/features/health": ["libs/features/health/src/index.ts"],
+      "@restate/features/invocation-route": [
+        "libs/features/invocation-route/src/index.ts"
+      ],
       "@restate/features/invocations-route": [
         "libs/features/invocations-route/src/index.ts"
       ],
