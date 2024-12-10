@@ -21,6 +21,7 @@ import {
 } from '@restate/util/snapshot-time';
 import { useEffect, useState } from 'react';
 import { formatDurations } from '@restate/util/intl';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@restate/ui/tooltip';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: 120,
@@ -75,16 +76,24 @@ function Component() {
   return (
     <div className="flex flex-col flex-auto gap-2 h-[calc(100vh-9rem-10rem)]">
       <div className="flex self-end gap-2">
-        <Button
-          variant="icon"
-          className="rounded-lg"
-          onClick={() => invocations.reload()}
-        >
-          <Icon
-            name={IconName.Retry}
-            className="h-5 w-5 aspect-square text-gray-500"
-          />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger>
+            <Button
+              variant="icon"
+              className="rounded-lg"
+              onClick={() => invocations.reload()}
+            >
+              <Icon
+                name={IconName.Retry}
+                className="h-5 w-5 aspect-square text-gray-500"
+              />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent small offset={5}>
+            Refresh
+          </TooltipContent>
+        </Tooltip>
+
         <Dropdown>
           <DropdownTrigger>
             <Button variant="icon" className="self-end rounded-lg">
