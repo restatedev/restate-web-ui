@@ -53,14 +53,25 @@ function Component() {
       return {
         items: items.sort((a, b) => {
           let cmp = 0;
-          cmp = collator.compare(
-            a[
-              sortDescriptor.column as Exclude<ColumnKey, 'deployment'>
-            ]?.toString() ?? '',
-            b[
-              sortDescriptor.column as Exclude<ColumnKey, 'deployment'>
-            ]?.toString() ?? ''
-          );
+          if (sortDescriptor.column === 'deployment') {
+            cmp = collator.compare(
+              (
+                a.last_attempt_deployment_id ?? a.pinned_deployment_id
+              )?.toString() ?? '',
+              (
+                b.last_attempt_deployment_id ?? b.pinned_deployment_id
+              )?.toString() ?? ''
+            );
+          } else {
+            cmp = collator.compare(
+              a[
+                sortDescriptor.column as Exclude<ColumnKey, 'deployment'>
+              ]?.toString() ?? '',
+              b[
+                sortDescriptor.column as Exclude<ColumnKey, 'deployment'>
+              ]?.toString() ?? ''
+            );
+          }
 
           // Flip the direction if descending order is specified.
           if (sortDescriptor.direction === 'descending') {
