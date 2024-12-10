@@ -2048,6 +2048,7 @@ export interface operations {
           'application/json': {
             rows: components['schemas']['Invocation'][];
             total_count: number;
+            limit?: number;
           };
         };
       };

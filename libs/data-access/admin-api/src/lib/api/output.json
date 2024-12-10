@@ -1513,6 +1513,9 @@
                     },
                     "total_count": {
                       "type": "integer"
+                    },
+                    "limit": {
+                      "type": "integer"
                     }
                   }
                 }
