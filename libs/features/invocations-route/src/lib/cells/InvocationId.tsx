@@ -5,6 +5,7 @@ import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Link } from '@restate/ui/link';
 import { Invocation } from '@restate/data-access/admin-api';
 import { tv } from 'tailwind-variants';
+import { INVOCATION_QUERY_NAME } from '@restate/features/invocation-route';
 
 const styles = tv({
   base: 'relative text-zinc-600 font-mono',
@@ -65,7 +66,7 @@ export function InvocationId({
         </TruncateWithTooltip>
         <Link
           ref={linkRef}
-          href="?a=b"
+          href={`?${INVOCATION_QUERY_NAME}=${id}`}
           aria-label={id}
           variant="secondary"
           className={link()}
