@@ -20,6 +20,8 @@ import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: 120,
   created_at: 100,
+  invoked_by: 150,
+  deployment: 220,
   journal_size: 90,
 };
 
