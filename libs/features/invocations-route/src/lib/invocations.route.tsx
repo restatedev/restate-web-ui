@@ -223,10 +223,19 @@ function Footnote() {
   const duration = formatDurations(parts);
   return (
     <div className="w-full text-center text-xs text-gray-500/80">
-      <span>{data.rows.length}</span> of{' '}
-      <span className="font-medium text-gray-500">{data.total_count}</span>{' '}
-      recently modified invocations as of{' '}
-      <span className="font-medium text-gray-500">{duration} ago</span>
+      {data.total_count ? (
+        <>
+          <span>{data.rows.length}</span>
+          {' of '}
+          <span className="font-medium text-gray-500">
+            {data.total_count}
+          </span>{' '}
+          recently modified invocations
+        </>
+      ) : (
+        'No invocations found'
+      )}{' '}
+      as of <span className="font-medium text-gray-500">{duration} ago</span>
     </div>
   );
 }
