@@ -15,7 +15,12 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { COLUMN_NAMES, ColumnKey, useColumns } from './columns';
 import { InvocationCell } from './cells';
 import { useQueryClient } from '@tanstack/react-query';
-import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
+import {
+  SnapshotTimeProvider,
+  useDurationSinceLastSnapshot,
+} from '@restate/util/snapshot-time';
+import { useEffect, useState } from 'react';
+import { formatDurations, formatRelativeTime } from '@restate/util/intl';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: 120,
@@ -28,7 +33,7 @@ const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
 function Component() {
   const { selectedColumns, setSelectedColumns, sortedColumnsList } =
     useColumns();
-  const { refetch, queryKey, dataUpdatedAt, error } = useListInvocations({
+  const { refetch, queryKey, dataUpdatedAt, error, data } = useListInvocations({
     refetchOnMount: false,
     refetchOnReconnect: false,
     initialData: { rows: [], total_count: 0 },
@@ -148,7 +153,46 @@ function Component() {
             )}
           </TableBody>
         </Table>
+        <Footnote />
       </SnapshotTimeProvider>
+    </div>
+  );
+}
+
+function Footnote() {
+  const [now, setNow] = useState(() => Date.now());
+  const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
+  const { data } = useListInvocations({
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    initialData: { rows: [], total_count: 0 },
+    staleTime: Infinity,
+  });
+
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval> | null = null;
+    if (data) {
+      interval = setInterval(() => {
+        setNow(Date.now());
+      }, 30_000);
+    }
+
+    return () => {
+      interval && clearInterval(interval);
+    };
+  }, [data]);
+
+  if (!data) {
+    return null;
+  }
+  const { isPast, ...parts } = durationSinceLastSnapshot(now);
+  const duration = formatDurations(parts);
+  return (
+    <div className="w-full text-center text-xs text-gray-500/80">
+      Viewing <span>{data.rows.length}</span> of{' '}
+      <span className="font-medium text-gray-500">{data.total_count}</span>{' '}
+      invocations as of{' '}
+      <span className="font-medium text-gray-500">{duration} ago</span>
     </div>
   );
 }
