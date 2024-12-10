@@ -6,6 +6,7 @@ import { Link } from '@restate/ui/link';
 import { Invocation } from '@restate/data-access/admin-api';
 import { tv } from 'tailwind-variants';
 import { INVOCATION_QUERY_NAME } from '@restate/features/invocation-route';
+import { useSearchParams } from 'react-router';
 
 const styles = tv({
   base: 'relative text-zinc-600 font-mono',
@@ -51,6 +52,8 @@ export function InvocationId({
 }) {
   const linkRef = useRef<HTMLAnchorElement>(null);
   const { base, icon, text, link, container, linkIcon } = styles({ size });
+  const [searchParams] = useSearchParams();
+  const isSelected = searchParams.getAll(INVOCATION_QUERY_NAME).includes(id);
 
   return (
     <div className={base({ className })}>
@@ -70,6 +73,7 @@ export function InvocationId({
           aria-label={id}
           variant="secondary"
           className={link()}
+          data-invocation-selected={isSelected}
         >
           <Icon name={IconName.ChevronRight} className={linkIcon()} />
         </Link>

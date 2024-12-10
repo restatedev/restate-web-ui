@@ -177,7 +177,7 @@ function Component() {
             }
           >
             {(row) => (
-              <Row>
+              <Row className="[&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50 bg-transparent aaa">
                 {sortedColumnsList.map((col) => (
                   <InvocationCell key={col} column={col} invocation={row} />
                 ))}
