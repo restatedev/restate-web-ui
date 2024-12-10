@@ -1591,6 +1591,17 @@
         "summary": "Get invocation",
         "description": "Get invocation",
         "operationId": "get_invocation",
+        "parameters": [
+          {
+            "name": "invocationId",
+            "in": "path",
+            "description": "Invocation id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",

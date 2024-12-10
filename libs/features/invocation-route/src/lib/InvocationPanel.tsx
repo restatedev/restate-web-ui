@@ -9,11 +9,15 @@ import { useSearchParams } from 'react-router';
 import { INVOCATION_QUERY_NAME } from './constants';
 import { Link } from '@restate/ui/link';
 import { Code, Snippet } from '@restate/ui/code';
+import { useGetInvocation } from '@restate/data-access/admin-api';
 
 export function InvocationPanel() {
   const [searchParams] = useSearchParams();
   const invocationId = searchParams.get(INVOCATION_QUERY_NAME);
-
+  const { data } = useGetInvocation(String(invocationId), {
+    enabled: Boolean(invocationId),
+    refetchOnMount: true,
+  });
   if (!invocationId) {
     return null;
   }

@@ -2126,7 +2126,10 @@ export interface operations {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        /** @description Invocation id */
+        invocationId: string;
+      };
       cookie?: never;
     };
     requestBody?: never;

@@ -1,8 +1,5 @@
-import {
-  InvocationComputedStatus,
-  RawInvocation,
-} from '@restate/data-access/admin-api';
 import { convertInvocation } from './convertInvocation';
+import { match } from 'path-to-regexp';
 
 function query(query: string, { baseUrl }: { baseUrl: string }) {
   return fetch(`${baseUrl}/query`, {
@@ -48,11 +45,47 @@ function listInvocations(baseUrl: string) {
   });
 }
 
+function getInvocation(invocationId: string, baseUrl: string) {
+  return query(`SELECT * FROM sys_invocation WHERE id = '${invocationId}'`, {
+    baseUrl,
+  }).then(async (res) => {
+    if (res.ok) {
+      const jsonResponse = await res.json();
+      if (jsonResponse.rows.length > 0) {
+        return new Response(
+          JSON.stringify({
+            ...convertInvocation(jsonResponse.rows.at(0)),
+          }),
+          {
+            status: res.status,
+            statusText: res.statusText,
+            headers: res.headers,
+          }
+        );
+      }
+      return new Response(JSON.stringify({ message: 'Not found' }), {
+        status: 404,
+        statusText: 'Not found',
+        headers: res.headers,
+      });
+    }
+    return res;
+  });
+}
+
 export function queryMiddlerWare(req: Request) {
   const { url, method } = req;
+  const urlObj = new URL(url);
+
   if (url.endsWith('/query/invocations') && method.toUpperCase() === 'GET') {
-    const urlObj = new URL(url);
     const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
     return listInvocations(baseUrl);
+  }
+  const getInvocationParams = match<{ invocationId: string }>(
+    '/query/invocations/:invocationId'
+  )(urlObj.pathname);
+  if (getInvocationParams && method.toUpperCase() === 'GET') {
+    const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
+    return getInvocation(getInvocationParams.params.invocationId, baseUrl);
   }
 }

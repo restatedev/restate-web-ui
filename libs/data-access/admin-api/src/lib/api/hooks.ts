@@ -249,3 +249,29 @@ export function useListInvocations(
     queryKey: queryOptions.queryKey,
   };
 }
+
+export function useGetInvocation(
+  invocationId: string,
+  options?: HookQueryOptions<'/query/invocations/{invocationId}', 'get'>
+) {
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi(
+    'query',
+    '/query/invocations/{invocationId}',
+    'get',
+    {
+      baseUrl,
+      parameters: { path: { invocationId } },
+    }
+  );
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+  };
+}
