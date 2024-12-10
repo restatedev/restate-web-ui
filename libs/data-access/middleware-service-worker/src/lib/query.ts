@@ -67,38 +67,46 @@ function getComputedStatus(
 }
 
 function listInvocations(baseUrl: string) {
-  return query('SELECT * FROM sys_invocation', { baseUrl }).then(
-    async (res) => {
-      if (res.ok) {
-        const jsonResponse = await res.json();
-        return new Response(
-          JSON.stringify({
-            ...jsonResponse,
-            rows: jsonResponse.rows.map((invocation: RawInvocation) => ({
-              ...invocation,
-              status: getComputedStatus(invocation),
-              last_start_at:
-                invocation.last_start_at && `${invocation.last_start_at}Z`,
-              running_at: invocation.running_at && `${invocation.running_at}Z`,
-              modified_at:
-                invocation.modified_at && `${invocation.modified_at}Z`,
-              inboxed_at: invocation.inboxed_at && `${invocation.inboxed_at}Z`,
-              scheduled_at:
-                invocation.scheduled_at && `${invocation.scheduled_at}Z`,
-              completed_at:
-                invocation.completed_at && `${invocation.completed_at}Z`,
-            })),
-          }),
-          {
-            status: res.status,
-            statusText: res.statusText,
-            headers: res.headers,
-          }
-        );
-      }
-      return res;
+  const totalCountPromise = query(
+    'SELECT COUNT(*) AS total_count FROM sys_invocation',
+    { baseUrl }
+  )
+    .then((res) => res.json())
+    .then(({ rows }) => rows?.at(0)?.total_count);
+  return query('SELECT * FROM sys_invocation ORDER BY modified_at LIMIT 1000', {
+    baseUrl,
+  }).then(async (res) => {
+    if (res.ok) {
+      const jsonResponse = await res.json();
+      const total_count = await totalCountPromise;
+      return new Response(
+        JSON.stringify({
+          ...jsonResponse,
+          limit: 1000,
+          total_count,
+          rows: jsonResponse.rows.map((invocation: RawInvocation) => ({
+            ...invocation,
+            status: getComputedStatus(invocation),
+            last_start_at:
+              invocation.last_start_at && `${invocation.last_start_at}Z`,
+            running_at: invocation.running_at && `${invocation.running_at}Z`,
+            modified_at: invocation.modified_at && `${invocation.modified_at}Z`,
+            inboxed_at: invocation.inboxed_at && `${invocation.inboxed_at}Z`,
+            scheduled_at:
+              invocation.scheduled_at && `${invocation.scheduled_at}Z`,
+            completed_at:
+              invocation.completed_at && `${invocation.completed_at}Z`,
+          })),
+        }),
+        {
+          status: res.status,
+          statusText: res.statusText,
+          headers: res.headers,
+        }
+      );
     }
-  );
+    return res;
+  });
 }
 
 export function queryMiddlerWare(req: Request) {

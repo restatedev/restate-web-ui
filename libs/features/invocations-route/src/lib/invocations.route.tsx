@@ -31,7 +31,7 @@ function Component() {
   const { refetch, queryKey, dataUpdatedAt, error } = useListInvocations({
     refetchOnMount: false,
     refetchOnReconnect: false,
-    initialData: { rows: [] },
+    initialData: { rows: [], total_count: 0 },
     staleTime: Infinity,
   });
   const queryCLient = useQueryClient();
