@@ -71,7 +71,7 @@ function TargetInner({
         triggerRef={linkRef}
       >
         <div className="flex items-stretch overflow-hidden">
-          <div className="truncate inline-flex items-center mr-1.5">
+          <div className="truncate inline-flex items-center mr-2.5">
             <Icon
               name={IconName.Box}
               className="w-3 h-3 mr-1 text-zinc-400 fill-zinc-100 shrink-0"
@@ -80,7 +80,7 @@ function TargetInner({
           </div>
 
           {key && (
-            <div className="basis-0 grow shrink-1 max-w-fit truncate my-px [filter:drop-shadow(-1px_0px_0px_theme(colors.zinc.200/100%))] ml-0.5">
+            <div className="basis-0 grow shrink-1 max-w-fit truncate my-px [filter:drop-shadow(-1px_0px_0px_theme(colors.zinc.200/100%))] -ml-1">
               <div className="font-mono text-2xs h-full [clip-path:polygon(4px_0,100%_0,calc(100%-4px)_100%,0%_100%)] bg-zinc-50 text-zinc-500 flex items-center pl-1.5 pr-2">
                 <TruncateTooltipTrigger>{key}</TruncateTooltipTrigger>
               </div>
