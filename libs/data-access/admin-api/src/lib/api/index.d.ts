@@ -730,6 +730,123 @@ export interface components {
            */
           services: components['schemas']['ServiceMetadata'][];
         };
+    Invocation: {
+      /** Format: date-time */
+      created_at: string;
+      /** Format: date-time */
+      modified_at: string;
+      /** Format: date-time */
+      scheduled_at: string;
+      /** Format: date-time */
+      inboxed_at?: string;
+      /** Format: date-time */
+      running_at?: string;
+      /** Format: date-time */
+      completed_at?: string;
+      /** Format: date-time */
+      last_start_at?: string;
+      /** Format: date-time */
+      next_retry_at?: string;
+      id: string;
+      invoked_by: string;
+      /** @enum {string} */
+      status:
+        | 'succeeded'
+        | 'failed'
+        | 'cancelled'
+        | 'killed'
+        | 'retrying'
+        | 'running'
+        | 'suspended'
+        | 'scheduled'
+        | 'pending'
+        | 'ready';
+      target: string;
+      target_handler_name: string;
+      /** @enum {string} */
+      target_service_key?: 'ingress' | 'service';
+      target_service_name: string;
+      /** @enum {string} */
+      target_service_ty: 'service' | 'virtual_object' | 'workflow';
+      /** @enum {string} */
+      completion_result?: 'success' | 'failure';
+      completion_failure?: string;
+      invoked_by_service_name?: string;
+      invoked_by_id?: string;
+      invoked_by_target?: string;
+      pinned_deployment_id?: string;
+      trace_id?: string;
+      idempotency_key?: string;
+      /** Format: uint32 */
+      journal_size?: number;
+      /** Format: uint64 */
+      retry_count?: number;
+      /** Format: uint64 */
+      last_failure_related_entry_index?: number;
+      last_failure_related_entry_name?: string;
+      last_failure_related_entry_type?: string;
+      last_attempt_deployment_id?: string;
+      last_attempt_server?: string;
+      last_failure?: string;
+      last_failure_error_code?: string;
+    };
+    RawInvocation: {
+      /** Format: date-time */
+      created_at: string;
+      /** Format: date-time */
+      modified_at: string;
+      /** Format: date-time */
+      scheduled_at: string;
+      /** Format: date-time */
+      inboxed_at?: string;
+      /** Format: date-time */
+      running_at?: string;
+      /** Format: date-time */
+      completed_at?: string;
+      /** Format: date-time */
+      last_start_at?: string;
+      /** Format: date-time */
+      next_retry_at?: string;
+      id: string;
+      invoked_by: string;
+      /** @enum {string} */
+      status:
+        | 'pending'
+        | 'scheduled'
+        | 'ready'
+        | 'running'
+        | 'backing-off'
+        | 'suspended'
+        | 'completed';
+      target: string;
+      target_handler_name: string;
+      /** @enum {string} */
+      target_service_key?: 'ingress' | 'service';
+      target_service_name: string;
+      /** @enum {string} */
+      target_service_ty: 'service' | 'virtual_object' | 'workflow';
+      /** @enum {string} */
+      completion_result?: 'success' | 'failure';
+      completion_failure?: string;
+      invoked_by_service_name?: string;
+      invoked_by_id?: string;
+      invoked_by_target?: string;
+      pinned_deployment_id?: string;
+      trace_id?: string;
+      idempotency_key?: string;
+      /** Format: uint32 */
+      journal_size?: number;
+      /** Format: uint64 */
+      retry_count?: number;
+      /** Format: uint64 */
+      last_failure_related_entry_index?: number;
+      last_failure_related_entry_name?: string;
+      last_failure_related_entry_type?: string;
+      last_attempt_deployment_id?: string;
+      last_attempt_server?: string;
+      last_failure?: string;
+      last_failure_error_code?: string;
+    };
   };
   responses: never;
   parameters: never;
@@ -1928,7 +2045,11 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': Record<string, never>;
+          'application/json': {
+            rows: components['schemas']['Invocation'][];
+            total_count: number;
+            limit?: number;
+          };
         };
       };
       400: {

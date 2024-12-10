@@ -2,11 +2,12 @@ import type { ToastState } from '@react-stately/toast';
 import type { AriaToastProps } from '@react-aria/toast';
 import { useToast as useAriaToast } from '@react-aria/toast';
 import { useEffect, useRef } from 'react';
-import { Button, Spinner } from '@restate/ui/button';
+import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from 'tailwind-variants';
 import { PressResponder } from '@react-aria/interactions';
 import { NotificationContent, notificationQueue } from './queue';
+import { Spinner } from '@restate/ui/loading';
 
 interface ToastProps extends AriaToastProps<NotificationContent> {
   state: ToastState<NotificationContent>;

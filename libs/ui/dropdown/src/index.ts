@@ -1,4 +1,5 @@
 export { DropdownMenu } from './lib/DropdownMenu';
+export type { DropdownMenuSelection } from './lib/DropdownMenu';
 export { DropdownItem } from './lib/DropdownItem';
 export type { DropdownItemProps } from './lib/DropdownItem';
 export { DropdownSection } from './lib/DropdownSection';

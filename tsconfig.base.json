@@ -33,6 +33,9 @@
       ],
       "@restate/features/explainers": ["libs/features/explainers/src/index.ts"],
       "@restate/features/health": ["libs/features/health/src/index.ts"],
+      "@restate/features/invocation-route": [
+        "libs/features/invocation-route/src/index.ts"
+      ],
       "@restate/features/invocations-route": [
         "libs/features/invocations-route/src/index.ts"
       ],
@@ -45,6 +48,7 @@
       "@restate/features/version": ["libs/features/version/src/index.ts"],
       "@restate/humantime": ["libs/util/humantime/src/index.ts"],
       "@restate/ui/api": ["libs/ui/api/src/index.ts"],
+      "@restate/ui/badge": ["libs/ui/badge/src/index.ts"],
       "@restate/ui/button": ["libs/ui/button/src/index.ts"],
       "@restate/ui/code": ["libs/ui/code/src/index.ts"],
       "@restate/ui/copy": ["libs/ui/copy/src/index.ts"],
@@ -58,18 +62,22 @@
       "@restate/ui/layout": ["libs/ui/layout/src/index.ts"],
       "@restate/ui/link": ["libs/ui/link/src/index.ts"],
       "@restate/ui/listbox": ["libs/ui/listbox/src/index.ts"],
+      "@restate/ui/loading": ["libs/ui/loading/src/index.ts"],
       "@restate/ui/nav": ["libs/ui/nav/src/index.ts"],
       "@restate/ui/notification": ["libs/ui/notification/src/index.ts"],
       "@restate/ui/popover": ["libs/ui/popover/src/index.ts"],
       "@restate/ui/radio-group": ["libs/ui/radio-group/src/index.ts"],
       "@restate/ui/section": ["libs/ui/section/src/index.ts"],
+      "@restate/ui/table": ["libs/ui/table/src/index.ts"],
       "@restate/ui/tooltip": ["libs/ui/tooltip/src/index.ts"],
       "@restate/util/errors": ["libs/util/errors/src/index.ts"],
       "@restate/util/feature-flag": ["libs/util/feature-flag/src/index.ts"],
+      "@restate/util/intl": ["libs/util/intl/src/index.ts"],
       "@restate/util/mock-api": ["libs/util/mock-api/src/index.ts"],
       "@restate/util/playwright": ["libs/util/playwright/src/index.ts"],
       "@restate/util/react-query": ["libs/util/react-query/src/index.ts"],
-      "@restate/util/remix": ["libs/util/remix/src/index.ts"]
+      "@restate/util/remix": ["libs/util/remix/src/index.ts"],
+      "@restate/util/snapshot-time": ["libs/util/snapshot-time/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

@@ -49,7 +49,7 @@ const modalStyles = tv({
     {
       isExiting: true,
       variant: 'sheet',
-      className: 'slide-out-from-top',
+      className: 'slide-out-to-bottom fade-out',
     },
     {
       isEntering: true,
@@ -98,7 +98,7 @@ export function DialogContent({
   variant = 'modal',
 }: PropsWithChildren<DialogContentProps>) {
   return (
-    <AriaModalOverlay className={overlayStyles({ variant })}>
+    <AriaModalOverlay className={overlayStyles({ variant })} isDismissable>
       <AriaModal
         isDismissable
         className={composeRenderProps(className, (className, renderProps) =>

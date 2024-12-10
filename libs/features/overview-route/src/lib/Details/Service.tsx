@@ -215,7 +215,7 @@ function ServiceForm({
             value="true"
             defaultChecked={data?.public}
             direction="right"
-            className="[&_input]:self-center"
+            className="[&_label]:self-center"
             disabled={isPendingOrSubmitting}
           >
             <span className="text-zinc-500 font-medium text-sm">Public</span>

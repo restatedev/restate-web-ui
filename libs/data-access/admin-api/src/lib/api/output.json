@@ -1502,7 +1502,22 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "type": "object",
+                  "required": ["rows", "total_count"],
+                  "properties": {
+                    "rows": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Invocation"
+                      }
+                    },
+                    "total_count": {
+                      "type": "integer"
+                    },
+                    "limit": {
+                      "type": "integer"
+                    }
+                  }
                 }
               }
             }
@@ -2219,6 +2234,287 @@
             }
           }
         ]
+      },
+      "Invocation": {
+        "type": "object",
+        "required": [
+          "id",
+          "created_at",
+          "modified_at",
+          "scheduled_at",
+          "invoked_by",
+          "status",
+          "target",
+          "target_handler_name",
+          "target_service_name",
+          "target_service_ty"
+        ],
+        "properties": {
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modified_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "scheduled_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "inboxed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "running_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "last_start_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "next_retry_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "id": {
+            "type": "string"
+          },
+          "invoked_by": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "succeeded",
+              "failed",
+              "cancelled",
+              "killed",
+              "retrying",
+              "running",
+              "suspended",
+              "scheduled",
+              "pending",
+              "ready"
+            ]
+          },
+          "target": {
+            "type": "string"
+          },
+          "target_handler_name": {
+            "type": "string"
+          },
+          "target_service_key": {
+            "type": "string",
+            "enum": ["ingress", "service"]
+          },
+          "target_service_name": {
+            "type": "string"
+          },
+          "target_service_ty": {
+            "type": "string",
+            "enum": ["service", "virtual_object", "workflow"]
+          },
+          "completion_result": {
+            "type": "string",
+            "enum": ["success", "failure"]
+          },
+          "completion_failure": {
+            "type": "string"
+          },
+          "invoked_by_service_name": {
+            "type": "string"
+          },
+          "invoked_by_id": {
+            "type": "string"
+          },
+          "invoked_by_target": {
+            "type": "string"
+          },
+          "pinned_deployment_id": {
+            "type": "string"
+          },
+          "trace_id": {
+            "type": "string"
+          },
+          "idempotency_key": {
+            "type": "string"
+          },
+          "journal_size": {
+            "type": "integer",
+            "format": "uint32"
+          },
+          "retry_count": {
+            "type": "integer",
+            "format": "uint64"
+          },
+          "last_failure_related_entry_index": {
+            "type": "integer",
+            "format": "uint64"
+          },
+          "last_failure_related_entry_name": {
+            "type": "string"
+          },
+          "last_failure_related_entry_type": {
+            "type": "string"
+          },
+          "last_attempt_deployment_id": {
+            "type": "string"
+          },
+          "last_attempt_server": {
+            "type": "string"
+          },
+          "last_failure": {
+            "type": "string"
+          },
+          "last_failure_error_code": {
+            "type": "string"
+          }
+        }
+      },
+      "RawInvocation": {
+        "type": "object",
+        "required": [
+          "id",
+          "created_at",
+          "modified_at",
+          "scheduled_at",
+          "invoked_by",
+          "status",
+          "target",
+          "target_handler_name",
+          "target_service_name",
+          "target_service_ty"
+        ],
+        "properties": {
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modified_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "scheduled_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "inboxed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "running_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "last_start_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "next_retry_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "id": {
+            "type": "string"
+          },
+          "invoked_by": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "scheduled",
+              "ready",
+              "running",
+              "backing-off",
+              "suspended",
+              "completed"
+            ]
+          },
+          "target": {
+            "type": "string"
+          },
+          "target_handler_name": {
+            "type": "string"
+          },
+          "target_service_key": {
+            "type": "string",
+            "enum": ["ingress", "service"]
+          },
+          "target_service_name": {
+            "type": "string"
+          },
+          "target_service_ty": {
+            "type": "string",
+            "enum": ["service", "virtual_object", "workflow"]
+          },
+          "completion_result": {
+            "type": "string",
+            "enum": ["success", "failure"]
+          },
+          "completion_failure": {
+            "type": "string"
+          },
+          "invoked_by_service_name": {
+            "type": "string"
+          },
+          "invoked_by_id": {
+            "type": "string"
+          },
+          "invoked_by_target": {
+            "type": "string"
+          },
+          "pinned_deployment_id": {
+            "type": "string"
+          },
+          "trace_id": {
+            "type": "string"
+          },
+          "idempotency_key": {
+            "type": "string"
+          },
+          "journal_size": {
+            "type": "integer",
+            "format": "uint32"
+          },
+          "retry_count": {
+            "type": "integer",
+            "format": "uint64"
+          },
+          "last_failure_related_entry_index": {
+            "type": "integer",
+            "format": "uint64"
+          },
+          "last_failure_related_entry_name": {
+            "type": "string"
+          },
+          "last_failure_related_entry_type": {
+            "type": "string"
+          },
+          "last_attempt_deployment_id": {
+            "type": "string"
+          },
+          "last_attempt_server": {
+            "type": "string"
+          },
+          "last_failure": {
+            "type": "string"
+          },
+          "last_failure_error_code": {
+            "type": "string"
+          }
+        }
       }
     }
   }

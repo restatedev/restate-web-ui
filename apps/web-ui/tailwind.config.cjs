@@ -19,6 +19,7 @@ module.exports = withTV({
         sans: ['Inter var', ...defaultTheme.fontFamily.sans],
       },
       fontSize: {
+        '3xs': '0.625rem',
         '2xs': '0.6875rem',
         code: '0.8125rem',
       },

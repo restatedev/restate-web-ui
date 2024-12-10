@@ -29,6 +29,10 @@ import {
   ArrowRight,
   ArrowLeft,
   ChevronLeft,
+  Settings,
+  TableProperties,
+  ChevronsLeftRightEllipsis,
+  Timer,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from 'tailwind-variants';
@@ -43,8 +47,17 @@ import { SupportTicket } from './custom-icons/SupportTicket';
 import { Help } from './custom-icons/Help';
 import { Question } from './custom-icons/Question';
 import { Function } from './custom-icons/Function';
+import { Go } from './custom-icons/Go';
+import { Java } from './custom-icons/Java';
+import { Kotlin } from './custom-icons/Kotlin';
+import { Typescript } from './custom-icons/Typescript';
+import { Rust } from './custom-icons/Rust';
+import { Python } from './custom-icons/Python';
 
 export const enum IconName {
+  Settings = 'Settings',
+  Invocation = 'Invocation',
+  TableProperties = 'TableProperties',
   ChevronDown = 'ChevronDown',
   ChevronRight = 'ChevronRight',
   Check = 'Check',
@@ -86,6 +99,13 @@ export const enum IconName {
   ChevronLeft = 'ChevronLeft',
   ChevronUp = 'ChevronUp',
   Question = 'Question',
+  Timer = 'Timer',
+  Go = 'Go',
+  Rust = 'Rust',
+  Typescript = 'Typescript',
+  Java = 'Java',
+  Python = 'Python',
+  Kotlin = 'Kotlin',
 }
 export interface IconsProps {
   name: IconName;
@@ -94,6 +114,8 @@ export interface IconsProps {
 }
 
 const ICONS: Record<IconName, LucideIcon> = {
+  [IconName.Settings]: Settings,
+  [IconName.TableProperties]: TableProperties,
   [IconName.ChevronDown]: ChevronDown,
   [IconName.Check]: Check,
   [IconName.ChevronRight]: ChevronRight,
@@ -135,6 +157,14 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.ChevronLeft]: ChevronLeft,
   [IconName.ChevronUp]: ChevronUp,
   [IconName.Question]: Question,
+  [IconName.Invocation]: ChevronsLeftRightEllipsis,
+  [IconName.Timer]: Timer,
+  [IconName.Go]: Go,
+  [IconName.Rust]: Rust,
+  [IconName.Typescript]: Typescript,
+  [IconName.Java]: Java,
+  [IconName.Python]: Python,
+  [IconName.Kotlin]: Kotlin,
 };
 
 const styles = tv({

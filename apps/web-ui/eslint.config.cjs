@@ -17,5 +17,5 @@ module.exports = [
     // Override or add rules here
     rules: {},
   },
-  { ignores: ['build', 'public/build'] },
+  { ignores: ['build', 'public/build', '.react-router'] },
 ];

@@ -41,6 +41,7 @@ export function RestateServerError({
           {help ? (
             <InlineTooltip
               variant="indicator-button"
+              className="[&_button]:self-start [&_button]:mt-1 [&_button]:mr-1"
               title={code}
               {...(code && {
                 learnMoreHref: `https://docs.restate.dev/references/errors/#${code}`,

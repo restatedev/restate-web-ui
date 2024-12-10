@@ -235,9 +235,17 @@ export function useListInvocations(
   options?: HookQueryOptions<'/query/invocations', 'get'>
 ) {
   const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi('query', '/query/invocations', 'get', {
+    baseUrl,
+  });
 
-  return useQuery({
-    ...adminApi('query', '/query/invocations', 'get', { baseUrl }),
+  const results = useQuery({
+    ...queryOptions,
     ...options,
   });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+  };
 }

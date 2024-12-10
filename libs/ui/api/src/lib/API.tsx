@@ -27,7 +27,6 @@ export const API = ({
       apiDescriptionDocument={apiDescriptionDocument}
       router="hash"
       layout="responsive"
-      hideExport="true"
     />
   );
 };

@@ -14,7 +14,7 @@ import { useSearchParams } from 'react-router';
 import { useRef } from 'react';
 
 const styles = tv({
-  base: 'flex flex-row items-center gap-2 relative border -m-1 p-1 transition-all ease-in-out',
+  base: 'flex flex-row items-center gap-2 relative border -m-1 p-1 transition-all ease-in-out text-code',
   variants: {
     isSelected: {
       true: 'bg-white shadow-sm rounded-lg border -mx-5 px-[1.25rem] z-10 font-medium',
@@ -27,15 +27,19 @@ export function Deployment({
   className,
   revision,
   deploymentId,
+  highlightSelection = true,
 }: {
   revision: ServiceRevision;
   className?: string;
   deploymentId?: DeploymentId;
+  highlightSelection?: boolean;
 }) {
   const { data: { deployments } = {} } = useListDeployments();
   const deployment = deploymentId ? deployments?.get(deploymentId) : undefined;
   const [searchParams] = useSearchParams();
-  const isSelected = searchParams.get(DEPLOYMENT_QUERY_PARAM) === deploymentId;
+  const isSelected =
+    searchParams.get(DEPLOYMENT_QUERY_PARAM) === deploymentId &&
+    highlightSelection;
   const linkRef = useRef<HTMLAnchorElement>(null);
 
   if (!deployment) {
@@ -53,7 +57,7 @@ export function Deployment({
         />
       </div>
 
-      <div className="flex flex-row gap-1 items-center text-code text-zinc-600 truncate">
+      <div className="flex flex-row gap-1 items-center  text-zinc-600 truncate min-w-[6ch]">
         <TruncateWithTooltip copyText={deploymentEndpoint} triggerRef={linkRef}>
           {deploymentEndpoint}
         </TruncateWithTooltip>
