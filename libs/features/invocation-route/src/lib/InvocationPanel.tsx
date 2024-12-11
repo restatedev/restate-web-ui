@@ -11,6 +11,7 @@ import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { ServiceHandlerSection } from './ServiceHandlerSection';
 import { InvokedBySection } from './InvokedBySection';
 import { DeploymentSection } from './DeploymentSection';
+import { KeysIdsSection } from './KeysIdsSection';
 
 export function InvocationPanel() {
   const [searchParams] = useSearchParams();
@@ -66,13 +67,11 @@ export function InvocationPanel() {
         <ServiceHandlerSection className="mt-5" invocation={data} />
         <InvokedBySection className="mt-2" invocation={data} />
         <DeploymentSection className="mt-2" invocation={data} />
+        <KeysIdsSection className="mt-2" invocation={data} />
       </>
     </ComplementaryWithSearchParam>
   );
 }
-// deployment
-// idempotency
 // queue
 // lifecycle + attempt count +  status
-// trace id
 // modified at

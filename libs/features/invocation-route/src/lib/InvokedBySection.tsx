@@ -23,21 +23,20 @@ export function InvokedBySection({
     <Section className={styles({ className })}>
       <SectionTitle>Invoked by</SectionTitle>
       {invocation.invoked_by === 'ingress' && (
-        <SectionContent className="px-2 py-1 pb-2" raised={false}>
-          <Badge className="">Ingress</Badge>
+        <SectionContent className="p-0" raised={true}>
+          <div className="text-code text-gray-500 font-medium pl-2.5 py-1">
+            Ingress
+          </div>
         </SectionContent>
       )}
       {invocation.invoked_by === 'service' && (
         <SectionContent className="px-2 py-2" raised={false}>
           <div className="relative">
+            <InvocationId id={invocation.invoked_by_id!} className="text-xs " />
+            <div className="absolute w-7 border-l border-b  border-black/20 border-dashed left-3 top-6 bottom-[0.65rem] rounded-b" />
             <Target
               target={invocation.invoked_by_target}
-              className="text-code mt-1"
-            />
-            <div className="absolute w-5 border-l border-b  border-black/20 border-dashed left-3.5 top-7 bottom-[0.65rem] rounded-b" />
-            <InvocationId
-              id={invocation.invoked_by_id!}
-              className="text-xs mt-1.5 ml-5"
+              className="text-code mt-1.5 ml-7"
             />
           </div>
         </SectionContent>
