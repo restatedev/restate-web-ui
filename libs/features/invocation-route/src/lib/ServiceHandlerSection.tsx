@@ -1,7 +1,7 @@
 import { Invocation } from '@restate/data-access/admin-api';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { tv } from 'tailwind-variants';
-import { ServiceHandler } from './Target';
+import { Target } from './Target';
 
 const styles = tv({ base: '' });
 export function ServiceHandlerSection({
@@ -21,9 +21,9 @@ export function ServiceHandlerSection({
     <Section className={styles({ className })}>
       <SectionTitle>Service / Handler</SectionTitle>
       <SectionContent className="px-2 pt-2" raised={false}>
-        <ServiceHandler
-          service={invocation.target_service_name}
-          handler={invocation.target_handler_name}
+        <Target
+          target={`${invocation.target_service_name}/${invocation.target_handler_name}`}
+          className="text-code"
         />
       </SectionContent>
     </Section>

@@ -1,4 +1,3 @@
-import { Badge } from '@restate/ui/badge';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Link } from '@restate/ui/link';
 import {
@@ -6,10 +5,8 @@ import {
   TruncateTooltipTrigger,
 } from '@restate/ui/tooltip';
 import { useRef } from 'react';
-import { InvocationId } from './InvocationId';
 import { tv } from 'tailwind-variants';
 import { SERVICE_QUERY_PARAM } from '@restate/features/overview-route';
-import { Invocation } from '@restate/data-access/admin-api';
 
 function TargetTooltipContent({
   service,
@@ -114,33 +111,4 @@ export function Target({
       </TruncateWithTooltip>
     </div>
   );
-}
-
-export function ServiceHandler({
-  service,
-  handler,
-}: {
-  service: string;
-  handler: string;
-}) {
-  return <Target target={`${service}/${handler}`} />;
-}
-
-export function InvokedBy({ invocation }: { invocation: Invocation }) {
-  if (invocation.invoked_by === 'ingress') {
-    return <Badge className="bg-white">Ingress</Badge>;
-  } else if (invocation.invoked_by_target) {
-    return (
-      <div className="flex flex-col gap-0.5 items-start w-full">
-        <Target target={invocation.invoked_by_target} />
-        {invocation.invoked_by_id && (
-          <InvocationId
-            id={invocation.invoked_by_id}
-            className="max-w-full mt-2 min-w-0 text-xs text-zinc-500"
-          />
-        )}
-      </div>
-    );
-  }
-  return null;
 }

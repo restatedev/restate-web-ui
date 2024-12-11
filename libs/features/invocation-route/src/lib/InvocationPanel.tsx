@@ -8,12 +8,9 @@ import { INVOCATION_QUERY_NAME } from './constants';
 import { useGetInvocation } from '@restate/data-access/admin-api';
 import { Icon, IconName } from '@restate/ui/icons';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
-import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
-import { InvokedBy, ServiceHandler, Target } from './Target';
-import { InvocationId } from './InvocationId';
-import { Badge } from '@restate/ui/badge';
 import { ServiceHandlerSection } from './ServiceHandlerSection';
 import { InvokedBySection } from './InvokedBySection';
+import { DeploymentSection } from './DeploymentSection';
 
 export function InvocationPanel() {
   const [searchParams] = useSearchParams();
@@ -68,6 +65,7 @@ export function InvocationPanel() {
 
         <ServiceHandlerSection className="mt-5" invocation={data} />
         <InvokedBySection className="mt-2" invocation={data} />
+        <DeploymentSection className="mt-2" invocation={data} />
       </>
     </ComplementaryWithSearchParam>
   );

@@ -10,9 +10,12 @@ import { CellProps } from './cells/types';
 import { InvocationIdCell } from './cells/InvocationId';
 import { formatDurations, formatNumber } from '@restate/util/intl';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
-import { DeploymentCell } from './cells/Deployment';
 import { tv } from 'tailwind-variants';
-import { InvocationId, Target } from '@restate/features/invocation-route';
+import {
+  InvocationDeployment,
+  InvocationId,
+  Target,
+} from '@restate/features/invocation-route';
 
 function withDate({
   tooltipTitle,
@@ -101,7 +104,7 @@ function InvokedBy({ invocation }: CellProps) {
         {invocation.invoked_by_id && (
           <InvocationId
             id={invocation.invoked_by_id}
-            className="max-w-full w-[20ch]  min-w-0 text-zinc-500"
+            className="max-w-full w-[20ch] pl-1.5  min-w-0 text-zinc-500"
             size="sm"
           />
         )}
@@ -146,7 +149,7 @@ const CELLS: Record<ColumnKey, ComponentType<CellProps>> = {
   ),
   journal_size: withCell(withField({ field: 'journal_size' })),
   retry_count: withCell(withField({ field: 'retry_count' })),
-  deployment: withCell(DeploymentCell),
+  deployment: withCell(InvocationDeployment),
   target_service_key: withCell(withField({ field: 'target_service_key' })),
   target_service_name: withCell(withField({ field: 'target_service_name' })),
 };

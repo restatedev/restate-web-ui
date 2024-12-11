@@ -1,3 +1,4 @@
+export { InvocationDeployment } from './lib/InvocationDeployment';
 export * from './lib/constants';
 export * from './lib/InvocationPanel';
 export * from './lib/InvocationId';

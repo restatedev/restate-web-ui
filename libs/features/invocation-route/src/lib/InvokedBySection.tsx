@@ -21,25 +21,26 @@ export function InvokedBySection({
 
   return (
     <Section className={styles({ className })}>
+      <SectionTitle>Invoked by</SectionTitle>
       {invocation.invoked_by === 'ingress' && (
-        <>
-          <SectionTitle>Invoked by</SectionTitle>
-          <SectionContent className="px-2 py-1 pb-2" raised={false}>
-            <Badge>Ingress</Badge>
-          </SectionContent>
-        </>
+        <SectionContent className="px-2 py-1 pb-2" raised={false}>
+          <Badge className="">Ingress</Badge>
+        </SectionContent>
       )}
       {invocation.invoked_by === 'service' && (
-        <>
-          <SectionTitle>Invoked by Id</SectionTitle>
-          <SectionContent className="px-2 py-1" raised={false}>
-            <InvocationId id={invocation.invoked_by_id!} />
-          </SectionContent>
-          <SectionTitle>Invoked by target</SectionTitle>
-          <SectionContent className="px-2 py-1 pb-2" raised={false}>
-            <Target target={invocation.invoked_by_target} />
-          </SectionContent>
-        </>
+        <SectionContent className="px-2 py-2" raised={false}>
+          <div className="relative">
+            <Target
+              target={invocation.invoked_by_target}
+              className="text-code mt-1"
+            />
+            <div className="absolute w-5 border-l border-b  border-black/20 border-dashed left-3.5 top-7 bottom-[0.65rem] rounded-b" />
+            <InvocationId
+              id={invocation.invoked_by_id!}
+              className="text-xs mt-1.5 ml-5"
+            />
+          </div>
+        </SectionContent>
       )}
     </Section>
   );
