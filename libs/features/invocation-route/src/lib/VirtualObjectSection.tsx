@@ -6,13 +6,8 @@ import { Link } from '@restate/ui/link';
 import { INVOCATION_QUERY_NAME } from './constants';
 import { Copy } from '@restate/ui/copy';
 import { Badge } from '@restate/ui/badge';
-import {
-  HoverTooltip,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@restate/ui/tooltip';
-import { Pressable } from '@react-aria/interactions';
+import { HoverTooltip } from '@restate/ui/tooltip';
+import { formatNumber } from '@restate/util/intl';
 
 const styles = tv({ base: '' });
 export function VirtualObjectSection({
@@ -99,7 +94,11 @@ export function VirtualObjectSection({
                   </div>
                   <div className="w-[1.125rem] h-[1.125rem] mt-2 absolute top-2.5 ">
                     <HoverTooltip
-                      content={<div>{position === 0 ? 'Head' : position}</div>}
+                      content={
+                        <div>
+                          {position === 0 ? 'Head' : formatNumber(position)}
+                        </div>
+                      }
                     >
                       <div className="inset-0 shadow-sm w-[1.125rem] h-[1.125rem] bg-white rounded-full p-1.5">
                         <div className="bg-blue-600 rounded-full h-full w-full animate-pulse" />
@@ -111,7 +110,7 @@ export function VirtualObjectSection({
               {position !== size - 1 && (
                 <div className="absolute left-0 -top-4 -translate-y-1/2 flex flex-col items-center">
                   <div className="text-xs font-medium text-zinc-400 font-mono">
-                    {size - 1}
+                    {formatNumber(size - 1)}
                   </div>
                 </div>
               )}
@@ -122,7 +121,7 @@ export function VirtualObjectSection({
               <>
                 Invocation is in progress with{' '}
                 <span className="font-medium text-zinc-500">
-                  {size - position - 1}
+                  {formatNumber(size - position - 1)}
                 </span>{' '}
                 pending in queue.
               </>
@@ -130,7 +129,9 @@ export function VirtualObjectSection({
             {position > 0 && (
               <>
                 Invocation is pending waiting for{' '}
-                <span className="font-medium text-zinc-500">{position}</span>{' '}
+                <span className="font-medium text-zinc-500">
+                  {formatNumber(position)}
+                </span>{' '}
                 ahead in the queue.
               </>
             )}
