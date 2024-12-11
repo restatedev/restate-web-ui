@@ -22,6 +22,7 @@ import {
   ServiceCompatibility,
 } from '@restate/features/explainers';
 import { ErrorBanner } from '@restate/ui/error';
+import { Copy } from '@restate/ui/copy';
 
 export function DeploymentDetails() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -95,7 +96,7 @@ function DeploymentContent({ deployment }: { deployment: string }) {
           ) : (
             <>
               Deployment
-              <span className="text-sm text-gray-500 contents">
+              <span className="text-sm text-gray-500 contents font-mono">
                 <TruncateWithTooltip>{getEndpoint(data)}</TruncateWithTooltip>
               </span>
             </>
@@ -214,6 +215,15 @@ function DeploymentContent({ deployment }: { deployment: string }) {
             </SectionContent>
           </>
         )}
+      </Section>
+      <Section className="mt-4">
+        <SectionTitle>Id</SectionTitle>
+        <SectionContent className="font-mono py-0.5 flex items-center pr-0.5 text-zinc-600 text-code">
+          <div>{data?.id}</div>
+          {data?.id && (
+            <Copy copyText={data?.id} className="shrink-0 text-2xs" />
+          )}
+        </SectionContent>
       </Section>
     </>
   );
