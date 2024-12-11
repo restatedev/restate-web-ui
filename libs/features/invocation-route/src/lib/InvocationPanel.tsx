@@ -5,13 +5,18 @@ import {
 } from '@restate/ui/layout';
 import { useSearchParams } from 'react-router';
 import { INVOCATION_QUERY_NAME } from './constants';
-import { useGetInvocation } from '@restate/data-access/admin-api';
+import {
+  useGetInvocation,
+  useGetVirtualObjectInbox,
+} from '@restate/data-access/admin-api';
 import { Icon, IconName } from '@restate/ui/icons';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { ServiceHandlerSection } from './ServiceHandlerSection';
 import { InvokedBySection } from './InvokedBySection';
 import { DeploymentSection } from './DeploymentSection';
 import { KeysIdsSection } from './KeysIdsSection';
+import { VirtualObjectSection } from './VirtualObjectSection';
+import { WorkflowKeySection } from './WorkflowKeySection';
 
 export function InvocationPanel() {
   const [searchParams] = useSearchParams();
@@ -20,6 +25,15 @@ export function InvocationPanel() {
     enabled: Boolean(invocationId),
     refetchOnMount: true,
   });
+  const key = data?.target_service_key;
+  const { data: inbox } = useGetVirtualObjectInbox(
+    String(key),
+    String(data?.id),
+    {
+      enabled: Boolean(key && data),
+    }
+  );
+
   if (!invocationId) {
     return null;
   }
@@ -68,10 +82,19 @@ export function InvocationPanel() {
         <InvokedBySection className="mt-2" invocation={data} />
         <DeploymentSection className="mt-2" invocation={data} />
         <KeysIdsSection className="mt-2" invocation={data} />
+        {data?.target_service_ty === 'virtual_object' && (
+          <VirtualObjectSection
+            className="mt-2"
+            head={inbox?.head}
+            size={inbox?.size}
+            position={inbox?.[data.id]}
+            invocation={data}
+          />
+        )}
+        <WorkflowKeySection className="mt-2" invocation={data} />
       </>
     </ComplementaryWithSearchParam>
   );
 }
-// queue
 // lifecycle + attempt count +  status
 // modified at
