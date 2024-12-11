@@ -12,7 +12,7 @@ import { formatDurations, formatNumber } from '@restate/util/intl';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 import { DeploymentCell } from './cells/Deployment';
 import { tv } from 'tailwind-variants';
-import { InvokedBy, Target } from '@restate/features/invocation-route';
+import { InvocationId, Target } from '@restate/features/invocation-route';
 
 function withDate({
   tooltipTitle,
@@ -91,6 +91,30 @@ function Type({ invocation }: CellProps) {
   );
 }
 
+function InvokedBy({ invocation }: CellProps) {
+  if (invocation.invoked_by === 'ingress') {
+    return <Badge className="border-none">Ingress</Badge>;
+  } else if (invocation.invoked_by_target) {
+    return (
+      <div className="flex flex-col gap-0.5 items-start w-full">
+        <Target target={invocation.invoked_by_target} />
+        {invocation.invoked_by_id && (
+          <InvocationId
+            id={invocation.invoked_by_id}
+            className="max-w-full w-[20ch]  min-w-0 text-zinc-500"
+            size="sm"
+          />
+        )}
+      </div>
+    );
+  }
+  return null;
+}
+
+function TargetCell({ invocation }: CellProps) {
+  return <Target target={invocation.target} />;
+}
+
 function withCell(Component: ComponentType<CellProps>) {
   return (props: CellProps) => (
     <Cell className="align-top">
@@ -101,7 +125,7 @@ function withCell(Component: ComponentType<CellProps>) {
 
 const CELLS: Record<ColumnKey, ComponentType<CellProps>> = {
   id: withCell(InvocationIdCell),
-  target: withCell(Target),
+  target: withCell(TargetCell),
   status: withCell(Status),
   target_service_ty: withCell(Type),
   invoked_by: withCell(InvokedBy),

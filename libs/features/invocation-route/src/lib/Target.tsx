@@ -39,7 +39,7 @@ function TargetTooltipContent({
 const styles = tv({
   base: 'min-w-0 max-w-full [&:has([data-pressed=true])]:shadow-none transition-all inline-flex relative shadow-sm pl-2 text-xs rounded-lg bg-white ring-gray-200 text-zinc-600 font-medium ring-1 ring-inset',
 });
-function TargetInner({
+export function Target({
   target = '',
   className,
 }: {
@@ -116,10 +116,6 @@ function TargetInner({
   );
 }
 
-export function Target({ invocation }: { invocation: Invocation }) {
-  return <TargetInner target={invocation.target} />;
-}
-
 export function ServiceHandler({
   service,
   handler,
@@ -127,21 +123,20 @@ export function ServiceHandler({
   service: string;
   handler: string;
 }) {
-  return <TargetInner target={`${service}/${handler}`} />;
+  return <Target target={`${service}/${handler}`} />;
 }
 
 export function InvokedBy({ invocation }: { invocation: Invocation }) {
   if (invocation.invoked_by === 'ingress') {
-    return <Badge className="border-none">Ingress</Badge>;
+    return <Badge className="bg-white">Ingress</Badge>;
   } else if (invocation.invoked_by_target) {
     return (
       <div className="flex flex-col gap-0.5 items-start w-full">
-        <TargetInner target={invocation.invoked_by_target} />
+        <Target target={invocation.invoked_by_target} />
         {invocation.invoked_by_id && (
           <InvocationId
             id={invocation.invoked_by_id}
-            className="max-w-full w-[20ch]  min-w-0 text-zinc-500"
-            size="sm"
+            className="max-w-full mt-2 min-w-0 text-xs text-zinc-500"
           />
         )}
       </div>

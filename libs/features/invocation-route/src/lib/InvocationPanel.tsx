@@ -3,18 +3,18 @@ import {
   ComplementaryWithSearchParam,
   ComplementaryClose,
 } from '@restate/ui/layout';
-
 import { useSearchParams } from 'react-router';
-
 import { INVOCATION_QUERY_NAME } from './constants';
-import { Link } from '@restate/ui/link';
-import { Code, Snippet } from '@restate/ui/code';
 import { useGetInvocation } from '@restate/data-access/admin-api';
+import { Icon, IconName } from '@restate/ui/icons';
+import { TruncateWithTooltip } from '@restate/ui/tooltip';
+import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
+import { InvokedBy, ServiceHandler } from './Target';
 
 export function InvocationPanel() {
   const [searchParams] = useSearchParams();
   const invocationId = searchParams.get(INVOCATION_QUERY_NAME);
-  const { data } = useGetInvocation(String(invocationId), {
+  const { data, isPending } = useGetInvocation(String(invocationId), {
     enabled: Boolean(invocationId),
     refetchOnMount: true,
   });
@@ -37,39 +37,49 @@ export function InvocationPanel() {
         </div>
       }
     >
-      <div className="flex flex-col items-center py-8 flex-auto w-full justify-center rounded-xl">
-        <div className="flex flex-col gap-2 items-center relative w-full text-left mt-6 justify-start">
-          <h3 className="text-sm font-semibold text-gray-600 w-full px-4">
-            Coming soon!
-          </h3>
-          <p className="text-sm text-gray-500 px-4 max-w-md">
-            The Invocation details page is currently under development and will
-            be available soon. In the meantime, you can use our{' '}
-            <Link
-              href="https://docs.restate.dev/develop/local_dev/#running-restate-server--cli-locally"
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              CLI
-            </Link>{' '}
-            to manage invocations. Below are a few examples of how you can use
-            CLI commands to perform tasks:
-          </p>
-          <Code className="bg-zinc-700 py-4 pr-8 pl-4 text-code mt-4 mx-4">
-            <Snippet language="bash">#Get the invocation details</Snippet>
-            <Snippet className="[filter:invert(1)]" language="bash">
-              {`restate invocation get ${invocationId}`}
-            </Snippet>
-            <Snippet className="mt-2" language="bash">
-              #Cancel an invocation
-            </Snippet>
-            <Snippet
-              className="[filter:invert(1)]"
-              language="bash"
-            >{`restate invocation cancel ${invocationId}`}</Snippet>
-          </Code>
-        </div>
-      </div>
+      <>
+        <h2 className="mb-3 text-lg font-medium leading-6 text-gray-900 flex gap-2 items-center">
+          <div className="h-10 w-10 shrink-0 text-blue-400">
+            <Icon
+              name={IconName.Invocation}
+              className="w-full h-full p-1.5 fill-blue-50 text-blue-400 drop-shadow-md"
+            />
+          </div>{' '}
+          <div className="flex flex-col items-start gap-1 min-w-0">
+            {isPending ? (
+              <>
+                <div className="w-[16ch] h-5 animate-pulse rounded-md bg-gray-200 mt-1" />
+                <div className="w-[8ch] h-5 animate-pulse rounded-md bg-gray-200" />
+              </>
+            ) : (
+              <>
+                Invocation
+                <span className="text-sm text-gray-500 contents font-mono">
+                  <TruncateWithTooltip>{data?.id}</TruncateWithTooltip>
+                </span>
+              </>
+            )}
+          </div>
+        </h2>
+
+        <Section className="mt-5">
+          <SectionTitle>Service / Handler</SectionTitle>
+          <SectionContent className="px-2 pt-2" raised={false}>
+            {data && (
+              <ServiceHandler
+                service={data?.target_service_name}
+                handler={data?.target_handler_name}
+              />
+            )}
+          </SectionContent>
+        </Section>
+        <Section className="mt-2">
+          <SectionTitle>Invoked by</SectionTitle>
+          <SectionContent className="px-2 pt-2" raised={false}>
+            {data && <InvokedBy invocation={data} />}
+          </SectionContent>
+        </Section>
+      </>
     </ComplementaryWithSearchParam>
   );
 }
