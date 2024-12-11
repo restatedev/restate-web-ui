@@ -8,11 +8,11 @@ import { ServiceTypeExplainer } from '@restate/features/explainers';
 import { Status } from './cells/Status';
 import { CellProps } from './cells/types';
 import { InvocationIdCell } from './cells/InvocationId';
-import { InvokedBy, Target } from './cells/Target';
 import { formatDurations, formatNumber } from '@restate/util/intl';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 import { DeploymentCell } from './cells/Deployment';
 import { tv } from 'tailwind-variants';
+import { InvokedBy, Target } from '@restate/features/invocation-route';
 
 function withDate({
   tooltipTitle,

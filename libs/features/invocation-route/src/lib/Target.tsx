@@ -6,10 +6,10 @@ import {
   TruncateTooltipTrigger,
 } from '@restate/ui/tooltip';
 import { useRef } from 'react';
-import { CellProps } from './types';
 import { InvocationId } from './InvocationId';
 import { tv } from 'tailwind-variants';
 import { SERVICE_QUERY_PARAM } from '@restate/features/overview-route';
+import { Invocation } from '@restate/data-access/admin-api';
 
 function TargetTooltipContent({
   service,
@@ -116,11 +116,21 @@ function TargetInner({
   );
 }
 
-export function Target({ invocation }: CellProps) {
+export function Target({ invocation }: { invocation: Invocation }) {
   return <TargetInner target={invocation.target} />;
 }
 
-export function InvokedBy({ invocation }: CellProps) {
+export function ServiceHandler({
+  service,
+  handler,
+}: {
+  service: string;
+  handler: string;
+}) {
+  return <TargetInner target={`${service}/${handler}`} />;
+}
+
+export function InvokedBy({ invocation }: { invocation: Invocation }) {
   if (invocation.invoked_by === 'ingress') {
     return <Badge className="border-none">Ingress</Badge>;
   } else if (invocation.invoked_by_target) {
