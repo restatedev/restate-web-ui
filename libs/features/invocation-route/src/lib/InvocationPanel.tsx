@@ -9,7 +9,11 @@ import { useGetInvocation } from '@restate/data-access/admin-api';
 import { Icon, IconName } from '@restate/ui/icons';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
-import { InvokedBy, ServiceHandler } from './Target';
+import { InvokedBy, ServiceHandler, Target } from './Target';
+import { InvocationId } from './InvocationId';
+import { Badge } from '@restate/ui/badge';
+import { ServiceHandlerSection } from './ServiceHandlerSection';
+import { InvokedBySection } from './InvokedBySection';
 
 export function InvocationPanel() {
   const [searchParams] = useSearchParams();
@@ -62,24 +66,15 @@ export function InvocationPanel() {
           </div>
         </h2>
 
-        <Section className="mt-5">
-          <SectionTitle>Service / Handler</SectionTitle>
-          <SectionContent className="px-2 pt-2" raised={false}>
-            {data && (
-              <ServiceHandler
-                service={data?.target_service_name}
-                handler={data?.target_handler_name}
-              />
-            )}
-          </SectionContent>
-        </Section>
-        <Section className="mt-2">
-          <SectionTitle>Invoked by</SectionTitle>
-          <SectionContent className="px-2 pt-2" raised={false}>
-            {data && <InvokedBy invocation={data} />}
-          </SectionContent>
-        </Section>
+        <ServiceHandlerSection className="mt-5" invocation={data} />
+        <InvokedBySection className="mt-2" invocation={data} />
       </>
     </ComplementaryWithSearchParam>
   );
 }
+// deployment
+// idempotency
+// queue
+// lifecycle + attempt count +  status
+// trace id
+// modified at
