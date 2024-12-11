@@ -2437,7 +2437,7 @@
           }
         },
         "additionalProperties": {
-          "type": "string"
+          "type": "integer"
         }
       },
       "Invocation": {

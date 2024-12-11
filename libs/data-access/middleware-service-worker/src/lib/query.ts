@@ -88,12 +88,13 @@ function getInbox(key: string, invocationId: string, baseUrl: string) {
       const queriedInvocation = jsonResponse.rows?.find(
         (row: any) => row.id === invocationId
       );
-      if (!headInvocation || !queriedInvocation) {
+      console.log(headInvocation, queriedInvocation);
+      if (headInvocation && queriedInvocation) {
         return new Response(
           JSON.stringify({
             head: headInvocation.id,
-            size: headInvocation.size,
-            invocationId: queriedInvocation.sequence_number,
+            size: headInvocation.size + 1,
+            [invocationId]: queriedInvocation.sequence_number,
           }),
           {
             status: res.status,

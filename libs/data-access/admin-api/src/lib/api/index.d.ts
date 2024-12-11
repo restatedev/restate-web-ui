@@ -774,7 +774,7 @@ export interface components {
       size?: number;
       head: string;
     } & {
-      [key: string]: string;
+      [key: string]: number;
     };
     Invocation: {
       /** Format: date-time */

@@ -31,7 +31,7 @@ export function KeysIdsSection({
             <div className="flex-auto pl-1 text-code text-gray-500 font-medium">
               Idempotency Key
             </div>
-            <div className="h-5 min-w-5 self-end  bg-zinc-50 text-zinc-600 ring-zinc-600/20 inline-flex text-xs gap-1 items-center rounded-md pl-2 py-0.5 font-medium ring-1 ring-inset">
+            <div className="h-5 min-w-5 self-end font-mono bg-zinc-50 text-zinc-600 ring-zinc-600/20 inline-flex text-xs gap-1 items-center rounded-md pl-2 py-0.5 font-medium ring-1 ring-inset">
               {idempotencyId}
               <Copy
                 copyText={idempotencyId}
@@ -45,7 +45,7 @@ export function KeysIdsSection({
             <div className="flex-auto pl-1 text-code text-gray-500 font-medium">
               Trace ID
             </div>
-            <div className="h-5 min-w-5 self-end  bg-zinc-50 text-zinc-600 ring-zinc-600/20 inline-flex text-xs gap-1 items-center rounded-md pl-2 py-0.5 font-medium ring-1 ring-inset">
+            <div className="h-5 min-w-5 self-end font-mono bg-zinc-50 text-zinc-600 ring-zinc-600/20 inline-flex text-xs gap-1 items-center rounded-md pl-2 py-0.5 font-medium ring-1 ring-inset">
               {traceId}
               <Copy
                 copyText={traceId}

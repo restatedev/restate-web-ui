@@ -488,7 +488,7 @@
           "head": { "type": "string" }
         },
         "additionalProperties": {
-          "type": "string"
+          "type": "integer"
         }
       },
       "Invocation": {

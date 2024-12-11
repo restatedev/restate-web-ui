@@ -218,10 +218,13 @@ function DeploymentContent({ deployment }: { deployment: string }) {
       </Section>
       <Section className="mt-4">
         <SectionTitle>Id</SectionTitle>
-        <SectionContent className="font-mono py-0.5 flex items-center pr-0.5 text-zinc-600 text-code">
+        <SectionContent className="font-mono py-1 flex items-center pr-0.5 text-zinc-600 text-code">
           <div>{data?.id}</div>
           {data?.id && (
-            <Copy copyText={data?.id} className="shrink-0 text-2xs" />
+            <Copy
+              copyText={data?.id}
+              className=" [&_svg]:w-3 [&_svg]:h-3 shrink-0 text-2xs p-1"
+            />
           )}
         </SectionContent>
       </Section>
