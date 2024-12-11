@@ -73,6 +73,45 @@ function getInvocation(invocationId: string, baseUrl: string) {
   });
 }
 
+function getInbox(key: string, invocationId: string, baseUrl: string) {
+  return query(
+    `SELECT *, (SELECT MAX(sequence_number) AS size FROM sys_inbox WHERE service_key = '${key}') FROM sys_inbox WHERE (sequence_number = 0 OR id = '${invocationId}') AND service_key = '${key}'`,
+    {
+      baseUrl,
+    }
+  ).then(async (res) => {
+    if (res.ok) {
+      const jsonResponse = await res.json();
+      const headInvocation = jsonResponse.rows?.find(
+        (row: any) => row.sequence_number === 0
+      );
+      const queriedInvocation = jsonResponse.rows?.find(
+        (row: any) => row.id === invocationId
+      );
+      if (!headInvocation || !queriedInvocation) {
+        return new Response(
+          JSON.stringify({
+            head: headInvocation.id,
+            size: headInvocation.size,
+            invocationId: queriedInvocation.sequence_number,
+          }),
+          {
+            status: res.status,
+            statusText: res.statusText,
+            headers: res.headers,
+          }
+        );
+      }
+      return new Response(JSON.stringify({ message: 'Not found' }), {
+        status: 404,
+        statusText: 'Not found',
+        headers: res.headers,
+      });
+    }
+    return res;
+  });
+}
+
 export function queryMiddlerWare(req: Request) {
   const { url, method } = req;
   const urlObj = new URL(url);
@@ -81,11 +120,24 @@ export function queryMiddlerWare(req: Request) {
     const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
     return listInvocations(baseUrl);
   }
+
   const getInvocationParams = match<{ invocationId: string }>(
     '/query/invocations/:invocationId'
   )(urlObj.pathname);
   if (getInvocationParams && method.toUpperCase() === 'GET') {
     const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
     return getInvocation(getInvocationParams.params.invocationId, baseUrl);
+  }
+
+  const getInboxParams = match<{ key: string }>(
+    '/query/virtualObjects/:key/inbox'
+  )(urlObj.pathname);
+  if (getInboxParams && method.toUpperCase() === 'GET') {
+    const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
+    return getInbox(
+      getInboxParams.params.key,
+      String(urlObj.searchParams.get('invocationId')),
+      baseUrl
+    );
   }
 }
