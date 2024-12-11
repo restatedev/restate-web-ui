@@ -104,7 +104,7 @@ function InvokedBy({ invocation }: CellProps) {
         {invocation.invoked_by_id && (
           <InvocationId
             id={invocation.invoked_by_id}
-            className="max-w-full w-[20ch] pl-1.5  min-w-0 text-zinc-500"
+            className="max-w-full w-[20ch] pl-1.5 pr-1 min-w-0 text-zinc-500"
             size="sm"
           />
         )}

@@ -2,7 +2,6 @@ import { Invocation } from '@restate/data-access/admin-api';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { tv } from 'tailwind-variants';
 import { Target } from './Target';
-import { Badge } from '@restate/ui/badge';
 import { InvocationId } from './InvocationId';
 
 const styles = tv({ base: '' });
@@ -36,7 +35,7 @@ export function InvokedBySection({
             <div className="absolute w-7 border-l border-b  border-black/20 border-dashed left-3 top-6 bottom-[0.65rem] rounded-b" />
             <Target
               target={invocation.invoked_by_target}
-              className="text-code mt-1.5 ml-7"
+              className="text-code mt-1.5 ml-7 font-normal"
             />
           </div>
         </SectionContent>

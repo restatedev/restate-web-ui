@@ -23,7 +23,7 @@ export function ServiceHandlerSection({
       <SectionContent className="px-2 pt-2" raised={false}>
         <Target
           target={`${invocation.target_service_name}/${invocation.target_handler_name}`}
-          className="text-code"
+          className="text-code font-normal"
         />
       </SectionContent>
     </Section>

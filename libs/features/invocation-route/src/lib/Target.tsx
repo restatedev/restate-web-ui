@@ -85,7 +85,7 @@ export function Target({
           )}
 
           <div className="truncate my-px [filter:drop-shadow(-1px_0px_0px_theme(colors.zinc.200/100%))] ml-[-4px]">
-            <div className="italic  h-full [clip-path:polygon(4px_0,100%_0,100%_100%,0%_100%)] bg-zinc-100 text-zinc-600/80 flex items-center pl-1 pr-0.5">
+            <div className="italic font-medium h-full [clip-path:polygon(4px_0,100%_0,100%_100%,0%_100%)] bg-zinc-100 text-zinc-600/80 flex items-center pl-1 pr-0.5">
               <Icon
                 name={IconName.Function}
                 className="w-4 h-4 text-zinc-400 shrink-0 -mr-0.5"
