@@ -75,26 +75,30 @@ function getInvocation(invocationId: string, baseUrl: string) {
 
 function getInbox(key: string, invocationId: string, baseUrl: string) {
   return query(
-    `SELECT *, (SELECT MAX(sequence_number) AS size FROM sys_inbox WHERE service_key = '${key}') FROM sys_inbox WHERE (sequence_number = 0 OR id = '${invocationId}') AND service_key = '${key}'`,
+    `SELECT * FROM sys_inbox WHERE (sequence_number = (SELECT MIN(sequence_number) FROM sys_inbox WHERE service_key = '${key}') OR sequence_number = (SELECT MAX(sequence_number) FROM sys_inbox WHERE service_key = '${key}') OR id = '${invocationId}') AND  service_key = '${key}'`,
     {
       baseUrl,
     }
   ).then(async (res) => {
     if (res.ok) {
       const jsonResponse = await res.json();
+      const indexes = (jsonResponse.rows ?? []).map(
+        (row: any) => row.sequence_number
+      );
+      const head = Math.min(...indexes);
+      const tail = Math.max(...indexes);
       const headInvocation = jsonResponse.rows?.find(
-        (row: any) => row.sequence_number === 0
+        (row: any) => row.sequence_number === head
       );
       const queriedInvocation = jsonResponse.rows?.find(
         (row: any) => row.id === invocationId
       );
-      console.log(headInvocation, queriedInvocation);
       if (headInvocation && queriedInvocation) {
         return new Response(
           JSON.stringify({
             head: headInvocation.id,
-            size: headInvocation.size + 1,
-            [invocationId]: queriedInvocation.sequence_number,
+            size: tail - head + 1,
+            [invocationId]: queriedInvocation.sequence_number - head,
           }),
           {
             status: res.status,
