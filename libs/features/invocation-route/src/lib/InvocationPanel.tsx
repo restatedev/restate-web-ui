@@ -24,7 +24,7 @@ import {
 } from '@restate/util/snapshot-time';
 import { useEffect, useState } from 'react';
 import { formatDurations } from '@restate/util/intl';
-import { Action } from './Actions';
+import { Actions } from './Actions';
 
 function Footnote({ invocationId }: { invocationId?: string }) {
   const [now, setNow] = useState(() => Date.now());
@@ -140,7 +140,7 @@ export function InvocationPanel() {
                     <div className="flex w-full items-center">Invocation</div>
                     <div className="min-h-4 flex w-full items-center">
                       <Footnote invocationId={invocationId} />
-                      <Action invocation={data} />
+                      <Actions invocation={data} />
                     </div>
                   </>
                 )}

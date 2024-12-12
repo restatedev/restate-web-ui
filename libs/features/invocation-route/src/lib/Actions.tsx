@@ -15,7 +15,7 @@ import {
 } from './constants';
 import { Button } from '@restate/ui/button';
 
-export function Action({ invocation }: { invocation?: Invocation }) {
+export function Actions({ invocation }: { invocation?: Invocation }) {
   if (!invocation) {
     return null;
   }

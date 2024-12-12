@@ -1,6 +1,13 @@
 import { Invocation, useListInvocations } from '@restate/data-access/admin-api';
 import { Button } from '@restate/ui/button';
-import { Column, Row, Table, TableBody, TableHeader } from '@restate/ui/table';
+import {
+  Cell,
+  Column,
+  Row,
+  Table,
+  TableBody,
+  TableHeader,
+} from '@restate/ui/table';
 import { useCollator } from 'react-aria';
 import { useAsyncList } from 'react-stately';
 import {
@@ -22,6 +29,7 @@ import {
 import { useEffect, useState } from 'react';
 import { formatDurations } from '@restate/util/intl';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@restate/ui/tooltip';
+import { Actions } from '@restate/features/invocation-route';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: 120,
@@ -138,23 +146,27 @@ function Component() {
           sortDescriptor={invocations.sortDescriptor}
           onSortChange={invocations.sort}
         >
-          <TableHeader
-            columns={sortedColumnsList.map((id, index) => ({
-              name: COLUMN_NAMES[id],
-              id,
-              isRowHeader: index === 0,
-            }))}
-          >
-            {(col) => (
-              <Column
-                id={col.id}
-                isRowHeader={col.isRowHeader}
-                allowsSorting
-                defaultWidth={COLUMN_WIDTH[col.id]}
-              >
-                {col.name}
-              </Column>
-            )}
+          <TableHeader>
+            {sortedColumnsList
+              .map((id, index) => ({
+                name: COLUMN_NAMES[id],
+                id,
+                isRowHeader: index === 0,
+              }))
+              .map((col) => (
+                <Column
+                  id={col.id}
+                  isRowHeader={col.isRowHeader}
+                  allowsSorting
+                  defaultWidth={COLUMN_WIDTH[col.id]}
+                  key={col.id}
+                >
+                  {col.name}
+                </Column>
+              ))}
+            <Column id="actions" width={40}>
+              <span className="sr-only">Actions</span>
+            </Column>
           </TableHeader>
           <TableBody
             items={invocations.items}
@@ -181,6 +193,9 @@ function Component() {
                 {sortedColumnsList.map((col) => (
                   <InvocationCell key={col} column={col} invocation={row} />
                 ))}
+                <Cell>
+                  <Actions invocation={row} />
+                </Cell>
               </Row>
             )}
           </TableBody>
