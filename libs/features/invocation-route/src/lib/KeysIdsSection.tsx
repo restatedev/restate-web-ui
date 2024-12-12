@@ -16,7 +16,8 @@ export function KeysIdsSection({
 }) {
   const idempotencyId = invocation?.idempotency_key;
   const traceId = invocation?.trace_id;
-  if (!idempotencyId && !traceId) {
+
+  if (!invocation) {
     return null;
   }
 
@@ -24,6 +25,21 @@ export function KeysIdsSection({
     <Section className={styles({ className })}>
       <SectionTitle>Keys & IDs</SectionTitle>
       <SectionContent className="p-0">
+        <div className="flex px-1.5 py-1 items-center [&:not(:last-child)]:border-b">
+          <span className="flex-auto pl-1 text-code text-gray-500 font-medium">
+            Id
+          </span>
+          <Badge
+            size="sm"
+            className="font-mono py-0 pr-0 align-middle ml-[30%] min-w-0"
+          >
+            <div className="truncate">{invocation.id}</div>
+            <Copy
+              copyText={invocation?.id}
+              className="shrink-0 [&_svg]:w-2.5 [&_svg]:h-2.5 p-1 ml-1"
+            />
+          </Badge>
+        </div>
         {idempotencyId && (
           <div className="flex px-1.5 py-1 items-center [&:not(:last-child)]:border-b">
             <span className="flex-auto pl-1 text-code text-gray-500 font-medium">

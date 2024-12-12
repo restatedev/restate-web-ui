@@ -5,6 +5,35 @@ import { formatDurations } from '@restate/util/intl';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 import { ComponentType } from 'react';
 
+export function Duration({
+  prefix,
+  suffix,
+  date,
+  tooltipTitle,
+}: {
+  prefix?: string;
+  suffix?: string;
+  date: string;
+  tooltipTitle: string;
+}) {
+  const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
+  const duration = formatDurations(durationSinceLastSnapshot(date));
+
+  return (
+    <Badge
+      size="sm"
+      className="text-2xs py-0 bg-transparent border-none text-zinc-500/80 font-normal max-w-full truncate"
+    >
+      <span className="truncate">
+        {prefix && `${prefix} `}
+        <DateTooltip date={new Date(date)} title={tooltipTitle}>
+          <span className="font-medium text-zinc-500/90">{duration}</span>
+        </DateTooltip>
+        {suffix && ` ${suffix}`}
+      </span>
+    </Badge>
+  );
+}
 function withStatusTimeline({
   prefix,
   suffix,
@@ -17,27 +46,18 @@ function withStatusTimeline({
   field: keyof Invocation;
 }) {
   return (props: { invocation: Invocation }) => {
-    const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
-
     const value = props.invocation[field];
     if (typeof value !== 'string') {
       return null;
     }
-    const duration = formatDurations(durationSinceLastSnapshot(value));
 
     return (
-      <Badge
-        size="sm"
-        className="text-2xs py-0 bg-transparent border-none text-zinc-500/80 font-normal max-w-full truncate"
-      >
-        <span className="truncate">
-          {prefix && `${prefix} `}
-          <DateTooltip date={new Date(value)} title={tooltipTitle}>
-            <span className="font-medium text-zinc-500/90">{duration}</span>
-          </DateTooltip>
-          {suffix && ` ${suffix}`}
-        </span>
-      </Badge>
+      <Duration
+        prefix={prefix}
+        suffix={suffix}
+        tooltipTitle={tooltipTitle}
+        date={value}
+      />
     );
   };
 }

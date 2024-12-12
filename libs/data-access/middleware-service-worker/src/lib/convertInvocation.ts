@@ -12,5 +12,6 @@ export function convertInvocation(invocation: RawInvocation) {
     inboxed_at: convertToUTC(invocation.inboxed_at),
     scheduled_at: convertToUTC(invocation.scheduled_at),
     completed_at: convertToUTC(invocation.completed_at),
+    created_at: convertToUTC(invocation.created_at),
   };
 }

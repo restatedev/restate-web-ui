@@ -5,7 +5,6 @@ import { ColumnKey } from './columns';
 import { ComponentType } from 'react';
 import { Badge } from '@restate/ui/badge';
 import { ServiceTypeExplainer } from '@restate/features/explainers';
-import { Status } from './cells/Status';
 import { CellProps } from './cells/types';
 import { InvocationIdCell } from './cells/InvocationId';
 import { formatDurations, formatNumber } from '@restate/util/intl';
@@ -14,6 +13,7 @@ import { tv } from 'tailwind-variants';
 import {
   InvocationDeployment,
   InvocationId,
+  Status,
   Target,
 } from '@restate/features/invocation-route';
 

@@ -96,7 +96,7 @@ export function VirtualObjectSection({
                 <div
                   style={{
                     right: `clamp(${position === 0 ? '0rem' : '2rem'}, ${
-                      (position * 100) / (size - 1)
+                      (position * 100) / Math.max(size - 1, 1)
                     }% , calc(100% - 0.5rem))`,
                   }}
                   className="absolute -top-4 -translate-y-1/2 flex flex-col items-center"
@@ -124,7 +124,7 @@ export function VirtualObjectSection({
               {position !== size - 1 && (
                 <div className="absolute left-0 -top-4 -translate-y-1/2 flex flex-col items-center">
                   <div className="text-xs font-medium text-zinc-400 font-mono">
-                    {formatNumber(size - 1)}
+                    {formatNumber(size)}
                   </div>
                 </div>
               )}
