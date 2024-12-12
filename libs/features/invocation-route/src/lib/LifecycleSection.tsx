@@ -42,7 +42,7 @@ export function LifecycleSection({
               <div className="w-3 h-3 rounded-full shrink-0 bg-zinc-100 border border-zinc-200 shadow-sm absolute left-0 top-[1.3125rem] -translate-y-1/2" />
 
               <Badge className="border-transparent bg-transparent  text-zinc-500">
-                1st attempt
+                Started to run
               </Badge>
               <Duration
                 date={invocation.running_at}
