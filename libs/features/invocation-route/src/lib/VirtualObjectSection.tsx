@@ -6,8 +6,13 @@ import { Link } from '@restate/ui/link';
 import { INVOCATION_QUERY_NAME } from './constants';
 import { Copy } from '@restate/ui/copy';
 import { Badge } from '@restate/ui/badge';
-import { HoverTooltip } from '@restate/ui/tooltip';
-import { formatNumber } from '@restate/util/intl';
+import {
+  HoverTooltip,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@restate/ui/tooltip';
+import { formatNumber, formatOrdinals } from '@restate/util/intl';
 
 const styles = tv({ base: '' });
 export function VirtualObjectSection({
@@ -66,17 +71,24 @@ export function VirtualObjectSection({
                   <span className="text-xs font-medium text-zinc-400 font-mono">
                     Head
                   </span>
-                  <Link
-                    href={`?${INVOCATION_QUERY_NAME}=${head}`}
-                    aria-label={head}
-                    variant="secondary"
-                    className="w-6 h-6 bg-white shadow-sm border rounded-lg block"
-                  >
-                    <Icon
-                      name={IconName.Invocation}
-                      className="w-full h-full text-zinc-500 p-1"
-                    />
-                  </Link>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Link
+                        href={`?${INVOCATION_QUERY_NAME}=${head}`}
+                        aria-label={head}
+                        variant="secondary"
+                        className="w-6 h-6 bg-white shadow-sm border rounded-lg block"
+                      >
+                        <Icon
+                          name={IconName.Invocation}
+                          className="w-full h-full text-zinc-500 p-1 animate-pulse"
+                        />
+                      </Link>
+                    </TooltipTrigger>
+                    <TooltipContent small>
+                      The ongoing invocation at the head
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
               )}
 
@@ -96,12 +108,14 @@ export function VirtualObjectSection({
                     <HoverTooltip
                       content={
                         <div>
-                          {position === 0 ? 'Head' : formatNumber(position)}
+                          {position === 0
+                            ? 'Head'
+                            : `${formatOrdinals(position + 1)}  in the queue`}
                         </div>
                       }
                     >
                       <div className="inset-0 shadow-sm w-[1.125rem] h-[1.125rem] bg-white rounded-full p-1.5">
-                        <div className="bg-blue-600 rounded-full h-full w-full animate-pulse" />
+                        <div className="bg-blue-600 rounded-full h-full w-full" />
                       </div>
                     </HoverTooltip>
                   </div>

@@ -82,15 +82,13 @@ export function InvocationPanel() {
         <InvokedBySection className="mt-2" invocation={data} />
         <DeploymentSection className="mt-2" invocation={data} />
         <KeysIdsSection className="mt-2" invocation={data} />
-        {data?.target_service_ty === 'virtual_object' && (
-          <VirtualObjectSection
-            className="mt-2"
-            head={inbox?.head}
-            size={inbox?.size}
-            position={inbox?.[data.id]}
-            invocation={data}
-          />
-        )}
+        <VirtualObjectSection
+          className="mt-2"
+          head={inbox?.head}
+          size={inbox?.size}
+          position={inbox?.[String(data?.id)]}
+          invocation={data}
+        />
         <WorkflowKeySection className="mt-2" invocation={data} />
       </>
     </ComplementaryWithSearchParam>
