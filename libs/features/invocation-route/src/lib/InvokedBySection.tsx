@@ -35,7 +35,7 @@ export function InvokedBySection({
             <div className="absolute w-7 border-l border-b  border-black/20 border-dashed left-3 top-6 bottom-[0.65rem] rounded-b" />
             <Target
               target={invocation.invoked_by_target}
-              className="text-code mt-1.5 ml-7 font-normal"
+              className="text-code mt-1.5 ml-7 font-normal max-w-[calc(100%-1.75rem)]"
             />
           </div>
         </SectionContent>
