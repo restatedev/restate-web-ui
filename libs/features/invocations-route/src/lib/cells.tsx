@@ -5,14 +5,17 @@ import { ColumnKey } from './columns';
 import { ComponentType } from 'react';
 import { Badge } from '@restate/ui/badge';
 import { ServiceTypeExplainer } from '@restate/features/explainers';
-import { Status } from './cells/Status';
 import { CellProps } from './cells/types';
 import { InvocationIdCell } from './cells/InvocationId';
-import { InvokedBy, Target } from './cells/Target';
 import { formatDurations, formatNumber } from '@restate/util/intl';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
-import { DeploymentCell } from './cells/Deployment';
 import { tv } from 'tailwind-variants';
+import {
+  InvocationDeployment,
+  InvocationId,
+  Status,
+  Target,
+} from '@restate/features/invocation-route';
 
 function withDate({
   tooltipTitle,
@@ -91,6 +94,30 @@ function Type({ invocation }: CellProps) {
   );
 }
 
+function InvokedBy({ invocation }: CellProps) {
+  if (invocation.invoked_by === 'ingress') {
+    return <Badge className="border-none">Ingress</Badge>;
+  } else if (invocation.invoked_by_target) {
+    return (
+      <div className="flex flex-col gap-0.5 items-start w-full">
+        <Target target={invocation.invoked_by_target} />
+        {invocation.invoked_by_id && (
+          <InvocationId
+            id={invocation.invoked_by_id}
+            className="max-w-full w-[20ch] pl-1.5 pr-1 min-w-0 text-zinc-500"
+            size="sm"
+          />
+        )}
+      </div>
+    );
+  }
+  return null;
+}
+
+function TargetCell({ invocation }: CellProps) {
+  return <Target target={invocation.target} />;
+}
+
 function withCell(Component: ComponentType<CellProps>) {
   return (props: CellProps) => (
     <Cell className="align-top">
@@ -101,7 +128,7 @@ function withCell(Component: ComponentType<CellProps>) {
 
 const CELLS: Record<ColumnKey, ComponentType<CellProps>> = {
   id: withCell(InvocationIdCell),
-  target: withCell(Target),
+  target: withCell(TargetCell),
   status: withCell(Status),
   target_service_ty: withCell(Type),
   invoked_by: withCell(InvokedBy),
@@ -122,7 +149,7 @@ const CELLS: Record<ColumnKey, ComponentType<CellProps>> = {
   ),
   journal_size: withCell(withField({ field: 'journal_size' })),
   retry_count: withCell(withField({ field: 'retry_count' })),
-  deployment: withCell(DeploymentCell),
+  deployment: withCell(InvocationDeployment),
   target_service_key: withCell(withField({ field: 'target_service_key' })),
   target_service_name: withCell(withField({ field: 'target_service_name' })),
 };

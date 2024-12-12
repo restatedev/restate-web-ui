@@ -4,3 +4,4 @@ export * from './lib/TooltipTrigger';
 export * from './lib/InlineTooltip';
 export * from './lib/TruncateWithTooltip';
 export * from './lib/DateTooltip';
+export * from './lib/HoverTooltip';

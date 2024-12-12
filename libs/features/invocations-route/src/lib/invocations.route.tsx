@@ -1,6 +1,13 @@
 import { Invocation, useListInvocations } from '@restate/data-access/admin-api';
 import { Button } from '@restate/ui/button';
-import { Column, Row, Table, TableBody, TableHeader } from '@restate/ui/table';
+import {
+  Cell,
+  Column,
+  Row,
+  Table,
+  TableBody,
+  TableHeader,
+} from '@restate/ui/table';
 import { useCollator } from 'react-aria';
 import { useAsyncList } from 'react-stately';
 import {
@@ -22,6 +29,7 @@ import {
 import { useEffect, useState } from 'react';
 import { formatDurations } from '@restate/util/intl';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@restate/ui/tooltip';
+import { Actions } from '@restate/features/invocation-route';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: 120,
@@ -85,76 +93,80 @@ function Component() {
   });
 
   return (
-    <div className="flex flex-col flex-auto gap-2">
-      <div className="flex self-end gap-2">
-        <Tooltip>
-          <TooltipTrigger>
-            <Button
-              variant="icon"
-              className="rounded-lg"
-              onClick={() => invocations.reload()}
-            >
-              <Icon
-                name={IconName.Retry}
-                className="h-5 w-5 aspect-square text-gray-500"
-              />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent small offset={5}>
-            Refresh
-          </TooltipContent>
-        </Tooltip>
-
-        <Dropdown>
-          <DropdownTrigger>
-            <Button variant="icon" className="self-end rounded-lg">
-              <Icon
-                name={IconName.TableProperties}
-                className="h-5 w-5 aspect-square text-gray-500"
-              />
-            </Button>
-          </DropdownTrigger>
-          <DropdownPopover>
-            <DropdownSection title="Columns">
-              <DropdownMenu
-                multiple
-                selectable
-                selectedItems={selectedColumns}
-                onSelect={setSelectedColumns}
+    <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
+      <div className="flex flex-col flex-auto gap-2">
+        <div className="flex self-end gap-2">
+          <Tooltip>
+            <TooltipTrigger>
+              <Button
+                variant="icon"
+                className="rounded-lg"
+                onClick={() => invocations.reload()}
               >
-                {Object.entries(COLUMN_NAMES).map(([key, name]) => (
-                  <DropdownItem key={key} value={key}>
-                    {name}
-                  </DropdownItem>
-                ))}
-              </DropdownMenu>
-            </DropdownSection>
-          </DropdownPopover>
-        </Dropdown>
-      </div>
-      <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
+                <Icon
+                  name={IconName.Retry}
+                  className="h-5 w-5 aspect-square text-gray-500"
+                />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent small offset={5}>
+              <RefreshContentTooltip />
+            </TooltipContent>
+          </Tooltip>
+
+          <Dropdown>
+            <DropdownTrigger>
+              <Button variant="icon" className="self-end rounded-lg">
+                <Icon
+                  name={IconName.TableProperties}
+                  className="h-5 w-5 aspect-square text-gray-500"
+                />
+              </Button>
+            </DropdownTrigger>
+            <DropdownPopover>
+              <DropdownSection title="Columns">
+                <DropdownMenu
+                  multiple
+                  selectable
+                  selectedItems={selectedColumns}
+                  onSelect={setSelectedColumns}
+                >
+                  {Object.entries(COLUMN_NAMES).map(([key, name]) => (
+                    <DropdownItem key={key} value={key}>
+                      {name}
+                    </DropdownItem>
+                  ))}
+                </DropdownMenu>
+              </DropdownSection>
+            </DropdownPopover>
+          </Dropdown>
+        </div>
         <Table
           aria-label="Invocations"
           sortDescriptor={invocations.sortDescriptor}
           onSortChange={invocations.sort}
         >
-          <TableHeader
-            columns={sortedColumnsList.map((id, index) => ({
-              name: COLUMN_NAMES[id],
-              id,
-              isRowHeader: index === 0,
-            }))}
-          >
-            {(col) => (
-              <Column
-                id={col.id}
-                isRowHeader={col.isRowHeader}
-                allowsSorting
-                defaultWidth={COLUMN_WIDTH[col.id]}
-              >
-                {col.name}
-              </Column>
-            )}
+          <TableHeader>
+            {sortedColumnsList
+              .map((id, index) => ({
+                name: COLUMN_NAMES[id],
+                id,
+                isRowHeader: index === 0,
+              }))
+              .map((col) => (
+                <Column
+                  id={col.id}
+                  isRowHeader={col.isRowHeader}
+                  allowsSorting
+                  defaultWidth={COLUMN_WIDTH[col.id]}
+                  key={col.id}
+                >
+                  {col.name}
+                </Column>
+              ))}
+            <Column id="actions" width={40}>
+              <span className="sr-only">Actions</span>
+            </Column>
           </TableHeader>
           <TableBody
             items={invocations.items}
@@ -177,17 +189,20 @@ function Component() {
             }
           >
             {(row) => (
-              <Row>
+              <Row className="[&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50 bg-transparent aaa">
                 {sortedColumnsList.map((col) => (
                   <InvocationCell key={col} column={col} invocation={row} />
                 ))}
+                <Cell>
+                  <Actions invocation={row} />
+                </Cell>
               </Row>
             )}
           </TableBody>
         </Table>
         <Footnote />
-      </SnapshotTimeProvider>
-    </div>
+      </div>
+    </SnapshotTimeProvider>
   );
 }
 
@@ -223,10 +238,35 @@ function Footnote() {
   const duration = formatDurations(parts);
   return (
     <div className="w-full text-center text-xs text-gray-500/80">
-      <span>{data.rows.length}</span> of{' '}
-      <span className="font-medium text-gray-500">{data.total_count}</span>{' '}
-      recently modified invocations as of{' '}
-      <span className="font-medium text-gray-500">{duration} ago</span>
+      {data.total_count ? (
+        <>
+          <span>{data.rows.length}</span>
+          {' of '}
+          <span className="font-medium text-gray-500">
+            {data.total_count}
+          </span>{' '}
+          recently modified invocations
+        </>
+      ) : (
+        'No invocations found'
+      )}{' '}
+      as of <span className="font-medium text-gray-500">{duration} ago</span>
+    </div>
+  );
+}
+
+function RefreshContentTooltip() {
+  const [now] = useState(() => Date.now());
+
+  const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
+  const { isPast, ...parts } = durationSinceLastSnapshot(now);
+  const duration = formatDurations(parts);
+  return (
+    <div>
+      <div className="font-medium text-center">Refresh</div>
+      <div className="text-2xs text-center opacity-90">
+        Last updated {duration} ago
+      </div>
     </div>
   );
 }

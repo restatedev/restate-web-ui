@@ -1,7 +1,5 @@
-import {
-  InvocationComputedStatus,
-  RawInvocation,
-} from '@restate/data-access/admin-api';
+import { convertInvocation } from './convertInvocation';
+import { match } from 'path-to-regexp';
 
 function query(query: string, { baseUrl }: { baseUrl: string }) {
   return fetch(`${baseUrl}/query`, {
@@ -9,61 +7,6 @@ function query(query: string, { baseUrl }: { baseUrl: string }) {
     body: JSON.stringify({ query }),
     headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
   });
-}
-
-function getComputedStatus(
-  invocation: RawInvocation
-): InvocationComputedStatus {
-  const isSuccessful = invocation.completion_result === 'success';
-  const isCancelled = Boolean(
-    invocation.completion_result === 'failure' &&
-      invocation.completion_failure?.startsWith('[409]')
-  );
-  const isKilled = Boolean(
-    isCancelled && invocation.completion_failure?.includes('killed')
-  );
-  const isRunning = invocation.status === 'running';
-  const isCompleted = invocation.status === 'completed';
-  const isRetrying = Boolean(
-    invocation.retry_count &&
-      invocation.retry_count > 1 &&
-      (isRunning || invocation.status === 'backing-off')
-  );
-
-  if (isCompleted) {
-    if (isSuccessful) {
-      return 'succeeded';
-    }
-    if (isKilled) {
-      return 'killed';
-    }
-    if (isCancelled) {
-      return 'cancelled';
-    }
-    if (invocation.completion_result === 'failure') {
-      return 'failed';
-    }
-  }
-
-  if (isRetrying) {
-    return 'retrying';
-  }
-
-  switch (invocation.status) {
-    case 'pending':
-      return 'pending';
-    case 'ready':
-      return 'ready';
-    case 'scheduled':
-      return 'scheduled';
-    case 'running':
-      return 'running';
-    case 'suspended':
-      return 'suspended';
-
-    default:
-      throw new Error('Cannot calculate status');
-  }
 }
 
 const INVOCATIONS_LIMIT = 500;
@@ -89,19 +32,7 @@ function listInvocations(baseUrl: string) {
           ...jsonResponse,
           limit: INVOCATIONS_LIMIT,
           total_count,
-          rows: jsonResponse.rows.map((invocation: RawInvocation) => ({
-            ...invocation,
-            status: getComputedStatus(invocation),
-            last_start_at:
-              invocation.last_start_at && `${invocation.last_start_at}Z`,
-            running_at: invocation.running_at && `${invocation.running_at}Z`,
-            modified_at: invocation.modified_at && `${invocation.modified_at}Z`,
-            inboxed_at: invocation.inboxed_at && `${invocation.inboxed_at}Z`,
-            scheduled_at:
-              invocation.scheduled_at && `${invocation.scheduled_at}Z`,
-            completed_at:
-              invocation.completed_at && `${invocation.completed_at}Z`,
-          })),
+          rows: jsonResponse.rows.map(convertInvocation),
         }),
         {
           status: res.status,
@@ -114,11 +45,104 @@ function listInvocations(baseUrl: string) {
   });
 }
 
+function getInvocation(invocationId: string, baseUrl: string) {
+  return query(`SELECT * FROM sys_invocation WHERE id = '${invocationId}'`, {
+    baseUrl,
+  }).then(async (res) => {
+    if (res.ok) {
+      const jsonResponse = await res.json();
+      if (jsonResponse.rows.length > 0) {
+        return new Response(
+          JSON.stringify({
+            ...convertInvocation(jsonResponse.rows.at(0)),
+          }),
+          {
+            status: res.status,
+            statusText: res.statusText,
+            headers: res.headers,
+          }
+        );
+      }
+      return new Response(JSON.stringify({ message: 'Not found' }), {
+        status: 404,
+        statusText: 'Not found',
+        headers: res.headers,
+      });
+    }
+    return res;
+  });
+}
+
+function getInbox(key: string, invocationId: string, baseUrl: string) {
+  return query(
+    `SELECT * FROM sys_inbox WHERE (sequence_number = (SELECT MIN(sequence_number) FROM sys_inbox WHERE service_key = '${key}') OR sequence_number = (SELECT MAX(sequence_number) FROM sys_inbox WHERE service_key = '${key}') OR id = '${invocationId}') AND  service_key = '${key}'`,
+    {
+      baseUrl,
+    }
+  ).then(async (res) => {
+    if (res.ok) {
+      const jsonResponse = await res.json();
+      const indexes = (jsonResponse.rows ?? []).map(
+        (row: any) => row.sequence_number
+      );
+      const head = Math.min(...indexes);
+      const tail = Math.max(...indexes);
+      const headInvocation = jsonResponse.rows?.find(
+        (row: any) => row.sequence_number === head
+      );
+      const queriedInvocation = jsonResponse.rows?.find(
+        (row: any) => row.id === invocationId
+      );
+      if (headInvocation && queriedInvocation) {
+        return new Response(
+          JSON.stringify({
+            head: headInvocation.id,
+            size: tail - head + 1,
+            [invocationId]: queriedInvocation.sequence_number - head,
+          }),
+          {
+            status: res.status,
+            statusText: res.statusText,
+            headers: res.headers,
+          }
+        );
+      }
+      return new Response(JSON.stringify({ message: 'Not found' }), {
+        status: 404,
+        statusText: 'Not found',
+        headers: res.headers,
+      });
+    }
+    return res;
+  });
+}
+
 export function queryMiddlerWare(req: Request) {
   const { url, method } = req;
+  const urlObj = new URL(url);
+
   if (url.endsWith('/query/invocations') && method.toUpperCase() === 'GET') {
-    const urlObj = new URL(url);
     const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
     return listInvocations(baseUrl);
+  }
+
+  const getInvocationParams = match<{ invocationId: string }>(
+    '/query/invocations/:invocationId'
+  )(urlObj.pathname);
+  if (getInvocationParams && method.toUpperCase() === 'GET') {
+    const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
+    return getInvocation(getInvocationParams.params.invocationId, baseUrl);
+  }
+
+  const getInboxParams = match<{ key: string }>(
+    '/query/virtualObjects/:key/inbox'
+  )(urlObj.pathname);
+  if (getInboxParams && method.toUpperCase() === 'GET') {
+    const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
+    return getInbox(
+      getInboxParams.params.key,
+      String(urlObj.searchParams.get('invocationId')),
+      baseUrl
+    );
   }
 }

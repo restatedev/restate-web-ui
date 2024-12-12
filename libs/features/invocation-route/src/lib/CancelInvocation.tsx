@@ -4,52 +4,36 @@ import {
   DialogFooter,
   QueryDialog,
 } from '@restate/ui/dialog';
-import {
-  DELETE_DEPLOYMENT_QUERY_PARAM,
-  DEPLOYMENT_QUERY_PARAM,
-} from './constants';
+import { CANCEL_INVOCATION_QUERY_PARAM } from './constants';
 import { Form, useSearchParams } from 'react-router';
 import { Button, SubmitButton } from '@restate/ui/button';
 import { ErrorBanner } from '@restate/ui/error';
 import { FormFieldInput } from '@restate/ui/form-field';
-import { FormEvent, useId, useState } from 'react';
-import {
-  useDeleteDeployment,
-  useListDeployments,
-} from '@restate/data-access/admin-api';
-import { getEndpoint } from './types';
+import { FormEvent, useId } from 'react';
+import { useDeleteInvocation } from '@restate/data-access/admin-api';
 import { showSuccessNotification } from '@restate/ui/notification';
+import { Link } from '@restate/ui/link';
+import { Icon, IconName } from '@restate/ui/icons';
 
-export function DeleteDeployment() {
+export function CancelInvocation() {
   const formId = useId();
   const [searchParams, setSearchParams] = useSearchParams();
-  const deploymentId = searchParams.get(DELETE_DEPLOYMENT_QUERY_PARAM);
-  const { data, refetch } = useListDeployments();
-  const deployment = deploymentId
-    ? data?.deployments.get(deploymentId)
-    : undefined;
-  const [deploymentEndpoint, setDeploymentEndpoint] = useState(
-    getEndpoint(deployment)
-  );
-  if (deployment && !deploymentEndpoint) {
-    setDeploymentEndpoint(getEndpoint(deployment));
-  }
-  const { mutate, isPending, error } = useDeleteDeployment(
-    String(deploymentId),
+  const invocationId = searchParams.get(CANCEL_INVOCATION_QUERY_PARAM);
+
+  const { mutate, isPending, error } = useDeleteInvocation(
+    String(invocationId),
     {
       onSuccess(data, variables) {
         setSearchParams((old) => {
-          old.delete(DELETE_DEPLOYMENT_QUERY_PARAM);
-          old.delete(DEPLOYMENT_QUERY_PARAM);
+          old.delete(CANCEL_INVOCATION_QUERY_PARAM);
           return old;
         });
         showSuccessNotification(
           <>
-            <code>{variables.parameters?.path.deployment}</code> has been
-            successfully deleted.
+            <code>{variables.parameters?.path.invocation_id}</code> has been
+            successfully registered for cancellation.
           </>
         );
-        refetch();
       },
     }
   );
@@ -59,49 +43,69 @@ export function DeleteDeployment() {
 
     mutate({
       parameters: {
-        path: { deployment: String(deploymentId) },
-        query: { force: true },
+        path: { invocation_id: String(invocationId) },
+        query: { mode: 'Cancel' },
       },
     });
   };
 
   return (
-    <QueryDialog query={DELETE_DEPLOYMENT_QUERY_PARAM}>
-      <DialogContent>
+    <QueryDialog query={CANCEL_INVOCATION_QUERY_PARAM}>
+      <DialogContent className="max-w-lg">
         <div className="flex flex-col gap-2">
           <h3 className="text-lg font-medium leading-6 text-gray-900">
-            Confirm Deployment deletion
+            Confirm Invocation cancellation
           </h3>
-          <p className="text-sm text-gray-500">
-            Are you sure you want to delete{' '}
-            <code className="bg-red-50 text-red-700 ring-red-600/10 p-0.5 inline-block rounded-md">
-              {deploymentEndpoint}
-            </code>
-            ? This might break in-flight invocations, use with{' '}
-            <span className="font-medium">caution</span>.
-          </p>
+          <div className="text-sm text-gray-500 flex flex-col gap-2">
+            <p>
+              Are you sure you want to cancel{' '}
+              <code className="bg-red-50 text-red-700 ring-red-600/10 p-0.5 inline-block rounded-md">
+                {invocationId}
+              </code>
+              ?
+            </p>
+
+            <p className="mt-2 text-code flex rounded-xl bg-blue-50 p-3 text-blue-600 gap-2">
+              <Icon
+                className="h-5 w-5  text-blue-100 fill-blue-600 shrink-0"
+                name={IconName.Info}
+              />
+              <div>
+                Canceling an invocation frees resources and rolls back changes
+                made so far. It's a non-blocking operation, so cancellation
+                completion is not guaranteed.{' '}
+                <Link
+                  href="https://docs.restate.dev/operate/invocation/#cancelling-invocations"
+                  variant="secondary"
+                  className="text-blue-600"
+                >
+                  Learn more…
+                </Link>
+              </div>
+            </p>
+          </div>
           <Form
             id={formId}
             method="DELETE"
-            action={`/deployments/${deploymentId}`}
+            action={`/invocations/${invocationId}`}
             onSubmit={submitHandler}
           >
             <p className="text-sm text-gray-500 mt-2">
-              Please confirm to proceed or close to keep the Deployment.
+              Please confirm to proceed or close to keep the Invocation.
             </p>
             <FormFieldInput
               autoFocus
               required
-              pattern="delete"
+              pattern="cancel"
               name="confirm"
               className="mt-2"
-              placeholder='Type "delete" to confirm'
+              placeholder='Type "cancel" to confirm'
               errorMessage={(errors) => {
                 const isMisMatch =
                   errors.validationDetails.patternMismatch &&
                   !errors.validationDetails.valueMissing;
                 if (isMisMatch) {
-                  return 'Type "delete" to confirm';
+                  return 'Type "cancel" to confirm';
                 }
                 return errors.validationErrors;
               }}
@@ -124,7 +128,7 @@ export function DeleteDeployment() {
                     form={formId}
                     className="flex-auto"
                   >
-                    Delete
+                    Cancel
                   </SubmitButton>
                 </div>
               </div>

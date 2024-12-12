@@ -22,6 +22,8 @@ import {
   ServiceCompatibility,
 } from '@restate/features/explainers';
 import { ErrorBanner } from '@restate/ui/error';
+import { Copy } from '@restate/ui/copy';
+import { Badge } from '@restate/ui/badge';
 
 export function DeploymentDetails() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -43,7 +45,7 @@ export function DeploymentDetails() {
           <div className="flex gap-2">
             <ComplementaryClose>
               <Button className="flex-auto grow-0 w-1/2" variant="secondary">
-                Cancel
+                Close
               </Button>
             </ComplementaryClose>
             <Button
@@ -95,7 +97,7 @@ function DeploymentContent({ deployment }: { deployment: string }) {
           ) : (
             <>
               Deployment
-              <span className="text-sm text-gray-500 contents">
+              <span className="text-sm text-gray-500 contents font-mono">
                 <TruncateWithTooltip>{getEndpoint(data)}</TruncateWithTooltip>
               </span>
             </>
@@ -104,7 +106,7 @@ function DeploymentContent({ deployment }: { deployment: string }) {
       </h2>
       <Section className="mt-5">
         <SectionTitle>Services</SectionTitle>
-        <SectionContent className="bg-transparent shadow-none border-none px-2 pt-2">
+        <SectionContent className="px-2 pt-2" raised={false}>
           {isPending ? (
             <div className="flex flex-col gap-2">
               <div className="w-full h-6 animate-pulse rounded-md bg-white" />
@@ -122,7 +124,7 @@ function DeploymentContent({ deployment }: { deployment: string }) {
       {additionalHeaders.length > 0 && (
         <Section className="mt-4">
           <SectionTitle>Additional headers</SectionTitle>
-          <SectionContent className="bg-transparent shadow-none border-none p-0">
+          <SectionContent className="p-0" raised={false}>
             <>
               <div className="mt-2 grid [grid-template-columns:1fr_2fr] text-xs font-medium text-gray-400">
                 <div className="pl-2">Name</div>
@@ -155,21 +157,21 @@ function DeploymentContent({ deployment }: { deployment: string }) {
         </SectionTitle>
         <SectionContent className="p-0">
           <div className="flex px-1.5 py-1 items-center [&:not(:last-child)]:border-b">
-            <div className="flex-auto pl-1 text-code text-gray-500 font-medium">
+            <span className="flex-auto pl-1 text-code text-gray-500 font-medium">
               Type
-            </div>
-            <div className="h-5 min-w-5 self-end bg-zinc-50 text-zinc-600 ring-zinc-600/20 inline-flex text-xs gap-1 items-center rounded-md px-2 py-0.5 font-medium ring-1 ring-inset">
+            </span>
+            <Badge size="sm" className="font-mono py-0  align-middle">
               {getProtocolType(data)}
-            </div>
+            </Badge>
           </div>
           {data && isHttpDeployment(data) && (
-            <div className="flex px-1.5 py-1 items-center">
-              <div className="flex-auto pl-1 text-code text-gray-500 font-medium">
+            <div className="flex px-1.5 py-1 items-center [&:not(:last-child)]:border-b">
+              <span className="flex-auto pl-1 text-code text-gray-500 font-medium">
                 <code>HTTP</code> version
-              </div>
-              <div className="h-5 min-w-5 self-end bg-zinc-50 text-zinc-600 ring-zinc-600/20 inline-flex text-xs gap-1 items-center rounded-md px-2 py-0.5 font-medium ring-1 ring-inset">
+              </span>
+              <Badge size="sm" className="font-mono py-0  align-middle">
                 {data.http_version}
-              </div>
+              </Badge>
             </div>
           )}
         </SectionContent>
@@ -179,21 +181,21 @@ function DeploymentContent({ deployment }: { deployment: string }) {
           </ServiceCompatibility>
         </SectionTitle>
         <SectionContent className="p-0">
-          <div className="flex border-b px-1.5 py-1">
-            <div className="flex-auto pl-1 text-code text-gray-500 font-medium">
+          <div className="flex px-1.5 py-1 items-center [&:not(:last-child)]:border-b">
+            <span className="flex-auto pl-1 text-code text-gray-500 font-medium">
               Min protocol version
-            </div>
-            <div className="h-5 min-w-5 self-end  bg-zinc-50 text-zinc-600 ring-zinc-600/20 inline-flex text-xs gap-1 items-center rounded-md px-2 py-0.5 font-medium ring-1 ring-inset">
+            </span>
+            <Badge size="sm" className="font-mono py-0  align-middle">
               {data?.min_protocol_version}
-            </div>
+            </Badge>
           </div>
-          <div className="flex px-1.5 py-1">
-            <div className="flex-auto pl-1 text-code text-gray-500 font-medium">
+          <div className="flex px-1.5 py-1 items-center [&:not(:last-child)]:border-b">
+            <span className="flex-auto pl-1 text-code text-gray-500 font-medium">
               Max protocol version
-            </div>
-            <div className="h-5 min-w-5 self-end  bg-zinc-50 text-zinc-600 ring-zinc-600/20 inline-flex text-xs gap-1 items-center rounded-md px-2 py-0.5 font-medium ring-1 ring-inset">
+            </span>
+            <Badge size="sm" className="font-mono py-0  align-middle">
               {data?.max_protocol_version}
-            </div>
+            </Badge>
           </div>
         </SectionContent>
         {data && isLambdaDeployment(data) && data.assume_role_arn && (
@@ -214,6 +216,18 @@ function DeploymentContent({ deployment }: { deployment: string }) {
             </SectionContent>
           </>
         )}
+      </Section>
+      <Section className="mt-4">
+        <SectionTitle>Id</SectionTitle>
+        <SectionContent className="font-mono py-1 flex items-center pr-0.5 text-zinc-600 text-code">
+          <div>{data?.id}</div>
+          {data?.id && (
+            <Copy
+              copyText={data?.id}
+              className=" [&_svg]:w-3 [&_svg]:h-3 shrink-0 text-2xs p-1"
+            />
+          )}
+        </SectionContent>
       </Section>
     </>
   );

@@ -29,7 +29,10 @@ import {
   ServiceDetails,
 } from '@restate/features/overview-route';
 import { Spinner } from '@restate/ui/loading';
-import { InvocationPanel } from '@restate/features/invocation-route';
+import {
+  DeleteInvocation,
+  InvocationPanel,
+} from '@restate/features/invocation-route';
 
 export const links: LinksFunction = () => [
   {
@@ -153,6 +156,7 @@ export default function App() {
         <DeleteDeployment />
         <ServicePlayground />
         <InvocationPanel />
+        <DeleteInvocation />
       </RestateContextProvider>
     </QueryProvider>
   );

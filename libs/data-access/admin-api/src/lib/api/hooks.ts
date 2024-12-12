@@ -249,3 +249,71 @@ export function useListInvocations(
     queryKey: queryOptions.queryKey,
   };
 }
+
+export function useGetInvocation(
+  invocationId: string,
+  options?: HookQueryOptions<'/query/invocations/{invocationId}', 'get'>
+) {
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi(
+    'query',
+    '/query/invocations/{invocationId}',
+    'get',
+    {
+      baseUrl,
+      parameters: { path: { invocationId } },
+    }
+  );
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+  };
+}
+
+export function useGetVirtualObjectInbox(
+  key: string,
+  invocationId: string,
+  options?: HookQueryOptions<'/query/virtualObjects/{key}/inbox', 'get'>
+) {
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi(
+    'query',
+    '/query/virtualObjects/{key}/inbox',
+    'get',
+    {
+      baseUrl,
+      parameters: { path: { key }, query: { invocationId } },
+    }
+  );
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+  };
+}
+
+export function useDeleteInvocation(
+  invocation_id: string,
+  options?: HookMutationOptions<'/invocations/{invocation_id}', 'delete'>
+) {
+  const baseUrl = useAdminBaseUrl();
+
+  return useMutation({
+    ...adminApi('mutate', '/invocations/{invocation_id}', 'delete', {
+      baseUrl,
+      resolvedPath: `/invocations/${invocation_id}`,
+    }),
+    ...options,
+  });
+}

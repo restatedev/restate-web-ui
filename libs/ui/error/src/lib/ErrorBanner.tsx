@@ -5,8 +5,8 @@ import { tv } from 'tailwind-variants';
 import { RestateServerError } from './RestateServerError';
 
 export interface ErrorProps {
-  errors?: Error[] | string[] | RestateError[];
-  error?: Error | string | RestateError;
+  errors?: (Error | null)[] | (string | null)[] | (RestateError | null)[];
+  error?: Error | string | RestateError | null;
   className?: string;
 }
 
@@ -21,6 +21,7 @@ function SingleError({
 }: PropsWithChildren<{
   error?:
     | Error
+    | null
     | string
     | {
         message: string;
@@ -60,11 +61,12 @@ export function ErrorBanner({
   children,
   className,
 }: PropsWithChildren<ErrorProps>) {
-  if (errors.length === 0 && !error) {
+  const filteredErrors = errors.filter(Boolean);
+  if (filteredErrors.length === 0 && !error) {
     return null;
   }
-  if (errors.length === 1) {
-    const [singleError] = errors;
+  if (filteredErrors.length === 1) {
+    const [singleError] = filteredErrors;
     return (
       <SingleError
         error={singleError}
@@ -91,13 +93,13 @@ export function ErrorBanner({
         </div>
         <div className="ml-3 flex flex-col gap-2">
           <h3 className="text-sm font-medium text-red-800">
-            There were {errors.length} errors:
+            There were {filteredErrors.length} errors:
           </h3>
           <output className="text-sm text-red-700 [word-break:break-word] max-h-20 overflow-auto">
             <ul className="list-disc space-y-1 pl-5">
-              {errors.map((error) => (
-                <li key={typeof error === 'string' ? error : error.message}>
-                  {typeof error === 'string' ? error : error.message}
+              {filteredErrors.map((error) => (
+                <li key={typeof error === 'string' ? error : error?.message}>
+                  {typeof error === 'string' ? error : error?.message}
                 </li>
               ))}
             </ul>

@@ -59,10 +59,15 @@ function LanguageIcon({
   return null;
 }
 
-function SDK({
+const sdkStyles = tv({
+  base: 'font-mono font-semibold text-zinc-500/80 flex items-center border border-transparent',
+});
+export function SDK({
   lastAttemptServer,
+  className,
 }: {
   lastAttemptServer: Invocation['last_attempt_server'];
+  className?: string;
 }) {
   const { sdk, version } = getSDKVersion(lastAttemptServer);
 
@@ -71,10 +76,13 @@ function SDK({
   }
 
   return (
-    <>
+    <div className={sdkStyles({ className })}>
       <LanguageIcon lang={sdk} className="w-6 h-6 shrink-0 opacity-80" />
-      SDK/{version && <div className=" font-semibold truncate">{version}</div>}
-    </>
+      <div className="inline-flex items-center">
+        SDK/
+        {version && <div className="truncate">{version}</div>}
+      </div>
+    </div>
   );
 }
 
@@ -82,12 +90,14 @@ const styles = tv({
   base: 'text-xs  flex flex-col items-start',
 });
 
-export function DeploymentCell({
+export function InvocationDeployment({
   invocation,
   className,
+  showSdk = true,
 }: {
   invocation: Invocation;
   className?: string;
+  showSdk?: boolean;
 }) {
   const { data } = useListDeployments();
   const deploymentId =
@@ -103,12 +113,15 @@ export function DeploymentCell({
         <Deployment
           deploymentId={deploymentId}
           revision={revision}
-          className="text-xs p-0 pr-0.5 m-0 [&_a:before]:rounded-md max-w-full"
+          className="text-inherit p-0 pr-0.5 m-0 [&_a:before]:rounded-md max-w-full"
           highlightSelection={false}
         />
-        <div className="[font-size:85%] font-mono font-semibold text-zinc-500/80 flex items-center border border-transparent ml-7 max-w-[calc(100%-1.75rem)] -mt-0.5">
-          <SDK lastAttemptServer={invocation.last_attempt_server} />
-        </div>
+        {showSdk && (
+          <SDK
+            lastAttemptServer={invocation.last_attempt_server}
+            className="[font-size:85%] gap-2 max-w-[calc(100%-1.75rem)] -mt-0.5"
+          />
+        )}
       </div>
     ) : null;
   }

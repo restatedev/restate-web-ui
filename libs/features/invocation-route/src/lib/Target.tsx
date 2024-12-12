@@ -1,4 +1,3 @@
-import { Badge } from '@restate/ui/badge';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Link } from '@restate/ui/link';
 import {
@@ -6,8 +5,6 @@ import {
   TruncateTooltipTrigger,
 } from '@restate/ui/tooltip';
 import { useRef } from 'react';
-import { CellProps } from './types';
-import { InvocationId } from './InvocationId';
 import { tv } from 'tailwind-variants';
 import { SERVICE_QUERY_PARAM } from '@restate/features/overview-route';
 
@@ -39,7 +36,7 @@ function TargetTooltipContent({
 const styles = tv({
   base: 'min-w-0 max-w-full [&:has([data-pressed=true])]:shadow-none transition-all inline-flex relative shadow-sm pl-2 text-xs rounded-lg bg-white ring-gray-200 text-zinc-600 font-medium ring-1 ring-inset',
 });
-function TargetInner({
+export function Target({
   target = '',
   className,
 }: {
@@ -71,7 +68,7 @@ function TargetInner({
         triggerRef={linkRef}
       >
         <div className="flex items-stretch overflow-hidden">
-          <div className="truncate inline-flex items-center mr-1.5">
+          <div className="truncate inline-flex items-center mr-2.5">
             <Icon
               name={IconName.Box}
               className="w-3 h-3 mr-1 text-zinc-400 fill-zinc-100 shrink-0"
@@ -80,7 +77,7 @@ function TargetInner({
           </div>
 
           {key && (
-            <div className="basis-0 grow shrink-1 max-w-fit truncate my-px [filter:drop-shadow(-1px_0px_0px_theme(colors.zinc.200/100%))] ml-0.5">
+            <div className="basis-0 grow shrink-1 max-w-fit truncate my-px [filter:drop-shadow(-1px_0px_0px_theme(colors.zinc.200/100%))] -ml-1">
               <div className="font-mono text-2xs h-full [clip-path:polygon(4px_0,100%_0,calc(100%-4px)_100%,0%_100%)] bg-zinc-50 text-zinc-500 flex items-center pl-1.5 pr-2">
                 <TruncateTooltipTrigger>{key}</TruncateTooltipTrigger>
               </div>
@@ -88,7 +85,7 @@ function TargetInner({
           )}
 
           <div className="truncate my-px [filter:drop-shadow(-1px_0px_0px_theme(colors.zinc.200/100%))] ml-[-4px]">
-            <div className="italic  h-full [clip-path:polygon(4px_0,100%_0,100%_100%,0%_100%)] bg-zinc-100 text-zinc-600/80 flex items-center pl-1 pr-0.5">
+            <div className="italic font-medium h-full [clip-path:polygon(4px_0,100%_0,100%_100%,0%_100%)] bg-zinc-100 text-zinc-600/80 flex items-center pl-1 pr-0.5">
               <Icon
                 name={IconName.Function}
                 className="w-4 h-4 text-zinc-400 shrink-0 -mr-0.5"
@@ -114,28 +111,4 @@ function TargetInner({
       </TruncateWithTooltip>
     </div>
   );
-}
-
-export function Target({ invocation }: CellProps) {
-  return <TargetInner target={invocation.target} />;
-}
-
-export function InvokedBy({ invocation }: CellProps) {
-  if (invocation.invoked_by === 'ingress') {
-    return <Badge className="border-none">Ingress</Badge>;
-  } else if (invocation.invoked_by_target) {
-    return (
-      <div className="flex flex-col gap-0.5 items-start w-full">
-        <TargetInner target={invocation.invoked_by_target} />
-        {invocation.invoked_by_id && (
-          <InvocationId
-            id={invocation.invoked_by_id}
-            className="max-w-full w-[20ch]  min-w-0 text-zinc-500"
-            size="sm"
-          />
-        )}
-      </div>
-    );
-  }
-  return null;
 }
