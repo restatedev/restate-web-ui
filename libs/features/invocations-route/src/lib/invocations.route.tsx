@@ -85,54 +85,54 @@ function Component() {
   });
 
   return (
-    <div className="flex flex-col flex-auto gap-2">
-      <div className="flex self-end gap-2">
-        <Tooltip>
-          <TooltipTrigger>
-            <Button
-              variant="icon"
-              className="rounded-lg"
-              onClick={() => invocations.reload()}
-            >
-              <Icon
-                name={IconName.Retry}
-                className="h-5 w-5 aspect-square text-gray-500"
-              />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent small offset={5}>
-            Refresh
-          </TooltipContent>
-        </Tooltip>
-
-        <Dropdown>
-          <DropdownTrigger>
-            <Button variant="icon" className="self-end rounded-lg">
-              <Icon
-                name={IconName.TableProperties}
-                className="h-5 w-5 aspect-square text-gray-500"
-              />
-            </Button>
-          </DropdownTrigger>
-          <DropdownPopover>
-            <DropdownSection title="Columns">
-              <DropdownMenu
-                multiple
-                selectable
-                selectedItems={selectedColumns}
-                onSelect={setSelectedColumns}
+    <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
+      <div className="flex flex-col flex-auto gap-2">
+        <div className="flex self-end gap-2">
+          <Tooltip>
+            <TooltipTrigger>
+              <Button
+                variant="icon"
+                className="rounded-lg"
+                onClick={() => invocations.reload()}
               >
-                {Object.entries(COLUMN_NAMES).map(([key, name]) => (
-                  <DropdownItem key={key} value={key}>
-                    {name}
-                  </DropdownItem>
-                ))}
-              </DropdownMenu>
-            </DropdownSection>
-          </DropdownPopover>
-        </Dropdown>
-      </div>
-      <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
+                <Icon
+                  name={IconName.Retry}
+                  className="h-5 w-5 aspect-square text-gray-500"
+                />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent small offset={5}>
+              <RefreshContentTooltip />
+            </TooltipContent>
+          </Tooltip>
+
+          <Dropdown>
+            <DropdownTrigger>
+              <Button variant="icon" className="self-end rounded-lg">
+                <Icon
+                  name={IconName.TableProperties}
+                  className="h-5 w-5 aspect-square text-gray-500"
+                />
+              </Button>
+            </DropdownTrigger>
+            <DropdownPopover>
+              <DropdownSection title="Columns">
+                <DropdownMenu
+                  multiple
+                  selectable
+                  selectedItems={selectedColumns}
+                  onSelect={setSelectedColumns}
+                >
+                  {Object.entries(COLUMN_NAMES).map(([key, name]) => (
+                    <DropdownItem key={key} value={key}>
+                      {name}
+                    </DropdownItem>
+                  ))}
+                </DropdownMenu>
+              </DropdownSection>
+            </DropdownPopover>
+          </Dropdown>
+        </div>
         <Table
           aria-label="Invocations"
           sortDescriptor={invocations.sortDescriptor}
@@ -186,8 +186,8 @@ function Component() {
           </TableBody>
         </Table>
         <Footnote />
-      </SnapshotTimeProvider>
-    </div>
+      </div>
+    </SnapshotTimeProvider>
   );
 }
 
@@ -236,6 +236,22 @@ function Footnote() {
         'No invocations found'
       )}{' '}
       as of <span className="font-medium text-gray-500">{duration} ago</span>
+    </div>
+  );
+}
+
+function RefreshContentTooltip() {
+  const [now] = useState(() => Date.now());
+
+  const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
+  const { isPast, ...parts } = durationSinceLastSnapshot(now);
+  const duration = formatDurations(parts);
+  return (
+    <div>
+      <div className="font-medium text-center">Refresh</div>
+      <div className="text-2xs text-center opacity-90">
+        Last updated {duration} ago
+      </div>
     </div>
   );
 }
