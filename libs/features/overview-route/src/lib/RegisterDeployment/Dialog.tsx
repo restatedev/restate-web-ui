@@ -35,7 +35,7 @@ function RegisterDeploymentFooter() {
         <div className="flex gap-2">
           <DialogClose>
             <Button variant="secondary" disabled={isPending}>
-              Cancel
+              Close
             </Button>
           </DialogClose>
           <div className="flex-auto flex flex-row-reverse gap-2">

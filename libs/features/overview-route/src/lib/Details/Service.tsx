@@ -113,7 +113,7 @@ export function ServiceDetails() {
                 variant="secondary"
                 disabled={isPending || isSubmitting}
               >
-                Cancel
+                Close
               </Button>
             </ComplementaryClose>
             <SubmitButton

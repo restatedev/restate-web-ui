@@ -116,7 +116,7 @@ export function DeleteDeployment() {
                       className="flex-auto"
                       disabled={isPending}
                     >
-                      Cancel
+                      Close
                     </Button>
                   </DialogClose>
                   <SubmitButton

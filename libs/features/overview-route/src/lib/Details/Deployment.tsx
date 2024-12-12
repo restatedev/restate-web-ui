@@ -45,7 +45,7 @@ export function DeploymentDetails() {
           <div className="flex gap-2">
             <ComplementaryClose>
               <Button className="flex-auto grow-0 w-1/2" variant="secondary">
-                Cancel
+                Close
               </Button>
             </ComplementaryClose>
             <Button
