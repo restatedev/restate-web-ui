@@ -4,52 +4,34 @@ import {
   DialogFooter,
   QueryDialog,
 } from '@restate/ui/dialog';
-import {
-  DELETE_DEPLOYMENT_QUERY_PARAM,
-  DEPLOYMENT_QUERY_PARAM,
-} from './constants';
+import { PURGE_INVOCATION_QUERY_PARAM } from './constants';
 import { Form, useSearchParams } from 'react-router';
 import { Button, SubmitButton } from '@restate/ui/button';
 import { ErrorBanner } from '@restate/ui/error';
 import { FormFieldInput } from '@restate/ui/form-field';
-import { FormEvent, useId, useState } from 'react';
-import {
-  useDeleteDeployment,
-  useListDeployments,
-} from '@restate/data-access/admin-api';
-import { getEndpoint } from './types';
+import { FormEvent, useId } from 'react';
+import { useDeleteInvocation } from '@restate/data-access/admin-api';
 import { showSuccessNotification } from '@restate/ui/notification';
 
-export function DeleteDeployment() {
+export function PurgeInvocation() {
   const formId = useId();
   const [searchParams, setSearchParams] = useSearchParams();
-  const deploymentId = searchParams.get(DELETE_DEPLOYMENT_QUERY_PARAM);
-  const { data, refetch } = useListDeployments();
-  const deployment = deploymentId
-    ? data?.deployments.get(deploymentId)
-    : undefined;
-  const [deploymentEndpoint, setDeploymentEndpoint] = useState(
-    getEndpoint(deployment)
-  );
-  if (deployment && !deploymentEndpoint) {
-    setDeploymentEndpoint(getEndpoint(deployment));
-  }
-  const { mutate, isPending, error } = useDeleteDeployment(
-    String(deploymentId),
+  const invocationId = searchParams.get(PURGE_INVOCATION_QUERY_PARAM);
+
+  const { mutate, isPending, error } = useDeleteInvocation(
+    String(invocationId),
     {
       onSuccess(data, variables) {
         setSearchParams((old) => {
-          old.delete(DELETE_DEPLOYMENT_QUERY_PARAM);
-          old.delete(DEPLOYMENT_QUERY_PARAM);
+          old.delete(PURGE_INVOCATION_QUERY_PARAM);
           return old;
         });
         showSuccessNotification(
           <>
-            <code>{variables.parameters?.path.deployment}</code> has been
+            <code>{variables.parameters?.path.invocation_id}</code> has been
             successfully deleted.
           </>
         );
-        refetch();
       },
     }
   );
@@ -59,35 +41,36 @@ export function DeleteDeployment() {
 
     mutate({
       parameters: {
-        path: { deployment: String(deploymentId) },
-        query: { force: true },
+        path: { invocation_id: String(invocationId) },
+        query: { mode: 'Purge' },
       },
     });
   };
 
   return (
-    <QueryDialog query={DELETE_DEPLOYMENT_QUERY_PARAM}>
-      <DialogContent>
+    <QueryDialog query={PURGE_INVOCATION_QUERY_PARAM}>
+      <DialogContent className="max-w-lg">
         <div className="flex flex-col gap-2">
           <h3 className="text-lg font-medium leading-6 text-gray-900">
-            Confirm Deployment deletion
+            Confirm invocation deletion
           </h3>
-          <p className="text-sm text-gray-500">
-            Are you sure you want to delete{' '}
-            <code className="bg-red-50 text-red-700 ring-red-600/10 p-0.5 inline-block rounded-md">
-              {deploymentEndpoint}
-            </code>
-            ? This might break in-flight invocations, use with{' '}
-            <span className="font-medium">caution</span>.
-          </p>
+          <div className="text-sm text-gray-500 flex flex-col gap-2">
+            <p>
+              Are you sure you want to delete{' '}
+              <code className="bg-red-50 text-red-700 ring-red-600/10 p-0.5 inline-block rounded-md">
+                {invocationId}
+              </code>
+              ?
+            </p>
+          </div>
           <Form
             id={formId}
             method="DELETE"
-            action={`/deployments/${deploymentId}`}
+            action={`/invocations/${invocationId}`}
             onSubmit={submitHandler}
           >
             <p className="text-sm text-gray-500 mt-2">
-              Please confirm to proceed or close to keep the Deployment.
+              Please confirm to proceed or close to keep the Invocation.
             </p>
             <FormFieldInput
               autoFocus

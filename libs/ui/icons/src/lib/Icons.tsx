@@ -33,6 +33,7 @@ import {
   TableProperties,
   ChevronsLeftRightEllipsis,
   Timer,
+  Ellipsis,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from 'tailwind-variants';
@@ -106,6 +107,7 @@ export const enum IconName {
   Java = 'Java',
   Python = 'Python',
   Kotlin = 'Kotlin',
+  Ellipsis = 'Ellipsis',
 }
 export interface IconsProps {
   name: IconName;
@@ -164,6 +166,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Typescript]: Typescript,
   [IconName.Java]: Java,
   [IconName.Python]: Python,
+  [IconName.Ellipsis]: Ellipsis,
   [IconName.Kotlin]: Kotlin,
 };
 

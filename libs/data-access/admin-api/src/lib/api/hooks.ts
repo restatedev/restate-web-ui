@@ -302,3 +302,18 @@ export function useGetVirtualObjectInbox(
     queryKey: queryOptions.queryKey,
   };
 }
+
+export function useDeleteInvocation(
+  invocation_id: string,
+  options?: HookMutationOptions<'/invocations/{invocation_id}', 'delete'>
+) {
+  const baseUrl = useAdminBaseUrl();
+
+  return useMutation({
+    ...adminApi('mutate', '/invocations/{invocation_id}', 'delete', {
+      baseUrl,
+      resolvedPath: `/invocations/${invocation_id}`,
+    }),
+    ...options,
+  });
+}

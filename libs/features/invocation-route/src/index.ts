@@ -1,3 +1,4 @@
+export { DeleteInvocation } from './lib/DeleteInvocation';
 export { Status } from './lib/Status';
 export { InvocationDeployment } from './lib/InvocationDeployment';
 export * from './lib/constants';
