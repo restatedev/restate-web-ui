@@ -26,6 +26,7 @@ function getBadgeVariant(status: InvocationComputedStatus) {
     case 'succeeded':
       return 'success';
     case 'retrying':
+    case 'pending':
       return 'warning';
     case 'running':
       return 'info';
@@ -48,7 +49,7 @@ const styles = tv({
       info: '',
     },
     status: {
-      pending: 'border-dashed bg-transparent border-zinc-300 text-zinc-500',
+      pending: 'border-dashed bg-transparent border-orange-200 text-orange-700',
       scheduled: 'border-dashed bg-transparent border-zinc-300',
       ready: 'border-dashed bg-transparent border-zinc-300 text-zinc-500',
       running: 'border-dashed',
