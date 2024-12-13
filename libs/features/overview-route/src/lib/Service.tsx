@@ -5,8 +5,8 @@ import { Deployment } from './Deployment';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Link } from '@restate/ui/link';
 import { SERVICE_QUERY_PARAM } from './constants';
-import { useSearchParams } from 'react-router';
 import { useRef } from 'react';
+import { useActiveSidebarParam } from '@restate/ui/layout';
 
 const styles = tv({
   base: 'w-full rounded-2xl p2-0.5 pt2-1 border shadow-zinc-800/[0.03] transform transition',
@@ -32,8 +32,8 @@ export function Service({
   const serviceDeployments = service?.deployments;
   const revisions = service?.sortedRevisions ?? [];
 
-  const [searchParams] = useSearchParams();
-  const isSelected = searchParams.get(SERVICE_QUERY_PARAM) === serviceName;
+  const activeServiceInSidebar = useActiveSidebarParam(SERVICE_QUERY_PARAM);
+  const isSelected = activeServiceInSidebar === serviceName;
   const linkRef = useRef<HTMLAnchorElement>(null);
 
   const deploymentRevisionPairs = revisions

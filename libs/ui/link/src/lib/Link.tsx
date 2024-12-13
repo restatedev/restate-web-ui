@@ -22,7 +22,7 @@ interface LinkProps
     Pick<AriaAttributes, 'aria-current'> {
   className?: string;
   variant?: 'primary' | 'secondary' | 'button' | 'secondary-button';
-  appendQueryParams?: boolean;
+  preserveQueryParams?: boolean;
 }
 
 const styles = tv({
@@ -45,27 +45,45 @@ const styles = tv({
   },
 });
 
+export function useHrefWithQueryParams({
+  preserveQueryParams,
+  href,
+  mode = 'prepend',
+}: {
+  preserveQueryParams: boolean;
+  href?: string;
+  mode?: 'append' | 'prepend';
+}) {
+  const [searchParams] = useSearchParams();
+
+  const hrefWithQueryParams = useMemo(() => {
+    if (preserveQueryParams && href?.startsWith('?')) {
+      const newSearchParams = new URLSearchParams(href);
+      let existingSearchParams = new URLSearchParams(searchParams);
+      Array.from(newSearchParams.entries()).forEach(([key, value]) => {
+        existingSearchParams = new URLSearchParams(
+          existingSearchParams.toString().replace(`${key}=${value}`, '')
+        );
+      });
+      const combinedSearchParams = new URLSearchParams([
+        ...(mode === 'prepend' ? newSearchParams : []),
+        ...existingSearchParams,
+        ...(mode === 'append' ? newSearchParams : []),
+      ]);
+      return '?' + combinedSearchParams.toString();
+    } else {
+      return href;
+    }
+  }, [preserveQueryParams, href, searchParams, mode]);
+
+  return hrefWithQueryParams;
+}
 export const Link = forwardRef<HTMLAnchorElement, LinkProps>(
-  ({ href, appendQueryParams = true, ...props }, ref) => {
-    const [searchParams] = useSearchParams();
-    const hrefWithQueryParams = useMemo(() => {
-      if (appendQueryParams && href?.startsWith('?')) {
-        const appendingSearchParams = new URLSearchParams(href);
-        let existingSearchParams = new URLSearchParams(searchParams);
-        Array.from(appendingSearchParams.entries()).forEach(([key, value]) => {
-          existingSearchParams = new URLSearchParams(
-            existingSearchParams.toString().replace(`${key}=${value}`, '')
-          );
-        });
-        const combinedSearchParams = new URLSearchParams([
-          ...appendingSearchParams,
-          ...existingSearchParams,
-        ]);
-        return '?' + combinedSearchParams.toString();
-      } else {
-        return href;
-      }
-    }, [appendQueryParams, href, searchParams]);
+  ({ href, preserveQueryParams = true, ...props }, ref) => {
+    const hrefWithQueryParams = useHrefWithQueryParams({
+      href,
+      preserveQueryParams,
+    });
 
     return (
       <AriaLink
