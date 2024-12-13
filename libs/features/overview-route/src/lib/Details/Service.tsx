@@ -4,7 +4,14 @@ import {
   ComplementaryClose,
 } from '@restate/ui/layout';
 import { SERVICE_QUERY_PARAM } from '../constants';
-import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
+import {
+  CollapsibleSection,
+  CollapsibleSectionContent,
+  CollapsibleSectionTitle,
+  Section,
+  SectionContent,
+  SectionTitle,
+} from '@restate/ui/section';
 import {
   useListDeployments,
   useModifyService,
@@ -128,7 +135,7 @@ export function ServiceDetails() {
       }
     >
       <Form
-        className="flex [&_section+section]:mt-2 flex-col"
+        className="flex [&_.section+.section]:mt-2 flex-col"
         id={formId}
         method="patch"
         action={`/services/${String(service)}`}
@@ -209,7 +216,7 @@ function ServiceForm({
       </Section>
       <Section>
         <SectionTitle>Access</SectionTitle>
-        <SectionContent>
+        <SectionContent className="py-1.5">
           <FormFieldCheckbox
             name="public"
             value="true"
@@ -226,9 +233,24 @@ function ServiceForm({
           services can only be accessed from another Restate service.
         </span>
       </Section>
-      <Section>
-        <SectionTitle>Retention</SectionTitle>
-        <SectionContent className="flex flex-col gap-4">
+      <CollapsibleSection>
+        <CollapsibleSectionTitle>Retention</CollapsibleSectionTitle>
+        <CollapsibleSectionContent
+          className="flex flex-col gap-4"
+          footer={
+            <span className="text-gray-500 px-4 pb-2 block text-xs normal-case font-normal mt-2">
+              Configured using the{' '}
+              <Link
+                href="https://docs.rs/humantime/latest/humantime/fn.parse_duration.html#examples"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                humantime
+              </Link>{' '}
+              format.
+            </span>
+          }
+        >
           <FormFieldCombobox
             pattern={HUMANTIME_PATTERN_INPUT}
             allowsCustomValue
@@ -318,22 +340,26 @@ function ServiceForm({
               </ComboBoxSection>
             </FormFieldCombobox>
           )}
-        </SectionContent>
-        <span className="text-gray-500 px-4 pb-2 block text-xs normal-case font-normal mt-2">
-          Configured using the{' '}
-          <Link
-            href="https://docs.rs/humantime/latest/humantime/fn.parse_duration.html#examples"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            humantime
-          </Link>{' '}
-          format.
-        </span>
-      </Section>
-      <Section>
-        <SectionTitle>Timeouts</SectionTitle>
-        <SectionContent className="flex flex-col gap-4">
+        </CollapsibleSectionContent>
+      </CollapsibleSection>
+      <CollapsibleSection>
+        <CollapsibleSectionTitle>Timeouts</CollapsibleSectionTitle>
+        <CollapsibleSectionContent
+          className="flex flex-col gap-4"
+          footer={
+            <span className="text-gray-500 px-4 pb-2 block text-xs normal-case font-normal mt-2">
+              Configured using the{' '}
+              <Link
+                href="https://docs.rs/humantime/latest/humantime/fn.parse_duration.html#examples"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                humantime
+              </Link>{' '}
+              format.
+            </span>
+          }
+        >
           <FormFieldCombobox
             pattern={HUMANTIME_PATTERN_INPUT}
             allowsCustomValue
@@ -422,19 +448,8 @@ function ServiceForm({
               <ComboBoxItem value="1day">1day</ComboBoxItem>
             </ComboBoxSection>
           </FormFieldCombobox>
-        </SectionContent>
-        <span className="text-gray-500 px-4 pb-2 block text-xs normal-case font-normal mt-2">
-          Configured using the{' '}
-          <Link
-            href="https://docs.rs/humantime/latest/humantime/fn.parse_duration.html#examples"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            humantime
-          </Link>{' '}
-          format.
-        </span>
-      </Section>
+        </CollapsibleSectionContent>
+      </CollapsibleSection>
       <Section>
         <SectionTitle>Deployments</SectionTitle>
         <SectionContent className="px-2 pt-2" raised={false}>

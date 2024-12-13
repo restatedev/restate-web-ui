@@ -6,7 +6,7 @@ interface SectionProps {
 }
 
 const styles = tv({
-  base: 'flex flex-col bg-gray-100 rounded-xl p-0.5 border2 shadow2-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]',
+  base: 'section flex flex-col bg-gray-100 rounded-xl p-0.5',
 });
 export function Section({
   children,
