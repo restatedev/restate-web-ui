@@ -34,7 +34,7 @@ import { Actions } from '@restate/features/invocation-route';
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: 120,
   created_at: 100,
-  invoked_by: 150,
+  invoked_by: 180,
   deployment: 220,
   journal_size: 90,
 };
