@@ -42,7 +42,7 @@ export function VirtualObjectSection({
 
   return (
     <Section className={styles({ className })}>
-      <SectionTitle>Virtual Object</SectionTitle>
+      <SectionTitle className="">{invocation.target_service_name}</SectionTitle>
       <SectionContent className="p-0">
         <div className="flex px-1.5 py-1 items-center">
           <span className="flex-auto pl-1 text-code text-gray-500 font-medium">
