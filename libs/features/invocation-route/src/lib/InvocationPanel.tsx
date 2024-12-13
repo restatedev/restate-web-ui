@@ -7,7 +7,7 @@ import { useSearchParams } from 'react-router';
 import { INVOCATION_QUERY_NAME } from './constants';
 import {
   useGetInvocation,
-  useGetVirtualObjectInbox,
+  useGetVirtualObjectQueue,
 } from '@restate/data-access/admin-api';
 import { Icon, IconName } from '@restate/ui/icons';
 import { ServiceHandlerSection } from './ServiceHandlerSection';
@@ -78,14 +78,19 @@ export function InvocationPanel() {
   });
   const key = data?.target_service_key;
   const { data: inbox, refetch: refetchVirtualObject } =
-    useGetVirtualObjectInbox(String(key), String(data?.id), {
-      enabled: Boolean(
-        key &&
-          data &&
-          !data.completed_at &&
-          data.target_service_ty === 'virtual_object'
-      ),
-    });
+    useGetVirtualObjectQueue(
+      String(data?.target_service_name),
+      String(key),
+      String(data?.id),
+      {
+        enabled: Boolean(
+          key &&
+            data &&
+            !data.completed_at &&
+            data.target_service_ty === 'virtual_object'
+        ),
+      }
+    );
 
   if (!invocationId) {
     return null;
