@@ -1,10 +1,11 @@
 import { focusRing } from '@restate/ui/focus';
-import { AriaAttributes, forwardRef } from 'react';
+import { AriaAttributes, forwardRef, useMemo } from 'react';
 import {
   Link as AriaLink,
   LinkProps as AriaLinkProps,
   composeRenderProps,
 } from 'react-aria-components';
+import { useSearchParams } from 'react-router';
 import { tv } from 'tailwind-variants';
 
 interface LinkProps
@@ -21,6 +22,7 @@ interface LinkProps
     Pick<AriaAttributes, 'aria-current'> {
   className?: string;
   variant?: 'primary' | 'secondary' | 'button' | 'secondary-button';
+  preserveQueryParams?: boolean;
 }
 
 const styles = tv({
@@ -43,14 +45,57 @@ const styles = tv({
   },
 });
 
-export const Link = forwardRef<HTMLAnchorElement, LinkProps>((props, ref) => {
-  return (
-    <AriaLink
-      {...props}
-      ref={ref}
-      className={composeRenderProps(props.className, (className, renderProps) =>
-        styles({ ...renderProps, className, variant: props.variant })
-      )}
-    />
-  );
-});
+export function useHrefWithQueryParams({
+  preserveQueryParams,
+  href,
+  mode = 'prepend',
+}: {
+  preserveQueryParams: boolean;
+  href?: string;
+  mode?: 'append' | 'prepend';
+}) {
+  const [searchParams] = useSearchParams();
+
+  const hrefWithQueryParams = useMemo(() => {
+    if (preserveQueryParams && href?.startsWith('?')) {
+      const newSearchParams = new URLSearchParams(href);
+      let existingSearchParams = new URLSearchParams(searchParams);
+      Array.from(newSearchParams.entries()).forEach(([key, value]) => {
+        existingSearchParams = new URLSearchParams(
+          existingSearchParams.toString().replace(`${key}=${value}`, '')
+        );
+      });
+      const combinedSearchParams = new URLSearchParams([
+        ...(mode === 'prepend' ? newSearchParams : []),
+        ...existingSearchParams,
+        ...(mode === 'append' ? newSearchParams : []),
+      ]);
+      return '?' + combinedSearchParams.toString();
+    } else {
+      return href;
+    }
+  }, [preserveQueryParams, href, searchParams, mode]);
+
+  return hrefWithQueryParams;
+}
+export const Link = forwardRef<HTMLAnchorElement, LinkProps>(
+  ({ href, preserveQueryParams = true, ...props }, ref) => {
+    const hrefWithQueryParams = useHrefWithQueryParams({
+      href,
+      preserveQueryParams,
+    });
+
+    return (
+      <AriaLink
+        {...props}
+        href={hrefWithQueryParams}
+        ref={ref}
+        className={composeRenderProps(
+          props.className,
+          (className, renderProps) =>
+            styles({ ...renderProps, className, variant: props.variant })
+        )}
+      />
+    );
+  }
+);

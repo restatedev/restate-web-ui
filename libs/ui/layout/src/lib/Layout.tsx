@@ -52,7 +52,7 @@ export function LayoutOutlet({
     return createPortal(
       <>
         {children}
-        <div data-variant={variant} />
+        {zone === LayoutZone.AppBar && <div data-variant={variant} />}
       </>,
       document.getElementById(ZONE_IDS[zone])!
     );

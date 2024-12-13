@@ -1,4 +1,5 @@
 import { Icon, IconName } from '@restate/ui/icons';
+import { useHrefWithQueryParams } from '@restate/ui/link';
 import type { PropsWithChildren } from 'react';
 import {
   MenuItem as AriaMenuItem,
@@ -102,10 +103,21 @@ export type DropdownItemProps =
   | DropdownNavItemProps;
 
 export function DropdownItem(props: DropdownItemProps) {
+  const hrefWithQUeryParams = useHrefWithQueryParams({
+    href: props.href,
+    preserveQueryParams: true,
+    mode: 'append',
+  });
+
   if (isNavItem(props)) {
     const { href, value, ...rest } = props;
     return (
-      <StyledDropdownItem {...rest} href={href} id={value} textValue={value} />
+      <StyledDropdownItem
+        {...rest}
+        href={hrefWithQUeryParams}
+        id={value}
+        textValue={value}
+      />
     );
   }
   if (isCustomItem(props)) {

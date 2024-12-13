@@ -444,7 +444,12 @@ function ServiceForm({
             <div className="flex flex-col gap-2">
               {sortedRevisions.map((revision) =>
                 deployments?.[revision]?.map((id) => (
-                  <Deployment deploymentId={id} revision={revision} key={id} />
+                  <Deployment
+                    deploymentId={id}
+                    revision={revision}
+                    key={id}
+                    highlightSelection={false}
+                  />
                 ))
               )}
             </div>

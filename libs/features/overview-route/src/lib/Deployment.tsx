@@ -10,8 +10,8 @@ import {
 import { Revision } from './Revision';
 import { DEPLOYMENT_QUERY_PARAM } from './constants';
 import { Link } from '@restate/ui/link';
-import { useSearchParams } from 'react-router';
 import { useRef } from 'react';
+import { useActiveSidebarParam } from '@restate/ui/layout';
 
 const styles = tv({
   base: 'flex flex-row items-center gap-2 relative border -m-1 p-1 transition-all ease-in-out text-code',
@@ -36,10 +36,12 @@ export function Deployment({
 }) {
   const { data: { deployments } = {} } = useListDeployments();
   const deployment = deploymentId ? deployments?.get(deploymentId) : undefined;
-  const [searchParams] = useSearchParams();
+  const activeDeploymentInSidebar = useActiveSidebarParam(
+    DEPLOYMENT_QUERY_PARAM
+  );
+
   const isSelected =
-    searchParams.get(DEPLOYMENT_QUERY_PARAM) === deploymentId &&
-    highlightSelection;
+    activeDeploymentInSidebar === deploymentId && highlightSelection;
   const linkRef = useRef<HTMLAnchorElement>(null);
 
   if (!deployment) {
