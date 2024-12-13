@@ -93,7 +93,7 @@ const styles = tv({
 export function InvocationDeployment({
   invocation,
   className,
-  showSdk = true,
+  showSdk = false,
 }: {
   invocation: Invocation;
   className?: string;

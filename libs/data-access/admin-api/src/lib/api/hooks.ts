@@ -276,19 +276,23 @@ export function useGetInvocation(
   };
 }
 
-export function useGetVirtualObjectInbox(
+export function useGetVirtualObjectQueue(
+  serviceName: string,
   key: string,
   invocationId: string,
-  options?: HookQueryOptions<'/query/virtualObjects/{key}/inbox', 'get'>
+  options?: HookQueryOptions<
+    '/query/virtualObjects/{name}/keys/{key}/queue',
+    'get'
+  >
 ) {
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi(
     'query',
-    '/query/virtualObjects/{key}/inbox',
+    '/query/virtualObjects/{name}/keys/{key}/queue',
     'get',
     {
       baseUrl,
-      parameters: { path: { key }, query: { invocationId } },
+      parameters: { path: { key, name: serviceName }, query: { invocationId } },
     }
   );
 

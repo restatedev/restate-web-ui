@@ -361,7 +361,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/query/virtualObjects/{key}/inbox': {
+  '/query/virtualObjects/{name}/keys/{key}/queue': {
     parameters: {
       query?: never;
       header?: never;
@@ -2226,6 +2226,8 @@ export interface operations {
       };
       header?: never;
       path: {
+        /** @description service name */
+        name: string;
         /** @description key */
         key: string;
       };

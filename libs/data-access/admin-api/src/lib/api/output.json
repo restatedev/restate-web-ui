@@ -1676,13 +1676,22 @@
         }
       }
     },
-    "/query/virtualObjects/{key}/inbox": {
+    "/query/virtualObjects/{name}/keys/{key}/queue": {
       "get": {
         "tags": ["query-invocations"],
         "summary": "Get Virtual Object inbox inbox for a key",
         "description": "Get Virtual Object inbox inbox for a key",
         "operationId": "get_inbox",
         "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "description": "service name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "key",
             "in": "path",

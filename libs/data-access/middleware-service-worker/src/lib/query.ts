@@ -1,119 +1,122 @@
+import ky from 'ky';
 import { convertInvocation } from './convertInvocation';
 import { match } from 'path-to-regexp';
 
 function query(query: string, { baseUrl }: { baseUrl: string }) {
-  return fetch(`${baseUrl}/query`, {
-    method: 'POST',
-    body: JSON.stringify({ query }),
-    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-  });
+  return ky
+    .post(`${baseUrl}/query`, {
+      json: { query },
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    })
+    .json<{ rows: any[] }>();
 }
 
 const INVOCATIONS_LIMIT = 500;
 
-function listInvocations(baseUrl: string) {
+async function listInvocations(baseUrl: string) {
   const totalCountPromise = query(
     'SELECT COUNT(*) AS total_count FROM sys_invocation',
     { baseUrl }
-  )
-    .then((res) => res.json())
-    .then(({ rows }) => rows?.at(0)?.total_count);
-  return query(
+  ).then(({ rows }) => rows?.at(0)?.total_count as number);
+  const invocationsPromise = query(
     `SELECT * FROM sys_invocation ORDER BY modified_at DESC LIMIT ${INVOCATIONS_LIMIT}`,
     {
       baseUrl,
     }
-  ).then(async (res) => {
-    if (res.ok) {
-      const jsonResponse = await res.json();
-      const total_count = await totalCountPromise;
-      return new Response(
-        JSON.stringify({
-          ...jsonResponse,
-          limit: INVOCATIONS_LIMIT,
-          total_count,
-          rows: jsonResponse.rows.map(convertInvocation),
-        }),
-        {
-          status: res.status,
-          statusText: res.statusText,
-          headers: res.headers,
-        }
-      );
+  ).then(({ rows }) => rows.map(convertInvocation));
+
+  const [total_count, invocations] = await Promise.all([
+    totalCountPromise,
+    invocationsPromise,
+  ]);
+
+  return new Response(
+    JSON.stringify({
+      limit: INVOCATIONS_LIMIT,
+      total_count,
+      rows: invocations,
+    }),
+    {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
     }
-    return res;
-  });
+  );
 }
 
-function getInvocation(invocationId: string, baseUrl: string) {
-  return query(`SELECT * FROM sys_invocation WHERE id = '${invocationId}'`, {
-    baseUrl,
-  }).then(async (res) => {
-    if (res.ok) {
-      const jsonResponse = await res.json();
-      if (jsonResponse.rows.length > 0) {
-        return new Response(
-          JSON.stringify({
-            ...convertInvocation(jsonResponse.rows.at(0)),
-          }),
-          {
-            status: res.status,
-            statusText: res.statusText,
-            headers: res.headers,
-          }
-        );
-      }
-      return new Response(JSON.stringify({ message: 'Not found' }), {
-        status: 404,
-        statusText: 'Not found',
-        headers: res.headers,
-      });
-    }
-    return res;
-  });
-}
-
-function getInbox(key: string, invocationId: string, baseUrl: string) {
-  return query(
-    `SELECT * FROM sys_inbox WHERE (sequence_number = (SELECT MIN(sequence_number) FROM sys_inbox WHERE service_key = '${key}') OR sequence_number = (SELECT MAX(sequence_number) FROM sys_inbox WHERE service_key = '${key}') OR id = '${invocationId}') AND  service_key = '${key}'`,
+async function getInvocation(invocationId: string, baseUrl: string) {
+  const invocations = await query(
+    `SELECT * FROM sys_invocation WHERE id = '${invocationId}'`,
     {
       baseUrl,
     }
-  ).then(async (res) => {
-    if (res.ok) {
-      const jsonResponse = await res.json();
-      const indexes = (jsonResponse.rows ?? []).map(
-        (row: any) => row.sequence_number
-      );
-      const head = Math.min(...indexes);
-      const tail = Math.max(...indexes);
-      const headInvocation = jsonResponse.rows?.find(
-        (row: any) => row.sequence_number === head
-      );
-      const queriedInvocation = jsonResponse.rows?.find(
-        (row: any) => row.id === invocationId
-      );
-      if (headInvocation && queriedInvocation) {
-        return new Response(
-          JSON.stringify({
-            head: headInvocation.id,
-            size: tail - head + 1,
-            [invocationId]: queriedInvocation.sequence_number - head,
-          }),
-          {
-            status: res.status,
-            statusText: res.statusText,
-            headers: res.headers,
-          }
-        );
+  ).then(({ rows }) => rows.map(convertInvocation));
+  if (invocations.length > 0) {
+    return new Response(JSON.stringify(invocations.at(0)), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  return new Response(JSON.stringify({ message: 'Not found' }), {
+    status: 404,
+    statusText: 'Not found',
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+async function getInbox(
+  service: string,
+  key: string,
+  invocationId: string,
+  baseUrl: string
+) {
+  const [head, size, position] = await Promise.all([
+    query(
+      `SELECT * FROM sys_invocation WHERE target_service_key = '${key}' AND target_service_name = '${service}' AND status NOT IN ('completed', 'pending', 'scheduled')`,
+      {
+        baseUrl,
       }
-      return new Response(JSON.stringify({ message: 'Not found' }), {
-        status: 404,
-        statusText: 'Not found',
-        headers: res.headers,
-      });
-    }
-    return res;
+    ).then(({ rows }) => rows.at(0)?.id),
+    query(
+      `SELECT COUNT(*) AS size FROM sys_inbox WHERE service_key = '${key}' AND service_name = '${service}'`,
+      {
+        baseUrl,
+      }
+    ).then(({ rows }) => rows.at(0)?.size),
+    query(
+      `SELECT COUNT(*) AS position FROM sys_inbox WHERE service_key = '${key}' AND service_name = '${service}' AND sequence_number < (SELECT sequence_number FROM sys_inbox WHERE id = '${invocationId}')`,
+      {
+        baseUrl,
+      }
+    ).then(({ rows }) => rows.at(0)?.position),
+  ]);
+
+  if (
+    typeof position === 'number' &&
+    typeof size === 'number' &&
+    typeof head === 'string'
+  ) {
+    const isInvocationHead = head === invocationId;
+    return new Response(
+      JSON.stringify({
+        head,
+        size: size + 1,
+        [invocationId]: isInvocationHead ? 0 : position + 1,
+      }),
+      {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+  }
+
+  return new Response(JSON.stringify({ message: 'Not found' }), {
+    status: 404,
+    statusText: 'Not found',
+    headers: { 'Content-Type': 'application/json' },
   });
 }
 
@@ -134,12 +137,13 @@ export function queryMiddlerWare(req: Request) {
     return getInvocation(getInvocationParams.params.invocationId, baseUrl);
   }
 
-  const getInboxParams = match<{ key: string }>(
-    '/query/virtualObjects/:key/inbox'
+  const getInboxParams = match<{ key: string; name: string }>(
+    '/query/virtualObjects/:name/keys/:key/queue'
   )(urlObj.pathname);
   if (getInboxParams && method.toUpperCase() === 'GET') {
     const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
     return getInbox(
+      getInboxParams.params.name,
       getInboxParams.params.key,
       String(urlObj.searchParams.get('invocationId')),
       baseUrl
