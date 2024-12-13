@@ -16,7 +16,7 @@ export function ComplementaryOutlet(
       <aside className="[&:has(>*>*)]:duration-250 [&:has(>*>*)]:animate-in [&:has(>*>*)]:slide-in-from-right [&:has(>*>*)]:fade-in [&:not(has(>*>*))]:duration-250 flex flex-col 3xl:sticky top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 sm:translate-y-0 sm:translate-x-0 sm:top-24 3xl:top-[calc(0.75rem+3.5rem+2.5rem)] 3xl:px-0 3xl:pt-8 [&:not(:has([data-complementary-content]>*))]:hidden fixed z-[100] sm:z-50 lg:right-8 sm:right-6 right-auto sm:left-auto lg:bottom-6 sm:bottom-6 max-h-[90vh] max-w-[100vw] 3xl:max-h-auto sm:max-h-none lg:max-h-none 3xl:max-h-none">
         <div
           {...props}
-          className="3xl:h-auto h-full flex-auto 3xl:flex-none p-1.5 border shadow-lg 3xl:shadow-sm shadow-zinc-800/5 bg-gray-50/80 backdrop-blur-xl backdrop-saturate-200 rounded-[1.125rem] max-h-[inherit] flex flex-col max-w-[90vw] w-[350px]"
+          className="relative [&>*]:row-start-1 [&>*]:row-end-2 [&>*]:col-start-1 [&>*]:col-end-2 [&>[data-top=false]]:absolute [&>[data-top=false]:has(~[data-top=false])]:-right-3 [&>[data-top=false]:has(~[data-top=false])]:top-3 [&>[data-top=false]:has(~[data-top=false])]:bottom-3 [&>*[data-top=false]]:-right-1.5 [&>[data-top=false]]:top-1.5 [&>[data-top=false]]:bottom-1.5 3xl:h-auto h-full flex-auto 3xl:flex-none  max-h-[inherit] grid [grid-template-columns:1fr] [grid-template-rows:1fr] max-w-[90vw] w-[350px]"
         />
       </aside>
     </>

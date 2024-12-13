@@ -1,10 +1,11 @@
 import { focusRing } from '@restate/ui/focus';
-import { AriaAttributes, forwardRef } from 'react';
+import { AriaAttributes, forwardRef, useMemo } from 'react';
 import {
   Link as AriaLink,
   LinkProps as AriaLinkProps,
   composeRenderProps,
 } from 'react-aria-components';
+import { useSearchParams } from 'react-router';
 import { tv } from 'tailwind-variants';
 
 interface LinkProps
@@ -21,6 +22,7 @@ interface LinkProps
     Pick<AriaAttributes, 'aria-current'> {
   className?: string;
   variant?: 'primary' | 'secondary' | 'button' | 'secondary-button';
+  appendQueryParams?: boolean;
 }
 
 const styles = tv({
@@ -43,14 +45,39 @@ const styles = tv({
   },
 });
 
-export const Link = forwardRef<HTMLAnchorElement, LinkProps>((props, ref) => {
-  return (
-    <AriaLink
-      {...props}
-      ref={ref}
-      className={composeRenderProps(props.className, (className, renderProps) =>
-        styles({ ...renderProps, className, variant: props.variant })
-      )}
-    />
-  );
-});
+export const Link = forwardRef<HTMLAnchorElement, LinkProps>(
+  ({ href, appendQueryParams = true, ...props }, ref) => {
+    const [searchParams] = useSearchParams();
+    const hrefWithQueryParams = useMemo(() => {
+      if (appendQueryParams && href?.startsWith('?')) {
+        const appendingSearchParams = new URLSearchParams(href);
+        let existingSearchParams = new URLSearchParams(searchParams);
+        Array.from(appendingSearchParams.entries()).forEach(([key, value]) => {
+          existingSearchParams = new URLSearchParams(
+            existingSearchParams.toString().replace(`${key}=${value}`, '')
+          );
+        });
+        const combinedSearchParams = new URLSearchParams([
+          ...appendingSearchParams,
+          ...existingSearchParams,
+        ]);
+        return '?' + combinedSearchParams.toString();
+      } else {
+        return href;
+      }
+    }, [appendQueryParams, href, searchParams]);
+
+    return (
+      <AriaLink
+        {...props}
+        href={hrefWithQueryParams}
+        ref={ref}
+        className={composeRenderProps(
+          props.className,
+          (className, renderProps) =>
+            styles({ ...renderProps, className, variant: props.variant })
+        )}
+      />
+    );
+  }
+);
