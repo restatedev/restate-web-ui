@@ -17,7 +17,7 @@ export function WorkflowKeySection({
   if (invocation?.target_service_ty === 'workflow') {
     return (
       <Section className={styles({ className })}>
-        <SectionTitle>Workflow instance</SectionTitle>
+        <SectionTitle>{invocation.target_service_name}</SectionTitle>
         <SectionContent className="p-0">
           <div className="flex px-1.5 py-1 items-center">
             <span className="flex-auto pl-1 text-code text-gray-500 font-medium">
