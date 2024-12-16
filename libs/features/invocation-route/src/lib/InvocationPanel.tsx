@@ -26,13 +26,9 @@ import { useEffect, useState } from 'react';
 import { formatDurations } from '@restate/util/intl';
 import { Actions } from './Actions';
 
-function Footnote({ invocationId }: { invocationId?: string }) {
+function Footnote({ dataUpdatedAt }: { dataUpdatedAt?: number }) {
   const [now, setNow] = useState(() => Date.now());
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
-  const { dataUpdatedAt, isFetching } = useGetInvocation(String(invocationId), {
-    enabled: Boolean(invocationId),
-    refetchOnMount: false,
-  });
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
@@ -49,7 +45,7 @@ function Footnote({ invocationId }: { invocationId?: string }) {
     };
   }, [dataUpdatedAt]);
 
-  if (!dataUpdatedAt || isFetching) {
+  if (!dataUpdatedAt) {
     return null;
   }
   const { isPast, ...parts } = durationSinceLastSnapshot(now);
@@ -71,6 +67,7 @@ export function InvocationPanel() {
     error: getInvocationError,
     dataUpdatedAt,
     refetch: refetchGetInvocation,
+    isSuccess,
   } = useGetInvocation(String(invocationId), {
     enabled: Boolean(invocationId),
     refetchOnMount: true,
@@ -144,7 +141,7 @@ export function InvocationPanel() {
                   <>
                     <div className="flex w-full items-center">Invocation</div>
                     <div className="min-h-4 flex w-full items-center">
-                      <Footnote invocationId={invocationId} />
+                      {isSuccess && <Footnote dataUpdatedAt={dataUpdatedAt} />}
                       <Actions invocation={data} />
                     </div>
                   </>
