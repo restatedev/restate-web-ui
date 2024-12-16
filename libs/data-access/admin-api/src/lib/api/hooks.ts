@@ -276,6 +276,32 @@ export function useGetInvocation(
   };
 }
 
+export function useGetInvocationJournal(
+  invocationId: string,
+  options?: HookQueryOptions<'/query/invocations/{invocationId}/journal', 'get'>
+) {
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi(
+    'query',
+    '/query/invocations/{invocationId}/journal',
+    'get',
+    {
+      baseUrl,
+      parameters: { path: { invocationId } },
+    }
+  );
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+  };
+}
+
 export function useGetVirtualObjectQueue(
   serviceName: string,
   key: string,

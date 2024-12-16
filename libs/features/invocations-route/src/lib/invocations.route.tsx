@@ -193,7 +193,7 @@ function Component() {
                 {sortedColumnsList.map((col) => (
                   <InvocationCell key={col} column={col} invocation={row} />
                 ))}
-                <Cell>
+                <Cell className="align-top">
                   <Actions invocation={row} />
                 </Cell>
               </Row>

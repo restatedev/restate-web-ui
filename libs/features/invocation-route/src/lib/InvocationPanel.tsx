@@ -71,7 +71,6 @@ export function InvocationPanel() {
   } = useGetInvocation(String(invocationId), {
     enabled: Boolean(invocationId),
     refetchOnMount: true,
-    staleTime: 0,
   });
   const key = data?.target_service_key;
   const { data: inbox, refetch: refetchVirtualObject } =
