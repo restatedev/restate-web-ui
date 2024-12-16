@@ -376,6 +376,106 @@
         }
       }
     },
+    "/query/invocations/{invocationId}/journal": {
+      "get": {
+        "tags": ["query-invocations"],
+        "summary": "Get invocation journal",
+        "description": "Get invocation journal",
+        "operationId": "get_invocation_journal",
+        "parameters": [
+          {
+            "name": "invocationId",
+            "in": "path",
+            "description": "Invocation id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["entries"],
+                  "properties": {
+                    "entries": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/JournalEntry"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/query/virtualObjects/{name}/keys/{key}/queue": {
       "get": {
         "tags": ["query-invocations"],
@@ -487,6 +587,316 @@
   },
   "components": {
     "schemas": {
+      "JournalEntry": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/JournalBaseEntry"
+          },
+          {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/InputJournalEntryType"
+              },
+              {
+                "$ref": "#/components/schemas/GetStateJournalEntryType"
+              },
+              {
+                "$ref": "#/components/schemas/SetStateJournalEntryType"
+              },
+              {
+                "$ref": "#/components/schemas/GetStateKeysJournalEntryType"
+              },
+              {
+                "$ref": "#/components/schemas/ClearStateJournalEntryType"
+              },
+              {
+                "$ref": "#/components/schemas/ClearAllStateJournalEntryType"
+              },
+              {
+                "$ref": "#/components/schemas/SleepJournalEntryType"
+              },
+              {
+                "$ref": "#/components/schemas/GetPromiseJournalEntryType"
+              },
+              {
+                "$ref": "#/components/schemas/PeekPromiseJournalEntryType"
+              },
+              {
+                "$ref": "#/components/schemas/CompletePromiseJournalEntryType"
+              },
+              {
+                "$ref": "#/components/schemas/OneWayCallJournalEntryType"
+              },
+              {
+                "$ref": "#/components/schemas/CallJournalEntryType"
+              },
+              {
+                "$ref": "#/components/schemas/AwakeableJournalEntryType"
+              },
+              {
+                "$ref": "#/components/schemas/CompleteAwakeableJournalEntryType"
+              },
+              {
+                "$ref": "#/components/schemas/RunJournalEntryType"
+              }
+            ]
+          }
+        ]
+      },
+      "JournalBaseEntry": {
+        "type": "object",
+        "required": ["index", "entry_type"],
+        "properties": {
+          "index": { "type": "integer" },
+          "raw": { "type": "string", "format": "binary" },
+          "completed": { "type": "boolean" }
+        }
+      },
+      "InputJournalEntryType": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/JournalBaseEntry"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "entry_type": { "type": "string", "enum": ["Input"] }
+            }
+          }
+        ]
+      },
+      "GetStateJournalEntryType": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/JournalBaseEntry"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "entry_type": { "type": "string", "enum": ["GetState"] }
+            }
+          }
+        ]
+      },
+      "SetStateJournalEntryType": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/JournalBaseEntry"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "entry_type": { "type": "string", "enum": ["SetState"] }
+            }
+          }
+        ]
+      },
+      "GetStateKeysJournalEntryType": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/JournalBaseEntry"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "entry_type": { "type": "string", "enum": ["GetStateKeys"] }
+            }
+          }
+        ]
+      },
+      "ClearStateJournalEntryType": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/JournalBaseEntry"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "entry_type": { "type": "string", "enum": ["ClearState"] }
+            }
+          }
+        ]
+      },
+      "ClearAllStateJournalEntryType": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/JournalBaseEntry"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "entry_type": { "type": "string", "enum": ["ClearAllState"] }
+            }
+          }
+        ]
+      },
+      "SleepJournalEntryType": {
+        "type": "object",
+        "required": ["sleep_wakeup_at"],
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/JournalBaseEntry"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "sleep_wakeup_at": {
+                "type": "string",
+                "format": "data-time"
+              },
+              "entry_type": { "type": "string", "enum": ["Sleep"] }
+            }
+          }
+        ]
+      },
+      "GetPromiseJournalEntryType": {
+        "type": "object",
+        "required": ["promise_name"],
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/JournalBaseEntry"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "promise_name": {
+                "type": "string"
+              },
+              "entry_type": { "type": "string", "enum": ["GetPromise"] }
+            }
+          }
+        ]
+      },
+      "PeekPromiseJournalEntryType": {
+        "type": "object",
+        "required": ["promise_name"],
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/JournalBaseEntry"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "promise_name": {
+                "type": "string"
+              },
+              "entry_type": { "type": "string", "enum": ["PeekPromise"] }
+            }
+          }
+        ]
+      },
+      "CompletePromiseJournalEntryType": {
+        "type": "object",
+        "required": ["promise_name"],
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/JournalBaseEntry"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "promise_name": {
+                "type": "string"
+              },
+              "entry_type": { "type": "string", "enum": ["CompletePromise"] }
+            }
+          }
+        ]
+      },
+      "OneWayCallJournalEntryType": {
+        "type": "object",
+        "required": ["invoked_id", "invoked_target"],
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/JournalBaseEntry"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "invoked_id": {
+                "type": "string"
+              },
+              "invoked_target": {
+                "type": "string"
+              },
+              "entry_type": { "type": "string", "enum": ["OneWayCall"] }
+            }
+          }
+        ]
+      },
+      "CallJournalEntryType": {
+        "type": "object",
+        "required": ["invoked_id", "invoked_target"],
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/JournalBaseEntry"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "invoked_id": {
+                "type": "string"
+              },
+              "invoked_target": {
+                "type": "string"
+              },
+              "entry_type": { "type": "string", "enum": ["Call"] }
+            }
+          }
+        ]
+      },
+      "AwakeableJournalEntryType": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/JournalBaseEntry"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "entry_type": { "type": "string", "enum": ["Awakeable"] }
+            }
+          }
+        ]
+      },
+      "CompleteAwakeableJournalEntryType": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/JournalBaseEntry"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "entry_type": { "type": "string", "enum": ["CompleteAwakeable"] }
+            }
+          }
+        ]
+      },
+      "RunJournalEntryType": {
+        "type": "object",
+        "required": ["name"],
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/JournalBaseEntry"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "entry_type": { "type": "string", "enum": ["Run"] }
+            }
+          }
+        ]
+      },
       "InboxResponse": {
         "type": "object",
         "required": ["length", "head"],

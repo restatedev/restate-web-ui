@@ -361,6 +361,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/query/invocations/{invocationId}/journal': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get invocation journal
+     * @description Get invocation journal
+     */
+    get: operations['get_invocation_journal'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/query/virtualObjects/{name}/keys/{key}/queue': {
     parameters: {
       query?: never;
@@ -770,6 +790,100 @@ export interface components {
            */
           services: components['schemas']['ServiceMetadata'][];
         };
+    JournalEntry: components['schemas']['JournalBaseEntry'] &
+      (
+        | components['schemas']['InputJournalEntryType']
+        | components['schemas']['GetStateJournalEntryType']
+        | components['schemas']['SetStateJournalEntryType']
+        | components['schemas']['GetStateKeysJournalEntryType']
+        | components['schemas']['ClearStateJournalEntryType']
+        | components['schemas']['ClearAllStateJournalEntryType']
+        | components['schemas']['SleepJournalEntryType']
+        | components['schemas']['GetPromiseJournalEntryType']
+        | components['schemas']['PeekPromiseJournalEntryType']
+        | components['schemas']['CompletePromiseJournalEntryType']
+        | components['schemas']['OneWayCallJournalEntryType']
+        | components['schemas']['CallJournalEntryType']
+        | components['schemas']['AwakeableJournalEntryType']
+        | components['schemas']['CompleteAwakeableJournalEntryType']
+        | components['schemas']['RunJournalEntryType']
+      );
+    JournalBaseEntry: {
+      index: number;
+      /** Format: binary */
+      raw?: string;
+      completed?: boolean;
+    };
+    InputJournalEntryType: components['schemas']['JournalBaseEntry'] & {
+      /** @enum {string} */
+      entry_type?: 'Input';
+    };
+    GetStateJournalEntryType: components['schemas']['JournalBaseEntry'] & {
+      /** @enum {string} */
+      entry_type?: 'GetState';
+    };
+    SetStateJournalEntryType: components['schemas']['JournalBaseEntry'] & {
+      /** @enum {string} */
+      entry_type?: 'SetState';
+    };
+    GetStateKeysJournalEntryType: components['schemas']['JournalBaseEntry'] & {
+      /** @enum {string} */
+      entry_type?: 'GetStateKeys';
+    };
+    ClearStateJournalEntryType: components['schemas']['JournalBaseEntry'] & {
+      /** @enum {string} */
+      entry_type?: 'ClearState';
+    };
+    ClearAllStateJournalEntryType: components['schemas']['JournalBaseEntry'] & {
+      /** @enum {string} */
+      entry_type?: 'ClearAllState';
+    };
+    SleepJournalEntryType: components['schemas']['JournalBaseEntry'] & {
+      /** Format: data-time */
+      sleep_wakeup_at: string;
+      /** @enum {string} */
+      entry_type?: 'Sleep';
+    };
+    GetPromiseJournalEntryType: components['schemas']['JournalBaseEntry'] & {
+      promise_name: string;
+      /** @enum {string} */
+      entry_type?: 'GetPromise';
+    };
+    PeekPromiseJournalEntryType: components['schemas']['JournalBaseEntry'] & {
+      promise_name: string;
+      /** @enum {string} */
+      entry_type?: 'PeekPromise';
+    };
+    CompletePromiseJournalEntryType: components['schemas']['JournalBaseEntry'] & {
+      promise_name: string;
+      /** @enum {string} */
+      entry_type?: 'CompletePromise';
+    };
+    OneWayCallJournalEntryType: components['schemas']['JournalBaseEntry'] & {
+      invoked_id: string;
+      invoked_target: string;
+      /** @enum {string} */
+      entry_type?: 'OneWayCall';
+    };
+    CallJournalEntryType: components['schemas']['JournalBaseEntry'] & {
+      invoked_id: string;
+      invoked_target: string;
+      /** @enum {string} */
+      entry_type?: 'Call';
+    };
+    AwakeableJournalEntryType: components['schemas']['JournalBaseEntry'] & {
+      /** @enum {string} */
+      entry_type?: 'Awakeable';
+    };
+    CompleteAwakeableJournalEntryType: components['schemas']['JournalBaseEntry'] & {
+      /** @enum {string} */
+      entry_type?: 'CompleteAwakeable';
+    };
+    RunJournalEntryType: components['schemas']['JournalBaseEntry'] & {
+      name: string;
+      /** @enum {string} */
+      entry_type?: 'Run';
+    };
     InboxResponse: {
       size?: number;
       head: string;
@@ -2166,6 +2280,78 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['Invocation'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  get_invocation_journal: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Invocation id */
+        invocationId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            entries: components['schemas']['JournalEntry'][];
+          };
         };
       };
       400: {

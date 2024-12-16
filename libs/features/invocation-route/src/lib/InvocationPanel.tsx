@@ -142,7 +142,9 @@ export function InvocationPanel() {
                     <div className="flex w-full items-center">Invocation</div>
                     <div className="min-h-4 flex w-full items-center">
                       {isSuccess && <Footnote dataUpdatedAt={dataUpdatedAt} />}
-                      <Actions invocation={data} />
+                      <div className="ml-auto">
+                        <Actions invocation={data} />
+                      </div>
                     </div>
                   </>
                 )}

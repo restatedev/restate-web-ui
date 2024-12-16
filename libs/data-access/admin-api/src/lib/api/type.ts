@@ -21,6 +21,7 @@ export type InvocationComputedStatus =
   | 'ready';
 
 export type RawInvocation = components['schemas']['RawInvocation'];
+export type JournalEntry = components['schemas']['JournalEntry'];
 export type Invocation = components['schemas']['Invocation'];
 export type ServiceName = Service['name'];
 export type DeploymentId = Deployment['id'];
