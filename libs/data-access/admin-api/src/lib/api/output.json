@@ -2905,9 +2905,6 @@
               "completed": {
                 "type": "boolean"
               },
-              "promise_name": {
-                "type": "string"
-              },
               "entry_type": {
                 "type": "string",
                 "enum": ["GetPromise"]
@@ -2937,9 +2934,6 @@
             "properties": {
               "completed": {
                 "type": "boolean"
-              },
-              "promise_name": {
-                "type": "string"
               },
               "entry_type": {
                 "type": "string",
@@ -2977,9 +2971,6 @@
               "entry_type": {
                 "type": "string",
                 "enum": ["CompletePromise"]
-              },
-              "key": {
-                "type": "string"
               },
               "completion": {
                 "type": "object",

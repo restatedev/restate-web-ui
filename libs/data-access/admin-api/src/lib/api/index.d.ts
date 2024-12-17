@@ -912,7 +912,6 @@ export interface components {
     };
     GetPromiseJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       completed?: boolean;
-      promise_name: string;
       /** @enum {string} */
       entry_type?: 'GetPromise';
       key?: string;
@@ -921,7 +920,6 @@ export interface components {
     };
     PeekPromiseJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       completed?: boolean;
-      promise_name: string;
       /** @enum {string} */
       entry_type?: 'PeekPromise';
       key?: string;
@@ -933,7 +931,6 @@ export interface components {
       promise_name: string;
       /** @enum {string} */
       entry_type?: 'CompletePromise';
-      key?: string;
       completion?: {
         value?: string;
         failure?: components['schemas']['FailureEntry'];
