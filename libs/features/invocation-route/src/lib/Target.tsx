@@ -20,7 +20,7 @@ function TargetTooltipContent({
   return (
     <div className="[word-break:break-word]">
       {service}
-      {serviceKey && (
+      {typeof serviceKey === 'string' && (
         <>
           {' / '}
           <wbr />
@@ -76,7 +76,7 @@ export function Target({
             <TruncateTooltipTrigger>{service}</TruncateTooltipTrigger>
           </div>
 
-          {key && (
+          {typeof key === 'string' && (
             <div className="basis-0 grow shrink-1 max-w-fit truncate my-px [filter:drop-shadow(-1px_0px_0px_theme(colors.zinc.200/100%))] -ml-1">
               <div className="font-mono text-2xs h-full [clip-path:polygon(4px_0,100%_0,calc(100%-4px)_100%,0%_100%)] bg-zinc-50 text-zinc-500 flex items-center pl-1.5 pr-2">
                 <TruncateTooltipTrigger>{key}</TruncateTooltipTrigger>
