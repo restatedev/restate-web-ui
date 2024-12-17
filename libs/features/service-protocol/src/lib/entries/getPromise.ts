@@ -9,11 +9,11 @@ export function getPromise(raw?: string) {
     return {};
   }
   const message = fromBinary(GetPromiseEntryMessageSchema, toUnit8Array(raw));
+  console.log(message);
   switch (message.result.case) {
     case 'failure':
       return {
         name: message.name,
-        key: message.key,
         value: undefined,
         failure: new RestateError(
           message.result.value.message,
@@ -23,14 +23,12 @@ export function getPromise(raw?: string) {
     case 'value':
       return {
         name: message.name,
-        key: message.key,
         value: decode(message.result.value),
         failure: undefined,
       };
     default:
       return {
         name: message.name,
-        key: message.key,
         value: undefined,
         failure: undefined,
       };

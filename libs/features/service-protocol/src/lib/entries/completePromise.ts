@@ -43,7 +43,6 @@ export function completePromise(raw?: string) {
     case 'failure':
       return {
         name: message.name,
-        key: message.key,
         completion,
         failure: new RestateError(
           message.result.value.message,
@@ -53,14 +52,12 @@ export function completePromise(raw?: string) {
     case 'empty':
       return {
         name: message.name,
-        key: message.key,
         completion,
         failure: undefined,
       };
     default:
       return {
         name: message.name,
-        key: message.key,
         completion,
         failure: undefined,
       };

@@ -884,9 +884,6 @@
             "type": "object",
             "properties": {
               "completed": { "type": "boolean" },
-              "promise_name": {
-                "type": "string"
-              },
               "entry_type": { "type": "string", "enum": ["GetPromise"] },
               "key": {
                 "type": "string"
@@ -912,9 +909,6 @@
             "type": "object",
             "properties": {
               "completed": { "type": "boolean" },
-              "promise_name": {
-                "type": "string"
-              },
               "entry_type": { "type": "string", "enum": ["PeekPromise"] },
               "key": {
                 "type": "string"
@@ -944,9 +938,6 @@
                 "type": "string"
               },
               "entry_type": { "type": "string", "enum": ["CompletePromise"] },
-              "key": {
-                "type": "string"
-              },
               "completion": {
                 "type": "object",
                 "properties": {

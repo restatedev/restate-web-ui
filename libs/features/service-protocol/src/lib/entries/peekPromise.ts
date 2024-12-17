@@ -13,7 +13,6 @@ export function peekPromise(raw?: string) {
     case 'failure':
       return {
         name: message.name,
-        key: message.key,
         value: undefined,
         failure: new RestateError(
           message.result.value.message,
@@ -23,7 +22,6 @@ export function peekPromise(raw?: string) {
     case 'value':
       return {
         name: message.name,
-        key: message.key,
         value: decode(message.result.value),
         failure: undefined,
       };
@@ -37,7 +35,6 @@ export function peekPromise(raw?: string) {
     default:
       return {
         name: message.name,
-        key: message.key,
         value: undefined,
         failure: undefined,
       };
