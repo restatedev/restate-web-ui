@@ -17,6 +17,12 @@ importers:
 
   .:
     dependencies:
+      '@buf/restatedev_service-protocol.bufbuild_es':
+        specifier: 2.2.3-20240606160341-127256df3b4d.1
+        version: 2.2.3-20240606160341-127256df3b4d.1(@bufbuild/protobuf@2.2.3)
+      '@bufbuild/protobuf':
+        specifier: ^2.2.3
+        version: 2.2.3
       '@formatjs/intl-durationformat':
         specifier: ^0.6.4
         version: 0.6.4
@@ -1032,6 +1038,14 @@ packages:
 
   '@bcoe/v8-coverage@0.2.3':
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
+
+  '@buf/restatedev_service-protocol.bufbuild_es@2.2.3-20240606160341-127256df3b4d.1':
+    resolution: {tarball: https://buf.build/gen/npm/v1/@buf/restatedev_service-protocol.bufbuild_es/-/restatedev_service-protocol.bufbuild_es-2.2.3-20240606160341-127256df3b4d.1.tgz}
+    peerDependencies:
+      '@bufbuild/protobuf': ^2.2.3
+
+  '@bufbuild/protobuf@2.2.3':
+    resolution: {integrity: sha512-tFQoXHJdkEOSwj5tRIZSPNUuXK3RaR7T1nUrPgbYX1pUbvqqaaZAsfo+NXBPsz5rZMSKVFrgK1WL8Q/MSLvprg==}
 
   '@bundled-es-modules/cookie@2.0.0':
     resolution: {integrity: sha512-Or6YHg/kamKHpxULAdSqhGqnWFneIXu1NKvvfBBzKGwpVsYuFIQ5aBPHDnnoR3ghW1nvSkALd+EF9iMtY7Vjxw==}
@@ -10737,6 +10751,12 @@ snapshots:
       to-fast-properties: 2.0.0
 
   '@bcoe/v8-coverage@0.2.3': {}
+
+  '@buf/restatedev_service-protocol.bufbuild_es@2.2.3-20240606160341-127256df3b4d.1(@bufbuild/protobuf@2.2.3)':
+    dependencies:
+      '@bufbuild/protobuf': 2.2.3
+
+  '@bufbuild/protobuf@2.2.3': {}
 
   '@bundled-es-modules/cookie@2.0.0':
     dependencies:
