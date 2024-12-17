@@ -27,7 +27,9 @@ export function WorkflowKeySection({
               size="sm"
               className="font-mono py-0 pr-0 align-middle ml-1 min-w-0"
             >
-              <div className="truncate">{invocation?.target_service_key}</div>
+              <div className="truncate">
+                {JSON.stringify(invocation?.target_service_key)}
+              </div>
               <Copy
                 copyText={String(invocation?.target_service_key)}
                 className="shrink-0 [&_svg]:w-2.5 [&_svg]:h-2.5 p-1 ml-1"
