@@ -9,7 +9,6 @@ export function getPromise(raw?: string) {
     return {};
   }
   const message = fromBinary(GetPromiseEntryMessageSchema, toUnit8Array(raw));
-  console.log(message);
   switch (message.result.case) {
     case 'failure':
       return {

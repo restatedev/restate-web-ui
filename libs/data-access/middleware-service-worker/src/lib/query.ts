@@ -168,14 +168,19 @@ export function queryMiddlerWare(req: Request) {
     return getInvocation(getInvocationParams.params.invocationId, baseUrl);
   }
 
-  const getInboxParams = match<{ key: string; name: string }>(
-    '/query/virtualObjects/:name/keys/:key/queue'
-  )(urlObj.pathname);
+  const getInboxParams =
+    match<{ key: string; name: string }>(
+      '/query/virtualObjects/:name/keys/:key/queue'
+    )(urlObj.pathname) ||
+    match<{ key: string; name: string }>(
+      '/query/virtualObjects/:name/keys//queue'
+    )(urlObj.pathname);
+
   if (getInboxParams && method.toUpperCase() === 'GET') {
     const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
     return getInbox(
       getInboxParams.params.name,
-      getInboxParams.params.key,
+      getInboxParams.params.key ?? '',
       String(urlObj.searchParams.get('invocationId')),
       baseUrl
     );

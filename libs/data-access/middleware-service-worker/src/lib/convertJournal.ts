@@ -141,7 +141,6 @@ const JOURNAL_ENTRY_CONVERT_MAP: Record<
       promise_name: entry.promise_name!,
       completed: entry.completed,
       failure: entryMessage.failure,
-      key: entryMessage.key,
       value: entryMessage.value,
     };
   },
@@ -154,7 +153,6 @@ const JOURNAL_ENTRY_CONVERT_MAP: Record<
       promise_name: entry.promise_name!,
       completed: entry.completed,
       failure: entryMessage.failure,
-      key: entryMessage.key,
       value: entryMessage.value,
     };
   },
@@ -169,7 +167,6 @@ const JOURNAL_ENTRY_CONVERT_MAP: Record<
       promise_name: entry.promise_name!,
       completed: entry.completed,
       failure: entryMessage.failure,
-      key: entryMessage.key,
       completion: entryMessage.completion,
     };
   },
