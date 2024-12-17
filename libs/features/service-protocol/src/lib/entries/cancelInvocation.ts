@@ -1,3 +1,3 @@
-export function cancelInvocation(raw: string) {
+export function cancelInvocation(raw?: string) {
   return {};
 }

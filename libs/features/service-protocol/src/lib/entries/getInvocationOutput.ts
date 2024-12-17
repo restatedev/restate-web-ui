@@ -1,3 +1,3 @@
-export function getInvocationOutput(raw: string) {
+export function getInvocationOutput(raw?: string) {
   return {};
 }

@@ -3,7 +3,10 @@ import { SleepEntryMessageSchema } from '@buf/restatedev_service-protocol.bufbui
 import { toUnit8Array } from '../toUni8Array';
 import { RestateError } from '@restate/util/errors';
 
-export function sleep(raw: string) {
+export function sleep(raw?: string) {
+  if (!raw) {
+    return {};
+  }
   const message = fromBinary(SleepEntryMessageSchema, toUnit8Array(raw));
   switch (message.result.case) {
     case 'empty':

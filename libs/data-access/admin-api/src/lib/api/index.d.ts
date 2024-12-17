@@ -812,30 +812,88 @@ export interface components {
         | components['schemas']['AttachInvocationJournalEntryType']
         | components['schemas']['GetInvocationOutputJournalEntryType']
         | components['schemas']['CustomJournalEntryType']
+        | components['schemas']['OutputJournalEntryType']
       );
-    JournalBaseEntry: {
+    JournalRawEntry: {
       index: number;
       /** Format: binary */
       raw?: string;
+      /** Format: date-time */
+      sleep_wakeup_at?: string;
       completed?: boolean;
+      promise_name?: string;
+      invoked_target?: string;
+      invoked_id?: string;
+      name?: string;
+      /** @enum {string} */
+      entry_type:
+        | 'Input'
+        | 'Output'
+        | 'GetState'
+        | 'SetState'
+        | 'GetStateKeys'
+        | 'ClearState'
+        | 'ClearAllState'
+        | 'Sleep'
+        | 'GetPromise'
+        | 'PeekPromise'
+        | 'CompletePromise'
+        | 'OneWayCall'
+        | 'Call'
+        | 'Awakeable'
+        | 'CompleteAwakeable'
+        | 'Run'
+        | 'CancelInvocation'
+        | 'GetCallInvocationId'
+        | 'AttachInvocation'
+        | 'GetInvocationOutput'
+        | 'Custom';
+    };
+    JournalBaseEntry: {
+      index: number;
+    };
+    FailureEntry: {
+      message?: string;
+      restate_code?: string;
     };
     InputJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       /** @enum {string} */
       entry_type?: 'Input';
+      value?: string;
+      headers?: {
+        key?: string;
+        value?: string;
+      }[];
+    };
+    OutputJournalEntryType: components['schemas']['JournalBaseEntry'] & {
+      /** @enum {string} */
+      entry_type?: 'Output';
+      value?: string;
+      failure?: components['schemas']['FailureEntry'];
     };
     GetStateJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       /** @enum {string} */
       entry_type?: 'GetState';
+      key?: string;
+      value?: string;
+      completed?: boolean;
+      failure?: components['schemas']['FailureEntry'];
     };
     SetStateJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       /** @enum {string} */
       entry_type?: 'SetState';
+      key?: string;
+      value?: string;
     };
     GetStateKeysJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       /** @enum {string} */
       entry_type?: 'GetStateKeys';
+      completed?: boolean;
+      keys?: string[];
+      failure?: components['schemas']['FailureEntry'];
     };
     ClearStateJournalEntryType: components['schemas']['JournalBaseEntry'] & {
+      key?: string;
       /** @enum {string} */
       entry_type?: 'ClearState';
     };
@@ -844,51 +902,97 @@ export interface components {
       entry_type?: 'ClearAllState';
     };
     SleepJournalEntryType: components['schemas']['JournalBaseEntry'] & {
+      completed?: boolean;
+      fired?: boolean;
+      failure?: components['schemas']['FailureEntry'];
       /** Format: data-time */
       sleep_wakeup_at: string;
       /** @enum {string} */
       entry_type?: 'Sleep';
     };
     GetPromiseJournalEntryType: components['schemas']['JournalBaseEntry'] & {
+      completed?: boolean;
       promise_name: string;
       /** @enum {string} */
       entry_type?: 'GetPromise';
+      key?: string;
+      value?: string;
+      failure?: components['schemas']['FailureEntry'];
     };
     PeekPromiseJournalEntryType: components['schemas']['JournalBaseEntry'] & {
+      completed?: boolean;
       promise_name: string;
       /** @enum {string} */
       entry_type?: 'PeekPromise';
+      key?: string;
+      value?: string;
+      failure?: components['schemas']['FailureEntry'];
     };
     CompletePromiseJournalEntryType: components['schemas']['JournalBaseEntry'] & {
+      completed?: boolean;
       promise_name: string;
       /** @enum {string} */
       entry_type?: 'CompletePromise';
+      key?: string;
+      completion?: {
+        value?: string;
+        failure?: components['schemas']['FailureEntry'];
+      };
+      failure?: components['schemas']['FailureEntry'];
     };
     OneWayCallJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       invoked_id: string;
       invoked_target: string;
+      key?: string;
+      serviceName?: string;
+      handlerName?: string;
+      parameters?: string;
+      headers?: {
+        key?: string;
+        value?: string;
+      }[];
+      /** Format: date-time */
+      invokeTime?: string;
       /** @enum {string} */
       entry_type?: 'OneWayCall';
     };
     CallJournalEntryType: components['schemas']['JournalBaseEntry'] & {
+      completed?: boolean;
       invoked_id: string;
       invoked_target: string;
+      failure?: components['schemas']['FailureEntry'];
+      key?: string;
+      serviceName?: string;
+      handlerName?: string;
+      parameters?: string;
+      headers?: {
+        key?: string;
+        value?: string;
+      }[];
+      value?: string;
       /** @enum {string} */
       entry_type?: 'Call';
     };
     AwakeableJournalEntryType: components['schemas']['JournalBaseEntry'] & {
+      completed?: boolean;
       /** @enum {string} */
       entry_type?: 'Awakeable';
+      failure?: components['schemas']['FailureEntry'];
+      value?: string;
     };
     CompleteAwakeableJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       /** @enum {string} */
       entry_type?: 'CompleteAwakeable';
+      failure?: components['schemas']['FailureEntry'];
+      value?: string;
+      id?: string;
     };
     CancelInvocationJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       /** @enum {string} */
       entry_type?: 'CancelInvocation';
     };
     GetCallInvocationIdJournalEntryType: components['schemas']['JournalBaseEntry'] & {
+      completed?: boolean;
       /** @enum {string} */
       entry_type?: 'GetCallInvocationId';
     };
@@ -908,6 +1012,8 @@ export interface components {
       name: string;
       /** @enum {string} */
       entry_type?: 'Run';
+      failure?: components['schemas']['FailureEntry'];
+      value?: string;
     };
     InboxResponse: {
       size?: number;

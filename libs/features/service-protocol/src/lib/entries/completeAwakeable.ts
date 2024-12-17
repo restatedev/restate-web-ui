@@ -4,7 +4,10 @@ import { toUnit8Array } from '../toUni8Array';
 import { decode } from '../decoder';
 import { RestateError } from '@restate/util/errors';
 
-export function completeAwakeable(raw: string) {
+export function completeAwakeable(raw?: string) {
+  if (!raw) {
+    return {};
+  }
   const message = fromBinary(
     CompleteAwakeableEntryMessageSchema,
     toUnit8Array(raw)

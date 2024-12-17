@@ -30,7 +30,10 @@ function getCompletion(completion: CompletePromiseEntryMessage['completion']) {
   }
 }
 
-export function completePromise(raw: string) {
+export function completePromise(raw?: string) {
+  if (!raw) {
+    return {};
+  }
   const message = fromBinary(
     CompletePromiseEntryMessageSchema,
     toUnit8Array(raw)
@@ -41,7 +44,6 @@ export function completePromise(raw: string) {
       return {
         name: message.name,
         key: message.key,
-        value: undefined,
         completion,
         failure: new RestateError(
           message.result.value.message,
@@ -53,7 +55,6 @@ export function completePromise(raw: string) {
         name: message.name,
         key: message.key,
         completion,
-        value: undefined,
         failure: undefined,
       };
     default:
@@ -61,7 +62,6 @@ export function completePromise(raw: string) {
         name: message.name,
         key: message.key,
         completion,
-        value: undefined,
         failure: undefined,
       };
   }

@@ -1,3 +1,3 @@
-export function attachInvocation(raw: string) {
+export function attachInvocation(raw?: string) {
   return {};
 }

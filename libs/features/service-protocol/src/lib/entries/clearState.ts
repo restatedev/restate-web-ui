@@ -3,7 +3,10 @@ import { ClearStateEntryMessageSchema } from '@buf/restatedev_service-protocol.b
 import { toUnit8Array } from '../toUni8Array';
 import { decode } from '../decoder';
 
-export function clearState(raw: string) {
+export function clearState(raw?: string) {
+  if (!raw) {
+    return {};
+  }
   const message = fromBinary(ClearStateEntryMessageSchema, toUnit8Array(raw));
   return {
     name: message.name,

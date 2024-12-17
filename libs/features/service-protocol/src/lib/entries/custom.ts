@@ -1,3 +1,3 @@
-export function custom(raw: string) {
+export function custom(raw?: string) {
   return {};
 }

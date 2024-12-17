@@ -3,7 +3,10 @@ import { SetStateEntryMessageSchema } from '@buf/restatedev_service-protocol.buf
 import { toUnit8Array } from '../toUni8Array';
 import { decode } from '../decoder';
 
-export function setState(raw: string) {
+export function setState(raw?: string) {
+  if (!raw) {
+    return {};
+  }
   const message = fromBinary(SetStateEntryMessageSchema, toUnit8Array(raw));
   return {
     name: message.name,

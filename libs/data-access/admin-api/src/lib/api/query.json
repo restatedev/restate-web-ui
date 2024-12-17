@@ -653,18 +653,66 @@
               },
               {
                 "$ref": "#/components/schemas/CustomJournalEntryType"
+              },
+              {
+                "$ref": "#/components/schemas/OutputJournalEntryType"
               }
             ]
           }
         ]
       },
-      "JournalBaseEntry": {
+      "JournalRawEntry": {
         "type": "object",
         "required": ["index", "entry_type"],
         "properties": {
           "index": { "type": "integer" },
           "raw": { "type": "string", "format": "binary" },
-          "completed": { "type": "boolean" }
+          "sleep_wakeup_at": { "type": "string", "format": "date-time" },
+          "completed": { "type": "boolean" },
+          "promise_name": { "type": "string" },
+          "invoked_target": { "type": "string" },
+          "invoked_id": { "type": "string" },
+          "name": { "type": "string" },
+          "entry_type": {
+            "type": "string",
+            "enum": [
+              "Input",
+              "Output",
+              "GetState",
+              "SetState",
+              "GetStateKeys",
+              "ClearState",
+              "ClearAllState",
+              "Sleep",
+              "GetPromise",
+              "PeekPromise",
+              "CompletePromise",
+              "OneWayCall",
+              "Call",
+              "Awakeable",
+              "CompleteAwakeable",
+              "Run",
+              "CancelInvocation",
+              "GetCallInvocationId",
+              "AttachInvocation",
+              "GetInvocationOutput",
+              "Custom"
+            ]
+          }
+        }
+      },
+      "JournalBaseEntry": {
+        "type": "object",
+        "required": ["index", "entry_type"],
+        "properties": {
+          "index": { "type": "integer" }
+        }
+      },
+      "FailureEntry": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" },
+          "restate_code": { "type": "string" }
         }
       },
       "InputJournalEntryType": {
@@ -676,7 +724,36 @@
           {
             "type": "object",
             "properties": {
-              "entry_type": { "type": "string", "enum": ["Input"] }
+              "entry_type": { "type": "string", "enum": ["Input"] },
+              "value": { "type": "string" },
+              "headers": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "key": { "type": "string" },
+                    "value": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "OutputJournalEntryType": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/JournalBaseEntry"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "entry_type": { "type": "string", "enum": ["Output"] },
+              "value": { "type": "string" },
+              "failure": {
+                "$ref": "#/components/schemas/FailureEntry"
+              }
             }
           }
         ]
@@ -690,7 +767,13 @@
           {
             "type": "object",
             "properties": {
-              "entry_type": { "type": "string", "enum": ["GetState"] }
+              "entry_type": { "type": "string", "enum": ["GetState"] },
+              "key": { "type": "string" },
+              "value": { "type": "string" },
+              "completed": { "type": "boolean" },
+              "failure": {
+                "$ref": "#/components/schemas/FailureEntry"
+              }
             }
           }
         ]
@@ -704,7 +787,9 @@
           {
             "type": "object",
             "properties": {
-              "entry_type": { "type": "string", "enum": ["SetState"] }
+              "entry_type": { "type": "string", "enum": ["SetState"] },
+              "key": { "type": "string" },
+              "value": { "type": "string" }
             }
           }
         ]
@@ -718,7 +803,17 @@
           {
             "type": "object",
             "properties": {
-              "entry_type": { "type": "string", "enum": ["GetStateKeys"] }
+              "entry_type": { "type": "string", "enum": ["GetStateKeys"] },
+              "completed": { "type": "boolean" },
+              "keys": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "failure": {
+                "$ref": "#/components/schemas/FailureEntry"
+              }
             }
           }
         ]
@@ -732,6 +827,9 @@
           {
             "type": "object",
             "properties": {
+              "key": {
+                "type": "string"
+              },
               "entry_type": { "type": "string", "enum": ["ClearState"] }
             }
           }
@@ -761,6 +859,11 @@
           {
             "type": "object",
             "properties": {
+              "completed": { "type": "boolean" },
+              "fired": { "type": "boolean" },
+              "failure": {
+                "$ref": "#/components/schemas/FailureEntry"
+              },
               "sleep_wakeup_at": {
                 "type": "string",
                 "format": "data-time"
@@ -780,10 +883,20 @@
           {
             "type": "object",
             "properties": {
+              "completed": { "type": "boolean" },
               "promise_name": {
                 "type": "string"
               },
-              "entry_type": { "type": "string", "enum": ["GetPromise"] }
+              "entry_type": { "type": "string", "enum": ["GetPromise"] },
+              "key": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              },
+              "failure": {
+                "$ref": "#/components/schemas/FailureEntry"
+              }
             }
           }
         ]
@@ -798,10 +911,20 @@
           {
             "type": "object",
             "properties": {
+              "completed": { "type": "boolean" },
               "promise_name": {
                 "type": "string"
               },
-              "entry_type": { "type": "string", "enum": ["PeekPromise"] }
+              "entry_type": { "type": "string", "enum": ["PeekPromise"] },
+              "key": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              },
+              "failure": {
+                "$ref": "#/components/schemas/FailureEntry"
+              }
             }
           }
         ]
@@ -816,10 +939,28 @@
           {
             "type": "object",
             "properties": {
+              "completed": { "type": "boolean" },
               "promise_name": {
                 "type": "string"
               },
-              "entry_type": { "type": "string", "enum": ["CompletePromise"] }
+              "entry_type": { "type": "string", "enum": ["CompletePromise"] },
+              "key": {
+                "type": "string"
+              },
+              "completion": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": "string"
+                  },
+                  "failure": {
+                    "$ref": "#/components/schemas/FailureEntry"
+                  }
+                }
+              },
+              "failure": {
+                "$ref": "#/components/schemas/FailureEntry"
+              }
             }
           }
         ]
@@ -840,6 +981,32 @@
               "invoked_target": {
                 "type": "string"
               },
+              "key": {
+                "type": "string"
+              },
+              "serviceName": {
+                "type": "string"
+              },
+              "handlerName": {
+                "type": "string"
+              },
+              "parameters": {
+                "type": "string"
+              },
+              "headers": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "key": { "type": "string" },
+                    "value": { "type": "string" }
+                  }
+                }
+              },
+              "invokeTime": {
+                "type": "string",
+                "format": "date-time"
+              },
               "entry_type": { "type": "string", "enum": ["OneWayCall"] }
             }
           }
@@ -855,12 +1022,39 @@
           {
             "type": "object",
             "properties": {
+              "completed": { "type": "boolean" },
               "invoked_id": {
                 "type": "string"
               },
               "invoked_target": {
                 "type": "string"
               },
+              "failure": {
+                "$ref": "#/components/schemas/FailureEntry"
+              },
+              "key": {
+                "type": "string"
+              },
+              "serviceName": {
+                "type": "string"
+              },
+              "handlerName": {
+                "type": "string"
+              },
+              "parameters": {
+                "type": "string"
+              },
+              "headers": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "key": { "type": "string" },
+                    "value": { "type": "string" }
+                  }
+                }
+              },
+              "value": { "type": "string" },
               "entry_type": { "type": "string", "enum": ["Call"] }
             }
           }
@@ -875,7 +1069,12 @@
           {
             "type": "object",
             "properties": {
-              "entry_type": { "type": "string", "enum": ["Awakeable"] }
+              "completed": { "type": "boolean" },
+              "entry_type": { "type": "string", "enum": ["Awakeable"] },
+              "failure": {
+                "$ref": "#/components/schemas/FailureEntry"
+              },
+              "value": { "type": "string" }
             }
           }
         ]
@@ -889,7 +1088,12 @@
           {
             "type": "object",
             "properties": {
-              "entry_type": { "type": "string", "enum": ["CompleteAwakeable"] }
+              "entry_type": { "type": "string", "enum": ["CompleteAwakeable"] },
+              "failure": {
+                "$ref": "#/components/schemas/FailureEntry"
+              },
+              "value": { "type": "string" },
+              "id": { "type": "string" }
             }
           }
         ]
@@ -917,6 +1121,7 @@
           {
             "type": "object",
             "properties": {
+              "completed": { "type": "boolean" },
               "entry_type": {
                 "type": "string",
                 "enum": ["GetCallInvocationId"]
@@ -989,7 +1194,11 @@
               "name": {
                 "type": "string"
               },
-              "entry_type": { "type": "string", "enum": ["Run"] }
+              "entry_type": { "type": "string", "enum": ["Run"] },
+              "failure": {
+                "$ref": "#/components/schemas/FailureEntry"
+              },
+              "value": { "type": "string" }
             }
           }
         ]

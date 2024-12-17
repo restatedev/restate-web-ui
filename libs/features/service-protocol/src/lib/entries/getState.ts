@@ -4,7 +4,10 @@ import { toUnit8Array } from '../toUni8Array';
 import { decode } from '../decoder';
 import { RestateError } from '@restate/util/errors';
 
-export function getState(raw: string) {
+export function getState(raw?: string) {
+  if (!raw) {
+    return {};
+  }
   const message = fromBinary(GetStateEntryMessageSchema, toUnit8Array(raw));
   switch (message.result.case) {
     case 'empty':

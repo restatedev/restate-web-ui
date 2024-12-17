@@ -1,3 +1,3 @@
-export function getCallInvocationId(raw: string) {
+export function getCallInvocationId(raw?: string) {
   return {};
 }
