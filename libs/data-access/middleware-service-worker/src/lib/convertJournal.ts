@@ -129,7 +129,6 @@ const JOURNAL_ENTRY_CONVERT_MAP: Record<
       index: entry.index,
       sleep_wakeup_at: convertToUTC(entry.sleep_wakeup_at)!,
       completed: entry.completed,
-      fired: entryMessage.fired,
       failure: entryMessage.failure,
     };
   },

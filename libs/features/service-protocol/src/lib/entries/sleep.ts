@@ -12,13 +12,11 @@ export function sleep(raw?: string) {
     case 'empty':
       return {
         name: message.name,
-        fired: true,
         failure: undefined,
       };
     case 'failure':
       return {
         name: message.name,
-        fired: false,
         failure: new RestateError(
           message.result.value.message,
           message.result.value.code.toString()
@@ -28,7 +26,6 @@ export function sleep(raw?: string) {
     default:
       return {
         name: message.name,
-        fired: false,
         failure: undefined,
       };
   }

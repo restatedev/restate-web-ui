@@ -15,6 +15,6 @@ export function oneWayCall(raw?: string) {
     handlerName: message.handlerName,
     parameters: decode(message.parameter),
     headers: message.headers.map(({ key, value }) => ({ key, value })),
-    invokeTime: new Date(Number(message.invokeTime / 1000n)).toISOString(),
+    invokeTime: new Date(Number(message.invokeTime)).toISOString(),
   };
 }
