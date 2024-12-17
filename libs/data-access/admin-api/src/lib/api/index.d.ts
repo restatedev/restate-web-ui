@@ -807,6 +807,11 @@ export interface components {
         | components['schemas']['AwakeableJournalEntryType']
         | components['schemas']['CompleteAwakeableJournalEntryType']
         | components['schemas']['RunJournalEntryType']
+        | components['schemas']['CancelInvocationJournalEntryType']
+        | components['schemas']['GetCallInvocationIdJournalEntryType']
+        | components['schemas']['AttachInvocationJournalEntryType']
+        | components['schemas']['GetInvocationOutputJournalEntryType']
+        | components['schemas']['CustomJournalEntryType']
       );
     JournalBaseEntry: {
       index: number;
@@ -878,6 +883,26 @@ export interface components {
     CompleteAwakeableJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       /** @enum {string} */
       entry_type?: 'CompleteAwakeable';
+    };
+    CancelInvocationJournalEntryType: components['schemas']['JournalBaseEntry'] & {
+      /** @enum {string} */
+      entry_type?: 'CancelInvocation';
+    };
+    GetCallInvocationIdJournalEntryType: components['schemas']['JournalBaseEntry'] & {
+      /** @enum {string} */
+      entry_type?: 'GetCallInvocationId';
+    };
+    AttachInvocationJournalEntryType: components['schemas']['JournalBaseEntry'] & {
+      /** @enum {string} */
+      entry_type?: 'AttachInvocation';
+    };
+    GetInvocationOutputJournalEntryType: components['schemas']['JournalBaseEntry'] & {
+      /** @enum {string} */
+      entry_type?: 'GetInvocationOutput';
+    };
+    CustomJournalEntryType: components['schemas']['JournalBaseEntry'] & {
+      /** @enum {string} */
+      entry_type?: 'Custom';
     };
     RunJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       name: string;

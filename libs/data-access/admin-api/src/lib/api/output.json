@@ -2585,6 +2585,21 @@
               },
               {
                 "$ref": "#/components/schemas/RunJournalEntryType"
+              },
+              {
+                "$ref": "#/components/schemas/CancelInvocationJournalEntryType"
+              },
+              {
+                "$ref": "#/components/schemas/GetCallInvocationIdJournalEntryType"
+              },
+              {
+                "$ref": "#/components/schemas/AttachInvocationJournalEntryType"
+              },
+              {
+                "$ref": "#/components/schemas/GetInvocationOutputJournalEntryType"
+              },
+              {
+                "$ref": "#/components/schemas/CustomJournalEntryType"
               }
             ]
           }
@@ -2870,6 +2885,91 @@
               "entry_type": {
                 "type": "string",
                 "enum": ["CompleteAwakeable"]
+              }
+            }
+          }
+        ]
+      },
+      "CancelInvocationJournalEntryType": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/JournalBaseEntry"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "entry_type": {
+                "type": "string",
+                "enum": ["CancelInvocation"]
+              }
+            }
+          }
+        ]
+      },
+      "GetCallInvocationIdJournalEntryType": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/JournalBaseEntry"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "entry_type": {
+                "type": "string",
+                "enum": ["GetCallInvocationId"]
+              }
+            }
+          }
+        ]
+      },
+      "AttachInvocationJournalEntryType": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/JournalBaseEntry"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "entry_type": {
+                "type": "string",
+                "enum": ["AttachInvocation"]
+              }
+            }
+          }
+        ]
+      },
+      "GetInvocationOutputJournalEntryType": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/JournalBaseEntry"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "entry_type": {
+                "type": "string",
+                "enum": ["GetInvocationOutput"]
+              }
+            }
+          }
+        ]
+      },
+      "CustomJournalEntryType": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/JournalBaseEntry"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "entry_type": {
+                "type": "string",
+                "enum": ["Custom"]
               }
             }
           }
