@@ -2875,9 +2875,6 @@
               "completed": {
                 "type": "boolean"
               },
-              "fired": {
-                "type": "boolean"
-              },
               "failure": {
                 "$ref": "#/components/schemas/FailureEntry"
               },

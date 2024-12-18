@@ -903,7 +903,6 @@ export interface components {
     };
     SleepJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       completed?: boolean;
-      fired?: boolean;
       failure?: components['schemas']['FailureEntry'];
       /** Format: data-time */
       sleep_wakeup_at: string;
