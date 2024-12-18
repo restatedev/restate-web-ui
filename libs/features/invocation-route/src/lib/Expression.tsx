@@ -11,11 +11,11 @@ import { ReactNode } from 'react';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 
 const styles = tv({
-  base: 'flex flex-row flex-wrap relative items-center  pr-2',
+  base: 'flex flex-row  flex-wrap relative items-center  pr-2',
   variants: {
     isFunction: {
       true: 'italic font-medium',
-      false: 'font-mono',
+      false: '',
     },
   },
 });
@@ -42,7 +42,9 @@ export function Expression({
       <div className="text-inherits w-full text-zinc-600  flex-auto">
         <span className="flex items-center min-w-0">
           {prefix && (
-            <span className="opacity-70 not-italic mr-[0.5ch]">{prefix}</span>
+            <span className="opacity-70 not-italic mr-[0.5ch] font-normal">
+              {prefix}
+            </span>
           )}
           <TruncateWithTooltip copyText={name}>{name}</TruncateWithTooltip>
 
@@ -80,7 +82,7 @@ export function InputOutput({
   popoverTitle,
 }: {
   className?: string;
-  name: string;
+  name: ReactNode;
   popoverContent?: ReactNode;
   popoverTitle?: string;
 }) {
@@ -92,7 +94,7 @@ export function InputOutput({
         <span
           className={value({
             className:
-              'basis-20 text-zinc-600 font-normal leading-5 text-xs not-italic grow max-w-fit truncate font-mono px-0.5 py-0',
+              'basis-20 text-zinc-600 font-normal font-sans leading-5 text-xs not-italic grow max-w-fit truncate px-0.5 py-0',
           })}
         >
           <span className="truncate px-0.5">{name}</span>
@@ -107,7 +109,7 @@ export function InputOutput({
         <Popover>
           <PopoverHoverTrigger>
             <Button
-              className="basis-20 grow max-w-fit truncate font-mono text-inherit [font-style:inherit] [font-size:inherit] px-0.5 py-0 rounded-sm underline-offset-4 decoration-from-font decoration-dashed underline "
+              className="basis-20 grow max-w-fit truncate font-mono text-inherit [font-size:inherit] px-0.5 py-0 rounded-sm underline-offset-4 decoration-from-font decoration-dashed underline "
               variant="icon"
             >
               <span className="truncate pr-0.5">{name}</span>
