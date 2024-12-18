@@ -38,7 +38,6 @@ export default defineConfig(({ mode }) => {
       !process.env.VITEST && reactRouter(),
       nxViteTsPaths(),
     ] as Plugin[],
-
     // Uncomment this if you are using workers.
     worker: {
       plugins: () => [nxViteTsPaths()],
@@ -47,6 +46,9 @@ export default defineConfig(({ mode }) => {
       commonjsOptions: {
         transformMixedEsModules: true,
       },
+    },
+    ssr: {
+      noExternal: ['@uiw/react-json-view'],
     },
 
     server: {

@@ -16,6 +16,7 @@
     "@stoplight/json-schema-viewer": "4.16.2",
     "@tailwindcss/container-queries": "0.1.1",
     "@tanstack/react-query": "5.51.21",
+    "@uiw/react-json-view": "2.0.0-alpha.30",
     "axios": "1.7.4",
     "cors": "2.8.5",
     "express": "4.20.0",

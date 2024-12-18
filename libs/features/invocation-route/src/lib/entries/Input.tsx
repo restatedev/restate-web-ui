@@ -2,6 +2,7 @@ import { InputJournalEntryType } from '@restate/data-access/admin-api';
 import { EntryProps } from './types';
 import { HandlerCaller, InputOutput } from '../Handler';
 import { Headers } from '../Headers';
+import { Value } from '../Value';
 
 export function Input({
   entry,
@@ -18,7 +19,12 @@ export function Input({
               <InputOutput
                 name="parameterssdfdsf"
                 popoverTitle="Parameters"
-                popoverContent={entry.body}
+                popoverContent={
+                  <Value
+                    value={entry.body}
+                    className="text-xs font-mono py-3"
+                  />
+                }
               />
             )}
             {entry.body && entry.headers && ', '}
