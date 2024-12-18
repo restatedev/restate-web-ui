@@ -12,30 +12,46 @@ import { TruncateWithTooltip } from '@restate/ui/tooltip';
 
 const styles = tv({
   base: 'flex flex-row flex-wrap relative items-center  pr-2',
+  variants: {
+    isFunction: {
+      true: 'italic font-medium',
+      false: 'font-mono',
+    },
+  },
 });
 
-export function HandlerCaller({
+export function Expression({
   className,
   name,
   input,
   output,
+  isFunction = true,
+  operationSymbol = '→',
 }: {
   className?: string;
   name: string;
   input?: ReactNode;
   output?: ReactNode;
+  isFunction?: boolean;
+  operationSymbol?: string;
 }) {
   return (
-    <div className={styles({ className })}>
-      <div className="text-inherits w-full text-zinc-600 italic font-medium flex-auto">
+    <div className={styles({ className, isFunction })}>
+      <div className="text-inherits w-full text-zinc-600  flex-auto">
         <span className="flex items-center min-w-0">
           <TruncateWithTooltip copyText={name}>{name}</TruncateWithTooltip>
 
-          <span className="ml-[0.5ch] shrink-0 text-zinc-400">{'('}</span>
+          {isFunction && (
+            <span className="ml-[0.5ch] shrink-0 text-zinc-400">{'('}</span>
+          )}
           {input}
           <span className="shrink-0 text-zinc-400">
-            {')'}
-            {output && <span className="text-zinc-500 mx-[0.5ch]">→</span>}
+            {isFunction && ')'}
+            {output && (
+              <span className="text-zinc-500 mx-[0.5ch] font-sans">
+                {operationSymbol}
+              </span>
+            )}
           </span>
           {output}
         </span>
