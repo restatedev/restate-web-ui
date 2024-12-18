@@ -885,7 +885,7 @@
             "properties": {
               "completed": { "type": "boolean" },
               "entry_type": { "type": "string", "enum": ["GetPromise"] },
-              "key": {
+              "promise_name": {
                 "type": "string"
               },
               "value": {
@@ -910,7 +910,7 @@
             "properties": {
               "completed": { "type": "boolean" },
               "entry_type": { "type": "string", "enum": ["PeekPromise"] },
-              "key": {
+              "promise_name": {
                 "type": "string"
               },
               "value": {

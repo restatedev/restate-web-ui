@@ -27,6 +27,7 @@ export function Expression({
   output,
   isFunction = true,
   operationSymbol = '→',
+  prefix,
 }: {
   className?: string;
   name: string;
@@ -34,11 +35,15 @@ export function Expression({
   output?: ReactNode;
   isFunction?: boolean;
   operationSymbol?: string;
+  prefix?: ReactNode;
 }) {
   return (
     <div className={styles({ className, isFunction })}>
       <div className="text-inherits w-full text-zinc-600  flex-auto">
         <span className="flex items-center min-w-0">
+          {prefix && (
+            <span className="opacity-70 not-italic mr-[0.5ch]">{prefix}</span>
+          )}
           <TruncateWithTooltip copyText={name}>{name}</TruncateWithTooltip>
 
           {isFunction && (

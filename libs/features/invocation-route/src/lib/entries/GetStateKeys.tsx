@@ -16,7 +16,7 @@ export function GetStateKeys({
         <>
           {entry.keys && entry.keys.length > 0 && (
             <InputOutput
-              name={entry.keys.join(', ')}
+              name={entry.keys.map((key) => JSON.stringify(key)).join(', ')}
               popoverTitle="Keys"
               popoverContent={
                 <ul className="flex flex-col gap-2">

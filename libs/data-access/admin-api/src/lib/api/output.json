@@ -2907,7 +2907,7 @@
                 "type": "string",
                 "enum": ["GetPromise"]
               },
-              "key": {
+              "promise_name": {
                 "type": "string"
               },
               "value": {
@@ -2937,7 +2937,7 @@
                 "type": "string",
                 "enum": ["PeekPromise"]
               },
-              "key": {
+              "promise_name": {
                 "type": "string"
               },
               "value": {

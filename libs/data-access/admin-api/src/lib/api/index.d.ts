@@ -913,7 +913,7 @@ export interface components {
       completed?: boolean;
       /** @enum {string} */
       entry_type?: 'GetPromise';
-      key?: string;
+      promise_name: string;
       value?: string;
       failure?: components['schemas']['FailureEntry'];
     };
@@ -921,7 +921,7 @@ export interface components {
       completed?: boolean;
       /** @enum {string} */
       entry_type?: 'PeekPromise';
-      key?: string;
+      promise_name: string;
       value?: string;
       failure?: components['schemas']['FailureEntry'];
     };
