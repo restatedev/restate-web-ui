@@ -16,7 +16,7 @@ export function Run({
       prefix="await"
       {...(entry.name && {
         input: (
-          <div className="basis-0 not-italic text-zinc-500 grow min-w-0 flex text-2xs items-center px-[0.3ch]">
+          <div className="basis-0 not-italic max-w-fit text-zinc-500 grow min-w-0 flex text-2xs items-center px-[0.3ch]">
             "<TruncateWithTooltip>{entry.name}</TruncateWithTooltip>"
           </div>
         ),
