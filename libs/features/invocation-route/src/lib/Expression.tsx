@@ -42,7 +42,7 @@ export function Expression({
           <TruncateWithTooltip copyText={name}>{name}</TruncateWithTooltip>
 
           {isFunction && (
-            <span className="ml-[0.5ch] shrink-0 text-zinc-400">{'('}</span>
+            <span className="ml-[0.2ch] shrink-0 text-zinc-400">{'('}</span>
           )}
           {input}
           <span className="shrink-0 text-zinc-400">
@@ -76,10 +76,25 @@ export function InputOutput({
 }: {
   className?: string;
   name: string;
-  popoverContent: ReactNode;
-  popoverTitle: string;
+  popoverContent?: ReactNode;
+  popoverTitle?: string;
 }) {
   const { base, value, content } = inputOutputStyles();
+
+  if (!popoverContent) {
+    return (
+      <div className={base()}>
+        <span
+          className={value({
+            className:
+              'basis-20 text-zinc-600 font-normal leading-5 text-xs not-italic grow max-w-fit truncate font-mono px-0.5 py-0',
+          })}
+        >
+          <span className="truncate px-0.5">{name}</span>
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div className={base()}>
