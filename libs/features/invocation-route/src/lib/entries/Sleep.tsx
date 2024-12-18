@@ -1,7 +1,5 @@
 import { SleepJournalEntryType } from '@restate/data-access/admin-api';
 import { EntryProps } from './types';
-import { Expression, InputOutput } from '../Handler';
-import { Value } from '../Value';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 import { formatDurations } from '@restate/util/intl';
 import { DateTooltip } from '@restate/ui/tooltip';

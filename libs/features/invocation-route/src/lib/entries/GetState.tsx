@@ -1,6 +1,6 @@
 import { GetStateJournalEntryType } from '@restate/data-access/admin-api';
 import { EntryProps } from './types';
-import { Expression, InputOutput } from '../Handler';
+import { Expression, InputOutput } from '../Expression';
 import { Value } from '../Value';
 
 export function GetState({
