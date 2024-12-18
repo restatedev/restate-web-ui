@@ -7,6 +7,7 @@ import { useSearchParams } from 'react-router';
 import { INVOCATION_QUERY_NAME } from './constants';
 import {
   useGetInvocation,
+  useGetInvocationJournal,
   useGetVirtualObjectQueue,
 } from '@restate/data-access/admin-api';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -25,6 +26,8 @@ import {
 import { useEffect, useState } from 'react';
 import { formatDurations } from '@restate/util/intl';
 import { Actions } from './Actions';
+import { JournalSection } from './Journal';
+import { useQueryClient } from '@tanstack/react-query';
 
 function Footnote({ dataUpdatedAt }: { dataUpdatedAt?: number }) {
   const [now, setNow] = useState(() => Date.now());
@@ -73,22 +76,23 @@ export function InvocationPanel() {
     refetchOnMount: true,
     staleTime: 0,
   });
-  const key = data?.target_service_key;
-  const { data: inbox, refetch: refetchVirtualObject } =
-    useGetVirtualObjectQueue(
-      String(data?.target_service_name),
-      String(key),
-      String(data?.id),
-      {
-        enabled: Boolean(
-          typeof key === 'string' &&
-            data &&
-            !data.completed_at &&
-            data.target_service_ty === 'virtual_object'
-        ),
-        staleTime: 0,
-      }
-    );
+  const { queryKey: journalQueryKey } = useGetInvocationJournal(
+    String(invocationId),
+    {
+      enabled: false,
+    }
+  );
+
+  const { queryKey: inboxQueryKey } = useGetVirtualObjectQueue(
+    String(data?.target_service_name),
+    String(data?.target_service_key),
+    String(data?.id),
+    {
+      enabled: false,
+    }
+  );
+
+  const queryClient = useQueryClient();
 
   if (!invocationId) {
     return null;
@@ -113,7 +117,14 @@ export function InvocationPanel() {
                 variant="primary"
                 onClick={() => {
                   refetchGetInvocation();
-                  refetchVirtualObject();
+                  queryClient.refetchQueries({
+                    queryKey: inboxQueryKey,
+                    exact: true,
+                  });
+                  queryClient.refetchQueries({
+                    queryKey: journalQueryKey,
+                    exact: true,
+                  });
                 }}
                 isPending={isPending}
               >
@@ -153,19 +164,14 @@ export function InvocationPanel() {
             </h2>
           </div>
 
-          <ServiceHandlerSection className="mt-5" invocation={data} />
           <KeysIdsSection className="mt-2" invocation={data} />
+          <ServiceHandlerSection className="mt-5" invocation={data} />
           <LifecycleSection className="mt-2" invocation={data} />
-          <VirtualObjectSection
-            className="mt-2"
-            head={inbox?.head}
-            size={inbox?.size}
-            position={inbox?.[String(data?.id)]}
-            invocation={data}
-          />
+          <VirtualObjectSection className="mt-2" invocation={data} />
           <WorkflowKeySection className="mt-2" invocation={data} />
           <InvokedBySection className="mt-2" invocation={data} />
           <DeploymentSection className="mt-2" invocation={data} />
+          <JournalSection className="mt-2" invocation={data} />
         </>
       </ComplementaryWithSearchParam>
     </SnapshotTimeProvider>

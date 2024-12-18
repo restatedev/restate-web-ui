@@ -1,4 +1,7 @@
-import { Invocation } from '@restate/data-access/admin-api';
+import {
+  Invocation,
+  useGetVirtualObjectQueue,
+} from '@restate/data-access/admin-api';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { tv } from 'tailwind-variants';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -16,32 +19,43 @@ import { formatNumber, formatOrdinals } from '@restate/util/intl';
 
 const styles = tv({ base: '' });
 export function VirtualObjectSection({
-  size,
-  head,
-  position,
   isPending,
   className,
   invocation,
 }: {
-  size?: number;
-  head?: string;
-  position?: number;
   isPending?: boolean;
   className?: string;
   invocation?: Invocation;
 }) {
-  const shouldShowQueue = !(
-    typeof position === 'undefined' ||
-    typeof size === 'undefined' ||
-    typeof head === 'undefined'
+  const { data } = useGetVirtualObjectQueue(
+    String(invocation?.target_service_name),
+    String(invocation?.target_service_key),
+    String(invocation?.id),
+    {
+      enabled: Boolean(
+        typeof invocation?.target_service_key === 'string' &&
+          invocation &&
+          !invocation.completed_at &&
+          invocation.target_service_ty === 'virtual_object'
+      ),
+      staleTime: 0,
+    }
   );
+
   if (
+    !data ||
     typeof invocation?.target_service_key === 'undefined' ||
     invocation?.target_service_ty !== 'virtual_object'
   ) {
     return null;
   }
+  const { size, head } = data;
+  const position = data[invocation.id];
 
+  const shouldShowQueue =
+    typeof position === 'number' &&
+    typeof size === 'number' &&
+    typeof head === 'string';
   return (
     <Section className={styles({ className })}>
       <SectionTitle className="">{invocation.target_service_name}</SectionTitle>
