@@ -2706,6 +2706,7 @@
                 "type": "array",
                 "items": {
                   "type": "object",
+                  "required": ["key", "value"],
                   "properties": {
                     "key": {
                       "type": "string"
@@ -3022,6 +3023,7 @@
                 "type": "array",
                 "items": {
                   "type": "object",
+                  "required": ["key", "value"],
                   "properties": {
                     "key": {
                       "type": "string"
@@ -3082,6 +3084,7 @@
                 "type": "array",
                 "items": {
                   "type": "object",
+                  "required": ["key", "value"],
                   "properties": {
                     "key": {
                       "type": "string"

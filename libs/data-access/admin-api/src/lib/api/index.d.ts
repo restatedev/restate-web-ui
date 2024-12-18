@@ -861,8 +861,8 @@ export interface components {
       entry_type?: 'Input';
       body?: string;
       headers?: {
-        key?: string;
-        value?: string;
+        key: string;
+        value: string;
       }[];
     };
     OutputJournalEntryType: components['schemas']['JournalBaseEntry'] & {
@@ -945,8 +945,8 @@ export interface components {
       handlerName?: string;
       parameters?: string;
       headers?: {
-        key?: string;
-        value?: string;
+        key: string;
+        value: string;
       }[];
       /** Format: date-time */
       invokeTime?: string;
@@ -963,8 +963,8 @@ export interface components {
       handlerName?: string;
       parameters?: string;
       headers?: {
-        key?: string;
-        value?: string;
+        key: string;
+        value: string;
       }[];
       value?: string;
       /** @enum {string} */
