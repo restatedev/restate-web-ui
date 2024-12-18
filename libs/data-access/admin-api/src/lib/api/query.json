@@ -725,7 +725,7 @@
             "type": "object",
             "properties": {
               "entry_type": { "type": "string", "enum": ["Input"] },
-              "value": { "type": "string" },
+              "body": { "type": "string" },
               "headers": {
                 "type": "array",
                 "items": {

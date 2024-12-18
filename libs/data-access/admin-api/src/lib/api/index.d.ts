@@ -859,7 +859,7 @@ export interface components {
     InputJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       /** @enum {string} */
       entry_type?: 'Input';
-      value?: string;
+      body?: string;
       headers?: {
         key?: string;
         value?: string;

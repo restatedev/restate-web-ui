@@ -10,7 +10,7 @@ export function input(raw?: string) {
   const message = fromBinary(InputEntryMessageSchema, toUnit8Array(raw));
   return {
     name: message.name,
-    value: decode(message.value),
+    body: decode(message.value),
     headers: message.headers.map(({ key, value }) => ({ key, value })),
   };
 }
