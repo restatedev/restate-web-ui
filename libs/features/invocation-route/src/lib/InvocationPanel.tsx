@@ -164,8 +164,8 @@ export function InvocationPanel() {
             </h2>
           </div>
 
-          <KeysIdsSection className="mt-2" invocation={data} />
-          <ServiceHandlerSection className="mt-5" invocation={data} />
+          <KeysIdsSection className="mt-5" invocation={data} />
+          <ServiceHandlerSection className="mt-2" invocation={data} />
           <LifecycleSection className="mt-2" invocation={data} />
           <VirtualObjectSection className="mt-2" invocation={data} />
           <WorkflowKeySection className="mt-2" invocation={data} />

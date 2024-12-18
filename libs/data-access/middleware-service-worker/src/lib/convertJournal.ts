@@ -68,7 +68,7 @@ const JOURNAL_ENTRY_CONVERT_MAP: Record<
     return {
       entry_type: 'Output',
       index: entry.index,
-      value: entryMessage.value,
+      body: entryMessage.body,
       failure: entryMessage.failure,
     };
   },

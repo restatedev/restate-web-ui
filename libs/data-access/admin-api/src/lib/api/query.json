@@ -750,7 +750,7 @@
             "type": "object",
             "properties": {
               "entry_type": { "type": "string", "enum": ["Output"] },
-              "value": { "type": "string" },
+              "body": { "type": "string" },
               "failure": {
                 "$ref": "#/components/schemas/FailureEntry"
               }

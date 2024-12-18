@@ -2733,7 +2733,7 @@
                 "type": "string",
                 "enum": ["Output"]
               },
-              "value": {
+              "body": {
                 "type": "string"
               },
               "failure": {

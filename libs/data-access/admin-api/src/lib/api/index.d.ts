@@ -868,7 +868,7 @@ export interface components {
     OutputJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       /** @enum {string} */
       entry_type?: 'Output';
-      value?: string;
+      body?: string;
       failure?: components['schemas']['FailureEntry'];
     };
     GetStateJournalEntryType: components['schemas']['JournalBaseEntry'] & {

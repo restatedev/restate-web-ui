@@ -13,7 +13,7 @@ export function output(raw?: string) {
     case 'failure':
       return {
         name: message.name,
-        value: undefined,
+        body: undefined,
         failure: new RestateError(
           message.result.value.message,
           message.result.value.code.toString()
@@ -22,13 +22,13 @@ export function output(raw?: string) {
     case 'value':
       return {
         name: message.name,
-        value: decode(message.result.value),
+        body: decode(message.result.value),
         failure: undefined,
       };
     default:
       return {
         name: message.name,
-        value: undefined,
+        body: undefined,
         failure: undefined,
       };
   }
