@@ -157,10 +157,10 @@ const defaultEntryStyles = tv({
   base: '',
   slots: {
     entryItem:
-      'flex items-center w-full gap-1 flex-wrap w-full min-w-0 mb-2 pl-2 bg-zinc-50 border-zinc-600/10 border rounded-none py-1 font-mono [font-size:90%] rounded -mt-px',
+      'flex items-center w-full gap-1 flex-wrap w-full min-w-0 mb-2 pl-2 bg-zinc-50 border-zinc-600/10 border rounded-none py-1 font-mono [font-size:95%] rounded -mt-px',
     circle:
       'w-3 h-3 rounded-full shrink-0 bg-zinc-100 border border-zinc-200 shadow-sm absolute left-0 top-[0.8625rem] -translate-y-1/2',
-    line: 'absolute group-first:top-[0.5625rem] group-last:bottom-[calc(100%-0.5625rem+1px)] border-l left-[0.35rem] top-0 bottom-0',
+    line: 'absolute group-first:top-[0.5625rem] group-last:bottom-[calc(100%-0.5625rem+1px)] border-l left-[calc(0.35rem+0.5px)] top-0 bottom-0',
   },
   variants: {
     appended: {
