@@ -46,7 +46,9 @@ export function Expression({
               {prefix}
             </span>
           )}
-          <TruncateWithTooltip copyText={name}>{name}</TruncateWithTooltip>
+          <span className="block max-w-fit basis-20 min-w-0">
+            <TruncateWithTooltip copyText={name}>{name}</TruncateWithTooltip>
+          </span>
 
           {isFunction && (
             <span className="ml-[0.2ch] shrink-0 text-zinc-400">{'('}</span>

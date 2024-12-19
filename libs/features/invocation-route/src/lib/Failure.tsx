@@ -10,7 +10,7 @@ const failureStyle = tv({
   base: '',
   slots: {
     trigger:
-      'text-red-500 bg-white/70 border px-1.5 py-0.5 flex rounded-md items-center gap-1 text-2xs h-5',
+      'text-red-500 bg-white/70 border px-1.5 py-0 flex rounded-md items-center gap-1 [font-size:inherit] h-5',
     errorIcon: 'h-3 w-3 shrink-0 text-red-500/90',
   },
 });
