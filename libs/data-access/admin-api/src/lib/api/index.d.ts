@@ -432,7 +432,7 @@ export interface paths {
      * Get state keys
      * @description Get state keys
      */
-    get: operations['get_state_keys'];
+    get: operations['get_state'];
     put?: never;
     post?: never;
     delete?: never;
@@ -832,13 +832,13 @@ export interface components {
         };
     StateInterfaceResponse: {
       keys?: {
-        name?: string;
+        name: string;
       }[];
     };
     StateResponse: {
       state?: {
-        name?: string;
-        value?: string;
+        name: string;
+        value: string;
       }[];
     };
     JournalEntry: components['schemas']['JournalBaseEntry'] &
@@ -2727,7 +2727,7 @@ export interface operations {
       };
     };
   };
-  get_state_keys: {
+  get_state: {
     parameters: {
       query?: never;
       header?: never;

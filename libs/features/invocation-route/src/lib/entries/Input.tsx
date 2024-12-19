@@ -34,8 +34,8 @@ export function Input({
             {entry.headers && (
               <InputOutput
                 name="headers"
-                popoverTitle="Headers"
-                className="px-0 bg-transparent border-none mx-2 [&&&]:mb-3"
+                popoverTitle=""
+                className="px-0 bg-transparent border-none mx-0 [&&&]:mb-1"
                 popoverContent={<Headers headers={entry.headers} />}
               />
             )}

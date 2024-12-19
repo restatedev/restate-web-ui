@@ -1,6 +1,7 @@
 import {
   Invocation,
   useGetVirtualObjectQueue,
+  useGetVirtualObjectState,
 } from '@restate/data-access/admin-api';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { tv } from 'tailwind-variants';
@@ -16,6 +17,10 @@ import {
   TooltipTrigger,
 } from '@restate/ui/tooltip';
 import { formatNumber, formatOrdinals } from '@restate/util/intl';
+import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
+import { Button } from '@restate/ui/button';
+import { DropdownSection } from '@restate/ui/dropdown';
+import { State } from './State';
 
 const styles = tv({ base: '' });
 export function VirtualObjectSection({
@@ -41,6 +46,18 @@ export function VirtualObjectSection({
       staleTime: 0,
     }
   );
+  const { data: stateData } = useGetVirtualObjectState(
+    String(invocation?.target_service_name),
+    String(invocation?.target_service_key),
+    {
+      enabled: Boolean(
+        typeof invocation?.target_service_key === 'string' &&
+          invocation &&
+          invocation.target_service_ty === 'virtual_object'
+      ),
+      staleTime: 0,
+    }
+  );
 
   if (
     !data ||
@@ -56,14 +73,14 @@ export function VirtualObjectSection({
     typeof position === 'number' &&
     typeof size === 'number' &&
     typeof head === 'string';
+  const hasState = Boolean(stateData?.state && stateData?.state.length > 0);
   return (
     <Section className={styles({ className })}>
       <SectionTitle className="">{invocation.target_service_name}</SectionTitle>
       <SectionContent className="p-0">
-        <div className="flex px-1.5 py-1 items-center">
-          <span className="flex-auto pl-1 text-code text-gray-500 font-medium">
-            Key
-          </span>
+        <div className="flex px-1.5 py-1 items-center gap-1">
+          <span className="pl-1 text-code text-gray-500 font-medium">Key</span>
+          {!hasState && <div className="ml-auto" />}
           <Badge
             size="sm"
             className="font-mono py-0 pr-0 align-middle ml-1 min-w-0"
@@ -74,6 +91,30 @@ export function VirtualObjectSection({
               className="shrink-0 [&_svg]:w-2.5 [&_svg]:h-2.5 p-1 ml-1"
             />
           </Badge>
+          {hasState && (
+            <Popover>
+              <PopoverTrigger>
+                <Button
+                  variant="secondary"
+                  className="bg-white/70 border px-1.5 py-0 flex rounded-md items-center gap-1 text-xs h-5 ml-auto"
+                >
+                  State {`(${stateData?.state?.length})`}
+                  <Icon
+                    name={IconName.ChevronsUpDown}
+                    className="h-3 w-3 text-gray-500 shrink-0"
+                  />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="max-w-lg">
+                <DropdownSection
+                  title=""
+                  className="px-0 bg-transparent border-none mx-0 [&&&]:mb-1 font-mono"
+                >
+                  <State state={stateData?.state} />
+                </DropdownSection>
+              </PopoverContent>
+            </Popover>
+          )}
         </div>
       </SectionContent>
       {shouldShowQueue && (

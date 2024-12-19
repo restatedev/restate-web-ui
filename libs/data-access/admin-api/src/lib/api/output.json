@@ -1980,7 +1980,7 @@
         "tags": ["query-invocations"],
         "summary": "Get state keys",
         "description": "Get state keys",
-        "operationId": "get_state_keys",
+        "operationId": "get_state",
         "parameters": [
           {
             "name": "name",
@@ -2732,6 +2732,7 @@
             "type": "array",
             "items": {
               "type": "object",
+              "required": ["name"],
               "properties": {
                 "name": {
                   "type": "string"
@@ -2748,6 +2749,7 @@
             "type": "array",
             "items": {
               "type": "object",
+              "required": ["name", "value"],
               "properties": {
                 "name": {
                   "type": "string"

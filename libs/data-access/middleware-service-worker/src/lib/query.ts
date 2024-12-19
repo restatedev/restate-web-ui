@@ -142,10 +142,10 @@ async function getInbox(
 
 async function getState(service: string, key: string, baseUrl: string) {
   const state: { name: string; value: string }[] = await query(
-    `SELECT key, value FROM state WHERE service_name = '${service}' AND service_key = '${key}'`,
+    `SELECT key, value_utf8 FROM state WHERE service_name = '${service}' AND service_key = '${key}'`,
     { baseUrl }
   ).then(({ rows }) =>
-    rows.map((row) => ({ name: row.key, value: row.value }))
+    rows.map((row) => ({ name: row.key, value: row.value_utf8 }))
   );
 
   return new Response(JSON.stringify({ state }), {
@@ -235,6 +235,6 @@ export function queryMiddlerWare(req: Request) {
 
   if (getStateInterfaceParams && method.toUpperCase() === 'GET') {
     const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
-    return getStateInterface(getStateParams.params.name, baseUrl);
+    return getStateInterface(getStateInterfaceParams.params.name, baseUrl);
   }
 }
