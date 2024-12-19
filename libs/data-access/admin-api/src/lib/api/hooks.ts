@@ -333,6 +333,59 @@ export function useGetVirtualObjectQueue(
   };
 }
 
+export function useGetVirtualObjectState(
+  serviceName: string,
+  key: string,
+  options?: HookQueryOptions<'/query/services/{name}/keys/{key}/state', 'get'>
+) {
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi(
+    'query',
+    '/query/services/{name}/keys/{key}/state',
+    'get',
+    {
+      baseUrl,
+      parameters: { path: { key, name: serviceName } },
+    }
+  );
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+  };
+}
+
+export function useGetVirtualObjectStateInterface(
+  serviceName: string,
+  options?: HookQueryOptions<'/query/services/{name}/state', 'get'>
+) {
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi(
+    'query',
+    '/query/services/{name}/state',
+    'get',
+    {
+      baseUrl,
+      parameters: { path: { name: serviceName } },
+    }
+  );
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+  };
+}
+
 export function useDeleteInvocation(
   invocation_id: string,
   options?: HookMutationOptions<'/invocations/{invocation_id}', 'delete'>

@@ -47,7 +47,7 @@ export function Call({
               {entry.headers && entry.headers.length > 0 && (
                 <InputOutput
                   name="headers"
-                  popoverTitle="Headers"
+                  popoverTitle=""
                   className="px-0 bg-transparent border-none mx-2 [&&&]:mb-3"
                   popoverContent={<Headers headers={entry.headers} />}
                 />

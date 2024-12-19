@@ -9,6 +9,7 @@ import {
   useGetInvocation,
   useGetInvocationJournal,
   useGetVirtualObjectQueue,
+  useGetVirtualObjectState,
 } from '@restate/data-access/admin-api';
 import { Icon, IconName } from '@restate/ui/icons';
 import { ServiceHandlerSection } from './ServiceHandlerSection';
@@ -91,6 +92,13 @@ export function InvocationPanel() {
       enabled: false,
     }
   );
+  const { queryKey: stateQuery } = useGetVirtualObjectState(
+    String(data?.target_service_name),
+    String(data?.target_service_key),
+    {
+      enabled: false,
+    }
+  );
 
   const queryClient = useQueryClient();
 
@@ -125,6 +133,12 @@ export function InvocationPanel() {
                     queryKey: journalQueryKey,
                     exact: true,
                   });
+                  if (data?.target_service_ty === 'virtual_object') {
+                    queryClient.refetchQueries({
+                      queryKey: stateQuery,
+                      exact: true,
+                    });
+                  }
                 }}
                 isPending={isPending}
               >
