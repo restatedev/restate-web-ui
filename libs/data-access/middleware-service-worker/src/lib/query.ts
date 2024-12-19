@@ -140,6 +140,32 @@ async function getInbox(
   });
 }
 
+async function getState(service: string, key: string, baseUrl: string) {
+  const state: { name: string; value: string }[] = await query(
+    `SELECT key, value FROM state WHERE service_name = '${service}' AND service_key = '${key}'`,
+    { baseUrl }
+  ).then(({ rows }) =>
+    rows.map((row) => ({ name: row.key, value: row.value }))
+  );
+
+  return new Response(JSON.stringify({ state }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+async function getStateInterface(service: string, baseUrl: string) {
+  const keys: { name: string }[] = await query(
+    `SELECT DISTINCT key FROM state WHERE service_name = '${service}' GROUP BY key`,
+    { baseUrl }
+  ).then(({ rows }) => rows.map((row) => ({ name: row.key })));
+
+  return new Response(JSON.stringify({ keys }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
 export function queryMiddlerWare(req: Request) {
   const { url, method } = req;
   const urlObj = new URL(url);
@@ -184,5 +210,31 @@ export function queryMiddlerWare(req: Request) {
       String(urlObj.searchParams.get('invocationId')),
       baseUrl
     );
+  }
+
+  const getStateParams =
+    match<{ key: string; name: string }>(
+      '/query/services/:name/keys/:key/state'
+    )(urlObj.pathname) ||
+    match<{ key: string; name: string }>('/query/services/:name/keys//state')(
+      urlObj.pathname
+    );
+
+  if (getStateParams && method.toUpperCase() === 'GET') {
+    const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
+    return getState(
+      getStateParams.params.name,
+      getStateParams.params.key ?? '',
+      baseUrl
+    );
+  }
+
+  const getStateInterfaceParams = match<{ key: string; name: string }>(
+    '/query/services/:name/state'
+  )(urlObj.pathname);
+
+  if (getStateInterfaceParams && method.toUpperCase() === 'GET') {
+    const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
+    return getStateInterface(getStateParams.params.name, baseUrl);
   }
 }
