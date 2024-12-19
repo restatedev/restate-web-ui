@@ -14,6 +14,7 @@ export function Output({
 
   return (
     <Expression
+      isHandler
       name={invocation.target_handler_name}
       output={
         <>

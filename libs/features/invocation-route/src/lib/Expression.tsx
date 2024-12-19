@@ -9,6 +9,7 @@ import {
 import { ReactNode } from 'react';
 
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
+import { Icon, IconName } from '@restate/ui/icons';
 
 const styles = tv({
   base: 'flex flex-row max-w-full flex-wrap relative items-center  pr-2',
@@ -26,6 +27,7 @@ export function Expression({
   input,
   output,
   isFunction = true,
+  isHandler = false,
   operationSymbol = '→',
   prefix,
 }: {
@@ -34,6 +36,8 @@ export function Expression({
   input?: ReactNode;
   output?: ReactNode;
   isFunction?: boolean;
+  isHandler?: boolean;
+
   operationSymbol?: string;
   prefix?: ReactNode;
 }) {
@@ -46,7 +50,13 @@ export function Expression({
               {prefix}
             </span>
           )}
-          <span className="block max-w-fit basis-20 min-w-0">
+          <span className="flex items-center max-w-fit basis-20 grow min-w-0">
+            {isHandler && (
+              <Icon
+                name={IconName.Function}
+                className="w-4 h-4 text-zinc-400 shrink-0 -ml-1"
+              />
+            )}
             <TruncateWithTooltip copyText={name}>{name}</TruncateWithTooltip>
           </span>
 

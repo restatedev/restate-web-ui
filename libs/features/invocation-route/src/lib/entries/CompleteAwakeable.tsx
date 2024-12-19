@@ -3,7 +3,6 @@ import { EntryProps } from './types';
 import { Expression, InputOutput } from '../Expression';
 import { Value } from '../Value';
 import { Failure } from '../Failure';
-import { TruncateWithTooltip } from '@restate/ui/tooltip';
 
 export function CompleteAwakeable({
   entry,

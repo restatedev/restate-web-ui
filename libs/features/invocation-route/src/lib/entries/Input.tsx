@@ -14,6 +14,7 @@ export function Input({
   return (
     <>
       <Expression
+        isHandler
         name={invocation.target_handler_name}
         input={
           <>
