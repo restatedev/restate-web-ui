@@ -13,6 +13,7 @@ export function SetState({
       isFunction={false}
       name={entry.key ?? ''}
       operationSymbol={'='}
+      prefix="set"
       output={
         typeof entry.value === 'string' ? (
           <InputOutput

@@ -12,6 +12,7 @@ export function GetStateKeys({
   return (
     <Expression
       name="keys"
+      prefix="get"
       output={
         <>
           {entry.keys && entry.keys.length > 0 && (

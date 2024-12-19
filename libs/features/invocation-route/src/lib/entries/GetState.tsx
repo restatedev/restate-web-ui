@@ -13,6 +13,7 @@ export function GetState({
     <Expression
       isFunction={false}
       name={entry.key ?? ''}
+      prefix="get"
       output={
         <>
           {typeof entry.value === 'string' && (
