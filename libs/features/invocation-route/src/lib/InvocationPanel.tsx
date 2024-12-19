@@ -7,6 +7,7 @@ import { useSearchParams } from 'react-router';
 import { INVOCATION_QUERY_NAME } from './constants';
 import {
   useGetInvocation,
+  useGetInvocationJournal,
   useGetVirtualObjectQueue,
 } from '@restate/data-access/admin-api';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -25,14 +26,12 @@ import {
 import { useEffect, useState } from 'react';
 import { formatDurations } from '@restate/util/intl';
 import { Actions } from './Actions';
+import { JournalSection } from './Journal';
+import { useQueryClient } from '@tanstack/react-query';
 
-function Footnote({ invocationId }: { invocationId?: string }) {
+function Footnote({ dataUpdatedAt }: { dataUpdatedAt?: number }) {
   const [now, setNow] = useState(() => Date.now());
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
-  const { dataUpdatedAt, isFetching } = useGetInvocation(String(invocationId), {
-    enabled: Boolean(invocationId),
-    refetchOnMount: false,
-  });
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
@@ -49,7 +48,7 @@ function Footnote({ invocationId }: { invocationId?: string }) {
     };
   }, [dataUpdatedAt]);
 
-  if (!dataUpdatedAt || isFetching) {
+  if (!dataUpdatedAt) {
     return null;
   }
   const { isPast, ...parts } = durationSinceLastSnapshot(now);
@@ -71,26 +70,29 @@ export function InvocationPanel() {
     error: getInvocationError,
     dataUpdatedAt,
     refetch: refetchGetInvocation,
+    isSuccess,
   } = useGetInvocation(String(invocationId), {
     enabled: Boolean(invocationId),
     refetchOnMount: true,
     staleTime: 0,
   });
-  const key = data?.target_service_key;
-  const { data: inbox, refetch: refetchVirtualObject } =
-    useGetVirtualObjectQueue(
-      String(data?.target_service_name),
-      String(key),
-      String(data?.id),
-      {
-        enabled: Boolean(
-          key &&
-            data &&
-            !data.completed_at &&
-            data.target_service_ty === 'virtual_object'
-        ),
-      }
-    );
+  const { queryKey: journalQueryKey } = useGetInvocationJournal(
+    String(invocationId),
+    {
+      enabled: false,
+    }
+  );
+
+  const { queryKey: inboxQueryKey } = useGetVirtualObjectQueue(
+    String(data?.target_service_name),
+    String(data?.target_service_key),
+    String(data?.id),
+    {
+      enabled: false,
+    }
+  );
+
+  const queryClient = useQueryClient();
 
   if (!invocationId) {
     return null;
@@ -115,7 +117,14 @@ export function InvocationPanel() {
                 variant="primary"
                 onClick={() => {
                   refetchGetInvocation();
-                  refetchVirtualObject();
+                  queryClient.refetchQueries({
+                    queryKey: inboxQueryKey,
+                    exact: true,
+                  });
+                  queryClient.refetchQueries({
+                    queryKey: journalQueryKey,
+                    exact: true,
+                  });
                 }}
                 isPending={isPending}
               >
@@ -144,8 +153,10 @@ export function InvocationPanel() {
                   <>
                     <div className="flex w-full items-center">Invocation</div>
                     <div className="min-h-4 flex w-full items-center">
-                      <Footnote invocationId={invocationId} />
-                      <Actions invocation={data} />
+                      {isSuccess && <Footnote dataUpdatedAt={dataUpdatedAt} />}
+                      <div className="ml-auto">
+                        <Actions invocation={data} />
+                      </div>
                     </div>
                   </>
                 )}
@@ -153,19 +164,14 @@ export function InvocationPanel() {
             </h2>
           </div>
 
-          <ServiceHandlerSection className="mt-5" invocation={data} />
-          <KeysIdsSection className="mt-2" invocation={data} />
+          <KeysIdsSection className="mt-5" invocation={data} />
+          <ServiceHandlerSection className="mt-2" invocation={data} />
           <LifecycleSection className="mt-2" invocation={data} />
-          <VirtualObjectSection
-            className="mt-2"
-            head={inbox?.head}
-            size={inbox?.size}
-            position={inbox?.[String(data?.id)]}
-            invocation={data}
-          />
+          <VirtualObjectSection className="mt-2" invocation={data} />
           <WorkflowKeySection className="mt-2" invocation={data} />
           <InvokedBySection className="mt-2" invocation={data} />
           <DeploymentSection className="mt-2" invocation={data} />
+          <JournalSection className="mt-2" invocation={data} />
         </>
       </ComplementaryWithSearchParam>
     </SnapshotTimeProvider>

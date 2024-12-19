@@ -5,6 +5,8 @@
   "scripts": {},
   "private": true,
   "dependencies": {
+    "@buf/restatedev_service-protocol.bufbuild_es": "2.2.3-20240606160341-127256df3b4d.1",
+    "@bufbuild/protobuf": "^2.2.3",
     "@formatjs/intl-durationformat": "^0.6.4",
     "@react-aria/interactions": "3.22.5",
     "@react-aria/toast": "3.0.0-beta.18",
@@ -14,6 +16,7 @@
     "@stoplight/json-schema-viewer": "4.16.2",
     "@tailwindcss/container-queries": "0.1.1",
     "@tanstack/react-query": "5.51.21",
+    "@uiw/react-json-view": "2.0.0-alpha.30",
     "axios": "1.7.4",
     "cors": "2.8.5",
     "express": "4.20.0",
@@ -58,7 +61,7 @@
     "@nx/vite": "20.0.1",
     "@nx/web": "20.0.1",
     "@nx/workspace": "20.0.1",
-    "@playwright/test": "1.44.1",
+    "@playwright/test": "1.49.1",
     "@react-router/dev": "7.0.1",
     "@redocly/cli": "1.19.0",
     "@swc-node/register": "1.9.2",
@@ -134,5 +137,5 @@
       }
     }
   },
-  "packageManager": "pnpm@9.12.1"
+  "packageManager": "pnpm@9.15.0"
 }

@@ -27,7 +27,7 @@ export const COLUMN_NAMES: Record<ColumnKey, string> = {
   target: 'Target',
   status: 'Status',
   invoked_by: 'Invoked by',
-  journal_size: 'Journal',
+  journal_size: 'Execution logs',
   deployment: 'Deployment',
   retry_count: 'Attempt count',
   modified_at: 'Modified at',

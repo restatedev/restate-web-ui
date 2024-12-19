@@ -7,15 +7,24 @@ import { Badge } from '@restate/ui/badge';
 import { ServiceTypeExplainer } from '@restate/features/explainers';
 import { CellProps } from './cells/types';
 import { InvocationIdCell } from './cells/InvocationId';
-import { formatDurations, formatNumber } from '@restate/util/intl';
+import {
+  formatDurations,
+  formatNumber,
+  formatPlurals,
+} from '@restate/util/intl';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 import { tv } from 'tailwind-variants';
 import {
   InvocationDeployment,
   InvocationId,
+  Journal,
   Status,
   Target,
 } from '@restate/features/invocation-route';
+import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
+import { Button } from '@restate/ui/button';
+import { DropdownSection } from '@restate/ui/dropdown';
+import { Icon, IconName } from '@restate/ui/icons';
 
 function withDate({
   tooltipTitle,
@@ -126,6 +135,38 @@ function withCell(Component: ComponentType<CellProps>) {
   );
 }
 
+function JournalCell({ invocation }: CellProps) {
+  if (!invocation.journal_size) {
+    return null;
+  }
+
+  return (
+    <Popover>
+      <PopoverTrigger>
+        <Button
+          variant="secondary"
+          className="px-1.5 py-0.5 flex rounded-md items-center gap-1 text-2xs"
+        >
+          {invocation.journal_size}{' '}
+          {formatPlurals(invocation.journal_size, {
+            one: 'entry',
+            other: 'entries',
+          })}
+          <Icon
+            name={IconName.ChevronsUpDown}
+            className="h-3 w-3 text-gray-500 shrink-0"
+          />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="max-w-sm">
+        <DropdownSection title="Execution logs" className="p-3">
+          <Journal invocation={invocation} />
+        </DropdownSection>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 const CELLS: Record<ColumnKey, ComponentType<CellProps>> = {
   id: withCell(InvocationIdCell),
   target: withCell(TargetCell),
@@ -147,7 +188,7 @@ const CELLS: Record<ColumnKey, ComponentType<CellProps>> = {
   idempotency_key: withCell(
     withField({ field: 'idempotency_key', className: 'font-mono' })
   ),
-  journal_size: withCell(withField({ field: 'journal_size' })),
+  journal_size: withCell(JournalCell),
   retry_count: withCell(withField({ field: 'retry_count' })),
   deployment: withCell(InvocationDeployment),
   target_service_key: withCell(withField({ field: 'target_service_key' })),

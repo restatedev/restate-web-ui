@@ -32,11 +32,11 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@restate/ui/tooltip';
 import { Actions } from '@restate/features/invocation-route';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
-  id: 120,
+  id: 80,
   created_at: 100,
   invoked_by: 180,
   deployment: 220,
-  journal_size: 90,
+  journal_size: 135,
 };
 
 function Component() {
@@ -193,7 +193,7 @@ function Component() {
                 {sortedColumnsList.map((col) => (
                   <InvocationCell key={col} column={col} invocation={row} />
                 ))}
-                <Cell>
+                <Cell className="align-top">
                   <Actions invocation={row} />
                 </Cell>
               </Row>

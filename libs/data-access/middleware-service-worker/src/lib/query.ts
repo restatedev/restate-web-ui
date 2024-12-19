@@ -1,6 +1,7 @@
 import ky from 'ky';
 import { convertInvocation } from './convertInvocation';
 import { match } from 'path-to-regexp';
+import { convertJournal } from './convertJournal';
 
 function query(query: string, { baseUrl }: { baseUrl: string }) {
   return ky
@@ -60,9 +61,28 @@ async function getInvocation(invocationId: string, baseUrl: string) {
     });
   }
 
-  return new Response(JSON.stringify({ message: 'Not found' }), {
-    status: 404,
-    statusText: 'Not found',
+  return new Response(
+    JSON.stringify({
+      message:
+        'Invocation not found. Please note that completed invocations without idempotency keys are not persisted. For invocations with idempotency keys, the response is retained for a configured retention period per service.',
+    }),
+    {
+      status: 404,
+      statusText: 'Not found',
+      headers: { 'Content-Type': 'application/json' },
+    }
+  );
+}
+
+async function getInvocationJournal(invocationId: string, baseUrl: string) {
+  const entries = await query(
+    `SELECT * FROM sys_journal WHERE id = '${invocationId}'`,
+    {
+      baseUrl,
+    }
+  ).then(({ rows }) => rows.map(convertJournal));
+  return new Response(JSON.stringify({ entries }), {
+    status: 200,
     headers: { 'Content-Type': 'application/json' },
   });
 }
@@ -129,6 +149,17 @@ export function queryMiddlerWare(req: Request) {
     return listInvocations(baseUrl);
   }
 
+  const getInvocationJournalParams = match<{ invocationId: string }>(
+    '/query/invocations/:invocationId/journal'
+  )(urlObj.pathname);
+  if (getInvocationJournalParams && method.toUpperCase() === 'GET') {
+    const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
+    return getInvocationJournal(
+      getInvocationJournalParams.params.invocationId,
+      baseUrl
+    );
+  }
+
   const getInvocationParams = match<{ invocationId: string }>(
     '/query/invocations/:invocationId'
   )(urlObj.pathname);
@@ -137,14 +168,19 @@ export function queryMiddlerWare(req: Request) {
     return getInvocation(getInvocationParams.params.invocationId, baseUrl);
   }
 
-  const getInboxParams = match<{ key: string; name: string }>(
-    '/query/virtualObjects/:name/keys/:key/queue'
-  )(urlObj.pathname);
+  const getInboxParams =
+    match<{ key: string; name: string }>(
+      '/query/virtualObjects/:name/keys/:key/queue'
+    )(urlObj.pathname) ||
+    match<{ key: string; name: string }>(
+      '/query/virtualObjects/:name/keys//queue'
+    )(urlObj.pathname);
+
   if (getInboxParams && method.toUpperCase() === 'GET') {
     const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
     return getInbox(
       getInboxParams.params.name,
-      getInboxParams.params.key,
+      getInboxParams.params.key ?? '',
       String(urlObj.searchParams.get('invocationId')),
       baseUrl
     );

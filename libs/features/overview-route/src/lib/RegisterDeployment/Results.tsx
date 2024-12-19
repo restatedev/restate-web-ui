@@ -80,7 +80,7 @@ function Service({
               <div className="ml-2 uppercase text-xs font-semibold text-gray-400 mt-2 mb-1 flex gap-2 items-center">
                 Handlers
               </div>
-              <div className="flex flex-col gap-4 pl-1.5 mt-2">
+              <div className="flex flex-col gap-2 pl-1.5 mt-2">
                 {service.handlers.map((handler) => (
                   <Handler
                     handler={handler}

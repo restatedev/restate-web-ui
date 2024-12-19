@@ -11,7 +11,7 @@
     "experimentalDecorators": true,
     "noUncheckedIndexedAccess": true,
     "importHelpers": true,
-    "target": "es2018",
+    "target": "es2020",
     "module": "esnext",
     "lib": ["es2020", "dom"],
     "skipLibCheck": true,
@@ -47,6 +47,9 @@
       ],
       "@restate/features/version": ["libs/features/version/src/index.ts"],
       "@restate/humantime": ["libs/util/humantime/src/index.ts"],
+      "@restate/service-protocol": [
+        "libs/features/service-protocol/src/index.ts"
+      ],
       "@restate/ui/api": ["libs/ui/api/src/index.ts"],
       "@restate/ui/badge": ["libs/ui/badge/src/index.ts"],
       "@restate/ui/button": ["libs/ui/button/src/index.ts"],

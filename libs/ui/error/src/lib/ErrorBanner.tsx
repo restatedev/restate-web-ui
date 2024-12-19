@@ -11,7 +11,7 @@ export interface ErrorProps {
 }
 
 const styles = tv({
-  base: 'rounded-xl bg-red-100 p-3',
+  base: 'rounded-xl bg-red-100 p-3 text-sm',
 });
 
 function SingleError({
@@ -46,7 +46,7 @@ function SingleError({
             name={IconName.CircleX}
           />
         </div>
-        <output className="text-sm flex-auto text-red-700 [word-break:break-word] max-h-28 overflow-auto">
+        <output className="flex-auto text-red-700 [word-break:break-word] max-h-28 overflow-auto">
           {typeof error === 'string' ? error : error.message}
         </output>
         {children && <div className="flex-shrink-0">{children}</div>}
@@ -92,10 +92,10 @@ export function ErrorBanner({
           />
         </div>
         <div className="ml-3 flex flex-col gap-2">
-          <h3 className="text-sm font-medium text-red-800">
+          <h3 className="font-medium text-red-800">
             There were {filteredErrors.length} errors:
           </h3>
-          <output className="text-sm text-red-700 [word-break:break-word] max-h-20 overflow-auto">
+          <output className=" text-red-700 [word-break:break-word] max-h-20 overflow-auto">
             <ul className="list-disc space-y-1 pl-5">
               {filteredErrors.map((error) => (
                 <li key={typeof error === 'string' ? error : error?.message}>

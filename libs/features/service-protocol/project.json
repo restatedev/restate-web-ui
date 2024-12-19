@@ -1,0 +1,9 @@
+{
+  "name": "service-protocol",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/features/service-protocol/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project service-protocol --web",
+  "targets": {}
+}

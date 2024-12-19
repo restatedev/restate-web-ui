@@ -70,7 +70,7 @@ export function CancelInvocation() {
                 className="h-5 w-5  text-blue-100 fill-blue-600 shrink-0"
                 name={IconName.Info}
               />
-              <div>
+              <span className="block">
                 Canceling an invocation frees resources and rolls back changes
                 made so far. It's a non-blocking operation, so cancellation
                 completion is not guaranteed.{' '}
@@ -81,7 +81,7 @@ export function CancelInvocation() {
                 >
                   Learn more…
                 </Link>
-              </div>
+              </span>
             </p>
           </div>
           <Form

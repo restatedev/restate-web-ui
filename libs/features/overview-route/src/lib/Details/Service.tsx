@@ -200,7 +200,7 @@ function ServiceForm({
           {isPendingOrSubmitting ? (
             <div className="w-full h-6 animate-pulse rounded-md bg-white" />
           ) : (
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
               {handlers.map((handler) => (
                 <Handler
                   handler={handler}

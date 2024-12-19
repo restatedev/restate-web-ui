@@ -21,6 +21,50 @@ export type InvocationComputedStatus =
   | 'ready';
 
 export type RawInvocation = components['schemas']['RawInvocation'];
+export type JournalEntry = components['schemas']['JournalEntry'];
+export type JournalRawEntry = components['schemas']['JournalRawEntry'];
+export type InputJournalEntryType =
+  components['schemas']['InputJournalEntryType'];
+export type GetStateJournalEntryType =
+  components['schemas']['GetStateJournalEntryType'];
+export type SetStateJournalEntryType =
+  components['schemas']['SetStateJournalEntryType'];
+export type GetStateKeysJournalEntryType =
+  components['schemas']['GetStateKeysJournalEntryType'];
+export type ClearStateJournalEntryType =
+  components['schemas']['ClearStateJournalEntryType'];
+export type ClearAllStateJournalEntryType =
+  components['schemas']['ClearAllStateJournalEntryType'];
+export type SleepJournalEntryType =
+  components['schemas']['SleepJournalEntryType'];
+export type GetPromiseJournalEntryType =
+  components['schemas']['GetPromiseJournalEntryType'];
+export type PeekPromiseJournalEntryType =
+  components['schemas']['PeekPromiseJournalEntryType'];
+export type CompletePromiseJournalEntryType =
+  components['schemas']['CompletePromiseJournalEntryType'];
+export type OneWayCallJournalEntryType =
+  components['schemas']['OneWayCallJournalEntryType'];
+export type CallJournalEntryType =
+  components['schemas']['CallJournalEntryType'];
+export type AwakeableJournalEntryType =
+  components['schemas']['AwakeableJournalEntryType'];
+export type CompleteAwakeableJournalEntryType =
+  components['schemas']['CompleteAwakeableJournalEntryType'];
+export type RunJournalEntryType = components['schemas']['RunJournalEntryType'];
+export type CancelInvocationJournalEntryType =
+  components['schemas']['CancelInvocationJournalEntryType'];
+export type GetCallInvocationIdJournalEntryType =
+  components['schemas']['GetCallInvocationIdJournalEntryType'];
+export type AttachInvocationJournalEntryType =
+  components['schemas']['AttachInvocationJournalEntryType'];
+export type GetInvocationOutputJournalEntryType =
+  components['schemas']['GetInvocationOutputJournalEntryType'];
+export type CustomJournalEntryType =
+  components['schemas']['CustomJournalEntryType'];
+export type OutputJournalEntryType =
+  components['schemas']['OutputJournalEntryType'];
+export type EntryType = Exclude<JournalEntry['entry_type'], undefined>;
 export type Invocation = components['schemas']['Invocation'];
 export type ServiceName = Service['name'];
 export type DeploymentId = Deployment['id'];
