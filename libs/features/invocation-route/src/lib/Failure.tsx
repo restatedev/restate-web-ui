@@ -10,16 +10,18 @@ const failureStyle = tv({
   base: '',
   slots: {
     trigger:
-      'text-red-500 truncate bg-white/70 border px-1.5 py-0.5 flex rounded-md items-center gap-1 text-2xs h-5',
+      'text-red-500 bg-white/70 border px-1.5 py-0.5 flex rounded-md items-center gap-1 text-2xs h-5',
     errorIcon: 'h-3 w-3 shrink-0 text-red-500/90',
   },
 });
 export function Failure({
   message,
   restate_code,
+  className,
 }: {
   restate_code?: string;
   message: string;
+  className?: string;
 }) {
   const error = useMemo(
     () => new RestateError(message, restate_code),
@@ -30,7 +32,11 @@ export function Failure({
   return (
     <Popover>
       <PopoverTrigger>
-        <Button variant="secondary" className={trigger()} disabled={!error}>
+        <Button
+          variant="secondary"
+          className={trigger({ className })}
+          disabled={!error}
+        >
           <Icon name={IconName.CircleX} className={errorIcon()} />
           {restate_code}
           <Icon

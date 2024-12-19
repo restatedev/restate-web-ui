@@ -3,12 +3,16 @@ import { EntryProps } from './types';
 import { Expression, InputOutput } from '../Expression';
 import { Value } from '../Value';
 import { Failure } from '../Failure';
+import { Ellipsis } from '@restate/ui/loading';
 
 export function GetStateKeys({
   entry,
   failed,
   invocation,
+  error,
 }: EntryProps<GetStateKeysJournalEntryType>) {
+  const entryError = entry.failure || error;
+
   return (
     <Expression
       name="keys"
@@ -32,15 +36,19 @@ export function GetStateKeys({
               }
             />
           )}
-          {entry.keys && entry.keys.length === 0 && (
-            <div className="text-zinc-400 font-semibold font-mono text-2xs">
-              void
-            </div>
-          )}
-          {entry.failure?.message && (
+          {entry.keys &&
+            entry.keys.length === 0 &&
+            !entryError &&
+            entry.completed && (
+              <div className="text-zinc-400 font-semibold font-mono text-2xs">
+                void
+              </div>
+            )}
+          {!entry.completed && <Ellipsis />}
+          {entryError?.message && (
             <Failure
-              message={entry.failure.message}
-              restate_code={entry.failure.restate_code}
+              message={entryError.message}
+              restate_code={entryError.restate_code}
             />
           )}
         </>

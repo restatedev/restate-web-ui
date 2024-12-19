@@ -3,13 +3,15 @@ import { EntryProps } from './types';
 import { Expression, InputOutput } from '../Expression';
 import { Value } from '../Value';
 import { Failure } from '../Failure';
+import { Ellipsis } from '@restate/ui/loading';
 
 export function CompletePromise({
   entry,
   failed,
   invocation,
+  error,
 }: EntryProps<CompletePromiseJournalEntryType>) {
-  const failure = entry.failure ?? entry.completion?.failure;
+  const failure = entry.failure ?? entry.completion?.failure ?? error;
   return (
     <Expression
       prefix="await"
@@ -28,11 +30,14 @@ export function CompletePromise({
               }
             />
           )}
-          {typeof entry.completion?.value === 'undefined' && !failure && (
-            <div className="text-zinc-400 font-semibold font-mono text-2xs">
-              void
-            </div>
-          )}
+          {typeof entry.completion?.value === 'undefined' &&
+            !failure &&
+            entry.completed && (
+              <div className="text-zinc-400 font-semibold font-mono text-2xs">
+                void
+              </div>
+            )}
+          {!entry.completed && <Ellipsis />}
           {failure?.message && (
             <Failure
               message={failure.message}

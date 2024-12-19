@@ -8,7 +8,10 @@ export function Output({
   entry,
   failed,
   invocation,
+  error,
 }: EntryProps<OutputJournalEntryType>) {
+  const entryError = entry.failure || error;
+
   return (
     <Expression
       name={invocation.target_handler_name}
@@ -23,15 +26,15 @@ export function Output({
               }
             />
           )}
-          {typeof entry.body === 'undefined' && !entry.failure && (
+          {typeof entry.body === 'undefined' && !entryError && (
             <div className="text-zinc-400 font-semibold font-mono text-2xs">
               void
             </div>
           )}
-          {entry.failure?.message && (
+          {entryError?.message && (
             <Failure
-              message={entry.failure.message}
-              restate_code={entry.failure.restate_code}
+              message={entryError.message}
+              restate_code={entryError.restate_code}
             />
           )}
         </>

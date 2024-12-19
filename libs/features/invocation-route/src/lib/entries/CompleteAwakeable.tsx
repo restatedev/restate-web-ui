@@ -9,16 +9,25 @@ export function CompleteAwakeable({
   entry,
   failed,
   invocation,
+  error,
 }: EntryProps<CompleteAwakeableJournalEntryType>) {
+  const entryError = entry.failure || error;
+
   return (
     <Expression
       name={'awakeable'}
       prefix="await"
-      input={
-        <div className="basis-0 not-italic max-w-fit text-zinc-500 grow min-w-0 flex text-2xs items-center px-[0.3ch]">
-          "<TruncateWithTooltip>{entry.id}</TruncateWithTooltip>"
-        </div>
-      }
+      {...(typeof entry.id === 'string' && {
+        input: (
+          <InputOutput
+            name={JSON.stringify(entry.id)}
+            popoverTitle="Id"
+            popoverContent={
+              <Value value={entry.id} className="text-xs font-mono py-3" />
+            }
+          />
+        ),
+      })}
       output={
         <>
           {typeof entry.value === 'string' && (
@@ -30,15 +39,15 @@ export function CompleteAwakeable({
               }
             />
           )}
-          {typeof entry.value === 'undefined' && !entry.failure && (
+          {typeof entry.value === 'undefined' && !entryError && (
             <div className="text-zinc-400 font-semibold font-mono text-2xs">
               void
             </div>
           )}
-          {entry.failure?.message && (
+          {entryError?.message && (
             <Failure
-              message={entry.failure.message}
-              restate_code={entry.failure.restate_code}
+              message={entryError.message}
+              restate_code={entryError.restate_code}
             />
           )}
         </>

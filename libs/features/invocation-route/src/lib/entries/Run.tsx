@@ -3,22 +3,28 @@ import { EntryProps } from './types';
 import { Expression, InputOutput } from '../Expression';
 import { Value } from '../Value';
 import { Failure } from '../Failure';
-import { TruncateWithTooltip } from '@restate/ui/tooltip';
 
 export function Run({
   entry,
   failed,
   invocation,
+  error,
 }: EntryProps<RunJournalEntryType>) {
+  const entryError = entry.failure || error;
+
   return (
     <Expression
       name={'run'}
       prefix="await"
-      {...(entry.name && {
+      {...(typeof entry.name === 'string' && {
         input: (
-          <div className="basis-0 not-italic max-w-fit text-zinc-500 grow min-w-0 flex text-2xs items-center px-[0.3ch]">
-            "<TruncateWithTooltip>{entry.name}</TruncateWithTooltip>"
-          </div>
+          <InputOutput
+            name={JSON.stringify(entry.name)}
+            popoverTitle="Name"
+            popoverContent={
+              <Value value={entry.name} className="text-xs font-mono py-3" />
+            }
+          />
         ),
       })}
       output={
@@ -32,15 +38,15 @@ export function Run({
               }
             />
           )}
-          {typeof entry.value === 'undefined' && !entry.failure && (
+          {typeof entry.value === 'undefined' && !entryError && (
             <div className="text-zinc-400 font-semibold font-mono text-2xs">
               void
             </div>
           )}
-          {entry.failure?.message && (
+          {entryError?.message && (
             <Failure
-              message={entry.failure.message}
-              restate_code={entry.failure.restate_code}
+              message={entryError.message}
+              restate_code={entryError.restate_code}
             />
           )}
         </>

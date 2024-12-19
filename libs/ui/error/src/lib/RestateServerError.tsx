@@ -7,7 +7,7 @@ import Markdown from 'react-markdown';
 import { tv } from 'tailwind-variants';
 
 const styles = tv({
-  base: 'rounded-xl bg-red-100 p-3 gap-2 flex flex-col',
+  base: 'rounded-xl bg-red-100 p-3 gap-2 flex flex-col text-sm',
 });
 
 const DEFAULT_ERROR: { summary: string; help?: string } = {
@@ -37,7 +37,7 @@ export function RestateServerError({
             name={IconName.CircleX}
           />
         </div>
-        <output className="text-sm flex-auto text-red-700 [word-break:break-word] max-h-28 overflow-auto">
+        <output className="flex-auto text-red-700 [word-break:break-word] max-h-28 overflow-auto">
           {help ? (
             <InlineTooltip
               variant="indicator-button"
@@ -62,7 +62,7 @@ export function RestateServerError({
       <div className="flex flex-col gap-2 w-full">
         <Code className="shadow-[inset_0_0.5px_0.5px_0px_rgba(0,0,0,0.08)] border bg-red-200 py-4 text-code flex-auto text-red-700">
           <Snippet language="bash" className="px-0">
-            <details className="group text-xs overflow-auto max-h-28 w-full">
+            <details className="group [font-size:90%] overflow-auto max-h-28 w-full">
               <summary className="group-open:h-4">
                 <span className="group-open:invisible group-open:[font-size:0px] truncate w-[calc(100%-5ch)] inline-block align-middle">
                   {message}

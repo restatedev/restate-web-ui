@@ -11,11 +11,11 @@ import { ReactNode } from 'react';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 
 const styles = tv({
-  base: 'flex flex-row  flex-wrap relative items-center  pr-2',
+  base: 'flex flex-row max-w-full flex-wrap relative items-center  pr-2',
   variants: {
     isFunction: {
       true: 'italic font-medium',
-      false: '',
+      false: 'font-medium',
     },
   },
 });
@@ -42,7 +42,7 @@ export function Expression({
       <div className="text-inherits w-full text-zinc-600  flex-auto">
         <span className="flex items-center min-w-0">
           {prefix && (
-            <span className="opacity-70 not-italic mr-[0.5ch] font-normal">
+            <span className="text-blue-500 not-italic mr-[0.5ch] font-normal">
               {prefix}
             </span>
           )}

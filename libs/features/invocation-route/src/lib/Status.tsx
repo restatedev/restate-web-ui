@@ -14,7 +14,7 @@ import { formatOrdinals } from '@restate/util/intl';
 import { Ellipsis } from '@restate/ui/loading';
 import { StatusTimeline } from './StatusTimeline';
 
-function getError(invocation: Invocation) {
+export function getRestateError(invocation: Invocation) {
   const message = invocation.last_failure ?? invocation.completion_failure;
   return message
     ? new RestateError(message, invocation.last_failure_error_code)
@@ -85,7 +85,7 @@ export function Status({
 }) {
   const { status } = invocation;
   const variant = getBadgeVariant(status);
-  const error = getError(invocation);
+  const error = getRestateError(invocation);
 
   return (
     <div className="flex items-center flex-wrap flex-row gap-0.5">
@@ -133,16 +133,18 @@ const lastErrorStyles = tv({
 });
 
 const ERROR_CODE_REGEXP = /^\[(?<restate_code>\d+)\]/;
-function LastError({
+export function LastError({
   isRetrying,
   isFailed,
   error,
   attemptCount = 0,
+  popoverTitle,
 }: {
   isRetrying: boolean;
   isFailed: boolean;
   error?: RestateError;
   attemptCount?: number;
+  popoverTitle?: string;
 }) {
   const { trigger, errorIcon } = lastErrorStyles({ isRetrying });
   const errorCode =
@@ -175,7 +177,9 @@ function LastError({
       </PopoverTrigger>
       <PopoverContent className="max-w-lg">
         <DropdownSection
-          title={isFailed ? 'Completion failure' : 'Last failure'}
+          title={
+            popoverTitle ?? (isFailed ? 'Completion failure' : 'Last failure')
+          }
         >
           <ErrorBanner
             error={error}

@@ -1,21 +1,20 @@
 import { ClearStateJournalEntryType } from '@restate/data-access/admin-api';
 import { EntryProps } from './types';
 import { Expression } from '../Expression';
-import { TruncateWithTooltip } from '@restate/ui/tooltip';
+import { Failure } from '../Failure';
 
 export function ClearState({
   entry,
   failed,
   invocation,
+  error,
 }: EntryProps<ClearStateJournalEntryType>) {
   return (
-    <Expression
-      name="clear"
-      input={
-        <div className="basis-0 not-italic max-w-fit text-zinc-500 grow min-w-0 flex text-2xs items-center px-[0.3ch]">
-          "<TruncateWithTooltip>{entry.key}</TruncateWithTooltip>"
-        </div>
-      }
-    />
+    <>
+      <Expression prefix="clear" isFunction={false} name={entry.key ?? ''} />
+      {error?.message && (
+        <Failure message={error.message} restate_code={error.restate_code} />
+      )}
+    </>
   );
 }
