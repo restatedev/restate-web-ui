@@ -60,7 +60,7 @@ importers:
         specifier: 2.8.5
         version: 2.8.5
       express:
-        specifier: '>=4.21.2'
+        specifier: 4.21.2
         version: 4.21.2
       highlight.js:
         specifier: 11.11.1
