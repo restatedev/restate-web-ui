@@ -108,9 +108,9 @@ export function useListDeployments(
 
 export function useHealth(options?: HookQueryOptions<'/health', 'get'>) {
   const baseUrl = useAdminBaseUrl();
-
+  const queryOptions = adminApi('query', '/health', 'get', { baseUrl });
   return useQuery({
-    ...adminApi('query', '/health', 'get', { baseUrl }),
+    ...queryOptions,
     ...options,
   });
 }

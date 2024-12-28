@@ -8,7 +8,7 @@ import createClient from 'openapi-fetch';
 
 const client = createClient<paths>({});
 const errorMiddleware: Middleware = {
-  async onResponse({ response }) {
+  async onResponse({ response, request }) {
     if (!response.ok) {
       if (response.status === 401) {
         // TODO: change import
@@ -27,6 +27,12 @@ const errorMiddleware: Middleware = {
         throw new RestateError(body.message, body.restate_code ?? '');
       }
       throw new Error(body);
+    }
+    if (response.ok && request.url.endsWith('health')) {
+      return new Response(JSON.stringify({}), {
+        ...response,
+        headers: { ...response.headers, 'content-type': 'application/json' },
+      });
     }
     return response;
   },
@@ -49,6 +55,7 @@ export type SupportedMethods<Path extends keyof paths> = keyof {
           };
         }
       | never;
+    responses: Record<number, any>;
   }>
     ? PossibleMethod
     : never]: paths[Path];
@@ -84,10 +91,14 @@ export type OperationBody<
 export type QueryOptions<
   Path extends keyof paths,
   Method extends SupportedMethods<Path>
-> = UseQueryOptions<
-  FetchResponse<paths[Path][Method], {}, 'application/json'>['data'],
-  RestateError | Error
->;
+> = paths[Path][Method] extends {
+  responses: Record<number, any>;
+}
+  ? UseQueryOptions<
+      FetchResponse<paths[Path][Method], {}, 'application/json'>['data'],
+      RestateError | Error
+    >
+  : never;
 
 type QueryFn<
   Path extends keyof paths,
@@ -104,14 +115,16 @@ export type MutationOptions<
   Method extends SupportedMethods<Path>,
   Parameters extends OperationParameters<Path, Method>,
   Body extends OperationBody<Path, Method>
-> = UseMutationOptions<
-  FetchResponse<paths[Path][Method], {}, 'application/json'>['data'],
-  RestateError | Error,
-  {
-    parameters?: Parameters;
-    body?: Body;
-  }
->;
+> = paths[Path][Method] extends { responses: Record<number, any> }
+  ? UseMutationOptions<
+      FetchResponse<paths[Path][Method], {}, 'application/json'>['data'],
+      RestateError | Error,
+      {
+        parameters?: Parameters;
+        body?: Body;
+      }
+    >
+  : never;
 
 type MutationFn<
   Path extends keyof paths,
@@ -203,7 +216,7 @@ export function adminApi<
     return {
       queryKey: key,
       meta: { path, method, isAdmin: true },
-      queryFn: async ({ signal }: { signal: AbortSignal }) => {
+      queryFn: (async ({ signal }: { signal: AbortSignal }) => {
         const { data } = await (client as any)[String(method).toUpperCase()](
           path,
           {
@@ -218,14 +231,14 @@ export function adminApi<
           }
         );
         return data;
-      },
+      }) as any,
       refetchOnMount: true,
     };
   } else {
     return {
       mutationKey: key,
       meta: { path, method, isAdmin: true },
-      mutationFn: async (variables: {
+      mutationFn: (async (variables: {
         parameters?: Parameters;
         body?: Body;
       }) => {
@@ -238,7 +251,7 @@ export function adminApi<
           }
         );
         return data;
-      },
+      }) as any,
     };
   }
 }
