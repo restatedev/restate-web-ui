@@ -1,7 +1,7 @@
 import type {
   InvocationComputedStatus,
   RawInvocation,
-} from '@restate/data-access/admin-api';
+} from '@restate/data-access/admin-api/spec';
 
 export function getComputedInvocationStatus(
   invocation: RawInvocation
