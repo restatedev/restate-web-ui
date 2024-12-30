@@ -276,4 +276,6 @@ export function query(req: Request) {
       headers
     );
   }
+
+  return Promise.resolve(Response.json({}));
 }

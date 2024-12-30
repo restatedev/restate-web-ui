@@ -1,4 +1,4 @@
-import type { RawInvocation } from '@restate/data-access/admin-api';
+import type { RawInvocation } from '@restate/data-access/admin-api/spec';
 import { getComputedInvocationStatus } from './getComputedInvocationStatus';
 import { convertToUTC } from './convertToUTC';
 

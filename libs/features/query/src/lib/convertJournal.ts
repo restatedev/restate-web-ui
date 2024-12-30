@@ -23,7 +23,7 @@ import type {
   RunJournalEntryType,
   SetStateJournalEntryType,
   SleepJournalEntryType,
-} from '@restate/data-access/admin-api';
+} from '@restate/data-access/admin-api/spec';
 import { convertToUTC } from './convertToUTC';
 import {
   awakeable,
