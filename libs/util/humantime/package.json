@@ -1,5 +1,5 @@
 {
-  "name": "@restate/humantime",
+  "name": "@restate/util/humantime",
   "version": "0.0.1",
   "dependencies": {},
   "private": true

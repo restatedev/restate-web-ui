@@ -29,7 +29,10 @@ import {
   FormFieldCombobox,
 } from '@restate/ui/form-field';
 import { InlineTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
-import { formatHumantime, HUMANTIME_PATTERN_INPUT } from '@restate/humantime';
+import {
+  formatHumantime,
+  HUMANTIME_PATTERN_INPUT,
+} from '@restate/util/humantime';
 import { FormEvent, useEffect, useId, useState } from 'react';
 import { Link } from '@restate/ui/link';
 import { useQueryClient } from '@tanstack/react-query';
