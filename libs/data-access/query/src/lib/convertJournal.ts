@@ -41,7 +41,7 @@ import {
   run,
   setState,
   sleep,
-} from '@restate/service-protocol';
+} from '@restate/features/service-protocol';
 
 export function convertJournal(entry: JournalRawEntry): JournalEntry {
   return (
