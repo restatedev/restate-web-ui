@@ -1,6 +1,5 @@
 /// <reference lib="WebWorker" />
-
-import { queryMiddlerWare } from './query';
+import { query } from '@restate/features/query';
 
 export type {};
 declare const self: ServiceWorkerGlobalScope;
@@ -17,7 +16,7 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  const response = queryMiddlerWare(event.request);
+  const response = query(event.request);
   if (response) {
     event.respondWith(response);
   }

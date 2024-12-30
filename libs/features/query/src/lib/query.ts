@@ -3,7 +3,7 @@ import { convertInvocation } from './convertInvocation';
 import { match } from 'path-to-regexp';
 import { convertJournal } from './convertJournal';
 
-function query(
+function queryFetcher(
   query: string,
   { baseUrl, headers = new Headers() }: { baseUrl: string; headers: Headers }
 ) {
@@ -22,11 +22,11 @@ function query(
 const INVOCATIONS_LIMIT = 500;
 
 async function listInvocations(baseUrl: string, headers: Headers) {
-  const totalCountPromise = query(
+  const totalCountPromise = queryFetcher(
     'SELECT COUNT(*) AS total_count FROM sys_invocation',
     { baseUrl, headers }
   ).then(({ rows }) => rows?.at(0)?.total_count as number);
-  const invocationsPromise = query(
+  const invocationsPromise = queryFetcher(
     `SELECT * FROM sys_invocation ORDER BY modified_at DESC LIMIT ${INVOCATIONS_LIMIT}`,
     {
       baseUrl,
@@ -57,7 +57,7 @@ async function getInvocation(
   baseUrl: string,
   headers: Headers
 ) {
-  const invocations = await query(
+  const invocations = await queryFetcher(
     `SELECT * FROM sys_invocation WHERE id = '${invocationId}'`,
     {
       baseUrl,
@@ -89,7 +89,7 @@ async function getInvocationJournal(
   baseUrl: string,
   headers: Headers
 ) {
-  const entries = await query(
+  const entries = await queryFetcher(
     `SELECT * FROM sys_journal WHERE id = '${invocationId}'`,
     {
       baseUrl,
@@ -110,21 +110,21 @@ async function getInbox(
   headers: Headers
 ) {
   const [head, size, position] = await Promise.all([
-    query(
+    queryFetcher(
       `SELECT * FROM sys_invocation WHERE target_service_key = '${key}' AND target_service_name = '${service}' AND status NOT IN ('completed', 'pending', 'scheduled')`,
       {
         baseUrl,
         headers,
       }
     ).then(({ rows }) => rows.at(0)?.id),
-    query(
+    queryFetcher(
       `SELECT COUNT(*) AS size FROM sys_inbox WHERE service_key = '${key}' AND service_name = '${service}'`,
       {
         baseUrl,
         headers,
       }
     ).then(({ rows }) => rows.at(0)?.size),
-    query(
+    queryFetcher(
       `SELECT COUNT(*) AS position FROM sys_inbox WHERE service_key = '${key}' AND service_name = '${service}' AND sequence_number < (SELECT sequence_number FROM sys_inbox WHERE id = '${invocationId}')`,
       {
         baseUrl,
@@ -165,7 +165,7 @@ async function getState(
   baseUrl: string,
   headers: Headers
 ) {
-  const state: { name: string; value: string }[] = await query(
+  const state: { name: string; value: string }[] = await queryFetcher(
     `SELECT key, value_utf8 FROM state WHERE service_name = '${service}' AND service_key = '${key}'`,
     { baseUrl, headers }
   ).then(({ rows }) =>
@@ -183,7 +183,7 @@ async function getStateInterface(
   baseUrl: string,
   headers: Headers
 ) {
-  const keys: { name: string }[] = await query(
+  const keys: { name: string }[] = await queryFetcher(
     `SELECT DISTINCT key FROM state WHERE service_name = '${service}' GROUP BY key`,
     { baseUrl, headers }
   ).then(({ rows }) => rows.map((row) => ({ name: row.key })));
@@ -194,7 +194,7 @@ async function getStateInterface(
   });
 }
 
-export function queryMiddlerWare(req: Request) {
+export function query(req: Request) {
   const { url, method, headers } = req;
   const urlObj = new URL(url);
 

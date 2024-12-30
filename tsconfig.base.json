@@ -42,6 +42,7 @@
       "@restate/features/overview-route": [
         "libs/features/overview-route/src/index.ts"
       ],
+      "@restate/features/query": ["libs/features/query/src/index.ts"],
       "@restate/features/restate-context": [
         "libs/features/restate-context/src/index.ts"
       ],
