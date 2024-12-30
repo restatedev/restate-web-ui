@@ -30,9 +30,10 @@ function useIsSubmitting(action?: string) {
   } catch {
     actionUrl = null;
   }
-  const formActionPathname = actionUrl?.pathname
-    .split(basename.replace(/\/$/, ''))
-    .at(-1);
+  const formActionPathname =
+    basename === '/'
+      ? actionUrl?.pathname
+      : actionUrl?.pathname.split(basename.replace(/\/$/, '')).at(-1);
   const fetchers = useFetchers();
   const submitFetcher = fetchers.find(
     (fetcher) => fetcher.formAction === formActionPathname

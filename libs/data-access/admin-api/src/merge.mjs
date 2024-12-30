@@ -29,4 +29,3 @@ writeFileSync(
   JSON.stringify(output, null, 2),
   'utf8'
 );
-// console.log(output);
