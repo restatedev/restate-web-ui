@@ -7,11 +7,9 @@ function query(
   query: string,
   { baseUrl, headers = new Headers() }: { baseUrl: string; headers: Headers }
 ) {
-  const queryHeaders = new Headers([
-    ['accept', 'json'],
-    ['content-type', 'application/json'],
-  ]);
-  headers.forEach((v, k) => queryHeaders.set(k, v));
+  const queryHeaders = new Headers(headers);
+  queryHeaders.set('accept', 'application/json');
+  queryHeaders.set('content-type', 'application/json');
 
   return ky
     .post(`${baseUrl}/query`, {
@@ -197,7 +195,7 @@ async function getStateInterface(
 }
 
 export function queryMiddlerWare(req: Request) {
-  const { url, method, headers } = req.clone();
+  const { url, method, headers } = req;
   const urlObj = new URL(url);
 
   if (url.endsWith('/query/invocations') && method.toUpperCase() === 'GET') {
