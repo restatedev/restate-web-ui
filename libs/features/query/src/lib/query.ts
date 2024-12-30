@@ -277,5 +277,5 @@ export function query(req: Request) {
     );
   }
 
-  return Promise.resolve(Response.json({}));
+  return null;
 }
