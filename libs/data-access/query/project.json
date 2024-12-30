@@ -1,7 +1,7 @@
 {
   "name": "query",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/features/query/src",
+  "sourceRoot": "libs/data-access/query/src",
   "projectType": "library",
   "tags": [],
   "// targets": "to see all targets run: nx show project query --web",

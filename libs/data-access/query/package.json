@@ -1,5 +1,5 @@
 {
-  "name": "@restate/features/query",
+  "name": "@restate/data-access/query",
   "version": "0.0.1",
   "dependencies": {},
   "private": true

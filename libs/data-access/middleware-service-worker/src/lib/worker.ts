@@ -1,5 +1,5 @@
 /// <reference lib="WebWorker" />
-import { query } from '@restate/features/query';
+import { query } from '@restate/data-access/query';
 
 export type {};
 declare const self: ServiceWorkerGlobalScope;
