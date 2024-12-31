@@ -3,8 +3,21 @@ import {
   QueryClient,
   QueryClientProvider,
   QueryCache,
+  hydrate,
 } from '@tanstack/react-query';
 import { PropsWithChildren, useState } from 'react';
+import { useMatches } from 'react-router';
+
+const useDehydratedState = (queryClient: QueryClient) => {
+  const matches = useMatches();
+
+  matches
+    .map((match) => (match.data as any)?.dehydratedState)
+    .filter(Boolean)
+    .forEach((dehydratedState) => {
+      hydrate(queryClient, dehydratedState);
+    });
+};
 
 export function QueryProvider({
   children,
@@ -33,7 +46,7 @@ export function QueryProvider({
         },
       })
   );
-
+  useDehydratedState(queryClient);
   return (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
