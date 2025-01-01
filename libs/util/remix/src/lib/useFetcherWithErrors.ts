@@ -5,12 +5,17 @@ export function useFetcherWithError<
   TData extends (
     params: ClientActionFunctionArgs
   ) => Promise<{ errors?: Error[] } | any>
->({ key }: { key: string }) {
+>({ key, method }: { key: string; method: string }) {
   const fetcher = useFetcher<TData>({ key });
   const [errors, setErrors] = useState<Error[]>();
   const [canUpdateErrors, setCanUpdateErrors] = useState(true);
 
-  if (fetcher.state === 'submitting' && !canUpdateErrors) {
+  if (
+    fetcher.state === 'submitting' &&
+    !canUpdateErrors &&
+    fetcher.formAction === key &&
+    fetcher.formMethod === method
+  ) {
     setCanUpdateErrors(true);
   }
   if (fetcher.state === 'submitting' && errors) {

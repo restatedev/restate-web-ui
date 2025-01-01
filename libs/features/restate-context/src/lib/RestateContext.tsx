@@ -49,13 +49,18 @@ export function RestateContextProvider({
   children,
   adminBaseUrl,
   ingressUrl,
+  isPending,
 }: PropsWithChildren<{
   adminBaseUrl?: string;
   ingressUrl: string;
+  isPending?: boolean;
 }>) {
   return (
     <AdminBaseURLProvider baseUrl={adminBaseUrl}>
-      <InternalRestateContextProvider ingressUrl={ingressUrl}>
+      <InternalRestateContextProvider
+        ingressUrl={ingressUrl}
+        isPending={isPending}
+      >
         {children}
       </InternalRestateContextProvider>
     </AdminBaseURLProvider>

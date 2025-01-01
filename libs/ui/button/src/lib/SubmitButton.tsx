@@ -1,5 +1,5 @@
 import { useRef, type PropsWithChildren, useDeferredValue } from 'react';
-import { useFetchers, useHref } from 'react-router';
+import { useFetchers, useHref, useNavigation } from 'react-router';
 import { Button } from './Button';
 import { tv } from 'tailwind-variants';
 import { useIsMutating } from '@tanstack/react-query';
@@ -45,8 +45,11 @@ function useIsSubmitting(action?: string) {
       return formActionPathname === pathName;
     },
   });
+  const { state } = useNavigation();
 
-  return submitFetcher?.state === 'submitting' || isMutating > 0;
+  return (
+    submitFetcher?.state === 'submitting' || isMutating > 0 || state !== 'idle'
+  );
 }
 
 export function SubmitButton({
