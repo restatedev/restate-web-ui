@@ -2,6 +2,8 @@ import ky from 'ky';
 import { convertInvocation } from './convertInvocation';
 import { match } from 'path-to-regexp';
 import { convertJournal } from './convertJournal';
+import type { FilterItem } from '@restate/data-access/admin-api';
+import { convertFilters } from './convertFilters';
 
 function queryFetcher(
   query: string,
@@ -21,9 +23,20 @@ function queryFetcher(
 
 const INVOCATIONS_LIMIT = 500;
 
-async function listInvocations(baseUrl: string, headers: Headers) {
+async function listInvocations(
+  baseUrl: string,
+  headers: Headers,
+  filters: FilterItem[]
+) {
+  console.log(
+    `SELECT COUNT(*) AS total_count FROM sys_invocation ${convertFilters(
+      filters
+    )}`
+  );
   const totalCountPromise = queryFetcher(
-    'SELECT COUNT(*) AS total_count FROM sys_invocation',
+    `SELECT COUNT(*) AS total_count FROM sys_invocation ${convertFilters(
+      filters
+    )}`,
     { baseUrl, headers }
   ).then(({ rows }) => rows?.at(0)?.total_count as number);
   const invocationsPromise = queryFetcher(
@@ -194,13 +207,14 @@ async function getStateInterface(
   });
 }
 
-export function query(req: Request) {
+export async function query(req: Request) {
   const { url, method, headers } = req;
   const urlObj = new URL(url);
 
   if (url.endsWith('/query/invocations') && method.toUpperCase() === 'POST') {
     const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
-    return listInvocations(baseUrl, headers);
+    const { filters = [] } = await req.json();
+    return listInvocations(baseUrl, headers, filters);
   }
 
   const getInvocationJournalParams = match<{ invocationId: string }>(
@@ -277,5 +291,5 @@ export function query(req: Request) {
     );
   }
 
-  return null;
+  return new Response('Not implemented', { status: 501 });
 }
