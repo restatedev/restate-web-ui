@@ -28,11 +28,6 @@ async function listInvocations(
   headers: Headers,
   filters: FilterItem[]
 ) {
-  console.log(
-    `SELECT COUNT(*) AS total_count FROM sys_invocation ${convertFilters(
-      filters
-    )}`
-  );
   const totalCountPromise = queryFetcher(
     `SELECT COUNT(*) AS total_count FROM sys_invocation ${convertFilters(
       filters
@@ -40,7 +35,9 @@ async function listInvocations(
     { baseUrl, headers }
   ).then(({ rows }) => rows?.at(0)?.total_count as number);
   const invocationsPromise = queryFetcher(
-    `SELECT * FROM sys_invocation ORDER BY modified_at DESC LIMIT ${INVOCATIONS_LIMIT}`,
+    `SELECT * FROM sys_invocation ${convertFilters(
+      filters
+    )} ORDER BY modified_at DESC LIMIT ${INVOCATIONS_LIMIT}`,
     {
       baseUrl,
       headers,

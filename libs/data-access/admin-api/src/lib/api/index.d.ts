@@ -856,7 +856,7 @@ export interface components {
       /** @enum {string} */
       type: 'STRING';
       /** @enum {string} */
-      operation: 'EQUALS' | 'NOT_EQUALS';
+      operation: 'EQUALS' | 'NOT_EQUALS' | 'CONTAINS';
       value?: string;
     };
     FilterStringListItem: {
