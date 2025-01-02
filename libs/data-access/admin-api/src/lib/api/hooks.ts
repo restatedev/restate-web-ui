@@ -9,7 +9,13 @@ import {
   SupportedMethods,
 } from './client';
 import { useAdminBaseUrl } from '../AdminBaseUrlProvider';
-import type { DeploymentId, Revision, ServiceName, Deployment } from './type';
+import type {
+  DeploymentId,
+  Revision,
+  ServiceName,
+  Deployment,
+  FilterItem,
+} from './type';
 
 type HookQueryOptions<
   Path extends keyof paths,
@@ -232,11 +238,15 @@ export function useServiceOpenApi(
 }
 
 export function useListInvocations(
-  options?: HookQueryOptions<'/query/invocations', 'get'>
+  filters?: FilterItem[],
+  options?: HookQueryOptions<'/query/invocations', 'post'>
 ) {
   const baseUrl = useAdminBaseUrl();
-  const queryOptions = adminApi('query', '/query/invocations', 'get', {
+  const queryOptions = adminApi('query', '/query/invocations', 'post', {
     baseUrl,
+    body: {
+      filters,
+    },
   });
 
   const results = useQuery({

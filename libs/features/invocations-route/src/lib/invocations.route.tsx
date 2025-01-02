@@ -42,7 +42,7 @@ const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
 function Component() {
   const { selectedColumns, setSelectedColumns, sortedColumnsList } =
     useColumns();
-  const { refetch, queryKey, dataUpdatedAt, error } = useListInvocations({
+  const { refetch, queryKey, dataUpdatedAt, error } = useListInvocations([], {
     refetchOnMount: false,
     refetchOnReconnect: false,
     initialData: { rows: [], total_count: 0 },
@@ -209,7 +209,7 @@ function Component() {
 function Footnote() {
   const [now, setNow] = useState(() => Date.now());
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
-  const { data, isFetching } = useListInvocations({
+  const { data, isFetching } = useListInvocations([], {
     refetchOnMount: false,
     refetchOnReconnect: false,
     initialData: { rows: [], total_count: 0 },

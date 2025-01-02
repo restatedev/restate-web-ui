@@ -1491,11 +1491,21 @@
       }
     },
     "/query/invocations": {
-      "get": {
+      "post": {
         "tags": ["query-invocations"],
         "summary": "List invocations",
         "description": "List invocations",
         "operationId": "list_invocations",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ListInvocationsRequestBody"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "description": "",
@@ -2724,6 +2734,125 @@
             }
           }
         ]
+      },
+      "ListInvocationsRequestBody": {
+        "type": "object",
+        "properties": {
+          "filters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FilterItem"
+            }
+          }
+        }
+      },
+      "FilterItem": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/FilterBaseItem"
+          },
+          {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/FilterNumberItem"
+              },
+              {
+                "$ref": "#/components/schemas/FilterStringItem"
+              },
+              {
+                "$ref": "#/components/schemas/FilterDateItem"
+              },
+              {
+                "$ref": "#/components/schemas/FilterStringListItem"
+              }
+            ]
+          }
+        ]
+      },
+      "FilterBaseItem": {
+        "type": "object",
+        "required": ["type", "field"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["STRING", "NUMBER", "DATE", "STRING_LIST"]
+          },
+          "field": {
+            "type": "string"
+          }
+        }
+      },
+      "FilterNumberItem": {
+        "type": "object",
+        "required": ["type", "operation"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["NUMBER"]
+          },
+          "operation": {
+            "type": "string",
+            "enum": ["EQUALS", "NOT_EQUALS", "GREATER_THAN", "LESS_THAN"]
+          },
+          "value": {
+            "type": "number"
+          }
+        }
+      },
+      "FilterStringItem": {
+        "type": "object",
+        "required": ["type", "operation"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["STRING"]
+          },
+          "operation": {
+            "type": "string",
+            "enum": ["EQUALS", "NOT_EQUALS", "CONTAINS"]
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      },
+      "FilterStringListItem": {
+        "type": "object",
+        "required": ["type", "operation", "value"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["STRING_LIST"]
+          },
+          "operation": {
+            "type": "string",
+            "enum": ["IN", "NOT_IN"]
+          },
+          "value": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "FilterDateItem": {
+        "type": "object",
+        "required": ["type", "operation", "value"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["DATE"]
+          },
+          "operation": {
+            "type": "string",
+            "enum": ["BEFORE", "AFTER"]
+          },
+          "value": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
       },
       "StateInterfaceResponse": {
         "type": "object",

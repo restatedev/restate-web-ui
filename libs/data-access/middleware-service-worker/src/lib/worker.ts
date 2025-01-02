@@ -15,9 +15,12 @@ self.addEventListener('activate', (event) => {
   // You can clean up old caches here
 });
 
-self.addEventListener('fetch', (event) => {
-  const response = query(event.request);
-  if (response) {
-    event.respondWith(response);
+self.addEventListener('fetch', async (event) => {
+  const url = new URL(event.request.url);
+  if (url.pathname.startsWith('/query')) {
+    const response = query(event.request);
+    if (response) {
+      event.respondWith(response);
+    }
   }
 });
