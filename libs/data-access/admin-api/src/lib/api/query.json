@@ -899,7 +899,7 @@
           },
           "operation": {
             "type": "string",
-            "enum": ["BEFORE", "AFTER", "BETWEEN"]
+            "enum": ["BEFORE", "AFTER"]
           },
           "value": {
             "type": "string",

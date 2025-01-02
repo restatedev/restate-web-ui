@@ -870,7 +870,7 @@ export interface components {
       /** @enum {string} */
       type: 'DATE';
       /** @enum {string} */
-      operation: 'BEFORE' | 'AFTER' | 'BETWEEN';
+      operation: 'BEFORE' | 'AFTER';
       /** Format: date-time */
       value: string;
     };

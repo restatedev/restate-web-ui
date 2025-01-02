@@ -70,3 +70,8 @@ export type ServiceName = Service['name'];
 export type DeploymentId = Deployment['id'];
 export type ServiceType = Service['ty'];
 export type FilterItem = components['schemas']['FilterItem'];
+export type FilterDateItem = components['schemas']['FilterDateItem'];
+export type FilterNumberItem = components['schemas']['FilterNumberItem'];
+export type FilterStringListItem =
+  components['schemas']['FilterStringListItem'];
+export type FilterStringItem = components['schemas']['FilterStringItem'];
