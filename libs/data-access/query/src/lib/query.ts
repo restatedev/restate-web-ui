@@ -2,7 +2,7 @@ import ky from 'ky';
 import { convertInvocation } from './convertInvocation';
 import { match } from 'path-to-regexp';
 import { convertJournal } from './convertJournal';
-import type { FilterItem } from '@restate/data-access/admin-api';
+import type { FilterItem } from '@restate/data-access/admin-api/spec';
 import { convertFilters } from './convertFilters';
 
 function queryFetcher(
