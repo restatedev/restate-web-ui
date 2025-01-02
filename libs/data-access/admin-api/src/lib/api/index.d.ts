@@ -328,13 +328,13 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
+    get?: never;
+    put?: never;
     /**
      * List invocations
      * @description List invocations
      */
-    get: operations['list_invocations'];
-    put?: never;
-    post?: never;
+    post: operations['list_invocations'];
     delete?: never;
     options?: never;
     head?: never;
@@ -830,6 +830,50 @@ export interface components {
            */
           services: components['schemas']['ServiceMetadata'][];
         };
+    ListInvocationsRequestBody: {
+      filters?: components['schemas']['FilterItem'][];
+    };
+    FilterItem: components['schemas']['FilterBaseItem'] &
+      (
+        | components['schemas']['FilterNumberItem']
+        | components['schemas']['FilterStringItem']
+        | components['schemas']['FilterDateItem']
+        | components['schemas']['FilterStringListItem']
+      );
+    FilterBaseItem: {
+      /** @enum {string} */
+      type: 'STRING' | 'NUMBER' | 'DATE' | 'STRING_LIST';
+      field: string;
+    };
+    FilterNumberItem: {
+      /** @enum {string} */
+      type: 'NUMBER';
+      /** @enum {string} */
+      operation: 'EQUALS' | 'NOT_EQUALS' | 'GREATER_THAN' | 'LESS_THAN';
+      value?: number;
+    };
+    FilterStringItem: {
+      /** @enum {string} */
+      type: 'STRING';
+      /** @enum {string} */
+      operation: 'EQUALS' | 'NOT_EQUALS';
+      value?: string;
+    };
+    FilterStringListItem: {
+      /** @enum {string} */
+      type: 'STRING_LIST';
+      /** @enum {string} */
+      operation: 'IN' | 'NOT_IN';
+      value: string[];
+    };
+    FilterDateItem: {
+      /** @enum {string} */
+      type: 'DATE';
+      /** @enum {string} */
+      operation: 'BEFORE' | 'AFTER' | 'BETWEEN';
+      /** Format: date-time */
+      value: string;
+    };
     StateInterfaceResponse: {
       keys?: {
         name: string;
@@ -2376,7 +2420,11 @@ export interface operations {
       path?: never;
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ListInvocationsRequestBody'];
+      };
+    };
     responses: {
       200: {
         headers: {

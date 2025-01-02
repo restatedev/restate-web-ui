@@ -69,3 +69,4 @@ export type Invocation = components['schemas']['Invocation'];
 export type ServiceName = Service['name'];
 export type DeploymentId = Deployment['id'];
 export type ServiceType = Service['ty'];
+export type FilterItem = components['schemas']['FilterItem'];

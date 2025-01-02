@@ -198,7 +198,7 @@ export function query(req: Request) {
   const { url, method, headers } = req;
   const urlObj = new URL(url);
 
-  if (url.endsWith('/query/invocations') && method.toUpperCase() === 'GET') {
+  if (url.endsWith('/query/invocations') && method.toUpperCase() === 'POST') {
     const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
     return listInvocations(baseUrl, headers);
   }
