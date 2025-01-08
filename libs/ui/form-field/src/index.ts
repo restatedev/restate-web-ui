@@ -1,3 +1,5 @@
+export { FormFieldMultiCombobox } from './lib/MultiCombobox/MultiCombobox';
+
 export * from './lib/FormFieldError';
 export * from './lib/FormFieldGroup';
 export * from './lib/FormFieldLabel';

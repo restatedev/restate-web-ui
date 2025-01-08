@@ -89,7 +89,7 @@ export function FormFieldCombobox<T extends object>({
         </div>
       </Group>
       <FormFieldError>{errorMessage}</FormFieldError>
-      <PopoverOverlay className="w-[--trigger-width]">
+      <PopoverOverlay className="min-w-[--trigger-width] bg-gray-100/90">
         <ListBox className="outline-0 p-1 max-h-[inherit] overflow-auto border-none">
           {children}
         </ListBox>
