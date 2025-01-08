@@ -1,4 +1,5 @@
 import {
+  ComponentType,
   createContext,
   PropsWithChildren,
   ReactNode,
@@ -52,6 +53,8 @@ export function AddQueryTrigger({
   placeholder,
   title,
   children,
+  className,
+  MenuTrigger,
 }: {
   placeholder: string;
   title: string;
@@ -60,6 +63,8 @@ export function AddQueryTrigger({
     onRemove?: VoidFunction;
     onUpdate?: (item: QueryClause<QueryClauseType>) => void;
   }) => ReactNode;
+  className?: string;
+  MenuTrigger?: ComponentType<unknown>;
 }) {
   const { query, schema } = use(QueryBuilderContext);
   const items = useMemo(
@@ -78,6 +83,8 @@ export function AddQueryTrigger({
       items={items}
       children={children}
       placeholder={placeholder}
+      className={className}
+      MenuTrigger={MenuTrigger}
     />
   );
 }
