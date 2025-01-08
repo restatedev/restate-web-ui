@@ -1,4 +1,4 @@
-import { PropsWithChildren } from 'react';
+import { PropsWithChildren, RefObject } from 'react';
 import {
   Popover as AriaPopover,
   composeRenderProps,
@@ -21,7 +21,10 @@ export function PopoverOverlay({
   children,
   className,
   ...props
-}: PropsWithChildren<{ className?: string }>) {
+}: PropsWithChildren<{
+  className?: string;
+  triggerRef?: RefObject<Element | null>;
+}>) {
   return (
     <AriaPopover
       offset={12}

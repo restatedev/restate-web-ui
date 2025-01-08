@@ -4,6 +4,8 @@ import {
   KeyboardEvent,
   useId,
   ComponentType,
+  ReactNode,
+  Fragment,
 } from 'react';
 import {
   ComboBox,
@@ -15,20 +17,42 @@ import {
 import { useListData, ListData } from 'react-stately';
 import { useFilter } from 'react-aria';
 import { ListBox, ListBoxItem, ListBoxSection } from '@restate/ui/listbox';
-import { Tag, TagGroup, TagList } from './TagGroup';
 import { LabeledGroup } from './LabeledGroup';
 import { tv } from 'tailwind-variants';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import { PopoverOverlay } from '@restate/ui/popover';
+import { focusRing } from '@restate/ui/focus';
 
+const tagStyles = tv({
+  extend: focusRing,
+  base: 'bg-white/90 border text-zinc-800 shadow-sm  flex max-w-fit cursor-default items-center gap-x-1 rounded-md pl-1.5 py-0.5 text-xs font-medium outline-0 transition ',
+});
 function DefaultTag<
   T extends {
     id: Key;
     textValue: string;
   }
->({ item }: { item: T }) {
-  return <Tag id={item.id}>{item.textValue}</Tag>;
+>({ item, onRemove }: { item: T; onRemove?: VoidFunction }) {
+  return (
+    <div className={tagStyles()}>
+      {item.textValue}
+      <Button onClick={onRemove} variant="icon">
+        <Icon name={IconName.X} className="w-3 h-3" />
+      </Button>
+    </div>
+  );
+}
+
+function DefaultMenuTrigger() {
+  return (
+    <Button variant="secondary" className="rounded-lg p-1 outline-offset-0">
+      <Icon
+        name={IconName.ChevronsUpDown}
+        className="w-[1.25em] h-[1.25em] text-gray-500"
+      />
+    </Button>
+  );
 }
 
 export interface MultiSelectProps<T extends object>
@@ -51,8 +75,14 @@ export interface MultiSelectProps<T extends object>
   onItemAdd?: (key: Key) => void;
   onItemRemove?: (key: Key) => void;
   renderEmptyState?: (inputValue: string) => React.ReactNode;
-  Tag?: ComponentType<{ item: T }>;
+  children?: (props: {
+    item: T;
+    onRemove?: VoidFunction;
+    onUpdate?: (newValue: T) => void;
+  }) => ReactNode;
+  MenuTrigger?: ComponentType<unknown>;
   label: string;
+  placeholder?: string;
 }
 
 const multiSelectStyles = tv({
@@ -76,7 +106,9 @@ export function FormFieldMultiCombobox<
   className,
   name,
   renderEmptyState,
-  Tag = DefaultTag,
+  children = DefaultTag,
+  MenuTrigger = DefaultMenuTrigger,
+  placeholder,
   ...props
 }: MultiSelectProps<T>) {
   const { contains } = useFilter({ sensitivity: 'base' });
@@ -106,18 +138,26 @@ export function FormFieldMultiCombobox<
   });
 
   const onRemove = useCallback(
-    (keys: Set<Key>) => {
-      const key = keys.values().next().value;
-      if (key) {
-        selectedList.remove(key);
-        setFieldState({
-          inputValue: '',
-          selectedKey: null,
-        });
-        onItemRemove?.(key);
-      }
+    (key: Key) => {
+      selectedList.remove(key);
+      setFieldState({
+        inputValue: '',
+        selectedKey: null,
+      });
+      onItemRemove?.(key);
     },
     [selectedList, onItemRemove]
+  );
+
+  const onUpdate = useCallback(
+    (newValue: T) => {
+      selectedList.update(newValue.id, newValue);
+      setFieldState({
+        inputValue: '',
+        selectedKey: null,
+      });
+    },
+    [selectedList]
   );
 
   const onSelectionChange = (id: Key | null) => {
@@ -186,23 +226,18 @@ export function FormFieldMultiCombobox<
     <>
       <LabeledGroup id={labelId} className={multiSelectStyles({ className })}>
         <Label className="sr-only">{label}</Label>
-        {selectedList.items.length > 0 && (
-          <TagGroup
-            id={tagGroupId}
-            aria-labelledby={labelId}
-            className="contents"
-            onRemove={onRemove}
-          >
-            <TagList
-              items={selectedList.items}
-              className={`outline-none ${
-                selectedList.items.length !== 0 ? 'p-1' : ''
-              }`}
-            >
-              {(item) => <Tag item={item} />}
-            </TagList>
-          </TagGroup>
-        )}
+
+        <div className="flex gap-1 flex-wrap px-1" id={tagGroupId}>
+          {selectedList.items.map((item) => (
+            <Fragment key={item.id}>
+              {children({
+                item,
+                onRemove: onRemove.bind(null, item.id),
+                onUpdate,
+              })}
+            </Fragment>
+          ))}
+        </div>
 
         <ComboBox
           {...props}
@@ -233,42 +268,37 @@ export function FormFieldMultiCombobox<
               }}
               aria-describedby={tagGroupId}
               onKeyDownCapture={onKeyDownCapture}
+              placeholder={placeholder}
             />
             <div className="absolute right-1 top-0 bottom-0 flex items-center">
-              <Button
-                variant="secondary"
-                className="rounded-lg p-1 outline-offset-0"
-              >
-                <Icon
-                  name={IconName.ChevronsUpDown}
-                  className="w-[1.25em] h-[1.25em] text-gray-500"
-                />
-              </Button>
+              <MenuTrigger />
             </div>
           </div>
 
-          <PopoverOverlay className="min-w-[--trigger-width] p-0 bg-gray-100/90">
-            <ListBox
-              multiple
-              selectable
-              className="outline-0 p-1 max-h-[inherit] overflow-auto border-none"
-            >
-              <ListBoxSection title={label}>
-                {availableList.items.map((item) => (
-                  <ListBoxItem value={String(item.id)} key={item.id}>
-                    {item.textValue}
-                  </ListBoxItem>
-                ))}
-              </ListBoxSection>
-            </ListBox>
-          </PopoverOverlay>
+          {availableList.items.length > 0 && (
+            <PopoverOverlay className="min-w-[--trigger-width] p-0 bg-gray-100/90">
+              <ListBox
+                multiple
+                selectable
+                className="outline-0 p-1 max-h-[inherit] overflow-auto border-none"
+              >
+                <ListBoxSection title={label}>
+                  {availableList.items.map((item) => (
+                    <ListBoxItem value={String(item.id)} key={item.id}>
+                      {item.textValue}
+                    </ListBoxItem>
+                  ))}
+                </ListBoxSection>
+              </ListBox>
+            </PopoverOverlay>
+          )}
         </ComboBox>
       </LabeledGroup>
 
       {name && (
         <>
           {selectedKeys.map((key) => (
-            <input hidden name={name} value={key} readOnly />
+            <input hidden name={name} value={key} readOnly key={key} />
           ))}
         </>
       )}
