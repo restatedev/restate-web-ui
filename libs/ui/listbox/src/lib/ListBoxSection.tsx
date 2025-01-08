@@ -1,5 +1,5 @@
 import type { PropsWithChildren, ReactNode } from 'react';
-import { Header, Section } from 'react-aria-components';
+import { Header, ListBoxSection as Section } from 'react-aria-components';
 import { tv } from 'tailwind-variants';
 
 export interface ListBoxSectionProps extends PropsWithChildren<object> {
