@@ -228,7 +228,7 @@ export function FormFieldMultiCombobox<
         <Label className="sr-only">{label}</Label>
 
         <div
-          className="flex gap-1 flex-wrap pr-1 has-[>*]:pl-1"
+          className="hidden gap-1 flex-wrap px-1 py-1 has-[>*]:flex"
           id={tagGroupId}
         >
           {selectedList.items.map((item) => (
@@ -255,10 +255,9 @@ export function FormFieldMultiCombobox<
           aria-labelledby={labelId}
         >
           <div
-            className={[
-              'inline-flex flex-1 flex2-wrap items-center gap-1 px-0',
-              selectedList.items.length > 0 && 'ps-0',
-            ].join(' ')}
+            className={['inline-flex flex-1 items-center gap-1 px-0 pl-1'].join(
+              ' '
+            )}
           >
             <MenuTrigger />
             <AriaInput

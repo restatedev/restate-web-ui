@@ -2,6 +2,7 @@ import { PropsWithChildren, RefObject } from 'react';
 import { Dialog as AriaDialog } from 'react-aria-components';
 import { PopoverOverlay } from './PopoverOverlay';
 import { tv } from 'tailwind-variants';
+import { Placement } from 'react-aria';
 
 const styles = tv({
   base: 'rounded-[1rem]',
@@ -13,6 +14,7 @@ export function PopoverContent({
 }: PropsWithChildren<{
   className?: string;
   triggerRef?: RefObject<Element | null>;
+  placement?: Placement;
 }>) {
   return (
     <PopoverOverlay {...props} className={styles({ className })}>

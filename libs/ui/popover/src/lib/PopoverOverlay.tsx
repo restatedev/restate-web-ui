@@ -1,4 +1,5 @@
 import { PropsWithChildren, RefObject } from 'react';
+import { Placement } from 'react-aria';
 import {
   Popover as AriaPopover,
   composeRenderProps,
@@ -24,6 +25,7 @@ export function PopoverOverlay({
 }: PropsWithChildren<{
   className?: string;
   triggerRef?: RefObject<Element | null>;
+  placement?: Placement;
 }>) {
   return (
     <AriaPopover

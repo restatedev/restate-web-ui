@@ -1,8 +1,13 @@
 import { PropsWithChildren } from 'react';
 import { MenuTrigger } from 'react-aria-components';
 
-type DropdownProps = unknown;
+interface DropdownProps {
+  defaultOpen?: boolean;
+}
 
-export function Dropdown({ children }: PropsWithChildren<DropdownProps>) {
-  return <MenuTrigger>{children}</MenuTrigger>;
+export function Dropdown({
+  children,
+  defaultOpen,
+}: PropsWithChildren<DropdownProps>) {
+  return <MenuTrigger defaultOpen={defaultOpen}>{children}</MenuTrigger>;
 }

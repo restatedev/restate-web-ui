@@ -42,6 +42,7 @@ export function QueryProvider({
             staleTime: 5 * 60 * 1000,
             retry: false,
             refetchOnMount: false,
+            experimental_prefetchInRender: true,
           },
         },
       })

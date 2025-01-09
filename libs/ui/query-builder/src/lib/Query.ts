@@ -5,20 +5,24 @@ export type QueryClauseOperationId =
   | 'IN'
   | 'NOT_IN'
   | 'BEFORE'
+  | 'AFTER'
   | 'LESS_THAN'
   | 'GREATER_THAN';
 
-export interface QueryClauseOperation {
-  value: QueryClauseOperationId;
+interface Option<T extends string> {
+  value: T;
   label: string;
   description?: string;
 }
+
+export type QueryClauseOperation = Option<QueryClauseOperationId>;
+export type QueryClauseOption = Option<string>;
 export interface QueryClauseSchema<T extends QueryClauseType> {
   id: string;
   label: string;
   operations: QueryClauseOperation[];
   type: T;
-  loadOptions?: () => Promise<{ value: string; label: string }[]>;
+  loadOptions?: () => Promise<QueryClauseOption[]>;
 }
 type QueryClauseValue<T extends QueryClauseType> = T extends 'STRING'
   ? string
@@ -39,6 +43,10 @@ export class QueryClause<T extends QueryClauseType> {
     return this.schema.id;
   }
 
+  get label() {
+    return this.schema.label;
+  }
+
   get textValue() {
     return this.schema.label;
   }
@@ -57,8 +65,15 @@ export class QueryClause<T extends QueryClauseType> {
     )?.label;
   }
 
+  private _options?: QueryClauseOption[];
   get options() {
-    return this.schema.loadOptions?.();
+    if (this._options) {
+      return this._options;
+    }
+    return this.schema.loadOptions?.().then((options) => {
+      this._options = options;
+      return options;
+    });
   }
 
   constructor(
@@ -66,8 +81,6 @@ export class QueryClause<T extends QueryClauseType> {
     public readonly value: {
       operation?: QueryClauseOperationId;
       value?: QueryClauseValue<T>;
-    } = schema.operations.length === 1
-      ? { operation: schema.operations[0]?.value, value: undefined }
-      : {}
+    } = { operation: schema.operations[0]?.value, value: undefined }
   ) {}
 }
