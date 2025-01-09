@@ -1,5 +1,10 @@
-import { Invocation, useListInvocations } from '@restate/data-access/admin-api';
-import { Button } from '@restate/ui/button';
+import {
+  getEndpoint,
+  Invocation,
+  useListDeployments,
+  useListInvocations,
+} from '@restate/data-access/admin-api';
+import { Button, SubmitButton } from '@restate/ui/button';
 import {
   Cell,
   Column,
@@ -26,10 +31,19 @@ import {
   SnapshotTimeProvider,
   useDurationSinceLastSnapshot,
 } from '@restate/util/snapshot-time';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { formatDurations } from '@restate/util/intl';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@restate/ui/tooltip';
 import { Actions } from '@restate/features/invocation-route';
+import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
+import {
+  AddQueryTrigger,
+  QueryBuilder,
+  QueryClauseSchema,
+  QueryClauseType,
+  useQueryBuilder,
+} from '@restate/ui/query-builder';
+import { ClauseChip, FiltersTrigger } from './Filters';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: 80,
@@ -48,6 +62,8 @@ function Component() {
     initialData: { rows: [], total_count: 0 },
     staleTime: Infinity,
   });
+  const { promise: listDeploymentPromise } = useListDeployments();
+
   const queryCLient = useQueryClient();
   const collator = useCollator();
   const invocations = useAsyncList<Invocation>({
@@ -91,6 +107,160 @@ function Component() {
       };
     },
   });
+
+  const query = useQueryBuilder();
+
+  const schema = useMemo(() => {
+    return [
+      {
+        id: 'id',
+        label: 'Invocation Id',
+        operations: [{ value: 'EQUALS', label: 'is' }],
+        type: 'STRING',
+      },
+      {
+        id: 'status',
+        label: 'Status',
+        operations: [
+          { value: 'IN', label: 'is' },
+          { value: 'NOT_IN', label: 'is not' },
+        ],
+        type: 'STRING_LIST',
+        loadOptions: async () =>
+          [
+            'scheduled',
+            'pending',
+            'ready',
+            'running',
+            'suspending',
+            'retrying',
+            'killed',
+            'cancelled',
+            'succeeded',
+            'failed',
+          ].map((value) => ({ label: value, value })),
+      },
+      {
+        id: 'target_service_name',
+        label: 'Service',
+        operations: [
+          { value: 'IN', label: 'is' },
+          { value: 'NOT_IN', label: 'is not' },
+        ],
+        type: 'STRING_LIST',
+        loadOptions: async () =>
+          listDeploymentPromise.then((results) => {
+            return (
+              results?.sortedServiceNames.map((name) => ({
+                label: name,
+                value: name,
+              })) ?? []
+            );
+          }),
+      },
+      {
+        id: 'target_service_key',
+        label: 'Service key',
+        operations: [{ value: 'EQUALS', label: 'is' }],
+        type: 'STRING',
+      },
+      {
+        id: 'target_service_ty',
+        label: 'Service type',
+        operations: [
+          { value: 'IN', label: 'is' },
+          { value: 'NOT_IN', label: 'is not' },
+        ],
+        type: 'STRING_LIST',
+        loadOptions: async () => [
+          { value: 'service', label: 'Service' },
+          { value: 'virtual_object', label: 'Virtual Object' },
+          { value: 'workflow', label: 'Workflow' },
+        ],
+      },
+      {
+        id: 'deployment',
+        label: 'Deployment',
+        operations: [
+          { value: 'IN', label: 'is' },
+          { value: 'NOT_IN', label: 'is not' },
+        ],
+        type: 'STRING_LIST',
+        loadOptions: async () =>
+          listDeploymentPromise.then((results) =>
+            Array.from(results?.deployments.values() ?? []).map(
+              (deployment) => ({
+                label: String(getEndpoint(deployment)),
+                value: deployment.id,
+                description: deployment.id,
+              })
+            )
+          ),
+      },
+      {
+        id: 'invoked_by_service_name',
+        label: 'Invoked by',
+        operations: [
+          { value: 'IN', label: 'is' },
+          { value: 'NOT_IN', label: 'is not' },
+        ],
+        type: 'STRING_LIST',
+        loadOptions: async () =>
+          listDeploymentPromise.then(
+            (results) =>
+              results?.sortedServiceNames.map((name) => ({
+                label: name,
+                value: name,
+              })) ?? []
+          ),
+      },
+      {
+        id: 'idempotency_key',
+        label: 'Idempotency key',
+        operations: [{ value: 'EQUALS', label: 'is' }],
+        type: 'STRING',
+      },
+      {
+        id: 'invoked_by_id',
+        label: 'Invoked by id',
+        operations: [{ value: 'EQUALS', label: 'is' }],
+        type: 'STRING',
+      },
+      {
+        id: 'retry_count',
+        label: 'Attempt count',
+        operations: [{ value: 'GREATER_THAN', label: '>' }],
+        type: 'NUMBER',
+      },
+      {
+        id: 'created_at',
+        label: 'Created',
+        operations: [
+          { value: 'BEFORE', label: 'before' },
+          { value: 'AFTER', label: 'after' },
+        ],
+        type: 'DATE',
+      },
+      {
+        id: 'scheduled_at',
+        label: 'Scheduled',
+        operations: [
+          { value: 'BEFORE', label: 'before' },
+          { value: 'AFTER', label: 'after' },
+        ],
+        type: 'DATE',
+      },
+      {
+        id: 'last_start_at',
+        label: 'Last started',
+        operations: [
+          { value: 'BEFORE', label: 'before' },
+          { value: 'AFTER', label: 'after' },
+        ],
+        type: 'DATE',
+      },
+    ] satisfies QueryClauseSchema<QueryClauseType>[];
+  }, [listDeploymentPromise]);
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
@@ -202,6 +372,26 @@ function Component() {
         </Table>
         <Footnote />
       </div>
+      <LayoutOutlet zone={LayoutZone.Toolbar}>
+        <div className="flex relative">
+          <QueryBuilder query={query} schema={schema}>
+            <AddQueryTrigger
+              MenuTrigger={FiltersTrigger}
+              placeholder="Filter invocations…"
+              title="Filters"
+              className="rounded-xl has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500 [&_input]:placeholder-zinc-400 border-transparent pr-20 [&_input+*]:left2-1 [&_input+*]:right-24 [&_input]:min-w-[10ch]"
+            >
+              {ClauseChip}
+            </AddQueryTrigger>
+          </QueryBuilder>
+          <SubmitButton
+            variant="primary"
+            className="absolute right-1 top-1 bottom-1 rounded-lg py-0 self-end h-7"
+          >
+            Query
+          </SubmitButton>
+        </div>
+      </LayoutOutlet>
     </SnapshotTimeProvider>
   );
 }

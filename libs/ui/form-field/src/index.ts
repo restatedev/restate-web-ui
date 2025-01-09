@@ -8,3 +8,4 @@ export * from './lib/FormFieldCheckbox';
 export * from './lib/FormFieldSelect';
 export * from './lib/FormFieldNumberInput';
 export * from './lib/FormFieldCombobox';
+export * from './lib/FormFieldDateTimeInput';

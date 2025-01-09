@@ -8,6 +8,7 @@
     "@buf/restatedev_service-protocol.bufbuild_es": "2.2.3-20240606160341-127256df3b4d.1",
     "@bufbuild/protobuf": "2.2.3",
     "@formatjs/intl-durationformat": "0.6.4",
+    "@internationalized/date": "^3.6.0",
     "@react-aria/interactions": "3.22.5",
     "@react-aria/toast": "3.0.0-beta.18",
     "@react-router/node": "7.1.1",
