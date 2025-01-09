@@ -1,11 +1,12 @@
 import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from 'tailwind-variants';
-import { getEndpoint, isHttpDeployment } from './types';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import {
   DeploymentId,
   Revision as ServiceRevision,
   useListDeployments,
+  getEndpoint,
+  isHttpDeployment,
 } from '@restate/data-access/admin-api';
 import { Revision } from './Revision';
 import { DEPLOYMENT_QUERY_PARAM } from './constants';

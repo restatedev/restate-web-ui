@@ -3693,7 +3693,8 @@
             "type": "string"
           },
           "invoked_by": {
-            "type": "string"
+            "type": "string",
+            "enum": ["ingress", "service"]
           },
           "status": {
             "type": "string",
@@ -3717,8 +3718,7 @@
             "type": "string"
           },
           "target_service_key": {
-            "type": "string",
-            "enum": ["ingress", "service"]
+            "type": "string"
           },
           "target_service_name": {
             "type": "string"
@@ -3835,7 +3835,8 @@
             "type": "string"
           },
           "invoked_by": {
-            "type": "string"
+            "type": "string",
+            "enum": ["ingress", "service"]
           },
           "status": {
             "type": "string",
@@ -3856,8 +3857,7 @@
             "type": "string"
           },
           "target_service_key": {
-            "type": "string",
-            "enum": ["ingress", "service"]
+            "type": "string"
           },
           "target_service_name": {
             "type": "string"

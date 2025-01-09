@@ -28,6 +28,7 @@ interface SelectProps
   placeholder?: string;
   errorMessage?: ComponentProps<typeof FormFieldError>['children'];
   label?: ReactNode;
+  defaultValue?: string;
 }
 export function FormFieldSelect({
   className,
@@ -39,6 +40,7 @@ export function FormFieldSelect({
   children,
   label,
   autoFocus,
+  defaultValue,
   ...props
 }: PropsWithChildren<SelectProps>) {
   return (
@@ -49,10 +51,11 @@ export function FormFieldSelect({
       isDisabled={disabled}
       className={containerStyles({ className })}
       placeholder={placeholder}
+      defaultSelectedKey={defaultValue}
     >
       {!label && <Label className="sr-only">{placeholder}</Label>}
       {label && <FormFieldLabel>{label}</FormFieldLabel>}
-      <div className="shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] p-0.5 bg-gray-100 rounded-xl border border-gray-200">
+      <div className="shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] p-px bg-gray-100 rounded-xl border border-gray-200">
         <Button
           autoFocus
           variant="secondary"

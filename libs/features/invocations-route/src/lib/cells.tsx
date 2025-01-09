@@ -193,6 +193,7 @@ const CELLS: Record<ColumnKey, ComponentType<CellProps>> = {
   deployment: withCell(InvocationDeployment),
   target_service_key: withCell(withField({ field: 'target_service_key' })),
   target_service_name: withCell(withField({ field: 'target_service_name' })),
+  target_handler_name: withCell(withField({ field: 'target_handler_name' })),
 };
 
 export function InvocationCell({

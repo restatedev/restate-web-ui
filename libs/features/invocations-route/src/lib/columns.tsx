@@ -18,6 +18,7 @@ const COLUMNS_KEYS = [
   'target_service_ty',
   'target_service_name',
   'target_service_key',
+  'target_handler_name',
 ] as const;
 export type ColumnKey = (typeof COLUMNS_KEYS)[number];
 
@@ -37,6 +38,7 @@ export const COLUMN_NAMES: Record<ColumnKey, string> = {
   target_service_ty: 'Service type',
   target_service_name: 'Service name',
   target_service_key: 'Service key',
+  target_handler_name: 'Handler',
 };
 
 const SORT_ORDER: Record<ColumnKey, number> = Object.entries(
