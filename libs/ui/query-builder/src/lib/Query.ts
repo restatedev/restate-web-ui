@@ -1,3 +1,5 @@
+import { formatDateTime } from '@restate/util/intl';
+
 export type QueryClauseType = 'STRING' | 'STRING_LIST' | 'NUMBER' | 'DATE';
 export type QueryClauseOperationId =
   | 'EQUALS'
@@ -63,6 +65,20 @@ export class QueryClause<T extends QueryClauseType> {
     return this.schema.operations.find(
       (op) => op.value === this.value.operation
     )?.label;
+  }
+
+  get valueLabel() {
+    const value = this.value.value;
+    if (typeof value === 'number' || typeof value === 'string') {
+      return String(value);
+    }
+    if (value instanceof Date) {
+      return formatDateTime(value, 'system');
+    }
+    if (Array.isArray(value)) {
+      return value.join(', ');
+    }
+    return '';
   }
 
   private _options?: QueryClauseOption[];
