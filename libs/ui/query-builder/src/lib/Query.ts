@@ -1,5 +1,5 @@
 export type QueryClauseType = 'STRING' | 'STRING_LIST' | 'NUMBER' | 'DATE';
-export type QueryClauseOperation =
+export type QueryClauseOperationId =
   | 'EQUALS'
   | 'NOT_EQUALS'
   | 'IN'
@@ -7,6 +7,12 @@ export type QueryClauseOperation =
   | 'BEFORE'
   | 'LESS_THAN'
   | 'GREATER_THAN';
+
+export interface QueryClauseOperation {
+  value: QueryClauseOperationId;
+  label: string;
+  description?: string;
+}
 export interface QueryClauseSchema<T extends QueryClauseType> {
   id: string;
   label: string;
@@ -45,15 +51,23 @@ export class QueryClause<T extends QueryClauseType> {
     return this.schema.operations;
   }
 
+  get operationLabel() {
+    return this.schema.operations.find(
+      (op) => op.value === this.value.operation
+    )?.label;
+  }
+
   get options() {
     return this.schema.loadOptions?.();
   }
 
   constructor(
     public readonly schema: QueryClauseSchema<T>,
-    public readonly value?: {
-      operation: QueryClauseOperation;
-      value: QueryClauseValue<T>;
-    }
+    public readonly value: {
+      operation?: QueryClauseOperationId;
+      value?: QueryClauseValue<T>;
+    } = schema.operations.length === 1
+      ? { operation: schema.operations[0]?.value, value: undefined }
+      : {}
   ) {}
 }
