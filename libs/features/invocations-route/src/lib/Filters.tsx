@@ -33,9 +33,11 @@ export function ClauseChip({
     <EditQueryTrigger clause={item} onRemove={onRemove} onUpdate={onUpdate}>
       <Button
         variant="secondary"
-        className="inline-flex items-center py-1 rounded-lg bg-white/[0.25] hover:bg-white/30 pressed:bg-white/30 text-zinc-50 text-xs px-1.5"
+        className="inline-flex gap-[0.5ch] items-center py-1 rounded-lg bg-white/[0.25] hover:bg-white/30 pressed:bg-white/30 text-zinc-50 text-xs px-1.5"
       >
-        {item.textValue}:{JSON.stringify(item?.value ?? {})}
+        <span>{item.label}</span>
+        <span className="font-mono">{item.operationLabel}</span>
+        <span className="font-semibold">{item.valueLabel}</span>
         <Icon name={IconName.ChevronsUpDown} className="w-3.5 h-3.5 ml-2" />
       </Button>
     </EditQueryTrigger>
@@ -133,7 +135,10 @@ function ValueSelector({
         >
           {resolvedOptions?.map((opt) => (
             <DropdownItem value={opt.value} key={opt.value}>
-              {opt.label}
+              <div className="flex flex-col gap-0.5">
+                {opt.label}
+                <div className="text-xs opacity-80">{opt.description}</div>
+              </div>
             </DropdownItem>
           ))}
         </DropdownMenu>
