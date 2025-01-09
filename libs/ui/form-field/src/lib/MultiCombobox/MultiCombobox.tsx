@@ -227,7 +227,10 @@ export function FormFieldMultiCombobox<
       <LabeledGroup id={labelId} className={multiSelectStyles({ className })}>
         <Label className="sr-only">{label}</Label>
 
-        <div className="flex gap-1 flex-wrap px-1" id={tagGroupId}>
+        <div
+          className="flex gap-1 flex-wrap pr-1 has-[>*]:pl-1"
+          id={tagGroupId}
+        >
           {selectedList.items.map((item) => (
             <Fragment key={item.id}>
               {children({
