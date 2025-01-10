@@ -18,8 +18,13 @@ import {
   QueryClauseOperationId,
   QueryClauseType,
 } from '@restate/ui/query-builder';
-import { PropsWithChildren, use, useMemo } from 'react';
+import { PropsWithChildren, Suspense, use, useMemo } from 'react';
 
+// TODO
+function ValueLabel({ promise }: { promise: Promise<string> }) {
+  const valueLabel = use(promise);
+  return valueLabel;
+}
 export function ClauseChip({
   item,
   onRemove,
@@ -33,11 +38,19 @@ export function ClauseChip({
     <EditQueryTrigger clause={item} onRemove={onRemove} onUpdate={onUpdate}>
       <Button
         variant="secondary"
-        className="inline-flex gap-[0.5ch] items-center py-1 rounded-lg bg-white/[0.25] hover:bg-white/30 pressed:bg-white/30 text-zinc-50 text-xs px-1.5"
+        className="inline-flex gap-[0.7ch] items-center py-1 rounded-lg bg-white/[0.25] hover:bg-white/30 pressed:bg-white/30 text-zinc-50 text-xs px-1.5"
       >
-        <span>{item.label}</span>
-        <span className="font-mono">{item.operationLabel}</span>
-        <span className="font-semibold">{item.valueLabel}</span>
+        <span className="">{item.label}</span>
+        {item.operationLabel?.split(' ').map((segment) => (
+          <span className="font-mono" key={segment}>
+            {segment}
+          </span>
+        ))}
+        <span className="font-semibold">
+          <Suspense fallback={item.valueLabel}>
+            <ValueLabel promise={item.valueLabelPromise} />
+          </Suspense>
+        </span>
         <Icon name={IconName.ChevronsUpDown} className="w-3.5 h-3.5 ml-2" />
       </Button>
     </EditQueryTrigger>
@@ -78,7 +91,6 @@ function EditQueryTrigger({
               multiple
               selectedItems={selectedOperations}
               onSelect={(operations) => {
-                console.log(selectedOperations, Array.from(operations).at(-1));
                 const newClause = new QueryClause(clause.schema, {
                   ...clause.value,
                   operation: Array.from(operations).at(

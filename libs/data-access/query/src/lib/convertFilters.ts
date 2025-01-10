@@ -18,6 +18,10 @@ function convertFilterNumberToSqlClause(
       return `${filter.field} > ${filter.value}`;
     case 'LESS_THAN':
       return `${filter.field} < ${filter.value}`;
+    case 'GREATER_THAN_OR_EQUAL':
+      return `${filter.field} >= ${filter.value}`;
+    case 'LESS_THAN_OR_EQUAL':
+      return `${filter.field} <= ${filter.value}`;
   }
 }
 
@@ -31,6 +35,8 @@ function convertFilterStringToSqlClause(
       return `${filter.field} != '${filter.value}'`;
     case 'CONTAINS':
       return `${filter.field} LIKE '%${filter.value}%'`;
+    case 'NOT_CONTAINS':
+      return `${filter.field} NOT LIKE '%${filter.value}%'`;
   }
 }
 
@@ -57,6 +63,35 @@ function convertFilterStringListToSqlClause(
       return `${filter.field} NOT IN (${filter.value
         .map((value) => `'${value}'`)
         .join(', ')})`;
+  }
+}
+
+function negateOperation(op: FilterItem['operation']): FilterItem['operation'] {
+  switch (op) {
+    case 'AFTER':
+      return 'BEFORE';
+    case 'BEFORE':
+      return 'AFTER';
+    case 'CONTAINS':
+      return 'NOT_CONTAINS';
+    case 'EQUALS':
+      return 'NOT_EQUALS';
+    case 'GREATER_THAN':
+      return 'LESS_THAN_OR_EQUAL';
+    case 'GREATER_THAN_OR_EQUAL':
+      return 'LESS_THAN';
+    case 'IN':
+      return 'NOT_IN';
+    case 'LESS_THAN':
+      return 'GREATER_THAN_OR_EQUAL';
+    case 'LESS_THAN_OR_EQUAL':
+      return 'GREATER_THAN';
+    case 'NOT_CONTAINS':
+      return 'CONTAINS';
+    case 'NOT_EQUALS':
+      return 'EQUALS';
+    case 'NOT_IN':
+      return 'IN';
   }
 }
 
@@ -191,7 +226,10 @@ export function convertFilters(filters: FilterItem[]) {
           .filter(Boolean)
           .join(' AND ')
       );
-    } else if (statusFilter.type === 'STRING_LIST') {
+    } else if (
+      statusFilter.type === 'STRING_LIST' &&
+      statusFilter.operation === 'IN'
+    ) {
       mappedFilters.push(
         `(${statusFilter.value
           .map((value) =>
@@ -202,6 +240,28 @@ export function convertFilters(filters: FilterItem[]) {
           )
           .map((clause) => `(${clause})`)
           .join(' OR ')})`
+      );
+    } else if (
+      statusFilter.type === 'STRING_LIST' &&
+      statusFilter.operation === 'NOT_IN'
+    ) {
+      mappedFilters.push(
+        `(${statusFilter.value
+          .map((value) =>
+            getStatusFilterString(value)
+              .map(
+                (filter) =>
+                  ({
+                    ...filter,
+                    operation: negateOperation(filter.operation),
+                  } as FilterItem)
+              )
+              .map(convertFilterToSqlClause)
+              .filter(Boolean)
+              .join(' OR ')
+          )
+          .map((clause) => `(${clause})`)
+          .join(' AND ')})`
       );
     }
   }

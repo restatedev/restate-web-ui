@@ -2792,7 +2792,14 @@
           },
           "operation": {
             "type": "string",
-            "enum": ["EQUALS", "NOT_EQUALS", "GREATER_THAN", "LESS_THAN"]
+            "enum": [
+              "EQUALS",
+              "NOT_EQUALS",
+              "GREATER_THAN",
+              "LESS_THAN",
+              "GREATER_THAN_OR_EQUAL",
+              "LESS_THAN_OR_EQUAL"
+            ]
           },
           "value": {
             "type": "number"
@@ -2809,7 +2816,7 @@
           },
           "operation": {
             "type": "string",
-            "enum": ["EQUALS", "NOT_EQUALS", "CONTAINS"]
+            "enum": ["EQUALS", "NOT_EQUALS", "CONTAINS", "NOT_CONTAINS"]
           },
           "value": {
             "type": "string"

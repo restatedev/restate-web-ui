@@ -76,9 +76,31 @@ export class QueryClause<T extends QueryClauseType> {
       return formatDateTime(value, 'system');
     }
     if (Array.isArray(value)) {
-      return value.join(', ');
+      return value
+        .map((v) => this._options?.find((opt) => opt.value === v)?.label ?? v)
+        .join(', ');
     }
     return '';
+  }
+
+  get valueLabelPromise() {
+    const value = this.value.value;
+    if (typeof value === 'number' || typeof value === 'string') {
+      return Promise.resolve(String(value));
+    }
+    if (value instanceof Date) {
+      return Promise.resolve(formatDateTime(value, 'system'));
+    }
+    if (Array.isArray(value)) {
+      return (
+        Promise.resolve(this.options)?.then((options) => {
+          return value
+            .map((v) => options?.find((opt) => opt.value === v)?.label ?? v)
+            .join(', ');
+        }) ?? Promise.resolve('')
+      );
+    }
+    return Promise.resolve('');
   }
 
   private _options?: QueryClauseOption[];
@@ -99,4 +121,39 @@ export class QueryClause<T extends QueryClauseType> {
       value?: QueryClauseValue<T>;
     } = { operation: schema.operations[0]?.value, value: undefined }
   ) {}
+
+  toString() {
+    return JSON.stringify(this.value);
+  }
+
+  static fromJSON(schema: QueryClauseSchema<QueryClauseType>, value: string) {
+    const parsedValue = JSON.parse(value) as {
+      operation?: QueryClauseOperationId;
+      value?: number | string | string[];
+    };
+    return new QueryClause(schema, {
+      operation: parsedValue.operation,
+      value: getValue(schema.type, parsedValue.value),
+    });
+  }
+}
+
+function getValue(type: QueryClauseType, value?: number | string | string[]) {
+  if (type === 'STRING' && typeof value === 'string') {
+    return value;
+  }
+  if (type === 'NUMBER' && !isNaN(Number(value))) {
+    return Number(value);
+  }
+  if (type === 'DATE' && typeof value === 'string') {
+    return new Date(value);
+  }
+  if (
+    type === 'STRING_LIST' &&
+    Array.isArray(value) &&
+    value.every((v) => typeof v === 'string')
+  ) {
+    return value;
+  }
+  throw new Error('Invalid value');
 }

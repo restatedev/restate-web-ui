@@ -1,6 +1,6 @@
 import {
+  FilterItem,
   getEndpoint,
-  Invocation,
   useListDeployments,
   useListInvocations,
 } from '@restate/data-access/admin-api';
@@ -14,7 +14,7 @@ import {
   TableHeader,
 } from '@restate/ui/table';
 import { useCollator } from 'react-aria';
-import { useAsyncList } from 'react-stately';
+import { SortDescriptor } from 'react-stately';
 import {
   Dropdown,
   DropdownItem,
@@ -26,7 +26,6 @@ import {
 import { Icon, IconName } from '@restate/ui/icons';
 import { COLUMN_NAMES, ColumnKey, useColumns } from './columns';
 import { InvocationCell } from './cells';
-import { useQueryClient } from '@tanstack/react-query';
 import {
   SnapshotTimeProvider,
   useDurationSinceLastSnapshot,
@@ -39,11 +38,18 @@ import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import {
   AddQueryTrigger,
   QueryBuilder,
+  QueryClause,
   QueryClauseSchema,
   QueryClauseType,
   useQueryBuilder,
 } from '@restate/ui/query-builder';
 import { ClauseChip, FiltersTrigger } from './Filters';
+import {
+  ClientLoaderFunctionArgs,
+  Form,
+  redirect,
+  useSearchParams,
+} from 'react-router';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: 80,
@@ -54,62 +60,8 @@ const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
 };
 
 function Component() {
-  const { selectedColumns, setSelectedColumns, sortedColumnsList } =
-    useColumns();
-  const { refetch, queryKey, dataUpdatedAt, error } = useListInvocations([], {
-    refetchOnMount: false,
-    refetchOnReconnect: false,
-    initialData: { rows: [], total_count: 0 },
-    staleTime: Infinity,
-  });
   const { promise: listDeploymentPromise } = useListDeployments();
-
-  const queryCLient = useQueryClient();
-  const collator = useCollator();
-  const invocations = useAsyncList<Invocation>({
-    async load() {
-      await queryCLient.invalidateQueries({ queryKey });
-      const results = await refetch();
-      return { items: results.data?.rows ?? [] };
-    },
-    async sort({ items, sortDescriptor }) {
-      // TODO
-      return {
-        items: items.sort((a, b) => {
-          let cmp = 0;
-          if (sortDescriptor.column === 'deployment') {
-            cmp = collator.compare(
-              (
-                a.last_attempt_deployment_id ?? a.pinned_deployment_id
-              )?.toString() ?? '',
-              (
-                b.last_attempt_deployment_id ?? b.pinned_deployment_id
-              )?.toString() ?? ''
-            );
-          } else {
-            cmp = collator.compare(
-              a[
-                sortDescriptor.column as Exclude<ColumnKey, 'deployment'>
-              ]?.toString() ?? '',
-              b[
-                sortDescriptor.column as Exclude<ColumnKey, 'deployment'>
-              ]?.toString() ?? ''
-            );
-          }
-
-          // Flip the direction if descending order is specified.
-          if (sortDescriptor.direction === 'descending') {
-            cmp *= -1;
-          }
-
-          return cmp;
-        }),
-      };
-    },
-  });
-
-  const query = useQueryBuilder();
-
+  const [searchParams, setSearchParams] = useSearchParams();
   const schema = useMemo(() => {
     return [
       {
@@ -126,19 +78,18 @@ function Component() {
           { value: 'NOT_IN', label: 'is not' },
         ],
         type: 'STRING_LIST',
-        loadOptions: async () =>
-          [
-            'scheduled',
-            'pending',
-            'ready',
-            'running',
-            'suspending',
-            'retrying',
-            'killed',
-            'cancelled',
-            'succeeded',
-            'failed',
-          ].map((value) => ({ label: value, value })),
+        loadOptions: async () => [
+          { value: 'scheduled', label: 'Scheduled' },
+          { value: 'pending', label: 'Pending' },
+          { value: 'ready', label: 'Ready' },
+          { value: 'running', label: 'Running' },
+          { value: 'suspended', label: 'Suspended' },
+          { value: 'retrying', label: 'Retrying' },
+          { value: 'killed', label: 'Killed' },
+          { value: 'cancelled', label: 'Cancelled' },
+          { value: 'succeeded', label: 'Succeeded' },
+          { value: 'failed', label: 'Failed' },
+        ],
       },
       {
         id: 'target_service_name',
@@ -262,6 +213,77 @@ function Component() {
     ] satisfies QueryClauseSchema<QueryClauseType>[];
   }, [listDeploymentPromise]);
 
+  const { selectedColumns, setSelectedColumns, sortedColumnsList } =
+    useColumns();
+  const { refetch, dataUpdatedAt, error, data, isPending } = useListInvocations(
+    schema
+      .filter((schemaClause) => searchParams.get(`filter_${schemaClause.id}`))
+      .map((schemaClause) => {
+        return QueryClause.fromJSON(
+          schemaClause,
+          searchParams.get(`filter_${schemaClause.id}`)!
+        );
+      })
+      .map((clause) => {
+        return {
+          field: clause.id,
+          operation: clause.value.operation!,
+          type: clause.type,
+          value: clause.value.value,
+        } as FilterItem;
+      }),
+    {
+      refetchOnMount: false,
+      refetchOnReconnect: false,
+      staleTime: Infinity,
+    }
+  );
+  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>();
+  const collator = useCollator();
+
+  const sortedItems = useMemo(() => {
+    return data?.rows.sort((a, b) => {
+      let cmp = 0;
+      if (sortDescriptor?.column === 'deployment') {
+        cmp = collator.compare(
+          (
+            a.last_attempt_deployment_id ?? a.pinned_deployment_id
+          )?.toString() ?? '',
+          (
+            b.last_attempt_deployment_id ?? b.pinned_deployment_id
+          )?.toString() ?? ''
+        );
+      } else {
+        cmp = collator.compare(
+          a[
+            sortDescriptor?.column as Exclude<ColumnKey, 'deployment'>
+          ]?.toString() ?? '',
+          b[
+            sortDescriptor?.column as Exclude<ColumnKey, 'deployment'>
+          ]?.toString() ?? ''
+        );
+      }
+
+      // Flip the direction if descending order is specified.
+      if (sortDescriptor?.direction === 'descending') {
+        cmp *= -1;
+      }
+
+      return cmp;
+    });
+  }, [collator, data?.rows, sortDescriptor?.column, sortDescriptor?.direction]);
+
+  const query = useQueryBuilder(
+    schema
+      .filter((schemaClause) => searchParams.get(`filter_${schemaClause.id}`))
+      .map((schemaClause) => {
+        return QueryClause.fromJSON(
+          schemaClause,
+          searchParams.get(`filter_${schemaClause.id}`)!
+        );
+      })
+  );
+
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
       <div className="flex flex-col flex-auto gap-2">
@@ -271,7 +293,7 @@ function Component() {
               <Button
                 variant="icon"
                 className="rounded-lg"
-                onClick={() => invocations.reload()}
+                onClick={() => refetch()}
               >
                 <Icon
                   name={IconName.Retry}
@@ -313,8 +335,8 @@ function Component() {
         </div>
         <Table
           aria-label="Invocations"
-          sortDescriptor={invocations.sortDescriptor}
-          onSortChange={invocations.sort}
+          sortDescriptor={sortDescriptor}
+          onSortChange={setSortDescriptor}
         >
           <TableHeader>
             {sortedColumnsList
@@ -339,10 +361,10 @@ function Component() {
             </Column>
           </TableHeader>
           <TableBody
-            items={invocations.items}
-            dependencies={[selectedColumns, invocations.isLoading, error]}
+            items={sortedItems}
+            dependencies={[selectedColumns, isPending, error]}
             error={error}
-            isLoading={invocations.isLoading}
+            isLoading={isPending}
             numOfColumns={sortedColumnsList.length}
             emptyPlaceholder={
               <div className="flex flex-col items-center py-14 gap-4">
@@ -373,7 +395,23 @@ function Component() {
         <Footnote />
       </div>
       <LayoutOutlet zone={LayoutZone.Toolbar}>
-        <div className="flex relative">
+        <Form
+          className="flex relative"
+          onSubmit={(event) => {
+            event.preventDefault();
+            setSearchParams((old) => {
+              const newSearchParams = new URLSearchParams(old);
+              Array.from(newSearchParams.keys())
+                .filter((key) => key.startsWith('filter_'))
+                .forEach((key) => newSearchParams.delete(key));
+              query.items.forEach((item) => {
+                newSearchParams.set(`filter_${item.id}`, String(item));
+              });
+              return newSearchParams;
+            });
+            refetch();
+          }}
+        >
           <QueryBuilder query={query} schema={schema}>
             <AddQueryTrigger
               MenuTrigger={FiltersTrigger}
@@ -390,7 +428,7 @@ function Component() {
           >
             Query
           </SubmitButton>
-        </div>
+        </Form>
       </LayoutOutlet>
     </SnapshotTimeProvider>
   );
@@ -461,4 +499,21 @@ function RefreshContentTooltip() {
   );
 }
 
-export const invocations = { Component };
+export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
+  const url = new URL(request.url);
+  const hasFilters = Array.from(url.searchParams.keys()).some((key) =>
+    key.startsWith('filter_')
+  );
+  if (!hasFilters) {
+    url.searchParams.append(
+      'filter_status',
+      JSON.stringify({
+        operation: 'NOT_IN',
+        value: ['succeeded', 'failed', 'cancelled', 'killed'],
+      })
+    );
+    return redirect(url.search);
+  }
+};
+
+export const invocations = { Component, clientLoader };

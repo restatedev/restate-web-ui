@@ -849,14 +849,20 @@ export interface components {
       /** @enum {string} */
       type: 'NUMBER';
       /** @enum {string} */
-      operation: 'EQUALS' | 'NOT_EQUALS' | 'GREATER_THAN' | 'LESS_THAN';
+      operation:
+        | 'EQUALS'
+        | 'NOT_EQUALS'
+        | 'GREATER_THAN'
+        | 'LESS_THAN'
+        | 'GREATER_THAN_OR_EQUAL'
+        | 'LESS_THAN_OR_EQUAL';
       value?: number;
     };
     FilterStringItem: {
       /** @enum {string} */
       type: 'STRING';
       /** @enum {string} */
-      operation: 'EQUALS' | 'NOT_EQUALS' | 'CONTAINS';
+      operation: 'EQUALS' | 'NOT_EQUALS' | 'CONTAINS' | 'NOT_CONTAINS';
       value?: string;
     };
     FilterStringListItem: {
