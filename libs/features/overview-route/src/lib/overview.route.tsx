@@ -1,4 +1,7 @@
-import { useListDeployments } from '@restate/data-access/admin-api';
+import {
+  getEndpoint,
+  useListDeployments,
+} from '@restate/data-access/admin-api';
 import { RestateServer } from './RestateServer';
 import { tv } from 'tailwind-variants';
 import { TriggerRegisterDeploymentDialog } from './RegisterDeployment/Dialog';
@@ -8,16 +11,35 @@ import {
 } from '@restate/features/explainers';
 import { Service } from './Service';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
-import { useId, useLayoutEffect, useState } from 'react';
+import { useId, useLayoutEffect, useMemo, useState } from 'react';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
+import { FormFieldInput } from '@restate/ui/form-field';
 
-function MultipleDeploymentsPlaceholder() {
+function MultipleDeploymentsPlaceholder({
+  filterText,
+  onFilter,
+}: {
+  filterText: string;
+  onFilter: (filterText: string) => void;
+}) {
   return (
     <LayoutOutlet zone={LayoutZone.Toolbar}>
-      <div className="[&_a]:px-5 [&_a]:py-1.5 [&_a]:rounded-xl [&_a]:shadow-[inset_0_1px_0_0_theme(colors.gray.500)] [&_a]:[filter:drop-shadow(0_8px_6px_rgb(39_39_42/0.15))_drop-shadow(0_4px_3px_rgb(39_39_42/0.2))] [&_a:hover]:[filter:drop-shadow(0_12px_9px_rgb(39_39_42/0.15))_drop-shadow(0_8px_6px_rgb(39_39_42/0.2))] [&_a]:backdrop-blur-xl [&_a]:text-zinc-200 [&_a]:border-zinc-900/80 [&_a]:bg-zinc-900/90 [&_a:hover]:bg-zinc-900/85 [&_a[data-pressed=true]]:bg-zinc-900/80 flex flex-col gap-2 items-center text-center [&_a:hover]:scale-105 [&_a[data-pressed=true]]:scale-100 will-change-transform transform transition">
-        <TriggerRegisterDeploymentDialog>
-          Deployment
-        </TriggerRegisterDeploymentDialog>
+      <div className="p-1 flex items-center has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500">
+        <div className="h-7 items-stretch flex gap-3">
+          <FormFieldInput
+            type="search"
+            value={filterText}
+            onChange={onFilter}
+            placeholder="Filter services and deployments…"
+            className="w-[30ch] [&_input]:py2-0 [&>*]:min-h-0 [&>*]:h-full [&_input]:h-full [&_input[data-focused=true]]:outline-0  [&_input]:placeholder-zinc-400 [&_input[data-focused=true]]:border-transparent [&_input]:text-current [&_input]:border-transparent [&_input]:bg-transparent shadow-none"
+          />
+          <TriggerRegisterDeploymentDialog
+            variant="button"
+            className="py-0 h-7 rounded-lg"
+          >
+            Deployment
+          </TriggerRegisterDeploymentDialog>
+        </div>
       </div>
     </LayoutOutlet>
   );
@@ -112,6 +134,33 @@ function Component() {
   const [isScrolling, setIsScrolling] = useState(false);
   const masonryId = useId();
 
+  const [filter, setFilter] = useState('');
+
+  const filteredSortedServiceNames = useMemo(() => {
+    if (!filter) {
+      return sortedServiceNames;
+    } else {
+      return sortedServiceNames
+        ?.map((name) => {
+          const service = services?.get(name);
+          const searchValues = Array.from(
+            new Set(Object.values(service?.deployments ?? {}).flat())
+          )
+            .map((id) => deployments?.get(id))
+            .map((deployment) => [getEndpoint(deployment)])
+            .flat();
+
+          return { name, searchValues: [name, ...searchValues] };
+        })
+        .filter(({ searchValues }) =>
+          searchValues.some((value) =>
+            value?.toLowerCase().includes(filter.toLowerCase())
+          )
+        )
+        .map(({ name }) => name);
+    }
+  }, [deployments, filter, services, sortedServiceNames]);
+
   useLayoutEffect(() => {
     let isCanceled = false;
     const resizeObserver = new ResizeObserver(() => {
@@ -150,7 +199,7 @@ function Component() {
           style={{ gap: 'calc(8rem + 150px)' }}
           className={layoutStyles({ isScrolling, className: masonryId })}
         >
-          {sortedServiceNames?.map((serviceName, i) => (
+          {filteredSortedServiceNames?.map((serviceName, i) => (
             <Service
               key={serviceName}
               serviceName={serviceName}
@@ -163,7 +212,12 @@ function Component() {
       <RestateServer className={reactServerStyles({ isEmpty })}>
         {isEmpty && <NoDeploymentPlaceholder />}
       </RestateServer>
-      {size > 1 && <MultipleDeploymentsPlaceholder />}
+      {size > 1 && (
+        <MultipleDeploymentsPlaceholder
+          filterText={filter}
+          onFilter={setFilter}
+        />
+      )}
     </>
   );
 }

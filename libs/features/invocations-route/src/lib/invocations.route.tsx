@@ -32,7 +32,6 @@ import {
 } from '@restate/util/snapshot-time';
 import { useEffect, useMemo, useState } from 'react';
 import { formatDurations } from '@restate/util/intl';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@restate/ui/tooltip';
 import { Actions } from '@restate/features/invocation-route';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import {
@@ -50,6 +49,7 @@ import {
   redirect,
   useSearchParams,
 } from 'react-router';
+import { useQueryClient } from '@tanstack/react-query';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: 80,
@@ -215,63 +215,73 @@ function Component() {
 
   const { selectedColumns, setSelectedColumns, sortedColumnsList } =
     useColumns();
-  const { refetch, dataUpdatedAt, error, data, isFetching, isPending } =
-    useListInvocations(
-      schema
-        .filter((schemaClause) => searchParams.get(`filter_${schemaClause.id}`))
-        .map((schemaClause) => {
-          return QueryClause.fromJSON(
-            schemaClause,
-            searchParams.get(`filter_${schemaClause.id}`)!
-          );
-        })
-        .map((clause) => {
-          return {
-            field: clause.id,
-            operation: clause.value.operation!,
-            type: clause.type,
-            value: clause.value.value,
-          } as FilterItem;
-        }),
-      {
-        refetchOnMount: false,
-        refetchOnReconnect: false,
-        staleTime: Infinity,
-      }
-    );
+  const queryCLient = useQueryClient();
+  const [queryFilters, setQueryFilters] = useState<FilterItem[]>(() =>
+    schema
+      .filter((schemaClause) => searchParams.get(`filter_${schemaClause.id}`))
+      .map((schemaClause) => {
+        return QueryClause.fromJSON(
+          schemaClause,
+          searchParams.get(`filter_${schemaClause.id}`)!
+        );
+      })
+      .map((clause) => {
+        return {
+          field: clause.id,
+          operation: clause.value.operation!,
+          type: clause.type,
+          value: clause.value.value,
+        } as FilterItem;
+      })
+  );
+  const {
+    refetch,
+    dataUpdatedAt,
+    error,
+    data,
+    isFetching,
+    isPending,
+    queryKey,
+  } = useListInvocations(queryFilters, {
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    staleTime: 0,
+  });
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>();
   const collator = useCollator();
 
   const sortedItems = useMemo(() => {
-    return data?.rows.sort((a, b) => {
-      let cmp = 0;
-      if (sortDescriptor?.column === 'deployment') {
-        cmp = collator.compare(
-          (
-            a.last_attempt_deployment_id ?? a.pinned_deployment_id
-          )?.toString() ?? '',
-          (
-            b.last_attempt_deployment_id ?? b.pinned_deployment_id
-          )?.toString() ?? ''
-        );
-      } else {
-        cmp = collator.compare(
-          a[
-            sortDescriptor?.column as Exclude<ColumnKey, 'deployment'>
-          ]?.toString() ?? '',
-          b[
-            sortDescriptor?.column as Exclude<ColumnKey, 'deployment'>
-          ]?.toString() ?? ''
-        );
-      }
+    return (
+      data?.rows.sort((a, b) => {
+        let cmp = 0;
+        if (sortDescriptor?.column === 'deployment') {
+          cmp = collator.compare(
+            (
+              a.last_attempt_deployment_id ?? a.pinned_deployment_id
+            )?.toString() ?? '',
+            (
+              b.last_attempt_deployment_id ?? b.pinned_deployment_id
+            )?.toString() ?? ''
+          );
+        } else {
+          cmp = collator.compare(
+            a[
+              sortDescriptor?.column as Exclude<ColumnKey, 'deployment'>
+            ]?.toString() ?? '',
+            b[
+              sortDescriptor?.column as Exclude<ColumnKey, 'deployment'>
+            ]?.toString() ?? ''
+          );
+        }
 
-      // Flip the direction if descending order is specified.
-      if (sortDescriptor?.direction === 'descending') {
-        cmp *= -1;
-      }
+        // Flip the direction if descending order is specified.
+        if (sortDescriptor?.direction === 'descending') {
+          cmp *= -1;
+        }
 
-      return cmp;
-    });
+        return cmp;
+      }) ?? []
+    );
   }, [collator, data?.rows, sortDescriptor?.column, sortDescriptor?.direction]);
 
   const query = useQueryBuilder(
@@ -288,52 +298,6 @@ function Component() {
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
       <div className="flex flex-col flex-auto gap-2">
-        <div className="flex self-end gap-2">
-          <Tooltip>
-            <TooltipTrigger>
-              <Button
-                variant="icon"
-                className="rounded-lg"
-                onClick={() => refetch()}
-              >
-                <Icon
-                  name={IconName.Retry}
-                  className="h-5 w-5 aspect-square text-gray-500"
-                />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent small offset={5}>
-              <RefreshContentTooltip />
-            </TooltipContent>
-          </Tooltip>
-
-          <Dropdown>
-            <DropdownTrigger>
-              <Button variant="icon" className="self-end rounded-lg">
-                <Icon
-                  name={IconName.TableProperties}
-                  className="h-5 w-5 aspect-square text-gray-500"
-                />
-              </Button>
-            </DropdownTrigger>
-            <DropdownPopover>
-              <DropdownSection title="Columns">
-                <DropdownMenu
-                  multiple
-                  selectable
-                  selectedItems={selectedColumns}
-                  onSelect={setSelectedColumns}
-                >
-                  {Object.entries(COLUMN_NAMES).map(([key, name]) => (
-                    <DropdownItem key={key} value={key}>
-                      {name}
-                    </DropdownItem>
-                  ))}
-                </DropdownMenu>
-              </DropdownSection>
-            </DropdownPopover>
-          </Dropdown>
-        </div>
         <Table
           aria-label="Invocations"
           sortDescriptor={sortDescriptor}
@@ -358,12 +322,38 @@ function Component() {
                 </Column>
               ))}
             <Column id="actions" width={40}>
+              <Dropdown>
+                <DropdownTrigger>
+                  <Button variant="icon" className="self-end rounded-lg p-0.5">
+                    <Icon
+                      name={IconName.TableProperties}
+                      className="h-4 w-4 aspect-square text-gray-500"
+                    />
+                  </Button>
+                </DropdownTrigger>
+                <DropdownPopover>
+                  <DropdownSection title="Columns">
+                    <DropdownMenu
+                      multiple
+                      selectable
+                      selectedItems={selectedColumns}
+                      onSelect={setSelectedColumns}
+                    >
+                      {Object.entries(COLUMN_NAMES).map(([key, name]) => (
+                        <DropdownItem key={key} value={key}>
+                          {name}
+                        </DropdownItem>
+                      ))}
+                    </DropdownMenu>
+                  </DropdownSection>
+                </DropdownPopover>
+              </Dropdown>
               <span className="sr-only">Actions</span>
             </Column>
           </TableHeader>
           <TableBody
             items={sortedItems}
-            dependencies={[selectedColumns, isPending, error]}
+            dependencies={[selectedColumns]}
             error={error}
             isLoading={isPending}
             numOfColumns={sortedColumnsList.length}
@@ -393,14 +383,14 @@ function Component() {
             )}
           </TableBody>
         </Table>
-        <Footnote />
+        <Footnote data={data} isFetching={isFetching} />
       </div>
       <LayoutOutlet zone={LayoutZone.Toolbar}>
         <Form
           action="/query/invocations"
           method="POST"
           className="flex relative"
-          onSubmit={(event) => {
+          onSubmit={async (event) => {
             event.preventDefault();
             setSearchParams((old) => {
               const newSearchParams = new URLSearchParams(old);
@@ -412,7 +402,18 @@ function Component() {
               });
               return newSearchParams;
             });
-            refetch();
+            setQueryFilters(
+              query.items.map(
+                (clause) =>
+                  ({
+                    field: clause.id,
+                    operation: clause.value.operation!,
+                    type: clause.type,
+                    value: clause.value.value,
+                  } as FilterItem)
+              )
+            );
+            await queryCLient.invalidateQueries({ queryKey });
           }}
         >
           <QueryBuilder query={query} schema={schema}>
@@ -420,7 +421,7 @@ function Component() {
               MenuTrigger={FiltersTrigger}
               placeholder="Filter invocations…"
               title="Filters"
-              className="rounded-xl has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500 [&_input]:placeholder-zinc-400 border-transparent pr-20 [&_input+*]:left2-1 [&_input+*]:right-24 [&_input]:min-w-[10ch]"
+              className="rounded-xl has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500 [&_input]:placeholder-zinc-400 border-transparent pr-20  [&_input+*]:right-24 [&_input]:min-w-[10ch]"
             >
               {ClauseChip}
             </AddQueryTrigger>
@@ -437,15 +438,15 @@ function Component() {
   );
 }
 
-function Footnote() {
+function Footnote({
+  data,
+  isFetching,
+}: {
+  isFetching: boolean;
+  data?: ReturnType<typeof useListInvocations>['data'];
+}) {
   const [now, setNow] = useState(() => Date.now());
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
-  const { data, isFetching } = useListInvocations([], {
-    refetchOnMount: false,
-    refetchOnReconnect: false,
-    initialData: { rows: [], total_count: 0 },
-    staleTime: Infinity,
-  });
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
@@ -482,22 +483,6 @@ function Footnote() {
         'No invocations found'
       )}{' '}
       as of <span className="font-medium text-gray-500">{duration} ago</span>
-    </div>
-  );
-}
-
-function RefreshContentTooltip() {
-  const [now] = useState(() => Date.now());
-
-  const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
-  const { isPast, ...parts } = durationSinceLastSnapshot(now);
-  const duration = formatDurations(parts);
-  return (
-    <div>
-      <div className="font-medium text-center">Refresh</div>
-      <div className="text-2xs text-center opacity-90">
-        Last updated {duration} ago
-      </div>
     </div>
   );
 }
