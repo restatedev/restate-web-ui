@@ -130,7 +130,7 @@ function Component() {
         ],
       },
       {
-        id: 'deployment',
+        id: 'last_attempt_deployment_id',
         label: 'Deployment',
         operations: [
           { value: 'IN', label: 'is' },
@@ -215,29 +215,30 @@ function Component() {
 
   const { selectedColumns, setSelectedColumns, sortedColumnsList } =
     useColumns();
-  const { refetch, dataUpdatedAt, error, data, isPending } = useListInvocations(
-    schema
-      .filter((schemaClause) => searchParams.get(`filter_${schemaClause.id}`))
-      .map((schemaClause) => {
-        return QueryClause.fromJSON(
-          schemaClause,
-          searchParams.get(`filter_${schemaClause.id}`)!
-        );
-      })
-      .map((clause) => {
-        return {
-          field: clause.id,
-          operation: clause.value.operation!,
-          type: clause.type,
-          value: clause.value.value,
-        } as FilterItem;
-      }),
-    {
-      refetchOnMount: false,
-      refetchOnReconnect: false,
-      staleTime: Infinity,
-    }
-  );
+  const { refetch, dataUpdatedAt, error, data, isFetching, isPending } =
+    useListInvocations(
+      schema
+        .filter((schemaClause) => searchParams.get(`filter_${schemaClause.id}`))
+        .map((schemaClause) => {
+          return QueryClause.fromJSON(
+            schemaClause,
+            searchParams.get(`filter_${schemaClause.id}`)!
+          );
+        })
+        .map((clause) => {
+          return {
+            field: clause.id,
+            operation: clause.value.operation!,
+            type: clause.type,
+            value: clause.value.value,
+          } as FilterItem;
+        }),
+      {
+        refetchOnMount: false,
+        refetchOnReconnect: false,
+        staleTime: Infinity,
+      }
+    );
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>();
   const collator = useCollator();
 
@@ -396,6 +397,8 @@ function Component() {
       </div>
       <LayoutOutlet zone={LayoutZone.Toolbar}>
         <Form
+          action="/query/invocations"
+          method="POST"
           className="flex relative"
           onSubmit={(event) => {
             event.preventDefault();
@@ -423,7 +426,7 @@ function Component() {
             </AddQueryTrigger>
           </QueryBuilder>
           <SubmitButton
-            variant="primary"
+            isPending={isFetching}
             className="absolute right-1 top-1 bottom-1 rounded-lg py-0 self-end h-7"
           >
             Query

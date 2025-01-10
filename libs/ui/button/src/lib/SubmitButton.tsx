@@ -64,7 +64,6 @@ export function SubmitButton({
   const isSubmitting =
     useIsSubmitting(formElement?.action) || Boolean(isPending);
   const deferredIsSubmitting = useDeferredValue(isSubmitting);
-
   return (
     <Button
       {...props}
