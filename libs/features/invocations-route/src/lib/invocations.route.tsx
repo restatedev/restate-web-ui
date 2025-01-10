@@ -509,7 +509,7 @@ export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
       'filter_status',
       JSON.stringify({
         operation: 'NOT_IN',
-        value: ['succeeded', 'failed', 'cancelled', 'killed'],
+        value: ['succeeded', 'cancelled', 'killed'],
       })
     );
     return redirect(url.search);
