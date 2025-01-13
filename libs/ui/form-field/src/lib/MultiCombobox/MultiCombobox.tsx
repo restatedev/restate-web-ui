@@ -6,6 +6,7 @@ import {
   ComponentType,
   ReactNode,
   Fragment,
+  RefObject,
 } from 'react';
 import {
   ComboBox,
@@ -83,6 +84,7 @@ export interface MultiSelectProps<T extends object>
   MenuTrigger?: ComponentType<unknown>;
   label: string;
   placeholder?: string;
+  ref?: RefObject<HTMLInputElement | null>;
 }
 
 const multiSelectStyles = tv({
@@ -109,6 +111,7 @@ export function FormFieldMultiCombobox<
   children = DefaultTag,
   MenuTrigger = DefaultMenuTrigger,
   placeholder,
+  ref,
   ...props
 }: MultiSelectProps<T>) {
   const { contains } = useFilter({ sensitivity: 'base' });
@@ -261,6 +264,7 @@ export function FormFieldMultiCombobox<
           >
             <MenuTrigger />
             <AriaInput
+              ref={ref}
               className={inputStyles()}
               onBlur={() => {
                 setFieldState({

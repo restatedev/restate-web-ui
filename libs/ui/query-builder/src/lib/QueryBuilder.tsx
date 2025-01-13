@@ -4,7 +4,9 @@ import {
   PropsWithChildren,
   ReactNode,
   use,
+  useEffect,
   useMemo,
+  useRef,
 } from 'react';
 import { QueryClause, QueryClauseSchema, QueryClauseType } from './Query';
 import { FormFieldMultiCombobox } from '@restate/ui/form-field';
@@ -72,6 +74,33 @@ export function AddQueryTrigger({
     [schema]
   );
 
+  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    const input = inputRef.current;
+    const keyHandler = (event: KeyboardEvent) => {
+      if (
+        event.key !== '/' ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey ||
+        event.repeat
+      ) {
+        return;
+      }
+      if (
+        event.target instanceof HTMLElement &&
+        /^(?:input|textarea|select|button)$/i.test(event.target?.tagName)
+      )
+        return;
+      event.preventDefault();
+      input?.focus();
+    };
+    document.addEventListener('keydown', keyHandler);
+    return () => {
+      document.removeEventListener('keydown', keyHandler);
+    };
+  }, []);
+
   if (!query) {
     return null;
   }
@@ -85,6 +114,7 @@ export function AddQueryTrigger({
       placeholder={placeholder}
       className={className}
       MenuTrigger={MenuTrigger}
+      ref={inputRef}
     />
   );
 }
