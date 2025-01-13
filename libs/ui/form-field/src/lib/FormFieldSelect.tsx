@@ -68,7 +68,7 @@ export function FormFieldSelect({
           />
         </Button>
       </div>
-      <PopoverOverlay className="min-w-[--trigger-width] p-0 bg-gray-100/90">
+      <PopoverOverlay className="w-[--trigger-width] p-0 bg-gray-100/90">
         <ListBox className="rounded-xl m-0 border-none" selectable multiple>
           {children}
         </ListBox>
