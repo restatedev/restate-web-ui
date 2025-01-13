@@ -22,6 +22,26 @@ const styles = tv({
       true: '',
       false: 'opacity-70',
     },
+    isSelected: {
+      true: '',
+      false: '',
+    },
+  },
+  compoundVariants: [
+    { isMatching: false, isSelected: true, className: 'opacity-100' },
+  ],
+  defaultVariants: {
+    isMatching: true,
+  },
+});
+
+const serviceLinkStyles = tv({
+  base: "outline-offset-0 rounded-full before:absolute before:inset-0 before:content-[''] hover:before:bg-black/[0.03] pressed:before:bg-black/5",
+  variants: {
+    isMatching: {
+      true: 'before:rounded-t-[0.9rem]',
+      false: 'before:rounded-[0.9rem]',
+    },
   },
   defaultVariants: {
     isMatching: true,
@@ -29,12 +49,12 @@ const styles = tv({
 });
 
 const serviceStyles = tv({
-  base: 'w-full rounded-2xl border border-white/50 shadow-zinc-800/[0.03] transform transition',
+  base: 'w-full rounded-2xl border  shadow-zinc-800/[0.03] transform transition',
   variants: {
     isSelected: {
       true: 'bg-white shadow-md scale-105',
       false:
-        'bg-gradient-to-b to-gray-50/80 from-gray-50 shadow2-[inset_0_2px_0_0_rgba(255,255,255, 0.8)] shadow-sm scale-100',
+        'border-white/50 bg-gradient-to-b to-gray-50/80 from-gray-50 shadow2-[inset_0_2px_0_0_rgba(255,255,255, 0.8)] shadow-sm scale-100',
     },
   },
   defaultVariants: { isSelected: false },
@@ -118,7 +138,7 @@ export function Service({
     ) ?? [];
 
   return (
-    <div className={styles({ className, isMatching })}>
+    <div className={styles({ className, isMatching, isSelected })}>
       <div className={serviceStyles({ isSelected })}>
         <div className="relative p-2 w-full rounded-[calc(0.75rem-0.125rem)] flex items-center gap-2 flex-row text-sm">
           <div className="h-8 w-8 shrink-0">
@@ -138,7 +158,7 @@ export function Service({
               aria-label={serviceName}
               variant="secondary"
               href={`?${SERVICE_QUERY_PARAM}=${serviceName}`}
-              className="outline-offset-0 rounded-full before:absolute before:inset-0 before:content-[''] before:rounded-t-[0.9rem] hover:before:bg-black/[0.03] pressed:before:bg-black/5"
+              className={serviceLinkStyles({ isMatching })}
             >
               <Icon
                 name={IconName.ChevronRight}

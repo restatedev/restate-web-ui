@@ -18,7 +18,7 @@ const styles = tv({
   base: 'flex flex-row items-center gap-2 relative border -m-1 p-1 transition-all ease-in-out text-code',
   variants: {
     isSelected: {
-      true: 'bg-white shadow-sm rounded-lg border -mx-4 px-[1rem] z-10 font-medium',
+      true: 'bg-white shadow-sm shadow-zinc-800/[0.03] rounded-lg border -mx-[0.875rem] px-[0.875rem] z-10 font-medium',
       false: 'border-transparent',
     },
   },
