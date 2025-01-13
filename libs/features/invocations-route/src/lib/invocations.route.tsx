@@ -254,6 +254,7 @@ function Component() {
           searchParams.get(`filter_${schemaClause.id}`)!
         );
       })
+      .filter((clause) => clause.isValid)
       .map((clause) => {
         return {
           field: clause.id,
@@ -425,15 +426,17 @@ function Component() {
               return newSearchParams;
             });
             setQueryFilters(
-              query.items.map(
-                (clause) =>
-                  ({
-                    field: clause.id,
-                    operation: clause.value.operation!,
-                    type: clause.type,
-                    value: clause.value.value,
-                  } as FilterItem)
-              )
+              query.items
+                .filter((clause) => clause.isValid)
+                .map(
+                  (clause) =>
+                    ({
+                      field: clause.id,
+                      operation: clause.value.operation!,
+                      type: clause.type,
+                      value: clause.value.value,
+                    } as FilterItem)
+                )
             );
             await queryCLient.invalidateQueries({ queryKey });
           }}

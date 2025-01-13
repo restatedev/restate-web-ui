@@ -89,6 +89,10 @@ export class QueryClause<T extends QueryClauseType> {
     return this._options;
   }
 
+  get isValid() {
+    return !!this.value.value;
+  }
+
   constructor(
     public readonly schema: QueryClauseSchema<T>,
     public readonly value: {
@@ -104,6 +108,9 @@ export class QueryClause<T extends QueryClauseType> {
   }
 
   toString() {
+    if (!this.value.value) {
+      return undefined;
+    }
     return JSON.stringify(this.value);
   }
 
@@ -136,5 +143,5 @@ function getValue(type: QueryClauseType, value?: number | string | string[]) {
   ) {
     return value;
   }
-  throw new Error('Invalid value');
+  return undefined;
 }
