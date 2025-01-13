@@ -24,6 +24,7 @@ const QueryBuilderContext = createContext<{
   schema: [],
 });
 
+// TODO: update state if schema changes
 export function useQueryBuilder(
   initialClauses: QueryClause<QueryClauseType>[] = []
 ) {

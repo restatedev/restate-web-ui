@@ -200,6 +200,7 @@ export function useListServices(
           return result;
         }, new Map<string, Service>()),
         isPending: results.some((result) => result.isPending),
+        promise: Promise.all(results.map(({ promise }) => promise)),
       };
     },
   });

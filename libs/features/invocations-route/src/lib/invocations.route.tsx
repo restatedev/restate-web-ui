@@ -3,6 +3,7 @@ import {
   getEndpoint,
   useListDeployments,
   useListInvocations,
+  useListServices,
 } from '@restate/data-access/admin-api';
 import { Button, SubmitButton } from '@restate/ui/button';
 import {
@@ -60,7 +61,11 @@ const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
 };
 
 function Component() {
-  const { promise: listDeploymentPromise } = useListDeployments();
+  const { promise: listDeploymentPromise, data: listDeploymentsData } =
+    useListDeployments();
+  const { promise: listServicesPromise } = useListServices(
+    listDeploymentsData?.sortedServiceNames
+  );
   const [searchParams, setSearchParams] = useSearchParams();
   const schema = useMemo(() => {
     return [
@@ -114,6 +119,30 @@ function Component() {
         label: 'Service key',
         operations: [{ value: 'EQUALS', label: 'is' }],
         type: 'STRING',
+      },
+      {
+        id: 'target_handler_name',
+        label: 'Handler',
+        operations: [
+          { value: 'IN', label: 'is' },
+          { value: 'NOT_IN', label: 'is not' },
+        ],
+        type: 'STRING_LIST',
+        loadOptions: async () => {
+          return listServicesPromise.then(
+            (services) =>
+              services
+                .filter(Boolean)
+                .map((service) =>
+                  service!.handlers.map((handler) => handler.name)
+                )
+                .flat()
+                .map((name) => ({
+                  label: name,
+                  value: name,
+                })) ?? []
+          );
+        },
       },
       {
         id: 'target_service_ty',
@@ -211,7 +240,7 @@ function Component() {
         type: 'DATE',
       },
     ] satisfies QueryClauseSchema<QueryClauseType>[];
-  }, [listDeploymentPromise]);
+  }, [listDeploymentPromise, listServicesPromise]);
 
   const { selectedColumns, setSelectedColumns, sortedColumnsList } =
     useColumns();
