@@ -234,19 +234,12 @@ function Component() {
         } as FilterItem;
       })
   );
-  const {
-    refetch,
-    dataUpdatedAt,
-    error,
-    data,
-    isFetching,
-    isPending,
-    queryKey,
-  } = useListInvocations(queryFilters, {
-    refetchOnMount: false,
-    refetchOnReconnect: false,
-    staleTime: 0,
-  });
+  const { dataUpdatedAt, error, data, isFetching, isPending, queryKey } =
+    useListInvocations(queryFilters, {
+      refetchOnMount: true,
+      refetchOnReconnect: false,
+      staleTime: 0,
+    });
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>();
   const collator = useCollator();
 
