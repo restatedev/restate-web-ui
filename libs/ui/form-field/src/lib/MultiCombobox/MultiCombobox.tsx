@@ -276,6 +276,7 @@ export function FormFieldMultiCombobox<
               aria-describedby={tagGroupId}
               onKeyDownCapture={onKeyDownCapture}
               placeholder={placeholder}
+              type="search"
             />
           </div>
 

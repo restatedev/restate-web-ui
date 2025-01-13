@@ -71,14 +71,15 @@ export class QueryClause<T extends QueryClauseType> {
   get valueLabel() {
     const value = this.value.value;
     if (typeof value === 'number' || typeof value === 'string') {
-      return String(value);
+      const valueOption = this.options?.find((opt) => opt.value === value);
+      return valueOption?.label ?? String(value);
     }
     if (value instanceof Date) {
       return formatDateTime(value, 'system');
     }
     if (Array.isArray(value)) {
       return value
-        .map((v) => this._options?.find((opt) => opt.value === v)?.label ?? v)
+        .map((v) => this.options?.find((opt) => opt.value === v)?.label ?? v)
         .join(', ');
     }
     return '';
@@ -100,10 +101,12 @@ export class QueryClause<T extends QueryClauseType> {
       value?: QueryClauseValue<T>;
     } = { operation: schema.operations[0]?.value, value: undefined }
   ) {
-    this._options = this.schema.options;
+    this._options = schema.options;
     this.schema
       .loadOptions?.()
-      ?.then((opts) => (this._options = opts))
+      ?.then((opts) => {
+        this._options = opts;
+      })
       .catch(() => {});
   }
 

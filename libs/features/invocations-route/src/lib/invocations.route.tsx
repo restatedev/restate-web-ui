@@ -178,8 +178,18 @@ function Component() {
           ),
       },
       {
-        id: 'invoked_by_service_name',
+        id: 'invoked_by',
         label: 'Invoked by',
+        operations: [{ value: 'EQUALS', label: 'is' }],
+        type: 'STRING',
+        options: [
+          { value: 'service', label: 'Service' },
+          { value: 'ingress', label: 'Ingress' },
+        ],
+      },
+      {
+        id: 'invoked_by_service_name',
+        label: 'Invoked by service',
         operations: [
           { value: 'IN', label: 'is' },
           { value: 'NOT_IN', label: 'is not' },
@@ -195,17 +205,18 @@ function Component() {
           ),
       },
       {
-        id: 'idempotency_key',
-        label: 'Idempotency key',
-        operations: [{ value: 'EQUALS', label: 'is' }],
-        type: 'STRING',
-      },
-      {
         id: 'invoked_by_id',
         label: 'Invoked by id',
         operations: [{ value: 'EQUALS', label: 'is' }],
         type: 'STRING',
       },
+      {
+        id: 'idempotency_key',
+        label: 'Idempotency key',
+        operations: [{ value: 'EQUALS', label: 'is' }],
+        type: 'STRING',
+      },
+
       {
         id: 'retry_count',
         label: 'Attempt count',
@@ -446,7 +457,7 @@ function Component() {
               MenuTrigger={FiltersTrigger}
               placeholder="Filter invocations…"
               title="Filters"
-              className="rounded-xl has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500 [&_input]:placeholder-zinc-400 border-transparent pr-20  [&_input+*]:right-24 [&_input]:min-w-[10ch]"
+              className="rounded-xl [&_input::-webkit-search-cancel-button]:invert has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500 [&_input]:placeholder-zinc-400 border-transparent pr-20  [&_input+*]:right-24 [&_input]:min-w-[10ch]"
             >
               {ClauseChip}
             </AddQueryTrigger>

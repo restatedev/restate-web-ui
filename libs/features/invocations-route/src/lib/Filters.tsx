@@ -126,6 +126,7 @@ function ValueSelector({
   onUpdate?: (item: QueryClause<QueryClauseType>) => void;
 }) {
   if (clause.type === 'STRING_LIST') {
+    // TODO: redo passing options
     if (clause.options) {
       return (
         <DropdownMenu
@@ -133,10 +134,14 @@ function ValueSelector({
           multiple
           selectedItems={clause.value.value as string[]}
           onSelect={(values) => {
-            const newClause = new QueryClause(clause.schema, {
-              ...clause.value,
-              value: Array.from(values as Set<string>),
-            });
+            const newClause = new QueryClause(
+              { ...clause.schema, options: clause.options },
+              {
+                ...clause.value,
+                value: Array.from(values as Set<string>),
+              }
+            );
+
             onUpdate?.(newClause);
           }}
         >
@@ -154,6 +159,32 @@ function ValueSelector({
   }
 
   if (clause.type === 'STRING') {
+    if (clause.options) {
+      return (
+        <DropdownMenu
+          selectable
+          selectedItems={
+            typeof clause.value.value === 'string' ? [clause.value.value] : []
+          }
+          onSelect={(value) => {
+            const newClause = new QueryClause(clause.schema, {
+              ...clause.value,
+              value,
+            });
+            onUpdate?.(newClause);
+          }}
+        >
+          {clause.options?.map((opt) => (
+            <DropdownItem value={opt.value} key={opt.value}>
+              <div className="flex flex-col gap-0.5">
+                {opt.label}
+                <div className="text-xs opacity-80">{opt.description}</div>
+              </div>
+            </DropdownItem>
+          ))}
+        </DropdownMenu>
+      );
+    }
     return (
       <FormFieldInput
         label={clause.label}
