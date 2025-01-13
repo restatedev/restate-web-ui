@@ -18,13 +18,8 @@ import {
   QueryClauseOperationId,
   QueryClauseType,
 } from '@restate/ui/query-builder';
-import { PropsWithChildren, Suspense, use, useMemo } from 'react';
+import { PropsWithChildren, useMemo } from 'react';
 
-// TODO
-function ValueLabel({ promise }: { promise: Promise<string> }) {
-  const valueLabel = use(promise);
-  return valueLabel;
-}
 export function ClauseChip({
   item,
   onRemove,
@@ -46,11 +41,7 @@ export function ClauseChip({
             {segment}
           </span>
         ))}
-        <span className="font-semibold">
-          <Suspense fallback={item.valueLabel}>
-            <ValueLabel promise={item.valueLabelPromise} />
-          </Suspense>
-        </span>
+        <span className="font-semibold">{item.valueLabel}</span>
         <Icon name={IconName.ChevronsUpDown} className="w-3.5 h-3.5 ml-2" />
       </Button>
     </EditQueryTrigger>
@@ -136,9 +127,6 @@ function ValueSelector({
 }) {
   if (clause.type === 'STRING_LIST') {
     if (clause.options) {
-      const resolvedOptions =
-        'then' in clause.options ? use(clause.options) : clause.options;
-
       return (
         <DropdownMenu
           selectable
@@ -152,7 +140,7 @@ function ValueSelector({
             onUpdate?.(newClause);
           }}
         >
-          {resolvedOptions?.map((opt) => (
+          {clause.options?.map((opt) => (
             <DropdownItem value={opt.value} key={opt.value}>
               <div className="flex flex-col gap-0.5">
                 {opt.label}

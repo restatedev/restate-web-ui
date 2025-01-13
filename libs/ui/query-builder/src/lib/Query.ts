@@ -25,6 +25,7 @@ export interface QueryClauseSchema<T extends QueryClauseType> {
   operations: QueryClauseOperation[];
   type: T;
   loadOptions?: () => Promise<QueryClauseOption[]>;
+  options?: QueryClauseOption[];
 }
 type QueryClauseValue<T extends QueryClauseType> = T extends 'STRING'
   ? string
@@ -83,35 +84,9 @@ export class QueryClause<T extends QueryClauseType> {
     return '';
   }
 
-  get valueLabelPromise() {
-    const value = this.value.value;
-    if (typeof value === 'number' || typeof value === 'string') {
-      return Promise.resolve(String(value));
-    }
-    if (value instanceof Date) {
-      return Promise.resolve(formatDateTime(value, 'system'));
-    }
-    if (Array.isArray(value)) {
-      return (
-        Promise.resolve(this.options)?.then((options) => {
-          return value
-            .map((v) => options?.find((opt) => opt.value === v)?.label ?? v)
-            .join(', ');
-        }) ?? Promise.resolve('')
-      );
-    }
-    return Promise.resolve('');
-  }
-
   private _options?: QueryClauseOption[];
   get options() {
-    if (this._options) {
-      return this._options;
-    }
-    return this.schema.loadOptions?.().then((options) => {
-      this._options = options;
-      return options;
-    });
+    return this._options;
   }
 
   constructor(
@@ -120,7 +95,13 @@ export class QueryClause<T extends QueryClauseType> {
       operation?: QueryClauseOperationId;
       value?: QueryClauseValue<T>;
     } = { operation: schema.operations[0]?.value, value: undefined }
-  ) {}
+  ) {
+    this._options = this.schema.options;
+    this.schema
+      .loadOptions?.()
+      ?.then((opts) => (this._options = opts))
+      .catch(() => {});
+  }
 
   toString() {
     return JSON.stringify(this.value);

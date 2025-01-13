@@ -78,7 +78,7 @@ function Component() {
           { value: 'NOT_IN', label: 'is not' },
         ],
         type: 'STRING_LIST',
-        loadOptions: async () => [
+        options: [
           { value: 'scheduled', label: 'Scheduled' },
           { value: 'pending', label: 'Pending' },
           { value: 'ready', label: 'Ready' },
@@ -123,7 +123,7 @@ function Component() {
           { value: 'NOT_IN', label: 'is not' },
         ],
         type: 'STRING_LIST',
-        loadOptions: async () => [
+        options: [
           { value: 'service', label: 'Service' },
           { value: 'virtual_object', label: 'Virtual Object' },
           { value: 'workflow', label: 'Workflow' },
