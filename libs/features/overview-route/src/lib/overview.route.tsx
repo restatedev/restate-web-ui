@@ -1,7 +1,4 @@
-import {
-  getEndpoint,
-  useListDeployments,
-} from '@restate/data-access/admin-api';
+import { useListDeployments } from '@restate/data-access/admin-api';
 import { RestateServer } from './RestateServer';
 import { tv } from 'tailwind-variants';
 import { TriggerRegisterDeploymentDialog } from './RegisterDeployment/Dialog';
@@ -11,7 +8,7 @@ import {
 } from '@restate/features/explainers';
 import { Service } from './Service';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
-import { useId, useLayoutEffect, useMemo, useState } from 'react';
+import { useDeferredValue, useId, useLayoutEffect, useState } from 'react';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import { FormFieldInput } from '@restate/ui/form-field';
 
@@ -24,14 +21,14 @@ function MultipleDeploymentsPlaceholder({
 }) {
   return (
     <LayoutOutlet zone={LayoutZone.Toolbar}>
-      <div className="p-1 flex items-center has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500">
-        <div className="h-7 items-stretch flex gap-3">
+      <div className="p-0.5 flex items-center rounded-xl border-transparent ring-1 ring-transparent border has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500">
+        <div className="items-center flex gap-3 p-px">
           <FormFieldInput
             type="search"
             value={filterText}
             onChange={onFilter}
-            placeholder="Filter services and deployments…"
-            className="w-[30ch] [&_input]:py2-0 [&>*]:min-h-0 [&>*]:h-full [&_input]:h-full [&_input[data-focused=true]]:outline-0  [&_input]:placeholder-zinc-400 [&_input[data-focused=true]]:border-transparent [&_input]:text-current [&_input]:border-transparent [&_input]:bg-transparent shadow-none"
+            placeholder="Filter services, or deployments…"
+            className="w-[30ch] [&>*]:min-h-0 [&>*]:h-6  [&_input]:border-0 [&_input]:h-full [&_input[data-focused=true]]:outline-0  [&_input]:placeholder-zinc-400 [&_input[data-focused=true]]:border-transparent [&_input]:text-current [&_input]:border-transparent [&_input]:bg-transparent shadow-none"
           />
           <TriggerRegisterDeploymentDialog
             variant="button"
@@ -129,37 +126,13 @@ function Component() {
     isPending,
     isSuccess,
   } = useListDeployments();
+
   const size = services ? services.size : 0;
-  const isEmpty = isSuccess && (!deployments || deployments.size === 0);
   const [isScrolling, setIsScrolling] = useState(false);
   const masonryId = useId();
 
   const [filter, setFilter] = useState('');
-
-  const filteredSortedServiceNames = useMemo(() => {
-    if (!filter) {
-      return sortedServiceNames;
-    } else {
-      return sortedServiceNames
-        ?.map((name) => {
-          const service = services?.get(name);
-          const searchValues = Array.from(
-            new Set(Object.values(service?.deployments ?? {}).flat())
-          )
-            .map((id) => deployments?.get(id))
-            .map((deployment) => [getEndpoint(deployment)])
-            .flat();
-
-          return { name, searchValues: [name, ...searchValues] };
-        })
-        .filter(({ searchValues }) =>
-          searchValues.some((value) =>
-            value?.toLowerCase().includes(filter.toLowerCase())
-          )
-        )
-        .map(({ name }) => name);
-    }
-  }, [deployments, filter, services, sortedServiceNames]);
+  const filterQuery = useDeferredValue(filter);
 
   useLayoutEffect(() => {
     let isCanceled = false;
@@ -185,6 +158,7 @@ function Component() {
       resizeObserver.unobserve(document.body);
     };
   }, [masonryId, sortedServiceNames]);
+  const isEmpty = isSuccess && (!deployments || deployments.size === 0);
 
   // TODO: Handle isLoading & isError
 
@@ -199,11 +173,12 @@ function Component() {
           style={{ gap: 'calc(8rem + 150px)' }}
           className={layoutStyles({ isScrolling, className: masonryId })}
         >
-          {filteredSortedServiceNames?.map((serviceName, i) => (
+          {sortedServiceNames?.map((serviceName) => (
             <Service
               key={serviceName}
               serviceName={serviceName}
               className="max-w-lg"
+              filterText={filterQuery}
             />
           ))}
           {size === 1 && <OneDeploymentPlaceholder />}
