@@ -8,7 +8,14 @@ import {
 } from '@restate/features/explainers';
 import { Service } from './Service';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
-import { useDeferredValue, useId, useLayoutEffect, useState } from 'react';
+import {
+  useDeferredValue,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import { FormFieldInput } from '@restate/ui/form-field';
 
@@ -19,20 +26,49 @@ function MultipleDeploymentsPlaceholder({
   filterText: string;
   onFilter: (filterText: string) => void;
 }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    const input = inputRef.current;
+    const keyHandler = (event: KeyboardEvent) => {
+      if (
+        event.key !== '/' ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey ||
+        event.repeat
+      ) {
+        return;
+      }
+      if (
+        event.target instanceof HTMLElement &&
+        /^(?:input|textarea|select|button)$/i.test(event.target?.tagName)
+      )
+        return;
+      event.preventDefault();
+      input?.focus();
+    };
+    document.addEventListener('keydown', keyHandler);
+    return () => {
+      document.removeEventListener('keydown', keyHandler);
+    };
+  }, []);
+
   return (
     <LayoutOutlet zone={LayoutZone.Toolbar}>
       <div className="p-0.5 flex items-center rounded-xl border-transparent ring-1 ring-transparent border has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500">
-        <div className="items-center flex gap-3 p-px">
+        <div className="items-center flex gap-0 p-px w-full">
+          <div className="bg-zinc-600 text-zinc-400 px-2 rounded ml-2">/</div>
           <FormFieldInput
+            ref={inputRef}
             type="search"
             value={filterText}
             onChange={onFilter}
-            placeholder="Filter services, or deployments…"
-            className="w-[30ch] [&>*]:min-h-0 [&>*]:h-6  [&_input]:border-0 [&_input]:h-full [&_input[data-focused=true]]:outline-0  [&_input]:placeholder-zinc-400 [&_input[data-focused=true]]:border-transparent [&_input]:text-current [&_input]:border-transparent [&_input]:bg-transparent shadow-none"
+            placeholder="Filter services, handlers, or deployments…"
+            className="min-w-0 w-[40ch] [&>*]:min-h-0 [&>*]:h-6 [&_input]:border-0 [&_input]:h-full [&_input[data-focused=true]]:outline-0  [&_input]:placeholder-zinc-400 [&_input[data-focused=true]]:border-transparent [&_input]:text-current [&_input]:border-transparent [&_input]:bg-transparent shadow-none"
           />
           <TriggerRegisterDeploymentDialog
             variant="button"
-            className="py-0 h-7 rounded-lg"
+            className="py-0 h-7 rounded-lg ml-auto"
           >
             Deployment
           </TriggerRegisterDeploymentDialog>

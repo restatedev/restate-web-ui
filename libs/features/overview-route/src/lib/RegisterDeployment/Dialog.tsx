@@ -112,7 +112,7 @@ export function TriggerRegisterDeploymentDialog({
           className={triggerStyles({ className })}
           href={`?${REGISTER_DEPLOYMENT_QUERY}=true`}
         >
-          <Icon name={IconName.Plus} />
+          <Icon name={IconName.Plus} className="w-4 h-4" />
           {children}
         </Link>
       </DialogTrigger>
