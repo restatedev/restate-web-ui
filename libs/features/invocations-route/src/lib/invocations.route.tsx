@@ -202,8 +202,8 @@ function Component() {
         type: 'DATE',
       },
       {
-        id: 'last_start_at',
-        label: 'Last started',
+        id: 'modified_at',
+        label: 'Modified',
         operations: [
           { value: 'BEFORE', label: 'before' },
           { value: 'AFTER', label: 'after' },
