@@ -64,7 +64,7 @@ function MultipleDeploymentsPlaceholder({
             value={filterText}
             onChange={onFilter}
             placeholder="Filter services, handlers, or deployments…"
-            className="min-w-0 w-[40ch] [&>*]:min-h-0 [&>*]:h-6 [&_input]:border-0 [&_input]:h-full [&_input[data-focused=true]]:outline-0  [&_input]:placeholder-zinc-400 [&_input[data-focused=true]]:border-transparent [&_input]:text-current [&_input]:border-transparent [&_input]:bg-transparent shadow-none"
+            className="[&_input::-webkit-search-cancel-button]:invert min-w-0 w-[40ch] [&>*]:min-h-0 [&>*]:h-6 [&_input]:border-0 [&_input]:h-full [&_input[data-focused=true]]:outline-0  [&_input]:placeholder-zinc-400 [&_input[data-focused=true]]:border-transparent [&_input]:text-current [&_input]:border-transparent [&_input]:bg-transparent shadow-none"
           />
           <TriggerRegisterDeploymentDialog
             variant="button"
@@ -193,7 +193,7 @@ function Component() {
       isCanceled = true;
       resizeObserver.unobserve(document.body);
     };
-  }, [masonryId, sortedServiceNames]);
+  }, [masonryId, sortedServiceNames, filterQuery]);
   const isEmpty = isSuccess && (!deployments || deployments.size === 0);
 
   // TODO: Handle isLoading & isError
