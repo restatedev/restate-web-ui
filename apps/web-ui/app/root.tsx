@@ -5,6 +5,7 @@ import {
   Path,
   Scripts,
   ScrollRestoration,
+  useHref,
   useNavigate,
 } from 'react-router';
 import styles from './tailwind.css?url';
@@ -90,7 +91,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body className="h-full font-sans">
-        <RouterProvider navigate={navigate}>
+        <RouterProvider navigate={navigate} useHref={useHref}>
           <LayoutProvider>{children}</LayoutProvider>
         </RouterProvider>
         <ScrollRestoration />
