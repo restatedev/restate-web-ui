@@ -32,6 +32,8 @@ export function ClauseChip({
   return (
     <EditQueryTrigger clause={item} onRemove={onRemove} onUpdate={onUpdate}>
       <Button
+        data-filter-id={item.id}
+        autoFocus={item.isNew}
         variant="secondary"
         className="inline-flex gap-[0.7ch] items-center py-1 rounded-lg bg-white/[0.25] hover:bg-white/30 pressed:bg-white/30 text-zinc-50 text-xs px-1.5"
       >
@@ -72,7 +74,21 @@ function EditQueryTrigger({
     : `${clause.schema.label} ${clause.operationLabel}`;
 
   return (
-    <Dropdown defaultOpen={!clause.value.value}>
+    <Dropdown
+      defaultOpen={clause.isNew}
+      onOpenChange={(isOpen) => {
+        // TODO: refactor focus
+        if (!isOpen && clause.isNew) {
+          clause.isNew = false;
+          const el = document.querySelector(`[data-filter-id=${clause.id}]`);
+          if (el instanceof HTMLElement) {
+            setTimeout(() => {
+              el.focus();
+            }, 0);
+          }
+        }
+      }}
+    >
       <DropdownTrigger>{children}</DropdownTrigger>
       <DropdownPopover placement="top">
         <DropdownSection title={title}>
@@ -81,6 +97,7 @@ function EditQueryTrigger({
               selectable
               multiple
               selectedItems={selectedOperations}
+              autoFocus={false}
               onSelect={(operations) => {
                 const newClause = new QueryClause(clause.schema, {
                   ...clause.value,
@@ -88,6 +105,8 @@ function EditQueryTrigger({
                     -1
                   ) as QueryClauseOperationId,
                 });
+                newClause.isNew = clause.isNew;
+
                 onUpdate?.(newClause);
               }}
             >
@@ -110,7 +129,7 @@ function EditQueryTrigger({
             only for the service's specified retention period.
           </p>
         )}
-        <DropdownMenu onSelect={onRemove}>
+        <DropdownMenu onSelect={onRemove} autoFocus={false}>
           <DropdownItem destructive>Remove</DropdownItem>
         </DropdownMenu>
       </DropdownPopover>
@@ -130,6 +149,7 @@ function ValueSelector({
     if (clause.options) {
       return (
         <DropdownMenu
+          autoFocus
           selectable
           multiple
           selectedItems={clause.value.value as string[]}
@@ -141,9 +161,11 @@ function ValueSelector({
                 value: Array.from(values as Set<string>),
               }
             );
+            newClause.isNew = clause.isNew;
 
             onUpdate?.(newClause);
           }}
+          className="max-h-96"
         >
           {clause.options?.map((opt) => (
             <DropdownItem value={opt.value} key={opt.value}>
@@ -162,6 +184,7 @@ function ValueSelector({
     if (clause.options) {
       return (
         <DropdownMenu
+          autoFocus
           selectable
           selectedItems={
             typeof clause.value.value === 'string' ? [clause.value.value] : []
@@ -171,6 +194,8 @@ function ValueSelector({
               ...clause.value,
               value,
             });
+            newClause.isNew = clause.isNew;
+
             onUpdate?.(newClause);
           }}
         >
@@ -187,6 +212,7 @@ function ValueSelector({
     }
     return (
       <FormFieldInput
+        autoFocus
         label={clause.label}
         placeholder={clause.label}
         value={clause.value.value as string}
@@ -195,6 +221,8 @@ function ValueSelector({
             ...clause.value,
             value,
           });
+          newClause.isNew = clause.isNew;
+
           onUpdate?.(newClause);
         }}
         className="m-1 [&_label]:hidden"
@@ -205,6 +233,7 @@ function ValueSelector({
   if (clause.type === 'NUMBER') {
     return (
       <FormFieldNumberInput
+        autoFocus
         label={clause.label}
         placeholder={clause.label}
         value={clause.value.value as number}
@@ -213,6 +242,8 @@ function ValueSelector({
             ...clause.value,
             value,
           });
+          newClause.isNew = clause.isNew;
+
           onUpdate?.(newClause);
         }}
         className="m-1 [&_label]:hidden"
@@ -232,11 +263,13 @@ function ValueSelector({
               ...clause.value,
               value: value ? new Date(value) : undefined,
             });
+            newClause.isNew = clause.isNew;
             onUpdate?.(newClause);
           }}
           className="m-1"
         />
         <DropdownMenu
+          autoFocus
           onSelect={(value) => {
             const multiplier: Record<string, number> = {
               '1m': 1,
@@ -249,6 +282,8 @@ function ValueSelector({
                 ? new Date(Date.now() - 60 * 1000 * (multiplier[value] ?? 1))
                 : undefined,
             });
+            newClause.isNew = clause.isNew;
+
             onUpdate?.(newClause);
           }}
         >
@@ -264,14 +299,8 @@ function ValueSelector({
 
 export function FiltersTrigger() {
   return (
-    <Button
-      variant="icon"
-      className="rounded-lg p-1 outline-offset-0 hover:bg-white/10 pressed:bg-white/15"
-    >
-      <Icon
-        name={IconName.Plus}
-        className="w-[1.25em] h-[1.25em] text-zinc-400"
-      />
-    </Button>
+    <div className="bg-zinc-600 text-zinc-400 px-1.5 rounded ml-1 mr-1 text-sm">
+      /
+    </div>
   );
 }

@@ -7,6 +7,7 @@ import {
   ReactNode,
   Fragment,
   RefObject,
+  PropsWithChildren,
 } from 'react';
 import {
   ComboBox,
@@ -14,9 +15,10 @@ import {
   Key,
   Input as AriaInput,
   Label,
+  InputProps,
 } from 'react-aria-components';
 import { useListData, ListData } from 'react-stately';
-import { useFilter } from 'react-aria';
+import { FocusScope, useFilter, useFocusManager } from 'react-aria';
 import { ListBox, ListBoxItem, ListBoxSection } from '@restate/ui/listbox';
 import { LabeledGroup } from './LabeledGroup';
 import { tv } from 'tailwind-variants';
@@ -46,14 +48,7 @@ function DefaultTag<
 }
 
 function DefaultMenuTrigger() {
-  return (
-    <Button variant="secondary" className="rounded-lg p-1 outline-offset-0">
-      <Icon
-        name={IconName.ChevronsUpDown}
-        className="w-[1.25em] h-[1.25em] text-gray-500"
-      />
-    </Button>
-  );
+  return null;
 }
 
 export interface MultiSelectProps<T extends object>
@@ -226,22 +221,25 @@ export function FormFieldMultiCombobox<
   const labelId = useId();
 
   return (
-    <>
+    <FocusScope>
       <LabeledGroup id={labelId} className={multiSelectStyles({ className })}>
         <Label className="sr-only">{label}</Label>
 
         <div
-          className="hidden gap-1 flex-wrap px-1 py-1 has-[>*]:flex"
+          className="hidden gap-1.5 flex-wrap px-1 py-1 has-[>*]:flex"
           id={tagGroupId}
         >
           {selectedList.items.map((item) => (
-            <Fragment key={item.id}>
+            <TagFocusManager
+              key={item.id}
+              onRemove={onRemove.bind(null, item.id)}
+            >
               {children({
                 item,
                 onRemove: onRemove.bind(null, item.id),
                 onUpdate,
               })}
-            </Fragment>
+            </TagFocusManager>
           ))}
         </div>
 
@@ -263,7 +261,7 @@ export function FormFieldMultiCombobox<
             )}
           >
             <MenuTrigger />
-            <AriaInput
+            <InputWithFocusManager
               ref={ref}
               className={inputStyles()}
               onBlur={() => {
@@ -307,6 +305,69 @@ export function FormFieldMultiCombobox<
           ))}
         </>
       )}
-    </>
+    </FocusScope>
   );
+}
+
+function TagFocusManager({
+  children,
+  onRemove,
+}: PropsWithChildren<{ onRemove?: VoidFunction }>) {
+  const focusManager = useFocusManager();
+  const onKeyDown = (e: KeyboardEvent) => {
+    switch (e.key) {
+      case 'Backspace':
+        onRemove?.();
+        break;
+      case 'ArrowRight':
+        focusManager?.focusNext({ wrap: true });
+        break;
+      case 'ArrowLeft':
+        focusManager?.focusPrevious({ wrap: true });
+        break;
+    }
+  };
+
+  return (
+    <div className="contents" onKeyDown={onKeyDown}>
+      {children}
+    </div>
+  );
+}
+
+function InputWithFocusManager({
+  onKeyDownCapture,
+  ...props
+}: Pick<
+  InputProps,
+  'onBlur' | 'className' | 'onKeyDownCapture' | 'placeholder' | 'type'
+> & { ref?: RefObject<HTMLInputElement | null> }) {
+  const focusManager = useFocusManager();
+
+  const onKeyDownCaptureInner = useCallback(
+    (e: KeyboardEvent<HTMLInputElement>) => {
+      onKeyDownCapture?.(e);
+
+      switch (e.key) {
+        case 'ArrowRight':
+          if (
+            e.currentTarget.selectionStart === e.currentTarget.value.length &&
+            e.currentTarget.selectionEnd === e.currentTarget.value.length
+          ) {
+            focusManager?.focusNext({ wrap: true });
+          }
+          break;
+        case 'ArrowLeft':
+          if (
+            e.currentTarget.selectionStart === 0 &&
+            e.currentTarget.selectionEnd === 0
+          ) {
+            focusManager?.focusPrevious({ wrap: true });
+          }
+          break;
+      }
+    },
+    [focusManager, onKeyDownCapture]
+  );
+  return <AriaInput {...props} onKeyDownCapture={onKeyDownCaptureInner} />;
 }

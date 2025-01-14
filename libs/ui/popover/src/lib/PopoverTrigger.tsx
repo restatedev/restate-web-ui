@@ -12,7 +12,9 @@ export function PopoverTrigger({
   return children;
 }
 
-function getTriggerElement(context: ContextValue<PopoverProps, HTMLElement>) {
+export function getTriggerElement(
+  context: ContextValue<PopoverProps, HTMLElement>
+) {
   if (
     context &&
     'triggerRef' in context &&

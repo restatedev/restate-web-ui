@@ -10,7 +10,7 @@ import {
 } from 'react';
 import { QueryClause, QueryClauseSchema, QueryClauseType } from './Query';
 import { FormFieldMultiCombobox } from '@restate/ui/form-field';
-import { ListData, useListData } from 'react-stately';
+import { Key, ListData, useListData } from 'react-stately';
 
 interface QueryBuilderProps {
   schema: QueryClauseSchema<QueryClauseType>[];
@@ -105,7 +105,6 @@ export function AddQueryTrigger({
   if (!query) {
     return null;
   }
-
   return (
     <FormFieldMultiCombobox<QueryClause<QueryClauseType>>
       selectedList={query}
@@ -116,6 +115,18 @@ export function AddQueryTrigger({
       className={className}
       MenuTrigger={MenuTrigger}
       ref={inputRef}
+      onItemAdd={(key) => {
+        const item = items.find((i) => i.id === key);
+        if (item) {
+          item.isNew = true;
+        }
+      }}
+      onItemRemove={(key) => {
+        const item = items.find((i) => i.id === key);
+        if (item) {
+          item.isNew = false;
+        }
+      }}
     />
   );
 }

@@ -68,6 +68,9 @@ function Component() {
   );
   const [searchParams, setSearchParams] = useSearchParams();
   const schema = useMemo(() => {
+    const serviceNamesPromise = listDeploymentPromise.then((results) =>
+      [...(results?.sortedServiceNames ?? [])].sort()
+    );
     return [
       {
         id: 'id',
@@ -105,9 +108,9 @@ function Component() {
         ],
         type: 'STRING_LIST',
         loadOptions: async () =>
-          listDeploymentPromise.then((results) => {
+          serviceNamesPromise.then((results) => {
             return (
-              results?.sortedServiceNames.map((name) => ({
+              results.map((name) => ({
                 label: name,
                 value: name,
               })) ?? []
@@ -131,12 +134,17 @@ function Component() {
         loadOptions: async () => {
           return listServicesPromise.then(
             (services) =>
-              services
-                .filter(Boolean)
-                .map((service) =>
-                  service!.handlers.map((handler) => handler.name)
-                )
-                .flat()
+              Array.from(
+                new Set(
+                  services
+                    .filter(Boolean)
+                    .map((service) =>
+                      service!.handlers.map((handler) => handler.name)
+                    )
+                    .flat()
+                ).values()
+              )
+                .sort()
                 .map((name) => ({
                   label: name,
                   value: name,
@@ -196,12 +204,11 @@ function Component() {
         ],
         type: 'STRING_LIST',
         loadOptions: async () =>
-          listDeploymentPromise.then(
-            (results) =>
-              results?.sortedServiceNames.map((name) => ({
-                label: name,
-                value: name,
-              })) ?? []
+          serviceNamesPromise.then((results) =>
+            results.map((name) => ({
+              label: name,
+              value: name,
+            }))
           ),
       },
       {
@@ -431,9 +438,11 @@ function Component() {
               Array.from(newSearchParams.keys())
                 .filter((key) => key.startsWith('filter_'))
                 .forEach((key) => newSearchParams.delete(key));
-              query.items.forEach((item) => {
-                newSearchParams.set(`filter_${item.id}`, String(item));
-              });
+              query.items
+                .filter((clause) => clause.isValid)
+                .forEach((item) => {
+                  newSearchParams.set(`filter_${item.id}`, String(item));
+                });
               return newSearchParams;
             });
             setQueryFilters(

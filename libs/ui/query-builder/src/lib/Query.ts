@@ -94,6 +94,8 @@ export class QueryClause<T extends QueryClauseType> {
     return !!this.value.value;
   }
 
+  public isNew = false;
+
   constructor(
     public readonly schema: QueryClauseSchema<T>,
     public readonly value: {
@@ -118,14 +120,18 @@ export class QueryClause<T extends QueryClauseType> {
   }
 
   static fromJSON(schema: QueryClauseSchema<QueryClauseType>, value: string) {
-    const parsedValue = JSON.parse(value) as {
-      operation?: QueryClauseOperationId;
-      value?: number | string | string[];
-    };
-    return new QueryClause(schema, {
-      operation: parsedValue.operation,
-      value: getValue(schema.type, parsedValue.value),
-    });
+    try {
+      const parsedValue = JSON.parse(value) as {
+        operation?: QueryClauseOperationId;
+        value?: number | string | string[];
+      };
+      return new QueryClause(schema, {
+        operation: parsedValue.operation,
+        value: getValue(schema.type, parsedValue.value),
+      });
+    } catch (error) {
+      return new QueryClause(schema);
+    }
   }
 }
 
