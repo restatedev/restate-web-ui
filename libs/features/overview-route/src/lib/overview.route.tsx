@@ -57,9 +57,9 @@ function MultipleDeploymentsPlaceholder({
     <LayoutOutlet zone={LayoutZone.Toolbar}>
       <div className="p-0.5 flex items-center rounded-xl border-transparent ring-1 ring-transparent border has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500">
         <div className="items-center flex gap-0 p-px w-full">
-          <div className="bg-zinc-600 text-zinc-400 px-1.5 rounded ml-2 text-sm">
+          <kbd className="bg-zinc-600 text-zinc-400 px-1.5 rounded ml-2 text-sm">
             /
-          </div>
+          </kbd>
           <FormFieldInput
             ref={inputRef}
             type="search"

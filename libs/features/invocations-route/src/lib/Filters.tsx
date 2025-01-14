@@ -299,8 +299,8 @@ function ValueSelector({
 
 export function FiltersTrigger() {
   return (
-    <div className="bg-zinc-600 text-zinc-400 px-1.5 rounded ml-1 mr-1 text-sm">
+    <kbd className="bg-zinc-600 text-zinc-400 px-1.5 rounded ml-1 mr-1 text-sm">
       /
-    </div>
+    </kbd>
   );
 }
