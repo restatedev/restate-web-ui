@@ -19,7 +19,7 @@ import {
   QueryClauseType,
   useNewQueryId,
 } from '@restate/ui/query-builder';
-import { PropsWithChildren, useMemo } from 'react';
+import { PropsWithChildren, useEffect, useMemo, useState } from 'react';
 
 export function ClauseChip({
   item,
@@ -30,9 +30,17 @@ export function ClauseChip({
   onRemove?: VoidFunction;
   onUpdate?: (item: QueryClause<QueryClauseType>) => void;
 }) {
+  const isNew = useNewQueryId() === item.id;
+
   return (
-    <EditQueryTrigger clause={item} onRemove={onRemove} onUpdate={onUpdate}>
+    <EditQueryTrigger
+      clause={item}
+      onRemove={onRemove}
+      onUpdate={onUpdate}
+      isNew={isNew}
+    >
       <Button
+        autoFocus={isNew}
         data-filter-id={item.id}
         variant="secondary"
         className="inline-flex gap-[0.7ch] items-center py-1 rounded-lg bg-white/[0.25] hover:bg-white/30 pressed:bg-white/30 text-zinc-50 text-xs px-1.5"
@@ -55,16 +63,24 @@ function EditQueryTrigger({
   onRemove,
   onUpdate,
   clause,
+  isNew,
 }: PropsWithChildren<{
   clause: QueryClause<QueryClauseType>;
   onRemove?: VoidFunction;
   onUpdate?: (item: QueryClause<QueryClauseType>) => void;
+  isNew?: boolean;
 }>) {
   const selectedOperations = useMemo(
     () => (clause.value.operation ? [clause.value.operation] : []),
     [clause.value.operation]
   );
-  const isNew = useNewQueryId() === clause.id;
+
+  const [isOpen, setIsOpen] = useState(false);
+  useEffect(() => {
+    if (isNew) {
+      setIsOpen(true);
+    }
+  }, [isNew]);
 
   if (!clause) {
     return null;
@@ -75,20 +91,7 @@ function EditQueryTrigger({
     : `${clause.schema.label} ${clause.operationLabel}`;
 
   return (
-    <Dropdown
-      defaultOpen={isNew}
-      onOpenChange={(isOpen) => {
-        // TODO: refactor focus
-        if (!isOpen && isNew) {
-          const el = document.querySelector(`[data-filter-id=${clause.id}]`);
-          if (el instanceof HTMLElement) {
-            setTimeout(() => {
-              el.focus();
-            }, 0);
-          }
-        }
-      }}
-    >
+    <Dropdown isOpen={isOpen} onOpenChange={setIsOpen}>
       <DropdownTrigger>{children}</DropdownTrigger>
       <DropdownPopover placement="top">
         <DropdownSection title={title}>
