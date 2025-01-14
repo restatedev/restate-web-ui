@@ -94,8 +94,6 @@ export class QueryClause<T extends QueryClauseType> {
     return !!this.value.value;
   }
 
-  public isNew = false;
-
   constructor(
     public readonly schema: QueryClauseSchema<T>,
     public readonly value: {

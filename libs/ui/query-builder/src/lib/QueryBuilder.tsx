@@ -4,9 +4,11 @@ import {
   PropsWithChildren,
   ReactNode,
   use,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
+  useState,
 } from 'react';
 import { QueryClause, QueryClauseSchema, QueryClauseType } from './Query';
 import { FormFieldMultiCombobox } from '@restate/ui/form-field';
@@ -20,6 +22,8 @@ interface QueryBuilderProps {
 const QueryBuilderContext = createContext<{
   query?: ListData<QueryClause<QueryClauseType>>;
   schema: QueryClauseSchema<QueryClauseType>[];
+  newId?: string;
+  setNewId?: (id?: string) => void;
 }>({
   schema: [],
 });
@@ -40,11 +44,15 @@ export function QueryBuilder({
   query,
   children,
 }: PropsWithChildren<QueryBuilderProps>) {
+  const [newId, setNewId] = useState<string>();
+
   return (
     <QueryBuilderContext.Provider
       value={{
         schema,
         query,
+        newId,
+        setNewId,
       }}
     >
       {children}
@@ -69,11 +77,10 @@ export function AddQueryTrigger({
   className?: string;
   MenuTrigger?: ComponentType<unknown>;
 }) {
-  const { query, schema } = use(QueryBuilderContext);
-  const items = useMemo(
-    () => schema.map((clauseSchema) => new QueryClause(clauseSchema)),
-    [schema]
-  );
+  const { query, schema, setNewId } = use(QueryBuilderContext);
+  const items = useMemo(() => {
+    return schema.map((clauseSchema) => new QueryClause(clauseSchema));
+  }, [schema]);
 
   const inputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
@@ -90,7 +97,9 @@ export function AddQueryTrigger({
       }
       if (
         event.target instanceof HTMLElement &&
-        /^(?:input|textarea|select|button)$/i.test(event.target?.tagName)
+        (/^(?:input|textarea|select|button)$/i.test(event.target?.tagName) ||
+          event.target.closest('[role=listbox]') ||
+          event.target.closest('[role=dialog]'))
       )
         return;
       event.preventDefault();
@@ -101,6 +110,19 @@ export function AddQueryTrigger({
       document.removeEventListener('keydown', keyHandler);
     };
   }, []);
+
+  const onAdd = useCallback(
+    (key: Key) => {
+      setNewId?.(String(key));
+    },
+    [setNewId]
+  );
+  const onRemove = useCallback(
+    (key: Key) => {
+      setNewId?.(undefined);
+    },
+    [setNewId]
+  );
 
   if (!query) {
     return null;
@@ -115,18 +137,14 @@ export function AddQueryTrigger({
       className={className}
       MenuTrigger={MenuTrigger}
       ref={inputRef}
-      onItemAdd={(key) => {
-        const item = items.find((i) => i.id === key);
-        if (item) {
-          item.isNew = true;
-        }
-      }}
-      onItemRemove={(key) => {
-        const item = items.find((i) => i.id === key);
-        if (item) {
-          item.isNew = false;
-        }
-      }}
+      onItemAdd={onAdd}
+      onItemRemove={onRemove}
+      onItemUpdated={onRemove}
     />
   );
+}
+
+export function useNewQueryId() {
+  const { newId } = use(QueryBuilderContext);
+  return newId;
 }

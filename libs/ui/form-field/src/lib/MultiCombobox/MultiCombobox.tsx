@@ -70,6 +70,7 @@ export interface MultiSelectProps<T extends object>
   className?: string;
   onItemAdd?: (key: Key) => void;
   onItemRemove?: (key: Key) => void;
+  onItemUpdated?: (key: Key) => void;
   renderEmptyState?: (inputValue: string) => React.ReactNode;
   children?: (props: {
     item: T;
@@ -100,6 +101,7 @@ export function FormFieldMultiCombobox<
   selectedList,
   onItemRemove,
   onItemAdd,
+  onItemUpdated,
   className,
   name,
   renderEmptyState,
@@ -154,8 +156,9 @@ export function FormFieldMultiCombobox<
         inputValue: '',
         selectedKey: null,
       });
+      onItemUpdated?.(newValue.id);
     },
-    [selectedList]
+    [onItemUpdated, selectedList]
   );
 
   const onSelectionChange = (id: Key | null) => {

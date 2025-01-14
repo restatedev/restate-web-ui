@@ -17,6 +17,7 @@ import {
   QueryClause,
   QueryClauseOperationId,
   QueryClauseType,
+  useNewQueryId,
 } from '@restate/ui/query-builder';
 import { PropsWithChildren, useMemo } from 'react';
 
@@ -33,7 +34,6 @@ export function ClauseChip({
     <EditQueryTrigger clause={item} onRemove={onRemove} onUpdate={onUpdate}>
       <Button
         data-filter-id={item.id}
-        autoFocus={item.isNew}
         variant="secondary"
         className="inline-flex gap-[0.7ch] items-center py-1 rounded-lg bg-white/[0.25] hover:bg-white/30 pressed:bg-white/30 text-zinc-50 text-xs px-1.5"
       >
@@ -64,6 +64,7 @@ function EditQueryTrigger({
     () => (clause.value.operation ? [clause.value.operation] : []),
     [clause.value.operation]
   );
+  const isNew = useNewQueryId() === clause.id;
 
   if (!clause) {
     return null;
@@ -75,11 +76,10 @@ function EditQueryTrigger({
 
   return (
     <Dropdown
-      defaultOpen={clause.isNew}
+      defaultOpen={isNew}
       onOpenChange={(isOpen) => {
         // TODO: refactor focus
-        if (!isOpen && clause.isNew) {
-          clause.isNew = false;
+        if (!isOpen && isNew) {
           const el = document.querySelector(`[data-filter-id=${clause.id}]`);
           if (el instanceof HTMLElement) {
             setTimeout(() => {
@@ -105,8 +105,6 @@ function EditQueryTrigger({
                     -1
                   ) as QueryClauseOperationId,
                 });
-                newClause.isNew = clause.isNew;
-
                 onUpdate?.(newClause);
               }}
             >
@@ -161,8 +159,6 @@ function ValueSelector({
                 value: Array.from(values as Set<string>),
               }
             );
-            newClause.isNew = clause.isNew;
-
             onUpdate?.(newClause);
           }}
           className="max-h-96"
@@ -194,8 +190,6 @@ function ValueSelector({
               ...clause.value,
               value,
             });
-            newClause.isNew = clause.isNew;
-
             onUpdate?.(newClause);
           }}
         >
@@ -221,8 +215,6 @@ function ValueSelector({
             ...clause.value,
             value,
           });
-          newClause.isNew = clause.isNew;
-
           onUpdate?.(newClause);
         }}
         className="m-1 [&_label]:hidden"
@@ -242,8 +234,6 @@ function ValueSelector({
             ...clause.value,
             value,
           });
-          newClause.isNew = clause.isNew;
-
           onUpdate?.(newClause);
         }}
         className="m-1 [&_label]:hidden"
@@ -263,7 +253,6 @@ function ValueSelector({
               ...clause.value,
               value: value ? new Date(value) : undefined,
             });
-            newClause.isNew = clause.isNew;
             onUpdate?.(newClause);
           }}
           className="m-1"
@@ -282,8 +271,6 @@ function ValueSelector({
                 ? new Date(Date.now() - 60 * 1000 * (multiplier[value] ?? 1))
                 : undefined,
             });
-            newClause.isNew = clause.isNew;
-
             onUpdate?.(newClause);
           }}
         >
