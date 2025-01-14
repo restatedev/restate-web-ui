@@ -282,7 +282,7 @@ export function FormFieldMultiCombobox<
           </div>
 
           {availableList.items.length > 0 && (
-            <PopoverOverlay className="w-[--trigger-width] p-0 bg-gray-100/90">
+            <PopoverOverlay className="w-[--trigger-width] min-w-fit p-0 bg-gray-100/90">
               <ListBox
                 multiple
                 selectable
