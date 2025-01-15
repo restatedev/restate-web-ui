@@ -28,6 +28,7 @@ interface SelectProps
   placeholder?: string;
   errorMessage?: ComponentProps<typeof FormFieldError>['children'];
   label?: ReactNode;
+  defaultValue?: string;
 }
 export function FormFieldSelect({
   className,
@@ -39,6 +40,7 @@ export function FormFieldSelect({
   children,
   label,
   autoFocus,
+  defaultValue,
   ...props
 }: PropsWithChildren<SelectProps>) {
   return (
@@ -49,10 +51,11 @@ export function FormFieldSelect({
       isDisabled={disabled}
       className={containerStyles({ className })}
       placeholder={placeholder}
+      defaultSelectedKey={defaultValue}
     >
       {!label && <Label className="sr-only">{placeholder}</Label>}
       {label && <FormFieldLabel>{label}</FormFieldLabel>}
-      <div className="shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] p-0.5 bg-gray-100 rounded-xl border border-gray-200">
+      <div className="shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] p-px bg-gray-100 rounded-xl border border-gray-200">
         <Button
           autoFocus
           variant="secondary"
@@ -65,11 +68,8 @@ export function FormFieldSelect({
           />
         </Button>
       </div>
-      <PopoverOverlay className="min-w-[--trigger-width] p-0 bg-white/90">
-        <ListBox
-          className="bg-white2 border2 shadow-sm2 rounded-xl m-0 border-none"
-          selectable
-        >
+      <PopoverOverlay className="w-[--trigger-width] min-w-fit p-0 bg-gray-100/90">
+        <ListBox className="rounded-xl m-0 border-none" selectable multiple>
           {children}
         </ListBox>
       </PopoverOverlay>
@@ -78,9 +78,15 @@ export function FormFieldSelect({
   );
 }
 
-export function Option({ children }: { children: string }) {
+export function Option({
+  children,
+  value = children,
+}: {
+  children: string;
+  value?: string;
+}) {
   return (
-    <ListBoxItem className="px-2 rounded-lg" value={children}>
+    <ListBoxItem className="px-2 rounded-lg" value={value}>
       {children}
     </ListBoxItem>
   );

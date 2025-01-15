@@ -12,7 +12,9 @@ export function PopoverTrigger({
   return children;
 }
 
-function getTriggerElement(context: ContextValue<PopoverProps, HTMLElement>) {
+export function getTriggerElement(
+  context: ContextValue<PopoverProps, HTMLElement>
+) {
   if (
     context &&
     'triggerRef' in context &&
@@ -49,7 +51,7 @@ export function PopoverHoverTrigger({
       if (popoverId) {
         const popoverEl = document.getElementById(popoverId);
         popoverEl?.addEventListener(
-          'mouseenter',
+          'mouseover',
           () => {
             isPopoverHovered = true;
             timeout && clearTimeout(timeout);
@@ -85,12 +87,12 @@ export function PopoverHoverTrigger({
       }, 250);
     };
 
-    elementTriggeringHover?.addEventListener('mouseenter', enterHandler);
+    elementTriggeringHover?.addEventListener('mouseover', enterHandler);
     elementTriggeringHover?.addEventListener('mouseleave', leaveHandler);
 
     return () => {
       timeout && clearTimeout(timeout);
-      elementTriggeringHover?.removeEventListener('mouseenter', enterHandler);
+      elementTriggeringHover?.removeEventListener('mouseover', enterHandler);
       elementTriggeringHover?.removeEventListener('mouseleave', leaveHandler);
       observer.disconnect();
     };

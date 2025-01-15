@@ -13,8 +13,10 @@ import { Icon, IconName } from '@restate/ui/icons';
 import {
   Deployment,
   useDeploymentDetails,
+  getEndpoint,
+  isHttpDeployment,
+  isLambdaDeployment,
 } from '@restate/data-access/admin-api';
-import { getEndpoint, isHttpDeployment, isLambdaDeployment } from '../types';
 import { InlineTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
 import { MiniService } from '../MiniService';
 import {

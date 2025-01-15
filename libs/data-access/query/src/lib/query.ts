@@ -94,6 +94,7 @@ async function getInvocation(
   );
 }
 
+// TODO: add limit
 async function getInvocationJournal(
   invocationId: string,
   baseUrl: string,
@@ -121,7 +122,7 @@ async function getInbox(
 ) {
   const [head, size, position] = await Promise.all([
     queryFetcher(
-      `SELECT * FROM sys_invocation WHERE target_service_key = '${key}' AND target_service_name = '${service}' AND status NOT IN ('completed', 'pending', 'scheduled')`,
+      `SELECT id FROM sys_invocation WHERE target_service_key = '${key}' AND target_service_name = '${service}' AND status NOT IN ('completed', 'pending', 'scheduled')`,
       {
         baseUrl,
         headers,
@@ -188,6 +189,7 @@ async function getState(
   });
 }
 
+// TODO: add limit
 async function getStateInterface(
   service: string,
   baseUrl: string,

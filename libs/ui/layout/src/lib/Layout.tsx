@@ -5,6 +5,7 @@ import { ZONE_IDS, LayoutZone } from './LayoutZone';
 import { ComplementaryOutlet } from './ComplementaryOutlet';
 import { defaultConfig } from 'tailwind-variants';
 import { NotificationRegion } from '@restate/ui/notification';
+import { Toolbar } from './Toolbar';
 
 // TODO: refactor to a separate pacakge
 defaultConfig.twMergeConfig = {
@@ -30,12 +31,8 @@ export function LayoutProvider({ children }: PropsWithChildren<LayoutProps>) {
       </div>
 
       {children}
-      <div className="hidden [&:has(>*>*)]:block z-0 h-20 fixed left-0 right-0 bottom-0 bg-gradient-to-b from-transparent to-gray-100">
-        <div
-          id={ZONE_IDS[LayoutZone.Toolbar]}
-          className="absolute top-0 left-[50vw] -translate-x-1/2"
-        />
-      </div>
+
+      <Toolbar id={ZONE_IDS[LayoutZone.Toolbar]} />
     </div>
   );
 }

@@ -18,6 +18,7 @@ const COLUMNS_KEYS = [
   'target_service_ty',
   'target_service_name',
   'target_service_key',
+  'target_handler_name',
 ] as const;
 export type ColumnKey = (typeof COLUMNS_KEYS)[number];
 
@@ -27,7 +28,7 @@ export const COLUMN_NAMES: Record<ColumnKey, string> = {
   target: 'Target',
   status: 'Status',
   invoked_by: 'Invoked by',
-  journal_size: 'Execution logs',
+  journal_size: 'Journal',
   deployment: 'Deployment',
   retry_count: 'Attempt count',
   modified_at: 'Modified at',
@@ -37,6 +38,7 @@ export const COLUMN_NAMES: Record<ColumnKey, string> = {
   target_service_ty: 'Service type',
   target_service_name: 'Service name',
   target_service_key: 'Service key',
+  target_handler_name: 'Handler',
 };
 
 const SORT_ORDER: Record<ColumnKey, number> = Object.entries(

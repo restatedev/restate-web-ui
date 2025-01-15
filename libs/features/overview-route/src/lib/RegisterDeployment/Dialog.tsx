@@ -7,7 +7,7 @@ import {
   QueryDialog,
 } from '@restate/ui/dialog';
 import { Icon, IconName } from '@restate/ui/icons';
-import { PropsWithChildren } from 'react';
+import { ComponentProps, PropsWithChildren } from 'react';
 import { ErrorBanner } from '@restate/ui/error';
 import { RegistrationForm } from './Form';
 import { REGISTER_DEPLOYMENT_QUERY } from './constant';
@@ -16,6 +16,7 @@ import {
   DeploymentRegistrationState,
   useRegisterDeploymentContext,
 } from './Context';
+import { tv } from 'tailwind-variants';
 
 function RegisterDeploymentFooter() {
   const {
@@ -94,18 +95,24 @@ function RegisterDeploymentFooter() {
   );
 }
 
+const triggerStyles = tv({ base: 'flex gap-2 items-center px-3' });
 export function TriggerRegisterDeploymentDialog({
   children = 'Register deployment',
-}: PropsWithChildren<NonNullable<unknown>>) {
+  variant = 'secondary-button',
+  className,
+}: PropsWithChildren<{
+  variant?: ComponentProps<typeof Link>['variant'];
+  className?: string;
+}>) {
   return (
     <QueryDialog query={REGISTER_DEPLOYMENT_QUERY}>
       <DialogTrigger>
         <Link
-          variant="secondary-button"
-          className="flex gap-2 items-center px-3"
+          variant={variant}
+          className={triggerStyles({ className })}
           href={`?${REGISTER_DEPLOYMENT_QUERY}=true`}
         >
-          <Icon name={IconName.Plus} />
+          <Icon name={IconName.Plus} className="w-4 h-4" />
           {children}
         </Link>
       </DialogTrigger>

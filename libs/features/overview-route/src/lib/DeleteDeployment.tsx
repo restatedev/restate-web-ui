@@ -16,8 +16,8 @@ import { FormEvent, useId, useState } from 'react';
 import {
   useDeleteDeployment,
   useListDeployments,
+  getEndpoint,
 } from '@restate/data-access/admin-api';
-import { getEndpoint } from './types';
 import { showSuccessNotification } from '@restate/ui/notification';
 
 export function DeleteDeployment() {

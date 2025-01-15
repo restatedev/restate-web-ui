@@ -31,7 +31,7 @@ const styles = tv({
   variants: {
     variant: {
       button:
-        'no-underline bg-blue-600 hover:bg-blue-700 pressed:bg-blue-800 text-white shadow-sm px-5 py-2 text-sm text-center transition rounded-xl border border-black/10',
+        'no-underline bg-gradient-to-b from-blue-600/90 to-blue-600 hover:from-blue-700 hover:to-blue-700 pressed:from-blue-800 pressed:to-blue-800 text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2)] drop-shadow-sm hover:shadow-none pressed:shadow-none px-5 py-2 text-sm text-center transition rounded-xl border border-black/10',
       'secondary-button':
         'bg-white hover:bg-gray-100 pressed:bg-gray-200 text-gray-800 no-underline shadow-sm px-5 py-2 text-sm text-center transition rounded-xl border',
       primary:

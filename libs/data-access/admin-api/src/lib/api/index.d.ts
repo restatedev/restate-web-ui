@@ -849,14 +849,20 @@ export interface components {
       /** @enum {string} */
       type: 'NUMBER';
       /** @enum {string} */
-      operation: 'EQUALS' | 'NOT_EQUALS' | 'GREATER_THAN' | 'LESS_THAN';
+      operation:
+        | 'EQUALS'
+        | 'NOT_EQUALS'
+        | 'GREATER_THAN'
+        | 'LESS_THAN'
+        | 'GREATER_THAN_OR_EQUAL'
+        | 'LESS_THAN_OR_EQUAL';
       value?: number;
     };
     FilterStringItem: {
       /** @enum {string} */
       type: 'STRING';
       /** @enum {string} */
-      operation: 'EQUALS' | 'NOT_EQUALS' | 'CONTAINS';
+      operation: 'EQUALS' | 'NOT_EQUALS' | 'CONTAINS' | 'NOT_CONTAINS';
       value?: string;
     };
     FilterStringListItem: {
@@ -1130,7 +1136,8 @@ export interface components {
       /** Format: date-time */
       next_retry_at?: string;
       id: string;
-      invoked_by: string;
+      /** @enum {string} */
+      invoked_by: 'ingress' | 'service';
       /** @enum {string} */
       status:
         | 'succeeded'
@@ -1145,8 +1152,7 @@ export interface components {
         | 'ready';
       target: string;
       target_handler_name: string;
-      /** @enum {string} */
-      target_service_key?: 'ingress' | 'service';
+      target_service_key?: string;
       target_service_name: string;
       /** @enum {string} */
       target_service_ty: 'service' | 'virtual_object' | 'workflow';
@@ -1190,7 +1196,8 @@ export interface components {
       /** Format: date-time */
       next_retry_at?: string;
       id: string;
-      invoked_by: string;
+      /** @enum {string} */
+      invoked_by: 'ingress' | 'service';
       /** @enum {string} */
       status:
         | 'pending'
@@ -1202,8 +1209,7 @@ export interface components {
         | 'completed';
       target: string;
       target_handler_name: string;
-      /** @enum {string} */
-      target_service_key?: 'ingress' | 'service';
+      target_service_key?: string;
       target_service_name: string;
       /** @enum {string} */
       target_service_ty: 'service' | 'virtual_object' | 'workflow';

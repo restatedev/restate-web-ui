@@ -11,7 +11,7 @@ const styles = tv({
   slots: {
     container: 'px-1',
     header: 'text-sm font-semibold text-gray-500 px-4 py-1 pt-2 truncate',
-    menu: 'bg-white rounded-xl border [&_.dropdown-item]:rounded-lg [&:last-child]:mb-1',
+    menu: 'bg-white [&:not(:has(*))]:hidden rounded-xl border [&_.dropdown-item]:rounded-lg [&:last-child]:mb-1',
   },
 });
 export function DropdownSection({

@@ -8,16 +8,73 @@ import {
 } from '@restate/features/explainers';
 import { Service } from './Service';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
-import { useId, useLayoutEffect, useState } from 'react';
+import {
+  useDeferredValue,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
+import { FormFieldInput } from '@restate/ui/form-field';
 
-function MultipleDeploymentsPlaceholder() {
+function MultipleDeploymentsPlaceholder({
+  filterText,
+  onFilter,
+}: {
+  filterText: string;
+  onFilter: (filterText: string) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    const input = inputRef.current;
+    const keyHandler = (event: KeyboardEvent) => {
+      if (
+        event.key !== '/' ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey ||
+        event.repeat
+      ) {
+        return;
+      }
+      if (
+        event.target instanceof HTMLElement &&
+        /^(?:input|textarea|select|button)$/i.test(event.target?.tagName)
+      )
+        return;
+      event.preventDefault();
+      input?.focus();
+    };
+    document.addEventListener('keydown', keyHandler);
+    return () => {
+      document.removeEventListener('keydown', keyHandler);
+    };
+  }, []);
+
   return (
     <LayoutOutlet zone={LayoutZone.Toolbar}>
-      <div className="[&_a]:px-5 [&_a]:py-1.5 [&_a]:rounded-xl [&_a]:shadow-[inset_0_1px_0_0_theme(colors.gray.500)] [&_a]:[filter:drop-shadow(0_8px_6px_rgb(39_39_42/0.15))_drop-shadow(0_4px_3px_rgb(39_39_42/0.2))] [&_a:hover]:[filter:drop-shadow(0_12px_9px_rgb(39_39_42/0.15))_drop-shadow(0_8px_6px_rgb(39_39_42/0.2))] [&_a]:backdrop-blur-xl [&_a]:text-zinc-200 [&_a]:border-zinc-900/80 [&_a]:bg-zinc-900/90 [&_a:hover]:bg-zinc-900/85 [&_a[data-pressed=true]]:bg-zinc-900/80 flex flex-col gap-2 items-center text-center [&_a:hover]:scale-105 [&_a[data-pressed=true]]:scale-100 will-change-transform transform transition">
-        <TriggerRegisterDeploymentDialog>
-          Deployment
-        </TriggerRegisterDeploymentDialog>
+      <div className="p-0.5 flex items-center rounded-xl border-transparent ring-1 ring-transparent border has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500">
+        <div className="items-center flex gap-0 p-px w-full">
+          <kbd className="bg-zinc-600 text-zinc-400 px-1.5 rounded ml-2 text-sm">
+            /
+          </kbd>
+          <FormFieldInput
+            ref={inputRef}
+            type="search"
+            value={filterText}
+            onChange={onFilter}
+            placeholder="Filter services, handlers, or deployments…"
+            className="[&_input::-webkit-search-cancel-button]:invert min-w-0 w-[40ch] [&>*]:min-h-0 [&>*]:h-6 [&_input]:border-0 [&_input]:h-full [&_input[data-focused=true]]:outline-0  [&_input]:placeholder-zinc-400 [&_input[data-focused=true]]:border-transparent [&_input]:text-current [&_input]:border-transparent [&_input]:bg-transparent shadow-none"
+          />
+          <TriggerRegisterDeploymentDialog
+            variant="button"
+            className="py-0 h-7 rounded-lg ml-auto"
+          >
+            Deployment
+          </TriggerRegisterDeploymentDialog>
+        </div>
       </div>
     </LayoutOutlet>
   );
@@ -107,10 +164,13 @@ function Component() {
     isPending,
     isSuccess,
   } = useListDeployments();
+
   const size = services ? services.size : 0;
-  const isEmpty = isSuccess && (!deployments || deployments.size === 0);
   const [isScrolling, setIsScrolling] = useState(false);
   const masonryId = useId();
+
+  const [filter, setFilter] = useState('');
+  const filterQuery = useDeferredValue(filter);
 
   useLayoutEffect(() => {
     let isCanceled = false;
@@ -135,7 +195,8 @@ function Component() {
       isCanceled = true;
       resizeObserver.unobserve(document.body);
     };
-  }, [masonryId, sortedServiceNames]);
+  }, [masonryId, sortedServiceNames, filterQuery]);
+  const isEmpty = isSuccess && (!deployments || deployments.size === 0);
 
   // TODO: Handle isLoading & isError
 
@@ -150,11 +211,12 @@ function Component() {
           style={{ gap: 'calc(8rem + 150px)' }}
           className={layoutStyles({ isScrolling, className: masonryId })}
         >
-          {sortedServiceNames?.map((serviceName, i) => (
+          {sortedServiceNames?.map((serviceName) => (
             <Service
               key={serviceName}
               serviceName={serviceName}
               className="max-w-lg"
+              filterText={filterQuery}
             />
           ))}
           {size === 1 && <OneDeploymentPlaceholder />}
@@ -163,7 +225,12 @@ function Component() {
       <RestateServer className={reactServerStyles({ isEmpty })}>
         {isEmpty && <NoDeploymentPlaceholder />}
       </RestateServer>
-      {size > 1 && <MultipleDeploymentsPlaceholder />}
+      {size > 1 && (
+        <MultipleDeploymentsPlaceholder
+          filterText={filter}
+          onFilter={setFilter}
+        />
+      )}
     </>
   );
 }

@@ -12,11 +12,11 @@ import {
 import { ListData, useListData } from 'react-stately';
 import * as adminApi from '@restate/data-access/admin-api/spec';
 import {
+  getEndpoint,
   useListDeployments,
   useRegisterDeployment,
 } from '@restate/data-access/admin-api';
 import { useDialog } from '@restate/ui/dialog';
-import { getEndpoint } from '../types';
 import { showSuccessNotification } from '@restate/ui/notification';
 import { RestateError } from '@restate/util/errors';
 

@@ -292,7 +292,7 @@ export function JournalSection({
 
   return (
     <Section className={sectionStyles({ className })}>
-      <SectionTitle>Execution Logs</SectionTitle>
+      <SectionTitle>Journal</SectionTitle>
       <SectionContent className="">
         <Journal invocation={invocation} />
       </SectionContent>

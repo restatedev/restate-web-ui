@@ -1,5 +1,11 @@
-import { Invocation, useListInvocations } from '@restate/data-access/admin-api';
-import { Button } from '@restate/ui/button';
+import {
+  FilterItem,
+  getEndpoint,
+  useListDeployments,
+  useListInvocations,
+  useListServices,
+} from '@restate/data-access/admin-api';
+import { Button, SubmitButton } from '@restate/ui/button';
 import {
   Cell,
   Column,
@@ -9,7 +15,7 @@ import {
   TableHeader,
 } from '@restate/ui/table';
 import { useCollator } from 'react-aria';
-import { useAsyncList } from 'react-stately';
+import { SortDescriptor } from 'react-stately';
 import {
   Dropdown,
   DropdownItem,
@@ -21,15 +27,30 @@ import {
 import { Icon, IconName } from '@restate/ui/icons';
 import { COLUMN_NAMES, ColumnKey, useColumns } from './columns';
 import { InvocationCell } from './cells';
-import { useQueryClient } from '@tanstack/react-query';
 import {
   SnapshotTimeProvider,
   useDurationSinceLastSnapshot,
 } from '@restate/util/snapshot-time';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { formatDurations } from '@restate/util/intl';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@restate/ui/tooltip';
 import { Actions } from '@restate/features/invocation-route';
+import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
+import {
+  AddQueryTrigger,
+  QueryBuilder,
+  QueryClause,
+  QueryClauseSchema,
+  QueryClauseType,
+  useQueryBuilder,
+} from '@restate/ui/query-builder';
+import { ClauseChip, FiltersTrigger } from './Filters';
+import {
+  ClientLoaderFunctionArgs,
+  Form,
+  redirect,
+  useSearchParams,
+} from 'react-router';
+import { useQueryClient } from '@tanstack/react-query';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: 80,
@@ -40,111 +61,288 @@ const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
 };
 
 function Component() {
+  const { promise: listDeploymentPromise, data: listDeploymentsData } =
+    useListDeployments();
+  const { promise: listServicesPromise } = useListServices(
+    listDeploymentsData?.sortedServiceNames
+  );
+  const [searchParams, setSearchParams] = useSearchParams();
+  const schema = useMemo(() => {
+    const serviceNamesPromise = listDeploymentPromise.then((results) =>
+      [...(results?.sortedServiceNames ?? [])].sort()
+    );
+    return [
+      {
+        id: 'id',
+        label: 'Invocation Id',
+        operations: [{ value: 'EQUALS', label: 'is' }],
+        type: 'STRING',
+      },
+      {
+        id: 'status',
+        label: 'Status',
+        operations: [
+          { value: 'IN', label: 'is' },
+          { value: 'NOT_IN', label: 'is not' },
+        ],
+        type: 'STRING_LIST',
+        options: [
+          { value: 'scheduled', label: 'Scheduled' },
+          { value: 'pending', label: 'Pending' },
+          { value: 'ready', label: 'Ready' },
+          { value: 'running', label: 'Running' },
+          { value: 'suspended', label: 'Suspended' },
+          { value: 'retrying', label: 'Retrying' },
+          { value: 'killed', label: 'Killed' },
+          { value: 'cancelled', label: 'Cancelled' },
+          { value: 'succeeded', label: 'Succeeded' },
+          { value: 'failed', label: 'Failed' },
+        ],
+      },
+      {
+        id: 'target_service_name',
+        label: 'Service',
+        operations: [
+          { value: 'IN', label: 'is' },
+          { value: 'NOT_IN', label: 'is not' },
+        ],
+        type: 'STRING_LIST',
+        loadOptions: async () =>
+          serviceNamesPromise.then((results) => {
+            return (
+              results.map((name) => ({
+                label: name,
+                value: name,
+              })) ?? []
+            );
+          }),
+      },
+      {
+        id: 'target_service_key',
+        label: 'Service key',
+        operations: [{ value: 'EQUALS', label: 'is' }],
+        type: 'STRING',
+      },
+      {
+        id: 'target_handler_name',
+        label: 'Handler',
+        operations: [
+          { value: 'IN', label: 'is' },
+          { value: 'NOT_IN', label: 'is not' },
+        ],
+        type: 'STRING_LIST',
+        loadOptions: async () => {
+          return listServicesPromise.then(
+            (services) =>
+              Array.from(
+                new Set(
+                  services
+                    .filter(Boolean)
+                    .map((service) =>
+                      service!.handlers.map((handler) => handler.name)
+                    )
+                    .flat()
+                ).values()
+              )
+                .sort()
+                .map((name) => ({
+                  label: name,
+                  value: name,
+                })) ?? []
+          );
+        },
+      },
+      {
+        id: 'target_service_ty',
+        label: 'Service type',
+        operations: [
+          { value: 'IN', label: 'is' },
+          { value: 'NOT_IN', label: 'is not' },
+        ],
+        type: 'STRING_LIST',
+        options: [
+          { value: 'service', label: 'Service' },
+          { value: 'virtual_object', label: 'Virtual Object' },
+          { value: 'workflow', label: 'Workflow' },
+        ],
+      },
+      {
+        id: 'last_attempt_deployment_id',
+        label: 'Deployment',
+        operations: [
+          { value: 'IN', label: 'is' },
+          { value: 'NOT_IN', label: 'is not' },
+        ],
+        type: 'STRING_LIST',
+        loadOptions: async () =>
+          listDeploymentPromise.then((results) =>
+            Array.from(results?.deployments.values() ?? []).map(
+              (deployment) => ({
+                label: String(getEndpoint(deployment)),
+                value: deployment.id,
+                description: deployment.id,
+              })
+            )
+          ),
+      },
+      {
+        id: 'invoked_by',
+        label: 'Invoked by',
+        operations: [{ value: 'EQUALS', label: 'is' }],
+        type: 'STRING',
+        options: [
+          { value: 'service', label: 'Service' },
+          { value: 'ingress', label: 'Ingress' },
+        ],
+      },
+      {
+        id: 'invoked_by_service_name',
+        label: 'Invoked by service',
+        operations: [
+          { value: 'IN', label: 'is' },
+          { value: 'NOT_IN', label: 'is not' },
+        ],
+        type: 'STRING_LIST',
+        loadOptions: async () =>
+          serviceNamesPromise.then((results) =>
+            results.map((name) => ({
+              label: name,
+              value: name,
+            }))
+          ),
+      },
+      {
+        id: 'invoked_by_id',
+        label: 'Invoked by id',
+        operations: [{ value: 'EQUALS', label: 'is' }],
+        type: 'STRING',
+      },
+      {
+        id: 'idempotency_key',
+        label: 'Idempotency key',
+        operations: [{ value: 'EQUALS', label: 'is' }],
+        type: 'STRING',
+      },
+
+      {
+        id: 'retry_count',
+        label: 'Attempt count',
+        operations: [{ value: 'GREATER_THAN', label: '>' }],
+        type: 'NUMBER',
+      },
+      {
+        id: 'created_at',
+        label: 'Created',
+        operations: [
+          { value: 'BEFORE', label: 'before' },
+          { value: 'AFTER', label: 'after' },
+        ],
+        type: 'DATE',
+      },
+      {
+        id: 'scheduled_at',
+        label: 'Scheduled',
+        operations: [
+          { value: 'BEFORE', label: 'before' },
+          { value: 'AFTER', label: 'after' },
+        ],
+        type: 'DATE',
+      },
+      {
+        id: 'modified_at',
+        label: 'Modified',
+        operations: [
+          { value: 'BEFORE', label: 'before' },
+          { value: 'AFTER', label: 'after' },
+        ],
+        type: 'DATE',
+      },
+    ] satisfies QueryClauseSchema<QueryClauseType>[];
+  }, [listDeploymentPromise, listServicesPromise]);
+
   const { selectedColumns, setSelectedColumns, sortedColumnsList } =
     useColumns();
-  const { refetch, queryKey, dataUpdatedAt, error } = useListInvocations([], {
-    refetchOnMount: false,
-    refetchOnReconnect: false,
-    initialData: { rows: [], total_count: 0 },
-    staleTime: Infinity,
-  });
   const queryCLient = useQueryClient();
+  const [queryFilters, setQueryFilters] = useState<FilterItem[]>(() =>
+    schema
+      .filter((schemaClause) => searchParams.get(`filter_${schemaClause.id}`))
+      .map((schemaClause) => {
+        return QueryClause.fromJSON(
+          schemaClause,
+          searchParams.get(`filter_${schemaClause.id}`)!
+        );
+      })
+      .filter((clause) => clause.isValid)
+      .map((clause) => {
+        return {
+          field: clause.id,
+          operation: clause.value.operation!,
+          type: clause.type,
+          value: clause.value.value,
+        } as FilterItem;
+      })
+  );
+  const { dataUpdatedAt, error, data, isFetching, isPending, queryKey } =
+    useListInvocations(queryFilters, {
+      refetchOnMount: true,
+      refetchOnReconnect: false,
+      staleTime: 0,
+    });
+  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>();
   const collator = useCollator();
-  const invocations = useAsyncList<Invocation>({
-    async load() {
-      await queryCLient.invalidateQueries({ queryKey });
-      const results = await refetch();
-      return { items: results.data?.rows ?? [] };
-    },
-    async sort({ items, sortDescriptor }) {
-      // TODO
-      return {
-        items: items.sort((a, b) => {
-          let cmp = 0;
-          if (sortDescriptor.column === 'deployment') {
-            cmp = collator.compare(
-              (
-                a.last_attempt_deployment_id ?? a.pinned_deployment_id
-              )?.toString() ?? '',
-              (
-                b.last_attempt_deployment_id ?? b.pinned_deployment_id
-              )?.toString() ?? ''
-            );
-          } else {
-            cmp = collator.compare(
-              a[
-                sortDescriptor.column as Exclude<ColumnKey, 'deployment'>
-              ]?.toString() ?? '',
-              b[
-                sortDescriptor.column as Exclude<ColumnKey, 'deployment'>
-              ]?.toString() ?? ''
-            );
-          }
 
-          // Flip the direction if descending order is specified.
-          if (sortDescriptor.direction === 'descending') {
-            cmp *= -1;
-          }
+  const sortedItems = useMemo(() => {
+    return (
+      data?.rows.sort((a, b) => {
+        let cmp = 0;
+        if (sortDescriptor?.column === 'deployment') {
+          cmp = collator.compare(
+            (
+              a.last_attempt_deployment_id ?? a.pinned_deployment_id
+            )?.toString() ?? '',
+            (
+              b.last_attempt_deployment_id ?? b.pinned_deployment_id
+            )?.toString() ?? ''
+          );
+        } else {
+          cmp = collator.compare(
+            a[
+              sortDescriptor?.column as Exclude<ColumnKey, 'deployment'>
+            ]?.toString() ?? '',
+            b[
+              sortDescriptor?.column as Exclude<ColumnKey, 'deployment'>
+            ]?.toString() ?? ''
+          );
+        }
 
-          return cmp;
-        }),
-      };
-    },
-  });
+        // Flip the direction if descending order is specified.
+        if (sortDescriptor?.direction === 'descending') {
+          cmp *= -1;
+        }
+
+        return cmp;
+      }) ?? []
+    );
+  }, [collator, data?.rows, sortDescriptor?.column, sortDescriptor?.direction]);
+
+  const query = useQueryBuilder(
+    schema
+      .filter((schemaClause) => searchParams.get(`filter_${schemaClause.id}`))
+      .map((schemaClause) => {
+        return QueryClause.fromJSON(
+          schemaClause,
+          searchParams.get(`filter_${schemaClause.id}`)!
+        );
+      })
+  );
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
       <div className="flex flex-col flex-auto gap-2">
-        <div className="flex self-end gap-2">
-          <Tooltip>
-            <TooltipTrigger>
-              <Button
-                variant="icon"
-                className="rounded-lg"
-                onClick={() => invocations.reload()}
-              >
-                <Icon
-                  name={IconName.Retry}
-                  className="h-5 w-5 aspect-square text-gray-500"
-                />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent small offset={5}>
-              <RefreshContentTooltip />
-            </TooltipContent>
-          </Tooltip>
-
-          <Dropdown>
-            <DropdownTrigger>
-              <Button variant="icon" className="self-end rounded-lg">
-                <Icon
-                  name={IconName.TableProperties}
-                  className="h-5 w-5 aspect-square text-gray-500"
-                />
-              </Button>
-            </DropdownTrigger>
-            <DropdownPopover>
-              <DropdownSection title="Columns">
-                <DropdownMenu
-                  multiple
-                  selectable
-                  selectedItems={selectedColumns}
-                  onSelect={setSelectedColumns}
-                >
-                  {Object.entries(COLUMN_NAMES).map(([key, name]) => (
-                    <DropdownItem key={key} value={key}>
-                      {name}
-                    </DropdownItem>
-                  ))}
-                </DropdownMenu>
-              </DropdownSection>
-            </DropdownPopover>
-          </Dropdown>
-        </div>
         <Table
           aria-label="Invocations"
-          sortDescriptor={invocations.sortDescriptor}
-          onSortChange={invocations.sort}
+          sortDescriptor={sortDescriptor}
+          onSortChange={setSortDescriptor}
         >
           <TableHeader>
             {sortedColumnsList
@@ -165,14 +363,40 @@ function Component() {
                 </Column>
               ))}
             <Column id="actions" width={40}>
+              <Dropdown>
+                <DropdownTrigger>
+                  <Button variant="icon" className="self-end rounded-lg p-0.5">
+                    <Icon
+                      name={IconName.TableProperties}
+                      className="h-4 w-4 aspect-square text-gray-500"
+                    />
+                  </Button>
+                </DropdownTrigger>
+                <DropdownPopover>
+                  <DropdownSection title="Columns">
+                    <DropdownMenu
+                      multiple
+                      selectable
+                      selectedItems={selectedColumns}
+                      onSelect={setSelectedColumns}
+                    >
+                      {Object.entries(COLUMN_NAMES).map(([key, name]) => (
+                        <DropdownItem key={key} value={key}>
+                          {name}
+                        </DropdownItem>
+                      ))}
+                    </DropdownMenu>
+                  </DropdownSection>
+                </DropdownPopover>
+              </Dropdown>
               <span className="sr-only">Actions</span>
             </Column>
           </TableHeader>
           <TableBody
-            items={invocations.items}
-            dependencies={[selectedColumns, invocations.isLoading, error]}
+            items={sortedItems}
+            dependencies={[selectedColumns]}
             error={error}
-            isLoading={invocations.isLoading}
+            isLoading={isPending}
             numOfColumns={sortedColumnsList.length}
             emptyPlaceholder={
               <div className="flex flex-col items-center py-14 gap-4">
@@ -200,21 +424,74 @@ function Component() {
             )}
           </TableBody>
         </Table>
-        <Footnote />
+        <Footnote data={data} isFetching={isFetching} />
       </div>
+      <LayoutOutlet zone={LayoutZone.Toolbar}>
+        <Form
+          action="/query/invocations"
+          method="POST"
+          className="flex relative"
+          onSubmit={async (event) => {
+            event.preventDefault();
+            setSearchParams((old) => {
+              const newSearchParams = new URLSearchParams(old);
+              Array.from(newSearchParams.keys())
+                .filter((key) => key.startsWith('filter_'))
+                .forEach((key) => newSearchParams.delete(key));
+              query.items
+                .filter((clause) => clause.isValid)
+                .forEach((item) => {
+                  newSearchParams.set(`filter_${item.id}`, String(item));
+                });
+              return newSearchParams;
+            });
+            setQueryFilters(
+              query.items
+                .filter((clause) => clause.isValid)
+                .map(
+                  (clause) =>
+                    ({
+                      field: clause.id,
+                      operation: clause.value.operation!,
+                      type: clause.type,
+                      value: clause.value.value,
+                    } as FilterItem)
+                )
+            );
+            await queryCLient.invalidateQueries({ queryKey });
+          }}
+        >
+          <QueryBuilder query={query} schema={schema}>
+            <AddQueryTrigger
+              MenuTrigger={FiltersTrigger}
+              placeholder="Filter invocations…"
+              title="Filters"
+              className="rounded-xl [&_input::-webkit-search-cancel-button]:invert has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500 [&_input]:placeholder-zinc-400 border-transparent pr-20  [&_input+*]:right-24 [&_input]:min-w-[10ch]"
+            >
+              {ClauseChip}
+            </AddQueryTrigger>
+          </QueryBuilder>
+          <SubmitButton
+            isPending={isFetching}
+            className="absolute right-1 top-1 bottom-1 rounded-lg py-0 self-end h-7"
+          >
+            Query
+          </SubmitButton>
+        </Form>
+      </LayoutOutlet>
     </SnapshotTimeProvider>
   );
 }
 
-function Footnote() {
+function Footnote({
+  data,
+  isFetching,
+}: {
+  isFetching: boolean;
+  data?: ReturnType<typeof useListInvocations>['data'];
+}) {
   const [now, setNow] = useState(() => Date.now());
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
-  const { data, isFetching } = useListInvocations([], {
-    refetchOnMount: false,
-    refetchOnReconnect: false,
-    initialData: { rows: [], total_count: 0 },
-    staleTime: Infinity,
-  });
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
@@ -255,20 +532,21 @@ function Footnote() {
   );
 }
 
-function RefreshContentTooltip() {
-  const [now] = useState(() => Date.now());
-
-  const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
-  const { isPast, ...parts } = durationSinceLastSnapshot(now);
-  const duration = formatDurations(parts);
-  return (
-    <div>
-      <div className="font-medium text-center">Refresh</div>
-      <div className="text-2xs text-center opacity-90">
-        Last updated {duration} ago
-      </div>
-    </div>
+export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
+  const url = new URL(request.url);
+  const hasFilters = Array.from(url.searchParams.keys()).some((key) =>
+    key.startsWith('filter_')
   );
-}
+  if (!hasFilters) {
+    url.searchParams.append(
+      'filter_status',
+      JSON.stringify({
+        operation: 'NOT_IN',
+        value: ['succeeded', 'cancelled', 'killed'],
+      })
+    );
+    return redirect(url.search);
+  }
+};
 
-export const invocations = { Component };
+export const invocations = { Component, clientLoader };
