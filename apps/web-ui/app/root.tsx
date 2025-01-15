@@ -97,11 +97,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <ScrollRestoration />
         <Scripts />
         {/* TODO: move to its own lib */}
-        <script
-          src="https://unpkg.com/@stoplight/elements/web-components.min.js"
-          async
-          defer
-        ></script>
+        <script src="/ui/elements-web-components.min.js" async defer></script>
       </body>
     </html>
   );
