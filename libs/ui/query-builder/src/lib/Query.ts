@@ -107,6 +107,7 @@ export class QueryClause<T extends QueryClauseType> {
       ?.then((opts) => {
         this._options = opts;
       })
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       .catch(() => {});
   }
 
