@@ -65,7 +65,9 @@ const MAX_NUMBER_OF_HANDLERS = 2;
 
 function filterHandler(handler: HandlerType, filterText?: string) {
   return (
-    !filterText || handler.name.toLowerCase().includes(filterText.toLowerCase())
+    !filterText ||
+    handler.name.toLowerCase().includes(filterText.toLowerCase()) ||
+    handler.ty?.toLowerCase().includes(filterText.toLowerCase())
   );
 }
 function filterDeployment(deployment?: DeploymentType, filterText?: string) {
