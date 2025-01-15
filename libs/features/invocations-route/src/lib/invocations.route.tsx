@@ -473,7 +473,7 @@ function Component() {
           </QueryBuilder>
           <SubmitButton
             isPending={isFetching}
-            className="absolute right-1 top-1 bottom-1 rounded-lg py-0"
+            className="absolute right-1 top-1 bottom-1 rounded-lg py-0 disabled:bg-gray-400  disabled:text-gray-200"
           >
             Query
           </SubmitButton>
