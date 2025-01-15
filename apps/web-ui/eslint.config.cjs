@@ -17,5 +17,12 @@ module.exports = [
     // Override or add rules here
     rules: {},
   },
-  { ignores: ['build', 'public/build', '.react-router'] },
+  {
+    ignores: [
+      'build',
+      'public/build',
+      '.react-router',
+      'public/elements-web-components.min.js',
+    ],
+  },
 ];

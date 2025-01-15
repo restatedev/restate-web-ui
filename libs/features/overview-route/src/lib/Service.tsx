@@ -64,8 +64,13 @@ const MAX_NUMBER_OF_DEPLOYMENTS = 2;
 const MAX_NUMBER_OF_HANDLERS = 2;
 
 function filterHandler(handler: HandlerType, filterText?: string) {
+  const lowerCaseFilter = filterText?.toLowerCase();
   return (
-    !filterText || handler.name.toLowerCase().includes(filterText.toLowerCase())
+    !lowerCaseFilter ||
+    handler.name.toLowerCase().includes(lowerCaseFilter) ||
+    handler.ty?.toLowerCase().includes(lowerCaseFilter) ||
+    handler.input_description?.toLowerCase().includes(lowerCaseFilter) ||
+    handler.output_description?.toLowerCase().includes(lowerCaseFilter)
   );
 }
 function filterDeployment(deployment?: DeploymentType, filterText?: string) {
