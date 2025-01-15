@@ -229,7 +229,7 @@ export function FormFieldMultiCombobox<
         <Label className="sr-only">{label}</Label>
 
         <div
-          className="hidden gap-1.5 flex-wrap px-1 py-1 has-[>*]:flex"
+          className="hidden gap-1.5 flex-wrap px-1 py-1 has-[>*]:flex max-w-full"
           id={tagGroupId}
         >
           {selectedList.items.map((item) => (

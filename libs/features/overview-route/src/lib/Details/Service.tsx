@@ -182,17 +182,21 @@ function ServiceForm({
             </>
           ) : (
             <>
-              <TruncateWithTooltip>{data?.name}</TruncateWithTooltip>
-              <div className="flex items-center w-full gap-2">
-                <ServiceType type={data?.ty} className="" />
-                {data?.name && (
-                  <ServicePlaygroundTrigger
-                    service={data?.name}
-                    className=""
-                    variant="primary"
-                  />
-                )}
-              </div>
+              <TruncateWithTooltip>
+                {data?.name ?? 'Service'}
+              </TruncateWithTooltip>
+              {data && (
+                <div className="flex items-center w-full gap-2">
+                  <ServiceType type={data?.ty} className="" />
+                  {data?.name && (
+                    <ServicePlaygroundTrigger
+                      service={data?.name}
+                      className=""
+                      variant="primary"
+                    />
+                  )}
+                </div>
+              )}
             </>
           )}
         </div>

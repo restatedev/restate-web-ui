@@ -466,14 +466,14 @@ function Component() {
               MenuTrigger={FiltersTrigger}
               placeholder="Filter invocations…"
               title="Filters"
-              className="rounded-xl [&_input::-webkit-search-cancel-button]:invert has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500 [&_input]:placeholder-zinc-400 border-transparent pr-20  [&_input+*]:right-24 [&_input]:min-w-[10ch]"
+              className="rounded-xl [&_input::-webkit-search-cancel-button]:invert has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500 [&_input]:placeholder-zinc-400 border-transparent pr-24 w-full  [&_input+*]:right-24 [&_input]:min-w-[10ch]"
             >
               {ClauseChip}
             </AddQueryTrigger>
           </QueryBuilder>
           <SubmitButton
             isPending={isFetching}
-            className="absolute right-1 top-1 bottom-1 rounded-lg py-0 self-end h-7"
+            className="absolute right-1 top-1 bottom-1 rounded-lg py-0"
           >
             Query
           </SubmitButton>

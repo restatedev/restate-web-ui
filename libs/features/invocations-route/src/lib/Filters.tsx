@@ -43,16 +43,19 @@ export function ClauseChip({
         autoFocus={isNew}
         data-filter-id={item.id}
         variant="secondary"
-        className="inline-flex gap-[0.7ch] items-center py-1 rounded-lg bg-white/[0.25] hover:bg-white/30 pressed:bg-white/30 text-zinc-50 text-xs px-1.5"
+        className="min-w-0 flex gap-[0.7ch] items-center py-1 rounded-lg bg-white/[0.25] hover:bg-white/30 pressed:bg-white/30 text-zinc-50 text-xs px-1.5"
       >
-        <span className="">{item.label}</span>
+        <span className="whitespace-nowrap shrink-0">{item.label}</span>
         {item.operationLabel?.split(' ').map((segment) => (
           <span className="font-mono" key={segment}>
             {segment}
           </span>
         ))}
-        <span className="font-semibold">{item.valueLabel}</span>
-        <Icon name={IconName.ChevronsUpDown} className="w-3.5 h-3.5 ml-2" />
+        <span className="font-semibold truncate">{item.valueLabel}</span>
+        <Icon
+          name={IconName.ChevronsUpDown}
+          className="w-3.5 h-3.5 ml-2 shrink-0"
+        />
       </Button>
     </EditQueryTrigger>
   );

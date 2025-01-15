@@ -62,7 +62,10 @@ export function RestateServerError({
       <div className="flex flex-col gap-2 w-full">
         <Code className="shadow-[inset_0_0.5px_0.5px_0px_rgba(0,0,0,0.08)] border bg-red-200 py-4 text-code flex-auto text-red-700">
           <Snippet language="bash" className="px-0">
-            <details className="group [font-size:90%] overflow-auto max-h-28 w-full">
+            <details
+              className="group [font-size:90%] overflow-auto max-h-28 w-full"
+              open
+            >
               <summary className="group-open:h-4">
                 <span className="group-open:invisible group-open:[font-size:0px] truncate w-[calc(100%-5ch)] inline-block align-middle">
                   {message}
