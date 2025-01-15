@@ -29,7 +29,7 @@ const styles = tv({
   variants: {
     variant: {
       primary:
-        'bg-gradient-to-b from-blue-600/90 to-blue-600 disabled:bg-gray-400 disabled:shadow-none disabled:drop-shadow-none disabled:text-gray-200 hover:from-blue-700 hover:to-blue-700 pressed:from-blue-800 pressed:to-blue-800 text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2)] drop-shadow-sm hover:shadow-none pressed:shadow-none',
+        'bg-gradient-to-b from-blue-600/90 to-blue-600 disabled:shadow-none disabled:drop-shadow-none hover:from-blue-700 hover:to-blue-700 pressed:from-blue-800 pressed:to-blue-800 text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2)] drop-shadow-sm hover:shadow-none pressed:shadow-none',
       secondary: 'bg-white hover:bg-gray-100 pressed:bg-gray-200 text-gray-800',
       destructive:
         'bg-gradient-to-b from-red-700/95 to-red-700  shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)] drop-shadow-sm hover:from-red-800 hover:to-red-800 pressed:from-red-900 pressed:to-red-900 text-white hover:shadow-none pressed:shadow-none',

@@ -339,6 +339,8 @@ function Component() {
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
       <div className="flex flex-col flex-auto gap-2">
+        <Footnote data={data} isFetching={isFetching} />
+
         <Table
           aria-label="Invocations"
           sortDescriptor={sortDescriptor}
@@ -424,7 +426,6 @@ function Component() {
             )}
           </TableBody>
         </Table>
-        <Footnote data={data} isFetching={isFetching} />
       </div>
       <LayoutOutlet zone={LayoutZone.Toolbar}>
         <Form
@@ -473,7 +474,7 @@ function Component() {
           </QueryBuilder>
           <SubmitButton
             isPending={isFetching}
-            className="absolute right-1 top-1 bottom-1 rounded-lg py-0"
+            className="absolute right-1 top-1 bottom-1 rounded-lg py-0 disabled:bg-gray-400  disabled:text-gray-200"
           >
             Query
           </SubmitButton>
