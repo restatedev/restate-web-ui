@@ -339,6 +339,8 @@ function Component() {
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
       <div className="flex flex-col flex-auto gap-2">
+        <Footnote data={data} isFetching={isFetching} />
+
         <Table
           aria-label="Invocations"
           sortDescriptor={sortDescriptor}
@@ -424,7 +426,6 @@ function Component() {
             )}
           </TableBody>
         </Table>
-        <Footnote data={data} isFetching={isFetching} />
       </div>
       <LayoutOutlet zone={LayoutZone.Toolbar}>
         <Form
