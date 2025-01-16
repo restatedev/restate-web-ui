@@ -86,7 +86,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name="msapplication-TileColor" content="#222452" />
         <meta name="theme-color" content="#f3f4f6"></meta>
         <meta name="version" content={globalThis.env.VERSION} />
-        <title>Restate UI</title>
+        <title>Restate</title>
         <Meta />
         <Links />
       </head>

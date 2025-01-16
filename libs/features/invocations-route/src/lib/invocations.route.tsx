@@ -338,7 +338,7 @@ function Component() {
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
-      <div className="flex flex-col flex-auto gap-2">
+      <div className="flex flex-col flex-auto gap-2 relative">
         <Footnote data={data} isFetching={isFetching} />
 
         <Table
@@ -515,7 +515,7 @@ function Footnote({
   const { isPast, ...parts } = durationSinceLastSnapshot(now);
   const duration = formatDurations(parts);
   return (
-    <div className="w-full text-center text-xs text-gray-500/80">
+    <div className="w-full text-center text-xs text-gray-500/80 absolute -top-6">
       {data.total_count ? (
         <>
           <span>{data.rows.length}</span>

@@ -6,7 +6,11 @@ import { UseMutationOptions, UseQueryOptions } from '@tanstack/react-query';
 import type { FetchResponse, Middleware } from 'openapi-fetch';
 import createClient from 'openapi-fetch';
 
-const client = createClient<paths>({});
+const client = createClient<paths>({
+  fetch: (...args) => {
+    return globalThis.fetch(...args);
+  },
+});
 const errorMiddleware: Middleware = {
   async onResponse({ response, request }) {
     if (!response.ok) {

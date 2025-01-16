@@ -1,4 +1,5 @@
 /// <reference types="vite/client" />
+import { queryFetcher } from './queryFetcher';
 import workerUrl from './worker?worker&url';
 
 export async function register() {
@@ -22,6 +23,7 @@ export async function register() {
       await navigator.serviceWorker.ready;
     } catch (error) {
       console.error(`Registration failed with ${error}`);
+      globalThis.fetch = queryFetcher;
     }
   }
 }
