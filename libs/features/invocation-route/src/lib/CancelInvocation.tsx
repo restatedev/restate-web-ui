@@ -78,6 +78,8 @@ export function CancelInvocation() {
                   href="https://docs.restate.dev/operate/invocation/#cancelling-invocations"
                   variant="secondary"
                   className="text-blue-600"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   Learn more…
                 </Link>

@@ -9,7 +9,7 @@ import {
   useNavigate,
 } from 'react-router';
 import styles from './tailwind.css?url';
-import type { LinksFunction } from 'react-router';
+import type { LinksFunction, To } from 'react-router';
 import { LayoutOutlet, LayoutProvider, LayoutZone } from '@restate/ui/layout';
 import { RouterProvider } from 'react-aria-components';
 import { Button } from '@restate/ui/button';
@@ -68,6 +68,16 @@ export const links: LinksFunction = () => [
   { rel: 'mask-icon', href: '/ui/safari-pinned-tab.svg', color: '#222452' },
 ];
 
+function useRefWithSupportForAbsolutePath(path: To) {
+  const url = useHref(path);
+
+  if (path.toString().startsWith('http')) {
+    return path.toString();
+  }
+
+  return url;
+}
+
 export function Layout({ children }: { children: React.ReactNode }) {
   const remixNavigate = useNavigate();
 
@@ -91,7 +101,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body className="h-full font-sans">
-        <RouterProvider navigate={navigate} useHref={useHref}>
+        <RouterProvider
+          navigate={navigate}
+          useHref={useRefWithSupportForAbsolutePath}
+        >
           <LayoutProvider>{children}</LayoutProvider>
         </RouterProvider>
         <ScrollRestoration />

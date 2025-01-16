@@ -77,6 +77,8 @@ export function KillInvocation() {
                   href="https://docs.restate.dev/operate/invocation/#killing-invocations"
                   variant="secondary"
                   className="text-orange-600"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   Learn more…
                 </Link>
