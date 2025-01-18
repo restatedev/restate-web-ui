@@ -21,9 +21,12 @@ export async function register() {
       });
 
       await navigator.serviceWorker.ready;
+      return;
     } catch (error) {
-      console.error(`Registration failed with ${error}`);
-      globalThis.fetch = queryFetcher;
+      console.warn(`Registration failed with ${error}`);
     }
+  } else {
+    console.warn('Service Worker not available');
   }
+  globalThis.queryFetch = queryFetcher;
 }
