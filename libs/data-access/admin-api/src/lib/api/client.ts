@@ -8,7 +8,8 @@ import createClient from 'openapi-fetch';
 
 const client = createClient<paths>({
   fetch: (...args) => {
-    return globalThis.fetch(...args);
+    const fetcher = globalThis.queryFetch ?? globalThis.fetch;
+    return fetcher(...args);
   },
 });
 const errorMiddleware: Middleware = {
