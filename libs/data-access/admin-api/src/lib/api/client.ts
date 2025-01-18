@@ -31,7 +31,9 @@ const errorMiddleware: Middleware = {
       if (typeof body === 'object') {
         throw new RestateError(body.message, body.restate_code ?? '');
       }
-      throw new Error(body);
+      throw new Error(
+        body || 'An unexpected error occurred. Please try again later.'
+      );
     }
     if (response.ok && request.url.endsWith('health')) {
       return new Response(JSON.stringify({}), {
