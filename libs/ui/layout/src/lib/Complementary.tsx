@@ -54,7 +54,7 @@ export function Complementary({
               {children}
             </div>
             {footer && (
-              <div className="flex gap-2 has-[*]:py-1 has-[*]:pb-0 has-[*]:mt-1 [&>*]:min-w-0 3xl:sticky 3xl:bottom-0 3xl:bg-gray-50/80 3xl:backdrop-blur-xl 3xl:backdrop-saturate-200 rounded-[1rem] 3xl:-mx-1.5 3xl:-mb-1.5 3xl:p-1.5 3xl:pb-1.5 z-10">
+              <div className="min-h-0 flex gap-2 has-[*]:py-1 has-[*]:pb-0 has-[*]:mt-1 [&>*]:min-w-0 3xl:sticky 3xl:bottom-0 3xl:bg-gray-50/80 3xl:backdrop-blur-xl 3xl:backdrop-saturate-200 rounded-[1rem] 3xl:-mx-1.5 3xl:-mb-1.5 3xl:p-1.5 3xl:pb-1.5 z-10">
                 {footer}
               </div>
             )}

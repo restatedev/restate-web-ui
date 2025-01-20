@@ -45,11 +45,11 @@ export function Failure({
           />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="max-w-lg">
+      <PopoverContent>
         <DropdownSection title="Failure">
           <ErrorBanner
             error={error}
-            className="rounded-lg [&_details]:max-h-[min(10rem,30vh)]"
+            className="rounded-lg flex-auto [&_code]:whitespace-pre  w-[min(36rem,90vw)] [&_details]:max-h-full [&:has(details[open])]:h-[min(50vh,16rem)]  overflow-auto resize max-w-full max-h-full"
           />
         </DropdownSection>
       </PopoverContent>

@@ -27,8 +27,7 @@ const errorMiddleware: Middleware = {
           } = response.headers.get('content-type')?.includes('json')
         ? await response.clone().json()
         : await response.clone().text();
-
-      if (typeof body === 'object') {
+      if (typeof body === 'object' && body) {
         throw new RestateError(body.message, body.restate_code ?? '');
       }
       throw new Error(
