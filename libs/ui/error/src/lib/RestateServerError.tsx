@@ -7,7 +7,7 @@ import Markdown from 'react-markdown';
 import { tv } from 'tailwind-variants';
 
 const styles = tv({
-  base: 'rounded-xl bg-red-100 p-3 gap-2 flex flex-col text-sm',
+  base: 'rounded-xl bg-red-100 p-3 gap-2 flex flex-col text-sm min-h-0',
 });
 
 const DEFAULT_ERROR: { summary: string; help?: string } = {
@@ -59,11 +59,11 @@ export function RestateServerError({
           )}
         </output>
       </div>
-      <div className="flex flex-col gap-2 w-full">
-        <Code className="shadow-[inset_0_0.5px_0.5px_0px_rgba(0,0,0,0.08)] border bg-red-200 py-4 text-code flex-auto text-red-700">
-          <Snippet language="bash" className="px-0">
+      <div className="flex flex-col gap-2 w-full flex-auto min-h-0">
+        <Code className="shadow-[inset_0_0.5px_0.5px_0px_rgba(0,0,0,0.08)] border bg-red-200 py-4 text-code flex-auto text-red-700 h-full">
+          <Snippet language="bash" className="px-0 h-full">
             <details
-              className="group [font-size:90%] overflow-auto max-h-28 w-full"
+              className="group [font-size:90%] overflow-auto  max-h-28 w-full h-full"
               open
             >
               <summary className="group-open:h-4">
