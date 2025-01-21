@@ -105,13 +105,15 @@ function EditQueryTrigger({
               selectedItems={selectedOperations}
               autoFocus={false}
               onSelect={(operations) => {
-                const newClause = new QueryClause(clause.schema, {
-                  ...clause.value,
-                  operation: Array.from(operations).at(
-                    -1
-                  ) as QueryClauseOperationId,
-                });
-                onUpdate?.(newClause);
+                if (operations instanceof Set && operations.size > 0) {
+                  const newClause = new QueryClause(clause.schema, {
+                    ...clause.value,
+                    operation: Array.from(operations).at(
+                      -1
+                    ) as QueryClauseOperationId,
+                  });
+                  onUpdate?.(newClause);
+                }
               }}
             >
               {clause.operations.map((op) => (
