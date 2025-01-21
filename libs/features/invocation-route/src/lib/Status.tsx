@@ -184,7 +184,8 @@ export function LastError({
         >
           <ErrorBanner
             error={error}
-            className="rounded-lg flex-auto [&_code]:whitespace-pre  w-[min(36rem,90vw)] [&_details]:max-h-full [&:has(details[open])]:h-[min(50vh,16rem)]  overflow-auto resize max-w-full max-h-full"
+            wrap={error?.message.includes('\n')}
+            className="rounded-lg flex-auto  w-[min(36rem,90vw)] [&_details]:max-h-full [&:has(details[open])]:h-[min(50vh,16rem)]  overflow-auto resize max-w-full max-h-full"
           />
         </DropdownSection>
       </PopoverContent>
