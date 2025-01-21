@@ -66,6 +66,14 @@ function convertFilterStringListToSqlClause(
   }
 }
 
+function negateOperator(op: 'AND' | 'OR'): 'AND' | 'OR' {
+  switch (op) {
+    case 'AND':
+      return 'OR';
+    case 'OR':
+      return 'AND';
+  }
+}
 function negateOperation(op: FilterItem['operation']): FilterItem['operation'] {
   switch (op) {
     case 'AFTER':
@@ -108,105 +116,189 @@ function convertFilterToSqlClause(filter: FilterItem) {
   }
 }
 
-function getStatusFilterString(value?: string): FilterItem[] {
+interface FilterGroup {
+  filters: FilterItem[];
+  operator: 'AND' | 'OR';
+}
+function getStatusFilterString(value?: string): {
+  groups: FilterGroup[];
+  operator: 'AND' | 'OR';
+} {
   switch (value) {
     case 'succeeded':
-      return [
-        {
-          type: 'STRING',
-          field: 'status',
-          operation: 'EQUALS',
-          value: 'completed',
-        },
-        {
-          type: 'STRING',
-          field: 'completion_result',
-          operation: 'EQUALS',
-          value: 'success',
-        },
-      ];
+      return {
+        operator: 'AND',
+        groups: [
+          {
+            filters: [
+              {
+                type: 'STRING',
+                field: 'status',
+                operation: 'EQUALS',
+                value: 'completed',
+              },
+              {
+                type: 'STRING',
+                field: 'completion_result',
+                operation: 'EQUALS',
+                value: 'success',
+              },
+            ],
+            operator: 'AND',
+          },
+        ],
+      };
     case 'failed':
-      return [
-        {
-          type: 'STRING',
-          field: 'status',
-          operation: 'EQUALS',
-          value: 'completed',
-        },
-        {
-          type: 'STRING',
-          field: 'completion_result',
-          operation: 'EQUALS',
-          value: 'failure',
-        },
-      ];
+      return {
+        operator: 'AND',
+        groups: [
+          {
+            filters: [
+              {
+                type: 'STRING',
+                field: 'status',
+                operation: 'EQUALS',
+                value: 'completed',
+              },
+              {
+                type: 'STRING',
+                field: 'completion_result',
+                operation: 'EQUALS',
+                value: 'failure',
+              },
+              {
+                type: 'STRING',
+                field: 'completion_failure',
+                operation: 'NOT_CONTAINS',
+                value: '[409]',
+              },
+            ],
+            operator: 'AND',
+          },
+        ],
+      };
     case 'killed':
-      return [
-        {
-          type: 'STRING',
-          field: 'status',
-          operation: 'EQUALS',
-          value: 'completed',
-        },
-        {
-          type: 'STRING',
-          field: 'completion_result',
-          operation: 'EQUALS',
-          value: 'failure',
-        },
-        {
-          type: 'STRING',
-          field: 'completion_failure',
-          operation: 'CONTAINS',
-          value: 'killed',
-        },
-      ];
+      return {
+        operator: 'AND',
+        groups: [
+          {
+            filters: [
+              {
+                type: 'STRING',
+                field: 'status',
+                operation: 'EQUALS',
+                value: 'completed',
+              },
+              {
+                type: 'STRING',
+                field: 'completion_result',
+                operation: 'EQUALS',
+                value: 'failure',
+              },
+              {
+                type: 'STRING',
+                field: 'completion_failure',
+                operation: 'EQUALS',
+                value: '[409] killed',
+              },
+            ],
+            operator: 'AND',
+          },
+        ],
+      };
     case 'cancelled':
-      return [
-        {
-          type: 'STRING',
-          field: 'status',
-          operation: 'EQUALS',
-          value: 'completed',
-        },
-        {
-          type: 'STRING',
-          field: 'completion_result',
-          operation: 'EQUALS',
-          value: 'failure',
-        },
-        {
-          type: 'STRING',
-          field: 'completion_failure',
-          operation: 'CONTAINS',
-          value: '[409]',
-        },
-      ];
+      return {
+        operator: 'AND',
+        groups: [
+          {
+            filters: [
+              {
+                type: 'STRING',
+                field: 'status',
+                operation: 'EQUALS',
+                value: 'completed',
+              },
+              {
+                type: 'STRING',
+                field: 'completion_result',
+                operation: 'EQUALS',
+                value: 'failure',
+              },
+              {
+                type: 'STRING',
+                field: 'completion_failure',
+                operation: 'EQUALS',
+                value: '[409] canceled',
+              },
+            ],
+            operator: 'AND',
+          },
+        ],
+      };
     case 'retrying':
-      return [
-        {
-          type: 'STRING_LIST',
-          field: 'status',
-          operation: 'IN',
-          value: ['running', 'backing-off'],
-        },
-        {
-          type: 'NUMBER',
-          field: 'retry_count',
-          operation: 'GREATER_THAN',
-          value: 1,
-        },
-      ];
+      return {
+        operator: 'OR',
+        groups: [
+          {
+            filters: [
+              {
+                type: 'STRING',
+                field: 'status',
+                operation: 'EQUALS',
+                value: 'backing-off',
+              },
+              {
+                type: 'NUMBER',
+                field: 'retry_count',
+                operation: 'GREATER_THAN',
+                value: 1,
+              },
+            ],
+            operator: 'AND',
+          },
+          {
+            filters: [
+              {
+                type: 'STRING',
+                field: 'status',
+                operation: 'EQUALS',
+                value: 'running',
+              },
+              {
+                type: 'NUMBER',
+                field: 'retry_count',
+                operation: 'GREATER_THAN',
+                value: 1,
+              },
+              {
+                type: 'NUMBER',
+                field: 'journal_size - last_failure_related_entry_index',
+                operation: 'LESS_THAN_OR_EQUAL',
+                value: 1,
+              },
+            ],
+            operator: 'AND',
+          },
+        ],
+      };
 
     default:
-      return [
-        {
-          type: 'STRING',
-          field: 'status',
-          operation: 'EQUALS',
-          value,
-        },
-      ];
+      return {
+        groups: [
+          {
+            filters: [
+              {
+                type: 'STRING',
+                field: 'status',
+                operation: 'EQUALS',
+                value,
+              },
+            ],
+            operator: 'AND',
+          },
+        ],
+        operator: 'AND',
+      };
   }
 }
 
@@ -220,11 +312,18 @@ export function convertFilters(filters: FilterItem[]) {
 
   if (statusFilter) {
     if (statusFilter.type === 'STRING') {
+      const { groups, operator } = getStatusFilterString(statusFilter.value);
       mappedFilters.push(
-        getStatusFilterString(statusFilter.value)
-          .map(convertFilterToSqlClause)
+        groups
+          .map(
+            ({ filters, operator }) =>
+              `(${filters
+                .map(convertFilterToSqlClause)
+                .filter(Boolean)
+                .join(` ${operator} `)})`
+          )
           .filter(Boolean)
-          .join(' AND ')
+          .join(` ${operator} `)
       );
     } else if (
       statusFilter.type === 'STRING_LIST' &&
@@ -232,12 +331,20 @@ export function convertFilters(filters: FilterItem[]) {
     ) {
       mappedFilters.push(
         `(${statusFilter.value
-          .map((value) =>
-            getStatusFilterString(value)
-              .map(convertFilterToSqlClause)
+          .map((value) => {
+            const { groups, operator } = getStatusFilterString(value);
+            return groups
+              .map(
+                ({ filters, operator }) =>
+                  `(${filters
+                    .map(convertFilterToSqlClause)
+                    .filter(Boolean)
+                    .join(` ${operator} `)})`
+              )
               .filter(Boolean)
-              .join(' AND ')
-          )
+              .map((clause) => `(${clause})`)
+              .join(` ${operator} `);
+          })
           .map((clause) => `(${clause})`)
           .join(' OR ')})`
       );
@@ -247,19 +354,27 @@ export function convertFilters(filters: FilterItem[]) {
     ) {
       mappedFilters.push(
         `(${statusFilter.value
-          .map((value) =>
-            getStatusFilterString(value)
-              .map(
-                (filter) =>
-                  ({
-                    ...filter,
-                    operation: negateOperation(filter.operation),
-                  } as FilterItem)
+          .map((value) => {
+            const { groups, operator } = getStatusFilterString(value);
+
+            return groups
+              .map(({ filters, operator }) =>
+                filters
+                  .map(
+                    (filter) =>
+                      ({
+                        ...filter,
+                        operation: negateOperation(filter.operation),
+                      } as FilterItem)
+                  )
+                  .map(convertFilterToSqlClause)
+                  .filter(Boolean)
+                  .join(` ${negateOperator(operator)} `)
               )
-              .map(convertFilterToSqlClause)
               .filter(Boolean)
-              .join(' OR ')
-          )
+              .map((clause) => `(${clause})`)
+              .join(` ${negateOperator(operator)} `);
+          })
           .map((clause) => `(${clause})`)
           .join(' AND ')})`
       );

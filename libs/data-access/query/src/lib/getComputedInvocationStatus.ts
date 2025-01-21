@@ -9,17 +9,22 @@ export function getComputedInvocationStatus(
   const isSuccessful = invocation.completion_result === 'success';
   const isCancelled = Boolean(
     invocation.completion_result === 'failure' &&
-      invocation.completion_failure?.startsWith('[409]')
+      invocation.completion_failure === '[409] canceled'
   );
   const isKilled = Boolean(
-    isCancelled && invocation.completion_failure?.includes('killed')
+    invocation.completion_result === 'failure' &&
+      invocation.completion_failure === '[409] killed'
   );
   const isRunning = invocation.status === 'running';
   const isCompleted = invocation.status === 'completed';
+  const isStuckOnLastStep =
+    typeof invocation.last_failure_related_entry_index === 'number' &&
+    typeof invocation.journal_size === 'number' &&
+    invocation.last_failure_related_entry_index + 1 >= invocation.journal_size;
   const isRetrying = Boolean(
     invocation.retry_count &&
       invocation.retry_count > 1 &&
-      (isRunning || invocation.status === 'backing-off')
+      ((isRunning && isStuckOnLastStep) || invocation.status === 'backing-off')
   );
 
   if (isCompleted) {
