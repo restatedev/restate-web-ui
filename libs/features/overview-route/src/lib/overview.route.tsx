@@ -18,6 +18,7 @@ import {
 } from 'react';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import { FormFieldInput } from '@restate/ui/form-field';
+import { ErrorBanner } from '@restate/ui/error';
 
 function MultipleDeploymentsPlaceholder({
   filterText,
@@ -98,7 +99,14 @@ function OneDeploymentPlaceholder() {
   );
 }
 
-function NoDeploymentPlaceholder() {
+function NoDeploymentPlaceholder({ error }: { error?: Error | null }) {
+  if (error) {
+    return (
+      <div className="flex flex-col gap-2 items-center relative w-full  mt-6">
+        <ErrorBanner error={error} />
+      </div>
+    );
+  }
   return (
     <div className="flex flex-col gap-2 items-center relative w-full text-center mt-6">
       <h3 className="text-sm font-semibold text-gray-600">
@@ -131,7 +139,7 @@ const deploymentsStyles = tv({
   },
 });
 const layoutStyles = tv({
-  base: 'min-h-full [&>*]:items-center',
+  base: 'min-h-full [&>*]:items-center [&>*:first-child_[data-anchor]]:rounded-br-none [&>*:first-child_[data-anchor]]:rounded-tr-none [&>*:first-child_[data-anchor]]:rounded-bl-full [&>*:first-child_[data-anchor]]:rounded-tl-full [&>*:first-child_[data-anchor]]:right-0 [&>*:first-child_[data-anchor]]:left-auto',
   variants: {
     isScrolling: {
       true: 'items-start',
@@ -151,9 +159,14 @@ const reactServerStyles = tv({
       false:
         'hidden lg:block lg:fixed top-[50vh] left-[50vw] -translate-y-1/2 -translate-x-1/2',
     },
+    isError: {
+      true: 'bg-red-100',
+      false: '',
+    },
   },
   defaultVariants: {
     isEmpty: false,
+    isError: false,
   },
 });
 
@@ -163,6 +176,8 @@ function Component() {
     data: { services, sortedServiceNames, deployments } = {},
     isPending,
     isSuccess,
+    isError,
+    error,
   } = useListDeployments();
 
   const size = services ? services.size : 0;
@@ -196,7 +211,7 @@ function Component() {
       resizeObserver.unobserve(document.body);
     };
   }, [masonryId, sortedServiceNames, filterQuery]);
-  const isEmpty = isSuccess && (!deployments || deployments.size === 0);
+  const isEmpty = !deployments || deployments.size === 0;
 
   // TODO: Handle isLoading & isError
 
@@ -217,13 +232,22 @@ function Component() {
               serviceName={serviceName}
               className="max-w-lg"
               filterText={filterQuery}
-            />
+            >
+              <div
+                className="absolute w-0 h-0 top-1/2 left-0 rounded-tr-full rounded-br-full"
+                data-anchor
+              />
+            </Service>
           ))}
           {size === 1 && <OneDeploymentPlaceholder />}
         </Masonry>
       </ResponsiveMasonry>
-      <RestateServer className={reactServerStyles({ isEmpty })}>
-        {isEmpty && <NoDeploymentPlaceholder />}
+      <RestateServer
+        className={reactServerStyles({ isEmpty, isError })}
+        isError={isError}
+        isEmpty={isEmpty}
+      >
+        {isEmpty && <NoDeploymentPlaceholder error={error} />}
       </RestateServer>
       {size > 1 && (
         <MultipleDeploymentsPlaceholder
