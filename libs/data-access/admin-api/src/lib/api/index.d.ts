@@ -414,7 +414,11 @@ export interface paths {
      */
     get: operations['get_state_keys'];
     put?: never;
-    post?: never;
+    /**
+     * List virtual object state
+     * @description List virtual object state
+     */
+    post: operations['list_virtual_object_state'];
     delete?: never;
     options?: never;
     head?: never;
@@ -433,6 +437,26 @@ export interface paths {
      * @description Get state keys
      */
     get: operations['get_state'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/services/state': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List state
+     * @description List state
+     */
+    get: operations['list_state'];
     put?: never;
     post?: never;
     delete?: never;
@@ -830,7 +854,11 @@ export interface components {
            */
           services: components['schemas']['ServiceMetadata'][];
         };
+    VirtualObjectState: string[];
     ListInvocationsRequestBody: {
+      filters?: components['schemas']['FilterItem'][];
+    };
+    ListVirtualObjectStateRequestBody: {
       filters?: components['schemas']['FilterItem'][];
     };
     FilterItem: components['schemas']['FilterBaseItem'] &
@@ -2781,6 +2809,87 @@ export interface operations {
       };
     };
   };
+  list_virtual_object_state: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description service name */
+        name: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ListVirtualObjectStateRequestBody'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            rows: {
+              key?: string;
+              state?: components['schemas']['StateResponse'];
+            }[];
+            total_count: number;
+            limit?: number;
+          };
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
   get_state: {
     parameters: {
       query?: never;
@@ -2801,6 +2910,75 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['StateResponse'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  list_state: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            virtualObjects: components['schemas']['StateInterfaceResponse'][];
+          };
         };
       };
       400: {
