@@ -1,3 +1,6 @@
+/**
+ * Inspired by https://codepen.io/shubniggurath/pen/EmMzpp
+ */
 interface Position {
   x: number;
   y: number;
