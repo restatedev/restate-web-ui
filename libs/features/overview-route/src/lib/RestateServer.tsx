@@ -129,119 +129,123 @@ export function RestateServer({
             return;
           }
           isAnimating.current = true;
-          const elements = Array.from(
-            document.querySelectorAll('[data-anchor]')
-          )
-            .filter((el) => el instanceof HTMLElement)
-            .filter((el) => {
+          try {
+            const elements = Array.from(
+              document.querySelectorAll('[data-anchor]')
+            )
+              .filter((el) => el instanceof HTMLElement)
+              .filter((el) => {
+                const rect = el.getBoundingClientRect();
+                return rect.bottom >= 0 && rect.bottom <= window.innerHeight;
+              });
+
+            elements.filter(async (el) => {
               const rect = el.getBoundingClientRect();
-              return rect.bottom >= 0 && rect.bottom <= window.innerHeight;
+
+              let { x } = rect;
+              const { y } = rect;
+              const beamEl = document.createElement('div');
+              beamEl.style.position = 'absolute';
+              beamEl.style.width = '2px';
+              beamEl.style.height = '2px';
+              beamEl.style.left = '50%';
+              beamEl.style.top = '50%';
+              beamEl.style.zIndex = '-100000';
+              beamEl.style.borderRadius = '2px';
+              beamEl.style.opacity = '30%';
+              beamEl.style.background =
+                'linear-gradient(to right, rgba(69, 82, 204, 1) 0%, rgba(69, 82, 204, 0) 100%)';
+
+              buttonRef.current?.appendChild(beamEl);
+              const beamElPosition = beamEl.getBoundingClientRect();
+              if (beamElPosition.x < x) {
+                x -= 30;
+              } else {
+                x += 10;
+              }
+              let angle =
+                Math.PI / 2 -
+                Math.atan((beamElPosition.x - x) / (beamElPosition.y - y));
+
+              if (beamElPosition.y < y) {
+                angle = angle + Math.PI;
+              }
+
+              beamEl.style.transform = `rotate(${angle}rad)`;
+
+              const animation = beamEl.animate(
+                [
+                  {
+                    transform: `translateY(0px) translateX(0px) rotate(${angle}rad)`,
+                    width: '2px',
+                  },
+                  {
+                    transform: `translateY(${
+                      y - beamElPosition.y
+                    }px) translateX(${
+                      x - beamElPosition.x
+                    }px) rotate(${angle}rad)`,
+                    width: '30px',
+                  },
+                ],
+                { duration: 1000, easing: 'ease-in' }
+              );
+              await animation.finished;
+              animation.commitStyles();
+
+              beamEl.remove();
+              const isSelected = el.parentElement?.dataset.selected === 'true';
+              const originalScale = isSelected ? 1.05 : 1;
+              const targetAnimation = el.parentElement?.animate(
+                [
+                  { transform: `scale(${originalScale})` },
+                  { transform: `scale(${originalScale * 1.02})` },
+                ],
+                { duration: 300, fill: 'both', easing: 'ease-in' }
+              );
+              el.style.backgroundColor = 'rgb(69, 82, 204)';
+              const ripple = el.animate(
+                [
+                  {
+                    width: '0px',
+                    opacity: 0,
+                    height: '200%',
+                    transform: 'translateY(-50%)',
+                  },
+                  {
+                    width: '100%',
+                    opacity: 0.03,
+                    height: '200%',
+                    transform: 'translateY(-50%)',
+                  },
+                  {
+                    width: '150%',
+                    opacity: 0.0,
+                    height: '200%',
+                    transform: 'translateY(-50%)',
+                  },
+                  {
+                    width: '150%',
+                    opacity: 0.0,
+                    height: '0',
+                    transform: 'translateY(0)',
+                  },
+                ],
+                { duration: 1000, easing: 'ease-in' }
+              );
+              await Promise.all([
+                ripple.finished,
+                targetAnimation?.finished.then(() => {
+                  targetAnimation?.commitStyles();
+                  targetAnimation.reverse();
+                  return targetAnimation.finished;
+                }),
+              ]);
+              isAnimating.current = false;
             });
-
-          elements.filter(async (el) => {
-            const rect = el.getBoundingClientRect();
-
-            let { x } = rect;
-            const { y } = rect;
-            const beamEl = document.createElement('div');
-            beamEl.style.position = 'absolute';
-            beamEl.style.width = '2px';
-            beamEl.style.height = '2px';
-            beamEl.style.left = '50%';
-            beamEl.style.top = '50%';
-            beamEl.style.zIndex = '-100000';
-            beamEl.style.borderRadius = '2px';
-            beamEl.style.opacity = '30%';
-            beamEl.style.background =
-              'linear-gradient(to right, rgba(69, 82, 204, 1) 0%, rgba(69, 82, 204, 0) 100%)';
-
-            buttonRef.current?.appendChild(beamEl);
-            const beamElPosition = beamEl.getBoundingClientRect();
-            if (beamElPosition.x < x) {
-              x -= 30;
-            } else {
-              x += 10;
-            }
-            let angle =
-              Math.PI / 2 -
-              Math.atan((beamElPosition.x - x) / (beamElPosition.y - y));
-
-            if (beamElPosition.y < y) {
-              angle = angle + Math.PI;
-            }
-
-            beamEl.style.transform = `rotate(${angle}rad)`;
-
-            const animation = beamEl.animate(
-              [
-                {
-                  transform: `translateY(0px) translateX(0px) rotate(${angle}rad)`,
-                  width: '2px',
-                },
-                {
-                  transform: `translateY(${
-                    y - beamElPosition.y
-                  }px) translateX(${
-                    x - beamElPosition.x
-                  }px) rotate(${angle}rad)`,
-                  width: '30px',
-                },
-              ],
-              { duration: 1000, easing: 'ease-in' }
-            );
-            await animation.finished;
-            animation.commitStyles();
-
-            beamEl.remove();
-            const isSelected = el.parentElement?.dataset.selected === 'true';
-            const originalScale = isSelected ? 1.05 : 1;
-            const targetAnimation = el.parentElement?.animate(
-              [
-                { transform: `scale(${originalScale})` },
-                { transform: `scale(${originalScale * 1.02})` },
-              ],
-              { duration: 300, fill: 'both', easing: 'ease-in' }
-            );
-            el.style.backgroundColor = 'rgb(69, 82, 204)';
-            const ripple = el.animate(
-              [
-                {
-                  width: '0px',
-                  opacity: 0,
-                  height: '200%',
-                  transform: 'translateY(-50%)',
-                },
-                {
-                  width: '100%',
-                  opacity: 0.03,
-                  height: '200%',
-                  transform: 'translateY(-50%)',
-                },
-                {
-                  width: '150%',
-                  opacity: 0.0,
-                  height: '200%',
-                  transform: 'translateY(-50%)',
-                },
-                {
-                  width: '150%',
-                  opacity: 0.0,
-                  height: '0',
-                  transform: 'translateY(0)',
-                },
-              ],
-              { duration: 1000, easing: 'ease-in' }
-            );
-            await Promise.all([
-              ripple.finished,
-              targetAnimation?.finished.then(() => {
-                targetAnimation?.commitStyles();
-                targetAnimation.reverse();
-                return targetAnimation.finished;
-              }),
-            ]);
+          } catch (_) {
             isAnimating.current = false;
-          });
+          }
         }}
         ref={buttonRef}
         className={buttonStyles({ isEmpty })}
