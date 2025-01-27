@@ -1,0 +1,9 @@
+{
+  "name": "state-route",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/features/state-route/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project state-route --web",
+  "targets": {}
+}

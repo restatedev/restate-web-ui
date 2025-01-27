@@ -123,7 +123,16 @@ export function InvocationDeployment({
           />
         )}
       </div>
-    ) : null;
+    ) : (
+      <div className="font-mono text-zinc-600 flex flex-col gap-1.5 text-xs">
+        <div className="bg-white shadow-sm border rounded-[calc(0.75rem-0.125rem)] text-xs font-medium pl-2.5 py-1 -mx-2">
+          {deploymentId}
+        </div>
+        <div className="font-sans text-xs text-zinc-500">
+          The deployment no longer exists.
+        </div>
+      </div>
+    );
   }
   return null;
 }

@@ -206,6 +206,89 @@ async function getStateInterface(
   });
 }
 
+// TODO: add limit
+// TODO: pagination
+async function queryState(
+  service: string,
+  baseUrl: string,
+  headers: Headers,
+  filters: FilterItem[]
+) {
+  const filterWithServiceName: FilterItem[] = [
+    ...filters,
+    {
+      field: 'service_name',
+      operation: 'EQUALS',
+      value: service,
+      type: 'STRING',
+    },
+  ];
+  const totalCountPromise = queryFetcher(
+    `SELECT COUNT(*) AS total_count FROM state ${convertFilters(
+      filterWithServiceName
+    )}`,
+    { baseUrl, headers }
+  ).then(({ rows }) => rows?.at(0)?.total_count as number);
+  const resultsPromise: Promise<
+    Record<string, { key: string; state: { name: string; value: string }[] }>
+  > = queryFetcher(
+    `SELECT * FROM state ${convertFilters(filterWithServiceName)}`,
+    { baseUrl, headers }
+  ).then(({ rows }) =>
+    rows.reduce((result, row) => {
+      return {
+        ...result,
+        [row.service_key]: {
+          key: row.service_key,
+          state: [
+            ...(result[row.service_key]?.state ?? []),
+            {
+              name: row.key,
+              value: row.value_utf8,
+            },
+          ],
+        },
+      };
+    }, {})
+  );
+
+  const [total_count, results] = await Promise.all([
+    totalCountPromise,
+    resultsPromise,
+  ]);
+  const objects = Array.from(Object.values(results));
+
+  return new Response(JSON.stringify({ total_count, objects }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+// TODO: add limit
+async function getAllStateInterface(baseUrl: string, headers: Headers) {
+  const results: Record<string, string[]> = await queryFetcher(
+    `SELECT DISTINCT key, service_name FROM state GROUP BY key, service_name`,
+    { baseUrl, headers }
+  ).then(({ rows }) =>
+    rows.reduce((results, c) => {
+      return {
+        ...results,
+        [c.service_name]: [...(results[c.service_name] ?? []), c.key],
+      };
+    }, {})
+  );
+
+  const objects = Array.from(Object.entries(results)).map(([name, keys]) => ({
+    name,
+    keys,
+  }));
+
+  return new Response(JSON.stringify({ objects }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
 export async function query(req: Request) {
   const { url, method, headers } = req;
   const urlObj = new URL(url);
@@ -277,8 +360,8 @@ export async function query(req: Request) {
     );
   }
 
-  const getStateInterfaceParams = match<{ key: string; name: string }>(
-    '/query/services/:name/state'
+  const getStateInterfaceParams = match<{ name: string }>(
+    '/query/services/:name/state/keys'
   )(urlObj.pathname);
 
   if (getStateInterfaceParams && method.toUpperCase() === 'GET') {
@@ -288,6 +371,29 @@ export async function query(req: Request) {
       baseUrl,
       headers
     );
+  }
+
+  const getQueryStateParams = match<{ name: string }>(
+    '/query/services/:name/state'
+  )(urlObj.pathname);
+
+  if (getQueryStateParams && method.toUpperCase() === 'POST') {
+    const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
+    const { filters = [] } = await req.json();
+    return queryState(
+      getQueryStateParams.params.name,
+      baseUrl,
+      headers,
+      filters
+    );
+  }
+
+  if (
+    urlObj.pathname === '/query/services/state' &&
+    method.toUpperCase() === 'GET'
+  ) {
+    const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
+    return getAllStateInterface(baseUrl, headers);
   }
 
   return new Response('Not implemented', { status: 501 });

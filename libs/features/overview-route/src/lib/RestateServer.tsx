@@ -191,7 +191,7 @@ export function RestateServer({
                 { duration: 1000, easing: 'ease-in' }
               );
               await animation.finished;
-              animation.commitStyles();
+              animation.cancel();
 
               beamEl.remove();
               const isSelected = el.parentElement?.dataset.selected === 'true';
@@ -236,11 +236,12 @@ export function RestateServer({
               await Promise.all([
                 ripple.finished,
                 targetAnimation?.finished.then(() => {
-                  targetAnimation?.commitStyles();
                   targetAnimation.reverse();
                   return targetAnimation.finished;
                 }),
               ]);
+              targetAnimation?.cancel();
+              ripple.cancel();
               isAnimating.current = false;
             });
           } catch (_) {
