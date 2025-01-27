@@ -49,6 +49,12 @@
       "@restate/features/service-protocol": [
         "libs/features/service-protocol/src/index.ts"
       ],
+      "@restate/features/state-object-route": [
+        "libs/features/state-object-route/src/index.ts"
+      ],
+      "@restate/features/state-route": [
+        "libs/features/state-route/src/index.ts"
+      ],
       "@restate/features/version": ["libs/features/version/src/index.ts"],
       "@restate/ui/api": ["libs/ui/api/src/index.ts"],
       "@restate/ui/badge": ["libs/ui/badge/src/index.ts"],
