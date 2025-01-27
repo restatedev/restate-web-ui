@@ -441,12 +441,12 @@ export function useQueryVirtualObjectState(
 
 export function useGetVirtualObjectStateInterface(
   serviceName: string,
-  options?: HookQueryOptions<'/query/services/{name}/state', 'get'>
+  options?: HookQueryOptions<'/query/services/{name}/state/keys', 'get'>
 ) {
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi(
     'query',
-    '/query/services/{name}/state',
+    '/query/services/{name}/state/keys',
     'get',
     {
       baseUrl,
