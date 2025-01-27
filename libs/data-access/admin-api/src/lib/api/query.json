@@ -594,7 +594,7 @@
         }
       }
     },
-    "/query/services/{name}/state": {
+    "/query/services/{name}/state/keys": {
       "get": {
         "tags": ["query-invocations"],
         "summary": "Get state keys",
@@ -683,7 +683,9 @@
             }
           }
         }
-      },
+      }
+    },
+    "/query/services/{name}/state": {
       "post": {
         "tags": ["query-state"],
         "summary": "List virtual object state",
@@ -717,20 +719,25 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "required": ["rows", "total_count"],
+                  "required": ["objects", "total_count"],
                   "properties": {
-                    "rows": {
+                    "objects": {
                       "type": "array",
                       "items": {
                         "type": "object",
-                        "properties": {
-                          "key": {
-                            "type": "string"
-                          },
-                          "state": {
+                        "allOf": [
+                          {
                             "$ref": "#/components/schemas/StateResponse"
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "key": {
+                                "type": "string"
+                              }
+                            }
                           }
-                        }
+                        ]
                       }
                     },
                     "total_count": {
@@ -920,12 +927,24 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "required": ["virtualObjects"],
+                  "required": ["objects"],
                   "properties": {
-                    "virtualObjects": {
+                    "objects": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/StateInterfaceResponse"
+                        "required": ["name", "keys"],
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          },
+                          "keys": {
+                            "type": "array",
+                            "items": {
+                              "$ref": "#/components/schemas/StateInterfaceResponse"
+                            }
+                          }
+                        }
                       }
                     }
                   }

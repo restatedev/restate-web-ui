@@ -401,7 +401,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/query/services/{name}/state': {
+  '/query/services/{name}/state/keys': {
     parameters: {
       query?: never;
       header?: never;
@@ -413,6 +413,22 @@ export interface paths {
      * @description Get state keys
      */
     get: operations['get_state_keys'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/services/{name}/state': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
     put?: never;
     /**
      * List virtual object state
@@ -2831,10 +2847,9 @@ export interface operations {
         };
         content: {
           'application/json': {
-            rows: {
+            objects: (components['schemas']['StateResponse'] & {
               key?: string;
-              state?: components['schemas']['StateResponse'];
-            }[];
+            })[];
             total_count: number;
             limit?: number;
           };
@@ -2977,7 +2992,10 @@ export interface operations {
         };
         content: {
           'application/json': {
-            virtualObjects: components['schemas']['StateInterfaceResponse'][];
+            objects: {
+              name: string;
+              keys: components['schemas']['StateInterfaceResponse'][];
+            }[];
           };
         };
       };
