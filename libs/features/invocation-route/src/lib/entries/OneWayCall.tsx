@@ -35,7 +35,7 @@ export function OneWayCall({
       <div className="pl-7 max-w-full flex items-center flex-wrap">
         <Expression
           isHandler
-          name={invocation.target_handler_name}
+          name={entry.invoked_target.split('/').at(-1) ?? ''}
           input={
             <>
               {entry.parameters && (
