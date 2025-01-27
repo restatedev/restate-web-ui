@@ -175,7 +175,7 @@ function Component() {
   const {
     data: { services, sortedServiceNames, deployments } = {},
     isPending,
-    isSuccess,
+    isFetched,
     isError,
     error,
   } = useListDeployments();
@@ -211,7 +211,7 @@ function Component() {
       resizeObserver.unobserve(document.body);
     };
   }, [masonryId, sortedServiceNames, filterQuery]);
-  const isEmpty = !deployments || deployments.size === 0;
+  const isEmpty = isFetched && (!deployments || deployments.size === 0);
 
   // TODO: Handle isLoading & isError
 
