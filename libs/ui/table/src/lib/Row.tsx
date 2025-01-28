@@ -14,7 +14,7 @@ import { PropsWithChildren, ReactElement, Ref, useRef, useState } from 'react';
 
 const rowStyles = tv({
   extend: focusRing,
-  base: ' group/row transform transition relative cursor-default -outline-offset-2 text-gray-900 disabled:text-gray-300 text-sm hover:bg-gray-100 selected:bg-blue-100 selected:hover:bg-blue-200',
+  base: '[content-visibility:auto] group/row transform transition relative cursor-default -outline-offset-2 text-gray-900 disabled:text-gray-300 text-sm hover:bg-gray-100 selected:bg-blue-100 selected:hover:bg-blue-200',
   variants: {
     isVisible: {
       true: '[&_td]:opacity-100',
