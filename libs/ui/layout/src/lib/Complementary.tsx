@@ -129,11 +129,14 @@ function ComplementaryWithSearchParamValue({
   }, [children, paramValue]);
 
   const onClose = useCallback(() => {
-    setSearchParams((prev) => {
-      return new URLSearchParams(
-        prev.toString().replace(`${paramName}=${paramValue}`, '')
-      );
-    });
+    setSearchParams(
+      (prev) => {
+        return new URLSearchParams(
+          prev.toString().replace(`${paramName}=${paramValue}`, '')
+        );
+      },
+      { preventScrollReset: true }
+    );
   }, [paramName, paramValue, setSearchParams]);
   const isOnTop = searchParams
     .toString()

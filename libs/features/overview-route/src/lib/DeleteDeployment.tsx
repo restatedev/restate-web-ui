@@ -38,11 +38,14 @@ export function DeleteDeployment() {
     String(deploymentId),
     {
       onSuccess(data, variables) {
-        setSearchParams((old) => {
-          old.delete(DELETE_DEPLOYMENT_QUERY_PARAM);
-          old.delete(DEPLOYMENT_QUERY_PARAM);
-          return old;
-        });
+        setSearchParams(
+          (old) => {
+            old.delete(DELETE_DEPLOYMENT_QUERY_PARAM);
+            old.delete(DEPLOYMENT_QUERY_PARAM);
+            return old;
+          },
+          { preventScrollReset: true }
+        );
         showSuccessNotification(
           <>
             <code>{variables.parameters?.path.deployment}</code> has been

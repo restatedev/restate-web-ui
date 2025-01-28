@@ -434,18 +434,21 @@ function Component() {
           className="flex relative"
           onSubmit={async (event) => {
             event.preventDefault();
-            setSearchParams((old) => {
-              const newSearchParams = new URLSearchParams(old);
-              Array.from(newSearchParams.keys())
-                .filter((key) => key.startsWith('filter_'))
-                .forEach((key) => newSearchParams.delete(key));
-              query.items
-                .filter((clause) => clause.isValid)
-                .forEach((item) => {
-                  newSearchParams.set(`filter_${item.id}`, String(item));
-                });
-              return newSearchParams;
-            });
+            setSearchParams(
+              (old) => {
+                const newSearchParams = new URLSearchParams(old);
+                Array.from(newSearchParams.keys())
+                  .filter((key) => key.startsWith('filter_'))
+                  .forEach((key) => newSearchParams.delete(key));
+                query.items
+                  .filter((clause) => clause.isValid)
+                  .forEach((item) => {
+                    newSearchParams.set(`filter_${item.id}`, String(item));
+                  });
+                return newSearchParams;
+              },
+              { preventScrollReset: true }
+            );
             setQueryFilters(
               query.items
                 .filter((clause) => clause.isValid)
