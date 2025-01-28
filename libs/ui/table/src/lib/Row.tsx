@@ -10,24 +10,24 @@ import {
   useTableOptions,
 } from 'react-aria-components';
 import { Checkbox } from '@restate/ui/form-field';
-import { PropsWithChildren, ReactElement, Ref, useRef, useState } from 'react';
+import {
+  PropsWithChildren,
+  ReactElement,
+  Ref,
+  useDeferredValue,
+  useState,
+} from 'react';
 
 const rowStyles = tv({
   extend: focusRing,
   base: '[content-visibility:auto] group/row transform transition relative cursor-default -outline-offset-2 text-gray-900 disabled:text-gray-300 text-sm hover:bg-gray-100 selected:bg-blue-100 selected:hover:bg-blue-200',
-  variants: {
-    isVisible: {
-      true: '[&_td]:opacity-100',
-      false: '[&_td]:opacity-0',
-    },
-  },
-  defaultVariants: {
-    isVisible: true,
-  },
 });
 
 interface RowProps<T extends object>
-  extends Pick<AriaRowProps<T>, 'id' | 'columns' | 'children'> {
+  extends Pick<
+    AriaRowProps<T>,
+    'id' | 'columns' | 'children' | 'dependencies'
+  > {
   className?: string;
   ref?: Ref<HTMLTableRowElement>;
 }
@@ -39,7 +39,7 @@ export function Row<T extends object>({
   className,
   ref,
   ...otherProps
-}: PropsWithChildren<RowProps<T>>) {
+}: RowProps<T>) {
   const { selectionBehavior, allowsDragging } = useTableOptions();
 
   return (
@@ -59,46 +59,45 @@ export function Row<T extends object>({
           <Checkbox slot="selection" />
         </Cell>
       )}
-      {columns ? <Collection items={columns}>{children}</Collection> : children}
+      <Collection items={columns}>{children}</Collection>
     </AriaRow>
   );
 }
 
 export function PerformantRow<T extends object>({
   children,
-  columns,
   ...otherProps
 }: Omit<RowProps<T>, 'children' | 'ref'> & {
   children: (item: T & { isVisible?: boolean }) => ReactElement;
 }) {
   const [isVisible, setIsVisible] = useState(false);
-  const observerRef = useRef<IntersectionObserver | undefined>(undefined);
+  const deferredIsVisible = useDeferredValue(isVisible);
+  const [observer] = useState(
+    () =>
+      new IntersectionObserver(
+        ([entry]) => {
+          setIsVisible(!!entry?.isIntersecting);
+        },
+        {
+          root: null,
+          rootMargin: '0% 0px 0% 0px',
+          threshold: 0.1,
+        }
+      )
+  );
 
   return (
     <Row
       ref={(el) => {
-        if (el) {
-          observerRef.current = new IntersectionObserver(
-            ([entry]) => {
-              setIsVisible(!!entry?.isIntersecting);
-            },
-            {
-              root: null, // Use the viewport as the container
-              rootMargin: '50% 0px 50% 0px',
-              threshold: 0.1, // Trigger when 50% of the element is visible
-            }
-          );
-          observerRef.current.observe(el);
-        } else {
-          observerRef.current?.disconnect();
-          observerRef.current = undefined;
-        }
+        el && observer?.observe(el);
+        return () => {
+          el && observer?.unobserve(el);
+        };
       }}
       {...otherProps}
+      dependencies={[deferredIsVisible]}
     >
-      <Collection dependencies={[isVisible]} items={columns}>
-        {(col) => children({ ...col, isVisible })}
-      </Collection>
+      {(col) => children({ ...col, isVisible: deferredIsVisible })}
     </Row>
   );
 }
