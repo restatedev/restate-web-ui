@@ -19,6 +19,7 @@ const COLUMNS_KEYS = [
   'target_service_name',
   'target_service_key',
   'target_handler_name',
+  'actions',
 ] as const;
 export type ColumnKey = (typeof COLUMNS_KEYS)[number];
 
@@ -39,6 +40,7 @@ export const COLUMN_NAMES: Record<ColumnKey, string> = {
   target_service_name: 'Service name',
   target_service_key: 'Service key',
   target_handler_name: 'Handler',
+  actions: 'Actions',
 };
 
 const SORT_ORDER: Record<ColumnKey, number> = Object.entries(
@@ -63,10 +65,15 @@ export function useColumns() {
       'journal_size',
     ])
   );
-  const sortedColumnsList = useMemo(
-    () => Array.from(selectedColumns).sort(sortColumns) as ColumnKey[],
-    [selectedColumns]
-  );
+  const sortedColumnsList = useMemo(() => {
+    return [...Array.from(selectedColumns).sort(sortColumns), 'actions'].map(
+      (id, index) => ({
+        name: COLUMN_NAMES[id as ColumnKey],
+        id,
+        isRowHeader: index === 0,
+      })
+    ) as { id: ColumnKey; name: string; isRowHeader: boolean }[];
+  }, [selectedColumns]);
 
   return { selectedColumns, setSelectedColumns, sortedColumnsList };
 }

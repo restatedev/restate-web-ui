@@ -4,7 +4,8 @@ import { tv } from 'tailwind-variants';
 const styles = tv({
   base: 'inline-flex items-baseline gap-[0.15em]',
   slots: {
-    ellipsis: 'inline-flex gap-[0.15em] items-baseline gap-[0.15em]',
+    ellipsis:
+      'inline-flex gap-[0.15em] items-baseline gap-[0.15em] [content-visibility:auto]',
   },
 });
 

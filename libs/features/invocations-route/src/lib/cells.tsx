@@ -194,6 +194,7 @@ const CELLS: Record<ColumnKey, ComponentType<CellProps>> = {
   target_service_key: withCell(withField({ field: 'target_service_key' })),
   target_service_name: withCell(withField({ field: 'target_service_name' })),
   target_handler_name: withCell(withField({ field: 'target_handler_name' })),
+  actions: () => <Cell />,
 };
 
 export function InvocationCell({
