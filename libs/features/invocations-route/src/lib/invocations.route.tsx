@@ -432,8 +432,10 @@ function Component() {
                   if (isVisible === false) {
                     const value = (row as Record<string, any>)[id];
                     return (
-                      <Cell key={id} className="h-[2.6875rem] text-transparent">
-                        {value}
+                      <Cell key={id} className="p-2 h-[2.6875rem]">
+                        <div className="min-h-full text-transparent rounded-md bg-slate-200/70 w-fit">
+                          {value}
+                        </div>
                       </Cell>
                     );
                   }
