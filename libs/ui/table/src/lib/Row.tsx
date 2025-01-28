@@ -32,7 +32,7 @@ interface RowProps<T extends object>
   ref?: Ref<HTMLTableRowElement>;
 }
 
-export function Row<T extends object>({
+export function Row<T extends { id?: string }>({
   id,
   columns,
   children,
@@ -64,7 +64,7 @@ export function Row<T extends object>({
   );
 }
 
-export function PerformantRow<T extends object>({
+export function PerformantRow<T extends { id?: string }>({
   children,
   ...otherProps
 }: Omit<RowProps<T>, 'children' | 'ref'> & {
@@ -80,7 +80,7 @@ export function PerformantRow<T extends object>({
         },
         {
           root: null,
-          rootMargin: '0% 0px 0% 0px',
+          rootMargin: '10% 0px 10% 0px',
           threshold: 0.1,
         }
       )
