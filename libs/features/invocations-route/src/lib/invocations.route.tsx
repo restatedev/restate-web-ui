@@ -424,6 +424,7 @@ function Component() {
           >
             {(row) => (
               <PerformantRow
+                id={row.id}
                 columns={sortedColumnsList}
                 className={` [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50 bg-transparent [content-visibility:auto]`}
               >
