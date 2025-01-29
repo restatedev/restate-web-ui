@@ -3,7 +3,7 @@ import { TooltipTriggerStateContext } from 'react-aria-components';
 import { Tooltip } from './Tooltip';
 import { TooltipContent } from './TooltipContent';
 import { Copy } from '@restate/ui/copy';
-import { formatDateTime } from '@restate/util/intl';
+import { formatDateTime, formatDateToISO } from '@restate/util/intl';
 import { useTooltipWithHover } from './useTooltipWithHover';
 import { tv } from 'tailwind-variants';
 
@@ -61,7 +61,7 @@ export function DateTooltip({
               </div>
             </div>
             <Copy
-              copyText={date.toISOString()}
+              copyText={formatDateToISO(date)}
               className="p-1 -m-1 -mt-0.5 [&_svg]:w-3 [&_svg]:h-3  [&_svg]:text-gray-200 bg-transparent hover:bg-zinc-600 pressed:bg-zinc-500 rounded-sm"
             />
           </div>

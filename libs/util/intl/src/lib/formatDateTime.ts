@@ -20,6 +20,9 @@ const utcFormatter = new Intl.DateTimeFormat('en', {
 });
 
 export function formatDateTime(value: Date, timezone: 'UTC' | 'system') {
+  if (isNaN(value.valueOf())) {
+    return '';
+  }
   if (timezone === 'UTC') {
     return utcFormatter.format(value);
   } else {

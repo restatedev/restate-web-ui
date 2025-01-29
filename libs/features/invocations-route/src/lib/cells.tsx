@@ -141,7 +141,7 @@ function withCell(Component: ComponentType<CellProps>, id: ColumnKey) {
         {isVisible ? (
           <Component {...props} />
         ) : (
-          <div className="min-h-full text-transparent rounded-md bg-slate-200/70 w-fit max-w-full truncate">
+          <div className="min-h-6 text-transparent rounded-md bg-slate-200/70 w-fit max-w-full truncate">
             {key && props.invocation[key]}
           </div>
         )}

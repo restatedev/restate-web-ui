@@ -106,7 +106,12 @@ async function getInvocationJournal(
       baseUrl,
       headers,
     }
-  ).then(({ rows }) => rows.map(convertJournal));
+  ).then(({ rows }) =>
+    // TODO only pass entries after current entry
+    rows
+      .map((entry, _, allEntries) => convertJournal(entry, allEntries))
+      .filter((entry) => !entry.entry_type?.startsWith('Notification'))
+  );
   return new Response(JSON.stringify({ entries }), {
     status: 200,
     headers: { 'Content-Type': 'application/json' },
