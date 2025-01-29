@@ -15,6 +15,7 @@ import {
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 import { tv } from 'tailwind-variants';
 import {
+  Actions,
   InvocationDeployment,
   InvocationId,
   Journal,
@@ -127,12 +128,26 @@ function TargetCell({ invocation }: CellProps) {
   return <Target target={invocation.target} />;
 }
 
-function withCell(Component: ComponentType<CellProps>) {
-  return (props: CellProps) => (
-    <Cell className="align-top">
-      <Component {...props} />
-    </Cell>
-  );
+function withCell(Component: ComponentType<CellProps>, id: ColumnKey) {
+  return function ({ isVisible, ...props }: CellProps) {
+    const key: keyof Invocation | undefined =
+      id !== 'actions'
+        ? id !== 'deployment'
+          ? id
+          : 'pinned_deployment_id'
+        : undefined;
+    return (
+      <Cell className="align-top">
+        {isVisible ? (
+          <Component {...props} />
+        ) : (
+          <div className="min-h-full text-transparent rounded-md bg-slate-200/70 w-fit max-w-full truncate">
+            {key && props.invocation[key]}
+          </div>
+        )}
+      </Cell>
+    );
+  };
 }
 
 function JournalCell({ invocation }: CellProps) {
@@ -168,38 +183,58 @@ function JournalCell({ invocation }: CellProps) {
 }
 
 const CELLS: Record<ColumnKey, ComponentType<CellProps>> = {
-  id: withCell(InvocationIdCell),
-  target: withCell(TargetCell),
-  status: withCell(Status),
-  target_service_ty: withCell(Type),
-  invoked_by: withCell(InvokedBy),
+  id: withCell(InvocationIdCell, 'id'),
+  target: withCell(TargetCell, 'target'),
+  status: withCell(Status, 'status'),
+  target_service_ty: withCell(Type, 'target_service_ty'),
+  invoked_by: withCell(InvokedBy, 'invoked_by'),
   created_at: withCell(
-    withDate({ field: 'created_at', tooltipTitle: 'Created at' })
+    withDate({ field: 'created_at', tooltipTitle: 'Created at' }),
+    'created_at'
   ),
   modified_at: withCell(
-    withDate({ field: 'modified_at', tooltipTitle: 'Modified at' })
+    withDate({ field: 'modified_at', tooltipTitle: 'Modified at' }),
+    'modified_at'
   ),
   scheduled_at: withCell(
-    withDate({ field: 'scheduled_at', tooltipTitle: 'Scheduled at' })
+    withDate({ field: 'scheduled_at', tooltipTitle: 'Scheduled at' }),
+    'scheduled_at'
   ),
   running_at: withCell(
-    withDate({ field: 'running_at', tooltipTitle: 'Running since' })
+    withDate({ field: 'running_at', tooltipTitle: 'Running since' }),
+    'running_at'
   ),
   idempotency_key: withCell(
-    withField({ field: 'idempotency_key', className: 'font-mono' })
+    withField({ field: 'idempotency_key', className: 'font-mono' }),
+    'idempotency_key'
   ),
-  journal_size: withCell(JournalCell),
-  retry_count: withCell(withField({ field: 'retry_count' })),
-  deployment: withCell(InvocationDeployment),
-  target_service_key: withCell(withField({ field: 'target_service_key' })),
-  target_service_name: withCell(withField({ field: 'target_service_name' })),
-  target_handler_name: withCell(withField({ field: 'target_handler_name' })),
+  journal_size: withCell(JournalCell, 'journal_size'),
+  retry_count: withCell(withField({ field: 'retry_count' }), 'retry_count'),
+  deployment: withCell(InvocationDeployment, 'deployment'),
+  target_service_key: withCell(
+    withField({ field: 'target_service_key' }),
+    'target_service_key'
+  ),
+  target_service_name: withCell(
+    withField({ field: 'target_service_name' }),
+    'target_handler_name'
+  ),
+  target_handler_name: withCell(
+    withField({ field: 'target_handler_name' }),
+    'target_handler_name'
+  ),
+  actions: ({ invocation }) => (
+    <Cell className="align-top">
+      <Actions invocation={invocation} />
+    </Cell>
+  ),
 };
 
 export function InvocationCell({
   invocation,
+  isVisible,
   column,
 }: CellProps & { column: ColumnKey }) {
   const Cell = CELLS[column];
-  return <Cell invocation={invocation} />;
+  return <Cell invocation={invocation} isVisible={isVisible} />;
 }

@@ -24,10 +24,13 @@ export function CancelInvocation() {
     String(invocationId),
     {
       onSuccess(data, variables) {
-        setSearchParams((old) => {
-          old.delete(CANCEL_INVOCATION_QUERY_PARAM);
-          return old;
-        });
+        setSearchParams(
+          (old) => {
+            old.delete(CANCEL_INVOCATION_QUERY_PARAM);
+            return old;
+          },
+          { preventScrollReset: true }
+        );
         showSuccessNotification(
           <>
             <code>{variables.parameters?.path.invocation_id}</code> has been

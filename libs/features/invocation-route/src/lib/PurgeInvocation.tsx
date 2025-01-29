@@ -22,10 +22,13 @@ export function PurgeInvocation() {
     String(invocationId),
     {
       onSuccess(data, variables) {
-        setSearchParams((old) => {
-          old.delete(PURGE_INVOCATION_QUERY_PARAM);
-          return old;
-        });
+        setSearchParams(
+          (old) => {
+            old.delete(PURGE_INVOCATION_QUERY_PARAM);
+            return old;
+          },
+          { preventScrollReset: true }
+        );
         showSuccessNotification(
           <>
             <code>{variables.parameters?.path.invocation_id}</code> has been

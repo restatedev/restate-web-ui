@@ -43,7 +43,7 @@ export function Complementary({
           <FocusScope restoreFocus autoFocus>
             <div
               data-complementary-content
-              className="overflow-y-auto bg-white p-3 pt-7 border rounded-xl flex-auto flex flex-col min-h-[50vh] overflow-auto relative max-h-[inherit]"
+              className="[content-visibility:auto] overflow-y-auto bg-white p-3 pt-7 border rounded-xl flex-auto flex flex-col min-h-[50vh] overflow-auto relative max-h-[inherit]"
               onKeyDown={(e) => {
                 if (e.key === 'Escape') {
                   onClose?.();
@@ -129,11 +129,14 @@ function ComplementaryWithSearchParamValue({
   }, [children, paramValue]);
 
   const onClose = useCallback(() => {
-    setSearchParams((prev) => {
-      return new URLSearchParams(
-        prev.toString().replace(`${paramName}=${paramValue}`, '')
-      );
-    });
+    setSearchParams(
+      (prev) => {
+        return new URLSearchParams(
+          prev.toString().replace(`${paramName}=${paramValue}`, '')
+        );
+      },
+      { preventScrollReset: true }
+    );
   }, [paramName, paramValue, setSearchParams]);
   const isOnTop = searchParams
     .toString()

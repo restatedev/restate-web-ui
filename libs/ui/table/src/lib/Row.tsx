@@ -10,29 +10,45 @@ import {
   useTableOptions,
 } from 'react-aria-components';
 import { Checkbox } from '@restate/ui/form-field';
-import { PropsWithChildren } from 'react';
+import {
+  PropsWithChildren,
+  ReactElement,
+  Ref,
+  useDeferredValue,
+  useState,
+} from 'react';
 
 const rowStyles = tv({
   extend: focusRing,
-  base: 'group/row relative cursor-default -outline-offset-2 text-gray-900 disabled:text-gray-300 text-sm hover:bg-gray-100 selected:bg-blue-100 selected:hover:bg-blue-200',
+  base: '[content-visibility:auto] group/row transform transition relative cursor-default -outline-offset-2 text-gray-900 disabled:text-gray-300 text-sm hover:bg-gray-100 selected:bg-blue-100 selected:hover:bg-blue-200',
 });
 
 interface RowProps<T extends object>
-  extends Pick<AriaRowProps<T>, 'id' | 'columns'> {
+  extends Pick<
+    AriaRowProps<T>,
+    'id' | 'columns' | 'children' | 'dependencies'
+  > {
   className?: string;
+  ref?: Ref<HTMLTableRowElement>;
 }
 
-export function Row<T extends object>({
+export function Row<T extends { id?: string }>({
   id,
   columns,
   children,
   className,
+  ref,
   ...otherProps
-}: PropsWithChildren<RowProps<T>>) {
+}: RowProps<T>) {
   const { selectionBehavior, allowsDragging } = useTableOptions();
 
   return (
-    <AriaRow id={id} {...otherProps} className={rowStyles({ className })}>
+    <AriaRow
+      ref={ref}
+      id={id}
+      {...otherProps}
+      className={rowStyles({ className })}
+    >
       {allowsDragging && (
         <Cell>
           <Button slot="drag">≡</Button>
@@ -45,6 +61,44 @@ export function Row<T extends object>({
       )}
       <Collection items={columns}>{children}</Collection>
     </AriaRow>
+  );
+}
+
+export function PerformantRow<T extends { id?: string }>({
+  children,
+  ...otherProps
+}: Omit<RowProps<T>, 'children' | 'ref'> & {
+  children: (item: T & { isVisible?: boolean }) => ReactElement;
+}) {
+  const [isVisible, setIsVisible] = useState(false);
+  const deferredIsVisible = useDeferredValue(isVisible);
+  const [observer] = useState(
+    () =>
+      new IntersectionObserver(
+        ([entry]) => {
+          setIsVisible(!!entry?.isIntersecting);
+        },
+        {
+          root: null,
+          rootMargin: '10% 0px 10% 0px',
+          threshold: 0.1,
+        }
+      )
+  );
+
+  return (
+    <Row
+      ref={(el) => {
+        el && observer?.observe(el);
+        return () => {
+          el && observer?.unobserve(el);
+        };
+      }}
+      {...otherProps}
+      dependencies={[deferredIsVisible]}
+    >
+      {(col) => children({ ...col, isVisible: deferredIsVisible })}
+    </Row>
   );
 }
 

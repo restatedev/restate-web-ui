@@ -54,10 +54,13 @@ export function DeploymentDetails() {
               className="flex-auto grow-0 w-1/2"
               variant="destructive"
               onClick={() =>
-                setSearchParams((old) => {
-                  old.set(DELETE_DEPLOYMENT_QUERY_PARAM, deployment);
-                  return old;
-                })
+                setSearchParams(
+                  (old) => {
+                    old.set(DELETE_DEPLOYMENT_QUERY_PARAM, deployment);
+                    return old;
+                  },
+                  { preventScrollReset: true }
+                )
               }
             >
               Delete

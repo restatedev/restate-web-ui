@@ -7,9 +7,8 @@ import {
 } from '@restate/data-access/admin-api';
 import { Button, SubmitButton } from '@restate/ui/button';
 import {
-  Cell,
   Column,
-  Row,
+  PerformantRow,
   Table,
   TableBody,
   TableHeader,
@@ -33,7 +32,6 @@ import {
 } from '@restate/util/snapshot-time';
 import { useEffect, useMemo, useState } from 'react';
 import { formatDurations } from '@restate/util/intl';
-import { Actions } from '@restate/features/invocation-route';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import {
   AddQueryTrigger,
@@ -307,10 +305,16 @@ function Component() {
         } else {
           cmp = collator.compare(
             a[
-              sortDescriptor?.column as Exclude<ColumnKey, 'deployment'>
+              sortDescriptor?.column as Exclude<
+                ColumnKey,
+                'deployment' | 'actions'
+              >
             ]?.toString() ?? '',
             b[
-              sortDescriptor?.column as Exclude<ColumnKey, 'deployment'>
+              sortDescriptor?.column as Exclude<
+                ColumnKey,
+                'deployment' | 'actions'
+              >
             ]?.toString() ?? ''
           );
         }
@@ -347,13 +351,8 @@ function Component() {
           onSortChange={setSortDescriptor}
         >
           <TableHeader>
-            {sortedColumnsList
-              .map((id, index) => ({
-                name: COLUMN_NAMES[id],
-                id,
-                isRowHeader: index === 0,
-              }))
-              .map((col) => (
+            {sortedColumnsList.map((col) =>
+              col.id !== 'actions' ? (
                 <Column
                   id={col.id}
                   isRowHeader={col.isRowHeader}
@@ -363,36 +362,43 @@ function Component() {
                 >
                   {col.name}
                 </Column>
-              ))}
-            <Column id="actions" width={40}>
-              <Dropdown>
-                <DropdownTrigger>
-                  <Button variant="icon" className="self-end rounded-lg p-0.5">
-                    <Icon
-                      name={IconName.TableProperties}
-                      className="h-4 w-4 aspect-square text-gray-500"
-                    />
-                  </Button>
-                </DropdownTrigger>
-                <DropdownPopover>
-                  <DropdownSection title="Columns">
-                    <DropdownMenu
-                      multiple
-                      selectable
-                      selectedItems={selectedColumns}
-                      onSelect={setSelectedColumns}
-                    >
-                      {Object.entries(COLUMN_NAMES).map(([key, name]) => (
-                        <DropdownItem key={key} value={key}>
-                          {name}
-                        </DropdownItem>
-                      ))}
-                    </DropdownMenu>
-                  </DropdownSection>
-                </DropdownPopover>
-              </Dropdown>
-              <span className="sr-only">Actions</span>
-            </Column>
+              ) : (
+                <Column id="actions" width={40} key={col.id}>
+                  <Dropdown>
+                    <DropdownTrigger>
+                      <Button
+                        variant="icon"
+                        className="self-end rounded-lg p-0.5"
+                      >
+                        <Icon
+                          name={IconName.TableProperties}
+                          className="h-4 w-4 aspect-square text-gray-500"
+                        />
+                      </Button>
+                    </DropdownTrigger>
+                    <DropdownPopover>
+                      <DropdownSection title="Columns">
+                        <DropdownMenu
+                          multiple
+                          selectable
+                          selectedItems={selectedColumns}
+                          onSelect={setSelectedColumns}
+                        >
+                          {Object.entries(COLUMN_NAMES)
+                            .filter(([key]) => key !== 'actions')
+                            .map(([key, name]) => (
+                              <DropdownItem key={key} value={key}>
+                                {name}
+                              </DropdownItem>
+                            ))}
+                        </DropdownMenu>
+                      </DropdownSection>
+                    </DropdownPopover>
+                  </Dropdown>
+                  <span className="sr-only">Actions</span>
+                </Column>
+              )
+            )}
           </TableHeader>
           <TableBody
             items={sortedItems}
@@ -415,14 +421,22 @@ function Component() {
             }
           >
             {(row) => (
-              <Row className="[&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50 bg-transparent aaa">
-                {sortedColumnsList.map((col) => (
-                  <InvocationCell key={col} column={col} invocation={row} />
-                ))}
-                <Cell className="align-top">
-                  <Actions invocation={row} />
-                </Cell>
-              </Row>
+              <PerformantRow
+                id={row.id}
+                columns={sortedColumnsList}
+                className={` [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50 bg-transparent [content-visibility:auto]`}
+              >
+                {({ isVisible, id }) => {
+                  return (
+                    <InvocationCell
+                      key={id}
+                      column={id}
+                      invocation={row}
+                      isVisible={isVisible}
+                    />
+                  );
+                }}
+              </PerformantRow>
             )}
           </TableBody>
         </Table>
@@ -434,18 +448,21 @@ function Component() {
           className="flex relative"
           onSubmit={async (event) => {
             event.preventDefault();
-            setSearchParams((old) => {
-              const newSearchParams = new URLSearchParams(old);
-              Array.from(newSearchParams.keys())
-                .filter((key) => key.startsWith('filter_'))
-                .forEach((key) => newSearchParams.delete(key));
-              query.items
-                .filter((clause) => clause.isValid)
-                .forEach((item) => {
-                  newSearchParams.set(`filter_${item.id}`, String(item));
-                });
-              return newSearchParams;
-            });
+            setSearchParams(
+              (old) => {
+                const newSearchParams = new URLSearchParams(old);
+                Array.from(newSearchParams.keys())
+                  .filter((key) => key.startsWith('filter_'))
+                  .forEach((key) => newSearchParams.delete(key));
+                query.items
+                  .filter((clause) => clause.isValid)
+                  .forEach((item) => {
+                    newSearchParams.set(`filter_${item.id}`, String(item));
+                  });
+                return newSearchParams;
+              },
+              { preventScrollReset: true }
+            );
             setQueryFilters(
               query.items
                 .filter((clause) => clause.isValid)

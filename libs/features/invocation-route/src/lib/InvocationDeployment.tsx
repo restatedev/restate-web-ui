@@ -1,6 +1,7 @@
 import { Invocation, useListDeployments } from '@restate/data-access/admin-api';
 import { Deployment } from '@restate/features/overview-route';
 import { Icon, IconName } from '@restate/ui/icons';
+import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { tv } from 'tailwind-variants';
 
 const RESTATE_SDK_REGEXP =
@@ -124,12 +125,14 @@ export function InvocationDeployment({
         )}
       </div>
     ) : (
-      <div className="font-mono text-zinc-600 flex flex-col gap-1.5 text-xs">
-        <div className="bg-white shadow-sm border rounded-[calc(0.75rem-0.125rem)] text-xs font-medium pl-2.5 py-1 -mx-2">
-          {deploymentId}
-        </div>
-        <div className="font-sans text-xs text-zinc-500">
-          The deployment no longer exists.
+      <div className="font-mono text-zinc-600  gap-1.5 text-xs truncate">
+        <div className="py-0.5 min-w-0 truncate font-sans text-xs text-zinc-500 flex items-center gap-[0.5ch]">
+          <div className="min-w-[5ch] basis-[5ch] flex-auto">
+            <TruncateWithTooltip copyText={deploymentId}>
+              {deploymentId}
+            </TruncateWithTooltip>
+          </div>
+          <div className="truncate flex-auto">no longer exists.</div>
         </div>
       </div>
     );
