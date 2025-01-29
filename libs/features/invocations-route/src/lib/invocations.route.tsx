@@ -7,7 +7,6 @@ import {
 } from '@restate/data-access/admin-api';
 import { Button, SubmitButton } from '@restate/ui/button';
 import {
-  Cell,
   Column,
   PerformantRow,
   Table,
@@ -33,7 +32,6 @@ import {
 } from '@restate/util/snapshot-time';
 import { useEffect, useMemo, useState } from 'react';
 import { formatDurations } from '@restate/util/intl';
-import { Actions } from '@restate/features/invocation-route';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import {
   AddQueryTrigger,
@@ -429,25 +427,13 @@ function Component() {
                 className={` [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50 bg-transparent [content-visibility:auto]`}
               >
                 {({ isVisible, id }) => {
-                  if (isVisible === false) {
-                    const value = (row as Record<string, any>)[id];
-                    return (
-                      <Cell key={id} className="p-2 h-[2.6875rem]">
-                        <div className="min-h-full text-transparent rounded-md bg-slate-200/70 w-fit max-w-full truncate">
-                          {value}
-                        </div>
-                      </Cell>
-                    );
-                  }
-                  if (id === 'actions') {
-                    return (
-                      <Cell className="align-top" key={id}>
-                        <Actions invocation={row} />
-                      </Cell>
-                    );
-                  }
                   return (
-                    <InvocationCell key={id} column={id} invocation={row} />
+                    <InvocationCell
+                      key={id}
+                      column={id}
+                      invocation={row}
+                      isVisible={isVisible}
+                    />
                   );
                 }}
               </PerformantRow>
