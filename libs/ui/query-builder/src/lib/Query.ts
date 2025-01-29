@@ -91,7 +91,11 @@ export class QueryClause<T extends QueryClauseType> {
   }
 
   get isValid() {
-    return !!this.value.value;
+    if (Array.isArray(this.value.value)) {
+      return this.value.value.length > 0;
+    } else {
+      return !!this.value.value;
+    }
   }
 
   constructor(
