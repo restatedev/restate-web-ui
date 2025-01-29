@@ -363,7 +363,7 @@ function Component() {
                   {col.name}
                 </Column>
               ) : (
-                <Column id="actions" width={40}>
+                <Column id="actions" width={40} key={col.id}>
                   <Dropdown>
                     <DropdownTrigger>
                       <Button
