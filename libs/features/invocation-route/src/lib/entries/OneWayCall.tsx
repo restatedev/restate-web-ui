@@ -35,7 +35,7 @@ export function OneWayCall({
       <div className="pl-7 max-w-full flex items-center flex-wrap">
         <Expression
           isHandler
-          name={entry.invoked_target.split('/').at(-1) ?? ''}
+          name={entry.invoked_target?.split('/').at(-1) ?? ''}
           input={
             <>
               {entry.parameters && (
@@ -50,7 +50,10 @@ export function OneWayCall({
                   }
                 />
               )}
-              {entry.parameters && entry.headers && ', '}
+              {entry.parameters &&
+                entry.headers &&
+                entry.headers.length > 0 &&
+                ', '}
               {entry.headers && entry.headers.length > 0 && (
                 <InputOutput
                   name="headers"
@@ -79,11 +82,13 @@ export function OneWayCall({
           <Failure message={error.message} restate_code={error.restate_code} />
         )}
       </div>
-      <InvocationId
-        id={entry.invoked_id}
-        className="max-w-full pl-10 mt-0.5"
-        size="sm"
-      />
+      {entry.invoked_id && (
+        <InvocationId
+          id={entry.invoked_id}
+          className="max-w-full pl-10 mt-0.5"
+          size="sm"
+        />
+      )}
     </div>
   );
 }

@@ -1,16 +1,43 @@
-import { fromBinary } from '@bufbuild/protobuf';
-import { ClearAllStateEntryMessageSchema } from '@buf/restatedev_service-protocol.bufbuild_es/dev/restate/service/protocol_pb';
-import { toUnit8Array } from '../toUni8Array';
+import { JournalRawEntry } from '@restate/data-access/admin-api/spec';
+import { parseEntryJson } from './util';
 
-export function clearAllState(raw?: string) {
+function clearAllStateV1(entry: JournalRawEntry) {
+  const { raw } = entry;
+
   if (!raw) {
     return {};
   }
-  const message = fromBinary(
-    ClearAllStateEntryMessageSchema,
-    toUnit8Array(raw)
-  );
+
   return {
-    name: message.name,
+    name: entry.name,
+    completed: true,
   };
+}
+
+function clearAllStateV2(
+  entry: JournalRawEntry,
+  allEntries: JournalRawEntry[]
+) {
+  const entryJSON = parseEntryJson(entry.entry_json);
+
+  return {
+    name: entryJSON?.Command?.ClearAllState?.name,
+    start: entry.appended_at,
+    completed: true,
+  };
+}
+
+export function clearAllState(
+  entry: JournalRawEntry,
+  allEntries: JournalRawEntry[]
+) {
+  if (entry.version === 1) {
+    return clearAllStateV1(entry);
+  }
+
+  if (entry.version === 2 && entry.entry_json) {
+    return clearAllStateV2(entry, allEntries);
+  }
+
+  return {};
 }

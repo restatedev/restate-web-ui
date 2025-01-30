@@ -3,6 +3,7 @@ import { EntryProps } from './types';
 import { Expression, InputOutput } from '../Expression';
 import { Value } from '../Value';
 import { Failure } from '../Failure';
+import { Ellipsis } from '@restate/ui/loading';
 
 export function Run({
   entry,
@@ -38,11 +39,14 @@ export function Run({
               }
             />
           )}
-          {typeof entry.value === 'undefined' && !entryError && (
-            <div className="text-zinc-400 font-semibold font-mono text-2xs">
-              void
-            </div>
-          )}
+          {!entry.completed && !entryError && <Ellipsis />}
+          {typeof entry.value === 'undefined' &&
+            !entryError &&
+            entry.completed && (
+              <div className="text-zinc-400 font-semibold font-mono text-2xs">
+                void
+              </div>
+            )}
           {entryError?.message && (
             <Failure
               message={entryError.message}

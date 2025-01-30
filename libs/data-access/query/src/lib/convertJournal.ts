@@ -24,219 +24,232 @@ import type {
   SetStateJournalEntryType,
   SleepJournalEntryType,
 } from '@restate/data-access/admin-api/spec';
-import { convertToUTC } from './convertToUTC';
 import {
-  awakeable,
-  call,
-  clearState,
-  completeAwakeable,
-  completePromise,
-  getPromise,
   getState,
   getStateKeys,
   input,
-  oneWayCall,
-  output,
-  peekPromise,
   run,
   setState,
+  clearAllState,
+  clearState,
+  call,
   sleep,
+  oneWayCall,
+  awakeable,
+  completeAwakeable,
+  completePromise,
+  getPromise,
+  peekPromise,
+  output,
 } from '@restate/features/service-protocol';
 
-export function convertJournal(entry: JournalRawEntry): JournalEntry {
+export function convertJournal(
+  entry: JournalRawEntry,
+  allEntries: JournalRawEntry[]
+): JournalEntry {
   return (
-    JOURNAL_ENTRY_CONVERT_MAP[entry.entry_type](entry) ??
+    JOURNAL_ENTRY_CONVERT_MAP[entry.entry_type]?.(entry, allEntries) ??
     (entry as JournalEntry)
   );
 }
 
+function GetState(
+  entry: JournalRawEntry,
+  allEntries: JournalRawEntry[]
+): GetStateJournalEntryType {
+  const entryMessage = getState(entry, allEntries);
+
+  return {
+    entry_type: 'GetState',
+    index: entry.index,
+    ...entryMessage,
+  };
+}
+
+function GetStateKeys(
+  entry: JournalRawEntry,
+  allEntries: JournalRawEntry[]
+): GetStateKeysJournalEntryType {
+  const entryMessage = getStateKeys(entry, allEntries);
+  return {
+    entry_type: 'GetStateKeys',
+    index: entry.index,
+    ...entryMessage,
+  };
+}
+
 const JOURNAL_ENTRY_CONVERT_MAP: Record<
   EntryType,
-  (entry: JournalRawEntry) => JournalEntry
+  (entry: JournalRawEntry, allEntries: JournalRawEntry[]) => JournalEntry
 > = {
-  Input: function (entry: JournalRawEntry): InputJournalEntryType {
-    const entryMessage = input(entry.raw);
+  Input: function (
+    entry: JournalRawEntry,
+    allEntries: JournalRawEntry[]
+  ): InputJournalEntryType {
+    const entryMessage = input(entry, allEntries);
     return {
+      ...entryMessage,
       entry_type: 'Input',
       index: entry.index,
-      body: entryMessage.body,
-      headers: entryMessage.headers,
     };
   },
-  Output: function (entry: JournalRawEntry): OutputJournalEntryType {
-    const entryMessage = output(entry.raw);
+  Output: function (
+    entry: JournalRawEntry,
+    allEntries: JournalRawEntry[]
+  ): OutputJournalEntryType {
+    const entryMessage = output(entry, allEntries);
     return {
       entry_type: 'Output',
       index: entry.index,
-      body: entryMessage.body,
-      failure: entryMessage.failure,
+      ...entryMessage,
     };
   },
-  GetState: function (entry: JournalRawEntry): GetStateJournalEntryType {
-    const entryMessage = getState(entry.raw);
+  GetState,
+  GetEagerState: GetState,
 
-    return {
-      entry_type: 'GetState',
-      index: entry.index,
-      failure: entryMessage.failure,
-      key: entryMessage.key,
-      value: entryMessage.value,
-      completed: entry.completed,
-    };
-  },
-  SetState: function (entry: JournalRawEntry): SetStateJournalEntryType {
-    const entryMessage = setState(entry.raw);
+  SetState: function (
+    entry: JournalRawEntry,
+    allEntries: JournalRawEntry[]
+  ): SetStateJournalEntryType {
+    const entryMessage = setState(entry, allEntries);
 
     return {
       entry_type: 'SetState',
       index: entry.index,
-      key: entryMessage.key,
-      value: entryMessage.value,
+      ...entryMessage,
     };
   },
-  GetStateKeys: function (
-    entry: JournalRawEntry
-  ): GetStateKeysJournalEntryType {
-    const entryMessage = getStateKeys(entry.raw);
-    return {
-      entry_type: 'GetStateKeys',
-      index: entry.index,
-      completed: entry.completed,
-      keys: entryMessage.keys,
-      failure: entryMessage.failure,
-    };
-  },
-  ClearState: function (entry: JournalRawEntry): ClearStateJournalEntryType {
-    const entryMessage = clearState(entry.raw);
+  GetStateKeys,
+  GetEagerStateKeys: GetStateKeys,
+  ClearState: function (
+    entry: JournalRawEntry,
+    allEntries: JournalRawEntry[]
+  ): ClearStateJournalEntryType {
+    const entryMessage = clearState(entry, allEntries);
     return {
       entry_type: 'ClearState',
       index: entry.index,
-      key: entryMessage.key,
+      ...entryMessage,
     };
   },
   ClearAllState: function (
-    entry: JournalRawEntry
+    entry: JournalRawEntry,
+    allEntries: JournalRawEntry[]
   ): ClearAllStateJournalEntryType {
+    const entryMessage = clearAllState(entry, allEntries);
+
     return {
       entry_type: 'ClearAllState',
       index: entry.index,
+      ...entryMessage,
     };
   },
-  Sleep: function (entry: JournalRawEntry): SleepJournalEntryType {
-    const entryMessage = sleep(entry.raw);
+  Sleep: function (
+    entry: JournalRawEntry,
+    allEntries: JournalRawEntry[]
+  ): SleepJournalEntryType {
+    const entryMessage = sleep(entry, allEntries);
     return {
       entry_type: 'Sleep',
       index: entry.index,
-      sleep_wakeup_at: convertToUTC(entry.sleep_wakeup_at)!,
-      completed: entry.completed,
-      failure: entryMessage.failure,
+      ...entryMessage,
     };
   },
-  GetPromise: function (entry: JournalRawEntry): GetPromiseJournalEntryType {
-    const entryMessage = getPromise(entry.raw);
+  GetPromise: function (
+    entry: JournalRawEntry,
+    allEntries: JournalRawEntry[]
+  ): GetPromiseJournalEntryType {
+    const entryMessage = getPromise(entry, allEntries);
 
     return {
       entry_type: 'GetPromise',
       index: entry.index,
-      promise_name: entry.promise_name!,
-      completed: entry.completed,
-      failure: entryMessage.failure,
-      value: entryMessage.value,
+      ...entryMessage,
     };
   },
-  PeekPromise: function (entry: JournalRawEntry): PeekPromiseJournalEntryType {
-    const entryMessage = peekPromise(entry.raw);
+  PeekPromise: function (
+    entry: JournalRawEntry,
+    allEntries: JournalRawEntry[]
+  ): PeekPromiseJournalEntryType {
+    const entryMessage = peekPromise(entry, allEntries);
 
     return {
       entry_type: 'PeekPromise',
       index: entry.index,
-      promise_name: entry.promise_name!,
-      completed: entry.completed,
-      failure: entryMessage.failure,
-      value: entryMessage.value,
+      ...entryMessage,
     };
   },
   CompletePromise: function (
-    entry: JournalRawEntry
+    entry: JournalRawEntry,
+    allEntries: JournalRawEntry[]
   ): CompletePromiseJournalEntryType {
-    const entryMessage = completePromise(entry.raw);
+    const entryMessage = completePromise(entry, allEntries);
 
     return {
       entry_type: 'CompletePromise',
       index: entry.index,
-      promise_name: entry.promise_name!,
-      completed: entry.completed,
-      failure: entryMessage.failure,
-      completion: entryMessage.completion,
+      ...entryMessage,
     };
   },
-  OneWayCall: function (entry: JournalRawEntry): OneWayCallJournalEntryType {
-    const entryMessage = oneWayCall(entry.raw);
+  OneWayCall: function (
+    entry: JournalRawEntry,
+    allEntries: JournalRawEntry[]
+  ): OneWayCallJournalEntryType {
+    const entryMessage = oneWayCall(entry, allEntries);
 
     return {
       entry_type: 'OneWayCall',
       index: entry.index,
-      invoked_id: entry.invoked_id!,
-      invoked_target: entry.invoked_target!,
-      key: entryMessage.key,
-      serviceName: entryMessage.serviceName,
-      handlerName: entryMessage.handlerName,
-      headers: entryMessage.headers,
-      parameters: entryMessage.parameters,
-      invokeTime: entryMessage.invokeTime,
+      ...entryMessage,
     };
   },
-  Call: function (entry: JournalRawEntry): CallJournalEntryType {
-    const entryMessage = call(entry.raw);
+  Call: function (
+    entry: JournalRawEntry,
+    allEntries: JournalRawEntry[]
+  ): CallJournalEntryType {
+    const entryMessage = call(entry, allEntries);
 
     return {
       entry_type: 'Call',
       index: entry.index,
-      invoked_id: entry.invoked_id!,
-      invoked_target: entry.invoked_target!,
-      completed: entry.completed,
-      key: entryMessage.key,
-      serviceName: entryMessage.serviceName,
-      handlerName: entryMessage.handlerName,
-      headers: entryMessage.headers,
-      parameters: entryMessage.parameters,
-      failure: entryMessage.failure,
-      value: entryMessage.value,
+      ...entryMessage,
     };
   },
-  Awakeable: function (entry: JournalRawEntry): AwakeableJournalEntryType {
-    const entryMessage = awakeable(entry.raw);
+  Awakeable: function (
+    entry: JournalRawEntry,
+    allEntries: JournalRawEntry[]
+  ): AwakeableJournalEntryType {
+    const entryMessage = awakeable(entry, allEntries);
 
     return {
       entry_type: 'Awakeable',
       index: entry.index,
-      completed: entry.completed,
-      value: entryMessage.value,
-      failure: entryMessage.failure,
+      ...entryMessage,
     };
   },
   CompleteAwakeable: function (
-    entry: JournalRawEntry
+    entry: JournalRawEntry,
+    allEntries: JournalRawEntry[]
   ): CompleteAwakeableJournalEntryType {
-    const entryMessage = completeAwakeable(entry.raw);
+    const entryMessage = completeAwakeable(entry, allEntries);
 
     return {
       entry_type: 'CompleteAwakeable',
       index: entry.index,
-      id: entryMessage.id,
-      value: entryMessage.value,
-      failure: entryMessage.failure,
+      ...entryMessage,
     };
   },
-  Run: function (entry: JournalRawEntry): RunJournalEntryType {
-    const entryMessage = run(entry.raw);
+  Run: function (
+    entry: JournalRawEntry,
+    allEntries: JournalRawEntry[]
+  ): RunJournalEntryType {
+    const entryMessage = run(entry, allEntries);
 
     return {
+      ...entryMessage,
       entry_type: 'Run',
       index: entry.index,
-      name: entry.name!,
-      value: entryMessage.value,
-      failure: entryMessage.failure,
+      name: entryMessage.name ?? '',
     };
   },
   CancelInvocation: function (
@@ -271,7 +284,10 @@ const JOURNAL_ENTRY_CONVERT_MAP: Record<
       index: entry.index,
     };
   },
-  Custom: function (entry: JournalRawEntry): CustomJournalEntryType {
+  Custom: function (
+    entry: JournalRawEntry,
+    allEntries: JournalRawEntry[]
+  ): CustomJournalEntryType {
     return {
       entry_type: 'Custom',
       index: entry.index,

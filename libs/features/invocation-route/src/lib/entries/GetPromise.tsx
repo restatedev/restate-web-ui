@@ -15,7 +15,7 @@ export function GetPromise({
 
   return (
     <Expression
-      name={entry.promise_name}
+      name={entry.promise_name ?? ''}
       prefix="await"
       output={
         <>

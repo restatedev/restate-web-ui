@@ -4,3 +4,4 @@ export * from './lib/formatRelative';
 export * from './lib/formatDateTime';
 export * from './lib/formatNumber';
 export * from './lib/formatPlurals';
+export * from './lib/formatDateToISO';

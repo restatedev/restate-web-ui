@@ -9,11 +9,14 @@ export function getComputedInvocationStatus(
   const isSuccessful = invocation.completion_result === 'success';
   const isCancelled = Boolean(
     invocation.completion_result === 'failure' &&
-      invocation.completion_failure === '[409] canceled'
+      invocation.completion_failure &&
+      ['[409] canceled', '[409] cancelled'].includes(
+        invocation.completion_failure?.toLowerCase()
+      )
   );
   const isKilled = Boolean(
     invocation.completion_result === 'failure' &&
-      invocation.completion_failure === '[409] killed'
+      invocation.completion_failure?.toLowerCase() === '[409] killed'
   );
   const isRunning = invocation.status === 'running';
   const isCompleted = invocation.status === 'completed';
@@ -58,7 +61,13 @@ export function getComputedInvocationStatus(
     case 'suspended':
       return 'suspended';
 
-    default:
+    default: {
+      console.warn(
+        invocation.status,
+        invocation.completion_result,
+        invocation.completion_failure
+      );
       throw new Error('Cannot calculate status');
+    }
   }
 }

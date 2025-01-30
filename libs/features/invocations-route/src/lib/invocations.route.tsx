@@ -282,7 +282,7 @@ function Component() {
   );
   const { dataUpdatedAt, error, data, isFetching, isPending, queryKey } =
     useListInvocations(queryFilters, {
-      refetchOnMount: true,
+      refetchOnMount: false,
       refetchOnReconnect: false,
       staleTime: 0,
     });

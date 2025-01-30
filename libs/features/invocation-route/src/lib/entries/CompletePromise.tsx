@@ -15,7 +15,7 @@ export function CompletePromise({
   return (
     <Expression
       prefix="await"
-      name={entry.promise_name}
+      name={entry.promise_name ?? ''}
       output={
         <>
           {typeof entry.completion?.value === 'string' && (
