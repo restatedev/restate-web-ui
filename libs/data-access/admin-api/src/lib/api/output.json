@@ -3249,14 +3249,26 @@
           "name": {
             "type": "string"
           },
+          "entry_json": {
+            "type": "string"
+          },
+          "appended_at": {
+            "type": "string",
+            "format": "data-time"
+          },
+          "version": {
+            "type": "integer"
+          },
           "entry_type": {
             "type": "string",
             "enum": [
               "Input",
               "Output",
               "GetState",
+              "GetEagerState",
               "SetState",
               "GetStateKeys",
+              "GetEagerStateKeys",
               "ClearState",
               "ClearAllState",
               "Sleep",
@@ -3283,6 +3295,17 @@
         "properties": {
           "index": {
             "type": "integer"
+          },
+          "start": {
+            "type": "string",
+            "format": "data-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "data-time"
+          },
+          "completed": {
+            "type": "boolean"
           }
         }
       },
@@ -3366,7 +3389,7 @@
             "properties": {
               "entry_type": {
                 "type": "string",
-                "enum": ["GetState"]
+                "enum": ["GetState", "GetEagerState"]
               },
               "key": {
                 "type": "string"
@@ -3418,7 +3441,7 @@
             "properties": {
               "entry_type": {
                 "type": "string",
-                "enum": ["GetStateKeys"]
+                "enum": ["GetStateKeys", "GetEagerStateKeys"]
               },
               "completed": {
                 "type": "boolean"
@@ -3475,7 +3498,6 @@
       },
       "SleepJournalEntryType": {
         "type": "object",
-        "required": ["sleep_wakeup_at"],
         "allOf": [
           {
             "$ref": "#/components/schemas/JournalBaseEntry"
@@ -3503,7 +3525,6 @@
       },
       "GetPromiseJournalEntryType": {
         "type": "object",
-        "required": ["promise_name"],
         "allOf": [
           {
             "$ref": "#/components/schemas/JournalBaseEntry"
@@ -3533,7 +3554,6 @@
       },
       "PeekPromiseJournalEntryType": {
         "type": "object",
-        "required": ["promise_name"],
         "allOf": [
           {
             "$ref": "#/components/schemas/JournalBaseEntry"
@@ -3563,7 +3583,6 @@
       },
       "CompletePromiseJournalEntryType": {
         "type": "object",
-        "required": ["promise_name"],
         "allOf": [
           {
             "$ref": "#/components/schemas/JournalBaseEntry"
@@ -3601,7 +3620,6 @@
       },
       "OneWayCallJournalEntryType": {
         "type": "object",
-        "required": ["invoked_id", "invoked_target"],
         "allOf": [
           {
             "$ref": "#/components/schemas/JournalBaseEntry"
@@ -3656,7 +3674,6 @@
       },
       "CallJournalEntryType": {
         "type": "object",
-        "required": ["invoked_id", "invoked_target"],
         "allOf": [
           {
             "$ref": "#/components/schemas/JournalBaseEntry"

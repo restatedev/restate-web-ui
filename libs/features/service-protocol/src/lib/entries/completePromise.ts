@@ -6,6 +6,8 @@ import {
 import { toUnit8Array } from '../toUni8Array';
 import { decode } from '../decoder';
 import { RestateError } from '@restate/util/errors';
+import { JournalRawEntry } from '@restate/data-access/admin-api/spec';
+import { findEntryAfter, parseEntryJson, parseResults } from './util';
 
 function getCompletion(completion: CompletePromiseEntryMessage['completion']) {
   switch (completion.case) {
@@ -30,7 +32,8 @@ function getCompletion(completion: CompletePromiseEntryMessage['completion']) {
   }
 }
 
-export function completePromise(raw?: string) {
+function completePromiseV1(entry: JournalRawEntry) {
+  const { raw } = entry;
   if (!raw) {
     return {};
   }
@@ -48,18 +51,62 @@ export function completePromise(raw?: string) {
           message.result.value.message,
           message.result.value.code.toString()
         ),
+        promise_name: entry.promise_name,
       };
     case 'empty':
       return {
         name: message.name,
         completion,
         failure: undefined,
+        promise_name: entry.promise_name,
       };
     default:
       return {
         name: message.name,
         completion,
         failure: undefined,
+        promise_name: entry.promise_name,
       };
   }
+}
+
+function completePromiseV2(
+  entry: JournalRawEntry,
+  allEntries: JournalRawEntry[]
+) {
+  const entryJSON = parseEntryJson(entry.entry_json);
+  const completedId = entryJSON?.Command?.CompletePromise?.completion_id;
+
+  const { entryJSON: completionEntryJson, entry: completionEntry } =
+    findEntryAfter(entry, allEntries, (entryJSON) => {
+      const isCompletionEntry =
+        entryJSON?.['Notification']?.Completion?.CompletePromise
+          ?.completion_id === completedId;
+
+      return isCompletionEntry;
+    });
+
+  return {
+    name: entryJSON?.Command?.CompletePromise?.key,
+    start: entry?.appended_at,
+    completed: Boolean(completionEntry),
+    completion: parseResults(entryJSON?.Command?.CompletePromise?.value),
+    end: completionEntry?.appended_at,
+    promise_name: entryJSON?.Command?.CompletePromise?.key,
+  };
+}
+
+export function completePromise(
+  entry: JournalRawEntry,
+  allEntries: JournalRawEntry[]
+) {
+  if (entry.version === 1) {
+    return completePromiseV1(entry);
+  }
+
+  if (entry.version === 2 && entry.entry_json) {
+    return completePromiseV2(entry, allEntries);
+  }
+
+  return {};
 }

@@ -7,7 +7,7 @@ import {
 import { Badge } from '@restate/ui/badge';
 import { Ellipsis, Spinner } from '@restate/ui/loading';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
-import { ComponentType, PropsWithChildren } from 'react';
+import { Component, ComponentType, ErrorInfo, PropsWithChildren } from 'react';
 import { tv } from 'tailwind-variants';
 import { EntryProps } from './entries/types';
 import { Input } from './entries/Input';
@@ -28,16 +28,15 @@ import { OneWayCall } from './entries/OneWayCall';
 import { Call } from './entries/Call';
 import { getRestateError } from './Status';
 import { HoverTooltip } from '@restate/ui/tooltip';
+import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
 
-const styles = tv({
-  base: '',
-});
 export function Journal({ invocation }: { invocation?: Invocation }) {
-  const { data, isSuccess, isPending } = useGetInvocationJournal(
+  const { data, isSuccess, isPending, dataUpdatedAt } = useGetInvocationJournal(
     String(invocation?.id),
     {
       enabled: Boolean(invocation?.id),
       refetchOnMount: true,
+      staleTime: 0,
     }
   );
   const entries = (data?.entries ?? []).sort((a, b) => a.index - b.index);
@@ -47,57 +46,59 @@ export function Journal({ invocation }: { invocation?: Invocation }) {
   const error = getRestateError(invocation);
 
   return (
-    <div className="flex flex-col">
-      {entries.map((entry) => {
-        return (
+    <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
+      <div className="flex flex-col">
+        {entries.map((entry) => {
+          return (
+            <DefaultEntry
+              key={entry.index}
+              entry={entry}
+              invocation={invocation}
+              failed={
+                entry.index === invocation?.last_failure_related_entry_index ||
+                Boolean('failure' in entry && entry.failure)
+              }
+              appended
+              {...(entry.index ===
+                invocation?.last_failure_related_entry_index && {
+                error,
+              })}
+            />
+          );
+        })}
+        {invocation?.last_failure_related_entry_index === entries.length && (
           <DefaultEntry
-            key={entry.index}
-            entry={entry}
             invocation={invocation}
-            failed={
-              entry.index === invocation?.last_failure_related_entry_index ||
-              Boolean('failure' in entry && entry.failure)
+            entry={
+              {
+                entry_type: invocation.last_failure_related_entry_type,
+                name: invocation.last_failure_related_entry_name,
+                completed: true,
+                index: entries.length,
+              } as any
             }
-            appended
-            {...(entry.index ===
-              invocation?.last_failure_related_entry_index && {
-              error,
-            })}
+            failed
+            appended={false}
+            error={error}
           />
-        );
-      })}
-      {invocation?.last_failure_related_entry_index === entries.length && (
-        <DefaultEntry
-          invocation={invocation}
-          entry={
-            {
-              entry_type: invocation.last_failure_related_entry_type,
-              name: invocation.last_failure_related_entry_name,
-              completed: true,
-              index: entries.length,
-            } as any
-          }
-          failed
-          appended={false}
-          error={error}
-        />
-      )}
-      {entries.length === 0 && isSuccess && (
-        <div className="text-zinc-500/90 text-sm font-medium p-2 text-center">
-          No entries found
-          <div className="font-normal mt-1 text-code">
-            Please note that once the invocation is completed, the entries will
-            be cleared.{' '}
+        )}
+        {entries.length === 0 && isSuccess && (
+          <div className="text-zinc-500/90 text-sm font-medium p-2 text-center">
+            No entries found
+            <div className="font-normal mt-1 text-code">
+              Please note that once the invocation is completed, the entries
+              will be cleared.{' '}
+            </div>
           </div>
-        </div>
-      )}
-      {isPending && (
-        <div className="flex items-center gap-1.5 text-sm text-zinc-500">
-          <Spinner className="w-4 h-4" />
-          Loading…
-        </div>
-      )}
-    </div>
+        )}
+        {isPending && (
+          <div className="flex items-center gap-1.5 text-sm text-zinc-500">
+            <Spinner className="w-4 h-4" />
+            Loading…
+          </div>
+        )}
+      </div>
+    </SnapshotTimeProvider>
   );
 }
 
@@ -123,6 +124,8 @@ const ENTRY_TYPE_LABEL: Record<EntryType, string> = {
   GetInvocationOutput: 'Get invocation output',
   Custom: 'Custom',
   Output: 'Output',
+  GetEagerState: 'Get state',
+  GetEagerStateKeys: 'Get state keys',
 };
 
 const ENTRY_COMPONENTS: {
@@ -207,6 +210,7 @@ const defaultEntryStyles = tv({
     },
   },
 });
+
 function DefaultEntry({
   entry,
   failed,
@@ -226,13 +230,22 @@ function DefaultEntry({
       >)
     : undefined;
   const completed = 'completed' in entry ? !!entry.completed : true;
+
   return (
     <div className="text-xs flex flex-col items-baseline gap-x-2 relative pl-6 group">
-      <div className={line({ appended, failed, completed })} />
-      <div className={circle({ appended, failed, completed })}>
-        {!completed && (
-          <div className="inset-[-1px] absolute">
-            <Spinner className="w-full h-full [&_circle]:opacity-0" />
+      <div
+        className={line({ appended, failed, completed: completed || failed })}
+      />
+      <div
+        className={circle({
+          appended,
+          failed,
+          completed: completed || failed,
+        })}
+      >
+        {!completed && !failed && (
+          <div className="inset-[-1px] absolute bg-white">
+            <Spinner className="absolute inset-0 w-full h-full [&_circle]:opacity-0 text-zinc-300/70 fill-zinc-100" />
           </div>
         )}
         <HoverTooltip
@@ -245,27 +258,30 @@ function DefaultEntry({
           <div className="inset-0 w-full he-full absolute"></div>
         </HoverTooltip>
       </div>
-
-      {EntrySpecificComponent ? (
-        <div className={entryItem({ appended, failed, completed })}>
-          <EntrySpecificComponent
-            entry={entry}
-            failed={failed}
-            invocation={invocation}
-            error={error}
-          />
-        </div>
-      ) : (
-        <Badge
-          variant={failed ? 'danger' : 'default'}
-          size="sm"
-          className="shrink-0 [&:has(+*)]:rounded-b-none [&:has(+*)]:mb-0 uppercase my-1 font-mono font-normal text-2xs py-0 px-1 leading-4 rounded"
-        >
-          <Ellipsis visible={'completed' in entry && entry.completed === false}>
-            {ENTRY_TYPE_LABEL[entry.entry_type]}
-          </Ellipsis>
-        </Badge>
-      )}
+      <ErrorBoundary entry={entry}>
+        {EntrySpecificComponent ? (
+          <div className={entryItem({ appended, failed, completed })}>
+            <EntrySpecificComponent
+              entry={entry}
+              failed={failed}
+              invocation={invocation}
+              error={error}
+            />
+          </div>
+        ) : (
+          <Badge
+            variant={failed ? 'danger' : 'default'}
+            size="sm"
+            className="shrink-0 [&:has(+*)]:rounded-b-none [&:has(+*)]:mb-0 uppercase my-1 font-mono font-normal text-2xs py-0 px-1 leading-4 rounded"
+          >
+            <Ellipsis
+              visible={'completed' in entry && entry.completed === false}
+            >
+              {ENTRY_TYPE_LABEL[entry.entry_type]}
+            </Ellipsis>
+          </Badge>
+        )}
+      </ErrorBoundary>
     </div>
   );
 }
@@ -298,4 +314,38 @@ export function JournalSection({
       </SectionContent>
     </Section>
   );
+}
+
+class ErrorBoundary extends Component<
+  PropsWithChildren<{ entry?: JournalEntry }>,
+  {
+    hasError: boolean;
+  }
+> {
+  constructor(props: PropsWithChildren<{ entry?: JournalEntry }>) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(_: Error): {
+    hasError: boolean;
+  } {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('Error caught by ErrorBoundary: ', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="truncate max-w-full flex items-center text-red-500 gap-1 flex-wrap w-full min-w-0 mb-2 px-2 bg-zinc-50 border-zinc-600/10 border py-1 font-mono [font-size:95%] rounded -mt-px">
+          Failed to display {this.props.entry?.entry_type} entry
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
 }

@@ -87,8 +87,12 @@ function listDeploymentsSelector(
   );
 
   const sortedServiceNames = Array.from(services.keys()).sort((a, b) => {
-    const aDeployment = deployments.get(a);
-    const bDeployment = deployments.get(b);
+    const aRevision = services.get(a)?.sortedRevisions[0] ?? 1;
+    const bRevision = services.get(b)?.sortedRevisions[0] ?? 1;
+    const aDeploymentId = services.get(a)?.deployments[aRevision]?.[0];
+    const bDeploymentId = services.get(b)?.deployments[bRevision]?.[0];
+    const aDeployment = aDeploymentId && deployments.get(aDeploymentId);
+    const bDeployment = bDeploymentId && deployments.get(bDeploymentId);
     if (!aDeployment || !bDeployment) {
       return Number(bDeployment) - Number(aDeployment);
     }
@@ -97,7 +101,6 @@ function listDeploymentsSelector(
 
     return new Date(bCreated).valueOf() - new Date(aCreated).valueOf();
   });
-
   return { services, deployments, sortedServiceNames };
 }
 

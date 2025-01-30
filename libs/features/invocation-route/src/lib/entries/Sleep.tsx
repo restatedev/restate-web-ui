@@ -24,12 +24,14 @@ export function Sleep({
       <span className="font-normal text-zinc-500">
         {isPast ? 'Woke up from sleep ' : 'Wakes up from sleep in '}
       </span>
-      <DateTooltip
-        date={new Date(entry.sleep_wakeup_at)}
-        title={isPast ? 'Woke up from sleep at' : 'Wakes up from sleep at'}
-      >
-        {duration}
-      </DateTooltip>
+      {entry.sleep_wakeup_at && (
+        <DateTooltip
+          date={new Date(entry.sleep_wakeup_at)}
+          title={isPast ? 'Woke up from sleep at' : 'Wakes up from sleep at'}
+        >
+          {duration}
+        </DateTooltip>
+      )}
       {!entry.completed && <Ellipsis />}
       <span className="font-normal text-zinc-500">{isPast && ' ago'}</span>
       {entryError?.message && (

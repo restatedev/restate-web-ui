@@ -72,7 +72,7 @@ export function KillInvocation() {
                 className="h-5 w-5  text-orange-100 fill-orange-600 shrink-0"
                 name={IconName.TriangleAlert}
               />
-              <div>
+              <span className="block">
                 Killing an invocation stops all calls in its call tree and skips
                 compensation logic, potentially leaving the service in an
                 inconsistent state. Use cautiously and try other fixes first.{' '}
@@ -85,7 +85,7 @@ export function KillInvocation() {
                 >
                   Learn more…
                 </Link>
-              </div>
+              </span>
             </p>
           </div>
           <Form

@@ -970,13 +970,19 @@ export interface components {
       invoked_target?: string;
       invoked_id?: string;
       name?: string;
+      entry_json?: string;
+      /** Format: data-time */
+      appended_at?: string;
+      version?: number;
       /** @enum {string} */
       entry_type:
         | 'Input'
         | 'Output'
         | 'GetState'
+        | 'GetEagerState'
         | 'SetState'
         | 'GetStateKeys'
+        | 'GetEagerStateKeys'
         | 'ClearState'
         | 'ClearAllState'
         | 'Sleep'
@@ -996,6 +1002,11 @@ export interface components {
     };
     JournalBaseEntry: {
       index: number;
+      /** Format: data-time */
+      start?: string;
+      /** Format: data-time */
+      end?: string;
+      completed?: boolean;
     };
     FailureEntry: {
       message?: string;
@@ -1018,7 +1029,7 @@ export interface components {
     };
     GetStateJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       /** @enum {string} */
-      entry_type?: 'GetState';
+      entry_type?: 'GetState' | 'GetEagerState';
       key?: string;
       value?: string;
       completed?: boolean;
@@ -1032,7 +1043,7 @@ export interface components {
     };
     GetStateKeysJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       /** @enum {string} */
-      entry_type?: 'GetStateKeys';
+      entry_type?: 'GetStateKeys' | 'GetEagerStateKeys';
       completed?: boolean;
       keys?: string[];
       failure?: components['schemas']['FailureEntry'];
@@ -1050,7 +1061,7 @@ export interface components {
       completed?: boolean;
       failure?: components['schemas']['FailureEntry'];
       /** Format: data-time */
-      sleep_wakeup_at: string;
+      sleep_wakeup_at?: string;
       /** @enum {string} */
       entry_type?: 'Sleep';
     };
@@ -1058,7 +1069,7 @@ export interface components {
       completed?: boolean;
       /** @enum {string} */
       entry_type?: 'GetPromise';
-      promise_name: string;
+      promise_name?: string;
       value?: string;
       failure?: components['schemas']['FailureEntry'];
     };
@@ -1066,13 +1077,13 @@ export interface components {
       completed?: boolean;
       /** @enum {string} */
       entry_type?: 'PeekPromise';
-      promise_name: string;
+      promise_name?: string;
       value?: string;
       failure?: components['schemas']['FailureEntry'];
     };
     CompletePromiseJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       completed?: boolean;
-      promise_name: string;
+      promise_name?: string;
       /** @enum {string} */
       entry_type?: 'CompletePromise';
       completion?: {
@@ -1082,8 +1093,8 @@ export interface components {
       failure?: components['schemas']['FailureEntry'];
     };
     OneWayCallJournalEntryType: components['schemas']['JournalBaseEntry'] & {
-      invoked_id: string;
-      invoked_target: string;
+      invoked_id?: string;
+      invoked_target?: string;
       key?: string;
       serviceName?: string;
       handlerName?: string;
@@ -1099,8 +1110,8 @@ export interface components {
     };
     CallJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       completed?: boolean;
-      invoked_id: string;
-      invoked_target: string;
+      invoked_id?: string;
+      invoked_target?: string;
       failure?: components['schemas']['FailureEntry'];
       key?: string;
       serviceName?: string;

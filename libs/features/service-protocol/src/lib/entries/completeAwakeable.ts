@@ -3,8 +3,11 @@ import { CompleteAwakeableEntryMessageSchema } from '@buf/restatedev_service-pro
 import { toUnit8Array } from '../toUni8Array';
 import { decode } from '../decoder';
 import { RestateError } from '@restate/util/errors';
+import { JournalRawEntry } from '@restate/data-access/admin-api/spec';
+import { parseResults, parseEntryJson } from './util';
 
-export function completeAwakeable(raw?: string) {
+function completeAwakeableV1(entry: JournalRawEntry) {
+  const { raw } = entry;
   if (!raw) {
     return {};
   }
@@ -38,4 +41,34 @@ export function completeAwakeable(raw?: string) {
         failure: undefined,
       };
   }
+}
+
+function completeAwakeableV2(
+  entry: JournalRawEntry,
+  allEntries: JournalRawEntry[]
+) {
+  const entryJSON = parseEntryJson(entry.entry_json);
+
+  const result = entryJSON?.Command?.CompleteAwakeable?.result;
+
+  return {
+    name: entryJSON?.Command?.CompleteAwakeable?.name,
+    ...parseResults(result),
+    start: entry?.appended_at,
+  };
+}
+
+export function completeAwakeable(
+  entry: JournalRawEntry,
+  allEntries: JournalRawEntry[]
+) {
+  if (entry.version === 1) {
+    return completeAwakeableV1(entry);
+  }
+
+  if (entry.version === 2 && entry.entry_json) {
+    return completeAwakeableV2(entry, allEntries);
+  }
+
+  return {};
 }

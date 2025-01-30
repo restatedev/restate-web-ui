@@ -30,8 +30,14 @@ const HOURS_IN_DAY = 24;
 export function useDurationSinceLastSnapshot() {
   const { lastSnapshot } = useContext(SnapshotTimeContext);
   const durationSinceLastSnapshot = useCallback(
-    (value: string | number | Date) => {
+    (value?: string | number | Date) => {
+      if (!value) {
+        return {};
+      }
       const date = new Date(value);
+      if (isNaN(date.valueOf())) {
+        return {};
+      }
 
       let duration = date.getTime() - lastSnapshot;
       const isPast = duration < 0;

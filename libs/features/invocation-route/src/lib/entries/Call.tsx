@@ -28,7 +28,7 @@ export function Call({
       <div className="pl-7 max-w-full flex items-center">
         <Expression
           isHandler
-          name={entry.invoked_target.split('/').at(-1) ?? ''}
+          name={entry.invoked_target?.split('/').at(-1) ?? ''}
           input={
             <>
               {entry.parameters && (
@@ -43,7 +43,10 @@ export function Call({
                   }
                 />
               )}
-              {entry.parameters && entry.headers && ', '}
+              {entry.parameters &&
+                entry.headers &&
+                entry.headers.length > 0 &&
+                ', '}
               {entry.headers && entry.headers.length > 0 && (
                 <InputOutput
                   name="headers"
@@ -75,7 +78,7 @@ export function Call({
                     void
                   </div>
                 )}
-              {!entry.completed && <Ellipsis />}
+              {!entry.completed && !failed && <Ellipsis />}
               {entryError?.message && (
                 <Failure
                   message={entryError.message}
@@ -86,11 +89,13 @@ export function Call({
           }
         />
       </div>
-      <InvocationId
-        id={entry.invoked_id}
-        className="max-w-full pl-10 mt-0.5"
-        size="sm"
-      />
+      {entry.invoked_id && (
+        <InvocationId
+          id={entry.invoked_id}
+          className="max-w-full pl-10 mt-0.5"
+          size="sm"
+        />
+      )}
     </div>
   );
 }

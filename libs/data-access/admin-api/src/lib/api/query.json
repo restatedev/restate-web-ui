@@ -1284,14 +1284,26 @@
           "invoked_target": { "type": "string" },
           "invoked_id": { "type": "string" },
           "name": { "type": "string" },
+          "entry_json": {
+            "type": "string"
+          },
+          "appended_at": {
+            "type": "string",
+            "format": "data-time"
+          },
+          "version": {
+            "type": "integer"
+          },
           "entry_type": {
             "type": "string",
             "enum": [
               "Input",
               "Output",
               "GetState",
+              "GetEagerState",
               "SetState",
               "GetStateKeys",
+              "GetEagerStateKeys",
               "ClearState",
               "ClearAllState",
               "Sleep",
@@ -1316,7 +1328,16 @@
         "type": "object",
         "required": ["index", "entry_type"],
         "properties": {
-          "index": { "type": "integer" }
+          "index": { "type": "integer" },
+          "start": {
+            "type": "string",
+            "format": "data-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "data-time"
+          },
+          "completed": { "type": "boolean" }
         }
       },
       "FailureEntry": {
@@ -1379,7 +1400,10 @@
           {
             "type": "object",
             "properties": {
-              "entry_type": { "type": "string", "enum": ["GetState"] },
+              "entry_type": {
+                "type": "string",
+                "enum": ["GetState", "GetEagerState"]
+              },
               "key": { "type": "string" },
               "value": { "type": "string" },
               "completed": { "type": "boolean" },
@@ -1415,7 +1439,10 @@
           {
             "type": "object",
             "properties": {
-              "entry_type": { "type": "string", "enum": ["GetStateKeys"] },
+              "entry_type": {
+                "type": "string",
+                "enum": ["GetStateKeys", "GetEagerStateKeys"]
+              },
               "completed": { "type": "boolean" },
               "keys": {
                 "type": "array",
@@ -1463,7 +1490,6 @@
       },
       "SleepJournalEntryType": {
         "type": "object",
-        "required": ["sleep_wakeup_at"],
         "allOf": [
           {
             "$ref": "#/components/schemas/JournalBaseEntry"
@@ -1486,7 +1512,6 @@
       },
       "GetPromiseJournalEntryType": {
         "type": "object",
-        "required": ["promise_name"],
         "allOf": [
           {
             "$ref": "#/components/schemas/JournalBaseEntry"
@@ -1511,7 +1536,6 @@
       },
       "PeekPromiseJournalEntryType": {
         "type": "object",
-        "required": ["promise_name"],
         "allOf": [
           {
             "$ref": "#/components/schemas/JournalBaseEntry"
@@ -1536,7 +1560,6 @@
       },
       "CompletePromiseJournalEntryType": {
         "type": "object",
-        "required": ["promise_name"],
         "allOf": [
           {
             "$ref": "#/components/schemas/JournalBaseEntry"
@@ -1569,7 +1592,6 @@
       },
       "OneWayCallJournalEntryType": {
         "type": "object",
-        "required": ["invoked_id", "invoked_target"],
         "allOf": [
           {
             "$ref": "#/components/schemas/JournalBaseEntry"
@@ -1617,7 +1639,6 @@
       },
       "CallJournalEntryType": {
         "type": "object",
-        "required": ["invoked_id", "invoked_target"],
         "allOf": [
           {
             "$ref": "#/components/schemas/JournalBaseEntry"
