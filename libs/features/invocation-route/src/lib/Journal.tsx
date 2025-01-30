@@ -3,6 +3,7 @@ import {
   Invocation,
   JournalEntry,
   useGetInvocationJournal,
+  useGetInvocationJournalWithInvocation,
 } from '@restate/data-access/admin-api';
 import { Badge } from '@restate/ui/badge';
 import { Ellipsis, Spinner } from '@restate/ui/loading';
@@ -30,15 +31,18 @@ import { getRestateError } from './Status';
 import { HoverTooltip } from '@restate/ui/tooltip';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
 
-export function Journal({ invocation }: { invocation?: Invocation }) {
-  const { data, isSuccess, isPending, dataUpdatedAt } = useGetInvocationJournal(
-    String(invocation?.id),
-    {
-      enabled: Boolean(invocation?.id),
-      refetchOnMount: true,
-      staleTime: 0,
-    }
-  );
+export function Journal({ invocationId }: { invocationId?: string }) {
+  const {
+    data: journalAndInvocationData,
+    isSuccess,
+    isPending,
+    dataUpdatedAt,
+  } = useGetInvocationJournalWithInvocation(String(invocationId), {
+    enabled: Boolean(invocationId),
+    refetchOnMount: true,
+    staleTime: 0,
+  });
+  const { journal: data, invocation } = journalAndInvocationData ?? {};
   const entries = (data?.entries ?? []).sort((a, b) => a.index - b.index);
   if (!invocation) {
     return null;
@@ -310,7 +314,7 @@ export function JournalSection({
     <Section className={sectionStyles({ className })}>
       <SectionTitle>Journal</SectionTitle>
       <SectionContent className="">
-        <Journal invocation={invocation} />
+        <Journal invocationId={invocation?.id} />
       </SectionContent>
     </Section>
   );

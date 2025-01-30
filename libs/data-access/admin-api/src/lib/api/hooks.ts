@@ -399,6 +399,11 @@ export function useGetInvocationJournalWithInvocation(
             },
           }),
         isPending: journalResults.isPending || invocationResults.isPending,
+        isSuccess: journalResults.isSuccess && invocationResults.isSuccess,
+        dataUpdatedAt: Math.max(
+          journalResults.dataUpdatedAt,
+          invocationResults.dataUpdatedAt
+        ),
         error: journalResults.error || invocationResults.error,
       };
     },
