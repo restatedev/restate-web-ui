@@ -134,7 +134,7 @@ const ENTRY_TYPE_LABEL: Record<EntryType, string> = {
 
 const ENTRY_COMPONENTS: {
   [K in EntryType]?: ComponentType<
-    EntryProps<JournalEntry & { entry_type: K }>
+    EntryProps<JournalEntry & { entry_type: K; isRetrying?: boolean }>
   >;
 } = {
   Input: Input,
@@ -212,6 +212,20 @@ const defaultEntryStyles = tv({
         entryItem: '',
       },
     },
+    isRetrying: {
+      true: {
+        line: '',
+        base: '',
+        circle: 'border-orange-200 bg-orange-50',
+        entryItem: 'border-orange-200 bg-orange-50',
+      },
+      false: {
+        line: '',
+        base: '',
+        circle: '',
+        entryItem: '',
+      },
+    },
   },
 });
 
@@ -223,6 +237,13 @@ function DefaultEntry({
   appended,
   error,
 }: PropsWithChildren<EntryProps<JournalEntry>>) {
+  const isRetrying = Boolean(
+    ['running', 'retrying'].includes(invocation.status) &&
+      (failed || ('failure' in entry && entry.failure))
+  );
+  const hasRetriedButSucceeded = Boolean(
+    'success' in entry && entry.success && isRetrying
+  );
   const { base, line, circle, entryItem } = defaultEntryStyles();
   if (!entry.entry_type) {
     return null;
@@ -245,9 +266,11 @@ function DefaultEntry({
           appended,
           failed,
           completed: completed || failed,
+          isRetrying,
         })}
       >
-        {!completed && !failed && (
+        {((!completed && !failed) ||
+          (isRetrying && !hasRetriedButSucceeded)) && (
           <div className="inset-[-1px] absolute bg-white">
             <Spinner className="absolute inset-0 w-full h-full [&_circle]:opacity-0 text-zinc-300/70 fill-zinc-100" />
           </div>
@@ -264,12 +287,20 @@ function DefaultEntry({
       </div>
       <ErrorBoundary entry={entry}>
         {EntrySpecificComponent ? (
-          <div className={entryItem({ appended, failed, completed })}>
+          <div
+            className={entryItem({
+              appended,
+              failed,
+              completed,
+              isRetrying,
+            })}
+          >
             <EntrySpecificComponent
               entry={entry}
               failed={failed}
               invocation={invocation}
               error={error}
+              isRetrying={isRetrying}
             />
           </div>
         ) : (
