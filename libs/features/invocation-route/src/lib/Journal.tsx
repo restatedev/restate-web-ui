@@ -251,6 +251,10 @@ function DefaultEntry({
     : undefined;
   const completed = 'completed' in entry ? !!entry.completed : true;
 
+  if (!EntrySpecificComponent) {
+    return null;
+  }
+
   return (
     <div className="text-xs flex flex-col items-baseline gap-x-2 relative pl-6 group">
       <div
@@ -280,24 +284,22 @@ function DefaultEntry({
         </HoverTooltip>
       </div>
       <ErrorBoundary entry={entry}>
-        {EntrySpecificComponent ? (
-          <div
-            className={entryItem({
-              appended,
-              failed,
-              completed,
-              isRetrying: isRetryingThisEntry,
-            })}
-          >
-            <EntrySpecificComponent
-              entry={entry}
-              failed={failed}
-              invocation={invocation}
-              error={error}
-              isRetrying={isRetryingThisEntry}
-            />
-          </div>
-        ) : null}
+        <div
+          className={entryItem({
+            appended,
+            failed,
+            completed,
+            isRetrying: isRetryingThisEntry,
+          })}
+        >
+          <EntrySpecificComponent
+            entry={entry}
+            failed={failed}
+            invocation={invocation}
+            error={error}
+            isRetrying={isRetryingThisEntry}
+          />
+        </div>
       </ErrorBoundary>
     </div>
   );
