@@ -173,7 +173,7 @@ function JournalCell({ invocation }: CellProps) {
           />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="max-w-sm">
+      <PopoverContent className="max-w-xl">
         <DropdownSection title="Journal" className="p-3">
           <Journal invocationId={invocation.id} />
         </DropdownSection>
