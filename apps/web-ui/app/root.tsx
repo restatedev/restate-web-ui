@@ -128,10 +128,7 @@ function getCookieValue(name: string) {
 export default function App() {
   return (
     <QueryProvider>
-      <RestateContextProvider
-        adminBaseUrl={getCookieValue('adminBaseUrl')}
-        ingressUrl="http://localhost:8080"
-      >
+      <RestateContextProvider adminBaseUrl={getCookieValue('adminBaseUrl')}>
         <LayoutOutlet zone={LayoutZone.Content}>
           <Outlet />
         </LayoutOutlet>

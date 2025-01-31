@@ -21,9 +21,11 @@ function InternalRestateContextProvider({
   children,
   isPending,
   ingressUrl,
-}: PropsWithChildren<{ isPending?: boolean; ingressUrl: string }>) {
+}: PropsWithChildren<{ isPending?: boolean; ingressUrl?: string }>) {
   const { data } = useVersion({ enabled: !isPending });
   const version = data?.version;
+  const resolvedIngress =
+    ingressUrl || data?.ingress_endpoint || 'http://localhost:8080';
 
   const { isSuccess, failureCount } = useHealth({
     enabled: !isPending,
@@ -39,7 +41,9 @@ function InternalRestateContextProvider({
     : 'PENDING';
 
   return (
-    <InternalRestateContext.Provider value={{ version, status, ingressUrl }}>
+    <InternalRestateContext.Provider
+      value={{ version, status, ingressUrl: resolvedIngress }}
+    >
       {children}
     </InternalRestateContext.Provider>
   );
@@ -52,7 +56,7 @@ export function RestateContextProvider({
   isPending,
 }: PropsWithChildren<{
   adminBaseUrl?: string;
-  ingressUrl: string;
+  ingressUrl?: string;
   isPending?: boolean;
 }>) {
   return (
