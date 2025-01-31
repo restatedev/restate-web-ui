@@ -10,24 +10,41 @@ const failureStyle = tv({
   base: '',
   slots: {
     trigger:
-      'text-red-500 bg-white/70 border px-1.5 py-0 flex rounded-md items-center gap-1 [font-size:inherit] h-5',
-    errorIcon: 'h-3 w-3 shrink-0 text-red-500/90',
+      ' bg-white/70 border px-1.5 py-0 flex rounded-md items-center gap-1 [font-size:inherit] h-5',
+    errorIcon: 'h-3 w-3 shrink-0 ',
+  },
+  variants: {
+    isRetrying: {
+      true: {
+        trigger: 'text-orange-700',
+        errorIcon: 'text-orange-600',
+      },
+      false: {
+        trigger: 'text-red-500',
+        errorIcon: 'text-red-500/90',
+      },
+    },
+  },
+  defaultVariants: {
+    isRetrying: false,
   },
 });
 export function Failure({
   message,
   restate_code,
   className,
+  isRetrying,
 }: {
   restate_code?: string;
   message: string;
   className?: string;
+  isRetrying?: boolean;
 }) {
   const error = useMemo(
     () => new RestateError(message, restate_code),
     [message, restate_code]
   );
-  const { trigger, errorIcon } = failureStyle();
+  const { trigger, errorIcon } = failureStyle({ isRetrying });
 
   return (
     <Popover>
@@ -37,7 +54,10 @@ export function Failure({
           className={trigger({ className })}
           disabled={!error}
         >
-          <Icon name={IconName.CircleX} className={errorIcon()} />
+          <Icon
+            name={isRetrying ? IconName.TriangleAlert : IconName.CircleX}
+            className={errorIcon()}
+          />
           {restate_code}
           <Icon
             name={IconName.ChevronsUpDown}
@@ -50,7 +70,7 @@ export function Failure({
           <ErrorBanner
             error={error}
             wrap={error?.message.includes('\n')}
-            className="rounded-lg flex-auto w-[min(40rem,90vw)] [&_details]:max-h-full [&:has(details[open])]:h-[min(50vh,16rem)]  overflow-auto resize max-w-full max-h-full"
+            className="rounded-lg flex-auto max-w-[min(50rem,90vw)] [&_details]:max-h-full [&:has(details[open])]:h-[min(50vh,16rem)]  overflow-auto resize max-h-full"
           />
         </DropdownSection>
       </PopoverContent>

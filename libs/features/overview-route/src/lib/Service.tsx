@@ -76,7 +76,10 @@ function filterHandler(handler: HandlerType, filterText?: string) {
 function filterDeployment(deployment?: DeploymentType, filterText?: string) {
   return Boolean(
     !filterText ||
-      getEndpoint(deployment)?.toLowerCase().includes(filterText.toLowerCase())
+      getEndpoint(deployment)
+        ?.toLowerCase()
+        .includes(filterText.toLowerCase()) ||
+      (filterText.startsWith('dp_') && deployment?.id.includes(filterText))
   );
 }
 

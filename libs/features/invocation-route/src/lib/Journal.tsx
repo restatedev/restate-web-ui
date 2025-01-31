@@ -3,6 +3,7 @@ import {
   Invocation,
   JournalEntry,
   useGetInvocationJournal,
+  useGetInvocationJournalWithInvocation,
 } from '@restate/data-access/admin-api';
 import { Badge } from '@restate/ui/badge';
 import { Ellipsis, Spinner } from '@restate/ui/loading';
@@ -30,42 +31,44 @@ import { getRestateError } from './Status';
 import { HoverTooltip } from '@restate/ui/tooltip';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
 
-export function Journal({ invocation }: { invocation?: Invocation }) {
-  const { data, isSuccess, isPending, dataUpdatedAt } = useGetInvocationJournal(
-    String(invocation?.id),
-    {
-      enabled: Boolean(invocation?.id),
-      refetchOnMount: true,
-      staleTime: 0,
-    }
-  );
+export function Journal({ invocationId }: { invocationId?: string }) {
+  const {
+    data: journalAndInvocationData,
+    isSuccess,
+    isPending,
+    dataUpdatedAt,
+  } = useGetInvocationJournalWithInvocation(String(invocationId), {
+    enabled: Boolean(invocationId),
+    refetchOnMount: true,
+    staleTime: 0,
+  });
+  const { journal: data, invocation } = journalAndInvocationData ?? {};
   const entries = (data?.entries ?? []).sort((a, b) => a.index - b.index);
-  if (!invocation) {
-    return null;
-  }
   const error = getRestateError(invocation);
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
       <div className="flex flex-col">
-        {entries.map((entry) => {
-          return (
-            <DefaultEntry
-              key={entry.index}
-              entry={entry}
-              invocation={invocation}
-              failed={
-                entry.index === invocation?.last_failure_related_entry_index ||
-                Boolean('failure' in entry && entry.failure)
-              }
-              appended
-              {...(entry.index ===
-                invocation?.last_failure_related_entry_index && {
-                error,
-              })}
-            />
-          );
-        })}
+        {invocation &&
+          entries.map((entry) => {
+            return (
+              <DefaultEntry
+                key={entry.index}
+                entry={entry}
+                invocation={invocation}
+                failed={
+                  entry.index ===
+                    invocation?.last_failure_related_entry_index ||
+                  Boolean('failure' in entry && entry.failure)
+                }
+                appended
+                {...(entry.index ===
+                  invocation?.last_failure_related_entry_index && {
+                  error,
+                })}
+              />
+            );
+          })}
         {invocation?.last_failure_related_entry_index === entries.length && (
           <DefaultEntry
             invocation={invocation}
@@ -130,7 +133,7 @@ const ENTRY_TYPE_LABEL: Record<EntryType, string> = {
 
 const ENTRY_COMPONENTS: {
   [K in EntryType]?: ComponentType<
-    EntryProps<JournalEntry & { entry_type: K }>
+    EntryProps<JournalEntry & { entry_type: K; isRetrying?: boolean }>
   >;
 } = {
   Input: Input,
@@ -208,6 +211,20 @@ const defaultEntryStyles = tv({
         entryItem: '',
       },
     },
+    isRetrying: {
+      true: {
+        line: '',
+        base: '',
+        circle: 'border-orange-200 bg-orange-50',
+        entryItem: 'border-orange-200 bg-orange-50',
+      },
+      false: {
+        line: '',
+        base: '',
+        circle: '',
+        entryItem: '',
+      },
+    },
   },
 });
 
@@ -219,6 +236,9 @@ function DefaultEntry({
   appended,
   error,
 }: PropsWithChildren<EntryProps<JournalEntry>>) {
+  const isRetrying = invocation.status === 'retrying';
+  const isRetryingThisEntry =
+    isRetrying && failed && entry.index >= (invocation.journal_size ?? 0) - 1;
   const { base, line, circle, entryItem } = defaultEntryStyles();
   if (!entry.entry_type) {
     return null;
@@ -231,6 +251,10 @@ function DefaultEntry({
     : undefined;
   const completed = 'completed' in entry ? !!entry.completed : true;
 
+  if (!EntrySpecificComponent) {
+    return null;
+  }
+
   return (
     <div className="text-xs flex flex-col items-baseline gap-x-2 relative pl-6 group">
       <div
@@ -241,9 +265,10 @@ function DefaultEntry({
           appended,
           failed,
           completed: completed || failed,
+          isRetrying: isRetryingThisEntry,
         })}
       >
-        {!completed && !failed && (
+        {((!completed && !failed) || isRetryingThisEntry) && (
           <div className="inset-[-1px] absolute bg-white">
             <Spinner className="absolute inset-0 w-full h-full [&_circle]:opacity-0 text-zinc-300/70 fill-zinc-100" />
           </div>
@@ -259,28 +284,22 @@ function DefaultEntry({
         </HoverTooltip>
       </div>
       <ErrorBoundary entry={entry}>
-        {EntrySpecificComponent ? (
-          <div className={entryItem({ appended, failed, completed })}>
-            <EntrySpecificComponent
-              entry={entry}
-              failed={failed}
-              invocation={invocation}
-              error={error}
-            />
-          </div>
-        ) : (
-          <Badge
-            variant={failed ? 'danger' : 'default'}
-            size="sm"
-            className="shrink-0 [&:has(+*)]:rounded-b-none [&:has(+*)]:mb-0 uppercase my-1 font-mono font-normal text-2xs py-0 px-1 leading-4 rounded"
-          >
-            <Ellipsis
-              visible={'completed' in entry && entry.completed === false}
-            >
-              {ENTRY_TYPE_LABEL[entry.entry_type]}
-            </Ellipsis>
-          </Badge>
-        )}
+        <div
+          className={entryItem({
+            appended,
+            failed,
+            completed,
+            isRetrying: isRetryingThisEntry,
+          })}
+        >
+          <EntrySpecificComponent
+            entry={entry}
+            failed={failed}
+            invocation={invocation}
+            error={error}
+            isRetrying={isRetryingThisEntry}
+          />
+        </div>
       </ErrorBoundary>
     </div>
   );
@@ -310,7 +329,7 @@ export function JournalSection({
     <Section className={sectionStyles({ className })}>
       <SectionTitle>Journal</SectionTitle>
       <SectionContent className="">
-        <Journal invocation={invocation} />
+        <Journal invocationId={invocation?.id} />
       </SectionContent>
     </Section>
   );

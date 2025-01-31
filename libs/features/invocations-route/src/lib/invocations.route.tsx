@@ -30,7 +30,7 @@ import {
   SnapshotTimeProvider,
   useDurationSinceLastSnapshot,
 } from '@restate/util/snapshot-time';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { formatDurations } from '@restate/util/intl';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import {
@@ -286,6 +286,10 @@ function Component() {
       refetchOnReconnect: false,
       staleTime: 0,
     });
+  const dataUpdatedAtRef = useRef(dataUpdatedAt);
+  if (isFetching) {
+    dataUpdatedAtRef.current = dataUpdatedAt;
+  }
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>();
   const collator = useCollator();
 
@@ -341,7 +345,7 @@ function Component() {
   );
 
   return (
-    <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
+    <SnapshotTimeProvider lastSnapshot={dataUpdatedAtRef.current}>
       <div className="flex flex-col flex-auto gap-2 relative">
         <Footnote data={data} isFetching={isFetching} />
 

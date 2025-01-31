@@ -137,8 +137,8 @@ function DeploymentContent({ deployment }: { deployment: string }) {
               </div>
               {isPending ? (
                 <div className="flex flex-col border-transparent rounded-[calc(0.75rem-0.125rem)]">
-                  <div className="w-full h-6 animate-pulse border-b duration2-250 rounded-t-[calc(0.75rem-0.125rem)] bg-white" />
-                  <div className="w-full h-6 animate-pulse delay-200 duration2-350 rounded-b-[calc(0.75rem-0.125rem)] bg-white" />
+                  <div className="w-full h-6 animate-pulse border-b rounded-t-[calc(0.75rem-0.125rem)] bg-white" />
+                  <div className="w-full h-6 animate-pulse delay-200 rounded-b-[calc(0.75rem-0.125rem)] bg-white" />
                 </div>
               ) : (
                 <div className="flex flex-col shadow-sm border rounded-[calc(0.75rem-0.125rem)]">

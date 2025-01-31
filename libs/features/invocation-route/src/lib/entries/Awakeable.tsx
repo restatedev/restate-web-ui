@@ -10,6 +10,7 @@ export function Awakeable({
   failed,
   invocation,
   error,
+  isRetrying,
 }: EntryProps<AwakeableJournalEntryType>) {
   const entryError = entry.failure || error;
 
@@ -35,11 +36,12 @@ export function Awakeable({
                 void
               </div>
             )}
-          {!entry.completed && <Ellipsis />}
+          {!entry.completed && (!entryError || isRetrying) && <Ellipsis />}
           {entryError?.message && (
             <Failure
               message={entryError.message}
               restate_code={entryError.restate_code}
+              isRetrying={isRetrying}
             />
           )}
         </>

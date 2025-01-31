@@ -34,6 +34,7 @@ import {
   DeleteInvocation,
   InvocationPanel,
 } from '@restate/features/invocation-route';
+import { Support } from '@restate/features/support';
 
 export const links: LinksFunction = () => [
   {
@@ -167,6 +168,7 @@ export default function App() {
         <ServicePlayground />
         <InvocationPanel />
         <DeleteInvocation />
+        <Support />
       </RestateContextProvider>
     </QueryProvider>
   );

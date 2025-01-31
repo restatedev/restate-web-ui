@@ -24,7 +24,7 @@ module.exports = withTV({
         code: '0.8125rem',
       },
       screens: {
-        '3xl': '1850px',
+        '3xl': '1950px',
       },
     },
   },

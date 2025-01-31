@@ -10,6 +10,7 @@ export function PeekPromise({
   failed,
   invocation,
   error,
+  isRetrying,
 }: EntryProps<PeekPromiseJournalEntryType>) {
   const entryError = entry.failure || error;
 
@@ -35,11 +36,12 @@ export function PeekPromise({
                 void
               </div>
             )}
-          {!entry.completed && <Ellipsis />}
+          {!entry.completed && (!entryError || isRetrying) && <Ellipsis />}
           {entryError?.message && (
             <Failure
               message={entryError.message}
               restate_code={entryError.restate_code}
+              isRetrying={isRetrying}
             />
           )}
         </>

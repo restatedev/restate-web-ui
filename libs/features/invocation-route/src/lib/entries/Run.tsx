@@ -10,6 +10,7 @@ export function Run({
   failed,
   invocation,
   error,
+  isRetrying,
 }: EntryProps<RunJournalEntryType>) {
   const entryError = entry.failure || error;
 
@@ -39,7 +40,7 @@ export function Run({
               }
             />
           )}
-          {!entry.completed && !entryError && <Ellipsis />}
+          {!entry.completed && (!entryError || isRetrying) && <Ellipsis />}
           {typeof entry.value === 'undefined' &&
             !entryError &&
             entry.completed && (
@@ -51,6 +52,7 @@ export function Run({
             <Failure
               message={entryError.message}
               restate_code={entryError.restate_code}
+              isRetrying={isRetrying}
             />
           )}
         </>

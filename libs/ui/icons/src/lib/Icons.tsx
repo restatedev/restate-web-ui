@@ -44,6 +44,7 @@ import { Lambda } from './custom-icons/Lambda';
 import { Docs } from './custom-icons/Docs';
 import { Github } from './custom-icons/Github';
 import { Discord } from './custom-icons/Discord';
+import { Slack } from './custom-icons/Slack';
 import { SupportTicket } from './custom-icons/SupportTicket';
 import { Help } from './custom-icons/Help';
 import { Question } from './custom-icons/Question';
@@ -108,6 +109,7 @@ export const enum IconName {
   Python = 'Python',
   Kotlin = 'Kotlin',
   Ellipsis = 'Ellipsis',
+  Slack = 'Slack',
 }
 export interface IconsProps {
   name: IconName;
@@ -168,6 +170,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Python]: Python,
   [IconName.Ellipsis]: Ellipsis,
   [IconName.Kotlin]: Kotlin,
+  [IconName.Slack]: Slack,
 };
 
 const styles = tv({
