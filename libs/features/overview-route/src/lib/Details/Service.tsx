@@ -192,7 +192,7 @@ function ServiceForm({
                     <ServicePlaygroundTrigger
                       service={data?.name}
                       className=""
-                      variant="primary"
+                      variant="button"
                     />
                   )}
                 </div>

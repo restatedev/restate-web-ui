@@ -161,6 +161,7 @@ function HandlerInputOutput({
                       <ServicePlaygroundTriggerWithClosePopover
                         service={service}
                         handler={handler}
+                        variant="icon"
                       />
                     </div>
                   )}

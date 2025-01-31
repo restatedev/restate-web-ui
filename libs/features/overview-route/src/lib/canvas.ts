@@ -254,7 +254,6 @@ export class Blob {
     if (ctx) {
       const path = shape.path();
       const center = this.center;
-
       const primaryGradient = ctx.createRadialGradient(
         center.x,
         center.y,
