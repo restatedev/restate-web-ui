@@ -237,13 +237,9 @@ function DefaultEntry({
   appended,
   error,
 }: PropsWithChildren<EntryProps<JournalEntry>>) {
-  const isRetrying = Boolean(
-    ['running', 'retrying'].includes(invocation.status) &&
-      (failed || ('failure' in entry && entry.failure))
-  );
-  const hasRetriedButSucceeded = Boolean(
-    'success' in entry && entry.success && isRetrying
-  );
+  const isRetrying = invocation.status === 'retrying';
+  const isRetryingThisEntry =
+    isRetrying && failed && entry.index >= (invocation.journal_size ?? 0) - 1;
   const { base, line, circle, entryItem } = defaultEntryStyles();
   if (!entry.entry_type) {
     return null;
@@ -266,11 +262,10 @@ function DefaultEntry({
           appended,
           failed,
           completed: completed || failed,
-          isRetrying,
+          isRetrying: isRetryingThisEntry,
         })}
       >
-        {((!completed && !failed) ||
-          (isRetrying && !hasRetriedButSucceeded)) && (
+        {((!completed && !failed) || isRetryingThisEntry) && (
           <div className="inset-[-1px] absolute bg-white">
             <Spinner className="absolute inset-0 w-full h-full [&_circle]:opacity-0 text-zinc-300/70 fill-zinc-100" />
           </div>
@@ -292,7 +287,7 @@ function DefaultEntry({
               appended,
               failed,
               completed,
-              isRetrying,
+              isRetrying: isRetryingThisEntry,
             })}
           >
             <EntrySpecificComponent
@@ -300,7 +295,7 @@ function DefaultEntry({
               failed={failed}
               invocation={invocation}
               error={error}
-              isRetrying={isRetrying}
+              isRetrying={isRetryingThisEntry}
             />
           </div>
         ) : (

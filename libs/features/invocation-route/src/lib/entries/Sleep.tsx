@@ -11,6 +11,7 @@ export function Sleep({
   failed,
   invocation,
   error,
+  isRetrying,
 }: EntryProps<SleepJournalEntryType>) {
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
 
@@ -32,12 +33,13 @@ export function Sleep({
           {duration}
         </DateTooltip>
       )}
-      {!entry.completed && <Ellipsis />}
+      {!entry.completed && (!failed || isRetrying) && <Ellipsis />}
       <span className="font-normal text-zinc-500">{isPast && ' ago'}</span>
       {entryError?.message && (
         <Failure
           message={entryError.message}
           restate_code={entryError.restate_code}
+          isRetrying
         />
       )}
     </>

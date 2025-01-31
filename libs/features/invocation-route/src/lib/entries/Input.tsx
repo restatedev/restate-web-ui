@@ -10,6 +10,7 @@ export function Input({
   failed,
   invocation,
   error,
+  isRetrying,
 }: EntryProps<InputJournalEntryType>) {
   return (
     <>
@@ -43,7 +44,11 @@ export function Input({
         }
       />
       {error?.message && (
-        <Failure message={error.message} restate_code={error.restate_code} />
+        <Failure
+          message={error.message}
+          restate_code={error.restate_code}
+          isRetrying={isRetrying}
+        />
       )}
     </>
   );

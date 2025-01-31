@@ -13,6 +13,7 @@ export function Call({
   failed,
   invocation,
   error,
+  isRetrying,
 }: EntryProps<CallJournalEntryType>) {
   const entryError = entry.failure || error;
 
@@ -78,11 +79,12 @@ export function Call({
                     void
                   </div>
                 )}
-              {!entry.completed && !failed && <Ellipsis />}
+              {!entry.completed && (!entryError || isRetrying) && <Ellipsis />}
               {entryError?.message && (
                 <Failure
                   message={entryError.message}
                   restate_code={entryError.restate_code}
+                  isRetrying={isRetrying}
                 />
               )}
             </>

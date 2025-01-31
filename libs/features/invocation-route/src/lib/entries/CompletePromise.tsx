@@ -10,6 +10,7 @@ export function CompletePromise({
   failed,
   invocation,
   error,
+  isRetrying,
 }: EntryProps<CompletePromiseJournalEntryType>) {
   const failure = entry.failure ?? entry.completion?.failure ?? error;
   return (
@@ -37,11 +38,12 @@ export function CompletePromise({
                 void
               </div>
             )}
-          {!entry.completed && <Ellipsis />}
+          {!entry.completed && (!failure || isRetrying) && <Ellipsis />}
           {failure?.message && (
             <Failure
               message={failure.message}
               restate_code={failure.restate_code}
+              isRetrying
             />
           )}
         </>

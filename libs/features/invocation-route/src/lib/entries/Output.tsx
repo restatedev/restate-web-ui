@@ -9,6 +9,7 @@ export function Output({
   failed,
   invocation,
   error,
+  isRetrying,
 }: EntryProps<OutputJournalEntryType>) {
   const entryError = entry.failure || error;
 
@@ -36,6 +37,7 @@ export function Output({
             <Failure
               message={entryError.message}
               restate_code={entryError.restate_code}
+              isRetrying={isRetrying}
             />
           )}
         </>

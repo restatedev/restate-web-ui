@@ -9,6 +9,7 @@ export function SetState({
   failed,
   invocation,
   error,
+  isRetrying,
 }: EntryProps<SetStateJournalEntryType>) {
   return (
     <Expression
@@ -36,6 +37,7 @@ export function SetState({
             <Failure
               message={error.message}
               restate_code={error.restate_code}
+              isRetrying={isRetrying}
             />
           )}
         </>

@@ -7,4 +7,5 @@ export interface EntryProps<T extends JournalEntry> {
   invocation: Invocation;
   appended?: boolean;
   error?: RestateError;
+  isRetrying?: boolean;
 }
