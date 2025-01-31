@@ -21,7 +21,7 @@ interface LinkProps
     >,
     Pick<AriaAttributes, 'aria-current'> {
   className?: string;
-  variant?: 'primary' | 'secondary' | 'button' | 'secondary-button';
+  variant?: 'primary' | 'secondary' | 'button' | 'secondary-button' | 'icon';
   preserveQueryParams?: boolean;
 }
 
@@ -38,6 +38,7 @@ const styles = tv({
         'text-blue-600 dark:text-blue-500 underline decoration-blue-600/60 hover:decoration-blue-600',
       secondary:
         'text-gray-700 dark:text-zinc-300 underline decoration-gray-700/50 hover:decoration-gray-700',
+      icon: 'no-underline shadow-none border-0 p-1 flex items-center justify-center text-gray-600 hover:bg-black/[5%] pressed:bg-black/10 disabled:bg-transparent',
     },
   },
   defaultVariants: {
@@ -58,7 +59,8 @@ export function useHrefWithQueryParams({
 
   const hrefWithQueryParams = useMemo(() => {
     if (preserveQueryParams && href?.startsWith('?')) {
-      const newSearchParams = new URLSearchParams(href);
+      const [hrefParams, hash] = href.split('#');
+      const newSearchParams = new URLSearchParams(hrefParams);
       let existingSearchParams = new URLSearchParams(searchParams);
       Array.from(newSearchParams.entries()).forEach(([key, value]) => {
         existingSearchParams = new URLSearchParams(
@@ -70,12 +72,11 @@ export function useHrefWithQueryParams({
         ...existingSearchParams,
         ...(mode === 'append' ? newSearchParams : []),
       ]);
-      return '?' + combinedSearchParams.toString();
+      return '?' + combinedSearchParams.toString() + (hash ? `#${hash}` : '');
     } else {
       return href;
     }
   }, [preserveQueryParams, href, searchParams, mode]);
-
   return hrefWithQueryParams;
 }
 export const Link = forwardRef<HTMLAnchorElement, LinkProps>(
