@@ -14,7 +14,10 @@ import { formatOrdinals } from '@restate/util/intl';
 import { Ellipsis } from '@restate/ui/loading';
 import { StatusTimeline } from './StatusTimeline';
 
-export function getRestateError(invocation: Invocation) {
+export function getRestateError(invocation?: Invocation) {
+  if (!invocation) {
+    return undefined;
+  }
   const message = invocation.last_failure ?? invocation.completion_failure;
   return message
     ? new RestateError(message, invocation.last_failure_error_code)

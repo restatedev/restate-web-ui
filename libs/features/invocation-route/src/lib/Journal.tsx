@@ -44,32 +44,31 @@ export function Journal({ invocationId }: { invocationId?: string }) {
   });
   const { journal: data, invocation } = journalAndInvocationData ?? {};
   const entries = (data?.entries ?? []).sort((a, b) => a.index - b.index);
-  if (!invocation) {
-    return null;
-  }
   const error = getRestateError(invocation);
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
       <div className="flex flex-col">
-        {entries.map((entry) => {
-          return (
-            <DefaultEntry
-              key={entry.index}
-              entry={entry}
-              invocation={invocation}
-              failed={
-                entry.index === invocation?.last_failure_related_entry_index ||
-                Boolean('failure' in entry && entry.failure)
-              }
-              appended
-              {...(entry.index ===
-                invocation?.last_failure_related_entry_index && {
-                error,
-              })}
-            />
-          );
-        })}
+        {invocation &&
+          entries.map((entry) => {
+            return (
+              <DefaultEntry
+                key={entry.index}
+                entry={entry}
+                invocation={invocation}
+                failed={
+                  entry.index ===
+                    invocation?.last_failure_related_entry_index ||
+                  Boolean('failure' in entry && entry.failure)
+                }
+                appended
+                {...(entry.index ===
+                  invocation?.last_failure_related_entry_index && {
+                  error,
+                })}
+              />
+            );
+          })}
         {invocation?.last_failure_related_entry_index === entries.length && (
           <DefaultEntry
             invocation={invocation}
@@ -298,19 +297,7 @@ function DefaultEntry({
               isRetrying={isRetryingThisEntry}
             />
           </div>
-        ) : (
-          <Badge
-            variant={failed ? 'danger' : 'default'}
-            size="sm"
-            className="shrink-0 [&:has(+*)]:rounded-b-none [&:has(+*)]:mb-0 uppercase my-1 font-mono font-normal text-2xs py-0 px-1 leading-4 rounded"
-          >
-            <Ellipsis
-              visible={'completed' in entry && entry.completed === false}
-            >
-              {ENTRY_TYPE_LABEL[entry.entry_type]}
-            </Ellipsis>
-          </Badge>
-        )}
+        ) : null}
       </ErrorBoundary>
     </div>
   );
