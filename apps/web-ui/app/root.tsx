@@ -153,8 +153,12 @@ export default function App() {
             </Button>
             <LayoutOutlet zone={LayoutZone.Nav}>
               <Nav ariaCurrentValue="page">
-                <NavItem href={'/overview'}>Overview</NavItem>
-                <NavItem href={'/invocations'}>Invocations</NavItem>
+                <NavItem preserveSearchParams href={'/overview'}>
+                  Overview
+                </NavItem>
+                <NavItem preserveSearchParams href={'/invocations'}>
+                  Invocations
+                </NavItem>
               </Nav>
             </LayoutOutlet>
           </div>
