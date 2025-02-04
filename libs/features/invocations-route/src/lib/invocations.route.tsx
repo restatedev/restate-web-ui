@@ -53,6 +53,8 @@ import {
   ClientLoaderFunctionArgs,
   Form,
   redirect,
+  ShouldRevalidateFunction,
+  ShouldRevalidateFunctionArgs,
   useSearchParams,
 } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
@@ -625,12 +627,21 @@ function Footnote({
   );
 }
 
+/**
+ *
+ * https://github.com/remix-run/react-router/issues/12607
+ * TODO: workaround to make sure clientLoader only runs on first render
+ */
+let hasRendered = false;
 export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
   const url = new URL(request.url);
   const hasFilters = Array.from(url.searchParams.keys()).some((key) =>
     key.startsWith('filter_')
   );
-  if (!hasFilters) {
+
+  if (!hasFilters && !hasRendered) {
+    hasRendered = true;
+
     url.searchParams.append(
       'filter_status',
       JSON.stringify({
@@ -640,6 +651,11 @@ export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
     );
     return redirect(url.search + window.location.hash);
   }
+  hasRendered = true;
 };
 
-export const invocations = { Component, clientLoader };
+export function shouldRevalidate(arg: ShouldRevalidateFunctionArgs) {
+  return false;
+}
+
+export const invocations = { Component, clientLoader, shouldRevalidate };
