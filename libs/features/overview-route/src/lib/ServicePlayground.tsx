@@ -1,4 +1,4 @@
-import { useLocation, useNavigation, useSearchParams } from 'react-router';
+import { useLocation, useSearchParams } from 'react-router';
 import { useServiceOpenApi } from '@restate/data-access/admin-api';
 import { Button } from '@restate/ui/button';
 import { QueryDialog, DialogContent, DialogClose } from '@restate/ui/dialog';
@@ -32,6 +32,7 @@ import {
   DropdownTrigger,
 } from '@restate/ui/dropdown';
 import { Badge } from '@restate/ui/badge';
+import { useTransition } from 'react';
 
 const styles = tv({
   base: 'px-1.5 py-0.5 text-xs font-normal font-sans rounded-md flex items-center gap-1',
@@ -75,6 +76,7 @@ export function ServicePlayground() {
   const services = searchParams.getAll(SERVICE_PLAYGROUND_QUERY_PARAM);
   const service = services.at(0);
   const isActiveServiceSheet = isSidebar.get(String(service)) !== true;
+  const [isPending, startTransition] = useTransition();
 
   return (
     <>
@@ -82,11 +84,20 @@ export function ServicePlayground() {
         <ServicePlaygroundComplementaryContent
           setIsSidebar={setIsSidebar}
           isSidebar={isSidebar}
+          onClose={(service) => {
+            startTransition(() => {
+              setIsSidebar((old) => {
+                old.delete(service);
+                return new Map(old);
+              });
+            });
+          }}
         />
       </ComplementaryWithSearchParam>
-      {service && isActiveServiceSheet && (
+      {service && isActiveServiceSheet && !isPending && (
         <ServicePlaygroundSheetContent
           service={service}
+          isSidebar={isSidebar}
           setIsSidebar={setIsSidebar}
         />
       )}
@@ -170,9 +181,11 @@ function useApiSpec(service?: string | null) {
 function ServicePlaygroundComplementaryContent({
   setIsSidebar,
   isSidebar,
+  onClose,
 }: {
   setIsSidebar: Dispatch<React.SetStateAction<Map<string, boolean>>>;
   isSidebar: Map<string, boolean>;
+  onClose?: (service: string) => void;
 }) {
   const service = useParamValue();
   const { apiSpec, handlers } = useApiSpec(service);
@@ -180,7 +193,6 @@ function ServicePlaygroundComplementaryContent({
   const shouldDisplay = isSidebar.get(service) === true;
   const isActive = activeSearch === service;
   const location = useLocation();
-  const { state } = useNavigation();
 
   const selectedHandlerFromURL = window.location.hash
     .split('#/operations/')
@@ -198,12 +210,11 @@ function ServicePlaygroundComplementaryContent({
 
   const setSelectedHandler = useCallback(
     (value: string) => {
-      console.log(state, value);
       window.location.hash = `#/operations/${value}`;
       location.hash = `#/operations/${value}`;
       _setSelectedHandler(value);
     },
-    [location, state]
+    [location]
   );
 
   const defaultHandler = handlers.get(DEFAULT_CATEGORY)?.at(0)?.id;
@@ -257,10 +268,8 @@ function ServicePlaygroundComplementaryContent({
               className="flex-auto shrink-0 grow-0 basis-1/2"
               variant="secondary"
               onClick={() => {
-                // setIsSidebar((old) => {
-                //   old.delete(service);
-                //   return new Map(old);
-                // });
+                _setSelectedHandler(undefined);
+                onClose?.(service);
               }}
             >
               Close
@@ -348,11 +357,14 @@ function ServicePlaygroundComplementaryContent({
 function ServicePlaygroundSheetContent({
   service,
   setIsSidebar,
+  isSidebar,
 }: {
   service: string;
   setIsSidebar: Dispatch<React.SetStateAction<Map<string, boolean>>>;
+  isSidebar: Map<string, boolean>;
 }) {
   const { apiSpec, handlers } = useApiSpec(service);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   return (
     <QueryDialog query={SERVICE_PLAYGROUND_QUERY_PARAM}>
@@ -364,7 +376,29 @@ function ServicePlaygroundSheetContent({
           <>
             <API apiDescriptionDocument={apiSpec} />
             <DialogClose>
-              <Button variant="icon" className="absolute left-3 top-3">
+              <Button
+                variant="icon"
+                className="absolute left-3 top-3"
+                onClick={() => {
+                  const valuesToBeDeleted = searchParams
+                    .getAll(SERVICE_PLAYGROUND_QUERY_PARAM)
+                    .filter((service) => isSidebar.get(service) !== true);
+                  setSearchParams(
+                    (prev) => {
+                      let search = prev.toString();
+                      valuesToBeDeleted.forEach((serviceName) => {
+                        search = search.replace(
+                          `${SERVICE_PLAYGROUND_QUERY_PARAM}=${serviceName}`,
+                          ''
+                        );
+                      });
+
+                      return new URLSearchParams(search);
+                    },
+                    { preventScrollReset: true }
+                  );
+                }}
+              >
                 <Icon name={IconName.X} className="w-5 h-5" />
               </Button>
             </DialogClose>
