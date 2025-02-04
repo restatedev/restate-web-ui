@@ -277,8 +277,8 @@ function ServicePlaygroundComplementaryContent({
           </ComplementaryClose>
         </div>
       </ComplementaryFooter>
-      <div className="[&_.sl-rounded-lg]:rounded-xl [&_h1]:hidden [&_[dir=ltr]>[dir=ltr]]:hidden [&_h1]:mb-2 [&_.sl-stack--8]:gap-4 [&_.sl-stack--5]:gap-2 [&_.sl-pt-8]:pt-2 [&_p]:text-sm [&_.sl-inverted_input]:text-gray-700 [&_input]:text-sm [&_h1]:text-2xl [&_h2]:text-xl [&_h3]:text-lg [&_.sl-elements-api>*:first-child]:hidden [&_.sl-elements-api>*:nth-child(2)]:px-2 [&_.sl-elements-api>*:nth-child(2)>*]:pt-2 [&_.sl-elements-api>*:nth-child(2)>*>*>*:last-child]:flex-col-reverse [&_.sl-elements-api>*:nth-child(2)>*>*>*>*]:mx-0 [&_.sl-elements-api>*:nth-child(2)>*>*>*>*]:w-full">
-        <h2 className="mb-3 text-lg font-medium leading-6 text-gray-900 flex gap-2 items-center">
+      <div className="flex flex-col min-h-full [&_.sl-text-lg]:text-code [&_.sl-rounded-lg]:rounded-xl [&_h1]:hidden [&_[dir=ltr]>[dir=ltr]]:hidden [&_h1]:mb-2 [&_.sl-stack--8]:gap-4 [&_.sl-stack--5]:gap-2 [&_.sl-pt-8]:pt-2 [&_p]:text-sm [&_.sl-inverted_input]:text-gray-700 [&_input]:text-sm [&_h1]:text-2xl [&_elements-api_h2]:text-xl [&_h3]:text-lg [&_.sl-elements-api>*:first-child]:hidden [&_.sl-elements-api>*:nth-child(2)]:px-2 [&_.sl-elements-api>*:nth-child(2)>*]:pt-2 [&_.sl-elements-api>*:nth-child(2)>*>*>*:last-child]:flex-col-reverse [&_.sl-elements-api>*:nth-child(2)>*>*>*>*]:mx-0 [&_.sl-elements-api>*:nth-child(2)>*>*>*>*]:w-full">
+        <h2 className="mb-0.5 text-lg font-medium leading-6 text-gray-900 flex gap-2 items-center">
           <div className="h-10 w-10 shrink-0 text-blue-400">
             <Icon
               name={IconName.Function}
@@ -286,23 +286,23 @@ function ServicePlaygroundComplementaryContent({
             />
           </div>{' '}
           <div className="flex flex-col flex-auto items-start gap-1 min-w-0">
-            <div className="flex items-center w-full pr-3">
-              <span className="text-zinc-500 truncate min-w-0 block mr-[0.5ch]">
+            <div className="flex items-center w-full pr-3 ">
+              <span className="text-gray-500 truncate min-w-0 block mr-[0.5ch]">
                 {service}
               </span>
-              <span className="shrink-0 min-w-[1ch]">/</span>
+              <span className="shrink-0 text-gray-500">/</span>
               <Dropdown>
                 <DropdownTrigger>
                   <Button
                     variant="icon"
-                    className="flex text-md px-1.5 italic  gap-2 grow-0 items-center justify-center min-w-0"
+                    className="flex px-1.5 text-lg italic gap-2 grow-0 items-center justify-center min-w-0"
                   >
-                    <span className="block truncate min-w-0 font-mono font-semibold">
+                    <span className="block text-gray-900 truncate min-w-0 font-medium">
                       {selectedName?.name}
                     </span>
                     <Icon
                       name={IconName.ChevronsUpDown}
-                      className="text-gray-500 w-5 h-5"
+                      className="text-gray-500 w-4 h-4"
                     />
                   </Button>
                 </DropdownTrigger>
@@ -345,17 +345,19 @@ function ServicePlaygroundComplementaryContent({
             </div>
           </div>
         </h2>
-        {isActive && isSelectedHandlerFromURLValid && (
+        {isActive && isSelectedHandlerFromURLValid ? (
           <API
             apiDescriptionDocument={apiSpec}
             layout="sidebar"
             key={selectedHandlerFromURL}
           />
+        ) : (
+          <div className="flex-auto" />
         )}
         <Attribution />
         <Button
           variant="icon"
-          className="absolute right-1 top-2"
+          className="absolute right-1 top-1"
           onClick={() => {
             setIsSidebar((old) => {
               if (service) {
@@ -365,7 +367,7 @@ function ServicePlaygroundComplementaryContent({
             });
           }}
         >
-          <Icon name={IconName.Maximize} className="w-4 h-4 text-zinc-500" />
+          <Icon name={IconName.Maximize} className="w-4 h-4 text-gray-500" />
         </Button>
       </div>
     </>
@@ -393,56 +395,56 @@ function ServicePlaygroundSheetContent({
         {apiSpec ? (
           <>
             <API apiDescriptionDocument={apiSpec} />
-            <DialogClose>
+            <div className="absolute right-3 top-3 flex items-center gap-2">
               <Button
                 variant="icon"
-                className="absolute right-3 top-3"
                 onClick={() => {
-                  const valuesToBeDeleted = searchParams
-                    .getAll(SERVICE_PLAYGROUND_QUERY_PARAM)
-                    .filter((service) => isSidebar.get(service) !== true);
-                  setSearchParams(
-                    (prev) => {
-                      let search = prev.toString();
-                      valuesToBeDeleted.forEach((serviceName) => {
-                        search = search.replace(
-                          `${SERVICE_PLAYGROUND_QUERY_PARAM}=${serviceName}`,
-                          ''
-                        );
-                      });
+                  const handlerFromUrl = window.location.hash
+                    .split('#/operations/')
+                    .at(-1)
+                    ?.split('#')
+                    ?.at(0);
 
-                      return new URLSearchParams(search);
-                    },
-                    { preventScrollReset: true }
-                  );
+                  const handlerId =
+                    handlerFromUrl || handlers.get(DEFAULT_CATEGORY)?.at(0)?.id;
+                  window.location.hash = `#/operations/${handlerId}`;
+                  setIsSidebar((old) => {
+                    if (service) {
+                      old.set(service, true);
+                    }
+                    return new Map(old);
+                  });
                 }}
               >
-                <Icon name={IconName.X} className="w-5 h-5" />
+                <Icon name={IconName.Minimize} className="w-5 h-5" />
               </Button>
-            </DialogClose>
-            <Button
-              variant="icon"
-              className="absolute right-12 top-3"
-              onClick={() => {
-                const handlerFromUrl = window.location.hash
-                  .split('#/operations/')
-                  .at(-1)
-                  ?.split('#')
-                  ?.at(0);
+              <DialogClose>
+                <Button
+                  variant="icon"
+                  onClick={() => {
+                    const valuesToBeDeleted = searchParams
+                      .getAll(SERVICE_PLAYGROUND_QUERY_PARAM)
+                      .filter((service) => isSidebar.get(service) !== true);
+                    setSearchParams(
+                      (prev) => {
+                        let search = prev.toString();
+                        valuesToBeDeleted.forEach((serviceName) => {
+                          search = search.replace(
+                            `${SERVICE_PLAYGROUND_QUERY_PARAM}=${serviceName}`,
+                            ''
+                          );
+                        });
 
-                const handlerId =
-                  handlerFromUrl || handlers.get(DEFAULT_CATEGORY)?.at(0)?.id;
-                window.location.hash = `#/operations/${handlerId}`;
-                setIsSidebar((old) => {
-                  if (service) {
-                    old.set(service, true);
-                  }
-                  return new Map(old);
-                });
-              }}
-            >
-              <Icon name={IconName.Minimize} className="w-5 h-5" />
-            </Button>
+                        return new URLSearchParams(search);
+                      },
+                      { preventScrollReset: true }
+                    );
+                  }}
+                >
+                  <Icon name={IconName.X} className="w-5 h-5" />
+                </Button>
+              </DialogClose>
+            </div>
           </>
         ) : null}
       </DialogContent>
