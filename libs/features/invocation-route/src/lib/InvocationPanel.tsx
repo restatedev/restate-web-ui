@@ -2,6 +2,8 @@ import { Button, SubmitButton } from '@restate/ui/button';
 import {
   ComplementaryWithSearchParam,
   ComplementaryClose,
+  ComplementaryFooter,
+  useParamValue,
 } from '@restate/ui/layout';
 import { useSearchParams } from 'react-router';
 import { INVOCATION_QUERY_NAME } from './constants';
@@ -63,8 +65,15 @@ function Footnote({ dataUpdatedAt }: { dataUpdatedAt?: number }) {
 }
 
 export function InvocationPanel() {
-  const [searchParams] = useSearchParams();
-  const invocationId = searchParams.get(INVOCATION_QUERY_NAME);
+  return (
+    <ComplementaryWithSearchParam paramName={INVOCATION_QUERY_NAME}>
+      <InvocationPanelContent />
+    </ComplementaryWithSearchParam>
+  );
+}
+
+function InvocationPanelContent() {
+  const invocationId = useParamValue();
   const {
     data,
     isPending,
@@ -108,86 +117,80 @@ export function InvocationPanel() {
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
-      <ComplementaryWithSearchParam
-        paramName={INVOCATION_QUERY_NAME}
-        footer={
-          <div className="flex gap-2 flex-col flex-auto">
-            {getInvocationError && <ErrorBanner error={getInvocationError} />}
+      <ComplementaryFooter>
+        <div className="flex gap-2 flex-col flex-auto">
+          {getInvocationError && <ErrorBanner error={getInvocationError} />}
 
-            <div className="flex gap-2">
-              <ComplementaryClose>
-                <Button className="flex-auto grow-0 w-full" variant="secondary">
-                  Close
-                </Button>
-              </ComplementaryClose>
-              <SubmitButton
-                className="flex-auto grow-0 w-full"
-                variant="primary"
-                onClick={() => {
-                  refetchGetInvocation();
+          <div className="flex gap-2">
+            <ComplementaryClose>
+              <Button className="flex-auto grow-0 w-full" variant="secondary">
+                Close
+              </Button>
+            </ComplementaryClose>
+            <SubmitButton
+              className="flex-auto grow-0 w-full"
+              variant="primary"
+              onClick={() => {
+                refetchGetInvocation();
+                queryClient.refetchQueries({
+                  queryKey: inboxQueryKey,
+                  exact: true,
+                });
+                queryClient.refetchQueries({
+                  queryKey: journalQueryKey,
+                  exact: true,
+                });
+                if (data?.target_service_ty === 'virtual_object') {
                   queryClient.refetchQueries({
-                    queryKey: inboxQueryKey,
+                    queryKey: stateQuery,
                     exact: true,
                   });
-                  queryClient.refetchQueries({
-                    queryKey: journalQueryKey,
-                    exact: true,
-                  });
-                  if (data?.target_service_ty === 'virtual_object') {
-                    queryClient.refetchQueries({
-                      queryKey: stateQuery,
-                      exact: true,
-                    });
-                  }
-                }}
-                isPending={isPending}
-              >
-                Refresh
-              </SubmitButton>
-            </div>
+                }
+              }}
+              isPending={isPending}
+            >
+              Refresh
+            </SubmitButton>
           </div>
-        }
-      >
-        <>
-          <div className="flex flex-col items-start">
-            <h2 className="mb-3 text-lg font-medium leading-6 text-gray-900 flex gap-2 items-center w-full">
-              <div className="h-10 w-10 shrink-0 text-blue-400">
-                <Icon
-                  name={IconName.Invocation}
-                  className="w-full h-full p-1.5 fill-blue-50 text-blue-400 drop-shadow-md"
-                />
-              </div>
-              <div className="flex flex-col items-start gap-1 min-w-0 flex-auto">
-                {isPending ? (
-                  <>
-                    <div className="w-[16ch] h-5 animate-pulse rounded-md bg-gray-200 mt-1" />
-                    <div className="w-[8ch] h-5 animate-pulse rounded-md bg-gray-200" />
-                  </>
-                ) : (
-                  <>
-                    <div className="flex w-full items-center">Invocation</div>
-                    <div className="min-h-4 flex w-full items-center">
-                      {isSuccess && <Footnote dataUpdatedAt={dataUpdatedAt} />}
-                      <div className="ml-auto">
-                        <Actions invocation={data} />
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-            </h2>
+        </div>
+      </ComplementaryFooter>
+      <div className="flex flex-col items-start">
+        <h2 className="mb-3 text-lg font-medium leading-6 text-gray-900 flex gap-2 items-center w-full">
+          <div className="h-10 w-10 shrink-0 text-blue-400">
+            <Icon
+              name={IconName.Invocation}
+              className="w-full h-full p-1.5 fill-blue-50 text-blue-400 drop-shadow-md"
+            />
           </div>
+          <div className="flex flex-col items-start gap-1 min-w-0 flex-auto">
+            {isPending ? (
+              <>
+                <div className="w-[16ch] h-5 animate-pulse rounded-md bg-gray-200 mt-1" />
+                <div className="w-[8ch] h-5 animate-pulse rounded-md bg-gray-200" />
+              </>
+            ) : (
+              <>
+                <div className="flex w-full items-center">Invocation</div>
+                <div className="min-h-4 flex w-full items-center">
+                  {isSuccess && <Footnote dataUpdatedAt={dataUpdatedAt} />}
+                  <div className="ml-auto">
+                    <Actions invocation={data} />
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </h2>
+      </div>
 
-          <KeysIdsSection className="mt-5" invocation={data} />
-          <ServiceHandlerSection className="mt-2" invocation={data} />
-          <LifecycleSection className="mt-2" invocation={data} />
-          <VirtualObjectSection className="mt-2" invocation={data} />
-          <WorkflowKeySection className="mt-2" invocation={data} />
-          <InvokedBySection className="mt-2" invocation={data} />
-          <DeploymentSection className="mt-2" invocation={data} />
-          <JournalSection className="mt-2" invocation={data} />
-        </>
-      </ComplementaryWithSearchParam>
+      <KeysIdsSection className="mt-5" invocation={data} />
+      <ServiceHandlerSection className="mt-2" invocation={data} />
+      <LifecycleSection className="mt-2" invocation={data} />
+      <VirtualObjectSection className="mt-2" invocation={data} />
+      <WorkflowKeySection className="mt-2" invocation={data} />
+      <InvokedBySection className="mt-2" invocation={data} />
+      <DeploymentSection className="mt-2" invocation={data} />
+      <JournalSection className="mt-2" invocation={data} />
     </SnapshotTimeProvider>
   );
 }

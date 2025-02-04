@@ -2,6 +2,8 @@ import { Button } from '@restate/ui/button';
 import {
   ComplementaryWithSearchParam,
   ComplementaryClose,
+  ComplementaryFooter,
+  useParamValue,
 } from '@restate/ui/layout';
 import {
   DELETE_DEPLOYMENT_QUERY_PARAM,
@@ -28,8 +30,16 @@ import { Copy } from '@restate/ui/copy';
 import { Badge } from '@restate/ui/badge';
 
 export function DeploymentDetails() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const deployment = searchParams.get(DEPLOYMENT_QUERY_PARAM);
+  return (
+    <ComplementaryWithSearchParam paramName={DEPLOYMENT_QUERY_PARAM}>
+      <DeploymentDetailsContents />
+    </ComplementaryWithSearchParam>
+  );
+}
+
+function DeploymentDetailsContents() {
+  const [, setSearchParams] = useSearchParams();
+  const deployment = useParamValue();
   const { error } = useDeploymentDetails(String(deployment), {
     ...(!deployment && { enabled: false }),
   });
@@ -39,9 +49,8 @@ export function DeploymentDetails() {
   }
 
   return (
-    <ComplementaryWithSearchParam
-      paramName={DEPLOYMENT_QUERY_PARAM}
-      footer={
+    <>
+      <ComplementaryFooter>
         <div className="flex gap-2 flex-col flex-auto">
           {error && <ErrorBanner errors={[error]} />}
           <div className="flex gap-2">
@@ -67,10 +76,9 @@ export function DeploymentDetails() {
             </Button>
           </div>
         </div>
-      }
-    >
+      </ComplementaryFooter>
       <DeploymentContent deployment={deployment} />
-    </ComplementaryWithSearchParam>
+    </>
   );
 }
 
