@@ -15,6 +15,8 @@ import { ComponentProps } from 'react';
 import { JsonSchemaViewer } from '@restate/ui/api';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Badge } from '@restate/ui/badge';
+import { Link } from '@restate/ui/link';
+import { SERVICE_PLAYGROUND_QUERY_PARAM } from './constants';
 
 const styles = tv({
   base: 'flex flex-row flex-wrap relative items-center  pr-2',
@@ -137,9 +139,10 @@ function HandlerInputOutput({
       <span className={value()}>
         <Popover>
           <PopoverHoverTrigger>
-            <Button
+            <Link
               className="basis-20 grow max-w-fit truncate font-mono text-inherit [font-style:inherit] [font-size:inherit] px-0.5 py-0 rounded-sm underline-offset-4 decoration-from-font decoration-dashed underline "
               variant="icon"
+              href={`?${SERVICE_PLAYGROUND_QUERY_PARAM}=${service}#/operations/${handler}`}
             >
               <span className="truncate pr-0.5">
                 {schema?.title ?? (
@@ -148,7 +151,7 @@ function HandlerInputOutput({
                   </span>
                 )}
               </span>
-            </Button>
+            </Link>
           </PopoverHoverTrigger>
           <PopoverContent className="[&_header]:font-mono [&_header]:text-code">
             <DropdownSection

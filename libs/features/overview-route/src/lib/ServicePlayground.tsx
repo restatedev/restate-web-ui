@@ -127,7 +127,7 @@ function Attribution() {
           d="M240.5 224H352C365.3 224 377.3 232.3 381.1 244.7C386.6 257.2 383.1 271.3 373.1 280.1L117.1 504.1C105.8 513.9 89.27 514.7 77.19 505.9C65.1 497.1 60.7 481.1 66.59 467.4L143.5 288H31.1C18.67 288 6.733 279.7 2.044 267.3C-2.645 254.8 .8944 240.7 10.93 231.9L266.9 7.918C278.2-1.92 294.7-2.669 306.8 6.114C318.9 14.9 323.3 30.87 317.4 44.61L240.5 224z"
         ></path>
       </svg>
-      <div className="text-sm">
+      <div className="text-code">
         powered by&nbsp;<strong>Stoplight</strong>
       </div>
     </a>
@@ -277,7 +277,7 @@ function ServicePlaygroundComplementaryContent({
           </ComplementaryClose>
         </div>
       </ComplementaryFooter>
-      <div className="flex flex-col min-h-full [&_.sl-text-lg]:text-code [&_.sl-rounded-lg]:rounded-xl [&_h1]:hidden [&_[dir=ltr]>[dir=ltr]]:hidden [&_h1]:mb-2 [&_.sl-stack--8]:gap-4 [&_.sl-stack--5]:gap-2 [&_.sl-pt-8]:pt-2 [&_p]:text-sm [&_.sl-inverted_input]:text-gray-700 [&_input]:text-sm [&_h1]:text-2xl [&_elements-api_h2]:text-xl [&_h3]:text-lg [&_.sl-elements-api>*:first-child]:hidden [&_.sl-elements-api>*:nth-child(2)]:px-2 [&_.sl-elements-api>*:nth-child(2)>*]:pt-2 [&_.sl-elements-api>*:nth-child(2)>*>*>*:last-child]:flex-col-reverse [&_.sl-elements-api>*:nth-child(2)>*>*>*>*]:mx-0 [&_.sl-elements-api>*:nth-child(2)>*>*>*>*]:w-full">
+      <div className="flex flex-col min-h-full [&_.sl-text-lg]:text-code [&_.sl-rounded-lg]:rounded-xl [&_h1]:hidden [&_[dir=ltr]>[dir=ltr]]:hidden [&_h1]:mb-2 [&_.sl-stack--8]:gap-6 [&_.sl-stack--5]:gap-2 [&_.sl-pt-8]:pt-2 [&_p]:text-sm [&_.sl-inverted_input]:text-gray-700 [&_input]:text-sm [&_h1]:text-2xl [&_elements-api_h2]:text-xl [&_h3]:text-lg [&_.sl-elements-api>*:first-child]:hidden [&_.sl-elements-api>*:nth-child(2)]:px-2 [&_.sl-elements-api>*:nth-child(2)>*]:pt-2 [&_.sl-elements-api>*:nth-child(2)>*>*>*:last-child]:flex-col-reverse [&_.sl-elements-api>*:nth-child(2)>*>*>*>*]:mx-0 [&_.sl-elements-api>*:nth-child(2)>*>*>*>*]:w-full">
         <h2 className="mb-0.5 text-lg font-medium leading-6 text-gray-900 flex gap-2 items-center">
           <div className="h-10 w-10 shrink-0 text-blue-400">
             <Icon
