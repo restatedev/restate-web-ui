@@ -19,7 +19,7 @@ import {
   useModifyService,
   useServiceDetails,
 } from '@restate/data-access/admin-api';
-import { Form, useSearchParams } from 'react-router';
+import { Form } from 'react-router';
 import { Handler } from '../Handler';
 import { Icon, IconName } from '@restate/ui/icons';
 import { ServiceType } from '../ServiceType';

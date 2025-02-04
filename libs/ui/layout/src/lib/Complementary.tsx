@@ -179,7 +179,7 @@ export function useParamValue() {
 export function useActiveSidebarParam(paramName: string) {
   const [searchParams] = useSearchParams();
 
-  if (searchParams.toString().startsWith(paramName)) {
+  if (searchParams.toString().startsWith(`${paramName}=`)) {
     return searchParams.get(paramName) as string;
   } else {
     return undefined;
