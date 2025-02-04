@@ -28,10 +28,14 @@ import {
   DeploymentDetails,
   ServicePlayground,
   ServiceDetails,
+  SERVICE_PLAYGROUND_QUERY_PARAM,
+  SERVICE_QUERY_PARAM,
+  DEPLOYMENT_QUERY_PARAM,
 } from '@restate/features/overview-route';
 import { Spinner } from '@restate/ui/loading';
 import {
   DeleteInvocation,
+  INVOCATION_QUERY_NAME,
   InvocationPanel,
 } from '@restate/features/invocation-route';
 import { Support } from '@restate/features/support';
@@ -153,10 +157,26 @@ export default function App() {
             </Button>
             <LayoutOutlet zone={LayoutZone.Nav}>
               <Nav ariaCurrentValue="page">
-                <NavItem preserveSearchParams href={'/overview'}>
+                <NavItem
+                  preserveSearchParams={[
+                    SERVICE_PLAYGROUND_QUERY_PARAM,
+                    SERVICE_QUERY_PARAM,
+                    DEPLOYMENT_QUERY_PARAM,
+                    INVOCATION_QUERY_NAME,
+                  ]}
+                  href={'/overview'}
+                >
                   Overview
                 </NavItem>
-                <NavItem preserveSearchParams href={'/invocations'}>
+                <NavItem
+                  preserveSearchParams={[
+                    SERVICE_PLAYGROUND_QUERY_PARAM,
+                    SERVICE_QUERY_PARAM,
+                    DEPLOYMENT_QUERY_PARAM,
+                    INVOCATION_QUERY_NAME,
+                  ]}
+                  href={'/invocations'}
+                >
                   Invocations
                 </NavItem>
               </Nav>

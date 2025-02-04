@@ -19,7 +19,7 @@ export function ComplementaryOutlet(
       >
         <div
           {...props}
-          className="relative [&>*]:row-start-1 [&>*]:row-end-2 [&>*]:col-start-1 [&>*]:col-end-2 [&>[data-top=false]]:absolute [&>[data-top=false]:has(~[data-top=false])]:-right-3 [&>[data-top=false]:has(~[data-top=false])]:top-3 [&>[data-top=false]:has(~[data-top=false])]:bottom-3 [&>*[data-top=false]]:-right-1.5 [&>[data-top=false]]:top-1.5 [&>[data-top=false]]:bottom-1.5 h-full flex-auto max-h-[inherit] grid [grid-template-columns:1fr] [grid-template-rows:1fr] max-w-[90vw] w-[400px]"
+          className="relative [&>*]:row-start-1 [&>*]:row-end-2 [&>*]:col-start-1 [&>*]:col-end-2 [&>[data-top=false]]:absolute [&>[data-top=false]:has(~[data-top=false]>*:nth-child(2)>*:nth-child(2))]:-right-3 [&>[data-top=false]:has(~[data-top=false])]:top-3 [&>[data-top=false]:has(~[data-top=false])]:bottom-3 [&>*[data-top=false]]:-right-1.5 [&>[data-top=false]]:top-1.5 [&>[data-top=false]]:bottom-1.5 h-full flex-auto max-h-[inherit] grid [grid-template-columns:1fr] [grid-template-rows:1fr] max-w-[90vw] w-[400px]"
         />
       </aside>
     </>

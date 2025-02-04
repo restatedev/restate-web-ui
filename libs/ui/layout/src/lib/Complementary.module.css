@@ -3,7 +3,11 @@
 }
 
 @supports selector(:has(*)) {
-  .overlay:has(+ aside [data-complementary-content] > *) {
+  .overlay:has(+ aside [data-complementary-content] > * + *) {
     visibility: visible;
+  }
+
+  .overlay + aside [data-top]:not(:has([data-complementary-content] > * + *)) {
+    display: none;
   }
 }

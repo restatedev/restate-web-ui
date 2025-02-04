@@ -567,7 +567,7 @@ export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
         value: ['succeeded', 'cancelled', 'killed'],
       })
     );
-    return redirect(url.search);
+    return redirect(url.search + window.location.hash);
   }
 };
 
