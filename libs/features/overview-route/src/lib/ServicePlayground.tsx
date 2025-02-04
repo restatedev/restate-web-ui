@@ -265,7 +265,7 @@ function ServicePlaygroundComplementaryContent({
         <div className="flex gap-2 w-full">
           <ComplementaryClose>
             <Button
-              className="flex-auto shrink-0 grow-0 basis-1/2"
+              className="flex-auto shrink-0 grow-0 basis-full"
               variant="secondary"
               onClick={() => {
                 _setSelectedHandler(undefined);
@@ -275,58 +275,76 @@ function ServicePlaygroundComplementaryContent({
               Close
             </Button>
           </ComplementaryClose>
-          <Dropdown>
-            <DropdownTrigger>
-              <Button className="flex flex-auto gap-2 grow-0 items-center pl-8 justify-center  basis-1/2 min-w-0">
-                <span className="block truncate min-w-0 font-mono">
-                  <span className="uppercase">{selectedName?.method}</span>{' '}
-                  {selectedName?.name}
-                </span>
-                <Icon
-                  name={IconName.ChevronsUpDown}
-                  className="text-gray-200 w-3]4 h-4"
-                />
-              </Button>
-            </DropdownTrigger>
-            <DropdownPopover className="max-h-36">
-              {Array.from(handlers.entries()).map(([category, methods]) => (
-                <DropdownSection
-                  key={category}
-                  {...(category === DEFAULT_CATEGORY
-                    ? {
-                        className: 'mt-1',
-                      }
-                    : {
-                        title: category,
-                      })}
-                >
-                  <DropdownMenu
-                    selectedItems={selectedHandler ? [selectedHandler] : []}
-                    selectable
-                    onSelect={(value) => {
-                      setSelectedHandler(value);
-                    }}
-                  >
-                    {methods.map(({ name, id, method }) => (
-                      <DropdownItem key={id} value={id}>
-                        <span className="font-mono ">
-                          <Badge size="sm">
-                            <span className="uppercase text-gray-500">
-                              {method}
-                            </span>
-                          </Badge>{' '}
-                          {name}
-                        </span>
-                      </DropdownItem>
-                    ))}
-                  </DropdownMenu>
-                </DropdownSection>
-              ))}
-            </DropdownPopover>
-          </Dropdown>
         </div>
       </ComplementaryFooter>
-      <div className="[&_.sl-rounded-lg]:rounded-xl [&_h1]:mb-2 [&_.sl-stack--8]:gap-4 [&_.sl-stack--5]:gap-2 [&_.sl-pt-8]:pt-2 [&_p]:text-sm [&_.sl-inverted_input]:text-gray-700 [&_input]:text-sm [&_h1]:text-2xl [&_h2]:text-xl [&_h3]:text-lg [&_.sl-elements-api>*:first-child]:hidden [&_.sl-elements-api>*:nth-child(2)]:px-2 [&_.sl-elements-api>*:nth-child(2)>*]:pt-2 [&_.sl-elements-api>*:nth-child(2)>*>*>*:last-child]:flex-col-reverse [&_.sl-elements-api>*:nth-child(2)>*>*>*>*]:mx-0 [&_.sl-elements-api>*:nth-child(2)>*>*>*>*]:w-full">
+      <div className="[&_.sl-rounded-lg]:rounded-xl [&_h1]:hidden [&_[dir=ltr]>[dir=ltr]]:hidden [&_h1]:mb-2 [&_.sl-stack--8]:gap-4 [&_.sl-stack--5]:gap-2 [&_.sl-pt-8]:pt-2 [&_p]:text-sm [&_.sl-inverted_input]:text-gray-700 [&_input]:text-sm [&_h1]:text-2xl [&_h2]:text-xl [&_h3]:text-lg [&_.sl-elements-api>*:first-child]:hidden [&_.sl-elements-api>*:nth-child(2)]:px-2 [&_.sl-elements-api>*:nth-child(2)>*]:pt-2 [&_.sl-elements-api>*:nth-child(2)>*>*>*:last-child]:flex-col-reverse [&_.sl-elements-api>*:nth-child(2)>*>*>*>*]:mx-0 [&_.sl-elements-api>*:nth-child(2)>*>*>*>*]:w-full">
+        <h2 className="mb-3 text-lg font-medium leading-6 text-gray-900 flex gap-2 items-center">
+          <div className="h-10 w-10 shrink-0 text-blue-400">
+            <Icon
+              name={IconName.Function}
+              className="w-full h-full p-0.5 fill-blue-50 text-blue-400 drop-shadow-md"
+            />
+          </div>{' '}
+          <div className="flex flex-col flex-auto items-start gap-1 min-w-0">
+            <div className="flex items-center w-full pr-3">
+              <span className="text-zinc-500 truncate min-w-0 block mr-[0.5ch]">
+                {service}
+              </span>
+              <span className="shrink-0 min-w-[1ch]">/</span>
+              <Dropdown>
+                <DropdownTrigger>
+                  <Button
+                    variant="icon"
+                    className="flex text-md px-1.5 italic  gap-2 grow-0 items-center justify-center min-w-0"
+                  >
+                    <span className="block truncate min-w-0 font-mono font-semibold">
+                      {selectedName?.name}
+                    </span>
+                    <Icon
+                      name={IconName.ChevronsUpDown}
+                      className="text-gray-500 w-5 h-5"
+                    />
+                  </Button>
+                </DropdownTrigger>
+                <DropdownPopover className="max-h-36">
+                  {Array.from(handlers.entries()).map(([category, methods]) => (
+                    <DropdownSection
+                      key={category}
+                      {...(category === DEFAULT_CATEGORY
+                        ? {
+                            className: 'mt-1',
+                          }
+                        : {
+                            title: category,
+                          })}
+                    >
+                      <DropdownMenu
+                        selectedItems={selectedHandler ? [selectedHandler] : []}
+                        selectable
+                        onSelect={(value) => {
+                          setSelectedHandler(value);
+                        }}
+                      >
+                        {methods.map(({ name, id, method }) => (
+                          <DropdownItem key={id} value={id}>
+                            <span className="font-mono ">
+                              <Badge size="sm">
+                                <span className="uppercase text-gray-500">
+                                  {method}
+                                </span>
+                              </Badge>{' '}
+                              {name}
+                            </span>
+                          </DropdownItem>
+                        ))}
+                      </DropdownMenu>
+                    </DropdownSection>
+                  ))}
+                </DropdownPopover>
+              </Dropdown>
+            </div>
+          </div>
+        </h2>
         {isActive && isSelectedHandlerFromURLValid && (
           <API
             apiDescriptionDocument={apiSpec}
@@ -337,7 +355,7 @@ function ServicePlaygroundComplementaryContent({
         <Attribution />
         <Button
           variant="icon"
-          className="absolute right-3 top-3"
+          className="absolute right-1 top-2"
           onClick={() => {
             setIsSidebar((old) => {
               if (service) {
@@ -347,7 +365,7 @@ function ServicePlaygroundComplementaryContent({
             });
           }}
         >
-          <Icon name={IconName.Maximize} className="w-5 h-5" />
+          <Icon name={IconName.Maximize} className="w-4 h-4 text-zinc-500" />
         </Button>
       </div>
     </>
@@ -378,7 +396,7 @@ function ServicePlaygroundSheetContent({
             <DialogClose>
               <Button
                 variant="icon"
-                className="absolute left-3 top-3"
+                className="absolute right-3 top-3"
                 onClick={() => {
                   const valuesToBeDeleted = searchParams
                     .getAll(SERVICE_PLAYGROUND_QUERY_PARAM)
@@ -404,7 +422,7 @@ function ServicePlaygroundSheetContent({
             </DialogClose>
             <Button
               variant="icon"
-              className="absolute right-3 top-3"
+              className="absolute right-12 top-3"
               onClick={() => {
                 const handlerFromUrl = window.location.hash
                   .split('#/operations/')
