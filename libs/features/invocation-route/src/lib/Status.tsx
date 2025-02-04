@@ -123,6 +123,8 @@ const lastErrorStyles = tv({
     trigger:
       'truncate bg-white/70 border-gray-200/80 px-1.5 py-0.5 flex rounded-md items-center gap-1 text-2xs h-5 shadow-none',
     errorIcon: 'h-3 w-3 shrink-0',
+    errorBanner:
+      'rounded-lg flex-auto  max-w-[min(50rem,90vw)] [&_details]:max-h-full [&:has(details[open])]:h-[min(50vh,16rem)]  overflow-auto resize  max-h-full',
   },
   variants: {
     isRetrying: {
@@ -132,7 +134,49 @@ const lastErrorStyles = tv({
       },
       false: { trigger: 'text-red-500', errorIcon: 'text-red-500/90' },
     },
+    hasStack: {
+      true: {
+        trigger: '',
+        errorIcon: '',
+        errorBanner: '',
+      },
+      false: {
+        trigger: '',
+        errorIcon: '',
+        errorBanner: '',
+      },
+    },
+    isLargeError: {
+      true: {
+        trigger: '',
+        errorIcon: '',
+        errorBanner: '',
+      },
+      false: {
+        trigger: '',
+        errorIcon: '',
+        errorBanner: '',
+      },
+    },
   },
+  compoundVariants: [
+    {
+      isLargeError: false,
+      hasStack: false,
+      isRetrying: false,
+      className: {
+        errorBanner: 'w-[32rem]',
+      },
+    },
+    {
+      isLargeError: false,
+      hasStack: false,
+      isRetrying: true,
+      className: {
+        errorBanner: 'w-[32rem]',
+      },
+    },
+  ],
 });
 
 const ERROR_CODE_REGEXP = /^\[(?<restate_code>\d+)\]/;
@@ -149,7 +193,13 @@ export function LastError({
   attemptCount?: number;
   popoverTitle?: string;
 }) {
-  const { trigger, errorIcon } = lastErrorStyles({ isRetrying });
+  const hasStack = error?.message.includes('\n');
+  const isLargeError = Boolean(error && error?.message.length > 200);
+  const { trigger, errorIcon, errorBanner } = lastErrorStyles({
+    isRetrying,
+    hasStack,
+    isLargeError,
+  });
   const errorCode =
     error?.restate_code ??
     error?.message.match(ERROR_CODE_REGEXP)?.groups?.restate_code;
@@ -187,8 +237,8 @@ export function LastError({
         >
           <ErrorBanner
             error={error}
-            wrap={error?.message.includes('\n')}
-            className="rounded-lg flex-auto  max-w-[min(50rem,90vw)] [&_details]:max-h-full [&:has(details[open])]:h-[min(50vh,16rem)]  overflow-auto resize  max-h-full"
+            wrap={hasStack}
+            className={errorBanner()}
           />
         </DropdownSection>
       </PopoverContent>
