@@ -606,8 +606,8 @@ function Footnote({
   const duration = formatDurations(parts);
 
   return (
-    <div className="flex flex-wrap items-center w-full text-center text-xs text-gray-500/80 ">
-      <div>
+    <div className="flex flex-row-reverse flex-wrap items-center w-full text-center text-xs text-gray-500/80 ">
+      <div className="ml-auto">
         {data.total_count ? (
           <>
             <span>{data.rows.length}</span>
@@ -622,7 +622,7 @@ function Footnote({
         )}{' '}
         as of <span className="font-medium text-gray-500">{duration} ago</span>
       </div>
-      <div className="ml-auto">{children}</div>
+      <div>{children}</div>
     </div>
   );
 }
