@@ -5,17 +5,294 @@
     "version": "1.1.3"
   },
   "paths": {
-    "/services/{service}/state": {
+    "/cluster-health": {
+      "get": {
+        "tags": ["cluster_health"],
+        "summary": "Cluster health",
+        "description": "Get the cluster health.",
+        "operationId": "cluster_health",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClusterHealthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/deployments": {
+      "get": {
+        "tags": ["deployment"],
+        "summary": "List deployments",
+        "description": "List all registered deployments.",
+        "operationId": "list_deployments",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListDeploymentsResponse"
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
-        "tags": ["service"],
-        "summary": "Modify a service state",
-        "description": "Modify service state",
-        "operationId": "modify_service_state",
+        "tags": ["deployment"],
+        "summary": "Create deployment",
+        "description": "Create deployment. Restate will invoke the endpoint to gather additional information required for registration, such as the services exposed by the deployment. If the deployment is already registered, this method will fail unless `force` is set to `true`.",
+        "operationId": "create_deployment",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDeploymentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegisterDeploymentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/deployments/{deployment}": {
+      "get": {
+        "tags": ["deployment"],
+        "summary": "Get deployment",
+        "description": "Get deployment metadata",
+        "operationId": "get_deployment",
         "parameters": [
           {
-            "name": "service",
+            "name": "deployment",
             "in": "path",
-            "description": "Fully qualified service name.",
+            "description": "Deployment identifier",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetailedDeploymentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["deployment"],
+        "summary": "Update deployment",
+        "description": "Update deployment. Invokes the endpoint and replaces the existing deployment metadata with the discovered information. This is a dangerous operation that should be used only when there are failing invocations on the deployment that cannot be resolved any other way. Sense checks are applied to test that the new deployment is sufficiently similar to the old one.",
+        "operationId": "update_deployment",
+        "parameters": [
+          {
+            "name": "deployment",
+            "in": "path",
+            "description": "Deployment identifier",
             "required": true,
             "schema": {
               "type": "string"
@@ -26,12 +303,110 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ModifyServiceStateRequest"
+                "$ref": "#/components/schemas/UpdateDeploymentRequest"
               }
             }
           },
           "required": true
         },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetailedDeploymentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["deployment"],
+        "summary": "Delete deployment",
+        "description": "Delete deployment. Currently it's supported to remove a deployment only using the force flag",
+        "operationId": "delete_deployment",
+        "parameters": [
+          {
+            "name": "deployment",
+            "in": "path",
+            "description": "Deployment identifier",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "force",
+            "in": "query",
+            "description": "If true, the deployment will be forcefully deleted. This might break in-flight invocations, use with caution.",
+            "style": "simple",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
         "responses": {
           "202": {
             "description": "Accepted"
@@ -85,6 +460,9 @@
                 }
               }
             }
+          },
+          "501": {
+            "description": "Not implemented. Only using the force flag is supported at the moment."
           },
           "503": {
             "description": "",
@@ -205,389 +583,24 @@
         }
       }
     },
-    "/services/{service}/openapi": {
+    "/openapi": {
       "get": {
-        "tags": ["service"],
-        "summary": "Get service OpenAPI",
-        "description": "Get the service OpenAPI 3.1 contract.",
-        "operationId": "get_service_openapi",
-        "parameters": [
-          {
-            "name": "service",
-            "in": "path",
-            "description": "Fully qualified service name.",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OpenAPI 3.1 of the service",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/subscriptions/{subscription}": {
-      "get": {
-        "tags": ["subscription"],
-        "summary": "Get subscription",
-        "description": "Get subscription",
-        "operationId": "get_subscription",
-        "parameters": [
-          {
-            "name": "subscription",
-            "in": "path",
-            "description": "Subscription identifier",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SubscriptionResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "tags": ["subscription"],
-        "summary": "Delete subscription",
-        "description": "Delete subscription.",
-        "operationId": "delete_subscription",
-        "parameters": [
-          {
-            "name": "subscription",
-            "in": "path",
-            "description": "Subscription identifier",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "202": {
-            "description": "Accepted"
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/subscriptions": {
-      "get": {
-        "tags": ["subscription"],
-        "summary": "List subscriptions",
-        "description": "List all subscriptions.",
-        "operationId": "list_subscriptions",
-        "parameters": [
-          {
-            "name": "sink",
-            "in": "query",
-            "description": "Filter by the exact specified sink.",
-            "style": "simple",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "source",
-            "in": "query",
-            "description": "Filter by the exact specified source.",
-            "style": "simple",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ListSubscriptionsResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": ["subscription"],
-        "summary": "Create subscription",
-        "description": "Create subscription.",
-        "operationId": "create_subscription",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateSubscriptionRequest"
-              }
-            }
-          },
-          "required": true
+        "tags": ["openapi"],
+        "summary": "OpenAPI specification",
+        "externalDocs": {
+          "url": "https://swagger.io/specification/"
         },
+        "operationId": "openapi_spec",
         "responses": {
-          "201": {
-            "description": "Created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SubscriptionResponse"
-                }
-              }
-            }
-          },
-          "400": {
+          "200": {
             "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
                 }
               }
             }
@@ -608,106 +621,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ListServicesResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/services/{service}/handlers/{handler}": {
-      "get": {
-        "tags": ["service_handler"],
-        "summary": "Get service handler",
-        "description": "Get the handler of a service",
-        "operationId": "get_service_handler",
-        "parameters": [
-          {
-            "name": "service",
-            "in": "path",
-            "description": "Fully qualified service name.",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "handler",
-            "in": "path",
-            "description": "Handler name.",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HandlerMetadata"
                 }
               }
             }
@@ -965,134 +878,6 @@
         }
       }
     },
-    "/version": {
-      "get": {
-        "tags": ["version"],
-        "summary": "Admin version information",
-        "description": "Obtain admin version information.",
-        "operationId": "version",
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/VersionInformation"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/deployments": {
-      "get": {
-        "tags": ["deployment"],
-        "summary": "List deployments",
-        "description": "List all registered deployments.",
-        "operationId": "list_deployments",
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ListDeploymentsResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": ["deployment"],
-        "summary": "Create deployment",
-        "description": "Create deployment. Restate will invoke the endpoint to gather additional information required for registration, such as the services exposed by the deployment. If the deployment is already registered, this method will fail unless `force` is set to `true`.",
-        "operationId": "create_deployment",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RegisterDeploymentRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": "Created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RegisterDeploymentResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/services/{service}/handlers": {
       "get": {
         "tags": ["service_handler"],
@@ -1184,17 +969,26 @@
         }
       }
     },
-    "/deployments/{deployment}": {
+    "/services/{service}/handlers/{handler}": {
       "get": {
-        "tags": ["deployment"],
-        "summary": "Get deployment",
-        "description": "Get deployment metadata",
-        "operationId": "get_deployment",
+        "tags": ["service_handler"],
+        "summary": "Get service handler",
+        "description": "Get the handler of a service",
+        "operationId": "get_service_handler",
         "parameters": [
           {
-            "name": "deployment",
+            "name": "service",
             "in": "path",
-            "description": "Deployment identifier",
+            "description": "Fully qualified service name.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "handler",
+            "in": "path",
+            "description": "Handler name.",
             "required": true,
             "schema": {
               "type": "string"
@@ -1207,7 +1001,409 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DetailedDeploymentResponse"
+                  "$ref": "#/components/schemas/HandlerMetadata"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/services/{service}/openapi": {
+      "get": {
+        "tags": ["service"],
+        "summary": "Get service OpenAPI",
+        "description": "Get the service OpenAPI 3.1 contract.",
+        "operationId": "get_service_openapi",
+        "parameters": [
+          {
+            "name": "service",
+            "in": "path",
+            "description": "Fully qualified service name.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OpenAPI 3.1 of the service",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/services/{service}/state": {
+      "post": {
+        "tags": ["service"],
+        "summary": "Modify a service state",
+        "description": "Modify service state",
+        "operationId": "modify_service_state",
+        "parameters": [
+          {
+            "name": "service",
+            "in": "path",
+            "description": "Fully qualified service name.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModifyServiceStateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted"
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/subscriptions": {
+      "get": {
+        "tags": ["subscription"],
+        "summary": "List subscriptions",
+        "description": "List all subscriptions.",
+        "operationId": "list_subscriptions",
+        "parameters": [
+          {
+            "name": "sink",
+            "in": "query",
+            "description": "Filter by the exact specified sink.",
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "description": "Filter by the exact specified source.",
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListSubscriptionsResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["subscription"],
+        "summary": "Create subscription",
+        "description": "Create subscription.",
+        "operationId": "create_subscription",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSubscriptionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubscriptionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/subscriptions/{subscription}": {
+      "get": {
+        "tags": ["subscription"],
+        "summary": "Get subscription",
+        "description": "Get subscription",
+        "operationId": "get_subscription",
+        "parameters": [
+          {
+            "name": "subscription",
+            "in": "path",
+            "description": "Subscription identifier",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubscriptionResponse"
                 }
               }
             }
@@ -1275,27 +1471,18 @@
         }
       },
       "delete": {
-        "tags": ["deployment"],
-        "summary": "Delete deployment",
-        "description": "Delete deployment. Currently it's supported to remove a deployment only using the force flag",
-        "operationId": "delete_deployment",
+        "tags": ["subscription"],
+        "summary": "Delete subscription",
+        "description": "Delete subscription.",
+        "operationId": "delete_subscription",
         "parameters": [
           {
-            "name": "deployment",
+            "name": "subscription",
             "in": "path",
-            "description": "Deployment identifier",
+            "description": "Subscription identifier",
             "required": true,
             "schema": {
               "type": "string"
-            }
-          },
-          {
-            "name": "force",
-            "in": "query",
-            "description": "If true, the deployment will be forcefully deleted. This might break in-flight invocations, use with caution.",
-            "style": "simple",
-            "schema": {
-              "type": "boolean"
             }
           }
         ],
@@ -1353,9 +1540,6 @@
               }
             }
           },
-          "501": {
-            "description": "Not implemented. Only using the force flag is supported at the moment."
-          },
           "503": {
             "description": "",
             "content": {
@@ -1369,24 +1553,19 @@
         }
       }
     },
-    "/openapi": {
+    "/version": {
       "get": {
-        "tags": ["openapi"],
-        "summary": "OpenAPI specification",
-        "externalDocs": {
-          "url": "https://swagger.io/specification/"
-        },
-        "operationId": "openapi_spec",
+        "tags": ["version"],
+        "summary": "Admin version information",
+        "description": "Obtain admin version information.",
+        "operationId": "version",
         "responses": {
           "200": {
             "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "additionalProperties": {
-                    "type": "string"
-                  }
+                  "$ref": "#/components/schemas/VersionInformation"
                 }
               }
             }
@@ -2318,32 +2497,36 @@
   },
   "components": {
     "schemas": {
-      "ModifyServiceStateRequest": {
+      "ClusterHealthResponse": {
         "type": "object",
-        "required": ["new_state", "object_key"],
+        "required": ["cluster_name"],
         "properties": {
-          "version": {
-            "title": "Version",
-            "description": "If set, the latest version of the state is compared with this value and the operation will fail when the versions differ.",
-            "type": "string",
-            "nullable": true
-          },
-          "object_key": {
-            "title": "Service key",
-            "description": "To what virtual object key to apply this change",
+          "cluster_name": {
+            "description": "Cluster name",
             "type": "string"
           },
-          "new_state": {
-            "title": "New State",
-            "description": "The new state to replace the previous state with",
-            "type": "object",
-            "additionalProperties": {
-              "type": "array",
-              "items": {
-                "type": "integer",
-                "format": "uint8",
-                "minimum": 0
+          "metadata_cluster_health": {
+            "description": "Embedded metadata cluster health if it was enabled",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EmbeddedMetadataClusterHealth"
               }
+            ],
+            "nullable": true
+          }
+        }
+      },
+      "EmbeddedMetadataClusterHealth": {
+        "type": "object",
+        "required": ["members"],
+        "properties": {
+          "members": {
+            "description": "Current members of the embedded metadata cluster",
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0
             }
           }
         }
@@ -2360,230 +2543,6 @@
           "restate_code": {
             "title": "Restate code",
             "description": "Restate error code describing this error",
-            "type": "string",
-            "nullable": true
-          }
-        }
-      },
-      "DeletionMode": {
-        "type": "string",
-        "enum": ["Cancel", "Kill", "Purge"]
-      },
-      "SubscriptionResponse": {
-        "type": "object",
-        "required": ["id", "options", "sink", "source"],
-        "properties": {
-          "id": {
-            "$ref": "#/components/schemas/String"
-          },
-          "source": {
-            "type": "string"
-          },
-          "sink": {
-            "type": "string"
-          },
-          "options": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            }
-          }
-        }
-      },
-      "String": {
-        "type": "string"
-      },
-      "ListSubscriptionsResponse": {
-        "type": "object",
-        "required": ["subscriptions"],
-        "properties": {
-          "subscriptions": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SubscriptionResponse"
-            }
-          }
-        }
-      },
-      "ListServicesResponse": {
-        "type": "object",
-        "required": ["services"],
-        "properties": {
-          "services": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ServiceMetadata"
-            }
-          }
-        }
-      },
-      "ServiceMetadata": {
-        "type": "object",
-        "required": [
-          "deployment_id",
-          "handlers",
-          "idempotency_retention",
-          "name",
-          "public",
-          "revision",
-          "ty"
-        ],
-        "properties": {
-          "name": {
-            "title": "Name",
-            "description": "Fully qualified name of the service",
-            "type": "string"
-          },
-          "handlers": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/HandlerMetadata"
-            }
-          },
-          "ty": {
-            "$ref": "#/components/schemas/ServiceType"
-          },
-          "deployment_id": {
-            "title": "Deployment Id",
-            "description": "Deployment exposing the latest revision of the service.",
-            "type": "string"
-          },
-          "revision": {
-            "title": "Revision",
-            "description": "Latest revision of the service.",
-            "type": "integer",
-            "format": "uint32",
-            "minimum": 0
-          },
-          "public": {
-            "title": "Public",
-            "description": "If true, the service can be invoked through the ingress. If false, the service can be invoked only from another Restate service.",
-            "type": "boolean"
-          },
-          "idempotency_retention": {
-            "title": "Idempotency retention",
-            "description": "The retention duration of idempotent requests for this service.",
-            "type": "string"
-          },
-          "workflow_completion_retention": {
-            "title": "Workflow completion retention",
-            "description": "The retention duration of workflows. Only available on workflow services.",
-            "type": "string",
-            "nullable": true
-          },
-          "inactivity_timeout": {
-            "title": "Inactivity timeout",
-            "description": "This timer guards against stalled service/handler invocations. Once it expires, Restate triggers a graceful termination by asking the service invocation to suspend (which preserves intermediate progress).\n\nThe 'abort timeout' is used to abort the invocation, in case it doesn't react to the request to suspend.\n\nCan be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format.\n\nThis overrides the default inactivity timeout set in invoker options.",
-            "type": "string",
-            "nullable": true
-          },
-          "abort_timeout": {
-            "title": "Abort timeout",
-            "description": "This timer guards against stalled service/handler invocations that are supposed to terminate. The abort timeout is started after the 'inactivity timeout' has expired and the service/handler invocation has been asked to gracefully terminate. Once the timer expires, it will abort the service/handler invocation.\n\nThis timer potentially **interrupts** user code. If the user code needs longer to gracefully terminate, then this value needs to be set accordingly.\n\nCan be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format.\n\nThis overrides the default abort timeout set in invoker options.",
-            "type": "string",
-            "nullable": true
-          }
-        }
-      },
-      "HandlerMetadata": {
-        "type": "object",
-        "required": ["input_description", "name", "output_description", "ty"],
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "ty": {
-            "$ref": "#/components/schemas/HandlerMetadataType"
-          },
-          "input_description": {
-            "title": "Human readable input description",
-            "description": "If empty, no schema was provided by the user at discovery time.",
-            "type": "string"
-          },
-          "output_description": {
-            "title": "Human readable output description",
-            "description": "If empty, no schema was provided by the user at discovery time.",
-            "type": "string"
-          },
-          "input_json_schema": {
-            "title": "Input JSON Schema",
-            "description": "JSON Schema of the handler input",
-            "nullable": true
-          },
-          "output_json_schema": {
-            "title": "Output JSON Schema",
-            "description": "JSON Schema of the handler output",
-            "nullable": true
-          }
-        }
-      },
-      "HandlerMetadataType": {
-        "type": "string",
-        "enum": ["Exclusive", "Shared", "Workflow"]
-      },
-      "ServiceType": {
-        "type": "string",
-        "enum": ["Service", "VirtualObject", "Workflow"]
-      },
-      "VersionInformation": {
-        "type": "object",
-        "required": [
-          "max_admin_api_version",
-          "min_admin_api_version",
-          "version"
-        ],
-        "properties": {
-          "version": {
-            "title": "Admin server version",
-            "description": "Version of the admin server",
-            "type": "string"
-          },
-          "min_admin_api_version": {
-            "title": "Min admin API version",
-            "description": "Minimum supported admin API version by the admin server",
-            "type": "integer",
-            "format": "uint16",
-            "minimum": 0
-          },
-          "max_admin_api_version": {
-            "title": "Max admin API version",
-            "description": "Maximum supported admin API version by the admin server",
-            "type": "integer",
-            "format": "uint16",
-            "minimum": 0
-          }
-        }
-      },
-      "ModifyServiceRequest": {
-        "type": "object",
-        "properties": {
-          "public": {
-            "title": "Public",
-            "description": "If true, the service can be invoked through the ingress. If false, the service can be invoked only from another Restate service.",
-            "type": "boolean",
-            "nullable": true
-          },
-          "idempotency_retention": {
-            "title": "Idempotency retention",
-            "description": "Modify the retention of idempotent requests for this service.\n\nCan be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format or the ISO8601.",
-            "type": "string",
-            "nullable": true
-          },
-          "workflow_completion_retention": {
-            "title": "Workflow completion retention",
-            "description": "Modify the retention of the workflow completion. This can be modified only for workflow services!\n\nCan be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format or the ISO8601.",
-            "type": "string",
-            "nullable": true
-          },
-          "inactivity_timeout": {
-            "title": "Inactivity timeout",
-            "description": "This timer guards against stalled service/handler invocations. Once it expires, Restate triggers a graceful termination by asking the service invocation to suspend (which preserves intermediate progress).\n\nThe 'abort timeout' is used to abort the invocation, in case it doesn't react to the request to suspend.\n\nCan be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format or the ISO8601.\n\nThis overrides the default inactivity timeout set in invoker options.",
-            "type": "string",
-            "nullable": true
-          },
-          "abort_timeout": {
-            "title": "Abort timeout",
-            "description": "This timer guards against stalled service/handler invocations that are supposed to terminate. The abort timeout is started after the 'inactivity timeout' has expired and the service/handler invocation has been asked to gracefully terminate. Once the timer expires, it will abort the service/handler invocation.\n\nThis timer potentially **interrupts** user code. If the user code needs longer to gracefully terminate, then this value needs to be set accordingly.\n\nCan be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format or the ISO8601.\n\nThis overrides the default abort timeout set in invoker options.",
             "type": "string",
             "nullable": true
           }
@@ -2706,6 +2665,9 @@
           }
         ]
       },
+      "String": {
+        "type": "string"
+      },
       "ServiceNameRevPair": {
         "type": "object",
         "required": ["name", "revision"],
@@ -2727,43 +2689,6 @@
       "LambdaARN": {
         "type": "string",
         "format": "arn"
-      },
-      "CreateSubscriptionRequest": {
-        "type": "object",
-        "required": ["sink", "source"],
-        "properties": {
-          "source": {
-            "title": "Source",
-            "description": "Source uri. Accepted forms:\n\n* `kafka://<cluster_name>/<topic_name>`, e.g. `kafka://my-cluster/my-topic`",
-            "type": "string"
-          },
-          "sink": {
-            "title": "Sink",
-            "description": "Sink uri. Accepted forms:\n\n* `service://<service_name>/<service_name>`, e.g. `service://Counter/count`",
-            "type": "string"
-          },
-          "options": {
-            "title": "Options",
-            "description": "Additional options to apply to the subscription.",
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            },
-            "nullable": true
-          }
-        }
-      },
-      "ListServiceHandlersResponse": {
-        "type": "object",
-        "required": ["handlers"],
-        "properties": {
-          "handlers": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/HandlerMetadata"
-            }
-          }
-        }
       },
       "RegisterDeploymentRequest": {
         "anyOf": [
@@ -2859,6 +2784,147 @@
             }
           }
         }
+      },
+      "ServiceMetadata": {
+        "type": "object",
+        "required": [
+          "deployment_id",
+          "handlers",
+          "idempotency_retention",
+          "name",
+          "public",
+          "revision",
+          "ty"
+        ],
+        "properties": {
+          "name": {
+            "title": "Name",
+            "description": "Fully qualified name of the service",
+            "type": "string"
+          },
+          "handlers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HandlerMetadata"
+            }
+          },
+          "ty": {
+            "$ref": "#/components/schemas/ServiceType"
+          },
+          "documentation": {
+            "title": "Documentation",
+            "description": "Documentation of the service, as propagated by the SDKs.",
+            "type": "string",
+            "nullable": true
+          },
+          "metadata": {
+            "title": "Metadata",
+            "description": "Additional service metadata, as propagated by the SDKs.",
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "deployment_id": {
+            "title": "Deployment Id",
+            "description": "Deployment exposing the latest revision of the service.",
+            "type": "string"
+          },
+          "revision": {
+            "title": "Revision",
+            "description": "Latest revision of the service.",
+            "type": "integer",
+            "format": "uint32",
+            "minimum": 0
+          },
+          "public": {
+            "title": "Public",
+            "description": "If true, the service can be invoked through the ingress. If false, the service can be invoked only from another Restate service.",
+            "type": "boolean"
+          },
+          "idempotency_retention": {
+            "title": "Idempotency retention",
+            "description": "The retention duration of idempotent requests for this service.",
+            "type": "string"
+          },
+          "workflow_completion_retention": {
+            "title": "Workflow completion retention",
+            "description": "The retention duration of workflows. Only available on workflow services.",
+            "type": "string",
+            "nullable": true
+          },
+          "inactivity_timeout": {
+            "title": "Inactivity timeout",
+            "description": "This timer guards against stalled service/handler invocations. Once it expires, Restate triggers a graceful termination by asking the service invocation to suspend (which preserves intermediate progress).\n\nThe 'abort timeout' is used to abort the invocation, in case it doesn't react to the request to suspend.\n\nCan be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format.\n\nThis overrides the default inactivity timeout set in invoker options.",
+            "type": "string",
+            "nullable": true
+          },
+          "abort_timeout": {
+            "title": "Abort timeout",
+            "description": "This timer guards against stalled service/handler invocations that are supposed to terminate. The abort timeout is started after the 'inactivity timeout' has expired and the service/handler invocation has been asked to gracefully terminate. Once the timer expires, it will abort the service/handler invocation.\n\nThis timer potentially **interrupts** user code. If the user code needs longer to gracefully terminate, then this value needs to be set accordingly.\n\nCan be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format.\n\nThis overrides the default abort timeout set in invoker options.",
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "HandlerMetadata": {
+        "type": "object",
+        "required": ["input_description", "name", "output_description"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "ty": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/HandlerMetadataType"
+              }
+            ],
+            "nullable": true
+          },
+          "documentation": {
+            "title": "Documentation",
+            "description": "Documentation of the handler, as propagated by the SDKs.",
+            "type": "string",
+            "nullable": true
+          },
+          "metadata": {
+            "title": "Metadata",
+            "description": "Additional handler metadata, as propagated by the SDKs.",
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "input_description": {
+            "title": "Human readable input description",
+            "description": "If empty, no schema was provided by the user at discovery time.",
+            "type": "string"
+          },
+          "output_description": {
+            "title": "Human readable output description",
+            "description": "If empty, no schema was provided by the user at discovery time.",
+            "type": "string"
+          },
+          "input_json_schema": {
+            "title": "Input JSON Schema",
+            "description": "JSON Schema of the handler input",
+            "nullable": true
+          },
+          "output_json_schema": {
+            "title": "Output JSON Schema",
+            "description": "JSON Schema of the handler output",
+            "nullable": true
+          }
+        }
+      },
+      "HandlerMetadataType": {
+        "type": "string",
+        "enum": ["Exclusive", "Shared", "Workflow"]
+      },
+      "ServiceType": {
+        "type": "string",
+        "enum": ["Service", "VirtualObject", "Workflow"]
       },
       "DetailedDeploymentResponse": {
         "type": "object",
@@ -2964,6 +3030,266 @@
             }
           }
         ]
+      },
+      "UpdateDeploymentRequest": {
+        "anyOf": [
+          {
+            "type": "object",
+            "required": ["uri"],
+            "properties": {
+              "uri": {
+                "title": "Uri",
+                "description": "Uri to use to discover/invoke the http deployment.",
+                "type": "string"
+              },
+              "additional_headers": {
+                "title": "Additional headers",
+                "description": "Additional headers added to the discover/invoke requests to the deployment.",
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "nullable": true
+              },
+              "use_http_11": {
+                "title": "Use http1.1",
+                "description": "If `true`, discovery will be attempted using a client that defaults to HTTP1.1 instead of a prior-knowledge HTTP2 client. HTTP2 may still be used for TLS servers that advertise HTTP2 support via ALPN. HTTP1.1 deployments will only work in request-response mode.",
+                "default": false,
+                "type": "boolean"
+              },
+              "dry_run": {
+                "title": "Dry-run mode",
+                "description": "If `true`, discovery will run but the deployment will not be registered. This is useful to see the impact of a new deployment before registering it.",
+                "default": false,
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": ["arn"],
+            "properties": {
+              "arn": {
+                "title": "ARN",
+                "description": "ARN to use to discover/invoke the lambda deployment.",
+                "type": "string"
+              },
+              "assume_role_arn": {
+                "title": "Assume role ARN",
+                "description": "Optional ARN of a role to assume when invoking the addressed Lambda, to support role chaining",
+                "type": "string",
+                "nullable": true
+              },
+              "additional_headers": {
+                "title": "Additional headers",
+                "description": "Additional headers added to the discover/invoke requests to the deployment.",
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "nullable": true
+              },
+              "dry_run": {
+                "title": "Dry-run mode",
+                "description": "If `true`, discovery will run but the deployment will not be registered. This is useful to see the impact of a new deployment before registering it.",
+                "default": false,
+                "type": "boolean"
+              }
+            }
+          }
+        ]
+      },
+      "DeletionMode": {
+        "type": "string",
+        "enum": ["Cancel", "Kill", "Purge"]
+      },
+      "ListServicesResponse": {
+        "type": "object",
+        "required": ["services"],
+        "properties": {
+          "services": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceMetadata"
+            }
+          }
+        }
+      },
+      "ModifyServiceRequest": {
+        "type": "object",
+        "properties": {
+          "public": {
+            "title": "Public",
+            "description": "If true, the service can be invoked through the ingress. If false, the service can be invoked only from another Restate service.",
+            "default": null,
+            "type": "boolean",
+            "nullable": true
+          },
+          "idempotency_retention": {
+            "title": "Idempotency retention",
+            "description": "Modify the retention of idempotent requests for this service.\n\nCan be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format or the ISO8601.",
+            "default": null,
+            "type": "string",
+            "nullable": true
+          },
+          "workflow_completion_retention": {
+            "title": "Workflow completion retention",
+            "description": "Modify the retention of the workflow completion. This can be modified only for workflow services!\n\nCan be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format or the ISO8601.",
+            "default": null,
+            "type": "string",
+            "nullable": true
+          },
+          "inactivity_timeout": {
+            "title": "Inactivity timeout",
+            "description": "This timer guards against stalled service/handler invocations. Once it expires, Restate triggers a graceful termination by asking the service invocation to suspend (which preserves intermediate progress).\n\nThe 'abort timeout' is used to abort the invocation, in case it doesn't react to the request to suspend.\n\nCan be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format or the ISO8601.\n\nThis overrides the default inactivity timeout set in invoker options.",
+            "default": null,
+            "type": "string",
+            "nullable": true
+          },
+          "abort_timeout": {
+            "title": "Abort timeout",
+            "description": "This timer guards against stalled service/handler invocations that are supposed to terminate. The abort timeout is started after the 'inactivity timeout' has expired and the service/handler invocation has been asked to gracefully terminate. Once the timer expires, it will abort the service/handler invocation.\n\nThis timer potentially **interrupts** user code. If the user code needs longer to gracefully terminate, then this value needs to be set accordingly.\n\nCan be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format or the ISO8601.\n\nThis overrides the default abort timeout set in invoker options.",
+            "default": null,
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "ListServiceHandlersResponse": {
+        "type": "object",
+        "required": ["handlers"],
+        "properties": {
+          "handlers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HandlerMetadata"
+            }
+          }
+        }
+      },
+      "ModifyServiceStateRequest": {
+        "type": "object",
+        "required": ["new_state", "object_key"],
+        "properties": {
+          "version": {
+            "title": "Version",
+            "description": "If set, the latest version of the state is compared with this value and the operation will fail when the versions differ.",
+            "type": "string",
+            "nullable": true
+          },
+          "object_key": {
+            "title": "Service key",
+            "description": "To what virtual object key to apply this change",
+            "type": "string"
+          },
+          "new_state": {
+            "title": "New State",
+            "description": "The new state to replace the previous state with",
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "uint8",
+                "minimum": 0
+              }
+            }
+          }
+        }
+      },
+      "ListSubscriptionsResponse": {
+        "type": "object",
+        "required": ["subscriptions"],
+        "properties": {
+          "subscriptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SubscriptionResponse"
+            }
+          }
+        }
+      },
+      "SubscriptionResponse": {
+        "type": "object",
+        "required": ["id", "options", "sink", "source"],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/String"
+          },
+          "source": {
+            "type": "string"
+          },
+          "sink": {
+            "type": "string"
+          },
+          "options": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "CreateSubscriptionRequest": {
+        "type": "object",
+        "required": ["sink", "source"],
+        "properties": {
+          "source": {
+            "title": "Source",
+            "description": "Source uri. Accepted forms:\n\n* `kafka://<cluster_name>/<topic_name>`, e.g. `kafka://my-cluster/my-topic`",
+            "type": "string"
+          },
+          "sink": {
+            "title": "Sink",
+            "description": "Sink uri. Accepted forms:\n\n* `service://<service_name>/<service_name>`, e.g. `service://Counter/count`",
+            "type": "string"
+          },
+          "options": {
+            "title": "Options",
+            "description": "Additional options to apply to the subscription.",
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        }
+      },
+      "VersionInformation": {
+        "type": "object",
+        "required": [
+          "ingress_endpoint",
+          "max_admin_api_version",
+          "min_admin_api_version",
+          "version"
+        ],
+        "properties": {
+          "version": {
+            "title": "Admin server version",
+            "description": "Version of the admin server",
+            "type": "string"
+          },
+          "min_admin_api_version": {
+            "title": "Min admin API version",
+            "description": "Minimum supported admin API version by the admin server",
+            "type": "integer",
+            "format": "uint16",
+            "minimum": 0
+          },
+          "max_admin_api_version": {
+            "title": "Max admin API version",
+            "description": "Maximum supported admin API version by the admin server",
+            "type": "integer",
+            "format": "uint16",
+            "minimum": 0
+          },
+          "ingress_endpoint": {
+            "title": "Ingress endpoint",
+            "description": "Ingress endpoint that the Web UI should use to interact with.",
+            "type": "string",
+            "format": "uri"
+          }
+        }
       },
       "VirtualObjectState": {
         "type": "array",

@@ -2,6 +2,8 @@ import { Button, SubmitButton } from '@restate/ui/button';
 import {
   ComplementaryWithSearchParam,
   ComplementaryClose,
+  useParamValue,
+  ComplementaryFooter,
 } from '@restate/ui/layout';
 import { SERVICE_QUERY_PARAM } from '../constants';
 import {
@@ -17,7 +19,7 @@ import {
   useModifyService,
   useServiceDetails,
 } from '@restate/data-access/admin-api';
-import { Form, useSearchParams } from 'react-router';
+import { Form } from 'react-router';
 import { Handler } from '../Handler';
 import { Icon, IconName } from '@restate/ui/icons';
 import { ServiceType } from '../ServiceType';
@@ -41,9 +43,16 @@ import { ServicePlaygroundTrigger } from '../ServicePlayground';
 import { showSuccessNotification } from '@restate/ui/notification';
 
 export function ServiceDetails() {
+  return (
+    <ComplementaryWithSearchParam paramName={SERVICE_QUERY_PARAM}>
+      <ServiceDetailsContent />
+    </ComplementaryWithSearchParam>
+  );
+}
+
+function ServiceDetailsContent() {
   const formId = useId();
-  const [searchParams] = useSearchParams();
-  const service = searchParams.get(SERVICE_QUERY_PARAM);
+  const service = useParamValue();
   const [key, setKey] = useState(0);
   const {
     data,
@@ -100,20 +109,18 @@ export function ServiceDetails() {
       },
       body: {
         public: isPublic,
-        idempotency_retention: formatHumantime(idempotency_retention),
-        workflow_completion_retention: formatHumantime(
-          workflow_completion_retention
-        ),
-        inactivity_timeout: formatHumantime(inactivity_timeout),
-        abort_timeout: formatHumantime(abort_timeout),
+        idempotency_retention: formatHumantime(idempotency_retention) ?? null,
+        workflow_completion_retention:
+          formatHumantime(workflow_completion_retention) ?? null,
+        inactivity_timeout: formatHumantime(inactivity_timeout) ?? null,
+        abort_timeout: formatHumantime(abort_timeout) ?? null,
       },
     });
   };
 
   return (
-    <ComplementaryWithSearchParam
-      paramName={SERVICE_QUERY_PARAM}
-      footer={
+    <>
+      <ComplementaryFooter>
         <div className="flex gap-2 flex-col flex-auto">
           {error && <ErrorBanner errors={[error]} />}
           <div className="flex gap-2">
@@ -135,8 +142,7 @@ export function ServiceDetails() {
             </SubmitButton>
           </div>
         </div>
-      }
-    >
+      </ComplementaryFooter>
       <Form
         className="flex [&_.section+.section]:mt-2 flex-col"
         id={formId}
@@ -147,7 +153,7 @@ export function ServiceDetails() {
       >
         <ServiceForm service={service} />
       </Form>
-    </ComplementaryWithSearchParam>
+    </>
   );
 }
 
@@ -192,7 +198,7 @@ function ServiceForm({
                     <ServicePlaygroundTrigger
                       service={data?.name}
                       className=""
-                      variant="primary"
+                      variant="button"
                     />
                   )}
                 </div>

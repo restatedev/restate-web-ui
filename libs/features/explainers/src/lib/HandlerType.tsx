@@ -1,7 +1,10 @@
 import { InlineTooltip } from '@restate/ui/tooltip';
 import { ComponentProps, PropsWithChildren } from 'react';
 import * as adminApi from '@restate/data-access/admin-api/spec';
-type HandlerType = adminApi.components['schemas']['HandlerMetadata']['ty'];
+type HandlerType = Exclude<
+  adminApi.components['schemas']['HandlerMetadata']['ty'],
+  undefined | null
+>;
 
 const TITLES: Record<HandlerType, string> = {
   Exclusive: 'Exclusive',

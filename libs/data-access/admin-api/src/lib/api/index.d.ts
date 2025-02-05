@@ -4,21 +4,73 @@
  */
 
 export interface paths {
-  '/services/{service}/state': {
+  '/cluster-health': {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    /**
+     * Cluster health
+     * @description Get the cluster health.
+     */
+    get: operations['cluster_health'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/deployments': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List deployments
+     * @description List all registered deployments.
+     */
+    get: operations['list_deployments'];
     put?: never;
     /**
-     * Modify a service state
-     * @description Modify service state
+     * Create deployment
+     * @description Create deployment. Restate will invoke the endpoint to gather additional information required for registration, such as the services exposed by the deployment. If the deployment is already registered, this method will fail unless `force` is set to `true`.
      */
-    post: operations['modify_service_state'];
+    post: operations['create_deployment'];
     delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/deployments/{deployment}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get deployment
+     * @description Get deployment metadata
+     */
+    get: operations['get_deployment'];
+    /**
+     * Update deployment
+     * @description Update deployment. Invokes the endpoint and replaces the existing deployment metadata with the discovered information. This is a dangerous operation that should be used only when there are failing invocations on the deployment that cannot be resolved any other way. Sense checks are applied to test that the new deployment is sufficiently similar to the old one.
+     */
+    put: operations['update_deployment'];
+    post?: never;
+    /**
+     * Delete deployment
+     * @description Delete deployment. Currently it's supported to remove a deployment only using the force flag
+     */
+    delete: operations['delete_deployment'];
     options?: never;
     head?: never;
     patch?: never;
@@ -64,68 +116,17 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/services/{service}/openapi': {
+  '/openapi': {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    /**
-     * Get service OpenAPI
-     * @description Get the service OpenAPI 3.1 contract.
-     */
-    get: operations['get_service_openapi'];
+    /** OpenAPI specification */
+    get: operations['openapi_spec'];
     put?: never;
     post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/subscriptions/{subscription}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Get subscription
-     * @description Get subscription
-     */
-    get: operations['get_subscription'];
-    put?: never;
-    post?: never;
-    /**
-     * Delete subscription
-     * @description Delete subscription.
-     */
-    delete: operations['delete_subscription'];
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/subscriptions': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * List subscriptions
-     * @description List all subscriptions.
-     */
-    get: operations['list_subscriptions'];
-    put?: never;
-    /**
-     * Create subscription
-     * @description Create subscription.
-     */
-    post: operations['create_subscription'];
     delete?: never;
     options?: never;
     head?: never;
@@ -144,26 +145,6 @@ export interface paths {
      * @description List all registered services.
      */
     get: operations['list_services'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/services/{service}/handlers/{handler}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Get service handler
-     * @description Get the handler of a service
-     */
-    get: operations['get_service_handler'];
     put?: never;
     post?: never;
     delete?: never;
@@ -196,50 +177,6 @@ export interface paths {
     patch: operations['modify_service'];
     trace?: never;
   };
-  '/version': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Admin version information
-     * @description Obtain admin version information.
-     */
-    get: operations['version'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/deployments': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * List deployments
-     * @description List all registered deployments.
-     */
-    get: operations['list_deployments'];
-    put?: never;
-    /**
-     * Create deployment
-     * @description Create deployment. Restate will invoke the endpoint to gather additional information required for registration, such as the services exposed by the deployment. If the deployment is already registered, this method will fail unless `force` is set to `true`.
-     */
-    post: operations['create_deployment'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   '/services/{service}/handlers': {
     parameters: {
       query?: never;
@@ -260,7 +197,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/deployments/{deployment}': {
+  '/services/{service}/handlers/{handler}': {
     parameters: {
       query?: never;
       header?: never;
@@ -268,31 +205,118 @@ export interface paths {
       cookie?: never;
     };
     /**
-     * Get deployment
-     * @description Get deployment metadata
+     * Get service handler
+     * @description Get the handler of a service
      */
-    get: operations['get_deployment'];
+    get: operations['get_service_handler'];
     put?: never;
     post?: never;
-    /**
-     * Delete deployment
-     * @description Delete deployment. Currently it's supported to remove a deployment only using the force flag
-     */
-    delete: operations['delete_deployment'];
+    delete?: never;
     options?: never;
     head?: never;
     patch?: never;
     trace?: never;
   };
-  '/openapi': {
+  '/services/{service}/openapi': {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    /** OpenAPI specification */
-    get: operations['openapi_spec'];
+    /**
+     * Get service OpenAPI
+     * @description Get the service OpenAPI 3.1 contract.
+     */
+    get: operations['get_service_openapi'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/services/{service}/state': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Modify a service state
+     * @description Modify service state
+     */
+    post: operations['modify_service_state'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/subscriptions': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List subscriptions
+     * @description List all subscriptions.
+     */
+    get: operations['list_subscriptions'];
+    put?: never;
+    /**
+     * Create subscription
+     * @description Create subscription.
+     */
+    post: operations['create_subscription'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/subscriptions/{subscription}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get subscription
+     * @description Get subscription
+     */
+    get: operations['get_subscription'];
+    put?: never;
+    post?: never;
+    /**
+     * Delete subscription
+     * @description Delete subscription.
+     */
+    delete: operations['delete_subscription'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/version': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Admin version information
+     * @description Obtain admin version information.
+     */
+    get: operations['version'];
     put?: never;
     post?: never;
     delete?: never;
@@ -485,24 +509,17 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
-    ModifyServiceStateRequest: {
-      /**
-       * Version
-       * @description If set, the latest version of the state is compared with this value and the operation will fail when the versions differ.
-       */
-      version?: string | null;
-      /**
-       * Service key
-       * @description To what virtual object key to apply this change
-       */
-      object_key: string;
-      /**
-       * New State
-       * @description The new state to replace the previous state with
-       */
-      new_state: {
-        [key: string]: number[];
-      };
+    ClusterHealthResponse: {
+      /** @description Cluster name */
+      cluster_name: string;
+      /** @description Embedded metadata cluster health if it was enabled */
+      metadata_cluster_health?:
+        | components['schemas']['EmbeddedMetadataClusterHealth']
+        | null;
+    };
+    EmbeddedMetadataClusterHealth: {
+      /** @description Current members of the embedded metadata cluster */
+      members: number[];
     };
     /**
      * Error description response
@@ -515,170 +532,6 @@ export interface components {
        * @description Restate error code describing this error
        */
       restate_code?: string | null;
-    };
-    /** @enum {string} */
-    DeletionMode: 'Cancel' | 'Kill' | 'Purge';
-    SubscriptionResponse: {
-      id: components['schemas']['String'];
-      source: string;
-      sink: string;
-      options: {
-        [key: string]: string;
-      };
-    };
-    String: string;
-    ListSubscriptionsResponse: {
-      subscriptions: components['schemas']['SubscriptionResponse'][];
-    };
-    ListServicesResponse: {
-      services: components['schemas']['ServiceMetadata'][];
-    };
-    ServiceMetadata: {
-      /**
-       * Name
-       * @description Fully qualified name of the service
-       */
-      name: string;
-      handlers: components['schemas']['HandlerMetadata'][];
-      ty: components['schemas']['ServiceType'];
-      /**
-       * Deployment Id
-       * @description Deployment exposing the latest revision of the service.
-       */
-      deployment_id: string;
-      /**
-       * Revision
-       * Format: uint32
-       * @description Latest revision of the service.
-       */
-      revision: number;
-      /**
-       * Public
-       * @description If true, the service can be invoked through the ingress. If false, the service can be invoked only from another Restate service.
-       */
-      public: boolean;
-      /**
-       * Idempotency retention
-       * @description The retention duration of idempotent requests for this service.
-       */
-      idempotency_retention: string;
-      /**
-       * Workflow completion retention
-       * @description The retention duration of workflows. Only available on workflow services.
-       */
-      workflow_completion_retention?: string | null;
-      /**
-       * Inactivity timeout
-       * @description This timer guards against stalled service/handler invocations. Once it expires, Restate triggers a graceful termination by asking the service invocation to suspend (which preserves intermediate progress).
-       *
-       *     The 'abort timeout' is used to abort the invocation, in case it doesn't react to the request to suspend.
-       *
-       *     Can be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format.
-       *
-       *     This overrides the default inactivity timeout set in invoker options.
-       */
-      inactivity_timeout?: string | null;
-      /**
-       * Abort timeout
-       * @description This timer guards against stalled service/handler invocations that are supposed to terminate. The abort timeout is started after the 'inactivity timeout' has expired and the service/handler invocation has been asked to gracefully terminate. Once the timer expires, it will abort the service/handler invocation.
-       *
-       *     This timer potentially **interrupts** user code. If the user code needs longer to gracefully terminate, then this value needs to be set accordingly.
-       *
-       *     Can be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format.
-       *
-       *     This overrides the default abort timeout set in invoker options.
-       */
-      abort_timeout?: string | null;
-    };
-    HandlerMetadata: {
-      name: string;
-      ty: components['schemas']['HandlerMetadataType'];
-      /**
-       * Human readable input description
-       * @description If empty, no schema was provided by the user at discovery time.
-       */
-      input_description: string;
-      /**
-       * Human readable output description
-       * @description If empty, no schema was provided by the user at discovery time.
-       */
-      output_description: string;
-      /**
-       * Input JSON Schema
-       * @description JSON Schema of the handler input
-       */
-      input_json_schema?: unknown;
-      /**
-       * Output JSON Schema
-       * @description JSON Schema of the handler output
-       */
-      output_json_schema?: unknown;
-    };
-    /** @enum {string} */
-    HandlerMetadataType: 'Exclusive' | 'Shared' | 'Workflow';
-    /** @enum {string} */
-    ServiceType: 'Service' | 'VirtualObject' | 'Workflow';
-    VersionInformation: {
-      /**
-       * Admin server version
-       * @description Version of the admin server
-       */
-      version: string;
-      /**
-       * Min admin API version
-       * Format: uint16
-       * @description Minimum supported admin API version by the admin server
-       */
-      min_admin_api_version: number;
-      /**
-       * Max admin API version
-       * Format: uint16
-       * @description Maximum supported admin API version by the admin server
-       */
-      max_admin_api_version: number;
-    };
-    ModifyServiceRequest: {
-      /**
-       * Public
-       * @description If true, the service can be invoked through the ingress. If false, the service can be invoked only from another Restate service.
-       */
-      public?: boolean | null;
-      /**
-       * Idempotency retention
-       * @description Modify the retention of idempotent requests for this service.
-       *
-       *     Can be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format or the ISO8601.
-       */
-      idempotency_retention?: string | null;
-      /**
-       * Workflow completion retention
-       * @description Modify the retention of the workflow completion. This can be modified only for workflow services!
-       *
-       *     Can be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format or the ISO8601.
-       */
-      workflow_completion_retention?: string | null;
-      /**
-       * Inactivity timeout
-       * @description This timer guards against stalled service/handler invocations. Once it expires, Restate triggers a graceful termination by asking the service invocation to suspend (which preserves intermediate progress).
-       *
-       *     The 'abort timeout' is used to abort the invocation, in case it doesn't react to the request to suspend.
-       *
-       *     Can be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format or the ISO8601.
-       *
-       *     This overrides the default inactivity timeout set in invoker options.
-       */
-      inactivity_timeout?: string | null;
-      /**
-       * Abort timeout
-       * @description This timer guards against stalled service/handler invocations that are supposed to terminate. The abort timeout is started after the 'inactivity timeout' has expired and the service/handler invocation has been asked to gracefully terminate. Once the timer expires, it will abort the service/handler invocation.
-       *
-       *     This timer potentially **interrupts** user code. If the user code needs longer to gracefully terminate, then this value needs to be set accordingly.
-       *
-       *     Can be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format or the ISO8601.
-       *
-       *     This overrides the default abort timeout set in invoker options.
-       */
-      abort_timeout?: string | null;
     };
     ListDeploymentsResponse: {
       deployments: components['schemas']['DeploymentResponse'][];
@@ -721,6 +574,7 @@ export interface components {
           /** Format: int32 */
           max_protocol_version: number;
         };
+    String: string;
     ServiceNameRevPair: {
       name: string;
       /** Format: uint32 */
@@ -730,32 +584,6 @@ export interface components {
     ProtocolType: 'RequestResponse' | 'BidiStream';
     /** Format: arn */
     LambdaARN: string;
-    CreateSubscriptionRequest: {
-      /**
-       * Source
-       * @description Source uri. Accepted forms:
-       *
-       *     * `kafka://<cluster_name>/<topic_name>`, e.g. `kafka://my-cluster/my-topic`
-       */
-      source: string;
-      /**
-       * Sink
-       * @description Sink uri. Accepted forms:
-       *
-       *     * `service://<service_name>/<service_name>`, e.g. `service://Counter/count`
-       */
-      sink: string;
-      /**
-       * Options
-       * @description Additional options to apply to the subscription.
-       */
-      options?: {
-        [key: string]: string;
-      } | null;
-    };
-    ListServiceHandlersResponse: {
-      handlers: components['schemas']['HandlerMetadata'][];
-    };
     RegisterDeploymentRequest:
       | {
           /**
@@ -832,6 +660,115 @@ export interface components {
       id: components['schemas']['String'];
       services: components['schemas']['ServiceMetadata'][];
     };
+    ServiceMetadata: {
+      /**
+       * Name
+       * @description Fully qualified name of the service
+       */
+      name: string;
+      handlers: components['schemas']['HandlerMetadata'][];
+      ty: components['schemas']['ServiceType'];
+      /**
+       * Documentation
+       * @description Documentation of the service, as propagated by the SDKs.
+       */
+      documentation?: string | null;
+      /**
+       * Metadata
+       * @description Additional service metadata, as propagated by the SDKs.
+       */
+      metadata?: {
+        [key: string]: string;
+      };
+      /**
+       * Deployment Id
+       * @description Deployment exposing the latest revision of the service.
+       */
+      deployment_id: string;
+      /**
+       * Revision
+       * Format: uint32
+       * @description Latest revision of the service.
+       */
+      revision: number;
+      /**
+       * Public
+       * @description If true, the service can be invoked through the ingress. If false, the service can be invoked only from another Restate service.
+       */
+      public: boolean;
+      /**
+       * Idempotency retention
+       * @description The retention duration of idempotent requests for this service.
+       */
+      idempotency_retention: string;
+      /**
+       * Workflow completion retention
+       * @description The retention duration of workflows. Only available on workflow services.
+       */
+      workflow_completion_retention?: string | null;
+      /**
+       * Inactivity timeout
+       * @description This timer guards against stalled service/handler invocations. Once it expires, Restate triggers a graceful termination by asking the service invocation to suspend (which preserves intermediate progress).
+       *
+       *     The 'abort timeout' is used to abort the invocation, in case it doesn't react to the request to suspend.
+       *
+       *     Can be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format.
+       *
+       *     This overrides the default inactivity timeout set in invoker options.
+       */
+      inactivity_timeout?: string | null;
+      /**
+       * Abort timeout
+       * @description This timer guards against stalled service/handler invocations that are supposed to terminate. The abort timeout is started after the 'inactivity timeout' has expired and the service/handler invocation has been asked to gracefully terminate. Once the timer expires, it will abort the service/handler invocation.
+       *
+       *     This timer potentially **interrupts** user code. If the user code needs longer to gracefully terminate, then this value needs to be set accordingly.
+       *
+       *     Can be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format.
+       *
+       *     This overrides the default abort timeout set in invoker options.
+       */
+      abort_timeout?: string | null;
+    };
+    HandlerMetadata: {
+      name: string;
+      ty?: components['schemas']['HandlerMetadataType'] | null;
+      /**
+       * Documentation
+       * @description Documentation of the handler, as propagated by the SDKs.
+       */
+      documentation?: string | null;
+      /**
+       * Metadata
+       * @description Additional handler metadata, as propagated by the SDKs.
+       */
+      metadata?: {
+        [key: string]: string;
+      };
+      /**
+       * Human readable input description
+       * @description If empty, no schema was provided by the user at discovery time.
+       */
+      input_description: string;
+      /**
+       * Human readable output description
+       * @description If empty, no schema was provided by the user at discovery time.
+       */
+      output_description: string;
+      /**
+       * Input JSON Schema
+       * @description JSON Schema of the handler input
+       */
+      input_json_schema?: unknown;
+      /**
+       * Output JSON Schema
+       * @description JSON Schema of the handler output
+       */
+      output_json_schema?: unknown;
+    };
+    /** @enum {string} */
+    HandlerMetadataType: 'Exclusive' | 'Shared' | 'Workflow';
+    /** @enum {string} */
+    ServiceType: 'Service' | 'VirtualObject' | 'Workflow';
     DetailedDeploymentResponse:
       | {
           uri: string;
@@ -870,6 +807,192 @@ export interface components {
            */
           services: components['schemas']['ServiceMetadata'][];
         };
+    UpdateDeploymentRequest:
+      | {
+          /**
+           * Uri
+           * @description Uri to use to discover/invoke the http deployment.
+           */
+          uri: string;
+          /**
+           * Additional headers
+           * @description Additional headers added to the discover/invoke requests to the deployment.
+           */
+          additional_headers?: {
+            [key: string]: string;
+          } | null;
+          /**
+           * Use http1.1
+           * @description If `true`, discovery will be attempted using a client that defaults to HTTP1.1 instead of a prior-knowledge HTTP2 client. HTTP2 may still be used for TLS servers that advertise HTTP2 support via ALPN. HTTP1.1 deployments will only work in request-response mode.
+           * @default false
+           */
+          use_http_11: boolean;
+          /**
+           * Dry-run mode
+           * @description If `true`, discovery will run but the deployment will not be registered. This is useful to see the impact of a new deployment before registering it.
+           * @default false
+           */
+          dry_run: boolean;
+        }
+      | {
+          /**
+           * ARN
+           * @description ARN to use to discover/invoke the lambda deployment.
+           */
+          arn: string;
+          /**
+           * Assume role ARN
+           * @description Optional ARN of a role to assume when invoking the addressed Lambda, to support role chaining
+           */
+          assume_role_arn?: string | null;
+          /**
+           * Additional headers
+           * @description Additional headers added to the discover/invoke requests to the deployment.
+           */
+          additional_headers?: {
+            [key: string]: string;
+          } | null;
+          /**
+           * Dry-run mode
+           * @description If `true`, discovery will run but the deployment will not be registered. This is useful to see the impact of a new deployment before registering it.
+           * @default false
+           */
+          dry_run: boolean;
+        };
+    /** @enum {string} */
+    DeletionMode: 'Cancel' | 'Kill' | 'Purge';
+    ListServicesResponse: {
+      services: components['schemas']['ServiceMetadata'][];
+    };
+    ModifyServiceRequest: {
+      /**
+       * Public
+       * @description If true, the service can be invoked through the ingress. If false, the service can be invoked only from another Restate service.
+       * @default null
+       */
+      public: boolean | null;
+      /**
+       * Idempotency retention
+       * @description Modify the retention of idempotent requests for this service.
+       *
+       *     Can be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format or the ISO8601.
+       * @default null
+       */
+      idempotency_retention: string | null;
+      /**
+       * Workflow completion retention
+       * @description Modify the retention of the workflow completion. This can be modified only for workflow services!
+       *
+       *     Can be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format or the ISO8601.
+       * @default null
+       */
+      workflow_completion_retention: string | null;
+      /**
+       * Inactivity timeout
+       * @description This timer guards against stalled service/handler invocations. Once it expires, Restate triggers a graceful termination by asking the service invocation to suspend (which preserves intermediate progress).
+       *
+       *     The 'abort timeout' is used to abort the invocation, in case it doesn't react to the request to suspend.
+       *
+       *     Can be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format or the ISO8601.
+       *
+       *     This overrides the default inactivity timeout set in invoker options.
+       * @default null
+       */
+      inactivity_timeout: string | null;
+      /**
+       * Abort timeout
+       * @description This timer guards against stalled service/handler invocations that are supposed to terminate. The abort timeout is started after the 'inactivity timeout' has expired and the service/handler invocation has been asked to gracefully terminate. Once the timer expires, it will abort the service/handler invocation.
+       *
+       *     This timer potentially **interrupts** user code. If the user code needs longer to gracefully terminate, then this value needs to be set accordingly.
+       *
+       *     Can be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format or the ISO8601.
+       *
+       *     This overrides the default abort timeout set in invoker options.
+       * @default null
+       */
+      abort_timeout: string | null;
+    };
+    ListServiceHandlersResponse: {
+      handlers: components['schemas']['HandlerMetadata'][];
+    };
+    ModifyServiceStateRequest: {
+      /**
+       * Version
+       * @description If set, the latest version of the state is compared with this value and the operation will fail when the versions differ.
+       */
+      version?: string | null;
+      /**
+       * Service key
+       * @description To what virtual object key to apply this change
+       */
+      object_key: string;
+      /**
+       * New State
+       * @description The new state to replace the previous state with
+       */
+      new_state: {
+        [key: string]: number[];
+      };
+    };
+    ListSubscriptionsResponse: {
+      subscriptions: components['schemas']['SubscriptionResponse'][];
+    };
+    SubscriptionResponse: {
+      id: components['schemas']['String'];
+      source: string;
+      sink: string;
+      options: {
+        [key: string]: string;
+      };
+    };
+    CreateSubscriptionRequest: {
+      /**
+       * Source
+       * @description Source uri. Accepted forms:
+       *
+       *     * `kafka://<cluster_name>/<topic_name>`, e.g. `kafka://my-cluster/my-topic`
+       */
+      source: string;
+      /**
+       * Sink
+       * @description Sink uri. Accepted forms:
+       *
+       *     * `service://<service_name>/<service_name>`, e.g. `service://Counter/count`
+       */
+      sink: string;
+      /**
+       * Options
+       * @description Additional options to apply to the subscription.
+       */
+      options?: {
+        [key: string]: string;
+      } | null;
+    };
+    VersionInformation: {
+      /**
+       * Admin server version
+       * @description Version of the admin server
+       */
+      version: string;
+      /**
+       * Min admin API version
+       * Format: uint16
+       * @description Minimum supported admin API version by the admin server
+       */
+      min_admin_api_version: number;
+      /**
+       * Max admin API version
+       * Format: uint16
+       * @description Maximum supported admin API version by the admin server
+       */
+      max_admin_api_version: number;
+      /**
+       * Ingress endpoint
+       * Format: uri
+       * @description Ingress endpoint that the Web UI should use to interact with.
+       */
+      ingress_endpoint: string;
+    };
     VirtualObjectState: string[];
     ListInvocationsRequestBody: {
       filters?: components['schemas']['FilterItem'][];
@@ -1299,21 +1422,322 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-  modify_service_state: {
+  cluster_health: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ClusterHealthResponse'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  list_deployments: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ListDeploymentsResponse'];
+        };
+      };
+    };
+  };
+  create_deployment: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['RegisterDeploymentRequest'];
+      };
+    };
+    responses: {
+      /** @description Created */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['RegisterDeploymentResponse'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  get_deployment: {
     parameters: {
       query?: never;
       header?: never;
       path: {
-        /** @description Fully qualified service name. */
-        service: string;
+        /** @description Deployment identifier */
+        deployment: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['DetailedDeploymentResponse'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  update_deployment: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Deployment identifier */
+        deployment: string;
       };
       cookie?: never;
     };
     requestBody: {
       content: {
-        'application/json': components['schemas']['ModifyServiceStateRequest'];
+        'application/json': components['schemas']['UpdateDeploymentRequest'];
       };
     };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['DetailedDeploymentResponse'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  delete_deployment: {
+    parameters: {
+      query?: {
+        /** @description If true, the deployment will be forcefully deleted. This might break in-flight invocations, use with caution. */
+        force?: boolean;
+      };
+      header?: never;
+      path: {
+        /** @description Deployment identifier */
+        deployment: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
     responses: {
       /** @description Accepted */
       202: {
@@ -1361,6 +1785,13 @@ export interface operations {
         content: {
           'application/json': components['schemas']['ErrorDescriptionResponse'];
         };
+      };
+      /** @description Not implemented. Only using the force flag is supported at the moment. */
+      501: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
       503: {
         headers: {
@@ -1462,308 +1893,23 @@ export interface operations {
       };
     };
   };
-  get_service_openapi: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Fully qualified service name. */
-        service: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description OpenAPI 3.1 of the service */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': unknown;
-        };
-      };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-    };
-  };
-  get_subscription: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Subscription identifier */
-        subscription: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['SubscriptionResponse'];
-        };
-      };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-    };
-  };
-  delete_subscription: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Subscription identifier */
-        subscription: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Accepted */
-      202: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-    };
-  };
-  list_subscriptions: {
-    parameters: {
-      query?: {
-        /** @description Filter by the exact specified sink. */
-        sink?: string;
-        /** @description Filter by the exact specified source. */
-        source?: string;
-      };
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ListSubscriptionsResponse'];
-        };
-      };
-    };
-  };
-  create_subscription: {
+  openapi_spec: {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CreateSubscriptionRequest'];
-      };
-    };
+    requestBody?: never;
     responses: {
-      /** @description Created */
-      201: {
+      200: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['SubscriptionResponse'];
-        };
-      };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
+          'application/json': {
+            [key: string]: string;
+          };
         };
       };
     };
@@ -1783,78 +1929,6 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['ListServicesResponse'];
-        };
-      };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-    };
-  };
-  get_service_handler: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Fully qualified service name. */
-        service: string;
-        /** @description Handler name. */
-        handler: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['HandlerMetadata'];
         };
       };
       400: {
@@ -2051,116 +2125,6 @@ export interface operations {
       };
     };
   };
-  version: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['VersionInformation'];
-        };
-      };
-    };
-  };
-  list_deployments: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ListDeploymentsResponse'];
-        };
-      };
-    };
-  };
-  create_deployment: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['RegisterDeploymentRequest'];
-      };
-    };
-    responses: {
-      /** @description Created */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['RegisterDeploymentResponse'];
-        };
-      };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-    };
-  };
   list_service_handlers: {
     parameters: {
       query?: never;
@@ -2231,13 +2195,15 @@ export interface operations {
       };
     };
   };
-  get_deployment: {
+  get_service_handler: {
     parameters: {
       query?: never;
       header?: never;
       path: {
-        /** @description Deployment identifier */
-        deployment: string;
+        /** @description Fully qualified service name. */
+        service: string;
+        /** @description Handler name. */
+        handler: string;
       };
       cookie?: never;
     };
@@ -2248,7 +2214,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['DetailedDeploymentResponse'];
+          'application/json': components['schemas']['HandlerMetadata'];
         };
       };
       400: {
@@ -2301,16 +2267,323 @@ export interface operations {
       };
     };
   };
-  delete_deployment: {
+  get_service_openapi: {
     parameters: {
-      query?: {
-        /** @description If true, the deployment will be forcefully deleted. This might break in-flight invocations, use with caution. */
-        force?: boolean;
-      };
+      query?: never;
       header?: never;
       path: {
-        /** @description Deployment identifier */
-        deployment: string;
+        /** @description Fully qualified service name. */
+        service: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OpenAPI 3.1 of the service */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': unknown;
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  modify_service_state: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Fully qualified service name. */
+        service: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ModifyServiceStateRequest'];
+      };
+    };
+    responses: {
+      /** @description Accepted */
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  list_subscriptions: {
+    parameters: {
+      query?: {
+        /** @description Filter by the exact specified sink. */
+        sink?: string;
+        /** @description Filter by the exact specified source. */
+        source?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ListSubscriptionsResponse'];
+        };
+      };
+    };
+  };
+  create_subscription: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateSubscriptionRequest'];
+      };
+    };
+    responses: {
+      /** @description Created */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['SubscriptionResponse'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  get_subscription: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Subscription identifier */
+        subscription: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['SubscriptionResponse'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  delete_subscription: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Subscription identifier */
+        subscription: string;
       };
       cookie?: never;
     };
@@ -2363,13 +2636,6 @@ export interface operations {
           'application/json': components['schemas']['ErrorDescriptionResponse'];
         };
       };
-      /** @description Not implemented. Only using the force flag is supported at the moment. */
-      501: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
       503: {
         headers: {
           [name: string]: unknown;
@@ -2380,7 +2646,7 @@ export interface operations {
       };
     };
   };
-  openapi_spec: {
+  version: {
     parameters: {
       query?: never;
       header?: never;
@@ -2394,9 +2660,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': {
-            [key: string]: string;
-          };
+          'application/json': components['schemas']['VersionInformation'];
         };
       };
     };

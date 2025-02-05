@@ -28,10 +28,14 @@ export function DeleteDeployment() {
   const deployment = deploymentId
     ? data?.deployments.get(deploymentId)
     : undefined;
+
   const [deploymentEndpoint, setDeploymentEndpoint] = useState(
     getEndpoint(deployment)
   );
-  if (deployment && !deploymentEndpoint) {
+  if (
+    deployment &&
+    (!deploymentEndpoint || deploymentEndpoint !== getEndpoint(deployment))
+  ) {
     setDeploymentEndpoint(getEndpoint(deployment));
   }
   const { mutate, isPending, error } = useDeleteDeployment(

@@ -32,9 +32,16 @@ export function QueryDialog({
       onOpenChange={(isOpen) => {
         if (!isOpen) {
           setSearchParams(
-            (perv) => {
-              perv.delete(query);
-              return perv;
+            (prev) => {
+              if (prev.getAll(query).length <= 1) {
+                prev.delete(query);
+                return prev;
+              } else {
+                const value = prev.get(query);
+                return new URLSearchParams(
+                  prev.toString().replace(`${query}=${value}`, '')
+                );
+              }
             },
             { preventScrollReset: true }
           );

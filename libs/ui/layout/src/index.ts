@@ -5,4 +5,6 @@ export {
   ComplementaryWithSearchParam,
   ComplementaryClose,
   useActiveSidebarParam,
+  ComplementaryFooter,
+  useParamValue,
 } from './lib/Complementary';

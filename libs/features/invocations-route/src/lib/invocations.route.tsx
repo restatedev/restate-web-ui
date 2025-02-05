@@ -9,6 +9,7 @@ import { Button, SubmitButton } from '@restate/ui/button';
 import {
   Column,
   PerformantRow,
+  Row,
   Table,
   TableBody,
   TableHeader,
@@ -30,7 +31,14 @@ import {
   SnapshotTimeProvider,
   useDurationSinceLastSnapshot,
 } from '@restate/util/snapshot-time';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  PropsWithChildren,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { formatDurations } from '@restate/util/intl';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import {
@@ -46,9 +54,11 @@ import {
   ClientLoaderFunctionArgs,
   Form,
   redirect,
+  ShouldRevalidateFunctionArgs,
   useSearchParams,
 } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
+import { useTransition } from 'react';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: 80,
@@ -58,6 +68,7 @@ const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   journal_size: 135,
 };
 
+const PAGE_SIZE = 30;
 function Component() {
   const { promise: listDeploymentPromise, data: listDeploymentsData } =
     useListDeployments();
@@ -292,46 +303,63 @@ function Component() {
   }
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>();
   const collator = useCollator();
+  const [pageIndex, _setPageIndex] = useState(0);
+  const [, startTransition] = useTransition();
+
+  const setPageIndex = useCallback(
+    (arg: Parameters<typeof _setPageIndex>[0]) => {
+      startTransition(() => {
+        window.scrollTo({ top: 0, behavior: 'auto' });
+        _setPageIndex(arg);
+      });
+    },
+    []
+  );
 
   const sortedItems = useMemo(() => {
-    return (
-      data?.rows.sort((a, b) => {
-        let cmp = 0;
-        if (sortDescriptor?.column === 'deployment') {
-          cmp = collator.compare(
-            (
-              a.last_attempt_deployment_id ?? a.pinned_deployment_id
-            )?.toString() ?? '',
-            (
-              b.last_attempt_deployment_id ?? b.pinned_deployment_id
-            )?.toString() ?? ''
-          );
-        } else {
-          cmp = collator.compare(
-            a[
-              sortDescriptor?.column as Exclude<
-                ColumnKey,
-                'deployment' | 'actions'
-              >
-            ]?.toString() ?? '',
-            b[
-              sortDescriptor?.column as Exclude<
-                ColumnKey,
-                'deployment' | 'actions'
-              >
-            ]?.toString() ?? ''
-          );
-        }
+    return [...(data?.rows ?? [])].sort((a, b) => {
+      let cmp = 0;
+      if (sortDescriptor?.column === 'deployment') {
+        cmp = collator.compare(
+          (
+            a.last_attempt_deployment_id ?? a.pinned_deployment_id
+          )?.toString() ?? '',
+          (
+            b.last_attempt_deployment_id ?? b.pinned_deployment_id
+          )?.toString() ?? ''
+        );
+      } else {
+        cmp = collator.compare(
+          a[
+            sortDescriptor?.column as Exclude<
+              ColumnKey,
+              'deployment' | 'actions'
+            >
+          ]?.toString() ?? '',
+          b[
+            sortDescriptor?.column as Exclude<
+              ColumnKey,
+              'deployment' | 'actions'
+            >
+          ]?.toString() ?? ''
+        );
+      }
 
-        // Flip the direction if descending order is specified.
-        if (sortDescriptor?.direction === 'descending') {
-          cmp *= -1;
-        }
+      // Flip the direction if descending order is specified.
+      if (sortDescriptor?.direction === 'descending') {
+        cmp *= -1;
+      }
 
-        return cmp;
-      }) ?? []
-    );
+      return cmp;
+    });
   }, [collator, data?.rows, sortDescriptor?.column, sortDescriptor?.direction]);
+
+  const currentPageItems = useMemo(() => {
+    return sortedItems.slice(
+      pageIndex * PAGE_SIZE,
+      (pageIndex + 1) * PAGE_SIZE
+    );
+  }, [pageIndex, sortedItems]);
 
   const query = useQueryBuilder(
     schema
@@ -344,11 +372,11 @@ function Component() {
       })
   );
 
+  const totalSize = Math.ceil((data?.rows ?? []).length / PAGE_SIZE);
+
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdatedAtRef.current}>
       <div className="flex flex-col flex-auto gap-2 relative">
-        <Footnote data={data} isFetching={isFetching} />
-
         <Table
           aria-label="Invocations"
           sortDescriptor={sortDescriptor}
@@ -405,8 +433,8 @@ function Component() {
             )}
           </TableHeader>
           <TableBody
-            items={sortedItems}
-            dependencies={[selectedColumns]}
+            items={currentPageItems}
+            dependencies={[selectedColumns, pageIndex]}
             error={error}
             isLoading={isPending}
             numOfColumns={sortedColumnsList.length}
@@ -425,25 +453,65 @@ function Component() {
             }
           >
             {(row) => (
-              <PerformantRow
+              <Row
                 id={row.id}
                 columns={sortedColumnsList}
                 className={` [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50 bg-transparent [content-visibility:auto]`}
               >
-                {({ isVisible, id }) => {
+                {({ id }) => {
                   return (
                     <InvocationCell
                       key={id}
                       column={id}
                       invocation={row}
-                      isVisible={isVisible}
+                      isVisible
                     />
                   );
                 }}
-              </PerformantRow>
+              </Row>
             )}
           </TableBody>
         </Table>
+        <Footnote data={data} isFetching={isFetching}>
+          {!isPending && !error && totalSize > 1 && (
+            <div className="flex items-center bg-zinc-50 shadow-sm border rounded-lg py-0.5">
+              <Button
+                variant="icon"
+                disabled={pageIndex === 0}
+                onClick={() => setPageIndex(0)}
+              >
+                <Icon name={IconName.ChevronFirst} className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="icon"
+                disabled={pageIndex === 0}
+                onClick={() => setPageIndex((s) => s - 1)}
+                className=""
+              >
+                <Icon name={IconName.ChevronLeft} className="w-4 h-4" />
+              </Button>
+              <div className="flex items-center gap-0.5 mx-2 text-code">
+                {pageIndex + 1} / {totalSize}
+              </div>
+
+              <Button
+                variant="icon"
+                disabled={pageIndex + 1 === totalSize}
+                onClick={() => setPageIndex((s) => s + 1)}
+                className=""
+              >
+                <Icon name={IconName.ChevronRight} className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="icon"
+                disabled={pageIndex + 1 === totalSize}
+                onClick={() => setPageIndex(totalSize - 1)}
+              >
+                <Icon name={IconName.ChevronLast} className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
+        </Footnote>
       </div>
       <LayoutOutlet zone={LayoutZone.Toolbar}>
         <Form
@@ -508,10 +576,11 @@ function Component() {
 function Footnote({
   data,
   isFetching,
-}: {
+  children,
+}: PropsWithChildren<{
   isFetching: boolean;
   data?: ReturnType<typeof useListInvocations>['data'];
-}) {
+}>) {
   const [now, setNow] = useState(() => Date.now());
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
 
@@ -535,31 +604,44 @@ function Footnote({
   }
   const { isPast, ...parts } = durationSinceLastSnapshot(now);
   const duration = formatDurations(parts);
+
   return (
-    <div className="w-full text-center text-xs text-gray-500/80 absolute -top-6">
-      {data.total_count ? (
-        <>
-          <span>{data.rows.length}</span>
-          {' of '}
-          <span className="font-medium text-gray-500">
-            {data.total_count}
-          </span>{' '}
-          recently modified invocations
-        </>
-      ) : (
-        'No invocations found'
-      )}{' '}
-      as of <span className="font-medium text-gray-500">{duration} ago</span>
+    <div className="flex flex-row-reverse flex-wrap items-center w-full text-center text-xs text-gray-500/80 ">
+      <div className="ml-auto">
+        {data.total_count ? (
+          <>
+            <span>{data.rows.length}</span>
+            {' of '}
+            <span className="font-medium text-gray-500">
+              {data.total_count}
+            </span>{' '}
+            recently modified invocations
+          </>
+        ) : (
+          'No invocations found'
+        )}{' '}
+        as of <span className="font-medium text-gray-500">{duration} ago</span>
+      </div>
+      <div>{children}</div>
     </div>
   );
 }
 
+/**
+ *
+ * https://github.com/remix-run/react-router/issues/12607
+ * TODO: workaround to make sure clientLoader only runs on first render
+ */
+let hasRendered = false;
 export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
   const url = new URL(request.url);
   const hasFilters = Array.from(url.searchParams.keys()).some((key) =>
     key.startsWith('filter_')
   );
-  if (!hasFilters) {
+
+  if (!hasFilters && !hasRendered) {
+    hasRendered = true;
+
     url.searchParams.append(
       'filter_status',
       JSON.stringify({
@@ -567,8 +649,13 @@ export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
         value: ['succeeded', 'cancelled', 'killed'],
       })
     );
-    return redirect(url.search);
+    return redirect(url.search + window.location.hash);
   }
+  hasRendered = true;
 };
 
-export const invocations = { Component, clientLoader };
+export function shouldRevalidate(arg: ShouldRevalidateFunctionArgs) {
+  return false;
+}
+
+export const invocations = { Component, clientLoader, shouldRevalidate };

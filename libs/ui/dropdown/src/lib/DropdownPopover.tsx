@@ -9,7 +9,7 @@ interface DropdownPopoverProps {
 }
 
 const styles = tv({
-  base: 'min-w-[150px]',
+  base: 'min-w-[max(var(--trigger-width),150px)] w-fit max-w-[90vw] lg:max-w-[50vw]',
 });
 
 export function DropdownPopover({

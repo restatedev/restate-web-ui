@@ -3,7 +3,7 @@ on:
     branches: [main]
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: warp-ubuntu-latest-x64-4x
     name: Build
     steps:
       - uses: pnpm/action-setup@v4
@@ -15,7 +15,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm nx affected --targets=build --base=origin/main --head=HEAD
   test:
-    runs-on: ubuntu-latest
+    runs-on: warp-ubuntu-latest-x64-4x
     name: Unit tests
     steps:
       - uses: pnpm/action-setup@v4
@@ -27,7 +27,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm nx affected --targets=test --base=origin/main --head=HEAD --passWithNoTests --watch=false
   static-analysis:
-    runs-on: ubuntu-latest
+    runs-on: warp-ubuntu-latest-x64-4x
     name: Static Analyzis
     steps:
       - uses: pnpm/action-setup@v4
@@ -42,7 +42,7 @@ jobs:
       - run: NX_BASE=origin/main NX_HEAD=HEAD pnpm nx format:check
       - run: pnpm audit --prod
   e2e:
-    runs-on: ubuntu-latest
+    runs-on: warp-ubuntu-latest-x64-4x
     permissions:
       contents: read
       deployments: write

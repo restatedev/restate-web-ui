@@ -1,13 +1,14 @@
 import { useLocation, useNavigation } from 'react-router';
 import { focusRing } from '@restate/ui/focus';
 import { Link } from '@restate/ui/link';
-import { PropsWithChildren, useContext } from 'react';
+import { PropsWithChildren, useContext, useMemo } from 'react';
 import { tv } from 'tailwind-variants';
 import { NavContext } from './NavContext';
 import { Button } from '@restate/ui/button';
 
 interface NavItemProps {
   href: string;
+  preserveSearchParams?: boolean | string[];
 }
 
 const styles = tv({
@@ -24,16 +25,34 @@ const styles = tv({
   },
 });
 
-export function NavItem({ children, href }: PropsWithChildren<NavItemProps>) {
+export function NavItem({
+  children,
+  href,
+  preserveSearchParams = false,
+}: PropsWithChildren<NavItemProps>) {
   const location = useLocation();
   const isActive = location.pathname === href;
   const { value } = useContext(NavContext);
+
+  const search = useMemo(() => {
+    if (Array.isArray(preserveSearchParams)) {
+      const searchParams = new URLSearchParams(location.search);
+      Array.from(searchParams.keys()).forEach((key) => {
+        if (!preserveSearchParams.includes(key)) {
+          searchParams.delete(key);
+        }
+      });
+      return '?' + searchParams.toString();
+    } else {
+      return location.search;
+    }
+  }, [location.search, preserveSearchParams]);
 
   return (
     <li>
       <Link
         className={styles()}
-        href={href}
+        href={preserveSearchParams ? `${href}${search}${location.hash}` : href}
         data-active={isActive}
         {...(isActive && { 'aria-current': value })}
       >

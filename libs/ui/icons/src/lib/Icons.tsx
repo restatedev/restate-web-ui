@@ -34,6 +34,10 @@ import {
   ChevronsLeftRightEllipsis,
   Timer,
   Ellipsis,
+  Maximize2,
+  Minimize2,
+  ChevronLast,
+  ChevronFirst,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from 'tailwind-variants';
@@ -110,6 +114,10 @@ export const enum IconName {
   Kotlin = 'Kotlin',
   Ellipsis = 'Ellipsis',
   Slack = 'Slack',
+  Maximize = 'Maximize',
+  Minimize = 'Minimize',
+  ChevronLast = 'ChevronLast',
+  ChevronFirst = 'ChevronFirst',
 }
 export interface IconsProps {
   name: IconName;
@@ -171,6 +179,10 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Ellipsis]: Ellipsis,
   [IconName.Kotlin]: Kotlin,
   [IconName.Slack]: Slack,
+  [IconName.Maximize]: Maximize2,
+  [IconName.Minimize]: Minimize2,
+  [IconName.ChevronFirst]: ChevronFirst,
+  [IconName.ChevronLast]: ChevronLast,
 };
 
 const styles = tv({

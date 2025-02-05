@@ -19,8 +19,10 @@ const JsonSchemaViewerInner = lazy(() => {
 
 export const API = ({
   apiDescriptionDocument,
+  layout = 'responsive',
 }: {
   apiDescriptionDocument?: string;
+  layout?: 'sidebar' | 'responsive' | 'stacked';
 }) => {
   const id = useId();
 
@@ -29,7 +31,7 @@ export const API = ({
       id={id}
       apiDescriptionDocument={apiDescriptionDocument}
       router="hash"
-      layout="responsive"
+      layout={layout}
     />
   );
 };

@@ -28,10 +28,14 @@ import {
   DeploymentDetails,
   ServicePlayground,
   ServiceDetails,
+  SERVICE_PLAYGROUND_QUERY_PARAM,
+  SERVICE_QUERY_PARAM,
+  DEPLOYMENT_QUERY_PARAM,
 } from '@restate/features/overview-route';
 import { Spinner } from '@restate/ui/loading';
 import {
   DeleteInvocation,
+  INVOCATION_QUERY_NAME,
   InvocationPanel,
 } from '@restate/features/invocation-route';
 import { Support } from '@restate/features/support';
@@ -128,10 +132,7 @@ function getCookieValue(name: string) {
 export default function App() {
   return (
     <QueryProvider>
-      <RestateContextProvider
-        adminBaseUrl={getCookieValue('adminBaseUrl')}
-        ingressUrl="http://localhost:8080"
-      >
+      <RestateContextProvider adminBaseUrl={getCookieValue('adminBaseUrl')}>
         <LayoutOutlet zone={LayoutZone.Content}>
           <Outlet />
         </LayoutOutlet>
@@ -156,8 +157,28 @@ export default function App() {
             </Button>
             <LayoutOutlet zone={LayoutZone.Nav}>
               <Nav ariaCurrentValue="page">
-                <NavItem href={'/overview'}>Overview</NavItem>
-                <NavItem href={'/invocations'}>Invocations</NavItem>
+                <NavItem
+                  preserveSearchParams={[
+                    SERVICE_PLAYGROUND_QUERY_PARAM,
+                    SERVICE_QUERY_PARAM,
+                    DEPLOYMENT_QUERY_PARAM,
+                    INVOCATION_QUERY_NAME,
+                  ]}
+                  href={'/overview'}
+                >
+                  Overview
+                </NavItem>
+                <NavItem
+                  preserveSearchParams={[
+                    SERVICE_PLAYGROUND_QUERY_PARAM,
+                    SERVICE_QUERY_PARAM,
+                    DEPLOYMENT_QUERY_PARAM,
+                    INVOCATION_QUERY_NAME,
+                  ]}
+                  href={'/invocations'}
+                >
+                  Invocations
+                </NavItem>
               </Nav>
             </LayoutOutlet>
           </div>
