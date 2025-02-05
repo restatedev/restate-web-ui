@@ -5,8 +5,6 @@ import {
   useGetInvocationJournal,
   useGetInvocationJournalWithInvocation,
 } from '@restate/data-access/admin-api';
-import { Badge } from '@restate/ui/badge';
-import { Ellipsis, Spinner } from '@restate/ui/loading';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { Component, ComponentType, ErrorInfo, PropsWithChildren } from 'react';
 import { tv } from 'tailwind-variants';
@@ -30,6 +28,7 @@ import { Call } from './entries/Call';
 import { getRestateError } from './Status';
 import { HoverTooltip } from '@restate/ui/tooltip';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
+import { Spinner } from '@restate/ui/loading';
 
 export function Journal({ invocationId }: { invocationId?: string }) {
   const {

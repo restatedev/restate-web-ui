@@ -1,6 +1,6 @@
 import { useLocation, useSearchParams } from 'react-router';
 import { useServiceOpenApi } from '@restate/data-access/admin-api';
-import { Button } from '@restate/ui/button';
+import { Button, SubmitButton } from '@restate/ui/button';
 import { QueryDialog, DialogContent, DialogClose } from '@restate/ui/dialog';
 import { Icon, IconName } from '@restate/ui/icons';
 import { SERVICE_PLAYGROUND_QUERY_PARAM } from './constants';
@@ -33,6 +33,8 @@ import {
 } from '@restate/ui/dropdown';
 import { Badge } from '@restate/ui/badge';
 import { useTransition } from 'react';
+import { ErrorBanner } from '@restate/ui/error';
+import { Spinner } from '@restate/ui/loading';
 
 const styles = tv({
   base: 'px-1.5 py-0.5 text-xs font-normal font-sans rounded-md flex items-center gap-1',
@@ -90,6 +92,7 @@ export function ServicePlayground() {
                 old.delete(service);
                 return new Map(old);
               });
+              return Promise.resolve();
             });
           }}
         />
@@ -136,7 +139,12 @@ function Attribution() {
 
 function useApiSpec(service?: string | null) {
   const enabled = typeof service === 'string';
-  const { data } = useServiceOpenApi(String(service), { enabled });
+  const { data, error, refetch, isFetching } = useServiceOpenApi(
+    String(service),
+    {
+      enabled,
+    }
+  );
   const { ingressUrl } = useRestateContext();
 
   const { apiSpec, handlers } = useMemo(() => {
@@ -175,7 +183,7 @@ function useApiSpec(service?: string | null) {
     return { apiSpec, handlers };
   }, [data, ingressUrl]);
 
-  return { apiSpec, handlers };
+  return { apiSpec, handlers, error, refetch, isFetching };
 }
 
 function ServicePlaygroundComplementaryContent({
@@ -188,7 +196,7 @@ function ServicePlaygroundComplementaryContent({
   onClose?: (service: string) => void;
 }) {
   const service = useParamValue();
-  const { apiSpec, handlers } = useApiSpec(service);
+  const { apiSpec, handlers, error, refetch, isFetching } = useApiSpec(service);
   const activeSearch = useActiveSidebarParam(SERVICE_PLAYGROUND_QUERY_PARAM);
   const shouldDisplay = isSidebar.get(service) === true;
   const isActive = activeSearch === service;
@@ -205,6 +213,7 @@ function ServicePlaygroundComplementaryContent({
     Array.from(handlers.values()).some((methods) =>
       methods.some(({ id }) => id === selectedHandlerFromURL)
     );
+
   const [selectedHandler, _setSelectedHandler] = useState(
     selectedHandlerFromURL
   );
@@ -263,19 +272,29 @@ function ServicePlaygroundComplementaryContent({
   return (
     <>
       <ComplementaryFooter>
-        <div className="flex gap-2 w-full">
-          <ComplementaryClose>
-            <Button
-              className="flex-auto shrink-0 grow-0 basis-full"
-              variant="secondary"
-              onClick={() => {
-                _setSelectedHandler(undefined);
-                onClose?.(service);
-              }}
+        <div className="flex gap-2 flex-col flex-auto">
+          {error && <ErrorBanner errors={[error]} />}
+          <div className="flex gap-2 w-full">
+            <ComplementaryClose>
+              <Button
+                className="flex-auto  grow-0 basis-1/2"
+                variant="secondary"
+                onClick={() => {
+                  _setSelectedHandler(undefined);
+                  onClose?.(service);
+                }}
+              >
+                Close
+              </Button>
+            </ComplementaryClose>
+            <SubmitButton
+              className="flex-auto grow-0 basis-1/2"
+              onClick={() => refetch()}
+              isPending={isFetching}
             >
-              Close
-            </Button>
-          </ComplementaryClose>
+              Refresh
+            </SubmitButton>
+          </div>
         </div>
       </ComplementaryFooter>
       <div className="flex flex-col min-h-full [&_.sl-text-lg]:text-code [&_.sl-rounded-lg]:rounded-xl [&_h1]:hidden [&_[dir=ltr]>[dir=ltr]]:hidden [&_h1]:mb-2 [&_.sl-stack--8]:gap-6 [&_.sl-stack--5]:gap-2 [&_.sl-pt-8]:pt-2 [&_p]:text-sm [&_.sl-inverted_input]:text-gray-700 [&_input]:text-sm [&_h1]:text-2xl [&_elements-api_h2]:text-xl [&_h3]:text-lg [&_.sl-elements-api>*:first-child]:hidden [&_.sl-elements-api>*:nth-child(2)]:px-2 [&_.sl-elements-api>*:nth-child(2)>*]:pt-2 [&_.sl-elements-api>*:nth-child(2)>*>*>*:last-child]:flex-col-reverse [&_.sl-elements-api>*:nth-child(2)>*>*>*>*]:mx-0 [&_.sl-elements-api>*:nth-child(2)>*>*>*>*]:w-full">
@@ -384,7 +403,7 @@ function ServicePlaygroundSheetContent({
   setIsSidebar: Dispatch<React.SetStateAction<Map<string, boolean>>>;
   isSidebar: Map<string, boolean>;
 }) {
-  const { apiSpec, handlers } = useApiSpec(service);
+  const { apiSpec, handlers, error, isFetching } = useApiSpec(service);
   const [searchParams, setSearchParams] = useSearchParams();
 
   return (
@@ -393,61 +412,73 @@ function ServicePlaygroundSheetContent({
         variant={'sheet'}
         className='[&_*:has(>[data-test="mobile-top-nav"])]:w-[calc(100vw-1rem)] [&_*:has(>[data-test="mobile-top-nav"])]:rounded-t-[0.7rem] [&_.sl-inverted_input]:text-gray-700 [&_input]:text-sm'
       >
-        {apiSpec ? (
-          <>
-            <API apiDescriptionDocument={apiSpec} />
-            <div className="absolute right-3 top-3 flex items-center gap-2">
-              <Button
-                variant="icon"
-                onClick={() => {
-                  const handlerFromUrl = window.location.hash
-                    .split('#/operations/')
-                    .at(-1)
-                    ?.split('#')
-                    ?.at(0);
-
-                  const handlerId =
-                    handlerFromUrl || handlers.get(DEFAULT_CATEGORY)?.at(0)?.id;
-                  window.location.hash = `#/operations/${handlerId}`;
-                  setIsSidebar((old) => {
-                    if (service) {
-                      old.set(service, true);
-                    }
-                    return new Map(old);
-                  });
-                }}
-              >
-                <Icon name={IconName.Minimize} className="w-5 h-5" />
-              </Button>
-              <DialogClose>
-                <Button
-                  variant="icon"
-                  onClick={() => {
-                    const valuesToBeDeleted = searchParams
-                      .getAll(SERVICE_PLAYGROUND_QUERY_PARAM)
-                      .filter((service) => isSidebar.get(service) !== true);
-                    setSearchParams(
-                      (prev) => {
-                        let search = prev.toString();
-                        valuesToBeDeleted.forEach((serviceName) => {
-                          search = search.replace(
-                            `${SERVICE_PLAYGROUND_QUERY_PARAM}=${serviceName}`,
-                            ''
-                          );
-                        });
-
-                        return new URLSearchParams(search);
-                      },
-                      { preventScrollReset: true }
-                    );
-                  }}
-                >
-                  <Icon name={IconName.X} className="w-5 h-5" />
-                </Button>
-              </DialogClose>
+        {apiSpec ? <API apiDescriptionDocument={apiSpec} /> : null}
+        {error && (
+          <div className="mt-12 mx-8">
+            <ErrorBanner errors={[error]} />
+          </div>
+        )}
+        {!apiSpec && isFetching && (
+          <div className="w-full h-full items-center justify-center flex">
+            <div className="flex items-center gap-2.5 text-lg text-zinc-500">
+              <Spinner className="w-6 h-6" />
+              Loading…
             </div>
-          </>
-        ) : null}
+          </div>
+        )}
+
+        <div className="absolute right-3 top-3 flex items-center gap-2">
+          {handlers.size > 0 && (
+            <Button
+              variant="icon"
+              onClick={() => {
+                const handlerFromUrl = window.location.hash
+                  .split('#/operations/')
+                  .at(-1)
+                  ?.split('#')
+                  ?.at(0);
+
+                const handlerId =
+                  handlerFromUrl || handlers.get(DEFAULT_CATEGORY)?.at(0)?.id;
+                window.location.hash = `#/operations/${handlerId}`;
+                setIsSidebar((old) => {
+                  if (service) {
+                    old.set(service, true);
+                  }
+                  return new Map(old);
+                });
+              }}
+            >
+              <Icon name={IconName.Minimize} className="w-5 h-5" />
+            </Button>
+          )}
+          <DialogClose>
+            <Button
+              variant="icon"
+              onClick={() => {
+                const valuesToBeDeleted = searchParams
+                  .getAll(SERVICE_PLAYGROUND_QUERY_PARAM)
+                  .filter((service) => isSidebar.get(service) !== true);
+                setSearchParams(
+                  (prev) => {
+                    let search = prev.toString();
+                    valuesToBeDeleted.forEach((serviceName) => {
+                      search = search.replace(
+                        `${SERVICE_PLAYGROUND_QUERY_PARAM}=${serviceName}`,
+                        ''
+                      );
+                    });
+
+                    return new URLSearchParams(search);
+                  },
+                  { preventScrollReset: true }
+                );
+              }}
+            >
+              <Icon name={IconName.X} className="w-5 h-5" />
+            </Button>
+          </DialogClose>
+        </div>
       </DialogContent>
     </QueryDialog>
   );
