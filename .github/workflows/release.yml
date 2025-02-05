@@ -3,7 +3,7 @@ on:
     branches: [main]
 jobs:
   check-version:
-    runs-on: ubuntu-latest
+    runs-on: warp-ubuntu-latest-x64-4x
     steps:
       - uses: pnpm/action-setup@v4
         with:
@@ -21,7 +21,7 @@ jobs:
       has-updated: ${{ steps.package-json.outputs.has-updated }}
       version: ${{ steps.package-json.outputs.version }}
   release:
-    runs-on: ubuntu-latest
+    runs-on: warp-ubuntu-latest-x64-4x
     name: Release
     needs: check-version
     permissions:
@@ -55,7 +55,7 @@ jobs:
           generateReleaseNotes: true
   update-ui:
     name: Update UI in restate repo
-    runs-on: ubuntu-latest
+    runs-on: warp-ubuntu-latest-x64-4x
     needs: release
     permissions:
       contents: write
