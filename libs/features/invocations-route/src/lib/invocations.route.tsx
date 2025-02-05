@@ -474,7 +474,7 @@ function Component() {
         </Table>
         <Footnote data={data} isFetching={isFetching}>
           {!isPending && !error && totalSize > 1 && (
-            <div className="flex items-center">
+            <div className="flex items-center bg-zinc-50 shadow-sm border rounded-lg py-0.5">
               <Button
                 variant="icon"
                 disabled={pageIndex === 0}
@@ -490,8 +490,8 @@ function Component() {
               >
                 <Icon name={IconName.ChevronLeft} className="w-4 h-4" />
               </Button>
-              <div className="flex items-center gap-0.5 mx-2">
-                {pageIndex + 1}/{totalSize}
+              <div className="flex items-center gap-0.5 mx-2 text-code">
+                {pageIndex + 1} / {totalSize}
               </div>
 
               <Button

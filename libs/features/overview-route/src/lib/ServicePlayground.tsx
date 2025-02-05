@@ -199,6 +199,7 @@ function ServicePlaygroundComplementaryContent({
     .at(-1)
     ?.split('#')
     .at(0);
+
   const isSelectedHandlerFromURLValid =
     !handlers.size ||
     Array.from(handlers.values()).some((methods) =>
@@ -345,7 +346,7 @@ function ServicePlaygroundComplementaryContent({
             </div>
           </div>
         </h2>
-        {isActive && isSelectedHandlerFromURLValid ? (
+        {isActive ? (
           <API
             apiDescriptionDocument={apiSpec}
             layout="sidebar"
