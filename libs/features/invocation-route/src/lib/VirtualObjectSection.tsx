@@ -73,7 +73,7 @@ export function VirtualObjectSection({
     typeof position === 'number' &&
     typeof size === 'number' &&
     typeof head === 'string';
-  const hasState = Boolean(stateData?.state && stateData?.state.length > 0);
+  const state = stateData?.state ?? [];
   return (
     <Section className={styles({ className })}>
       <SectionTitle className="">{invocation.target_service_name}</SectionTitle>
@@ -101,11 +101,10 @@ export function VirtualObjectSection({
             <PopoverTrigger>
               <Button
                 variant="secondary"
-                disabled={(stateData?.state ?? [])?.length === 0}
+                disabled={state.length === 0}
                 className="bg-white/70 border disabled:border-transparent disabled:shadow-none disabled:text-zinc-500 px-1.5 text-zinc-600 font-mono font-medium py-0 flex rounded-md items-center gap-1 text-xs h-5 ml-auto"
               >
-                {`(${stateData?.state?.length})`} key
-                {(stateData?.state ?? [])?.length > 1 ? 's' : ''}
+                {state.length > 0 ? `(${state.length})` : 'No state'}
                 {(stateData?.state ?? [])?.length > 0 && (
                   <Icon
                     name={IconName.ChevronsUpDown}
