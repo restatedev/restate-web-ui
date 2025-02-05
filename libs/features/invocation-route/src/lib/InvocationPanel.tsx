@@ -79,6 +79,7 @@ function InvocationPanelContent() {
     isPending,
     error: getInvocationError,
     dataUpdatedAt,
+    errorUpdatedAt,
     refetch: refetchGetInvocation,
     isSuccess,
   } = useGetInvocation(String(invocationId), {
@@ -116,7 +117,9 @@ function InvocationPanelContent() {
   }
 
   return (
-    <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
+    <SnapshotTimeProvider
+      lastSnapshot={getInvocationError ? errorUpdatedAt : dataUpdatedAt}
+    >
       <ComplementaryFooter>
         <div className="flex gap-2 flex-col flex-auto">
           {getInvocationError && <ErrorBanner error={getInvocationError} />}
@@ -172,7 +175,11 @@ function InvocationPanelContent() {
               <>
                 <div className="flex w-full items-center">Invocation</div>
                 <div className="min-h-4 flex w-full items-center">
-                  {isSuccess && <Footnote dataUpdatedAt={dataUpdatedAt} />}
+                  <Footnote
+                    dataUpdatedAt={
+                      getInvocationError ? errorUpdatedAt : dataUpdatedAt
+                    }
+                  />
                   <div className="ml-auto">
                     <Actions invocation={data} />
                   </div>
