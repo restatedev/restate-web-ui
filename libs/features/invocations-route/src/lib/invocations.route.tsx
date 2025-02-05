@@ -9,6 +9,7 @@ import { Button, SubmitButton } from '@restate/ui/button';
 import {
   Column,
   PerformantRow,
+  Row,
   Table,
   TableBody,
   TableHeader,
@@ -53,7 +54,6 @@ import {
   ClientLoaderFunctionArgs,
   Form,
   redirect,
-  ShouldRevalidateFunction,
   ShouldRevalidateFunctionArgs,
   useSearchParams,
 } from 'react-router';
@@ -68,7 +68,7 @@ const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   journal_size: 135,
 };
 
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 30;
 function Component() {
   const { promise: listDeploymentPromise, data: listDeploymentsData } =
     useListDeployments();
@@ -453,22 +453,22 @@ function Component() {
             }
           >
             {(row) => (
-              <PerformantRow
+              <Row
                 id={row.id}
                 columns={sortedColumnsList}
                 className={` [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50 bg-transparent [content-visibility:auto]`}
               >
-                {({ isVisible, id }) => {
+                {({ id }) => {
                   return (
                     <InvocationCell
                       key={id}
                       column={id}
                       invocation={row}
-                      isVisible={isVisible}
+                      isVisible
                     />
                   );
                 }}
-              </PerformantRow>
+              </Row>
             )}
           </TableBody>
         </Table>
@@ -486,7 +486,7 @@ function Component() {
                 variant="icon"
                 disabled={pageIndex === 0}
                 onClick={() => setPageIndex((s) => s - 1)}
-                className="-ml-2"
+                className=""
               >
                 <Icon name={IconName.ChevronLeft} className="w-4 h-4" />
               </Button>
@@ -498,7 +498,7 @@ function Component() {
                 variant="icon"
                 disabled={pageIndex + 1 === totalSize}
                 onClick={() => setPageIndex((s) => s + 1)}
-                className="-mr-2"
+                className=""
               >
                 <Icon name={IconName.ChevronRight} className="w-4 h-4" />
               </Button>
