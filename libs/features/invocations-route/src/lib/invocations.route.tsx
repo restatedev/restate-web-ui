@@ -361,6 +361,14 @@ function Component() {
     );
   }, [pageIndex, sortedItems]);
 
+  useEffect(() => {
+    hasRendered = true;
+
+    return () => {
+      hasRendered = false;
+    };
+  }, []);
+
   const query = useQueryBuilder(
     schema
       .filter((schemaClause) => searchParams.get(`filter_${schemaClause.id}`))
