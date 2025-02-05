@@ -175,10 +175,10 @@ We suggest checking the service/deployment logs as well to get any hint on the e
   RT0007: {
     summary:
       'A retry-able error was received from the service while processing the invocation.',
-    help: `A retry-able error was received from the service while processing the invocation. Suggestions:
+    help: `A retry-able error was received from the service while processing the invocation. Restate will soon retry executing the invocation, replaying from the point where it left. Suggestions:
 
-* Check the component/deployment logs to get more info about the error cause, like the stacktrace.
-* Look at the error handling docs for more info about error handling in components (for [TypeScript](https://docs.restate.dev/develop/ts/error-handling) or [Java](https://docs.restate.dev/develop/java/error-handling)).`,
+* Check the service logs to get more info about the error cause, like the stacktrace.
+* Look at the error handling docs for more info about error handling in services (e.g. for [TypeScript](https://docs.restate.dev/develop/ts/error-handling) or [Java](https://docs.restate.dev/develop/java/error-handling)).`,
   },
   RT0009: {
     summary:
@@ -191,7 +191,7 @@ Suggestions:
 * Configure a different worker storage directory via \`worker.storage_rocksdb.path\`.
 * Downgrade your Restate server to < 0.8.`,
   },
-  RT00010: {
+  RT0010: {
     summary: 'Network error when interacting with the service endpoint.',
     help: `Network error when interacting with the service endpoint. This can be caused by a variety of reasons including:
 
@@ -200,27 +200,27 @@ Suggestions:
 * Your network security setup blocks Restate from reaching the service
 * A config error where the registered service endpoint and the actually deployed service endpoint differ`,
   },
-  RT00011: {
+  RT0011: {
     summary: 'No deployment found for the given service. ',
     help: `No deployment found for the given service. 
 This might indicate that the service and/or the associated deployment was removed from the schema registry before starting to process the invocation. 
-Check whether the schema registry contains the related service and deployment.`,
+Check whether the deployment still exists.`,
   },
-  RT00012: {
+  RT0012: {
     summary: 'Protocol violation error.',
-    help: `Protocol violation error. This can be caused by an incompatible runtime and SDK version. If the error persists, please file a [bug report](https://github.com/restatedev/restate/issues). `,
+    help: `Protocol violation error. This can be caused by an incompatible runtime and SDK version, or by an SDK bug. If the error persists, please file a [bug report](https://github.com/restatedev/restate/issues). `,
   },
-  RT00013: {
+  RT0013: {
     summary:
       'The service endpoint does not support any of the supported service protocol versions of the server.',
-    help: `The service endpoint does not support any of the supported service protocol versions of the server. Therefore, the server cannot talk to this endpoint. Please make sure that the service endpoint's SDK and the Restate server are compatible.
+    help: `The service endpoint does not support any of the supported service protocol versions of the server. Please make sure that the service endpoint's SDK and the Restate server are compatible.
 
 Suggestions:
 
 * Register a service endpoint which uses an SDK which is compatible with the used server
 * Upgrade the server to a version which is compatible with the used SDK`,
   },
-  RT00014: {
+  RT0014: {
     summary:
       'The server cannot resume an in-flight invocation which has been started with a now incompatible service protocol version.',
     help: `The server cannot resume an in-flight invocation which has been started with a now incompatible service protocol version. Restate does not support upgrading service protocols yet.
@@ -230,7 +230,7 @@ Suggestions:
 * Downgrade the server to a version which is compatible with the used service protocol version
 * Kill the affected invocation via the CLI.`,
   },
-  RT00015: {
+  RT0015: {
     summary: `The server can't establish an invocation stream because the SDK does not support the service protocol version negotiated during discovery.`,
     help: `The server can't establish an invocation stream because the SDK does not support the service protocol version negotiated during discovery.
 
@@ -239,7 +239,33 @@ This indicates that the SDK was updated to a new version that dropped support fo
 Suggestions:
 
 * For in-flight invocations, downgrade the SDK version back to the previous version.
-* For new invocations, register a new deployment with a new endpoint as described in the [versioning documentation](https://docs.restate.dev/operate/versioning#deploying-new-service-versions).  
-* Make sure the new SDK is compatible with this runtime version, for more info check out [Service compatibility](https://docs.restate.dev/operate/upgrading#service-compatibility).`,
+* For new invocations, register a new deployment with a new endpoint as described in [here](https://docs.restate.dev/operate/versioning#deploying-new-service-versions).  
+* Make sure the new SDK is compatible with this runtime version, for more info check out [here](https://docs.restate.dev/operate/upgrading#service-compatibility).`,
+  },
+  RT0016: {
+    summary: `Journal mismatch detected when replaying the invocation: the handler generated a sequence of journal entries (thus context operations) that doesn't exactly match the recorded journal.`,
+    help: `Journal mismatch detected when replaying the invocation: the handler generated a sequence of journal entries (thus context operations) that doesn't exactly match the recorded journal. This indicates that either the service code was changed (e.g. the service container image updated) without registering a new version of the service deployment, or some code within the handler is non-deterministic. Some common mistakes that lead to non-deterministic errors are:
+    
+* Branch the execution flow based on some non-deterministic information, such as the elapsed time between now and another timestamp, or the result of an HTTP request that was not recorded using the \`ctx.run\` feature.
+* A parameter passed to a \`Context\` operation is non-deterministic, for example setting a state key using a random value or the current date-time.
+* Execute a sequence of \`Context\` operations, such as calling other services, while iterating over a data structure with non-deterministic iteration order (such as sets/maps/dictionaries).
+    
+For more info about service versioning, check out [here](https://docs.restate.dev/operate/versioning).
+For more info about determinism and journaling of non-deterministic operations, check out [here](https://docs.restate.dev/get_started/tour/#journaling-actions).`,
+  },
+  RT0017: {
+    summary: `The entry cannot be processed due to a failed precondition.`,
+    help: `The entry cannot be processed due to a failed precondition. This entry, and all the subsequent received entries, have been discarded and Restate will retry executing the invocation from the last recorded entry.
+    
+Entry preconditions are usually checked by the SDK. If the error persists, please file a bug report [here](https://github.com/restatedev/restate/issues).`,
+  },
+  RT0018: {
+    summary: `The request submitted through the \`Context\` API to the given service handler cannot be processed, because the service handler doesn't exist.`,
+    help: `The request submitted through the \`Context\` API to the given service handler cannot be processed, because the service handler doesn't exist.
+    
+Make sure the service/handler is registered:
+
+* If the service/handler is correctly registered, you can ignore this error as it's a transient error, due to internal propagation of the cluster metadata.
+* If the service/handler is not registered, you must register it in order for this invocation to progress.`,
   },
 };
