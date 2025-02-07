@@ -47,9 +47,15 @@ export function convertJournal(
   entry: JournalRawEntry,
   allEntries: JournalRawEntry[]
 ): JournalEntry {
+  /**
+   * TODO:
+   * In v2 journal the entry type in in the format of Command/Notification: {name}
+   * For now we remove the Command but need to revisit this.
+   */
   return (
-    JOURNAL_ENTRY_CONVERT_MAP[entry.entry_type]?.(entry, allEntries) ??
-    (entry as JournalEntry)
+    JOURNAL_ENTRY_CONVERT_MAP[
+      entry.entry_type.replace('Command: ', '') as EntryType
+    ]?.(entry, allEntries) ?? (entry as JournalEntry)
   );
 }
 
