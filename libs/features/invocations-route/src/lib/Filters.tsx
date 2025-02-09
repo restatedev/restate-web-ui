@@ -20,6 +20,7 @@ import {
   useNewQueryId,
 } from '@restate/ui/query-builder';
 import { PropsWithChildren, useEffect, useMemo, useState } from 'react';
+import { Form } from 'react-router';
 
 export function ClauseChip({
   item,
@@ -89,55 +90,67 @@ function EditQueryTrigger({
     return null;
   }
   const canChangeOperation = clause.operations.length > 1;
-  const title = canChangeOperation
-    ? clause.schema.label
-    : `${clause.schema.label} ${clause.operationLabel}`;
+  const title = canChangeOperation ? (
+    clause.schema.label
+  ) : (
+    <>
+      {clause.schema.label}{' '}
+      <span className="font-mono">{clause.operationLabel}</span>
+    </>
+  );
 
   return (
     <Dropdown isOpen={isOpen} onOpenChange={setIsOpen}>
       <DropdownTrigger>{children}</DropdownTrigger>
       <DropdownPopover placement="top">
-        <DropdownSection title={title}>
-          {canChangeOperation && (
-            <DropdownMenu
-              selectable
-              multiple
-              selectedItems={selectedOperations}
-              autoFocus={false}
-              onSelect={(operations) => {
-                if (operations instanceof Set && operations.size > 0) {
-                  const newClause = new QueryClause(clause.schema, {
-                    ...clause.value,
-                    operation: Array.from(operations).at(
-                      -1
-                    ) as QueryClauseOperationId,
-                  });
-                  onUpdate?.(newClause);
-                }
-              }}
-            >
-              {clause.operations.map((op) => (
-                <DropdownItem value={op.value} key={op.value}>
-                  {op.label}
-                  {op.description}
-                </DropdownItem>
-              ))}
-            </DropdownMenu>
+        <Form
+          onSubmit={(e) => {
+            e.preventDefault();
+            setIsOpen(false);
+          }}
+        >
+          <DropdownSection title={title}>
+            {canChangeOperation && (
+              <DropdownMenu
+                selectable
+                multiple
+                selectedItems={selectedOperations}
+                autoFocus={false}
+                onSelect={(operations) => {
+                  if (operations instanceof Set && operations.size > 0) {
+                    const newClause = new QueryClause(clause.schema, {
+                      ...clause.value,
+                      operation: Array.from(operations).at(
+                        -1
+                      ) as QueryClauseOperationId,
+                    });
+                    onUpdate?.(newClause);
+                  }
+                }}
+              >
+                {clause.operations.map((op) => (
+                  <DropdownItem value={op.value} key={op.value}>
+                    {op.label}
+                    {op.description}
+                  </DropdownItem>
+                ))}
+              </DropdownMenu>
+            )}
+          </DropdownSection>
+          <DropdownSection>
+            <ValueSelector clause={clause} onUpdate={onUpdate} />
+          </DropdownSection>
+          {clause.id === 'status' && (
+            <p className="text-xs text-gray-500 px-5 py-1 max-w-xs mb-2">
+              Completed invocations (succeeded, failed, cancelled, killed) are
+              retained only for workflows and those with idempotency keys, and
+              only for the service's specified retention period.
+            </p>
           )}
-        </DropdownSection>
-        <DropdownSection>
-          <ValueSelector clause={clause} onUpdate={onUpdate} />
-        </DropdownSection>
-        {clause.id === 'status' && (
-          <p className="text-xs text-gray-500 px-5 py-1 max-w-xs mb-2">
-            Completed invocations (succeeded, failed, cancelled, killed) are
-            retained only for workflows and those with idempotency keys, and
-            only for the service's specified retention period.
-          </p>
-        )}
-        <DropdownMenu onSelect={onRemove} autoFocus={false}>
-          <DropdownItem destructive>Remove</DropdownItem>
-        </DropdownMenu>
+          <DropdownMenu onSelect={onRemove} autoFocus={false}>
+            <DropdownItem destructive>Remove</DropdownItem>
+          </DropdownMenu>
+        </Form>
       </DropdownPopover>
     </Dropdown>
   );
@@ -264,6 +277,7 @@ function ValueSelector({
             onUpdate?.(newClause);
           }}
           className="m-1"
+          name="aaaaa"
         />
         <DropdownMenu
           autoFocus
