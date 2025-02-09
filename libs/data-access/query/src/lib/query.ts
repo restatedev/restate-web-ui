@@ -1,9 +1,10 @@
-import ky from 'ky';
+import ky, { HTTPError } from 'ky';
 import { convertInvocation } from './convertInvocation';
 import { match } from 'path-to-regexp';
 import { convertJournal } from './convertJournal';
 import type { FilterItem } from '@restate/data-access/admin-api/spec';
 import { convertFilters } from './convertFilters';
+import { RestateError } from '@restate/util/errors';
 
 function queryFetcher(
   query: string,
@@ -292,6 +293,26 @@ async function getAllStateInterface(baseUrl: string, headers: Headers) {
 }
 
 export async function query(req: Request) {
+  return queryHandler(req).catch(async (error) => {
+    if (error instanceof HTTPError) {
+      const body = await error.response.json();
+      return new Response(JSON.stringify(new RestateError(body.message)), {
+        status: error.response.status,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } else {
+      return new Response(
+        JSON.stringify(new RestateError('Oops something went wrong!')),
+        {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
+  });
+}
+
+async function queryHandler(req: Request) {
   const { url, method, headers } = req;
   const urlObj = new URL(url);
 
