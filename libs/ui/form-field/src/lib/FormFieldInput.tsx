@@ -42,6 +42,7 @@ interface InputProps
   placeholder?: string;
   label?: ReactNode;
   errorMessage?: ComponentProps<typeof FormFieldError>['children'];
+  form?: string;
 }
 export const FormFieldInput = forwardRef<
   HTMLInputElement,
@@ -58,6 +59,7 @@ export const FormFieldInput = forwardRef<
       label,
       readonly,
       children,
+      form,
       ...props
     },
     ref
@@ -80,6 +82,7 @@ export const FormFieldInput = forwardRef<
             aria-label={placeholder}
             ref={ref}
             spellCheck={false}
+            form={form}
           />
           {children}
         </div>
