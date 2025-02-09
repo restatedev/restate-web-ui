@@ -6,14 +6,7 @@ import {
   useListServices,
 } from '@restate/data-access/admin-api';
 import { Button, SubmitButton } from '@restate/ui/button';
-import {
-  Column,
-  PerformantRow,
-  Row,
-  Table,
-  TableBody,
-  TableHeader,
-} from '@restate/ui/table';
+import { Column, Row, Table, TableBody, TableHeader } from '@restate/ui/table';
 import { useCollator } from 'react-aria';
 import { SortDescriptor } from 'react-stately';
 import {
@@ -63,9 +56,16 @@ import { useTransition } from 'react';
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: 80,
   created_at: 100,
-  invoked_by: 180,
   deployment: 220,
   journal_size: 135,
+};
+const MIN_COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
+  status: 150,
+  target: 150,
+  invoked_by: 100,
+};
+const MAX_COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
+  invoked_by: 180,
 };
 
 const PAGE_SIZE = 30;
@@ -398,6 +398,8 @@ function Component() {
                   isRowHeader={col.isRowHeader}
                   allowsSorting
                   defaultWidth={COLUMN_WIDTH[col.id]}
+                  minWidth={MIN_COLUMN_WIDTH[col.id] ?? 80}
+                  maxWidth={MAX_COLUMN_WIDTH[col.id]}
                   key={col.id}
                 >
                   {col.name}
@@ -564,7 +566,7 @@ function Component() {
               MenuTrigger={FiltersTrigger}
               placeholder="Filter invocations…"
               title="Filters"
-              className="rounded-xl [&_input::-webkit-search-cancel-button]:invert has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500 [&_input]:placeholder-zinc-400 border-transparent pr-24 w-full  [&_input+*]:right-24 [&_input]:min-w-[10ch]"
+              className="rounded-xl [&_input::-webkit-search-cancel-button]:invert has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500 [&_input]:placeholder-zinc-400 border-transparent pr-24 w-full  [&_input+*]:right-24 [&_input]:min-w-[25ch]"
             >
               {ClauseChip}
             </AddQueryTrigger>
