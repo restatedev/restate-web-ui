@@ -8,6 +8,8 @@ import {
   Fragment,
   RefObject,
   PropsWithChildren,
+  ComponentProps,
+  useRef,
 } from 'react';
 import {
   ComboBox,
@@ -26,6 +28,7 @@ import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import { PopoverOverlay } from '@restate/ui/popover';
 import { focusRing } from '@restate/ui/focus';
+import { mergeRefs, useObjectRef } from '@react-aria/utils';
 
 const tagStyles = tv({
   extend: focusRing,
@@ -114,6 +117,10 @@ export function FormFieldMultiCombobox<
   const { contains } = useFilter({ sensitivity: 'base' });
 
   const selectedKeys = selectedList.items.map((i) => i.id);
+  const [menuTrigger, setMenuTrigger] =
+    useState<ComponentProps<typeof ComboBox>['menuTrigger']>('focus');
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const inputRefObject = useObjectRef(mergeRefs(inputRef, ref));
 
   const filter = useCallback(
     (item: T, filterText: string) => {
@@ -145,8 +152,13 @@ export function FormFieldMultiCombobox<
         selectedKey: null,
       });
       onItemRemove?.(key);
+      setMenuTrigger('input');
+      setTimeout(() => {
+        inputRefObject?.current?.focus();
+        setMenuTrigger('focus');
+      });
     },
-    [selectedList, onItemRemove]
+    [selectedList, onItemRemove, inputRefObject]
   );
 
   const onUpdate = useCallback(
@@ -249,7 +261,7 @@ export function FormFieldMultiCombobox<
         <ComboBox
           {...props}
           allowsEmptyCollection
-          menuTrigger="focus"
+          menuTrigger={menuTrigger}
           className="group flex flex-1"
           items={availableList.items}
           selectedKey={fieldState.selectedKey}
@@ -258,14 +270,10 @@ export function FormFieldMultiCombobox<
           onInputChange={onInputChange}
           aria-labelledby={labelId}
         >
-          <div
-            className={['inline-flex flex-1 items-center gap-1 px-0 pl-1'].join(
-              ' '
-            )}
-          >
+          <div className={'inline-flex flex-1 items-center gap-1 px-0 pl-1'}>
             <MenuTrigger />
             <InputWithFocusManager
-              ref={ref}
+              ref={inputRefObject}
               className={inputStyles()}
               onBlur={() => {
                 setFieldState({
