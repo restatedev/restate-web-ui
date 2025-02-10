@@ -160,7 +160,7 @@ const reactServerStyles = tv({
         'hidden lg:block lg:fixed top-[50vh] left-[50vw] -translate-y-1/2 -translate-x-1/2',
     },
     isError: {
-      true: 'bg-red-100',
+      true: '[&>svg:first-child>path]:fill-red-100',
       false: '',
     },
   },
