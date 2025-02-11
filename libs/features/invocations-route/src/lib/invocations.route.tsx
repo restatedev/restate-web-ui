@@ -530,6 +530,7 @@ function Component() {
           className="flex relative"
           onSubmit={async (event) => {
             event.preventDefault();
+            setPageIndex(0);
             setSearchParams(
               (old) => {
                 const newSearchParams = new URLSearchParams(old);
@@ -609,29 +610,29 @@ function Footnote({
     };
   }, [data]);
 
-  if (!data || isFetching) {
-    return null;
-  }
   const { isPast, ...parts } = durationSinceLastSnapshot(now);
   const duration = formatDurations(parts);
 
   return (
     <div className="flex flex-row-reverse flex-wrap items-center w-full text-center text-xs text-gray-500/80 ">
-      <div className="ml-auto">
-        {data.total_count ? (
-          <>
-            <span>{data.rows.length}</span>
-            {' of '}
-            <span className="font-medium text-gray-500">
-              {data.total_count}
-            </span>{' '}
-            recently modified invocations
-          </>
-        ) : (
-          'No invocations found'
-        )}{' '}
-        as of <span className="font-medium text-gray-500">{duration} ago</span>
-      </div>
+      {data && (
+        <div className="ml-auto">
+          {data.total_count ? (
+            <>
+              <span>{data.rows.length}</span>
+              {' of '}
+              <span className="font-medium text-gray-500">
+                {data.total_count}
+              </span>{' '}
+              recently modified invocations
+            </>
+          ) : (
+            'No invocations found'
+          )}{' '}
+          as of{' '}
+          <span className="font-medium text-gray-500">{duration} ago</span>
+        </div>
+      )}
       <div>{children}</div>
     </div>
   );

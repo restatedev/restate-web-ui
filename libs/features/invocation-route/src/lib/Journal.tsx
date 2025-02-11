@@ -29,6 +29,7 @@ import { getRestateError } from './Status';
 import { HoverTooltip } from '@restate/ui/tooltip';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
 import { Spinner } from '@restate/ui/loading';
+import { ErrorBanner } from '@restate/ui/error';
 
 export function Journal({ invocationId }: { invocationId?: string }) {
   const {
@@ -36,6 +37,7 @@ export function Journal({ invocationId }: { invocationId?: string }) {
     isSuccess,
     isPending,
     dataUpdatedAt,
+    error: apiError,
   } = useGetInvocationJournalWithInvocation(String(invocationId), {
     enabled: Boolean(invocationId),
     refetchOnMount: true,
@@ -99,6 +101,7 @@ export function Journal({ invocationId }: { invocationId?: string }) {
             Loading…
           </div>
         )}
+        {apiError && <ErrorBanner error={apiError} />}
       </div>
     </SnapshotTimeProvider>
   );
