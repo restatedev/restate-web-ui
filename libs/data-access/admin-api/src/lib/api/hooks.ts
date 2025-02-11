@@ -504,6 +504,11 @@ export function useGetVirtualObjectState(
 
 export function useQueryVirtualObjectState(
   serviceName: string,
+  page: number,
+  sort?: {
+    field: string;
+    order: 'ASC' | 'DESC';
+  },
   filters?: FilterItem[],
   options?: HookQueryOptions<'/query/services/{name}/state', 'post'>
 ) {
@@ -517,6 +522,8 @@ export function useQueryVirtualObjectState(
       parameters: { path: { name: serviceName } },
       body: {
         filters,
+        page,
+        sort,
       },
     }
   );

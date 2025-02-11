@@ -3,8 +3,8 @@ import { convertInvocation } from './convertInvocation';
 import { match } from 'path-to-regexp';
 import { convertJournal } from './convertJournal';
 import type { FilterItem } from '@restate/data-access/admin-api/spec';
-import { convertFilters } from './convertFilters';
 import { RestateError } from '@restate/util/errors';
+import { convertFilters, convertStateFilters } from './convertFilters';
 
 function queryFetcher(
   query: string,
@@ -209,57 +209,84 @@ async function getStateInterface(
   });
 }
 
+const STATE_PAGE_SIZE = 2;
+
 // TODO: add limit
 // TODO: pagination
 async function queryState(
   service: string,
   baseUrl: string,
   headers: Headers,
-  filters: FilterItem[]
+  filters: FilterItem[],
+  pageIndex: number,
+  sort: {
+    field: string;
+    order: 'ASC' | 'DESC';
+  }
 ) {
-  const filterWithServiceName: FilterItem[] = [
-    ...filters,
-    {
-      field: 'service_name',
-      operation: 'EQUALS',
-      value: service,
-      type: 'STRING',
-    },
-  ];
+  const columns: string[] = filters.map((filter) => filter.field);
+  const hasCustomSort = sort.field !== 'service_key';
+  if (hasCustomSort) {
+    columns.push(sort.field);
+  }
+
+  const query = `SELECT service_key${columns.length > 0 ? ',' : ''}
+  ${columns
+    .map((col) => `MAX(CASE WHEN key = '${col}' THEN value_utf8 END) AS ${col}`)
+    .join(', ')} 
+    FROM state 
+    WHERE service_name = '${service}'
+    GROUP BY service_key
+    ${filters.length > 0 ? `HAVING ${convertStateFilters(filters)}` : ''}`;
+
+  const orderAndPaginationQuery = `
+    ORDER BY ${hasCustomSort ? `${sort.field} ${sort.order},` : ''} service_key
+    LIMIT ${STATE_PAGE_SIZE} OFFSET ${pageIndex * STATE_PAGE_SIZE}`;
+
   const totalCountPromise = queryFetcher(
-    `SELECT COUNT(*) AS total_count FROM state ${convertFilters(
-      filterWithServiceName
-    )}`,
+    `SELECT COUNT(*) AS total_count FROM (${query})`,
     { baseUrl, headers }
   ).then(({ rows }) => rows?.at(0)?.total_count as number);
-  const resultsPromise: Promise<
-    Record<string, { key: string; state: { name: string; value: string }[] }>
-  > = queryFetcher(
-    `SELECT * FROM state ${convertFilters(filterWithServiceName)}`,
-    { baseUrl, headers }
-  ).then(({ rows }) =>
-    rows.reduce((result, row) => {
-      return {
-        ...result,
-        [row.service_key]: {
-          key: row.service_key,
-          state: [
-            ...(result[row.service_key]?.state ?? []),
-            {
-              name: row.key,
-              value: row.value_utf8,
-            },
-          ],
-        },
-      };
-    }, {})
-  );
 
-  const [total_count, results] = await Promise.all([
+  const resultsPromise: Promise<
+    {
+      key: string;
+      state: { name: string; value: string }[];
+    }[]
+  > = queryFetcher(`${query} ${orderAndPaginationQuery}`, {
+    baseUrl,
+    headers,
+  }).then(async ({ rows }) => {
+    const serviceKeys = rows.map((row) => row.service_key);
+    const { rows: rowsWithData } = await queryFetcher(
+      `SELECT service_key, key, value_utf8 FROM state  WHERE service_name = '${service}' AND service_key IN (${serviceKeys
+        .map((key) => `'${key}'`)
+        .join(',')})`,
+      {
+        baseUrl,
+        headers,
+      }
+    );
+
+    const objects = new Map<
+      string,
+      {
+        key: string;
+        state: { name: string; value: string }[];
+      }
+    >(serviceKeys.map((key) => [key, { key, state: [] }]));
+    rowsWithData.forEach((row) => {
+      objects
+        .get(row.service_key)
+        ?.state.push({ name: row.key, value: row.value_utf8 });
+    });
+    return Array.from(objects.values());
+  });
+
+  const [total_count, objects] = await Promise.all([
     totalCountPromise,
     resultsPromise,
   ]);
-  const objects = Array.from(Object.values(results));
 
   return new Response(JSON.stringify({ total_count, objects }), {
     status: 200,
@@ -402,12 +429,21 @@ async function queryHandler(req: Request) {
 
   if (getQueryStateParams && method.toUpperCase() === 'POST') {
     const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
-    const { filters = [] } = await req.json();
+    const {
+      filters = [],
+      page = 0,
+      sort = {
+        field: 'service_key',
+        order: 'DESC',
+      },
+    } = await req.json();
     return queryState(
       getQueryStateParams.params.name,
       baseUrl,
       headers,
-      filters
+      filters,
+      page,
+      sort
     );
   }
 

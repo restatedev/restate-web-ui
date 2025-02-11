@@ -120,7 +120,10 @@ const tableHeaderStyles = tv({
 });
 
 interface TableHeaderProps<T extends object>
-  extends Pick<AriaTableHeaderProps<T>, 'columns' | 'children'> {
+  extends Pick<
+    AriaTableHeaderProps<T>,
+    'columns' | 'children' | 'dependencies'
+  > {
   className?: string;
 }
 
