@@ -998,6 +998,12 @@ export interface components {
       filters?: components['schemas']['FilterItem'][];
     };
     ListVirtualObjectStateRequestBody: {
+      page?: number;
+      sort?: {
+        field: string;
+        /** @enum {string} */
+        order: 'ASC' | 'DESC';
+      };
       filters?: components['schemas']['FilterItem'][];
     };
     FilterItem: components['schemas']['FilterBaseItem'] &

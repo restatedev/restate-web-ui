@@ -1038,6 +1038,22 @@
       "ListVirtualObjectStateRequestBody": {
         "type": "object",
         "properties": {
+          "page": {
+            "type": "integer"
+          },
+          "sort": {
+            "type": "object",
+            "required": ["field", "order"],
+            "properties": {
+              "field": {
+                "type": "string"
+              },
+              "order": {
+                "type": "string",
+                "enum": ["ASC", "DESC"]
+              }
+            }
+          },
           "filters": {
             "type": "array",
             "items": {
