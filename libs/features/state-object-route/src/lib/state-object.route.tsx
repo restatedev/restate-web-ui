@@ -53,6 +53,13 @@ import {
   ClauseChip,
   FiltersTrigger,
 } from '@restate/features/invocations-route';
+import {
+  Popover,
+  PopoverContent,
+  PopoverHoverTrigger,
+} from '@restate/ui/popover';
+import { Value } from '@restate/features/invocation-route';
+import { TruncateWithTooltip } from '@restate/ui/tooltip';
 
 function getQuery(
   searchParams: URLSearchParams,
@@ -360,11 +367,45 @@ function Component() {
                 >
                   {({ id }) => {
                     if (id === 'service_key') {
-                      return <Cell key={id}>{row.key}</Cell>;
+                      return (
+                        <Cell key={id}>
+                          <TruncateWithTooltip>{row.key}</TruncateWithTooltip>
+                        </Cell>
+                      );
                     } else if (id === '__actions__') {
                       return <Cell />;
                     } else {
-                      return <Cell key={id}>{row.state?.[id]}</Cell>;
+                      return (
+                        <Cell key={id}>
+                          <Popover>
+                            <PopoverHoverTrigger>
+                              <Button
+                                className="max-w-full basis-20 grow  truncate font-mono text-inherit [font-size:inherit] px-0.5 py-0 rounded-sm underline-offset-4 decoration-from-font decoration-dashed "
+                                variant="icon"
+                              >
+                                <span className="truncate pr-0.5">
+                                  {row.state?.[id]}
+                                </span>
+                              </Button>
+                            </PopoverHoverTrigger>
+                            <PopoverContent>
+                              <DropdownSection
+                                className="min-w-80 overflow-auto max-w-[min(90vw,600px)] px-4 mb-1"
+                                title={
+                                  <div className="flex items-center text-code">
+                                    {id}
+                                  </div>
+                                }
+                              >
+                                <Value
+                                  value={row.state?.[id]}
+                                  className="text-xs font-mono py-3"
+                                />
+                              </DropdownSection>
+                            </PopoverContent>
+                          </Popover>
+                        </Cell>
+                      );
                     }
                   }}
                 </Row>

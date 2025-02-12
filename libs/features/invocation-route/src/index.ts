@@ -1,3 +1,4 @@
+export { Value } from './lib/Value';
 export { Journal } from './lib/Journal';
 export { Actions } from './lib/Actions';
 export { DeleteInvocation } from './lib/DeleteInvocation';
