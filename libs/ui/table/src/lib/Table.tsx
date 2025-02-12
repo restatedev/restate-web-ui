@@ -158,6 +158,7 @@ interface TableBodyProps<T extends object>
   isLoading?: boolean;
   error?: Error | null;
   numOfColumns: number;
+  numOfRows?: number;
   emptyPlaceholder?: ReactNode;
 }
 
@@ -168,6 +169,7 @@ export function TableBody<T extends object>({
   dependencies = [],
   numOfColumns,
   emptyPlaceholder,
+  numOfRows,
   ...props
 }: TableBodyProps<T>) {
   return (
@@ -182,7 +184,11 @@ export function TableBody<T extends object>({
         );
       }}
     >
-      {isLoading ? <LoadingRows numOfColumns={numOfColumns} /> : children}
+      {isLoading ? (
+        <LoadingRows numOfColumns={numOfColumns} numOfRows={numOfRows} />
+      ) : (
+        children
+      )}
     </AriaTableBody>
   );
 }

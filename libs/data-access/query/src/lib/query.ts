@@ -209,7 +209,8 @@ async function getStateInterface(
   });
 }
 
-const STATE_PAGE_SIZE = 2;
+// TODO: set in api
+const STATE_PAGE_SIZE = 30;
 
 // TODO: add limit
 // TODO: pagination
@@ -258,6 +259,9 @@ async function queryState(
     headers,
   }).then(async ({ rows }) => {
     const serviceKeys = rows.map((row) => row.service_key);
+    if (serviceKeys.length === 0) {
+      return [];
+    }
     const { rows: rowsWithData } = await queryFetcher(
       `SELECT service_key, key, value_utf8 FROM state  WHERE service_name = '${service}' AND service_key IN (${serviceKeys
         .map((key) => `'${key}'`)
