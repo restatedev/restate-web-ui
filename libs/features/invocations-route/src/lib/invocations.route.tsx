@@ -542,11 +542,7 @@ function Component() {
             newSearchParams.sort();
             const sortedOldSearchParams = new URLSearchParams(searchParams);
             sortedOldSearchParams.sort();
-            console.log(
-              sortedOldSearchParams.toString(),
-              newSearchParams.toString(),
-              sortedOldSearchParams.toString() === newSearchParams.toString()
-            );
+
             if (
               sortedOldSearchParams.toString() !== newSearchParams.toString()
             ) {
