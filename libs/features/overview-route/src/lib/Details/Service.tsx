@@ -221,6 +221,7 @@ function ServiceForm({
                   className="pl-0"
                   service={service}
                   withPlayground
+                  serviceType={data?.ty}
                 />
               ))}
             </div>

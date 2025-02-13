@@ -1,4 +1,7 @@
-import { Handler as HandlerType } from '@restate/data-access/admin-api';
+import {
+  Handler as HandlerType,
+  ServiceType,
+} from '@restate/data-access/admin-api';
 import { HandlerTypeExplainer } from '@restate/features/explainers';
 import { Button } from '@restate/ui/button';
 import { DropdownSection } from '@restate/ui/dropdown';
@@ -31,11 +34,13 @@ export function Handler({
   className,
   service,
   withPlayground,
+  serviceType,
 }: {
   handler: HandlerType;
   className?: string;
   service: string;
   withPlayground?: boolean;
+  serviceType?: ServiceType;
 }) {
   return (
     <div className={styles({ className })}>
@@ -47,7 +52,7 @@ export function Handler({
           />
         </div>
         <div className="flex items-center flex-row gap-x-1.5 flex-wrap flex-auto justify-start min-w-0">
-          {handler.ty && (
+          {handler.ty && serviceType && serviceType !== 'Service' && (
             <Badge
               size="sm"
               className="text-xs py-0 font-medium bg-transparent border-none text-zinc-500/80 px-0"
@@ -140,9 +145,11 @@ function HandlerInputOutput({
         <Popover>
           <PopoverHoverTrigger>
             <Link
-              className="basis-20 grow max-w-fit truncate font-mono text-inherit [font-style:inherit] [font-size:inherit] px-0.5 py-0 rounded-sm underline-offset-4 decoration-from-font decoration-dashed underline "
+              className="[&:not([href])]:cursor-default basis-20 grow max-w-fit truncate font-mono text-inherit [font-style:inherit] [font-size:inherit] px-0.5 py-0 rounded-sm underline-offset-4 decoration-from-font decoration-dashed underline "
               variant="icon"
-              href={`?${SERVICE_PLAYGROUND_QUERY_PARAM}=${service}#/operations/${handler}`}
+              {...(withPlayground && {
+                href: `?${SERVICE_PLAYGROUND_QUERY_PARAM}=${service}#/operations/${handler}`,
+              })}
             >
               <span className="truncate pr-0.5">
                 {schema?.title ?? (
