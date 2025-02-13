@@ -846,7 +846,21 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/StateResponse"
+                  "type": "object",
+                  "required": ["state"],
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/StateResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "version": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
                 }
               }
             }
@@ -1196,17 +1210,21 @@
       },
       "StateResponse": {
         "type": "object",
+        "required": ["state"],
         "properties": {
           "state": {
             "type": "array",
             "items": {
               "type": "object",
-              "required": ["name", "value"],
+              "required": ["name", "value", "bytes"],
               "properties": {
                 "name": {
                   "type": "string"
                 },
                 "value": {
+                  "type": "string"
+                },
+                "bytes": {
                   "type": "string"
                 }
               }

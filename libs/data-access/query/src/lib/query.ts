@@ -5,6 +5,7 @@ import { convertJournal } from './convertJournal';
 import type { FilterItem } from '@restate/data-access/admin-api/spec';
 import { RestateError } from '@restate/util/errors';
 import { convertFilters, convertStateFilters } from './convertFilters';
+import { stateVersion } from './stateVersion';
 
 function queryFetcher(
   query: string,
@@ -179,14 +180,20 @@ async function getState(
   baseUrl: string,
   headers: Headers
 ) {
-  const state: { name: string; value: string }[] = await queryFetcher(
-    `SELECT key, value_utf8 FROM state WHERE service_name = '${service}' AND service_key = '${key}'`,
-    { baseUrl, headers }
-  ).then(({ rows }) =>
-    rows.map((row) => ({ name: row.key, value: row.value_utf8 }))
-  );
+  const state: { name: string; value: string; bytes: string }[] =
+    await queryFetcher(
+      `SELECT key, value_utf8, value FROM state WHERE service_name = '${service}' AND service_key = '${key}'`,
+      { baseUrl, headers }
+    ).then(({ rows }) =>
+      rows.map((row) => ({
+        name: row.key,
+        value: row.value_utf8,
+        bytes: row.value,
+      }))
+    );
+  const version = await stateVersion(state);
 
-  return new Response(JSON.stringify({ state }), {
+  return new Response(JSON.stringify({ state, version }), {
     status: 200,
     headers: { 'Content-Type': 'application/json' },
   });
@@ -263,7 +270,7 @@ async function queryState(
       return [];
     }
     const { rows: rowsWithData } = await queryFetcher(
-      `SELECT service_key, key, value_utf8 FROM state  WHERE service_name = '${service}' AND service_key IN (${serviceKeys
+      `SELECT service_key, key, value_utf8, value FROM state  WHERE service_name = '${service}' AND service_key IN (${serviceKeys
         .map((key) => `'${key}'`)
         .join(',')})`,
       {
@@ -276,13 +283,15 @@ async function queryState(
       string,
       {
         key: string;
-        state: { name: string; value: string }[];
+        state: { name: string; value: string; bytes: string }[];
       }
     >(serviceKeys.map((key) => [key, { key, state: [] }]));
     rowsWithData.forEach((row) => {
-      objects
-        .get(row.service_key)
-        ?.state.push({ name: row.key, value: row.value_utf8 });
+      objects.get(row.service_key)?.state.push({
+        name: row.key,
+        value: row.value_utf8,
+        bytes: row.value,
+      });
     });
     return Array.from(objects.values());
   });

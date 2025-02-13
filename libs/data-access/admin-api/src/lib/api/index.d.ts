@@ -1059,9 +1059,10 @@ export interface components {
       }[];
     };
     StateResponse: {
-      state?: {
+      state: {
         name: string;
         value: string;
+        bytes: string;
       }[];
     };
     JournalEntry: components['schemas']['JournalBaseEntry'] &
@@ -3205,7 +3206,12 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['StateResponse'];
+          'application/json': WithRequired<
+            components['schemas']['StateResponse'],
+            'state'
+          > & {
+            version?: string;
+          };
         };
       };
       400: {
@@ -3331,3 +3337,6 @@ export interface operations {
     };
   };
 }
+type WithRequired<T, K extends keyof T> = T & {
+  [P in K]-?: T[P];
+};
