@@ -38,6 +38,7 @@ import {
   Minimize2,
   ChevronLast,
   ChevronFirst,
+  Pencil,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from 'tailwind-variants';
@@ -118,6 +119,7 @@ export const enum IconName {
   Minimize = 'Minimize',
   ChevronLast = 'ChevronLast',
   ChevronFirst = 'ChevronFirst',
+  Pencil = 'Pencil',
 }
 export interface IconsProps {
   name: IconName;
@@ -183,6 +185,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Minimize]: Minimize2,
   [IconName.ChevronFirst]: ChevronFirst,
   [IconName.ChevronLast]: ChevronLast,
+  [IconName.Pencil]: Pencil,
 };
 
 const styles = tv({
