@@ -2,6 +2,7 @@ import {
   Deployment as DeploymentType,
   getEndpoint,
   Handler as HandlerType,
+  ServiceType,
   useListDeployments,
   useServiceDetails,
 } from '@restate/data-access/admin-api';
@@ -63,12 +64,17 @@ const serviceStyles = tv({
 const MAX_NUMBER_OF_DEPLOYMENTS = 2;
 const MAX_NUMBER_OF_HANDLERS = 2;
 
-function filterHandler(handler: HandlerType, filterText?: string) {
+function filterHandler(
+  serviceType: ServiceType,
+  handler: HandlerType,
+  filterText?: string
+) {
   const lowerCaseFilter = filterText?.toLowerCase();
   return (
     !lowerCaseFilter ||
     handler.name.toLowerCase().includes(lowerCaseFilter) ||
-    handler.ty?.toLowerCase().includes(lowerCaseFilter) ||
+    (serviceType !== 'Service' &&
+      handler.ty?.toLowerCase().includes(lowerCaseFilter)) ||
     handler.input_description?.toLowerCase().includes(lowerCaseFilter) ||
     handler.output_description?.toLowerCase().includes(lowerCaseFilter)
   );
@@ -118,7 +124,7 @@ export function Service({
     serviceName.toLowerCase().includes(filterText.toLowerCase()) ||
     serviceDetails?.ty.toLowerCase().includes(filterText.toLowerCase());
   const isMatchingAnyHandlerName = serviceDetails?.handlers.some((handler) =>
-    filterHandler(handler, filterText)
+    filterHandler(serviceDetails?.ty, handler, filterText)
   );
   const isMatchingAnyDeployment = Object.values(service?.deployments ?? {})
     .flat()
@@ -136,7 +142,7 @@ export function Service({
       (handler) =>
         isMatchingServiceName ||
         isMatchingAnyDeployment ||
-        filterHandler(handler, filterText)
+        filterHandler(serviceDetails?.ty, handler, filterText)
     ) ?? [];
   const filteredDeployments =
     deploymentRevisionPairs.filter(
