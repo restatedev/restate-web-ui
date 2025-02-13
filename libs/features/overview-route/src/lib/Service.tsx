@@ -190,6 +190,7 @@ export function Service({
                       className="pl-0"
                       service={serviceName}
                       withPlayground
+                      serviceType={serviceDetails.ty}
                     />
                   ))}
                 {filteredHandlers.length > MAX_NUMBER_OF_HANDLERS && (

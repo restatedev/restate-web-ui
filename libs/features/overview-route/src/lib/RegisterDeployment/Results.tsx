@@ -86,6 +86,7 @@ function Service({
                     handler={handler}
                     key={handler.name}
                     service={service.name}
+                    serviceType={service.ty}
                   />
                 ))}
               </div>
