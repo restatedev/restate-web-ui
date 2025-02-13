@@ -23,6 +23,7 @@ import type {
   Service,
 } from './type';
 import { useEffect } from 'react';
+import { RestateError } from '@restate/util/errors';
 
 type HookQueryOptions<
   Path extends keyof paths,
@@ -525,6 +526,7 @@ export function useQueryVirtualObjectState(
         page,
         sort,
       },
+      resolvedPath: `/query/services/${serviceName}/state`,
     }
   );
 
@@ -597,4 +599,132 @@ export function useDeleteInvocation(
     }),
     ...options,
   });
+}
+
+function convertStateToUnit8Array(state: Record<string, string>) {
+  return Object.entries(state).reduce(
+    (results, [k, v]) => ({
+      ...results,
+      [k]: Array.from(new TextEncoder().encode(v)),
+    }),
+    {} as Record<string, number[]>
+  );
+}
+
+export function convertStateToObject(
+  state: { name: string; value: string; bytes: string }[]
+) {
+  return state.reduce(
+    (p, c) => ({ ...p, [c.name]: c.value }),
+    {} as Record<string, string>
+  );
+}
+
+export function useEditState(
+  service: string,
+  objectKey: string,
+  options?: HookMutationOptions<'/services/{service}/state', 'post'>
+) {
+  const baseUrl = useAdminBaseUrl();
+
+  const queryOptions = adminApi(
+    'query',
+    '/query/services/{name}/keys/{key}/state',
+    'get',
+    {
+      baseUrl,
+      parameters: { path: { key: objectKey, name: service } },
+    }
+  );
+
+  const query = useQuery(queryOptions);
+
+  const { mutationFn, mutationKey, meta } = adminApi(
+    'mutate',
+    '/services/{service}/state',
+    'post',
+    {
+      baseUrl,
+      resolvedPath: `/services/${service}/state`,
+    }
+  );
+
+  const mutate = (variables: {
+    state: Record<string, string>;
+    partial?: boolean;
+  }) => {
+    if (!query.data?.version) {
+      throw new RestateError(
+        'Modifying the state is only allowed in an HTTPS context.'
+      );
+    }
+    return mutationFn({
+      parameters: { path: { service } },
+      body: {
+        object_key: objectKey,
+        version: query.data?.version,
+        new_state: {
+          ...(variables.partial && {
+            ...convertStateToUnit8Array(convertStateToObject(query.data.state)),
+          }),
+          ...convertStateToUnit8Array(variables.state),
+        },
+      },
+    }).then(async (res) => {
+      const { data: newData } = await query.refetch();
+      const newMergedState = convertStateToObject(newData?.state ?? []);
+      const isStateUpdated = Array.from(Object.keys(variables.state)).every(
+        (key) => variables.state[key] === newMergedState?.[key]
+      );
+      if (!isStateUpdated) {
+        throw new RestateError(
+          'Changes were made to the state prior to your update attempt. Please sync to the latest version to continue.'
+        );
+      }
+
+      return newData?.state;
+    });
+  };
+
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: mutate,
+    mutationKey,
+    meta,
+    onSuccess(data, variables, context) {
+      options?.onSuccess?.(data, variables, context);
+      queryClient.setQueriesData(
+        {
+          predicate: (query) => {
+            return (
+              Array.isArray(query.queryKey) &&
+              query.queryKey.at(0) === `/query/services/${service}/state`
+            );
+          },
+        },
+        (oldData: ReturnType<typeof useQueryVirtualObjectState>['data']) => {
+          if (!oldData || !data) {
+            return oldData;
+          } else {
+            return {
+              ...oldData,
+              objects: oldData.objects.map((oldObject) => {
+                if (oldObject.key === objectKey) {
+                  return {
+                    ...oldObject,
+                    state: data,
+                  };
+                } else {
+                  return oldObject;
+                }
+              }),
+            };
+          }
+        }
+      );
+    },
+  });
+
+  return { mutation, query };
 }
