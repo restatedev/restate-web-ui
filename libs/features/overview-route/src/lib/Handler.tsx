@@ -145,9 +145,11 @@ function HandlerInputOutput({
         <Popover>
           <PopoverHoverTrigger>
             <Link
-              className="basis-20 grow max-w-fit truncate font-mono text-inherit [font-style:inherit] [font-size:inherit] px-0.5 py-0 rounded-sm underline-offset-4 decoration-from-font decoration-dashed underline "
+              className="[&:not([href])]:cursor-default basis-20 grow max-w-fit truncate font-mono text-inherit [font-style:inherit] [font-size:inherit] px-0.5 py-0 rounded-sm underline-offset-4 decoration-from-font decoration-dashed underline "
               variant="icon"
-              href={`?${SERVICE_PLAYGROUND_QUERY_PARAM}=${service}#/operations/${handler}`}
+              {...(withPlayground && {
+                href: `?${SERVICE_PLAYGROUND_QUERY_PARAM}=${service}#/operations/${handler}`,
+              })}
             >
               <span className="truncate pr-0.5">
                 {schema?.title ?? (
