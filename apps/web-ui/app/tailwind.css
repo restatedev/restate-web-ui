@@ -6,6 +6,9 @@
   html {
     font-family: 'Inter var', 'Helvetica', system-ui, sans-serif;
   }
+  body {
+    padding-left: calc(100vw - 100%);
+  }
 }
 
 *[data-testid='underlay'] {
