@@ -664,6 +664,7 @@ function ServiceSelector() {
   invariant(virtualObject, 'Missing virtualObject param');
   const { data: deployments } = useListDeployments();
   const services = Array.from(deployments?.services.keys() ?? []);
+  const servicesSize = services.length;
   const { data } = useListServices(services);
   const virtualObjects = Array.from(data.values() ?? [])
     .filter((service) => service.ty === 'VirtualObject')
@@ -674,11 +675,16 @@ function ServiceSelector() {
     const virtualObjects = Array.from(data.values() ?? [])
       .filter((service) => service.ty === 'VirtualObject')
       .map((service) => service.name);
-    if (data && !virtualObjects.includes(virtualObject)) {
+
+    if (
+      data.size === servicesSize &&
+      servicesSize > 0 &&
+      !virtualObjects.includes(virtualObject)
+    ) {
       const newVirtualObject = virtualObjects[0];
       navigate(newVirtualObject ? `/state/${newVirtualObject}` : '/state');
     }
-  }, [data, navigate, virtualObject]);
+  }, [data, navigate, servicesSize, virtualObject]);
 
   return (
     <Dropdown>
