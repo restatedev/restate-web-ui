@@ -603,7 +603,7 @@ export function useDeleteInvocation(
   });
 }
 
-function convertStateToUnit8Array(state: Record<string, string>) {
+function convertStateToUnit8Array(state: Record<string, string | undefined>) {
   return Object.entries(state).reduce(
     (results, [k, v]) => ({
       ...results,
@@ -627,7 +627,7 @@ export function useEditState(
     StateResponse['state'] | undefined,
     RestateError | Error,
     {
-      state: Record<string, string>;
+      state: Record<string, string | undefined>;
       partial?: boolean;
     }
   >
@@ -657,7 +657,7 @@ export function useEditState(
   );
 
   const mutate = (variables: {
-    state: Record<string, string>;
+    state: Record<string, string | undefined>;
     partial?: boolean;
   }) => {
     if (!query.data?.version) {
@@ -665,6 +665,7 @@ export function useEditState(
         'Modifying the state is only allowed in an HTTPS context.'
       );
     }
+
     return mutationFn({
       parameters: { path: { service } },
       body: {
@@ -679,15 +680,6 @@ export function useEditState(
       },
     }).then(async (res) => {
       const { data: newData } = await query.refetch();
-      const newMergedState = convertStateToObject(newData?.state ?? []);
-      const isStateUpdated = Array.from(Object.keys(variables.state)).every(
-        (key) => variables.state[key] === newMergedState?.[key]
-      );
-      if (!isStateUpdated) {
-        throw new RestateError(
-          'Changes were made to the state prior to your update attempt. Please sync to the latest version to continue.'
-        );
-      }
 
       return newData?.state;
     });
