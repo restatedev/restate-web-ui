@@ -60,6 +60,7 @@ import {
 } from '@restate/ui/popover';
 import { Value } from '@restate/features/invocation-route';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
+import { EditState, EditStateTrigger } from './EditState';
 
 function getQuery(
   searchParams: URLSearchParams,
@@ -280,8 +281,28 @@ function Component() {
 
   const totalSize = Math.ceil((data?.total_count ?? 0) / STATE_PAGE_SIZE);
 
+  const [editState, setEditState] = useState<
+    | {
+        isEditing: true;
+        key?: string;
+        objectKey: string;
+      }
+    | { isEditing: false; key?: undefined; objectKey?: undefined }
+  >({ isEditing: false, key: undefined, objectKey: undefined });
+
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
+      <EditState
+        service={virtualObject}
+        objectKey={editState.objectKey!}
+        stateKey={editState.key}
+        isOpen={editState.isEditing}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            setEditState({ isEditing: false });
+          }
+        }}
+      />
       <div className="flex flex-col flex-auto gap-2 relative">
         <Table
           aria-label="Invocations"
@@ -373,37 +394,95 @@ function Component() {
                         </Cell>
                       );
                     } else if (id === '__actions__') {
-                      return <Cell />;
+                      return (
+                        <Cell>
+                          <EditStateTrigger
+                            className=""
+                            variant="icon"
+                            onClick={() =>
+                              setEditState({
+                                isEditing: true,
+                                objectKey: row.key!,
+                              })
+                            }
+                          >
+                            <Icon
+                              name={IconName.Pencil}
+                              className="w-3 h-3 fill-current opacity-70"
+                            />
+                          </EditStateTrigger>
+                        </Cell>
+                      );
                     } else {
                       return (
-                        <Cell key={id}>
-                          <Popover>
-                            <PopoverHoverTrigger>
-                              <Button
-                                className="max-w-full basis-20 grow  truncate font-mono text-inherit [font-size:inherit] px-0.5 py-0 rounded-sm underline-offset-4 decoration-from-font decoration-dashed "
-                                variant="icon"
-                              >
-                                <span className="truncate pr-0.5">
-                                  {row.state?.[id]}
-                                </span>
-                              </Button>
-                            </PopoverHoverTrigger>
-                            <PopoverContent>
-                              <DropdownSection
-                                className="min-w-80 overflow-auto max-w-[min(90vw,600px)] px-4 mb-1"
-                                title={
-                                  <div className="flex items-center text-code">
-                                    {id}
-                                  </div>
-                                }
-                              >
-                                <Value
-                                  value={row.state?.[id]}
-                                  className="text-xs font-mono py-3"
-                                />
-                              </DropdownSection>
-                            </PopoverContent>
-                          </Popover>
+                        <Cell
+                          key={id}
+                          className="[&:has(*:hover)_*]:visible [&:has(*:focus)_*]:visible"
+                        >
+                          <div className="min-h-5 flex item-center justify-start gap-1 w-full h-full">
+                            {row.state?.[id] && (
+                              <Popover>
+                                <PopoverHoverTrigger>
+                                  <Button
+                                    className="truncate font-mono text-inherit [font-size:inherit] px-0.5 py-0 rounded-sm underline-offset-4 decoration-from-font decoration-dashed "
+                                    variant="icon"
+                                  >
+                                    <span className="truncate pr-0.5">
+                                      {row.state?.[id]}
+                                    </span>
+                                  </Button>
+                                </PopoverHoverTrigger>
+                                <PopoverContent>
+                                  <DropdownSection
+                                    className="min-w-80 overflow-auto max-w-[min(90vw,600px)] px-4 mb-1"
+                                    title={
+                                      <div className="flex items-center text-code">
+                                        {id}
+                                        <EditStateTrigger
+                                          onClick={() =>
+                                            setEditState({
+                                              isEditing: true,
+                                              key: id,
+                                              objectKey: row.key!,
+                                            })
+                                          }
+                                          variant="secondary"
+                                          className="shrink-0 ml-auto flex items-center gap-1 text-xs font-normal rounded px-1.5 py-0"
+                                        >
+                                          Edit
+                                          <Icon
+                                            name={IconName.ExternalLink}
+                                            className="w-3 h-3"
+                                          />
+                                        </EditStateTrigger>
+                                      </div>
+                                    }
+                                  >
+                                    <Value
+                                      value={row.state?.[id]}
+                                      className="text-xs font-mono py-3"
+                                    />
+                                  </DropdownSection>
+                                </PopoverContent>
+                              </Popover>
+                            )}
+                            <EditStateTrigger
+                              onClick={() =>
+                                setEditState({
+                                  isEditing: true,
+                                  key: id,
+                                  objectKey: row.key!,
+                                })
+                              }
+                              variant="icon"
+                              className="shrink-0 invisible"
+                            >
+                              <Icon
+                                name={IconName.Pencil}
+                                className="w-3 h-3 fill-current opacity-70"
+                              />
+                            </EditStateTrigger>
+                          </div>
                         </Cell>
                       );
                     }
@@ -559,10 +638,10 @@ function Footnote({
               <span className="font-medium text-gray-500">
                 {data.total_count}
               </span>{' '}
-              recently modified invocations
+              keys
             </>
           ) : (
-            'No invocations found'
+            'No data found'
           )}{' '}
           as of{' '}
           <span className="font-medium text-gray-500">{duration} ago</span>
