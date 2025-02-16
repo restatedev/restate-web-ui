@@ -282,26 +282,22 @@ function Component() {
 
   const totalSize = Math.ceil((data?.total_count ?? 0) / STATE_PAGE_SIZE);
 
-  const [editState, setEditState] = useState<
-    | {
-        isEditing: true;
-        key?: string;
-        objectKey: string;
-      }
-    | { isEditing: false; key?: undefined; objectKey?: undefined }
-  >({ isEditing: false, key: undefined, objectKey: undefined });
-  const deferredEditState = useDeferredValue(editState);
+  const [editState, setEditState] = useState<{
+    isEditing: boolean;
+    key?: string;
+    objectKey?: string;
+  }>({ isEditing: false, key: undefined, objectKey: undefined });
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
       <EditState
         service={virtualObject}
-        objectKey={deferredEditState.objectKey!}
-        stateKey={deferredEditState.key}
+        objectKey={editState.objectKey!}
+        stateKey={editState.key}
         isOpen={editState.isEditing}
         onOpenChange={(isOpen) => {
           if (!isOpen) {
-            setEditState({ isEditing: false });
+            setEditState((s) => ({ ...s, isEditing: false }));
           }
         }}
       />

@@ -86,10 +86,10 @@ export function EditState({
     <Dialog
       open={isOpen}
       onOpenChange={(isOpen) => {
-        onOpenChange(isOpen);
         if (!isOpen) {
           mutation.reset();
         }
+        onOpenChange(isOpen);
       }}
     >
       <DialogContent className="max-w-2xl">
