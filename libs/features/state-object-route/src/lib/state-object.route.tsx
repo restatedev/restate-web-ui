@@ -31,6 +31,7 @@ import {
 import {
   PropsWithChildren,
   useCallback,
+  useDeferredValue,
   useEffect,
   useMemo,
   useRef,
@@ -289,13 +290,14 @@ function Component() {
       }
     | { isEditing: false; key?: undefined; objectKey?: undefined }
   >({ isEditing: false, key: undefined, objectKey: undefined });
+  const deferredEditState = useDeferredValue(editState);
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
       <EditState
         service={virtualObject}
-        objectKey={editState.objectKey!}
-        stateKey={editState.key}
+        objectKey={deferredEditState.objectKey!}
+        stateKey={deferredEditState.key}
         isOpen={editState.isEditing}
         onOpenChange={(isOpen) => {
           if (!isOpen) {

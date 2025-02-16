@@ -450,7 +450,7 @@ export function useGetInvocationJournalWithInvocation(
 export function useGetVirtualObjectQueue(
   serviceName: string,
   key: string,
-  invocationId: string,
+  invocationId?: string,
   options?: HookQueryOptions<
     '/query/virtualObjects/{name}/keys/{key}/queue',
     'get'
@@ -670,7 +670,9 @@ export function useEditState(
       parameters: { path: { service } },
       body: {
         object_key: objectKey,
-        version: query.data?.version,
+        ...(variables.partial && {
+          version: query.data?.version,
+        }),
         new_state: {
           ...(variables.partial && {
             ...convertStateToUnit8Array(convertStateToObject(query.data.state)),

@@ -120,7 +120,7 @@ async function getInvocationJournal(
 async function getInbox(
   service: string,
   key: string,
-  invocationId: string,
+  invocationId: string | undefined,
   baseUrl: string,
   headers: Headers
 ) {
@@ -139,26 +139,27 @@ async function getInbox(
         headers,
       }
     ).then(({ rows }) => rows.at(0)?.size),
-    queryFetcher(
-      `SELECT COUNT(*) AS position FROM sys_inbox WHERE service_key = '${key}' AND service_name = '${service}' AND sequence_number < (SELECT sequence_number FROM sys_inbox WHERE id = '${invocationId}')`,
-      {
-        baseUrl,
-        headers,
-      }
-    ).then(({ rows }) => rows.at(0)?.position),
+    invocationId
+      ? queryFetcher(
+          `SELECT COUNT(*) AS position FROM sys_inbox WHERE service_key = '${key}' AND service_name = '${service}' AND sequence_number < (SELECT sequence_number FROM sys_inbox WHERE id = '${invocationId}')`,
+          {
+            baseUrl,
+            headers,
+          }
+        ).then(({ rows }) => rows.at(0)?.position)
+      : null,
   ]);
 
-  if (
-    typeof position === 'number' &&
-    typeof size === 'number' &&
-    typeof head === 'string'
-  ) {
+  if (typeof size === 'number' && typeof head === 'string') {
     const isInvocationHead = head === invocationId;
     return new Response(
       JSON.stringify({
         head,
         size: size + 1,
-        [invocationId]: isInvocationHead ? 0 : position + 1,
+        ...(typeof position === 'number' &&
+          invocationId && {
+            [invocationId]: isInvocationHead ? 0 : position + 1,
+          }),
       }),
       {
         status: 200,
@@ -399,7 +400,9 @@ async function queryHandler(req: Request) {
     return getInbox(
       getInboxParams.params.name,
       getInboxParams.params.key ?? '',
-      String(urlObj.searchParams.get('invocationId')),
+      urlObj.searchParams.has('invocationId')
+        ? String(urlObj.searchParams.get('invocationId'))
+        : undefined,
       baseUrl,
       headers
     );
