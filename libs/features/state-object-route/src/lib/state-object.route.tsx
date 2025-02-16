@@ -668,6 +668,17 @@ function ServiceSelector() {
   const virtualObjects = Array.from(data.values() ?? [])
     .filter((service) => service.ty === 'VirtualObject')
     .map((service) => service.name);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const virtualObjects = Array.from(data.values() ?? [])
+      .filter((service) => service.ty === 'VirtualObject')
+      .map((service) => service.name);
+    if (data && !virtualObjects.includes(virtualObject)) {
+      const newVirtualObject = virtualObjects[0];
+      navigate(newVirtualObject ? `/state/${newVirtualObject}` : '/state');
+    }
+  }, [data, navigate, virtualObject]);
 
   return (
     <Dropdown>
