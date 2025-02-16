@@ -36,10 +36,13 @@ export function FormFieldCode({
               );
             }
           }}
+          ref={(el) => {
+            if (el) {
+              el.innerText = content ?? '';
+            }
+          }}
           spellCheck="false"
-        >
-          {content}
-        </code>
+        />
       </pre>
       <input
         type="hidden"
