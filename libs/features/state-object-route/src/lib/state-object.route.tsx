@@ -639,7 +639,7 @@ function Footnote({
               <span className="font-medium text-gray-500">
                 {data.total_count}
               </span>{' '}
-              keys
+              objects
             </>
           ) : (
             'No data found'
