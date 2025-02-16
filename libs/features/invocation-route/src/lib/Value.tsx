@@ -26,7 +26,11 @@ export function Value({
   if (object && typeof object === 'object') {
     return (
       <ErrorBoundary>
-        <JsonView value={object} className={className} />
+        <JsonView
+          value={object}
+          className={className}
+          displayDataTypes={false}
+        />
       </ErrorBoundary>
     );
   }
