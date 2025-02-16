@@ -56,7 +56,9 @@ export function EditState({
   const { mutation, query } = useEditState(service, objectKey, {
     onSuccess(data, variables) {
       onOpenChange(false);
-      showSuccessNotification(<>State has been successfully updated.</>);
+      showSuccessNotification(
+        'The state mutation has been successfully accepted for processing.'
+      );
     },
   });
   const isPartial = typeof key === 'string';
