@@ -75,7 +75,12 @@ export function EditState({
 
   const error = query.error || mutation.error;
 
-  const { data: queue } = useGetVirtualObjectQueue(service, objectKey);
+  const { data: queue } = useGetVirtualObjectQueue(
+    service,
+    objectKey,
+    undefined,
+    { enabled: Boolean(objectKey) }
+  );
   const hasActiveInvocations = (queue?.size ?? 0) > 0;
 
   const { banner, bannerIcon } = styles({

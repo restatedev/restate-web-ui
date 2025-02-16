@@ -84,6 +84,7 @@ export interface MultiSelectProps<T extends object>
   label: string;
   placeholder?: string;
   ref?: RefObject<HTMLInputElement | null>;
+  prefix?: ReactNode;
 }
 
 const multiSelectStyles = tv({
@@ -112,6 +113,7 @@ export function FormFieldMultiCombobox<
   MenuTrigger = DefaultMenuTrigger,
   placeholder,
   ref,
+  prefix,
   ...props
 }: MultiSelectProps<T>) {
   const { contains } = useFilter({ sensitivity: 'base' });
@@ -244,6 +246,7 @@ export function FormFieldMultiCombobox<
           className="hidden gap-1.5 flex-wrap px-1 py-1 has-[>*]:flex max-w-full"
           id={tagGroupId}
         >
+          {prefix}
           {selectedList.items.map((item) => (
             <TagFocusManager
               key={item.id}

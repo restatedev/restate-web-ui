@@ -1,6 +1,8 @@
 import {
   FilterItem,
   useGetVirtualObjectStateInterface,
+  useListDeployments,
+  useListServices,
   useQueryVirtualObjectState,
 } from '@restate/data-access/admin-api';
 import { Button, SubmitButton } from '@restate/ui/button';
@@ -47,7 +49,7 @@ import {
   QueryClauseType,
   useQueryBuilder,
 } from '@restate/ui/query-builder';
-import { Form, useParams, useSearchParams } from 'react-router';
+import { Form, useNavigate, useParams, useSearchParams } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import invariant from 'tiny-invariant';
 import {
@@ -535,7 +537,7 @@ function Component() {
         <Form
           action={`/query/services/${virtualObject}/state`}
           method="POST"
-          className="flex relative"
+          className="flex relative items-center"
           onSubmit={async (event) => {
             event.preventDefault();
 
@@ -574,10 +576,11 @@ function Component() {
             await queryCLient.invalidateQueries({ queryKey });
           }}
         >
-          <QueryBuilder query={query} schema={schema}>
+          <QueryBuilder query={query} schema={schema} key={virtualObject}>
             <AddQueryTrigger
               MenuTrigger={FiltersTrigger}
               placeholder={`Filter state…`}
+              prefix={<ServiceSelector />}
               title="Filters"
               className="rounded-xl [&_input::-webkit-search-cancel-button]:invert has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500 [&_input]:placeholder-zinc-400 border-transparent pr-24 w-full  [&_input+*]:right-24 [&_input]:min-w-[25ch]"
             >
@@ -647,6 +650,51 @@ function Footnote({
       )}
       <div>{children}</div>
     </div>
+  );
+}
+
+function ServiceSelector() {
+  const { virtualObject } = useParams<{ virtualObject: string }>();
+  invariant(virtualObject, 'Missing virtualObject param');
+  const { data: deployments } = useListDeployments();
+  const services = Array.from(deployments?.services.keys() ?? []);
+  const { data } = useListServices(services);
+  const virtualObjects = Array.from(data.values() ?? [])
+    .filter((service) => service.ty === 'VirtualObject')
+    .map((service) => service.name);
+
+  return (
+    <Dropdown>
+      <DropdownTrigger>
+        <Button
+          variant="secondary"
+          className="shrink-0 min-w-0 flex gap-[0.7ch] items-center py-1 rounded-lg bg-white/[0.25] hover:bg-white/30 pressed:bg-white/30 text-zinc-50 text-xs px-1.5"
+        >
+          <span className="whitespace-nowrap shrink-0">Virtual Object</span>
+          <span className="font-mono">is</span>
+          <span className="font-semibold truncate">{virtualObject}</span>
+          <Icon
+            name={IconName.ChevronsUpDown}
+            className="w-3.5 h-3.5 ml-2 shrink-0"
+          />
+        </Button>
+      </DropdownTrigger>
+      <DropdownPopover placement="top">
+        <DropdownSection title="Virtual Objects">
+          <DropdownMenu selectable selectedItems={[virtualObject]}>
+            {virtualObjects.map((service) => (
+              <DropdownItem
+                value={service}
+                key={service}
+                href={`/state/${service}`}
+              >
+                {service}
+              </DropdownItem>
+            ))}
+          </DropdownMenu>
+        </DropdownSection>
+      </DropdownPopover>
+    </Dropdown>
   );
 }
 
