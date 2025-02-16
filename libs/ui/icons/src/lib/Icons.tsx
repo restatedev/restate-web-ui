@@ -39,6 +39,7 @@ import {
   ChevronLast,
   ChevronFirst,
   Pencil,
+  Database,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from 'tailwind-variants';
@@ -120,6 +121,7 @@ export const enum IconName {
   ChevronLast = 'ChevronLast',
   ChevronFirst = 'ChevronFirst',
   Pencil = 'Pencil',
+  Database = 'Database',
 }
 export interface IconsProps {
   name: IconName;
@@ -186,6 +188,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.ChevronFirst]: ChevronFirst,
   [IconName.ChevronLast]: ChevronLast,
   [IconName.Pencil]: Pencil,
+  [IconName.Database]: Database,
 };
 
 const styles = tv({

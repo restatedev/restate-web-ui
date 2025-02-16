@@ -145,6 +145,10 @@ function Component() {
   );
 
   useEffect(() => {
+    setSelectedColumns(new Set(['service_key']));
+  }, [virtualObject]);
+
+  useEffect(() => {
     setSelectedColumns((old) => {
       if (old instanceof Set && old.size <= 2) {
         return new Set([
@@ -316,15 +320,17 @@ function Component() {
                   <Column id={col.id} width={40}>
                     <Dropdown>
                       <DropdownTrigger>
-                        <Button
-                          variant="icon"
-                          className="self-end rounded-lg p-0.5"
-                        >
-                          <Icon
-                            name={IconName.TableProperties}
-                            className="h-4 w-4 aspect-square text-gray-500"
-                          />
-                        </Button>
+                        {keys.length > 0 && (
+                          <Button
+                            variant="icon"
+                            className="self-end rounded-lg p-0.5"
+                          >
+                            <Icon
+                              name={IconName.TableProperties}
+                              className="h-4 w-4 aspect-square text-gray-500"
+                            />
+                          </Button>
+                        )}
                       </DropdownTrigger>
                       <DropdownPopover>
                         <DropdownSection title="Columns">
@@ -369,12 +375,12 @@ function Component() {
               <div className="flex flex-col items-center py-14 gap-4">
                 <div className="mr-1.5 shrink-0 h-12 w-12 p-1 bg-gray-200/50  rounded-xl">
                   <Icon
-                    name={IconName.Invocation}
+                    name={IconName.Database}
                     className="w-full h-full text-zinc-400 p-1"
                   />
                 </div>
                 <h3 className="text-sm font-semibold text-zinc-400">
-                  No data found
+                  No object found
                 </h3>
               </div>
             }
@@ -642,7 +648,7 @@ function Footnote({
               objects
             </>
           ) : (
-            'No data found'
+            'No object found'
           )}{' '}
           as of{' '}
           <span className="font-medium text-gray-500">{duration} ago</span>
