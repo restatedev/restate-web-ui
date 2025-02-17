@@ -482,7 +482,11 @@ function Component() {
             )}
           </TableBody>
         </Table>
-        <Footnote data={data} isFetching={isFetching}>
+        <Footnote
+          data={data}
+          isFetching={isFetching}
+          key={dataUpdatedAtRef.current}
+        >
           {!isPending && !error && totalSize > 1 && (
             <div className="flex items-center bg-zinc-50 shadow-sm border rounded-lg py-0.5">
               <Button

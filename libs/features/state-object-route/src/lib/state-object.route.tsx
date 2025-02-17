@@ -294,8 +294,13 @@ function Component() {
     objectKey?: string;
   }>({ isEditing: false, key: undefined, objectKey: undefined });
 
+  const dataUpdatedAtRef = useRef(dataUpdatedAt);
+  if (isFetching) {
+    dataUpdatedAtRef.current = dataUpdatedAt;
+  }
+
   return (
-    <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
+    <SnapshotTimeProvider lastSnapshot={dataUpdatedAtRef.current}>
       <EditState
         service={virtualObject}
         objectKey={editState.objectKey!}
@@ -373,7 +378,7 @@ function Component() {
             numOfColumns={selectedColumnsArray.length}
             emptyPlaceholder={
               <div className="flex flex-col items-center py-14 gap-4">
-                <div className="mr-1.5 shrink-0 h-12 w-12 p-1 bg-gray-200/50  rounded-xl">
+                <div className="shrink-0 h-12 w-12 p-1 bg-gray-200/50  rounded-xl">
                   <Icon
                     name={IconName.Database}
                     className="w-full h-full text-zinc-400 p-1"
@@ -498,7 +503,11 @@ function Component() {
             }}
           </TableBody>
         </Table>
-        <Footnote data={data} isFetching={isFetching}>
+        <Footnote
+          data={data}
+          isFetching={isFetching}
+          key={dataUpdatedAtRef.current}
+        >
           {!isPending && !error && totalSize > 1 && (
             <div className="flex items-center bg-zinc-50 shadow-sm border rounded-lg py-0.5">
               <Button
