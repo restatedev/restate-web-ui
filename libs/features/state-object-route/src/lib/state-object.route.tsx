@@ -213,21 +213,28 @@ function Component() {
     [setSearchParams]
   );
 
-  const { dataUpdatedAt, error, data, isFetching, isPending, queryKey } =
-    useQueryVirtualObjectState(
-      virtualObject,
-      pageIndex,
-      {
-        field: String(sortDescriptor.column),
-        order: sortDescriptor.direction === 'ascending' ? 'ASC' : 'DESC',
-      },
-      queryFilters,
-      {
-        refetchOnMount: true,
-        refetchOnReconnect: false,
-        staleTime: 0,
-      }
-    );
+  const {
+    dataUpdatedAt,
+    errorUpdatedAt,
+    error,
+    data,
+    isFetching,
+    isPending,
+    queryKey,
+  } = useQueryVirtualObjectState(
+    virtualObject,
+    pageIndex,
+    {
+      field: String(sortDescriptor.column),
+      order: sortDescriptor.direction === 'ascending' ? 'ASC' : 'DESC',
+    },
+    queryFilters,
+    {
+      refetchOnMount: true,
+      refetchOnReconnect: false,
+      staleTime: 0,
+    }
+  );
 
   useEffect(() => {
     if (data && data.objects.length === 0 && pageIndex !== 0) {
@@ -294,13 +301,10 @@ function Component() {
     objectKey?: string;
   }>({ isEditing: false, key: undefined, objectKey: undefined });
 
-  const dataUpdatedAtRef = useRef(dataUpdatedAt);
-  if (isFetching) {
-    dataUpdatedAtRef.current = dataUpdatedAt;
-  }
+  const dataUpdate = error ? errorUpdatedAt : dataUpdatedAt;
 
   return (
-    <SnapshotTimeProvider lastSnapshot={dataUpdatedAtRef.current}>
+    <SnapshotTimeProvider lastSnapshot={dataUpdate}>
       <EditState
         service={virtualObject}
         objectKey={editState.objectKey!}
@@ -503,11 +507,8 @@ function Component() {
             }}
           </TableBody>
         </Table>
-        <Footnote
-          data={data}
-          isFetching={isFetching}
-          key={dataUpdatedAtRef.current}
-        >
+        <Footnote data={data} isFetching={isFetching} key={dataUpdate}>
+          {dataUpdate}
           {!isPending && !error && totalSize > 1 && (
             <div className="flex items-center bg-zinc-50 shadow-sm border rounded-lg py-0.5">
               <Button
