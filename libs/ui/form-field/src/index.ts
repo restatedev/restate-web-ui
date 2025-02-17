@@ -9,3 +9,4 @@ export * from './lib/FormFieldSelect';
 export * from './lib/FormFieldNumberInput';
 export * from './lib/FormFieldCombobox';
 export * from './lib/FormFieldDateTimeInput';
+export * from './lib/FormFieldCode';

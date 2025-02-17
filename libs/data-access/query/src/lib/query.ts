@@ -3,8 +3,9 @@ import { convertInvocation } from './convertInvocation';
 import { match } from 'path-to-regexp';
 import { convertJournal } from './convertJournal';
 import type { FilterItem } from '@restate/data-access/admin-api/spec';
-import { convertFilters } from './convertFilters';
 import { RestateError } from '@restate/util/errors';
+import { convertFilters, convertStateFilters } from './convertFilters';
+import { stateVersion } from './stateVersion';
 
 function queryFetcher(
   query: string,
@@ -119,7 +120,7 @@ async function getInvocationJournal(
 async function getInbox(
   service: string,
   key: string,
-  invocationId: string,
+  invocationId: string | undefined,
   baseUrl: string,
   headers: Headers
 ) {
@@ -138,26 +139,27 @@ async function getInbox(
         headers,
       }
     ).then(({ rows }) => rows.at(0)?.size),
-    queryFetcher(
-      `SELECT COUNT(*) AS position FROM sys_inbox WHERE service_key = '${key}' AND service_name = '${service}' AND sequence_number < (SELECT sequence_number FROM sys_inbox WHERE id = '${invocationId}')`,
-      {
-        baseUrl,
-        headers,
-      }
-    ).then(({ rows }) => rows.at(0)?.position),
+    invocationId
+      ? queryFetcher(
+          `SELECT COUNT(*) AS position FROM sys_inbox WHERE service_key = '${key}' AND service_name = '${service}' AND sequence_number < (SELECT sequence_number FROM sys_inbox WHERE id = '${invocationId}')`,
+          {
+            baseUrl,
+            headers,
+          }
+        ).then(({ rows }) => rows.at(0)?.position)
+      : null,
   ]);
 
-  if (
-    typeof position === 'number' &&
-    typeof size === 'number' &&
-    typeof head === 'string'
-  ) {
+  if (typeof size === 'number' && typeof head === 'string') {
     const isInvocationHead = head === invocationId;
     return new Response(
       JSON.stringify({
         head,
         size: size + 1,
-        [invocationId]: isInvocationHead ? 0 : position + 1,
+        ...(typeof position === 'number' &&
+          invocationId && {
+            [invocationId]: isInvocationHead ? 0 : position + 1,
+          }),
       }),
       {
         status: 200,
@@ -179,14 +181,20 @@ async function getState(
   baseUrl: string,
   headers: Headers
 ) {
-  const state: { name: string; value: string }[] = await queryFetcher(
-    `SELECT key, value_utf8 FROM state WHERE service_name = '${service}' AND service_key = '${key}'`,
-    { baseUrl, headers }
-  ).then(({ rows }) =>
-    rows.map((row) => ({ name: row.key, value: row.value_utf8 }))
-  );
+  const state: { name: string; value: string; bytes: string }[] =
+    await queryFetcher(
+      `SELECT key, value_utf8, value FROM state WHERE service_name = '${service}' AND service_key = '${key}'`,
+      { baseUrl, headers }
+    ).then(({ rows }) =>
+      rows.map((row) => ({
+        name: row.key,
+        value: row.value_utf8,
+        bytes: row.value,
+      }))
+    );
+  const version = await stateVersion(state);
 
-  return new Response(JSON.stringify({ state }), {
+  return new Response(JSON.stringify({ state, version }), {
     status: 200,
     headers: { 'Content-Type': 'application/json' },
   });
@@ -209,57 +217,90 @@ async function getStateInterface(
   });
 }
 
+// TODO: set in api
+const STATE_PAGE_SIZE = 30;
+
 // TODO: add limit
 // TODO: pagination
 async function queryState(
   service: string,
   baseUrl: string,
   headers: Headers,
-  filters: FilterItem[]
+  filters: FilterItem[],
+  pageIndex: number,
+  sort: {
+    field: string;
+    order: 'ASC' | 'DESC';
+  }
 ) {
-  const filterWithServiceName: FilterItem[] = [
-    ...filters,
-    {
-      field: 'service_name',
-      operation: 'EQUALS',
-      value: service,
-      type: 'STRING',
-    },
-  ];
+  const columns: string[] = filters.map((filter) => filter.field);
+  const hasCustomSort = sort.field !== 'service_key';
+  if (hasCustomSort) {
+    columns.push(sort.field);
+  }
+
+  const query = `SELECT service_key${columns.length > 0 ? ',' : ''}
+  ${columns
+    .map((col) => `MAX(CASE WHEN key = '${col}' THEN value_utf8 END) AS ${col}`)
+    .join(', ')} 
+    FROM state 
+    WHERE service_name = '${service}'
+    GROUP BY service_key
+    ${filters.length > 0 ? `HAVING ${convertStateFilters(filters)}` : ''}`;
+
+  const orderAndPaginationQuery = `
+    ORDER BY ${hasCustomSort ? `${sort.field} ${sort.order},` : ''} service_key
+    LIMIT ${STATE_PAGE_SIZE} OFFSET ${pageIndex * STATE_PAGE_SIZE}`;
+
   const totalCountPromise = queryFetcher(
-    `SELECT COUNT(*) AS total_count FROM state ${convertFilters(
-      filterWithServiceName
-    )}`,
+    `SELECT COUNT(*) AS total_count FROM (${query})`,
     { baseUrl, headers }
   ).then(({ rows }) => rows?.at(0)?.total_count as number);
-  const resultsPromise: Promise<
-    Record<string, { key: string; state: { name: string; value: string }[] }>
-  > = queryFetcher(
-    `SELECT * FROM state ${convertFilters(filterWithServiceName)}`,
-    { baseUrl, headers }
-  ).then(({ rows }) =>
-    rows.reduce((result, row) => {
-      return {
-        ...result,
-        [row.service_key]: {
-          key: row.service_key,
-          state: [
-            ...(result[row.service_key]?.state ?? []),
-            {
-              name: row.key,
-              value: row.value_utf8,
-            },
-          ],
-        },
-      };
-    }, {})
-  );
 
-  const [total_count, results] = await Promise.all([
+  const resultsPromise: Promise<
+    {
+      key: string;
+      state: { name: string; value: string }[];
+    }[]
+  > = queryFetcher(`${query} ${orderAndPaginationQuery}`, {
+    baseUrl,
+    headers,
+  }).then(async ({ rows }) => {
+    const serviceKeys = rows.map((row) => row.service_key);
+    if (serviceKeys.length === 0) {
+      return [];
+    }
+    const { rows: rowsWithData } = await queryFetcher(
+      `SELECT service_key, key, value_utf8, value FROM state  WHERE service_name = '${service}' AND service_key IN (${serviceKeys
+        .map((key) => `'${key}'`)
+        .join(',')})`,
+      {
+        baseUrl,
+        headers,
+      }
+    );
+
+    const objects = new Map<
+      string,
+      {
+        key: string;
+        state: { name: string; value: string; bytes: string }[];
+      }
+    >(serviceKeys.map((key) => [key, { key, state: [] }]));
+    rowsWithData.forEach((row) => {
+      objects.get(row.service_key)?.state.push({
+        name: row.key,
+        value: row.value_utf8,
+        bytes: row.value,
+      });
+    });
+    return Array.from(objects.values());
+  });
+
+  const [total_count, objects] = await Promise.all([
     totalCountPromise,
     resultsPromise,
   ]);
-  const objects = Array.from(Object.values(results));
 
   return new Response(JSON.stringify({ total_count, objects }), {
     status: 200,
@@ -359,7 +400,9 @@ async function queryHandler(req: Request) {
     return getInbox(
       getInboxParams.params.name,
       getInboxParams.params.key ?? '',
-      String(urlObj.searchParams.get('invocationId')),
+      urlObj.searchParams.has('invocationId')
+        ? String(urlObj.searchParams.get('invocationId'))
+        : undefined,
       baseUrl,
       headers
     );
@@ -402,12 +445,21 @@ async function queryHandler(req: Request) {
 
   if (getQueryStateParams && method.toUpperCase() === 'POST') {
     const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
-    const { filters = [] } = await req.json();
+    const {
+      filters = [],
+      page = 0,
+      sort = {
+        field: 'service_key',
+        order: 'DESC',
+      },
+    } = await req.json();
     return queryState(
       getQueryStateParams.params.name,
       baseUrl,
       headers,
-      filters
+      filters,
+      page,
+      sort
     );
   }
 

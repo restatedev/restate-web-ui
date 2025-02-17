@@ -66,6 +66,7 @@ export function AddQueryTrigger({
   children,
   className,
   MenuTrigger,
+  prefix,
 }: {
   placeholder: string;
   title: string;
@@ -75,6 +76,7 @@ export function AddQueryTrigger({
     onUpdate?: (item: QueryClause<QueryClauseType>) => void;
   }) => ReactNode;
   className?: string;
+  prefix?: ReactNode;
   MenuTrigger?: ComponentType<unknown>;
 }) {
   const { query, schema, setNewId } = use(QueryBuilderContext);
@@ -140,6 +142,7 @@ export function AddQueryTrigger({
       onItemAdd={onAdd}
       onItemRemove={onRemove}
       onItemUpdated={onRemove}
+      prefix={prefix}
     />
   );
 }

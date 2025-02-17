@@ -2325,7 +2325,21 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/StateResponse"
+                  "type": "object",
+                  "required": ["state"],
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/StateResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "version": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
                 }
               }
             }
@@ -3311,6 +3325,22 @@
       "ListVirtualObjectStateRequestBody": {
         "type": "object",
         "properties": {
+          "page": {
+            "type": "integer"
+          },
+          "sort": {
+            "type": "object",
+            "required": ["field", "order"],
+            "properties": {
+              "field": {
+                "type": "string"
+              },
+              "order": {
+                "type": "string",
+                "enum": ["ASC", "DESC"]
+              }
+            }
+          },
           "filters": {
             "type": "array",
             "items": {
@@ -3453,17 +3483,21 @@
       },
       "StateResponse": {
         "type": "object",
+        "required": ["state"],
         "properties": {
           "state": {
             "type": "array",
             "items": {
               "type": "object",
-              "required": ["name", "value"],
+              "required": ["name", "value", "bytes"],
               "properties": {
                 "name": {
                   "type": "string"
                 },
                 "value": {
+                  "type": "string"
+                },
+                "bytes": {
                   "type": "string"
                 }
               }

@@ -291,16 +291,22 @@ function Component() {
         } as FilterItem;
       })
   );
-  const { dataUpdatedAt, error, data, isFetching, isPending, queryKey } =
-    useListInvocations(queryFilters, {
-      refetchOnMount: false,
-      refetchOnReconnect: false,
-      staleTime: 0,
-    });
-  const dataUpdatedAtRef = useRef(dataUpdatedAt);
-  if (isFetching) {
-    dataUpdatedAtRef.current = dataUpdatedAt;
-  }
+  const {
+    dataUpdatedAt,
+    errorUpdatedAt,
+    error,
+    data,
+    isFetching,
+    isPending,
+    queryKey,
+  } = useListInvocations(queryFilters, {
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    staleTime: 0,
+  });
+
+  const dataUpdate = error ? errorUpdatedAt : dataUpdatedAt;
+
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>();
   const collator = useCollator();
   const [pageIndex, _setPageIndex] = useState(0);
@@ -383,7 +389,7 @@ function Component() {
   const totalSize = Math.ceil((data?.rows ?? []).length / PAGE_SIZE);
 
   return (
-    <SnapshotTimeProvider lastSnapshot={dataUpdatedAtRef.current}>
+    <SnapshotTimeProvider lastSnapshot={dataUpdate}>
       <div className="flex flex-col flex-auto gap-2 relative">
         <Table
           aria-label="Invocations"
@@ -482,7 +488,7 @@ function Component() {
             )}
           </TableBody>
         </Table>
-        <Footnote data={data} isFetching={isFetching}>
+        <Footnote data={data} isFetching={isFetching} key={dataUpdate}>
           {!isPending && !error && totalSize > 1 && (
             <div className="flex items-center bg-zinc-50 shadow-sm border rounded-lg py-0.5">
               <Button

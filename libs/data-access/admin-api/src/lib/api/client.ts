@@ -162,6 +162,7 @@ export function adminApi<
     baseUrl: string;
     parameters?: Parameters;
     body?: Body;
+    resolvedPath?: string;
   }
 ): {
   queryFn: QueryFn<Path, Method>;
