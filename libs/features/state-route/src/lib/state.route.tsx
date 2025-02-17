@@ -17,7 +17,8 @@ function Component() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    virtualObject && navigate(`/state/${virtualObject}`);
+    virtualObject &&
+      navigate(`/state/${virtualObject}${window.location.search}`);
   }, [navigate, virtualObject]);
 
   if (virtualObject) {

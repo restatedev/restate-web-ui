@@ -692,9 +692,27 @@ function ServiceSelector() {
       !virtualObjects.includes(virtualObject)
     ) {
       const newVirtualObject = virtualObjects[0];
-      navigate(newVirtualObject ? `/state/${newVirtualObject}` : '/state');
+      navigate(
+        newVirtualObject
+          ? `/state/${newVirtualObject}${window.location.search}`
+          : '/state'
+      );
     }
   }, [data, navigate, servicesSize, virtualObject]);
+  const [searchParams] = useSearchParams();
+
+  const search = useMemo(() => {
+    const newSearchParams = new URLSearchParams(searchParams);
+    Array.from(newSearchParams.keys())
+      .filter((key) => key.startsWith('filter_'))
+      .forEach((key) => newSearchParams.delete(key));
+
+    newSearchParams.set('page', '0');
+    newSearchParams.set('sort_col', 'service_key');
+    newSearchParams.set('sort_dir', 'descending');
+
+    return newSearchParams.toString();
+  }, [searchParams]);
 
   return (
     <Dropdown>
@@ -719,7 +737,7 @@ function ServiceSelector() {
               <DropdownItem
                 value={service}
                 key={service}
-                href={`/state/${service}`}
+                href={`/state/${service}?${search}`}
               >
                 {service}
               </DropdownItem>
