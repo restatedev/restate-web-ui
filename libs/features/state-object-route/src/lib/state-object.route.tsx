@@ -87,7 +87,7 @@ function Component() {
   const { virtualObject } = useParams<{ virtualObject: string }>();
   invariant(virtualObject, 'Missing virtualObject param');
 
-  const { data: stateInterface } =
+  const { data: stateInterface, queryKey: virtualObjectInterfaceQueryKey } =
     useGetVirtualObjectStateInterface(virtualObject);
 
   const keys = useMemo(
@@ -242,42 +242,19 @@ function Component() {
     }
   }, [data, pageIndex, setPageIndex]);
 
-  const collator = useCollator();
-
   const sortedItems = useMemo(() => {
     return (
-      [...(data?.objects ?? [])]
-        .map((row) => {
-          return {
-            key: row.key,
-            state: row.state?.reduce(
-              (p, c) => ({ ...p, [c.name]: c.value }),
-              {} as Record<string, string>
-            ),
-          };
-        })
-        .sort((a, b) => {
-          let cmp = 0;
-
-          cmp = collator.compare(
-            a.state?.[sortDescriptor?.column]?.toString() ?? '',
-            b.state?.[sortDescriptor?.column]?.toString() ?? ''
-          );
-
-          // Flip the direction if descending order is specified.
-          if (sortDescriptor?.direction === 'descending') {
-            cmp *= -1;
-          }
-
-          return cmp;
-        }) ?? []
+      [...(data?.objects ?? [])].map((row) => {
+        return {
+          key: row.key,
+          state: row.state?.reduce(
+            (p, c) => ({ ...p, [c.name]: c.value }),
+            {} as Record<string, string>
+          ),
+        };
+      }) ?? []
     );
-  }, [
-    collator,
-    data?.objects,
-    sortDescriptor?.column,
-    sortDescriptor?.direction,
-  ]);
+  }, [data?.objects]);
 
   const selectedColumnsArray = useMemo(() => {
     const cols = Array.from(selectedColumns).map((id, index) => ({
@@ -508,7 +485,6 @@ function Component() {
           </TableBody>
         </Table>
         <Footnote data={data} isFetching={isFetching} key={dataUpdate}>
-          {dataUpdate}
           {!isPending && !error && totalSize > 1 && (
             <div className="flex items-center bg-zinc-50 shadow-sm border rounded-lg py-0.5">
               <Button
@@ -590,6 +566,9 @@ function Component() {
                 )
             );
             await queryCLient.invalidateQueries({ queryKey });
+            await queryCLient.invalidateQueries({
+              queryKey: virtualObjectInterfaceQueryKey,
+            });
           }}
         >
           <QueryBuilder query={query} schema={schema} key={virtualObject}>
