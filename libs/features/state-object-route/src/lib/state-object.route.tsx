@@ -111,7 +111,7 @@ function Component() {
   invariant(virtualObject, 'Missing virtualObject param');
 
   const { data: stateInterface, queryKey: virtualObjectInterfaceQueryKey } =
-    useGetVirtualObjectStateInterface(virtualObject);
+    useGetVirtualObjectStateInterface(virtualObject, { refetchOnMount: false });
 
   const keys = useMemo(
     () => stateInterface?.keys?.map(({ name }) => name).sort() ?? [],
@@ -253,7 +253,7 @@ function Component() {
     },
     queryFilters,
     {
-      refetchOnMount: true,
+      refetchOnMount: false,
       refetchOnReconnect: false,
       staleTime: 0,
     }
