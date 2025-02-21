@@ -73,6 +73,7 @@ import { tv } from 'tailwind-variants';
 import { STATE_QUERY_NAME } from './constants';
 import { Link } from '@restate/ui/link';
 import { useEditStateContext } from '@restate/features/edit-state';
+import { toStateParam } from './toStateParam';
 
 function getQuery(
   searchParams: URLSearchParams,
@@ -635,7 +636,7 @@ function KeyCell({
         </TruncateWithTooltip>
         <Link
           ref={linkRef}
-          href={`?${STATE_QUERY_NAME}=${JSON.stringify({
+          href={`?${STATE_QUERY_NAME}=${toStateParam({
             key: serviceKey,
             virtualObject,
           })}`}

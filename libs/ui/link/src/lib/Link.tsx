@@ -64,7 +64,10 @@ export function useHrefWithQueryParams({
       let existingSearchParams = new URLSearchParams(searchParams);
       Array.from(newSearchParams.entries()).forEach(([key, value]) => {
         existingSearchParams = new URLSearchParams(
-          existingSearchParams.toString().replace(`${key}=${value}`, '')
+          existingSearchParams
+            .toString()
+            .replace(`${key}=${value}`, '')
+            .replace(`${key}=${encodeURIComponent(value)}`, '')
         );
       });
       const combinedSearchParams = new URLSearchParams([

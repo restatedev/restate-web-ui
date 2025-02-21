@@ -3,6 +3,7 @@ import { Value } from './Value';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import { useEditStateContext } from '@restate/features/edit-state';
+import { usePopover } from '@restate/ui/popover';
 
 export function State({
   state = [],
@@ -46,6 +47,7 @@ function StateKey({
   serviceKey: string;
 }) {
   const setEditState = useEditStateContext();
+  const { close } = usePopover();
 
   return (
     <div className="group bg-white [&:not(:last-child)]:border-b [&:first-child]:rounded-t-[calc(0.75rem-0.125rem)] [&:last-child]:rounded-b-[calc(0.75rem-0.125rem)] gap-1 px-2 py-0 items-center text-code text-zinc-600 truncate grid [grid-template-columns:1fr_2fr]">
@@ -60,14 +62,15 @@ function StateKey({
         <Button
           variant="icon"
           className="absolute top-1 right-0 invisible group-hover:visible"
-          onClick={() =>
+          onClick={() => {
+            close?.();
             setEditState({
               isEditing: true,
               service,
               objectKey: serviceKey,
               key: name,
-            })
-          }
+            });
+          }}
         >
           <Icon
             name={IconName.Pencil}

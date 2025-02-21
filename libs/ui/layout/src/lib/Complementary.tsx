@@ -144,9 +144,11 @@ function ComplementaryWithSearchParamValue({
       { preventScrollReset: true }
     );
   }, [paramName, paramValue, setSearchParams]);
-  const isOnTop = searchParams
-    .toString()
-    .startsWith(`${paramName}=${paramValue}`);
+  const isOnTop =
+    searchParams.toString().startsWith(`${paramName}=${paramValue}`) ||
+    searchParams
+      .toString()
+      .startsWith(`${paramName}=${encodeURIComponent(paramValue)}`);
 
   return (
     <ComplementaryWithSearchContext.Provider

@@ -24,7 +24,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@restate/ui/tooltip';
 import {
   INVOCATION_QUERY_NAME,
   State,
-  Target,
 } from '@restate/features/invocation-route';
 import { Link } from '@restate/ui/link';
 import { Badge } from '@restate/ui/badge';
@@ -229,6 +228,16 @@ function StatePanelContent() {
                     </div>
                   )}
                 </div>
+                {Number(queueData.size) > 1 && (
+                  <div className="text-xs text-zinc-500/80">
+                    There are {queueData.size} invocations in progress.
+                  </div>
+                )}
+                {Number(queueData.size) === 1 && (
+                  <div className="text-xs text-zinc-500/80">
+                    There is 1 invocation in progress.
+                  </div>
+                )}
               </div>
             </SectionContent>
           </>
