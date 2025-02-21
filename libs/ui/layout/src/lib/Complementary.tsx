@@ -135,7 +135,10 @@ function ComplementaryWithSearchParamValue({
     setSearchParams(
       (prev) => {
         return new URLSearchParams(
-          prev.toString().replace(`${paramName}=${paramValue}`, '')
+          prev
+            .toString()
+            .replace(`${paramName}=${paramValue}`, '')
+            .replace(`${paramName}=${encodeURIComponent(paramValue)}`, '')
         );
       },
       { preventScrollReset: true }
