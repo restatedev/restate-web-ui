@@ -14,7 +14,6 @@ import {
   TableBody,
   TableHeader,
 } from '@restate/ui/table';
-import { useCollator } from 'react-aria';
 import { SortDescriptor } from 'react-stately';
 import {
   Dropdown,
@@ -31,9 +30,9 @@ import {
   useDurationSinceLastSnapshot,
 } from '@restate/util/snapshot-time';
 import {
+  ComponentProps,
   PropsWithChildren,
   useCallback,
-  useDeferredValue,
   useEffect,
   useMemo,
   useRef,
@@ -49,7 +48,13 @@ import {
   QueryClauseType,
   useQueryBuilder,
 } from '@restate/ui/query-builder';
-import { Form, useNavigate, useParams, useSearchParams } from 'react-router';
+import {
+  Form,
+  useHref,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import invariant from 'tiny-invariant';
 import {
@@ -60,10 +65,15 @@ import {
   Popover,
   PopoverContent,
   PopoverHoverTrigger,
+  usePopover,
 } from '@restate/ui/popover';
 import { Value } from '@restate/features/invocation-route';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
-import { EditState, EditStateTrigger } from './EditState';
+import { tv } from 'tailwind-variants';
+import { STATE_QUERY_NAME } from './constants';
+import { Link } from '@restate/ui/link';
+import { useEditStateContext } from '@restate/features/edit-state';
+import { toStateParam } from './toStateParam';
 
 function getQuery(
   searchParams: URLSearchParams,
@@ -80,6 +90,19 @@ function getQuery(
 }
 
 const STATE_PAGE_SIZE = 30;
+
+function EditStateTrigger(props: ComponentProps<typeof Button>) {
+  const { close } = usePopover();
+  return (
+    <Button
+      {...props}
+      onClick={(e) => {
+        close?.();
+        props?.onClick?.(e);
+      }}
+    />
+  );
+}
 
 function Component() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -271,28 +294,11 @@ function Component() {
   }, [selectedColumns]);
 
   const totalSize = Math.ceil((data?.total_count ?? 0) / STATE_PAGE_SIZE);
-
-  const [editState, setEditState] = useState<{
-    isEditing: boolean;
-    key?: string;
-    objectKey?: string;
-  }>({ isEditing: false, key: undefined, objectKey: undefined });
-
   const dataUpdate = error ? errorUpdatedAt : dataUpdatedAt;
+  const setEditState = useEditStateContext();
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdate}>
-      <EditState
-        service={virtualObject}
-        objectKey={editState.objectKey!}
-        stateKey={editState.key}
-        isOpen={editState.isEditing}
-        onOpenChange={(isOpen) => {
-          if (!isOpen) {
-            setEditState((s) => ({ ...s, isEditing: false }));
-          }
-        }}
-      />
       <div className="flex flex-col flex-auto gap-2 relative">
         <Table
           aria-label="Invocations"
@@ -382,7 +388,10 @@ function Component() {
                     if (id === 'service_key') {
                       return (
                         <Cell key={id}>
-                          <TruncateWithTooltip>{row.key}</TruncateWithTooltip>
+                          <KeyCell
+                            serviceKey={String(row.key)}
+                            virtualObject={virtualObject}
+                          />
                         </Cell>
                       );
                     } else if (id === '__actions__') {
@@ -395,6 +404,7 @@ function Component() {
                               setEditState({
                                 isEditing: true,
                                 objectKey: row.key!,
+                                service: virtualObject,
                               })
                             }
                           >
@@ -409,7 +419,7 @@ function Component() {
                       return (
                         <Cell
                           key={id}
-                          className="[&:has(*:hover)_*]:visible [&:has(*:focus)_*]:visible"
+                          className="group [&:has(*:hover)_*]:visible [&:has(*:focus)_*]:visible"
                         >
                           <div className="min-h-5 flex item-center justify-start gap-1 w-full h-full">
                             {row.state?.[id] && (
@@ -436,6 +446,7 @@ function Component() {
                                               isEditing: true,
                                               key: id,
                                               objectKey: row.key!,
+                                              service: virtualObject,
                                             })
                                           }
                                           variant="secondary"
@@ -464,10 +475,11 @@ function Component() {
                                   isEditing: true,
                                   key: id,
                                   objectKey: row.key!,
+                                  service: virtualObject,
                                 })
                               }
                               variant="icon"
-                              className="shrink-0 invisible"
+                              className="shrink-0 invisible group-hover:visible"
                             >
                               <Icon
                                 name={IconName.Pencil}
@@ -594,6 +606,51 @@ function Component() {
   );
 }
 
+const stylesKey = tv({
+  base: 'relative text-zinc-600 font-mono -ml-1 w-fit max-w-full',
+  slots: {
+    text: '',
+    container: 'pl-1 inline-flex items-center w-full align-middle',
+    link: "before:rounded-lg m-0.5 text-zinc-500 outline-offset-0 ml-0 rounded-full  before:absolute before:inset-0 before:content-[''] hover:before:bg-black/[0.03] pressed:before:bg-black/5",
+    linkIcon: 'w-4 h-4 text-current shrink-0',
+  },
+});
+
+function KeyCell({
+  serviceKey,
+  virtualObject,
+  className,
+}: {
+  serviceKey: string;
+  virtualObject: string;
+  className?: string;
+}) {
+  const linkRef = useRef<HTMLAnchorElement>(null);
+  const { base, text, link, container, linkIcon } = stylesKey();
+
+  return (
+    <div className={base({ className })}>
+      <div className={container({})}>
+        <TruncateWithTooltip copyText={serviceKey} triggerRef={linkRef}>
+          <span className={text()}>{serviceKey}</span>
+        </TruncateWithTooltip>
+        <Link
+          ref={linkRef}
+          href={`?${STATE_QUERY_NAME}=${toStateParam({
+            key: serviceKey,
+            virtualObject,
+          })}`}
+          aria-label={serviceKey}
+          variant="secondary"
+          className={link()}
+        >
+          <Icon name={IconName.ChevronRight} className={linkIcon()} />
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 function Footnote({
   data,
   isFetching,
@@ -659,39 +716,26 @@ function ServiceSelector() {
     .filter((service) => service.ty === 'VirtualObject')
     .map((service) => service.name);
   const navigate = useNavigate();
+  const newVirtualObject = virtualObjects[0];
+
+  const defaultVirtualObject = useHref(
+    newVirtualObject ? `../${newVirtualObject}` : '..',
+    {
+      relative: 'path',
+    }
+  );
+  const isInValid =
+    data.size === servicesSize &&
+    servicesSize > 0 &&
+    !virtualObjects.includes(virtualObject);
 
   useEffect(() => {
-    const virtualObjects = Array.from(data.values() ?? [])
-      .filter((service) => service.ty === 'VirtualObject')
-      .map((service) => service.name);
-
-    if (
-      data.size === servicesSize &&
-      servicesSize > 0 &&
-      !virtualObjects.includes(virtualObject)
-    ) {
-      const newVirtualObject = virtualObjects[0];
-      navigate(
-        newVirtualObject
-          ? `/state/${newVirtualObject}${window.location.search}`
-          : '/state'
-      );
+    if (isInValid) {
+      navigate(`${defaultVirtualObject}${window.location.search}`, {
+        relative: 'path',
+      });
     }
-  }, [data, navigate, servicesSize, virtualObject]);
-  const [searchParams] = useSearchParams();
-
-  const search = useMemo(() => {
-    const newSearchParams = new URLSearchParams(searchParams);
-    Array.from(newSearchParams.keys())
-      .filter((key) => key.startsWith('filter_'))
-      .forEach((key) => newSearchParams.delete(key));
-
-    newSearchParams.set('page', '0');
-    newSearchParams.set('sort_col', 'service_key');
-    newSearchParams.set('sort_dir', 'descending');
-
-    return newSearchParams.toString();
-  }, [searchParams]);
+  }, [navigate, defaultVirtualObject, isInValid]);
 
   return (
     <Dropdown>
@@ -713,18 +757,39 @@ function ServiceSelector() {
         <DropdownSection title="Virtual Objects">
           <DropdownMenu selectable selectedItems={[virtualObject]}>
             {virtualObjects.map((service) => (
-              <DropdownItem
-                value={service}
-                key={service}
-                href={`/state/${service}?${search}`}
-              >
-                {service}
-              </DropdownItem>
+              <DropDownVirtualObject service={service} key={service} />
             ))}
           </DropdownMenu>
         </DropdownSection>
       </DropdownPopover>
     </Dropdown>
+  );
+}
+
+function DropDownVirtualObject({ service }: { service: string }) {
+  const [searchParams] = useSearchParams();
+
+  const search = useMemo(() => {
+    const newSearchParams = new URLSearchParams(searchParams);
+    Array.from(newSearchParams.keys())
+      .filter((key) => key.startsWith('filter_'))
+      .forEach((key) => newSearchParams.delete(key));
+
+    newSearchParams.set('page', '0');
+    newSearchParams.set('sort_col', 'service_key');
+    newSearchParams.set('sort_dir', 'descending');
+
+    return newSearchParams.toString();
+  }, [searchParams]);
+
+  // TODO: refactor using useHref
+  const base = useHref('/');
+  const href = useHref(`../${service}?${search}`, { relative: 'path' });
+
+  return (
+    <DropdownItem value={service} href={href.replace(base, '')}>
+      {service}
+    </DropdownItem>
   );
 }
 

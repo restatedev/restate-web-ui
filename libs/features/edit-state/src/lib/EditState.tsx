@@ -8,14 +8,21 @@ import { Form } from 'react-router';
 import { Button, SubmitButton } from '@restate/ui/button';
 import { ErrorBanner } from '@restate/ui/error';
 import { FormFieldCode } from '@restate/ui/form-field';
-import { ComponentProps, FormEvent, PropsWithChildren, useId } from 'react';
+import {
+  createContext,
+  Dispatch,
+  FormEvent,
+  PropsWithChildren,
+  use,
+  useId,
+  useState,
+} from 'react';
 import {
   convertStateToObject,
   useEditState,
   useGetVirtualObjectQueue,
 } from '@restate/data-access/admin-api';
 import { showSuccessNotification } from '@restate/ui/notification';
-import { usePopover } from '@restate/ui/popover';
 import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from 'tailwind-variants';
 
@@ -38,22 +45,68 @@ const styles = tv({
     },
   },
 });
-export function EditState({
+
+const EditStateContext = createContext<{
+  isEditing: boolean;
+  key?: string;
+  objectKey?: string;
+  service?: string;
+  setEditState: Dispatch<
+    React.SetStateAction<{
+      isEditing: boolean;
+      key?: string;
+      service?: string;
+      objectKey?: string;
+    }>
+  >;
+}>({
+  isEditing: false,
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  setEditState: () => {},
+});
+
+export function useEditStateContext() {
+  return use(EditStateContext).setEditState;
+}
+
+export function EditState({ children }: PropsWithChildren) {
+  const [editState, setEditState] = useState<{
+    isEditing: boolean;
+    key?: string;
+    objectKey?: string;
+    service?: string;
+  }>({ isEditing: false, key: undefined, objectKey: undefined });
+  return (
+    <EditStateContext.Provider value={{ ...editState, setEditState }}>
+      <EditStateInner
+        isOpen={editState.isEditing}
+        service={editState.service}
+        objectKey={editState.objectKey}
+        stateKey={editState.key}
+        onOpenChange={(isEditing) => setEditState((s) => ({ ...s, isEditing }))}
+      />
+      {children}
+    </EditStateContext.Provider>
+  );
+}
+
+function EditStateInner({
   service,
   objectKey,
   stateKey: key,
   isOpen,
   onOpenChange,
 }: PropsWithChildren<{
-  service: string;
+  service?: string;
   stateKey?: string;
-  objectKey: string;
+  objectKey?: string;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
 }>) {
   const formId = useId();
 
-  const { mutation, query } = useEditState(service, objectKey, {
+  const { mutation, query } = useEditState(String(service), String(objectKey), {
+    enabled: Boolean(service && objectKey),
     onSuccess(data, variables) {
       onOpenChange(false);
       showSuccessNotification(
@@ -78,10 +131,10 @@ export function EditState({
   const error = query.error || mutation.error;
 
   const { data: queue } = useGetVirtualObjectQueue(
-    service,
-    objectKey,
+    String(service),
+    String(objectKey),
     undefined,
-    { enabled: Boolean(objectKey) }
+    { enabled: Boolean(objectKey && service) }
   );
   const hasActiveInvocations = (queue?.size ?? 0) > 0;
 
@@ -91,7 +144,7 @@ export function EditState({
 
   return (
     <Dialog
-      open={isOpen}
+      open={Boolean(isOpen && service && objectKey)}
       onOpenChange={(isOpen) => {
         if (!isOpen) {
           mutation.reset();
@@ -198,19 +251,6 @@ export function EditState({
         </div>
       </DialogContent>
     </Dialog>
-  );
-}
-
-export function EditStateTrigger(props: ComponentProps<typeof Button>) {
-  const { close } = usePopover();
-  return (
-    <Button
-      {...props}
-      onClick={(e) => {
-        close?.();
-        props?.onClick?.(e);
-      }}
-    />
   );
 }
 

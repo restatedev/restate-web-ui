@@ -118,7 +118,11 @@ export function VirtualObjectSection({
                 title=""
                 className="px-0 bg-transparent border-none mx-0 [&&&]:mb-1 font-mono"
               >
-                <State state={stateData?.state} />
+                <State
+                  state={stateData?.state}
+                  service={invocation?.target_service_name}
+                  serviceKey={invocation?.target_service_key}
+                />
               </DropdownSection>
             </PopoverContent>
           </Popover>

@@ -30,6 +30,8 @@ export function Value({
           value={object}
           className={className}
           displayDataTypes={false}
+          displayObjectSize={false}
+          enableClipboard={false}
         />
       </ErrorBoundary>
     );

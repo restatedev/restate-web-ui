@@ -135,15 +135,20 @@ function ComplementaryWithSearchParamValue({
     setSearchParams(
       (prev) => {
         return new URLSearchParams(
-          prev.toString().replace(`${paramName}=${paramValue}`, '')
+          prev
+            .toString()
+            .replace(`${paramName}=${paramValue}`, '')
+            .replace(`${paramName}=${encodeURIComponent(paramValue)}`, '')
         );
       },
       { preventScrollReset: true }
     );
   }, [paramName, paramValue, setSearchParams]);
-  const isOnTop = searchParams
-    .toString()
-    .startsWith(`${paramName}=${paramValue}`);
+  const isOnTop =
+    searchParams.toString().startsWith(`${paramName}=${paramValue}`) ||
+    searchParams
+      .toString()
+      .startsWith(`${paramName}=${encodeURIComponent(paramValue)}`);
 
   return (
     <ComplementaryWithSearchContext.Provider

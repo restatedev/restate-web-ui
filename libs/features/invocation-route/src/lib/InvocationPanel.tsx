@@ -5,7 +5,6 @@ import {
   ComplementaryFooter,
   useParamValue,
 } from '@restate/ui/layout';
-import { useSearchParams } from 'react-router';
 import { INVOCATION_QUERY_NAME } from './constants';
 import {
   useGetInvocation,

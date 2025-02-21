@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router';
 function Component() {
   const { data: deployments } = useListDeployments();
   const services = Array.from(deployments?.services.keys() ?? []);
-  const { data } = useListServices(services);
+  const { data, isPending } = useListServices(services);
   const virtualObject = Array.from(data.entries())
     .filter(([service, data]) => data.ty === 'VirtualObject')
     .at(0)?.[0];
@@ -18,13 +18,15 @@ function Component() {
 
   useEffect(() => {
     virtualObject &&
-      navigate(`/state/${virtualObject}${window.location.search}`);
+      navigate(`./${virtualObject}${window.location.search}`, {
+        relative: 'path',
+      });
   }, [navigate, virtualObject]);
 
   if (virtualObject) {
     return null;
   }
-  if (data && deployments && !virtualObject) {
+  if (!isPending && deployments && !virtualObject) {
     return (
       <div className="mb-[-6rem] pb-8 pt-24 flex-auto w-full justify-center rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] flex flex-col items-center">
         <div className="flex flex-col gap-2 items-center relative w-full text-center mt-6">
