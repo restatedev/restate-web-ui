@@ -14,7 +14,6 @@ import {
   TableBody,
   TableHeader,
 } from '@restate/ui/table';
-import { useCollator } from 'react-aria';
 import { SortDescriptor } from 'react-stately';
 import {
   Dropdown,
@@ -31,9 +30,9 @@ import {
   useDurationSinceLastSnapshot,
 } from '@restate/util/snapshot-time';
 import {
+  ComponentProps,
   PropsWithChildren,
   useCallback,
-  useDeferredValue,
   useEffect,
   useMemo,
   useRef,
@@ -66,10 +65,14 @@ import {
   Popover,
   PopoverContent,
   PopoverHoverTrigger,
+  usePopover,
 } from '@restate/ui/popover';
 import { Value } from '@restate/features/invocation-route';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
-import { EditState, EditStateTrigger } from './EditState';
+import { tv } from 'tailwind-variants';
+import { STATE_QUERY_NAME } from './constants';
+import { Link } from '@restate/ui/link';
+import { useEditStateContext } from '@restate/features/edit-state';
 
 function getQuery(
   searchParams: URLSearchParams,
@@ -86,6 +89,19 @@ function getQuery(
 }
 
 const STATE_PAGE_SIZE = 30;
+
+function EditStateTrigger(props: ComponentProps<typeof Button>) {
+  const { close } = usePopover();
+  return (
+    <Button
+      {...props}
+      onClick={(e) => {
+        close?.();
+        props?.onClick?.(e);
+      }}
+    />
+  );
+}
 
 function Component() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -277,28 +293,11 @@ function Component() {
   }, [selectedColumns]);
 
   const totalSize = Math.ceil((data?.total_count ?? 0) / STATE_PAGE_SIZE);
-
-  const [editState, setEditState] = useState<{
-    isEditing: boolean;
-    key?: string;
-    objectKey?: string;
-  }>({ isEditing: false, key: undefined, objectKey: undefined });
-
   const dataUpdate = error ? errorUpdatedAt : dataUpdatedAt;
+  const setEditState = useEditStateContext();
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdate}>
-      <EditState
-        service={virtualObject}
-        objectKey={editState.objectKey!}
-        stateKey={editState.key}
-        isOpen={editState.isEditing}
-        onOpenChange={(isOpen) => {
-          if (!isOpen) {
-            setEditState((s) => ({ ...s, isEditing: false }));
-          }
-        }}
-      />
       <div className="flex flex-col flex-auto gap-2 relative">
         <Table
           aria-label="Invocations"
@@ -388,7 +387,10 @@ function Component() {
                     if (id === 'service_key') {
                       return (
                         <Cell key={id}>
-                          <TruncateWithTooltip>{row.key}</TruncateWithTooltip>
+                          <KeyCell
+                            serviceKey={String(row.key)}
+                            virtualObject={virtualObject}
+                          />
                         </Cell>
                       );
                     } else if (id === '__actions__') {
@@ -401,6 +403,7 @@ function Component() {
                               setEditState({
                                 isEditing: true,
                                 objectKey: row.key!,
+                                service: virtualObject,
                               })
                             }
                           >
@@ -415,7 +418,7 @@ function Component() {
                       return (
                         <Cell
                           key={id}
-                          className="[&:has(*:hover)_*]:visible [&:has(*:focus)_*]:visible"
+                          className="group [&:has(*:hover)_*]:visible [&:has(*:focus)_*]:visible"
                         >
                           <div className="min-h-5 flex item-center justify-start gap-1 w-full h-full">
                             {row.state?.[id] && (
@@ -442,6 +445,7 @@ function Component() {
                                               isEditing: true,
                                               key: id,
                                               objectKey: row.key!,
+                                              service: virtualObject,
                                             })
                                           }
                                           variant="secondary"
@@ -470,10 +474,11 @@ function Component() {
                                   isEditing: true,
                                   key: id,
                                   objectKey: row.key!,
+                                  service: virtualObject,
                                 })
                               }
                               variant="icon"
-                              className="shrink-0 invisible"
+                              className="shrink-0 invisible group-hover:visible"
                             >
                               <Icon
                                 name={IconName.Pencil}
@@ -597,6 +602,51 @@ function Component() {
         </Form>
       </LayoutOutlet>
     </SnapshotTimeProvider>
+  );
+}
+
+const stylesKey = tv({
+  base: 'relative text-zinc-600 font-mono -ml-1 w-fit max-w-full',
+  slots: {
+    text: '',
+    container: 'pl-1 inline-flex items-center w-full align-middle',
+    link: "before:rounded-lg m-0.5 text-zinc-500 outline-offset-0 ml-0 rounded-full  before:absolute before:inset-0 before:content-[''] hover:before:bg-black/[0.03] pressed:before:bg-black/5",
+    linkIcon: 'w-4 h-4 text-current shrink-0',
+  },
+});
+
+function KeyCell({
+  serviceKey,
+  virtualObject,
+  className,
+}: {
+  serviceKey: string;
+  virtualObject: string;
+  className?: string;
+}) {
+  const linkRef = useRef<HTMLAnchorElement>(null);
+  const { base, text, link, container, linkIcon } = stylesKey();
+
+  return (
+    <div className={base({ className })}>
+      <div className={container({})}>
+        <TruncateWithTooltip copyText={serviceKey} triggerRef={linkRef}>
+          <span className={text()}>{serviceKey}</span>
+        </TruncateWithTooltip>
+        <Link
+          ref={linkRef}
+          href={`?${STATE_QUERY_NAME}=${JSON.stringify({
+            key: serviceKey,
+            virtualObject,
+          })}`}
+          aria-label={serviceKey}
+          variant="secondary"
+          className={link()}
+        >
+          <Icon name={IconName.ChevronRight} className={linkIcon()} />
+        </Link>
+      </div>
+    </div>
   );
 }
 

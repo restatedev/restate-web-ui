@@ -39,6 +39,11 @@ import {
   InvocationPanel,
 } from '@restate/features/invocation-route';
 import { Support } from '@restate/features/support';
+import {
+  STATE_QUERY_NAME,
+  StatePanel,
+} from '@restate/features/state-object-route';
+import { EditState } from '@restate/features/edit-state';
 
 export const links: LinksFunction = () => [
   {
@@ -133,63 +138,68 @@ export default function App() {
   return (
     <QueryProvider>
       <RestateContextProvider adminBaseUrl={getCookieValue('adminBaseUrl')}>
-        <LayoutOutlet zone={LayoutZone.Content}>
-          <Outlet />
-        </LayoutOutlet>
-        <LayoutOutlet zone={LayoutZone.AppBar}>
-          <div className="flex items-stretch gap-2 flex-1">
-            <div className="flex gap-2 items-center rounded-xl border bg-white p-3 shadow-sm h-full">
-              <Icon
-                name={IconName.RestateEnvironment}
-                className="text-xl text-[#222452]"
-              />
-            </div>
-            <Button
-              variant="secondary"
-              className="flex items-center gap-2 px-2 my-1 bg-transparent border-none shadow-none"
-            >
-              <div className="truncate row-start-1 col-start-2 w-full flex items-center gap-2">
-                <HealthIndicator mini className="-mt-0.5" />
-                <HealthCheckNotification />
-                <span className="flex-auto truncate">Restate server</span>
-                <Version />
+        <EditState>
+          <LayoutOutlet zone={LayoutZone.Content}>
+            <Outlet />
+          </LayoutOutlet>
+          <LayoutOutlet zone={LayoutZone.AppBar}>
+            <div className="flex items-stretch gap-2 flex-1">
+              <div className="flex gap-2 items-center rounded-xl border bg-white p-3 shadow-sm h-full">
+                <Icon
+                  name={IconName.RestateEnvironment}
+                  className="text-xl text-[#222452]"
+                />
               </div>
-            </Button>
-            <LayoutOutlet zone={LayoutZone.Nav}>
-              <Nav ariaCurrentValue="page">
-                <NavItem
-                  preserveSearchParams={[
-                    SERVICE_PLAYGROUND_QUERY_PARAM,
-                    SERVICE_QUERY_PARAM,
-                    DEPLOYMENT_QUERY_PARAM,
-                    INVOCATION_QUERY_NAME,
-                  ]}
-                  href={'/overview'}
-                >
-                  Overview
-                </NavItem>
-                <NavItem
-                  preserveSearchParams={[
-                    SERVICE_PLAYGROUND_QUERY_PARAM,
-                    SERVICE_QUERY_PARAM,
-                    DEPLOYMENT_QUERY_PARAM,
-                    INVOCATION_QUERY_NAME,
-                  ]}
-                  href={'/invocations'}
-                >
-                  Invocations
-                </NavItem>
-              </Nav>
-            </LayoutOutlet>
-          </div>
-        </LayoutOutlet>
-        <DeploymentDetails />
-        <ServiceDetails />
-        <DeleteDeployment />
-        <ServicePlayground />
-        <InvocationPanel />
-        <DeleteInvocation />
-        <Support />
+              <Button
+                variant="secondary"
+                className="flex items-center gap-2 px-2 my-1 bg-transparent border-none shadow-none"
+              >
+                <div className="truncate row-start-1 col-start-2 w-full flex items-center gap-2">
+                  <HealthIndicator mini className="-mt-0.5" />
+                  <HealthCheckNotification />
+                  <span className="flex-auto truncate">Restate server</span>
+                  <Version />
+                </div>
+              </Button>
+              <LayoutOutlet zone={LayoutZone.Nav}>
+                <Nav ariaCurrentValue="page">
+                  <NavItem
+                    preserveSearchParams={[
+                      SERVICE_PLAYGROUND_QUERY_PARAM,
+                      SERVICE_QUERY_PARAM,
+                      DEPLOYMENT_QUERY_PARAM,
+                      INVOCATION_QUERY_NAME,
+                      STATE_QUERY_NAME,
+                    ]}
+                    href={'/overview'}
+                  >
+                    Overview
+                  </NavItem>
+                  <NavItem
+                    preserveSearchParams={[
+                      SERVICE_PLAYGROUND_QUERY_PARAM,
+                      SERVICE_QUERY_PARAM,
+                      DEPLOYMENT_QUERY_PARAM,
+                      INVOCATION_QUERY_NAME,
+                      STATE_QUERY_NAME,
+                    ]}
+                    href={'/invocations'}
+                  >
+                    Invocations
+                  </NavItem>
+                </Nav>
+              </LayoutOutlet>
+            </div>
+          </LayoutOutlet>
+          <DeploymentDetails />
+          <ServiceDetails />
+          <DeleteDeployment />
+          <ServicePlayground />
+          <InvocationPanel />
+          <StatePanel />
+          <DeleteInvocation />
+          <Support />
+        </EditState>
       </RestateContextProvider>
     </QueryProvider>
   );

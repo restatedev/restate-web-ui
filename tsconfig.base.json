@@ -32,6 +32,7 @@
         "libs/data-access/middleware-service-worker/src/index.ts"
       ],
       "@restate/data-access/query": ["libs/data-access/query/src/index.ts"],
+      "@restate/features/edit-state": ["libs/features/edit-state/src/index.ts"],
       "@restate/features/explainers": ["libs/features/explainers/src/index.ts"],
       "@restate/features/health": ["libs/features/health/src/index.ts"],
       "@restate/features/invocation-route": [

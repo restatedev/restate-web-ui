@@ -623,14 +623,17 @@ export function convertStateToObject(state: { name: string; value: string }[]) {
 export function useEditState(
   service: string,
   objectKey: string,
-  options?: UseMutationOptions<
+  {
+    enabled,
+    ...options
+  }: UseMutationOptions<
     StateResponse['state'] | undefined,
     RestateError | Error,
     {
       state: Record<string, string | undefined>;
       partial?: boolean;
     }
-  >
+  > & { enabled?: boolean } = {}
 ) {
   const baseUrl = useAdminBaseUrl();
 
@@ -644,7 +647,7 @@ export function useEditState(
     }
   );
 
-  const query = useQuery(queryOptions);
+  const query = useQuery({ ...queryOptions, enabled });
 
   const { mutationFn, mutationKey, meta } = adminApi(
     'mutate',
