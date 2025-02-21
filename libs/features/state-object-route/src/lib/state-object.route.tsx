@@ -49,7 +49,13 @@ import {
   QueryClauseType,
   useQueryBuilder,
 } from '@restate/ui/query-builder';
-import { Form, useNavigate, useParams, useSearchParams } from 'react-router';
+import {
+  Form,
+  useHref,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import invariant from 'tiny-invariant';
 import {
@@ -659,39 +665,26 @@ function ServiceSelector() {
     .filter((service) => service.ty === 'VirtualObject')
     .map((service) => service.name);
   const navigate = useNavigate();
+  const newVirtualObject = virtualObjects[0];
+
+  const defaultVirtualObject = useHref(
+    newVirtualObject ? `../${newVirtualObject}` : '..',
+    {
+      relative: 'path',
+    }
+  );
+  const isInValid =
+    data.size === servicesSize &&
+    servicesSize > 0 &&
+    !virtualObjects.includes(virtualObject);
 
   useEffect(() => {
-    const virtualObjects = Array.from(data.values() ?? [])
-      .filter((service) => service.ty === 'VirtualObject')
-      .map((service) => service.name);
-
-    if (
-      data.size === servicesSize &&
-      servicesSize > 0 &&
-      !virtualObjects.includes(virtualObject)
-    ) {
-      const newVirtualObject = virtualObjects[0];
-      navigate(
-        newVirtualObject
-          ? `/state/${newVirtualObject}${window.location.search}`
-          : '/state'
-      );
+    if (isInValid) {
+      navigate(`${defaultVirtualObject}${window.location.search}`, {
+        relative: 'path',
+      });
     }
-  }, [data, navigate, servicesSize, virtualObject]);
-  const [searchParams] = useSearchParams();
-
-  const search = useMemo(() => {
-    const newSearchParams = new URLSearchParams(searchParams);
-    Array.from(newSearchParams.keys())
-      .filter((key) => key.startsWith('filter_'))
-      .forEach((key) => newSearchParams.delete(key));
-
-    newSearchParams.set('page', '0');
-    newSearchParams.set('sort_col', 'service_key');
-    newSearchParams.set('sort_dir', 'descending');
-
-    return newSearchParams.toString();
-  }, [searchParams]);
+  }, [navigate, defaultVirtualObject, isInValid]);
 
   return (
     <Dropdown>
@@ -713,18 +706,39 @@ function ServiceSelector() {
         <DropdownSection title="Virtual Objects">
           <DropdownMenu selectable selectedItems={[virtualObject]}>
             {virtualObjects.map((service) => (
-              <DropdownItem
-                value={service}
-                key={service}
-                href={`/state/${service}?${search}`}
-              >
-                {service}
-              </DropdownItem>
+              <DropDownVirtualObject service={service} key={service} />
             ))}
           </DropdownMenu>
         </DropdownSection>
       </DropdownPopover>
     </Dropdown>
+  );
+}
+
+function DropDownVirtualObject({ service }: { service: string }) {
+  const [searchParams] = useSearchParams();
+
+  const search = useMemo(() => {
+    const newSearchParams = new URLSearchParams(searchParams);
+    Array.from(newSearchParams.keys())
+      .filter((key) => key.startsWith('filter_'))
+      .forEach((key) => newSearchParams.delete(key));
+
+    newSearchParams.set('page', '0');
+    newSearchParams.set('sort_col', 'service_key');
+    newSearchParams.set('sort_dir', 'descending');
+
+    return newSearchParams.toString();
+  }, [searchParams]);
+
+  // TODO: refactor using useHref
+  const base = useHref('/');
+  const href = useHref(`../${service}?${search}`, { relative: 'path' });
+
+  return (
+    <DropdownItem value={service} href={href.replace(base, '')}>
+      {service}
+    </DropdownItem>
   );
 }
 
