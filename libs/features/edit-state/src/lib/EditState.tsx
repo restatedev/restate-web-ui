@@ -141,7 +141,7 @@ function EditStateInner({
   const { banner, bannerIcon } = styles({
     isWarning: hasActiveInvocations && isPartial,
   });
-  console.log(isOpen, service, objectKey);
+
   return (
     <Dialog
       open={Boolean(isOpen && service && objectKey)}
