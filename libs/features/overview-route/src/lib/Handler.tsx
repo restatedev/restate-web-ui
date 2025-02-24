@@ -3,7 +3,6 @@ import {
   ServiceType,
 } from '@restate/data-access/admin-api';
 import { HandlerTypeExplainer } from '@restate/features/explainers';
-import { Button } from '@restate/ui/button';
 import { DropdownSection } from '@restate/ui/dropdown';
 import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from 'tailwind-variants';
@@ -134,11 +133,27 @@ function HandlerInputOutput({
   withPlayground?: boolean;
 }) {
   const hasSchema = Boolean(schema);
+  const isObjectSchema = hasSchema && schema.type === 'object';
   const { base, value } = inputOutputStyles({
     className,
     hasSchema,
   });
 
+  if (!isObjectSchema && hasSchema) {
+    return (
+      <span className="basis-20 text-2xs text-zinc-500 grow max-w-fit truncate font-mono text-inherit px-0.5 py-0 rounded-sm ">
+        {schema.type ?? getContentTypeLabel(contentType)}
+      </span>
+    );
+  }
+
+  if (!hasSchema && contentType === 'none') {
+    return (
+      <span className="basis-20 text-2xs text-zinc-500 grow max-w-fit truncate font-mono text-inherit px-0.5 py-0 rounded-sm ">
+        void
+      </span>
+    );
+  }
   return (
     <div className={base()}>
       <span className={value()}>
@@ -152,7 +167,7 @@ function HandlerInputOutput({
               })}
             >
               <span className="truncate pr-0.5">
-                {schema?.title ?? (
+                {schema?.title ?? schema?.type ?? (
                   <span className="uppercase ">
                     {getContentTypeLabel(contentType)}
                   </span>
@@ -178,7 +193,7 @@ function HandlerInputOutput({
                 </div>
               }
             >
-              {hasSchema ? (
+              {isObjectSchema ? (
                 <JsonSchemaViewer
                   className="font-mono [&>*>[aria-haspopup]]:mt-2 [&>*[data-test='property-description']]:mt-2"
                   schema={schema}

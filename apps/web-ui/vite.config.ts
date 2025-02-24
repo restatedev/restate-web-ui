@@ -4,6 +4,26 @@ import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import license from 'rollup-plugin-license';
 import path from 'path';
 import { BASE_URL } from './constants';
+import { defaultClientConditions, defaultServerConditions } from 'vite';
+
+// Add this plugin to your Vite config
+const prismaFixPlugin = {
+  name: 'prisma-fix',
+  enforce: 'post',
+  config() {
+    return {
+      resolve: {
+        conditions: [...defaultClientConditions],
+      },
+      ssr: {
+        resolve: {
+          conditions: [...defaultServerConditions],
+          externalConditions: [...defaultServerConditions],
+        },
+      },
+    };
+  },
+};
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
@@ -17,7 +37,13 @@ export default defineConfig(({ mode }) => {
     base: BASE_URL,
     root: __dirname,
     cacheDir: '../../node_modules/.vite/apps/web-ui',
+    resolve: {
+      alias: {
+        '@prisma/client': '@prisma/client/index.js',
+      },
+    },
     plugins: [
+      prismaFixPlugin,
       {
         ...license({
           cwd: path.join(__dirname, '../..'),
