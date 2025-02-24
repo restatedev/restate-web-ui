@@ -83,7 +83,7 @@ function MultipleDeploymentsPlaceholder({
 
 function OneDeploymentPlaceholder() {
   return (
-    <div className="flex p-4 flex-col gap-2 items-center relative w-full text-center rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
+    <div className="max-w-lg flex p-4 flex-col gap-2 items-center relative w-full text-center rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
       <p className="text-sm text-gray-500 max-w-md">
         Point Restate to your{' '}
         <ServiceDeploymentExplainer>
