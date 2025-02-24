@@ -148,7 +148,7 @@ function HandlerInputOutput({
   }
 
   if (!hasSchema && contentType === 'none') {
-    return (
+    return labelProp === 'Request' ? null : (
       <span className="basis-20 text-2xs text-zinc-500 grow max-w-fit truncate font-mono text-inherit px-0.5 py-0 rounded-sm ">
         void
       </span>
