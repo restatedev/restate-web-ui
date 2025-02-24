@@ -184,6 +184,7 @@ export class Blob {
   oldMousePosition?: Position;
   public shapes: Shape[] = [];
   public color = '#000000';
+  public isInitialized = false;
   private _status: Status = 'idle';
   private scale = 1;
 
@@ -208,11 +209,13 @@ export class Blob {
     this.status = 'pause';
     this.animationId && cancelAnimationFrame(this.animationId);
     this.shapes = [];
+    this.isInitialized = false;
   }
 
   init(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.status = 'idle';
+    this.isInitialized = true;
 
     this.push(new Shape(this, this.center));
 
@@ -371,7 +374,7 @@ export class Blob {
   }
 
   private get expandingDelta() {
-    return 1.5 / (this.canvasSize ?? 1);
+    return 1.5 / (this.canvasSize || 150);
   }
 
   private get ctx() {

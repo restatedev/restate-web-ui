@@ -176,8 +176,7 @@ function Component() {
       if (old instanceof Set && old.size <= 2) {
         return new Set([
           'service_key',
-          sortDescriptor.column,
-          ...keys.slice(0, 6),
+          ...[sortDescriptor.column, ...keys.slice(0, 6)].sort(),
         ]);
       }
       return old;
@@ -281,7 +280,7 @@ function Component() {
 
   const selectedColumnsArray = useMemo(() => {
     const cols = Array.from(selectedColumns).map((id, index) => ({
-      name: id === 'service_key' ? 'Key' : id,
+      name: id === 'service_key' ? `${virtualObject} (Key)` : id,
       id: String(id),
       isRowHeader: index === 0,
     }));
@@ -291,7 +290,7 @@ function Component() {
       isRowHeader: false,
     });
     return cols;
-  }, [selectedColumns]);
+  }, [selectedColumns, virtualObject]);
 
   const totalSize = Math.ceil((data?.total_count ?? 0) / STATE_PAGE_SIZE);
   const dataUpdate = error ? errorUpdatedAt : dataUpdatedAt;

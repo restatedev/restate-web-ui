@@ -77,14 +77,23 @@ export function RestateServer({
     const handler = (e: MouseEvent) => {
       blob.mouseMove(e);
     };
+    const resizeHandler = () => {
+      if (canvas && window.innerWidth > 1024 && !blob.isInitialized) {
+        blob.init(canvas);
+      }
 
-    if (canvas) {
-      blob.init(canvas);
-    }
+      if (window.innerWidth <= 1024) {
+        blob.cleanup();
+      }
+    };
+
+    resizeHandler();
 
     button?.addEventListener('mousemove', handler);
+    window?.addEventListener('resize', resizeHandler);
 
     return () => {
+      window?.removeEventListener('resize', resizeHandler);
       button?.removeEventListener('mousemove', handler);
       blob.cleanup();
     };
