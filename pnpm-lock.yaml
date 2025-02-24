@@ -51,8 +51,8 @@ importers:
         specifier: 3.0.0-beta.7
         version: 3.0.0-beta.7(react@19.0.0)
       '@stoplight/json-schema-viewer':
-        specifier: 4.16.3
-        version: 4.16.3(@babel/core@7.24.7)(@babel/template@7.25.9)(@stoplight/markdown-viewer@5.7.1(@stoplight/mosaic-code-viewer@1.53.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(@stoplight/mosaic@1.53.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(@stoplight/mosaic-code-viewer@1.53.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(@stoplight/mosaic@1.53.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+        specifier: 4.16.4
+        version: 4.16.4(@babel/core@7.24.7)(@babel/template@7.25.9)(@stoplight/markdown-viewer@5.7.1(@stoplight/mosaic-code-viewer@1.53.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(@stoplight/mosaic@1.53.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(@stoplight/mosaic-code-viewer@1.53.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(@stoplight/mosaic@1.53.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       '@tailwindcss/container-queries':
         specifier: 0.1.1
         version: 0.1.1(tailwindcss@3.4.3(ts-node@10.9.1(@swc/core@1.5.7(@swc/helpers@0.5.11))(@types/node@22.9.0)(typescript@5.6.3)))
@@ -3128,8 +3128,8 @@ packages:
     resolution: {integrity: sha512-SAGtof+ihIdPqETR+7XXOaqZJcrbSih/xEahaw5t1nXk5sVW6ss2l5A1WCIuvtvnQiUKnBfanmZU4eoM1ZvItg==}
     engines: {node: '>=10.18'}
 
-  '@stoplight/json-schema-viewer@4.16.3':
-    resolution: {integrity: sha512-cQDxmyAkR3l8Pem1EuGMR+JKM8ePTSr/aqzJscp+hJ4R2geUNbdEleBHnJkZLLLfNr+PMlP+WiFO6GajCSxzUA==}
+  '@stoplight/json-schema-viewer@4.16.4':
+    resolution: {integrity: sha512-5+2mQIhoFFPzk1Gxb1khrVk2Y5BzEIGcNnY74Ky0mo1ipkSNLBWX5ALU8Kn1rTjVjgO8KHacqR4rw/ZaNhxwhQ==}
     engines: {node: '>=16'}
     peerDependencies:
       '@stoplight/markdown-viewer': ^5
@@ -13504,7 +13504,7 @@ snapshots:
 
   '@react-types/button@3.4.1(react@19.0.0)':
     dependencies:
-      '@react-types/shared': 3.26.0(react@19.0.0)
+      '@react-types/shared': 3.27.0(react@19.0.0)
       react: 19.0.0
 
   '@react-types/calendar@3.5.0(react@19.0.0)':
@@ -13591,7 +13591,7 @@ snapshots:
 
   '@react-types/radio@3.1.2(react@19.0.0)':
     dependencies:
-      '@react-types/shared': 3.26.0(react@19.0.0)
+      '@react-types/shared': 3.27.0(react@19.0.0)
       react: 19.0.0
 
   '@react-types/radio@3.8.5(react@19.0.0)':
@@ -13630,7 +13630,7 @@ snapshots:
   '@react-types/switch@3.1.2(react@19.0.0)':
     dependencies:
       '@react-types/checkbox': 3.9.0(react@19.0.0)
-      '@react-types/shared': 3.26.0(react@19.0.0)
+      '@react-types/shared': 3.27.0(react@19.0.0)
       react: 19.0.0
 
   '@react-types/switch@3.5.7(react@19.0.0)':
@@ -13656,7 +13656,7 @@ snapshots:
 
   '@react-types/textfield@3.3.0(react@19.0.0)':
     dependencies:
-      '@react-types/shared': 3.26.0(react@19.0.0)
+      '@react-types/shared': 3.27.0(react@19.0.0)
       react: 19.0.0
 
   '@react-types/tooltip@3.4.13(react@19.0.0)':
@@ -13688,7 +13688,7 @@ snapshots:
       pluralize: 8.0.0
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-      redoc: 2.1.5(core-js@3.37.1)(encoding@0.1.13)(enzyme@3.11.0)(mobx@6.12.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.1.11(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+      redoc: 2.1.5(core-js@3.37.1)(encoding@0.1.13)(enzyme@3.11.0)(mobx@6.12.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.1.11(react-dom@19.0.0(react@19.0.0))(react@19.0.0))
       semver: 7.6.2
       simple-websocket: 9.1.0
       styled-components: 6.1.11(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -13916,7 +13916,7 @@ snapshots:
       '@types/json-schema': 7.0.15
       magic-error: 0.0.1
 
-  '@stoplight/json-schema-viewer@4.16.3(@babel/core@7.24.7)(@babel/template@7.25.9)(@stoplight/markdown-viewer@5.7.1(@stoplight/mosaic-code-viewer@1.53.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(@stoplight/mosaic@1.53.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(@stoplight/mosaic-code-viewer@1.53.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(@stoplight/mosaic@1.53.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
+  '@stoplight/json-schema-viewer@4.16.4(@babel/core@7.24.7)(@babel/template@7.25.9)(@stoplight/markdown-viewer@5.7.1(@stoplight/mosaic-code-viewer@1.53.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(@stoplight/mosaic@1.53.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(@stoplight/mosaic-code-viewer@1.53.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(@stoplight/mosaic@1.53.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
     dependencies:
       '@stoplight/json': 3.21.7
       '@stoplight/json-schema-tree': 4.0.0
@@ -20356,7 +20356,7 @@ snapshots:
       indent-string: 4.0.0
       strip-indent: 3.0.0
 
-  redoc@2.1.5(core-js@3.37.1)(encoding@0.1.13)(enzyme@3.11.0)(mobx@6.12.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.1.11(react-dom@18.3.1(react@18.3.1))(react@18.3.1)):
+  redoc@2.1.5(core-js@3.37.1)(encoding@0.1.13)(enzyme@3.11.0)(mobx@6.12.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.1.11(react-dom@19.0.0(react@19.0.0))(react@19.0.0)):
     dependencies:
       '@cfaester/enzyme-adapter-react-18': 0.8.0(enzyme@3.11.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@redocly/openapi-core': 1.19.0(encoding@0.1.13)(supports-color@9.4.0)
