@@ -545,12 +545,14 @@ function Component() {
               .forEach((item) => {
                 newSearchParams.set(`filter_${item.id}`, String(item));
               });
-            newSearchParams.sort();
+            const sortedNewSearchParams = new URLSearchParams(newSearchParams);
+            sortedNewSearchParams.sort();
             const sortedOldSearchParams = new URLSearchParams(searchParams);
             sortedOldSearchParams.sort();
 
             if (
-              sortedOldSearchParams.toString() !== newSearchParams.toString()
+              sortedOldSearchParams.toString() !==
+              sortedNewSearchParams.toString()
             ) {
               setPageIndex(0);
             }
