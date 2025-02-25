@@ -471,6 +471,12 @@ function Component() {
                 <h3 className="text-sm font-semibold text-zinc-400">
                   No invocations found
                 </h3>
+                <p className="text-code text-center text-zinc-400 px-4 max-w-md">
+                  Completed invocations (succeeded, failed, cancelled, or
+                  killed) are retained only for workflows and those with
+                  idempotency keys, and solely for the retention period
+                  specified by the service.
+                </p>
               </div>
             }
           >
