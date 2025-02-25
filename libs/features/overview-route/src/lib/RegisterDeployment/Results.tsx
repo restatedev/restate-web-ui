@@ -75,7 +75,7 @@ function Service({
           </div>
         </div>
         <DisclosurePanel>
-          {service.handlers.length > 0 && (
+          {(service.handlers ?? []).length > 0 && (
             <div className="flex flex-col mt-2 mx-1.5 mb-1.5">
               <div className="ml-2 uppercase text-xs font-semibold text-gray-400 mt-2 mb-1 flex gap-2 items-center">
                 Handlers

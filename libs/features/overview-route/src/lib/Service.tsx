@@ -123,7 +123,7 @@ export function Service({
     !filterText ||
     serviceName.toLowerCase().includes(filterText.toLowerCase()) ||
     serviceDetails?.ty.toLowerCase().includes(filterText.toLowerCase());
-  const isMatchingAnyHandlerName = serviceDetails?.handlers.some((handler) =>
+  const isMatchingAnyHandlerName = serviceDetails?.handlers?.some((handler) =>
     filterHandler(serviceDetails?.ty, handler, filterText)
   );
   const isMatchingAnyDeployment = Object.values(service?.deployments ?? {})
@@ -138,7 +138,7 @@ export function Service({
     isMatchingServiceName;
 
   const filteredHandlers =
-    serviceDetails?.handlers.filter(
+    serviceDetails?.handlers?.filter(
       (handler) =>
         isMatchingServiceName ||
         isMatchingAnyDeployment ||
@@ -184,7 +184,7 @@ export function Service({
         </div>
         {isMatching &&
           serviceDetails &&
-          serviceDetails?.handlers.length > 0 && (
+          serviceDetails?.handlers?.length > 0 && (
             <div className="mb-1 px-3 pb-3 pt-1 flex flex-col rounded-md rounded-t-sm gap-1">
               <div className="flex flex-col gap-1.5">
                 {filteredHandlers

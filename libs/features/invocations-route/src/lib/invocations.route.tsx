@@ -148,7 +148,7 @@ function Component() {
                   services
                     .filter(Boolean)
                     .map((service) =>
-                      service!.handlers.map((handler) => handler.name)
+                      (service!.handlers ?? []).map((handler) => handler.name)
                     )
                     .flat()
                 ).values()
