@@ -241,6 +241,10 @@ function DefaultEntry({
   const isRetrying = invocation.status === 'retrying';
   const isRetryingThisEntry =
     isRetrying && failed && entry.index >= (invocation.journal_size ?? 0) - 1;
+  const wasRetryingThisEntry =
+    !isRetrying &&
+    failed &&
+    entry.index === (invocation.last_failure_related_entry_index ?? -1);
   const { base, line, circle, entryItem } = defaultEntryStyles();
   if (!entry.entry_type) {
     return null;
@@ -267,7 +271,7 @@ function DefaultEntry({
           appended,
           failed,
           completed: completed || failed,
-          isRetrying: isRetryingThisEntry,
+          isRetrying: isRetryingThisEntry || wasRetryingThisEntry,
         })}
       >
         {((!completed && !failed) || isRetryingThisEntry) && (
@@ -291,7 +295,7 @@ function DefaultEntry({
             appended,
             failed,
             completed,
-            isRetrying: isRetryingThisEntry,
+            isRetrying: isRetryingThisEntry || wasRetryingThisEntry,
           })}
         >
           <EntrySpecificComponent
@@ -300,6 +304,7 @@ function DefaultEntry({
             invocation={invocation}
             error={error}
             isRetrying={isRetryingThisEntry}
+            wasRetrying={wasRetryingThisEntry}
           />
         </div>
       </ErrorBoundary>

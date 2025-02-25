@@ -11,6 +11,7 @@ export function Input({
   invocation,
   error,
   isRetrying,
+  wasRetrying,
 }: EntryProps<InputJournalEntryType>) {
   return (
     <>
@@ -31,8 +32,8 @@ export function Input({
                 }
               />
             )}
-            {entry.body && entry.headers && ', '}
-            {entry.headers && (
+            {entry.body && entry.headers && entry.headers.length > 0 && ', '}
+            {entry.headers && entry.headers.length > 0 && (
               <InputOutput
                 name="headers"
                 popoverTitle=""
@@ -47,7 +48,7 @@ export function Input({
         <Failure
           message={error.message}
           restate_code={error.restate_code}
-          isRetrying={isRetrying}
+          isRetrying={isRetrying || wasRetrying}
         />
       )}
     </>

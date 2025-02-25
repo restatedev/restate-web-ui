@@ -31,7 +31,7 @@ export function NavItem({
   preserveSearchParams = false,
 }: PropsWithChildren<NavItemProps>) {
   const location = useLocation();
-  const isActive = location.pathname === href;
+  const isActive = location.pathname.startsWith(href);
   const { value } = useContext(NavContext);
 
   const search = useMemo(() => {

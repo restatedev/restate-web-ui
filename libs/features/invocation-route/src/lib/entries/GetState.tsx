@@ -11,6 +11,7 @@ export function GetState({
   invocation,
   error,
   isRetrying,
+  wasRetrying,
 }: EntryProps<GetStateJournalEntryType>) {
   const entryError = entry.failure || error;
 
@@ -42,7 +43,7 @@ export function GetState({
             <Failure
               message={entryError.message}
               restate_code={entryError.restate_code}
-              isRetrying
+              isRetrying={isRetrying || wasRetrying}
             />
           )}
         </>

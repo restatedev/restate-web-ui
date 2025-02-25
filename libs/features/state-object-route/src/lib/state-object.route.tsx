@@ -37,6 +37,7 @@ import {
   useMemo,
   useRef,
   useState,
+  useTransition,
 } from 'react';
 import { formatDurations } from '@restate/util/intl';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
@@ -74,6 +75,7 @@ import { STATE_QUERY_NAME } from './constants';
 import { Link } from '@restate/ui/link';
 import { useEditStateContext } from '@restate/features/edit-state';
 import { toStateParam } from './toStateParam';
+import { useCollator } from 'react-aria';
 
 function getQuery(
   searchParams: URLSearchParams,
@@ -144,23 +146,19 @@ function Component() {
     ] satisfies QueryClauseSchema<QueryClauseType>[];
   }, [keys]);
 
-  const sortDescriptor: SortDescriptor = {
-    column: searchParams.get('sort_col') ?? 'service_key',
-    direction:
-      (searchParams.get('sort_dir') as SortDescriptor['direction']) ??
-      'descending',
-  };
-  const setSortDescriptor = useCallback(
-    (sort: SortDescriptor) => {
-      setSearchParams((old) => {
-        const newParams = new URLSearchParams(old);
-        newParams.set('sort_col', String(sort.column));
-        newParams.set('sort_dir', sort.direction);
-        newParams.set('page', '0');
-        return newParams;
+  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>();
+  const collator = useCollator();
+  const [pageIndex, _setPageIndex] = useState(0);
+  const [, startTransition] = useTransition();
+
+  const setPageIndex = useCallback(
+    (arg: Parameters<typeof _setPageIndex>[0]) => {
+      startTransition(() => {
+        window.scrollTo({ top: 0, behavior: 'auto' });
+        _setPageIndex(arg);
       });
     },
-    [setSearchParams]
+    []
   );
 
   const [selectedColumns, setSelectedColumns] = useState<DropdownMenuSelection>(
@@ -174,14 +172,11 @@ function Component() {
   useEffect(() => {
     setSelectedColumns((old) => {
       if (old instanceof Set && old.size <= 2) {
-        return new Set([
-          'service_key',
-          ...[sortDescriptor.column, ...keys.slice(0, 6)].sort(),
-        ]);
+        return new Set(['service_key', ...keys.slice(0, 6)]);
       }
       return old;
     });
-  }, [keys, sortDescriptor.column]);
+  }, [keys]);
 
   const queryCLient = useQueryClient();
   const [queryFilters, setQueryFilters] = useState<FilterItem[]>(() =>
@@ -223,18 +218,6 @@ function Component() {
     );
   }, [schema]);
 
-  const pageIndex = Number(searchParams.get('page') ?? 0);
-  const setPageIndex = useCallback(
-    (page: number) => {
-      setSearchParams((old) => {
-        const newParams = new URLSearchParams(old);
-        newParams.set('page', String(page));
-        return newParams;
-      });
-    },
-    [setSearchParams]
-  );
-
   const {
     dataUpdatedAt,
     errorUpdatedAt,
@@ -245,11 +228,8 @@ function Component() {
     queryKey,
   } = useQueryVirtualObjectState(
     virtualObject,
-    pageIndex,
-    {
-      field: String(sortDescriptor.column),
-      order: sortDescriptor.direction === 'ascending' ? 'ASC' : 'DESC',
-    },
+    undefined,
+    undefined,
     queryFilters,
     {
       refetchOnMount: false,
@@ -258,15 +238,9 @@ function Component() {
     }
   );
 
-  useEffect(() => {
-    if (data && data.objects.length === 0 && pageIndex !== 0) {
-      setPageIndex(0);
-    }
-  }, [data, pageIndex, setPageIndex]);
-
   const sortedItems = useMemo(() => {
-    return (
-      [...(data?.objects ?? [])].map((row) => {
+    return [...(data?.objects ?? [])]
+      .map((row) => {
         return {
           key: row.key,
           state: row.state?.reduce(
@@ -274,9 +248,35 @@ function Component() {
             {} as Record<string, string>
           ),
         };
-      }) ?? []
+      })
+      .sort((a, b) => {
+        let cmp = 0;
+
+        cmp = collator.compare(
+          a.state[String(sortDescriptor?.column)]?.toString() ?? '',
+          b.state[String(sortDescriptor?.column)]?.toString() ?? ''
+        );
+
+        // Flip the direction if descending order is specified.
+        if (sortDescriptor?.direction === 'descending') {
+          cmp *= -1;
+        }
+
+        return cmp;
+      });
+  }, [
+    collator,
+    data?.objects,
+    sortDescriptor?.column,
+    sortDescriptor?.direction,
+  ]);
+
+  const currentPageItems = useMemo(() => {
+    return sortedItems.slice(
+      pageIndex * STATE_PAGE_SIZE,
+      (pageIndex + 1) * STATE_PAGE_SIZE
     );
-  }, [data?.objects]);
+  }, [pageIndex, sortedItems]);
 
   const selectedColumnsArray = useMemo(() => {
     const cols = Array.from(selectedColumns).map((id, index) => ({
@@ -292,7 +292,7 @@ function Component() {
     return cols;
   }, [selectedColumns, virtualObject]);
 
-  const totalSize = Math.ceil((data?.total_count ?? 0) / STATE_PAGE_SIZE);
+  const totalSize = Math.ceil((data?.objects.length ?? 0) / STATE_PAGE_SIZE);
   const dataUpdate = error ? errorUpdatedAt : dataUpdatedAt;
   const setEditState = useEditStateContext();
 
@@ -357,7 +357,7 @@ function Component() {
           </TableHeader>
           <TableBody
             numOfRows={pageIndex === 0 ? undefined : STATE_PAGE_SIZE}
-            items={sortedItems}
+            items={currentPageItems}
             dependencies={[selectedColumnsArray, pageIndex]}
             error={error}
             isLoading={isPending}
@@ -371,7 +371,7 @@ function Component() {
                   />
                 </div>
                 <h3 className="text-sm font-semibold text-zinc-400">
-                  No object found
+                  No objects found
                 </h3>
               </div>
             }
@@ -558,12 +558,6 @@ function Component() {
             const sortedOldSearchParams = new URLSearchParams(searchParams);
             sortedOldSearchParams.sort();
 
-            if (
-              sortedOldSearchParams.toString() !==
-              sortedNewSearchParams.toString()
-            ) {
-              newSearchParams.set('page', '0');
-            }
             setSearchParams(newSearchParams, { preventScrollReset: true });
             setQueryFilters(
               query.items
@@ -685,17 +679,15 @@ function Footnote({
     <div className="flex flex-row-reverse flex-wrap items-center w-full text-center text-xs text-gray-500/80 ">
       {data && (
         <div className="ml-auto">
-          {data.total_count ? (
+          {data.objects && data.objects.length > 0 ? (
             <>
-              <span>{data.objects.length}</span>
-              {' of '}
               <span className="font-medium text-gray-500">
-                {data.total_count}
+                {data.objects.length}
               </span>{' '}
               objects
             </>
           ) : (
-            'No object found'
+            'No objects found'
           )}{' '}
           as of{' '}
           <span className="font-medium text-gray-500">{duration} ago</span>
@@ -775,10 +767,6 @@ function DropDownVirtualObject({ service }: { service: string }) {
     Array.from(newSearchParams.keys())
       .filter((key) => key.startsWith('filter_'))
       .forEach((key) => newSearchParams.delete(key));
-
-    newSearchParams.set('page', '0');
-    newSearchParams.set('sort_col', 'service_key');
-    newSearchParams.set('sort_dir', 'descending');
 
     return newSearchParams.toString();
   }, [searchParams]);

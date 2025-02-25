@@ -10,13 +10,15 @@ export function getComputedInvocationStatus(
   const isCancelled = Boolean(
     invocation.completion_result === 'failure' &&
       invocation.completion_failure &&
-      ['[409] canceled', '[409] cancelled'].includes(
+      ['[409] canceled', '[409] cancelled', '[409 aborted] canceled'].includes(
         invocation.completion_failure?.toLowerCase()
       )
   );
   const isKilled = Boolean(
     invocation.completion_result === 'failure' &&
-      invocation.completion_failure?.toLowerCase() === '[409] killed'
+      ['[409] killed', '[409 aborted] killed'].includes(
+        invocation.completion_failure?.toLowerCase() ?? ''
+      )
   );
   const isRunning = invocation.status === 'running';
   const isCompleted = invocation.status === 'completed';

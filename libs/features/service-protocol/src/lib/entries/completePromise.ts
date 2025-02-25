@@ -52,6 +52,7 @@ function completePromiseV1(entry: JournalRawEntry) {
           message.result.value.code.toString()
         ),
         promise_name: entry.promise_name,
+        completed: entry.completed,
       };
     case 'empty':
       return {
@@ -59,6 +60,7 @@ function completePromiseV1(entry: JournalRawEntry) {
         completion,
         failure: undefined,
         promise_name: entry.promise_name,
+        completed: entry.completed,
       };
     default:
       return {
@@ -66,6 +68,7 @@ function completePromiseV1(entry: JournalRawEntry) {
         completion,
         failure: undefined,
         promise_name: entry.promise_name,
+        completed: entry.completed,
       };
   }
 }

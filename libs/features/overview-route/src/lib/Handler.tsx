@@ -67,7 +67,7 @@ export function Handler({
                 {handler.name}
               </TruncateWithTooltip>
 
-              <span className="ml-[0.5ch] shrink-0 text-zinc-400">{'('}</span>
+              <span className="ml-[0.2ch] shrink-0 text-zinc-400">{'('}</span>
               <HandlerInputOutput
                 schema={handler.input_json_schema}
                 contentType={handler.input_description}

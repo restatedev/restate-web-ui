@@ -9,6 +9,7 @@ export function ClearState({
   invocation,
   error,
   isRetrying,
+  wasRetrying,
 }: EntryProps<ClearStateJournalEntryType>) {
   return (
     <>
@@ -17,7 +18,7 @@ export function ClearState({
         <Failure
           message={error.message}
           restate_code={error.restate_code}
-          isRetrying={isRetrying}
+          isRetrying={isRetrying || wasRetrying}
         />
       )}
     </>

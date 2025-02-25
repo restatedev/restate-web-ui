@@ -2,7 +2,6 @@ export async function stateVersion(
   state: {
     name: string;
     value: string;
-    bytes: string;
   }[]
 ) {
   return stateVersionInternal(state).catch(() => undefined);
@@ -12,14 +11,13 @@ async function stateVersionInternal(
   state: {
     name: string;
     value: string;
-    bytes: string;
   }[]
 ) {
   const kvs = [...state]
     .sort((a, b) => a.name.localeCompare(b.name))
     .map(
-      ({ name, bytes }) =>
-        [new TextEncoder().encode(name), hexToUint8Array(bytes)] as [
+      ({ name, value }) =>
+        [new TextEncoder().encode(name), new TextEncoder().encode(value)] as [
           Uint8Array,
           Uint8Array
         ]
@@ -45,16 +43,6 @@ async function stateVersionInternal(
 
   const hash = await crypto.subtle.digest('SHA-256', mergeUint8Arrays(chunks));
   return bufferToUrlSafe(hash);
-}
-
-function hexToUint8Array(hexString: string) {
-  const bytes = new Uint8Array(hexString.length / 2);
-
-  for (let i = 0; i < hexString.length; i += 2) {
-    bytes[i / 2] = parseInt(hexString.substring(i, i + 2), 16);
-  }
-
-  return bytes;
 }
 
 function bufferToUrlSafe(buffer: ArrayBuffer) {

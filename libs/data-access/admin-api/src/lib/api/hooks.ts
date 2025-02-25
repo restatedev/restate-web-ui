@@ -507,7 +507,7 @@ export function useGetVirtualObjectState(
 
 export function useQueryVirtualObjectState(
   serviceName: string,
-  page: number,
+  page?: number,
   sort?: {
     field: string;
     order: 'ASC' | 'DESC';
