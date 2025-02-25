@@ -359,7 +359,7 @@ function Component() {
       return cmp;
     });
   }, [collator, data?.rows, sortDescriptor?.column, sortDescriptor?.direction]);
-
+  console.log(sortedItems);
   const currentPageItems = useMemo(() => {
     return sortedItems.slice(
       pageIndex * PAGE_SIZE,
@@ -374,6 +374,12 @@ function Component() {
       hasRendered = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (sortedItems.length <= PAGE_SIZE * pageIndex) {
+      setPageIndex(0);
+    }
+  }, [pageIndex, setPageIndex, sortedItems.length]);
 
   const query = useQueryBuilder(
     schema
