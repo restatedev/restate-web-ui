@@ -711,12 +711,14 @@ function ServiceSelector() {
   const navigate = useNavigate();
   const newVirtualObject = virtualObjects[0];
 
+  const base = useHref('/');
   const defaultVirtualObject = useHref(
     newVirtualObject ? `../${newVirtualObject}` : '..',
     {
       relative: 'path',
     }
-  );
+  ).replace(base, '');
+
   const isInValid =
     data.size === servicesSize &&
     servicesSize > 0 &&
@@ -724,7 +726,7 @@ function ServiceSelector() {
 
   useEffect(() => {
     if (isInValid) {
-      navigate(`${defaultVirtualObject}${window.location.search}`, {
+      navigate(`/${defaultVirtualObject}${window.location.search}`, {
         relative: 'path',
       });
     }
