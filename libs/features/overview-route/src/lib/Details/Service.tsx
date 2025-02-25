@@ -224,6 +224,11 @@ function ServiceForm({
                   serviceType={data?.ty}
                 />
               ))}
+              {handlers.length === 0 && (
+                <div className="text-xs text-gray-400 leading-1">
+                  No handler
+                </div>
+              )}
             </div>
           )}
         </SectionContent>
