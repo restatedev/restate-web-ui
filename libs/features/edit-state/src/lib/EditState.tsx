@@ -139,7 +139,7 @@ function EditStateInner({
   const hasActiveInvocations = (queue?.size ?? 0) > 0;
 
   const { banner, bannerIcon } = styles({
-    isWarning: hasActiveInvocations && isPartial,
+    isWarning: (hasActiveInvocations && isPartial) || !isPartial,
   });
 
   return (
@@ -166,7 +166,7 @@ function EditStateInner({
               </>
             ) : (
               <>
-                Update <code>{service}</code> state for{' '}
+                Replace <code>{service}</code> state for{' '}
                 <code className="rounded bg-gray-100 px-[0.5ch]">
                   {objectKey}
                 </code>
@@ -177,7 +177,7 @@ function EditStateInner({
             <Icon
               className={bannerIcon()}
               name={
-                hasActiveInvocations && isPartial
+                (hasActiveInvocations && isPartial) || !isPartial
                   ? IconName.TriangleAlert
                   : IconName.Info
               }
@@ -191,6 +191,13 @@ function EditStateInner({
                   <br />
                   If the state of this key changes before this mutation is
                   processed, the mutation will be discarded.
+                </>
+              )}
+              {!isPartial && (
+                <>
+                  <br />
+                  The new state will <strong>replace</strong> the previous
+                  state.
                 </>
               )}
             </span>

@@ -296,6 +296,12 @@ function Component() {
   const dataUpdate = error ? errorUpdatedAt : dataUpdatedAt;
   const setEditState = useEditStateContext();
 
+  useEffect(() => {
+    if (sortedItems.length <= STATE_PAGE_SIZE * pageIndex) {
+      setPageIndex(0);
+    }
+  }, [pageIndex, setPageIndex, sortedItems.length]);
+
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdate}>
       <div className="flex flex-col flex-auto gap-2 relative">

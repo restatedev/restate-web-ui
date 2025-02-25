@@ -142,9 +142,9 @@ function EditQueryTrigger({
           </DropdownSection>
           {clause.id === 'status' && (
             <p className="text-xs text-gray-500 px-5 py-1 max-w-xs mb-2">
-              Completed invocations (succeeded, failed, cancelled, killed) are
-              retained only for workflows and those with idempotency keys, and
-              only for the service's specified retention period.
+              Completed invocations (succeeded, failed, cancelled, or killed)
+              are retained only for workflows and those with idempotency keys,
+              and solely for the retention period specified by the service.
             </p>
           )}
           <DropdownMenu onSelect={onRemove} autoFocus={false}>

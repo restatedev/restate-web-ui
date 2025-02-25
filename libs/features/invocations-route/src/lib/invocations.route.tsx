@@ -148,7 +148,7 @@ function Component() {
                   services
                     .filter(Boolean)
                     .map((service) =>
-                      service!.handlers.map((handler) => handler.name)
+                      (service!.handlers ?? []).map((handler) => handler.name)
                     )
                     .flat()
                 ).values()
@@ -359,7 +359,7 @@ function Component() {
       return cmp;
     });
   }, [collator, data?.rows, sortDescriptor?.column, sortDescriptor?.direction]);
-
+  console.log(sortedItems);
   const currentPageItems = useMemo(() => {
     return sortedItems.slice(
       pageIndex * PAGE_SIZE,
@@ -374,6 +374,12 @@ function Component() {
       hasRendered = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (sortedItems.length <= PAGE_SIZE * pageIndex) {
+      setPageIndex(0);
+    }
+  }, [pageIndex, setPageIndex, sortedItems.length]);
 
   const query = useQueryBuilder(
     schema
@@ -465,6 +471,12 @@ function Component() {
                 <h3 className="text-sm font-semibold text-zinc-400">
                   No invocations found
                 </h3>
+                <p className="text-code text-center text-zinc-400 px-4 max-w-md">
+                  Completed invocations (succeeded, failed, cancelled, or
+                  killed) are retained only for workflows and those with
+                  idempotency keys, and solely for the retention period
+                  specified by the service.
+                </p>
               </div>
             }
           >
