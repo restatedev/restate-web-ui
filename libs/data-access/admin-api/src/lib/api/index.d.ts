@@ -1001,6 +1001,7 @@ export interface components {
       page?: number;
       sort?: {
         field: string;
+        limit?: number;
         /** @enum {string} */
         order: 'ASC' | 'DESC';
       };
@@ -1062,7 +1063,6 @@ export interface components {
       state: {
         name: string;
         value: string;
-        bytes: string;
       }[];
     };
     JournalEntry: components['schemas']['JournalBaseEntry'] &
@@ -3132,7 +3132,7 @@ export interface operations {
             objects: (components['schemas']['StateResponse'] & {
               key?: string;
             })[];
-            total_count: number;
+            total_count?: number;
             limit?: number;
           };
         };

@@ -12,6 +12,7 @@ export function Sleep({
   invocation,
   error,
   isRetrying,
+  wasRetrying,
 }: EntryProps<SleepJournalEntryType>) {
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
 
@@ -39,7 +40,7 @@ export function Sleep({
         <Failure
           message={entryError.message}
           restate_code={entryError.restate_code}
-          isRetrying
+          isRetrying={isRetrying || wasRetrying}
         />
       )}
     </>

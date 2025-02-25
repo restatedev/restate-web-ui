@@ -8,4 +8,5 @@ export interface EntryProps<T extends JournalEntry> {
   appended?: boolean;
   error?: RestateError;
   isRetrying?: boolean;
+  wasRetrying?: boolean;
 }

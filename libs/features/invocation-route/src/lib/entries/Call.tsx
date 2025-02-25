@@ -14,6 +14,7 @@ export function Call({
   invocation,
   error,
   isRetrying,
+  wasRetrying,
 }: EntryProps<CallJournalEntryType>) {
   const entryError = entry.failure || error;
 
@@ -84,7 +85,7 @@ export function Call({
                 <Failure
                   message={entryError.message}
                   restate_code={entryError.restate_code}
-                  isRetrying={isRetrying}
+                  isRetrying={isRetrying || wasRetrying}
                 />
               )}
             </>

@@ -16,6 +16,7 @@ export function OneWayCall({
   invocation,
   error,
   isRetrying,
+  wasRetrying,
 }: EntryProps<OneWayCallJournalEntryType>) {
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
 
@@ -83,7 +84,7 @@ export function OneWayCall({
           <Failure
             message={error.message}
             restate_code={error.restate_code}
-            isRetrying={isRetrying}
+            isRetrying={isRetrying || wasRetrying}
           />
         )}
       </div>

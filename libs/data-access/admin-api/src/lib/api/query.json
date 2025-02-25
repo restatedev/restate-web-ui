@@ -719,7 +719,7 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "required": ["objects", "total_count"],
+                  "required": ["objects"],
                   "properties": {
                     "objects": {
                       "type": "array",
@@ -1062,6 +1062,9 @@
               "field": {
                 "type": "string"
               },
+              "limit": {
+                "type": "integer"
+              },
               "order": {
                 "type": "string",
                 "enum": ["ASC", "DESC"]
@@ -1216,15 +1219,12 @@
             "type": "array",
             "items": {
               "type": "object",
-              "required": ["name", "value", "bytes"],
+              "required": ["name", "value"],
               "properties": {
                 "name": {
                   "type": "string"
                 },
                 "value": {
-                  "type": "string"
-                },
-                "bytes": {
                   "type": "string"
                 }
               }

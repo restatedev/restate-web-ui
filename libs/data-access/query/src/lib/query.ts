@@ -217,9 +217,6 @@ async function getStateInterface(
   });
 }
 
-// TODO: set in api
-const STATE_PAGE_SIZE = 30;
-
 // TODO: add limit
 // TODO: pagination
 async function queryState(
@@ -227,35 +224,49 @@ async function queryState(
   baseUrl: string,
   headers: Headers,
   filters: FilterItem[],
-  pageIndex: number,
-  sort: {
+  pageIndex?: number,
+  limit?: number,
+  sort?: {
     field: string;
     order: 'ASC' | 'DESC';
   }
 ) {
   const columns: string[] = filters.map((filter) => filter.field);
-  const hasCustomSort = sort.field !== 'service_key';
+  const hasCustomSort = sort?.field;
   if (hasCustomSort) {
     columns.push(sort.field);
   }
 
-  const query = `SELECT service_key${columns.length > 0 ? ',' : ''}
-  ${columns
-    .map((col) => `MAX(CASE WHEN key = '${col}' THEN value_utf8 END) AS ${col}`)
-    .join(', ')} 
-    FROM state 
+  const keys = await queryFetcher(
+    `SELECT DISTINCT key FROM state WHERE service_name = '${service}'`,
+    { baseUrl, headers }
+  ).then(({ rows }) => rows.map((row) => row.key as string));
+  const stateSize = keys.length;
+
+  const query = `SELECT service_key${keys.length > 0 ? ',' : ''}
+  ${keys
+    .map(
+      (col) =>
+        `MAX(CASE WHEN key = '${col}' THEN value_utf8 END) AS state_${col}`
+    )
+    .join(', ')}
+    FROM state
     WHERE service_name = '${service}'
     GROUP BY service_key
-    ${filters.length > 0 ? `HAVING ${convertStateFilters(filters)}` : ''}`;
+    ${
+      filters.length > 0
+        ? `HAVING ${convertStateFilters(
+            filters.map((filter) => ({
+              ...filter,
+              field: `state_${filter.field}`,
+            }))
+          )}`
+        : ''
+    }`;
 
   const orderAndPaginationQuery = `
-    ORDER BY ${hasCustomSort ? `${sort.field} ${sort.order},` : ''} service_key
-    LIMIT ${STATE_PAGE_SIZE} OFFSET ${pageIndex * STATE_PAGE_SIZE}`;
-
-  const totalCountPromise = queryFetcher(
-    `SELECT COUNT(*) AS total_count FROM (${query})`,
-    { baseUrl, headers }
-  ).then(({ rows }) => rows?.at(0)?.total_count as number);
+    ${hasCustomSort ? ` ORDER BY ${sort.field} ${sort.order},` : ''} 
+    LIMIT ${Math.min(limit || 500, 500) * stateSize}`;
 
   const resultsPromise: Promise<
     {
@@ -266,43 +277,18 @@ async function queryState(
     baseUrl,
     headers,
   }).then(async ({ rows }) => {
-    const serviceKeys = rows.map((row) => row.service_key);
-    if (serviceKeys.length === 0) {
-      return [];
-    }
-    const { rows: rowsWithData } = await queryFetcher(
-      `SELECT service_key, key, value_utf8, value FROM state  WHERE service_name = '${service}' AND service_key IN (${serviceKeys
-        .map((key) => `'${key}'`)
-        .join(',')})`,
-      {
-        baseUrl,
-        headers,
-      }
-    );
-
-    const objects = new Map<
-      string,
-      {
-        key: string;
-        state: { name: string; value: string; bytes: string }[];
-      }
-    >(serviceKeys.map((key) => [key, { key, state: [] }]));
-    rowsWithData.forEach((row) => {
-      objects.get(row.service_key)?.state.push({
-        name: row.key,
-        value: row.value_utf8,
-        bytes: row.value,
-      });
-    });
-    return Array.from(objects.values());
+    return rows.map(({ service_key, ...row }) => ({
+      key: service_key,
+      state: Array.from(Object.entries(row)).map(([k, v]) => ({
+        name: k.replace('state_', ''),
+        value: v as string,
+      })),
+    }));
   });
 
-  const [total_count, objects] = await Promise.all([
-    totalCountPromise,
-    resultsPromise,
-  ]);
+  const [objects] = await Promise.all([resultsPromise]);
 
-  return new Response(JSON.stringify({ total_count, objects }), {
+  return new Response(JSON.stringify({ objects }), {
     status: 200,
     headers: { 'Content-Type': 'application/json' },
   });
@@ -445,21 +431,15 @@ async function queryHandler(req: Request) {
 
   if (getQueryStateParams && method.toUpperCase() === 'POST') {
     const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
-    const {
-      filters = [],
-      page = 0,
-      sort = {
-        field: 'service_key',
-        order: 'DESC',
-      },
-    } = await req.json();
+    const { filters = [], page, sort, limit } = await req.json();
     return queryState(
       getQueryStateParams.params.name,
       baseUrl,
       headers,
       filters,
       page,
-      sort
+      sort,
+      limit
     );
   }
 

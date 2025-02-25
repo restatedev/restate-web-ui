@@ -187,6 +187,18 @@ export default function App() {
                   >
                     Invocations
                   </NavItem>
+                  <NavItem
+                    preserveSearchParams={[
+                      SERVICE_PLAYGROUND_QUERY_PARAM,
+                      SERVICE_QUERY_PARAM,
+                      DEPLOYMENT_QUERY_PARAM,
+                      INVOCATION_QUERY_NAME,
+                      STATE_QUERY_NAME,
+                    ]}
+                    href={'/state'}
+                  >
+                    State
+                  </NavItem>
                 </Nav>
               </LayoutOutlet>
             </div>
