@@ -247,7 +247,7 @@ async function queryState(
   ${keys
     .map(
       (col) =>
-        `MAX(CASE WHEN key = '${col}' THEN value_utf8 END) AS state_${col}`
+        `MAX(CASE WHEN key = '${col}' THEN value_utf8 END) AS 'state_${col}'`
     )
     .join(', ')}
     FROM state
