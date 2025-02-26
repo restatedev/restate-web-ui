@@ -19,21 +19,24 @@ export interface LayoutProps {}
 
 export function LayoutProvider({ children }: PropsWithChildren<LayoutProps>) {
   return (
-    <div className="flex w-full flex-col min-h-[100vh] mx-auto max-w-6xl 3xl:max-w-[min(100rem,calc(100vw-800px-4rem))] py-3 sm:py-6 px-3 sm:px-6 lg:px-8">
-      <AppBar id={ZONE_IDS[LayoutZone.AppBar]} />
-      <NotificationRegion />
-      <div className="flex-auto flex flex-row 3xl:w-[calc(100%+800px+4rem)] 3xl:ml-[calc(-400px-2rem)] 3xl:grid 3xl:[grid-template-columns:400px_1fr_400px] 3xl:gap-8">
-        <main
-          id={ZONE_IDS[LayoutZone.Content]}
-          className="min-w-0 max-w-full pb-[8rem] pt-[2rem] px-4 flex-auto flex flex-col relative col-start-2 col-end-3"
-        ></main>
-        <ComplementaryOutlet id={ZONE_IDS[LayoutZone.Complementary]} />
+    <>
+      <div className="fixed top-0 h-6 z-50 left-0 right-0 bg-gradient-to-t from-gray-100/20 to-gray-100" />
+      <div className="flex w-full flex-col min-h-[100vh] mx-auto max-w-6xl 3xl:max-w-[min(100rem,calc(100vw-800px-4rem))] py-3 sm:py-6 px-3 sm:px-6 lg:px-8">
+        <AppBar id={ZONE_IDS[LayoutZone.AppBar]} />
+        <NotificationRegion />
+        <div className="flex-auto flex flex-row 3xl:w-[calc(100%+800px+4rem)] 3xl:ml-[calc(-400px-2rem)] 3xl:grid 3xl:[grid-template-columns:400px_1fr_400px] 3xl:gap-8">
+          <main
+            id={ZONE_IDS[LayoutZone.Content]}
+            className="min-w-0 max-w-full pb-[8rem] pt-[2rem] px-4 flex-auto flex flex-col relative col-start-2 col-end-3"
+          ></main>
+          <ComplementaryOutlet id={ZONE_IDS[LayoutZone.Complementary]} />
+        </div>
+
+        {children}
+
+        <Toolbar id={ZONE_IDS[LayoutZone.Toolbar]} />
       </div>
-
-      {children}
-
-      <Toolbar id={ZONE_IDS[LayoutZone.Toolbar]} />
-    </div>
+    </>
   );
 }
 
