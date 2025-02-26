@@ -1,9 +1,24 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-import { useId, Component } from 'react';
+import { useId, Component, Suspense, lazy } from 'react';
 import type { ErrorInfo, PropsWithChildren } from 'react';
 import { Icon, IconName } from '@restate/ui/icons';
-import { JsonSchemaViewer as JsonSchemaViewerInner } from '@stoplight/json-schema-viewer';
+import { Spinner } from '@restate/ui/loading';
+
+if (typeof window !== 'undefined') {
+  import('prism-react-renderer');
+  import('@stoplight/json-schema-viewer');
+}
+
+const JsonSchemaViewerInner = lazy(() => {
+  return import('prism-react-renderer').then((module) => {
+    (window as any).Prism = module.Prism;
+
+    return import('@stoplight/json-schema-viewer').then((module) => ({
+      default: module.JsonSchemaViewer,
+    }));
+  });
+});
 
 export const API = ({
   apiDescriptionDocument,
@@ -33,12 +48,21 @@ export const JsonSchemaViewer = ({
 }) => {
   return (
     <ErrorBoundary>
-      <JsonSchemaViewerInner
-        className={className}
-        schema={schema as any}
-        disableCrumbs
-        renderRootTreeLines
-      />
+      <Suspense
+        fallback={
+          <div className="flex items-center gap-1.5 text-sm text-zinc-500 py-2">
+            <Spinner className="w-4 h-4" />
+            Loading…
+          </div>
+        }
+      >
+        <JsonSchemaViewerInner
+          className={className}
+          schema={schema as any}
+          disableCrumbs
+          renderRootTreeLines
+        />
+      </Suspense>
     </ErrorBoundary>
   );
 };
