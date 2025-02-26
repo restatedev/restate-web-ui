@@ -252,10 +252,17 @@ function Component() {
       .sort((a, b) => {
         let cmp = 0;
 
-        cmp = collator.compare(
-          a.state[String(sortDescriptor?.column)]?.toString() ?? '',
-          b.state[String(sortDescriptor?.column)]?.toString() ?? ''
-        );
+        if (
+          !sortDescriptor?.column ||
+          sortDescriptor.column === 'service_key'
+        ) {
+          cmp = collator.compare(a.key ?? '', b.key ?? '');
+        } else {
+          cmp = collator.compare(
+            a.state[String(sortDescriptor?.column)]?.toString() ?? '',
+            b.state[String(sortDescriptor?.column)]?.toString() ?? ''
+          );
+        }
 
         // Flip the direction if descending order is specified.
         if (sortDescriptor?.direction === 'descending') {
