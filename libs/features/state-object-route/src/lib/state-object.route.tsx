@@ -308,6 +308,7 @@ function Component() {
       setPageIndex(0);
     }
   }, [pageIndex, setPageIndex, sortedItems.length]);
+  const hash = 'hash' + currentPageItems.map(({ key }) => key).join('');
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdate}>
@@ -316,6 +317,7 @@ function Component() {
           aria-label="Invocations"
           sortDescriptor={sortDescriptor}
           onSortChange={setSortDescriptor}
+          key={hash}
         >
           <TableHeader columns={selectedColumnsArray}>
             {(col) => {
