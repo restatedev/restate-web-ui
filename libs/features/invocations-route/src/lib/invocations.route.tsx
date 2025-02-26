@@ -359,7 +359,7 @@ function Component() {
       return cmp;
     });
   }, [collator, data?.rows, sortDescriptor?.column, sortDescriptor?.direction]);
-  console.log(sortedItems);
+
   const currentPageItems = useMemo(() => {
     return sortedItems.slice(
       pageIndex * PAGE_SIZE,
@@ -393,6 +393,7 @@ function Component() {
   );
 
   const totalSize = Math.ceil((data?.rows ?? []).length / PAGE_SIZE);
+  const hash = 'hash' + currentPageItems.map(({ id }) => id).join('');
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdate}>
@@ -401,6 +402,7 @@ function Component() {
           aria-label="Invocations"
           sortDescriptor={sortDescriptor}
           onSortChange={setSortDescriptor}
+          key={hash}
         >
           <TableHeader>
             {sortedColumnsList.map((col) =>
