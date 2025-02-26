@@ -30,13 +30,13 @@ function convertFilterStringToSqlClause(
 ) {
   switch (filter.operation) {
     case 'EQUALS':
-      return `${filter.field} = '${filter.value}'`;
+      return `"${filter.field}" = '${filter.value}'`;
     case 'NOT_EQUALS':
-      return `${filter.field} != '${filter.value}'`;
+      return `"${filter.field}" != '${filter.value}'`;
     case 'CONTAINS':
-      return `${filter.field} LIKE '%${filter.value}%'`;
+      return `"${filter.field}" LIKE '%${filter.value}%'`;
     case 'NOT_CONTAINS':
-      return `${filter.field} NOT LIKE '%${filter.value}%'`;
+      return `"${filter.field}" NOT LIKE '%${filter.value}%'`;
   }
 }
 
@@ -393,7 +393,7 @@ export function convertStateFilters(filters: FilterItem[]) {
   const keyFilters = filters
     .map((filter) => {
       if (['NOT_EQUALS', 'NOT_CONTAINS'].includes(filter.operation)) {
-        return `(${filter.field} IS NULL OR ${convertFilterToSqlClause(
+        return `("${filter.field}" IS NULL OR ${convertFilterToSqlClause(
           filter
         )})`;
       } else {
