@@ -258,7 +258,10 @@ async function queryState(
         ? `HAVING ${convertStateFilters(
             filters.map((filter) => ({
               ...filter,
-              field: `state_${filter.field}`,
+              field:
+                filter.field !== 'service_key'
+                  ? `state_${filter.field}`
+                  : filter.field,
             }))
           )}`
         : ''
