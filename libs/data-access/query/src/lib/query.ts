@@ -150,7 +150,7 @@ async function getInbox(
       : null,
   ]);
 
-  if (typeof size === 'number' && typeof head === 'string') {
+  if (typeof size === 'number') {
     const isInvocationHead = head === invocationId;
     return new Response(
       JSON.stringify({
