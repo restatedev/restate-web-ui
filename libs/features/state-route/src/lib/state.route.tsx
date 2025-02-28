@@ -20,6 +20,7 @@ function Component() {
     virtualObject &&
       navigate(`./${virtualObject}${window.location.search}`, {
         relative: 'path',
+        replace: true,
       });
   }, [navigate, virtualObject]);
 
