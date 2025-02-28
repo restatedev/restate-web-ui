@@ -593,7 +593,12 @@ function Component() {
             });
           }}
         >
-          <QueryBuilder query={query} schema={schema} key={virtualObject}>
+          <QueryBuilder
+            query={query}
+            schema={schema}
+            key={virtualObject}
+            multiple={false}
+          >
             <AddQueryTrigger
               MenuTrigger={FiltersTrigger}
               placeholder={`Filter state…`}

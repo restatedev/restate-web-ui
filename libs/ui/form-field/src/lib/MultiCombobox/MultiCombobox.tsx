@@ -85,6 +85,8 @@ export interface MultiSelectProps<T extends object>
   placeholder?: string;
   ref?: RefObject<HTMLInputElement | null>;
   prefix?: ReactNode;
+  disabled?: boolean;
+  multiple?: boolean;
 }
 
 const multiSelectStyles = tv({
@@ -114,6 +116,8 @@ export function FormFieldMultiCombobox<
   placeholder,
   ref,
   prefix,
+  disabled,
+  multiple,
   ...props
 }: MultiSelectProps<T>) {
   const { contains } = useFilter({ sensitivity: 'base' });
@@ -272,6 +276,7 @@ export function FormFieldMultiCombobox<
           onSelectionChange={onSelectionChange}
           onInputChange={onInputChange}
           aria-labelledby={labelId}
+          isDisabled={disabled}
         >
           <div className={'inline-flex flex-1 items-center gap-1 px-0 pl-1'}>
             <MenuTrigger />
@@ -294,19 +299,25 @@ export function FormFieldMultiCombobox<
 
           {availableList.items.length > 0 && (
             <PopoverOverlay className="w-[--trigger-width] min-w-fit p-0 bg-gray-100/90">
-              <ListBox
-                multiple
-                selectable
-                className="outline-0 p-1 max-h-[inherit] overflow-auto border-none"
-              >
-                <ListBoxSection title={label}>
-                  {availableList.items.map((item) => (
-                    <ListBoxItem value={String(item.id)} key={item.id}>
-                      {item.textValue}
-                    </ListBoxItem>
-                  ))}
-                </ListBoxSection>
-              </ListBox>
+              {multiple || selectedKeys.length === 0 ? (
+                <ListBox
+                  multiple
+                  selectable
+                  className="outline-0 p-1 max-h-[inherit] overflow-auto border-none"
+                >
+                  <ListBoxSection title={label}>
+                    {availableList.items.map((item) => (
+                      <ListBoxItem value={String(item.id)} key={item.id}>
+                        {item.textValue}
+                      </ListBoxItem>
+                    ))}
+                  </ListBoxSection>
+                </ListBox>
+              ) : (
+                <div className="flex items-center gap-1.5 text-sm text-zinc-500 px-4 py-2">
+                  You can apply only one filter at a time.
+                </div>
+              )}
             </PopoverOverlay>
           )}
         </ComboBox>
