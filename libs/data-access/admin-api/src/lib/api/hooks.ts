@@ -521,7 +521,7 @@ export function useQueryVirtualObjectState(
       body: {
         filters,
       },
-      resolvedPath: `/query/services/${serviceName}/state`,
+      resolvedPath: `/query/services/${serviceName}/state/query`,
     }
   );
   const results = useQuery({
