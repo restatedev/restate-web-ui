@@ -3125,7 +3125,7 @@ export interface operations {
         content: {
           'application/json': {
             objects: (components['schemas']['StateResponse'] & {
-              key?: string;
+              key: string;
             })[];
           };
         };
