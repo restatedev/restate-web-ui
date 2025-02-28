@@ -326,7 +326,7 @@ function Component() {
                   id={col.id}
                   isRowHeader={col.isRowHeader}
                   key={col.id}
-                  allowsSorting={col.id === 'service_key'}
+                  allowsSorting={false}
                 >
                   {col.name}
                 </Column>
