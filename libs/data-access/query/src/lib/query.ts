@@ -281,10 +281,19 @@ async function listState(
   headers: Headers,
   keys: string[]
 ) {
-  const query = `SELECT service_key, key, value_utf8
-    FROM state WHERE service_name = '${service}' AND service_key IN (${keys
-    .map((key) => `'${key}'`)
-    .join(',')})`;
+  if (keys.length === 0) {
+    return new Response(JSON.stringify({ objects: [] }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  const query = keys
+    .map((key) => {
+      return `SELECT service_key, key, value_utf8
+    FROM state WHERE service_name = '${service}' AND service_key = '${key}'`;
+    })
+    .join(' UNION ALL ');
 
   const resultsPromise: Promise<
     {
