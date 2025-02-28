@@ -25,6 +25,30 @@ const styles = tv({
 });
 
 function getContentTypeLabel(contentType: string) {
+  if (
+    contentType.startsWith('one of [') ||
+    contentType.startsWith('value of content-type') ||
+    contentType.startsWith('JSON value of content-type')
+  ) {
+    try {
+      let parsedContentType = contentType;
+      if (contentType.startsWith('one of [')) {
+        parsedContentType = JSON.parse(contentType.replace('one of ', '')).at(
+          1
+        );
+      }
+      return (
+        parsedContentType
+          ?.match(/'.*'/)
+          ?.at(0)
+          ?.split('application/')
+          .at(-1)
+          ?.replace(/'/g, '') || contentType
+      );
+    } catch (error) {
+      return contentType;
+    }
+  }
   return contentType.split('application/').at(-1);
 }
 
