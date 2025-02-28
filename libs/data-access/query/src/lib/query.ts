@@ -235,7 +235,7 @@ async function queryState(
       value: service,
       type: 'STRING',
     },
-    ...(filter
+    ...(filter && filter.field !== 'service_key'
       ? ([
           {
             field: 'key',
@@ -251,9 +251,10 @@ async function queryState(
           },
         ] as FilterItem[])
       : []),
+    ...(filter && filter.field === 'service_key' ? [filter] : []),
   ];
 
-  const query = `SELECT service_key
+  const query = `SELECT DISTINCT service_key
     FROM state ${convertFilters(filtersWithService)} 
     LIMIT 4500`;
 

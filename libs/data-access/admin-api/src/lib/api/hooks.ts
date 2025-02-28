@@ -686,24 +686,24 @@ export function useEditState(
             );
           },
         },
-        (oldData: ReturnType<typeof useQueryVirtualObjectState>['data']) => {
-          // if (!oldData || !data) {
-          //   return oldData;
-          // } else {
-          //   return {
-          //     ...oldData,
-          //     objects: oldData.objects.map((oldObject) => {
-          //       if (oldObject.key === objectKey) {
-          //         return {
-          //           ...oldObject,
-          //           state: data,
-          //         };
-          //       } else {
-          //         return oldObject;
-          //       }
-          //     }),
-          //   };
-          // }
+        (oldData: ReturnType<typeof useListVirtualObjectState>['data']) => {
+          if (!oldData || !data) {
+            return oldData;
+          } else {
+            return {
+              ...oldData,
+              objects: oldData.objects.map((oldObject) => {
+                if (oldObject.key === objectKey) {
+                  return {
+                    ...oldObject,
+                    state: data,
+                  };
+                } else {
+                  return oldObject;
+                }
+              }),
+            };
+          }
         }
       );
     },
