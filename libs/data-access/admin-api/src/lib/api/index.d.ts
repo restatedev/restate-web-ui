@@ -485,20 +485,20 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/query/services/state': {
+  '/query/services/{name}/state/query': {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    /**
-     * List state
-     * @description List state
-     */
-    get: operations['list_state'];
+    get?: never;
     put?: never;
-    post?: never;
+    /**
+     * Query virtual object state
+     * @description Query virtual object state
+     */
+    post: operations['query_virtual_object_state'];
     delete?: never;
     options?: never;
     head?: never;
@@ -998,13 +998,6 @@ export interface components {
       filters?: components['schemas']['FilterItem'][];
     };
     ListVirtualObjectStateRequestBody: {
-      page?: number;
-      sort?: {
-        field: string;
-        limit?: number;
-        /** @enum {string} */
-        order: 'ASC' | 'DESC';
-      };
       filters?: components['schemas']['FilterItem'][];
     };
     FilterItem: components['schemas']['FilterBaseItem'] &
@@ -3119,7 +3112,9 @@ export interface operations {
     };
     requestBody: {
       content: {
-        'application/json': components['schemas']['ListVirtualObjectStateRequestBody'];
+        'application/json': {
+          keys: string[];
+        };
       };
     };
     responses: {
@@ -3132,8 +3127,6 @@ export interface operations {
             objects: (components['schemas']['StateResponse'] & {
               key?: string;
             })[];
-            total_count?: number;
-            limit?: number;
           };
         };
       };
@@ -3264,14 +3257,21 @@ export interface operations {
       };
     };
   };
-  list_state: {
+  query_virtual_object_state: {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        /** @description service name */
+        name: string;
+      };
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ListVirtualObjectStateRequestBody'];
+      };
+    };
     responses: {
       200: {
         headers: {
@@ -3279,10 +3279,7 @@ export interface operations {
         };
         content: {
           'application/json': {
-            objects: {
-              name: string;
-              keys: components['schemas']['StateInterfaceResponse'][];
-            }[];
+            keys: string[];
           };
         };
       };

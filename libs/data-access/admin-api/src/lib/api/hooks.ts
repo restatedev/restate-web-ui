@@ -543,51 +543,6 @@ export function useQueryVirtualObjectState(
   };
 }
 
-export function useGetVirtualObjectStateInterface(
-  serviceName: string,
-  options?: HookQueryOptions<'/query/services/{name}/state/keys', 'get'>
-) {
-  const baseUrl = useAdminBaseUrl();
-  const queryOptions = adminApi(
-    'query',
-    '/query/services/{name}/state/keys',
-    'get',
-    {
-      baseUrl,
-      parameters: { path: { name: serviceName } },
-    }
-  );
-
-  const results = useQuery({
-    ...queryOptions,
-    ...options,
-  });
-
-  return {
-    ...results,
-    queryKey: queryOptions.queryKey,
-  };
-}
-
-export function useGetStateInterface(
-  options?: HookQueryOptions<'/query/services/state', 'get'>
-) {
-  const baseUrl = useAdminBaseUrl();
-  const queryOptions = adminApi('query', '/query/services/state', 'get', {
-    baseUrl,
-  });
-
-  const results = useQuery({
-    ...queryOptions,
-    ...options,
-  });
-
-  return {
-    ...results,
-    queryKey: queryOptions.queryKey,
-  };
-}
-
 export function useDeleteInvocation(
   invocation_id: string,
   options?: HookMutationOptions<'/invocations/{invocation_id}', 'delete'>
