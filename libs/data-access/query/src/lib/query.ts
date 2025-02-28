@@ -4,7 +4,7 @@ import { match } from 'path-to-regexp';
 import { convertJournal } from './convertJournal';
 import type { FilterItem } from '@restate/data-access/admin-api/spec';
 import { RestateError } from '@restate/util/errors';
-import { convertFilters, convertStateFilters } from './convertFilters';
+import { convertFilters } from './convertFilters';
 import { stateVersion } from './stateVersion';
 
 function queryFetcher(
@@ -150,7 +150,7 @@ async function getInbox(
       : null,
   ]);
 
-  if (typeof size === 'number' && typeof head === 'string') {
+  if (typeof size === 'number') {
     const isInvocationHead = head === invocationId;
     return new Response(
       JSON.stringify({
@@ -217,104 +217,114 @@ async function getStateInterface(
   });
 }
 
-// TODO: add limit
-// TODO: pagination
 async function queryState(
   service: string,
   baseUrl: string,
   headers: Headers,
-  filters: FilterItem[],
-  pageIndex?: number,
-  limit?: number,
-  sort?: {
-    field: string;
-    order: 'ASC' | 'DESC';
-  }
+  filters: FilterItem[]
 ) {
-  const columns: string[] = filters.map((filter) => filter.field);
-  const hasCustomSort = sort?.field;
-  if (hasCustomSort) {
-    columns.push(sort.field);
+  if (filters.length > 1) {
+    throw new Error('Only one filter is supported');
   }
 
-  const keys = await queryFetcher(
-    `SELECT DISTINCT key FROM state WHERE service_name = '${service}'`,
-    { baseUrl, headers }
-  ).then(({ rows }) => rows.map((row) => row.key as string));
-  const stateSize = keys.length;
+  const [filter] = filters;
+  const filtersWithService: FilterItem[] = [
+    {
+      field: 'service_name',
+      operation: 'EQUALS',
+      value: service,
+      type: 'STRING',
+    },
+    ...(filter && filter.field !== 'service_key'
+      ? ([
+          {
+            field: 'key',
+            operation: 'EQUALS',
+            value: filter.field,
+            type: 'STRING',
+          },
+          {
+            field: 'value_utf8',
+            operation: filter.operation,
+            value: filter.value,
+            type: filter.type,
+          },
+        ] as FilterItem[])
+      : []),
+    ...(filter && filter.field === 'service_key' ? [filter] : []),
+  ];
 
-  const query = `SELECT service_key${keys.length > 0 ? ',' : ''}
-  ${keys
-    .map(
-      (col) =>
-        `MAX(CASE WHEN key = '${col}' THEN value_utf8 END) AS 'state_${col}'`
-    )
-    .join(', ')}
-    FROM state
-    WHERE service_name = '${service}'
-    GROUP BY service_key
-    ${
-      filters.length > 0
-        ? `HAVING ${convertStateFilters(
-            filters.map((filter) => ({
-              ...filter,
-              field:
-                filter.field !== 'service_key'
-                  ? `state_${filter.field}`
-                  : filter.field,
-            }))
-          )}`
-        : ''
-    }`;
+  const query = `SELECT DISTINCT service_key
+    FROM state ${convertFilters(filtersWithService)} 
+    LIMIT 4500`;
 
-  const orderAndPaginationQuery = `
-    ${hasCustomSort ? ` ORDER BY ${sort.field} ${sort.order},` : ''} 
-    LIMIT ${Math.min(limit || 500, 500) * stateSize}`;
+  const resultsPromise: Promise<{
+    keys: string[];
+  }> = queryFetcher(query, {
+    baseUrl,
+    headers,
+  }).then(async ({ rows }) => ({
+    keys: rows.map(({ service_key }) => service_key),
+  }));
+
+  const [{ keys }] = await Promise.all([resultsPromise]);
+
+  return new Response(JSON.stringify({ keys }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+async function listState(
+  service: string,
+  baseUrl: string,
+  headers: Headers,
+  keys: string[]
+) {
+  const query = `SELECT service_key, key, value_utf8
+    FROM state WHERE service_name = '${service}' AND service_key IN (${keys
+    .map((key) => `'${key}'`)
+    .join(',')})`;
 
   const resultsPromise: Promise<
     {
       key: string;
       state: { name: string; value: string }[];
     }[]
-  > = queryFetcher(`${query} ${orderAndPaginationQuery}`, {
+  > = queryFetcher(query, {
     baseUrl,
     headers,
   }).then(async ({ rows }) => {
-    return rows.map(({ service_key, ...row }) => ({
-      key: service_key,
-      state: Array.from(Object.entries(row)).map(([k, v]) => ({
-        name: k.replace('state_', ''),
-        value: v as string,
+    const results: Record<
+      string,
+      { key: string; state: Record<string, string> }
+    > = rows.reduce(
+      (p, c) => {
+        return {
+          ...p,
+          [c.service_key]: {
+            ...p[c.service_key],
+            state: {
+              ...p[c.service_key].state,
+              [c.key]: c.value_utf8,
+            },
+          },
+        };
+      },
+      keys.reduce((p, c) => {
+        return { ...p, [c]: { key: c, state: {} } };
+      }, {})
+    );
+    return Object.values(results).map((object) => ({
+      key: object.key,
+      state: Object.entries(object.state).map(([name, value]) => ({
+        name,
+        value,
       })),
     }));
   });
 
-  const [objects] = await Promise.all([resultsPromise]);
-
-  return new Response(JSON.stringify({ objects }), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' },
-  });
-}
-
-// TODO: add limit
-async function getAllStateInterface(baseUrl: string, headers: Headers) {
-  const results: Record<string, string[]> = await queryFetcher(
-    `SELECT DISTINCT key, service_name FROM state GROUP BY key, service_name`,
-    { baseUrl, headers }
-  ).then(({ rows }) =>
-    rows.reduce((results, c) => {
-      return {
-        ...results,
-        [c.service_name]: [...(results[c.service_name] ?? []), c.key],
-      };
-    }, {})
-  );
-
-  const objects = Array.from(Object.entries(results)).map(([name, keys]) => ({
-    name,
-    keys,
-  }));
+  const objects = await resultsPromise;
 
   return new Response(JSON.stringify({ objects }), {
     status: 200,
@@ -429,29 +439,28 @@ async function queryHandler(req: Request) {
   }
 
   const getQueryStateParams = match<{ name: string }>(
-    '/query/services/:name/state'
+    '/query/services/:name/state/query'
   )(urlObj.pathname);
 
   if (getQueryStateParams && method.toUpperCase() === 'POST') {
     const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
-    const { filters = [], page, sort, limit } = await req.json();
+    const { filters = [] } = await req.json();
     return queryState(
       getQueryStateParams.params.name,
       baseUrl,
       headers,
-      filters,
-      page,
-      sort,
-      limit
+      filters
     );
   }
 
-  if (
-    urlObj.pathname === '/query/services/state' &&
-    method.toUpperCase() === 'GET'
-  ) {
+  const getListStateParams = match<{ name: string }>(
+    '/query/services/:name/state'
+  )(urlObj.pathname);
+
+  if (getListStateParams && method.toUpperCase() === 'POST') {
     const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
-    return getAllStateInterface(baseUrl, headers);
+    const { keys = [] } = await req.json();
+    return listState(getListStateParams.params.name, baseUrl, headers, keys);
   }
 
   return new Response('Not implemented', { status: 501 });

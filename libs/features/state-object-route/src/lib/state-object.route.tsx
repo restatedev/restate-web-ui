@@ -1,8 +1,8 @@
 import {
   FilterItem,
-  useGetVirtualObjectStateInterface,
   useListDeployments,
   useListServices,
+  useListVirtualObjectState,
   useQueryVirtualObjectState,
 } from '@restate/data-access/admin-api';
 import { Button, SubmitButton } from '@restate/ui/button';
@@ -75,7 +75,6 @@ import { STATE_QUERY_NAME } from './constants';
 import { Link } from '@restate/ui/link';
 import { useEditStateContext } from '@restate/features/edit-state';
 import { toStateParam } from './toStateParam';
-import { useCollator } from 'react-aria';
 
 function getQuery(
   searchParams: URLSearchParams,
@@ -112,43 +111,93 @@ function Component() {
   const { virtualObject } = useParams<{ virtualObject: string }>();
   invariant(virtualObject, 'Missing virtualObject param');
 
-  const { data: stateInterface, queryKey: virtualObjectInterfaceQueryKey } =
-    useGetVirtualObjectStateInterface(virtualObject, { refetchOnMount: false });
-
-  const keys = useMemo(
-    () => stateInterface?.keys?.map(({ name }) => name).sort() ?? [],
-    [stateInterface?.keys]
+  const [keysSet, setKeysSet] = useState(
+    () =>
+      new Set([
+        'service_key',
+        ...Array.from(new URLSearchParams(window.location.search).keys())
+          .filter((key) => key.startsWith('filter_'))
+          .map((key) => key.replace('filter_', '')),
+      ])
   );
+  const keys = Array.from(keysSet.values());
 
   const schema = useMemo(() => {
-    return [
-      {
-        id: 'service_key',
-        label: 'Key',
-        operations: [{ value: 'EQUALS', label: 'is' }],
-        type: 'STRING',
-      },
-      ...keys.map(
-        (key) =>
-          ({
-            id: key,
-            label: key,
-            operations: [
-              // TODO: add is null/ is not null
-              { value: 'EQUALS', label: 'is' },
-              { value: 'NOT_EQUALS', label: 'is not' },
-              { value: 'CONTAINS', label: 'contains' },
-              { value: 'NOT_CONTAINS', label: 'does not contain' },
-            ],
-            type: 'STRING',
-          } as QueryClauseSchema<QueryClauseType>)
-      ),
-    ] satisfies QueryClauseSchema<QueryClauseType>[];
-  }, [keys]);
+    return Array.from(keysSet.values()).map(
+      (key) =>
+        ({
+          id: key,
+          label: key === 'service_key' ? `${virtualObject} (Key)` : key,
+          operations: [
+            // TODO: add is null/ is not null
+            { value: 'EQUALS', label: 'is' },
+            { value: 'NOT_EQUALS', label: 'is not' },
+            { value: 'CONTAINS', label: 'contains' },
+            { value: 'NOT_CONTAINS', label: 'does not contain' },
+          ],
+          type: 'STRING',
+        } as QueryClauseSchema<QueryClauseType>)
+    ) satisfies QueryClauseSchema<QueryClauseType>[];
+  }, [keysSet, virtualObject]);
+
+  const [queryFilters, setQueryFilters] = useState<FilterItem[]>(() =>
+    getQuery(searchParams, schema)
+      .filter((clause) => clause.isValid)
+      .map((clause) => {
+        return {
+          field: clause.id,
+          operation: clause.value.operation!,
+          type: clause.type,
+          value: clause.value.value,
+        } as FilterItem;
+      })
+  );
+  const {
+    dataUpdatedAt,
+    errorUpdatedAt,
+    error,
+    data: serviceKeysData,
+    isFetching,
+    isPending,
+    queryKey,
+  } = useQueryVirtualObjectState(virtualObject, queryFilters, {
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    staleTime: 0,
+  });
+
+  const [pageIndex, _setPageIndex] = useState(0);
+  const currentPageItems = useMemo(() => {
+    return (serviceKeysData?.keys ?? [])
+      .sort()
+      .slice(pageIndex * STATE_PAGE_SIZE, (pageIndex + 1) * STATE_PAGE_SIZE);
+  }, [pageIndex, serviceKeysData?.keys]);
+  const listObjects = useListVirtualObjectState(
+    virtualObject,
+    currentPageItems
+  );
+
+  const flattenedData = useMemo(() => {
+    return (
+      listObjects.data?.objects.map((obj) => ({
+        ...obj,
+        state: obj.state.reduce(
+          (p, c) => ({ ...p, [c.name]: c.value }),
+          {} as Record<string, string>
+        ),
+      })) ?? []
+    );
+  }, [listObjects.data]);
+
+  useEffect(() => {
+    const keys =
+      listObjects.data?.objects
+        .map((obj) => obj.state.map(({ name }) => name))
+        .flat() ?? [];
+    setKeysSet((s) => new Set([...s.values(), ...keys].sort()));
+  }, [listObjects.data]);
 
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>();
-  const collator = useCollator();
-  const [pageIndex, _setPageIndex] = useState(0);
   const [, startTransition] = useTransition();
 
   const setPageIndex = useCallback(
@@ -172,118 +221,22 @@ function Component() {
   useEffect(() => {
     setSelectedColumns((old) => {
       if (old instanceof Set && old.size <= 2) {
-        return new Set(['service_key', ...keys.slice(0, 6)]);
+        return new Set([
+          'service_key',
+          ...Array.from(keysSet.values()).slice(0, 6),
+        ]);
       }
       return old;
     });
-  }, [keys]);
+  }, [keysSet]);
 
   const queryCLient = useQueryClient();
-  const [queryFilters, setQueryFilters] = useState<FilterItem[]>(() =>
-    getQuery(searchParams, schema)
-      .filter((clause) => clause.isValid)
-      .map((clause) => {
-        return {
-          field: clause.id,
-          operation: clause.value.operation!,
-          type: clause.type,
-          value: clause.value.value,
-        } as FilterItem;
-      })
-  );
 
   const query = useQueryBuilder(getQuery(searchParams, schema));
   const queryRef = useRef(query);
   useEffect(() => {
     queryRef.current = query;
   });
-
-  useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    queryRef.current.remove(...queryRef.current.items.map((item) => item.id));
-    const query = getQuery(searchParams, schema);
-    queryRef.current.append(...query);
-
-    setQueryFilters(
-      query
-        .filter((clause) => clause.isValid)
-        .map((clause) => {
-          return {
-            field: clause.id,
-            operation: clause.value.operation!,
-            type: clause.type,
-            value: clause.value.value,
-          } as FilterItem;
-        })
-    );
-  }, [schema]);
-
-  const {
-    dataUpdatedAt,
-    errorUpdatedAt,
-    error,
-    data,
-    isFetching,
-    isPending,
-    queryKey,
-  } = useQueryVirtualObjectState(
-    virtualObject,
-    undefined,
-    undefined,
-    queryFilters,
-    {
-      refetchOnMount: false,
-      refetchOnReconnect: false,
-      staleTime: 0,
-    }
-  );
-
-  const sortedItems = useMemo(() => {
-    return [...(data?.objects ?? [])]
-      .map((row) => {
-        return {
-          key: row.key,
-          state: row.state?.reduce(
-            (p, c) => ({ ...p, [c.name]: c.value }),
-            {} as Record<string, string>
-          ),
-        };
-      })
-      .sort((a, b) => {
-        let cmp = 0;
-
-        if (
-          !sortDescriptor?.column ||
-          sortDescriptor.column === 'service_key'
-        ) {
-          cmp = collator.compare(a.key ?? '', b.key ?? '');
-        } else {
-          cmp = collator.compare(
-            a.state[String(sortDescriptor?.column)]?.toString() ?? '',
-            b.state[String(sortDescriptor?.column)]?.toString() ?? ''
-          );
-        }
-
-        // Flip the direction if descending order is specified.
-        if (sortDescriptor?.direction === 'descending') {
-          cmp *= -1;
-        }
-
-        return cmp;
-      });
-  }, [
-    collator,
-    data?.objects,
-    sortDescriptor?.column,
-    sortDescriptor?.direction,
-  ]);
-
-  const currentPageItems = useMemo(() => {
-    return sortedItems.slice(
-      pageIndex * STATE_PAGE_SIZE,
-      (pageIndex + 1) * STATE_PAGE_SIZE
-    );
-  }, [pageIndex, sortedItems]);
 
   const selectedColumnsArray = useMemo(() => {
     const cols = Array.from(selectedColumns).map((id, index) => ({
@@ -299,16 +252,18 @@ function Component() {
     return cols;
   }, [selectedColumns, virtualObject]);
 
-  const totalSize = Math.ceil((data?.objects.length ?? 0) / STATE_PAGE_SIZE);
+  const totalSize = Math.ceil(
+    (serviceKeysData?.keys.length ?? 0) / STATE_PAGE_SIZE
+  );
   const dataUpdate = error ? errorUpdatedAt : dataUpdatedAt;
   const setEditState = useEditStateContext();
 
   useEffect(() => {
-    if (sortedItems.length <= STATE_PAGE_SIZE * pageIndex) {
+    if ((serviceKeysData?.keys ?? []).length <= STATE_PAGE_SIZE * pageIndex) {
       setPageIndex(0);
     }
-  }, [pageIndex, setPageIndex, sortedItems.length]);
-  const hash = 'hash' + currentPageItems.map(({ key }) => key).join('');
+  }, [pageIndex, serviceKeysData?.keys, setPageIndex]);
+  const hash = 'hash' + flattenedData.map(({ key }) => key).join('');
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdate}>
@@ -323,7 +278,7 @@ function Component() {
             {(col) => {
               if (col.id === '__actions__') {
                 return (
-                  <Column id={col.id} width={40}>
+                  <Column id={col.id} width={40} allowsSorting={false}>
                     <Dropdown>
                       <DropdownTrigger>
                         {keys.length > 0 && (
@@ -346,11 +301,19 @@ function Component() {
                             selectedItems={selectedColumns}
                             onSelect={setSelectedColumns}
                           >
-                            {keys.map((key) => (
-                              <DropdownItem key={key} value={key}>
-                                {key}
-                              </DropdownItem>
-                            ))}
+                            <DropdownItem
+                              key={'service_key'}
+                              value={'service_key'}
+                            >
+                              {virtualObject} (Key)
+                            </DropdownItem>
+                            {keys
+                              .filter((key) => key !== 'service_key')
+                              .map((key) => (
+                                <DropdownItem key={key} value={key}>
+                                  {key}
+                                </DropdownItem>
+                              ))}
                           </DropdownMenu>
                         </DropdownSection>
                       </DropdownPopover>
@@ -362,8 +325,8 @@ function Component() {
                 <Column
                   id={col.id}
                   isRowHeader={col.isRowHeader}
-                  allowsSorting
                   key={col.id}
+                  allowsSorting={col.id === 'service_key'}
                 >
                   {col.name}
                 </Column>
@@ -372,10 +335,13 @@ function Component() {
           </TableHeader>
           <TableBody
             numOfRows={pageIndex === 0 ? undefined : STATE_PAGE_SIZE}
-            items={currentPageItems}
+            items={flattenedData}
             dependencies={[selectedColumnsArray, pageIndex]}
-            error={error}
-            isLoading={isPending}
+            error={error || listObjects.error}
+            isLoading={
+              isPending ||
+              (listObjects.isPending && currentPageItems.length !== 0)
+            }
             numOfColumns={selectedColumnsArray.length}
             emptyPlaceholder={
               <div className="flex flex-col items-center py-14 gap-4">
@@ -510,7 +476,11 @@ function Component() {
             }}
           </TableBody>
         </Table>
-        <Footnote data={data} isFetching={isFetching} key={dataUpdate}>
+        <Footnote
+          data={serviceKeysData}
+          isFetching={isFetching || listObjects.isFetching}
+          key={dataUpdate}
+        >
           {!isPending && !error && totalSize > 1 && (
             <div className="flex items-center bg-zinc-50 shadow-sm border rounded-lg py-0.5">
               <Button
@@ -574,6 +544,7 @@ function Component() {
             sortedOldSearchParams.sort();
 
             setSearchParams(newSearchParams, { preventScrollReset: true });
+            console.log(query.items);
             setQueryFilters(
               query.items
                 .filter((clause) => clause.isValid)
@@ -589,11 +560,22 @@ function Component() {
             );
             await queryCLient.invalidateQueries({ queryKey });
             await queryCLient.invalidateQueries({
-              queryKey: virtualObjectInterfaceQueryKey,
+              predicate: (query) =>
+                query.queryKey[0] === `/query/services/${virtualObject}/state`,
             });
           }}
         >
-          <QueryBuilder query={query} schema={schema} key={virtualObject}>
+          <QueryBuilder
+            query={query}
+            schema={schema}
+            multiple={false}
+            key={
+              schema
+                .map((s) => s.id)
+                .sort()
+                .join('') + virtualObject
+            }
+          >
             <AddQueryTrigger
               MenuTrigger={FiltersTrigger}
               placeholder={`Filter state…`}
@@ -694,10 +676,10 @@ function Footnote({
     <div className="flex flex-row-reverse flex-wrap items-center w-full text-center text-xs text-gray-500/80 ">
       {data && (
         <div className="ml-auto">
-          {data.objects && data.objects.length > 0 ? (
+          {data.keys && data.keys.length > 0 ? (
             <>
               <span className="font-medium text-gray-500">
-                {data.objects.length}
+                {data.keys.length}
               </span>{' '}
               objects
             </>
@@ -722,7 +704,8 @@ function ServiceSelector() {
   const { data } = useListServices(services);
   const virtualObjects = Array.from(data.values() ?? [])
     .filter((service) => service.ty === 'VirtualObject')
-    .map((service) => service.name);
+    .map((service) => service.name)
+    .sort();
   const navigate = useNavigate();
   const newVirtualObject = virtualObjects[0];
 
@@ -765,7 +748,13 @@ function ServiceSelector() {
       </DropdownTrigger>
       <DropdownPopover placement="top">
         <DropdownSection title="Virtual Objects">
-          <DropdownMenu selectable selectedItems={[virtualObject]}>
+          <DropdownMenu
+            selectable
+            selectedItems={[virtualObject]}
+            onSelect={(value) =>
+              localStorage.setItem('state_virtualObject', value)
+            }
+          >
             {virtualObjects.map((service) => (
               <DropDownVirtualObject service={service} key={service} />
             ))}

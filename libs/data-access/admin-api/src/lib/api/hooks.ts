@@ -507,12 +507,37 @@ export function useGetVirtualObjectState(
 
 export function useQueryVirtualObjectState(
   serviceName: string,
-  page?: number,
-  sort?: {
-    field: string;
-    order: 'ASC' | 'DESC';
-  },
   filters?: FilterItem[],
+  options?: HookQueryOptions<'/query/services/{name}/state/query', 'post'>
+) {
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi(
+    'query',
+    '/query/services/{name}/state/query',
+    'post',
+    {
+      baseUrl,
+      parameters: { path: { name: serviceName } },
+      body: {
+        filters,
+      },
+      resolvedPath: `/query/services/${serviceName}/state/query`,
+    }
+  );
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+  };
+}
+
+export function useListVirtualObjectState(
+  serviceName: string,
+  keys: string[],
   options?: HookQueryOptions<'/query/services/{name}/state', 'post'>
 ) {
   const baseUrl = useAdminBaseUrl();
@@ -524,9 +549,7 @@ export function useQueryVirtualObjectState(
       baseUrl,
       parameters: { path: { name: serviceName } },
       body: {
-        filters,
-        page,
-        sort,
+        keys,
       },
       resolvedPath: `/query/services/${serviceName}/state`,
     }
@@ -535,51 +558,7 @@ export function useQueryVirtualObjectState(
   const results = useQuery({
     ...queryOptions,
     ...options,
-  });
-
-  return {
-    ...results,
-    queryKey: queryOptions.queryKey,
-  };
-}
-
-export function useGetVirtualObjectStateInterface(
-  serviceName: string,
-  options?: HookQueryOptions<'/query/services/{name}/state/keys', 'get'>
-) {
-  const baseUrl = useAdminBaseUrl();
-  const queryOptions = adminApi(
-    'query',
-    '/query/services/{name}/state/keys',
-    'get',
-    {
-      baseUrl,
-      parameters: { path: { name: serviceName } },
-    }
-  );
-
-  const results = useQuery({
-    ...queryOptions,
-    ...options,
-  });
-
-  return {
-    ...results,
-    queryKey: queryOptions.queryKey,
-  };
-}
-
-export function useGetStateInterface(
-  options?: HookQueryOptions<'/query/services/state', 'get'>
-) {
-  const baseUrl = useAdminBaseUrl();
-  const queryOptions = adminApi('query', '/query/services/state', 'get', {
-    baseUrl,
-  });
-
-  const results = useQuery({
-    ...queryOptions,
-    ...options,
+    ...(keys.length === 0 && { enabled: false }),
   });
 
   return {
@@ -707,7 +686,7 @@ export function useEditState(
             );
           },
         },
-        (oldData: ReturnType<typeof useQueryVirtualObjectState>['data']) => {
+        (oldData: ReturnType<typeof useListVirtualObjectState>['data']) => {
           if (!oldData || !data) {
             return oldData;
           } else {

@@ -2166,7 +2166,7 @@
     },
     "/query/services/{name}/state": {
       "post": {
-        "tags": ["query-state"],
+        "tags": ["list-state"],
         "summary": "List virtual object state",
         "description": "List virtual object state",
         "operationId": "list_virtual_object_state",
@@ -2185,7 +2185,16 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ListVirtualObjectStateRequestBody"
+                "type": "object",
+                "required": ["keys"],
+                "properties": {
+                  "keys": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
               }
             }
           },
@@ -2210,6 +2219,7 @@
                           },
                           {
                             "type": "object",
+                            "required": ["key"],
                             "properties": {
                               "key": {
                                 "type": "string"
@@ -2218,12 +2228,6 @@
                           }
                         ]
                       }
-                    },
-                    "total_count": {
-                      "type": "integer"
-                    },
-                    "limit": {
-                      "type": "integer"
                     }
                   }
                 }
@@ -2295,7 +2299,7 @@
     },
     "/query/services/{name}/keys/{key}/state": {
       "get": {
-        "tags": ["query-invocations"],
+        "tags": ["get-state"],
         "summary": "Get state keys",
         "description": "Get state keys",
         "operationId": "get_state",
@@ -2407,12 +2411,33 @@
         }
       }
     },
-    "/query/services/state": {
-      "get": {
+    "/query/services/{name}/state/query": {
+      "post": {
         "tags": ["query-state"],
-        "summary": "List state",
-        "description": "List state",
-        "operationId": "list_state",
+        "summary": "Query virtual object state",
+        "description": "Query virtual object state",
+        "operationId": "query_virtual_object_state",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "description": "service name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ListVirtualObjectStateRequestBody"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "description": "",
@@ -2420,24 +2445,12 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "required": ["objects"],
+                  "required": ["keys"],
                   "properties": {
-                    "objects": {
+                    "keys": {
                       "type": "array",
                       "items": {
-                        "required": ["name", "keys"],
-                        "type": "object",
-                        "properties": {
-                          "name": {
-                            "type": "string"
-                          },
-                          "keys": {
-                            "type": "array",
-                            "items": {
-                              "$ref": "#/components/schemas/StateInterfaceResponse"
-                            }
-                          }
-                        }
+                        "type": "string"
                       }
                     }
                   }
@@ -3325,25 +3338,6 @@
       "ListVirtualObjectStateRequestBody": {
         "type": "object",
         "properties": {
-          "page": {
-            "type": "integer"
-          },
-          "sort": {
-            "type": "object",
-            "required": ["field", "order"],
-            "properties": {
-              "field": {
-                "type": "string"
-              },
-              "limit": {
-                "type": "integer"
-              },
-              "order": {
-                "type": "string",
-                "enum": ["ASC", "DESC"]
-              }
-            }
-          },
           "filters": {
             "type": "array",
             "items": {

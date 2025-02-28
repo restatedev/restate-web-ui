@@ -17,9 +17,12 @@ function Component() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    virtualObject &&
-      navigate(`./${virtualObject}${window.location.search}`, {
+    const defaultVirtualObject =
+      localStorage.getItem('state_virtualObject') || virtualObject;
+    defaultVirtualObject &&
+      navigate(`./${defaultVirtualObject}${window.location.search}`, {
         relative: 'path',
+        replace: true,
       });
   }, [navigate, virtualObject]);
 

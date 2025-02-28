@@ -17,6 +17,7 @@ import { Key, ListData, useListData } from 'react-stately';
 interface QueryBuilderProps {
   schema: QueryClauseSchema<QueryClauseType>[];
   query: ListData<QueryClause<QueryClauseType>>;
+  multiple: boolean;
 }
 
 const QueryBuilderContext = createContext<{
@@ -24,8 +25,10 @@ const QueryBuilderContext = createContext<{
   schema: QueryClauseSchema<QueryClauseType>[];
   newId?: string;
   setNewId?: (id?: string) => void;
+  multiple: boolean;
 }>({
   schema: [],
+  multiple: false,
 });
 
 // TODO: update state if schema changes
@@ -43,6 +46,7 @@ export function QueryBuilder({
   schema,
   query,
   children,
+  multiple,
 }: PropsWithChildren<QueryBuilderProps>) {
   const [newId, setNewId] = useState<string>();
 
@@ -53,6 +57,7 @@ export function QueryBuilder({
         query,
         newId,
         setNewId,
+        multiple,
       }}
     >
       {children}
@@ -79,7 +84,7 @@ export function AddQueryTrigger({
   prefix?: ReactNode;
   MenuTrigger?: ComponentType<unknown>;
 }) {
-  const { query, schema, setNewId } = use(QueryBuilderContext);
+  const { query, schema, setNewId, multiple } = use(QueryBuilderContext);
   const items = useMemo(() => {
     return schema.map((clauseSchema) => new QueryClause(clauseSchema));
   }, [schema]);
@@ -143,6 +148,7 @@ export function AddQueryTrigger({
       onItemRemove={onRemove}
       onItemUpdated={onRemove}
       prefix={prefix}
+      multiple={multiple}
     />
   );
 }

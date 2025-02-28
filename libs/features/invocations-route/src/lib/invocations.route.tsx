@@ -587,7 +587,7 @@ function Component() {
             await queryCLient.invalidateQueries({ queryKey });
           }}
         >
-          <QueryBuilder query={query} schema={schema}>
+          <QueryBuilder query={query} schema={schema} multiple>
             <AddQueryTrigger
               MenuTrigger={FiltersTrigger}
               placeholder="Filter invocations…"
