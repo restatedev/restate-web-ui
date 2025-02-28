@@ -127,7 +127,7 @@ function Component() {
       (key) =>
         ({
           id: key,
-          label: key === 'service_key' ? 'Key' : key,
+          label: key === 'service_key' ? `${virtualObject} (Key)` : key,
           operations: [
             // TODO: add is null/ is not null
             { value: 'EQUALS', label: 'is' },
@@ -138,7 +138,7 @@ function Component() {
           type: 'STRING',
         } as QueryClauseSchema<QueryClauseType>)
     ) satisfies QueryClauseSchema<QueryClauseType>[];
-  }, [keysSet]);
+  }, [keysSet, virtualObject]);
 
   const [queryFilters, setQueryFilters] = useState<FilterItem[]>(() =>
     getQuery(searchParams, schema)
@@ -301,11 +301,19 @@ function Component() {
                             selectedItems={selectedColumns}
                             onSelect={setSelectedColumns}
                           >
-                            {keys.map((key) => (
-                              <DropdownItem key={key} value={key}>
-                                {key}
-                              </DropdownItem>
-                            ))}
+                            <DropdownItem
+                              key={'service_key'}
+                              value={'service_key'}
+                            >
+                              {virtualObject} (Key)
+                            </DropdownItem>
+                            {keys
+                              .filter((key) => key !== 'service_key')
+                              .map((key) => (
+                                <DropdownItem key={key} value={key}>
+                                  {key}
+                                </DropdownItem>
+                              ))}
                           </DropdownMenu>
                         </DropdownSection>
                       </DropdownPopover>
