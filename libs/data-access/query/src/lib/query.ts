@@ -294,7 +294,10 @@ async function listState(
     baseUrl,
     headers,
   }).then(async ({ rows }) => {
-    return rows.reduce(
+    const results: Record<
+      string,
+      { key: string; state: Record<string, string> }
+    > = rows.reduce(
       (p, c) => {
         return {
           ...p,
@@ -311,6 +314,13 @@ async function listState(
         return { ...p, [c]: { key: c, state: {} } };
       }, {})
     );
+    return Object.values(results).map((object) => ({
+      key: object.key,
+      state: Object.entries(object.state).map(([name, value]) => ({
+        name,
+        value,
+      })),
+    }));
   });
 
   const objects = await resultsPromise;
