@@ -4,7 +4,7 @@ import { match } from 'path-to-regexp';
 import { convertJournal } from './convertJournal';
 import type { FilterItem } from '@restate/data-access/admin-api/spec';
 import { RestateError } from '@restate/util/errors';
-import { convertFilters, convertStateFilters } from './convertFilters';
+import { convertFilters } from './convertFilters';
 import { stateVersion } from './stateVersion';
 
 function queryFetcher(
@@ -217,8 +217,6 @@ async function getStateInterface(
   });
 }
 
-// TODO: add limit
-// TODO: pagination
 async function queryState(
   service: string,
   baseUrl: string,
@@ -271,6 +269,53 @@ async function queryState(
   const [{ keys }] = await Promise.all([resultsPromise]);
 
   return new Response(JSON.stringify({ keys }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+async function listState(
+  service: string,
+  baseUrl: string,
+  headers: Headers,
+  keys: string[]
+) {
+  const query = `SELECT service_key, key, value_utf8
+    FROM state WHERE service_name = '${service}' AND service_key IN (${keys
+    .map((key) => `'${key}'`)
+    .join(',')})`;
+
+  const resultsPromise: Promise<
+    {
+      key: string;
+      state: { name: string; value: string }[];
+    }[]
+  > = queryFetcher(query, {
+    baseUrl,
+    headers,
+  }).then(async ({ rows }) => {
+    return rows.reduce(
+      (p, c) => {
+        return {
+          ...p,
+          [c.service_key]: {
+            ...p[c.service_key],
+            state: {
+              ...p[c.service_key].state,
+              [c.key]: c.value_utf8,
+            },
+          },
+        };
+      },
+      keys.reduce((p, c) => {
+        return { ...p, [c]: { key: c, state: {} } };
+      }, {})
+    );
+  });
+
+  const objects = await resultsPromise;
+
+  return new Response(JSON.stringify({ objects }), {
     status: 200,
     headers: { 'Content-Type': 'application/json' },
   });
@@ -395,6 +440,16 @@ async function queryHandler(req: Request) {
       headers,
       filters
     );
+  }
+
+  const getListStateParams = match<{ name: string }>(
+    '/query/services/:name/state'
+  )(urlObj.pathname);
+
+  if (getListStateParams && method.toUpperCase() === 'POST') {
+    const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
+    const { keys = [] } = await req.json();
+    return listState(getListStateParams.params.name, baseUrl, headers, keys);
   }
 
   return new Response('Not implemented', { status: 501 });

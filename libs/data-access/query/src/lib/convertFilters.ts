@@ -388,19 +388,3 @@ export function convertFilters(filters: FilterItem[]) {
     return `WHERE ${mappedFilters.join(' AND ')}`;
   }
 }
-
-export function convertStateFilters(filters: FilterItem[]) {
-  const keyFilters = filters
-    .map((filter) => {
-      if (['NOT_EQUALS', 'NOT_CONTAINS'].includes(filter.operation)) {
-        return `("${filter.field}" IS NULL OR ${convertFilterToSqlClause(
-          filter
-        )})`;
-      } else {
-        return convertFilterToSqlClause(filter);
-      }
-    })
-    .join(' AND ');
-
-  return keyFilters;
-}
