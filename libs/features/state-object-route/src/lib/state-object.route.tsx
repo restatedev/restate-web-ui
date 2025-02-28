@@ -704,7 +704,8 @@ function ServiceSelector() {
   const { data } = useListServices(services);
   const virtualObjects = Array.from(data.values() ?? [])
     .filter((service) => service.ty === 'VirtualObject')
-    .map((service) => service.name);
+    .map((service) => service.name)
+    .sort();
   const navigate = useNavigate();
   const newVirtualObject = virtualObjects[0];
 
@@ -747,7 +748,13 @@ function ServiceSelector() {
       </DropdownTrigger>
       <DropdownPopover placement="top">
         <DropdownSection title="Virtual Objects">
-          <DropdownMenu selectable selectedItems={[virtualObject]}>
+          <DropdownMenu
+            selectable
+            selectedItems={[virtualObject]}
+            onSelect={(value) =>
+              localStorage.setItem('state_virtualObject', value)
+            }
+          >
             {virtualObjects.map((service) => (
               <DropDownVirtualObject service={service} key={service} />
             ))}
