@@ -10,7 +10,7 @@ import {
 } from '@tanstack/react-query';
 
 const styles = tv({
-  base: 'min-w-[150px] h-[150px] relative p2-[4px]',
+  base: 'min-w-[150px] h-[150px] relative',
 });
 const buttonStyles = tv({
   base: 'flex w-[142px] h-[142px]  focus:outline-none bg-none group hover:bg-transparent pressed:bg-transparent shadow-none py-0 px-0 border-none hover:scale-105 pressed:scale-95 [&:not(:hover):has([data-status=active])]:scale-[1.025] [&:has([data-status=pause])_canvas]:hue-rotate-180 [&:has([data-status=active])_.server]:[filter:drop-shadow(0_6px_3px_theme(colors.zinc.800/5%))_drop-shadow(0_10px_8px_theme(colors.blue.500/20%))]',
@@ -53,6 +53,7 @@ export function RestateServer({
   const queryClient = useQueryClient();
 
   const { status } = useRestateContext();
+
   const isHealthy = status === 'HEALTHY';
   const isActive = isFetching || isMutating;
 

@@ -26,6 +26,7 @@ import type {
 } from './type';
 import { useEffect } from 'react';
 import { RestateError } from '@restate/util/errors';
+import { useAPIStatus } from '../APIStatusProvider';
 
 type HookQueryOptions<
   Path extends keyof paths,
@@ -116,6 +117,8 @@ function listDeploymentsSelector(
 export function useListDeployments(
   options?: HookQueryOptions<'/deployments', 'get'>
 ) {
+  const enabled = useAPIStatus();
+
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi('query', '/deployments', 'get', { baseUrl });
 
@@ -123,11 +126,13 @@ export function useListDeployments(
     ...queryOptions,
     ...options,
     select: listDeploymentsSelector,
+    enabled: options?.enabled !== false && enabled,
   });
 
   return {
     ...results,
     queryKey: queryOptions.queryKey,
+    isPending: results.isPending || !enabled,
   };
 }
 
@@ -192,6 +197,7 @@ export function useListServices(
   services: string[] = [],
   options?: HookQueryOptions<'/services/{service}', 'get'>
 ) {
+  const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
 
   const results = useQueries({
@@ -202,6 +208,7 @@ export function useListServices(
       }),
       staleTime: 0,
       ...options,
+      enabled: options?.enabled !== false && enabled,
     })),
     combine: (results) => {
       return {
@@ -211,7 +218,7 @@ export function useListServices(
           }
           return result;
         }, new Map<string, Service>()),
-        isPending: results.some((result) => result.isPending),
+        isPending: results.some((result) => result.isPending) || !enabled,
         promise: Promise.all(results.map(({ promise }) => promise)),
       };
     },
@@ -292,6 +299,8 @@ export function useListInvocations(
   filters?: FilterItem[],
   options?: HookQueryOptions<'/query/invocations', 'post'>
 ) {
+  const enabled = useAPIStatus();
+
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi('query', '/query/invocations', 'post', {
     baseUrl,
@@ -303,11 +312,13 @@ export function useListInvocations(
   const results = useQuery({
     ...queryOptions,
     ...options,
+    enabled: options?.enabled !== false && enabled,
   });
 
   return {
     ...results,
     queryKey: queryOptions.queryKey,
+    isPending: results.isPending || !enabled,
   };
 }
 
@@ -510,6 +521,7 @@ export function useQueryVirtualObjectState(
   filters?: FilterItem[],
   options?: HookQueryOptions<'/query/services/{name}/state/query', 'post'>
 ) {
+  const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi(
     'query',
@@ -527,11 +539,13 @@ export function useQueryVirtualObjectState(
   const results = useQuery({
     ...queryOptions,
     ...options,
+    enabled: options?.enabled !== false && enabled,
   });
 
   return {
     ...results,
     queryKey: queryOptions.queryKey,
+    isPending: results.isPending || !enabled,
   };
 }
 

@@ -269,7 +269,7 @@ function Component() {
     <SnapshotTimeProvider lastSnapshot={dataUpdate}>
       <div className="flex flex-col flex-auto gap-2 relative">
         <Table
-          aria-label="Invocations"
+          aria-label="State"
           sortDescriptor={sortDescriptor}
           onSortChange={setSortDescriptor}
           key={hash}

@@ -4,6 +4,14 @@ import {
 } from '@restate/data-access/admin-api';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Link } from '@restate/ui/link';
+import {
+  Cell,
+  Column,
+  Row,
+  Table,
+  TableBody,
+  TableHeader,
+} from '@restate/ui/table';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 
@@ -29,7 +37,25 @@ function Component() {
   if (virtualObject) {
     return null;
   }
-  if (!isPending && deployments && !virtualObject) {
+
+  if (isPending) {
+    return (
+      <div className="flex flex-col flex-auto gap-2 relative">
+        <Table aria-label="State">
+          <TableHeader>
+            <Column isRowHeader></Column>
+            <Column></Column>
+            <Column></Column>
+            <Column></Column>
+            <Column></Column>
+          </TableHeader>
+          <TableBody isLoading numOfColumns={5}></TableBody>
+        </Table>
+      </div>
+    );
+  }
+
+  if (!isPending && !virtualObject) {
     return (
       <div className="mb-[-6rem] pb-8 pt-24 flex-auto w-full justify-center rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] flex flex-col items-center">
         <div className="flex flex-col gap-2 items-center relative w-full text-center mt-6">
