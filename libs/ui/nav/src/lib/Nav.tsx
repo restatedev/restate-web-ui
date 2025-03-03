@@ -56,6 +56,7 @@ export function Nav({ children, className, ariaCurrentValue }: NavProps) {
     const observer = new MutationObserver(callback);
     const containerElement = containerElementRef.current;
     const detailsElement = containerElement?.closest('details');
+    // TODO
     const updateStyleWithDetails = () =>
       updateStyle(
         containerElement?.querySelector(
@@ -78,9 +79,12 @@ export function Nav({ children, className, ariaCurrentValue }: NavProps) {
         )
       );
     }
+
+    window.addEventListener('resize', updateStyleWithDetails);
     return () => {
       observer.disconnect();
       detailsElement?.removeEventListener('toggle', updateStyleWithDetails);
+      window.removeEventListener('resize', updateStyleWithDetails);
     };
   }, []);
 
