@@ -1,5 +1,6 @@
 import {
   AdminBaseURLProvider,
+  APIStatusProvider,
   useHealth,
   useVersion,
 } from '@restate/data-access/admin-api';
@@ -44,7 +45,9 @@ function InternalRestateContextProvider({
     <InternalRestateContext.Provider
       value={{ version, status, ingressUrl: resolvedIngress }}
     >
-      {children}
+      <APIStatusProvider enabled={status === 'HEALTHY'}>
+        {children}
+      </APIStatusProvider>
     </InternalRestateContext.Provider>
   );
 }
