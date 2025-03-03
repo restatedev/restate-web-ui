@@ -163,10 +163,15 @@ const reactServerStyles = tv({
       true: '[&>svg:first-child>path]:fill-red-100',
       false: '',
     },
+    isPending: {
+      true: 'flex fixed',
+      false: '',
+    },
   },
   defaultVariants: {
     isEmpty: false,
     isError: false,
+    isPending: false,
   },
 });
 
@@ -243,8 +248,12 @@ function Component() {
         </Masonry>
       </ResponsiveMasonry>
       <RestateServer
-        className={reactServerStyles({ isEmpty, isError })}
-        isError={isError}
+        className={reactServerStyles({
+          isEmpty,
+          isError,
+          isPending,
+        })}
+        isError={isError || !isPending}
         isEmpty={isEmpty}
       >
         {isEmpty && <NoDeploymentPlaceholder error={error} />}

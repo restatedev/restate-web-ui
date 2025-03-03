@@ -26,6 +26,7 @@ import type {
 } from './type';
 import { useEffect } from 'react';
 import { RestateError } from '@restate/util/errors';
+import { useRestateContext } from '@restate/features/restate-context';
 
 type HookQueryOptions<
   Path extends keyof paths,
@@ -116,6 +117,8 @@ function listDeploymentsSelector(
 export function useListDeployments(
   options?: HookQueryOptions<'/deployments', 'get'>
 ) {
+  const { status } = useRestateContext();
+
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi('query', '/deployments', 'get', { baseUrl });
 
@@ -123,11 +126,13 @@ export function useListDeployments(
     ...queryOptions,
     ...options,
     select: listDeploymentsSelector,
+    enabled: options?.enabled !== false && status === 'HEALTHY',
   });
 
   return {
     ...results,
     queryKey: queryOptions.queryKey,
+    isPending: results.isPending || status !== 'HEALTHY',
   };
 }
 
@@ -192,6 +197,7 @@ export function useListServices(
   services: string[] = [],
   options?: HookQueryOptions<'/services/{service}', 'get'>
 ) {
+  const { status } = useRestateContext();
   const baseUrl = useAdminBaseUrl();
 
   const results = useQueries({
@@ -202,6 +208,7 @@ export function useListServices(
       }),
       staleTime: 0,
       ...options,
+      enabled: options?.enabled !== false && status === 'HEALTHY',
     })),
     combine: (results) => {
       return {
@@ -211,7 +218,8 @@ export function useListServices(
           }
           return result;
         }, new Map<string, Service>()),
-        isPending: results.some((result) => result.isPending),
+        isPending:
+          results.some((result) => result.isPending) || status !== 'HEALTHY',
         promise: Promise.all(results.map(({ promise }) => promise)),
       };
     },
@@ -292,6 +300,8 @@ export function useListInvocations(
   filters?: FilterItem[],
   options?: HookQueryOptions<'/query/invocations', 'post'>
 ) {
+  const { status } = useRestateContext();
+
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi('query', '/query/invocations', 'post', {
     baseUrl,
@@ -303,11 +313,13 @@ export function useListInvocations(
   const results = useQuery({
     ...queryOptions,
     ...options,
+    enabled: options?.enabled !== false && status === 'HEALTHY',
   });
 
   return {
     ...results,
     queryKey: queryOptions.queryKey,
+    isPending: results.isPending || status !== 'HEALTHY',
   };
 }
 
@@ -510,6 +522,7 @@ export function useQueryVirtualObjectState(
   filters?: FilterItem[],
   options?: HookQueryOptions<'/query/services/{name}/state/query', 'post'>
 ) {
+  const { status } = useRestateContext();
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi(
     'query',
@@ -527,11 +540,13 @@ export function useQueryVirtualObjectState(
   const results = useQuery({
     ...queryOptions,
     ...options,
+    enabled: options?.enabled !== false && status === 'HEALTHY',
   });
 
   return {
     ...results,
     queryKey: queryOptions.queryKey,
+    isPending: results.isPending || status !== 'HEALTHY',
   };
 }
 
