@@ -143,7 +143,7 @@ export default function App() {
             <Outlet />
           </LayoutOutlet>
           <LayoutOutlet zone={LayoutZone.AppBar}>
-            <div className="flex items-stretch gap-2 flex-1">
+            <div className="flex items-stretch gap-2 flex-1 min-w-0">
               <div className="flex gap-2 items-center rounded-xl border bg-white p-3 shadow-sm h-full">
                 <Icon
                   name={IconName.RestateEnvironment}
@@ -152,12 +152,14 @@ export default function App() {
               </div>
               <Button
                 variant="secondary"
-                className="flex items-center gap-2 px-2 my-1 bg-transparent border-none shadow-none"
+                className="flex items-center gap-2 px-2 my-1 bg-transparent border-none shadow-none min-w-0"
               >
                 <div className="truncate row-start-1 col-start-2 w-full flex items-center gap-2">
                   <HealthIndicator mini className="-mt-0.5" />
                   <HealthCheckNotification />
-                  <span className="flex-auto truncate">Restate server</span>
+                  <span className="flex-auto truncate min-w-0 block">
+                    Restate server
+                  </span>
                   <Version />
                 </div>
               </Button>

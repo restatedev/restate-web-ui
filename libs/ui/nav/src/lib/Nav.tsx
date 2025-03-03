@@ -1,21 +1,36 @@
-import { AriaAttributes, PropsWithChildren, useEffect, useRef } from 'react';
+import {
+  AriaAttributes,
+  Children,
+  ComponentProps,
+  ReactElement,
+  useEffect,
+  useRef,
+} from 'react';
 import { tv } from 'tailwind-variants';
 import { NavContext } from './NavContext';
+import {
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownPopover,
+  DropdownTrigger,
+} from '@restate/ui/dropdown';
+import { NavItem } from './NavItem';
+import { Button } from '@restate/ui/button';
+import { useLocation } from 'react-router';
+import { Icon, IconName } from '@restate/ui/icons';
 
 interface NavProps {
   className?: string;
   ariaCurrentValue?: AriaAttributes['aria-current'];
+  children: ReactElement<ComponentProps<typeof NavItem>>[];
 }
 
 const styles = tv({
   base: 'flex items-center gap-0',
 });
 
-export function Nav({
-  children,
-  className,
-  ariaCurrentValue,
-}: PropsWithChildren<NavProps>) {
+export function Nav({ children, className, ariaCurrentValue }: NavProps) {
   const containerElementRef = useRef<HTMLDivElement | null>(null);
   const activeIndicatorElement = useRef<HTMLDivElement | null>(null);
 
@@ -69,10 +84,12 @@ export function Nav({
     };
   }, []);
 
+  const location = useLocation();
+
   return (
     <NavContext.Provider value={{ value: ariaCurrentValue }}>
       <div
-        className="relative  [&:has(a:hover)]:bg-black/[.03] [&:has(a:focus)]:bg-black/[.03] [&:has(a:hover)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] [&:has(a:focus)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] border-[0.5px] border-transparent [&:has(a:focus)]:border-zinc-800/5 [&:has(a:hover)]:border-zinc-800/5 [&:has(a:hover)]:border-[0.5px] [&:has(a:focus)]:border-[0.5px] rounded-xl"
+        className="hidden md:block relative  [&:has(a:hover)]:bg-black/[.03] [&:has(a:focus)]:bg-black/[.03] [&:has(a:hover)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] [&:has(a:focus)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] border-[0.5px] border-transparent [&:has(a:focus)]:border-zinc-800/5 [&:has(a:hover)]:border-zinc-800/5 [&:has(a:hover)]:border-[0.5px] [&:has(a:focus)]:border-[0.5px] rounded-xl"
         ref={containerElementRef}
       >
         <div
@@ -80,6 +97,50 @@ export function Nav({
           ref={activeIndicatorElement}
         />
         <ul className={styles({ className })}>{children}</ul>
+      </div>
+      <div className="md:hidden">
+        <Dropdown>
+          <DropdownTrigger>
+            <Button
+              variant="secondary"
+              className="flex items-center gap-2 pr-1.5 pl-3 py-1.5 "
+            >
+              {Children.map(children, (child) => (
+                <span
+                  className={
+                    location.pathname.startsWith(child.props.href)
+                      ? ''
+                      : 'hidden'
+                  }
+                >
+                  {child.props.children}
+                </span>
+              ))}
+              <Icon
+                name={IconName.ChevronsUpDown}
+                className="text-gray-500 w-4 h-4"
+              />
+            </Button>
+          </DropdownTrigger>
+          <DropdownPopover>
+            <DropdownMenu
+              selectable
+              selectedItems={Children.toArray(children)
+                .map(
+                  (child) =>
+                    (child as ReactElement<ComponentProps<typeof NavItem>>)
+                      .props.href
+                )
+                .filter((href) => location.pathname.startsWith(href))}
+            >
+              {Children.map(children, (child) => (
+                <DropdownItem href={child.props.href} value={child.props.href}>
+                  {child.props.children}
+                </DropdownItem>
+              ))}
+            </DropdownMenu>
+          </DropdownPopover>
+        </Dropdown>
       </div>
     </NavContext.Provider>
   );
