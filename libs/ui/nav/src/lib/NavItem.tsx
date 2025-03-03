@@ -76,21 +76,21 @@ export function NavSearchItem({
   currentSearchParams.sort();
   const targetSearchParams = new URLSearchParams(search);
   const keys = Array.from(targetSearchParams.keys());
-  const mergedTargetSearchParams = keys.reduce((search, key) => {
-    const value = targetSearchParams.get(key);
-    if (value) {
-      search.set(key, value);
-    } else {
-      search.delete(key);
-    }
+  const excludingNewParams = keys.reduce((search, key) => {
+    search.delete(key);
     return search;
-  }, new URLSearchParams(currentSearchParams));
-  mergedTargetSearchParams.sort();
+  }, new URLSearchParams(location.search));
+  const withNewParams = new URLSearchParams([
+    ...excludingNewParams,
+    ...new URLSearchParams(search),
+  ]);
+  const withNewParamsSorted = new URLSearchParams(withNewParams);
+  withNewParamsSorted.sort();
 
   const isActive =
-    currentSearchParams.toString() === mergedTargetSearchParams.toString();
+    currentSearchParams.toString() === withNewParamsSorted.toString();
   const targetSearch =
-    targetSearchParams.size > 0 ? `?${targetSearchParams.toString()}` : '';
+    targetSearchParams.size > 0 ? `?${withNewParams.toString()}` : '';
 
   const { value } = useContext(NavContext);
 
