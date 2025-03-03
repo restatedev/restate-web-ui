@@ -20,7 +20,7 @@ export interface LayoutProps {}
 export function LayoutProvider({ children }: PropsWithChildren<LayoutProps>) {
   return (
     <>
-      <div className="fixed top-0 h-6 z-50 left-0 right-0 bg-gradient-to-t from-gray-100/20 to-gray-100" />
+      <div className="fixed top-0 h-6 z-30 left-0 right-0 bg-gradient-to-t from-gray-100/20 to-gray-100" />
       <div className="flex w-full flex-col min-h-[100vh] mx-auto max-w-6xl 3xl:max-w-[min(100rem,calc(100vw-800px-4rem))] py-3 sm:py-6 px-3 sm:px-6 lg:px-8">
         <AppBar id={ZONE_IDS[LayoutZone.AppBar]} />
         <NotificationRegion />
