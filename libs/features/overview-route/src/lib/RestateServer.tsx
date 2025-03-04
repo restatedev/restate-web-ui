@@ -59,6 +59,7 @@ export function RestateServer({
 
   if ((!isHealthy || isError) && blob.status !== 'pause') {
     blob.status = 'pause';
+    timeoutRef.current && clearTimeout(timeoutRef.current);
   }
 
   if (isHealthy && isActive && blob.status !== 'active') {
@@ -67,7 +68,7 @@ export function RestateServer({
 
   if (isHealthy && !isActive && blob.status !== 'idle' && !timeoutRef.current) {
     timeoutRef.current = setTimeout(() => {
-      blob.status = 'idle';
+      blob.status = !isHealthy || isError ? 'pause' : 'idle';
       timeoutRef.current = null;
     }, 2000);
   }

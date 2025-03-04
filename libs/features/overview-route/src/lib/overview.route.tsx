@@ -183,6 +183,7 @@ function Component() {
     isFetched,
     isError,
     error,
+    isFetching,
   } = useListDeployments();
 
   const size = services ? services.size : 0;
@@ -253,7 +254,7 @@ function Component() {
           isError,
           isPending,
         })}
-        isError={isError || !isPending}
+        isError={isError}
         isEmpty={isEmpty}
       >
         {isEmpty && <NoDeploymentPlaceholder error={error} />}
