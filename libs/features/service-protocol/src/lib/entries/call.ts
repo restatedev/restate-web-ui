@@ -140,7 +140,7 @@ export function call(
   serviceName?: string;
   key?: string;
 } {
-  if (entry.version === 1) {
+  if (entry.version === 1 || !entry.version) {
     return callV1(entry);
   }
 

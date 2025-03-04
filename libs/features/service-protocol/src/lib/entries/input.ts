@@ -53,7 +53,7 @@ export function input(
   completed?: boolean;
   failure?: undefined;
 } {
-  if (entry.version === 1) {
+  if (entry.version === 1 || !entry.version) {
     return inputV1(entry);
   }
 

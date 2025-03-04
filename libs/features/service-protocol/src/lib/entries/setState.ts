@@ -35,7 +35,7 @@ export function setState(
   entry: JournalRawEntry,
   allEntries: JournalRawEntry[]
 ) {
-  if (entry.version === 1) {
+  if (entry.version === 1 || !entry.version) {
     return setStateV1(entry);
   }
 

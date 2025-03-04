@@ -53,7 +53,7 @@ function outputV2(entry: JournalRawEntry, allEntries: JournalRawEntry[]) {
 }
 
 export function output(entry: JournalRawEntry, allEntries: JournalRawEntry[]) {
-  if (entry.version === 1) {
+  if (entry.version === 1 || !entry.version) {
     return outputV1(entry);
   }
 
