@@ -75,7 +75,7 @@ export function sleep(
   completed?: boolean;
   failure?: RestateError;
 } {
-  if (entry.version === 1) {
+  if (entry.version === 1 || !entry.version) {
     return sleepV1(entry);
   }
 

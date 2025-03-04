@@ -103,7 +103,7 @@ export function completePromise(
   entry: JournalRawEntry,
   allEntries: JournalRawEntry[]
 ) {
-  if (entry.version === 1) {
+  if (entry.version === 1 || !entry.version) {
     return completePromiseV1(entry);
   }
 

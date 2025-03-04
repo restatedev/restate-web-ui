@@ -80,7 +80,7 @@ export function run(
   completed?: boolean;
   failure?: RestateError;
 } {
-  if (entry.version === 1) {
+  if (entry.version === 1 || !entry.version) {
     return runV1(entry);
   }
 

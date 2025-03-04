@@ -75,7 +75,7 @@ export function getState(
   key?: string;
   value?: string;
 } {
-  if (entry.version === 1) {
+  if (entry.version === 1 || !entry.version) {
     return getStateV1(entry);
   }
 

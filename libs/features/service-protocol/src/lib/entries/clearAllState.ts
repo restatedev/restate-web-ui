@@ -31,7 +31,7 @@ export function clearAllState(
   entry: JournalRawEntry,
   allEntries: JournalRawEntry[]
 ) {
-  if (entry.version === 1) {
+  if (entry.version === 1 || !entry.version) {
     return clearAllStateV1(entry);
   }
 

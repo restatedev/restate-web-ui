@@ -72,7 +72,7 @@ export function getPromise(
   entry: JournalRawEntry,
   allEntries: JournalRawEntry[]
 ) {
-  if (entry.version === 1) {
+  if (entry.version === 1 || !entry.version) {
     return getPromiseV1(entry);
   }
 

@@ -63,7 +63,7 @@ export function getStateKeys(
   failure?: RestateError;
   keys?: string[];
 } {
-  if (entry.version === 1) {
+  if (entry.version === 1 || !entry.version) {
     return getStateKeysV1(entry);
   }
 
