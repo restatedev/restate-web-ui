@@ -110,6 +110,7 @@ function Component() {
 
   const { virtualObject } = useParams<{ virtualObject: string }>();
   invariant(virtualObject, 'Missing virtualObject param');
+  const { isValid, isValidating } = useValidateVirtualObject();
 
   const [keysSet, setKeysSet] = useState(
     () =>
@@ -164,6 +165,7 @@ function Component() {
     refetchOnMount: false,
     refetchOnReconnect: false,
     staleTime: 0,
+    enabled: isValid,
   });
 
   const [pageIndex, _setPageIndex] = useState(0);
@@ -340,6 +342,7 @@ function Component() {
             error={error || listObjects.error}
             isLoading={
               isPending ||
+              isValidating ||
               (listObjects.isPending && currentPageItems.length !== 0)
             }
             numOfColumns={selectedColumnsArray.length}
@@ -695,10 +698,23 @@ function Footnote({
   );
 }
 
-function ServiceSelector() {
+function getDefaultVirtualObject(virtualObjects: string[]) {
+  if (typeof window !== 'undefined') {
+    const previousSelectedVirtualObject = localStorage.getItem(
+      'state_virtualObject'
+    );
+    return previousSelectedVirtualObject &&
+      virtualObjects.includes(previousSelectedVirtualObject)
+      ? previousSelectedVirtualObject
+      : virtualObjects.at(0);
+  }
+  return virtualObjects.at(0);
+}
+
+function useValidateVirtualObject() {
   const { virtualObject } = useParams<{ virtualObject: string }>();
   invariant(virtualObject, 'Missing virtualObject param');
-  const { data: deployments } = useListDeployments();
+  const { data: deployments, isPending } = useListDeployments();
   const services = Array.from(deployments?.services.keys() ?? []);
   const servicesSize = services.length;
   const { data } = useListServices(services);
@@ -707,7 +723,7 @@ function ServiceSelector() {
     .map((service) => service.name)
     .sort();
   const navigate = useNavigate();
-  const newVirtualObject = virtualObjects[0];
+  const newVirtualObject = getDefaultVirtualObject(virtualObjects);
 
   const base = useHref('/');
   const defaultVirtualObject = useHref(
@@ -729,6 +745,18 @@ function ServiceSelector() {
       });
     }
   }, [navigate, defaultVirtualObject, isInValid]);
+
+  return {
+    isValidating: isPending,
+    isValid: virtualObjects.includes(virtualObject),
+    virtualObjects,
+  };
+}
+
+function ServiceSelector() {
+  const { virtualObject } = useParams<{ virtualObject: string }>();
+  invariant(virtualObject, 'Missing virtualObject param');
+  const { virtualObjects } = useValidateVirtualObject();
 
   return (
     <Dropdown>

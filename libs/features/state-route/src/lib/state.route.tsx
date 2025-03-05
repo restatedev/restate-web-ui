@@ -4,37 +4,42 @@ import {
 } from '@restate/data-access/admin-api';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Link } from '@restate/ui/link';
-import {
-  Cell,
-  Column,
-  Row,
-  Table,
-  TableBody,
-  TableHeader,
-} from '@restate/ui/table';
+import { Column, Table, TableBody, TableHeader } from '@restate/ui/table';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
+
+function getDefaultVirtualObject(virtualObjects: string[]) {
+  if (typeof window !== 'undefined') {
+    const previousSelectedVirtualObject = localStorage.getItem(
+      'state_virtualObject'
+    );
+    return previousSelectedVirtualObject &&
+      virtualObjects.includes(previousSelectedVirtualObject)
+      ? previousSelectedVirtualObject
+      : virtualObjects.at(0);
+  }
+  return virtualObjects.at(0);
+}
 
 function Component() {
   const { data: deployments } = useListDeployments();
   const services = Array.from(deployments?.services.keys() ?? []);
   const { data, isPending } = useListServices(services);
-  const virtualObject = Array.from(data.entries())
+  const virtualObjects = Array.from(data.entries())
     .filter(([service, data]) => data.ty === 'VirtualObject')
-    .at(0)?.[0];
+    .map(([service, data]) => service);
+  const defaultVirtualObject = getDefaultVirtualObject(virtualObjects);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const defaultVirtualObject =
-      localStorage.getItem('state_virtualObject') || virtualObject;
     defaultVirtualObject &&
       navigate(`./${defaultVirtualObject}${window.location.search}`, {
         relative: 'path',
         replace: true,
       });
-  }, [navigate, virtualObject]);
+  }, [navigate, defaultVirtualObject]);
 
-  if (virtualObject) {
+  if (defaultVirtualObject) {
     return null;
   }
 
@@ -55,7 +60,7 @@ function Component() {
     );
   }
 
-  if (!isPending && !virtualObject) {
+  if (!isPending && !defaultVirtualObject) {
     return (
       <div className="mb-[-6rem] pb-8 pt-24 flex-auto w-full justify-center rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] flex flex-col items-center">
         <div className="flex flex-col gap-2 items-center relative w-full text-center mt-6">
