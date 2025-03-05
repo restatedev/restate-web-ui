@@ -69,10 +69,7 @@ export function VirtualObjectSection({
   const { size, head } = data;
   const position = data[invocation.id];
 
-  const shouldShowQueue =
-    typeof position === 'number' &&
-    typeof size === 'number' &&
-    typeof head === 'string';
+  const shouldShowQueue = typeof size === 'number' && typeof head === 'string';
   const state = stateData?.state ?? [];
   return (
     <Section className={styles({ className })}>
@@ -136,7 +133,8 @@ export function VirtualObjectSection({
               <div className="relative mt-12">
                 <div className="absolute left-0 right-0 bottom-2  ">
                   <div className=" [clip-path:polygon(0%_0%,100%_50%,0%_50%)] bg-zinc-200 rounded-sm h-3" />
-                  {position > 0 && (
+                  {((typeof position === 'number' && position > 0) ||
+                    position === undefined) && (
                     <div className="-top-1 absolute right-2 -translate-y-1/2 translate-x-1/2 flex flex-col items-center">
                       <span className="text-xs font-medium text-zinc-400 font-mono">
                         Head
@@ -162,7 +160,7 @@ export function VirtualObjectSection({
                     </div>
                   )}
 
-                  {position >= 0 && (
+                  {typeof position === 'number' && position >= 0 && (
                     <div
                       style={{
                         right: `clamp(${position === 0 ? '0rem' : '2rem'}, ${
@@ -212,7 +210,7 @@ export function VirtualObjectSection({
                     pending in queue.
                   </>
                 )}
-                {position > 0 && (
+                {typeof position === 'number' && position > 0 && (
                   <>
                     Invocation is pending waiting for{' '}
                     <span className="font-medium text-zinc-500">
