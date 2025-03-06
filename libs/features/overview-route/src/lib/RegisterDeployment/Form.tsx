@@ -148,6 +148,15 @@ function EndpointForm() {
             : 'http://localhost:9080'
         }
         label={isLambda ? 'Lambda ARN' : 'HTTP endpoint'}
+        onKeyDown={(e) => {
+          if (e.key === 'Tab' && !isLambda && !endpoint) {
+            updateEndpoint?.({
+              isLambda: false,
+              endpoint: 'http://localhost:9080',
+            });
+            e.preventDefault();
+          }
+        }}
         onChange={(value) => {
           updateEndpoint?.({
             isLambda: value.startsWith('arn')
