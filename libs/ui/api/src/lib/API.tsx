@@ -35,6 +35,7 @@ export const API = ({
       apiDescriptionDocument={apiDescriptionDocument}
       router="hash"
       layout={layout}
+      tryItCredentialsPolicy="include"
     />
   );
 };
