@@ -121,10 +121,14 @@ function EditStateInner({
     const formData = new FormData(event.currentTarget);
     const value = formData.get('value');
     if (typeof value === 'string') {
-      const obj: Record<string, string | undefined> = isPartial
-        ? { [key]: value || undefined }
-        : stringifyValues(JSON.parse(value));
-      mutation.mutate({ state: obj, partial: isPartial });
+      try {
+        const obj: Record<string, string | undefined> = isPartial
+          ? { [key]: value || undefined }
+          : stringifyValues(JSON.parse(value));
+        mutation.mutate({ state: obj, partial: isPartial });
+      } catch (error) {
+        mutation.mutate({ state: value as any, partial: isPartial });
+      }
     }
   };
 
@@ -216,6 +220,7 @@ function EditStateInner({
                 autoFocus
                 name="value"
                 className="mt-2 font-mono overflow-auto"
+                onInput={() => error && mutation.reset()}
                 {...(typeof key === 'undefined'
                   ? {
                       value: JSON.stringify(

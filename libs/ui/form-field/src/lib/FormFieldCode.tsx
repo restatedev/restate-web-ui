@@ -12,11 +12,13 @@ export function FormFieldCode({
   value,
   autoFocus,
   className,
+  onInput,
 }: {
   name: string;
   value?: string;
   autoFocus?: boolean;
   className?: string;
+  onInput?: (value: string) => void;
 }) {
   const [content] = useState(() => parseValue(value));
   const textareaRef = useRef<HTMLInputElement | null>(null);
@@ -34,10 +36,11 @@ export function FormFieldCode({
               textareaRef.current.value = stringifyValue(
                 e.currentTarget.innerText
               );
+              onInput?.(textareaRef.current.value);
             }
           }}
           ref={(el) => {
-            if (el) {
+            if (el && !el.innerText) {
               el.innerText = content ?? '';
             }
           }}

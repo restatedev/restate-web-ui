@@ -34,6 +34,7 @@ interface InputProps
     | 'maxLength'
     | 'type'
     | 'onChange'
+    | 'onKeyDown'
   > {
   className?: string;
   required?: boolean;

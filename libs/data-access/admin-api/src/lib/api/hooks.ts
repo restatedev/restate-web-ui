@@ -613,6 +613,13 @@ export function convertStateToObject(state: { name: string; value: string }[]) {
   );
 }
 
+function isValidJSON(value: any) {
+  try {
+    return Boolean(JSON.stringify(value));
+  } catch (error) {
+    return false;
+  }
+}
 export function useEditState(
   service: string,
   objectKey: string,
@@ -660,6 +667,13 @@ export function useEditState(
       throw new RestateError(
         'Modifying the state is only allowed in an HTTPS context.'
       );
+    }
+    if (
+      !variables.state ||
+      typeof variables.state !== 'object' ||
+      !isValidJSON(variables.state)
+    ) {
+      throw new RestateError('Please enter a valid value');
     }
 
     return mutationFn({
