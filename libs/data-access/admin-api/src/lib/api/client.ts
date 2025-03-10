@@ -230,7 +230,8 @@ export function adminApi<
             baseUrl: init.baseUrl,
             signal,
             headers: {
-              Accept: 'json',
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
             },
             body: init.body,
             params: init.parameters,

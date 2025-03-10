@@ -17,7 +17,7 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', async (event) => {
   const url = new URL(event.request.url);
-  if (url.pathname.startsWith('/query')) {
+  if (url.pathname.startsWith('/query/')) {
     const response = query(event.request);
     if (response) {
       event.respondWith(response);

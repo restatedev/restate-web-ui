@@ -30,7 +30,7 @@ importers:
         specifier: 0.6.4
         version: 0.6.4
       '@internationalized/date':
-        specifier: ^3.6.0
+        specifier: 3.6.0
         version: 3.6.0
       '@react-aria/interactions':
         specifier: 3.22.5
@@ -39,7 +39,7 @@ importers:
         specifier: 3.0.0-beta.18
         version: 3.0.0-beta.18(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       '@react-aria/utils':
-        specifier: ^3.27.0
+        specifier: 3.27.0
         version: 3.27.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       '@react-router/node':
         specifier: 7.1.1
@@ -83,6 +83,12 @@ importers:
       lucide-react:
         specifier: 0.469.0
         version: 0.469.0(react@19.0.0)
+      monaco-editor:
+        specifier: 0.52.2
+        version: 0.52.2
+      monaco-sql-languages:
+        specifier: 0.13.1
+        version: 0.13.1(antlr4ng-cli@1.0.7)(monaco-editor@0.52.2)
       openapi-fetch:
         specifier: 0.13.3
         version: 0.13.3
@@ -247,16 +253,16 @@ importers:
         specifier: 8.13.0
         version: 8.13.0(@typescript-eslint/parser@8.18.2(eslint@9.10.0(jiti@1.21.6))(typescript@5.6.3))(eslint@9.10.0(jiti@1.21.6))(typescript@5.6.3)
       '@typescript-eslint/parser':
-        specifier: ^8.13.0
+        specifier: 8.18.2
         version: 8.18.2(eslint@9.10.0(jiti@1.21.6))(typescript@5.6.3)
       '@typescript-eslint/utils':
-        specifier: ^8.13.0
+        specifier: 8.18.2
         version: 8.18.2(eslint@9.10.0(jiti@1.21.6))(typescript@5.6.3)
       '@vitejs/plugin-react':
         specifier: 4.3.1
         version: 4.3.1(vite@6.0.11(@types/node@22.9.0)(jiti@1.21.6)(less@4.1.3)(sass@1.79.5)(stylus@0.64.0)(terser@5.32.0)(yaml@2.6.1))
       '@vitest/coverage-v8':
-        specifier: ^1.0.4
+        specifier: 1.6.0
         version: 1.6.0(vitest@1.6.0)
       '@vitest/ui':
         specifier: 1.6.0
@@ -337,7 +343,7 @@ importers:
         specifier: 5.6.3
         version: 5.6.3
       typescript-eslint:
-        specifier: ^8.13.0
+        specifier: 8.18.2
         version: 8.18.2(eslint@9.10.0(jiti@1.21.6))(typescript@5.6.3)
       vite:
         specifier: '>=5.4.12'
@@ -4085,6 +4091,19 @@ packages:
     resolution: {integrity: sha512-bN798gFfQX+viw3R7yrGWRqnrN2oRkEkUjjl4JNn4E8GxxbjtG3FbrEIIY3l8/hrwUwIeCZvi4QuOTP4MErVug==}
     engines: {node: '>=12'}
 
+  antlr4-c3@3.3.7:
+    resolution: {integrity: sha512-F3ndE38wwA6z6AjUbL3heSdEGl4TxulGDPf9xB0/IY4dbRHWBh6XNaqFwur8vHKQk9FS5yNABHeg2wqlqIYO0w==}
+
+  antlr4ng-cli@1.0.7:
+    resolution: {integrity: sha512-qN2FsDBmLvsQcA5CWTrPz8I8gNXeS1fgXBBhI78VyxBSBV/EJgqy8ks6IDTC9jyugpl40csCQ4sL5K4i2YZ/2w==}
+    deprecated: 'This package is deprecated and will no longer be updated. Please use the new antlr-ng package instead: https://github.com/mike-lischke/antlr-ng'
+    hasBin: true
+
+  antlr4ng@2.0.11:
+    resolution: {integrity: sha512-9jM91VVtHSqHkAHQsXHaoaiewFETMvUTI1/tXvwTiFw4f7zke3IGlwEyoKN9NS0FqIwDKFvUNW2e1cKPniTkVQ==}
+    peerDependencies:
+      antlr4ng-cli: 1.0.7
+
   any-promise@1.3.0:
     resolution: {integrity: sha512-7UvmKalWRt1wgjL1RrGxoSJW/0QZFIegpeGvZG9kjp8vrRu55XTHbwnqq2GpXm9uLbcuhxm3IqX9OB4MZR1b2A==}
 
@@ -5119,6 +5138,10 @@ packages:
   dotenv@16.4.5:
     resolution: {integrity: sha512-ZmdL2rui+eB2YwhsWzjInR8LldtZHGDoQ1ugH85ppHKwpUHL7j7rN0Ti9NCnGiQbhaZ11FpR+7ao1dNsmduNUg==}
     engines: {node: '>=12'}
+
+  dt-sql-parser@4.1.1:
+    resolution: {integrity: sha512-9f4m+CxIzhIrFqW8g95bCRQd+B+WeiC+RgDinBL5hwxa9OXrC6iIbaUtmiMDLO3GDBONn9ybgc+kQzv+G7EKcg==}
+    engines: {node: '>=18'}
 
   duplexify@3.7.1:
     resolution: {integrity: sha512-07z8uv2wMyS51kKhD1KsdXJg5WQ6t93RneqRxUHnskXVtlYYkLqM0gqStQZ3pj073g687jPCHrqNfCzawLYh5g==}
@@ -7312,6 +7335,15 @@ packages:
 
   moment@2.30.1:
     resolution: {integrity: sha512-uEmtNhbDOrWPFS+hdjFCBfy9f2YoyzRpwcl+DqpC6taX21FzsTLQVbMV/W7PzNSX6x/bhC1zA3c2UQ5NzH6how==}
+
+  monaco-editor@0.52.2:
+    resolution: {integrity: sha512-GEQWEZmfkOGLdd3XK8ryrfWz3AIP8YymVXiPHEdewrUq7mh0qrKrfHLNCXcbB6sTnMLnOZ3ztSiKcciFUkIJwQ==}
+
+  monaco-sql-languages@0.13.1:
+    resolution: {integrity: sha512-lmcNOxfQMZFJmQpG0stscyANx1BY8rhUTtaGcEudTRuF3M8ogb0CLh2hzEPc1bpQitAeTirUjBWzt+fA92E6yw==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      monaco-editor: '>=0.31.0'
 
   moo@0.5.2:
     resolution: {integrity: sha512-iSAJLHYKnX41mKcJKjqvnAN9sf0LMDTXDEvFv+ffuRR9a1MIuXLjMNL6EsnDHSkKLTWNqQQ5uo61P4EbU4NU+Q==}
@@ -13688,7 +13720,7 @@ snapshots:
       pluralize: 8.0.0
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-      redoc: 2.1.5(core-js@3.37.1)(encoding@0.1.13)(enzyme@3.11.0)(mobx@6.12.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.1.11(react-dom@19.0.0(react@19.0.0))(react@19.0.0))
+      redoc: 2.1.5(core-js@3.37.1)(encoding@0.1.13)(enzyme@3.11.0)(mobx@6.12.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.1.11(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       semver: 7.6.2
       simple-websocket: 9.1.0
       styled-components: 6.1.11(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -14699,7 +14731,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/typescript-estree': 8.9.0(typescript@5.6.3)
       '@typescript-eslint/utils': 8.9.0(eslint@9.10.0(jiti@1.21.6))(typescript@5.6.3)
-      debug: 4.3.5
+      debug: 4.4.0(supports-color@9.4.0)
       ts-api-utils: 1.3.0(typescript@5.6.3)
     optionalDependencies:
       typescript: 5.6.3
@@ -14763,7 +14795,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/types': 8.9.0
       '@typescript-eslint/visitor-keys': 8.9.0
-      debug: 4.3.7
+      debug: 4.4.0(supports-color@9.4.0)
       fast-glob: 3.3.2
       is-glob: 4.0.3
       minimatch: 9.0.4
@@ -15114,6 +15146,18 @@ snapshots:
   ansi-styles@5.2.0: {}
 
   ansi-styles@6.2.1: {}
+
+  antlr4-c3@3.3.7(antlr4ng-cli@1.0.7):
+    dependencies:
+      antlr4ng: 2.0.11(antlr4ng-cli@1.0.7)
+    transitivePeerDependencies:
+      - antlr4ng-cli
+
+  antlr4ng-cli@1.0.7: {}
+
+  antlr4ng@2.0.11(antlr4ng-cli@1.0.7):
+    dependencies:
+      antlr4ng-cli: 1.0.7
 
   any-promise@1.3.0: {}
 
@@ -16232,6 +16276,13 @@ snapshots:
       dotenv: 16.4.5
 
   dotenv@16.4.5: {}
+
+  dt-sql-parser@4.1.1(antlr4ng-cli@1.0.7):
+    dependencies:
+      antlr4-c3: 3.3.7(antlr4ng-cli@1.0.7)
+      antlr4ng: 2.0.11(antlr4ng-cli@1.0.7)
+    transitivePeerDependencies:
+      - antlr4ng-cli
 
   duplexify@3.7.1:
     dependencies:
@@ -17913,7 +17964,7 @@ snapshots:
 
   istanbul-lib-source-maps@4.0.1:
     dependencies:
-      debug: 4.3.7
+      debug: 4.4.0(supports-color@9.4.0)
       istanbul-lib-coverage: 3.2.2
       source-map: 0.6.1
     transitivePeerDependencies:
@@ -19122,6 +19173,15 @@ snapshots:
   mobx@6.12.4: {}
 
   moment@2.30.1: {}
+
+  monaco-editor@0.52.2: {}
+
+  monaco-sql-languages@0.13.1(antlr4ng-cli@1.0.7)(monaco-editor@0.52.2):
+    dependencies:
+      dt-sql-parser: 4.1.1(antlr4ng-cli@1.0.7)
+      monaco-editor: 0.52.2
+    transitivePeerDependencies:
+      - antlr4ng-cli
 
   moo@0.5.2: {}
 
@@ -20356,7 +20416,7 @@ snapshots:
       indent-string: 4.0.0
       strip-indent: 3.0.0
 
-  redoc@2.1.5(core-js@3.37.1)(encoding@0.1.13)(enzyme@3.11.0)(mobx@6.12.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.1.11(react-dom@19.0.0(react@19.0.0))(react@19.0.0)):
+  redoc@2.1.5(core-js@3.37.1)(encoding@0.1.13)(enzyme@3.11.0)(mobx@6.12.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.1.11(react-dom@18.3.1(react@18.3.1))(react@18.3.1)):
     dependencies:
       '@cfaester/enzyme-adapter-react-18': 0.8.0(enzyme@3.11.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@redocly/openapi-core': 1.19.0(encoding@0.1.13)(supports-color@9.4.0)
