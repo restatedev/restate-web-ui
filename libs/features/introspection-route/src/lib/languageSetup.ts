@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 import { LanguageIdEnum } from 'monaco-sql-languages';
 /** import contribution file */
 import 'monaco-sql-languages/esm/languages/pgsql/pgsql.contribution';

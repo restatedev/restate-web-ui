@@ -195,19 +195,19 @@ export function SQLEditor({
           },
           {
             token: TokenClassConsts.STRING,
-            foreground: 'a1a1aa',
+            foreground: 'cbd5e1',
           },
           {
             token: postfixTokenClass(TokenClassConsts.STRING),
-            foreground: 'a1a1aa',
+            foreground: 'cbd5e1',
           },
           {
             token: postfixTokenClass(TokenClassConsts.TYPE),
-            foreground: 'a1a1aa',
+            foreground: 'cbd5e1',
           },
           {
             token: postfixTokenClass(TokenClassConsts.NUMBER),
-            foreground: 'a1a1aa',
+            foreground: 'cbd5e1',
           },
           // AND
           {
