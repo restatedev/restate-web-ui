@@ -46,7 +46,7 @@ export const KEYWORDS = [
   // "DELETE",
   'TABLE',
   'VIEW',
-  'SCHEMA',
+  //   'SCHEMA',
   // 'DATABASE',
   'EXPLAIN',
   'ANALYZE',
@@ -55,50 +55,73 @@ export const KEYWORDS = [
   'VALUES',
 ];
 
-export const AGG_FUNCTIONS = [
-  'SUM',
-  'COUNT',
-  'AVG',
-  'MIN',
-  'MAX',
-  'APPROX_DISTINCT',
+export const AGG_GENERAL_FUNCTIONS = [
   'ARRAY_AGG',
-  'CORR',
-  'COVAR',
-  'STDDEV',
-  'VARIANCE',
-  'STRING_AGG',
+  'AVG',
   'BIT_AND',
   'BIT_OR',
   'BIT_XOR',
   'BOOL_AND',
   'BOOL_OR',
+  'COUNT',
   'FIRST_VALUE',
   'GROUPING',
   'LAST_VALUE',
+  'MAX',
   'MEAN',
   'MEDIAN',
+  'MIN',
+  'STRING_AGG',
+  'SUM',
   'VAR',
   'VAR_POP',
   'VAR_POPULATION',
   'VAR_SAMP',
   'VAR_SAMPLE',
-];
+].map((s) => s.toLowerCase());
 
-export const WINDOWS_FUNCTIONS = [
-  'ROW_NUMBER',
-  'RANK',
-  'DENSE_RANK',
-  'PERCENT_RANK',
-  'CUME_DIST',
-  'LEAD',
-  'LAG',
-  'FIRST_VALUE',
-  'LAST_VALUE',
+export const AGG_STATISTICAL_FUNCTIONS = [
+  'CORR',
+  'COVAR',
+  'COVAR_POP',
+  'COVAR_SAMP',
   'NTH_VALUE',
-  'OVER',
-  'PARTITION BY',
+  'REGR_AVGX',
+  'REGR_AVGY',
+  'REGR_COUNT',
+  'REGR_INTERCEPT',
+  'REGR_R2',
+  'REGR_SLOPE',
+  'REGR_SXX',
+  'REGR_SXY',
+  'REGR_SYY',
+  'STDDEV',
+  'STDDEV_POP',
+  'STDDEV_SAMP',
+].map((s) => s.toLowerCase());
+
+export const AGG_APPROXIMATE_FUNCTIONS = [
+  'APPROX_DISTINCT',
+  'APPROX_MEDIAN',
+  'APPROX_PERCENTILE_CONT',
+  'APPROX_PERCENTILE_CONT_WITH_WEIGHT',
+].map((s) => s.toLowerCase());
+
+export const WINDOWS_RANKING_FUNCTIONS = [
+  'CUME_DIST',
+  'DENSE_RANK',
+  'NTILE',
+  'PERCENT_RANK',
+  'RANK',
+  'ROW_NUMBER',
 ];
+export const WINDOWS_ANALYTICAL_FUNCTIONS = [
+  'FIRST_VALUE',
+  'LAG',
+  'LAST_VALUE',
+  'LEAD',
+  'NTH_VALUE',
+].map((s) => s.toLowerCase());
 
 export const STRING_FUNCTIONS = [
   'ASCII',
@@ -143,16 +166,18 @@ export const STRING_FUNCTIONS = [
   'TO_HEX',
   'TRANSLATE',
   'UUID',
-];
+].map((s) => s.toLowerCase());
 
-export const BINARY_STRING_FUNCTIONS = ['DECODE', 'ENCODE'];
+export const BINARY_STRING_FUNCTIONS = ['DECODE', 'ENCODE'].map((s) =>
+  s.toLowerCase()
+);
 
 export const REG_EXPRESSION_FUNCTIONS = [
   'REGEXP_LIKE',
   'REGEXP_COUNT',
   'REGEXP_MATCH',
   'REGEXP_REPLACE',
-];
+].map((s) => s.toLowerCase());
 
 export const MATH_FUNCTIONS = [
   'ABS',
@@ -196,7 +221,7 @@ export const MATH_FUNCTIONS = [
   'SIGNUM',
   'SINH',
   'TANH',
-];
+].map((s) => s.toLowerCase());
 
 export const TIME_FUNCTIONS = [
   'CURRENT_DATE',
@@ -222,7 +247,7 @@ export const TIME_FUNCTIONS = [
   'TO_TIMESTAMP_SECONDS',
   'TO_UNIXTIME',
   'TODAY',
-];
+].map((s) => s.toLowerCase());
 
 export const CONDITIONAL_FUNCTIONS = [
   'COALESCE',
@@ -232,7 +257,7 @@ export const CONDITIONAL_FUNCTIONS = [
   'NULLIF',
   'NVL',
   'NVL2',
-];
+].map((s) => s.toLowerCase());
 
 export const ARRAY_FUNCTIONS = [
   'ARRAY_ANY_VALUE',
@@ -327,9 +352,11 @@ export const ARRAY_FUNCTIONS = [
   'RANGE',
   'STRING_TO_ARRAY',
   'STRING_TO_LIST',
-];
+].map((s) => s.toLowerCase());
 
-export const STRUCT_FUNCTIONS = ['NAMED_STRUCT', 'ROW', 'STRUCT'];
+export const STRUCT_FUNCTIONS = ['NAMED_STRUCT', 'ROW', 'STRUCT'].map((s) =>
+  s.toLowerCase()
+);
 
 export const MAP_FUNCTIONS = [
   'ELEMENT_AT',
@@ -337,7 +364,7 @@ export const MAP_FUNCTIONS = [
   'MAP_EXTRACT',
   'MAP_KEYS',
   'MAP_VALUES',
-];
+].map((s) => s.toLowerCase());
 
 export const HASHING_FUNCTIONS = [
   'DIGEST',
@@ -346,23 +373,23 @@ export const HASHING_FUNCTIONS = [
   'SHA256',
   'SHA384',
   'SHA512',
-];
+].map((s) => s.toLowerCase());
 
-export const UNION_FUNCTIONS = ['UNION_EXTRACT'];
+export const UNION_FUNCTIONS = ['UNION_EXTRACT'].map((s) => s.toLowerCase());
 
 export const OTHER_FUNCTIONS = [
   'ARROW_CAST',
   'ARROW_TYPEOF',
   'GET_FIELD',
   'VERSION',
-];
+].map((s) => s.toLowerCase());
 
 export const EXPANSION_FUNCTIONS = ['unnest'];
 
 export const TABLES = [
   {
     name: 'state',
-    description: '',
+    description: 'Table to inspect application state',
     columns: [
       {
         name: 'partition_key',
@@ -395,7 +422,7 @@ export const TABLES = [
   },
   {
     name: 'sys_journal',
-    description: '',
+    description: "Table to inspect the invocations' journal",
     columns: [
       {
         name: 'partition_key',
@@ -463,7 +490,7 @@ export const TABLES = [
   },
   {
     name: 'sys_keyed_service_status',
-    description: '',
+    description: 'Table to inspect the status of a Virtual Object',
     columns: [
       {
         name: 'partition_key',
@@ -486,7 +513,7 @@ export const TABLES = [
   },
   {
     name: 'sys_inbox',
-    description: '',
+    description: 'Table to inspect queue of pending invocations',
     columns: [
       {
         name: 'partition_key',
@@ -518,7 +545,7 @@ export const TABLES = [
   },
   {
     name: 'sys_idempotency',
-    description: '',
+    description: 'Table to inspect idempotency keys',
     columns: [
       {
         name: 'partition_key',
@@ -550,7 +577,7 @@ export const TABLES = [
   },
   {
     name: 'sys_promise',
-    description: '',
+    description: 'Table to inspect the status of a promises',
     columns: [
       {
         name: 'partition_key',
@@ -589,7 +616,7 @@ export const TABLES = [
   },
   {
     name: 'sys_service',
-    description: '',
+    description: 'Table to inspect the registered services',
     columns: [
       {
         name: 'name',
@@ -617,7 +644,7 @@ export const TABLES = [
   },
   {
     name: 'sys_deployment',
-    description: '',
+    description: 'Table to inspect service deployments',
     columns: [
       {
         name: 'id',
@@ -648,7 +675,7 @@ export const TABLES = [
   },
   {
     name: 'sys_invocation',
-    description: '',
+    description: 'Table to inspect invocations',
     columns: [
       {
         name: 'id',
@@ -813,6 +840,200 @@ export const TABLES = [
         name: 'completion_failure',
         description:
           "If status = 'completed' AND completion_result = 'failure', this contains the error cause",
+      },
+    ],
+  },
+  {
+    name: 'sys_invocation_status',
+    description: "Table to inspect invocations' status",
+    columns: [
+      {
+        name: 'partition_key',
+        description:
+          'Internal column that is used for partitioning the services invocations. Can be ignored.',
+      },
+      {
+        name: 'id',
+        description: 'Invocation ID.',
+      },
+      {
+        name: 'status',
+        description:
+          'Either pending or scheduled or ready or running or backing-off or suspended or completed.',
+      },
+      {
+        name: 'completion_result',
+        description:
+          "If status = 'completed', this contains either success or failure",
+      },
+      {
+        name: 'completion_failure',
+        description:
+          "If status = 'completed' AND completion_result = 'failure', this contains the error cause",
+      },
+      {
+        name: 'target',
+        description:
+          'Invocation Target. Format for plain services: ServiceName/HandlerName, e.g. Greeter/greet. Format for virtual objects/workflows: VirtualObjectName/Key/HandlerName, e.g. Greeter/Francesco/greet.',
+      },
+      {
+        name: 'target_service_name',
+        description: 'The name of the invoked service.',
+      },
+      {
+        name: 'target_service_key',
+        description:
+          'The key of the virtual object or the workflow ID. Null for regular services.',
+      },
+      {
+        name: 'target_handler_name',
+        description: 'The invoked handler.',
+      },
+      {
+        name: 'target_service_ty',
+        description:
+          'The service type. Either service or virtual_object or workflow.',
+      },
+      {
+        name: 'idempotency_key',
+        description: 'Idempotency key, if any.',
+      },
+      {
+        name: 'invoked_by',
+        description: `Either: \ningress if the invocation was created externally. \nservice if the invocation was created by another Restate service. \nsubscription if the invocation was created by a subscription (e.g. Kafka).`,
+      },
+      {
+        name: 'invoked_by_service_name',
+        description: "The name of caller service if invoked_by = 'service'.",
+      },
+      {
+        name: 'invoked_by_id',
+        description: "The caller Invocation ID if invoked_by = 'service'.",
+      },
+      {
+        name: 'invoked_by_subscription_id',
+        description: "The subscription id if invoked_by = 'subscription'.",
+      },
+      {
+        name: 'invoked_by_target',
+        description: "The caller invocation target if invoked_by = 'service'.",
+      },
+      {
+        name: 'pinned_deployment_id',
+        description:
+          'The ID of the service deployment that started processing this invocation, and will continue to do so (e.g. for retries). This gets set after the first journal entry has been stored for this invocation.',
+      },
+      {
+        name: 'pinned_service_protocol_version',
+        description:
+          'The negotiated protocol version used for this invocation. This gets set after the first journal entry has been stored for this invocation.',
+      },
+      {
+        name: 'trace_id',
+        description:
+          'The ID of the trace that is assigned to this invocation. Only relevant when tracing is enabled.',
+      },
+      {
+        name: 'journal_size',
+        description:
+          'The number of journal entries durably logged for this invocation.',
+      },
+      {
+        name: 'created_at',
+        description: 'Timestamp indicating the start of this invocation.',
+      },
+      {
+        name: 'modified_at',
+        description:
+          'Timestamp indicating the last invocation status transition. For example, last time the status changed from invoked to suspended.',
+      },
+      {
+        name: 'inboxed_at',
+        description:
+          'Timestamp indicating when the invocation was inboxed, if ever.',
+      },
+      {
+        name: 'scheduled_at',
+        description:
+          'Timestamp indicating when the invocation was scheduled, if ever.',
+      },
+      {
+        name: 'running_at',
+        description:
+          'Timestamp indicating when the invocation first transitioned to running, if ever.',
+      },
+      {
+        name: 'completed_at',
+        description:
+          'Timestamp indicating when the invocation was completed, if ever.',
+      },
+    ],
+  },
+  {
+    name: 'sys_invocation_state',
+    description: "Table to inspect invocations' state",
+    columns: [
+      {
+        name: 'id',
+        description: 'Invocation ID.',
+      },
+      {
+        name: 'partition_key',
+        description:
+          'Internal column that is used for partitioning the services invocations. Can be ignored.',
+      },
+      {
+        name: 'in_flight',
+        description: 'If true, the invocation is currently in-flight',
+      },
+      {
+        name: 'retry_count',
+        description:
+          'The number of invocation attempts since the current leader started executing it. Increments on start, so a value greater than 1 means a failure occurred. Note: the value is not a global attempt counter across invocation suspensions and leadership changes.',
+      },
+      {
+        name: 'last_start_at',
+        description:
+          'Timestamp indicating the start of the most recent attempt of this invocation.',
+      },
+      {
+        name: 'last_attempt_deployment_id',
+        description:
+          'The ID of the service deployment that executed the most recent attempt of this invocation; this is set before a journal entry is stored, but can change later.',
+      },
+      {
+        name: 'last_attempt_server',
+        description: 'Server/SDK version, e.g. restate-sdk-java/1.0.1',
+      },
+      {
+        name: 'next_retry_at',
+        description:
+          'Timestamp indicating the start of the next attempt of this invocation.',
+      },
+      {
+        name: 'last_failure',
+        description:
+          'An error message describing the most recent failed attempt of this invocation, if any.',
+      },
+      {
+        name: 'last_failure_error_code',
+        description:
+          'The error code of the most recent failed attempt of this invocation, if any.',
+      },
+      {
+        name: 'last_failure_related_entry_index',
+        description:
+          'The index of the journal entry that caused the failure, if any. It may be out-of-bound of the currently stored entries in sys_journal.',
+      },
+      {
+        name: 'last_failure_related_entry_name',
+        description:
+          'The name of the journal entry that caused the failure, if any.',
+      },
+      {
+        name: 'last_failure_related_entry_type',
+        description:
+          'The type of the journal entry that caused the failure, if any. You can check all the available entry types in entries.rs.',
       },
     ],
   },
