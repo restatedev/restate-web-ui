@@ -9,6 +9,7 @@ export default [
   index('routes/_index.tsx'),
   route('overview', 'routes/overview.tsx'),
   route('invocations', 'routes/invocations.tsx'),
+  route('introspection', 'routes/introspection.tsx'),
   ...prefix('state', [
     index('routes/state.tsx'),
     route(':virtualObject', 'routes/virtual-object.tsx'),

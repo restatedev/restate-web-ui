@@ -29,7 +29,6 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from 'react';
 import { formatDurations } from '@restate/util/intl';

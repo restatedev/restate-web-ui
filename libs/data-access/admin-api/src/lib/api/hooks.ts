@@ -136,6 +136,28 @@ export function useListDeployments(
   };
 }
 
+export function useSqlQuery(
+  query: string,
+  options?: HookQueryOptions<'/query', 'post'>
+) {
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi('query', '/query', 'post', {
+    baseUrl,
+    body: { query },
+  });
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+    enabled: Boolean(query),
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+  };
+}
+
 export function useHealth(options?: HookQueryOptions<'/health', 'get'>) {
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi('query', '/health', 'get', { baseUrl });
