@@ -30,12 +30,14 @@ export function Deployment({
   deploymentId,
   highlightSelection = true,
 }: {
-  revision: ServiceRevision;
+  revision?: ServiceRevision;
   className?: string;
   deploymentId?: DeploymentId;
   highlightSelection?: boolean;
 }) {
-  const { data: { deployments } = {} } = useListDeployments();
+  const { data: { deployments } = {} } = useListDeployments({
+    refetchOnMount: false,
+  });
   const deployment = deploymentId ? deployments?.get(deploymentId) : undefined;
   const activeDeploymentInSidebar = useActiveSidebarParam(
     DEPLOYMENT_QUERY_PARAM
@@ -77,7 +79,7 @@ export function Deployment({
           />
         </Link>
       </div>
-      <Revision revision={revision} className="ml-auto z-[2]" />
+      {revision && <Revision revision={revision} className="ml-auto z-[2]" />}
     </div>
   );
 }

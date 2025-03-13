@@ -35,6 +35,7 @@ import {
 import { useCollator } from 'react-aria';
 import { SortDescriptor } from 'react-aria-components';
 import { useSearchParams } from 'react-router';
+import { IntrospectionCell } from './IntrospectionCell';
 
 const SQLEditor = lazy(() =>
   import('./SQLEditor').then((m) => ({ default: m.SQLEditor }))
@@ -251,17 +252,19 @@ function Component() {
                 </div>
               }
             >
-              {({ row, hash }) => (
-                <Row
-                  id={hash}
-                  columns={selectedColumnsArray}
-                  className={` [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50 bg-transparent [content-visibility:auto]`}
-                >
-                  {({ id }) => {
-                    return <Cell id={id}>{row[id]}</Cell>;
-                  }}
-                </Row>
-              )}
+              {({ row, hash }) => {
+                return (
+                  <Row
+                    id={hash}
+                    columns={selectedColumnsArray}
+                    className={` [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50 bg-transparent [content-visibility:auto]`}
+                  >
+                    {({ id }) => {
+                      return <IntrospectionCell col={id} row={row} key={id} />;
+                    }}
+                  </Row>
+                );
+              }}
             </TableBody>
           </Table>
           <Footnote data={data} isFetching={isFetching} key={dataUpdate}>
