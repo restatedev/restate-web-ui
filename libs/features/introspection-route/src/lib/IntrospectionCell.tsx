@@ -49,5 +49,5 @@ export function IntrospectionCell({
       </Cell>
     );
   }
-  return <Cell className="min-h-6">{value ?? <br />}</Cell>;
+  return <Cell className="min-h-6 whitespace-pre-line">{value ?? <br />}</Cell>;
 }
