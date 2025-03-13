@@ -33,6 +33,7 @@ export function IntrospectionCell({
           deploymentId={value}
           className="text-inherit p-0 pr-0.5 m-0 [&_a:before]:rounded-md max-w-full"
           highlightSelection={false}
+          showEndpoint={false}
         />
       </Cell>
     );

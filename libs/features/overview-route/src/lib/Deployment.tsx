@@ -29,11 +29,13 @@ export function Deployment({
   revision,
   deploymentId,
   highlightSelection = true,
+  showEndpoint = true,
 }: {
   revision?: ServiceRevision;
   className?: string;
   deploymentId?: DeploymentId;
   highlightSelection?: boolean;
+  showEndpoint?: boolean;
 }) {
   const { data: { deployments } = {} } = useListDeployments({
     refetchOnMount: false,
@@ -64,7 +66,7 @@ export function Deployment({
 
       <div className="flex flex-row gap-1 items-center  text-zinc-600 truncate min-w-[6ch]">
         <TruncateWithTooltip copyText={deploymentEndpoint} triggerRef={linkRef}>
-          {deploymentEndpoint}
+          {showEndpoint ? deploymentEndpoint : deploymentId}
         </TruncateWithTooltip>
         <Link
           ref={linkRef}

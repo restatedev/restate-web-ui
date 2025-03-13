@@ -10,14 +10,7 @@ import {
   DropdownTrigger,
 } from '@restate/ui/dropdown';
 import { Icon, IconName } from '@restate/ui/icons';
-import {
-  Cell,
-  Column,
-  Row,
-  Table,
-  TableBody,
-  TableHeader,
-} from '@restate/ui/table';
+import { Column, Row, Table, TableBody, TableHeader } from '@restate/ui/table';
 import { formatDurations } from '@restate/util/intl';
 import {
   SnapshotTimeProvider,
@@ -51,6 +44,7 @@ function Component() {
   const { isFetching, data, dataUpdatedAt, error, errorUpdatedAt, isPending } =
     useSqlQuery(query, {
       enabled: Boolean(query),
+      refetchOnMount: false,
     });
 
   const dataUpdate = error ? errorUpdatedAt : dataUpdatedAt;
