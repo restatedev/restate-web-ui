@@ -272,7 +272,7 @@ export function SQLEditor({
         }
 
         if (containerRef.current) {
-          const padding = 4;
+          const padding = 2;
 
           containerRef.current.style.height = `${
             Math.min(Number(editorRef.current?.getContentHeight()), 112) +
