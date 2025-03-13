@@ -51,6 +51,7 @@ function Component() {
     useSqlQuery(query, {
       enabled: Boolean(query),
     });
+
   const dataUpdate = error ? errorUpdatedAt : dataUpdatedAt;
 
   const [initialQuery] = useState(() => searchParams.get(QUERY_PARAM) ?? '');
@@ -59,7 +60,11 @@ function Component() {
     (query: string) => {
       setSearchParams((old) => {
         const searchParams = new URLSearchParams(old);
-        searchParams.set(QUERY_PARAM, query);
+        if (query) {
+          searchParams.set(QUERY_PARAM, query);
+        } else {
+          searchParams.delete(QUERY_PARAM);
+        }
         return searchParams;
       });
     },
@@ -167,7 +172,6 @@ function Component() {
   }, [selectedColumns]);
 
   const totalSize = Math.ceil((data?.rows ?? []).length / PAGE_SIZE);
-
   return (
     <div>
       <SnapshotTimeProvider lastSnapshot={dataUpdate}>
@@ -236,7 +240,7 @@ function Component() {
               items={currentPageItems}
               dependencies={[selectedColumns, pageIndex]}
               error={error}
-              isLoading={isPending}
+              isLoading={isPending && !!query}
               numOfColumns={selectedColumnsArray.length}
               emptyPlaceholder={
                 <div className="flex flex-col items-center py-14 gap-4">
