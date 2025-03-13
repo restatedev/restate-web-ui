@@ -36,6 +36,7 @@ import { useCollator } from 'react-aria';
 import { SortDescriptor } from 'react-aria-components';
 import { useSearchParams } from 'react-router';
 import { IntrospectionCell } from './IntrospectionCell';
+import { Link } from '@restate/ui/link';
 
 const SQLEditor = lazy(() =>
   import('./SQLEditor').then((m) => ({ default: m.SQLEditor }))
@@ -243,17 +244,43 @@ function Component() {
               isLoading={isPending && !!query}
               numOfColumns={selectedColumnsArray.length}
               emptyPlaceholder={
-                <div className="flex flex-col items-center py-14 gap-4">
-                  <div className="mr-1.5 shrink-0 h-12 w-12 p-1 bg-gray-200/50  rounded-xl">
+                query ? (
+                  <div className="flex flex-col items-center py-14 gap-4">
+                    <div className="mr-1.5 shrink-0 h-12 w-12 p-1 bg-gray-200/50  rounded-xl">
+                      <Icon
+                        name={IconName.ScanSearch}
+                        className="w-full h-full text-zinc-400 p-1"
+                      />
+                    </div>
+                    <h3 className="text-sm font-semibold text-zinc-400">
+                      No results found
+                    </h3>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2 items-center relative w-full text-center my-12">
                     <Icon
                       name={IconName.ScanSearch}
-                      className="w-full h-full text-zinc-400 p-1"
+                      className="w-8 h-8 text-gray-500"
                     />
+                    <h3 className="text-sm font-semibold text-gray-600">
+                      Introspection SQL
+                    </h3>
+                    <p className="text-sm text-gray-500 px-4 max-w-lg">
+                      Restate exposes information on invocations and application
+                      state via Introspection SQL. You can use this to gain
+                      insight into the status of invocations and the service
+                      state that is stored.{' '}
+                      <Link
+                        href="https://docs.restate.dev/references/sql-introspection"
+                        variant="secondary"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Learn more
+                      </Link>
+                    </p>
                   </div>
-                  <h3 className="text-sm font-semibold text-zinc-400">
-                    No results found
-                  </h3>
-                </div>
+                )
               }
             >
               {({ row, hash }) => {
