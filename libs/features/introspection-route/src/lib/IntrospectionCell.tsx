@@ -2,6 +2,7 @@ import { useListDeployments } from '@restate/data-access/admin-api';
 import { InvocationId, Target } from '@restate/features/invocation-route';
 import { Deployment } from '@restate/features/overview-route';
 import { Cell } from '@restate/ui/table';
+import { TruncateWithTooltip } from '@restate/ui/tooltip';
 
 export function IntrospectionCell({
   col,
@@ -50,5 +51,14 @@ export function IntrospectionCell({
       </Cell>
     );
   }
-  return <Cell className="min-h-6 whitespace-pre-line">{value ?? <br />}</Cell>;
+
+  if (typeof value === 'string' && value.includes('\n')) {
+    return <Cell className="whitespace-pre-line">{value}</Cell>;
+  }
+
+  return (
+    <Cell className="min-h-6">
+      {<TruncateWithTooltip>{value ?? <br />}</TruncateWithTooltip>}
+    </Cell>
+  );
 }
