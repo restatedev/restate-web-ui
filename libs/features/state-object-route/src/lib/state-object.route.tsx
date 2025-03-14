@@ -192,12 +192,22 @@ function Component() {
   }, [listObjects.data]);
 
   useEffect(() => {
-    const keys =
-      listObjects.data?.objects
-        .map((obj) => obj.state.map(({ name }) => name))
-        .flat() ?? [];
-    setKeysSet((s) => new Set([...s.values(), ...keys].sort()));
-  }, [listObjects.data]);
+    if (!isPending) {
+      const keys =
+        listObjects.data?.objects
+          .map((obj) => obj.state.map(({ name }) => name))
+          .flat() ?? [];
+      setKeysSet(
+        (s) =>
+          new Set(
+            [
+              ...Array.from(s.values()).filter((v) => keys.includes(v)),
+              ...keys,
+            ].sort()
+          )
+      );
+    }
+  }, [listObjects.data, isPending]);
 
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>();
   const [, startTransition] = useTransition();
@@ -276,7 +286,10 @@ function Component() {
           onSortChange={setSortDescriptor}
           key={hash}
         >
-          <TableHeader columns={selectedColumnsArray}>
+          <TableHeader
+            columns={selectedColumnsArray}
+            dependencies={[selectedColumnsArray, selectedColumns, keys]}
+          >
             {(col) => {
               if (col.id === '__actions__') {
                 return (
