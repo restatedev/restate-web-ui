@@ -95,7 +95,7 @@ export function RegistrationForm() {
               </ServiceDeploymentExplainer>
             </>
           }
-          description="Please provide the HTTP endpoint or Lambda ARN where your service is running:"
+          description="Please provide the HTTP endpoint or Lambda function version ARN where your service is running:"
         >
           <EndpointForm />
         </Container>
@@ -138,13 +138,13 @@ function EndpointForm() {
         type={isLambda ? 'text' : 'url'}
         {...(isLambda && {
           pattern:
-            '^arn:aws:lambda:[a-z0-9\\-]+:\\d+:function:[a-zA-Z0-9\\-_]+:\\d+$',
+            '^arn:aws:lambda:[a-z0-9\\-]+:\\d+:function:[a-zA-Z0-9\\-_]+:.+$',
         })}
         name="endpoint"
         className="[&_.error]:absolute [&_.error]:pt-1 [&_input:not([type=radio])]:absolute left-0 right-0 my-2 [&_input:not([type=radio])]:pr-[4.75rem]"
         placeholder={
           isLambda
-            ? 'arn:aws:lambda:{reg}:{acc}:function:{func}:{version}'
+            ? 'arn:aws:lambda:{region}:{account}:function:{function-name}:{version}'
             : 'http://localhost:9080'
         }
         label={isLambda ? 'Lambda ARN' : 'HTTP endpoint'}
