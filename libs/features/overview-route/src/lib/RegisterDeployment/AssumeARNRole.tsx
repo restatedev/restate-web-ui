@@ -19,16 +19,19 @@ export function AssumeARNRole() {
               title="Assumed role"
               description={
                 <p>
-                  This role must exist in your account, it must trust Restate Cloud to assume it,
-                  and it must have permission to invoke the Lambda function containing the handler.
+                  This role must exist in your account, it must trust Restate
+                  Cloud to assume it, and it must have permission to invoke the
+                  Lambda function containing the handler.
                 </p>
               }
-              learnMoreHref="https://docs.restate.dev/deploy/server/cloud#aws-lambda-services">
-                Role ARN
+              learnMoreHref="https://docs.restate.dev/deploy/server/cloud#aws-lambda-services"
+            >
+              Role ARN
             </InlineTooltip>
           </span>
           <span slot="description" className="leading-5 text-code block">
-            AWS role ARN that Restate Cloud can assume to invoke the Lambda function
+            AWS role ARN that Restate Cloud can assume to invoke the Lambda
+            function
           </span>
         </>
       }
