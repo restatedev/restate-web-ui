@@ -24,7 +24,7 @@ export function Support() {
               href="https://docs.restate.dev/"
               target="_blank"
               rel="noreferrer noopener"
-              className="flex items-center gap-2 justify2-center text-code font-medium"
+              className="flex items-center gap-2 text-code font-medium"
             >
               <Icon
                 name={IconName.Docs}

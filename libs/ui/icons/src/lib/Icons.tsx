@@ -40,6 +40,7 @@ import {
   ChevronFirst,
   Pencil,
   Database,
+  ScanSearch,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from 'tailwind-variants';
@@ -122,6 +123,7 @@ export const enum IconName {
   ChevronFirst = 'ChevronFirst',
   Pencil = 'Pencil',
   Database = 'Database',
+  ScanSearch = 'ScanSearch',
 }
 export interface IconsProps {
   name: IconName;
@@ -189,6 +191,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.ChevronLast]: ChevronLast,
   [IconName.Pencil]: Pencil,
   [IconName.Database]: Database,
+  [IconName.ScanSearch]: ScanSearch,
 };
 
 const styles = tv({
