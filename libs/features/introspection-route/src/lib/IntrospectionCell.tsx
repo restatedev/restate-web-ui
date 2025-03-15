@@ -3,7 +3,8 @@ import { InvocationId, Target } from '@restate/features/invocation-route';
 import { Deployment } from '@restate/features/overview-route';
 import { Cell } from '@restate/ui/table';
 import { DateTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
-import { formatDateTime } from '@restate/util/intl';
+import { formatDateTime, formatDurations } from '@restate/util/intl';
+import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 
 const iso8601UTCPattern =
   /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/;
@@ -21,6 +22,7 @@ export function IntrospectionCell({
 }) {
   const { data } = useListDeployments({ refetchOnMount: false });
   const services = Array.from(data?.services.keys() ?? []);
+  const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
 
   if (col === '__actions__') {
     return <Cell />;
@@ -66,11 +68,16 @@ export function IntrospectionCell({
 
   if (typeof value === 'string' && isISODateString(value)) {
     const date = new Date(value);
+    const { isPast, ...parts } = durationSinceLastSnapshot(date);
+    const duration = formatDurations(parts);
+
     return (
       <Cell>
+        <span className="font-normal text-zinc-500">{!isPast && 'in '}</span>
         <DateTooltip date={date} title={col}>
-          {formatDateTime(date, 'system')}
+          {duration}
         </DateTooltip>
+        <span className="font-normal text-zinc-500">{isPast && ' ago'}</span>
       </Cell>
     );
   }
