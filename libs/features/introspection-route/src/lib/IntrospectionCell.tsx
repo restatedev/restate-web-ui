@@ -2,7 +2,15 @@ import { useListDeployments } from '@restate/data-access/admin-api';
 import { InvocationId, Target } from '@restate/features/invocation-route';
 import { Deployment } from '@restate/features/overview-route';
 import { Cell } from '@restate/ui/table';
-import { TruncateWithTooltip } from '@restate/ui/tooltip';
+import { DateTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
+import { formatDateTime } from '@restate/util/intl';
+
+const iso8601UTCPattern =
+  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/;
+
+function isISODateString(str: string) {
+  return iso8601UTCPattern.test(str);
+}
 
 export function IntrospectionCell({
   col,
@@ -54,6 +62,17 @@ export function IntrospectionCell({
 
   if (typeof value === 'string' && value.includes('\n')) {
     return <Cell className="whitespace-pre-line">{value}</Cell>;
+  }
+
+  if (typeof value === 'string' && isISODateString(value)) {
+    const date = new Date(value);
+    return (
+      <Cell>
+        <DateTooltip date={date} title={col}>
+          {formatDateTime(date, 'system')}
+        </DateTooltip>
+      </Cell>
+    );
   }
 
   return (
