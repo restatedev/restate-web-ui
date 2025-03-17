@@ -56,7 +56,6 @@ export const links: LinksFunction = () => [
     href: '/ui/inter.css',
   },
   { rel: 'stylesheet', href: styles },
-  { rel: 'stylesheet', href: 'https://rsms.me/inter/inter.css' },
   {
     rel: 'apple-touch-icon',
     href: '/ui/apple-touch-icon.png',
