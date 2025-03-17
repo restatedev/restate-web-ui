@@ -337,7 +337,8 @@ export function useRegisterDeploymentContext() {
       additionalHeaders.items &&
       additionalHeaders.items.some(({ key, value }) => key && value)
   );
-  const canSkipAdvanced = !hasAdditionalHeaders && !useHttp11 && !assumeRoleArn;
+  const canSkipAdvanced =
+    !hasAdditionalHeaders && !useHttp11 && !assumeRoleArn && !isLambda;
 
   return {
     isAdvanced,

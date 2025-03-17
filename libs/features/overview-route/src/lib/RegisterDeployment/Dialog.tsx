@@ -28,6 +28,7 @@ function RegisterDeploymentFooter() {
     error,
     formId,
     canSkipAdvanced,
+    isLambda,
   } = useRegisterDeploymentContext();
   return (
     <DialogFooter>
@@ -63,7 +64,7 @@ function RegisterDeploymentFooter() {
                 Confirm
               </SubmitButton>
             )}
-            {isEndpoint && canSkipAdvanced && (
+            {isEndpoint && canSkipAdvanced && !isLambda && (
               <SubmitButton
                 variant="secondary"
                 disabled={isPending}
