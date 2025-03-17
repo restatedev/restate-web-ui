@@ -18,6 +18,7 @@ interface LinkProps
       | 'children'
       | 'href'
       | 'aria-label'
+      | 'download'
     >,
     Pick<AriaAttributes, 'aria-current'> {
   className?: string;
