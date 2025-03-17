@@ -46,14 +46,14 @@ import {
 import { EditState } from '@restate/features/edit-state';
 
 export const links: LinksFunction = () => [
-  {
-    rel: 'preconnect',
-    href: 'https://rsms.me/',
-  },
   // TODO: move to the its own lib
   {
     rel: 'stylesheet',
-    href: 'https://unpkg.com/@stoplight/elements/styles.min.css',
+    href: '/ui/elements-web-components.min.css',
+  },
+  {
+    rel: 'stylesheet',
+    href: '/ui/inter.css',
   },
   { rel: 'stylesheet', href: styles },
   { rel: 'stylesheet', href: 'https://rsms.me/inter/inter.css' },
