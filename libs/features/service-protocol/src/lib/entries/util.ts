@@ -60,13 +60,6 @@ export function parseEntryJson(entryJSON?: string) {
   }
 }
 
-export function convertToUTC(date?: string) {
-  if (date && !date.endsWith('Z')) {
-    return date + 'Z';
-  }
-  return date;
-}
-
 export function getTarget(object: any): {
   name?: string;
   key?: string;

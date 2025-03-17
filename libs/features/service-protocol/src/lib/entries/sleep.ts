@@ -3,7 +3,7 @@ import { SleepEntryMessageSchema } from '@buf/restatedev_service-protocol.bufbui
 import { toUnit8Array } from '../toUni8Array';
 import { RestateError } from '@restate/util/errors';
 import { JournalRawEntry } from '@restate/data-access/admin-api/spec';
-import { parseEntryJson, convertToUTC, findEntryAfter } from './util';
+import { parseEntryJson, findEntryAfter } from './util';
 
 function sleepV1(entry: JournalRawEntry) {
   const { raw } = entry;
@@ -16,7 +16,7 @@ function sleepV1(entry: JournalRawEntry) {
       return {
         name: message.name,
         failure: undefined,
-        sleep_wakeup_at: convertToUTC(entry.sleep_wakeup_at)!,
+        sleep_wakeup_at: entry.sleep_wakeup_at,
       };
     case 'failure':
       return {
@@ -25,14 +25,14 @@ function sleepV1(entry: JournalRawEntry) {
           message.result.value.message,
           message.result.value.code.toString()
         ),
-        sleep_wakeup_at: convertToUTC(entry.sleep_wakeup_at)!,
+        sleep_wakeup_at: entry.sleep_wakeup_at,
       };
 
     default:
       return {
         name: message.name,
         failure: undefined,
-        sleep_wakeup_at: convertToUTC(entry.sleep_wakeup_at)!,
+        sleep_wakeup_at: entry.sleep_wakeup_at,
       };
   }
 }
