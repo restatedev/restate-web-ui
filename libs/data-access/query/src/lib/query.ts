@@ -181,7 +181,7 @@ async function getInbox(
     return new Response(
       JSON.stringify({
         head,
-        size: size + 1,
+        size: size + Number(!!head),
         ...(typeof position === 'number' &&
           (position >= 0 || isInvocationHead) &&
           invocationId && {
