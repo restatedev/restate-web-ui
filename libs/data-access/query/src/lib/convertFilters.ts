@@ -309,7 +309,10 @@ function getStatusFilterString(value?: string): {
 export function convertFilters(filters: FilterItem[]) {
   const statusFilter = filters.find((filter) => filter.field === 'status');
 
-  const mappedFilters = filters.map(convertFilterToSqlClause).filter(Boolean);
+  const mappedFilters = filters
+    .filter((filter) => filter.field !== 'status')
+    .map(convertFilterToSqlClause)
+    .filter(Boolean);
 
   if (statusFilter) {
     if (statusFilter.type === 'STRING') {
