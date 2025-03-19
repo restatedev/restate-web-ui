@@ -150,8 +150,10 @@ function useApiSpec(service?: string | null) {
   const { apiSpec, handlers } = useMemo(() => {
     const apiSpec = data
       ? JSON.stringify({
-          servers: [{ url: ingressUrl }],
           ...data,
+          ...(ingressUrl && {
+            servers: [{ url: ingressUrl, description: 'Restate Ingress URL' }],
+          }),
         })
       : undefined;
     const handlers = Array.from(
