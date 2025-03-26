@@ -25,8 +25,7 @@ import {
   useState,
   useTransition,
 } from 'react';
-import { RouterProvider, useCollator } from 'react-aria';
-import { SortDescriptor } from 'react-aria-components';
+import { RouterProvider } from 'react-aria';
 import { useSearchParams } from 'react-router';
 import { IntrospectionCell } from './IntrospectionCell';
 import { Link } from '@restate/ui/link';
@@ -67,7 +66,6 @@ function Component() {
     [setSearchParams]
   );
 
-  const collator = useCollator();
   const [, startTransition] = useTransition();
   const [pageIndex, _setPageIndex] = useState(0);
 
@@ -81,29 +79,12 @@ function Component() {
     []
   );
 
-  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>();
   const sortedItems = useMemo(() => {
-    return [...(data?.rows ?? [])]
-      .sort((a, b) => {
-        let cmp = 0;
-
-        if (!sortDescriptor) {
-          return cmp;
-        }
-
-        const col = String(sortDescriptor?.column);
-
-        cmp = collator.compare(a[col] ?? '', b[col] ?? '');
-
-        // Flip the direction if descending order is specified.
-        if (sortDescriptor?.direction === 'descending') {
-          cmp *= -1;
-        }
-
-        return cmp;
-      })
-      .map((row) => ({ row, hash: JSON.stringify(row) }));
-  }, [collator, data?.rows, sortDescriptor]);
+    return [...(data?.rows ?? [])].map((row) => ({
+      row,
+      hash: JSON.stringify(row),
+    }));
+  }, [data?.rows]);
 
   const currentPageItems = useMemo(() => {
     return sortedItems.slice(
@@ -145,7 +126,7 @@ function Component() {
               allColumns.has(col as string)
             ),
             ...allColumns,
-          ].slice(0, 5)
+          ].slice(0, 6)
         );
       }
 
@@ -172,19 +153,14 @@ function Component() {
     <div>
       <SnapshotTimeProvider lastSnapshot={dataUpdate}>
         <div className="flex flex-col flex-auto gap-2 relative">
-          <Table
-            aria-label="Invocations"
-            sortDescriptor={sortDescriptor}
-            onSortChange={setSortDescriptor}
-            key={hash}
-          >
+          <Table aria-label="Invocations" key={hash}>
             <TableHeader>
               {selectedColumnsArray.map((col) =>
                 col.id !== '__actions__' ? (
                   <Column
                     id={col.id}
                     isRowHeader={col.isRowHeader}
-                    allowsSorting
+                    allowsSorting={false}
                     key={col.id}
                   >
                     {col.name}
