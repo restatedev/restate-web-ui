@@ -3,7 +3,7 @@ import { InvocationId, Target } from '@restate/features/invocation-route';
 import { Deployment } from '@restate/features/overview-route';
 import { Cell } from '@restate/ui/table';
 import { DateTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
-import { formatDateTime, formatDurations } from '@restate/util/intl';
+import { formatDurations } from '@restate/util/intl';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 
 const iso8601UTCPattern =
@@ -62,10 +62,6 @@ export function IntrospectionCell({
     );
   }
 
-  if (typeof value === 'string' && value.includes('\n')) {
-    return <Cell className="whitespace-pre-line">{value}</Cell>;
-  }
-
   if (typeof value === 'string' && isISODateString(value)) {
     const date = new Date(value);
     const { isPast, ...parts } = durationSinceLastSnapshot(date);
@@ -84,7 +80,22 @@ export function IntrospectionCell({
 
   return (
     <Cell className="min-h-6">
-      {<TruncateWithTooltip>{value ?? <br />}</TruncateWithTooltip>}
+      {
+        <TruncateWithTooltip>
+          {formattedValue(value) ?? <br />}
+        </TruncateWithTooltip>
+      }
     </Cell>
   );
+}
+
+function formattedValue(value?: string) {
+  if (value) {
+    try {
+      return JSON.stringify(JSON.parse(value), null, 2);
+    } catch (_) {
+      return value;
+    }
+  }
+  return value;
 }

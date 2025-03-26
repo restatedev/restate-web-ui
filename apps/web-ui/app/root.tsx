@@ -210,7 +210,7 @@ export default function App() {
                     ]}
                     href={'/introspection'}
                   >
-                    Introspection
+                    Introspection SQL
                   </NavItem>
                 </Nav>
               </LayoutOutlet>

@@ -104,10 +104,6 @@ function Component() {
     [currentPageItems]
   );
 
-  const [selectedColumns, setSelectedColumns] = useState<DropdownMenuSelection>(
-    new Set([])
-  );
-
   const allColumns = useMemo(() => {
     return new Set(
       data?.rows
@@ -117,100 +113,44 @@ function Component() {
     );
   }, [data?.rows]);
 
-  useEffect(() => {
-    setSelectedColumns((old) => {
-      if (old instanceof Set) {
-        return new Set(
-          [
-            ...Array.from(old.values()).filter((col) =>
-              allColumns.has(col as string)
-            ),
-            ...allColumns,
-          ].slice(0, 6)
-        );
-      }
-
-      return old;
-    });
-  }, [allColumns]);
-
   const selectedColumnsArray = useMemo(() => {
-    const cols = Array.from(selectedColumns).map((id, index) => ({
+    const cols = Array.from(allColumns).map((id, index) => ({
       name: id,
       id: String(id),
       isRowHeader: index === 0,
     }));
-    cols.push({
-      id: '__actions__',
-      name: 'Actions',
-      isRowHeader: cols.length === 0,
-    });
+    if (cols.length === 0) {
+      cols.push({
+        id: '__actions__',
+        name: '',
+        isRowHeader: true,
+      });
+    }
     return cols;
-  }, [selectedColumns]);
+  }, [allColumns]);
 
   const totalSize = Math.ceil((data?.rows ?? []).length / PAGE_SIZE);
   return (
     <div>
       <SnapshotTimeProvider lastSnapshot={dataUpdate}>
         <div className="flex flex-col flex-auto gap-2 relative">
-          <Table aria-label="Invocations" key={hash}>
+          <Table aria-label="Introspection SQL" key={hash}>
             <TableHeader>
-              {selectedColumnsArray.map((col) =>
-                col.id !== '__actions__' ? (
-                  <Column
-                    id={col.id}
-                    isRowHeader={col.isRowHeader}
-                    allowsSorting={false}
-                    key={col.id}
-                  >
-                    {col.name}
-                  </Column>
-                ) : (
-                  <Column
-                    id="__actions__"
-                    {...(!col.isRowHeader && { width: 40 })}
-                    key={col.id}
-                    isRowHeader={col.isRowHeader}
-                  >
-                    <Dropdown>
-                      {!col.isRowHeader && (
-                        <DropdownTrigger>
-                          <Button
-                            variant="icon"
-                            className="self-end rounded-lg p-0.5"
-                          >
-                            <Icon
-                              name={IconName.TableProperties}
-                              className="h-4 w-4 aspect-square text-gray-500"
-                            />
-                          </Button>
-                        </DropdownTrigger>
-                      )}
-                      <DropdownPopover>
-                        <DropdownSection title="Columns">
-                          <DropdownMenu
-                            multiple
-                            selectable
-                            selectedItems={selectedColumns}
-                            onSelect={setSelectedColumns}
-                          >
-                            {Array.from(allColumns.values()).map((name) => (
-                              <DropdownItem key={name} value={name}>
-                                {name}
-                              </DropdownItem>
-                            ))}
-                          </DropdownMenu>
-                        </DropdownSection>
-                      </DropdownPopover>
-                    </Dropdown>
-                    <span className="sr-only">Actions</span>
-                  </Column>
-                )
-              )}
+              {selectedColumnsArray.map((col) => (
+                <Column
+                  id={col.id}
+                  isRowHeader={col.isRowHeader}
+                  allowsSorting={false}
+                  key={col.id}
+                  minWidth={150}
+                >
+                  {col.name}
+                </Column>
+              ))}
             </TableHeader>
             <TableBody
               items={currentPageItems}
-              dependencies={[selectedColumns, pageIndex]}
+              dependencies={[allColumns, pageIndex]}
               error={error}
               isLoading={isPending && !!query}
               numOfColumns={selectedColumnsArray.length}
