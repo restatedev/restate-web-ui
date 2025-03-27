@@ -1,14 +1,5 @@
 import { useSqlQuery } from '@restate/data-access/admin-api';
 import { Button } from '@restate/ui/button';
-import {
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownMenuSelection,
-  DropdownPopover,
-  DropdownSection,
-  DropdownTrigger,
-} from '@restate/ui/dropdown';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Column, Row, Table, TableBody, TableHeader } from '@restate/ui/table';
 import { formatDurations } from '@restate/util/intl';
@@ -25,12 +16,12 @@ import {
   useState,
   useTransition,
 } from 'react';
-import { RouterProvider, useCollator } from 'react-aria';
-import { SortDescriptor } from 'react-aria-components';
+import { RouterProvider } from 'react-aria';
 import { useSearchParams } from 'react-router';
 import { IntrospectionCell } from './IntrospectionCell';
 import { Link } from '@restate/ui/link';
 import { HoverTooltip } from '@restate/ui/tooltip';
+import { useQueryClient } from '@tanstack/react-query';
 
 const SQLEditor = lazy(() =>
   import('./SQLEditor').then((m) => ({ default: m.SQLEditor }))
@@ -47,13 +38,16 @@ function Component() {
       enabled: Boolean(query),
       refetchOnMount: false,
     });
+  const queryCLient = useQueryClient();
 
   const dataUpdate = error ? errorUpdatedAt : dataUpdatedAt;
 
-  const [initialQuery] = useState(() => searchParams.get(QUERY_PARAM) ?? '');
-
   const setQuery = useCallback(
     (query: string) => {
+      queryCLient.removeQueries({
+        predicate: (query) =>
+          Array.isArray(query.queryKey) && query.queryKey[0] === '/query',
+      });
       setSearchParams((old) => {
         const searchParams = new URLSearchParams(old);
         if (query) {
@@ -64,10 +58,9 @@ function Component() {
         return searchParams;
       });
     },
-    [setSearchParams]
+    [queryCLient, setSearchParams]
   );
 
-  const collator = useCollator();
   const [, startTransition] = useTransition();
   const [pageIndex, _setPageIndex] = useState(0);
 
@@ -81,29 +74,12 @@ function Component() {
     []
   );
 
-  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>();
   const sortedItems = useMemo(() => {
-    return [...(data?.rows ?? [])]
-      .sort((a, b) => {
-        let cmp = 0;
-
-        if (!sortDescriptor) {
-          return cmp;
-        }
-
-        const col = String(sortDescriptor?.column);
-
-        cmp = collator.compare(a[col] ?? '', b[col] ?? '');
-
-        // Flip the direction if descending order is specified.
-        if (sortDescriptor?.direction === 'descending') {
-          cmp *= -1;
-        }
-
-        return cmp;
-      })
-      .map((row) => ({ row, hash: JSON.stringify(row) }));
-  }, [collator, data?.rows, sortDescriptor]);
+    return [...(data?.rows ?? [])].map((row) => ({
+      row,
+      hash: JSON.stringify(row),
+    }));
+  }, [data?.rows]);
 
   const currentPageItems = useMemo(() => {
     return sortedItems.slice(
@@ -123,10 +99,6 @@ function Component() {
     [currentPageItems]
   );
 
-  const [selectedColumns, setSelectedColumns] = useState<DropdownMenuSelection>(
-    new Set([])
-  );
-
   const allColumns = useMemo(() => {
     return new Set(
       data?.rows
@@ -136,105 +108,44 @@ function Component() {
     );
   }, [data?.rows]);
 
-  useEffect(() => {
-    setSelectedColumns((old) => {
-      if (old instanceof Set) {
-        return new Set(
-          [
-            ...Array.from(old.values()).filter((col) =>
-              allColumns.has(col as string)
-            ),
-            ...allColumns,
-          ].slice(0, 5)
-        );
-      }
-
-      return old;
-    });
-  }, [allColumns]);
-
   const selectedColumnsArray = useMemo(() => {
-    const cols = Array.from(selectedColumns).map((id, index) => ({
+    const cols = Array.from(allColumns).map((id, index) => ({
       name: id,
       id: String(id),
       isRowHeader: index === 0,
     }));
-    cols.push({
-      id: '__actions__',
-      name: 'Actions',
-      isRowHeader: cols.length === 0,
-    });
+    if (cols.length === 0) {
+      cols.push({
+        id: '__actions__',
+        name: '',
+        isRowHeader: true,
+      });
+    }
     return cols;
-  }, [selectedColumns]);
+  }, [allColumns]);
 
   const totalSize = Math.ceil((data?.rows ?? []).length / PAGE_SIZE);
   return (
     <div>
       <SnapshotTimeProvider lastSnapshot={dataUpdate}>
         <div className="flex flex-col flex-auto gap-2 relative">
-          <Table
-            aria-label="Invocations"
-            sortDescriptor={sortDescriptor}
-            onSortChange={setSortDescriptor}
-            key={hash}
-          >
+          <Table aria-label="Introspection SQL" key={hash}>
             <TableHeader>
-              {selectedColumnsArray.map((col) =>
-                col.id !== '__actions__' ? (
-                  <Column
-                    id={col.id}
-                    isRowHeader={col.isRowHeader}
-                    allowsSorting
-                    key={col.id}
-                  >
-                    {col.name}
-                  </Column>
-                ) : (
-                  <Column
-                    id="__actions__"
-                    {...(!col.isRowHeader && { width: 40 })}
-                    key={col.id}
-                    isRowHeader={col.isRowHeader}
-                  >
-                    <Dropdown>
-                      {!col.isRowHeader && (
-                        <DropdownTrigger>
-                          <Button
-                            variant="icon"
-                            className="self-end rounded-lg p-0.5"
-                          >
-                            <Icon
-                              name={IconName.TableProperties}
-                              className="h-4 w-4 aspect-square text-gray-500"
-                            />
-                          </Button>
-                        </DropdownTrigger>
-                      )}
-                      <DropdownPopover>
-                        <DropdownSection title="Columns">
-                          <DropdownMenu
-                            multiple
-                            selectable
-                            selectedItems={selectedColumns}
-                            onSelect={setSelectedColumns}
-                          >
-                            {Array.from(allColumns.values()).map((name) => (
-                              <DropdownItem key={name} value={name}>
-                                {name}
-                              </DropdownItem>
-                            ))}
-                          </DropdownMenu>
-                        </DropdownSection>
-                      </DropdownPopover>
-                    </Dropdown>
-                    <span className="sr-only">Actions</span>
-                  </Column>
-                )
-              )}
+              {selectedColumnsArray.map((col) => (
+                <Column
+                  id={col.id}
+                  isRowHeader={col.isRowHeader}
+                  allowsSorting={false}
+                  key={col.id}
+                  minWidth={150}
+                >
+                  {col.name}
+                </Column>
+              ))}
             </TableHeader>
             <TableBody
               items={currentPageItems}
-              dependencies={[selectedColumns, pageIndex]}
+              dependencies={[allColumns, pageIndex]}
               error={error}
               isLoading={isPending && !!query}
               numOfColumns={selectedColumnsArray.length}
@@ -343,7 +254,8 @@ function Component() {
       <SQLEditor
         setQuery={setQuery}
         isPending={isFetching}
-        initialQuery={initialQuery}
+        initialQuery={searchParams.get(QUERY_PARAM) ?? ''}
+        key={searchParams.get(QUERY_PARAM)}
       />
     </div>
   );

@@ -82,14 +82,14 @@ export function TruncateWithTooltip({
         </span>
         <TooltipContent small offset={5} triggerRef={containerRef}>
           <div
-            className="flex items-start gap-4 [&_*]:text-gray-200 [&_*]:text-xs break-all"
+            className="flex items-start gap-4 [&_*]:text-gray-200 [&_*]:text-xs whitespace-pre-wrap"
             ref={tooltipHoverRef}
           >
-            {tooltipContent}
+            <div className="self-center whitespace-pre">{tooltipContent}</div>
             {!hideCopy && (
               <Copy
                 copyText={copyTextProp ?? triggerRef.current?.textContent ?? ''}
-                className="p-1 -m-1 -mt-0.5 [&_svg]:w-3 [&_svg]:h-3  [&_svg]:text-gray-200 bg-transparent hover:bg-zinc-600 pressed:bg-zinc-500 rounded-sm"
+                className="sticky top-0 right-0 translate-x-1 p-1 [&_svg]:w-3 [&_svg]:h-3  [&_svg]:text-gray-200 bg-transparent hover:bg-zinc-600 pressed:bg-zinc-500 rounded-sm"
               />
             )}
           </div>

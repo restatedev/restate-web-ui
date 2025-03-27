@@ -157,7 +157,8 @@ function HandlerInputOutput({
   withPlayground?: boolean;
 }) {
   const hasSchema = Boolean(schema);
-  const isObjectSchema = hasSchema && schema.type === 'object';
+  const isObjectSchema =
+    hasSchema && (schema.type === 'object' || schema.anyOf);
   const { base, value } = inputOutputStyles({
     className,
     hasSchema,
@@ -219,7 +220,7 @@ function HandlerInputOutput({
             >
               {isObjectSchema ? (
                 <JsonSchemaViewer
-                  className="font-mono [&>*>[aria-haspopup]]:mt-2 [&>*[data-test='property-description']]:mt-2"
+                  className="font-mono [&>*>[aria-haspopup]]:mt-2 [&>*[data-test='property-description']]:mt-2 [&:has([aria-haspopup])]:min-h-32"
                   schema={schema}
                 />
               ) : (
