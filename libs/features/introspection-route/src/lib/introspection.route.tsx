@@ -42,8 +42,6 @@ function Component() {
 
   const dataUpdate = error ? errorUpdatedAt : dataUpdatedAt;
 
-  const [initialQuery] = useState(() => searchParams.get(QUERY_PARAM) ?? '');
-
   const setQuery = useCallback(
     (query: string) => {
       queryCLient.removeQueries({
@@ -256,7 +254,8 @@ function Component() {
       <SQLEditor
         setQuery={setQuery}
         isPending={isFetching}
-        initialQuery={initialQuery}
+        initialQuery={searchParams.get(QUERY_PARAM) ?? ''}
+        key={searchParams.get(QUERY_PARAM)}
       />
     </div>
   );

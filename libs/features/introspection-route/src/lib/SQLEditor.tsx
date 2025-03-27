@@ -37,7 +37,6 @@ import {
   WINDOWS_RANKING_FUNCTIONS,
 } from './constants';
 import { TokenClassConsts, postfixTokenClass } from 'monaco-sql-languages';
-import { Icon, IconName } from '@restate/ui/icons';
 
 const COLUMNS: ICompletionItem[] = [
   ...Array.from(
@@ -357,7 +356,7 @@ export function SQLEditor({
     return () => {
       document.removeEventListener('keydown', keyHandler);
     };
-  }, []);
+  }, [setQuery]);
 
   return (
     <LayoutOutlet zone={LayoutZone.Toolbar}>
@@ -404,9 +403,7 @@ export function SQLEditor({
             <kbd className="[font-size:80%] font-mono font-medium rounded bg-black/20  text-white/90 px-1">
               {getMetaKeySymbol()}
             </kbd>
-            <div className="rounded bg-black/20 px-1 h-5 flex items-center text-white/90 aspect-square">
-              <Icon name={IconName.Return} className="w-3 h-3 " />
-            </div>
+            <div className="[font-size:120%] font-mono font-medium rounded bg-black/20 px-1 h-5 flex items-center justify-center text-white/90 aspect-square"></div>
           </div>
         </SubmitButton>
       </Form>

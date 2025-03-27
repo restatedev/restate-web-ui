@@ -85,7 +85,7 @@ export function TruncateWithTooltip({
             className="flex items-start gap-4 [&_*]:text-gray-200 [&_*]:text-xs whitespace-pre-wrap"
             ref={tooltipHoverRef}
           >
-            <div className="self-center">{tooltipContent}</div>
+            <div className="self-center whitespace-pre">{tooltipContent}</div>
             {!hideCopy && (
               <Copy
                 copyText={copyTextProp ?? triggerRef.current?.textContent ?? ''}
