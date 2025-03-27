@@ -403,7 +403,9 @@ export function SQLEditor({
             <kbd className="[font-size:80%] font-mono font-medium rounded bg-black/20  text-white/90 px-1">
               {getMetaKeySymbol()}
             </kbd>
-            <div className="[font-size:120%] font-mono font-medium rounded bg-black/20 px-1 h-5 flex items-center justify-center text-white/90 aspect-square"></div>
+            <div className="[font-size:120%] font-mono font-medium rounded bg-black/20 px-1 h-5 flex items-center justify-center text-white/90 aspect-square">
+              ⏎
+            </div>
           </div>
         </SubmitButton>
       </Form>
