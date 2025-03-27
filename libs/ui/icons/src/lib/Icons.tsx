@@ -42,6 +42,7 @@ import {
   Database,
   ScanSearch,
   Download,
+  CornerDownLeft,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from 'tailwind-variants';
@@ -126,6 +127,7 @@ export const enum IconName {
   Database = 'Database',
   ScanSearch = 'ScanSearch',
   Download = 'Download',
+  Return = 'Return',
 }
 export interface IconsProps {
   name: IconName;
@@ -195,6 +197,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Database]: Database,
   [IconName.ScanSearch]: ScanSearch,
   [IconName.Download]: Download,
+  [IconName.Return]: CornerDownLeft,
 };
 
 const styles = tv({

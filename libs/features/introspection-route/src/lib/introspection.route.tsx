@@ -1,14 +1,5 @@
 import { useSqlQuery } from '@restate/data-access/admin-api';
 import { Button } from '@restate/ui/button';
-import {
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownMenuSelection,
-  DropdownPopover,
-  DropdownSection,
-  DropdownTrigger,
-} from '@restate/ui/dropdown';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Column, Row, Table, TableBody, TableHeader } from '@restate/ui/table';
 import { formatDurations } from '@restate/util/intl';
@@ -30,6 +21,7 @@ import { useSearchParams } from 'react-router';
 import { IntrospectionCell } from './IntrospectionCell';
 import { Link } from '@restate/ui/link';
 import { HoverTooltip } from '@restate/ui/tooltip';
+import { useQueryClient } from '@tanstack/react-query';
 
 const SQLEditor = lazy(() =>
   import('./SQLEditor').then((m) => ({ default: m.SQLEditor }))
@@ -46,6 +38,7 @@ function Component() {
       enabled: Boolean(query),
       refetchOnMount: false,
     });
+  const queryCLient = useQueryClient();
 
   const dataUpdate = error ? errorUpdatedAt : dataUpdatedAt;
 
@@ -53,6 +46,10 @@ function Component() {
 
   const setQuery = useCallback(
     (query: string) => {
+      queryCLient.removeQueries({
+        predicate: (query) =>
+          Array.isArray(query.queryKey) && query.queryKey[0] === '/query',
+      });
       setSearchParams((old) => {
         const searchParams = new URLSearchParams(old);
         if (query) {
@@ -63,7 +60,7 @@ function Component() {
         return searchParams;
       });
     },
-    [setSearchParams]
+    [queryCLient, setSearchParams]
   );
 
   const [, startTransition] = useTransition();

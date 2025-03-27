@@ -37,6 +37,7 @@ import {
   WINDOWS_RANKING_FUNCTIONS,
 } from './constants';
 import { TokenClassConsts, postfixTokenClass } from 'monaco-sql-languages';
+import { Icon, IconName } from '@restate/ui/icons';
 
 const COLUMNS: ICompletionItem[] = [
   ...Array.from(
@@ -161,6 +162,7 @@ export function SQLEditor({
 }) {
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const hostRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const placeholderRef = useRef<HTMLDivElement>(null);
 
@@ -286,23 +288,42 @@ export function SQLEditor({
 
       updateStyles();
 
-      editorRef.current.onDidChangeModelContent(updateStyles);
+      editorRef.current.onDidChangeModelContent((e) => {
+        updateStyles();
+      });
+
+      editorRef.current.addCommand(
+        monaco.KeyCode.Enter | monaco.KeyMod.WinCtrl,
+        function () {
+          setQuery(editorRef.current?.getValue() ?? '');
+        }
+      );
+      editorRef.current.addCommand(
+        monaco.KeyCode.Enter | monaco.KeyMod.CtrlCmd,
+        function () {
+          setQuery(editorRef.current?.getValue() ?? '');
+        }
+      );
+
       window.addEventListener('resize', updateStyles);
 
       return () => {
         window.removeEventListener('resize', updateStyles);
       };
     }
-  }, [initialQuery]);
+  }, [initialQuery, setQuery]);
 
   useEffect(() => {
     const keyHandler = (event: KeyboardEvent) => {
       if (
-        event.key !== '/' ||
-        event.ctrlKey ||
-        event.metaKey ||
-        event.shiftKey ||
-        event.repeat
+        !(event.key === 'Enter' && event.metaKey) &&
+        !(
+          event.key === '/' &&
+          !event.ctrlKey &&
+          !event.metaKey &&
+          !event.shiftKey &&
+          !event.repeat
+        )
       ) {
         return;
       }
@@ -312,10 +333,25 @@ export function SQLEditor({
           event.target.closest('[role=listbox]') ||
           event.target.closest('[role=dialog]') ||
           event.target.closest('[class~="monaco-editor"]'))
-      )
+      ) {
         return;
+      }
+
       event.preventDefault();
-      editorRef.current?.focus();
+      if (event.key === 'Enter' && event.metaKey) {
+        setQuery(editorRef.current?.getValue() ?? '');
+      } else {
+        editorRef.current?.focus();
+        const model = editorRef.current?.getModel();
+        const lineCount = model?.getLineCount() ?? 0;
+        const lastLineLength = model?.getLineContent(lineCount).length ?? 0;
+
+        // Set the position to the end of the last line
+        editorRef.current?.setPosition({
+          lineNumber: lineCount,
+          column: lastLineLength + 1,
+        });
+      }
     };
     document.addEventListener('keydown', keyHandler);
     return () => {
@@ -331,6 +367,7 @@ export function SQLEditor({
           setQuery(editorRef.current?.getValue() ?? '');
         }}
         className="w-[100vw]"
+        ref={formRef}
       >
         <div className="p-0.5 flex items-center rounded-xl border-transparent ring-1 ring-transparent border has-[*:focus]:border-blue-500 has-[*:focus]:ring-blue-500">
           <div
@@ -360,11 +397,24 @@ export function SQLEditor({
         </div>
         <SubmitButton
           isPending={isPending}
-          className="absolute right-1 top-1 bottom-1 rounded-lg py-0 disabled:bg-gray-400  disabled:text-gray-200"
+          className="absolute pl-4 pr-1 gap-2 right-1 top-1 bottom-1 rounded-lg py-0 disabled:bg-gray-400  disabled:text-gray-200 flex items-center"
         >
           Query
+          <div className="text-2xs flex items-center gap-0.5  mt-0.5">
+            <kbd className="[font-size:80%] font-mono font-medium rounded bg-black/20  text-white/90 px-1">
+              {getMetaKeySymbol()}
+            </kbd>
+            <div className="rounded bg-black/20 px-1 h-5 flex items-center text-white/90 aspect-square">
+              <Icon name={IconName.Return} className="w-3 h-3 " />
+            </div>
+          </div>
         </SubmitButton>
       </Form>
     </LayoutOutlet>
   );
+}
+
+function getMetaKeySymbol() {
+  const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);
+  return isMac ? 'Cmd' : 'Ctrl';
 }
