@@ -15,7 +15,7 @@ interface TooltipContentProps {
 }
 
 const styles = tv({
-  base: 'max-w-xl  group  border border-zinc-900/80 text-gray-300 drop-shadow-xl will-change-transform overflow-auto',
+  base: 'max-w-2xl group border border-zinc-900/80 text-gray-300 drop-shadow-xl will-change-transform overflow-auto',
   variants: {
     isEntering: {
       true: 'animate-in fade-in placement-bottom:slide-in-from-top-0.5 placement-top:slide-in-from-bottom-0.5 placement-left:slide-in-from-right-0.5 placement-right:slide-in-from-left-0.5 ease-out duration-200',
@@ -62,7 +62,9 @@ export function InternalTooltipContent({
           </svg>
         </OverlayArrow>
       )}
-      {children}
+      <div className="whitespace-pre w-fit flex items-center h-full">
+        {children}
+      </div>
     </AriaTooltip>
   );
 }
