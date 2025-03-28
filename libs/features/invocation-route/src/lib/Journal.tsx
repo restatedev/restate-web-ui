@@ -2,6 +2,7 @@ import {
   EntryType,
   Invocation,
   JournalEntry,
+  RawInvocation,
   useGetInvocationJournal,
   useGetInvocationJournalWithInvocation,
 } from '@restate/data-access/admin-api';
@@ -31,6 +32,25 @@ import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
 import { Spinner } from '@restate/ui/loading';
 import { ErrorBanner } from '@restate/ui/error';
 
+function getLastFailure(invocation?: Invocation) {
+  const isOldProtocol =
+    !invocation?.pinned_service_protocol_version ||
+    invocation?.pinned_service_protocol_version < 5;
+
+  if (isOldProtocol) {
+    return {
+      index: invocation?.last_failure_related_entry_index,
+      name: invocation?.last_failure_related_entry_name,
+      type: invocation?.last_failure_related_entry_type,
+    };
+  }
+  return {
+    index: invocation?.last_failure_related_command_index,
+    name: invocation?.last_failure_related_command_name,
+    type: invocation?.last_failure_related_command_type,
+  };
+}
+
 export function Journal({ invocationId }: { invocationId?: string }) {
   const {
     data: journalAndInvocationData,
@@ -46,6 +66,18 @@ export function Journal({ invocationId }: { invocationId?: string }) {
   const { journal: data, invocation } = journalAndInvocationData ?? {};
   const entries = (data?.entries ?? []).sort((a, b) => a.index - b.index);
   const error = getRestateError(invocation);
+  const lastFailure = getLastFailure(invocation);
+
+  const isOldProtocol =
+    !invocation?.pinned_service_protocol_version ||
+    invocation?.pinned_service_protocol_version < 5;
+
+  // const lastCommandIndex =
+  //   Math.max(...entries.map((entry) => entry.command_index ?? -1)) -
+  //   (invocation?.pinned_service_protocol_version &&
+  //   invocation?.pinned_service_protocol_version >= 5
+  //     ? 1
+  //     : 0);
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
@@ -58,34 +90,35 @@ export function Journal({ invocationId }: { invocationId?: string }) {
                 entry={entry}
                 invocation={invocation}
                 failed={
-                  entry.index ===
-                    invocation?.last_failure_related_entry_index ||
+                  entry.command_index === lastFailure?.index ||
                   Boolean('failure' in entry && entry.failure)
                 }
                 appended
-                {...(entry.index ===
-                  invocation?.last_failure_related_entry_index && {
+                {...(entry.command_index === lastFailure?.index && {
                   error,
                 })}
               />
             );
           })}
-        {invocation?.last_failure_related_entry_index === entries.length && (
-          <DefaultEntry
-            invocation={invocation}
-            entry={
-              {
-                entry_type: invocation.last_failure_related_entry_type,
-                name: invocation.last_failure_related_entry_name,
-                completed: true,
-                index: entries.length,
-              } as any
-            }
-            failed
-            appended={false}
-            error={error}
-          />
-        )}
+        {invocation &&
+          isOldProtocol &&
+          lastFailure?.index === entries.length && (
+            <DefaultEntry
+              invocation={invocation}
+              entry={
+                {
+                  entry_type: lastFailure.type,
+                  name: lastFailure.name,
+                  completed: true,
+                  index: entries.length,
+                  command_index: entries.length,
+                } as any
+              }
+              failed
+              appended={false}
+              error={error}
+            />
+          )}
         {entries.length === 0 && isSuccess && (
           <div className="text-zinc-500/90 text-sm font-medium p-2 text-center">
             No entries found
@@ -240,11 +273,15 @@ function DefaultEntry({
 }: PropsWithChildren<EntryProps<JournalEntry>>) {
   const isRetrying = invocation.status === 'retrying';
   const isRetryingThisEntry =
-    isRetrying && failed && entry.index >= (invocation.journal_size ?? 0) - 1;
-  const wasRetryingThisEntry =
-    !isRetrying &&
+    isRetrying &&
     failed &&
-    entry.index === (invocation.last_failure_related_entry_index ?? -1);
+    (entry.version && entry.version >= 2
+      ? !entry.completed
+      : entry.index >= (invocation.journal_size ?? 0));
+  const lastFailure = getLastFailure(invocation);
+
+  const wasRetryingThisEntry =
+    !isRetrying && failed && entry.command_index === (lastFailure.index ?? -1);
   const { base, line, circle, entryItem } = defaultEntryStyles();
   if (!entry.entry_type) {
     return null;
