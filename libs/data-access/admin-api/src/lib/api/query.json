@@ -1102,6 +1102,9 @@
               },
               {
                 "$ref": "#/components/schemas/FilterStringListItem"
+              },
+              {
+                "$ref": "#/components/schemas/FilterNullItem"
               }
             ]
           }
@@ -1113,7 +1116,7 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["STRING", "NUMBER", "DATE", "STRING_LIST"]
+            "enum": ["STRING", "NUMBER", "DATE", "STRING_LIST", "NULL"]
           },
           "field": {
             "type": "string"
@@ -1158,6 +1161,20 @@
           },
           "value": {
             "type": "string"
+          }
+        }
+      },
+      "FilterNullItem": {
+        "type": "object",
+        "required": ["type", "operation"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["NULL"]
+          },
+          "operation": {
+            "type": "string",
+            "enum": ["IS", "IS_NOT"]
           }
         }
       },
@@ -1994,6 +2011,14 @@
             "type": "integer",
             "format": "uint32"
           },
+          "pinned_service_protocol_version": {
+            "type": "integer",
+            "format": "uint32"
+          },
+          "journal_commands_size": {
+            "type": "integer",
+            "format": "uint32"
+          },
           "retry_count": {
             "type": "integer",
             "format": "uint64"
@@ -2006,6 +2031,16 @@
             "type": "string"
           },
           "last_failure_related_entry_type": {
+            "type": "string"
+          },
+          "last_failure_related_command_index": {
+            "type": "integer",
+            "format": "uint64"
+          },
+          "last_failure_related_command_name": {
+            "type": "string"
+          },
+          "last_failure_related_command_type": {
             "type": "string"
           },
           "last_attempt_deployment_id": {
@@ -2133,9 +2168,27 @@
             "type": "integer",
             "format": "uint32"
           },
+          "pinned_service_protocol_version": {
+            "type": "integer",
+            "format": "uint32"
+          },
+          "journal_commands_size": {
+            "type": "integer",
+            "format": "uint32"
+          },
           "retry_count": {
             "type": "integer",
             "format": "uint64"
+          },
+          "last_failure_related_command_index": {
+            "type": "integer",
+            "format": "uint64"
+          },
+          "last_failure_related_command_name": {
+            "type": "string"
+          },
+          "last_failure_related_command_type": {
+            "type": "string"
           },
           "last_failure_related_entry_index": {
             "type": "integer",
