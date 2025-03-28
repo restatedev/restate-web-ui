@@ -271,10 +271,8 @@ async function queryState(
             type: 'STRING',
           },
           {
+            ...filter,
             field: 'value_utf8',
-            operation: filter.operation,
-            value: filter.value,
-            type: filter.type,
           },
         ] as FilterItem[])
       : []),
