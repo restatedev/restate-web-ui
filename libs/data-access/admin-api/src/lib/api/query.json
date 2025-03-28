@@ -1385,6 +1385,8 @@
         "required": ["index", "entry_type"],
         "properties": {
           "index": { "type": "integer" },
+          "version": { "type": "integer" },
+          "command_index": { "type": "integer" },
           "start": {
             "type": "string",
             "format": "data-time"

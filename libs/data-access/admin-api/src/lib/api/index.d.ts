@@ -1132,6 +1132,8 @@ export interface components {
     };
     JournalBaseEntry: {
       index: number;
+      version?: number;
+      command_index?: number;
       /** Format: data-time */
       start?: string;
       /** Format: data-time */
