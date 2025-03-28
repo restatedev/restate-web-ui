@@ -162,7 +162,7 @@ function JournalCell({ invocation }: CellProps) {
           variant="secondary"
           className="px-1.5 py-0.5 flex rounded-md items-center gap-1 text-2xs"
         >
-          {invocation.journal_size}{' '}
+          {invocation.journal_commands_size || invocation.journal_size}{' '}
           {formatPlurals(invocation.journal_size, {
             one: 'entry',
             other: 'entries',

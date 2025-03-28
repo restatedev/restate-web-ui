@@ -269,12 +269,6 @@ function getStatusFilterString(value?: string): {
                 operation: 'EQUALS',
                 value: 'backing-off',
               },
-              {
-                type: 'NUMBER',
-                field: 'retry_count',
-                operation: 'GREATER_THAN',
-                value: 1,
-              },
             ],
             operator: 'AND',
           },

@@ -31,7 +31,8 @@ export function GetState({
               }
             />
           )}
-          {typeof entry.value === 'undefined' &&
+          {(typeof entry.value === 'undefined' ||
+            (entry.version === 1 && entry.value === '')) &&
             !entryError &&
             entry.completed && (
               <div className="text-zinc-400 font-semibold font-mono text-2xs">

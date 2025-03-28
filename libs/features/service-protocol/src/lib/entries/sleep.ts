@@ -17,6 +17,7 @@ function sleepV1(entry: JournalRawEntry) {
         name: message.name,
         failure: undefined,
         sleep_wakeup_at: entry.sleep_wakeup_at,
+        completed: entry.completed,
       };
     case 'failure':
       return {
@@ -26,6 +27,7 @@ function sleepV1(entry: JournalRawEntry) {
           message.result.value.code.toString()
         ),
         sleep_wakeup_at: entry.sleep_wakeup_at,
+        completed: entry.completed,
       };
 
     default:
@@ -33,6 +35,7 @@ function sleepV1(entry: JournalRawEntry) {
         name: message.name,
         failure: undefined,
         sleep_wakeup_at: entry.sleep_wakeup_at,
+        completed: entry.completed,
       };
   }
 }
