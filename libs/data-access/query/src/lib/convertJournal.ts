@@ -52,11 +52,24 @@ export function convertJournal(
    * In v2 journal the entry type in in the format of Command/Notification: {name}
    * For now we remove the Command but need to revisit this.
    */
-  return (
+
+  const command_index =
+    entry.version && entry.version >= 2
+      ? entry.entry_type.startsWith('Command: ')
+        ? allEntries
+            .slice(0, entry.index)
+            .filter((entry) => entry.entry_type.startsWith('Command: ')).length
+        : undefined
+      : entry.index;
+  const newEntry =
     JOURNAL_ENTRY_CONVERT_MAP[
       entry.entry_type.replace('Command: ', '') as EntryType
-    ]?.(entry, allEntries) ?? (entry as JournalEntry)
-  );
+    ]?.(entry, allEntries) ?? (entry as JournalEntry);
+  return {
+    ...newEntry,
+    command_index,
+    version: entry.version ?? 1,
+  };
 }
 
 function GetState(
