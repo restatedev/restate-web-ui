@@ -100,12 +100,7 @@ function Component() {
   );
 
   const allColumns = useMemo(() => {
-    return new Set(
-      data?.rows
-        ?.map((row) => Object.keys(row))
-        .flat()
-        .sort()
-    );
+    return new Set(data?.rows?.map((row) => Object.keys(row)).flat());
   }, [data?.rows]);
 
   const selectedColumnsArray = useMemo(() => {
