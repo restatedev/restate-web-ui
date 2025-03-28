@@ -4,6 +4,7 @@ import type {
   FilterStringItem,
   FilterNumberItem,
   FilterStringListItem,
+  FilterNullItem,
 } from '@restate/data-access/admin-api/spec';
 
 function convertFilterNumberToSqlClause(
@@ -37,6 +38,17 @@ function convertFilterStringToSqlClause(
       return `"${filter.field}" LIKE '%${filter.value}%'`;
     case 'NOT_CONTAINS':
       return `"${filter.field}" NOT LIKE '%${filter.value}%'`;
+  }
+}
+
+function convertFilterNullToSqlClause(
+  filter: FilterNullItem & Pick<FilterItem, 'field'>
+) {
+  switch (filter.operation) {
+    case 'IS':
+      return `"${filter.field}" IS NULL`;
+    case 'IS_NOT':
+      return `"${filter.field}" IS NOT NULL`;
   }
 }
 
@@ -100,6 +112,10 @@ function negateOperation(op: FilterItem['operation']): FilterItem['operation'] {
       return 'EQUALS';
     case 'NOT_IN':
       return 'IN';
+    case 'IS':
+      return 'IS_NOT';
+    case 'IS_NOT':
+      return 'IS';
   }
 }
 
@@ -113,6 +129,8 @@ function convertFilterToSqlClause(filter: FilterItem) {
       return convertFilterStringListToSqlClause(filter);
     case 'NUMBER':
       return convertFilterNumberToSqlClause(filter);
+    case 'NULL':
+      return convertFilterNullToSqlClause(filter);
   }
 }
 
@@ -251,11 +269,35 @@ function getStatusFilterString(value?: string): {
                 operation: 'EQUALS',
                 value: 'backing-off',
               },
+            ],
+            operator: 'AND',
+          },
+          {
+            filters: [
+              {
+                type: 'STRING',
+                field: 'status',
+                operation: 'EQUALS',
+                value: 'running',
+              },
               {
                 type: 'NUMBER',
                 field: 'retry_count',
                 operation: 'GREATER_THAN',
                 value: 1,
+              },
+              {
+                type: 'NUMBER',
+                field:
+                  'journal_commands_size - last_failure_related_command_index',
+                operation: 'LESS_THAN_OR_EQUAL',
+                value: 0,
+              },
+              {
+                type: 'NUMBER',
+                field: 'pinned_service_protocol_version',
+                operation: 'GREATER_THAN_OR_EQUAL',
+                value: 5,
               },
             ],
             operator: 'AND',
@@ -278,7 +320,41 @@ function getStatusFilterString(value?: string): {
                 type: 'NUMBER',
                 field: 'journal_size - last_failure_related_entry_index',
                 operation: 'LESS_THAN_OR_EQUAL',
+                value: 0,
+              },
+              {
+                type: 'NUMBER',
+                field: 'pinned_service_protocol_version',
+                operation: 'LESS_THAN',
+                value: 5,
+              },
+            ],
+            operator: 'AND',
+          },
+          {
+            filters: [
+              {
+                type: 'STRING',
+                field: 'status',
+                operation: 'EQUALS',
+                value: 'running',
+              },
+              {
+                type: 'NUMBER',
+                field: 'retry_count',
+                operation: 'GREATER_THAN',
                 value: 1,
+              },
+              {
+                type: 'NUMBER',
+                field: 'journal_size - last_failure_related_entry_index',
+                operation: 'LESS_THAN_OR_EQUAL',
+                value: 0,
+              },
+              {
+                type: 'NULL',
+                field: 'pinned_service_protocol_version',
+                operation: 'IS',
               },
             ],
             operator: 'AND',

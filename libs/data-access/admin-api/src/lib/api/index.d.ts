@@ -1006,10 +1006,11 @@ export interface components {
         | components['schemas']['FilterStringItem']
         | components['schemas']['FilterDateItem']
         | components['schemas']['FilterStringListItem']
+        | components['schemas']['FilterNullItem']
       );
     FilterBaseItem: {
       /** @enum {string} */
-      type: 'STRING' | 'NUMBER' | 'DATE' | 'STRING_LIST';
+      type: 'STRING' | 'NUMBER' | 'DATE' | 'STRING_LIST' | 'NULL';
       field: string;
     };
     FilterNumberItem: {
@@ -1031,6 +1032,12 @@ export interface components {
       /** @enum {string} */
       operation: 'EQUALS' | 'NOT_EQUALS' | 'CONTAINS' | 'NOT_CONTAINS';
       value?: string;
+    };
+    FilterNullItem: {
+      /** @enum {string} */
+      type: 'NULL';
+      /** @enum {string} */
+      operation: 'IS' | 'IS_NOT';
     };
     FilterStringListItem: {
       /** @enum {string} */
@@ -1125,6 +1132,8 @@ export interface components {
     };
     JournalBaseEntry: {
       index: number;
+      version?: number;
+      command_index?: number;
       /** Format: data-time */
       start?: string;
       /** Format: data-time */
@@ -1345,12 +1354,20 @@ export interface components {
       idempotency_key?: string;
       /** Format: uint32 */
       journal_size?: number;
+      /** Format: uint32 */
+      pinned_service_protocol_version?: number;
+      /** Format: uint32 */
+      journal_commands_size?: number;
       /** Format: uint64 */
       retry_count?: number;
       /** Format: uint64 */
       last_failure_related_entry_index?: number;
       last_failure_related_entry_name?: string;
       last_failure_related_entry_type?: string;
+      /** Format: uint64 */
+      last_failure_related_command_index?: number;
+      last_failure_related_command_name?: string;
+      last_failure_related_command_type?: string;
       last_attempt_deployment_id?: string;
       last_attempt_server?: string;
       last_failure?: string;
@@ -1402,8 +1419,16 @@ export interface components {
       idempotency_key?: string;
       /** Format: uint32 */
       journal_size?: number;
+      /** Format: uint32 */
+      pinned_service_protocol_version?: number;
+      /** Format: uint32 */
+      journal_commands_size?: number;
       /** Format: uint64 */
       retry_count?: number;
+      /** Format: uint64 */
+      last_failure_related_command_index?: number;
+      last_failure_related_command_name?: string;
+      last_failure_related_command_type?: string;
       /** Format: uint64 */
       last_failure_related_entry_index?: number;
       last_failure_related_entry_name?: string;
