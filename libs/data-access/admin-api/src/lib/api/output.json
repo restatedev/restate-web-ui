@@ -3596,6 +3596,9 @@
               },
               {
                 "$ref": "#/components/schemas/OutputJournalEntryType"
+              },
+              {
+                "$ref": "#/components/schemas/CancelSignalJournalEntryType"
               }
             ]
           }
@@ -3666,7 +3669,8 @@
               "GetCallInvocationId",
               "AttachInvocation",
               "GetInvocationOutput",
-              "Custom"
+              "Custom",
+              "CancelSignal"
             ]
           }
         }
@@ -3707,6 +3711,23 @@
             "type": "string"
           }
         }
+      },
+      "CancelSignalJournalEntryType": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/JournalBaseEntry"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "entry_type": {
+                "type": "string",
+                "enum": ["CancelSignal"]
+              }
+            }
+          }
+        ]
       },
       "InputJournalEntryType": {
         "type": "object",

@@ -132,7 +132,7 @@ function Component() {
                   isRowHeader={col.isRowHeader}
                   allowsSorting={false}
                   key={col.id}
-                  minWidth={150}
+                  minWidth={100}
                 >
                   {col.name}
                 </Column>

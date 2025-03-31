@@ -1088,6 +1088,7 @@ export interface components {
         | components['schemas']['GetInvocationOutputJournalEntryType']
         | components['schemas']['CustomJournalEntryType']
         | components['schemas']['OutputJournalEntryType']
+        | components['schemas']['CancelSignalJournalEntryType']
       );
     JournalRawEntry: {
       index: number;
@@ -1128,7 +1129,8 @@ export interface components {
         | 'GetCallInvocationId'
         | 'AttachInvocation'
         | 'GetInvocationOutput'
-        | 'Custom';
+        | 'Custom'
+        | 'CancelSignal';
     };
     JournalBaseEntry: {
       index: number;
@@ -1143,6 +1145,10 @@ export interface components {
     FailureEntry: {
       message?: string;
       restate_code?: string;
+    };
+    CancelSignalJournalEntryType: components['schemas']['JournalBaseEntry'] & {
+      /** @enum {string} */
+      entry_type?: 'CancelSignal';
     };
     InputJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       /** @enum {string} */
