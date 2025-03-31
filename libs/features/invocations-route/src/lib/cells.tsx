@@ -223,6 +223,10 @@ const CELLS: Record<ColumnKey, ComponentType<CellProps>> = {
     withField({ field: 'target_handler_name' }),
     'target_handler_name'
   ),
+  pinned_service_protocol_version: withCell(
+    withField({ field: 'pinned_service_protocol_version' }),
+    'pinned_service_protocol_version'
+  ),
   actions: ({ invocation }) => (
     <Cell className="align-top">
       <Actions invocation={invocation} />
