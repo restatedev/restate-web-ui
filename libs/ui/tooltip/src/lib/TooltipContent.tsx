@@ -26,8 +26,8 @@ const styles = tv({
       true: 'animate-out fade-out placement-bottom:slide-out-to-top-0.5 placement-top:slide-out-to-bottom-0.5 placement-left:slide-out-to-right-0.5 placement-right:slide-out-to-left-0.5 ease-in duration-150',
     },
     size: {
-      sm: 'text-xs px-2 py-1 rounded-md shadow-[inset_0_0.5px_0_0_theme(colors.gray.500)] bg-zinc-800',
-      lg: 'max-w-2xl px-3 py-2 overflow-auto text-sm rounded-xl shadow-[inset_0_1px_0_0_theme(colors.gray.500)] bg-zinc-800/90 backdrop-blur-xl',
+      sm: 'text-xs px-2 py-1 rounded-md shadow-[inset_0_0.5px_0_0_theme(colors.gray.500)] bg-zinc-800 [&_.content]:break-all [&_.content]:max-w-full',
+      lg: 'max-w-2xl px-3 py-2 overflow-auto text-sm rounded-xl shadow-[inset_0_1px_0_0_theme(colors.gray.500)] bg-zinc-800/90 backdrop-blur-xl whitespace-pre',
       default:
         'text-sm p-4 rounded-xl shadow-[inset_0_1px_0_0_theme(colors.gray.500)] bg-zinc-800/90 backdrop-blur-xl',
     },
@@ -38,13 +38,7 @@ const styles = tv({
 });
 
 const contentStyles = tv({
-  base: 'w-fit flex items-center h-full',
-  variants: {
-    wrap: { false: 'max-w-2xl whitespace-pre', true: '' },
-  },
-  defaultVariants: {
-    wrap: true,
-  },
+  base: 'content w-fit flex items-center h-full',
 });
 
 export function InternalTooltipContent({
