@@ -57,6 +57,7 @@ const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   created_at: 100,
   deployment: 220,
   journal_size: 135,
+  pinned_service_protocol_version: 80,
 };
 const MIN_COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   status: 150,
