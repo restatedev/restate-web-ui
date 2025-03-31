@@ -97,7 +97,7 @@ function GetStateKeys(
     ...entryMessage,
   };
 }
-
+// Refactor
 const JOURNAL_ENTRY_CONVERT_MAP: Record<
   EntryType | 'Notification: Signal',
   (entry: JournalRawEntry, allEntries: JournalRawEntry[]) => JournalEntry
@@ -314,6 +314,15 @@ const JOURNAL_ENTRY_CONVERT_MAP: Record<
     };
   },
   'Notification: Signal': function (
+    entry: JournalRawEntry,
+    allEntries: JournalRawEntry[]
+  ): CancelInvocationJournalEntryType | JournalEntry {
+    const entryMessage = signal(entry, allEntries);
+
+    return entryMessage;
+  },
+  //TODO: should be remove. it's only here to pass type check
+  CancelSignal: function (
     entry: JournalRawEntry,
     allEntries: JournalRawEntry[]
   ): CancelInvocationJournalEntryType | JournalEntry {
