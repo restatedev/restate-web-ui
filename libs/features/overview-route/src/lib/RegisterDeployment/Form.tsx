@@ -195,7 +195,7 @@ function EndpointForm() {
                   <Icon name={IconName.Http} className="h-4 w-4" />
                 </CustomRadio>
               </TooltipTrigger>
-              <TooltipContent small offset={20}>
+              <TooltipContent size="sm" offset={20}>
                 HTTP endpoint
               </TooltipContent>
             </Tooltip>
@@ -209,7 +209,7 @@ function EndpointForm() {
                   <Icon name={IconName.Lambda} className="h-4 w-4" />
                 </CustomRadio>
               </TooltipTrigger>
-              <TooltipContent small offset={20}>
+              <TooltipContent size="sm" offset={20}>
                 AWS Lambda
               </TooltipContent>
             </Tooltip>

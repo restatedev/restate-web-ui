@@ -77,12 +77,19 @@ export function IntrospectionCell({
       </Cell>
     );
   }
-
+  const _formattedValue = formattedValue(value);
   return (
     <Cell className="min-h-6">
       {
-        <TruncateWithTooltip>
-          {formattedValue(value) ?? <br />}
+        <TruncateWithTooltip
+          size={
+            typeof _formattedValue === 'string' &&
+            (_formattedValue.length > 100 || _formattedValue.includes('\n'))
+              ? 'lg'
+              : 'sm'
+          }
+        >
+          {_formattedValue ?? <br />}
         </TruncateWithTooltip>
       }
     </Cell>

@@ -41,7 +41,7 @@ export const COLUMN_NAMES: Record<ColumnKey, string> = {
   target_service_name: 'Service name',
   target_service_key: 'Service key',
   target_handler_name: 'Handler',
-  pinned_service_protocol_version: 'Protocol Version',
+  pinned_service_protocol_version: 'Service Protocol Version',
   actions: 'Actions',
 };
 

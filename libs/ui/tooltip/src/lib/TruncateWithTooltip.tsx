@@ -1,4 +1,5 @@
 import {
+  ComponentProps,
   forwardRef,
   PropsWithChildren,
   ReactNode,
@@ -32,11 +33,13 @@ export function TruncateWithTooltip({
   triggerRef: propTriggerRef,
   tooltipContent = children,
   hideCopy,
+  size = 'sm',
 }: PropsWithChildren<{
   copyText?: string;
   triggerRef?: RefObject<HTMLElement | null>;
   tooltipContent?: ReactNode;
   hideCopy?: boolean;
+  size?: ComponentProps<typeof TooltipContent>['size'];
 }>) {
   const triggerRef = useRef<HTMLElement>(null);
   const containerRef = useRef<HTMLElement>(null);
@@ -80,7 +83,7 @@ export function TruncateWithTooltip({
             {children}
           </TruncateTooltipTrigger>
         </span>
-        <TooltipContent small offset={5} triggerRef={containerRef}>
+        <TooltipContent size={size} offset={5} triggerRef={containerRef}>
           <div
             className="flex items-start gap-4 [&_*]:text-gray-200 [&_*]:text-xs whitespace-pre-wrap"
             ref={tooltipHoverRef}

@@ -46,10 +46,10 @@ export function HoverTooltip({
         <span ref={triggerRef} className={styles({ className })}>
           {children}
         </span>
-        <TooltipContent small offset={5} triggerRef={triggerRef}>
+        <TooltipContent size="sm" offset={5} triggerRef={triggerRef}>
           <div
             ref={contentRef}
-            className="flex items-start gap-4 [&_*]:text-gray-200 [&_*]:text-xs break-all py-1"
+            className="flex items-start gap-4 [&_*]:text-gray-200 [&_*]:text-xs break-all py-0"
           >
             <div className="flex flex-col gap-1 items-start">{content}</div>
           </div>

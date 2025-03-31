@@ -214,7 +214,7 @@ function StatePanelContent() {
                             />
                           </Link>
                         </TooltipTrigger>
-                        <TooltipContent small>
+                        <TooltipContent size="sm">
                           The ongoing invocation at the head
                         </TooltipContent>
                       </Tooltip>
