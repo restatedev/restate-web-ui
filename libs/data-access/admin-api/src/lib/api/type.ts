@@ -64,6 +64,8 @@ export type CustomJournalEntryType =
   components['schemas']['CustomJournalEntryType'];
 export type OutputJournalEntryType =
   components['schemas']['OutputJournalEntryType'];
+export type CancelSignalJournalEntryType =
+  components['schemas']['CancelSignalJournalEntryType'];
 export type EntryType = Exclude<JournalEntry['entry_type'], undefined>;
 export type Invocation = components['schemas']['Invocation'];
 export type ServiceName = Service['name'];
