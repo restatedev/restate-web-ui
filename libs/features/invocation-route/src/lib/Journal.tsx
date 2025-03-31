@@ -31,6 +31,8 @@ import { HoverTooltip } from '@restate/ui/tooltip';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
 import { Spinner } from '@restate/ui/loading';
 import { ErrorBanner } from '@restate/ui/error';
+import { CancelSignal } from './entries/CancelSignal';
+import { Icon, IconName } from '@restate/ui/icons';
 
 function getLastFailure(invocation?: Invocation) {
   const isOldProtocol =
@@ -71,13 +73,6 @@ export function Journal({ invocationId }: { invocationId?: string }) {
   const isOldProtocol =
     !invocation?.pinned_service_protocol_version ||
     invocation?.pinned_service_protocol_version < 5;
-
-  // const lastCommandIndex =
-  //   Math.max(...entries.map((entry) => entry.command_index ?? -1)) -
-  //   (invocation?.pinned_service_protocol_version &&
-  //   invocation?.pinned_service_protocol_version >= 5
-  //     ? 1
-  //     : 0);
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
@@ -164,6 +159,7 @@ const ENTRY_TYPE_LABEL: Record<EntryType, string> = {
   Output: 'Output',
   GetEagerState: 'Get state',
   GetEagerStateKeys: 'Get state keys',
+  CancelSignal: 'Cancel Signal',
 };
 
 const ENTRY_COMPONENTS: {
@@ -192,6 +188,7 @@ const ENTRY_COMPONENTS: {
   GetInvocationOutput: undefined,
   Custom: undefined,
   Output: Output,
+  CancelSignal: CancelSignal,
 };
 
 const defaultEntryStyles = tv({
@@ -260,8 +257,26 @@ const defaultEntryStyles = tv({
         entryItem: '',
       },
     },
+    isEntrySignal: {
+      true: {
+        line: '',
+        base: '',
+        circle: '',
+        entryItem: 'bg-transparent border-transparent',
+      },
+      false: {
+        line: '',
+        base: '',
+        circle: '',
+        entryItem: '',
+      },
+    },
   },
 });
+
+function isSignal(type: EntryType) {
+  return type === 'CancelSignal';
+}
 
 function DefaultEntry({
   entry,
@@ -298,6 +313,7 @@ function DefaultEntry({
     return null;
   }
 
+  const isEntrySignal = isSignal(entry.entry_type);
   return (
     <div className="text-xs flex flex-col items-baseline gap-x-2 relative pl-6 group">
       <div
@@ -314,6 +330,14 @@ function DefaultEntry({
         {((!completed && !failed) || isRetryingThisEntry) && (
           <div className="inset-[-1px] absolute bg-white">
             <Spinner className="absolute inset-0 w-full h-full [&_circle]:opacity-0 text-zinc-300/70 fill-zinc-100" />
+          </div>
+        )}
+        {isEntrySignal && (
+          <div className="inset-[-1px] absolute bg-white">
+            <Icon
+              name={IconName.Radio}
+              className="absolute inset-0 w-full h-full text-zinc-400/80 ml-[0.5px]"
+            />
           </div>
         )}
         <HoverTooltip
@@ -333,6 +357,7 @@ function DefaultEntry({
             failed,
             completed,
             isRetrying: isRetryingThisEntry || wasRetryingThisEntry,
+            isEntrySignal,
           })}
         >
           <EntrySpecificComponent

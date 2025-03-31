@@ -19,3 +19,4 @@ export * from './lib/entries/run';
 export * from './lib/entries/setState';
 export * from './lib/entries/sleep';
 export * from './lib/entries/output';
+export * from './lib/entries/signal';

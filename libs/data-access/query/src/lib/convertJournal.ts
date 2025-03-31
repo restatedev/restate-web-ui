@@ -41,6 +41,7 @@ import {
   getPromise,
   peekPromise,
   output,
+  signal,
 } from '@restate/features/service-protocol';
 
 export function convertJournal(
@@ -98,7 +99,7 @@ function GetStateKeys(
 }
 
 const JOURNAL_ENTRY_CONVERT_MAP: Record<
-  EntryType,
+  EntryType | 'Notification: Signal',
   (entry: JournalRawEntry, allEntries: JournalRawEntry[]) => JournalEntry
 > = {
   Input: function (
@@ -311,5 +312,13 @@ const JOURNAL_ENTRY_CONVERT_MAP: Record<
       entry_type: 'Custom',
       index: entry.index,
     };
+  },
+  'Notification: Signal': function (
+    entry: JournalRawEntry,
+    allEntries: JournalRawEntry[]
+  ): CancelInvocationJournalEntryType | JournalEntry {
+    const entryMessage = signal(entry, allEntries);
+
+    return entryMessage;
   },
 };
