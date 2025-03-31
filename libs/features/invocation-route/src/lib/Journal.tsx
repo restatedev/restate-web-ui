@@ -261,7 +261,7 @@ const defaultEntryStyles = tv({
       true: {
         line: '',
         base: '',
-        circle: '',
+        circle: 'shadow-none bg-transparent border-transparent',
         entryItem: 'bg-transparent border-transparent',
       },
       false: {
@@ -325,6 +325,7 @@ function DefaultEntry({
           failed,
           completed: completed || failed,
           isRetrying: isRetryingThisEntry || wasRetryingThisEntry,
+          isEntrySignal,
         })}
       >
         {((!completed && !failed) || isRetryingThisEntry) && (
