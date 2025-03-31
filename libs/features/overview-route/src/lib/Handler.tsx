@@ -88,7 +88,17 @@ export function Handler({
           <div className="text-code min-w-0 text-zinc-600 italic font-medium flex-auto">
             <span className="flex items-center">
               <TruncateWithTooltip copyText={handler.name}>
-                {handler.name}
+                {withPlayground ? (
+                  <Link
+                    className="text-inherit no-underline"
+                    variant="secondary"
+                    href={`?${SERVICE_PLAYGROUND_QUERY_PARAM}=${service}#/operations/${handler.name}`}
+                  >
+                    {handler.name}
+                  </Link>
+                ) : (
+                  handler.name
+                )}
               </TruncateWithTooltip>
 
               <span className="ml-[0.2ch] shrink-0 text-zinc-400">{'('}</span>
