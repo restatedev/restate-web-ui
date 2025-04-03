@@ -8,7 +8,6 @@ import {
   useDurationSinceLastSnapshot,
 } from '@restate/util/snapshot-time';
 import {
-  lazy,
   PropsWithChildren,
   useCallback,
   useEffect,
@@ -22,10 +21,7 @@ import { IntrospectionCell } from './IntrospectionCell';
 import { Link } from '@restate/ui/link';
 import { HoverTooltip } from '@restate/ui/tooltip';
 import { useQueryClient } from '@tanstack/react-query';
-
-const SQLEditor = lazy(() =>
-  import('./SQLEditor').then((m) => ({ default: m.SQLEditor }))
-);
+import { Toolbar } from './Toolbar';
 
 const QUERY_PARAM = 'query';
 const PAGE_SIZE = 30;
@@ -246,7 +242,7 @@ function Component() {
           </Footnote>
         </div>
       </SnapshotTimeProvider>
-      <SQLEditor
+      <Toolbar
         setQuery={setQuery}
         isPending={isFetching}
         initialQuery={searchParams.get(QUERY_PARAM) ?? ''}
