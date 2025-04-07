@@ -711,22 +711,21 @@ function Footnote({
   );
 }
 
-function getDefaultVirtualObject(virtualObjects: string[]) {
+function getDefaultVirtualObjectOrWorkflow(services: string[]) {
   if (typeof window !== 'undefined') {
-    const previousSelectedVirtualObject = localStorage.getItem(
-      'state_virtualObject'
-    );
-    return previousSelectedVirtualObject &&
-      virtualObjects.includes(previousSelectedVirtualObject)
-      ? previousSelectedVirtualObject
-      : virtualObjects.at(0);
+    const previousSelectedState = localStorage.getItem('state_last_service');
+    return previousSelectedState && services.includes(previousSelectedState)
+      ? previousSelectedState
+      : services.at(0);
   }
-  return virtualObjects.at(0);
+  return services.at(0);
 }
 
 function useValidateVirtualObject() {
-  const { virtualObject } = useParams<{ virtualObject: string }>();
-  invariant(virtualObject, 'Missing virtualObject param');
+  const { virtualObject: serviceParam } = useParams<{
+    virtualObject: string;
+  }>();
+  invariant(serviceParam, 'Missing virtualObject param');
   const { data: deployments, isPending } = useListDeployments();
   const services = Array.from(deployments?.services.keys() ?? []);
   const servicesSize = services.length;
@@ -735,41 +734,49 @@ function useValidateVirtualObject() {
     .filter((service) => service.ty === 'VirtualObject')
     .map((service) => service.name)
     .sort();
+  const workflows = Array.from(data.values() ?? [])
+    .filter((service) => service.ty === 'Workflow')
+    .map((service) => service.name)
+    .sort();
+  const virtualObjectsAndWorkflows = [...virtualObjects, ...workflows];
   const navigate = useNavigate();
-  const newVirtualObject = getDefaultVirtualObject(virtualObjects);
+  const newService = getDefaultVirtualObjectOrWorkflow(
+    virtualObjectsAndWorkflows
+  );
 
   const base = useHref('/');
-  const defaultVirtualObject = useHref(
-    newVirtualObject ? `../${newVirtualObject}` : '..',
-    {
-      relative: 'path',
-    }
-  ).replace(base, '');
+  const defaultService = useHref(newService ? `../${newService}` : '..', {
+    relative: 'path',
+  }).replace(base, '');
 
   const isInValid =
     data.size === servicesSize &&
     servicesSize > 0 &&
-    !virtualObjects.includes(virtualObject);
+    !virtualObjectsAndWorkflows.includes(serviceParam);
 
   useEffect(() => {
     if (isInValid) {
-      navigate(`/${defaultVirtualObject}${window.location.search}`, {
+      navigate(`/${defaultService}${window.location.search}`, {
         relative: 'path',
       });
     }
-  }, [navigate, defaultVirtualObject, isInValid]);
+  }, [navigate, defaultService, isInValid]);
 
   return {
     isValidating: isPending,
-    isValid: virtualObjects.includes(virtualObject),
+    isValid: virtualObjectsAndWorkflows.includes(serviceParam),
+    virtualObjectsAndWorkflows,
     virtualObjects,
+    workflows,
   };
 }
 
 function ServiceSelector() {
-  const { virtualObject } = useParams<{ virtualObject: string }>();
-  invariant(virtualObject, 'Missing virtualObject param');
-  const { virtualObjects } = useValidateVirtualObject();
+  const { virtualObject: serviceParam } = useParams<{
+    virtualObject: string;
+  }>();
+  invariant(serviceParam, 'Missing virtualObject param');
+  const { virtualObjects, workflows } = useValidateVirtualObject();
 
   return (
     <Dropdown>
@@ -778,9 +785,15 @@ function ServiceSelector() {
           variant="secondary"
           className="shrink-0 min-w-0 flex gap-[0.7ch] items-center py-1 rounded-lg bg-white/[0.25] hover:bg-white/30 pressed:bg-white/30 text-zinc-50 text-xs px-1.5"
         >
-          <span className="whitespace-nowrap shrink-0">Virtual Object</span>
+          <span className="whitespace-nowrap shrink-0">
+            {virtualObjects.includes(serviceParam)
+              ? 'Virtual Object'
+              : workflows.includes(serviceParam)
+              ? 'Workflow'
+              : 'Service'}
+          </span>
           <span className="font-mono">is</span>
-          <span className="font-semibold truncate">{virtualObject}</span>
+          <span className="font-semibold truncate">{serviceParam}</span>
           <Icon
             name={IconName.ChevronsUpDown}
             className="w-3.5 h-3.5 ml-2 shrink-0"
@@ -788,19 +801,36 @@ function ServiceSelector() {
         </Button>
       </DropdownTrigger>
       <DropdownPopover placement="top">
-        <DropdownSection title="Virtual Objects">
-          <DropdownMenu
-            selectable
-            selectedItems={[virtualObject]}
-            onSelect={(value) =>
-              localStorage.setItem('state_virtualObject', value)
-            }
-          >
-            {virtualObjects.map((service) => (
-              <DropDownVirtualObject service={service} key={service} />
-            ))}
-          </DropdownMenu>
-        </DropdownSection>
+        {virtualObjects.length > 0 && (
+          <DropdownSection title="Virtual Objects">
+            <DropdownMenu
+              selectable
+              selectedItems={[serviceParam]}
+              onSelect={(value) =>
+                localStorage.setItem('state_last_service', value)
+              }
+            >
+              {virtualObjects.map((service) => (
+                <DropDownVirtualObject service={service} key={service} />
+              ))}
+            </DropdownMenu>
+          </DropdownSection>
+        )}
+        {workflows.length > 0 && (
+          <DropdownSection title="Workflows">
+            <DropdownMenu
+              selectable
+              selectedItems={[serviceParam]}
+              onSelect={(value) =>
+                localStorage.setItem('state_last_service', value)
+              }
+            >
+              {workflows.map((service) => (
+                <DropDownVirtualObject service={service} key={service} />
+              ))}
+            </DropdownMenu>
+          </DropdownSection>
+        )}
       </DropdownPopover>
     </Dropdown>
   );

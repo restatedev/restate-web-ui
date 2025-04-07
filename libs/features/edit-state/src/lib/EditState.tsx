@@ -25,6 +25,8 @@ import {
 import { showSuccessNotification } from '@restate/ui/notification';
 import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from 'tailwind-variants';
+import { useQueryClient } from '@tanstack/react-query';
+import { Spinner } from '@restate/ui/loading';
 
 const styles = tv({
   base: '',
@@ -134,14 +136,17 @@ function EditStateInner({
 
   const error = query.error || mutation.error;
 
-  const { data: queue } = useGetVirtualObjectQueue(
-    String(service),
-    String(objectKey),
-    undefined,
-    { enabled: Boolean(objectKey && service) }
-  );
+  const {
+    data: queue,
+    queryKey,
+    isFetching,
+  } = useGetVirtualObjectQueue(String(service), String(objectKey), undefined, {
+    enabled: Boolean(objectKey && service && isOpen),
+    staleTime: 0,
+    refetchOnMount: true,
+  });
+  const queryClient = useQueryClient();
   const hasActiveInvocations = (queue?.size ?? 0) > 0;
-
   const { banner, bannerIcon } = styles({
     isWarning: (hasActiveInvocations && isPartial) || !isPartial,
   });
@@ -150,10 +155,11 @@ function EditStateInner({
     <Dialog
       open={Boolean(isOpen && service && objectKey)}
       onOpenChange={(isOpen) => {
+        onOpenChange(isOpen);
         if (!isOpen) {
           mutation.reset();
         }
-        onOpenChange(isOpen);
+        isOpen && queryClient.invalidateQueries({ queryKey });
       }}
     >
       <DialogContent className="max-w-2xl">
@@ -177,15 +183,22 @@ function EditStateInner({
               </>
             )}
           </h3>
+
           <p className={banner()}>
-            <Icon
-              className={bannerIcon()}
-              name={
-                (hasActiveInvocations && isPartial) || !isPartial
-                  ? IconName.TriangleAlert
-                  : IconName.Info
-              }
-            />
+            {isFetching ? (
+              <div className="h-5 w-5 shrink-0 px-0.5">
+                <Spinner className="h-full w-full text-orange-500" />
+              </div>
+            ) : (
+              <Icon
+                className={bannerIcon()}
+                name={
+                  (hasActiveInvocations && isPartial) || !isPartial
+                    ? IconName.TriangleAlert
+                    : IconName.Info
+                }
+              />
+            )}
             <span className="block">
               {hasActiveInvocations
                 ? 'Currently, there are active invocations associated with this key. This mutation will be queued for processing once those invocations are complete.'
@@ -206,6 +219,7 @@ function EditStateInner({
               )}
             </span>
           </p>
+
           <Form
             id={formId}
             method="POST"
