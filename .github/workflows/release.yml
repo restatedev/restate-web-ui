@@ -53,10 +53,53 @@ jobs:
           tag: v${{ needs.check-version.outputs.version }}
           artifacts: ui-v${{ needs.check-version.outputs.version }}.zip
           generateReleaseNotes: true
+  update-ui-crate:
+    name: Update UI in restate-web-ui-crate repo
+    runs-on: warp-ubuntu-latest-x64-4x
+    needs: release
+    permissions:
+      contents: write
+    outputs:
+      commit-hash: ${{ steps.commit-hash.outputs.COMMIT_HASH }}
+      asset-hash: ${{ steps.asset-hash.outputs.FILE_SHA256 }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.TOKEN_FOR_RESTATE_REPO }}
+          repository: restatedev/restate-web-ui-crate
+      - name: Remove old artifacts
+        run: rm -f ./assets/*.zip
+      - name: Download artifact
+        uses: dsaltares/fetch-gh-release-asset@master
+        with:
+          version: tags/${{ needs.release.outputs.tag }}
+          file: ${{ needs.release.outputs.artifact-name }}
+          target: ./assets/${{ needs.release.outputs.artifact-name }}
+          token: ${{ secrets.TOKEN_FOR_RESTATE_REPO }}
+      - name: Calculate SHA256 checksum and set as env var
+        id: asset-hash
+        run: |
+          echo "FILE_SHA256=$(sha256sum ./restate-web-ui-crate/assets/${{ needs.release.outputs.artifact-name }} | awk '{print $1}')" >> $GITHUB_ENV
+        shell: bash
+      - name: Install cargo-set-version
+        run: cargo install cargo-set-version
+      - name: Bump version
+        run: cargo set-version ${{ needs.release.outputs.version }}
+      - name: Commit changes
+        run: |
+          git add .
+          git commit -m "[UI] Updating UI assets to ${{ needs.release.outputs.tag }}
+            ${{ needs.release.outputs.artifact-name }} published at https://github.com/restatedev/restate-web-ui/releases/download/${{ needs.release.outputs.tag }}/${{ needs.release.outputs.artifact-name }}
+            sha256: ${{ env.FILE_SHA256 }}"
+          git push origin main
+      - name: Capture commit hash
+        id: commit-hash
+        run: echo "COMMIT_HASH=$(git rev-parse HEAD)" >> $GITHUB_ENV
   update-ui:
     name: Update UI in restate repo
     runs-on: warp-ubuntu-latest-x64-4x
-    needs: release
+    needs: [update-ui-crate, release]
     permissions:
       contents: write
       pull-requests: write
@@ -66,19 +109,8 @@ jobs:
         with:
           token: ${{ secrets.TOKEN_FOR_RESTATE_REPO }}
           repository: restatedev/restate
-      - name: Remove old artifacts
-        run: rm -f ./crates/web-ui/assets/*.zip
-      - name: Download artifact
-        uses: dsaltares/fetch-gh-release-asset@master
-        with:
-          version: tags/${{ needs.release.outputs.tag }}
-          file: ${{ needs.release.outputs.artifact-name }}
-          target: ./crates/web-ui/assets/${{ needs.release.outputs.artifact-name }}
-          token: ${{ secrets.TOKEN_FOR_RESTATE_REPO }}
-      - name: Calculate SHA256 checksum and set as env var
-        run: |
-          echo "FILE_SHA256=$(sha256sum ./crates/web-ui/assets/${{ needs.release.outputs.artifact-name }} | awk '{print $1}')" >> $GITHUB_ENV
-        shell: bash
+      - name: Update restate-web-ui version
+        run: cargo add restate-web-ui --git https://github.com/restatedev/restate-web-ui-crate --rev $${{ needs.update-ui-crate.outputs.commit-hash }} --package restate-admin --optional
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:
@@ -89,8 +121,8 @@ jobs:
           commit-message: |
             [UI] Updating UI assets to ${{ needs.release.outputs.tag }}
             ${{ needs.release.outputs.artifact-name }} published at https://github.com/restatedev/restate-web-ui/releases/download/${{ needs.release.outputs.tag }}/${{ needs.release.outputs.artifact-name }}
-            sha256: ${{ env.FILE_SHA256 }}
+            sha256: ${{ needs.update-ui-crate.outputs.asset-hash }}
           body: |
             ### [UI] Updating UI assets to ${{ needs.release.outputs.tag }}
             ${{ needs.release.outputs.artifact-name }} published at https://github.com/restatedev/restate-web-ui/releases/download/${{ needs.release.outputs.tag }}/${{ needs.release.outputs.artifact-name }}
-            sha256: ${{ env.FILE_SHA256 }}
+            sha256: ${{ needs.update-ui-crate.outputs.asset-hash }}
