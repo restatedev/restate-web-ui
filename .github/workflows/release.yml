@@ -110,7 +110,7 @@ jobs:
           token: ${{ secrets.TOKEN_FOR_RESTATE_REPO }}
           repository: restatedev/restate
       - name: Update restate-web-ui version
-        run: cargo add restate-web-ui --git https://github.com/restatedev/restate-web-ui-crate --rev $${{ needs.update-ui-crate.outputs.commit-hash }} --package restate-admin --optional
+        run: cargo add restate-web-ui --git https://github.com/restatedev/restate-web-ui-crate --tag $${{ needs.release.outputs.tag }} --package restate-admin --optional
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:
