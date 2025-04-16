@@ -155,17 +155,17 @@ export function SQLEditor({
   placeholderRef,
   className,
   ref: hostRef,
+  editorRef,
 }: {
   isPending: boolean;
   setQuery: (value: string) => void;
   initialQuery?: string;
   containerRef: RefObject<HTMLDivElement | null>;
   placeholderRef: RefObject<HTMLDivElement | null>;
+  editorRef: RefObject<monaco.editor.IStandaloneCodeEditor | null>;
   ref?: RefObject<HTMLDivElement | null>;
   className?: string;
 }) {
-  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
-
   useEffect(() => {
     const placeholderEl = placeholderRef.current;
     if (hostRef?.current && !editorRef.current) {

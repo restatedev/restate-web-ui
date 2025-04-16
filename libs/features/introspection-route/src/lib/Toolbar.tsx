@@ -61,6 +61,7 @@ export function Toolbar({
                   isPending={isPending}
                   setQuery={setQuery}
                   initialQuery={initialQuery}
+                  editorRef={editorRef}
                 />
               </Suspense>
             </div>
