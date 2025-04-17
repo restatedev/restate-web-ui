@@ -77,12 +77,14 @@ jobs:
       - name: Calculate SHA256 checksum and set as env var
         id: asset-hash
         run: |
-          echo "FILE_SHA256=$(sha256sum ./restate-web-ui-crate/assets/${{ needs.release.outputs.artifact-name }} | awk '{print $1}')" >> $GITHUB_ENV
+          echo "FILE_SHA256=$(sha256sum ./assets/${{ needs.release.outputs.artifact-name }} | awk '{print $1}')" >> $GITHUB_ENV
         shell: bash
       - name: Install cargo-set-version
         run: cargo install cargo-set-version
       - name: Bump version
         run: cargo set-version ${{ needs.release.outputs.version }}
+      - name: Build
+        run: cargo build
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:
