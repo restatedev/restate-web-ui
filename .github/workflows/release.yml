@@ -86,6 +86,7 @@ jobs:
       - name: Build
         run: cargo build
       - name: Create Pull Request
+        id: cpr
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.TOKEN_FOR_RESTATE_REPO }}
@@ -100,3 +101,10 @@ jobs:
             ### [UI] Updating UI assets to ${{ needs.release.outputs.tag }}
             ${{ needs.release.outputs.artifact-name }} published at https://github.com/restatedev/restate-web-ui/releases/download/${{ needs.release.outputs.tag }}/${{ needs.release.outputs.artifact-name }}
             sha256: ${{ env.FILE_SHA256 }}
+      - name: Enable Pull Request Automerge
+        if: steps.cpr.outputs.pull-request-operation == 'created'
+        uses: peter-evans/enable-pull-request-automerge@v3
+        with:
+          token: ${{ secrets.TOKEN_FOR_RESTATE_REPO }}
+          pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
+          merge-method: squash
