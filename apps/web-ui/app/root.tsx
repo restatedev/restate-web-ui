@@ -53,7 +53,7 @@ export const links: LinksFunction = () => [
   },
   {
     rel: 'stylesheet',
-    href: '/ui/inter.css',
+    href: '/ui/font/inter.css',
   },
   { rel: 'stylesheet', href: styles },
   {
