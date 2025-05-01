@@ -8,10 +8,12 @@ export function DeploymentSection({
   invocation,
   isPending,
   className,
+  raised = false,
 }: {
   invocation?: Invocation;
   isPending?: boolean;
   className?: string;
+  raised?: boolean;
 }) {
   const deployment =
     invocation?.last_attempt_deployment_id ?? invocation?.pinned_deployment_id;
@@ -27,7 +29,7 @@ export function DeploymentSection({
   return (
     <Section className={styles({ className })}>
       <SectionTitle>{title}</SectionTitle>
-      <SectionContent className="px-2 pt-2" raised={false}>
+      <SectionContent className="px-2 py-2" raised={raised}>
         <div className="relative">
           <InvocationDeployment
             invocation={invocation!}
