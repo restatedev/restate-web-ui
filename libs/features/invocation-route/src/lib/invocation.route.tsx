@@ -11,6 +11,7 @@ import { Link } from '@restate/ui/link';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Spinner } from '@restate/ui/loading';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
+import { Actions } from './Actions';
 
 const itemsContainer = tv({
   base: 'flex gap-2 w-full [&>*]:flex-auto [&>*]:min-w-0 [&>*]:basis-1/2',
@@ -54,6 +55,9 @@ function Component() {
             <TruncateWithTooltip>{id}</TruncateWithTooltip>
           </h1>
           {invocation && <Status invocation={invocation} />}
+          <div className="ml-auto">
+            <Actions invocation={invocation} mini={false} className="text-sm" />
+          </div>
         </div>
       </div>
       <div className="flex flex-col gap-2 mt-8 md:flex-row">

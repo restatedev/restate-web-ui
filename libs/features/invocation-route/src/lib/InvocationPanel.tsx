@@ -180,7 +180,7 @@ function InvocationPanelContent() {
                     }
                   />
                   <div className="ml-auto">
-                    <Actions invocation={data} />
+                    <Actions invocation={data} mini={false} />
                   </div>
                 </div>
               </>

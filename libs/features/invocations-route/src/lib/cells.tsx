@@ -228,7 +228,7 @@ const CELLS: Record<ColumnKey, ComponentType<CellProps>> = {
     'pinned_service_protocol_version'
   ),
   actions: ({ invocation }) => (
-    <Cell className="align-top">
+    <Cell className="align-top [&&&]:overflow-visible">
       <Actions invocation={invocation} />
     </Cell>
   ),
