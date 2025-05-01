@@ -91,7 +91,7 @@ export function Status({
   const error = getRestateError(invocation);
 
   return (
-    <div className="flex items-center flex-wrap flex-row gap-0.5">
+    <div className="flex items-baseline flex-wrap flex-row gap-0.5">
       <Badge
         variant={variant}
         className={styles({

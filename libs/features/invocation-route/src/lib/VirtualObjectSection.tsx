@@ -27,10 +27,12 @@ export function VirtualObjectSection({
   isPending,
   className,
   invocation,
+  raised = false,
 }: {
   isPending?: boolean;
   className?: string;
   invocation?: Invocation;
+  raised?: boolean;
 }) {
   const { data } = useGetVirtualObjectQueue(
     String(invocation?.target_service_name),
@@ -74,7 +76,7 @@ export function VirtualObjectSection({
   return (
     <Section className={styles({ className })}>
       <SectionTitle className="">{invocation.target_service_name}</SectionTitle>
-      <SectionContent className="p-0 rounded-b-none">
+      <SectionContent className="p-0 rounded-b-none" raised={raised}>
         <div className="flex px-1.5 py-1 items-center gap-1">
           <span className="pl-1 text-code text-gray-500 font-medium">Key</span>
           <Badge
@@ -89,7 +91,7 @@ export function VirtualObjectSection({
           </Badge>
         </div>
       </SectionContent>
-      <SectionContent className="rounded-t-none -mt-px p-0">
+      <SectionContent className="rounded-t-none -mt-px p-0" raised={raised}>
         <div className="flex px-1.5 py-1 items-center gap-1">
           <span className="pl-1 text-code text-gray-500 font-medium">
             State
@@ -128,7 +130,7 @@ export function VirtualObjectSection({
       {shouldShowQueue && (
         <>
           <SectionTitle className="mt-2">queue</SectionTitle>
-          <SectionContent raised={false}>
+          <SectionContent raised={raised}>
             <div>
               <div className="relative mt-12">
                 <div className="absolute left-0 right-0 bottom-2  ">
