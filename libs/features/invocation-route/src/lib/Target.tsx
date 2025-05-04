@@ -4,7 +4,7 @@ import {
   TruncateWithTooltip,
   TruncateTooltipTrigger,
 } from '@restate/ui/tooltip';
-import { useRef } from 'react';
+import { PropsWithChildren, useRef } from 'react';
 import { tv } from 'tailwind-variants';
 import { SERVICE_QUERY_PARAM } from '@restate/features/overview-route';
 
@@ -34,17 +34,18 @@ function TargetTooltipContent({
   );
 }
 const styles = tv({
-  base: 'min-w-0 max-w-full [&:has([data-pressed=true])]:shadow-none transition-all inline-flex relative shadow-sm pl-2 text-xs rounded-lg bg-white ring-gray-200 text-zinc-600 font-medium ring-1 ring-inset',
+  base: 'min-w-0 max-w-full [&:has([data-pressed=true])]:shadow-none transition-all inline-flex relative shadow-sm pl-2 text-xs [--rounded-radius:0.5rem] rounded-[var(--rounded-radius)] bg-white ring-gray-200 text-zinc-600 font-medium ring-1 ring-inset',
 });
 export function Target({
   target = '',
   className,
   showHandler = true,
-}: {
+  children,
+}: PropsWithChildren<{
   target?: string;
   className?: string;
   showHandler?: boolean;
-}) {
+}>) {
   const results = target?.split('/');
   const linkRef = useRef<HTMLAnchorElement>(null);
 
@@ -77,14 +78,14 @@ export function Target({
               className="w-3 h-3 mr-1 text-zinc-400 fill-zinc-100 shrink-0"
             />
             <TruncateTooltipTrigger>{service}</TruncateTooltipTrigger>
-            {!shouldShowHandler && typeof key === 'undefined' && (
-              <div className="shrink-0 items-center h-full flex my-[1px] mr-px pl-[2px] rounded-r-[calc(0.5rem-1px)] pr-0.5">
+            {!shouldShowHandler && (typeof key === 'undefined' || children) && (
+              <div className="shrink-0 items-center h-full flex my-[1px] mr-px pl-[2px] rounded-r-[calc(var(--rounded-radius)-1px)] pr-0.5">
                 <Link
                   ref={linkRef}
                   href={`?${SERVICE_QUERY_PARAM}=${service}`}
                   aria-label={target}
                   variant="secondary"
-                  className="outline-offset-0 my-1 rounded-full before:rounded-lg before:absolute before:inset-0 before:z-[2] before:content-[''] hover:before:bg-black/[0.03] pressed:before:bg-black/5"
+                  className="outline-offset-0 my-1 rounded-full before:rounded-[var(--rounded-radius)] before:absolute before:inset-0 before:z-[2] before:content-[''] hover:before:bg-black/[0.03] pressed:before:bg-black/5"
                 >
                   <Icon
                     name={IconName.ChevronRight}
@@ -102,14 +103,14 @@ export function Target({
                   <TruncateTooltipTrigger>{key}</TruncateTooltipTrigger>
                 </div>
               </div>
-              {!shouldShowHandler && (
-                <div className="truncate ml-[-4px] shrink-0 bg-zinc-50 h-full flex my-[1px] mr-px pl-[2px] rounded-r-[calc(0.5rem-1px)] pr-0.5">
+              {!shouldShowHandler && !children && (
+                <div className="truncate ml-[-4px] shrink-0 bg-zinc-50 h-full flex my-[1px] mr-px pl-[2px] rounded-r-[calc(var(--rounded-radius)-1px)] pr-0.5">
                   <Link
                     ref={linkRef}
                     href={`?${SERVICE_QUERY_PARAM}=${service}`}
                     aria-label={target}
                     variant="secondary"
-                    className="outline-offset-0 my-1 rounded-full before:rounded-lg before:absolute before:inset-0 before:z-[2] before:content-[''] hover:before:bg-black/[0.03] pressed:before:bg-black/5"
+                    className="outline-offset-0 my-1 rounded-full before:rounded-[var(--rounded-radius)] before:absolute before:inset-0 before:z-[2] before:content-[''] hover:before:bg-black/[0.03] pressed:before:bg-black/5"
                   >
                     <Icon
                       name={IconName.ChevronRight}
@@ -131,13 +132,13 @@ export function Target({
                   <TruncateTooltipTrigger>{handler}</TruncateTooltipTrigger>
                 </div>
               </div>
-              <div className="shrink-0 bg-zinc-100 h-full flex my-[1px] mr-px pl-[2px] rounded-r-[calc(0.5rem-1px)] pr-0.5">
+              <div className="shrink-0 bg-zinc-100 h-full flex my-[1px] mr-px pl-[2px] rounded-r-[calc(var(--rounded-radius)-1px)] pr-0.5">
                 <Link
                   ref={linkRef}
                   href={`?${SERVICE_QUERY_PARAM}=${service}`}
                   aria-label={target}
                   variant="secondary"
-                  className="outline-offset-0 my-1 rounded-full before:rounded-lg before:absolute before:inset-0 before:z-[2] before:content-[''] hover:before:bg-black/[0.03] pressed:before:bg-black/5"
+                  className="outline-offset-0 my-1 rounded-full before:rounded-[var(--rounded-radius)] before:absolute before:inset-0 before:z-[2] before:content-[''] hover:before:bg-black/[0.03] pressed:before:bg-black/5"
                 >
                   <Icon
                     name={IconName.ChevronRight}
@@ -149,6 +150,13 @@ export function Target({
           )}
         </div>
       </TruncateWithTooltip>
+      {children && (
+        <div className="-translate-x-px truncate my-px [filter:drop-shadow(-1px_0px_0px_theme(colors.zinc.200/100%))] ml-[-4px] z-[3]">
+          <div className="italic font-medium h-full [clip-path:polygon(4px_0,100%_0,100%_100%,0%_100%)] bg-zinc-100 text-zinc-600/80 flex items-center pl-1.5 pr-0.5 rounded-r-[calc(var(--rounded-radius)-1px)]">
+            {children}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
