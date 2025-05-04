@@ -12,6 +12,7 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { Spinner } from '@restate/ui/loading';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { Actions } from './Actions';
+import { JournalV2 } from './JournalV2';
 
 const itemsContainer = tv({
   base: 'flex gap-2 w-full [&>*]:flex-auto [&>*]:min-w-0 [&>*]:basis-1/2',
@@ -56,7 +57,11 @@ function Component() {
           </h1>
           {invocation && <Status invocation={invocation} />}
           <div className="ml-auto">
-            <Actions invocation={invocation} mini={false} className="text-sm" />
+            <Actions
+              invocation={invocation}
+              mini={false}
+              className="text-sm font-medium"
+            />
           </div>
         </div>
       </div>
@@ -87,6 +92,7 @@ function Component() {
           </Section>
         )}
       </div>
+      <JournalV2 invocationId={String(id)} />
     </div>
   );
 }

@@ -2,7 +2,6 @@ import {
   EntryType,
   Invocation,
   JournalEntry,
-  RawInvocation,
   useGetInvocationJournal,
   useGetInvocationJournalWithInvocation,
 } from '@restate/data-access/admin-api';

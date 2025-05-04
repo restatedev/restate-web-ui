@@ -12,10 +12,12 @@ export function Input({
   error,
   isRetrying,
   wasRetrying,
+  className,
 }: EntryProps<InputJournalEntryType>) {
   return (
     <>
       <Expression
+        className={className}
         isHandler
         name={invocation.target_handler_name}
         input={
