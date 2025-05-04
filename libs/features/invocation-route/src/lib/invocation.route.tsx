@@ -1,4 +1,4 @@
-import { useGetInvocation } from '@restate/data-access/admin-api';
+import { useGetInvocationJournalWithInvocation } from '@restate/data-access/admin-api';
 import { ErrorBanner } from '@restate/ui/error';
 import { useParams } from 'react-router';
 import { getRestateError, Status } from './Status';
@@ -26,8 +26,16 @@ const itemsContainer = tv({
 
 function Component() {
   const { id } = useParams<{ id: string }>();
-  const { data: invocation, isPending, error } = useGetInvocation(String(id));
+  const {
+    data: journalAndInvocationData,
+    isPending,
+    error,
+  } = useGetInvocationJournalWithInvocation(String(id), {
+    refetchOnMount: true,
+    staleTime: 0,
+  });
 
+  const invocation = journalAndInvocationData?.invocation;
   if (isPending) {
     return <Spinner />;
   }
