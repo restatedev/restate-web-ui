@@ -18,7 +18,7 @@ export function Awakeable({
   return (
     <Expression
       name={'awakeable'}
-      prefix="await"
+      prefix="async"
       output={
         <>
           {typeof entry.value === 'string' && (

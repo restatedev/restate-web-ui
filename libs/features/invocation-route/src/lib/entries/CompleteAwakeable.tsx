@@ -17,7 +17,7 @@ export function CompleteAwakeable({
   return (
     <Expression
       name={'awakeable'}
-      prefix="await"
+      prefix="async"
       {...(typeof entry.id === 'string' && {
         input: (
           <InputOutput

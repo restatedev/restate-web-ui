@@ -18,7 +18,7 @@ export function GetPromise({
   return (
     <Expression
       name={entry.promise_name ?? ''}
-      prefix="await"
+      prefix="async"
       output={
         <>
           {typeof entry.value === 'string' && (

@@ -18,7 +18,7 @@ export function Run({
   return (
     <Expression
       name={'run'}
-      prefix="await"
+      prefix="async"
       {...(typeof entry.name === 'string' && {
         input: (
           <InputOutput

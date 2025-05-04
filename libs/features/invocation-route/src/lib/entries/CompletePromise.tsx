@@ -16,7 +16,7 @@ export function CompletePromise({
   const failure = entry.failure ?? entry.completion?.failure ?? error;
   return (
     <Expression
-      prefix="await"
+      prefix="async"
       name={entry.promise_name ?? ''}
       output={
         <>
