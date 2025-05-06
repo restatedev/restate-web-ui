@@ -47,7 +47,6 @@ function oneWayCallV2(entry: JournalRawEntry, allEntries: JournalRawEntry[]) {
     name: entryJSON?.Command?.Run?.name,
     completed: entry.completed,
     start: entry?.appended_at,
-    end: invokeTime,
     failure: undefined,
     invoked_id,
     invoked_target,
