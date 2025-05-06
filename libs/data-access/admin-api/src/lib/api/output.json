@@ -108,6 +108,9 @@
         "tags": ["deployment"],
         "summary": "Create deployment",
         "description": "Create deployment. Restate will invoke the endpoint to gather additional information required for registration, such as the services exposed by the deployment. If the deployment is already registered, this method will fail unless `force` is set to `true`.",
+        "externalDocs": {
+          "url": "https://docs.restate.dev/operate/registration"
+        },
         "operationId": "create_deployment",
         "requestBody": {
           "content": {
@@ -287,6 +290,9 @@
         "tags": ["deployment"],
         "summary": "Update deployment",
         "description": "Update deployment. Invokes the endpoint and replaces the existing deployment metadata with the discovered information. This is a dangerous operation that should be used only when there are failing invocations on the deployment that cannot be resolved any other way. Sense checks are applied to test that the new deployment is sufficiently similar to the old one.",
+        "externalDocs": {
+          "url": "https://docs.restate.dev/operate/versioning"
+        },
         "operationId": "update_deployment",
         "parameters": [
           {
@@ -1295,6 +1301,9 @@
         "tags": ["subscription"],
         "summary": "Create subscription",
         "description": "Create subscription.",
+        "externalDocs": {
+          "url": "https://docs.restate.dev/operate/invocation#managing-kafka-subscriptions"
+        },
         "operationId": "create_subscription",
         "requestBody": {
           "content": {
@@ -2599,42 +2608,52 @@
         }
       },
       "DeploymentResponse": {
-        "type": "object",
         "anyOf": [
           {
+            "title": "HttpDeploymentResponse",
+            "description": "Deployment response for HTTP deployments",
             "type": "object",
             "required": [
               "created_at",
               "http_version",
+              "id",
               "max_protocol_version",
               "min_protocol_version",
               "protocol_type",
-              "uri",
-              "id",
-              "services"
+              "services",
+              "uri"
             ],
             "properties": {
               "id": {
-                "$ref": "#/components/schemas/String"
-              },
-              "services": {
-                "title": "Services",
-                "description": "List of services exposed by this deployment.",
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/ServiceNameRevPair"
-                }
+                "title": "Deployment ID",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/String"
+                  }
+                ]
               },
               "uri": {
+                "title": "Deployment URI",
+                "description": "URI used to invoke this service deployment.",
                 "type": "string"
               },
               "protocol_type": {
-                "$ref": "#/components/schemas/ProtocolType"
+                "title": "Protocol Type",
+                "description": "Protocol type used to invoke this service deployment.",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ProtocolType"
+                  }
+                ]
               },
               "http_version": {
+                "title": "HTTP Version",
+                "description": "HTTP Version used to invoke this service deployment.",
                 "type": "string"
               },
               "additional_headers": {
+                "title": "Additional headers",
+                "description": "Additional headers used to invoke this service deployment.",
                 "type": "object",
                 "additionalProperties": {
                   "type": "string"
@@ -2644,45 +2663,72 @@
                 "type": "string"
               },
               "min_protocol_version": {
+                "title": "Minimum Service Protocol version",
+                "description": "During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.",
                 "type": "integer",
                 "format": "int32"
               },
               "max_protocol_version": {
+                "title": "Maximum Service Protocol version",
+                "description": "During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.",
                 "type": "integer",
                 "format": "int32"
+              },
+              "sdk_version": {
+                "title": "SDK version",
+                "description": "SDK library and version declared during registration.",
+                "type": "string",
+                "nullable": true
+              },
+              "services": {
+                "title": "Services",
+                "description": "List of services exposed by this deployment.",
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ServiceNameRevPair"
+                }
               }
             }
           },
           {
+            "title": "LambdaDeploymentResponse",
+            "description": "Deployment response for Lambda deployments",
             "type": "object",
             "required": [
               "arn",
               "created_at",
+              "id",
               "max_protocol_version",
               "min_protocol_version",
-              "id",
               "services"
             ],
             "properties": {
               "id": {
-                "$ref": "#/components/schemas/String"
-              },
-              "services": {
-                "title": "Services",
-                "description": "List of services exposed by this deployment.",
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/ServiceNameRevPair"
-                }
+                "title": "Deployment ID",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/String"
+                  }
+                ]
               },
               "arn": {
-                "$ref": "#/components/schemas/LambdaARN"
+                "title": "Lambda ARN",
+                "description": "Lambda ARN used to invoke this service deployment.",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/LambdaARN"
+                  }
+                ]
               },
               "assume_role_arn": {
+                "title": "Assume role ARN",
+                "description": "Assume role ARN used to invoke this deployment. Check https://docs.restate.dev/category/aws-lambda for more details.",
                 "type": "string",
                 "nullable": true
               },
               "additional_headers": {
+                "title": "Additional headers",
+                "description": "Additional headers used to invoke this service deployment.",
                 "type": "object",
                 "additionalProperties": {
                   "type": "string"
@@ -2692,12 +2738,30 @@
                 "type": "string"
               },
               "min_protocol_version": {
+                "title": "Minimum Service Protocol version",
+                "description": "During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.",
                 "type": "integer",
                 "format": "int32"
               },
               "max_protocol_version": {
+                "title": "Maximum Service Protocol version",
+                "description": "During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.",
                 "type": "integer",
                 "format": "int32"
+              },
+              "sdk_version": {
+                "title": "SDK version",
+                "description": "SDK library and version declared during registration.",
+                "type": "string",
+                "nullable": true
+              },
+              "services": {
+                "title": "Services",
+                "description": "List of services exposed by this deployment.",
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ServiceNameRevPair"
+                }
               }
             }
           }
@@ -2705,6 +2769,10 @@
       },
       "String": {
         "type": "string"
+      },
+      "ProtocolType": {
+        "type": "string",
+        "enum": ["RequestResponse", "BidiStream"]
       },
       "ServiceNameRevPair": {
         "type": "object",
@@ -2720,10 +2788,6 @@
           }
         }
       },
-      "ProtocolType": {
-        "type": "string",
-        "enum": ["RequestResponse", "BidiStream"]
-      },
       "LambdaARN": {
         "type": "string",
         "format": "arn"
@@ -2731,6 +2795,8 @@
       "RegisterDeploymentRequest": {
         "anyOf": [
           {
+            "title": "RegisterHttpDeploymentRequest",
+            "description": "Register HTTP deployment request",
             "type": "object",
             "required": ["uri"],
             "properties": {
@@ -2769,6 +2835,8 @@
             }
           },
           {
+            "title": "RegisterLambdaDeploymentRequest",
+            "description": "Register Lambda deployment request",
             "type": "object",
             "required": ["arn"],
             "properties": {
@@ -2820,6 +2888,26 @@
             "items": {
               "$ref": "#/components/schemas/ServiceMetadata"
             }
+          },
+          "min_protocol_version": {
+            "title": "Minimum Service Protocol version",
+            "description": "During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.",
+            "default": 0,
+            "type": "integer",
+            "format": "int32"
+          },
+          "max_protocol_version": {
+            "title": "Maximum Service Protocol version",
+            "description": "During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.",
+            "default": 0,
+            "type": "integer",
+            "format": "int32"
+          },
+          "sdk_version": {
+            "title": "SDK version",
+            "description": "SDK library and version declared during registration.",
+            "type": "string",
+            "nullable": true
           }
         }
       },
@@ -2965,31 +3053,52 @@
         "enum": ["Service", "VirtualObject", "Workflow"]
       },
       "DetailedDeploymentResponse": {
-        "type": "object",
         "anyOf": [
           {
+            "title": "HttpDetailedDeploymentResponse",
+            "description": "Detailed deployment response for HTTP deployments",
             "type": "object",
             "required": [
               "created_at",
               "http_version",
+              "id",
               "max_protocol_version",
               "min_protocol_version",
               "protocol_type",
-              "uri",
-              "id",
-              "services"
+              "services",
+              "uri"
             ],
             "properties": {
+              "id": {
+                "title": "Deployment ID",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/String"
+                  }
+                ]
+              },
               "uri": {
+                "title": "Deployment URI",
+                "description": "URI used to invoke this service deployment.",
                 "type": "string"
               },
               "protocol_type": {
-                "$ref": "#/components/schemas/ProtocolType"
+                "title": "Protocol Type",
+                "description": "Protocol type used to invoke this service deployment.",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ProtocolType"
+                  }
+                ]
               },
               "http_version": {
+                "title": "HTTP Version",
+                "description": "HTTP Version used to invoke this service deployment.",
                 "type": "string"
               },
               "additional_headers": {
+                "title": "Additional headers",
+                "description": "Additional headers used to invoke this service deployment.",
                 "type": "object",
                 "additionalProperties": {
                   "type": "string"
@@ -2999,15 +3108,22 @@
                 "type": "string"
               },
               "min_protocol_version": {
+                "title": "Minimum Service Protocol version",
+                "description": "During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.",
                 "type": "integer",
                 "format": "int32"
               },
               "max_protocol_version": {
+                "title": "Maximum Service Protocol version",
+                "description": "During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.",
                 "type": "integer",
                 "format": "int32"
               },
-              "id": {
-                "$ref": "#/components/schemas/String"
+              "sdk_version": {
+                "title": "SDK version",
+                "description": "SDK library and version declared during registration.",
+                "type": "string",
+                "nullable": true
               },
               "services": {
                 "title": "Services",
@@ -3020,24 +3136,44 @@
             }
           },
           {
+            "title": "LambdaDetailedDeploymentResponse",
+            "description": "Detailed deployment response for Lambda deployments",
             "type": "object",
             "required": [
               "arn",
               "created_at",
+              "id",
               "max_protocol_version",
               "min_protocol_version",
-              "id",
               "services"
             ],
             "properties": {
+              "id": {
+                "title": "Deployment ID",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/String"
+                  }
+                ]
+              },
               "arn": {
-                "$ref": "#/components/schemas/LambdaARN"
+                "title": "Lambda ARN",
+                "description": "Lambda ARN used to invoke this service deployment.",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/LambdaARN"
+                  }
+                ]
               },
               "assume_role_arn": {
+                "title": "Assume role ARN",
+                "description": "Assume role ARN used to invoke this deployment. Check https://docs.restate.dev/category/aws-lambda for more details.",
                 "type": "string",
                 "nullable": true
               },
               "additional_headers": {
+                "title": "Additional headers",
+                "description": "Additional headers used to invoke this service deployment.",
                 "type": "object",
                 "additionalProperties": {
                   "type": "string"
@@ -3047,15 +3183,22 @@
                 "type": "string"
               },
               "min_protocol_version": {
+                "title": "Minimum Service Protocol version",
+                "description": "During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.",
                 "type": "integer",
                 "format": "int32"
               },
               "max_protocol_version": {
+                "title": "Maximum Service Protocol version",
+                "description": "During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.",
                 "type": "integer",
                 "format": "int32"
               },
-              "id": {
-                "$ref": "#/components/schemas/String"
+              "sdk_version": {
+                "title": "SDK version",
+                "description": "SDK library and version declared during registration.",
+                "type": "string",
+                "nullable": true
               },
               "services": {
                 "title": "Services",
@@ -4640,5 +4783,48 @@
         }
       }
     }
+  },
+  "tags": [
+    {
+      "name": "deployment",
+      "description": "Service Deployment management"
+    },
+    {
+      "name": "invocation",
+      "description": "Invocation management",
+      "externalDocs": {
+        "url": "https://docs.restate.dev/operate/invocation"
+      }
+    },
+    {
+      "name": "subscription",
+      "description": "Subscription management",
+      "externalDocs": {
+        "url": "https://docs.restate.dev/operate/invocation#managing-kafka-subscriptions"
+      }
+    },
+    {
+      "name": "service",
+      "description": "Service management"
+    },
+    {
+      "name": "service_handler",
+      "description": "Service handlers metadata"
+    },
+    {
+      "name": "cluster_health",
+      "description": "Cluster health"
+    },
+    {
+      "name": "health",
+      "description": "Admin API health"
+    },
+    {
+      "name": "version",
+      "description": "API Version"
+    }
+  ],
+  "externalDocs": {
+    "url": "https://docs.restate.dev/operate/"
   }
 }

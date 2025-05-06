@@ -538,50 +538,106 @@ export interface components {
     };
     DeploymentResponse:
       | {
+          /** Deployment ID */
           id: components['schemas']['String'];
+          /**
+           * Deployment URI
+           * @description URI used to invoke this service deployment.
+           */
+          uri: string;
+          /**
+           * Protocol Type
+           * @description Protocol type used to invoke this service deployment.
+           */
+          protocol_type: components['schemas']['ProtocolType'];
+          /**
+           * HTTP Version
+           * @description HTTP Version used to invoke this service deployment.
+           */
+          http_version: string;
+          /**
+           * Additional headers
+           * @description Additional headers used to invoke this service deployment.
+           */
+          additional_headers?: {
+            [key: string]: string;
+          };
+          created_at: string;
+          /**
+           * Minimum Service Protocol version
+           * Format: int32
+           * @description During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
+           */
+          min_protocol_version: number;
+          /**
+           * Maximum Service Protocol version
+           * Format: int32
+           * @description During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
+           */
+          max_protocol_version: number;
+          /**
+           * SDK version
+           * @description SDK library and version declared during registration.
+           */
+          sdk_version?: string | null;
           /**
            * Services
            * @description List of services exposed by this deployment.
            */
           services: components['schemas']['ServiceNameRevPair'][];
-          uri: string;
-          protocol_type: components['schemas']['ProtocolType'];
-          http_version: string;
-          additional_headers?: {
-            [key: string]: string;
-          };
-          created_at: string;
-          /** Format: int32 */
-          min_protocol_version: number;
-          /** Format: int32 */
-          max_protocol_version: number;
         }
       | {
+          /** Deployment ID */
           id: components['schemas']['String'];
+          /**
+           * Lambda ARN
+           * @description Lambda ARN used to invoke this service deployment.
+           */
+          arn: components['schemas']['LambdaARN'];
+          /**
+           * Assume role ARN
+           * @description Assume role ARN used to invoke this deployment. Check https://docs.restate.dev/category/aws-lambda for more details.
+           */
+          assume_role_arn?: string | null;
+          /**
+           * Additional headers
+           * @description Additional headers used to invoke this service deployment.
+           */
+          additional_headers?: {
+            [key: string]: string;
+          };
+          created_at: string;
+          /**
+           * Minimum Service Protocol version
+           * Format: int32
+           * @description During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
+           */
+          min_protocol_version: number;
+          /**
+           * Maximum Service Protocol version
+           * Format: int32
+           * @description During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
+           */
+          max_protocol_version: number;
+          /**
+           * SDK version
+           * @description SDK library and version declared during registration.
+           */
+          sdk_version?: string | null;
           /**
            * Services
            * @description List of services exposed by this deployment.
            */
           services: components['schemas']['ServiceNameRevPair'][];
-          arn: components['schemas']['LambdaARN'];
-          assume_role_arn?: string | null;
-          additional_headers?: {
-            [key: string]: string;
-          };
-          created_at: string;
-          /** Format: int32 */
-          min_protocol_version: number;
-          /** Format: int32 */
-          max_protocol_version: number;
         };
     String: string;
+    /** @enum {string} */
+    ProtocolType: 'RequestResponse' | 'BidiStream';
     ServiceNameRevPair: {
       name: string;
       /** Format: uint32 */
       revision: number;
     };
-    /** @enum {string} */
-    ProtocolType: 'RequestResponse' | 'BidiStream';
     /** Format: arn */
     LambdaARN: string;
     RegisterDeploymentRequest:
@@ -659,6 +715,25 @@ export interface components {
     RegisterDeploymentResponse: {
       id: components['schemas']['String'];
       services: components['schemas']['ServiceMetadata'][];
+      /**
+       * Minimum Service Protocol version
+       * Format: int32
+       * @description During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
+       * @default 0
+       */
+      min_protocol_version: number;
+      /**
+       * Maximum Service Protocol version
+       * Format: int32
+       * @description During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
+       * @default 0
+       */
+      max_protocol_version: number;
+      /**
+       * SDK version
+       * @description SDK library and version declared during registration.
+       */
+      sdk_version?: string | null;
     };
     ServiceMetadata: {
       /**
@@ -771,18 +846,48 @@ export interface components {
     ServiceType: 'Service' | 'VirtualObject' | 'Workflow';
     DetailedDeploymentResponse:
       | {
+          /** Deployment ID */
+          id: components['schemas']['String'];
+          /**
+           * Deployment URI
+           * @description URI used to invoke this service deployment.
+           */
           uri: string;
+          /**
+           * Protocol Type
+           * @description Protocol type used to invoke this service deployment.
+           */
           protocol_type: components['schemas']['ProtocolType'];
+          /**
+           * HTTP Version
+           * @description HTTP Version used to invoke this service deployment.
+           */
           http_version: string;
+          /**
+           * Additional headers
+           * @description Additional headers used to invoke this service deployment.
+           */
           additional_headers?: {
             [key: string]: string;
           };
           created_at: string;
-          /** Format: int32 */
+          /**
+           * Minimum Service Protocol version
+           * Format: int32
+           * @description During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
+           */
           min_protocol_version: number;
-          /** Format: int32 */
+          /**
+           * Maximum Service Protocol version
+           * Format: int32
+           * @description During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
+           */
           max_protocol_version: number;
-          id: components['schemas']['String'];
+          /**
+           * SDK version
+           * @description SDK library and version declared during registration.
+           */
+          sdk_version?: string | null;
           /**
            * Services
            * @description List of services exposed by this deployment.
@@ -790,17 +895,43 @@ export interface components {
           services: components['schemas']['ServiceMetadata'][];
         }
       | {
+          /** Deployment ID */
+          id: components['schemas']['String'];
+          /**
+           * Lambda ARN
+           * @description Lambda ARN used to invoke this service deployment.
+           */
           arn: components['schemas']['LambdaARN'];
+          /**
+           * Assume role ARN
+           * @description Assume role ARN used to invoke this deployment. Check https://docs.restate.dev/category/aws-lambda for more details.
+           */
           assume_role_arn?: string | null;
+          /**
+           * Additional headers
+           * @description Additional headers used to invoke this service deployment.
+           */
           additional_headers?: {
             [key: string]: string;
           };
           created_at: string;
-          /** Format: int32 */
+          /**
+           * Minimum Service Protocol version
+           * Format: int32
+           * @description During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
+           */
           min_protocol_version: number;
-          /** Format: int32 */
+          /**
+           * Maximum Service Protocol version
+           * Format: int32
+           * @description During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
+           */
           max_protocol_version: number;
-          id: components['schemas']['String'];
+          /**
+           * SDK version
+           * @description SDK library and version declared during registration.
+           */
+          sdk_version?: string | null;
           /**
            * Services
            * @description List of services exposed by this deployment.
