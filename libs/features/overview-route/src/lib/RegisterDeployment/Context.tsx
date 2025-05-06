@@ -48,7 +48,10 @@ type UpdateUseHttp11Action = {
 };
 type UpdateServicesActions = {
   type: 'UpdateServicesActions';
-  payload: Pick<DeploymentRegistrationContextInterface, 'services'>;
+  payload: Pick<
+    DeploymentRegistrationContextInterface,
+    'services' | 'sdk_version' | 'min_protocol_version' | 'max_protocol_version'
+  >;
 };
 type UpdateShouldForce = {
   type: 'UpdateShouldForce';
@@ -81,6 +84,9 @@ interface DeploymentRegistrationContextInterface {
   isDuplicate?: boolean;
   shouldForce?: boolean;
   services?: adminApi.components['schemas']['ServiceMetadata'][];
+  min_protocol_version?: adminApi.components['schemas']['DeploymentResponse']['min_protocol_version'];
+  max_protocol_version?: adminApi.components['schemas']['DeploymentResponse']['max_protocol_version'];
+  sdk_version?: adminApi.components['schemas']['DeploymentResponse']['sdk_version'];
   goToEndpoint?: VoidFunction;
   goToAdvanced?: VoidFunction;
   goToConfirm?: VoidFunction;
@@ -119,7 +125,7 @@ function reducer(state: State, action: Action): State {
     case 'UpdateUseHttp11Action':
       return { ...state, useHttp11: action.payload.useHttp11 };
     case 'UpdateServicesActions':
-      return { ...state, services: action.payload.services };
+      return { ...state, ...action.payload };
     case 'UpdateShouldForce':
       return { ...state, shouldForce: action.payload.shouldForce };
 
@@ -163,10 +169,29 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
   const goToConfirm = useCallback(() => {
     dispatch({ type: 'NavigateToConfirmAction' });
   }, []);
-
+  console.log(state);
   const updateServices = useCallback(
-    (services: DeploymentRegistrationContextInterface['services']) => {
-      dispatch({ type: 'UpdateServicesActions', payload: { services } });
+    ({
+      services,
+      min_protocol_version,
+      max_protocol_version,
+      sdk_version,
+    }: Pick<
+      DeploymentRegistrationContextInterface,
+      | 'services'
+      | 'sdk_version'
+      | 'min_protocol_version'
+      | 'max_protocol_version'
+    >) => {
+      dispatch({
+        type: 'UpdateServicesActions',
+        payload: {
+          services,
+          min_protocol_version,
+          max_protocol_version,
+          sdk_version,
+        },
+      });
     },
     []
   );
@@ -180,7 +205,12 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
 
   const { mutate, isPending, error, reset } = useRegisterDeployment({
     onSuccess(data) {
-      updateServices(data?.services);
+      updateServices({
+        services: data?.services,
+        max_protocol_version: data?.max_protocol_version,
+        min_protocol_version: data?.min_protocol_version,
+        sdk_version: data?.sdk_version,
+      });
 
       if (state.stage === 'confirm') {
         refetch();
@@ -327,6 +357,9 @@ export function useRegisterDeploymentContext() {
     error,
     isPending,
     isDuplicate,
+    max_protocol_version,
+    min_protocol_version,
+    sdk_version,
   } = useContext(DeploymentRegistrationContext);
   const isEndpoint = stage === 'endpoint';
   const isAdvanced = stage === 'advanced';
@@ -355,6 +388,9 @@ export function useRegisterDeploymentContext() {
     formId,
     additionalHeaders,
     services,
+    max_protocol_version,
+    min_protocol_version,
+    sdk_version,
     updateAssumeRoleArn,
     updateUseHttp11Arn,
     updateShouldForce,

@@ -1,7 +1,8 @@
 import { Invocation } from '@restate/data-access/admin-api';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { tv } from 'tailwind-variants';
-import { InvocationDeployment, SDK } from './InvocationDeployment';
+import { InvocationDeployment } from './InvocationDeployment';
+import { SDK } from '@restate/features/overview-route';
 
 const styles = tv({ base: '' });
 export function DeploymentSection({

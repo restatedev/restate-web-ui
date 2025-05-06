@@ -7,7 +7,7 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { ComponentProps, PropsWithChildren, ReactNode } from 'react';
 import { Radio } from 'react-aria-components';
 import { RadioGroup } from '@restate/ui/radio-group';
-import { RegisterDeploymentResults } from './Results';
+import { DeploymentProtocolCheck, RegisterDeploymentResults } from './Results';
 import { AdditionalHeaders } from '../RegisterDeployment/AdditionalHeaders';
 import { UseHTTP11 } from '../RegisterDeployment/UseHTTP11';
 import { AssumeARNRole } from '../RegisterDeployment/AssumeARNRole';
@@ -110,6 +110,7 @@ export function RegistrationForm() {
           title="Services"
           description="Please confirm the list of registered services in this deployment."
         >
+          <DeploymentProtocolCheck />
           <RegisterDeploymentResults />
         </Container>
       )}
