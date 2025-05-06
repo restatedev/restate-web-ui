@@ -5,6 +5,40 @@ import { Disclosure, DisclosurePanel } from 'react-aria-components';
 import { Button } from '@restate/ui/button';
 import { Handler } from '../Handler';
 import { ServiceType } from '../ServiceType';
+import { Link } from '@restate/ui/link';
+
+export function DeploymentProtocolCheck() {
+  const { max_protocol_version } = useRegisterDeploymentContext();
+
+  if (max_protocol_version && max_protocol_version <= 4) {
+    return (
+      <p className="mt-2 text-code flex rounded-xl p-3 gap-2 bg-orange-50 text-orange-600">
+        <Icon
+          className="h-5 w-5 shrink-0 text-orange-100 fill-orange-600"
+          name={IconName.TriangleAlert}
+        />
+        <span className="inline-block">
+          The registered endpoint is using{' '}
+          <span className="font-semibold">
+            service protocol {max_protocol_version}
+          </span>{' '}
+          that will be <span className="font-semibold">removed</span> in the
+          future releases. Please update the SDK to the latest release and
+          re-register the deployment. For more info, check the{' '}
+          <Link
+            href="https://docs.restate.dev/operate/versioning#deploying-new-service-versions"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            docs.
+          </Link>
+        </span>
+      </p>
+    );
+  }
+
+  return null;
+}
 
 export function RegisterDeploymentResults() {
   const { services = [] } = useRegisterDeploymentContext();

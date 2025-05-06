@@ -75,6 +75,8 @@ const registerDeploymentHandler = http.post<
 
     return HttpResponse.json({
       id: existingDeployment.id,
+      min_protocol_version: 0,
+      max_protocol_version: 0,
       services: adminApiDb.service
         .findMany({
           where: { deployment: { id: { equals: existingDeployment.id } } },
@@ -115,6 +117,8 @@ const registerDeploymentHandler = http.post<
 
   return HttpResponse.json({
     id: newDeployment.id,
+    min_protocol_version: 0,
+    max_protocol_version: 0,
     services: services.map((service) => ({
       name: service.name,
       deployment_id: service.deployment!.id,

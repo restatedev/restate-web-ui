@@ -28,6 +28,7 @@ import {
 import { ErrorBanner } from '@restate/ui/error';
 import { Copy } from '@restate/ui/copy';
 import { Badge } from '@restate/ui/badge';
+import { SDK } from './SDK';
 
 export function DeploymentDetails() {
   return (
@@ -209,6 +210,15 @@ function DeploymentContent({ deployment }: { deployment: string }) {
             <Badge size="sm" className="font-mono py-0  align-middle">
               {data?.max_protocol_version}
             </Badge>
+          </div>
+        </SectionContent>
+        <SectionTitle className="mt-2">SDK</SectionTitle>
+        <SectionContent className="p-0">
+          <div className="flex px-1.5 py-1 items-center [&:not(:last-child)]:border-b">
+            <SDK
+              lastAttemptServer={data?.sdk_version ?? undefined}
+              className="text-xs font-medium text-zinc-500 gap-1"
+            />
           </div>
         </SectionContent>
         {data && isLambdaDeployment(data) && data.assume_role_arn && (
