@@ -34,6 +34,14 @@ const styles = tv({
         container: 'p-px',
         linkIcon: 'w-4 h-4',
       },
+      icon: {
+        base: '',
+        icon: 'h-6 w-6 rounded-lg shadow-sm',
+        text: 'w-0',
+        link: 'before:rounded-lg m-0.5',
+        container: 'p-px',
+        linkIcon: 'w-0 h-0',
+      },
     },
   },
   defaultVariants: {
@@ -47,7 +55,7 @@ export function InvocationId({
 }: {
   id: Invocation['id'];
   className?: string;
-  size?: 'sm' | 'default';
+  size?: 'sm' | 'default' | 'icon';
 }) {
   const linkRef = useRef<HTMLAnchorElement>(null);
   const { base, icon, text, link, container, linkIcon } = styles({ size });

@@ -53,7 +53,7 @@ export function Actions({
     return null;
   }
   const isCompleted = Boolean(invocation.completion_result);
-  console.log(styles({ className }), className);
+
   return (
     <div className={styles({ className })}>
       <Link

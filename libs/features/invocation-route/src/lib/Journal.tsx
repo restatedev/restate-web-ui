@@ -33,7 +33,7 @@ import { ErrorBanner } from '@restate/ui/error';
 import { CancelSignal } from './entries/CancelSignal';
 import { Icon, IconName } from '@restate/ui/icons';
 
-function getLastFailure(invocation?: Invocation) {
+export function getLastFailure(invocation?: Invocation) {
   const isOldProtocol =
     !invocation?.pinned_service_protocol_version ||
     invocation?.pinned_service_protocol_version < 5;
@@ -161,7 +161,7 @@ const ENTRY_TYPE_LABEL: Record<EntryType, string> = {
   CancelSignal: 'Cancel Signal',
 };
 
-const ENTRY_COMPONENTS: {
+export const ENTRY_COMPONENTS: {
   [K in EntryType]?: ComponentType<
     EntryProps<JournalEntry & { entry_type: K; isRetrying?: boolean }>
   >;
@@ -404,8 +404,11 @@ export function JournalSection({
   );
 }
 
-class ErrorBoundary extends Component<
-  PropsWithChildren<{ entry?: JournalEntry }>,
+const errorStyles = tv({
+  base: 'truncate max-w-full flex items-center text-red-500 gap-1 flex-wrap w-full min-w-0 mb-2 px-2 bg-zinc-50 border-zinc-600/10 border py-1 font-mono [font-size:95%] rounded -mt-px',
+});
+export class ErrorBoundary extends Component<
+  PropsWithChildren<{ entry?: JournalEntry; className?: string }>,
   {
     hasError: boolean;
   }
@@ -428,7 +431,7 @@ class ErrorBoundary extends Component<
   render() {
     if (this.state.hasError) {
       return (
-        <div className="truncate max-w-full flex items-center text-red-500 gap-1 flex-wrap w-full min-w-0 mb-2 px-2 bg-zinc-50 border-zinc-600/10 border py-1 font-mono [font-size:95%] rounded -mt-px">
+        <div className={errorStyles({ className: this.props.className })}>
           Failed to display {this.props.entry?.entry_type} entry
         </div>
       );

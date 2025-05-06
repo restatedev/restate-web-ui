@@ -34,7 +34,7 @@ function TargetTooltipContent({
   );
 }
 const styles = tv({
-  base: 'min-w-0 max-w-full [&:has([data-pressed=true])]:shadow-none transition-all inline-flex relative shadow-sm pl-2 text-xs [--rounded-radius:0.5rem] rounded-[var(--rounded-radius)] bg-white ring-gray-200 text-zinc-600 font-medium ring-1 ring-inset',
+  base: 'min-w-0 max-w-full flex-auto [&:has([data-pressed=true])]:shadow-none transition-all inline-flex relative shadow-sm pl-2 text-xs [--rounded-radius:0.5rem] [--rounded-radius-right:0.5rem] rounded-[var(--rounded-radius)] bg-white ring-gray-200 text-zinc-600 font-medium ring-1 ring-inset',
 });
 export function Target({
   target = '',
@@ -71,7 +71,7 @@ export function Target({
         copyText={target}
         triggerRef={linkRef}
       >
-        <div className="flex items-stretch overflow-hidden">
+        <div className="flex items-stretch overflow-hidden max-w-fit">
           <div className="truncate inline-flex items-center [&:has(a)]:mr-0 mr-2.5">
             <Icon
               name={IconName.Box}
@@ -100,7 +100,9 @@ export function Target({
             <>
               <div className="basis-0 grow shrink-1 max-w-fit truncate my-px [filter:drop-shadow(-1px_0px_0px_theme(colors.zinc.200/100%))] -ml-1">
                 <div className="font-mono [font-size:90%] h-full [clip-path:polygon(4px_0,100%_0,calc(100%-4px)_100%,0%_100%)] bg-zinc-50 text-zinc-500 flex items-center pl-1.5 pr-2">
-                  <TruncateTooltipTrigger>{key}</TruncateTooltipTrigger>
+                  <TruncateTooltipTrigger>
+                    {key || <>&nbsp;</>}
+                  </TruncateTooltipTrigger>
                 </div>
               </div>
               {!shouldShowHandler && !children && (
@@ -151,8 +153,8 @@ export function Target({
         </div>
       </TruncateWithTooltip>
       {children && (
-        <div className="-translate-x-px truncate my-px [filter:drop-shadow(-1px_0px_0px_theme(colors.zinc.200/100%))] ml-[-4px] z-[3]">
-          <div className="italic font-medium h-full [clip-path:polygon(4px_0,100%_0,100%_100%,0%_100%)] bg-zinc-100 text-zinc-600/80 flex items-center pl-1.5 pr-0.5 rounded-r-[calc(var(--rounded-radius)-1px)]">
+        <div className="flex-auto -translate-x-px truncate my-px [filter:drop-shadow(-1px_0px_0px_theme(colors.zinc.200/100%))] ml-[-4px] z-[3]">
+          <div className="italic font-medium h-full [clip-path:polygon(4px_0,100%_0,100%_100%,0%_100%)] bg-zinc-100 text-zinc-600/80 flex items-center pl-1.5 pr-0.5 rounded-r-[calc(var(--rounded-radius-right)-1px)]">
             {children}
           </div>
         </div>

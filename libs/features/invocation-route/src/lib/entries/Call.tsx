@@ -7,7 +7,11 @@ import { Target } from '../Target';
 import { InvocationId } from '../InvocationId';
 import { Failure } from '../Failure';
 import { Ellipsis } from '@restate/ui/loading';
+import { tv } from 'tailwind-variants';
 
+const styles = tv({
+  base: 'flex flex-row gap-1.5 items-center pr-1.5 max-w-full relative',
+});
 export function Call({
   entry,
   failed,
@@ -15,19 +19,17 @@ export function Call({
   error,
   isRetrying,
   wasRetrying,
+  className,
 }: EntryProps<CallJournalEntryType>) {
   const entryError = entry.failure || error;
 
   return (
-    <div className="flex flex-col gap-1.5 py-1.5 items-start pr-1.5 max-w-full relative">
-      <div className="absolute w-2.5 border-l border-b  border-black/20 border-dashed left-3.5 top-6 h-5  rounded-b rounded-br-none" />
-      <div className="absolute w-2.5 border-l border-b  border-black/20 border-dashed left-8 top-12 h-5  rounded-b rounded-br-none" />
+    <div className={styles({ className })}>
       <Target
         target={entry.invoked_target}
         className="[font-size:inherit] [&_a_svg]:w-3 [&_a_svg]:h-3"
         showHandler={false}
-      />
-      <div className="pl-7 max-w-full flex items-center">
+      >
         <Expression
           isHandler
           name={entry.invoked_target?.split('/').at(-1) ?? ''}
@@ -91,12 +93,12 @@ export function Call({
             </>
           }
         />
-      </div>
+      </Target>
       {entry.invoked_id && (
         <InvocationId
           id={entry.invoked_id}
-          className="max-w-full pl-10 mt-0.5"
-          size="sm"
+          className="min-w-[1.625rem] w-[1.625rem] shrink-0"
+          size="icon"
         />
       )}
     </div>
