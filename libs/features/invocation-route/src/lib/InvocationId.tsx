@@ -6,6 +6,7 @@ import { Invocation } from '@restate/data-access/admin-api';
 import { tv } from 'tailwind-variants';
 import { INVOCATION_QUERY_NAME } from './constants';
 import { useActiveSidebarParam } from '@restate/ui/layout';
+import { useNavigate } from 'react-router';
 
 const styles = tv({
   base: 'relative text-zinc-600 font-mono',
@@ -62,6 +63,8 @@ export function InvocationId({
   const invocationInSidebar = useActiveSidebarParam(INVOCATION_QUERY_NAME);
   const isSelected = invocationInSidebar === id;
 
+  const navigate = useNavigate();
+
   return (
     <div className={base({ className })}>
       <div className={container({})}>
@@ -74,16 +77,26 @@ export function InvocationId({
         <TruncateWithTooltip copyText={id} triggerRef={linkRef}>
           <span className={text()}>{id}</span>
         </TruncateWithTooltip>
-        <Link
-          ref={linkRef}
-          href={`?${INVOCATION_QUERY_NAME}=${id}`}
-          aria-label={id}
-          variant="secondary"
-          className={link()}
-          data-invocation-selected={isSelected}
+        <span
+          className="contents"
+          onClickCapture={(e) => {
+            if (e.shiftKey) {
+              e.preventDefault();
+              navigate(`/invocations/${id}`);
+            }
+          }}
         >
-          <Icon name={IconName.ChevronRight} className={linkIcon()} />
-        </Link>
+          <Link
+            ref={linkRef}
+            href={`?${INVOCATION_QUERY_NAME}=${id}`}
+            aria-label={id}
+            variant="secondary"
+            className={link()}
+            data-invocation-selected={isSelected}
+          >
+            <Icon name={IconName.ChevronRight} className={linkIcon()} />
+          </Link>
+        </span>
       </div>
     </div>
   );
