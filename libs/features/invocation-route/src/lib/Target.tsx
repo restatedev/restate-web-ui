@@ -71,7 +71,7 @@ export function Target({
         copyText={target}
         triggerRef={linkRef}
       >
-        <div className="flex items-stretch overflow-hidden max-w-fit">
+        <div className="flex items-stretch overflow-hidden [&>*]:flex-auto">
           <div className="truncate inline-flex items-center [&:has(a)]:mr-0 mr-2.5">
             <Icon
               name={IconName.Box}
@@ -134,19 +134,20 @@ export function Target({
                   <TruncateTooltipTrigger>{handler}</TruncateTooltipTrigger>
                 </div>
               </div>
-              <div className="shrink-0 bg-zinc-100 h-full flex my-[1px] mr-px pl-[2px] rounded-r-[calc(var(--rounded-radius)-1px)] pr-0.5">
+              <div className="shrink-0 ml-auto justify-end bg-zinc-100 h-full flex my-[1px] mr-px pl-[2px] rounded-r-[calc(var(--rounded-radius-right)-1px)] pr-0.5">
                 <Link
                   ref={linkRef}
                   href={`?${SERVICE_QUERY_PARAM}=${service}`}
                   aria-label={target}
                   variant="secondary"
-                  className="outline-offset-0 my-1 rounded-full before:rounded-[var(--rounded-radius)] before:absolute before:inset-0 before:z-[2] before:content-[''] hover:before:bg-black/[0.03] pressed:before:bg-black/5"
+                  className="flex items-center outline-offset-0 my-1 rounded-full before:rounded-[var(--rounded-radius)] before:rounded-r-[var(--rounded-radius-right)] before:absolute before:inset-0 before:z-[2] before:content-[''] hover:before:bg-black/[0.03] pressed:before:bg-black/5"
                 >
                   <Icon
                     name={IconName.ChevronRight}
                     className="w-4 h-4 text-gray-500 shrink-0 "
                   />
                 </Link>
+                &nbsp;
               </div>
             </>
           )}
