@@ -4,6 +4,7 @@ import {
   Link as AriaLink,
   LinkProps as AriaLinkProps,
   composeRenderProps,
+  PressEvent,
 } from 'react-aria-components';
 import { useSearchParams } from 'react-router';
 import { tv } from 'tailwind-variants';
@@ -30,6 +31,7 @@ interface LinkProps
     | 'destructive-button'
     | 'icon';
   preserveQueryParams?: boolean;
+  onClick?: (event: Omit<PressEvent, 'target'>) => void;
 }
 
 const styles = tv({
@@ -92,7 +94,7 @@ export function useHrefWithQueryParams({
   return hrefWithQueryParams;
 }
 export const Link = forwardRef<HTMLAnchorElement, LinkProps>(
-  ({ href, preserveQueryParams = true, ...props }, ref) => {
+  ({ href, preserveQueryParams = true, onClick, ...props }, ref) => {
     const hrefWithQueryParams = useHrefWithQueryParams({
       href,
       preserveQueryParams,
@@ -108,6 +110,7 @@ export const Link = forwardRef<HTMLAnchorElement, LinkProps>(
           (className, renderProps) =>
             styles({ ...renderProps, className, variant: props.variant })
         )}
+        onPress={onClick}
       />
     );
   }

@@ -6,6 +6,7 @@ import { Invocation } from '@restate/data-access/admin-api';
 import { tv } from 'tailwind-variants';
 import { INVOCATION_QUERY_NAME } from './constants';
 import { useActiveSidebarParam } from '@restate/ui/layout';
+import { useNavigate } from 'react-router';
 
 const styles = tv({
   base: 'relative text-zinc-600 font-mono',
@@ -34,6 +35,14 @@ const styles = tv({
         container: 'p-px',
         linkIcon: 'w-4 h-4',
       },
+      icon: {
+        base: '',
+        icon: 'h-6 w-6 rounded-lg shadow-sm',
+        text: 'w-0',
+        link: 'before:rounded-lg m-0.5',
+        container: 'p-px',
+        linkIcon: 'w-0 h-0',
+      },
     },
   },
   defaultVariants: {
@@ -47,12 +56,14 @@ export function InvocationId({
 }: {
   id: Invocation['id'];
   className?: string;
-  size?: 'sm' | 'default';
+  size?: 'sm' | 'default' | 'icon';
 }) {
   const linkRef = useRef<HTMLAnchorElement>(null);
   const { base, icon, text, link, container, linkIcon } = styles({ size });
   const invocationInSidebar = useActiveSidebarParam(INVOCATION_QUERY_NAME);
   const isSelected = invocationInSidebar === id;
+
+  const navigate = useNavigate();
 
   return (
     <div className={base({ className })}>
@@ -66,16 +77,26 @@ export function InvocationId({
         <TruncateWithTooltip copyText={id} triggerRef={linkRef}>
           <span className={text()}>{id}</span>
         </TruncateWithTooltip>
-        <Link
-          ref={linkRef}
-          href={`?${INVOCATION_QUERY_NAME}=${id}`}
-          aria-label={id}
-          variant="secondary"
-          className={link()}
-          data-invocation-selected={isSelected}
+        <span
+          className="contents"
+          onClickCapture={(e) => {
+            if (e.shiftKey) {
+              e.preventDefault();
+              navigate(`/invocations/${id}`);
+            }
+          }}
         >
-          <Icon name={IconName.ChevronRight} className={linkIcon()} />
-        </Link>
+          <Link
+            ref={linkRef}
+            href={`?${INVOCATION_QUERY_NAME}=${id}`}
+            aria-label={id}
+            variant="secondary"
+            className={link()}
+            data-invocation-selected={isSelected}
+          >
+            <Icon name={IconName.ChevronRight} className={linkIcon()} />
+          </Link>
+        </span>
       </div>
     </div>
   );

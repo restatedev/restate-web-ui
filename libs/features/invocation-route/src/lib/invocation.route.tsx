@@ -1,4 +1,4 @@
-import { useGetInvocation } from '@restate/data-access/admin-api';
+import { useGetInvocationJournalWithInvocation } from '@restate/data-access/admin-api';
 import { ErrorBanner } from '@restate/ui/error';
 import { useParams } from 'react-router';
 import { getRestateError, Status } from './Status';
@@ -12,6 +12,7 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { Spinner } from '@restate/ui/loading';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { Actions } from './Actions';
+import { JournalV2 } from './JournalV2';
 
 const itemsContainer = tv({
   base: 'flex gap-2 w-full [&>*]:flex-auto [&>*]:min-w-0 [&>*]:basis-1/2',
@@ -23,10 +24,28 @@ const itemsContainer = tv({
   },
 });
 
+const smCardsStyles = tv({
+  base: 'flex flex-col gap-2 flex-auto [&>*]:basis-1/2 [&>*]:flex-auto [&>*]:min-2w-0 self-start w-full',
+  variants: {
+    isVirtualObject: {
+      true: '',
+      false: '@[687px]/sm-cards:flex-row',
+    },
+  },
+});
+
 function Component() {
   const { id } = useParams<{ id: string }>();
-  const { data: invocation, isPending, error } = useGetInvocation(String(id));
+  const {
+    data: journalAndInvocationData,
+    isPending,
+    error,
+  } = useGetInvocationJournalWithInvocation(String(id), {
+    refetchOnMount: true,
+    staleTime: 0,
+  });
 
+  const invocation = journalAndInvocationData?.invocation;
   if (isPending) {
     return <Spinner />;
   }
@@ -50,13 +69,24 @@ function Component() {
           <Icon name={IconName.ArrowLeft} className="w-4 h-4 mt-0.5" />{' '}
           Invocations
         </Link>
-        <div className="flex @2xl:flex-row flex-col gap-x-2 gap-y-1.5 @2xl:items-center">
-          <h1 className="text-lg font-semibold tracking-tight text-gray-900 sm:text-xl max-w-[16ch] truncate pl-2">
+        <div className="flex @2xl:flex-row flex-col gap-x-2 gap-y-1.5 @2xl:items-center relative">
+          <h1 className="text-lg flex items-center font-semibold tracking-tight text-gray-900 sm:text-xl max-w-[16ch] truncate">
+            <div className="mr-1.5 shrink-0 bg-zinc-50 border rounded-lg">
+              <Icon
+                name={IconName.Invocation}
+                className="w-6 h-6 text-zinc-500 p-1"
+              />
+            </div>
+
             <TruncateWithTooltip>{id}</TruncateWithTooltip>
           </h1>
           {invocation && <Status invocation={invocation} />}
-          <div className="ml-auto">
-            <Actions invocation={invocation} mini={false} className="text-sm" />
+          <div className="absolute right-0">
+            <Actions
+              invocation={invocation}
+              mini={false}
+              className="text-sm font-medium"
+            />
           </div>
         </div>
       </div>
@@ -64,7 +94,12 @@ function Component() {
         <div className="@container/all-cards flex-auto">
           <div className={itemsContainer({ withError: shouldShowFailure })}>
             <div className="@container/sm-cards w-full">
-              <div className="@2xl/sm-cards:flex-row flex flex-col gap-2 flex-auto [&>*]:basis-1/2 [&>*]:flex-auto [&>*]:min-w-0 self-start w-full">
+              <div
+                className={smCardsStyles({
+                  isVirtualObject:
+                    invocation?.target_service_ty === 'virtual_object',
+                })}
+              >
                 <KeysIdsSection invocation={invocation} />
                 <DeploymentSection invocation={invocation} raised />
               </div>
@@ -87,6 +122,7 @@ function Component() {
           </Section>
         )}
       </div>
+      <JournalV2 invocationId={String(id)} />
     </div>
   );
 }

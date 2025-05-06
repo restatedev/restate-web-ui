@@ -36,7 +36,7 @@ export function findEntryAfter(
     const entryJSON = parseEntryJson(nextEntry?.entry_json);
     const isFound = cb(entryJSON);
     if (isFound) {
-      return { entry, entryJSON };
+      return { entry: nextEntry, entryJSON };
     }
   }
   return {};

@@ -401,25 +401,32 @@ export function useGetInvocationJournalWithInvocation(
   options?: HookQueryOptions<'/query/invocations/{invocationId}/journal', 'get'>
 ) {
   const baseUrl = useAdminBaseUrl();
+  const journalQuery = adminApi(
+    'query',
+    '/query/invocations/{invocationId}/journal',
+    'get',
+    {
+      baseUrl,
+      parameters: { path: { invocationId } },
+    }
+  );
+  const invocationQuery = adminApi(
+    'query',
+    '/query/invocations/{invocationId}',
+    'get',
+    {
+      baseUrl,
+      parameters: { path: { invocationId } },
+    }
+  );
   const results = useQueries({
     queries: [
       {
-        ...adminApi(
-          'query',
-          '/query/invocations/{invocationId}/journal',
-          'get',
-          {
-            baseUrl,
-            parameters: { path: { invocationId } },
-          }
-        ),
+        ...journalQuery,
         ...options,
       },
       {
-        ...adminApi('query', '/query/invocations/{invocationId}', 'get', {
-          baseUrl,
-          parameters: { path: { invocationId } },
-        }),
+        ...invocationQuery,
         refetchOnMount: options?.refetchOnMount !== false,
         enabled: options?.enabled !== false,
         staleTime: 0,
@@ -477,7 +484,19 @@ export function useGetInvocationJournalWithInvocation(
     );
   }, [queryClient, results]);
 
-  return results;
+  return {
+    ...results,
+    refetch: () => {
+      return Promise.all([
+        queryClient.refetchQueries({
+          queryKey: journalQuery.queryKey,
+        }),
+        queryClient.refetchQueries({
+          queryKey: invocationQuery.queryKey,
+        }),
+      ]);
+    },
+  };
 }
 
 export function useGetVirtualObjectQueue(

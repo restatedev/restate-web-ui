@@ -37,7 +37,6 @@ export function Expression({
   output?: ReactNode;
   isFunction?: boolean;
   isHandler?: boolean;
-
   operationSymbol?: string;
   prefix?: ReactNode;
 }) {

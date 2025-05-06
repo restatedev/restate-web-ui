@@ -9,4 +9,5 @@ export interface EntryProps<T extends JournalEntry> {
   error?: RestateError;
   isRetrying?: boolean;
   wasRetrying?: boolean;
+  className?: string;
 }
