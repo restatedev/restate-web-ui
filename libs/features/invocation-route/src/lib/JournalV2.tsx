@@ -1,10 +1,13 @@
 import {
   InputJournalEntryType,
+  Invocation,
   JournalEntry,
   useGetInvocationJournalWithInvocation,
 } from '@restate/data-access/admin-api';
 import {
+  ComponentProps,
   ComponentType,
+  CSSProperties,
   PropsWithChildren,
   useEffect,
   useRef,
@@ -21,13 +24,14 @@ import { createPortal } from 'react-dom';
 import { tv } from 'tailwind-variants';
 import { formatDurations } from '@restate/util/intl';
 import {
+  getDuration,
   SnapshotTimeProvider,
   useDurationSinceLastSnapshot,
 } from '@restate/util/snapshot-time';
 import { Link } from '@restate/ui/link';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Button } from '@restate/ui/button';
-import { HoverTooltip } from '@restate/ui/tooltip';
+import { DateTooltip, HoverTooltip } from '@restate/ui/tooltip';
 
 const inputStyles = tv({
   base: '[&_>*]:leading-7 [--rounded-radius:0.625rem] [--rounded-radius-right:0.25rem] rounded-r text-code w-full',
@@ -45,6 +49,7 @@ export function JournalV2({ invocationId }: { invocationId: string }) {
     isPending,
     error: apiError,
     refetch,
+    dataUpdatedAt,
   } = useGetInvocationJournalWithInvocation(String(invocationId), {
     refetchOnMount: false,
   });
@@ -99,13 +104,22 @@ export function JournalV2({ invocationId }: { invocationId: string }) {
     journalAndInvocationData.invocation.created_at
   ).getTime();
   const end = new Date(
-    journalAndInvocationData.invocation.completed_at ?? new Date().toISOString()
+    journalAndInvocationData.invocation.completed_at ??
+      new Date(dataUpdatedAt).toISOString()
   ).getTime();
 
   const hasInputEntry = inputEntry?.entry_type === 'Input';
+  const cancelEntry = journalAndInvocationData.journal.entries?.find(
+    (entry) => entry.entry_type === 'CancelSignal'
+  );
+  const lifecylcles = getLifeCycles(
+    journalAndInvocationData.invocation,
+    dataUpdatedAt,
+    cancelEntry?.start
+  );
 
   return (
-    <SnapshotTimeProvider lastSnapshot={start}>
+    <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
       <PanelGroup direction="horizontal" className="mt-8">
         <Panel defaultSize={50} className="pb-4">
           <div className="flex  flex-col items-start gap-1.5">
@@ -156,6 +170,8 @@ export function JournalV2({ invocationId }: { invocationId: string }) {
                       })}
                       start={start}
                       end={end}
+                      now={dataUpdatedAt}
+                      cancelTime={cancelEntry?.start}
                     />
                   )
                 );
@@ -188,8 +204,37 @@ export function JournalV2({ invocationId }: { invocationId: string }) {
               </HoverTooltip>
             </div>
             <div className="h-[1.875rem] py-1.5 mt-1.5">
-              <div className="relative w-full h-full">
-                <Progress start={0} end={1} endTime={end} />
+              <div className="relative w-full h-full flex flex-row">
+                {lifecylcles.map((event) => (
+                  <div
+                    key={event.type}
+                    {...(event.end && {
+                      style: {
+                        flexBasis: `${
+                          (100 * (event.end - event.start)) / (end - start)
+                        }%`,
+                      },
+                    })}
+                    className="flex [&>*]:w-full [&>*]:px-0  [&>*]:mx-0 relative"
+                  >
+                    <DateTooltip
+                      date={new Date(event.start)}
+                      title={TOOLTIP_LIFECyCLES[event.type]}
+                      className=""
+                    >
+                      <Progress
+                        startTime={event.start}
+                        endTime={event.end}
+                        start={(event.start - start) / (end - start)}
+                        {...(event.end && {
+                          end: (event.end - start) / (end - start),
+                        })}
+                        className="static"
+                        mode={event.type}
+                      />
+                    </DateTooltip>
+                  </div>
+                ))}
               </div>
             </div>
             {restEntries.map((entry) => (
@@ -229,7 +274,14 @@ function Entry({
   error,
   start,
   end,
-}: EntryProps<JournalEntry> & { start: number; end: number }) {
+  now,
+  cancelTime,
+}: EntryProps<JournalEntry> & {
+  start: number;
+  end: number;
+  cancelTime?: string;
+  now: number;
+}) {
   const EntrySpecificComponent = entry.entry_type
     ? (ENTRY_COMPONENTS[entry.entry_type] as ComponentType<
         EntryProps<JournalEntry>
@@ -253,6 +305,13 @@ function Entry({
   }
 
   const interval = end - start;
+  const entryEnd = entry.end
+    ? new Date(entry.end).getTime()
+    : cancelTime && entry.start && entry.start < cancelTime
+    ? new Date(cancelTime).getTime()
+    : !completed
+    ? now
+    : undefined;
 
   return (
     <div
@@ -274,28 +333,24 @@ function Entry({
           wasRetrying={wasRetryingThisEntry}
         />
         {entry.start && (
-          <SnapshotTimeProvider lastSnapshot={new Date(entry.start).getTime()}>
-            <TimelineProtal index={entry.index} invocationId={invocation.id}>
-              <div className="leading-7 flex items-center h-full py-2.5">
-                <div className="relative w-full h-full rounded-sm bg-zinc-200/50">
-                  <Progress
-                    start={(new Date(entry.start).getTime() - start) / interval}
-                    {...(entry.end && {
-                      end: (new Date(entry.end).getTime() - start) / interval,
-                      endTime: new Date(entry.end).getTime(),
-                    })}
-                    {...(!entry.end &&
-                      entry.completed === false && {
-                        end: (Date.now() - start) / interval,
-                        endTime: Date.now(),
-                      })}
-                    isPending={!completed}
-                    isRetrying={isRetryingThisEntry}
-                  />
-                </div>
+          <TimelineProtal index={entry.index} invocationId={invocation.id}>
+            <div className="leading-7 flex items-center h-full py-2.5">
+              <div className="relative w-full h-full rounded-sm bg-zinc-200/50">
+                <Progress
+                  startTime={new Date(entry.start).getTime()}
+                  start={(new Date(entry.start).getTime() - start) / interval}
+                  {...(entryEnd && {
+                    end: (entryEnd - start) / interval,
+                    endTime: entryEnd,
+                  })}
+                  isPending={!completed}
+                  isRetrying={isRetryingThisEntry}
+                  className="ml-0.5"
+                  showDuration
+                />
               </div>
-            </TimelineProtal>
-          </SnapshotTimeProvider>
+            </div>
+          </TimelineProtal>
         )}
         {!entry.start && (
           <TimelineProtal index={entry.index} invocationId={invocation.id}>
@@ -326,47 +381,190 @@ function TimelineProtal({
 }
 
 const progressStyles = tv({
-  base: 'absolute h-full bg-blue-400 min-w-1 rounded-md',
+  base: 'absolute h-full bg-blue-400 min-w-0.5 rounded-md @container',
   variants: {
     isPending: { true: 'animate-pulse', false: '' },
     isRetrying: { true: 'bg-orange-200', false: '' },
+    mode: {
+      suspended: 'border-zinc-300',
+      running: '',
+      pending: 'border-dashed bg-transparent border border-orange-400 ',
+      created: 'bg-zinc-300',
+      scheduled: 'border border-dashed bg-transparent border-zinc-300',
+      completed: '',
+      cancel: '',
+    },
   },
 });
+
+const TOOLTIP_LIFECyCLES: Record<
+  | 'created'
+  | 'running'
+  | 'scheduled'
+  | 'suspended'
+  | 'pending'
+  | 'completed'
+  | 'cancel',
+  string
+> = {
+  completed: 'Completed at',
+  running: 'Running since',
+  suspended: 'Suspended at',
+  scheduled: 'Scheduled at',
+  pending: 'Pending since',
+  created: 'Created at',
+  cancel: 'Cancelled at',
+};
 
 function Progress({
   start,
   end,
   className,
-  endTime,
+  startTime,
+  endTime = startTime,
   children,
   isPending,
   isRetrying,
+  mode = 'running',
+  style,
+  showDuration,
 }: PropsWithChildren<{
   start: number;
   end?: number;
   className?: string;
+  startTime: number;
   endTime?: number;
   isPending?: boolean;
   isRetrying?: boolean;
+  mode?:
+    | 'created'
+    | 'running'
+    | 'scheduled'
+    | 'suspended'
+    | 'pending'
+    | 'completed'
+    | 'cancel';
+  style?: CSSProperties;
+  showDuration?: boolean;
 }>) {
-  const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
-
-  const { isPast, ...parts } = durationSinceLastSnapshot(endTime);
+  const { isPast, ...parts } = getDuration(endTime - startTime);
   const duration = formatDurations(parts);
 
   return (
     <div
-      className={progressStyles({ className, isPending, isRetrying })}
+      className={progressStyles({ className, isPending, isRetrying, mode })}
       style={{
         left: `${start * 100}%`,
         ...(end && {
           right: `${(1 - end) * 100}%`,
         }),
+        ...style,
       }}
+      data-mode={mode}
     >
-      <div className="absolute top-full text-2xs text-zinc-500 leading-4">
-        {duration}
-      </div>
+      {showDuration && (
+        <div className="absolute top-full text-2xs left-0 text-zinc-500 leading-4 mt-0.5">
+          {duration || (mode === 'running' ? <>0ms</> : null)}
+        </div>
+      )}
     </div>
   );
+}
+
+function getLifeCycles(
+  invocation: Invocation,
+  now: number,
+  cancelTime?: string
+): {
+  start: number;
+  end: number;
+  type:
+    | 'created'
+    | 'running'
+    | 'scheduled'
+    | 'suspended'
+    | 'pending'
+    | 'completed'
+    | 'cancel';
+}[] {
+  const values: {
+    start: number;
+    type:
+      | 'created'
+      | 'running'
+      | 'scheduled'
+      | 'suspended'
+      | 'pending'
+      | 'completed'
+      | 'cancel'
+      | 'now';
+  }[] = [];
+
+  values.push({
+    start: new Date(invocation.created_at).getTime(),
+    type: 'created',
+  });
+  if (invocation.scheduled_at) {
+    values.push({
+      start: new Date(invocation.scheduled_at).getTime(),
+      type: 'scheduled',
+    });
+  }
+  if (invocation.inboxed_at) {
+    values.push({
+      start: new Date(invocation.inboxed_at).getTime(),
+      type: 'pending',
+    });
+  }
+  if (invocation.running_at) {
+    values.push({
+      start: new Date(invocation.running_at).getTime(),
+      type: 'running',
+    });
+  }
+
+  if (cancelTime) {
+    values.push({
+      start: new Date(cancelTime).getTime(),
+      type: 'cancel',
+    });
+  }
+  if (invocation.completed_at) {
+    values.push({
+      start: new Date(invocation.completed_at).getTime(),
+      type: 'completed',
+    });
+  } else {
+    values.push({
+      start: now,
+      type: 'now',
+    });
+  }
+  if (invocation.modified_at && invocation.status === 'suspended') {
+    values.push({
+      start: new Date(invocation.modified_at).getTime(),
+      type: 'suspended',
+    });
+  }
+
+  values.sort((a, b) => {
+    return a.start - b.start;
+  });
+
+  return values
+    .map((value, i, values) => {
+      return { ...value, end: values.at(i + 1)?.start };
+    })
+    .filter((value) => value.type !== 'now') as {
+    start: number;
+    end: number;
+    type:
+      | 'created'
+      | 'running'
+      | 'scheduled'
+      | 'suspended'
+      | 'pending'
+      | 'completed'
+      | 'cancel';
+  }[];
 }

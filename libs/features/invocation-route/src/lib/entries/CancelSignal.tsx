@@ -10,8 +10,11 @@ export function CancelSignal({
   wasRetrying,
 }: EntryProps<CancelSignalJournalEntryType>) {
   return (
-    <div className="italic">
-      <span className="font-semibold">Cancellation</span> request received.
+    <div className="text-zinc-600">
+      <span className="font-medium font italic text-blue-500">
+        Cancellation
+      </span>{' '}
+      request received.
     </div>
   );
 }

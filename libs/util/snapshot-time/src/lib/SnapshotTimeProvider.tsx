@@ -39,32 +39,39 @@ export function useDurationSinceLastSnapshot() {
         return {};
       }
 
-      let duration = date.getTime() - lastSnapshot;
-      const isPast = duration < 0;
-      duration = Math.abs(duration);
-      let milliseconds = duration % MILLISECONDS_IN_SECOND;
-      duration = (duration - milliseconds) / MILLISECONDS_IN_SECOND;
-      let seconds = duration % SECONDS_IN_MINUTE;
-      duration = (duration - seconds) / SECONDS_IN_MINUTE;
-      let minutes = duration % MINUTES_IN_HOUR;
-      duration = (duration - minutes) / MINUTES_IN_HOUR;
-      const hours = duration % HOURS_IN_DAY;
-      const days = (duration - hours) / HOURS_IN_DAY;
-
-      if (days || hours || minutes || seconds) {
-        milliseconds = 0;
-      }
-      if (days || hours) {
-        seconds = 0;
-      }
-      if (days) {
-        minutes = 0;
-      }
-
-      return { milliseconds, seconds, minutes, hours, days, isPast };
+      return getDuration(date.getTime() - lastSnapshot);
     },
     [lastSnapshot]
   );
 
   return durationSinceLastSnapshot;
+}
+
+export function getDuration(duration?: number) {
+  if (!duration) {
+    return {};
+  }
+
+  const isPast = duration < 0;
+  duration = Math.abs(duration);
+  let milliseconds = duration % MILLISECONDS_IN_SECOND;
+  duration = (duration - milliseconds) / MILLISECONDS_IN_SECOND;
+  let seconds = duration % SECONDS_IN_MINUTE;
+  duration = (duration - seconds) / SECONDS_IN_MINUTE;
+  let minutes = duration % MINUTES_IN_HOUR;
+  duration = (duration - minutes) / MINUTES_IN_HOUR;
+  const hours = duration % HOURS_IN_DAY;
+  const days = (duration - hours) / HOURS_IN_DAY;
+
+  if (days || hours || minutes || seconds) {
+    milliseconds = 0;
+  }
+  if (days || hours) {
+    seconds = 0;
+  }
+  if (days) {
+    minutes = 0;
+  }
+
+  return { milliseconds, seconds, minutes, hours, days, isPast };
 }
