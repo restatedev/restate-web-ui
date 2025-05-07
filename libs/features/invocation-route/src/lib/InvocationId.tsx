@@ -7,6 +7,7 @@ import { tv } from 'tailwind-variants';
 import { INVOCATION_QUERY_NAME } from './constants';
 import { useActiveSidebarParam } from '@restate/ui/layout';
 import { useNavigate } from 'react-router';
+import { useRestateContext } from '@restate/features/restate-context';
 
 const styles = tv({
   base: 'relative text-zinc-600 font-mono',
@@ -64,6 +65,7 @@ export function InvocationId({
   const isSelected = invocationInSidebar === id;
 
   const navigate = useNavigate();
+  const { baseUrl } = useRestateContext();
 
   return (
     <div className={base({ className })}>
@@ -82,7 +84,7 @@ export function InvocationId({
           onClickCapture={(e) => {
             if (e.shiftKey) {
               e.preventDefault();
-              navigate(`/invocations/${id}`);
+              navigate(`${baseUrl}/invocations/${id}`);
             }
           }}
         >
