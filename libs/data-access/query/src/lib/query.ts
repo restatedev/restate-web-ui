@@ -86,7 +86,7 @@ async function getInvocation(
   return new Response(
     JSON.stringify({
       message:
-        'Invocation not found. Please note that completed invocations without idempotency keys are not persisted. For invocations with idempotency keys, the response is retained for a configured retention period per service.',
+        'Invocation not found. Please note that completed invocations are retained only for workflows and those with idempotency keys, and solely for the retention period specified by the service.',
     }),
     {
       status: 404,
