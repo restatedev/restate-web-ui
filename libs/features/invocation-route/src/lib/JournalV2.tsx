@@ -5,7 +5,6 @@ import {
   useGetInvocationJournalWithInvocation,
 } from '@restate/data-access/admin-api';
 import {
-  ComponentProps,
   ComponentType,
   CSSProperties,
   PropsWithChildren,
@@ -343,7 +342,13 @@ function Entry({
                   isRetrying={isRetryingThisEntry}
                   className="ml-0.5"
                   showDuration
-                />
+                >
+                  <DateTooltip
+                    date={new Date(entry.start)}
+                    title="Appended at"
+                    className="min-w-2 block h-full"
+                  />
+                </Progress>
               </div>
             </div>
           </TimelineProtal>
@@ -458,6 +463,7 @@ function Progress({
       }}
       data-mode={mode}
     >
+      {children}
       {showDuration && (
         <div className="absolute top-full text-2xs left-0 text-zinc-500 leading-4 mt-0.5 whitespace-nowrap">
           {duration || (mode === 'running' ? <>0ms</> : null)}

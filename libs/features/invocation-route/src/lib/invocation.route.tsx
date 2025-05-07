@@ -82,11 +82,7 @@ function Component() {
           </h1>
           {invocation && <Status invocation={invocation} />}
           <div className="absolute right-0">
-            <Actions
-              invocation={invocation}
-              mini={false}
-              className="text-sm font-medium"
-            />
+            <Actions invocation={invocation} mini={false} className="text-sm" />
           </div>
         </div>
       </div>
