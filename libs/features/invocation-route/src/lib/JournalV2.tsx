@@ -5,7 +5,6 @@ import {
   useGetInvocationJournalWithInvocation,
 } from '@restate/data-access/admin-api';
 import {
-  ComponentProps,
   ComponentType,
   CSSProperties,
   PropsWithChildren,
@@ -23,11 +22,7 @@ import { InvocationId } from './InvocationId';
 import { createPortal } from 'react-dom';
 import { tv } from 'tailwind-variants';
 import { formatDurations } from '@restate/util/intl';
-import {
-  getDuration,
-  SnapshotTimeProvider,
-  useDurationSinceLastSnapshot,
-} from '@restate/util/snapshot-time';
+import { getDuration, SnapshotTimeProvider } from '@restate/util/snapshot-time';
 import { Link } from '@restate/ui/link';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Button } from '@restate/ui/button';
@@ -347,7 +342,13 @@ function Entry({
                   isRetrying={isRetryingThisEntry}
                   className="ml-0.5"
                   showDuration
-                />
+                >
+                  <DateTooltip
+                    date={new Date(entry.start)}
+                    title="Appended at"
+                    className="min-w-2 block h-full"
+                  />
+                </Progress>
               </div>
             </div>
           </TimelineProtal>
@@ -462,8 +463,9 @@ function Progress({
       }}
       data-mode={mode}
     >
+      {children}
       {showDuration && (
-        <div className="absolute top-full text-2xs left-0 text-zinc-500 leading-4 mt-0.5">
+        <div className="absolute top-full text-2xs left-0 text-zinc-500 leading-4 mt-0.5 whitespace-nowrap">
           {duration || (mode === 'running' ? <>0ms</> : null)}
         </div>
       )}

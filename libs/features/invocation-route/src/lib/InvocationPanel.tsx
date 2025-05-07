@@ -180,7 +180,11 @@ function InvocationPanelContent() {
                     }
                   />
                   <div className="ml-auto">
-                    <Actions invocation={data} mini={false} />
+                    <Actions
+                      invocation={data}
+                      mini={false}
+                      className="text-sm"
+                    />
                   </div>
                 </div>
               </>
@@ -192,10 +196,10 @@ function InvocationPanelContent() {
       <KeysIdsSection className="mt-5" invocation={data} />
       <ServiceHandlerSection className="mt-2" invocation={data} />
       <LifecycleSection className="mt-2" invocation={data} />
-      <VirtualObjectSection className="mt-2" invocation={data} />
+      <VirtualObjectSection className="mt-2" invocation={data} raised />
       <WorkflowKeySection className="mt-2" invocation={data} />
       <InvokedBySection className="mt-2" invocation={data} />
-      <DeploymentSection className="mt-2" invocation={data} />
+      <DeploymentSection className="mt-2" invocation={data} raised />
       <JournalSection className="mt-2" invocation={data} />
     </SnapshotTimeProvider>
   );
