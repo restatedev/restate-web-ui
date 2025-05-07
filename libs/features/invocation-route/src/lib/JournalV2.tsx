@@ -23,11 +23,7 @@ import { InvocationId } from './InvocationId';
 import { createPortal } from 'react-dom';
 import { tv } from 'tailwind-variants';
 import { formatDurations } from '@restate/util/intl';
-import {
-  getDuration,
-  SnapshotTimeProvider,
-  useDurationSinceLastSnapshot,
-} from '@restate/util/snapshot-time';
+import { getDuration, SnapshotTimeProvider } from '@restate/util/snapshot-time';
 import { Link } from '@restate/ui/link';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Button } from '@restate/ui/button';

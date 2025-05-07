@@ -28,6 +28,7 @@ function setStateV2(entry: JournalRawEntry, allEntries: JournalRawEntry[]) {
     name: entryJSON?.Command?.SetState?.name,
     key,
     value: decodeBinary(value),
+    start: entry.appended_at,
   };
 }
 
