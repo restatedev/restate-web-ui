@@ -27,17 +27,25 @@ export function InvocationDeployment({
 
     return revision ? (
       <div className={styles({ className })}>
-        <Deployment
-          deploymentId={deploymentId}
-          revision={revision}
-          className="text-inherit p-0 pr-0.5 m-0 [&_a:before]:rounded-md max-w-full"
-          highlightSelection={false}
-        />
-        {showSdk && (
-          <SDK
-            lastAttemptServer={invocation.last_attempt_server}
-            className="[font-size:85%] gap-2 max-w-[calc(100%-1.75rem)] -mt-0.5"
+        <div className="flex px-1.5 py-1 items-center [&:not(:last-child)]:border-b w-full">
+          <Deployment
+            deploymentId={deploymentId}
+            revision={revision}
+            className="text-inherit p-0 pr-0.5 m-0 [&_a:before]:rounded-md max-w-full w-full"
+            highlightSelection={false}
           />
+        </div>
+        {showSdk && (
+          <div className="flex px-1.5 py-1 items-center [&:not(:last-child)]:border-b w-full">
+            <SDK
+              lastAttemptServer={
+                invocation.last_attempt_server ??
+                deployment.sdk_version ??
+                undefined
+              }
+              className="[font-size:85%] font-medium text-zinc-600 gap-2 max-w-[calc(100%-1.75rem)] -mt-0.5"
+            />
+          </div>
         )}
       </div>
     ) : (

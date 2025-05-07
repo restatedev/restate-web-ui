@@ -217,7 +217,7 @@ function DeploymentContent({ deployment }: { deployment: string }) {
           <div className="flex px-1.5 py-1 items-center [&:not(:last-child)]:border-b">
             <SDK
               lastAttemptServer={data?.sdk_version ?? undefined}
-              className="text-xs font-medium text-zinc-500 gap-1"
+              className="text-xs font-medium text-zinc-600 gap-1"
             />
           </div>
         </SectionContent>
