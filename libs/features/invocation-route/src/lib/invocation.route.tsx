@@ -13,6 +13,7 @@ import { Spinner } from '@restate/ui/loading';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { Actions } from './Actions';
 import { JournalV2 } from './JournalV2';
+import { useRestateContext } from '@restate/features/restate-context';
 
 const itemsContainer = tv({
   base: 'flex gap-2 w-full [&>*]:flex-auto [&>*]:min-w-0 [&>*]:basis-1/2',
@@ -46,6 +47,8 @@ function Component() {
   });
 
   const invocation = journalAndInvocationData?.invocation;
+  const { baseUrl } = useRestateContext();
+
   if (isPending) {
     return <Spinner />;
   }
@@ -64,7 +67,7 @@ function Component() {
         <Link
           className="flex items-center gap-1 text-sm"
           variant="secondary"
-          href="/invocations"
+          href={`${baseUrl}/invocations${window.location.search}`}
         >
           <Icon name={IconName.ArrowLeft} className="w-4 h-4 mt-0.5" />{' '}
           Invocations

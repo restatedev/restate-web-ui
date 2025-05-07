@@ -7,12 +7,11 @@ import {
 import {
   ComponentType,
   CSSProperties,
+  lazy,
   PropsWithChildren,
-  useEffect,
-  useRef,
+  Suspense,
   useState,
 } from 'react';
-import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import { Input } from './entries/Input';
 import { Target } from './Target';
 import { ENTRY_COMPONENTS, ErrorBoundary, getLastFailure } from './Journal';
@@ -27,6 +26,18 @@ import { Link } from '@restate/ui/link';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Button } from '@restate/ui/button';
 import { DateTooltip, HoverTooltip } from '@restate/ui/tooltip';
+
+const LazyPanel = lazy(() =>
+  import('react-resizable-panels').then((m) => ({ default: m.Panel }))
+);
+const LazyPanelGroup = lazy(() =>
+  import('react-resizable-panels').then((m) => ({ default: m.PanelGroup }))
+);
+const LazyPanelResizeHandle = lazy(() =>
+  import('react-resizable-panels').then((m) => ({
+    default: m.PanelResizeHandle,
+  }))
+);
 
 const inputStyles = tv({
   base: '[&_>*]:leading-7 [--rounded-radius:0.625rem] [--rounded-radius-right:0.25rem] rounded-r text-code w-full',
@@ -53,35 +64,7 @@ export function JournalV2({ invocationId }: { invocationId: string }) {
     journalAndInvocationData?.journal.entries ?? [];
 
   const inputEntry = first as InputJournalEntryType;
-  const timelineContainer = useRef<HTMLDivElement>(null);
   const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    const callback: MutationCallback = (mutationList) => {
-      for (const mutation of mutationList) {
-        if (mutation.type === 'childList') {
-          setIsMounted(
-            Boolean(document.getElementById(getTimelineId(invocationId, 1)))
-          );
-        }
-      }
-    };
-
-    const observer = new MutationObserver(callback);
-    const element = timelineContainer.current;
-    if (element) {
-      console.log(element);
-      observer.observe(element, {
-        childList: true,
-      });
-    }
-    setIsMounted(
-      Boolean(document.getElementById(getTimelineId(invocationId, 1)))
-    );
-    return () => {
-      observer.disconnect();
-    };
-  }, [invocationId]);
 
   if (isPending) {
     return 'pending';
@@ -115,136 +98,141 @@ export function JournalV2({ invocationId }: { invocationId: string }) {
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
-      <PanelGroup direction="horizontal" className="mt-8">
-        <Panel defaultSize={50} className="pb-4">
-          <div className="flex  flex-col items-start gap-1.5">
-            <div className="flex items-center gap-1.5 w-full h-7 relative">
-              <div className="w-2 bg-zinc-300 absolute left-2.5 h-2 rounded-full">
-                <div className="w-px absolute left-1/2 h-8 top-full -translate-x-1/2 border-zinc-300 border border-dashed" />
-              </div>
-              <div className="shrink-0 text-xs uppercase font-semibold text-gray-400 pl-6">
-                Invoked by
-              </div>
-              {journalAndInvocationData.invocation.invoked_by === 'ingress' ? (
-                <div className="text-sm font-regular">Ingress</div>
-              ) : (
-                <InvocationId
-                  id={journalAndInvocationData.invocation.invoked_by_id!}
-                  className="text-xs min-w-0 max-w-[20ch]"
-                />
-              )}
-            </div>
-            <Target
-              target={journalAndInvocationData.invocation.target}
-              showHandler={!hasInputEntry}
-              className={inputStyles({ hasInputEntry })}
-            >
-              {hasInputEntry && (
-                <Input
-                  invocation={journalAndInvocationData.invocation}
-                  entry={inputEntry}
-                  className="text-xs w-full"
-                />
-              )}
-            </Target>
-            <div className="flex text-xs flex-col items-start gap-1.5 pl-2 w-full">
-              {restEntries.map((entry) => {
-                return (
-                  isMounted && (
-                    <Entry
-                      key={entry.index}
-                      entry={entry}
-                      invocation={journalAndInvocationData.invocation}
-                      appended
-                      failed={
-                        entry.command_index === lastFailure?.index ||
-                        Boolean('failure' in entry && entry.failure)
-                      }
-                      {...(entry.command_index === lastFailure?.index && {
-                        error,
-                      })}
-                      start={start}
-                      end={end}
-                      now={dataUpdatedAt}
-                      cancelTime={cancelEntry?.start}
-                    />
-                  )
-                );
-              })}
-            </div>
-          </div>
-        </Panel>
-        <PanelResizeHandle className="w-3 pt-8 pb-4 flex justify-center items-center group">
-          <div className="w-px bg-gray-200 h-full group-hover:bg-blue-500" />
-        </PanelResizeHandle>
-        <Panel defaultSize={50} className="hidden md:flex">
-          <div
-            ref={timelineContainer}
-            className="w-full h-full overflow-auto flex flex-col gap-0"
-          >
-            <div className="h-7 flex flex-row gap-2 items-center justify-end">
-              <HoverTooltip content="Refresh">
-                <Button variant="icon" onClick={refetch}>
-                  <Icon name={IconName.Retry} className="w-4 h-4" />
-                </Button>
-              </HoverTooltip>
-              <HoverTooltip content="Introspect">
-                <Link
-                  variant="icon"
-                  href={`/introspection?query=SELECT * FROM sys_journal WHERE id = '${journalAndInvocationData.invocation.id}'`}
-                  target="_blank"
-                >
-                  <Icon name={IconName.ScanSearch} className="w-4 h-4" />
-                </Link>
-              </HoverTooltip>
-            </div>
-            <div className="h-[1.875rem] py-1.5 mt-1.5">
-              <div className="relative w-full h-full flex flex-row">
-                {lifecylcles.map((event) => (
-                  <div
-                    key={event.type}
-                    {...(event.end && {
-                      style: {
-                        flexBasis: `${
-                          (100 * (event.end - event.start)) / (end - start)
-                        }%`,
-                      },
-                    })}
-                    className="flex [&>*]:w-full [&>*]:px-0  [&>*]:mx-0 relative"
-                  >
-                    <DateTooltip
-                      date={new Date(event.start)}
-                      title={TOOLTIP_LIFECyCLES[event.type]}
-                      className=""
-                    >
-                      <Progress
-                        startTime={event.start}
-                        endTime={event.end}
-                        start={(event.start - start) / (end - start)}
-                        {...(event.end && {
-                          end: (event.end - start) / (end - start),
-                        })}
-                        className="static"
-                        mode={event.type}
-                      />
-                    </DateTooltip>
-                  </div>
-                ))}
-              </div>
-            </div>
-            {restEntries.map((entry) => (
-              <div
-                id={getTimelineId(
-                  journalAndInvocationData.invocation.id,
-                  entry.index
+      <Suspense fallback={<div />}>
+        <LazyPanelGroup direction="horizontal" className="mt-8">
+          <LazyPanel defaultSize={50} className="pb-4">
+            <div className="flex  flex-col items-start gap-1.5">
+              <div className="flex items-center gap-1.5 w-full h-7 relative">
+                <div className="w-2 bg-zinc-300 absolute left-2.5 h-2 rounded-full">
+                  <div className="w-px absolute left-1/2 h-8 top-full -translate-x-1/2 border-zinc-300 border border-dashed" />
+                </div>
+                <div className="shrink-0 text-xs uppercase font-semibold text-gray-400 pl-6">
+                  Invoked by
+                </div>
+                {journalAndInvocationData.invocation.invoked_by ===
+                'ingress' ? (
+                  <div className="text-sm font-regular">Ingress</div>
+                ) : (
+                  <InvocationId
+                    id={journalAndInvocationData.invocation.invoked_by_id!}
+                    className="text-xs min-w-0 max-w-[20ch]"
+                  />
                 )}
-                className="[&:has(*)]:h-7 [&:has(*)]:mt-1.5 "
-                key={entry.index}
-              />
-            ))}
-          </div>
-        </Panel>
-      </PanelGroup>
+              </div>
+              <Target
+                target={journalAndInvocationData.invocation.target}
+                showHandler={!hasInputEntry}
+                className={inputStyles({ hasInputEntry })}
+              >
+                {hasInputEntry && (
+                  <Input
+                    invocation={journalAndInvocationData.invocation}
+                    entry={inputEntry}
+                    className="text-xs w-full"
+                  />
+                )}
+              </Target>
+              <div className="flex text-xs flex-col items-start gap-1.5 pl-2 w-full">
+                {restEntries.map((entry) => {
+                  return (
+                    isMounted && (
+                      <Entry
+                        key={entry.index}
+                        entry={entry}
+                        invocation={journalAndInvocationData.invocation}
+                        appended
+                        failed={
+                          entry.command_index === lastFailure?.index ||
+                          Boolean('failure' in entry && entry.failure)
+                        }
+                        {...(entry.command_index === lastFailure?.index && {
+                          error,
+                        })}
+                        start={start}
+                        end={end}
+                        now={dataUpdatedAt}
+                        cancelTime={cancelEntry?.start}
+                      />
+                    )
+                  );
+                })}
+              </div>
+            </div>
+          </LazyPanel>
+          <LazyPanelResizeHandle className="w-3 pt-8 pb-4 flex justify-center items-center group">
+            <div className="w-px bg-gray-200 h-full group-hover:bg-blue-500" />
+          </LazyPanelResizeHandle>
+          <LazyPanel defaultSize={50} className="hidden md:flex">
+            <div
+              ref={(el) => {
+                setIsMounted(!!el);
+              }}
+              className="w-full h-full overflow-auto flex flex-col gap-0"
+            >
+              <div className="h-7 flex flex-row gap-2 items-center justify-end">
+                <HoverTooltip content="Refresh">
+                  <Button variant="icon" onClick={refetch}>
+                    <Icon name={IconName.Retry} className="w-4 h-4" />
+                  </Button>
+                </HoverTooltip>
+                <HoverTooltip content="Introspect">
+                  <Link
+                    variant="icon"
+                    href={`/introspection?query=SELECT * FROM sys_journal WHERE id = '${journalAndInvocationData.invocation.id}'`}
+                    target="_blank"
+                  >
+                    <Icon name={IconName.ScanSearch} className="w-4 h-4" />
+                  </Link>
+                </HoverTooltip>
+              </div>
+              <div className="h-[1.875rem] py-1.5 mt-1.5">
+                <div className="relative w-full h-full flex flex-row">
+                  {lifecylcles.map((event) => (
+                    <div
+                      key={event.type}
+                      {...(event.end && {
+                        style: {
+                          flexBasis: `${
+                            (100 * (event.end - event.start)) / (end - start)
+                          }%`,
+                        },
+                      })}
+                      className="flex [&>*]:w-full [&>*]:px-0  [&>*]:mx-0 relative"
+                    >
+                      <DateTooltip
+                        date={new Date(event.start)}
+                        title={TOOLTIP_LIFECyCLES[event.type]}
+                        className=""
+                      >
+                        <Progress
+                          startTime={event.start}
+                          endTime={event.end}
+                          start={(event.start - start) / (end - start)}
+                          {...(event.end && {
+                            end: (event.end - start) / (end - start),
+                          })}
+                          className="static"
+                          mode={event.type}
+                        />
+                      </DateTooltip>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {restEntries.map((entry) => (
+                <div
+                  id={getTimelineId(
+                    journalAndInvocationData.invocation.id,
+                    entry.index
+                  )}
+                  className="[&:has(*)]:h-7 [&:has(*)]:mt-1.5 "
+                  key={entry.index}
+                />
+              ))}
+            </div>
+          </LazyPanel>
+        </LazyPanelGroup>
+      </Suspense>
     </SnapshotTimeProvider>
   );
 }
@@ -302,7 +290,7 @@ function Entry({
   const interval = end - start;
   const entryEnd = entry.end
     ? new Date(entry.end).getTime()
-    : cancelTime && entry.start && entry.start < cancelTime
+    : cancelTime && entry.start && entry.start < cancelTime && !completed
     ? new Date(cancelTime).getTime()
     : !completed
     ? now
