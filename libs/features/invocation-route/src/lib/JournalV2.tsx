@@ -459,7 +459,7 @@ function Progress({
       data-mode={mode}
     >
       {showDuration && (
-        <div className="absolute top-full text-2xs left-0 text-zinc-500 leading-4 mt-0.5">
+        <div className="absolute top-full text-2xs left-0 text-zinc-500 leading-4 mt-0.5 whitespace-nowrap">
           {duration || (mode === 'running' ? <>0ms</> : null)}
         </div>
       )}

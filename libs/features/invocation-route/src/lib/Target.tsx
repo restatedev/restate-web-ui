@@ -72,7 +72,7 @@ export function Target({
         triggerRef={linkRef}
       >
         <div className="flex items-stretch overflow-hidden [&>*]:flex-auto">
-          <div className="truncate inline-flex items-center [&:has(a)]:mr-0 mr-2.5">
+          <div className="truncate inline-flex items-center [&:has(a)]:mr-0 mr-2.5 [&&]:grow-0">
             <Icon
               name={IconName.Box}
               className="w-3 h-3 mr-1 text-zinc-400 fill-zinc-100 shrink-0"
