@@ -375,6 +375,7 @@ export async function query(req: Request) {
         headers: { 'Content-Type': 'application/json' },
       });
     } else {
+      console.log('/query call failed!', error);
       return new Response(
         JSON.stringify(new RestateError('Oops something went wrong!')),
         {
