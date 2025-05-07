@@ -375,7 +375,7 @@ const progressStyles = tv({
     isPending: { true: 'animate-pulse', false: '' },
     isRetrying: { true: 'bg-orange-200', false: '' },
     mode: {
-      suspended: 'border-zinc-300',
+      suspended: 'bg-zinc-300',
       running: '',
       pending: 'border-dashed bg-transparent border border-orange-400 ',
       created: 'bg-zinc-300',
