@@ -26,6 +26,7 @@ import { Link } from '@restate/ui/link';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Button } from '@restate/ui/button';
 import { DateTooltip, HoverTooltip } from '@restate/ui/tooltip';
+import { useRestateContext } from '@restate/features/restate-context';
 
 const LazyPanel = lazy(() =>
   import('react-resizable-panels').then((m) => ({ default: m.Panel }))
@@ -65,6 +66,7 @@ export function JournalV2({ invocationId }: { invocationId: string }) {
 
   const inputEntry = first as InputJournalEntryType;
   const [isMounted, setIsMounted] = useState(false);
+  const { baseUrl } = useRestateContext();
 
   if (isPending) {
     return 'pending';
@@ -178,7 +180,7 @@ export function JournalV2({ invocationId }: { invocationId: string }) {
                 <HoverTooltip content="Introspect">
                   <Link
                     variant="icon"
-                    href={`/introspection?query=SELECT * FROM sys_journal WHERE id = '${journalAndInvocationData.invocation.id}'`}
+                    href={`${baseUrl}/introspection?query=SELECT * FROM sys_journal WHERE id = '${journalAndInvocationData.invocation.id}'`}
                     target="_blank"
                   >
                     <Icon name={IconName.ScanSearch} className="w-4 h-4" />
@@ -375,7 +377,7 @@ const progressStyles = tv({
     isPending: { true: 'animate-pulse', false: '' },
     isRetrying: { true: 'bg-orange-200', false: '' },
     mode: {
-      suspended: 'border-zinc-300',
+      suspended: 'bg-zinc-300',
       running: '',
       pending: 'border-dashed bg-transparent border border-orange-400 ',
       created: 'bg-zinc-300',
