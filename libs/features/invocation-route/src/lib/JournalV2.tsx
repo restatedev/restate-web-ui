@@ -175,96 +175,101 @@ export function JournalV2({
               </div>
             </div>
           </LazyPanel>
-          <LazyPanelResizeHandle className="w-3 pt-8 pb-4 hidden md:flex justify-center items-center group">
-            <div className="w-px bg-gray-200 h-full group-hover:bg-blue-500" />
-          </LazyPanelResizeHandle>
-          <LazyPanel
-            defaultSize={timelineWidth * 100}
-            className="hidden md:flex"
-          >
-            <div
-              ref={(el) => {
-                setIsMounted(!!el);
-              }}
-              className="w-full h-full overflow-auto flex flex-col gap-0"
+          {timelineWidth !== 0 && (
+            <LazyPanelResizeHandle className="w-3 pt-8 pb-4 hidden md:flex justify-center items-center group">
+              <div className="w-px bg-gray-200 h-full group-hover:bg-blue-500" />
+            </LazyPanelResizeHandle>
+          )}
+          {
+            <LazyPanel
+              defaultSize={timelineWidth * 100}
+              className="hidden md:flex"
             >
-              <div className="h-7 flex flex-row gap-2 items-center justify-end">
-                <HoverTooltip content="Refresh">
-                  <Button variant="icon" onClick={refetch}>
-                    <Icon name={IconName.Retry} className="w-4 h-4" />
-                  </Button>
-                </HoverTooltip>
-                <HoverTooltip content="Introspect">
-                  <Link
-                    variant="icon"
-                    href={`${baseUrl}/introspection?query=SELECT * FROM sys_journal WHERE id = '${journalAndInvocationData.invocation.id}'`}
-                    target="_blank"
-                  >
-                    <Icon name={IconName.ScanSearch} className="w-4 h-4" />
-                  </Link>
-                </HoverTooltip>
-              </div>
-              <div className="h-[1.875rem] py-1.5 mt-1.5">
-                <div className="relative w-full h-full flex flex-row">
-                  {lifecylcles.map((event) => (
-                    <div
-                      key={event.type}
-                      {...(event.end && {
-                        style: {
-                          flexBasis: `${
-                            (100 * (event.end - event.start)) / (end - start)
-                          }%`,
-                        },
-                      })}
-                      className="flex [&>*]:w-full [&>*]:px-0  [&>*]:mx-0 relative"
+              <div
+                ref={(el) => {
+                  setIsMounted(!!el);
+                }}
+                className="w-full h-full overflow-auto flex flex-col gap-0"
+              >
+                <div className="h-7 flex flex-row gap-2 items-center justify-end">
+                  <HoverTooltip content="Refresh">
+                    <Button variant="icon" onClick={refetch}>
+                      <Icon name={IconName.Retry} className="w-4 h-4" />
+                    </Button>
+                  </HoverTooltip>
+                  <HoverTooltip content="Introspect">
+                    <Link
+                      variant="icon"
+                      href={`${baseUrl}/introspection?query=SELECT * FROM sys_journal WHERE id = '${journalAndInvocationData.invocation.id}'`}
+                      target="_blank"
                     >
-                      <DateTooltip
-                        date={new Date(event.start)}
-                        title={TOOLTIP_LIFECyCLES[event.type]}
-                        className=""
+                      <Icon name={IconName.ScanSearch} className="w-4 h-4" />
+                    </Link>
+                  </HoverTooltip>
+                </div>
+                <div className="h-[1.875rem] py-1.5 mt-1.5">
+                  <div className="relative w-full h-full flex flex-row">
+                    {lifecylcles.map((event) => (
+                      <div
+                        key={event.type}
+                        {...(event.end && {
+                          style: {
+                            flexBasis: `${
+                              (100 * (event.end - event.start)) / (end - start)
+                            }%`,
+                          },
+                        })}
+                        className="flex [&>*]:w-full [&>*]:px-0  [&>*]:mx-0 relative"
                       >
-                        <Progress
-                          startTime={event.start}
-                          endTime={event.end}
-                          start={(event.start - start) / (end - start)}
-                          {...(event.end && {
-                            end: (event.end - start) / (end - start),
-                          })}
-                          className="static"
-                          mode={event.type}
-                        />
-                      </DateTooltip>
-                    </div>
+                        <DateTooltip
+                          date={new Date(event.start)}
+                          title={TOOLTIP_LIFECyCLES[event.type]}
+                          className=""
+                        >
+                          <Progress
+                            startTime={event.start}
+                            endTime={event.end}
+                            start={(event.start - start) / (end - start)}
+                            {...(event.end && {
+                              end: (event.end - start) / (end - start),
+                            })}
+                            className="static"
+                            mode={event.type}
+                          />
+                        </DateTooltip>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {!isOldJournal &&
+                  timelineWidth !== 0 &&
+                  restEntries.map((entry) => (
+                    <div
+                      id={getTimelineId(
+                        journalAndInvocationData.invocation.id,
+                        entry.index
+                      )}
+                      className="[&:has(*)]:h-7 [&:has(*)]:mt-1.5 "
+                      key={entry.index}
+                    />
                   ))}
-                </div>
+                {isOldJournal && timelineWidth !== 0 && (
+                  <div className="text-code mb-4 p-2 py-4 text-zinc-500 text-center rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
+                    Update to the latest SDK to see more details in your
+                    journal. Check the{' '}
+                    <Link
+                      href="https://docs.restate.dev/operate/versioning#deploying-new-service-versions"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      docs
+                    </Link>{' '}
+                    for more info.
+                  </div>
+                )}
               </div>
-              {!isOldJournal &&
-                restEntries.map((entry) => (
-                  <div
-                    id={getTimelineId(
-                      journalAndInvocationData.invocation.id,
-                      entry.index
-                    )}
-                    className="[&:has(*)]:h-7 [&:has(*)]:mt-1.5 "
-                    key={entry.index}
-                  />
-                ))}
-              {isOldJournal && (
-                <div className="text-code mb-4 p-2 py-4 text-zinc-500 text-center rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
-                  Update to the latest SDK to see more details in your journal.
-                  Check the{' '}
-                  <Link
-                    href="https://docs.restate.dev/operate/versioning#deploying-new-service-versions"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    docs
-                  </Link>{' '}
-                  for more info.
-                </div>
-              )}
-            </div>
-          </LazyPanel>
+            </LazyPanel>
+          }
         </LazyPanelGroup>
       </Suspense>
     </SnapshotTimeProvider>
