@@ -34,7 +34,13 @@ function TargetTooltipContent({
   );
 }
 const styles = tv({
-  base: 'min-w-0 [&>*:first-child]:max-w-fit [&>*]:flex-auto [&>*]:basis-0 max-w-full flex-auto [&:has([data-pressed=true])]:shadow-none transition-all inline-flex relative shadow-sm pl-2 text-xs [--rounded-radius:0.5rem] [--rounded-radius-right:0.5rem] rounded-[var(--rounded-radius)] bg-white ring-gray-200 text-zinc-600 font-medium ring-1 ring-inset',
+  base: 'min-w-0 [&>*]:flex-auto [&>*]:basis-0 max-w-full flex-auto [&:has([data-pressed=true])]:shadow-none transition-all inline-flex relative shadow-sm pl-2 text-xs [--rounded-radius:0.5rem] [--rounded-radius-right:0.5rem] rounded-[var(--rounded-radius)] bg-white ring-gray-200 text-zinc-600 font-medium ring-1 ring-inset',
+  variants: {
+    withChildren: {
+      true: '[&>*:first-child]:max-w-fit [&>*:first-child]:basis-auto',
+      false: '',
+    },
+  },
 });
 export function Target({
   target = '',
@@ -59,7 +65,7 @@ export function Target({
   const shouldShowHandler = showHandler && typeof handler === 'string';
 
   return (
-    <div className={styles({ className })}>
+    <div className={styles({ className, withChildren: Boolean(children) })}>
       <TruncateWithTooltip
         tooltipContent={
           <TargetTooltipContent
@@ -125,7 +131,7 @@ export function Target({
           )}
           {shouldShowHandler && (
             <>
-              <div className="truncate [&&]:shrink-0 my-px [filter:drop-shadow(-1px_0px_0px_theme(colors.zinc.200/100%))] ml-[-4px]">
+              <div className="truncate max-w-fit  my-px [filter:drop-shadow(-1px_0px_0px_theme(colors.zinc.200/100%))] ml-[-4px]">
                 <div className="italic font-medium h-full [clip-path:polygon(4px_0,100%_0,100%_100%,0%_100%)] bg-zinc-100 text-zinc-600/80 flex items-center pl-1 pr-0.5">
                   <Icon
                     name={IconName.Function}
@@ -134,7 +140,7 @@ export function Target({
                   <TruncateTooltipTrigger>{handler}</TruncateTooltipTrigger>
                 </div>
               </div>
-              <div className="shrink-0 ml-auto justify-end bg-zinc-100 h-full flex my-[1px] mr-px pl-[2px] rounded-r-[calc(var(--rounded-radius-right)-1px)] pr-0.5">
+              <div className="shrink-0 [&&]:grow-0 ml-auto justify-end bg-zinc-100 h-full flex my-[1px] mr-px pl-[2px] rounded-r-[calc(var(--rounded-radius-right)-1px)] pr-0.5">
                 <Link
                   ref={linkRef}
                   href={`?${SERVICE_QUERY_PARAM}=${service}`}
@@ -154,7 +160,7 @@ export function Target({
         </div>
       </TruncateWithTooltip>
       {children && (
-        <div className="flex-auto [&&]:grow-[1] max-w-full -translate-x-px truncate my-px [filter:drop-shadow(-1px_0px_0px_theme(colors.zinc.200/100%))] ml-[-4px] z-[3]">
+        <div className="flex-auto [&&]:basis-auto [&&]:grow-[1] [&&]:shrink-[0] max-w-full -translate-x-px truncate my-px [filter:drop-shadow(-1px_0px_0px_theme(colors.zinc.200/100%))] ml-[-4px] z-[3]">
           <div className="italic font-medium h-full [clip-path:polygon(4px_0,100%_0,100%_100%,0%_100%)] bg-zinc-100 text-zinc-600/80 flex items-center pl-1.5 pr-0.5 rounded-r-[calc(var(--rounded-radius-right)-1px)]">
             {children}
           </div>
