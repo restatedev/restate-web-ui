@@ -27,6 +27,7 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { Button } from '@restate/ui/button';
 import { DateTooltip, HoverTooltip } from '@restate/ui/tooltip';
 import { useRestateContext } from '@restate/features/restate-context';
+import { ErrorBanner } from '@restate/ui/error';
 
 const LazyPanel = lazy(() =>
   import('react-resizable-panels').then((m) => ({ default: m.Panel }))
@@ -50,7 +51,18 @@ const inputStyles = tv({
   },
 });
 
-export function JournalV2({ invocationId }: { invocationId: string }) {
+const styles = tv({
+  base: 'mt-8',
+});
+export function JournalV2({
+  invocationId,
+  className,
+  timelineWidth = 0.5,
+}: {
+  invocationId: string;
+  className?: string;
+  timelineWidth?: number;
+}) {
   const {
     data: journalAndInvocationData,
     isPending,
@@ -68,11 +80,8 @@ export function JournalV2({ invocationId }: { invocationId: string }) {
   const [isMounted, setIsMounted] = useState(false);
   const { baseUrl } = useRestateContext();
 
-  if (isPending) {
-    return 'pending';
-  }
   if (apiError) {
-    return 'error';
+    return <ErrorBanner error={apiError} />;
   }
 
   if (!journalAndInvocationData) {
@@ -98,11 +107,16 @@ export function JournalV2({ invocationId }: { invocationId: string }) {
     cancelEntry?.start
   );
 
+  const isOldJournal = first && (!first.version || first.version === 1);
+
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
       <Suspense fallback={<div />}>
-        <LazyPanelGroup direction="horizontal" className="mt-8">
-          <LazyPanel defaultSize={50} className="pb-4">
+        <LazyPanelGroup
+          direction="horizontal"
+          className={styles({ className })}
+        >
+          <LazyPanel defaultSize={(1 - timelineWidth) * 100} className="pb-4">
             <div className="flex  flex-col items-start gap-1.5">
               <div className="flex items-center gap-1.5 w-full h-7 relative">
                 <div className="w-2 bg-zinc-300 absolute left-2.5 h-2 rounded-full">
@@ -161,10 +175,13 @@ export function JournalV2({ invocationId }: { invocationId: string }) {
               </div>
             </div>
           </LazyPanel>
-          <LazyPanelResizeHandle className="w-3 pt-8 pb-4 flex justify-center items-center group">
+          <LazyPanelResizeHandle className="w-3 pt-8 pb-4 hidden md:flex justify-center items-center group">
             <div className="w-px bg-gray-200 h-full group-hover:bg-blue-500" />
           </LazyPanelResizeHandle>
-          <LazyPanel defaultSize={50} className="hidden md:flex">
+          <LazyPanel
+            defaultSize={timelineWidth * 100}
+            className="hidden md:flex"
+          >
             <div
               ref={(el) => {
                 setIsMounted(!!el);
@@ -221,16 +238,31 @@ export function JournalV2({ invocationId }: { invocationId: string }) {
                   ))}
                 </div>
               </div>
-              {restEntries.map((entry) => (
-                <div
-                  id={getTimelineId(
-                    journalAndInvocationData.invocation.id,
-                    entry.index
-                  )}
-                  className="[&:has(*)]:h-7 [&:has(*)]:mt-1.5 "
-                  key={entry.index}
-                />
-              ))}
+              {!isOldJournal &&
+                restEntries.map((entry) => (
+                  <div
+                    id={getTimelineId(
+                      journalAndInvocationData.invocation.id,
+                      entry.index
+                    )}
+                    className="[&:has(*)]:h-7 [&:has(*)]:mt-1.5 "
+                    key={entry.index}
+                  />
+                ))}
+              {isOldJournal && (
+                <div className="text-code mb-4 p-2 py-4 text-zinc-500 text-center rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
+                  Update to the latest SDK to see more details in your journal.
+                  Check the{' '}
+                  <Link
+                    href="https://docs.restate.dev/operate/versioning#deploying-new-service-versions"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    docs
+                  </Link>{' '}
+                  for more info.
+                </div>
+              )}
             </div>
           </LazyPanel>
         </LazyPanelGroup>
