@@ -437,7 +437,7 @@ function TimelineProtal({
 }
 
 const progressStyles = tv({
-  base: 'absolute h-full bg-blue-400 min-w-0.5 rounded-md @container',
+  base: 'absolute h-full bg-blue-300 min-w-1 rounded-md @container hover:min-w-2 transition-all transform',
   variants: {
     isPending: { true: 'animate-pulse', false: '' },
     isRetrying: { true: 'bg-orange-200', false: '' },
@@ -448,9 +448,11 @@ const progressStyles = tv({
       pending: 'border-dashed bg-transparent border border-orange-300 ',
       created: 'bg-zinc-300',
       scheduled: 'border border-dashed bg-transparent border-zinc-300',
-      completed: '',
+      succeeded: 'bg-green-300',
+      killed: 'bg-zinc-300',
+      failed: 'bg-red-400',
       cancel:
-        '[background:repeating-linear-gradient(to_right,theme(colors.blue.400),theme(colors.blue.400)_4px,theme(colors.blue.400/0)_4px,theme(colors.blue.400/0)_6px)]',
+        '[background:repeating-linear-gradient(to_right,theme(colors.blue.300),theme(colors.blue.300)_4px,theme(colors.blue.300/0)_4px,theme(colors.blue.300/0)_6px)]',
     },
   },
 });
@@ -461,12 +463,16 @@ const TOOLTIP_LIFECyCLES: Record<
   | 'scheduled'
   | 'suspended'
   | 'pending'
-  | 'completed'
+  | 'succeeded'
+  | 'failed'
+  | 'killed'
   | 'cancel',
   string
 > = {
-  completed: 'Completed at',
+  failed: 'Failed at',
+  succeeded: 'Succeeded at',
   running: 'Running since',
+  killed: 'Killed at',
   suspended: 'Suspended at',
   scheduled: 'Scheduled at',
   pending: 'Pending since',
@@ -500,7 +506,9 @@ function Progress({
     | 'scheduled'
     | 'suspended'
     | 'pending'
-    | 'completed'
+    | 'succeeded'
+    | 'failed'
+    | 'killed'
     | 'cancel';
   style?: CSSProperties;
   showDuration?: boolean;
@@ -543,7 +551,9 @@ function getLifeCycles(
     | 'scheduled'
     | 'suspended'
     | 'pending'
-    | 'completed'
+    | 'succeeded'
+    | 'failed'
+    | 'killed'
     | 'cancel';
 }[] {
   const values: {
@@ -554,7 +564,9 @@ function getLifeCycles(
       | 'scheduled'
       | 'suspended'
       | 'pending'
-      | 'completed'
+      | 'succeeded'
+      | 'failed'
+      | 'killed'
       | 'cancel'
       | 'now';
   }[] = [];
@@ -596,7 +608,12 @@ function getLifeCycles(
   if (invocation.completed_at) {
     values.push({
       start: new Date(invocation.completed_at).getTime(),
-      type: 'completed',
+      type:
+        invocation.status === 'succeeded'
+          ? 'succeeded'
+          : invocation.status === 'killed'
+          ? 'killed'
+          : 'failed',
     });
   } else {
     values.push({
@@ -628,7 +645,9 @@ function getLifeCycles(
       | 'scheduled'
       | 'suspended'
       | 'pending'
-      | 'completed'
+      | 'succeeded'
+      | 'failed'
+      | 'killed'
       | 'cancel';
   }[];
 }
