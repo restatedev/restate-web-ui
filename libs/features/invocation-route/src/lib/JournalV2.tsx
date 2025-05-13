@@ -153,7 +153,7 @@ export function JournalV2({
                   />
                 )}
               </Target>
-              <div className="flex text-xs flex-col items-start gap-1.5 pl-2 w-full">
+              <div className="grid grid-cols-1 text-xs items-start gap-1.5 pl-2 w-full">
                 {restEntries.map((entry) => {
                   return (
                     isMounted && (
