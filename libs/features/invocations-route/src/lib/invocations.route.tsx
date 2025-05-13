@@ -300,7 +300,7 @@ function Component() {
     isPending,
     queryKey,
   } = useListInvocations(queryFilters, {
-    refetchOnMount: false,
+    refetchOnMount: true,
     refetchOnReconnect: false,
     staleTime: 0,
   });

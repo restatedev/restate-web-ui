@@ -56,7 +56,7 @@ export function Run({
               message={entryError.message}
               restate_code={entryError.restate_code}
               isRetrying={isRetrying || wasRetrying}
-              className="ml-auto -mr-1.5"
+              className="-mr-1.5"
             />
           )}
         </>

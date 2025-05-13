@@ -58,10 +58,12 @@ export function JournalV2({
   invocationId,
   className,
   timelineWidth = 0.5,
+  showApiError = true,
 }: {
   invocationId: string;
   className?: string;
   timelineWidth?: number;
+  showApiError?: boolean;
 }) {
   const {
     data: journalAndInvocationData,
@@ -71,6 +73,7 @@ export function JournalV2({
     dataUpdatedAt,
   } = useGetInvocationJournalWithInvocation(String(invocationId), {
     refetchOnMount: true,
+    staleTime: 0,
   });
 
   const [first, ...restEntries] =
@@ -80,7 +83,7 @@ export function JournalV2({
   const [isMounted, setIsMounted] = useState(false);
   const { baseUrl } = useRestateContext();
 
-  if (apiError) {
+  if (apiError && showApiError) {
     return <ErrorBanner error={apiError} />;
   }
 
