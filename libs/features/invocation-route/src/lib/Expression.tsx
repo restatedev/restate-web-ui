@@ -30,6 +30,7 @@ export function Expression({
   isHandler = false,
   operationSymbol = '→',
   prefix,
+  chain,
 }: {
   className?: string;
   name: string;
@@ -38,6 +39,7 @@ export function Expression({
   isFunction?: boolean;
   isHandler?: boolean;
   operationSymbol?: string;
+  chain?: string;
   prefix?: ReactNode;
 }) {
   return (
@@ -63,8 +65,14 @@ export function Expression({
             <span className="ml-[0.2ch] shrink-0 text-zinc-400">{'('}</span>
           )}
           {input}
+          <span className="shrink-0 text-zinc-400">{isFunction && ')'}</span>
+          {chain && (
+            <span className="min-w-0 truncate base-20">
+              <span className="text-zinc-600">{chain}</span>
+              {'()'}
+            </span>
+          )}
           <span className="shrink-0 text-zinc-400">
-            {isFunction && ')'}
             {output && (
               <span className="text-zinc-500 mx-[0.5ch] font-sans">
                 {operationSymbol}

@@ -17,7 +17,7 @@ export function Awakeable({
 
   return (
     <Expression
-      name={'awakeable'}
+      name={'ctx.awakeable'}
       prefix="async"
       output={
         <>

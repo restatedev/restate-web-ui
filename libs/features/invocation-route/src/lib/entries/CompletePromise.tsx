@@ -16,8 +16,23 @@ export function CompletePromise({
   const failure = entry.failure ?? entry.completion?.failure ?? error;
   return (
     <Expression
+      name={'ctx.promise'}
       prefix="async"
-      name={entry.promise_name ?? ''}
+      {...(typeof entry.promise_name === 'string' && {
+        input: (
+          <InputOutput
+            name={JSON.stringify(entry.promise_name)}
+            popoverTitle="Name"
+            popoverContent={
+              <Value
+                value={entry.promise_name}
+                className="text-xs font-mono py-3"
+              />
+            }
+          />
+        ),
+      })}
+      chain={entry.completion?.failure ? '.reject' : '.resolve'}
       output={
         <>
           {typeof entry.completion?.value === 'string' && (

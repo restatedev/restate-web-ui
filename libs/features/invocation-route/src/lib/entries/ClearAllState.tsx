@@ -13,7 +13,7 @@ export function ClearAllState({
 }: EntryProps<ClearAllStateJournalEntryType>) {
   return (
     <>
-      <Expression prefix="clear" name="*" isFunction={false} />
+      <Expression name="ctx.clearAll" />
       {error?.message && (
         <Failure
           message={error.message}

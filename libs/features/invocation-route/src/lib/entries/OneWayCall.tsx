@@ -42,8 +42,8 @@ export function OneWayCall({
               entry.invoked_id && (
                 <InvocationId
                   id={entry.invoked_id}
-                  className="min-w-[1.625rem] w-[1.625rem] shrink-0 flex"
-                  size="icon"
+                  className="truncate max-w-[15ch] flex"
+                  size="sm"
                 />
               )
             }
@@ -88,6 +88,7 @@ export function OneWayCall({
       </Target>
       {duration && invokeTime && (
         <>
+          <span className="font-normal text-zinc-500 truncate">scheduled </span>
           {!isPast && <span className="font-normal text-zinc-500">in </span>}
           <DateTooltip date={new Date(invokeTime)} title={'Call scheduled at'}>
             {duration}

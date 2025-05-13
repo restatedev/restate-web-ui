@@ -24,7 +24,7 @@ export function Sleep({
 
   return (
     <Expression
-      name={'sleep'}
+      name={'ctx.sleep'}
       prefix="async"
       className="pr-0"
       {...(typeof entry.name === 'string' &&

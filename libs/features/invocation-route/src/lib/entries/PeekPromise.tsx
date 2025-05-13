@@ -17,8 +17,23 @@ export function PeekPromise({
 
   return (
     <Expression
-      name={entry.promise_name ?? ''}
+      name={'ctx.promise'}
       prefix="async"
+      {...(typeof entry.promise_name === 'string' && {
+        input: (
+          <InputOutput
+            name={JSON.stringify(entry.promise_name)}
+            popoverTitle="Name"
+            popoverContent={
+              <Value
+                value={entry.promise_name}
+                className="text-xs font-mono py-3"
+              />
+            }
+          />
+        ),
+      })}
+      chain=".peak"
       output={
         <>
           {typeof entry.value === 'string' && (
