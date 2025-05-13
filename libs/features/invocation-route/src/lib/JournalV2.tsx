@@ -27,6 +27,7 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { Button } from '@restate/ui/button';
 import { DateTooltip, HoverTooltip } from '@restate/ui/tooltip';
 import { useRestateContext } from '@restate/features/restate-context';
+import { ErrorBanner } from '@restate/ui/error';
 
 const LazyPanel = lazy(() =>
   import('react-resizable-panels').then((m) => ({ default: m.Panel }))
@@ -50,7 +51,20 @@ const inputStyles = tv({
   },
 });
 
-export function JournalV2({ invocationId }: { invocationId: string }) {
+const styles = tv({
+  base: 'mt-8',
+});
+export function JournalV2({
+  invocationId,
+  className,
+  timelineWidth = 0.5,
+  showApiError = true,
+}: {
+  invocationId: string;
+  className?: string;
+  timelineWidth?: number;
+  showApiError?: boolean;
+}) {
   const {
     data: journalAndInvocationData,
     isPending,
@@ -58,7 +72,8 @@ export function JournalV2({ invocationId }: { invocationId: string }) {
     refetch,
     dataUpdatedAt,
   } = useGetInvocationJournalWithInvocation(String(invocationId), {
-    refetchOnMount: false,
+    refetchOnMount: true,
+    staleTime: 0,
   });
 
   const [first, ...restEntries] =
@@ -68,11 +83,8 @@ export function JournalV2({ invocationId }: { invocationId: string }) {
   const [isMounted, setIsMounted] = useState(false);
   const { baseUrl } = useRestateContext();
 
-  if (isPending) {
-    return 'pending';
-  }
-  if (apiError) {
-    return 'error';
+  if (apiError && showApiError) {
+    return <ErrorBanner error={apiError} />;
   }
 
   if (!journalAndInvocationData) {
@@ -89,20 +101,27 @@ export function JournalV2({ invocationId }: { invocationId: string }) {
   ).getTime();
 
   const hasInputEntry = inputEntry?.entry_type === 'Input';
-  const cancelEntry = journalAndInvocationData.journal.entries?.find(
+  const cancelEntries = journalAndInvocationData.journal.entries?.filter(
     (entry) => entry.entry_type === 'CancelSignal'
   );
   const lifecylcles = getLifeCycles(
     journalAndInvocationData.invocation,
     dataUpdatedAt,
-    cancelEntry?.start
+    cancelEntries
+      .map((cancelEntry) => cancelEntry?.start)
+      .filter(Boolean) as string[]
   );
+
+  const isOldJournal = first && (!first.version || first.version === 1);
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
       <Suspense fallback={<div />}>
-        <LazyPanelGroup direction="horizontal" className="mt-8">
-          <LazyPanel defaultSize={50} className="pb-4">
+        <LazyPanelGroup
+          direction="horizontal"
+          className={styles({ className })}
+        >
+          <LazyPanel defaultSize={(1 - timelineWidth) * 100} className="pb-4">
             <div className="flex  flex-col items-start gap-1.5">
               <div className="flex items-center gap-1.5 w-full h-7 relative">
                 <div className="w-2 bg-zinc-300 absolute left-2.5 h-2 rounded-full">
@@ -153,86 +172,132 @@ export function JournalV2({ invocationId }: { invocationId: string }) {
                         start={start}
                         end={end}
                         now={dataUpdatedAt}
-                        cancelTime={cancelEntry?.start}
+                        cancelTime={cancelEntries.at(0)?.start}
                       />
                     )
                   );
                 })}
-              </div>
-            </div>
-          </LazyPanel>
-          <LazyPanelResizeHandle className="w-3 pt-8 pb-4 flex justify-center items-center group">
-            <div className="w-px bg-gray-200 h-full group-hover:bg-blue-500" />
-          </LazyPanelResizeHandle>
-          <LazyPanel defaultSize={50} className="hidden md:flex">
-            <div
-              ref={(el) => {
-                setIsMounted(!!el);
-              }}
-              className="w-full h-full overflow-auto flex flex-col gap-0"
-            >
-              <div className="h-7 flex flex-row gap-2 items-center justify-end">
-                <HoverTooltip content="Refresh">
-                  <Button variant="icon" onClick={refetch}>
-                    <Icon name={IconName.Retry} className="w-4 h-4" />
-                  </Button>
-                </HoverTooltip>
-                <HoverTooltip content="Introspect">
-                  <Link
-                    variant="icon"
-                    href={`${baseUrl}/introspection?query=SELECT * FROM sys_journal WHERE id = '${journalAndInvocationData.invocation.id}'`}
-                    target="_blank"
-                  >
-                    <Icon name={IconName.ScanSearch} className="w-4 h-4" />
-                  </Link>
-                </HoverTooltip>
-              </div>
-              <div className="h-[1.875rem] py-1.5 mt-1.5">
-                <div className="relative w-full h-full flex flex-row">
-                  {lifecylcles.map((event) => (
-                    <div
-                      key={event.type}
-                      {...(event.end && {
-                        style: {
-                          flexBasis: `${
-                            (100 * (event.end - event.start)) / (end - start)
-                          }%`,
-                        },
-                      })}
-                      className="flex [&>*]:w-full [&>*]:px-0  [&>*]:mx-0 relative"
-                    >
-                      <DateTooltip
-                        date={new Date(event.start)}
-                        title={TOOLTIP_LIFECyCLES[event.type]}
-                        className=""
-                      >
-                        <Progress
-                          startTime={event.start}
-                          endTime={event.end}
-                          start={(event.start - start) / (end - start)}
-                          {...(event.end && {
-                            end: (event.end - start) / (end - start),
-                          })}
-                          className="static"
-                          mode={event.type}
-                        />
-                      </DateTooltip>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              {restEntries.map((entry) => (
-                <div
-                  id={getTimelineId(
-                    journalAndInvocationData.invocation.id,
-                    entry.index
+                {journalAndInvocationData.invocation &&
+                  (lastFailure?.index === undefined ||
+                    lastFailure?.index ===
+                      journalAndInvocationData.journal.entries.length) && (
+                    <Entry
+                      invocation={journalAndInvocationData.invocation}
+                      start={start}
+                      end={end}
+                      now={dataUpdatedAt}
+                      failed
+                      error={error}
+                      entry={
+                        {
+                          entry_type: lastFailure.type,
+                          name: lastFailure.name,
+                          index:
+                            journalAndInvocationData.journal.entries.length,
+                          command_index:
+                            journalAndInvocationData.journal.entries.length,
+                        } as any
+                      }
+                    />
                   )}
-                  className="[&:has(*)]:h-7 [&:has(*)]:mt-1.5 "
-                  key={entry.index}
-                />
-              ))}
+              </div>
             </div>
           </LazyPanel>
+          {timelineWidth !== 0 && (
+            <LazyPanelResizeHandle className="w-3 pt-8 pb-4 hidden md:flex justify-center items-center group">
+              <div className="w-px bg-gray-200 h-full group-hover:bg-blue-500" />
+            </LazyPanelResizeHandle>
+          )}
+          {
+            <LazyPanel
+              defaultSize={timelineWidth * 100}
+              className="hidden md:flex"
+            >
+              <div
+                ref={(el) => {
+                  setIsMounted(!!el);
+                }}
+                className="w-full h-full overflow-auto flex flex-col gap-0"
+              >
+                <div className="h-7 flex flex-row gap-2 items-center justify-end">
+                  <HoverTooltip content="Refresh">
+                    <Button variant="icon" onClick={refetch}>
+                      <Icon name={IconName.Retry} className="w-4 h-4" />
+                    </Button>
+                  </HoverTooltip>
+                  <HoverTooltip content="Introspect">
+                    <Link
+                      variant="icon"
+                      href={`${baseUrl}/introspection?query=SELECT * FROM sys_journal WHERE id = '${journalAndInvocationData.invocation.id}'`}
+                      target="_blank"
+                    >
+                      <Icon name={IconName.ScanSearch} className="w-4 h-4" />
+                    </Link>
+                  </HoverTooltip>
+                </div>
+                <div className="h-[1.875rem] py-1.5 mt-1.5">
+                  <div className="relative w-full h-full flex flex-row">
+                    {lifecylcles.map((event) => (
+                      <div
+                        key={event.type}
+                        {...(event.end && {
+                          style: {
+                            flexBasis: `${
+                              (100 * (event.end - event.start)) / (end - start)
+                            }%`,
+                          },
+                        })}
+                        className="flex [&>*]:w-full [&>*]:px-0  [&>*]:mx-0 relative"
+                      >
+                        <DateTooltip
+                          date={new Date(event.start)}
+                          title={TOOLTIP_LIFECyCLES[event.type]}
+                          className=""
+                        >
+                          <Progress
+                            startTime={event.start}
+                            endTime={event.end}
+                            start={(event.start - start) / (end - start)}
+                            {...(event.end && {
+                              end: (event.end - start) / (end - start),
+                            })}
+                            className="static"
+                            mode={event.type}
+                          />
+                        </DateTooltip>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {!isOldJournal &&
+                  timelineWidth !== 0 &&
+                  restEntries.map((entry) => (
+                    <div
+                      id={getTimelineId(
+                        journalAndInvocationData.invocation.id,
+                        entry.index
+                      )}
+                      className="[&:has(*)]:h-7 [&:has(*)]:mt-1.5 "
+                      key={entry.index}
+                    />
+                  ))}
+                {isOldJournal && timelineWidth !== 0 && (
+                  <div className="text-code mb-4 p-2 py-4 text-zinc-500 text-center rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
+                    Update to the latest SDK to see more details in your
+                    journal. Check the{' '}
+                    <Link
+                      href="https://docs.restate.dev/operate/versioning#deploying-new-service-versions"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      docs
+                    </Link>{' '}
+                    for more info.
+                  </div>
+                )}
+              </div>
+            </LazyPanel>
+          }
         </LazyPanelGroup>
       </Suspense>
     </SnapshotTimeProvider>
@@ -377,13 +442,15 @@ const progressStyles = tv({
     isPending: { true: 'animate-pulse', false: '' },
     isRetrying: { true: 'bg-orange-200', false: '' },
     mode: {
-      suspended: 'bg-zinc-300',
+      suspended:
+        '[background:repeating-linear-gradient(to_right,theme(colors.zinc.200),theme(colors.zinc.200)_4px,theme(colors.zinc.200/0)_4px,theme(colors.zinc.200/0)_6px)] border border-dashed border-zinc-200 ',
       running: '',
-      pending: 'border-dashed bg-transparent border border-orange-400 ',
+      pending: 'border-dashed bg-transparent border border-orange-300 ',
       created: 'bg-zinc-300',
       scheduled: 'border border-dashed bg-transparent border-zinc-300',
       completed: '',
-      cancel: '',
+      cancel:
+        '[background:repeating-linear-gradient(to_right,theme(colors.blue.400),theme(colors.blue.400)_4px,theme(colors.blue.400/0)_4px,theme(colors.blue.400/0)_6px)]',
     },
   },
 });
@@ -466,7 +533,7 @@ function Progress({
 function getLifeCycles(
   invocation: Invocation,
   now: number,
-  cancelTime?: string
+  cancelTimes?: string[]
 ): {
   start: number;
   end: number;
@@ -515,11 +582,16 @@ function getLifeCycles(
     });
   }
 
-  if (cancelTime) {
-    values.push({
-      start: new Date(cancelTime).getTime(),
-      type: 'cancel',
-    });
+  if (cancelTimes && cancelTimes.length > 0) {
+    values.push(
+      ...cancelTimes.map(
+        (cancelTime) =>
+          ({
+            start: new Date(cancelTime).getTime(),
+            type: 'cancel',
+          } as const)
+      )
+    );
   }
   if (invocation.completed_at) {
     values.push({

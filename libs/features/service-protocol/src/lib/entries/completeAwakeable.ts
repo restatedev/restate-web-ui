@@ -55,6 +55,7 @@ function completeAwakeableV2(
     name: entryJSON?.Command?.CompleteAwakeable?.name,
     ...parseResults(result),
     start: entry?.appended_at,
+    id: entryJSON?.Command?.CompleteAwakeable?.id,
   };
 }
 

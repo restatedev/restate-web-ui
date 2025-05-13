@@ -1,14 +1,18 @@
 import {
   CancelSignalJournalEntryType,
+  CompleteAwakeableJournalEntryType,
   JournalEntry,
   JournalRawEntry,
 } from '@restate/data-access/admin-api/spec';
-import { parseEntryJson } from './util';
+import { parseEntryJson, parseResults } from './util';
 
 export function signal(
   entry: JournalRawEntry,
   allEntries: JournalRawEntry[]
-): CancelSignalJournalEntryType | JournalEntry {
+):
+  | CancelSignalJournalEntryType
+  | CompleteAwakeableJournalEntryType
+  | JournalEntry {
   const entryJSON = parseEntryJson(entry.entry_json);
   const payload = entryJSON?.Notification?.Signal;
 
@@ -20,6 +24,17 @@ export function signal(
       version: entry.version,
       completed: entry.completed,
     } as CancelSignalJournalEntryType;
+  }
+
+  if (payload?.id?.Index === 17) {
+    return {
+      index: entry.index,
+      start: entry.appended_at,
+      entry_type: 'CompleteAwakeable',
+      version: entry.version,
+      completed: true,
+      ...parseResults(payload?.result),
+    } as CompleteAwakeableJournalEntryType;
   }
 
   return entry as JournalEntry;

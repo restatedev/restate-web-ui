@@ -32,6 +32,7 @@ export function Call({
       >
         <Expression
           isHandler
+          className="min-w-0"
           name={entry.invoked_target?.split('/').at(-1) ?? ''}
           input={
             <>
@@ -97,7 +98,7 @@ export function Call({
       {entry.invoked_id && (
         <InvocationId
           id={entry.invoked_id}
-          className="min-w-[1.625rem] w-[1.625rem] shrink-0"
+          className="min-w-[1.625rem] w-[1.625rem] shrink-0 flex"
           size="icon"
         />
       )}

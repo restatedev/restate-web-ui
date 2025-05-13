@@ -42,6 +42,7 @@ import {
   peekPromise,
   output,
   signal,
+  attachInvocation,
 } from '@restate/features/service-protocol';
 
 export function convertJournal(
@@ -289,9 +290,13 @@ const JOURNAL_ENTRY_CONVERT_MAP: Record<
     };
   },
   AttachInvocation: function (
-    entry: JournalRawEntry
+    entry: JournalRawEntry,
+    allEntries: JournalRawEntry[]
   ): AttachInvocationJournalEntryType {
+    const entryMessage = attachInvocation(entry, allEntries);
+
     return {
+      ...entryMessage,
       entry_type: 'AttachInvocation',
       index: entry.index,
     };
@@ -316,7 +321,10 @@ const JOURNAL_ENTRY_CONVERT_MAP: Record<
   'Notification: Signal': function (
     entry: JournalRawEntry,
     allEntries: JournalRawEntry[]
-  ): CancelInvocationJournalEntryType | JournalEntry {
+  ):
+    | CancelInvocationJournalEntryType
+    | CompleteAwakeableJournalEntryType
+    | JournalEntry {
     const entryMessage = signal(entry, allEntries);
 
     return entryMessage;

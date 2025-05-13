@@ -9,10 +9,10 @@ import { tv } from 'tailwind-variants';
 
 interface TooltipContentProps {
   className?: string;
-  // small?: boolean;
   size?: 'sm' | 'default' | 'lg';
   wrap?: boolean;
   offset?: number;
+  crossOffset?: number;
   triggerRef?: ComponentProps<typeof AriaTooltip>['triggerRef'];
 }
 
@@ -45,6 +45,7 @@ export function InternalTooltipContent({
   children,
   size,
   offset = 10,
+  crossOffset,
   ...props
 }: PropsWithChildren<
   ComponentProps<typeof Tooltip> & Pick<TooltipContentProps, 'size'>
@@ -53,6 +54,7 @@ export function InternalTooltipContent({
     <AriaTooltip
       {...props}
       offset={offset}
+      crossOffset={crossOffset}
       className={composeRenderProps(props.className, (className, renderProps) =>
         styles({ ...renderProps, className, size })
       )}

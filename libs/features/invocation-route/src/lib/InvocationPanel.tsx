@@ -14,7 +14,6 @@ import {
 } from '@restate/data-access/admin-api';
 import { Icon, IconName } from '@restate/ui/icons';
 import { ServiceHandlerSection } from './ServiceHandlerSection';
-import { InvokedBySection } from './InvokedBySection';
 import { DeploymentSection } from './DeploymentSection';
 import { KeysIdsSection } from './KeysIdsSection';
 import { VirtualObjectSection } from './VirtualObjectSection';
@@ -198,7 +197,6 @@ function InvocationPanelContent() {
       <LifecycleSection className="mt-2" invocation={data} />
       <VirtualObjectSection className="mt-2" invocation={data} raised />
       <WorkflowKeySection className="mt-2" invocation={data} />
-      <InvokedBySection className="mt-2" invocation={data} />
       <DeploymentSection className="mt-2" invocation={data} raised />
       <JournalSection className="mt-2" invocation={data} />
     </SnapshotTimeProvider>

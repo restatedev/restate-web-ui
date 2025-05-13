@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { Icon, IconName } from '@restate/ui/icons';
-import { TruncateWithTooltip } from '@restate/ui/tooltip';
+import { HoverTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Link } from '@restate/ui/link';
 import { Invocation } from '@restate/data-access/admin-api';
 import { tv } from 'tailwind-variants';
@@ -40,7 +40,7 @@ const styles = tv({
         base: '',
         icon: 'h-6 w-6 rounded-lg shadow-sm',
         text: 'w-0',
-        link: 'before:rounded-lg m-0.5',
+        link: 'before:rounded-lg m-0.5 inset-[-1px] absolute rounded-lg',
         container: 'p-px',
         linkIcon: 'w-0 h-0',
       },
@@ -66,6 +66,20 @@ export function InvocationId({
 
   const navigate = useNavigate();
   const { baseUrl } = useRestateContext();
+  const isIcon = size === 'icon';
+
+  const linkElement = (
+    <Link
+      ref={linkRef}
+      href={`?${INVOCATION_QUERY_NAME}=${id}`}
+      aria-label={id}
+      variant="secondary"
+      className={link()}
+      data-invocation-selected={isSelected}
+    >
+      <Icon name={IconName.ChevronRight} className={linkIcon()} />
+    </Link>
+  );
 
   return (
     <div className={base({ className })}>
@@ -76,9 +90,12 @@ export function InvocationId({
             className="w-full h-full text-zinc-500 p-1"
           />
         </div>
-        <TruncateWithTooltip copyText={id} triggerRef={linkRef}>
-          <span className={text()}>{id}</span>
-        </TruncateWithTooltip>
+
+        {!isIcon && (
+          <TruncateWithTooltip copyText={id} triggerRef={linkRef}>
+            <span className={text()}>{id}</span>
+          </TruncateWithTooltip>
+        )}
         <span
           className="contents"
           onClickCapture={(e) => {
@@ -88,16 +105,13 @@ export function InvocationId({
             }
           }}
         >
-          <Link
-            ref={linkRef}
-            href={`?${INVOCATION_QUERY_NAME}=${id}`}
-            aria-label={id}
-            variant="secondary"
-            className={link()}
-            data-invocation-selected={isSelected}
-          >
-            <Icon name={IconName.ChevronRight} className={linkIcon()} />
-          </Link>
+          {isIcon ? (
+            <HoverTooltip content={id} offset={20}>
+              {linkElement}
+            </HoverTooltip>
+          ) : (
+            linkElement
+          )}
         </span>
       </div>
     </div>

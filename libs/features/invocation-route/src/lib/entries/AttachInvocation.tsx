@@ -1,33 +1,32 @@
-import { RunJournalEntryType } from '@restate/data-access/admin-api';
+import { AttachInvocationJournalEntryType } from '@restate/data-access/admin-api';
 import { EntryProps } from './types';
 import { Expression, InputOutput } from '../Expression';
 import { Value } from '../Value';
 import { Failure } from '../Failure';
 import { Ellipsis } from '@restate/ui/loading';
+import { InvocationId } from '../InvocationId';
 
-export function Run({
+export function AttachInvocation({
   entry,
   failed,
   invocation,
   error,
   isRetrying,
   wasRetrying,
-}: EntryProps<RunJournalEntryType>) {
+}: EntryProps<AttachInvocationJournalEntryType>) {
   const entryError = entry.failure || error;
 
   return (
     <Expression
-      name={'run'}
+      name={'attach'}
       prefix="async"
       className="pr-0"
-      {...(typeof entry.name === 'string' && {
+      {...(typeof entry.invocationId === 'string' && {
         input: (
-          <InputOutput
-            name={JSON.stringify(entry.name)}
-            popoverTitle="Name"
-            popoverContent={
-              <Value value={entry.name} className="text-xs font-mono py-3" />
-            }
+          <InvocationId
+            id={String(entry.invocationId)}
+            size="sm"
+            className="truncate max-w-[15ch]"
           />
         ),
       })}

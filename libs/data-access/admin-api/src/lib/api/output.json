@@ -4070,6 +4070,9 @@
               "entry_type": {
                 "type": "string",
                 "enum": ["Sleep"]
+              },
+              "name": {
+                "type": "string"
               }
             }
           }
@@ -4384,6 +4387,15 @@
               "entry_type": {
                 "type": "string",
                 "enum": ["AttachInvocation"]
+              },
+              "invocationId": {
+                "type": "string"
+              },
+              "failure": {
+                "$ref": "#/components/schemas/FailureEntry"
+              },
+              "value": {
+                "type": "string"
               }
             }
           }

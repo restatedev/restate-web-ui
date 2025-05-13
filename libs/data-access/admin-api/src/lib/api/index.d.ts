@@ -1333,6 +1333,7 @@ export interface components {
       sleep_wakeup_at?: string;
       /** @enum {string} */
       entry_type?: 'Sleep';
+      name?: string;
     };
     GetPromiseJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       completed?: boolean;
@@ -1420,6 +1421,9 @@ export interface components {
     AttachInvocationJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       /** @enum {string} */
       entry_type?: 'AttachInvocation';
+      invocationId?: string;
+      failure?: components['schemas']['FailureEntry'];
+      value?: string;
     };
     GetInvocationOutputJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       /** @enum {string} */

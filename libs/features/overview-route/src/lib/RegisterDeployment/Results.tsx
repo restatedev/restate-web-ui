@@ -24,13 +24,13 @@ export function DeploymentProtocolCheck() {
           </span>{' '}
           that will be <span className="font-semibold">removed</span> in the
           future releases. Please update the SDK to the latest release and
-          re-register the deployment. For more info, check the{' '}
+          re-register the deployment. For more information, refer to the{' '}
           <Link
             href="https://docs.restate.dev/operate/versioning#deploying-new-service-versions"
             target="_blank"
             rel="noopener noreferrer"
           >
-            docs.
+            documentation.
           </Link>
         </span>
       </p>
