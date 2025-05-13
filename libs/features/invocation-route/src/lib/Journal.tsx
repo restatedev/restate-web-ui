@@ -32,6 +32,7 @@ import { Spinner } from '@restate/ui/loading';
 import { ErrorBanner } from '@restate/ui/error';
 import { CancelSignal } from './entries/CancelSignal';
 import { Icon, IconName } from '@restate/ui/icons';
+import { JournalV2 } from './JournalV2';
 import { AttachInvocation } from './entries/AttachInvocation';
 
 export function getLastFailure(invocation?: Invocation) {
@@ -391,15 +392,19 @@ export function JournalSection({
     enabled: Boolean(invocation?.id),
     refetchOnMount: true,
   });
-  if (!data || data.entries.length === 0) {
+  if (!data || data.entries.length === 0 || !invocation?.id) {
     return null;
   }
 
   return (
     <Section className={sectionStyles({ className })}>
-      <SectionTitle>Journal</SectionTitle>
-      <SectionContent className="">
-        <Journal invocationId={invocation?.id} />
+      <SectionContent className="px-1 pb-0" raised={false}>
+        <JournalV2
+          invocationId={invocation?.id}
+          timelineWidth={0}
+          className="mt-0 pr-2"
+          showApiError={false}
+        />
       </SectionContent>
     </Section>
   );

@@ -101,13 +101,15 @@ export function JournalV2({
   ).getTime();
 
   const hasInputEntry = inputEntry?.entry_type === 'Input';
-  const cancelEntry = journalAndInvocationData.journal.entries?.find(
+  const cancelEntries = journalAndInvocationData.journal.entries?.filter(
     (entry) => entry.entry_type === 'CancelSignal'
   );
   const lifecylcles = getLifeCycles(
     journalAndInvocationData.invocation,
     dataUpdatedAt,
-    cancelEntry?.start
+    cancelEntries
+      .map((cancelEntry) => cancelEntry?.start)
+      .filter(Boolean) as string[]
   );
 
   const isOldJournal = first && (!first.version || first.version === 1);
@@ -170,7 +172,7 @@ export function JournalV2({
                         start={start}
                         end={end}
                         now={dataUpdatedAt}
-                        cancelTime={cancelEntry?.start}
+                        cancelTime={cancelEntries.at(0)?.start}
                       />
                     )
                   );
@@ -440,13 +442,15 @@ const progressStyles = tv({
     isPending: { true: 'animate-pulse', false: '' },
     isRetrying: { true: 'bg-orange-200', false: '' },
     mode: {
-      suspended: 'bg-zinc-300',
+      suspended:
+        '[background:repeating-linear-gradient(to_right,theme(colors.zinc.200),theme(colors.zinc.200)_4px,theme(colors.zinc.200/0)_4px,theme(colors.zinc.200/0)_6px)] border border-dashed border-zinc-200 ',
       running: '',
-      pending: 'border-dashed bg-transparent border border-orange-400 ',
+      pending: 'border-dashed bg-transparent border border-orange-300 ',
       created: 'bg-zinc-300',
       scheduled: 'border border-dashed bg-transparent border-zinc-300',
       completed: '',
-      cancel: '',
+      cancel:
+        '[background:repeating-linear-gradient(to_right,theme(colors.blue.400),theme(colors.blue.400)_4px,theme(colors.blue.400/0)_4px,theme(colors.blue.400/0)_6px)]',
     },
   },
 });
@@ -529,7 +533,7 @@ function Progress({
 function getLifeCycles(
   invocation: Invocation,
   now: number,
-  cancelTime?: string
+  cancelTimes?: string[]
 ): {
   start: number;
   end: number;
@@ -578,11 +582,16 @@ function getLifeCycles(
     });
   }
 
-  if (cancelTime) {
-    values.push({
-      start: new Date(cancelTime).getTime(),
-      type: 'cancel',
-    });
+  if (cancelTimes && cancelTimes.length > 0) {
+    values.push(
+      ...cancelTimes.map(
+        (cancelTime) =>
+          ({
+            start: new Date(cancelTime).getTime(),
+            type: 'cancel',
+          } as const)
+      )
+    );
   }
   if (invocation.completed_at) {
     values.push({

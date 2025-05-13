@@ -104,7 +104,7 @@ export function Target({
 
           {typeof key === 'string' && (
             <>
-              <div className="[&&]:basis-0 [&&]:grow-[10000] [&&]:shrink-1 truncate my-px [filter:drop-shadow(-1px_0px_0px_theme(colors.zinc.200/100%))] -ml-1">
+              <div className="[&&]:basis-0 [&&]:grow-[10000] max-w-fit [&&]:shrink-1 truncate my-px [filter:drop-shadow(-1px_0px_0px_theme(colors.zinc.200/100%))] -ml-1">
                 <div className="font-mono [font-size:90%] h-full [clip-path:polygon(4px_0,100%_0,calc(100%-4px)_100%,0%_100%)] bg-zinc-50 text-zinc-500 flex items-center pl-1.5 pr-2">
                   <TruncateTooltipTrigger>
                     {key || <>&nbsp;</>}

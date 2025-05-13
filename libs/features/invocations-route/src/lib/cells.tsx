@@ -19,6 +19,7 @@ import {
   InvocationDeployment,
   InvocationId,
   Journal,
+  JournalV2,
   Status,
   Target,
 } from '@restate/features/invocation-route';
@@ -174,9 +175,11 @@ function JournalCell({ invocation }: CellProps) {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="max-w-2xl">
-        <DropdownSection title="Journal" className="p-3">
-          <Journal invocationId={invocation.id} />
-        </DropdownSection>
+        <JournalV2
+          invocationId={invocation.id}
+          className="mt-0 pt-2 pl-2 pr-4 bg-gray-200/20"
+          timelineWidth={0}
+        />
       </PopoverContent>
     </Popover>
   );
