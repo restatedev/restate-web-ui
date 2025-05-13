@@ -4384,6 +4384,9 @@
               "entry_type": {
                 "type": "string",
                 "enum": ["AttachInvocation"]
+              },
+              "invocationId": {
+                "type": "string"
               }
             }
           }
