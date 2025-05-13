@@ -32,6 +32,7 @@ import { Spinner } from '@restate/ui/loading';
 import { ErrorBanner } from '@restate/ui/error';
 import { CancelSignal } from './entries/CancelSignal';
 import { Icon, IconName } from '@restate/ui/icons';
+import { AttachInvocation } from './entries/AttachInvocation';
 
 export function getLastFailure(invocation?: Invocation) {
   const isOldProtocol =
@@ -183,7 +184,7 @@ export const ENTRY_COMPONENTS: {
   Run: Run,
   CancelInvocation: undefined,
   GetCallInvocationId: undefined,
-  AttachInvocation: undefined,
+  AttachInvocation: AttachInvocation,
   GetInvocationOutput: undefined,
   Custom: undefined,
   Output: Output,

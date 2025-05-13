@@ -1846,7 +1846,11 @@
               },
               "invocationId": {
                 "type": "string"
-              }
+              },
+              "failure": {
+                "$ref": "#/components/schemas/FailureEntry"
+              },
+              "value": { "type": "string" }
             }
           }
         ]

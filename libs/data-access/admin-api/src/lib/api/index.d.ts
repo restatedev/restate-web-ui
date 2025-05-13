@@ -1421,6 +1421,8 @@ export interface components {
       /** @enum {string} */
       entry_type?: 'AttachInvocation';
       invocationId?: string;
+      failure?: components['schemas']['FailureEntry'];
+      value?: string;
     };
     GetInvocationOutputJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       /** @enum {string} */
