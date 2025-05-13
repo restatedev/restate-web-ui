@@ -17,20 +17,21 @@ export function Run({
 
   return (
     <Expression
-      name={'run'}
+      name={'ctx.run'}
       prefix="async"
       className="pr-0"
-      {...(typeof entry.name === 'string' && {
-        input: (
-          <InputOutput
-            name={JSON.stringify(entry.name)}
-            popoverTitle="Name"
-            popoverContent={
-              <Value value={entry.name} className="text-xs font-mono py-3" />
-            }
-          />
-        ),
-      })}
+      {...(typeof entry.name === 'string' &&
+        entry.name && {
+          input: (
+            <InputOutput
+              name={JSON.stringify(entry.name)}
+              popoverTitle="Name"
+              popoverContent={
+                <Value value={entry.name} className="text-xs font-mono py-3" />
+              }
+            />
+          ),
+        })}
       output={
         <>
           {typeof entry.value === 'string' && (

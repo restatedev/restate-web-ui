@@ -30,7 +30,7 @@ export function OneWayCall({
     <div className="flex flex-row gap-1.5 items-center pr-1.5 max-w-full relative">
       <Target
         target={entry.invoked_target}
-        className="[font-size:inherit] [&>span_a_svg]:w-3.5 [&>*_a_svg]:h-3.5"
+        className="[font-size:1.02em] [&>span_a_svg]:w-3.5 [&>*_a_svg]:h-3.5"
         showHandler={false}
       >
         <div className="max-w-full flex items-center">
@@ -42,8 +42,8 @@ export function OneWayCall({
               entry.invoked_id && (
                 <InvocationId
                   id={entry.invoked_id}
-                  className="min-w-[1.625rem] w-[1.625rem] shrink-0 flex"
-                  size="icon"
+                  className="truncate max-w-[15ch] flex"
+                  size="sm"
                 />
               )
             }
@@ -87,13 +87,14 @@ export function OneWayCall({
         </div>
       </Target>
       {duration && invokeTime && (
-        <>
+        <div className="inline-flex items-center gap-[0.5ch] truncate">
+          <span className="font-normal text-zinc-500 truncate">scheduled </span>
           {!isPast && <span className="font-normal text-zinc-500">in </span>}
           <DateTooltip date={new Date(invokeTime)} title={'Call scheduled at'}>
             {duration}
           </DateTooltip>
           {isPast && <span className="font-normal text-zinc-500"> ago</span>}
-        </>
+        </div>
       )}
     </div>
   );

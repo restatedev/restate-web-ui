@@ -1,7 +1,8 @@
 import { ClearStateJournalEntryType } from '@restate/data-access/admin-api';
 import { EntryProps } from './types';
-import { Expression } from '../Expression';
+import { Expression, InputOutput } from '../Expression';
 import { Failure } from '../Failure';
+import { Value } from '../Value';
 
 export function ClearState({
   entry,
@@ -13,7 +14,19 @@ export function ClearState({
 }: EntryProps<ClearStateJournalEntryType>) {
   return (
     <>
-      <Expression prefix="clear" isFunction={false} name={entry.key ?? ''} />
+      <Expression
+        isFunction
+        name="ctx.clear"
+        input={
+          <InputOutput
+            name={JSON.stringify(entry.key ?? '')}
+            popoverTitle="Key"
+            popoverContent={
+              <Value value={entry.key} className="text-xs font-mono py-3" />
+            }
+          />
+        }
+      />
       {error?.message && (
         <Failure
           message={error.message}

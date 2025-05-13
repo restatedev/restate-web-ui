@@ -18,7 +18,7 @@ export function AttachInvocation({
 
   return (
     <Expression
-      name={'attach'}
+      name={'ctx.attach'}
       prefix="async"
       className="pr-0"
       {...(typeof entry.invocationId === 'string' && {

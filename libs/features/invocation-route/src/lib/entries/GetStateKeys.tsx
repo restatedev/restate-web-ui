@@ -17,8 +17,7 @@ export function GetStateKeys({
 
   return (
     <Expression
-      name="keys"
-      prefix="get"
+      name="ctx.keys"
       output={
         <>
           {entry.keys && entry.keys.length > 0 && (

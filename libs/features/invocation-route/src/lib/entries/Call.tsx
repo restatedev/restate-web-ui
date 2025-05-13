@@ -27,7 +27,7 @@ export function Call({
     <div className={styles({ className })}>
       <Target
         target={entry.invoked_target}
-        className="[font-size:inherit] [&_a_svg]:w-3.5 [&_a_svg]:h-3.5"
+        className="[font-size:1.02em] [&_a_svg]:w-3.5 [&_a_svg]:h-3.5"
         showHandler={false}
       >
         <Expression

@@ -85,7 +85,7 @@ export function Target({
             />
             <TruncateTooltipTrigger>{service}</TruncateTooltipTrigger>
             {!shouldShowHandler && (typeof key === 'undefined' || children) && (
-              <div className="shrink-0 items-center h-full flex my-[1px] mr-px pl-[2px] rounded-r-[calc(var(--rounded-radius)-1px)] pr-0.5">
+              <div className="shrink-0 items-center h-full flex my-[1px] mr-1 pl-[2px] rounded-r-[calc(var(--rounded-radius)-1px)] pr-0.5">
                 <Link
                   ref={linkRef}
                   href={`?${SERVICE_QUERY_PARAM}=${service}`}
