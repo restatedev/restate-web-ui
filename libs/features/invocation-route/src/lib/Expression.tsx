@@ -12,7 +12,7 @@ import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Icon, IconName } from '@restate/ui/icons';
 
 const styles = tv({
-  base: 'flex flex-row max-w-full flex-wrap relative items-center  pr-2',
+  base: 'flex flex-row max-w-full flex-wrap relative items-center pr-2',
   variants: {
     isFunction: {
       true: 'italic font-medium',

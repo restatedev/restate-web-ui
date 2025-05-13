@@ -70,7 +70,7 @@ export function JournalV2({
     refetch,
     dataUpdatedAt,
   } = useGetInvocationJournalWithInvocation(String(invocationId), {
-    refetchOnMount: false,
+    refetchOnMount: true,
   });
 
   const [first, ...restEntries] =
@@ -172,6 +172,29 @@ export function JournalV2({
                     )
                   );
                 })}
+                {journalAndInvocationData.invocation &&
+                  (lastFailure?.index === undefined ||
+                    lastFailure?.index ===
+                      journalAndInvocationData.journal.entries.length) && (
+                    <Entry
+                      invocation={journalAndInvocationData.invocation}
+                      start={start}
+                      end={end}
+                      now={dataUpdatedAt}
+                      failed
+                      error={error}
+                      entry={
+                        {
+                          entry_type: lastFailure.type,
+                          name: lastFailure.name,
+                          index:
+                            journalAndInvocationData.journal.entries.length,
+                          command_index:
+                            journalAndInvocationData.journal.entries.length,
+                        } as any
+                      }
+                    />
+                  )}
               </div>
             </div>
           </LazyPanel>

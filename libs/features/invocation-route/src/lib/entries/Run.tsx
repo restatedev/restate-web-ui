@@ -19,6 +19,7 @@ export function Run({
     <Expression
       name={'run'}
       prefix="async"
+      className="pr-0"
       {...(typeof entry.name === 'string' && {
         input: (
           <InputOutput
@@ -55,6 +56,7 @@ export function Run({
               message={entryError.message}
               restate_code={entryError.restate_code}
               isRetrying={isRetrying || wasRetrying}
+              className="ml-auto -mr-1.5"
             />
           )}
         </>
