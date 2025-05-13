@@ -1333,6 +1333,7 @@ export interface components {
       sleep_wakeup_at?: string;
       /** @enum {string} */
       entry_type?: 'Sleep';
+      name?: string;
     };
     GetPromiseJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       completed?: boolean;

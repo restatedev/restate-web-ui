@@ -1581,7 +1581,10 @@
                 "type": "string",
                 "format": "data-time"
               },
-              "entry_type": { "type": "string", "enum": ["Sleep"] }
+              "entry_type": { "type": "string", "enum": ["Sleep"] },
+              "name": {
+                "type": "string"
+              }
             }
           }
         ]
