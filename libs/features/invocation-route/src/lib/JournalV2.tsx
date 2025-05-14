@@ -383,7 +383,7 @@ function Entry({
           wasRetrying={wasRetryingThisEntry}
         />
         {entry.start && (
-          <TimelineProtal index={entry.index} invocationId={invocation.id}>
+          <TimelinePortal index={entry.index} invocationId={invocation.id}>
             <div className="leading-7 flex items-center h-full py-2.5">
               <div className="relative w-full h-full rounded-sm bg-zinc-200/50">
                 <Progress
@@ -406,12 +406,12 @@ function Entry({
                 </Progress>
               </div>
             </div>
-          </TimelineProtal>
+          </TimelinePortal>
         )}
         {!entry.start && (
-          <TimelineProtal index={entry.index} invocationId={invocation.id}>
+          <TimelinePortal index={entry.index} invocationId={invocation.id}>
             <div />
-          </TimelineProtal>
+          </TimelinePortal>
         )}
       </ErrorBoundary>
     </div>
@@ -422,7 +422,7 @@ function getTimelineId(invocationId: string, index: number) {
   return `${invocationId}-journal-${index}`;
 }
 
-function TimelineProtal({
+function TimelinePortal({
   children,
   index,
   invocationId,
