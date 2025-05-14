@@ -392,7 +392,7 @@ export function JournalSection({
     enabled: Boolean(invocation?.id),
     refetchOnMount: true,
   });
-  if (!data || data.entries.length === 0 || !invocation?.id) {
+  if (!data || !invocation?.id) {
     return null;
   }
 

@@ -13,7 +13,6 @@ import {
   useGetVirtualObjectState,
 } from '@restate/data-access/admin-api';
 import { Icon, IconName } from '@restate/ui/icons';
-import { ServiceHandlerSection } from './ServiceHandlerSection';
 import { DeploymentSection } from './DeploymentSection';
 import { KeysIdsSection } from './KeysIdsSection';
 import { VirtualObjectSection } from './VirtualObjectSection';
@@ -193,7 +192,6 @@ function InvocationPanelContent() {
       </div>
 
       <KeysIdsSection className="mt-5" invocation={data} />
-      <ServiceHandlerSection className="mt-2" invocation={data} />
       <LifecycleSection className="mt-2" invocation={data} />
       <VirtualObjectSection className="mt-2" invocation={data} raised />
       <WorkflowKeySection className="mt-2" invocation={data} />
