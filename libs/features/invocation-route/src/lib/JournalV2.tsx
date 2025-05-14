@@ -52,7 +52,7 @@ const inputStyles = tv({
 });
 
 const styles = tv({
-  base: 'mt-8',
+  base: 'mt-8 gap-1',
 });
 export function JournalV2({
   invocationId,
@@ -204,8 +204,8 @@ export function JournalV2({
             </div>
           </LazyPanel>
           {timelineWidth !== 0 && (
-            <LazyPanelResizeHandle className="w-3 pt-8 pb-4 hidden md:flex justify-center items-center group">
-              <div className="w-px bg-gray-200 h-full group-hover:bg-blue-500" />
+            <LazyPanelResizeHandle className="w-2 hidden md:flex justify-center items-center group relative">
+              <div className="w-px group-hover:w-[2px] absolute left-1/2 top-8 bottom-8 bg-gray-200 h-full group-hover:bg-blue-500" />
             </LazyPanelResizeHandle>
           )}
           {
