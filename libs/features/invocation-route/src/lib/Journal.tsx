@@ -402,7 +402,7 @@ export function JournalSection({
         <JournalV2
           invocationId={invocation?.id}
           timelineWidth={0}
-          className="mt-0 pr-2"
+          className="mt-0 pl-2 pr-2"
           showApiError={false}
         />
       </SectionContent>
