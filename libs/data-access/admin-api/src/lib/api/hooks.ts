@@ -5,6 +5,7 @@ import {
   useQueries,
   useQuery,
   useQueryClient,
+  UseQueryResult,
 } from '@tanstack/react-query';
 import {
   adminApi,
@@ -26,7 +27,7 @@ import type {
   Invocation,
   JournalEntry,
 } from './type';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { RestateError } from '@restate/util/errors';
 import { useAPIStatus } from '../APIStatusProvider';
 
@@ -519,6 +520,41 @@ export function useGetInvocationsJournalWithInvocations(
     })
   );
 
+  const combine = useCallback(
+    (
+      results: UseQueryResult<
+        | {
+            entries: JournalEntry[];
+          }
+        | Invocation
+        | undefined,
+        Error
+      >[]
+    ) => {
+      return {
+        data: invocationIds.reduce((combined, invocationId, index) => {
+          return {
+            ...combined,
+            [invocationId]: {
+              journal: results.at(index)?.data as {
+                entries: JournalEntry[];
+              },
+              invocation: results.at(index + invocationIds.length)
+                ?.data as Invocation,
+            },
+          };
+        }, {} as Record<string, { journal: { entries: JournalEntry[] }; invocation: Invocation }>),
+        isPending: results.some((result) => result.isPending),
+        isSuccess: results.every((result) => result.isSuccess),
+        dataUpdatedAt: Math.max(
+          ...results.map((result) => result.dataUpdatedAt)
+        ),
+        error: results.find((result) => result.error)?.error,
+      };
+    },
+    [invocationIds]
+  );
+
   const results = useQueries({
     queries: [
       ...journalQueries.map((journalQuery) => ({
@@ -534,30 +570,7 @@ export function useGetInvocationsJournalWithInvocations(
         staleTime: 0,
       })),
     ],
-    combine: (results) => {
-      return {
-        ...(results.every((result) => result.data) && {
-          data: invocationIds.reduce((combined, invocationId, index) => {
-            return {
-              ...combined,
-              [invocationId]: {
-                journal: results.at(index)?.data as {
-                  entries: JournalEntry[];
-                },
-                invocation: results.at(index + invocationIds.length)
-                  ?.data as Invocation,
-              },
-            };
-          }, {} as Record<string, { journal: { entries: JournalEntry[] }; invocation: Invocation }>),
-        }),
-        isPending: results.some((result) => result.isPending),
-        isSuccess: results.every((result) => result.isSuccess),
-        dataUpdatedAt: Math.max(
-          ...results.map((result) => result.dataUpdatedAt)
-        ),
-        error: results.find((result) => result.error)?.error,
-      };
-    },
+    combine,
   });
 
   const queryClient = useQueryClient();
