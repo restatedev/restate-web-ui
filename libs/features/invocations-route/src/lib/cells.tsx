@@ -177,7 +177,7 @@ function JournalCell({ invocation }: CellProps) {
       <PopoverContent className="max-w-2xl">
         <JournalV2
           invocationId={invocation.id}
-          className="mt-0 pt-2 pl-2 pr-4 bg-gray-200/20"
+          className="mt-0 pt-3 pl-4 pr-4 pb-1 bg-gray-200/20"
           timelineWidth={0}
         />
       </PopoverContent>

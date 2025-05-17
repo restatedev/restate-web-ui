@@ -6,8 +6,13 @@ import { Value } from '../Value';
 import { Target } from '../Target';
 import { InvocationId } from '../InvocationId';
 import { Failure } from '../Failure';
-import { Ellipsis } from '@restate/ui/loading';
+import { Ellipsis, Spinner } from '@restate/ui/loading';
 import { tv } from 'tailwind-variants';
+import { useJournalContext } from '../JournalContext';
+import { Button } from '@restate/ui/button';
+import { Icon, IconName } from '@restate/ui/icons';
+import { Entries } from '../Entries';
+import { CallInvokedLoadingError } from './CallInvokedLoadingError';
 
 const styles = tv({
   base: 'flex flex-row gap-1.5 items-center pr-1.5 max-w-full relative',
@@ -22,9 +27,49 @@ export function Call({
   className,
 }: EntryProps<CallJournalEntryType>) {
   const entryError = entry.failure || error;
+  const {
+    setInvocationIds,
+    isPending,
+    invocationIds,
+    error: invocationsError,
+  } = useJournalContext();
+  const isExpanded =
+    entry.invoked_id && invocationIds.includes(entry.invoked_id) && !isPending;
+
+  const invokedIsPending = isPending?.[String(entry.invoked_id)];
+  const invokedError = invocationsError?.[String(entry.invoked_id)];
 
   return (
     <div className={styles({ className })}>
+      {invokedError ? (
+        <CallInvokedLoadingError
+          error={invokedError}
+          className="absolute right-[100%]"
+        />
+      ) : (
+        <Button
+          onClick={() => {
+            setInvocationIds?.((ids) => {
+              if (entry.invoked_id && !ids.includes(entry.invoked_id)) {
+                return [...ids, entry.invoked_id];
+              } else {
+                return ids.filter((id) => id !== entry.invoked_id);
+              }
+            });
+          }}
+          variant="icon"
+          className="absolute right-[100%]"
+        >
+          {invokedIsPending ? (
+            <Spinner />
+          ) : (
+            <Icon
+              name={isExpanded ? IconName.ChevronUp : IconName.ChevronDown}
+              className="w-3.5 h-3.5"
+            />
+          )}
+        </Button>
+      )}
       <Target
         target={entry.invoked_target}
         className="[font-size:1.02em] [&_a_svg]:w-3.5 [&_a_svg]:h-3.5"
@@ -102,6 +147,11 @@ export function Call({
           size="icon"
         />
       )}
+      {entry.invoked_id &&
+        invocationIds.includes(entry.invoked_id) &&
+        !invokedIsPending && (
+          <Entries invocationId={entry.invoked_id} showInputEntry={false} />
+        )}
     </div>
   );
 }

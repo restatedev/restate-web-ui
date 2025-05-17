@@ -5,6 +5,7 @@ import {
   useQueries,
   useQuery,
   useQueryClient,
+  UseQueryResult,
 } from '@tanstack/react-query';
 import {
   adminApi,
@@ -23,8 +24,10 @@ import type {
   FilterItem,
   Service,
   StateResponse,
+  Invocation,
+  JournalEntry,
 } from './type';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { RestateError } from '@restate/util/errors';
 import { useAPIStatus } from '../APIStatusProvider';
 
@@ -494,6 +497,164 @@ export function useGetInvocationJournalWithInvocation(
         queryClient.refetchQueries({
           queryKey: invocationQuery.queryKey,
         }),
+      ]);
+    },
+  };
+}
+
+export function useGetInvocationsJournalWithInvocations(
+  invocationIds: string[],
+  options?: HookQueryOptions<'/query/invocations/{invocationId}/journal', 'get'>
+) {
+  const baseUrl = useAdminBaseUrl();
+  const journalQueries = invocationIds.map((invocationId) =>
+    adminApi('query', '/query/invocations/{invocationId}/journal', 'get', {
+      baseUrl,
+      parameters: { path: { invocationId } },
+    })
+  );
+  const invocationQueries = invocationIds.map((invocationId) =>
+    adminApi('query', '/query/invocations/{invocationId}', 'get', {
+      baseUrl,
+      parameters: { path: { invocationId } },
+    })
+  );
+
+  const combine = useCallback(
+    (
+      results: UseQueryResult<
+        | {
+            entries: JournalEntry[];
+          }
+        | Invocation
+        | undefined,
+        Error
+      >[]
+    ) => {
+      return {
+        data: invocationIds.reduce((combined, invocationId, index) => {
+          return {
+            ...combined,
+            [invocationId]: {
+              journal: results.at(index)?.data as {
+                entries: JournalEntry[];
+              },
+              invocation: results.at(index + invocationIds.length)
+                ?.data as Invocation,
+            },
+          };
+        }, {} as Record<string, { journal: { entries: JournalEntry[] }; invocation: Invocation }>),
+        isPending: invocationIds.reduce((combined, invocationId, index) => {
+          return {
+            ...combined,
+            [invocationId]:
+              results.at(index)?.isPending ||
+              results.at(index + invocationIds.length)?.isPending,
+          };
+        }, {} as Record<string, boolean | undefined>),
+        isSuccess: invocationIds.reduce((combined, invocationId, index) => {
+          return {
+            ...combined,
+            [invocationId]:
+              results.at(index)?.isSuccess &&
+              results.at(index + invocationIds.length)?.isSuccess,
+          };
+        }, {} as Record<string, boolean | undefined>),
+        error: invocationIds.reduce((combined, invocationId, index) => {
+          return {
+            ...combined,
+            [invocationId]:
+              results.at(index)?.error ||
+              results.at(index + invocationIds.length)?.error,
+          };
+        }, {} as Record<string, Error | null | undefined>),
+        dataUpdatedAt: Math.max(
+          ...results.map((result) => result.dataUpdatedAt)
+        ),
+      };
+    },
+    [invocationIds]
+  );
+
+  const results = useQueries({
+    queries: [
+      ...journalQueries.map((journalQuery) => ({
+        ...journalQuery,
+        refetchOnMount: options?.refetchOnMount !== false,
+        enabled: options?.enabled !== false,
+        staleTime: 0,
+      })),
+      ...invocationQueries.map((invocationQuery) => ({
+        ...invocationQuery,
+        refetchOnMount: options?.refetchOnMount !== false,
+        enabled: options?.enabled !== false,
+        staleTime: 0,
+      })),
+    ],
+    combine,
+  });
+
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    queryClient.setQueriesData(
+      {
+        predicate: (query) => {
+          return (
+            Array.isArray(query.queryKey) &&
+            query.queryKey.at(0) === '/query/invocations'
+          );
+        },
+      },
+      (oldData: ReturnType<typeof useListInvocations>['data']) => {
+        if (!oldData) {
+          return oldData;
+        } else {
+          return {
+            ...oldData,
+            rows: oldData.rows.map((oldInvocation) => {
+              const newInvocation =
+                results.data?.[oldInvocation.id]?.invocation;
+              if (newInvocation) {
+                return newInvocation;
+              } else {
+                return oldInvocation;
+              }
+            }),
+          };
+        }
+      }
+    );
+  }, [queryClient, results]);
+
+  return {
+    ...results,
+    refetch: () => {
+      return Promise.all([
+        ...journalQueries.map((journalQuery) =>
+          queryClient.refetchQueries({
+            queryKey: journalQuery.queryKey,
+          })
+        ),
+        ...invocationQueries.map((invocationQuery) =>
+          queryClient.refetchQueries({
+            queryKey: invocationQuery.queryKey,
+          })
+        ),
+      ]);
+    },
+    invalidate: () => {
+      return Promise.all([
+        ...journalQueries.map((journalQuery) =>
+          queryClient.invalidateQueries({
+            queryKey: journalQuery.queryKey,
+          })
+        ),
+        ...invocationQueries.map((invocationQuery) =>
+          queryClient.invalidateQueries({
+            queryKey: invocationQuery.queryKey,
+          })
+        ),
       ]);
     },
   };
