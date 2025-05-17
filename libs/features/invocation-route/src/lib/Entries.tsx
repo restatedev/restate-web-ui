@@ -414,7 +414,12 @@ function Entry({
                         end: (entryEnd - start) / interval,
                         endTime: entryEnd,
                       })}
-                      isPending={!completed}
+                      isPending={
+                        !completed &&
+                        (!cancelTime ||
+                          new Date(cancelTime).getTime() <
+                            new Date(entry.start).getTime())
+                      }
                       isRetrying={isRetryingThisEntry}
                       className="ml-0.5"
                       showDuration
@@ -514,7 +519,7 @@ const progressStyles = tv({
       killed: 'bg-zinc-300',
       failed: 'bg-red-400',
       cancel:
-        '[background:repeating-linear-gradient(to_right,theme(colors.blue.300),theme(colors.blue.300)_4px,theme(colors.blue.300/0)_4px,theme(colors.blue.300/0)_6px)]',
+        '[background:repeating-linear-gradient(to_right,theme(colors.blue.300),theme(colors.blue.300)_4px,theme(colors.blue.200)_4px,theme(colors.blue.200)_6px)]',
     },
   },
 });

@@ -53,6 +53,7 @@ export function JournalContextProvider({
         dataUpdatedAt,
         cancelTime,
         containerRef,
+        isPending,
       }}
     >
       {children}
