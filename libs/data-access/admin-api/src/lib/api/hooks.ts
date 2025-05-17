@@ -544,12 +544,33 @@ export function useGetInvocationsJournalWithInvocations(
             },
           };
         }, {} as Record<string, { journal: { entries: JournalEntry[] }; invocation: Invocation }>),
-        isPending: results.some((result) => result.isPending),
-        isSuccess: results.every((result) => result.isSuccess),
+        isPending: invocationIds.reduce((combined, invocationId, index) => {
+          return {
+            ...combined,
+            [invocationId]:
+              results.at(index)?.isPending ||
+              results.at(index + invocationIds.length)?.isPending,
+          };
+        }, {} as Record<string, boolean | undefined>),
+        isSuccess: invocationIds.reduce((combined, invocationId, index) => {
+          return {
+            ...combined,
+            [invocationId]:
+              results.at(index)?.isSuccess &&
+              results.at(index + invocationIds.length)?.isSuccess,
+          };
+        }, {} as Record<string, boolean | undefined>),
+        error: invocationIds.reduce((combined, invocationId, index) => {
+          return {
+            ...combined,
+            [invocationId]:
+              results.at(index)?.error ||
+              results.at(index + invocationIds.length)?.error,
+          };
+        }, {} as Record<string, Error | null | undefined>),
         dataUpdatedAt: Math.max(
           ...results.map((result) => result.dataUpdatedAt)
         ),
-        error: results.find((result) => result.error)?.error,
       };
     },
     [invocationIds]

@@ -3,7 +3,7 @@ import {
   JournalEntry,
   useGetInvocationsJournalWithInvocations,
 } from '@restate/data-access/admin-api';
-import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useRef, useState } from 'react';
 import { InvocationId } from './InvocationId';
 import { tv } from 'tailwind-variants';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
@@ -59,38 +59,15 @@ export function JournalV2({
 
   const journalAndInvocationData = data?.[invocationId];
 
-  const [mountedContainersCount, setMountedContainerCounts] = useState(0);
   const { baseUrl } = useRestateContext();
 
   const combinedEntries = getCombinedJournal(invocationId, data);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const el = containerRef?.current;
-    const cb = () => {
-      const container = el?.querySelector('[data-container]');
-      setMountedContainerCounts(container?.childElementCount ?? 0);
-    };
-    const observer = new MutationObserver((mutationsList) => {
-      cb();
-    });
+  const invocationApiError = apiError?.[invocationId];
 
-    if (el) {
-      observer.observe(el, {
-        childList: true,
-        attributes: false,
-        subtree: true,
-      });
-      cb();
-    }
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
-
-  if (apiError && showApiError) {
-    return <ErrorBanner error={apiError} />;
+  if (apiError && invocationApiError) {
+    return <ErrorBanner error={invocationApiError} />;
   }
 
   const start = new Date(
@@ -119,10 +96,9 @@ export function JournalV2({
         end={end}
         dataUpdatedAt={dataUpdatedAt}
         cancelTime={cancelEntries?.at(0)?.start}
-        isPending={
-          isPending || combinedEntries?.length !== mountedContainersCount
-        }
+        isPending={isPending}
         containerRef={containerRef}
+        error={apiError}
       >
         <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
           <Suspense fallback={<div />}>

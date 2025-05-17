@@ -331,6 +331,7 @@ const entryStyles = tv({
     },
   },
 });
+
 function Entry({
   entry,
   failed,
@@ -346,7 +347,7 @@ function Entry({
   cancelTime?: string;
   now: number;
 }) {
-  const { invocationIds } = useJournalContext();
+  const { invocationIds, error: invocationsError } = useJournalContext();
 
   const EntrySpecificComponent = entry.entry_type
     ? (ENTRY_COMPONENTS[entry.entry_type] as ComponentType<
@@ -401,7 +402,8 @@ function Entry({
           />
           {entry.start &&
             (!isEntryCall(entry) ||
-              !invocationIds.includes(String(entry?.invoked_id))) && (
+              !invocationIds.includes(String(entry?.invoked_id)) ||
+              invocationsError?.[String(entry.invoked_id)]) && (
               <TimelinePortal index={entry.index} invocationId={invocation.id}>
                 <div className="leading-7 flex items-center h-full py-2.5">
                   <div className="relative w-full h-full rounded-md bg-zinc-200/50">

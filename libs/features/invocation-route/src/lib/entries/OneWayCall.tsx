@@ -34,13 +34,15 @@ export function OneWayCall({
   const isExpanded =
     entry.invoked_id && invocationIds.includes(entry.invoked_id) && !isPending;
 
+  const invokedIsPending = isPending?.[String(entry.invoked_id)];
+
   return (
     <div className="flex flex-row gap-1.5 items-center pr-1.5 max-w-full relative">
       <Button
         onClick={() => {
           setInvocationIds?.((ids) => {
             if (entry.invoked_id && !ids.includes(entry.invoked_id)) {
-              return [...ids, entry.invoked_id!];
+              return [...ids, entry.invoked_id];
             } else {
               return ids.filter((id) => id !== entry.invoked_id);
             }
@@ -49,7 +51,7 @@ export function OneWayCall({
         variant="icon"
         className="absolute right-[100%] z-20"
       >
-        {isPending ? (
+        {invokedIsPending ? (
           <Spinner />
         ) : (
           <Icon
@@ -128,7 +130,7 @@ export function OneWayCall({
       )}
       {entry.invoked_id &&
         invocationIds.includes(entry.invoked_id) &&
-        !isPending && (
+        !invokedIsPending && (
           <Entries invocationId={entry.invoked_id} showInputEntry={false} />
         )}
     </div>

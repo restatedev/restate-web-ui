@@ -30,13 +30,15 @@ export function Call({
   const isExpanded =
     entry.invoked_id && invocationIds.includes(entry.invoked_id) && !isPending;
 
+  const invokedIsPending = isPending?.[String(entry.invoked_id)];
+
   return (
     <div className={styles({ className })}>
       <Button
         onClick={() => {
           setInvocationIds?.((ids) => {
             if (entry.invoked_id && !ids.includes(entry.invoked_id)) {
-              return [...ids, entry.invoked_id!];
+              return [...ids, entry.invoked_id];
             } else {
               return ids.filter((id) => id !== entry.invoked_id);
             }
@@ -45,7 +47,7 @@ export function Call({
         variant="icon"
         className="absolute right-[100%] z-20"
       >
-        {isPending ? (
+        {invokedIsPending ? (
           <Spinner />
         ) : (
           <Icon
@@ -133,7 +135,7 @@ export function Call({
       )}
       {entry.invoked_id &&
         invocationIds.includes(entry.invoked_id) &&
-        !isPending && (
+        !invokedIsPending && (
           <Entries invocationId={entry.invoked_id} showInputEntry={false} />
         )}
     </div>

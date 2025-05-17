@@ -14,7 +14,8 @@ const JournalContext = createContext<{
   end: number;
   cancelTime?: string;
   dataUpdatedAt: number;
-  isPending?: boolean;
+  isPending?: Record<string, boolean | undefined>;
+  error?: Record<string, Error | null | undefined>;
   containerRef?: RefObject<HTMLDivElement | null>;
 }>({
   invocationIds: [],
@@ -32,6 +33,7 @@ export function JournalContextProvider({
   dataUpdatedAt,
   cancelTime,
   isPending,
+  error,
   containerRef,
 }: PropsWithChildren<{
   invocationIds: string[];
@@ -40,7 +42,8 @@ export function JournalContextProvider({
   end: number;
   cancelTime?: string;
   dataUpdatedAt: number;
-  isPending?: boolean;
+  isPending?: Record<string, boolean | undefined>;
+  error?: Record<string, Error | null | undefined>;
   containerRef?: RefObject<HTMLDivElement | null>;
 }>) {
   return (
@@ -54,6 +57,7 @@ export function JournalContextProvider({
         cancelTime,
         containerRef,
         isPending,
+        error,
       }}
     >
       {children}
