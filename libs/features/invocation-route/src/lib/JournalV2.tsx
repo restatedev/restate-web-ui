@@ -68,7 +68,7 @@ export function JournalV2({
 
   const invocationApiError = apiError?.[invocationId];
 
-  if (apiError && invocationApiError) {
+  if (invocationApiError && showApiError) {
     return <ErrorBanner error={invocationApiError} />;
   }
 
