@@ -8,7 +8,14 @@ import {
 } from '@restate/data-access/admin-api';
 import { DateTooltip } from '@restate/ui/tooltip';
 import { formatDurations } from '@restate/util/intl';
-import { ComponentType, PropsWithChildren, CSSProperties } from 'react';
+import {
+  ComponentType,
+  PropsWithChildren,
+  CSSProperties,
+  useState,
+  useLayoutEffect,
+  useEffect,
+} from 'react';
 import { createPortal } from 'react-dom';
 import { tv } from 'tailwind-variants';
 import { EntryProps } from './entries/types';
@@ -18,6 +25,7 @@ import { Target } from './Target';
 import { Input } from './entries/Input';
 import { getDuration } from '@restate/util/snapshot-time';
 import { useJournalContext } from './JournalContext';
+import { Spinner } from '@restate/ui/loading';
 
 const inputStyles = tv({
   base: '[&_>*]:leading-7 [--rounded-radius:0.625rem] [--rounded-radius-right:0.25rem] rounded-r text-code w-full',
@@ -175,8 +183,14 @@ export function Entries({
   showLifeCycles?: boolean;
   invocationId: string;
 }) {
-  const { start, end, cancelTime, dataUpdatedAt, invocationIds } =
-    useJournalContext();
+  const {
+    start,
+    end,
+    cancelTime,
+    dataUpdatedAt,
+    invocationIds,
+    isPending: invocationsIsPending,
+  } = useJournalContext();
   const { data } = useGetInvocationsJournalWithInvocations(invocationIds, {
     enabled: false,
   });
@@ -186,8 +200,17 @@ export function Entries({
   const [first, ...restEntries] = entries ?? [];
   const inputEntry = first as InputJournalEntryType;
   const hasInputEntry = inputEntry?.entry_type === 'Input';
+  const isPending = invocationsIsPending?.[invocationId];
 
   if (!invocation) {
+    if (isPending) {
+      return (
+        <div className="flex items-center gap-1.5 text-code text-zinc-500 pl-2">
+          <Spinner className="w-3.5 h-3.5" />
+          Loading…
+        </div>
+      );
+    }
     return null;
   }
 
@@ -223,6 +246,12 @@ export function Entries({
             />
           )}
         </Target>
+      )}
+      {isPending && (
+        <div className="flex items-center gap-1.5 text-xs text-zinc-500 pl-2">
+          <Spinner className="w-3 h-3" />
+          Loading…
+        </div>
       )}
       {restEntries.map((entry) => {
         return (
@@ -454,13 +483,44 @@ export function getEntryId(invocationId: string, index: number) {
   return `${invocationId}-journal-entry-${index}`;
 }
 
+function usePortal(query: string) {
+  const { containerRef } = useJournalContext();
+  const [element, setElement] = useState<Element | null | undefined>();
+
+  useEffect(() => {
+    const container = containerRef?.current;
+    const cb: MutationCallback = (mutations, observer) => {
+      const element = container?.querySelector(query);
+      setElement(element);
+      if (element) {
+        observer.disconnect();
+      }
+    };
+    const observer = new MutationObserver(cb);
+
+    if (container) {
+      observer.observe(container, {
+        childList: true,
+        attributes: false,
+        subtree: true,
+      });
+      cb([], observer);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [containerRef, query]);
+
+  return { element };
+}
+
 function TimelinePortal({
   children,
   index,
   invocationId,
 }: PropsWithChildren<{ invocationId: string; index: number }>) {
-  const { containerRef } = useJournalContext();
-  const element = containerRef?.current?.querySelector(
+  const { element } = usePortal(
     `[data-id=${getTimelineId(invocationId, index)}]`
   );
 
@@ -475,10 +535,7 @@ function LifecyclePortal({
   children,
   invocationId,
 }: PropsWithChildren<{ invocationId: string }>) {
-  const { containerRef } = useJournalContext();
-  const element = containerRef?.current?.querySelector(
-    `[data-id=${getTimelineId(invocationId, 0)}]`
-  );
+  const { element } = usePortal(`[data-id=${getTimelineId(invocationId, 0)}]`);
 
   if (!element) {
     return null;
@@ -492,10 +549,7 @@ function EntryPortal({
   index,
   invocationId,
 }: PropsWithChildren<{ invocationId: string; index: number }>) {
-  const { containerRef } = useJournalContext();
-  const element = containerRef?.current?.querySelector(
-    `[data-id=${getEntryId(invocationId, index)}]`
-  );
+  const { element } = usePortal(`[data-id=${getEntryId(invocationId, index)}]`);
 
   if (!element) {
     return null;

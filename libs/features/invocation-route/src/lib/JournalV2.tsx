@@ -15,6 +15,7 @@ import { useRestateContext } from '@restate/features/restate-context';
 import { ErrorBanner } from '@restate/ui/error';
 import { Entries, getEntryId, getTimelineId, isEntryCall } from './Entries';
 import { JournalContextProvider } from './JournalContext';
+import { Spinner } from '@restate/ui/loading';
 
 const LazyPanel = lazy(() =>
   import('react-resizable-panels').then((m) => ({ default: m.Panel }))
@@ -46,6 +47,7 @@ export function JournalV2({
   showApiError?: boolean;
 }) {
   const [invocationIds, setInvocationIds] = useState([String(invocationId)]);
+
   const {
     data,
     isPending,
@@ -101,7 +103,14 @@ export function JournalV2({
         error={apiError}
       >
         <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
-          <Suspense fallback={<div />}>
+          <Suspense
+            fallback={
+              <div className="flex items-center gap-1.5 text-sm text-zinc-500 p-4">
+                <Spinner className="w-4 h-4" />
+                Loading…
+              </div>
+            }
+          >
             <LazyPanelGroup
               direction="horizontal"
               className={styles({ className })}
