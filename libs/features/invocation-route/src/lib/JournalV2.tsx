@@ -94,19 +94,19 @@ export function JournalV2({
   }
 
   const start = new Date(
-    journalAndInvocationData?.invocation.created_at ??
+    journalAndInvocationData?.invocation?.created_at ??
       new Date(dataUpdatedAt).toISOString()
   ).getTime();
   const end = new Date(
-    journalAndInvocationData?.invocation.completed_at ??
+    journalAndInvocationData?.invocation?.completed_at ??
       new Date(dataUpdatedAt).toISOString()
   ).getTime();
 
-  const cancelEntries = journalAndInvocationData?.journal.entries?.filter(
+  const cancelEntries = journalAndInvocationData?.journal?.entries?.filter(
     (entry) => entry.entry_type === 'CancelSignal'
   );
 
-  const isOldJournal = journalAndInvocationData?.journal.entries.some(
+  const isOldJournal = journalAndInvocationData?.journal?.entries.some(
     (entry) => !entry.version || entry.version === 1
   );
 
@@ -144,12 +144,12 @@ export function JournalV2({
                     <div className="shrink-0 text-xs uppercase font-semibold text-gray-400 pl-6">
                       Invoked by
                     </div>
-                    {journalAndInvocationData?.invocation.invoked_by ===
+                    {journalAndInvocationData?.invocation?.invoked_by ===
                     'ingress' ? (
                       <div className="text-xs font-medium">Ingress</div>
-                    ) : journalAndInvocationData?.invocation.invoked_by_id ? (
+                    ) : journalAndInvocationData?.invocation?.invoked_by_id ? (
                       <InvocationId
-                        id={journalAndInvocationData?.invocation.invoked_by_id}
+                        id={journalAndInvocationData?.invocation?.invoked_by_id}
                         className="min-w-0 max-w-[20ch] font-medium"
                         size="sm"
                       />
@@ -194,7 +194,7 @@ export function JournalV2({
                       <HoverTooltip content="Introspect">
                         <Link
                           variant="icon"
-                          href={`${baseUrl}/introspection?query=SELECT * FROM sys_journal WHERE id = '${journalAndInvocationData?.invocation.id}'`}
+                          href={`${baseUrl}/introspection?query=SELECT * FROM sys_journal WHERE id = '${journalAndInvocationData?.invocation?.id}'`}
                           target="_blank"
                         >
                           <Icon
@@ -270,7 +270,9 @@ function getCombinedJournal(
       },
     ];
   }
-  return data?.[invocationId]?.journal?.entries
+
+  const length = (data?.[invocationId]?.journal?.entries ?? []).length;
+  const combinedEntries = data?.[invocationId]?.journal?.entries
     ?.map((entry) => {
       if (isEntryCall(entry)) {
         const invoked_id = String(entry.invoked_id);
@@ -291,4 +293,13 @@ function getCombinedJournal(
       }
     })
     .flat();
+
+  return [
+    ...(combinedEntries ?? []),
+    {
+      invocationId,
+      entryIndex: length,
+      depth,
+    },
+  ];
 }
