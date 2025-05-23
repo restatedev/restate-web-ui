@@ -1,12 +1,13 @@
 import { PropsWithChildren } from 'react';
-import { hasAccessToFeature } from './hasAccessToFeature';
 import type { FeatureFlag } from './type';
+import { useIsFeatureFlagEnabled } from './FeatureFlags';
 
 export function FeatureFlag({
   featureFlag,
   children,
 }: PropsWithChildren<{ featureFlag: FeatureFlag }>) {
-  if (hasAccessToFeature(featureFlag)) {
+  const isEnabled = useIsFeatureFlagEnabled(featureFlag);
+  if (isEnabled) {
     return children;
   }
   return null;
