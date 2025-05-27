@@ -1,11 +1,12 @@
 import type {
-  InvocationComputedStatus,
+  InvocationComputedStatus2,
   RawInvocation,
 } from '@restate/data-access/admin-api/spec';
 
-export function getComputedInvocationStatus(
-  invocation: RawInvocation
-): InvocationComputedStatus {
+export function getComputedInvocationStatus(invocation: RawInvocation): {
+  isRetrying: boolean;
+  status: InvocationComputedStatus2;
+} {
   const isSuccessful = invocation.completion_result === 'success';
   const isCancelled = Boolean(
     invocation.completion_result === 'failure' &&
@@ -43,34 +44,33 @@ export function getComputedInvocationStatus(
 
   if (isCompleted) {
     if (isSuccessful) {
-      return 'succeeded';
+      return { status: 'succeeded', isRetrying: false };
     }
     if (isKilled) {
-      return 'killed';
+      return { status: 'killed', isRetrying: false };
     }
     if (isCancelled) {
-      return 'cancelled';
+      return { status: 'cancelled', isRetrying: false };
     }
     if (invocation.completion_result === 'failure') {
-      return 'failed';
+      return { status: 'failed', isRetrying: false };
     }
   }
 
   if (isRetrying) {
-    return 'retrying';
+    return {
+      status: invocation.status as InvocationComputedStatus2,
+      isRetrying: true,
+    };
   }
 
   switch (invocation.status) {
     case 'pending':
-      return 'pending';
     case 'ready':
-      return 'ready';
     case 'scheduled':
-      return 'scheduled';
     case 'running':
-      return 'running';
     case 'suspended':
-      return 'suspended';
+      return { status: invocation.status, isRetrying: false };
 
     default: {
       console.warn(

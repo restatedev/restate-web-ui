@@ -43,10 +43,12 @@ function withStatusTimeline({
   suffix?: string;
   prefix?: string;
   tooltipTitle: string;
-  field: keyof Invocation;
+  field: keyof Invocation | (keyof Invocation)[];
 }) {
   return (props: { invocation: Invocation }) => {
-    const value = props.invocation[field];
+    const value = Array.isArray(field)
+      ? field.map((key) => props.invocation[key]).find(Boolean)
+      : props.invocation[field];
     if (typeof value !== 'string') {
       return null;
     }
@@ -85,14 +87,14 @@ const STATUS_TIMELINE_COMPONENTS: Partial<
     tooltipTitle: 'Killed at',
     field: 'completed_at',
   }),
-  retrying: withStatusTimeline({
-    suffix: 'into current retry',
-    field: 'last_start_at',
-    tooltipTitle: 'Current retry in progress since',
+  'backing-off': withStatusTimeline({
+    prefix: 'for',
+    field: 'next_retry_at',
+    tooltipTitle: 'Will run at',
   }),
   running: withStatusTimeline({
     prefix: 'for',
-    field: 'running_at',
+    field: ['last_start_at', 'running_at'],
     tooltipTitle: 'Running since',
   }),
   suspended: withStatusTimeline({

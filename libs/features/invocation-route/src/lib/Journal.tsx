@@ -287,7 +287,8 @@ function DefaultEntry({
   appended,
   error,
 }: PropsWithChildren<EntryProps<JournalEntry>>) {
-  const isRetrying = invocation.status === 'retrying';
+  // const isRetrying = invocation.status === 'retrying';
+  const isRetrying = false;
   const isRetryingThisEntry =
     isRetrying &&
     failed &&

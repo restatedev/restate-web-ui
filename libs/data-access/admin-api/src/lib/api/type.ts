@@ -8,12 +8,12 @@ export type Revision = components['schemas']['ServiceMetadata']['revision'];
 export type Service = components['schemas']['ServiceMetadata'];
 export type Handler = components['schemas']['HandlerMetadata'];
 
-export type InvocationComputedStatus =
+export type InvocationComputedStatus2 =
   | 'succeeded'
   | 'failed'
   | 'cancelled'
   | 'killed'
-  | 'retrying'
+  | 'backing-off'
   | 'running'
   | 'suspended'
   | 'scheduled'
