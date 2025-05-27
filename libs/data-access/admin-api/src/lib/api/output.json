@@ -4542,7 +4542,6 @@
               "failed",
               "cancelled",
               "killed",
-              "retrying",
               "running",
               "suspended",
               "scheduled",

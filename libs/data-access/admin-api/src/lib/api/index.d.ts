@@ -1474,7 +1474,6 @@ export interface components {
         | 'failed'
         | 'cancelled'
         | 'killed'
-        | 'retrying'
         | 'running'
         | 'suspended'
         | 'scheduled'
