@@ -1454,6 +1454,8 @@ export interface components {
       /** Format: date-time */
       scheduled_at: string;
       /** Format: date-time */
+      scheduled_start_at?: string;
+      /** Format: date-time */
       inboxed_at?: string;
       /** Format: date-time */
       running_at?: string;
@@ -1477,7 +1479,8 @@ export interface components {
         | 'suspended'
         | 'scheduled'
         | 'pending'
-        | 'ready';
+        | 'ready'
+        | 'backing-off';
       target: string;
       target_handler_name: string;
       target_service_key?: string;
@@ -1513,6 +1516,7 @@ export interface components {
       last_attempt_server?: string;
       last_failure?: string;
       last_failure_error_code?: string;
+      isRetrying?: boolean;
     };
     RawInvocation: {
       /** Format: date-time */
@@ -1523,6 +1527,8 @@ export interface components {
       scheduled_at: string;
       /** Format: date-time */
       inboxed_at?: string;
+      /** Format: date-time */
+      scheduled_start_at?: string;
       /** Format: date-time */
       running_at?: string;
       /** Format: date-time */

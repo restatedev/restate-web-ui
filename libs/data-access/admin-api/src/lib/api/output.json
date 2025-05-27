@@ -4504,6 +4504,10 @@
             "type": "string",
             "format": "date-time"
           },
+          "scheduled_start_at": {
+            "type": "string",
+            "format": "date-time"
+          },
           "inboxed_at": {
             "type": "string",
             "format": "date-time"
@@ -4543,7 +4547,8 @@
               "suspended",
               "scheduled",
               "pending",
-              "ready"
+              "ready",
+              "backing-off"
             ]
           },
           "target": {
@@ -4634,6 +4639,9 @@
           },
           "last_failure_error_code": {
             "type": "string"
+          },
+          "isRetrying": {
+            "type": "boolean"
           }
         }
       },
@@ -4665,6 +4673,10 @@
             "format": "date-time"
           },
           "inboxed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "scheduled_start_at": {
             "type": "string",
             "format": "date-time"
           },
