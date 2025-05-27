@@ -17,7 +17,6 @@ export function CompletePromise({
   return (
     <Expression
       name={'ctx.promise'}
-      prefix="async"
       {...(typeof entry.promise_name === 'string' && {
         input: (
           <InputOutput

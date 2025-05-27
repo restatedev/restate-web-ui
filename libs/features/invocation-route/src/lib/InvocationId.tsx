@@ -6,8 +6,14 @@ import { Invocation } from '@restate/data-access/admin-api';
 import { tv } from 'tailwind-variants';
 import { INVOCATION_QUERY_NAME } from './constants';
 import { useActiveSidebarParam } from '@restate/ui/layout';
-import { useNavigate } from 'react-router';
+import { useLocation } from 'react-router';
 import { useRestateContext } from '@restate/features/restate-context';
+import {
+  DEPLOYMENT_QUERY_PARAM,
+  SERVICE_PLAYGROUND_QUERY_PARAM,
+  SERVICE_QUERY_PARAM,
+} from '@restate/features/overview-route';
+import { useIsInInvocationPage } from './InvocationPageContext';
 
 const styles = tv({
   base: 'relative text-zinc-600 font-mono',
@@ -50,6 +56,31 @@ const styles = tv({
     size: 'default',
   },
 });
+
+export function getSearchParams(
+  search: string,
+  excludingInvocationId?: string
+) {
+  const searchParams = new URLSearchParams(search);
+  Array.from(searchParams.keys()).forEach((key) => {
+    if (
+      ![
+        SERVICE_PLAYGROUND_QUERY_PARAM,
+        SERVICE_QUERY_PARAM,
+        DEPLOYMENT_QUERY_PARAM,
+        INVOCATION_QUERY_NAME,
+        'state', // TODO resolve circular dependency
+        // STATE_QUERY_NAME,
+      ].includes(key)
+    ) {
+      searchParams.delete(key);
+    }
+    if (key === INVOCATION_QUERY_NAME && excludingInvocationId) {
+      searchParams.delete(key, excludingInvocationId);
+    }
+  });
+  return '?' + searchParams.toString();
+}
 export function InvocationId({
   id,
   className,
@@ -64,14 +95,22 @@ export function InvocationId({
   const invocationInSidebar = useActiveSidebarParam(INVOCATION_QUERY_NAME);
   const isSelected = invocationInSidebar === id;
 
-  const navigate = useNavigate();
   const { baseUrl } = useRestateContext();
   const isIcon = size === 'icon';
+  const location = useLocation();
+
+  const isInInvocationsPage = useIsInInvocationPage();
+  const openInSidebar = Boolean(isInInvocationsPage);
 
   const linkElement = (
     <Link
       ref={linkRef}
-      href={`?${INVOCATION_QUERY_NAME}=${id}`}
+      {...(openInSidebar && {
+        href: `?${INVOCATION_QUERY_NAME}=${id}`,
+      })}
+      {...(!openInSidebar && {
+        href: `${baseUrl}/invocations/${id}${getSearchParams(location.search)}`,
+      })}
       aria-label={id}
       variant="secondary"
       className={link()}
@@ -96,23 +135,14 @@ export function InvocationId({
             <span className={text()}>{id}</span>
           </TruncateWithTooltip>
         )}
-        <span
-          className="contents"
-          onClickCapture={(e) => {
-            if (e.shiftKey) {
-              e.preventDefault();
-              navigate(`${baseUrl}/invocations/${id}`);
-            }
-          }}
-        >
-          {isIcon ? (
-            <HoverTooltip content={id} offset={20}>
-              {linkElement}
-            </HoverTooltip>
-          ) : (
-            linkElement
-          )}
-        </span>
+
+        {isIcon ? (
+          <HoverTooltip content={id} offset={20}>
+            {linkElement}
+          </HoverTooltip>
+        ) : (
+          linkElement
+        )}
       </div>
     </div>
   );

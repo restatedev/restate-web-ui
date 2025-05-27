@@ -28,6 +28,10 @@ import { formatDurations } from '@restate/util/intl';
 import { Actions } from './Actions';
 import { JournalSection } from './Journal';
 import { useQueryClient } from '@tanstack/react-query';
+import { Link } from '@restate/ui/link';
+import { useRestateContext } from '@restate/features/restate-context';
+import { useLocation } from 'react-router';
+import { getSearchParams } from './InvocationId';
 
 function Footnote({ dataUpdatedAt }: { dataUpdatedAt?: number }) {
   const [now, setNow] = useState(() => Date.now());
@@ -108,6 +112,8 @@ function InvocationPanelContent() {
   );
 
   const queryClient = useQueryClient();
+  const { baseUrl } = useRestateContext();
+  const location = useLocation();
 
   if (!invocationId) {
     return null;
@@ -154,6 +160,16 @@ function InvocationPanelContent() {
           </div>
         </div>
       </ComplementaryFooter>
+      <Link
+        variant="icon"
+        className="absolute right-1 top-1 rounded-lg"
+        href={`${baseUrl}/invocations/${invocationId}${getSearchParams(
+          location.search,
+          invocationId
+        )}`}
+      >
+        <Icon name={IconName.Maximize} className="w-4 h-4 text-gray-500" />
+      </Link>
       <div className="flex flex-col items-start">
         <h2 className="mb-3 text-lg font-medium leading-6 text-gray-900 flex gap-2 items-center w-full">
           <div className="h-10 w-10 shrink-0 text-blue-400">

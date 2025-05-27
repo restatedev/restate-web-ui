@@ -18,7 +18,6 @@ export function Awakeable({
   return (
     <Expression
       name={'ctx.awakeable'}
-      prefix="async"
       output={
         <>
           {typeof entry.value === 'string' && (
