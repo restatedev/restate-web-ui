@@ -44,6 +44,7 @@ import {
   StatePanel,
 } from '@restate/features/state-object-route';
 import { EditState } from '@restate/features/edit-state';
+import { FeatureFlags } from '@restate/util/feature-flag';
 
 export const links: LinksFunction = () => [
   // TODO: move to the its own lib

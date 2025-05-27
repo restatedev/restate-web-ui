@@ -19,14 +19,10 @@ function setFeatureFlag(flag: FeatureFlag, value: boolean) {
   return localStorage.setItem(flag, String(value));
 }
 
+let value: Partial<Record<FeatureFlag, boolean>> = {};
+
 function getFeatureFlags() {
-  return FEATURE_FLAGS.reduce(
-    (result, flag) => ({
-      ...result,
-      [flag]: isFeatureEnabled(flag),
-    }),
-    {} as Record<FeatureFlag, boolean>
-  );
+  return value;
 }
 
 function isFeatureFlag(key: string | null): key is FeatureFlag {
@@ -36,6 +32,13 @@ function isFeatureFlag(key: string | null): key is FeatureFlag {
 function onFlagChange(callback: VoidFunction) {
   function storageEventHandler(event: StorageEvent) {
     if (isFeatureFlag(event.key)) {
+      value = FEATURE_FLAGS.reduce(
+        (result, flag) => ({
+          ...result,
+          [flag]: isFeatureEnabled(flag),
+        }),
+        {} as Record<FeatureFlag, boolean>
+      );
       callback();
     }
   }
