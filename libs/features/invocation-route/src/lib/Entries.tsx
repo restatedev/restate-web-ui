@@ -13,7 +13,6 @@ import {
   PropsWithChildren,
   CSSProperties,
   useState,
-  useLayoutEffect,
   useEffect,
 } from 'react';
 import { createPortal } from 'react-dom';
