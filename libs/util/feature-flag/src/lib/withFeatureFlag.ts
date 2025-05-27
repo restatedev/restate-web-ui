@@ -1,21 +1,12 @@
-import type { LoaderFunction } from 'react-router';
 import { ClientLoaderFunction, redirect } from 'react-router';
-import { hasAccessToFeature } from './hasAccessToFeature';
 import type { FeatureFlag } from './type';
+import { isFeatureEnabled } from './FeatureFlags';
 
 export function withFeatureFlag(
   featureFlag: FeatureFlag,
-  loader: LoaderFunction
-): LoaderFunction;
-export function withFeatureFlag(
-  featureFlag: FeatureFlag,
   loader: ClientLoaderFunction
-): ClientLoaderFunction;
-export function withFeatureFlag(
-  featureFlag: FeatureFlag,
-  loader: LoaderFunction | ClientLoaderFunction
-): LoaderFunction | ClientLoaderFunction {
-  if (hasAccessToFeature(featureFlag)) {
+): ClientLoaderFunction {
+  if (isFeatureEnabled(featureFlag)) {
     return loader;
   }
 
