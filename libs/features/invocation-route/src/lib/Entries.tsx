@@ -165,7 +165,7 @@ const TOOLTIP_LIFECyCLES: Record<
 > = {
   failed: 'Failed at',
   succeeded: 'Succeeded at',
-  running: 'Running since',
+  running: 'Start running at',
   killed: 'Killed at',
   suspended: 'Suspended at',
   scheduled: 'Scheduled at',
@@ -296,8 +296,8 @@ export function Entries({
         )}
       {invocation && showLifeCycles && (
         <LifecyclePortal invocationId={invocation.id}>
-          <div className="h-7 py-1.5">
-            <div className="relative w-full h-full flex flex-row rounded-md bg-zinc-200/50">
+          <div className="h-7">
+            <div className="relative  w-full h-full flex flex-row rounded-md bg-zinc-200/50">
               <div
                 style={{
                   flexBasis: `${
@@ -320,7 +320,7 @@ export function Entries({
                   <DateTooltip
                     date={new Date(event.start)}
                     title={TOOLTIP_LIFECyCLES[event.type]}
-                    className="rounded-md"
+                    className="rounded-md hover:bg-transparent"
                   >
                     <Progress
                       startTime={event.start}
@@ -331,6 +331,7 @@ export function Entries({
                       })}
                       className="static"
                       mode={event.type}
+                      isRetrying={invocation.status === 'retrying'}
                       isRunning={
                         ['running', 'retrying'].includes(invocation.status) &&
                         i === lifeCycles.length - 1
@@ -434,7 +435,7 @@ function Entry({
               !invocationIds.includes(String(entry?.invoked_id)) ||
               invocationsError?.[String(entry.invoked_id)]) && (
               <TimelinePortal index={entry.index} invocationId={invocation.id}>
-                <div className="leading-7 flex items-center h-full py-2.5">
+                <div className="leading-7 flex items-center h-full ">
                   <div className="relative w-full h-full rounded-md bg-zinc-200/50">
                     <Progress
                       startTime={new Date(entry.start).getTime()}
@@ -452,13 +453,14 @@ function Entry({
                             new Date(entry.start).getTime())
                       }
                       isRetrying={isRetryingThisEntry}
-                      className="ml-0.5"
+                      isRunning={!completed}
+                      className="ml-0.5 top-1  h-1.5"
                       showDuration
                     >
                       <DateTooltip
                         date={new Date(entry.start)}
                         title="Appended at"
-                        className="min-w-2 block h-full rounded-md"
+                        className="min-w-2 block h-full rounded-md absolute inset-0 z-[2]"
                       />
                     </Progress>
                   </div>
@@ -559,25 +561,81 @@ function EntryPortal({
 }
 
 const progressStyles = tv({
-  base: 'absolute h-full bg-blue-300 min-w-[2px] rounded-md @container hover:min-w-2 transition-all transform',
+  base: 'absolute h-full bg-blue-300 min-w-[2px] rounded-md @container hover:min-w-2 hover:mt-0 hover:h-full hover:top-0 hover:z-10 transition-all transform',
   variants: {
-    isPending: { true: 'animate-pulse', false: '' },
-    isRetrying: { true: 'bg-orange-200', false: '' },
-    isRunning: { true: 'animate-pulse ', false: '' },
+    isPending: { true: '', false: '' },
+    isRetrying: {
+      true: 'bg-orange-200',
+      false: '',
+    },
+    isRunning: {
+      true: ' ',
+      false: '',
+    },
     mode: {
       suspended:
-        '[background:repeating-linear-gradient(to_right,theme(colors.zinc.200),theme(colors.zinc.200)_4px,theme(colors.gray.100)_4px,theme(colors.gray.100)_6px)] border border-dashed border-zinc-200 ',
-      running: '',
-      pending: 'border-dashed bg-transparent border border-orange-300 ',
-      created: 'bg-zinc-300',
-      scheduled: 'border border-dashed border-zinc-300/80 bg-gray-100',
+        'h-3 mt-2 [background:repeating-linear-gradient(to_right,theme(colors.zinc.200/0),theme(colors.zinc.200/0)_4px,theme(colors.zinc.300)_4px,theme(colors.zinc.300)_8px)] border border-dashed border-zinc-400/50 ',
+      running: 'border border-blue-400/70',
+      pending:
+        'h-3 mt-2 border-dashed bg-transparent border border-orange-300 ',
+      created: 'h-3 mt-2 bg-zinc-300',
+      scheduled:
+        'h-3 mt-2 border border-dashed border-zinc-400/50 bg-zinc-100/0',
       succeeded: 'bg-green-300',
       killed: 'bg-zinc-300',
       failed: 'bg-red-400',
-      cancel:
-        '[background:repeating-linear-gradient(to_right,theme(colors.blue.300),theme(colors.blue.300)_4px,theme(colors.blue.200)_4px,theme(colors.blue.200)_6px)]',
+      cancel: 'border border-blue-400/30 bg-blue-100',
     },
   },
+  compoundVariants: [
+    {
+      mode: 'running',
+      isRetrying: true,
+      className: 'bg-orange-200 border-orange-400/30',
+    },
+  ],
+});
+
+const animationStyles = tv({
+  base: 'absolute left-[-36px] right-[-36px] top-0 bottom-0 hidden opacity-80',
+  variants: {
+    isPending: { true: '', false: '' },
+    isRetrying: {
+      true: '[background:repeating-linear-gradient(-45deg,theme(colors.orange.200),theme(colors.orange.200)_8px,theme(colors.orange.300/5)_8px,theme(colors.orange.300/5)_12px)]',
+      false: '',
+    },
+    isRunning: {
+      true: '',
+      false: '',
+    },
+    mode: {
+      suspended: '',
+      running: 'block ',
+      pending: '',
+      created: '',
+      scheduled: '',
+      succeeded: '',
+      killed: '',
+      failed: '',
+      cancel:
+        'block [background:repeating-linear-gradient(-45deg,theme(colors.blue.100),theme(colors.blue.100)_8px,theme(colors.blue.300)_8px,theme(colors.blue.300)_12px)] [animation-duration:2000ms] animate-in slide-in-from-left-[34px] repeat-infinite ',
+    },
+  },
+  compoundVariants: [
+    {
+      mode: 'running',
+      isRetrying: true,
+      className:
+        '[animation-duration:2000ms] animate-in slide-in-from-left-[34px] repeat-infinite [background:repeating-linear-gradient(-45deg,theme(colors.orange.200),theme(colors.orange.200)_8px,theme(colors.orange.300/5)_8px,theme(colors.orange.300/5)_12px)]',
+    },
+    {
+      mode: 'running',
+      isRunning: true,
+      isRetrying: false,
+      className:
+        '[animation-duration:2000ms] animate-in slide-in-from-left-[34px] repeat-infinite [background:repeating-linear-gradient(-45deg,theme(colors.blue.300),theme(colors.blue.300)_8px,theme(colors.blue.400/5)_8px,theme(colors.blue.400/5)_12px)] ',
+    },
+  ],
 });
 
 export function Progress({
@@ -637,11 +695,22 @@ export function Progress({
       data-mode={mode}
     >
       {children}
+
       {showDuration && (
         <div className="absolute top-full text-2xs left-0 text-zinc-500 leading-4 mt-0.5 whitespace-nowrap">
           {duration || (mode === 'running' ? <>0ms</> : null)}
         </div>
       )}
+      <div className="absolute inset-0 overflow-hidden rounded-md animate-pulse">
+        <div
+          className={animationStyles({
+            mode,
+            isRunning,
+            isRetrying,
+            isPending,
+          })}
+        />
+      </div>
     </div>
   );
 }

@@ -75,60 +75,66 @@ export function VirtualObjectSection({
   const state = stateData?.state ?? [];
   return (
     <Section className={styles({ className })}>
-      <SectionTitle className="">{invocation.target_service_name}</SectionTitle>
-      <SectionContent className="p-0 rounded-b-none" raised={raised}>
-        <div className="flex px-1.5 py-1 items-center gap-1">
-          <span className="pl-1 text-code text-gray-500 font-medium">Key</span>
-          <Badge
-            size="sm"
-            className="font-mono py-0 pr-0 align-middle min-w-0 ml-auto"
-          >
-            <div className="truncate">{invocation?.target_service_key}</div>
-            <Copy
-              copyText={String(invocation?.target_service_key)}
-              className="shrink-0 [&_svg]:w-2.5 [&_svg]:h-2.5 p-1 ml-1"
-            />
-          </Badge>
-        </div>
-      </SectionContent>
-      <SectionContent className="rounded-t-none -mt-px p-0" raised={raised}>
-        <div className="flex px-1.5 py-1 items-center gap-1">
-          <span className="pl-1 text-code text-gray-500 font-medium">
-            State
-          </span>
-          <Popover>
-            <PopoverTrigger>
-              <Button
-                variant="secondary"
-                disabled={state.length === 0}
-                className="bg-white/70 border disabled:border-transparent disabled:shadow-none disabled:text-zinc-500 px-1.5 text-zinc-600 font-mono font-medium py-0 flex rounded-md items-center gap-1 text-xs h-5 ml-auto"
-              >
-                {state.length > 0 ? `(${state.length})` : 'No state'}
-                {(stateData?.state ?? [])?.length > 0 && (
-                  <Icon
-                    name={IconName.ChevronsUpDown}
-                    className="h-3 w-3 text-gray-500 shrink-0"
+      <div>
+        <SectionTitle className="">
+          {invocation.target_service_name}
+        </SectionTitle>
+        <SectionContent className="p-0 rounded-b-none" raised={raised}>
+          <div className="flex px-1.5 py-1 items-center gap-1">
+            <span className="pl-1 text-code text-gray-500 font-medium">
+              Key
+            </span>
+            <Badge
+              size="sm"
+              className="font-mono py-0 pr-0 align-middle min-w-0 ml-auto"
+            >
+              <div className="truncate">{invocation?.target_service_key}</div>
+              <Copy
+                copyText={String(invocation?.target_service_key)}
+                className="shrink-0 [&_svg]:w-2.5 [&_svg]:h-2.5 p-1 ml-1"
+              />
+            </Badge>
+          </div>
+        </SectionContent>
+        <SectionContent className="rounded-t-none -mt-px p-0" raised={raised}>
+          <div className="flex px-1.5 py-1 items-center gap-1">
+            <span className="pl-1 text-code text-gray-500 font-medium">
+              State
+            </span>
+            <Popover>
+              <PopoverTrigger>
+                <Button
+                  variant="secondary"
+                  disabled={state.length === 0}
+                  className="bg-white/70 border disabled:border-transparent disabled:shadow-none disabled:text-zinc-500 px-1.5 text-zinc-600 font-mono font-medium py-0 flex rounded-md items-center gap-1 text-xs h-5 ml-auto"
+                >
+                  {state.length > 0 ? `(${state.length})` : 'No state'}
+                  {(stateData?.state ?? [])?.length > 0 && (
+                    <Icon
+                      name={IconName.ChevronsUpDown}
+                      className="h-3 w-3 text-gray-500 shrink-0"
+                    />
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="max-w-lg">
+                <DropdownSection
+                  title=""
+                  className="px-0 bg-transparent border-none mx-0 [&&&]:mb-1 font-mono"
+                >
+                  <State
+                    state={stateData?.state}
+                    service={invocation?.target_service_name}
+                    serviceKey={invocation?.target_service_key}
                   />
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="max-w-lg">
-              <DropdownSection
-                title=""
-                className="px-0 bg-transparent border-none mx-0 [&&&]:mb-1 font-mono"
-              >
-                <State
-                  state={stateData?.state}
-                  service={invocation?.target_service_name}
-                  serviceKey={invocation?.target_service_key}
-                />
-              </DropdownSection>
-            </PopoverContent>
-          </Popover>
-        </div>
-      </SectionContent>
+                </DropdownSection>
+              </PopoverContent>
+            </Popover>
+          </div>
+        </SectionContent>
+      </div>
       {shouldShowQueue && (
-        <>
+        <div>
           <SectionTitle className="mt-2">queue</SectionTitle>
           <SectionContent raised={raised}>
             <div>
@@ -224,7 +230,7 @@ export function VirtualObjectSection({
               </div>
             </div>
           </SectionContent>
-        </>
+        </div>
       )}
     </Section>
   );

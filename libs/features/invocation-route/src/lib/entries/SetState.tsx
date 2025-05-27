@@ -16,7 +16,7 @@ export function SetState({
     <Expression
       isFunction={false}
       name={entry.key ?? ''}
-      operationSymbol={'←'}
+      operationSymbol={'='}
       prefix="set"
       output={
         <>

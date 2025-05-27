@@ -18,7 +18,6 @@ export function Run({
   return (
     <Expression
       name={'ctx.run'}
-      prefix="async"
       className="pr-0"
       {...(typeof entry.name === 'string' &&
         entry.name && {
