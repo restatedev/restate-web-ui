@@ -4,6 +4,6 @@ import { getComputedInvocationStatus } from './getComputedInvocationStatus';
 export function convertInvocation(invocation: RawInvocation) {
   return {
     ...invocation,
-    status: getComputedInvocationStatus(invocation),
+    ...getComputedInvocationStatus(invocation),
   };
 }

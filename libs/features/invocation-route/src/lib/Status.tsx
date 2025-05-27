@@ -1,6 +1,6 @@
 import {
   Invocation,
-  InvocationComputedStatus,
+  InvocationComputedStatus2,
 } from '@restate/data-access/admin-api';
 import { Badge } from '@restate/ui/badge';
 import { Button } from '@restate/ui/button';
@@ -24,11 +24,16 @@ export function getRestateError(invocation?: Invocation) {
     : undefined;
 }
 
-function getBadgeVariant(status: InvocationComputedStatus) {
+function getBadgeVariant(
+  status: InvocationComputedStatus2,
+  isRetrying?: boolean
+) {
+  if (isRetrying) {
+    return 'warning';
+  }
   switch (status) {
     case 'succeeded':
       return 'success';
-    case 'retrying':
     case 'pending':
       return 'warning';
     case 'running':
@@ -61,12 +66,16 @@ const styles = tv({
       failed: 'pr-0.5 py-0.5',
       cancelled: '',
       killed: '',
-      retrying: 'border-dashed border border-orange-200 pr-0.5 py-0.5',
+      'backing-off': '',
+    },
+    isRetrying: {
+      true: 'border-dashed border border-orange-200 pr-0.5 py-0.5',
+      false: '',
     },
   },
 });
 
-const STATUS_LABEL: Record<InvocationComputedStatus, string> = {
+const STATUS_LABEL: Record<InvocationComputedStatus2, string> = {
   pending: 'Pending',
   scheduled: 'Scheduled',
   ready: 'Ready',
@@ -76,7 +85,7 @@ const STATUS_LABEL: Record<InvocationComputedStatus, string> = {
   failed: 'Failed',
   cancelled: 'Cancelled',
   killed: 'Killed',
-  retrying: 'Retrying',
+  'backing-off': 'Backing-off',
 };
 
 export function Status({
@@ -87,7 +96,7 @@ export function Status({
   className?: string;
 }) {
   const { status } = invocation;
-  const variant = getBadgeVariant(status);
+  const variant = getBadgeVariant(status, invocation.isRetrying);
   const error = getRestateError(invocation);
 
   return (
@@ -97,15 +106,16 @@ export function Status({
         className={styles({
           className,
           status,
+          isRetrying: Boolean(invocation.isRetrying),
           variant,
         })}
       >
-        <Ellipsis visible={['running', 'retrying'].includes(status)}>
+        <Ellipsis visible={status === 'running'}>
           {STATUS_LABEL[status]}
         </Ellipsis>
-        {['retrying', 'failed'].includes(status) && (
+        {(status === 'failed' || invocation.isRetrying) && (
           <LastError
-            isRetrying={status === 'retrying'}
+            isRetrying={Boolean(invocation.isRetrying)}
             isFailed={status === 'failed'}
             error={error}
             attemptCount={invocation.retry_count}

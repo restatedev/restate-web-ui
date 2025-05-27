@@ -330,11 +330,8 @@ export function Entries({
                       })}
                       className="static"
                       mode={event.type}
-                      isRetrying={invocation.status === 'retrying'}
-                      isRunning={
-                        ['running', 'retrying'].includes(invocation.status) &&
-                        i === lifeCycles.length - 1
-                      }
+                      isRetrying={invocation.isRetrying}
+                      isRunning={invocation.status === 'running'}
                     />
                   </DateTooltip>
                 </div>
@@ -384,7 +381,7 @@ function Entry({
       >)
     : undefined;
   const completed = 'completed' in entry ? !!entry.completed : true;
-  const isRetrying = invocation.status === 'retrying';
+  const isRetrying = invocation.isRetrying;
   const isRetryingThisEntry =
     isRetrying &&
     failed &&

@@ -62,7 +62,7 @@ const serviceStyles = tv({
 });
 
 const MAX_NUMBER_OF_DEPLOYMENTS = 2;
-const MAX_NUMBER_OF_HANDLERS = 2;
+const MAX_NUMBER_OF_HANDLERS = 3;
 
 function filterHandler(
   serviceType: ServiceType,
