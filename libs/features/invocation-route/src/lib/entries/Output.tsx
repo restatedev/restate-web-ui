@@ -16,8 +16,10 @@ export function Output({
 
   return (
     <Expression
-      isHandler
-      name={invocation.target_handler_name}
+      prefix="return"
+      isFunction={false}
+      operationSymbol={''}
+      name={''}
       output={
         <>
           {typeof entry.body === 'string' && (
