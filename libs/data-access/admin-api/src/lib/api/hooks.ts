@@ -199,12 +199,39 @@ export function useRegisterDeployment(
   });
 }
 
+function getServiceAdminApi(init: {
+  baseUrl: string;
+  parameters?: OperationParameters<'/services/{service}', 'get'>;
+  resolvedPath?: string;
+}) {
+  const { queryFn, ...queryOptions } = adminApi(
+    'query',
+    '/services/{service}',
+    'get',
+    init
+  );
+
+  return {
+    ...queryOptions,
+    queryFn: (...args: Parameters<typeof queryFn>) =>
+      Promise.resolve(queryFn(...args))?.then((data) => {
+        if (!data) {
+          return data;
+        }
+        return {
+          ...data,
+          handlers: data?.handlers.sort((a, b) => a.name.localeCompare(b.name)),
+        };
+      }),
+  };
+}
+
 export function useServiceDetails(
   service: string,
   options?: HookQueryOptions<'/services/{service}', 'get'>
 ) {
   const baseUrl = useAdminBaseUrl();
-  const queryOptions = adminApi('query', '/services/{service}', 'get', {
+  const { queryFn, ...queryOptions } = getServiceAdminApi({
     baseUrl,
     parameters: { path: { service } },
   });
@@ -212,6 +239,16 @@ export function useServiceDetails(
   const results = useQuery({
     staleTime: 0,
     ...queryOptions,
+    queryFn: (...args: Parameters<typeof queryFn>) =>
+      Promise.resolve(queryFn(...args))?.then((data) => {
+        if (!data) {
+          return data;
+        }
+        return {
+          ...data,
+          handlers: data?.handlers.sort((a, b) => a.name.localeCompare(b.name)),
+        };
+      }),
     ...options,
   });
 
@@ -227,7 +264,7 @@ export function useListServices(
 
   const results = useQueries({
     queries: services.map((service) => ({
-      ...adminApi('query', '/services/{service}', 'get', {
+      ...getServiceAdminApi({
         baseUrl,
         parameters: { path: { service } },
       }),
