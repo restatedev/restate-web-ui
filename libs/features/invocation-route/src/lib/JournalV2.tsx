@@ -179,7 +179,7 @@ export function JournalV2({
                       <HoverTooltip content="Introspect">
                         <Link
                           variant="icon"
-                          href={`${baseUrl}/introspection?query=SELECT id, index, appended_at, entry_type, name, entry_json FROM sys_journal WHERE id = '${journalAndInvocationData?.invocation?.id}'`}
+                          href={`${baseUrl}/introspection?query=SELECT id, index, appended_at, entry_type, name, entry_lite_json AS metadata FROM sys_journal WHERE id = '${journalAndInvocationData?.invocation?.id}'`}
                           target="_blank"
                         >
                           <Icon
