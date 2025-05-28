@@ -62,6 +62,7 @@ function ServiceDetailsContent() {
   } = useServiceDetails(String(service), {
     ...(!service && { enabled: false }),
   });
+
   useEffect(() => {
     setKey((k) => k + 1);
   }, [data]);
