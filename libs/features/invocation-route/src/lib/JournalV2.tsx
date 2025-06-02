@@ -1,8 +1,4 @@
-import {
-  Invocation,
-  JournalEntry,
-  useGetInvocationsJournalWithInvocations,
-} from '@restate/data-access/admin-api';
+import { useGetInvocationsJournalWithInvocationsV2 } from '@restate/data-access/admin-api';
 import { lazy, Suspense, useRef, useState } from 'react';
 import { InvocationId } from './InvocationId';
 import { tv } from 'tailwind-variants';
@@ -54,7 +50,7 @@ export function JournalV2({
     error: apiError,
     refetch,
     dataUpdatedAt,
-  } = useGetInvocationsJournalWithInvocations(invocationIds, {
+  } = useGetInvocationsJournalWithInvocationsV2(invocationIds, {
     refetchOnMount: true,
     staleTime: 0,
   });
@@ -73,21 +69,21 @@ export function JournalV2({
   }
 
   const start = new Date(
-    journalAndInvocationData?.invocation?.created_at ??
+    journalAndInvocationData?.created_at ??
       new Date(dataUpdatedAt).toISOString()
   ).getTime();
   const end = new Date(
-    journalAndInvocationData?.invocation?.completed_at ??
+    journalAndInvocationData?.completed_at ??
       new Date(dataUpdatedAt).toISOString()
   ).getTime();
 
   const cancelEntries = journalAndInvocationData?.journal?.entries?.filter(
-    (entry) => entry.entry_type === 'CancelSignal'
+    (entry) => entry.type === 'Cancel' && entry.category === 'notification'
   );
 
-  const isOldJournal = journalAndInvocationData?.journal?.entries.some(
-    (entry) => !entry.version || entry.version === 1
-  );
+  const isOldJournal =
+    !journalAndInvocationData?.journal?.version ||
+    journalAndInvocationData?.journal?.version === 1;
 
   return (
     <div ref={containerRef}>
@@ -127,12 +123,11 @@ export function JournalV2({
                     <div className="shrink-0 text-xs uppercase font-semibold text-gray-400 pl-6">
                       Invoked by
                     </div>
-                    {journalAndInvocationData?.invocation?.invoked_by ===
-                    'ingress' ? (
+                    {journalAndInvocationData?.invoked_by === 'ingress' ? (
                       <div className="text-xs font-medium">Ingress</div>
-                    ) : journalAndInvocationData?.invocation?.invoked_by_id ? (
+                    ) : journalAndInvocationData?.invoked_by_id ? (
                       <InvocationId
-                        id={journalAndInvocationData?.invocation?.invoked_by_id}
+                        id={journalAndInvocationData?.invoked_by_id}
                         className="min-w-0 max-w-[20ch] font-medium"
                         size="sm"
                       />
@@ -143,14 +138,14 @@ export function JournalV2({
                     className="grid grid-cols-1 text-xs items-start gap-1.5 pl-2 w-full"
                     data-container
                   >
-                    {combinedEntries?.map((entry) => (
+                    {combinedEntries?.map((entry, index) => (
                       <div
                         data-id={getEntryId(
                           entry.invocationId,
                           entry.entryIndex
                         )}
                         className="contents [&:has(*)]:block"
-                        key={getEntryId(entry.invocationId, entry.entryIndex)}
+                        key={index}
                         style={{ paddingLeft: `${entry.depth * 1.125}rem` }}
                       />
                     ))}
@@ -177,7 +172,7 @@ export function JournalV2({
                       <HoverTooltip content="Introspect">
                         <Link
                           variant="icon"
-                          href={`${baseUrl}/introspection?query=SELECT id, index, appended_at, entry_type, name, entry_lite_json AS metadata FROM sys_journal WHERE id = '${journalAndInvocationData?.invocation?.id}'`}
+                          href={`${baseUrl}/introspection?query=SELECT id, index, appended_at, entry_type, name, entry_lite_json AS metadata FROM sys_journal WHERE id = '${journalAndInvocationData?.id}'`}
                           target="_blank"
                         >
                           <Icon
@@ -190,14 +185,14 @@ export function JournalV2({
 
                     {!isOldJournal &&
                       timelineWidth !== 0 &&
-                      combinedEntries?.map((entry) => (
+                      combinedEntries?.map((entry, index) => (
                         <div
                           data-id={getTimelineId(
                             entry.invocationId,
                             entry.entryIndex
                           )}
                           className="[&:has(*)]:min-h-7 [&:has(*)]:mb-1.5 [&:nth-child(2)]:min-h-[1.875rem]"
-                          key={entry.entryIndex + entry.invocationId}
+                          key={index}
                         />
                       ))}
                     {isOldJournal && timelineWidth !== 0 && (
@@ -227,15 +222,7 @@ export function JournalV2({
 
 function getCombinedJournal(
   invocationId: string,
-  data?: Record<
-    string,
-    {
-      journal: {
-        entries: JournalEntry[];
-      };
-      invocation: Invocation;
-    }
-  >,
+  data?: ReturnType<typeof useGetInvocationsJournalWithInvocationsV2>['data'],
   depth = 0
 ):
   | {
@@ -258,19 +245,20 @@ function getCombinedJournal(
   const combinedEntries = data?.[invocationId]?.journal?.entries
     ?.map((entry) => {
       if (isEntryCall(entry)) {
-        const invoked_id = String(entry.invoked_id);
+        const callInvocationId = String(entry.invocationId);
         return [
           {
             invocationId,
-            entryIndex: entry.index,
+            entryIndex: entry.index ?? -1,
             depth,
           },
-          ...(getCombinedJournal(invoked_id, data, depth + 1)?.flat() ?? []),
+          ...(getCombinedJournal(callInvocationId, data, depth + 1)?.flat() ??
+            []),
         ].flat();
       } else {
         return {
           invocationId,
-          entryIndex: entry.index,
+          entryIndex: entry.index ?? -1,
           depth,
         };
       }

@@ -1,4 +1,4 @@
-import { SleepJournalEntryType } from '@restate/data-access/admin-api';
+import { JournalEntryV2 } from '@restate/data-access/admin-api';
 import { EntryProps } from './types';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 import { formatDurations } from '@restate/util/intl';
@@ -15,12 +15,14 @@ export function Sleep({
   error,
   isRetrying,
   wasRetrying,
-}: EntryProps<SleepJournalEntryType>) {
+}: EntryProps<
+  Extract<JournalEntryV2, { type?: 'Sleep'; category?: 'command' }>
+>) {
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
-  const { isPast, ...parts } = durationSinceLastSnapshot(entry.sleep_wakeup_at);
+  const { isPast, ...parts } = durationSinceLastSnapshot(entry.wakeupAt);
   const duration = formatDurations(parts);
 
-  const entryError = entry.failure || error;
+  const entryError = entry.error;
 
   return (
     <Expression
@@ -44,9 +46,9 @@ export function Sleep({
             <span className="font-normal text-zinc-500 mr-[0.5ch] min-w-0 truncate">
               {isPast ? 'Woke up ' : 'Wakes up in '}
             </span>
-            {entry.sleep_wakeup_at && (
+            {entry.wakeupAt && (
               <DateTooltip
-                date={new Date(entry.sleep_wakeup_at)}
+                date={new Date(entry.wakeupAt)}
                 title={
                   isPast ? 'Woke up from sleep at' : 'Wakes up from sleep at'
                 }
@@ -59,12 +61,12 @@ export function Sleep({
               {isPast && ' ago'}
             </span>
           </div>
-          {!entry.completed && (!entryError || isRetrying) && <Ellipsis />}
+          {entry.isPending && (!entryError || entry.isRetrying) && <Ellipsis />}
           {entryError?.message && (
             <Failure
               message={entryError.message}
-              restate_code={entryError.restate_code}
-              isRetrying={isRetrying || wasRetrying}
+              restate_code={entryError.restateCode}
+              isRetrying={entry.isRetrying}
               className="-mr-1.5"
             />
           )}

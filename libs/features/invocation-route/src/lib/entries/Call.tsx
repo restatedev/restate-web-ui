@@ -1,4 +1,4 @@
-import { CallJournalEntryType } from '@restate/data-access/admin-api';
+import { JournalEntryV2 } from '@restate/data-access/admin-api';
 import { EntryProps } from './types';
 import { Expression, InputOutput } from '../Expression';
 import { Headers } from '../Headers';
@@ -25,8 +25,10 @@ export function Call({
   isRetrying,
   wasRetrying,
   className,
-}: EntryProps<CallJournalEntryType>) {
-  const entryError = entry.failure || error;
+}: EntryProps<
+  Extract<JournalEntryV2, { type?: 'Call'; category?: 'command' }>
+>) {
+  const entryError = entry.error;
   const {
     setInvocationIds,
     isPending,
@@ -34,10 +36,15 @@ export function Call({
     error: invocationsError,
   } = useJournalContext();
   const isExpanded =
-    entry.invoked_id && invocationIds.includes(entry.invoked_id) && !isPending;
+    entry.invocationId &&
+    invocationIds.includes(entry.invocationId) &&
+    !isPending;
 
-  const invokedIsPending = isPending?.[String(entry.invoked_id)];
-  const invokedError = invocationsError?.[String(entry.invoked_id)];
+  const invokedIsPending = isPending?.[String(entry.invocationId)];
+  const invokedError = invocationsError?.[String(entry.invocationId)];
+  const target = [entry.serviceName, entry.serviceKey, entry.handlerName]
+    .filter(Boolean)
+    .join('/');
 
   return (
     <div className={styles({ className })}>
@@ -50,10 +57,10 @@ export function Call({
         <Button
           onClick={() => {
             setInvocationIds?.((ids) => {
-              if (entry.invoked_id && !ids.includes(entry.invoked_id)) {
-                return [...ids, entry.invoked_id];
+              if (entry.invocationId && !ids.includes(entry.invocationId)) {
+                return [...ids, entry.invocationId];
               } else {
-                return ids.filter((id) => id !== entry.invoked_id);
+                return ids.filter((id) => id !== entry.invocationId);
               }
             });
           }}
@@ -71,14 +78,14 @@ export function Call({
         </Button>
       )}
       <Target
-        target={entry.invoked_target}
+        target={target}
         className="[font-size:1.02em] [&_a_svg]:w-3.5 [&_a_svg]:h-3.5"
         showHandler={false}
       >
         <Expression
           isHandler
           className="min-w-0"
-          name={entry.invoked_target?.split('/').at(-1) ?? ''}
+          name={entry?.handlerName ?? ''}
           input={
             <>
               {entry.parameters && (
@@ -123,34 +130,36 @@ export function Call({
               )}
               {typeof entry.value === 'undefined' &&
                 !entryError &&
-                entry.completed && (
+                !entry.isPending && (
                   <div className="text-zinc-400 font-semibold font-mono text-2xs">
                     void
                   </div>
                 )}
-              {!entry.completed && (!entryError || isRetrying) && <Ellipsis />}
+              {entry.isPending && (!entryError || entry.isRetrying) && (
+                <Ellipsis />
+              )}
               {entryError?.message && (
                 <Failure
                   message={entryError.message}
-                  restate_code={entryError.restate_code}
-                  isRetrying={isRetrying || wasRetrying}
+                  restate_code={entryError.restateCode}
+                  isRetrying={entry.isRetrying}
                 />
               )}
             </>
           }
         />
       </Target>
-      {entry.invoked_id && (
+      {entry.invocationId && (
         <InvocationId
-          id={entry.invoked_id}
+          id={entry.invocationId}
           className="min-w-[1.625rem] w-[1.625rem] shrink-0 flex"
           size="icon"
         />
       )}
-      {entry.invoked_id &&
-        invocationIds.includes(entry.invoked_id) &&
+      {entry.invocationId &&
+        invocationIds.includes(entry.invocationId) &&
         !invokedIsPending && (
-          <Entries invocationId={entry.invoked_id} showInputEntry={false} />
+          <Entries invocationId={entry.invocationId} showInputEntry={false} />
         )}
     </div>
   );

@@ -27,7 +27,7 @@ export function InvocationDeployment({
 
     return revision ? (
       <div className={styles({ className })}>
-        <div className="flex px-1.5 py-1 items-center [&:not(:last-child)]:border-b w-full">
+        <div className="flex px-1.5 py-1 h-9 items-center [&:not(:last-child)]:border-b w-full">
           <Deployment
             deploymentId={deploymentId}
             revision={revision}
@@ -37,7 +37,7 @@ export function InvocationDeployment({
         </div>
         {showSdk &&
           (invocation.last_attempt_server || deployment.sdk_version) && (
-            <div className="flex px-1.5 py-1 items-center [&:not(:last-child)]:border-b w-full">
+            <div className="flex px-1.5 py-1 h-9 items-center [&:not(:last-child)]:border-b w-full">
               <SDK
                 lastAttemptServer={
                   invocation.last_attempt_server ??

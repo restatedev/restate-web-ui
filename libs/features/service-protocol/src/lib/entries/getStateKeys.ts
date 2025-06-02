@@ -3,72 +3,115 @@ import { GetStateKeysEntryMessageSchema } from '@buf/restatedev_service-protocol
 import { toUnit8Array } from '../toUni8Array';
 import { decode } from '../decoder';
 import { RestateError } from '@restate/util/errors';
-import { JournalRawEntry } from '@restate/data-access/admin-api/spec';
-import { parseEntryJson } from './util';
+import {
+  Invocation,
+  JournalEntryV2,
+} from '@restate/data-access/admin-api/spec';
+import {
+  getEntryResultV2,
+  getLastFailureV1,
+  JournalRawEntryWithCommandIndex,
+  parseEntryJson,
+} from './util';
 
-function getStateKeysV1(entry: JournalRawEntry) {
+function getStateKeysV1(
+  entry: JournalRawEntryWithCommandIndex,
+  invocation?: Invocation
+): Extract<JournalEntryV2, { type?: 'GetStateKeys' | 'GetEagerStateKeys' }> {
   const { raw } = entry;
 
   if (!raw) {
     return {};
   }
   const message = fromBinary(GetStateKeysEntryMessageSchema, toUnit8Array(raw));
+  const error = getLastFailureV1(entry, invocation);
+
+  const metadata = {
+    start: entry.appended_at,
+    isPending: false,
+    commandIndex: entry.index,
+    type: 'GetEagerStateKeys',
+    category: 'command',
+    completionId: undefined,
+    end: undefined,
+    index: entry.index,
+    relatedIndexes: undefined,
+    isRetrying: false,
+    error,
+    isLoaded: true,
+  } as const;
+
   switch (message.result.case) {
     case 'failure':
       return {
-        name: message.name,
+        ...metadata,
         keys: undefined,
-        failure: new RestateError(
-          message.result.value.message,
-          message.result.value.code.toString()
-        ),
-        completed: entry.completed ?? true,
+        resultType: 'failure',
+        error:
+          new RestateError(
+            message.result.value.message,
+            message.result.value.code.toString()
+          ) || error,
       };
     case 'value':
       return {
-        name: message.name,
+        ...metadata,
+        resultType: 'success',
         keys: message.result.value.keys.map(decode),
-        failure: undefined,
-        completed: entry.completed ?? true,
       };
     default:
       return {
-        name: message.name,
+        ...metadata,
+        resultType: 'success',
         keys: undefined,
-        failure: undefined,
-        completed: entry.completed,
       };
   }
 }
 
-function getStateKeysV2(entry: JournalRawEntry, allEntries: JournalRawEntry[]) {
-  const entryJSON = parseEntryJson(entry.entry_json);
+function getStateKeysV2(
+  entry: JournalRawEntryWithCommandIndex,
+  nextEntries: JournalEntryV2[],
+  invocation?: Invocation
+): Extract<JournalEntryV2, { type?: 'GetStateKeys' | 'GetEagerStateKeys' }> {
+  const entryJSON = parseEntryJson(entry.entry_json ?? entry.entry_lite_json);
+  const commandIndex = entry.command_index;
+
+  const { isRetrying, error, resultType, relatedIndexes } = getEntryResultV2(
+    entry,
+    invocation,
+    nextEntries,
+    undefined
+  );
+
   return {
-    name: entryJSON?.Command?.GetEagerStateKeys?.name,
-    keys: entryJSON?.Command?.GetEagerStateKeys?.state_keys,
     start: entry.appended_at,
-    completed: entry.completed ?? true,
-    // TODO display failure
-    failure: undefined,
+    isPending: false,
+    commandIndex,
+    type: 'GetEagerStateKeys',
+    category: 'command',
+    completionId: undefined,
+    end: undefined,
+    index: entry.index,
+    relatedIndexes,
+    isRetrying,
+    error,
+    keys: entryJSON?.Command?.GetEagerStateKeys?.state_keys,
+    resultType,
+    isLoaded: typeof entry.entry_json !== 'undefined',
   };
 }
 
 export function getStateKeys(
-  entry: JournalRawEntry,
-  allEntries: JournalRawEntry[]
-): {
-  name?: string;
-  start?: string;
-  completed?: boolean;
-  failure?: RestateError;
-  keys?: string[];
-} {
+  entry: JournalRawEntryWithCommandIndex,
+  nextEntries: JournalEntryV2[],
+  invocation?: Invocation
+) {
   if (entry.version === 1 || !entry.version) {
-    return getStateKeysV1(entry);
+    return getStateKeysV1(entry, invocation);
   }
 
-  if (entry.version === 2 && entry.entry_json) {
-    return getStateKeysV2(entry, allEntries);
+  if (entry.version === 2 && (entry.entry_json || entry.entry_lite_json)) {
+    return getStateKeysV2(entry, nextEntries, invocation);
   }
 
   return {};

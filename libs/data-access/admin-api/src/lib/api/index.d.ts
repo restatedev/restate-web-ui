@@ -405,6 +405,46 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/query/invocations/{invocationId}/journal/{entryIndex}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get journal entry
+     * @description Get journal entry
+     */
+    get: operations['get_journal_entry'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/v2/invocations/{invocationId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get invocation and journal
+     * @description Get invocation journal v2
+     */
+    get: operations['get_invocation_journal_v2'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/query/virtualObjects/{name}/keys/{key}/queue': {
     parameters: {
       query?: never;
@@ -1221,6 +1261,47 @@ export interface components {
         | components['schemas']['OutputJournalEntryType']
         | components['schemas']['CancelSignalJournalEntryType']
       );
+    JournalEntryV2: components['schemas']['JournalBaseEntryV2'] &
+      (
+        | components['schemas']['InputJournalEntryV2']
+        | components['schemas']['GetStateJournalEntryV2']
+        | components['schemas']['SetStateJournalEntryV2']
+        | components['schemas']['GetStateKeysJournalEntryV2']
+        | components['schemas']['ClearStateJournalEntryV2']
+        | components['schemas']['ClearAllStateJournalEntryV2']
+        | components['schemas']['CallJournalEntryV2']
+        | components['schemas']['RunJournalEntryV2']
+        | components['schemas']['OutputJournalEntryV2']
+        | components['schemas']['NotificationCallJournalEntryV2']
+        | components['schemas']['NotificationRunJournalEntryV2']
+        | components['schemas']['OneWayCallJournalEntryTypeV2']
+        | components['schemas']['SleepJournalEntryTypeV2']
+        | components['schemas']['NotificationSleepJournalEntryV2']
+        | components['schemas']['CompleteAwakeableJournalEntryV2']
+        | components['schemas']['NotificationCompleteAwakeableJournalEntryV2']
+        | components['schemas']['AwakeableJournalEntryV2']
+        | components['schemas']['AttachInvocationJournalEntryV2']
+        | components['schemas']['NotificationAttachInvocationJournalEntryV2']
+        | components['schemas']['CancelJournalEntryV2']
+        | components['schemas']['NotificationCancelJournalEntryV2']
+        | components['schemas']['GetPromiseJournalEntryV2']
+        | components['schemas']['PeakPromiseJournalEntryV2']
+        | components['schemas']['CompletePromiseJournalEntryV2']
+        | components['schemas']['NotificationGetPromiseJournalEntryV2']
+        | components['schemas']['NotificationPeakPromiseJournalEntryV2']
+        | components['schemas']['NotificationCompletePromiseJournalEntryV2']
+        | components['schemas']['TransientErrorJournalEntryV2']
+        | components['schemas']['CreatedLifecycleJournalEntryV2']
+        | components['schemas']['RunningLifecycleJournalEntryV2']
+        | components['schemas']['RetryingLifecycleJournalEntryV2']
+        | components['schemas']['ScheduledLifecycleJournalEntryV2']
+        | components['schemas']['SuspendedLifecycleJournalEntryV2']
+        | components['schemas']['PendingLifecycleJournalEntryV2']
+        | components['schemas']['CompletionLifecycleJournalEntryV2']
+        | {
+            type?: string;
+          }
+      );
     JournalRawEntry: {
       index: number;
       /** Format: binary */
@@ -1233,6 +1314,7 @@ export interface components {
       invoked_id?: string;
       name?: string;
       entry_json?: string;
+      entry_lite_json?: string;
       /** Format: data-time */
       appended_at?: string;
       version?: number;
@@ -1261,7 +1343,38 @@ export interface components {
         | 'AttachInvocation'
         | 'GetInvocationOutput'
         | 'Custom'
-        | 'CancelSignal';
+        | 'Command: Input'
+        | 'Command: Output'
+        | 'Command: GetState'
+        | 'Command: GetEagerState'
+        | 'Command: SetState'
+        | 'Command: GetStateKeys'
+        | 'Command: GetEagerStateKeys'
+        | 'Command: ClearState'
+        | 'Command: ClearAllState'
+        | 'Command: Sleep'
+        | 'Command: GetPromise'
+        | 'Command: PeekPromise'
+        | 'Command: CompletePromise'
+        | 'Command: OneWayCall'
+        | 'Command: Call'
+        | 'Command: Awakeable'
+        | 'Command: CompleteAwakeable'
+        | 'Command: Run'
+        | 'Command: AttachInvocation'
+        | 'Command: GetInvocationOutput'
+        | 'Command: Custom'
+        | 'Command: SendSignal'
+        | 'Event'
+        | 'Notification: Signal'
+        | 'Notification: Sleep'
+        | 'Notification: Call'
+        | 'Notification: CallInvocationId'
+        | 'Notification: AttachInvocation'
+        | 'Notification: GetPromise'
+        | 'Notification: PeekPromise'
+        | 'Notification: CompletePromise'
+        | 'Notification: Run';
     };
     JournalBaseEntry: {
       index: number;
@@ -1273,6 +1386,31 @@ export interface components {
       end?: string;
       completed?: boolean;
     };
+    JournalBaseEntryV2: {
+      isPending?: boolean;
+      /** @enum {string} */
+      resultType?: 'success' | 'failure' | 'void';
+      isRetrying?: boolean;
+      isLoaded?: boolean;
+      error?: {
+        count?: number;
+        code?: number;
+        message?: string;
+        stack?: string;
+        restateCode?: string;
+      };
+      /** Format: datetime */
+      start?: string;
+      /** Format: datetime */
+      end?: string;
+      index?: number;
+      relatedIndexes?: number[];
+      completionId?: number;
+      commandIndex?: number;
+      /** @enum {string} */
+      category?: 'notification' | 'command' | 'event';
+      type?: string;
+    };
     FailureEntry: {
       message?: string;
       restate_code?: string;
@@ -1281,10 +1419,78 @@ export interface components {
       /** @enum {string} */
       entry_type?: 'CancelSignal';
     };
+    TransientErrorJournalEntryV2: {
+      /** @enum {string} */
+      category?: 'event';
+      /** @enum {string} */
+      type?: 'TransientError';
+      stackTrace?: string;
+      message?: string;
+      code?: number;
+      errorCount?: number;
+      relatedCommandName?: string;
+      relatedCommandType?: string;
+      relatedRestateErrorCode?: string;
+      relatedCommandIndex?: number;
+    };
+    CreatedLifecycleJournalEntryV2: {
+      /** @enum {string} */
+      category?: 'event';
+      /** @enum {string} */
+      type?: 'Created';
+    };
+    RunningLifecycleJournalEntryV2: {
+      /** @enum {string} */
+      category?: 'event';
+      /** @enum {string} */
+      type?: 'Running';
+    };
+    RetryingLifecycleJournalEntryV2: {
+      /** @enum {string} */
+      category?: 'event';
+      /** @enum {string} */
+      type?: 'Retrying';
+    };
+    ScheduledLifecycleJournalEntryV2: {
+      /** @enum {string} */
+      category?: 'event';
+      /** @enum {string} */
+      type?: 'Scheduled';
+    };
+    SuspendedLifecycleJournalEntryV2: {
+      /** @enum {string} */
+      category?: 'event';
+      /** @enum {string} */
+      type?: 'Suspended';
+    };
+    PendingLifecycleJournalEntryV2: {
+      /** @enum {string} */
+      category?: 'event';
+      /** @enum {string} */
+      type?: 'Pending';
+    };
+    CompletionLifecycleJournalEntryV2: {
+      /** @enum {string} */
+      category?: 'event';
+      /** @enum {string} */
+      type?: 'Completion';
+    };
     InputJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       /** @enum {string} */
       entry_type?: 'Input';
       body?: string;
+      headers?: {
+        key: string;
+        value: string;
+      }[];
+    };
+    InputJournalEntryV2: {
+      /** @enum {string} */
+      category?: 'command';
+      /** @enum {string} */
+      type?: 'Input';
+      handlerName?: string;
+      parameters?: string;
       headers?: {
         key: string;
         value: string;
@@ -1296,6 +1502,13 @@ export interface components {
       body?: string;
       failure?: components['schemas']['FailureEntry'];
     };
+    OutputJournalEntryV2: {
+      /** @enum {string} */
+      type?: 'Output';
+      value?: string;
+      /** @enum {string} */
+      category?: 'command';
+    };
     GetStateJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       /** @enum {string} */
       entry_type?: 'GetState' | 'GetEagerState';
@@ -1304,11 +1517,27 @@ export interface components {
       completed?: boolean;
       failure?: components['schemas']['FailureEntry'];
     };
+    GetStateJournalEntryV2: {
+      /** @enum {string} */
+      type?: 'GetState' | 'GetEagerState';
+      key?: string;
+      value?: string;
+      /** @enum {string} */
+      category?: 'command';
+    };
     SetStateJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       /** @enum {string} */
       entry_type?: 'SetState';
       key?: string;
       value?: string;
+    };
+    SetStateJournalEntryV2: {
+      /** @enum {string} */
+      type?: 'SetState';
+      key?: string;
+      value?: string;
+      /** @enum {string} */
+      category?: 'command';
     };
     GetStateKeysJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       /** @enum {string} */
@@ -1317,14 +1546,34 @@ export interface components {
       keys?: string[];
       failure?: components['schemas']['FailureEntry'];
     };
+    GetStateKeysJournalEntryV2: {
+      /** @enum {string} */
+      type?: 'GetStateKeys' | 'GetEagerStateKeys';
+      /** @enum {string} */
+      category?: 'command';
+      keys?: string[];
+    };
     ClearStateJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       key?: string;
       /** @enum {string} */
       entry_type?: 'ClearState';
     };
+    ClearStateJournalEntryV2: {
+      key?: string;
+      /** @enum {string} */
+      type?: 'ClearState';
+      /** @enum {string} */
+      category?: 'command';
+    };
     ClearAllStateJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       /** @enum {string} */
       entry_type?: 'ClearAllState';
+    };
+    ClearAllStateJournalEntryV2: {
+      /** @enum {string} */
+      type?: 'ClearAllState';
+      /** @enum {string} */
+      category?: 'command';
     };
     SleepJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       completed?: boolean;
@@ -1335,6 +1584,21 @@ export interface components {
       entry_type?: 'Sleep';
       name?: string;
     };
+    SleepJournalEntryTypeV2: {
+      /** Format: data-time */
+      wakeupAt?: string;
+      /** @enum {string} */
+      type?: 'Sleep';
+      /** @enum {string} */
+      category?: 'command';
+      name?: string;
+    };
+    NotificationSleepJournalEntryV2: {
+      /** @enum {string} */
+      type?: 'Sleep';
+      /** @enum {string} */
+      category?: 'notification';
+    };
     GetPromiseJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       completed?: boolean;
       /** @enum {string} */
@@ -1342,6 +1606,50 @@ export interface components {
       promise_name?: string;
       value?: string;
       failure?: components['schemas']['FailureEntry'];
+    };
+    GetPromiseJournalEntryV2: {
+      /** @enum {string} */
+      type?: 'GetPromise';
+      /** @enum {string} */
+      category?: 'command';
+      promiseName?: string;
+      value?: string;
+    };
+    PeakPromiseJournalEntryV2: {
+      /** @enum {string} */
+      type?: 'PeekPromise';
+      /** @enum {string} */
+      category?: 'command';
+      promiseName?: string;
+      value?: string;
+    };
+    CompletePromiseJournalEntryV2: {
+      /** @enum {string} */
+      type?: 'CompletePromise';
+      /** @enum {string} */
+      category?: 'command';
+      promiseName?: string;
+      value?: string;
+    };
+    NotificationGetPromiseJournalEntryV2: {
+      /** @enum {string} */
+      type?: 'GetPromise';
+      /** @enum {string} */
+      category?: 'notification';
+      value?: string;
+    };
+    NotificationPeakPromiseJournalEntryV2: {
+      /** @enum {string} */
+      type?: 'PeekPromise';
+      /** @enum {string} */
+      category?: 'notification';
+      value?: string;
+    };
+    NotificationCompletePromiseJournalEntryV2: {
+      /** @enum {string} */
+      type?: 'CompletePromise';
+      /** @enum {string} */
+      category?: 'notification';
     };
     PeekPromiseJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       completed?: boolean;
@@ -1378,6 +1686,23 @@ export interface components {
       /** @enum {string} */
       entry_type?: 'OneWayCall';
     };
+    OneWayCallJournalEntryTypeV2: {
+      invocationId?: string;
+      serviceKey?: string;
+      serviceName?: string;
+      handlerName?: string;
+      parameters?: string;
+      headers?: {
+        key: string;
+        value: string;
+      }[];
+      /** Format: date-time */
+      invokeTime?: string;
+      /** @enum {string} */
+      type?: 'OneWayCall';
+      /** @enum {string} */
+      category?: 'command';
+    };
     CallJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       completed?: boolean;
       invoked_id?: string;
@@ -1395,6 +1720,36 @@ export interface components {
       /** @enum {string} */
       entry_type?: 'Call';
     };
+    CallJournalEntryV2: {
+      invocationId?: string;
+      serviceKey?: string;
+      serviceName?: string;
+      handlerName?: string;
+      parameters?: string;
+      headers?: {
+        key: string;
+        value: string;
+      }[];
+      value?: string;
+      /** @enum {string} */
+      type?: 'Call';
+      /** @enum {string} */
+      category?: 'command';
+    };
+    NotificationCallJournalEntryV2: {
+      value?: string;
+      /** @enum {string} */
+      type?: 'Call';
+      /** @enum {string} */
+      category?: 'notification';
+    };
+    NotificationRunJournalEntryV2: {
+      value?: string;
+      /** @enum {string} */
+      type?: 'Run';
+      /** @enum {string} */
+      category?: 'notification';
+    };
     AwakeableJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       completed?: boolean;
       /** @enum {string} */
@@ -1402,12 +1757,49 @@ export interface components {
       failure?: components['schemas']['FailureEntry'];
       value?: string;
     };
+    AwakeableJournalEntryV2: {
+      /** @enum {string} */
+      type?: 'Awakeable';
+      /** @enum {string} */
+      category?: 'command';
+      value?: string;
+      id?: string;
+    };
     CompleteAwakeableJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       /** @enum {string} */
       entry_type?: 'CompleteAwakeable';
       failure?: components['schemas']['FailureEntry'];
       value?: string;
       id?: string;
+    };
+    CompleteAwakeableJournalEntryV2: {
+      /** @enum {string} */
+      type?: 'CompleteAwakeable';
+      /** @enum {string} */
+      category?: 'command';
+      value?: string;
+      id?: string;
+    };
+    NotificationCompleteAwakeableJournalEntryV2: {
+      /** @enum {string} */
+      type?: 'CompleteAwakeable';
+      /** @enum {string} */
+      category?: 'notification';
+      value?: string;
+      id?: string;
+    };
+    NotificationCancelJournalEntryV2: {
+      /** @enum {string} */
+      type?: 'Cancel';
+      /** @enum {string} */
+      category?: 'notification';
+    };
+    CancelJournalEntryV2: {
+      /** @enum {string} */
+      type?: 'Cancel';
+      /** @enum {string} */
+      category?: 'command';
+      invocationId?: string;
     };
     CancelInvocationJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       /** @enum {string} */
@@ -1425,6 +1817,21 @@ export interface components {
       failure?: components['schemas']['FailureEntry'];
       value?: string;
     };
+    AttachInvocationJournalEntryV2: {
+      /** @enum {string} */
+      type?: 'AttachInvocation';
+      /** @enum {string} */
+      category?: 'command';
+      invocationId?: string;
+      value?: string;
+    };
+    NotificationAttachInvocationJournalEntryV2: {
+      /** @enum {string} */
+      type?: 'AttachInvocation';
+      /** @enum {string} */
+      category?: 'notification';
+      value?: string;
+    };
     GetInvocationOutputJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       /** @enum {string} */
       entry_type?: 'GetInvocationOutput';
@@ -1438,6 +1845,14 @@ export interface components {
       /** @enum {string} */
       entry_type?: 'Run';
       failure?: components['schemas']['FailureEntry'];
+      value?: string;
+    };
+    RunJournalEntryV2: {
+      name?: string;
+      /** @enum {string} */
+      type?: 'Run';
+      /** @enum {string} */
+      category?: 'command';
       value?: string;
     };
     InboxResponse: {
@@ -1466,6 +1881,7 @@ export interface components {
       /** Format: date-time */
       next_retry_at?: string;
       id: string;
+      created_using_restate_version?: string;
       /** @enum {string} */
       invoked_by: 'ingress' | 'service';
       /** @enum {string} */
@@ -3077,6 +3493,156 @@ export interface operations {
         content: {
           'application/json': {
             entries: components['schemas']['JournalEntry'][];
+          };
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  get_journal_entry: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Invocation id */
+        invocationId: string;
+        /** @description Entry index */
+        entryIndex: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['JournalEntryV2'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  get_invocation_journal_v2: {
+    parameters: {
+      query?: {
+        /** @description Should include journal */
+        journal?: boolean;
+      };
+      header?: never;
+      path: {
+        /** @description Invocation id */
+        invocationId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Invocation'] & {
+            journal?: {
+              version?: number;
+              entries?: components['schemas']['JournalEntryV2'][];
+            };
           };
         };
       };

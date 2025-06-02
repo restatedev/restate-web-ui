@@ -2,11 +2,9 @@ import {
   EntryType,
   Invocation,
   JournalEntry,
-  useGetInvocationJournal,
   useGetInvocationJournalWithInvocation,
 } from '@restate/data-access/admin-api';
-import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
-import { Component, ComponentType, ErrorInfo, PropsWithChildren } from 'react';
+import { ComponentType, PropsWithChildren } from 'react';
 import { tv } from 'tailwind-variants';
 import { EntryProps } from './entries/types';
 import { Input } from './entries/Input';
@@ -32,7 +30,6 @@ import { Spinner } from '@restate/ui/loading';
 import { ErrorBanner } from '@restate/ui/error';
 import { CancelSignal } from './entries/CancelSignal';
 import { Icon, IconName } from '@restate/ui/icons';
-import { JournalV2 } from './JournalV2';
 import { AttachInvocation } from './entries/AttachInvocation';
 
 export function getLastFailure(invocation?: Invocation) {
@@ -353,97 +350,6 @@ function DefaultEntry({
           <div className="inset-0 w-full he-full absolute"></div>
         </HoverTooltip>
       </div>
-      <ErrorBoundary entry={entry}>
-        <div
-          className={entryItem({
-            appended,
-            failed,
-            completed,
-            isRetrying: isRetryingThisEntry || wasRetryingThisEntry,
-            isEntrySignal,
-          })}
-        >
-          <EntrySpecificComponent
-            entry={entry}
-            failed={failed}
-            invocation={invocation}
-            error={error}
-            isRetrying={isRetryingThisEntry}
-            wasRetrying={wasRetryingThisEntry}
-          />
-        </div>
-      </ErrorBoundary>
     </div>
   );
-}
-
-const sectionStyles = tv({
-  base: '',
-});
-export function JournalSection({
-  invocation,
-  isPending,
-  className,
-}: {
-  invocation?: Invocation;
-  isPending?: boolean;
-  className?: string;
-}) {
-  const { data, isSuccess } = useGetInvocationJournal(String(invocation?.id), {
-    enabled: Boolean(invocation?.id),
-    refetchOnMount: true,
-  });
-  if (!data || !invocation?.id) {
-    return null;
-  }
-
-  return (
-    <Section className={sectionStyles({ className })}>
-      <SectionContent className="px-1 pb-0" raised={false}>
-        <JournalV2
-          invocationId={invocation?.id}
-          timelineWidth={0}
-          className="mt-0 pl-2 pr-2"
-          showApiError={false}
-        />
-      </SectionContent>
-    </Section>
-  );
-}
-
-const errorStyles = tv({
-  base: 'truncate max-w-full flex items-center text-red-500 gap-1 flex-wrap w-full min-w-0 mb-2 px-2 bg-zinc-50 border-zinc-600/10 border py-1 font-mono [font-size:95%] rounded -mt-px',
-});
-export class ErrorBoundary extends Component<
-  PropsWithChildren<{ entry?: JournalEntry; className?: string }>,
-  {
-    hasError: boolean;
-  }
-> {
-  constructor(props: PropsWithChildren<{ entry?: JournalEntry }>) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError(_: Error): {
-    hasError: boolean;
-  } {
-    return { hasError: true };
-  }
-
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Error caught by ErrorBoundary: ', error, errorInfo);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className={errorStyles({ className: this.props.className })}>
-          Failed to display {this.props.entry?.entry_type} entry
-        </div>
-      );
-    }
-
-    return this.props.children;
-  }
 }

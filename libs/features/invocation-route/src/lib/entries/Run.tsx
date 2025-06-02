@@ -1,4 +1,4 @@
-import { RunJournalEntryType } from '@restate/data-access/admin-api';
+import { JournalEntryV2 } from '@restate/data-access/admin-api';
 import { EntryProps } from './types';
 import { Expression, InputOutput } from '../Expression';
 import { Value } from '../Value';
@@ -12,8 +12,10 @@ export function Run({
   error,
   isRetrying,
   wasRetrying,
-}: EntryProps<RunJournalEntryType>) {
-  const entryError = entry.failure || error;
+}: EntryProps<
+  Extract<JournalEntryV2, { type?: 'Run'; category?: 'command' }>
+>) {
+  const entryError = entry.error;
 
   return (
     <Expression
@@ -42,11 +44,10 @@ export function Run({
               }
             />
           )}
-          {!entry.completed && (!entryError || isRetrying) && <Ellipsis />}
-          {(typeof entry.value === 'undefined' ||
-            (entry.version === 1 && entry.value === '')) &&
+          {entry.isPending && (!entryError || entry.isRetrying) && <Ellipsis />}
+          {typeof entry.value === 'undefined' &&
             !entryError &&
-            entry.completed && (
+            !entry.isPending && (
               <div className="text-zinc-400 font-semibold font-mono text-2xs">
                 void
               </div>
@@ -54,8 +55,8 @@ export function Run({
           {entryError?.message && (
             <Failure
               message={entryError.message}
-              restate_code={entryError.restate_code}
-              isRetrying={isRetrying || wasRetrying}
+              restate_code={entryError.restateCode}
+              isRetrying={entry.isRetrying}
               className="-mr-1.5"
             />
           )}

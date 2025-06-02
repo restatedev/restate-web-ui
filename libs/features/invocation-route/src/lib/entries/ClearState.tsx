@@ -1,4 +1,4 @@
-import { ClearStateJournalEntryType } from '@restate/data-access/admin-api';
+import { JournalEntryV2 } from '@restate/data-access/admin-api';
 import { EntryProps } from './types';
 import { Expression, InputOutput } from '../Expression';
 import { Failure } from '../Failure';
@@ -8,10 +8,12 @@ export function ClearState({
   entry,
   failed,
   invocation,
-  error,
   isRetrying,
   wasRetrying,
-}: EntryProps<ClearStateJournalEntryType>) {
+}: EntryProps<
+  Extract<JournalEntryV2, { type?: 'ClearState'; category?: 'command' }>
+>) {
+  const error = entry.error;
   return (
     <>
       <Expression
@@ -30,8 +32,8 @@ export function ClearState({
       {error?.message && (
         <Failure
           message={error.message}
-          restate_code={error.restate_code}
-          isRetrying={isRetrying || wasRetrying}
+          restate_code={error.restateCode}
+          isRetrying={entry.isRetrying}
         />
       )}
     </>

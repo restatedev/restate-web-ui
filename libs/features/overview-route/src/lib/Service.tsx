@@ -55,7 +55,7 @@ const serviceStyles = tv({
     isSelected: {
       true: 'bg-white shadow-md scale-105',
       false:
-        'border-white/50 bg-gradient-to-b to-gray-50/80 from-gray-50 shadow2-[inset_0_2px_0_0_rgba(255,255,255, 0.8)] shadow-sm scale-100',
+        'border-white/50 bg-gradient-to-b to-gray-50/80 from-gray-50 shadow-sm scale-100',
     },
   },
   defaultVariants: { isSelected: false },

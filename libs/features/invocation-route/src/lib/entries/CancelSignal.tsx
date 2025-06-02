@@ -1,4 +1,4 @@
-import { CancelSignalJournalEntryType } from '@restate/data-access/admin-api';
+import { JournalEntryV2 } from '@restate/data-access/admin-api';
 import { EntryProps } from './types';
 
 export function CancelSignal({
@@ -8,7 +8,9 @@ export function CancelSignal({
   error,
   isRetrying,
   wasRetrying,
-}: EntryProps<CancelSignalJournalEntryType>) {
+}: EntryProps<
+  Extract<JournalEntryV2, { type?: 'Cancel'; category?: 'notification' }>
+>) {
   return (
     <div className="text-zinc-600">
       <span className="font-medium font italic text-blue-500">

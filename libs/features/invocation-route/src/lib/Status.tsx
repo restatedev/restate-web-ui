@@ -57,11 +57,12 @@ const styles = tv({
       info: '',
     },
     status: {
-      pending: 'border-dashed bg-transparent border-orange-200 text-orange-700',
-      scheduled: 'border-dashed bg-transparent border-zinc-300',
+      pending:
+        'border-dashed bg-transparent border-orange-300/90 text-orange-700',
+      scheduled: 'border-dashed bg-transparent border-zinc-400/60',
       ready: 'border-dashed bg-transparent border-zinc-300 text-zinc-500',
       running: 'border-dashed',
-      suspended: 'border-dashed border-zinc-300',
+      suspended: 'border-dashed border-zinc-400/60 bg-zinc-200/40',
       succeeded: '',
       failed: 'pr-0.5 py-0.5',
       cancelled: '',
@@ -69,7 +70,7 @@ const styles = tv({
       'backing-off': '',
     },
     isRetrying: {
-      true: 'border-dashed border border-orange-200 pr-0.5 py-0.5',
+      true: 'border-dashed border border-orange-300/80 pr-0.5 py-0.5',
       false: '',
     },
   },

@@ -1,4 +1,4 @@
-import { OneWayCallJournalEntryType } from '@restate/data-access/admin-api';
+import { JournalEntryV2 } from '@restate/data-access/admin-api';
 import { EntryProps } from './types';
 import { Expression, InputOutput } from '../Expression';
 import { Headers } from '../Headers';
@@ -20,10 +20,11 @@ export function OneWayCall({
   entry,
   failed,
   invocation,
-  error,
   isRetrying,
   wasRetrying,
-}: EntryProps<OneWayCallJournalEntryType>) {
+}: EntryProps<
+  Extract<JournalEntryV2, { type?: 'OneWayCall'; category?: 'command' }>
+>) {
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
 
   const invokeTime = entry.invokeTime ?? entry.start;
@@ -38,10 +39,17 @@ export function OneWayCall({
     error: invocationsError,
   } = useJournalContext();
   const isExpanded =
-    entry.invoked_id && invocationIds.includes(entry.invoked_id) && !isPending;
+    entry.invocationId &&
+    invocationIds.includes(entry.invocationId) &&
+    !isPending;
 
-  const invokedIsPending = isPending?.[String(entry.invoked_id)];
-  const invokedError = invocationsError?.[String(entry.invoked_id)];
+  const invokedIsPending = isPending?.[String(entry.invocationId)];
+  const invokedError = invocationsError?.[String(entry.invocationId)];
+  const target = [entry.serviceName, entry.serviceKey, entry.handlerName]
+    .filter(Boolean)
+    .join('/');
+
+  const error = entry.error;
 
   return (
     <div className="flex flex-row gap-1.5 items-center pr-1.5 max-w-full relative">
@@ -54,10 +62,10 @@ export function OneWayCall({
         <Button
           onClick={() => {
             setInvocationIds?.((ids) => {
-              if (entry.invoked_id && !ids.includes(entry.invoked_id)) {
-                return [...ids, entry.invoked_id];
+              if (entry.invocationId && !ids.includes(entry.invocationId)) {
+                return [...ids, entry.invocationId];
               } else {
-                return ids.filter((id) => id !== entry.invoked_id);
+                return ids.filter((id) => id !== entry.invocationId);
               }
             });
           }}
@@ -75,7 +83,7 @@ export function OneWayCall({
         </Button>
       )}
       <Target
-        target={entry.invoked_target}
+        target={target}
         className="[font-size:1.02em] [&>span_a_svg]:w-3.5 [&>*_a_svg]:h-3.5"
         showHandler={false}
       >
@@ -83,11 +91,11 @@ export function OneWayCall({
           <Expression
             isHandler
             className="min-w-0"
-            name={entry.invoked_target?.split('/').at(-1) ?? ''}
+            name={entry.handlerName ?? ''}
             output={
-              entry.invoked_id && (
+              entry.invocationId && (
                 <InvocationId
-                  id={entry.invoked_id}
+                  id={entry.invocationId}
                   className="truncate max-w-[15ch] flex"
                   size="sm"
                 />
@@ -126,8 +134,8 @@ export function OneWayCall({
           {error?.message && (
             <Failure
               message={error.message}
-              restate_code={error.restate_code}
-              isRetrying={isRetrying || wasRetrying}
+              restate_code={error.restateCode}
+              isRetrying={entry.isRetrying}
             />
           )}
         </div>
@@ -142,10 +150,10 @@ export function OneWayCall({
           {isPast && <span className="font-normal text-zinc-500"> ago</span>}
         </div>
       )}
-      {entry.invoked_id &&
-        invocationIds.includes(entry.invoked_id) &&
+      {entry.invocationId &&
+        invocationIds.includes(entry.invocationId) &&
         !invokedIsPending && (
-          <Entries invocationId={entry.invoked_id} showInputEntry={false} />
+          <Entries invocationId={entry.invocationId} showInputEntry={false} />
         )}
     </div>
   );

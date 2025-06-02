@@ -1,4 +1,4 @@
-import { CompletePromiseJournalEntryType } from '@restate/data-access/admin-api';
+import { JournalEntryV2 } from '@restate/data-access/admin-api';
 import { EntryProps } from './types';
 import { Expression, InputOutput } from '../Expression';
 import { Value } from '../Value';
@@ -12,53 +12,52 @@ export function CompletePromise({
   error,
   isRetrying,
   wasRetrying,
-}: EntryProps<CompletePromiseJournalEntryType>) {
-  const failure = entry.failure ?? entry.completion?.failure ?? error;
+}: EntryProps<
+  Extract<JournalEntryV2, { type?: 'CompletePromise'; category?: 'command' }>
+>) {
+  const failure = entry.error;
   return (
     <Expression
       name={'ctx.promise'}
-      {...(typeof entry.promise_name === 'string' && {
+      {...(typeof entry.promiseName === 'string' && {
         input: (
           <InputOutput
-            name={JSON.stringify(entry.promise_name)}
+            name={JSON.stringify(entry.promiseName)}
             popoverTitle="Name"
             popoverContent={
               <Value
-                value={entry.promise_name}
+                value={entry.promiseName}
                 className="text-xs font-mono py-3"
               />
             }
           />
         ),
       })}
-      chain={entry.completion?.failure ? '.reject' : '.resolve'}
+      chain={entry.resultType === 'failure' ? '.reject' : '.resolve'}
       output={
         <>
-          {typeof entry.completion?.value === 'string' && (
+          {typeof entry.value === 'string' && (
             <InputOutput
-              name={entry.completion.value}
+              name={entry.value}
               popoverTitle="Value"
               popoverContent={
-                <Value
-                  value={entry.completion.value}
-                  className="text-xs font-mono py-3"
-                />
+                <Value value={entry.value} className="text-xs font-mono py-3" />
               }
             />
           )}
-          {typeof entry.completion?.value === 'undefined' &&
+          {typeof entry.value === 'undefined' &&
             !failure &&
-            entry.completed && (
+            !entry.isPending && (
               <div className="text-zinc-400 font-semibold font-mono text-2xs">
                 void
               </div>
             )}
-          {!entry.completed && (!failure || isRetrying) && <Ellipsis />}
+          {entry.isPending && (!failure || entry.isRetrying) && <Ellipsis />}
           {failure?.message && (
             <Failure
               message={failure.message}
-              restate_code={failure.restate_code}
-              isRetrying={isRetrying || wasRetrying}
+              restate_code={failure.restateCode}
+              isRetrying={entry.isRetrying}
             />
           )}
         </>

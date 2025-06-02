@@ -20,3 +20,7 @@ export * from './lib/entries/setState';
 export * from './lib/entries/sleep';
 export * from './lib/entries/output';
 export * from './lib/entries/signal';
+export * from './lib/entries/sendSignal';
+export * from './lib/entries/event';
+export * from './lib/entries/lifeCycles';
+export type { JournalRawEntryWithCommandIndex } from './lib/entries/util';

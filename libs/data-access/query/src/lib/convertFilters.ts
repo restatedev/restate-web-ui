@@ -250,6 +250,7 @@ function getStatusFilterString(value?: string): {
                   '[409] canceled',
                   '[409] Cancelled',
                   '[409 Aborted] canceled',
+                  '[409 Aborted] Cancelled',
                 ],
               },
             ],

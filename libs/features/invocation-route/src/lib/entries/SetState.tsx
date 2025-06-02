@@ -1,4 +1,4 @@
-import { SetStateJournalEntryType } from '@restate/data-access/admin-api';
+import { JournalEntryV2 } from '@restate/data-access/admin-api';
 import { EntryProps } from './types';
 import { Expression, InputOutput } from '../Expression';
 import { Value } from '../Value';
@@ -8,10 +8,12 @@ export function SetState({
   entry,
   failed,
   invocation,
-  error,
   isRetrying,
   wasRetrying,
-}: EntryProps<SetStateJournalEntryType>) {
+}: EntryProps<
+  Extract<JournalEntryV2, { type?: 'SetState'; category?: 'command' }>
+>) {
+  const error = entry.error;
   return (
     <Expression
       isFunction={false}
@@ -37,8 +39,8 @@ export function SetState({
           {error?.message && (
             <Failure
               message={error.message}
-              restate_code={error.restate_code}
-              isRetrying={isRetrying || wasRetrying}
+              restate_code={error.restateCode}
+              isRetrying={entry.isRetrying}
             />
           )}
         </>

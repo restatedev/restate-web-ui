@@ -1,6 +1,10 @@
 import { RestateError } from '@restate/util/errors';
 import { decode } from '../decoder';
-import { JournalRawEntry } from '@restate/data-access/admin-api/spec';
+import {
+  Invocation,
+  JournalEntryV2,
+  JournalRawEntry,
+} from '@restate/data-access/admin-api/spec';
 
 export function parseResults(result?: any): {
   value?: string;
@@ -20,6 +24,128 @@ export function parseResults(result?: any): {
   }
 
   return {};
+}
+
+export function parseResults2(result?: any) {
+  if (
+    typeof result === 'string' &&
+    ['Success', 'Void', 'Failure'].includes(result)
+  ) {
+    return {
+      resultType: result.toLowerCase() as 'success' | 'void' | 'failure',
+    };
+  }
+
+  if (result?.Success && typeof result?.Success === 'object') {
+    return {
+      value: decodeBinary(result?.Success),
+      resultType: 'success',
+    } as const;
+  }
+
+  if (result?.Failure && typeof result?.Failure === 'object') {
+    return {
+      resultType: 'failure',
+      error: new RestateError(result?.Failure?.message, result?.Failure?.code),
+    } as const;
+  }
+
+  return {
+    resultType: undefined,
+    error: undefined,
+    value: undefined,
+  };
+}
+
+export function getLastFailureV1(
+  entry: JournalRawEntry,
+  invocation?: Invocation
+) {
+  const hasLastFailure =
+    invocation?.last_failure_related_entry_index === entry.index;
+  const lastFailure = hasLastFailure
+    ? new RestateError(
+        invocation?.last_failure || '',
+        invocation?.last_failure_error_code
+      )
+    : undefined;
+
+  return lastFailure;
+}
+
+export function getCompletionEntry<T extends JournalEntryV2>(
+  completionId: number,
+  type: string,
+  nextEntries: JournalEntryV2[]
+) {
+  for (let index = nextEntries.length - 1; index >= 0; index--) {
+    const completionEntry = nextEntries[index];
+    if (
+      completionEntry?.category === 'notification' &&
+      completionEntry?.type === type &&
+      completionEntry?.completionId === completionId
+    ) {
+      return completionEntry as T;
+    }
+  }
+  return undefined;
+}
+
+export function getEntryResultV2(
+  entry: JournalRawEntryWithCommandIndex,
+  invocation: Invocation | undefined,
+  nextEntries: JournalEntryV2[],
+  result?: any,
+  relatedIndexes: (number | undefined)[] = []
+): {
+  resultType?: 'success' | 'void' | 'failure';
+  value?: string;
+  error?: RestateError;
+  isRetrying: boolean;
+  relatedIndexes: number[];
+} {
+  const commandIndex = entry.command_index;
+  const hasLastFailure =
+    typeof commandIndex === 'number' &&
+    invocation?.last_failure_related_command_index === commandIndex;
+  const lastFailure = hasLastFailure
+    ? new RestateError(
+        invocation?.last_failure || '',
+        invocation?.last_failure_error_code
+      )
+    : undefined;
+
+  const transientFailures = nextEntries.filter(
+    (entry) =>
+      entry.category === 'event' &&
+      entry.relatedIndexes?.includes(Number(entry.index)) &&
+      entry.type === 'TransientError'
+  );
+
+  const hasTransientFailures = transientFailures.length > 0;
+  const isThereAnyCommandRunningAfter = nextEntries.some(
+    (nextEntry) =>
+      nextEntry.start &&
+      entry.appended_at &&
+      nextEntry.category === 'command' &&
+      entry.appended_at > nextEntry.start
+  );
+  const isRetrying =
+    !isThereAnyCommandRunningAfter && (hasTransientFailures || hasLastFailure);
+
+  const { resultType, value, error } = parseResults2(result);
+  return {
+    isRetrying,
+    error: error || lastFailure,
+    value,
+    resultType,
+    relatedIndexes: [
+      ...transientFailures.map((entry) => entry.index),
+      ...relatedIndexes,
+    ].filter(
+      (num: number | undefined): num is number => typeof num === 'number'
+    ),
+  };
 }
 
 export function findEntryAfter(
@@ -74,3 +200,7 @@ export function getTarget(object: any): {
   }
   return {};
 }
+
+export type JournalRawEntryWithCommandIndex = JournalRawEntry & {
+  command_index?: number;
+};

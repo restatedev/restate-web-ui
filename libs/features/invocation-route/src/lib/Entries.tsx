@@ -1,10 +1,8 @@
 import {
-  JournalEntry,
   InputJournalEntryType,
-  useGetInvocationsJournalWithInvocations,
   Invocation,
-  CallJournalEntryType,
-  OneWayCallJournalEntryType,
+  JournalEntryV2,
+  useGetInvocationsJournalWithInvocationsV2,
 } from '@restate/data-access/admin-api';
 import { DateTooltip } from '@restate/ui/tooltip';
 import { formatDurations } from '@restate/util/intl';
@@ -14,17 +12,36 @@ import {
   CSSProperties,
   useState,
   useEffect,
+  Component,
+  ErrorInfo,
 } from 'react';
 import { createPortal } from 'react-dom';
 import { tv } from 'tailwind-variants';
 import { EntryProps } from './entries/types';
-import { getLastFailure, ENTRY_COMPONENTS, ErrorBoundary } from './Journal';
 import { getRestateError } from './Status';
 import { Target } from './Target';
-import { Input } from './entries/Input';
 import { getDuration } from '@restate/util/snapshot-time';
 import { useJournalContext } from './JournalContext';
 import { Spinner } from '@restate/ui/loading';
+import { Input } from './entries/Input';
+import { GetState } from './entries/GetState';
+import { SetState } from './entries/SetState';
+import { Sleep } from './entries/Sleep';
+import { GetStateKeys } from './entries/GetStateKeys';
+import { ClearState } from './entries/ClearState';
+import { ClearAllState } from './entries/ClearAllState';
+import { GetPromise } from './entries/GetPromise';
+import { PeekPromise } from './entries/PeekPromise';
+import { CompletePromise } from './entries/CompletePromise';
+import { Awakeable } from './entries/Awakeable';
+import { CompleteAwakeable } from './entries/CompleteAwakeable';
+import { Run } from './entries/Run';
+import { Output } from './entries/Output';
+import { OneWayCall } from './entries/OneWayCall';
+import { Call } from './entries/Call';
+import { CancelSignal } from './entries/CancelSignal';
+import { AttachInvocation } from './entries/AttachInvocation';
+import { getLastFailure } from './Journal';
 
 const inputStyles = tv({
   base: '[&_>*]:leading-7 [--rounded-radius:0.625rem] [--rounded-radius-right:0.25rem] rounded-r text-code w-full',
@@ -73,6 +90,7 @@ function getLifeCycles(
     start: new Date(invocation.created_at).getTime(),
     type: 'created',
   });
+
   if (invocation.scheduled_at) {
     values.push({
       start: new Date(invocation.scheduled_at).getTime(),
@@ -190,17 +208,16 @@ export function Entries({
     invocationIds,
     isPending: invocationsIsPending,
   } = useJournalContext();
-  const { data } = useGetInvocationsJournalWithInvocations(invocationIds, {
+  const { data } = useGetInvocationsJournalWithInvocationsV2(invocationIds, {
     enabled: false,
   });
-  const invocation = data?.[invocationId]?.invocation;
+  const invocation = data?.[invocationId];
   const entries = data?.[invocationId]?.journal?.entries ?? [];
 
   const [first, ...restEntries] = entries ?? [];
   const inputEntry = first as InputJournalEntryType;
   const hasInputEntry = inputEntry?.entry_type === 'Input';
   const isPending = invocationsIsPending?.[invocationId];
-
   if (!invocation) {
     if (isPending) {
       return (
@@ -218,7 +235,7 @@ export function Entries({
   const error = getRestateError(invocation);
 
   const cancelEntries = entries?.filter(
-    (entry) => entry.entry_type === 'CancelSignal'
+    (entry) => entry.type === 'Cancel' && entry.category === 'notification'
   );
 
   const lifeCycles = getLifeCycles(
@@ -255,20 +272,13 @@ export function Entries({
           Loading…
         </div>
       )}
-      {restEntries.map((entry) => {
+      {restEntries.map((entry, index) => {
         return (
           <Entry
-            key={entry.index}
+            key={index}
             entry={entry}
             invocation={invocation}
             appended
-            failed={
-              entry.command_index === lastFailure?.index ||
-              Boolean('failure' in entry && entry.failure)
-            }
-            {...(entry.command_index === lastFailure?.index && {
-              error,
-            })}
             start={start}
             end={end}
             now={dataUpdatedAt}
@@ -309,7 +319,7 @@ export function Entries({
               />
               {lifeCycles.map((event, i) => (
                 <div
-                  key={event.type}
+                  key={i}
                   {...(event.end && {
                     style: {
                       flexBasis: `${
@@ -361,6 +371,80 @@ const entryStyles = tv({
   },
 });
 
+type CommandEntryType = NonNullable<
+  Extract<JournalEntryV2, { category?: 'command' }>['type']
+>;
+type NotificationEntryType = NonNullable<
+  Extract<JournalEntryV2, { category?: 'notification' }>['type']
+>;
+type EventEntryType = NonNullable<
+  Extract<JournalEntryV2, { category?: 'event' }>['type']
+>;
+
+export const ENTRY_COMMANDS_COMPONENTS: {
+  [K in CommandEntryType]:
+    | ComponentType<
+        EntryProps<Extract<JournalEntryV2, { type?: K; category?: 'command' }>>
+      >
+    | undefined;
+} = {
+  ClearState,
+  OneWayCall,
+  ClearAllState,
+  GetState,
+  GetEagerState: GetState,
+  Call,
+  SetState,
+  Awakeable,
+  Input,
+  GetStateKeys,
+  GetEagerStateKeys: GetStateKeys,
+  Sleep,
+  GetPromise,
+  PeekPromise,
+  CompletePromise,
+  CompleteAwakeable,
+  Run,
+  AttachInvocation,
+  Output,
+  Cancel: undefined, // TODO
+};
+export const ENTRY_NOTIFICATIONS_COMPONENTS: {
+  [K in NotificationEntryType]:
+    | ComponentType<
+        EntryProps<
+          Extract<JournalEntryV2, { type?: K; category?: 'notification' }>
+        >
+      >
+    | undefined;
+} = {
+  Call: undefined,
+  Sleep: undefined,
+  GetPromise: undefined,
+  PeekPromise: undefined,
+  CompletePromise: undefined,
+  CompleteAwakeable: undefined,
+  Run: undefined,
+  AttachInvocation: undefined,
+  Cancel: CancelSignal,
+};
+export const ENTRY_EVENTS_COMPONENTS: {
+  [K in EventEntryType]:
+    | ComponentType<
+        EntryProps<Extract<JournalEntryV2, { type?: K; category?: 'event' }>>
+      >
+    | undefined;
+} = {
+  TransientError: undefined,
+  Created: undefined,
+  Running: undefined,
+  Suspended: undefined,
+  Pending: undefined,
+  Completion: undefined,
+  Retrying: undefined,
+  Scheduled: undefined,
+};
+
 function Entry({
   entry,
   failed,
@@ -370,7 +454,7 @@ function Entry({
   end,
   now,
   cancelTime,
-}: EntryProps<JournalEntry> & {
+}: EntryProps<JournalEntryV2> & {
   start: number;
   end: number;
   cancelTime?: string;
@@ -378,25 +462,19 @@ function Entry({
 }) {
   const { invocationIds, error: invocationsError } = useJournalContext();
 
-  const EntrySpecificComponent = entry.entry_type
-    ? (ENTRY_COMPONENTS[entry.entry_type] as ComponentType<
-        EntryProps<JournalEntry>
-      >)
-    : undefined;
-  const completed = 'completed' in entry ? !!entry.completed : true;
-  const isRetrying = invocation.isRetrying;
-  const isRetryingThisEntry =
-    isRetrying &&
-    failed &&
-    (entry.version && entry.version >= 2
-      ? !entry.completed
-      : entry.index >= (invocation.journal_size ?? 0));
-  const lastFailure = getLastFailure(invocation);
+  const EntrySpecificComponent = (
+    entry.type
+      ? entry.category === 'command'
+        ? ENTRY_COMMANDS_COMPONENTS[entry.type as CommandEntryType]
+        : entry.category === 'notification'
+        ? ENTRY_NOTIFICATIONS_COMPONENTS[entry.type as NotificationEntryType]
+        : ENTRY_EVENTS_COMPONENTS[entry.type as EventEntryType]
+      : undefined
+  ) as ComponentType<EntryProps<JournalEntryV2>> | undefined;
 
-  const wasRetryingThisEntry =
-    !isRetrying && failed && entry.command_index === (lastFailure.index ?? -1);
-
-  if (!EntrySpecificComponent) {
+  const completed = !entry.isPending;
+  const isRetryingThisEntry = entry.isRetrying;
+  if (!EntrySpecificComponent || typeof entry.index === 'undefined') {
     return null;
   }
 
@@ -413,8 +491,9 @@ function Entry({
     <EntryPortal invocationId={invocation.id} index={entry.index}>
       <div
         className={entryStyles({
-          isCall: entry.entry_type === 'Call',
-          isOneWayCall: entry.entry_type === 'OneWayCall',
+          isCall: entry.type === 'Call' && entry.category === 'command',
+          isOneWayCall:
+            entry.type === 'OneWayCall' && entry.category === 'command',
         })}
       >
         <ErrorBoundary
@@ -427,12 +506,11 @@ function Entry({
             invocation={invocation}
             error={error}
             isRetrying={isRetryingThisEntry}
-            wasRetrying={wasRetryingThisEntry}
           />
           {entry.start &&
             (!isEntryCall(entry) ||
-              !invocationIds.includes(String(entry?.invoked_id)) ||
-              invocationsError?.[String(entry.invoked_id)]) && (
+              !invocationIds.includes(String(entry?.invocationId)) ||
+              invocationsError?.[String(entry.invocationId)]) && (
               <TimelinePortal index={entry.index} invocationId={invocation.id}>
                 <div className="leading-7 flex items-center h-full ">
                   <div className="relative w-full h-full rounded-md bg-zinc-200/50">
@@ -477,8 +555,13 @@ function Entry({
   );
 }
 
-export function getTimelineId(invocationId: string, index: number) {
-  return `${invocationId}-journal-timeline-${index}`;
+export function getTimelineId(
+  invocationId: string,
+  index?: number,
+  type?: string,
+  category?: string
+) {
+  return `${invocationId}-journal-timeline-${category}-${type}-${index}`;
 }
 export function getEntryId(invocationId: string, index: number) {
   return `${invocationId}-journal-entry-${index}`;
@@ -715,9 +798,51 @@ export function Progress({
 }
 
 export function isEntryCall(
-  entry: JournalEntry
-): entry is CallJournalEntryType | OneWayCallJournalEntryType {
+  entry: JournalEntryV2
+): entry is
+  | Extract<JournalEntryV2, { type?: 'Call'; category?: 'command' }>
+  | Extract<JournalEntryV2, { type?: 'OneWayCall'; category?: 'command' }> {
   return Boolean(
-    entry.entry_type && ['Call', 'OneWayCall'].includes(entry.entry_type)
+    entry.type &&
+      ['Call', 'OneWayCall'].includes(entry.type) &&
+      entry.category === 'command'
   );
+}
+
+const errorStyles = tv({
+  base: 'truncate max-w-full flex items-center text-red-500 gap-1 flex-wrap w-full min-w-0 mb-2 px-2 bg-zinc-50 border-zinc-600/10 border py-1 font-mono [font-size:95%] rounded -mt-px',
+});
+export class ErrorBoundary extends Component<
+  PropsWithChildren<{ entry?: JournalEntryV2; className?: string }>,
+  {
+    hasError: boolean;
+  }
+> {
+  constructor(props: PropsWithChildren<{ entry?: JournalEntryV2 }>) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(_: Error): {
+    hasError: boolean;
+  } {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('Error caught by ErrorBoundary: ', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className={errorStyles({ className: this.props.className })}>
+          Failed to display {this.props.entry?.category}:
+          {this.props.entry?.type} entry
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
 }

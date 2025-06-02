@@ -25,13 +25,13 @@ export function KeysIdsSection({
     <Section className={styles({ className })}>
       <SectionTitle>Keys & IDs</SectionTitle>
       <SectionContent className="p-0">
-        <div className="flex px-1.5 py-1 items-center [&:not(:last-child)]:border-b">
-          <span className="flex-auto pl-1 text-code text-gray-500 font-medium">
-            Id
+        <div className="flex px-1.5 py-1 h-9 items-center [&:not(:last-child)]:border-b">
+          <span className="flex-auto pl-1 text-code text-gray-500 font-medium whitespace-nowrap">
+            Invocation Id
           </span>
           <Badge
             size="sm"
-            className="font-mono py-0 pr-0 align-middle ml-[30%] min-w-0"
+            className="font-mono py-0 pr-0 align-middle min-w-0 ml-10"
           >
             <div className="truncate">{invocation.id}</div>
             <Copy
@@ -40,25 +40,31 @@ export function KeysIdsSection({
             />
           </Badge>
         </div>
-        {idempotencyId && (
-          <div className="flex px-1.5 py-1 items-center [&:not(:last-child)]:border-b">
-            <span className="flex-auto pl-1 text-code text-gray-500 font-medium">
-              Idempotency Key
-            </span>
+
+        <div className="flex px-1.5 py-1 h-9 items-center [&:not(:last-child)]:border-b">
+          <span className="flex-auto pl-1 text-code text-gray-500 font-medium">
+            Idempotency Key
+          </span>
+          {idempotencyId ? (
             <Badge
               size="sm"
               className="font-mono py-0 pr-0 align-middle ml-1 min-w-0"
             >
               <div className="truncate">{idempotencyId}</div>
+              (
               <Copy
                 copyText={idempotencyId}
                 className="shrink-0 [&_svg]:w-2.5 [&_svg]:h-2.5 p-1 ml-1"
               />
+              )
             </Badge>
-          </div>
-        )}
+          ) : (
+            <span className="font-mono text-xs text-gray-400">Not set</span>
+          )}
+        </div>
+
         {traceId && (
-          <div className="flex px-1.5 py-1 items-center [&:not(:last-child)]:border-b">
+          <div className="flex px-1.5 py-1 h-9 items-center [&:not(:last-child)]:border-b">
             <span className="flex-auto pl-1 text-code text-gray-500 font-medium">
               Trace ID
             </span>

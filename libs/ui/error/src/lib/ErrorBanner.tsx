@@ -9,6 +9,7 @@ export interface ErrorProps {
   error?: Error | string | RestateError | null;
   className?: string;
   wrap?: boolean;
+  open?: boolean;
 }
 
 const styles = tv({
@@ -20,6 +21,7 @@ function SingleError({
   children,
   className,
   wrap,
+  open,
 }: PropsWithChildren<{
   error?:
     | Error
@@ -31,6 +33,7 @@ function SingleError({
       };
   className?: string;
   wrap?: boolean;
+  open?: boolean;
 }>) {
   if (!error) {
     return null;
@@ -38,7 +41,12 @@ function SingleError({
 
   if (error instanceof RestateError) {
     return (
-      <RestateServerError error={error} className={className} wrap={wrap} />
+      <RestateServerError
+        error={error}
+        className={className}
+        wrap={wrap}
+        open={open}
+      />
     );
   }
 
@@ -66,6 +74,7 @@ export function ErrorBanner({
   children,
   className,
   wrap,
+  open,
 }: PropsWithChildren<ErrorProps>) {
   const filteredErrors = errors.filter(Boolean);
   if (filteredErrors.length === 0 && !error) {
@@ -79,6 +88,7 @@ export function ErrorBanner({
         children={children}
         className={className}
         wrap={wrap}
+        open={open}
       />
     );
   }
@@ -90,6 +100,7 @@ export function ErrorBanner({
         children={children}
         className={className}
         wrap={wrap}
+        open={open}
       />
     );
   }

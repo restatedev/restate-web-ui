@@ -1,4 +1,4 @@
-import { CompleteAwakeableJournalEntryType } from '@restate/data-access/admin-api';
+import { JournalEntryV2 } from '@restate/data-access/admin-api';
 import { EntryProps } from './types';
 import { Expression, InputOutput } from '../Expression';
 import { Value } from '../Value';
@@ -11,8 +11,17 @@ export function CompleteAwakeable({
   error,
   isRetrying,
   wasRetrying,
-}: EntryProps<CompleteAwakeableJournalEntryType>) {
-  const entryError = entry.failure || error;
+}: EntryProps<
+  | Extract<
+      JournalEntryV2,
+      { type?: 'CompleteAwakeable'; category?: 'command' }
+    >
+  | Extract<
+      JournalEntryV2,
+      { type?: 'CompleteAwakeable'; category?: 'notification' }
+    >
+>) {
+  const entryError = entry.error;
 
   return (
     <Expression
@@ -47,8 +56,8 @@ export function CompleteAwakeable({
           {entryError?.message && (
             <Failure
               message={entryError.message}
-              restate_code={entryError.restate_code}
-              isRetrying={isRetrying || wasRetrying}
+              restate_code={entryError.restateCode}
+              isRetrying={entry.isRetrying}
             />
           )}
         </>
