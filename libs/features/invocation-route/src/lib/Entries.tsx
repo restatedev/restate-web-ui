@@ -238,11 +238,14 @@ export function Entries({
           className={inputStyles({ hasInputEntry })}
         >
           {hasInputEntry && (
-            <Input
-              invocation={invocation}
-              entry={inputEntry}
-              className="text-xs w-full"
-            />
+            <>
+              <Input
+                invocation={invocation}
+                entry={inputEntry}
+                className="text-xs w-full"
+              />
+              <div data-fill />
+            </>
           )}
         </Target>
       )}

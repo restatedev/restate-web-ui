@@ -15,6 +15,7 @@ import { Actions } from './Actions';
 import { JournalV2 } from './JournalV2';
 import { useRestateContext } from '@restate/features/restate-context';
 import { InvocationPageProvider } from './InvocationPageContext';
+import { WorkflowKeySection } from './WorkflowKeySection';
 
 const itemsContainer = tv({
   base: 'flex gap-2 w-full [&>*]:flex-auto [&>*]:min-w-0 [&>*]:basis-1/2',
@@ -114,6 +115,7 @@ function Component() {
                 raised
                 className=""
               />
+              <WorkflowKeySection invocation={invocation} raised className="" />
             </div>
           </div>
           {shouldShowFailure && (
