@@ -114,12 +114,10 @@ export function JournalV2({
             <LazyPanelGroup
               direction="horizontal"
               className={styles({ className })}
-              style={{ overflow: 'visible' }}
             >
               <LazyPanel
                 defaultSize={(1 - timelineWidth) * 100}
                 className="pb-4"
-                style={{ overflow: 'visible' }}
               >
                 <div className="flex  flex-col items-start gap-1.5">
                   <div className="flex items-center gap-1.5 w-full h-7 relative">

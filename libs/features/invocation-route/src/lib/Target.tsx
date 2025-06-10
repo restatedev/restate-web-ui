@@ -77,7 +77,7 @@ export function Target({
         copyText={target}
         triggerRef={linkRef}
       >
-        <div className="flex items-stretch overflow-hidden [&>*]:flex-auto ">
+        <div className="flex items-stretch overflow-hidden [&>*]:flex-auto shrink-0">
           <div className="truncate inline-flex items-center [&:has(a)]:mr-0 mr-2.5 max-w-full [&&]:grow-0">
             <Icon
               name={IconName.Box}
@@ -160,7 +160,7 @@ export function Target({
         </div>
       </TruncateWithTooltip>
       {children && (
-        <div className="flex-auto [&&]:basis-auto [&&]:grow-[1] [&&]:shrink-[0] max-w-full -translate-x-px truncate my-px [filter:drop-shadow(-1px_0px_0px_theme(colors.zinc.200/100%))] ml-[-4px] z-[3]">
+        <div className="max-w-full [&:has([data-fill])]:basis-auto [&:has([data-fill])]:shrink-0 -translate-x-px truncate my-px [filter:drop-shadow(-1px_0px_0px_theme(colors.zinc.200/100%))] ml-[-4px] z-[3]">
           <div className="italic font-medium h-full [clip-path:polygon(4px_0,100%_0,100%_100%,0%_100%)] bg-zinc-100 text-zinc-600/80 flex items-center pl-1.5 pr-0.5 rounded-r-[calc(var(--rounded-radius-right)-1px)]">
             {children}
           </div>
