@@ -31,10 +31,7 @@ import {
   FormFieldCombobox,
 } from '@restate/ui/form-field';
 import { InlineTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
-import {
-  formatHumantime,
-  HUMANTIME_PATTERN_INPUT,
-} from '@restate/util/humantime';
+import { HUMANTIME_PATTERN_INPUT } from '@restate/util/humantime';
 import { FormEvent, useEffect, useId, useState } from 'react';
 import { Link } from '@restate/ui/link';
 import { useQueryClient } from '@tanstack/react-query';
@@ -110,11 +107,10 @@ function ServiceDetailsContent() {
       },
       body: {
         public: isPublic,
-        idempotency_retention: formatHumantime(idempotency_retention) ?? null,
-        workflow_completion_retention:
-          formatHumantime(workflow_completion_retention) ?? null,
-        inactivity_timeout: formatHumantime(inactivity_timeout) ?? null,
-        abort_timeout: formatHumantime(abort_timeout) ?? null,
+        idempotency_retention: idempotency_retention ?? null,
+        workflow_completion_retention: workflow_completion_retention ?? null,
+        inactivity_timeout: inactivity_timeout ?? null,
+        abort_timeout: abort_timeout ?? null,
       },
     });
   };

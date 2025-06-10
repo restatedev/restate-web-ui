@@ -1,8 +1,8 @@
-import { use, type PropsWithChildren, type ReactNode } from 'react';
+import { type PropsWithChildren, type ReactNode } from 'react';
 import {
   Header,
-  ListBoxContext,
   ListBoxSection as Section,
+  ListBoxItem,
 } from 'react-aria-components';
 import { tv } from 'tailwind-variants';
 
@@ -45,11 +45,14 @@ export function ListBoxSection({
         )}
         {children}
       </Section>
-      {description && (
-        <Header className={descriptionStyles()} slot="description">
-          {description}
-        </Header>
-      )}
+      <Section>
+        {description && (
+          <Header className={descriptionStyles()} slot="description">
+            {description}
+          </Header>
+        )}
+        <ListBoxItem isDisabled />
+      </Section>
     </>
   );
 }
