@@ -9,7 +9,7 @@ interface Duration {
 }
 
 const HUMANTIME_REGEXP =
-  /(?<unitValue>\d+)\s*(?<unit>msec|ms|seconds|second|sec|minute|minutes|hours|hour|days|day|months|month|years|year|y|min|M|m|s|h|d)/gm;
+  /(?<unitValue>\d+)\s*(?<unit>msec|ms|seconds|second|sec|minute|minutes|hours|hour|days|day|min|M|m|s|h|d)/gm;
 
 const HUMANTIME_UNITS_VALUES = [
   'msec',
@@ -28,12 +28,6 @@ const HUMANTIME_UNITS_VALUES = [
   'days',
   'day',
   'd',
-  'months',
-  'month',
-  'M',
-  'years',
-  'year',
-  'y',
 ] as const;
 
 export const HUMANTIME_PATTERN_INPUT = HUMANTIME_UNITS_VALUES.map(
@@ -60,12 +54,6 @@ const UNIT_MAPS: Record<
   days: 'days',
   day: 'days',
   d: 'days',
-  months: 'months',
-  month: 'months',
-  M: 'months',
-  years: 'years',
-  year: 'years',
-  y: 'years',
 };
 
 export function formatHumantime(value?: string | null) {

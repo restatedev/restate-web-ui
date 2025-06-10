@@ -31,10 +31,7 @@ import {
   FormFieldCombobox,
 } from '@restate/ui/form-field';
 import { InlineTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
-import {
-  formatHumantime,
-  HUMANTIME_PATTERN_INPUT,
-} from '@restate/util/humantime';
+import { HUMANTIME_PATTERN_INPUT } from '@restate/util/humantime';
 import { FormEvent, useEffect, useId, useState } from 'react';
 import { Link } from '@restate/ui/link';
 import { useQueryClient } from '@tanstack/react-query';
@@ -110,11 +107,10 @@ function ServiceDetailsContent() {
       },
       body: {
         public: isPublic,
-        idempotency_retention: formatHumantime(idempotency_retention) ?? null,
-        workflow_completion_retention:
-          formatHumantime(workflow_completion_retention) ?? null,
-        inactivity_timeout: formatHumantime(inactivity_timeout) ?? null,
-        abort_timeout: formatHumantime(abort_timeout) ?? null,
+        idempotency_retention: idempotency_retention ?? null,
+        workflow_completion_retention: workflow_completion_retention ?? null,
+        inactivity_timeout: inactivity_timeout ?? null,
+        abort_timeout: abort_timeout ?? null,
       },
     });
   };
@@ -261,11 +257,11 @@ function ServiceForm({
             <span className="text-gray-500 px-4 pb-2 block text-xs normal-case font-normal mt-2">
               Configured using the{' '}
               <Link
-                href="https://docs.rs/humantime/latest/humantime/fn.parse_duration.html#examples"
+                href="https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                humantime
+                jiff friendly
               </Link>{' '}
               format.
             </span>
@@ -297,11 +293,11 @@ function ServiceForm({
                   Choose from the example options above, or enter a custom value
                   in the{' '}
                   <Link
-                    href="https://docs.rs/humantime/latest/humantime/fn.parse_duration.html#examples"
+                    href="https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    humantime
+                    jiff friendly
                   </Link>{' '}
                   format.
                 </>
@@ -342,11 +338,11 @@ function ServiceForm({
                     Choose from the example options above, or enter a custom
                     value in the{' '}
                     <Link
-                      href="https://docs.rs/humantime/latest/humantime/fn.parse_duration.html#examples"
+                      href="https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      humantime
+                      jiff friendly
                     </Link>{' '}
                     format.
                   </>
@@ -370,11 +366,11 @@ function ServiceForm({
             <span className="text-gray-500 px-4 pb-2 block text-xs normal-case font-normal mt-2">
               Configured using the{' '}
               <Link
-                href="https://docs.rs/humantime/latest/humantime/fn.parse_duration.html#examples"
+                href="https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                humantime
+                jiff friendly
               </Link>{' '}
               format.
             </span>
@@ -407,11 +403,11 @@ function ServiceForm({
                   Choose from the example options above, or enter a custom value
                   in the{' '}
                   <Link
-                    href="https://docs.rs/humantime/latest/humantime/fn.parse_duration.html#examples"
+                    href="https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    humantime
+                    jiff friendly
                   </Link>{' '}
                   format.
                 </>
@@ -451,11 +447,11 @@ function ServiceForm({
                   Choose from the example options above, or enter a custom value
                   in the{' '}
                   <Link
-                    href="https://docs.rs/humantime/latest/humantime/fn.parse_duration.html#examples"
+                    href="https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    humantime
+                    jiff friendly
                   </Link>{' '}
                   format.
                 </>
