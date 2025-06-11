@@ -61,7 +61,13 @@ export function Target({
 
   const service = results.at(0);
   const handler = results.at(-1);
-  const key = results.length === 3 ? results.at(1) : undefined;
+  const key =
+    target && service && handler && results.length > 2
+      ? target.substring(
+          Number(service?.length) + 1,
+          target.length - Number(handler?.length) - 1
+        )
+      : undefined;
   const shouldShowHandler = showHandler && typeof handler === 'string';
 
   return (
