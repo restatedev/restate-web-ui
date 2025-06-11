@@ -12,7 +12,7 @@ export function event(
   | Extract<JournalEntryV2, { type?: 'TransientError'; category?: 'event' }>
   | JournalEntryV2 {
   const entryJSON = parseEntryJson(entry.entry_json ?? entry.entry_lite_json);
-  const isTransientError = entryJSON?.ty?.Other === 'TransientError';
+  const isTransientError = entryJSON?.Event?.ty?.Other === 'TransientError';
 
   if (isTransientError) {
     const metadata = entryJSON?.Event?.metadata;
