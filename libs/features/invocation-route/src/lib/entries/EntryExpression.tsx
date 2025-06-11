@@ -12,7 +12,7 @@ import { Value } from '../Value';
 const NAME_COMMANDS_COMPONENTS: {
   [K in CommandEntryType]: string;
 } = {
-  Input: '', // TODO
+  Input: '',
   GetState: 'get',
   GetEagerState: 'get',
   SetState: 'set',
@@ -93,6 +93,8 @@ export function EntryExpression({
   output: propOutput,
   inputParams,
   outputParam,
+  name,
+  operationSymbol,
 }: {
   invocation?: ReturnType<
     typeof useGetInvocationJournalWithInvocationV2
@@ -107,6 +109,8 @@ export function EntryExpression({
     isArray?: boolean;
   }[];
   outputParam?: string;
+  name?: string;
+  operationSymbol?: string;
 }) {
   if (entry?.category !== 'command') {
     return null;
@@ -136,6 +140,7 @@ export function EntryExpression({
               className="text-xs font-mono py-3"
             />
           }
+          key={param.paramName}
         />
       ))
       .reduce((p, c) => {
@@ -175,7 +180,10 @@ export function EntryExpression({
       namePrefix={
         ['Input', 'Output'].includes(String(entry.type)) ? '' : 'ctx.'
       }
-      name={NAME_COMMANDS_COMPONENTS[entry.type as CommandEntryType]}
+      name={
+        NAME_COMMANDS_COMPONENTS[entry.type as CommandEntryType] || name || ''
+      }
+      operationSymbol={operationSymbol}
       prefix={PREFIX_COMMANDS_COMPONENTS[entry.type as CommandEntryType]}
       {...(entry?.resultType && {
         chain:

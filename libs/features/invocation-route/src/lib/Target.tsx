@@ -83,7 +83,10 @@ export function Target({
         copyText={target}
         triggerRef={linkRef}
       >
-        <div className="flex items-stretch overflow-hidden [&>*]:flex-auto shrink-0">
+        <div
+          className="flex items-stretch overflow-hidden [&>*]:flex-auto shrink-0"
+          data-target
+        >
           <div className="truncate inline-flex items-center [&:has(a)]:mr-0 mr-2.5 max-w-full [&&]:grow-0">
             <Icon
               name={IconName.Box}
