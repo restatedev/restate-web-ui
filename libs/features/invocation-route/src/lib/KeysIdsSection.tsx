@@ -16,6 +16,7 @@ export function KeysIdsSection({
 }) {
   const idempotencyId = invocation?.idempotency_key;
   const traceId = invocation?.trace_id;
+  const restateVersion = invocation?.created_using_restate_version;
 
   if (!invocation) {
     return null;
@@ -23,7 +24,7 @@ export function KeysIdsSection({
 
   return (
     <Section className={styles({ className })}>
-      <SectionTitle>Keys & IDs</SectionTitle>
+      <SectionTitle>Metadata</SectionTitle>
       <SectionContent className="p-0">
         <div className="flex px-1.5 py-1 h-9 items-center [&:not(:last-child)]:border-b">
           <span className="flex-auto pl-1 text-code text-gray-500 font-medium whitespace-nowrap">
@@ -41,27 +42,42 @@ export function KeysIdsSection({
           </Badge>
         </div>
 
-        <div className="flex px-1.5 py-1 h-9 items-center [&:not(:last-child)]:border-b">
-          <span className="flex-auto pl-1 text-code text-gray-500 font-medium">
-            Idempotency Key
-          </span>
-          {idempotencyId ? (
+        {restateVersion && restateVersion.startsWith('0.0.0') && (
+          <div className="flex px-1.5 py-1 h-9 items-center [&:not(:last-child)]:border-b">
+            <span className="flex-auto pl-1 text-code text-gray-500 font-medium shrink-0">
+              Create by Restate
+            </span>
+            <Badge
+              size="sm"
+              className="font-mono py-0 pr-0 align-middle ml-1 min-w-0"
+            >
+              <div className="truncate">{restateVersion}</div>
+
+              <Copy
+                copyText={restateVersion}
+                className="shrink-0 [&_svg]:w-2.5 [&_svg]:h-2.5 p-1 ml-1"
+              />
+            </Badge>
+          </div>
+        )}
+        {idempotencyId && (
+          <div className="flex px-1.5 py-1 h-9 items-center [&:not(:last-child)]:border-b">
+            <span className="flex-auto pl-1 text-code text-gray-500 font-medium">
+              Idempotency Key
+            </span>
             <Badge
               size="sm"
               className="font-mono py-0 pr-0 align-middle ml-1 min-w-0"
             >
               <div className="truncate">{idempotencyId}</div>
-              (
+
               <Copy
                 copyText={idempotencyId}
                 className="shrink-0 [&_svg]:w-2.5 [&_svg]:h-2.5 p-1 ml-1"
               />
-              )
             </Badge>
-          ) : (
-            <span className="font-mono text-xs text-gray-400">Not set</span>
-          )}
-        </div>
+          </div>
+        )}
 
         {traceId && (
           <div className="flex px-1.5 py-1 h-9 items-center [&:not(:last-child)]:border-b">

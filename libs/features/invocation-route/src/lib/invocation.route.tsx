@@ -77,7 +77,7 @@ function Component() {
             Invocations
           </Link>
           <div className="flex @2xl:flex-row flex-col gap-x-2 gap-y-1.5 @2xl:items-center relative ">
-            <h1 className="text-lg flex items-center font-semibold font-mono pb-1 text-gray-900 sm:text-xl max-w-[20ch] truncate gap-1">
+            <h1 className="text-lg flex items-center font-semibold font-mono pb-1 text-gray-900 sm:text-lg max-w-[20ch] truncate gap-1">
               <div className="mr-1.5 shrink-0 bg-white border rounded-xl shadow-sm ">
                 <Icon
                   name={IconName.Invocation}
@@ -88,7 +88,7 @@ function Component() {
               <TruncateWithTooltip>{id}</TruncateWithTooltip>
             </h1>
             {journalAndInvocationData && (
-              <div className="[&>*]:scale-[1.15] [&>*]:[transform-origin:center_left] ">
+              <div className="[&>*]:scale-[1.1] [&>*]:[transform-origin:center_left] ">
                 <Status invocation={journalAndInvocationData} className="" />
               </div>
             )}
