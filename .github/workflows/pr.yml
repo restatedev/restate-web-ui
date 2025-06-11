@@ -40,7 +40,7 @@ jobs:
       - run: pnpm nx affected --targets=lint --base=origin/main --head=HEAD
       - run: NX_BASE=origin/main NX_HEAD=HEAD ./scripts/typecheck.js
       - run: NX_BASE=origin/main NX_HEAD=HEAD pnpm nx format:check
-      - run: pnpm audit --prod
+      - run: pnpm audit --prod --audit-level high
   e2e:
     runs-on: warp-ubuntu-latest-x64-4x
     permissions:
