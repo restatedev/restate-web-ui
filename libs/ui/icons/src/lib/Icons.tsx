@@ -21,6 +21,7 @@ import {
   Globe,
   FileClock,
   ExternalLink,
+  Eye,
   Wallet,
   X,
   Box,
@@ -130,6 +131,7 @@ export const enum IconName {
   Download = 'Download',
   Return = 'Return',
   Radio = 'Radio',
+  Eye = 'Eye',
 }
 export interface IconsProps {
   name: IconName;
@@ -201,6 +203,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Download]: Download,
   [IconName.Return]: CornerDownLeft,
   [IconName.Radio]: Radio,
+  [IconName.Eye]: Eye,
 };
 
 const styles = tv({

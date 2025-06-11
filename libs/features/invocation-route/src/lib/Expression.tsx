@@ -28,12 +28,14 @@ export function Expression({
   output,
   isFunction = true,
   isHandler = false,
-  operationSymbol = '→',
+  operationSymbol = isFunction ? '→' : '',
   prefix,
   chain,
+  namePrefix,
 }: {
   className?: string;
   name: string;
+  namePrefix?: string;
   input?: ReactNode;
   output?: ReactNode;
   isFunction?: boolean;
@@ -47,7 +49,7 @@ export function Expression({
       <div className="text-inherits w-full text-zinc-600  flex-auto">
         <span className="flex items-center min-w-0">
           {prefix && (
-            <span className="text-blue-500 not-italic mr-[0.5ch] font-normal">
+            <span className="text-blue-500 not-italic font-normal">
               {prefix}
             </span>
           )}
@@ -58,7 +60,10 @@ export function Expression({
                 className="w-4 h-4 text-zinc-400 shrink-0 -ml-1"
               />
             )}
-            <TruncateWithTooltip copyText={name}>{name}</TruncateWithTooltip>
+            <TruncateWithTooltip copyText={name}>
+              {namePrefix && <span className="opacity-60">{namePrefix}</span>}
+              {name}
+            </TruncateWithTooltip>
           </span>
 
           {isFunction && (
@@ -99,11 +104,13 @@ export function InputOutput({
   name,
   popoverContent,
   popoverTitle,
+  isValueHidden = false,
 }: {
   className?: string;
   name: ReactNode;
   popoverContent?: ReactNode;
   popoverTitle?: string;
+  isValueHidden?: boolean;
 }) {
   const { base, value, content } = inputOutputStyles();
 
@@ -127,12 +134,21 @@ export function InputOutput({
       <span className={value()}>
         <Popover>
           <PopoverHoverTrigger>
-            <Button
-              className="basis-20 grow max-w-fit truncate font-mono text-inherit [font-size:inherit] px-0.5 py-0 rounded-sm underline-offset-4 decoration-from-font decoration-dashed underline "
-              variant="icon"
-            >
-              <span className="truncate pr-0.5">{name}</span>
-            </Button>
+            {isValueHidden ? (
+              <Button
+                className=" rounded-md text-gray-500 bg-black/5"
+                variant="icon"
+              >
+                <Icon name={IconName.Eye} className="w-3 h-3 fill2-gray-500" />
+              </Button>
+            ) : (
+              <Button
+                className="basis-20 grow max-w-fit truncate font-mono text-inherit [font-size:inherit] px-0.5 py-0 rounded-sm underline-offset-4 decoration-from-font decoration-dashed underline "
+                variant="icon"
+              >
+                <span className="truncate pr-0.5">{name}</span>
+              </Button>
+            )}
           </PopoverHoverTrigger>
           <PopoverContent>
             <DropdownSection

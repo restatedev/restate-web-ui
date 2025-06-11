@@ -3,6 +3,7 @@ import { EntryProps } from './types';
 import { Expression, InputOutput } from '../Expression';
 import { Value } from '../Value';
 import { Failure } from '../Failure';
+import { EntryExpression } from './EntryExpression';
 
 export function Output({
   entry,
@@ -15,6 +16,17 @@ export function Output({
   Extract<JournalEntryV2, { type?: 'Output'; category?: 'command' }>
 >) {
   const entryError = entry.error;
+
+  return (
+    <EntryExpression
+      entry={entry}
+      invocation={invocation}
+      inputParams={[
+        { paramName: 'name', title: 'Name', placeholderLabel: 'name' },
+      ]}
+      outputParam="value"
+    />
+  );
 
   return (
     <Expression
