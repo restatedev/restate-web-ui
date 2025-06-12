@@ -11,7 +11,7 @@ const inputStyles = tv({
   base: '[font-size:inherit] [&_[data-target]]:font-medium -translate-y-px [&_[data-target]]:font-sans  shadow-none self-start  ring-0 [--rounded-radius-right:calc(1rem-1px)] [--rounded-radius:calc(1rem-1px)] [&&&>*:last-child>*]:rounded-b-none',
   variants: {
     hasEntryAfterInput: {
-      true: '[&&&&]:rounded-b-none [&&&&_a:before]:rounded-b-none  h-[calc(2.25rem-1px)]  [&_[data-target]]:h-[calc(2.25rem-1px)]',
+      true: 'border-b  [&&&&]:rounded-b-none [&&&&_a:before]:rounded-b-none  h-[calc(2.25rem-1px)]  [&_[data-target]]:h-[calc(2.25rem-1px)]',
       false: 'h-9  [&_[data-target]>*]:h-9',
     },
   },
