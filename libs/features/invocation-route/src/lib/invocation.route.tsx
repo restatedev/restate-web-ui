@@ -130,7 +130,6 @@ function Component() {
               <SectionContent className="flex-auto rounded-xl border-white/50 rounded-xl bg-gradient-to-b to-gray-50/80 from-gray-50 shadow-zinc-800/[0.03]">
                 <ErrorBanner
                   error={lastError}
-                  open={false}
                   wrap={hasStack}
                   className="bg-transparent p-0 [&_code]:bg-gray-200/50 h-full [&_details]:max-h-full"
                 />

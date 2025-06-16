@@ -4,6 +4,7 @@ import { DropdownSection } from '@restate/ui/dropdown';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
 import { PropsWithChildren } from 'react';
 import { Badge } from '@restate/ui/badge';
+import { Failure } from '../Failure';
 
 export function CompletionNotification({
   entry,
@@ -43,7 +44,18 @@ export function CompletionNotification({
           </PopoverContent>
         </Popover>
         {entry.resultType === 'failure' ? (
-          <div className="mr-2">Failed</div>
+          <>
+            Failed{' '}
+            {entry.error && (
+              <div className="text-2xs">
+                <Failure
+                  restate_code={entry.error?.restateCode}
+                  message={entry.error?.message ?? ''}
+                  className="bg-transparent border-none shadow-none"
+                />
+              </div>
+            )}
+          </>
         ) : (
           <div className="mr-2">Completed</div>
         )}

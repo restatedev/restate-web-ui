@@ -3,9 +3,10 @@ import {
   useGetInvocationJournalWithInvocationV2,
 } from '@restate/data-access/admin-api';
 import { EntryPortal } from './Portals';
-import { NotificationEntryType } from './entries/types';
+import { EventEntryType, NotificationEntryType } from './entries/types';
 import { ComponentType, PropsWithChildren } from 'react';
 import { CompletionNotification } from './entries/CompletionNotification';
+import { TransientError } from './entries/TransientError';
 
 const NOTIFICATIONS_COMPONENTS: {
   [K in NotificationEntryType]:
@@ -27,6 +28,27 @@ const NOTIFICATIONS_COMPONENTS: {
   Run: CompletionNotification,
   AttachInvocation: CompletionNotification,
   Cancel: undefined,
+};
+
+const EVENTS_COMPONENTS: {
+  [K in EventEntryType]:
+    | ComponentType<
+        PropsWithChildren<{
+          entry: JournalEntryV2;
+          commandIndex: number;
+          index: number;
+        }>
+      >
+    | undefined;
+} = {
+  TransientError: TransientError,
+  Created: undefined,
+  Running: undefined,
+  Suspended: undefined,
+  Pending: undefined,
+  Completion: undefined,
+  Retrying: undefined,
+  Scheduled: undefined,
 };
 
 export function RelatedEntries({
@@ -62,11 +84,14 @@ export function RelatedEntries({
           ) {
             return null;
           }
+
           const Component =
             relatedEntry.category === 'notification'
               ? NOTIFICATIONS_COMPONENTS[
                   relatedEntry?.type as NotificationEntryType
                 ]
+              : relatedEntry.category === 'event'
+              ? EVENTS_COMPONENTS[relatedEntry?.type as EventEntryType]
               : undefined;
 
           if (Component) {

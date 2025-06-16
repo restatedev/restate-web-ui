@@ -118,8 +118,13 @@ export function getEntryResultV2(
   const transientFailures = nextEntries.filter(
     (entry) =>
       entry.category === 'event' &&
-      entry.relatedIndexes?.includes(Number(entry.index)) &&
-      entry.type === 'TransientError'
+      entry.type === 'TransientError' &&
+      (
+        entry as Extract<
+          JournalEntryV2,
+          { type?: 'TransientError'; category?: 'event' }
+        >
+      ).relatedCommandIndex === commandIndex
   );
 
   const hasTransientFailures = transientFailures.length > 0;
@@ -130,6 +135,7 @@ export function getEntryResultV2(
       nextEntry.category === 'command' &&
       entry.appended_at > nextEntry.start
   );
+
   const isRetrying =
     !isThereAnyCommandRunningAfter && (hasTransientFailures || hasLastFailure);
 
