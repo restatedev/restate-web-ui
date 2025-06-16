@@ -28,14 +28,18 @@ export function TransientError({
   if (isTransientError(entry)) {
     return (
       <div className="flex item-center gap-2">
-        <Badge variant="warning" size="sm" className="aa gap-1 px-0 py-0 ">
+        <Badge
+          variant="warning"
+          size="sm"
+          className="font-sans font-normal gap-1 px-0 py-0 "
+        >
           <Popover>
             <PopoverTrigger>
               <Button
-                className="h-5 rounded-md text-gray-500 text-xs py-0 px-1 text-gray-400 -translate-x-px -my-px"
+                className=" font-mono rounded-md text-xs py-0 px-1 text-gray-400 translate-x-[-0.5px] my-[-0.5px]"
                 variant="secondary"
               >
-                #{commandIndex}
+                <div className="h-5 flex items-center">#{commandIndex}</div>
               </Button>
             </PopoverTrigger>
             <PopoverContent>
@@ -55,7 +59,7 @@ export function TransientError({
               restate_code={entry.relatedRestateErrorCode}
               message={entry.stackTrace ?? entry.stackTrace ?? ''}
               isRetrying
-              className="bg-transparent border-none shadow-none"
+              className="bg-transparent border-none shadow-none py-0 hover:bg-orange-100 pressed:bg-orange-200/50 rounded-md translate-x-px"
             />
           </div>
         </Badge>

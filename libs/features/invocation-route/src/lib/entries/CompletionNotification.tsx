@@ -21,15 +21,15 @@ export function CompletionNotification({
       <Badge
         variant={entry.resultType === 'failure' ? 'danger' : 'success'}
         size="sm"
-        className="aa gap-1 px-0 py-0 "
+        className="font-sans font-normal gap-1 px-0 py-0 "
       >
         <Popover>
           <PopoverTrigger>
             <Button
-              className="h-5 rounded-md text-gray-500 text-xs py-0 px-1 text-gray-400 -translate-x-px -my-px"
+              className=" font-mono rounded-md text-xs py-0 px-1 text-gray-400 translate-x-[-0.5px] my-[-0.5px]"
               variant="secondary"
             >
-              #{commandIndex}
+              <div className="h-5 flex items-center">#{commandIndex}</div>
             </Button>
           </PopoverTrigger>
           <PopoverContent>
@@ -51,7 +51,7 @@ export function CompletionNotification({
                 <Failure
                   restate_code={entry.error?.restateCode}
                   message={entry.error?.message ?? ''}
-                  className="bg-transparent border-none shadow-none"
+                  className="bg-transparent border-none shadow-none py-0 hover:bg-red-100 pressed:bg-red-200/70 rounded-md translate-x-px"
                 />
               </div>
             )}
