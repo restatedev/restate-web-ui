@@ -54,12 +54,12 @@ export function TransientError({
             </PopoverContent>
           </Popover>
           Retryable error
-          <div className="text-2xs">
+          <div className="text-2xs font-mono">
             <Failure
               restate_code={entry.relatedRestateErrorCode}
               message={entry.stackTrace ?? entry.stackTrace ?? ''}
               isRetrying
-              className="bg-transparent border-none shadow-none py-0 hover:bg-orange-100 pressed:bg-orange-200/50 rounded-md translate-x-px"
+              className="bg-transparent border-none shadow-none py-0 hover:bg-orange-100 pressed:bg-orange-200/50 rounded-md"
             />
           </div>
         </Badge>

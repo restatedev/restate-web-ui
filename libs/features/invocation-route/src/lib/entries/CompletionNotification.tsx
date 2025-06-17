@@ -47,11 +47,11 @@ export function CompletionNotification({
           <>
             Failed{' '}
             {entry.error && (
-              <div className="text-2xs">
+              <div className="text-2xs font-mono">
                 <Failure
                   restate_code={entry.error?.restateCode}
                   message={entry.error?.message ?? ''}
-                  className="bg-transparent border-none shadow-none py-0 hover:bg-red-100 pressed:bg-red-200/70 rounded-md translate-x-px"
+                  className="bg-transparent border-none shadow-none py-0 hover:bg-red-100 pressed:bg-red-200/70 rounded-md "
                 />
               </div>
             )}
