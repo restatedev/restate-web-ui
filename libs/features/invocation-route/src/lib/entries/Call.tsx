@@ -98,7 +98,7 @@ export function Call({
             prefix="."
             name={entry.handlerName ?? ''}
             operationSymbol=""
-            className="pr-0"
+            className="pr-0 [&>*>*>*]:flex-auto"
             input={
               entry.parameters ? (
                 <InputOutput

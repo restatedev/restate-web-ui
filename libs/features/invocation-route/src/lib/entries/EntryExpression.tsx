@@ -186,7 +186,13 @@ export function EntryExpression({
         NAME_COMMANDS_COMPONENTS[entry.type as CommandEntryType] || name || ''
       }
       operationSymbol={operationSymbol}
-      prefix={PREFIX_COMMANDS_COMPONENTS[entry.type as CommandEntryType]}
+      prefix={
+        entry.type === 'Output'
+          ? entry.error
+            ? 'throws'
+            : 'return '
+          : undefined
+      }
       {...(entry?.resultType && {
         chain:
           CHAIN_COMMANDS_COMPONENTS[entry.type as CommandEntryType]?.[
