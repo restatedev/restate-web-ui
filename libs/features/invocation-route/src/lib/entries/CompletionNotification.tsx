@@ -1,20 +1,24 @@
-import { JournalEntryV2 } from '@restate/data-access/admin-api';
+import { Invocation, JournalEntryV2 } from '@restate/data-access/admin-api';
 import { Button } from '@restate/ui/button';
 import { DropdownSection } from '@restate/ui/dropdown';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
 import { PropsWithChildren } from 'react';
 import { Badge } from '@restate/ui/badge';
 import { Failure } from '../Failure';
+import { TimelinePortal } from '../Portals';
+import { EntryProgress } from '../EntryProgress';
 
 export function CompletionNotification({
   entry,
   children,
   commandIndex,
   index,
+  invocation,
 }: PropsWithChildren<{
   entry: JournalEntryV2;
   commandIndex: number;
   index: number;
+  invocation?: Invocation;
 }>) {
   return (
     <div className="flex item-center gap-2">
@@ -60,6 +64,11 @@ export function CompletionNotification({
           <div className="mr-2">Completed</div>
         )}
       </Badge>
+      <TimelinePortal invocationId={invocation?.id ?? ''} entry={entry}>
+        <div className="h-9 border-b border-transparent w-full relative">
+          <EntryProgress entry={entry} invocation={invocation} />
+        </div>
+      </TimelinePortal>
     </div>
   );
 }

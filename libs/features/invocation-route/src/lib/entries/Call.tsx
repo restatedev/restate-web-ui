@@ -13,9 +13,10 @@ import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Entries } from '../Entries';
 import { CallInvokedLoadingError } from './CallInvokedLoadingError';
+import { EntryExpression } from './EntryExpression';
 
 const styles = tv({
-  base: 'flex flex-row gap-1.5 items-center pr-1.5 max-w-full relative',
+  base: 'flex flex-row gap-1.5 items-center pr-10  relative flex-auto',
 });
 export function Call({
   entry,
@@ -45,6 +46,84 @@ export function Call({
   const target = [entry.serviceName, entry.serviceKey, entry.handlerName]
     .filter(Boolean)
     .join('/');
+
+  return (
+    <div className={styles({ className })}>
+      {invokedError ? (
+        <CallInvokedLoadingError
+          error={invokedError}
+          className="absolute right-[100%]"
+        />
+      ) : (
+        <Button
+          onClick={() => {
+            setInvocationIds?.((ids) => {
+              if (entry.invocationId && !ids.includes(entry.invocationId)) {
+                return [...ids, entry.invocationId];
+              } else {
+                return ids.filter((id) => id !== entry.invocationId);
+              }
+            });
+          }}
+          variant="icon"
+          className="absolute right-0"
+        >
+          {invokedIsPending ? (
+            <Spinner />
+          ) : (
+            <Icon
+              name={isExpanded ? IconName.ChevronUp : IconName.ChevronDown}
+              className="w-3.5 h-3.5"
+            />
+          )}
+        </Button>
+      )}
+      <EntryExpression
+        entry={entry}
+        invocation={invocation}
+        inputParams={[
+          { paramName: 'name', title: 'Name', placeholderLabel: 'name' },
+        ]}
+        input={
+          <Target
+            showHandler={false}
+            target={[
+              entry.serviceName,
+              entry.serviceKey ||
+                'sdfsdfsdfsdfsdfsdfsdfsdfsfsdfsdfsfsdsdfsdfsdfsdfsd',
+              entry.handlerName,
+            ]
+              .filter((v) => typeof v === 'string')
+              .join('/')}
+            className="font-sans not-italic mx-0.5 basis-20"
+          />
+        }
+        chain={
+          <Expression
+            prefix="."
+            name={entry.handlerName ?? ''}
+            operationSymbol=""
+            className="pr-0"
+            input={
+              entry.parameters ? (
+                <InputOutput
+                  name="parameters"
+                  popoverTitle="Parameters"
+                  popoverContent={
+                    <Value
+                      value={entry.parameters}
+                      className="text-xs font-mono py-3"
+                    />
+                  }
+                />
+              ) : null
+            }
+          />
+        }
+        outputParam="value"
+      />
+    </div>
+  );
 
   return (
     <div className={styles({ className })}>

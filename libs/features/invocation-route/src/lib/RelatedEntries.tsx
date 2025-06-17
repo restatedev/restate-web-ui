@@ -1,4 +1,5 @@
 import {
+  Invocation,
   JournalEntryV2,
   useGetInvocationJournalWithInvocationV2,
 } from '@restate/data-access/admin-api';
@@ -15,6 +16,7 @@ const NOTIFICATIONS_COMPONENTS: {
           entry: JournalEntryV2;
           commandIndex: number;
           index: number;
+          invocation?: Invocation;
         }>
       >
     | undefined;
@@ -37,6 +39,7 @@ const EVENTS_COMPONENTS: {
           entry: JournalEntryV2;
           commandIndex: number;
           index: number;
+          invocation?: Invocation;
         }>
       >
     | undefined;
@@ -94,10 +97,10 @@ export function RelatedEntries({
               ? EVENTS_COMPONENTS[relatedEntry?.type as EventEntryType]
               : undefined;
 
-          if (Component) {
+          if (Component && invocation) {
             return (
               <EntryPortal
-                invocationId={invocation?.id ?? ''}
+                invocationId={invocation?.id}
                 category={relatedEntry?.category}
                 type={relatedEntry?.type}
                 index={relatedEntry?.index}
@@ -108,6 +111,7 @@ export function RelatedEntries({
                   commandIndex={entry.commandIndex}
                   index={entry.index}
                   children={children}
+                  invocation={invocation}
                 />
               </EntryPortal>
             );

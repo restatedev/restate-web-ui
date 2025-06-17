@@ -41,7 +41,7 @@ export function Expression({
   isFunction?: boolean;
   isHandler?: boolean;
   operationSymbol?: string;
-  chain?: string;
+  chain?: ReactNode;
   prefix?: ReactNode;
 }) {
   return (
@@ -49,11 +49,11 @@ export function Expression({
       <div className="text-inherits w-full text-zinc-600  flex-auto">
         <span className="flex items-center min-w-0">
           {prefix && (
-            <span className="text-blue-500 not-italic font-normal">
+            <span className="text-blue-500 not-italic font-normal shrink-0">
               {prefix}
             </span>
           )}
-          <span className="flex items-center max-w-fit basis-20 grow min-w-0">
+          <span className="flex items-center max-w-fit basis-20 grow min-w-0 shrink-0">
             {isHandler && (
               <Icon
                 name={IconName.Function}
@@ -74,7 +74,7 @@ export function Expression({
           {chain && (
             <span className="min-w-0 truncate base-20">
               <span className="text-zinc-600">{chain}</span>
-              {'()'}
+              {typeof chain === 'string' ? '()' : null}
             </span>
           )}
           <span className="shrink-0 text-zinc-400">

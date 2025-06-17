@@ -95,6 +95,7 @@ export function EntryExpression({
   outputParam,
   name,
   operationSymbol,
+  chain,
 }: {
   invocation?: ReturnType<
     typeof useGetInvocationJournalWithInvocationV2
@@ -111,6 +112,7 @@ export function EntryExpression({
   outputParam?: string;
   name?: string;
   operationSymbol?: string;
+  chain?: ReactNode;
 }) {
   if (entry?.category !== 'command') {
     return null;
@@ -209,6 +211,7 @@ export function EntryExpression({
           )}
         </>
       }
+      chain={chain}
     />
   );
 }

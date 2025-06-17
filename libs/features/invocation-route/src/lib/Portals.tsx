@@ -1,4 +1,11 @@
-import { PropsWithChildren } from 'react';
+import { JournalEntryV2 } from '@restate/data-access/admin-api';
+import {
+  createContext,
+  PropsWithChildren,
+  use,
+  useCallback,
+  useState,
+} from 'react';
 import { createPortal } from 'react-dom';
 
 export function getTimelineId(
@@ -21,19 +28,16 @@ export function getEntryId(
 
 export function TimelinePortal({
   children,
-  index,
   invocationId,
-  type,
-  category,
+  entry,
 }: PropsWithChildren<{
   invocationId: string;
-  index?: number;
-  type?: string;
-  category?: string;
+  entry?: JournalEntryV2;
 }>) {
-  const element = document.querySelector(
-    `[data-id=${getTimelineId(invocationId, index, type, category)}]`
+  const { getPortal } = usePortals(
+    getTimelineId(invocationId, entry?.index, entry?.type, entry?.category)
   );
+  const element = getPortal?.();
 
   if (!element) {
     return null;
@@ -54,13 +58,60 @@ export function EntryPortal({
   type?: string;
   category?: string;
 }>) {
-  const element = document.querySelector(
-    `[data-id=${getEntryId(invocationId, index, type, category)}]`
+  const { getPortal } = usePortals(
+    getEntryId(invocationId, index, type, category)
   );
-  console.log(element);
+  const element = getPortal?.();
+
   if (!element) {
     return null;
   }
 
   return createPortal(children, element);
+}
+
+const PortalContext = createContext<{
+  getPortal?: (id: string) => HTMLElement | null | undefined;
+  setPortal?: (id: string, element: HTMLElement | null) => void;
+}>({});
+
+export function PortalProvider({ children }: PropsWithChildren) {
+  const [portals, setPortals] = useState<
+    Record<string, HTMLElement | undefined | null>
+  >({});
+
+  const getPortal = useCallback(
+    (id: string) => {
+      return portals[id];
+    },
+    [portals]
+  );
+
+  const setPortal = useCallback((id: string, element: HTMLElement | null) => {
+    return setPortals((p) => ({ ...p, [id]: element }));
+  }, []);
+
+  return (
+    <PortalContext.Provider value={{ getPortal, setPortal }}>
+      {children}
+    </PortalContext.Provider>
+  );
+}
+
+export function usePortals(id: string) {
+  const { getPortal: contextGetPortal, setPortal: contextSetPortal } =
+    use(PortalContext);
+
+  const getPortal = useCallback(() => {
+    return contextGetPortal?.(id);
+  }, [contextGetPortal, id]);
+
+  const setPortal = useCallback(
+    (element: HTMLElement | null) => {
+      return contextSetPortal?.(id, element);
+    },
+    [contextSetPortal, id]
+  );
+
+  return { getPortal, setPortal };
 }
