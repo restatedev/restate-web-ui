@@ -16,7 +16,7 @@ import { CallInvokedLoadingError } from './CallInvokedLoadingError';
 import { EntryExpression } from './EntryExpression';
 
 const styles = tv({
-  base: 'flex flex-row gap-1.5 items-center pr-10  relative flex-auto',
+  base: 'flex flex-row gap-1.5 items-center pr-20  relative flex-auto',
 });
 export function Call({
   entry,
@@ -87,12 +87,7 @@ export function Call({
         input={
           <Target
             showHandler={false}
-            target={[
-              entry.serviceName,
-              entry.serviceKey ||
-                'sdfsdfsdfsdfsdfsdfsdfsdfsfsdfsdfsfsdsdfsdfsdfsdfsd',
-              entry.handlerName,
-            ]
+            target={[entry.serviceName, entry.serviceKey, entry.handlerName]
               .filter((v) => typeof v === 'string')
               .join('/')}
             className="font-sans not-italic mx-0.5 basis-20"
@@ -122,6 +117,12 @@ export function Call({
         }
         outputParam="value"
       />
+      {entry.invocationId && (
+        <>
+          <div className="text-gray-400 -ml-1.5">,</div>
+          <InvocationId id={entry.invocationId} className="-ml-1" size="icon" />
+        </>
+      )}
     </div>
   );
 

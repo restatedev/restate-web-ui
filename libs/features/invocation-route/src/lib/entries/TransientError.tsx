@@ -35,7 +35,7 @@ export function TransientError({
         <Badge
           variant="warning"
           size="sm"
-          className="font-sans font-normal gap-1 px-0 py-0 "
+          className="font-sans font-normal gap-0 px-0 py-0 "
         >
           <Popover>
             <PopoverTrigger>
@@ -57,13 +57,12 @@ export function TransientError({
               </DropdownSection>
             </PopoverContent>
           </Popover>
-          Retryable error
           <div className="text-2xs font-mono">
             <Failure
-              restate_code={entry.relatedRestateErrorCode}
+              restate_code={entry.relatedRestateErrorCode ?? String(entry.code)}
               message={entry.stackTrace ?? entry.stackTrace ?? ''}
               isRetrying
-              className="bg-transparent border-none shadow-none py-0 hover:bg-orange-100 pressed:bg-orange-200/50 rounded-md"
+              className="bg-transparent ml-0 border-none shadow-none py-0 hover:bg-orange-100 pressed:bg-orange-200/50 rounded-md"
             />
           </div>
         </Badge>

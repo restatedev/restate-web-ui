@@ -44,7 +44,7 @@ const styles = tv({
       },
       icon: {
         base: '',
-        icon: 'h-6 w-6 rounded-lg shadow-sm',
+        icon: 'h-6 w-6 rounded-lg shadow-sm mr-0',
         text: 'w-0',
         link: 'before:rounded-lg m-0.5 inset-[-1px] absolute rounded-lg',
         container: 'p-px',
