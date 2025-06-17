@@ -19,6 +19,7 @@ function queryFetcher(
     .post(`${baseUrl}/query`, {
       json: { query },
       headers: queryHeaders,
+      timeout: 60_000,
     })
     .json<{ rows: any[] }>();
 }
