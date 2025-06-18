@@ -9,6 +9,7 @@ import {
 } from '@restate/data-access/admin-api/spec';
 import {
   decodeBinary,
+  getCompletionEntry,
   getEntryResultV2,
   getLastFailureV1,
   getTarget,
@@ -62,11 +63,20 @@ function oneWayCallV2(
   const request = entry.entry_json
     ? entryJSON?.Command?.OneWayCall?.request
     : entryJSON?.Command?.OneWayCall;
+  const invocationIdCompletionId =
+    entryJSON?.Command?.OneWayCall?.invocation_id_completion_id;
 
   const invocationId = request?.invocation_id;
   const { name, key, handler } = getTarget(request?.invocation_target);
   const headers = request?.headers;
   const parameters = request?.parameter;
+
+  const invocationIdCompletionEntry = getCompletionEntry<
+    Extract<
+      JournalEntryV2,
+      { type?: 'CallInvocationId'; category?: 'notification' }
+    >
+  >(invocationIdCompletionId, 'CallInvocationId', nextEntries);
 
   const { isRetrying, error, relatedIndexes } = getEntryResultV2(
     entry,
@@ -82,7 +92,7 @@ function oneWayCallV2(
     type: 'OneWayCall',
     category: 'command',
     completionId: undefined,
-    end: undefined,
+    end: invocationIdCompletionEntry?.start,
     index: entry.index,
     relatedIndexes,
     isRetrying,
@@ -101,6 +111,9 @@ function oneWayCallV2(
     handlerName: handler,
     serviceKey: key,
     serviceName: name,
+    invokeTime: entryJSON?.Command?.OneWayCall?.invoke_time
+      ? new Date(entryJSON?.Command?.OneWayCall?.invoke_time).toISOString()
+      : undefined,
   };
 }
 
@@ -118,4 +131,33 @@ export function oneWayCall(
   }
 
   return {};
+}
+
+export function notificationCallInvocationId(
+  entry: JournalRawEntryWithCommandIndex,
+  nextEntries: JournalEntryV2[],
+  invocation?: Invocation
+): Extract<
+  JournalEntryV2,
+  { type?: 'CallInvocationId'; category?: 'notification' }
+> {
+  const entryJSON = parseEntryJson(entry.entry_json);
+  const entryLiteJSON = parseEntryJson(entry.entry_lite_json);
+  const completionId: number | undefined = entry.entry_json
+    ? entryJSON?.Notification?.Completion?.CallInvocationId?.completion_id
+    : entryLiteJSON?.Notification?.id?.CompletionId;
+
+  return {
+    start: entry.appended_at,
+    isPending: false,
+    commandIndex: undefined,
+    type: 'CallInvocationId',
+    category: 'notification',
+    completionId,
+    end: undefined,
+    index: entry.index,
+    relatedIndexes: undefined,
+    isRetrying: false,
+    isLoaded: true,
+  };
 }

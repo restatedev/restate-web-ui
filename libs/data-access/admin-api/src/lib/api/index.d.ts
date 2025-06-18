@@ -1273,6 +1273,7 @@ export interface components {
         | components['schemas']['RunJournalEntryV2']
         | components['schemas']['OutputJournalEntryV2']
         | components['schemas']['NotificationCallJournalEntryV2']
+        | components['schemas']['NotificationCallInvocationIdJournalEntryV2']
         | components['schemas']['NotificationRunJournalEntryV2']
         | components['schemas']['OneWayCallJournalEntryTypeV2']
         | components['schemas']['SleepJournalEntryTypeV2']
@@ -1740,6 +1741,13 @@ export interface components {
       value?: string;
       /** @enum {string} */
       type?: 'Call';
+      /** @enum {string} */
+      category?: 'notification';
+    };
+    NotificationCallInvocationIdJournalEntryV2: {
+      value?: string;
+      /** @enum {string} */
+      type?: 'CallInvocationId';
       /** @enum {string} */
       category?: 'notification';
     };

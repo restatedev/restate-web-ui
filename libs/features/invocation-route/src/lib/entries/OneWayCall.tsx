@@ -5,23 +5,20 @@ import { Headers } from '../Headers';
 import { Value } from '../Value';
 import { Target } from '../Target';
 import { InvocationId } from '../InvocationId';
-import { Failure } from '../Failure';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 import { formatDurations } from '@restate/util/intl';
 import { DateTooltip } from '@restate/ui/tooltip';
-import { useJournalContext } from '../JournalContext';
-import { Entries } from '../Entries';
-import { Button } from '@restate/ui/button';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Spinner } from '@restate/ui/loading';
-import { CallInvokedLoadingError } from './CallInvokedLoadingError';
+import { tv } from 'tailwind-variants';
+import { EntryExpression } from './EntryExpression';
+
+const styles = tv({
+  base: 'flex flex-row gap-1.5 items-center pr-2 relative flex-auto',
+});
 
 export function OneWayCall({
   entry,
-  failed,
   invocation,
-  isRetrying,
-  wasRetrying,
+  className,
 }: EntryProps<
   Extract<JournalEntryV2, { type?: 'OneWayCall'; category?: 'command' }>
 >) {
@@ -32,75 +29,29 @@ export function OneWayCall({
     ? durationSinceLastSnapshot(invokeTime)
     : { isPast: undefined };
   const duration = invokeTime ? formatDurations(parts) : undefined;
-  const {
-    setInvocationIds,
-    isPending,
-    invocationIds,
-    error: invocationsError,
-  } = useJournalContext();
-  const isExpanded =
-    entry.invocationId &&
-    invocationIds.includes(entry.invocationId) &&
-    !isPending;
-
-  const invokedIsPending = isPending?.[String(entry.invocationId)];
-  const invokedError = invocationsError?.[String(entry.invocationId)];
-  const target = [entry.serviceName, entry.serviceKey, entry.handlerName]
-    .filter(Boolean)
-    .join('/');
-
-  const error = entry.error;
 
   return (
-    <div className="flex flex-row gap-1.5 items-center pr-1.5 max-w-full relative">
-      {invokedError ? (
-        <CallInvokedLoadingError
-          error={invokedError}
-          className="absolute right-[100%]"
-        />
-      ) : (
-        <Button
-          onClick={() => {
-            setInvocationIds?.((ids) => {
-              if (entry.invocationId && !ids.includes(entry.invocationId)) {
-                return [...ids, entry.invocationId];
-              } else {
-                return ids.filter((id) => id !== entry.invocationId);
-              }
-            });
-          }}
-          variant="icon"
-          className="absolute right-[100%]"
-        >
-          {invokedIsPending ? (
-            <Spinner />
-          ) : (
-            <Icon
-              name={isExpanded ? IconName.ChevronUp : IconName.ChevronDown}
-              className="w-3.5 h-3.5"
-            />
-          )}
-        </Button>
-      )}
-      <Target
-        target={target}
-        className="[font-size:1.02em] [&>span_a_svg]:w-3.5 [&>*_a_svg]:h-3.5"
-        showHandler={false}
-      >
-        <div className="max-w-full flex items-center">
+    <div className={styles({ className })}>
+      <EntryExpression
+        entry={entry}
+        invocation={invocation}
+        inputParams={[
+          { paramName: 'name', title: 'Name', placeholderLabel: 'name' },
+        ]}
+        input={
+          <Target
+            showHandler={false}
+            target={[entry.serviceName, entry.serviceKey, entry.handlerName]
+              .filter((v) => typeof v === 'string')
+              .join('/')}
+            className="font-sans not-italic mx-0.5 basis-20 text-2xs h-6 [&_a]:my-0 [&_[data-target]]:h-6"
+          />
+        }
+        chain={
           <Expression
-            isHandler
-            className="min-w-0"
-            name={entry.handlerName ?? ''}
-            output={
-              entry.invocationId && (
-                <InvocationId
-                  id={entry.invocationId}
-                  className="truncate max-w-[15ch] flex"
-                  size="sm"
-                />
-              )
-            }
+            name={'.' + entry.handlerName}
+            operationSymbol=""
+            className="pr-0 [&>*>*>*]:flex-auto"
             input={
               <>
                 {entry.parameters && (
@@ -123,26 +74,21 @@ export function OneWayCall({
                   <InputOutput
                     name="headers"
                     popoverTitle=""
-                    className="px-0 bg-transparent border-none mx-2 [&&&]:mb-3"
+                    className="px-0 bg-transparent border-none mx-0 [&&&]:mb-1"
                     popoverContent={<Headers headers={entry.headers} />}
                   />
                 )}
               </>
             }
           />
-
-          {error?.message && (
-            <Failure
-              message={error.message}
-              restate_code={error.restateCode}
-              isRetrying={entry.isRetrying}
-            />
-          )}
-        </div>
-      </Target>
-      {duration && invokeTime && (
-        <div className="inline-flex items-center gap-[0.5ch] truncate">
-          <span className="font-normal text-zinc-500 truncate">scheduled </span>
+        }
+        className="min-w-0"
+      />
+      {entry.invocationId && (
+        <InvocationId id={entry.invocationId} className="-ml-1" size="icon" />
+      )}
+      {duration && invokeTime && !isPast && (
+        <div className="inline-flex items-center gap-[0.5ch] truncate ml-auto font-sans text-xs">
           {!isPast && <span className="font-normal text-zinc-500">in </span>}
           <DateTooltip date={new Date(invokeTime)} title={'Call scheduled at'}>
             {duration}
@@ -150,11 +96,6 @@ export function OneWayCall({
           {isPast && <span className="font-normal text-zinc-500"> ago</span>}
         </div>
       )}
-      {entry.invocationId &&
-        invocationIds.includes(entry.invocationId) &&
-        !invokedIsPending && (
-          <Entries invocationId={entry.invocationId} showInputEntry={false} />
-        )}
     </div>
   );
 }

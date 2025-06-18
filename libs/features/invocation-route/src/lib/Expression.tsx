@@ -5,6 +5,7 @@ import {
   Popover,
   PopoverContent,
   PopoverHoverTrigger,
+  PopoverTrigger,
 } from '@restate/ui/popover';
 import { ReactNode } from 'react';
 
@@ -133,13 +134,13 @@ export function InputOutput({
     <div className={base()}>
       <span className={value()}>
         <Popover>
-          <PopoverHoverTrigger>
+          <PopoverTrigger>
             {isValueHidden ? (
               <Button
-                className=" rounded-md text-gray-500 bg-black/5"
-                variant="icon"
+                className=" rounded-lg text-gray-500 h-6 w-6 p-0 flex justify-center items-center"
+                variant="secondary"
               >
-                <Icon name={IconName.Eye} className="w-3 h-3 fill2-gray-500" />
+                <Icon name={IconName.Eye} className="w-3 h-3" />
               </Button>
             ) : (
               <Button
@@ -149,7 +150,7 @@ export function InputOutput({
                 <span className="truncate pr-0.5">{name}</span>
               </Button>
             )}
-          </PopoverHoverTrigger>
+          </PopoverTrigger>
           <PopoverContent>
             <DropdownSection
               className={content({ className })}

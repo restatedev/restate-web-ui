@@ -4008,6 +4008,9 @@
                 "$ref": "#/components/schemas/NotificationCallJournalEntryV2"
               },
               {
+                "$ref": "#/components/schemas/NotificationCallInvocationIdJournalEntryV2"
+              },
+              {
                 "$ref": "#/components/schemas/NotificationRunJournalEntryV2"
               },
               {
@@ -5236,6 +5239,22 @@
           "type": {
             "type": "string",
             "enum": ["Call"]
+          },
+          "category": {
+            "type": "string",
+            "enum": ["notification"]
+          }
+        }
+      },
+      "NotificationCallInvocationIdJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["CallInvocationId"]
           },
           "category": {
             "type": "string",

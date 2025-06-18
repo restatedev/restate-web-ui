@@ -30,6 +30,7 @@ const NOTIFICATIONS_COMPONENTS: {
   Run: CompletionNotification,
   AttachInvocation: CompletionNotification,
   Cancel: undefined,
+  CallInvocationId: undefined,
 };
 
 const EVENTS_COMPONENTS: {

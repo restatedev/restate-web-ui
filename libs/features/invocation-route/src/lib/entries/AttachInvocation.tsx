@@ -1,66 +1,85 @@
 import { JournalEntryV2 } from '@restate/data-access/admin-api';
 import { EntryProps } from './types';
-import { Expression, InputOutput } from '../Expression';
-import { Value } from '../Value';
-import { Failure } from '../Failure';
-import { Ellipsis } from '@restate/ui/loading';
 import { InvocationId } from '../InvocationId';
+import { EntryExpression } from './EntryExpression';
+import { tv } from 'tailwind-variants';
+import { useJournalContext } from '../JournalContext';
+import { CallInvokedLoadingError } from './CallInvokedLoadingError';
+import { Button } from '@restate/ui/button';
+import { Spinner } from '@restate/ui/loading';
+import { Icon, IconName } from '@restate/ui/icons';
+
+const styles = tv({
+  base: 'flex flex-row gap-1.5 items-center pr-20  relative flex-auto',
+});
 
 export function AttachInvocation({
   entry,
-  failed,
   invocation,
-  error,
-  isRetrying,
-  wasRetrying,
+  className,
 }: EntryProps<
   Extract<JournalEntryV2, { type?: 'AttachInvocation'; category?: 'command' }>
 >) {
-  const entryError = entry.error;
+  const {
+    setInvocationIds,
+    isPending,
+    invocationIds,
+    error: invocationsError,
+  } = useJournalContext();
+  const isExpanded =
+    entry.invocationId &&
+    invocationIds.includes(entry.invocationId) &&
+    !isPending;
+
+  const invokedIsPending = isPending?.[String(entry.invocationId)];
+  const invokedError = invocationsError?.[String(entry.invocationId)];
 
   return (
-    <Expression
-      name={'ctx.attach'}
-      prefix="async"
-      className="pr-0"
-      {...(typeof entry.invocationId === 'string' && {
-        input: (
+    <div className={styles({ className })}>
+      {invokedError ? (
+        <CallInvokedLoadingError
+          error={invokedError}
+          className="absolute right-[100%]"
+        />
+      ) : (
+        <Button
+          onClick={() => {
+            setInvocationIds?.((ids) => {
+              if (entry.invocationId && !ids.includes(entry.invocationId)) {
+                return [...ids, entry.invocationId];
+              } else {
+                return ids.filter((id) => id !== entry.invocationId);
+              }
+            });
+          }}
+          variant="icon"
+          className="absolute right-0"
+        >
+          {invokedIsPending ? (
+            <Spinner />
+          ) : (
+            <Icon
+              name={isExpanded ? IconName.ChevronUp : IconName.ChevronDown}
+              className="w-3.5 h-3.5"
+            />
+          )}
+        </Button>
+      )}
+      <EntryExpression
+        entry={entry}
+        invocation={invocation}
+        inputParams={[
+          { paramName: 'name', title: 'Name', placeholderLabel: 'name' },
+        ]}
+        input={
           <InvocationId
             id={String(entry.invocationId)}
-            size="sm"
-            className="truncate max-w-[15ch]"
+            className="truncate max-w-[15ch] text-2xs not-italic font-semibold text-gray-500 mx-0.5 "
+            size="md"
           />
-        ),
-      })}
-      output={
-        <>
-          {typeof entry.value === 'string' && (
-            <InputOutput
-              name={entry.value}
-              popoverTitle="Value"
-              popoverContent={
-                <Value value={entry.value} className="text-xs font-mono py-3" />
-              }
-            />
-          )}
-          {entry.isPending && (!entryError || entry.isRetrying) && <Ellipsis />}
-          {typeof entry.value === 'undefined' &&
-            !entryError &&
-            !entry.isPending && (
-              <div className="text-zinc-400 font-semibold font-mono text-2xs">
-                void
-              </div>
-            )}
-          {entryError?.message && (
-            <Failure
-              message={entryError.message}
-              restate_code={entryError.restateCode}
-              isRetrying={entry.isRetrying}
-              className="-mr-1.5"
-            />
-          )}
-        </>
-      }
-    />
+        }
+        outputParam="value"
+      />
+    </div>
   );
 }

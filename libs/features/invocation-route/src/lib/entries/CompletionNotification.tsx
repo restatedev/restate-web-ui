@@ -25,7 +25,7 @@ export function CompletionNotification({
       <Badge
         variant={entry.resultType === 'failure' ? 'danger' : 'success'}
         size="sm"
-        className="font-sans font-normal gap-1 px-0 py-0 "
+        className="font-sans font-normal gap-1 px-0 py-0 rounded-lg"
       >
         <Popover>
           <PopoverTrigger>
@@ -55,7 +55,7 @@ export function CompletionNotification({
                 <Failure
                   restate_code={entry.error?.restateCode}
                   message={entry.error?.message ?? ''}
-                  className="bg-transparent border-none shadow-none py-0 hover:bg-red-100 pressed:bg-red-200/70 rounded-md "
+                  className="bg-transparent border-none shadow-none py-0 hover:bg-red-100 pressed:bg-red-200/70 [&_button]:h-5 my-[-2px]"
                 />
               </div>
             )}

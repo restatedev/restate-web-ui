@@ -669,9 +669,12 @@ export function useGetInvocationsJournalWithInvocationsV2(
             [invocationId]: results.at(index)?.error,
           };
         }, {} as Record<string, Error | null | undefined>),
-        dataUpdatedAt: Math.max(
-          ...results.map((result) => result.dataUpdatedAt)
-        ),
+        dataUpdatedAt: invocationIds.reduce((combined, invocationId, index) => {
+          return {
+            ...combined,
+            [invocationId]: results.at(index)?.dataUpdatedAt,
+          };
+        }, {} as Record<string, number | undefined>),
       };
     },
     [invocationIds]

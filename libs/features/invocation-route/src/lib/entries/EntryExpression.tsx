@@ -8,6 +8,7 @@ import { ReactNode } from 'react';
 import { Ellipsis } from '@restate/ui/loading';
 import { Failure } from '../Failure';
 import { Value } from '../Value';
+import { tv } from 'tailwind-variants';
 
 const NAME_COMMANDS_COMPONENTS: {
   [K in CommandEntryType]: string;
@@ -60,31 +61,7 @@ const CHAIN_COMMANDS_COMPONENTS: {
   PeekPromise: undefined,
   CompletePromise: { failure: 'reject', success: 'resolve', void: '' },
 };
-
-const PREFIX_COMMANDS_COMPONENTS: {
-  [K in CommandEntryType]: string | undefined;
-} = {
-  Input: undefined,
-  GetState: undefined,
-  GetEagerState: undefined,
-  SetState: undefined,
-  GetStateKeys: undefined,
-  GetEagerStateKeys: undefined,
-  ClearState: undefined,
-  ClearAllState: undefined,
-  Call: undefined,
-  Run: undefined,
-  Output: 'return',
-  OneWayCall: undefined,
-  Sleep: undefined,
-  CompleteAwakeable: undefined,
-  Awakeable: undefined,
-  AttachInvocation: undefined,
-  Cancel: undefined,
-  GetPromise: undefined,
-  PeekPromise: undefined,
-  CompletePromise: undefined,
-};
+const styles = tv({ base: 'pr-0' });
 
 export function EntryExpression({
   entry,
@@ -96,6 +73,7 @@ export function EntryExpression({
   name,
   operationSymbol,
   chain,
+  className,
 }: {
   invocation?: ReturnType<
     typeof useGetInvocationJournalWithInvocationV2
@@ -113,6 +91,7 @@ export function EntryExpression({
   name?: string;
   operationSymbol?: string;
   chain?: ReactNode;
+  className?: string;
 }) {
   if (entry?.category !== 'command') {
     return null;
@@ -199,7 +178,7 @@ export function EntryExpression({
             entry.resultType
           ],
       })}
-      className="pr-0"
+      className={styles({ className })}
       isFunction={entry.type !== 'Output'}
       input={input}
       output={

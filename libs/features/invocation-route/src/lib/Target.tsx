@@ -94,17 +94,17 @@ export function Target({
             />
             <TruncateTooltipTrigger>{service}</TruncateTooltipTrigger>
             {!shouldShowHandler && (typeof key === 'undefined' || children) && (
-              <div className="shrink-0 items-center h-full flex my-[1px] mr-1 pl-[2px] rounded-r-[calc(var(--rounded-radius)-1px)] pr-0.5">
+              <div className="shrink-0 items-center flex my-[1px] mr-1 pl-[2px] rounded-r-[calc(var(--rounded-radius)-1px)] pr-0.5">
                 <Link
                   ref={linkRef}
                   href={`?${SERVICE_QUERY_PARAM}=${service}`}
                   aria-label={target}
                   variant="secondary"
-                  className="outline-offset-0 my-1 rounded-full before:rounded-[var(--rounded-radius)] before:absolute before:inset-0 before:z-[2] before:content-[''] hover:before:bg-black/[0.03] pressed:before:bg-black/5"
+                  className="flex items-center outline-offset-0 my-1 rounded-full before:rounded-[var(--rounded-radius)] before:absolute before:inset-0 before:z-[2] before:content-[''] hover:before:bg-black/[0.03] pressed:before:bg-black/5"
                 >
                   <Icon
                     name={IconName.ChevronRight}
-                    className="w-4 h-4 text-gray-500 shrink-0 "
+                    className="aspect-square w-[1.25em]  text-gray-500 shrink-0 "
                   />
                 </Link>
               </div>
@@ -121,17 +121,17 @@ export function Target({
                 </div>
               </div>
               {!shouldShowHandler && !children && (
-                <div className="truncate ml-[-4px] [&&]:shrink-0 bg-zinc-50 h-full flex my-[1px] mr-px pl-[2px] rounded-r-[calc(var(--rounded-radius)-1px)] pr-0.5">
+                <div className="truncate ml-[-4px] [&&]:shrink-0 bg-zinc-50 flex my-[1px]  mr-px pl-[2px] rounded-r-[calc(var(--rounded-radius)-1px)] pr-0.5">
                   <Link
                     ref={linkRef}
                     href={`?${SERVICE_QUERY_PARAM}=${service}`}
                     aria-label={target}
                     variant="secondary"
-                    className=" outline-offset-0 my-1 rounded-full before:rounded-[var(--rounded-radius)] before:absolute before:inset-0 before:z-[2] before:content-[''] hover:before:bg-black/[0.03] pressed:before:bg-black/5"
+                    className="flex items-center outline-offset-0 my-1 rounded-full before:rounded-[var(--rounded-radius)] before:absolute before:inset-0 before:z-[2] before:content-[''] hover:before:bg-black/[0.03] pressed:before:bg-black/5"
                   >
                     <Icon
                       name={IconName.ChevronRight}
-                      className="w-4 h-4 text-gray-500 shrink-0 "
+                      className="aspect-square w-[1.25em] text-gray-500 shrink-0 "
                     />
                   </Link>
                 </div>

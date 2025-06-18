@@ -31,6 +31,7 @@ import {
   notificationAttachInvocation,
   notificationCall,
   notificationSleep,
+  notificationCallInvocationId,
 } from '@restate/features/service-protocol';
 
 export function convertJournalV2(
@@ -99,6 +100,7 @@ const JOURNAL_ENTRY_CONVERT_MAP: Partial<
   'Command: SendSignal': sendSignal,
   'Notification: Signal': signal,
   'Notification: Call': notificationCall,
+  'Notification: CallInvocationId': notificationCallInvocationId,
   'Notification: AttachInvocation': notificationAttachInvocation,
   'Notification: GetPromise': notificationGetPromise,
   'Notification: PeekPromise': notificationPeekPromise,
@@ -107,7 +109,6 @@ const JOURNAL_ENTRY_CONVERT_MAP: Partial<
   'Notification: Sleep': notificationSleep,
   Event: event,
 
-  'Notification: CallInvocationId': undefined,
   'Command: GetInvocationOutput': undefined,
   'Command: Custom': undefined,
   GetInvocationOutput: undefined,

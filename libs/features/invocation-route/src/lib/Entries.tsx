@@ -809,6 +809,21 @@ export function isEntryCall(
   );
 }
 
+export function isExpandable(
+  entry: JournalEntryV2
+): entry is
+  | Extract<JournalEntryV2, { type?: 'Call'; category?: 'command' }>
+  | Extract<
+      JournalEntryV2,
+      { type?: 'AttachInvocation'; category?: 'command' }
+    > {
+  return Boolean(
+    entry.type &&
+      ['Call', 'AttachInvocation'].includes(entry.type) &&
+      entry.category === 'command'
+  );
+}
+
 const errorStyles = tv({
   base: 'truncate max-w-full flex items-center text-red-500 gap-1 flex-wrap w-full min-w-0 mb-2 px-2 bg-zinc-50 border-zinc-600/10 border py-1 font-mono [font-size:95%] rounded -mt-px',
 });
