@@ -23,7 +23,7 @@ export function signal(
   const entryLiteJSON = parseEntryJson(entry.entry_lite_json);
 
   const id: number | undefined = entry.entry_json
-    ? entryJSON?.Notification?.Signal?.id?.index
+    ? entryJSON?.Notification?.Signal?.id?.Index
     : entryLiteJSON?.Notification?.id?.SignalIndex;
 
   if (id === 1) {

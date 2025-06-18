@@ -6,6 +6,7 @@ import { Value } from '../Value';
 import { Target } from '../Target';
 import { tv } from 'tailwind-variants';
 import { EntryExpression } from './EntryExpression';
+import { Icon, IconName } from '@restate/ui/icons';
 
 const inputStyles = tv({
   base: '[font-size:inherit] [&_[data-target]]:font-medium -translate-y-px [&_[data-target]]:font-sans  shadow-none self-start  ring-0 [--rounded-radius-right:calc(1rem-1px)] [--rounded-radius:calc(1rem-1px)] [&&&>*:last-child>*]:rounded-b-none',
@@ -39,7 +40,11 @@ export function Input({
       })}
     >
       {entry ? (
-        <>
+        <div className="flex items-center">
+          <Icon
+            name={IconName.Function}
+            className="w-4 h-4 text-zinc-400 shrink-0 -mr-0.5"
+          />
           <EntryExpression
             entry={entry}
             invocation={invocation}
@@ -75,7 +80,7 @@ export function Input({
             }
           />
           <div data-fill />
-        </>
+        </div>
       ) : null}
     </Target>
   );

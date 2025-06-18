@@ -4,7 +4,7 @@
 @tailwind utilities;
 @layer base {
   html {
-    font-family: 'Inter var', 'Helvetica', system-ui, sans-serif;
+    font-family: InterVariable, 'Helvetica', system-ui, sans-serif;
   }
   body {
     padding-left: calc(100vw - 100%);

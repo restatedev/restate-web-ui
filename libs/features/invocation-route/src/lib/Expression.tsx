@@ -50,11 +50,9 @@ export function Expression({
       <div className="text-inherits w-full text-zinc-600  flex-auto">
         <span className="flex items-center min-w-0">
           {prefix && (
-            <span className="text-blue-500 not-italic font-normal shrink-0">
-              {prefix}
-            </span>
+            <span className="text-blue-500 font-normal shrink-0">{prefix}</span>
           )}
-          <span className="flex items-center max-w-fit basis-20 grow min-w-0 shrink-0">
+          <span className="flex items-center font-medium  max-w-fit basis-20 grow min-w-0 shrink-0">
             {isHandler && (
               <Icon
                 name={IconName.Function}

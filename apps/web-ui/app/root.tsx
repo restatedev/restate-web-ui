@@ -56,6 +56,10 @@ export const links: LinksFunction = () => [
     rel: 'stylesheet',
     href: '/ui/font/inter.css',
   },
+  {
+    rel: 'stylesheet',
+    href: '/ui/font/jetbrains.css',
+  },
   { rel: 'stylesheet', href: styles },
   {
     rel: 'apple-touch-icon',

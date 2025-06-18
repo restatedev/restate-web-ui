@@ -75,6 +75,7 @@ export function EntryExpression({
   chain,
   className,
   outputParamPlaceholder = 'Result',
+  hideErrorForFailureResult,
 }: {
   invocation?: ReturnType<
     typeof useGetInvocationJournalWithInvocationV2
@@ -95,8 +96,9 @@ export function EntryExpression({
   operationSymbol?: string;
   chain?: ReactNode;
   className?: string;
+  hideErrorForFailureResult?: boolean;
 }) {
-  if (entry?.category !== 'command') {
+  if (entry?.category !== 'command' && entry?.type !== 'CompleteAwakeable') {
     return null;
   }
 
@@ -207,15 +209,16 @@ export function EntryExpression({
         <>
           {entry.isPending && <Ellipsis />}
           {output}
-          {entry.error && (
-            <div className="text-2xs">
-              <Failure
-                message={entry.error.message!}
-                restate_code={entry.error.restateCode}
-                isRetrying={entry.isRetrying}
-              />
-            </div>
-          )}
+          {entry.error &&
+            (!hideErrorForFailureResult || entry.resultType !== 'failure') && (
+              <div className="text-2xs ml-1">
+                <Failure
+                  message={entry.error.message!}
+                  restate_code={entry.error.restateCode}
+                  isRetrying={entry.isRetrying}
+                />
+              </div>
+            )}
         </>
       }
       chain={chain}
