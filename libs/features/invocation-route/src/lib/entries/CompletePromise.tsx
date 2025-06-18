@@ -3,7 +3,7 @@ import { EntryProps } from './types';
 import { Expression, InputOutput } from '../Expression';
 import { Value } from '../Value';
 import { Failure } from '../Failure';
-import { Ellipsis } from '@restate/ui/loading';
+import { EntryExpression } from './EntryExpression';
 
 export function CompletePromise({
   entry,
@@ -15,52 +15,52 @@ export function CompletePromise({
 }: EntryProps<
   Extract<JournalEntryV2, { type?: 'CompletePromise'; category?: 'command' }>
 >) {
-  const failure = entry.error;
   return (
-    <Expression
-      name={'ctx.promise'}
-      {...(typeof entry.promiseName === 'string' && {
-        input: (
-          <InputOutput
-            name={JSON.stringify(entry.promiseName)}
-            popoverTitle="Name"
-            popoverContent={
-              <Value
-                value={entry.promiseName}
-                className="text-xs font-mono py-3"
-              />
-            }
-          />
-        ),
-      })}
-      chain={entry.resultType === 'failure' ? '.reject' : '.resolve'}
-      output={
-        <>
-          {typeof entry.value === 'string' && (
-            <InputOutput
-              name={entry.value}
-              popoverTitle="Value"
-              popoverContent={
-                <Value value={entry.value} className="text-xs font-mono py-3" />
-              }
-            />
-          )}
-          {typeof entry.value === 'undefined' &&
-            !failure &&
-            !entry.isPending && (
-              <div className="text-zinc-400 font-semibold font-mono text-2xs">
-                void
-              </div>
-            )}
-          {entry.isPending && (!failure || entry.isRetrying) && <Ellipsis />}
-          {failure?.message && (
-            <Failure
-              message={failure.message}
-              restate_code={failure.restateCode}
-              isRetrying={entry.isRetrying}
-            />
-          )}
-        </>
+    <EntryExpression
+      entry={entry}
+      invocation={invocation}
+      inputParams={[
+        {
+          paramName: 'promiseName',
+          title: 'Name',
+          placeholderLabel: 'name',
+          shouldStringified: true,
+        },
+      ]}
+      operationSymbol=""
+      hideErrorForFailureResult
+      chain={
+        <Expression
+          name={'.' + (entry.resultType === 'failure' ? 'reject' : 'resolve')}
+          operationSymbol=""
+          className="pr-0 [&>*>*>*]:flex-auto"
+          input={
+            <div className="mx-0.5">
+              {entry.resultType !== 'failure' && (
+                <InputOutput
+                  name="value"
+                  popoverTitle="Value"
+                  isValueHidden
+                  popoverContent={
+                    <Value
+                      value={entry.value}
+                      className="text-xs font-mono py-3"
+                    />
+                  }
+                />
+              )}
+              {entry.error && (
+                <div className="text-2xs">
+                  <Failure
+                    message={entry.error.message!}
+                    restate_code={entry.error.restateCode}
+                    isRetrying={entry.isRetrying}
+                  />
+                </div>
+              )}
+            </div>
+          }
+        />
       }
     />
   );

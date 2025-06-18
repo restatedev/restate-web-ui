@@ -32,7 +32,7 @@ export function CompleteAwakeable({
           className="pr-0 [&>*>*>*]:flex-auto"
           input={
             <div className="mx-0.5">
-              {entry.value && (
+              {entry.resultType !== 'failure' && (
                 <InputOutput
                   name="value"
                   popoverTitle="Value"
