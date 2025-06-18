@@ -36,8 +36,6 @@ export function Call({
   const invokedIsPending = isPending?.[String(entry.invocationId)];
   const invokedError = invocationsError?.[String(entry.invocationId)];
 
-  console.log(isExpanded);
-
   return (
     <div className={styles({ className })}>
       {invokedError ? (
