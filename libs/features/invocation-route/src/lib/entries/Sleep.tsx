@@ -7,19 +7,13 @@ import { EntryExpression } from './EntryExpression';
 
 export function Sleep({
   entry,
-  failed,
   invocation,
-  error,
-  isRetrying,
-  wasRetrying,
 }: EntryProps<
   Extract<JournalEntryV2, { type?: 'Sleep'; category?: 'command' }>
 >) {
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
   const { isPast, ...parts } = durationSinceLastSnapshot(entry.wakeupAt);
   const duration = formatDurations(parts);
-
-  const entryError = entry.error;
 
   return (
     <EntryExpression
