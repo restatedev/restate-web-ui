@@ -1,9 +1,6 @@
 import { JournalEntryV2 } from '@restate/data-access/admin-api';
 import { EntryProps } from './types';
-import { Expression, InputOutput } from '../Expression';
-import { Value } from '../Value';
-import { Failure } from '../Failure';
-import { Ellipsis } from '@restate/ui/loading';
+import { EntryExpression } from './EntryExpression';
 
 export function GetState({
   entry,
@@ -18,41 +15,19 @@ export function GetState({
     { type?: 'GetState' | 'GetEagerState'; category?: 'command' }
   >
 >) {
-  const entryError = entry.error;
-
   return (
-    <Expression
-      isFunction={false}
-      name={entry.key ?? ''}
-      prefix="get"
-      output={
-        <>
-          {typeof entry.value === 'string' && (
-            <InputOutput
-              name={entry.value}
-              popoverTitle="Value"
-              popoverContent={
-                <Value value={entry.value} className="text-xs font-mono py-3" />
-              }
-            />
-          )}
-          {typeof entry.value === 'undefined' &&
-            !entryError &&
-            !entry.isPending && (
-              <div className="text-zinc-400 font-semibold font-mono text-2xs">
-                void
-              </div>
-            )}
-          {entry.isPending && (!entryError || entry.isRetrying) && <Ellipsis />}
-          {entryError?.message && (
-            <Failure
-              message={entryError.message}
-              restate_code={entryError.restateCode}
-              isRetrying={entry.isRetrying}
-            />
-          )}
-        </>
-      }
+    <EntryExpression
+      entry={entry}
+      invocation={invocation}
+      inputParams={[
+        {
+          paramName: 'key',
+          title: 'Key',
+          placeholderLabel: 'key',
+          shouldStringified: true,
+        },
+      ]}
+      outputParam="value"
     />
   );
 }

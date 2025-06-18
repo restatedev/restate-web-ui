@@ -13,7 +13,12 @@ export function Run({
       entry={entry}
       invocation={invocation}
       inputParams={[
-        { paramName: 'name', title: 'Name', placeholderLabel: 'name' },
+        {
+          paramName: 'name',
+          title: 'Name',
+          placeholderLabel: 'name',
+          shouldStringified: true,
+        },
       ]}
       outputParam="value"
     />

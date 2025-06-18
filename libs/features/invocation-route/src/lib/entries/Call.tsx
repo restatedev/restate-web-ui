@@ -70,9 +70,6 @@ export function Call({
       <EntryExpression
         entry={entry}
         invocation={invocation}
-        inputParams={[
-          { paramName: 'name', title: 'Name', placeholderLabel: 'name' },
-        ]}
         input={
           <Target
             showHandler={false}

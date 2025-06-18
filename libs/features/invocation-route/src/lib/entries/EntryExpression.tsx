@@ -74,6 +74,7 @@ export function EntryExpression({
   operationSymbol,
   chain,
   className,
+  outputParamPlaceholder = 'Result',
 }: {
   invocation?: ReturnType<
     typeof useGetInvocationJournalWithInvocationV2
@@ -86,8 +87,10 @@ export function EntryExpression({
     placeholderLabel: string;
     title: string;
     isArray?: boolean;
+    shouldStringified?: boolean;
   }[];
   outputParam?: string;
+  outputParamPlaceholder?: string;
   name?: string;
   operationSymbol?: string;
   chain?: ReactNode;
@@ -105,25 +108,30 @@ export function EntryExpression({
           (entry as any)[param.paramName] &&
           (!param.isArray || (entry as any)[param.paramName].length > 0)
       )
-      .map((param) => (
-        <InputOutput
-          name={
-            (entry as any)[param.paramName] ? (
-              JSON.stringify((entry as any)[param.paramName])
+      .map((param) => {
+        const paramValue = (entry as any)[param.paramName];
+
+        const displayedValuedPlaceholder =
+          typeof paramValue !== 'undefined' ? (
+            typeof paramValue === 'string' && !param.shouldStringified ? (
+              paramValue
             ) : (
-              <span className="bg-white block">{param.placeholderLabel}</span>
+              JSON.stringify(paramValue)
             )
-          }
-          popoverTitle={param.title}
-          popoverContent={
-            <Value
-              value={(entry as any)[param.paramName]}
-              className="text-xs font-mono py-3"
-            />
-          }
-          key={param.paramName}
-        />
-      ))
+          ) : (
+            <span className="bg-white block">{param.placeholderLabel}</span>
+          );
+        return (
+          <InputOutput
+            name={displayedValuedPlaceholder}
+            popoverTitle={param.title}
+            popoverContent={
+              <Value value={paramValue} className="text-xs font-mono py-3" />
+            }
+            key={param.paramName}
+          />
+        );
+      })
       .reduce((p, c) => {
         if (p.length === 0) {
           return [c];
@@ -139,7 +147,7 @@ export function EntryExpression({
           <InputOutput
             name={outputParam}
             isValueHidden
-            popoverTitle="Result"
+            popoverTitle={outputParamPlaceholder}
             popoverContent={
               <Value
                 value={(entry as any)[outputParam]}
@@ -148,6 +156,20 @@ export function EntryExpression({
             }
           />
         )}
+        {(entry as any)[outputParam] &&
+          Array.isArray((entry as any)[outputParam]) && (
+            <InputOutput
+              name={outputParam}
+              isValueHidden
+              popoverTitle={outputParamPlaceholder}
+              popoverContent={
+                <Value
+                  value={JSON.stringify((entry as any)[outputParam])}
+                  className="text-xs font-mono py-3"
+                />
+              }
+            />
+          )}
         {typeof (entry as any)[outputParam] === 'undefined' &&
           !entry.isPending &&
           !entry.error && (

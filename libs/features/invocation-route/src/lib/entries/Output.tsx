@@ -1,6 +1,5 @@
 import { JournalEntryV2 } from '@restate/data-access/admin-api';
 import { EntryProps } from './types';
-
 import { EntryExpression } from './EntryExpression';
 
 export function Output({
@@ -17,9 +16,6 @@ export function Output({
     <EntryExpression
       entry={entry}
       invocation={invocation}
-      inputParams={[
-        { paramName: 'name', title: 'Name', placeholderLabel: 'name' },
-      ]}
       outputParam="value"
     />
   );

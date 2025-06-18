@@ -20,7 +20,12 @@ export function Sleep({
       entry={entry}
       invocation={invocation}
       inputParams={[
-        { paramName: 'name', title: 'Name', placeholderLabel: 'name' },
+        {
+          paramName: 'name',
+          title: 'Name',
+          placeholderLabel: 'name',
+          shouldStringified: true,
+        },
       ]}
       output={
         <div className="inline-flex items-center truncate min-w-0 font-sans text-xs">

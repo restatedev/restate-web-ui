@@ -69,9 +69,6 @@ export function AttachInvocation({
       <EntryExpression
         entry={entry}
         invocation={invocation}
-        inputParams={[
-          { paramName: 'name', title: 'Name', placeholderLabel: 'name' },
-        ]}
         input={
           <InvocationId
             id={String(entry.invocationId)}

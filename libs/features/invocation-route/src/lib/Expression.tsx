@@ -134,23 +134,25 @@ export function InputOutput({
     <div className={base()}>
       <span className={value()}>
         <Popover>
-          <PopoverTrigger>
-            {isValueHidden ? (
+          {isValueHidden ? (
+            <PopoverTrigger>
               <Button
                 className="font-medium rounded-lg text-gray-500 h-6  p-0 pr-2.5 pl-1.5 font-sans flex justify-center items-center text-2xs gap-1"
                 variant="secondary"
               >
-                <Icon name={IconName.Eye} className="w-3 h-3" /> Result
+                <Icon name={IconName.Eye} className="w-3 h-3" /> {popoverTitle}
               </Button>
-            ) : (
+            </PopoverTrigger>
+          ) : (
+            <PopoverHoverTrigger>
               <Button
                 className="basis-20 grow max-w-fit truncate font-mono text-inherit [font-size:inherit] px-0.5 py-0 rounded-sm underline-offset-4 decoration-from-font decoration-dashed underline "
                 variant="icon"
               >
                 <span className="truncate pr-0.5">{name}</span>
               </Button>
-            )}
-          </PopoverTrigger>
+            </PopoverHoverTrigger>
+          )}
           <PopoverContent>
             <DropdownSection
               className={content({ className })}
