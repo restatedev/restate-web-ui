@@ -27,7 +27,7 @@ import type {
   Invocation,
   JournalEntry,
 } from './type';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { RestateError } from '@restate/util/errors';
 import { useAPIStatus } from '../APIStatusProvider';
 
@@ -629,11 +629,15 @@ export function useGetInvocationsJournalWithInvocationsV2(
   options?: HookQueryOptions<'/query/v2/invocations/{invocationId}', 'get'>
 ) {
   const baseUrl = useAdminBaseUrl();
-  const invocationQueries = invocationIds.map((invocationId) =>
-    adminApi('query', '/query/v2/invocations/{invocationId}', 'get', {
-      baseUrl,
-      parameters: { path: { invocationId }, query: { journal: true } },
-    })
+  const invocationQueries = useMemo(
+    () =>
+      invocationIds.map((invocationId) =>
+        adminApi('query', '/query/v2/invocations/{invocationId}', 'get', {
+          baseUrl,
+          parameters: { path: { invocationId }, query: { journal: true } },
+        })
+      ),
+    [baseUrl, invocationIds]
   );
 
   const combine = useCallback(
@@ -727,6 +731,16 @@ export function useGetInvocationsJournalWithInvocationsV2(
     );
   }, [queryClient, results]);
 
+  const invalidate = useCallback(() => {
+    return Promise.all([
+      ...invocationQueries.map((invocationQuery) =>
+        queryClient.invalidateQueries({
+          queryKey: invocationQuery.queryKey,
+        })
+      ),
+    ]);
+  }, [invocationQueries, queryClient]);
+
   return {
     ...results,
     refetch: () => {
@@ -738,15 +752,7 @@ export function useGetInvocationsJournalWithInvocationsV2(
         ),
       ]);
     },
-    invalidate: () => {
-      return Promise.all([
-        ...invocationQueries.map((invocationQuery) =>
-          queryClient.invalidateQueries({
-            queryKey: invocationQuery.queryKey,
-          })
-        ),
-      ]);
-    },
+    invalidate,
   };
 }
 

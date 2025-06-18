@@ -61,7 +61,7 @@ const CHAIN_COMMANDS_COMPONENTS: {
   PeekPromise: undefined,
   CompletePromise: { failure: 'reject', success: 'resolve', void: '' },
 };
-const styles = tv({ base: 'pr-0' });
+const styles = tv({ base: 'pr-0 overflow-hidden' });
 
 export function EntryExpression({
   entry,

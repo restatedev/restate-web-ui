@@ -140,7 +140,7 @@ function Component() {
 
         <div className="flex flex-col mt-24 ">
           <div className="rounded-2xl border bg-gray-200/50 relative">
-            <JournalV2 invocationId={String(id)} />
+            <JournalV2 invocationId={String(id)} key={String(id)} />
           </div>
         </div>
       </div>

@@ -24,18 +24,19 @@ export function Call({
   Extract<JournalEntryV2, { type?: 'Call'; category?: 'command' }>
 >) {
   const {
-    setInvocationIds,
+    addInvocationId,
+    removeInvocationId,
     isPending,
     invocationIds,
     error: invocationsError,
   } = useJournalContext();
   const isExpanded =
-    entry.invocationId &&
-    invocationIds.includes(entry.invocationId) &&
-    !isPending;
+    entry.invocationId && invocationIds.includes(entry.invocationId);
 
   const invokedIsPending = isPending?.[String(entry.invocationId)];
   const invokedError = invocationsError?.[String(entry.invocationId)];
+
+  console.log(isExpanded);
 
   return (
     <div className={styles({ className })}>
@@ -47,13 +48,13 @@ export function Call({
       ) : (
         <Button
           onClick={() => {
-            setInvocationIds?.((ids) => {
-              if (entry.invocationId && !ids.includes(entry.invocationId)) {
-                return [...ids, entry.invocationId];
+            if (entry.invocationId) {
+              if (invocationIds.includes(entry.invocationId)) {
+                removeInvocationId?.(entry.invocationId);
               } else {
-                return ids.filter((id) => id !== entry.invocationId);
+                addInvocationId?.(entry.invocationId);
               }
-            });
+            }
           }}
           variant="icon"
           className="absolute right-0"
@@ -62,7 +63,7 @@ export function Call({
             <Spinner />
           ) : (
             <Icon
-              name={isExpanded ? IconName.ChevronUp : IconName.ChevronDown}
+              name={isExpanded ? IconName.X : IconName.Plus}
               className="w-3.5 h-3.5"
             />
           )}

@@ -21,7 +21,8 @@ export function AttachInvocation({
   Extract<JournalEntryV2, { type?: 'AttachInvocation'; category?: 'command' }>
 >) {
   const {
-    setInvocationIds,
+    addInvocationId,
+    removeInvocationId,
     isPending,
     invocationIds,
     error: invocationsError,
@@ -44,13 +45,13 @@ export function AttachInvocation({
       ) : (
         <Button
           onClick={() => {
-            setInvocationIds?.((ids) => {
-              if (entry.invocationId && !ids.includes(entry.invocationId)) {
-                return [...ids, entry.invocationId];
+            if (entry.invocationId) {
+              if (invocationIds.includes(entry.invocationId)) {
+                removeInvocationId?.(entry.invocationId);
               } else {
-                return ids.filter((id) => id !== entry.invocationId);
+                addInvocationId?.(entry.invocationId);
               }
-            });
+            }
           }}
           variant="icon"
           className="absolute right-0"
