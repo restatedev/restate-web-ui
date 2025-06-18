@@ -3,10 +3,7 @@ import { EntryProps } from './types';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 import { formatDurations } from '@restate/util/intl';
 import { DateTooltip } from '@restate/ui/tooltip';
-import { Ellipsis } from '@restate/ui/loading';
-import { Failure } from '../Failure';
-import { Expression, InputOutput } from '../Expression';
-import { Value } from '../Value';
+import { EntryExpression } from './EntryExpression';
 
 export function Sleep({
   entry,
@@ -25,51 +22,31 @@ export function Sleep({
   const entryError = entry.error;
 
   return (
-    <Expression
-      name={'ctx.sleep'}
-      className="pr-0"
-      {...(typeof entry.name === 'string' &&
-        entry.name && {
-          input: (
-            <InputOutput
-              name={JSON.stringify(entry.name)}
-              popoverTitle="Name"
-              popoverContent={
-                <Value value={entry.name} className="text-xs font-mono py-3" />
-              }
-            />
-          ),
-        })}
+    <EntryExpression
+      entry={entry}
+      invocation={invocation}
+      inputParams={[
+        { paramName: 'name', title: 'Name', placeholderLabel: 'name' },
+      ]}
       output={
-        <div className="inline-flex items-center truncate">
-          <div className="inline-flex items-center truncate min-w-0">
-            <span className="font-normal text-zinc-500 mr-[0.5ch] min-w-0 truncate">
-              {isPast ? 'Woke up ' : 'Wakes up in '}
-            </span>
-            {entry.wakeupAt && (
-              <DateTooltip
-                date={new Date(entry.wakeupAt)}
-                title={
-                  isPast ? 'Woke up from sleep at' : 'Wakes up from sleep at'
-                }
-              >
-                {' '}
-                {duration}
-              </DateTooltip>
-            )}
-            <span className="font-normal text-zinc-500 ml-[0.5ch]">
-              {isPast && ' ago'}
-            </span>
-          </div>
-          {entry.isPending && (!entryError || entry.isRetrying) && <Ellipsis />}
-          {entryError?.message && (
-            <Failure
-              message={entryError.message}
-              restate_code={entryError.restateCode}
-              isRetrying={entry.isRetrying}
-              className="-mr-1.5"
-            />
+        <div className="inline-flex items-center truncate min-w-0 font-sans text-xs">
+          <span className="font-normal text-zinc-500 mr-[0.5ch] min-w-0 truncate">
+            {isPast ? 'Woke up ' : 'Wakes up in '}
+          </span>
+          {entry.wakeupAt && (
+            <DateTooltip
+              date={new Date(entry.wakeupAt)}
+              title={
+                isPast ? 'Woke up from sleep at' : 'Wakes up from sleep at'
+              }
+            >
+              {' '}
+              {duration}
+            </DateTooltip>
           )}
+          <span className="font-normal text-zinc-500 ml-[0.5ch]">
+            {isPast && ' ago'}
+          </span>
         </div>
       }
     />

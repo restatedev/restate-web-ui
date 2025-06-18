@@ -139,7 +139,7 @@ export function EntryExpression({
           <InputOutput
             name={outputParam}
             isValueHidden
-            popoverTitle="Value"
+            popoverTitle="Result"
             popoverContent={
               <Value
                 value={(entry as any)[outputParam]}
