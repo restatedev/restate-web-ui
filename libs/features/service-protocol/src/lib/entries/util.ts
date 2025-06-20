@@ -128,13 +128,14 @@ export function getEntryResultV2(
   );
 
   const hasTransientFailures = transientFailures.length > 0;
-  const isThereAnyCommandRunningAfter = nextEntries.some(
-    (nextEntry) =>
+  const isThereAnyCommandRunningAfter = nextEntries.some((nextEntry) => {
+    return (
       nextEntry.start &&
       entry.appended_at &&
       nextEntry.category === 'command' &&
-      entry.appended_at > nextEntry.start
-  );
+      entry.appended_at < nextEntry.start
+    );
+  });
 
   const isRetrying =
     !isThereAnyCommandRunningAfter && (hasTransientFailures || hasLastFailure);

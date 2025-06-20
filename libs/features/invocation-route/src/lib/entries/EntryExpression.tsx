@@ -98,7 +98,11 @@ export function EntryExpression({
   className?: string;
   hideErrorForFailureResult?: boolean;
 }) {
-  if (entry?.category !== 'command' && entry?.type !== 'CompleteAwakeable') {
+  if (
+    !entry ||
+    (entry?.category !== 'command' &&
+      !['CompleteAwakeable', 'Cancel'].includes(String(entry?.type)))
+  ) {
     return null;
   }
 
