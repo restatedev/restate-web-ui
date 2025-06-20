@@ -130,7 +130,7 @@ function Line({
 }
 
 const progressStyles = tv({
-  base: 'h-full relative flex flex-col gap-0.5 items-start justify-center min-w-[2px]',
+  base: 'h-full relative flex flex-col gap-0.5 items-start justify-center min-w-[2px] translate-y-[2px]',
   slots: {
     segmentContainer: 'w-full',
   },
