@@ -60,7 +60,11 @@ export function TransientError({
           <div className="text-2xs font-mono">
             <Failure
               restate_code={entry.relatedRestateErrorCode ?? String(entry.code)}
-              message={entry.stackTrace ?? entry.stackTrace ?? ''}
+              message={
+                entry.stackTrace ??
+                entry.message + '\n\n' + entry.stackTrace ??
+                entry.message
+              }
               isRetrying
               className="bg-transparent ml-0 border-none shadow-none py-0 hover:bg-orange-100 pressed:bg-orange-200/50 rounded-md my-[-2px] h-5"
             />

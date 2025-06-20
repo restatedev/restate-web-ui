@@ -265,7 +265,7 @@ export function EntryProgress({
           </Line>
         )}
       </div>
-      <div className="text-xs text-gray-500 ml-auto leading-3">
+      <div className="text-xs text-gray-500 ml-auto leading-3 whitespace-nowrap">
         {entry?.isPending ? <Ellipsis>{pendingDuration}</Ellipsis> : duration}
       </div>
     </div>

@@ -179,7 +179,7 @@ export function EntryExpression({
         {((typeof (entry as any)[outputParam] === 'undefined' &&
           entry.resultType === 'success') ||
           entry.resultType === 'void') && (
-          <div className="text-zinc-400 font-semibold">void</div>
+          <div className="text-zinc-400 font-regular">void</div>
         )}
         <div className="text-gray-400 [&:has(+*)]:block hidden">,</div>
       </>
