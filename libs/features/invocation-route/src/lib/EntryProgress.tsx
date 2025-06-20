@@ -44,7 +44,7 @@ const pointStyles = tv({
 });
 
 const pendingStyles = tv({
-  base: 'mix-blend-overlay absolute inset-0 [background:repeating-linear-gradient(-45deg,theme(colors.black/.05),theme(colors.black/.05)_8px,theme(colors.white/.20)_8px,theme(colors.white/.20)_16px)] [mask-image:linear-gradient(to_right,transparent_calc(100%-200px),black_100%)]',
+  base: 'mix-blend-overlay absolute inset-0 [background:repeating-linear-gradient(-45deg,theme(colors.black/.1),theme(colors.black/.1)_8px,theme(colors.white/.30)_8px,theme(colors.white/.30)_16px)] [mask-image:linear-gradient(to_right,transparent_calc(100%-200px),black_100%)]',
   variants: {
     isLive: {
       true: '[animation-duration:2000ms] animate-in slide-in-from-left-[34px] repeat-infinite',
@@ -250,7 +250,9 @@ export function EntryProgress({
         ...(relativeStart && {
           left: `${relativeStart * 100}%`,
         }),
-        width: `${((relativeEnd || 0) - (relativeStart || 0)) * 100}%`,
+        width: isPoint
+          ? '2px'
+          : `${((relativeEnd || 0) - (relativeStart || 0)) * 100}%`,
       }}
       className={base({ className })}
     >

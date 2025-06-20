@@ -176,11 +176,12 @@ export function EntryExpression({
               }
             />
           )}
-        {typeof (entry as any)[outputParam] === 'undefined' &&
-          !entry.isPending &&
-          !entry.error && (
-            <div className="text-zinc-400 font-semibold">void</div>
-          )}
+        {((typeof (entry as any)[outputParam] === 'undefined' &&
+          entry.resultType === 'success') ||
+          entry.resultType === 'void') && (
+          <div className="text-zinc-400 font-semibold">void</div>
+        )}
+        <div className="text-gray-400 [&:has(+*)]:block hidden">,</div>
       </>
     ));
 
