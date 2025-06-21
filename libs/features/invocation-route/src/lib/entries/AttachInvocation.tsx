@@ -10,7 +10,7 @@ import { Spinner } from '@restate/ui/loading';
 import { Icon, IconName } from '@restate/ui/icons';
 
 const styles = tv({
-  base: 'flex flex-row gap-1.5 items-center pr-20  relative flex-auto',
+  base: 'flex flex-row gap-1.5 items-center relative flex-auto',
 });
 
 export function AttachInvocation({
@@ -36,48 +36,49 @@ export function AttachInvocation({
   const invokedError = invocationsError?.[String(entry.invocationId)];
 
   return (
-    <div className={styles({ className })}>
-      {invokedError ? (
-        <CallInvokedLoadingError
-          error={invokedError}
-          className="absolute right-[100%]"
-        />
-      ) : (
-        <Button
-          onClick={() => {
-            if (entry.invocationId) {
-              if (invocationIds.includes(entry.invocationId)) {
-                removeInvocationId?.(entry.invocationId);
-              } else {
-                addInvocationId?.(entry.invocationId);
-              }
-            }
-          }}
-          variant="icon"
-          className="absolute right-0"
-        >
-          {invokedIsPending ? (
-            <Spinner />
-          ) : (
-            <Icon
-              name={isExpanded ? IconName.ChevronUp : IconName.ChevronDown}
-              className="w-3.5 h-3.5"
+    <>
+      <div className={styles({ className })}>
+        <EntryExpression
+          entry={entry}
+          invocation={invocation}
+          input={
+            <InvocationId
+              id={String(entry.invocationId)}
+              className="truncate max-w-[15ch] text-2xs not-italic font-semibold text-gray-500 mx-0.5 "
+              size="md"
             />
-          )}
-        </Button>
-      )}
-      <EntryExpression
-        entry={entry}
-        invocation={invocation}
-        input={
-          <InvocationId
-            id={String(entry.invocationId)}
-            className="truncate max-w-[15ch] text-2xs not-italic font-semibold text-gray-500 mx-0.5 "
-            size="md"
-          />
-        }
-        outputParam="value"
-      />
-    </div>
+          }
+          outputParam="value"
+        />
+      </div>
+      <div className="flex items-center absolute right-1 top-0 bottom-0">
+        {invokedError ? (
+          <CallInvokedLoadingError error={invokedError} className="" />
+        ) : (
+          <Button
+            onClick={() => {
+              if (entry.invocationId) {
+                if (invocationIds.includes(entry.invocationId)) {
+                  removeInvocationId?.(entry.invocationId);
+                } else {
+                  addInvocationId?.(entry.invocationId);
+                }
+              }
+            }}
+            variant="icon"
+            className="bg-black/[0.03]"
+          >
+            {invokedIsPending ? (
+              <Spinner />
+            ) : (
+              <Icon
+                name={isExpanded ? IconName.X : IconName.Plus}
+                className="w-3.5 h-3.5"
+              />
+            )}
+          </Button>
+        )}
+      </div>
+    </>
   );
 }

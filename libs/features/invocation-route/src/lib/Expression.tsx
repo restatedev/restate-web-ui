@@ -91,9 +91,9 @@ export function Expression({
 }
 
 const inputOutputStyles = tv({
-  base: 'contents text-2xs gap-1 rounded-md pl-0.5 py-0  items-center text-zinc-700',
+  base: 'contents text-2xs gap-1 rounded-md pl-0.5 py-0  items-center text-zinc-700 ',
   slots: {
-    value: 'contents text-zinc-500 font-semibold font-mono leading-5 mr-0.5',
+    value: 'contents text-zinc-500 font-semibold font-mono leading-5 mr-0.5 ',
     content: 'min-w-80 overflow-auto max-w-[min(90vw,600px)] px-4 mb-1',
   },
 });
@@ -135,10 +135,14 @@ export function InputOutput({
           {isValueHidden ? (
             <PopoverTrigger>
               <Button
-                className="font-medium rounded-lg text-gray-500 h-6  p-0 pr-2.5 pl-1.5 font-sans flex justify-center items-center text-2xs gap-1"
+                className="min-w-6 font-medium rounded-lg text-gray-500 h-6 gap-0 p-0 font-sans flex justify-center items-center text-2xs"
                 variant="secondary"
               >
-                <Icon name={IconName.Eye} className="w-3 h-3" /> {popoverTitle}
+                <Icon name={IconName.Eye} className="mx-1.5 w-3 h-3 shrink-0" />
+                <span className="truncate min-w-0 block">
+                  {popoverTitle}
+                  <span className="w-3 inline-block" />
+                </span>
               </Button>
             </PopoverTrigger>
           ) : (

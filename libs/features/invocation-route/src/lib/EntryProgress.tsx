@@ -12,9 +12,9 @@ import { Ellipsis } from '@restate/ui/loading';
 const pointStyles = tv({
   base: 'w-[2px] rounded-full h-full relative',
   slots: {
-    line: 'absolute w-full h-full rounded-full inset-0',
+    line: 'absolute left-px top-1/2  rounded-full  h-1 w-1 -translate-x-1/2 -translate-y-1/2',
     circle:
-      'absolute left-px top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-sm h-2.5 w-2.5 bg-inherit border',
+      'absolute left-px top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full h-2.5 w-2.5 bg-inherit border',
   },
   variants: {
     variant: {
@@ -141,13 +141,13 @@ const progressStyles = tv({
         segmentContainer: 'h-3.5',
       },
       false: {
-        base: '',
+        base: 'translate-y-1.5',
         segmentContainer: 'h-2',
       },
     },
     isPoint: {
       true: {
-        base: '',
+        base: 'translate-y-[calc(0.25rem-1px)]',
         segmentContainer: '',
       },
       false: {

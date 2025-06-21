@@ -61,7 +61,7 @@ const CHAIN_COMMANDS_COMPONENTS: {
   PeekPromise: undefined,
   CompletePromise: { failure: 'reject', success: 'resolve', void: '' },
 };
-const styles = tv({ base: 'pr-0 overflow-hidden' });
+const styles = tv({ base: 'pr-0 overflow-hidden mr-2' });
 
 export function EntryExpression({
   entry,
@@ -179,7 +179,7 @@ export function EntryExpression({
         {((typeof (entry as any)[outputParam] === 'undefined' &&
           entry.resultType === 'success') ||
           entry.resultType === 'void') && (
-          <div className="text-zinc-400 font-regular">void</div>
+          <div className="text-zinc-400 font-normal">void</div>
         )}
         <div className="text-gray-400 [&:has(+*)]:block hidden">,</div>
       </>
@@ -216,11 +216,12 @@ export function EntryExpression({
           {output}
           {entry.error &&
             (!hideErrorForFailureResult || entry.resultType !== 'failure') && (
-              <div className="text-2xs ml-1">
+              <div className="text-2xs ml-1 min-w-6">
                 <Failure
                   message={entry.error.message!}
                   restate_code={entry.error.restateCode}
                   isRetrying={entry.isRetrying}
+                  className="w-full"
                 />
               </div>
             )}

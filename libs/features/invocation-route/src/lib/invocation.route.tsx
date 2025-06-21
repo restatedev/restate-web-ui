@@ -21,13 +21,13 @@ const metadataContainerStyles = tv({
   base: 'mt-6 rounded-xl grid grid-cols-1 md:grid-cols-2 gap-2 gap-y-4',
   variants: {
     isVirtualObject: {
-      true: 'lg:grid-cols-2 3xl:grid-cols-4',
+      true: 'lg:grid-cols-2 2xl:grid-cols-4',
       false: '',
     },
   },
 });
 const lastFailureContainer = tv({
-  base: 'min-w-0 p-0 md:col-span-2 rounded-xl border bg-gray-200/50 rounded-xl 3xl:col-span-4',
+  base: 'min-w-0 p-0 md:col-span-2 rounded-xl border bg-gray-200/50 rounded-xl 2xl:col-span-4',
   variants: {
     isVirtualObject: {
       true: '',
@@ -105,33 +105,33 @@ function Component() {
         <div className={metadataContainerStyles({ isVirtualObject })}>
           <KeysIdsSection
             invocation={journalAndInvocationData}
-            className="p-0 rounded-xl border bg-gray-200/50 h-fit  [&>*:last-child]:border-white/50 [&>*:last-child]:rounded-xl [&>*:last-child]:border-white/50 [&>*:last-child]:bg-gradient-to-b [&>*:last-child]:to-gray-50/80 [&>*:last-child]:from-gray-50  [&>*:last-child]:shadow-zinc-800/[0.03]"
+            className="p-0 rounded-xl border bg-gray-200/50 h-fit  [&>*:last-child]:border-white/50 [&>*:last-child]:rounded-xl [&>*:last-child]:bg-gradient-to-b [&>*:last-child]:to-gray-50/80 [&>*:last-child]:from-gray-50  [&>*:last-child]:shadow-zinc-800/[0.03]"
           />
           <DeploymentSection
             invocation={journalAndInvocationData}
-            className="p-0 rounded-xl border h-fit bg-gray-200/50  [&>*:last-child]:border-white/50 [&>*:last-child]:rounded-xl [&>*:last-child]:border-white/50 [&>*:last-child]:bg-gradient-to-b [&>*:last-child]:to-gray-50/80 [&>*:last-child]:from-gray-50  [&>*:last-child]:shadow-zinc-800/[0.03]"
+            className="p-0 rounded-xl border h-fit bg-gray-200/50  [&>*:last-child]:border-white/50 [&>*:last-child]:rounded-xl [&>*:last-child]:bg-gradient-to-b [&>*:last-child]:to-gray-50/80 [&>*:last-child]:from-gray-50  [&>*:last-child]:shadow-zinc-800/[0.03]"
             raised
           />
           <VirtualObjectSection
             invocation={journalAndInvocationData}
             raised
-            className="contents [&>*:last-child>h3]:mt-0 [&>*]:rounded-xl  [&>*]:border [&>*]:h-fit [&>*]:bg-gray-200/50  [&>*>*:last-child]:rounded-xl  [&>*>*:last-child]:border-white/50 [&>*>*:last-child]:rounded-xl [&>*>*:last-child]:border-white/50 [&>*>*:last-child]:bg-gradient-to-b [&>*>*:last-child]:to-gray-50/80 [&>*>*:last-child]:from-gray-50  [&>*>*:last-child]:shadow-zinc-800/[0.03]"
+            className="contents [&>*:last-child>h3]:mt-0 [&>*]:rounded-xl  [&>*]:border [&>*]:h-fit [&>*]:bg-gray-200/50  [&>*>*:last-child]:rounded-xl  [&>*>*:last-child]:border-white/50 [&>*>*:last-child]:bg-gradient-to-b [&>*>*:last-child]:to-gray-50/80 [&>*>*:last-child]:from-gray-50  [&>*>*:last-child]:shadow-zinc-800/[0.03]"
           />
           <WorkflowKeySection
             invocation={journalAndInvocationData}
             raised
-            className="p-0 rounded-xl border h-fit bg-gray-200/50  [&>*:last-child]:border-white/50 [&>*:last-child]:rounded-xl [&>*:last-child]:border-white/50 [&>*:last-child]:bg-gradient-to-b [&>*:last-child]:to-gray-50/80 [&>*:last-child]:from-gray-50  [&>*:last-child]:shadow-zinc-800/[0.03]"
+            className="p-0 rounded-xl border h-fit bg-gray-200/50  [&>*:last-child]:border-white/50 [&>*:last-child]:rounded-xl [&>*:last-child]:bg-gradient-to-b [&>*:last-child]:to-gray-50/80 [&>*:last-child]:from-gray-50  [&>*:last-child]:shadow-zinc-800/[0.03]"
           />
           {shouldShowFailure && (
             <Section className={lastFailureContainer({ isVirtualObject })}>
               <SectionTitle>
                 {isFailed ? 'Completion failure' : 'Last failure'}
               </SectionTitle>
-              <SectionContent className="flex-auto rounded-xl border-white/50 rounded-xl bg-gradient-to-b to-gray-50/80 from-gray-50 shadow-zinc-800/[0.03]">
+              <SectionContent className="flex-auto rounded-xl border-white/50 bg-gradient-to-b to-gray-50/80 from-gray-50 shadow-zinc-800/[0.03]">
                 <ErrorBanner
                   error={lastError}
                   wrap={hasStack}
-                  className="bg-transparent p-0 [&_code]:bg-gray-200/50 h-full [&_details]:max-h-full"
+                  className="bg-transparent p-0 [&_code]:bg-gray-200/50 h-full [&_details]:max-h-48"
                 />
               </SectionContent>
             </Section>

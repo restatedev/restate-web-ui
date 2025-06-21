@@ -21,11 +21,11 @@ export function CompletionNotification({
   invocation?: Invocation;
 }>) {
   return (
-    <div className="flex item-center gap-2">
+    <div className="flex item-center gap-2 mr-2">
       <Badge
         variant={entry.resultType === 'failure' ? 'danger' : 'success'}
         size="sm"
-        className="font-sans font-normal gap-1 px-0 py-0 rounded-lg"
+        className="font-sans font-normal gap-1 px-0 py-0 rounded-lg text-2xs"
       >
         <Popover>
           <PopoverTrigger>
@@ -38,7 +38,7 @@ export function CompletionNotification({
           </PopoverTrigger>
           <PopoverContent>
             <DropdownSection
-              className="px-3 py-2 text-code"
+              className="px-3 py-2 text-code relative pr-8"
               title={
                 <span className="text-2xs uppercase text-gray-400">{`Command #${commandIndex}`}</span>
               }
@@ -61,7 +61,7 @@ export function CompletionNotification({
             )}
           </>
         ) : (
-          <div className="mr-2">Completed</div>
+          <div className="mr-2 ">Completed</div>
         )}
       </Badge>
       <TimelinePortal invocationId={invocation?.id ?? ''} entry={entry}>
