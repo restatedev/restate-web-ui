@@ -14,29 +14,29 @@ const pointStyles = tv({
   slots: {
     line: 'absolute left-px top-1/2  rounded-full  h-1 w-1 -translate-x-1/2 -translate-y-1/2',
     circle:
-      'absolute left-px top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full h-2.5 w-2.5 bg-inherit border',
+      'absolute shadow-sm left-px top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full h-2.5 w-2.5 bg-inherit border',
   },
   variants: {
     variant: {
       success: {
         line: 'bg-green-600 ',
-        circle: 'bg-green-200 border-green-700/20',
+        circle: 'bg-green-200 border-white',
       },
       danger: {
         line: 'bg-red-500',
-        circle: 'bg-red-50 border-red-600/20',
+        circle: 'bg-red-50 border-white',
       },
       warning: {
         line: 'bg-orange-500',
-        circle: 'bg-orange-100 border-orange-600/20',
+        circle: 'bg-orange-100 border-white',
       },
       info: {
         line: 'bg-blue-500',
-        circle: 'bg-blue-100 border-blue-700/10',
+        circle: 'bg-blue-100 border-white',
       },
       default: {
-        line: 'bg-zinc-600',
-        circle: 'bg-zinc-50 border-zinc-600/10',
+        line: 'bg-zinc-400',
+        circle: 'bg-zinc-50 border-white',
       },
     },
   },
@@ -44,7 +44,7 @@ const pointStyles = tv({
 });
 
 const pendingStyles = tv({
-  base: 'mix-blend-overlay absolute inset-0 [background:repeating-linear-gradient(-45deg,theme(colors.black/.1),theme(colors.black/.1)_8px,theme(colors.white/.30)_8px,theme(colors.white/.30)_16px)] [mask-image:linear-gradient(to_right,transparent_calc(100%-200px),black_100%)]',
+  base: 'mix-blend-overlay rounded-md absolute inset-0 [background:repeating-linear-gradient(-45deg,theme(colors.black/.15),theme(colors.black/.15)_8px,theme(colors.white/.40)_8px,theme(colors.white/.40)_16px)] [mask-image:linear-gradient(to_right,transparent_calc(100%-200px),black_100%)]',
   variants: {
     isLive: {
       true: '[animation-duration:2000ms] animate-in slide-in-from-left-[34px] repeat-infinite',
@@ -87,7 +87,7 @@ function Point({
 const lineStyles = tv({
   base: '',
   slots: {
-    line: 'relative h-full rounded',
+    line: 'relative h-full rounded-md shadow-sm border border-white/80',
   },
   variants: {
     variant: {
@@ -104,7 +104,13 @@ const lineStyles = tv({
         line: 'bg-blue-300',
       },
       default: {
-        line: 'bg-zinc-600',
+        line: 'bg-transparent  border-dashed [&>*]:mix-blend-color-burn border-zinc-600/40',
+      },
+      idleWarning: {
+        line: 'bg-orange-400/10 border-dashed border-orange-600/60',
+      },
+      idleNeutral: {
+        line: 'bg-zinc-400/20 border-dashed border-zinc-600/40',
       },
     },
   },
@@ -119,7 +125,14 @@ function Line({
 }: PropsWithChildren<{
   className?: string;
   style?: CSSProperties;
-  variant?: 'success' | 'info' | 'danger' | 'warning' | 'default';
+  variant?:
+    | 'success'
+    | 'info'
+    | 'danger'
+    | 'warning'
+    | 'default'
+    | 'idleNeutral'
+    | 'idleWarning';
 }>) {
   const { line } = lineStyles({ variant });
   return (
@@ -130,7 +143,7 @@ function Line({
 }
 
 const progressStyles = tv({
-  base: 'h-full relative flex flex-col gap-0.5 items-start justify-center min-w-[2px] translate-y-[2px]',
+  base: 'h-full relative flex flex-col gap-0.5 items-start justify-center min-w-[4px] -translate-x-[1px] translate-y-[2px]',
   slots: {
     segmentContainer: 'w-full',
   },
@@ -166,6 +179,9 @@ function getPointVariant(entry?: JournalEntryV2) {
   if (entry?.type === 'TransientError') {
     return 'warning';
   }
+  if (entry?.type === 'Retrying') {
+    return 'warning';
+  }
 
   if (
     (entry?.category === 'notification' &&
@@ -193,6 +209,18 @@ function getLineVariant(entry?: JournalEntryV2) {
   if (entry?.resultType === 'failure') {
     return 'danger';
   }
+  if (entry?.type === 'Suspended') {
+    return 'idleNeutral';
+  }
+  if (entry?.type === 'Pending') {
+    return 'idleWarning';
+  }
+  if (entry?.type === 'Retrying') {
+    return 'warning';
+  }
+  if (entry?.type === 'Scheduled') {
+    return 'default';
+  }
 
   return 'info';
 }
@@ -201,7 +229,7 @@ export function EntryProgress({
   className,
   children,
   style,
-  showDuration,
+  showDuration = true,
   entry,
   invocation,
 }: PropsWithChildren<{
@@ -213,9 +241,8 @@ export function EntryProgress({
     typeof useGetInvocationJournalWithInvocationV2
   >['data'];
 }>) {
-  const { start, end } = useJournalContext();
+  const { end } = useJournalContext();
 
-  const entryStart = entry?.start ? new Date(entry.start).getTime() : undefined;
   const entryEnd = entry?.end
     ? new Date(entry.end ?? entry.start).getTime()
     : undefined;
@@ -233,6 +260,64 @@ export function EntryProgress({
   const { isPast, ...parts } = getDuration(executionTime);
   const duration = formatDurations(parts);
   const pendingDuration = formatDurations(getDuration(pendingTime));
+
+  if (entry?.type === 'Scheduled') {
+    return (
+      <EntryProgressContainer entry={entry} className={base({ className })}>
+        <div className="flex items-center w-full">
+          <div>
+            <Point variant="default" />
+          </div>
+          <div className="flex-auto border-b-2 border-gray-500/30 border-dotted" />
+          <div className="">
+            <Point variant="default" />
+          </div>
+        </div>
+      </EntryProgressContainer>
+    );
+  }
+
+  return (
+    <EntryProgressContainer entry={entry} className={base({ className })}>
+      <div className={segmentContainer({})}>
+        {isPoint ? (
+          <Point variant={getPointVariant(entry)} />
+        ) : (
+          <Line variant={getLineVariant(entry)}>
+            {entry?.isPending && <Pending />}
+          </Line>
+        )}
+      </div>
+      {showDuration && (
+        <div className="text-xs text-gray-500 ml-auto leading-3 whitespace-nowrap font-sans ">
+          {entry?.isPending ? <Ellipsis>{pendingDuration}</Ellipsis> : duration}
+        </div>
+      )}
+    </EntryProgressContainer>
+  );
+}
+
+export function EntryProgressContainer({
+  className,
+  children,
+  style,
+  entry,
+}: PropsWithChildren<{
+  entry?: JournalEntryV2;
+  className?: string;
+  style?: CSSProperties;
+}>) {
+  const { start, end } = useJournalContext();
+
+  if (!entry) {
+    return null;
+  }
+
+  const entryStart = entry?.start ? new Date(entry.start).getTime() : undefined;
+  const entryEnd = entry?.end
+    ? new Date(entry.end ?? entry.start).getTime()
+    : undefined;
+  const isPoint = Boolean(!entryEnd && !entry?.isPending);
 
   const relativeStart = entryStart
     ? (entryStart - start) / (end - start)
@@ -254,20 +339,9 @@ export function EntryProgress({
           ? '2px'
           : `${((relativeEnd || 0) - (relativeStart || 0)) * 100}%`,
       }}
-      className={base({ className })}
+      className={className}
     >
-      <div className={segmentContainer({})}>
-        {isPoint ? (
-          <Point variant={getPointVariant(entry)} />
-        ) : (
-          <Line variant={getLineVariant(entry)}>
-            {entry?.isPending && <Pending />}
-          </Line>
-        )}
-      </div>
-      <div className="text-xs text-gray-500 ml-auto leading-3 whitespace-nowrap">
-        {entry?.isPending ? <Ellipsis>{pendingDuration}</Ellipsis> : duration}
-      </div>
+      {children}
     </div>
   );
 }

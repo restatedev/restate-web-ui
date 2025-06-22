@@ -9,13 +9,7 @@ import { EntryExpression } from './EntryExpression';
 import { Icon, IconName } from '@restate/ui/icons';
 
 const inputStyles = tv({
-  base: '[font-size:inherit] [&_[data-target]]:font-medium -translate-y-px [&_[data-target]]:font-sans  shadow-none self-start  ring-0 [--rounded-radius-right:calc(1rem-1px)] [--rounded-radius:calc(1rem-1px)] [&&&>*:last-child>*]:rounded-b-none',
-  variants: {
-    hasEntryAfterInput: {
-      true: 'border-b  [&&&&]:rounded-b-none [&&&&_a:before]:rounded-b-none  h-[calc(3rem-1px)]  [&_[data-target]]:h-[calc(3rem-1px)]',
-      false: 'h-12  [&_[data-target]>*]:h-12',
-    },
-  },
+  base: '[font-size:inherit] border-b border-t-[1px] border-white h-12 [&_[data-target]>*]:h-12 [&]:rounded-r-none [&_[data-target]]:font-medium [&_[data-target]]:font-sans  shadow-none self-start  ring-0 [--rounded-radius-right:0px] [--rounded-radius:calc(1rem-1px)] [&&&>*:last-child>*]:rounded-r-none',
 });
 
 export function Input({
@@ -33,14 +27,11 @@ export function Input({
       target={invocation?.target}
       showHandler={!entry}
       className={inputStyles({
-        hasEntryAfterInput: Boolean(
-          invocation?.journal_commands_size &&
-            invocation.journal_commands_size > 1
-        ),
+        className,
       })}
     >
       {entry ? (
-        <div className="flex items-center">
+        <div className="flex items-center ">
           <Icon
             name={IconName.Function}
             className="w-4 h-4 text-zinc-400 shrink-0 -mr-0.5"

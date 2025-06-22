@@ -220,7 +220,7 @@ async function getInvocationJournalV2(
 
   const entriesWithLifeCycleEvents = [
     ...entries,
-    ...(version === 2 ? lifeCycles(entries, invocation) : []),
+    ...lifeCycles(entries, invocation),
   ].sort((a, b) => {
     if (typeof a.index === 'number' && typeof b.index === 'number') {
       return a.index - b.index;
