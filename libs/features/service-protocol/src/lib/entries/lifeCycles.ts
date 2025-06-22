@@ -22,16 +22,11 @@ export function lifeCycles(
   }
 
   const events: LifeCycleEvent[] = [];
-  const isCompleted = ['succeeded', 'failed', 'killed', 'cancelled'].includes(
-    invocation.status
-  );
 
   events.push({
     type: 'Created',
     start: invocation.created_at,
     category: 'event',
-    end: invocation.completed_at,
-    isPending: !isCompleted,
     index: -4,
   });
 
@@ -40,7 +35,7 @@ export function lifeCycles(
       type: 'Pending',
       start: invocation.inboxed_at,
       category: 'event',
-      end: invocation.completed_at,
+      end: invocation.running_at,
       isPending: invocation.status === 'pending',
       index: -2,
     });
@@ -78,21 +73,24 @@ export function lifeCycles(
       type: 'Running',
       start: invocation.running_at,
       category: 'event',
-      end: undefined,
+      end:
+        invocation.status === 'running'
+          ? undefined
+          : invocation.status === 'suspended'
+          ? invocation.modified_at
+          : invocation.status === 'backing-off'
+          ? invocation.modified_at
+          : invocation.completed_at
+          ? invocation.completed_at
+          : undefined,
       isPending: invocation.status === 'running',
     });
   }
-  if (
-    invocation.last_start_at &&
-    invocation.retry_count &&
-    invocation.retry_count > 1
-  ) {
+  if (invocation.next_retry_at) {
     events.push({
       type: 'Retrying',
-      start: invocation.last_start_at,
       category: 'event',
-      end: invocation.next_retry_at,
-      isPending: invocation.status === 'backing-off',
+      start: invocation.next_retry_at,
     });
   }
 
