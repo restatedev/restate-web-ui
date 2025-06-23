@@ -184,7 +184,7 @@ export function Units({
               return (
                 <div
                   key={i}
-                  className="text-right text-2xs font-sans pr-0.5 pt-0.5 text-gray-500  border-r border-black/10 border-dotted pointer-events-none even:bg-gray-400/5"
+                  className="text-right text-2xs font-sans pr-0.5 pt-1 text-gray-500  border-r border-black/10 border-dotted pointer-events-none even:bg-gray-400/5"
                   style={{
                     width: `${(unit / executionTime) * 100}%`,
                   }}
