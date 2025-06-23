@@ -59,7 +59,7 @@ function Component() {
   const lastError = getRestateError(journalAndInvocationData);
   const shouldShowFailure = Boolean(lastError);
   const hasStack = lastError?.message.includes('\n');
-  const isFailed = journalAndInvocationData?.status === 'failed';
+  const isFailed = !!journalAndInvocationData?.completion_failure;
 
   const isVirtualObject =
     journalAndInvocationData?.target_service_ty === 'virtual_object';

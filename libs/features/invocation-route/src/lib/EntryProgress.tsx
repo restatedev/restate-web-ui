@@ -213,7 +213,7 @@ function getLineVariant(entry?: JournalEntryV2) {
   if (entry?.resultType === 'failure') {
     return 'danger';
   }
-  if (entry?.type === 'Suspended') {
+  if (entry?.type === 'Suspended' || entry?.type === 'Sleep') {
     return 'idleNeutral';
   }
   if (entry?.type === 'Pending') {

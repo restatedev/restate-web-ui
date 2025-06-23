@@ -40,40 +40,49 @@ function EntryContent({ entry }: { entry: JournalEntryV2 }) {
   const isFinished = !!entry.end;
   const { end } = useJournalContext();
   return (
-    <div className="flex gap-5 font-semibold">
-      <div>Execution Time:</div>
-      <div className="text-right font-normal opacity-90">
-        <div className="flex items-center gap-2">
-          {isPoint && (
-            <div>{formatDateTime(new Date(String(entry.start)), 'system')}</div>
-          )}
-          {isFinished && (
-            <div>
-              {formatRange(
-                new Date(String(entry.start)),
-                new Date(String(entry.end))
-              )}
-            </div>
-          )}
-          {inProgress && (
-            <div>
-              {`${formatDateTime(new Date(String(entry.start)), 'system')} – `}
-              <Ellipsis> </Ellipsis>
-            </div>
-          )}
+    <div className="flex flex-col gap-3">
+      <div className="uppercase font-semibold text-base">{entry.type}</div>
 
-          {entry.start && (entry.end || inProgress) && (
-            <div>
-              (
-              {formatDurations(
-                getDuration(
-                  new Date(entry.end || end).getTime() -
-                    new Date(entry.start).getTime()
+      <div className="flex gap-5 font-medium">
+        <div>Execution Time:</div>
+        <div className="text-right font-normal">
+          <div className="flex items-center gap-2">
+            {isPoint && (
+              <div className="opacity-80">
+                {formatDateTime(new Date(String(entry.start)), 'system')}
+              </div>
+            )}
+            {isFinished && (
+              <div className="opacity-80">
+                {formatRange(
+                  new Date(String(entry.start)),
+                  new Date(String(entry.end))
+                )}
+              </div>
+            )}
+            {inProgress && (
+              <div className="opacity-80">
+                {`${formatDateTime(
+                  new Date(String(entry.start)),
+                  'system'
+                )} – `}
+                <Ellipsis> </Ellipsis>
+              </div>
+            )}
+
+            {entry.start && (entry.end || inProgress) && (
+              <div className="font-semibold">
+                (
+                {formatDurations(
+                  getDuration(
+                    new Date(entry.end || end).getTime() -
+                      new Date(entry.start).getTime()
+                  )
+                )}
                 )
-              )}
-              )
-            </div>
-          )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
