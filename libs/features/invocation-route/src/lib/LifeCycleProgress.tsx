@@ -126,13 +126,13 @@ export function Units({
   const executionTime = end - start;
   const unit = unitInterval(executionTime);
 
-  const numOfInterval = Math.ceil(executionTime / unit);
+  const numOfInterval = Math.floor(executionTime / unit);
 
   return (
     <>
       <div className="absolute h-12 -left-6 right-0 border-transparent bg-gray-100 border-white rounded-2xl shadow-sm border border-t-[2px] z-[0]"></div>
       <div className={unitsStyles({ className })}>
-        <div className="absolute left-2  border-l text-gray-500 border-dashed text-2xs font-sans border-gray-500/30  bottom-0 -top-2">
+        <div className="absolute left-2 border-l text-gray-500 border-dashed text-2xs font-sans border-gray-500/30  bottom-0 -top-2">
           <div className="-translate-x-1/2 -translate-y-4">
             <DateTooltip date={new Date(start)} title="">
               {formatDateTime(new Date(start), 'system')}
@@ -140,30 +140,24 @@ export function Units({
           </div>
         </div>
         <div className="w-full h-full flex pointer-events-none overflow-hidden rounded-r-2xl ">
+          <div className="w-2 shrink-0" />
           {Array(numOfInterval)
             .fill(null)
             .map((_, i) => {
-              if (i === numOfInterval - 1) {
-                return (
-                  <div
-                    key={i}
-                    className="flex-auto text-right pointer-events-none even:bg-gray-400/5 rounded-r-2xl"
-                  ></div>
-                );
-              } else {
-                return (
-                  <div
-                    key={i}
-                    className="text-right text-2xs font-sans pr-0.5 pt-0.5 text-gray-500  border-r border-black/10 border-dotted pointer-events-none even:bg-gray-400/5"
-                    style={{
-                      width: `${(unit / executionTime) * 100}%`,
-                    }}
-                  >
-                    +{formatDurations(getDuration(unit * (i + 1)))}
-                  </div>
-                );
-              }
+              return (
+                <div
+                  key={i}
+                  className="text-right text-2xs font-sans pr-0.5 pt-0.5 text-gray-500  border-r border-black/10 border-dotted pointer-events-none even:bg-gray-400/5"
+                  style={{
+                    width: `${(unit / executionTime) * 100}%`,
+                  }}
+                >
+                  +{formatDurations(getDuration(unit * (i + 1)))}
+                </div>
+              );
             })}
+          <div className="flex-auto text-right pointer-events-none even:bg-gray-400/5 rounded-r-2xl"></div>
+          <div className="w-2 shrink-0" />
         </div>
       </div>
     </>
