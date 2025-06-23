@@ -183,6 +183,9 @@ function getPointVariant(entry?: JournalEntryV2) {
   if (entry?.type === 'Retrying') {
     return 'warning';
   }
+  if (entry?.type === 'Cancel' && entry.category === 'notification') {
+    return 'default';
+  }
 
   if (
     (entry?.category === 'notification' &&

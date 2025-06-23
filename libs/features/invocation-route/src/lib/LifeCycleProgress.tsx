@@ -51,7 +51,7 @@ function unitInterval(duration: number) {
 }
 
 const styles = tv({
-  base: 'rounded flex flex-col items-center relative rounded-t-2xl bg2-black/5 border2-b shadow-sm rounded-2xl rounded-l-none border-black/10 translate2-y-[-2px]',
+  base: 'rounded flex flex-col items-center relative rounded-t-2xl shadow-sm rounded-2xl rounded-l-none border-black/10',
 });
 export function LifeCycleProgress({
   className,
@@ -129,17 +129,34 @@ export function Units({
 
   const numOfInterval = Math.floor(executionTime / unit);
 
+  const cancelEvent = invocation?.journal?.entries?.find(
+    (entry) => entry.category === 'notification' && entry.type === 'Cancel'
+  );
+
   return (
     <>
       <div className="absolute h-12 -left-6 right-0 border-transparent bg-gray-100 border-white rounded-2xl shadow-sm border border-t-[2px] z-[0]"></div>
+      {cancelEvent && (
+        <div
+          className="h-full pointer-events-none mix-blend-overlay border-l bottom-0 absolute bg-zinc-900/50 [background-image2:radial-gradient(circle_at_1px_1px,theme(colors.black/105)_1px,_transparent_0)] [background-size:_4px_4px;] right-0 rounded-r-2xl"
+          style={{
+            left: `${
+              ((new Date(String(cancelEvent.start)).getTime() - start) /
+                executionTime) *
+              100
+            }%`,
+          }}
+        />
+      )}
       <div className={unitsStyles({ className })}>
-        <div className="absolute left-2 border-l text-gray-500 border-dashed text-2xs font-sans border-gray-500/30  bottom-0 -top-2">
+        <div className="absolute left-2 border-l text-gray-500 border-dashed text-2xs font-sans border-gray-500/30  bottom-0 -top-8">
           <div className="-translate-x-1/2 -translate-y-4">
             <DateTooltip date={new Date(start)} title="">
               {formatDateTime(new Date(start), 'system')}
             </DateTooltip>
           </div>
         </div>
+
         <div className="w-full h-full flex pointer-events-none overflow-hidden rounded-r-2xl ">
           <div className="w-2 shrink-0" />
           {Array(numOfInterval)
