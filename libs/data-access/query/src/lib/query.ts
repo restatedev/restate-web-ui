@@ -136,7 +136,7 @@ async function getJournalEntryV2(
   headers: Headers
 ) {
   const journalQuery = await queryFetcher(
-    `SELECT id, index, appended_at, entry_type, name, entry_json, version FROM sys_journal WHERE id = '${invocationId}' AND index = '${entryIndex}`,
+    `SELECT id, index, appended_at, entry_type, name, entry_json, version, raw, completed, sleep_wakeup_at, invoked_id, invoked_target, promise_name FROM sys_journal WHERE id = '${invocationId}' AND index = '${entryIndex}`,
     {
       baseUrl,
       headers,
@@ -170,7 +170,7 @@ async function getInvocationJournalV2(
       headers,
     }),
     queryFetcher(
-      `SELECT id, index, appended_at, entry_type, name, entry_json, version FROM sys_journal WHERE id = '${invocationId}'`,
+      `SELECT id, index, appended_at, entry_type, name, entry_json, version, raw, completed, sleep_wakeup_at, invoked_id, invoked_target, promise_name FROM sys_journal WHERE id = '${invocationId}'`,
       {
         baseUrl,
         headers,
@@ -219,15 +219,16 @@ async function getInvocationJournalV2(
     .reverse();
 
   const entriesWithLifeCycleEvents = [
-    ...entries,
     ...lifeCycles(entries, invocation),
+    ...entries,
   ].sort((a, b) => {
     if (typeof a.index === 'number' && typeof b.index === 'number') {
       return a.index - b.index;
     } else if (typeof a.start === 'string' && typeof b.start === 'string') {
       return new Date(a.start).getTime() - new Date(b.start).getTime();
+    } else {
+      return 0;
     }
-    return 0;
   });
 
   if (

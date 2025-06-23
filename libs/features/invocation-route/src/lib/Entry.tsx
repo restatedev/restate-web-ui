@@ -34,6 +34,7 @@ import { getEntryId, TimelinePortal, usePortals } from './Portals';
 import { RelatedEntries } from './RelatedEntries';
 import { Cancel } from './entries/Cancel';
 import { LifeCycle } from './entries/LifeCycle';
+import { Link } from '@restate/ui/link';
 
 export const ENTRY_COMMANDS_COMPONENTS: {
   [K in CommandEntryType]:
@@ -174,11 +175,30 @@ export function Entry({
           <div className="absolute left-0 right-0 h2-px bg2-gray-400/50 translate-y-[0.5px] border-b border-gray-300/50 border-dashed" />
         </div>
       </div>
-      <TimelinePortal invocationId={invocation?.id} entry={entry}>
-        {EntrySpecificComponent && (
-          <EntryProgress entry={entry} invocation={invocation} />
-        )}
-      </TimelinePortal>
+      {invocation.journal?.version !== 1 || entry.category === 'event' ? (
+        <TimelinePortal invocationId={invocation?.id} entry={entry}>
+          {EntrySpecificComponent && (
+            <EntryProgress entry={entry} invocation={invocation} />
+          )}
+        </TimelinePortal>
+      ) : (
+        entry.commandIndex === 1 && (
+          <TimelinePortal invocationId={invocation?.id} entry={entry}>
+            <div className="text-code px-6 text-zinc-500 text-center absolute font-sans w-full ">
+              Update to the latest SDK to see more details in your journal.
+              Check the{' '}
+              <Link
+                href="https://docs.restate.dev/operate/versioning#deploying-new-service-versions"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                docs
+              </Link>{' '}
+              for more info.
+            </div>
+          </TimelinePortal>
+        )
+      )}
     </>
   );
 }
