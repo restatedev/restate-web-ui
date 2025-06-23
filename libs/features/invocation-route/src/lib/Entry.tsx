@@ -33,6 +33,7 @@ import { EntryProgress } from './EntryProgress';
 import { getEntryId, TimelinePortal, usePortals } from './Portals';
 import { RelatedEntries } from './RelatedEntries';
 import { Cancel } from './entries/Cancel';
+import { LifeCycle } from './entries/LifeCycle';
 
 export const ENTRY_COMMANDS_COMPONENTS: {
   [K in CommandEntryType]:
@@ -91,13 +92,13 @@ export const ENTRY_EVENTS_COMPONENTS: {
     | undefined;
 } = {
   TransientError: undefined,
-  Created: undefined,
-  Running: undefined,
-  Suspended: undefined,
-  Pending: undefined,
+  Created: LifeCycle,
+  Running: LifeCycle,
+  Suspended: LifeCycle,
+  Pending: LifeCycle,
   Completion: undefined,
-  Retrying: undefined,
-  Scheduled: undefined,
+  Retrying: LifeCycle,
+  Scheduled: LifeCycle,
 };
 
 function digitCount(n: number) {

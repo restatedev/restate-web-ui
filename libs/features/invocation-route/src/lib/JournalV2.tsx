@@ -140,7 +140,7 @@ export function JournalV2({
                   />
                 ) : null}
               </div>
-              <div className="ml-auto flex flex-row gap-2 items-center justify-end ">
+              <div className="ml-auto flex flex-row gap-2 items-center justify-end z-10 h-full bg-gradient-to-l from-gray-100 via-gray-100 to-gray-100/0 rounded-lg pl-10">
                 <HoverTooltip content="Refresh">
                   <Button variant="icon" onClick={refetch}>
                     <Icon name={IconName.Retry} className="w-4 h-4" />

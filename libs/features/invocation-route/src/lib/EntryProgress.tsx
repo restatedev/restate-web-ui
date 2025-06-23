@@ -273,9 +273,6 @@ export function EntryProgress({
         style={{ zIndex: 2 }}
       >
         <div className="flex items-center w-full">
-          <div>
-            <Point variant="default" />
-          </div>
           <div className="flex-auto border-b-2 border-gray-500/30 border-dotted" />
           <div className="">
             <Point variant="default" />

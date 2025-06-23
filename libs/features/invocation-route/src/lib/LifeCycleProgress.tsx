@@ -123,7 +123,7 @@ export function Units({
     typeof useGetInvocationJournalWithInvocationV2
   >['data'];
 }) {
-  const { start, end } = useJournalContext();
+  const { start, end, dataUpdatedAt } = useJournalContext();
   const executionTime = end - start;
   const unit = unitInterval(executionTime);
 
@@ -138,24 +138,43 @@ export function Units({
       <div className="absolute h-12 -left-6 right-0 border-transparent bg-gray-100 border-white rounded-2xl shadow-sm border border-t-[2px] z-[0]"></div>
       {cancelEvent && (
         <div
-          className="h-full pointer-events-none mix-blend-overlay border-l bottom-0 absolute bg-zinc-900/50 [background-image2:radial-gradient(circle_at_1px_1px,theme(colors.black/105)_1px,_transparent_0)] [background-size:_4px_4px;] right-0 rounded-r-2xl"
+          className="h-full pointer-events-none mix-blend-overlay border-l-2  bottom-0 absolute bg-zinc-900/50 [background:repeating-linear-gradient(-45deg,theme(colors.black/.6),theme(colors.black/.6)_2px,theme(colors.white/0)_2px,theme(colors.white/0)_4px)] right-0 rounded-r-2xl"
           style={{
-            left: `${
+            left: `calc(${
               ((new Date(String(cancelEvent.start)).getTime() - start) /
                 executionTime) *
               100
-            }%`,
+            }% - 2px)`,
           }}
         />
       )}
       <div className={unitsStyles({ className })}>
-        <div className="absolute left-2 border-l text-gray-500 border-dashed text-2xs font-sans border-gray-500/30  bottom-0 -top-8">
-          <div className="-translate-x-1/2 -translate-y-4">
+        <div className="absolute left-2 border-l text-gray-500 border-dashed text-2xs font-sans border-gray-500/40  bottom-0 -top-8">
+          <div className=" text-left ml-1 flex justify-start flex-col  -translate-y-1 w-28">
             <DateTooltip date={new Date(start)} title="">
-              {formatDateTime(new Date(start), 'system')}
+              {new Date(start).toLocaleDateString('en', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+              })}
+            </DateTooltip>
+            <DateTooltip date={new Date(start)} title="">
+              {new Date(start).toLocaleTimeString('en', {
+                timeZoneName: 'short',
+              })}
             </DateTooltip>
           </div>
         </div>
+        {dataUpdatedAt < end && (
+          <div
+            style={{
+              left: `calc(${
+                ((dataUpdatedAt - start) / executionTime) * 100
+              }% - 2px - 0.5rem)`,
+            }}
+            className="absolute border-l-2 text-gray-500  text-2xs font-sans border-white/80  bottom-0 top-px "
+          ></div>
+        )}
 
         <div className="w-full h-full flex pointer-events-none overflow-hidden rounded-r-2xl ">
           <div className="w-2 shrink-0" />

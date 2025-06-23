@@ -181,7 +181,7 @@ export function EntryExpression({
           entry.resultType === 'void') && (
           <div className="text-zinc-400 font-normal">void</div>
         )}
-        <div className="text-gray-400 [&:has(+*)]:block hidden">,</div>
+        <div className="text-gray-400 comma hidden">,</div>
       </>
     ));
 
@@ -213,6 +213,7 @@ export function EntryExpression({
       output={
         <>
           {entry.isPending && <Ellipsis />}
+          <div className="[&:has(+.comma+*)>.comma]:block" />
           {output}
           {entry.error &&
             (!hideErrorForFailureResult || entry.resultType !== 'failure') && (

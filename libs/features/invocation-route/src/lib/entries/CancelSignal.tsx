@@ -8,11 +8,9 @@ export function CancelSignal({
   Extract<JournalEntryV2, { type?: 'Cancel'; category?: 'notification' }>
 >) {
   return (
-    <div className="text-zinc-600 font-sans">
-      <span className="font-medium font italic text-gray-800">
-        Cancellation
-      </span>{' '}
-      request received.
+    <div className="text-zinc-500 font-sans mr-2">
+      <span className="font-medium text-gray-600">Cancellation</span> signal
+      received.
     </div>
   );
 }
