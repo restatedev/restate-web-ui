@@ -30,7 +30,7 @@ export function sendSignal(
     return {
       start: entry.appended_at,
       isPending: false,
-      commandIndex: undefined,
+      commandIndex: entry.command_index,
       type: 'Cancel',
       category: 'command',
       completionId: undefined,
