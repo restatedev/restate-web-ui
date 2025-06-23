@@ -9,6 +9,8 @@ import { INVOCATION_QUERY_NAME } from './constants';
 import {
   useGetInvocation,
   useGetInvocationJournal,
+  useGetInvocationJournalWithInvocation,
+  useGetInvocationJournalWithInvocationV2,
   useGetVirtualObjectQueue,
   useGetVirtualObjectState,
 } from '@restate/data-access/admin-api';
@@ -26,12 +28,13 @@ import {
 import { useEffect, useState } from 'react';
 import { formatDurations } from '@restate/util/intl';
 import { Actions } from './Actions';
-import { JournalSection } from './Journal';
+import { JournalSection } from './JournalSection';
 import { useQueryClient } from '@tanstack/react-query';
 import { Link } from '@restate/ui/link';
 import { useRestateContext } from '@restate/features/restate-context';
 import { useLocation } from 'react-router';
 import { getSearchParams } from './InvocationId';
+import { InvokedBySection } from './InvokedBySection';
 
 function Footnote({ dataUpdatedAt }: { dataUpdatedAt?: number }) {
   const [now, setNow] = useState(() => Date.now());
@@ -75,25 +78,20 @@ export function InvocationPanel() {
 
 function InvocationPanelContent() {
   const invocationId = useParamValue();
+
   const {
+    queryKey: journalQueryKey,
     data,
     isPending,
     error: getInvocationError,
     dataUpdatedAt,
     errorUpdatedAt,
     refetch: refetchGetInvocation,
-    isSuccess,
-  } = useGetInvocation(String(invocationId), {
+  } = useGetInvocationJournalWithInvocationV2(String(invocationId), {
     enabled: Boolean(invocationId),
     refetchOnMount: true,
     staleTime: 0,
   });
-  const { queryKey: journalQueryKey } = useGetInvocationJournal(
-    String(invocationId),
-    {
-      enabled: false,
-    }
-  );
 
   const { queryKey: inboxQueryKey } = useGetVirtualObjectQueue(
     String(data?.target_service_name),
@@ -212,6 +210,7 @@ function InvocationPanelContent() {
       <VirtualObjectSection className="mt-2" invocation={data} raised />
       <WorkflowKeySection className="mt-2" invocation={data} />
       <DeploymentSection className="mt-2" invocation={data} raised />
+      <InvokedBySection className="mt-2" invocation={data} />
       <JournalSection className="mt-2" invocation={data} />
     </SnapshotTimeProvider>
   );

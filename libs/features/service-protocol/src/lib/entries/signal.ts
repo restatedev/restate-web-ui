@@ -1,41 +1,93 @@
 import {
-  CancelSignalJournalEntryType,
-  CompleteAwakeableJournalEntryType,
-  JournalEntry,
-  JournalRawEntry,
+  Invocation,
+  JournalEntryV2,
 } from '@restate/data-access/admin-api/spec';
-import { parseEntryJson, parseResults } from './util';
+import {
+  getEntryResultV2,
+  JournalRawEntryWithCommandIndex,
+  parseEntryJson,
+} from './util';
 
 export function signal(
-  entry: JournalRawEntry,
-  allEntries: JournalRawEntry[]
+  entry: JournalRawEntryWithCommandIndex,
+  nextEntries: JournalEntryV2[],
+  invocation?: Invocation
 ):
-  | CancelSignalJournalEntryType
-  | CompleteAwakeableJournalEntryType
-  | JournalEntry {
+  | Extract<
+      JournalEntryV2,
+      { type?: 'CompleteAwakeable'; category?: 'notification' }
+    >
+  | Extract<JournalEntryV2, { type?: 'Cancel'; category?: 'notification' }>
+  | JournalEntryV2 {
   const entryJSON = parseEntryJson(entry.entry_json);
-  const payload = entryJSON?.Notification?.Signal;
+  const entryLiteJSON = parseEntryJson(entry.entry_lite_json);
 
-  if (payload?.id?.Index === 1) {
+  const id: number | undefined = entry.entry_json
+    ? entryJSON?.Notification?.Signal?.id?.Index
+    : entryLiteJSON?.Notification?.id?.SignalIndex;
+
+  if (id === 1) {
+    const { error, relatedIndexes } = getEntryResultV2(
+      entry,
+      invocation,
+      nextEntries,
+      undefined
+    );
+
     return {
-      index: entry.index,
       start: entry.appended_at,
-      entry_type: 'CancelSignal',
-      version: entry.version,
-      completed: entry.completed,
-    } as CancelSignalJournalEntryType;
+      isPending: false,
+      commandIndex: undefined,
+      type: 'Cancel',
+      category: 'notification',
+      completionId: undefined,
+      end: undefined,
+      index: entry.index,
+      relatedIndexes,
+      isRetrying: false,
+      isLoaded: true,
+      error,
+      value: undefined,
+      resultType: undefined,
+    } as Extract<
+      JournalEntryV2,
+      { type?: 'Cancel'; category?: 'notification' }
+    >;
   }
 
-  if (payload?.id?.Index === 17) {
+  if (id === 17) {
+    const result = entry.entry_json
+      ? entryJSON?.Notification?.Signal?.result
+      : entryLiteJSON?.Notification?.result;
+
+    const { error, resultType, value, isRetrying } = getEntryResultV2(
+      entry,
+      invocation,
+      nextEntries,
+      result
+    );
+
     return {
-      index: entry.index,
       start: entry.appended_at,
-      entry_type: 'CompleteAwakeable',
-      version: entry.version,
-      completed: true,
-      ...parseResults(payload?.result),
-    } as CompleteAwakeableJournalEntryType;
+      isPending: false,
+      commandIndex: undefined,
+      type: 'CompleteAwakeable',
+      category: 'notification',
+      completionId: undefined,
+      end: undefined,
+      index: entry.index,
+      relatedIndexes: undefined,
+      isRetrying,
+      isLoaded: typeof entry.entry_json !== 'undefined',
+      error,
+      value,
+      resultType,
+      id: undefined,
+    } as Extract<
+      JournalEntryV2,
+      { type?: 'CompleteAwakeable'; category?: 'notification' }
+    >;
   }
 
-  return entry as JournalEntry;
+  return entry as JournalEntryV2;
 }

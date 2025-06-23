@@ -3,90 +3,166 @@ import { RunEntryMessageSchema } from '@buf/restatedev_service-protocol.bufbuild
 import { toUnit8Array } from '../toUni8Array';
 import { decode } from '../decoder';
 import { RestateError } from '@restate/util/errors';
-import { JournalRawEntry } from '@restate/data-access/admin-api/spec';
-import { parseResults, parseEntryJson, findEntryAfter } from './util';
+import {
+  Invocation,
+  JournalEntryV2,
+  JournalRawEntry,
+} from '@restate/data-access/admin-api/spec';
+import {
+  parseEntryJson,
+  JournalRawEntryWithCommandIndex,
+  getEntryResultV2,
+  getCompletionEntry,
+  getLastFailureV1,
+} from './util';
 
-function runV1(entry: JournalRawEntry) {
+function runV1(
+  entry: JournalRawEntry,
+  invocation?: Invocation
+): Extract<JournalEntryV2, { type?: 'Run'; category?: 'command' }> {
   const { raw } = entry;
   if (!raw) {
     return {};
   }
   const message = fromBinary(RunEntryMessageSchema, toUnit8Array(raw));
+  const error = getLastFailureV1(entry, invocation);
+
+  const metadata = {
+    name: message.name,
+    start: undefined,
+    isPending: !entry.completed,
+    commandIndex: entry.index,
+    type: 'Run',
+    category: 'command',
+    completionId: undefined,
+    end: undefined,
+    index: entry.index,
+    relatedIndexes: undefined,
+    isRetrying: false,
+    isLoaded: false,
+    invocationId: entry.invoked_id,
+    value: undefined,
+    error,
+  } as const;
+
   switch (message.result.case) {
     case 'failure':
       return {
-        name: message.name,
+        ...metadata,
+        isLoaded: true,
+        resultType: 'failure',
+        error:
+          new RestateError(
+            message.result.value.message,
+            message.result.value.code.toString()
+          ) || error,
         value: undefined,
-        failure: new RestateError(
-          message.result.value.message,
-          message.result.value.code.toString()
-        ),
-        completed: true,
       };
     case 'value':
       return {
-        name: message.name,
+        ...metadata,
+        isLoaded: true,
+        resultType: 'success',
         value: decode(message.result.value),
-        failure: undefined,
-        completed: true,
       };
     default:
-      return {
-        name: message.name,
-        value: undefined,
-        failure: undefined,
-        completed: true,
-      };
+      return metadata;
   }
 }
 
-function runV2(entry: JournalRawEntry, allEntries: JournalRawEntry[]) {
-  const entryJSON = parseEntryJson(entry.entry_json);
-  const completedId = entryJSON?.Command?.Run?.completion_id;
-  // TODO: display canceled runs
-  // TODO: display Failure results
-  /**
-   * If there is no completionEntry, either it's still in progress
-   * or it has been failed. The error can be find in the invocation.
-   */
-  const { entryJSON: completionEntryJson, entry: completionEntry } =
-    findEntryAfter(entry, allEntries, (entryJSON) => {
-      const isCompletionEntry =
-        entryJSON?.['Notification']?.Completion?.Run?.completion_id ===
-        completedId;
+function runV2(
+  entry: JournalRawEntryWithCommandIndex,
+  nextEntries: JournalEntryV2[],
+  invocation?: Invocation
+): Extract<JournalEntryV2, { type?: 'Run'; category?: 'command' }> {
+  const entryJSON = parseEntryJson(entry.entry_json ?? entry.entry_lite_json);
+  const commandIndex = entry.command_index;
 
-      return isCompletionEntry;
-    });
-  const completionEntryResult =
-    completionEntryJson?.Notification?.Completion?.Run?.result;
+  const resultCompletionId = entryJSON?.Command?.Run?.completion_id;
+  const completionEntry = getCompletionEntry<
+    Extract<JournalEntryV2, { type?: 'Run'; category?: 'notification' }>
+  >(resultCompletionId, 'Run', nextEntries);
+
+  const { isRetrying, error, relatedIndexes } = getEntryResultV2(
+    entry,
+    invocation,
+    nextEntries,
+    undefined,
+    [completionEntry?.index]
+  );
 
   return {
     name: entryJSON?.Command?.Run?.name,
-    completed: Boolean(completionEntry),
-    ...parseResults(completionEntryResult),
-    start: entry?.appended_at,
-    end: completionEntry?.appended_at,
+    start: entry.appended_at,
+    isPending: !completionEntry,
+    commandIndex,
+    type: 'Run',
+    category: 'command',
+    completionId: resultCompletionId,
+    end: completionEntry?.start,
+    index: entry.index,
+    relatedIndexes,
+    isRetrying,
+    error: completionEntry?.error || error,
+    resultType: completionEntry?.resultType,
+    isLoaded:
+      typeof entry.entry_json !== 'undefined' &&
+      (!completionEntry || completionEntry.isLoaded),
+    value: completionEntry?.value,
   };
 }
 
 export function run(
-  entry: JournalRawEntry,
-  allEntries: JournalRawEntry[]
-): {
-  name?: string;
-  value?: string;
-  start?: string;
-  end?: string;
-  completed?: boolean;
-  failure?: RestateError;
-} {
+  entry: JournalRawEntryWithCommandIndex,
+  nextEntries: JournalEntryV2[],
+  invocation?: Invocation
+) {
   if (entry.version === 1 || !entry.version) {
-    return runV1(entry);
+    return runV1(entry, invocation);
   }
 
-  if (entry.version === 2 && entry.entry_json) {
-    return runV2(entry, allEntries);
+  if (entry.version === 2 && (entry.entry_json || entry.entry_lite_json)) {
+    return runV2(entry, nextEntries, invocation);
   }
 
   return {};
+}
+
+export function notificationRun(
+  entry: JournalRawEntryWithCommandIndex,
+  nextEntries: JournalEntryV2[],
+  invocation?: Invocation
+): Extract<JournalEntryV2, { type?: 'Run'; category?: 'notification' }> {
+  const entryJSON = parseEntryJson(entry.entry_json);
+  const entryLiteJSON = parseEntryJson(entry.entry_lite_json);
+  const completionId: number | undefined = entry.entry_json
+    ? entryJSON?.Notification?.Completion?.Run?.completion_id
+    : entryLiteJSON?.Notification?.id?.CompletionId;
+  const result = entry.entry_json
+    ? entryJSON?.Notification?.Completion?.Run?.result
+    : entryLiteJSON?.Notification?.result;
+
+  const { error, resultType, value } = getEntryResultV2(
+    entry,
+    invocation,
+    nextEntries,
+    result
+  );
+
+  return {
+    start: entry.appended_at,
+    isPending: false,
+    commandIndex: undefined,
+    type: 'Run',
+    category: 'notification',
+    completionId,
+    end: undefined,
+    index: entry.index,
+    relatedIndexes: undefined,
+    isRetrying: false,
+    isLoaded: typeof entry.entry_json !== 'undefined',
+    error,
+    value,
+    resultType,
+  };
 }

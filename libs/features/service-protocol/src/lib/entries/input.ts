@@ -2,30 +2,78 @@ import { fromBinary } from '@bufbuild/protobuf';
 import { InputEntryMessageSchema } from '@buf/restatedev_service-protocol.bufbuild_es/dev/restate/service/protocol_pb';
 import { toUnit8Array } from '../toUni8Array';
 import { decode } from '../decoder';
-import { JournalRawEntry } from '@restate/data-access/admin-api/spec';
-import { decodeBinary, parseEntryJson } from './util';
+import {
+  Invocation,
+  JournalEntryV2,
+  JournalRawEntry,
+} from '@restate/data-access/admin-api/spec';
+import {
+  decodeBinary,
+  getEntryResultV2,
+  getLastFailureV1,
+  JournalRawEntryWithCommandIndex,
+  parseEntryJson,
+} from './util';
 
-function inputV1(entry: JournalRawEntry) {
+function inputV1(
+  entry: JournalRawEntry,
+  invocation?: Invocation
+): Extract<JournalEntryV2, { type?: 'Input' }> {
   const { raw } = entry;
   if (!raw) {
     return {};
   }
   const message = fromBinary(InputEntryMessageSchema, toUnit8Array(raw));
+  const error = getLastFailureV1(entry, invocation);
+
   return {
-    name: message.name,
-    body: decode(message.value),
-    headers: message.headers.map(({ key, value }) => ({ key, value })),
     start: undefined,
-    completed: true,
-    failure: undefined,
+    isPending: false,
+    commandIndex: entry.index,
+    type: 'Input',
+    category: 'command',
+    completionId: undefined,
+    end: undefined,
+    index: entry.index,
+    relatedIndexes: undefined,
+    isRetrying: false,
+    error,
+    resultType: undefined,
+    parameters: decode(message.value),
+    headers: message.headers.map(({ key, value }) => ({ key, value })),
+    isLoaded: true,
+    handlerName: invocation?.target_handler_name,
   };
 }
 
-function inputV2(entry: JournalRawEntry, allEntries: JournalRawEntry[]) {
-  const entryJSON = parseEntryJson(entry.entry_json);
+function inputV2(
+  entry: JournalRawEntryWithCommandIndex,
+  nextEntries: JournalEntryV2[],
+  invocation?: Invocation
+): Extract<JournalEntryV2, { type?: 'Input' }> {
+  const entryJSON = parseEntryJson(entry.entry_json ?? entry.entry_lite_json);
+  const commandIndex = entry.command_index;
+
+  const { isRetrying, error, resultType, relatedIndexes } = getEntryResultV2(
+    entry,
+    invocation,
+    nextEntries,
+    undefined
+  );
+
   return {
-    name: entryJSON?.Command?.Input?.name,
-    body: decodeBinary(entryJSON.Command.Input.payload),
+    start: entry.appended_at,
+    isPending: false,
+    commandIndex,
+    type: 'Input',
+    category: 'command',
+    completionId: undefined,
+    end: undefined,
+    index: entry.index,
+    relatedIndexes,
+    isRetrying,
+    error,
+    resultType,
     headers: entryJSON?.Command?.Input?.headers?.map(
       ({ name, value }: { name: string; value: string }) =>
         ({
@@ -33,32 +81,23 @@ function inputV2(entry: JournalRawEntry, allEntries: JournalRawEntry[]) {
           value,
         } as { key: string; value: string })
     ),
-    start: entry.appended_at,
-    completed: true,
-    failure: undefined,
+    parameters: decodeBinary(entryJSON?.Command?.Input?.payload),
+    isLoaded: typeof entry.entry_json !== 'undefined',
+    handlerName: invocation?.target_handler_name,
   };
 }
 
 export function input(
-  entry: JournalRawEntry,
-  allEntries: JournalRawEntry[]
-): {
-  name?: string;
-  body?: string;
-  headers?: {
-    key: string;
-    value: string;
-  }[];
-  start?: string;
-  completed?: boolean;
-  failure?: undefined;
-} {
+  entry: JournalRawEntryWithCommandIndex,
+  nextEntries: JournalEntryV2[],
+  invocation?: Invocation
+) {
   if (entry.version === 1 || !entry.version) {
-    return inputV1(entry);
+    return inputV1(entry, invocation);
   }
 
-  if (entry.version === 2 && entry.entry_json) {
-    return inputV2(entry, allEntries);
+  if (entry.version === 2 && (entry.entry_json || entry.entry_lite_json)) {
+    return inputV2(entry, nextEntries, invocation);
   }
 
   return {};

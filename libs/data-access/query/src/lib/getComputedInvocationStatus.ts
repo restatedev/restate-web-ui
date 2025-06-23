@@ -11,9 +11,12 @@ export function getComputedInvocationStatus(invocation: RawInvocation): {
   const isCancelled = Boolean(
     invocation.completion_result === 'failure' &&
       invocation.completion_failure &&
-      ['[409] canceled', '[409] cancelled', '[409 aborted] canceled'].includes(
-        invocation.completion_failure?.toLowerCase()
-      )
+      [
+        '[409] canceled',
+        '[409] cancelled',
+        '[409 aborted] canceled',
+        '[409 aborted] cancelled',
+      ].includes(invocation.completion_failure?.toLowerCase())
   );
   const isKilled = Boolean(
     invocation.completion_result === 'failure' &&
@@ -23,23 +26,14 @@ export function getComputedInvocationStatus(invocation: RawInvocation): {
   );
   const isRunning = invocation.status === 'running';
   const isCompleted = invocation.status === 'completed';
-  const isOldJournalFormat =
-    !invocation.pinned_service_protocol_version ||
-    invocation.pinned_service_protocol_version < 5;
-  const isStuckOnLastStep = isOldJournalFormat
-    ? typeof invocation.last_failure_related_entry_index === 'number' &&
-      typeof invocation.journal_size === 'number' &&
-      invocation.last_failure_related_entry_index + 1 >= invocation.journal_size
-    : typeof invocation.last_failure_related_command_index === 'number' &&
-      typeof invocation.journal_commands_size === 'number' &&
-      invocation.last_failure_related_command_index + 1 >=
-        invocation.journal_commands_size;
+
+  const hasLastFailure = Boolean(invocation.last_failure);
   const isRetrying = Boolean(
     invocation.status === 'backing-off' ||
       (invocation.retry_count &&
         invocation.retry_count > 1 &&
         isRunning &&
-        isStuckOnLastStep)
+        hasLastFailure)
   );
 
   if (isCompleted) {

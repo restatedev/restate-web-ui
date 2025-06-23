@@ -9,29 +9,34 @@ app.use(cors());
 app.use(express.json());
 
 const proxyHandler: RequestHandler = async (req, res) => {
-  const response = await fetch(`${ADMIN_ENDPOINT}${req.url}`, {
-    method: req.method,
-    headers: new Headers(req.headers as Record<string, string>),
-    ...(req.body &&
-      ['POST', 'PUT', 'PATCH'].includes(req.method) && {
-        body: JSON.stringify(req.body),
-      }),
-  });
+  try {
+    const response = await fetch(`${ADMIN_ENDPOINT}${req.url}`, {
+      method: req.method,
+      headers: new Headers(req.headers as Record<string, string>),
+      ...(req.body &&
+        ['POST', 'PUT', 'PATCH'].includes(req.method) && {
+          body: JSON.stringify(req.body),
+        }),
+    });
 
-  response.body?.pipeTo(
-    new WritableStream({
-      start() {
-        res.statusCode = response.status;
-        response.headers.forEach((v, n) => res.setHeader(n, v));
-      },
-      write(chunk) {
-        res.write(chunk);
-      },
-      close() {
-        res.end();
-      },
-    })
-  );
+    response.body?.pipeTo(
+      new WritableStream({
+        start() {
+          res.statusCode = response.status;
+          response.headers.forEach((v, n) => res.setHeader(n, v));
+        },
+        write(chunk) {
+          res.write(chunk);
+        },
+        close() {
+          res.end();
+        },
+      })
+    );
+  } catch (error) {
+    res.sendStatus(500);
+    res.end();
+  }
 };
 
 app.all('*', proxyHandler);

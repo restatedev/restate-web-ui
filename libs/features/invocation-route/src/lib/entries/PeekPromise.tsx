@@ -1,9 +1,6 @@
-import { PeekPromiseJournalEntryType } from '@restate/data-access/admin-api';
+import { JournalEntryV2 } from '@restate/data-access/admin-api';
 import { EntryProps } from './types';
-import { Expression, InputOutput } from '../Expression';
-import { Value } from '../Value';
-import { Failure } from '../Failure';
-import { Ellipsis } from '@restate/ui/loading';
+import { EntryExpression } from './EntryExpression';
 
 export function PeekPromise({
   entry,
@@ -12,56 +9,23 @@ export function PeekPromise({
   error,
   isRetrying,
   wasRetrying,
-}: EntryProps<PeekPromiseJournalEntryType>) {
-  const entryError = entry.failure || error;
-
+}: EntryProps<
+  Extract<JournalEntryV2, { type?: 'PeekPromise'; category?: 'command' }>
+>) {
   return (
-    <Expression
-      name={'ctx.promise'}
-      {...(typeof entry.promise_name === 'string' && {
-        input: (
-          <InputOutput
-            name={JSON.stringify(entry.promise_name)}
-            popoverTitle="Name"
-            popoverContent={
-              <Value
-                value={entry.promise_name}
-                className="text-xs font-mono py-3"
-              />
-            }
-          />
-        ),
-      })}
+    <EntryExpression
+      entry={entry}
+      invocation={invocation}
+      inputParams={[
+        {
+          paramName: 'promiseName',
+          title: 'Name',
+          placeholderLabel: 'name',
+          shouldStringified: true,
+        },
+      ]}
+      outputParam="value"
       chain=".peak"
-      output={
-        <>
-          {typeof entry.value === 'string' && (
-            <InputOutput
-              name={entry.value}
-              popoverTitle="Value"
-              popoverContent={
-                <Value value={entry.value} className="text-xs font-mono py-3" />
-              }
-            />
-          )}
-          {(typeof entry.value === 'undefined' ||
-            (entry.version === 1 && entry.value === '')) &&
-            !entryError &&
-            entry.completed && (
-              <div className="text-zinc-400 font-semibold font-mono text-2xs">
-                void
-              </div>
-            )}
-          {!entry.completed && (!entryError || isRetrying) && <Ellipsis />}
-          {entryError?.message && (
-            <Failure
-              message={entryError.message}
-              restate_code={entryError.restate_code}
-              isRetrying={isRetrying || wasRetrying}
-            />
-          )}
-        </>
-      }
     />
   );
 }

@@ -10,10 +10,10 @@ const failureStyle = tv({
   base: '',
   slots: {
     trigger:
-      ' bg-white/70 border px-1.5 py-0 flex rounded-md items-center gap-1 [font-size:inherit] h-5 ml-1.5',
-    errorIcon: 'h-3 w-3 shrink-0 ',
+      ' bg-white/70 border px-0 py-0 flex rounded-lg items-center gap-0 [font-size:inherit] h-6 min-w-6',
+    errorIcon: 'h-3 w-3 shrink-0 mx-[0.3rem]',
     errorBanner:
-      'rounded-lg flex-auto max-w-[min(50rem,90vw)] [&_details]:max-h-full [&:has(details[open])]:h-[min(50vh,16rem)]  overflow-auto resize max-h-full',
+      'rounded-lg flex-auto max-w-[min(50rem,90vw)] mr-1 [&_details]:max-h-full [&:has(details[open])]:h-[min(50vh,16rem)]  overflow-auto resize max-h-full',
   },
   variants: {
     isRetrying: {
@@ -110,10 +110,10 @@ export function Failure({
             name={isRetrying ? IconName.TriangleAlert : IconName.CircleX}
             className={errorIcon()}
           />
-          {restate_code}
+          <span className="truncate min-w-0 block mr-1">{restate_code}</span>
           <Icon
             name={IconName.ChevronsUpDown}
-            className="h-3 w-3 text-gray-500 shrink-0"
+            className="h-3 w-3 text-gray-500 shrink-0 mr-1"
           />
         </Button>
       </PopoverTrigger>

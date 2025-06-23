@@ -42,13 +42,7 @@ import {
   useQueryBuilder,
 } from '@restate/ui/query-builder';
 import { ClauseChip, FiltersTrigger } from './Filters';
-import {
-  ClientLoaderFunctionArgs,
-  Form,
-  redirect,
-  ShouldRevalidateFunctionArgs,
-  useSearchParams,
-} from 'react-router';
+import { Form, useSearchParams } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTransition } from 'react';
 
@@ -368,14 +362,6 @@ function Component() {
   }, [pageIndex, sortedItems]);
 
   useEffect(() => {
-    hasRendered = true;
-
-    return () => {
-      hasRendered = false;
-    };
-  }, []);
-
-  useEffect(() => {
     if (sortedItems.length <= PAGE_SIZE * pageIndex) {
       setPageIndex(0);
     }
@@ -663,35 +649,4 @@ function Footnote({
   );
 }
 
-/**
- *
- * https://github.com/remix-run/react-router/issues/12607
- * TODO: workaround to make sure clientLoader only runs on first render
- */
-let hasRendered = false;
-export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
-  const url = new URL(request.url);
-  const hasFilters = Array.from(url.searchParams.keys()).some((key) =>
-    key.startsWith('filter_')
-  );
-
-  if (!hasFilters && !hasRendered) {
-    hasRendered = true;
-
-    url.searchParams.append(
-      'filter_status',
-      JSON.stringify({
-        operation: 'NOT_IN',
-        value: ['succeeded', 'cancelled', 'killed'],
-      })
-    );
-    return redirect(url.search + window.location.hash);
-  }
-  hasRendered = true;
-};
-
-export function shouldRevalidate(arg: ShouldRevalidateFunctionArgs) {
-  return false;
-}
-
-export const invocations = { Component, clientLoader, shouldRevalidate };
+export const invocations = { Component };

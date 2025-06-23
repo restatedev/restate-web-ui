@@ -30,10 +30,12 @@ export function RestateServerError({
   children,
   className,
   wrap,
+  open = true,
 }: PropsWithChildren<{
   error: RestateError;
   className?: string;
   wrap?: boolean;
+  open?: boolean;
 }>) {
   const { restate_code: code, message } = error;
   const { summary, help } = code
@@ -76,7 +78,7 @@ export function RestateServerError({
           <Snippet language="bash" className="px-0 h-full">
             <details
               className="group [font-size:90%] overflow-auto  max-h-28 w-full h-full"
-              open
+              open={open}
             >
               <summary className="group-open:h-4">
                 <span className="group-open:invisible group-open:[font-size:0px] truncate w-[calc(100%-5ch)] inline-block align-middle">

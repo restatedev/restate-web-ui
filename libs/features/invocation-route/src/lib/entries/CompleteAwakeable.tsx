@@ -1,58 +1,89 @@
-import { CompleteAwakeableJournalEntryType } from '@restate/data-access/admin-api';
+import { JournalEntryV2 } from '@restate/data-access/admin-api';
 import { EntryProps } from './types';
 import { Expression, InputOutput } from '../Expression';
 import { Value } from '../Value';
 import { Failure } from '../Failure';
+import { EntryExpression } from './EntryExpression';
 
 export function CompleteAwakeable({
   entry,
-  failed,
   invocation,
-  error,
-  isRetrying,
-  wasRetrying,
-}: EntryProps<CompleteAwakeableJournalEntryType>) {
-  const entryError = entry.failure || error;
-
+}: EntryProps<
+  Extract<JournalEntryV2, { type?: 'CompleteAwakeable'; category?: 'command' }>
+>) {
   return (
-    <Expression
-      name={'ctx.awakeable'}
-      {...(typeof entry.id === 'string' && {
-        input: (
-          <InputOutput
-            name={JSON.stringify(entry.id)}
-            popoverTitle="Id"
-            popoverContent={
-              <Value value={entry.id} className="text-xs font-mono py-3" />
-            }
-          />
-        ),
-      })}
-      output={
-        <>
-          {typeof entry.value === 'string' && (
-            <InputOutput
-              name={entry.value}
-              popoverTitle="Value"
-              popoverContent={
-                <Value value={entry.value} className="text-xs font-mono py-3" />
-              }
-            />
-          )}
-          {typeof entry.value === 'undefined' && !entryError && (
-            <div className="text-zinc-400 font-semibold font-mono text-2xs">
-              void
+    <EntryExpression
+      entry={entry}
+      invocation={invocation}
+      inputParams={[
+        {
+          paramName: 'id',
+          title: 'Id',
+          placeholderLabel: 'id',
+          shouldStringified: true,
+        },
+      ]}
+      operationSymbol=""
+      hideErrorForFailureResult
+      chain={
+        <Expression
+          name={'.' + (entry.resultType === 'failure' ? 'reject' : 'resolve')}
+          operationSymbol=""
+          className="pr-0 [&>*>*>*]:flex-auto"
+          input={
+            <div className="mx-0.5">
+              {entry.resultType !== 'failure' && (
+                <InputOutput
+                  name="value"
+                  popoverTitle="Value"
+                  isValueHidden
+                  popoverContent={
+                    <Value
+                      value={entry.value}
+                      className="text-xs font-mono py-3"
+                    />
+                  }
+                />
+              )}
+              {entry.error && (
+                <div className="text-2xs">
+                  <Failure
+                    message={entry.error.message!}
+                    restate_code={entry.error.restateCode}
+                    isRetrying={entry.isRetrying}
+                  />
+                </div>
+              )}
             </div>
-          )}
-          {entryError?.message && (
-            <Failure
-              message={entryError.message}
-              restate_code={entryError.restate_code}
-              isRetrying={isRetrying || wasRetrying}
-            />
-          )}
-        </>
+          }
+        />
       }
+    />
+  );
+}
+
+export function CompleteAwakeableNotification({
+  entry,
+  invocation,
+}: EntryProps<
+  Extract<
+    JournalEntryV2,
+    { type?: 'CompleteAwakeable'; category?: 'notification' }
+  >
+>) {
+  return (
+    <EntryExpression
+      entry={entry}
+      invocation={invocation}
+      inputParams={[
+        {
+          paramName: 'id',
+          title: 'Id',
+          placeholderLabel: 'id',
+          shouldStringified: true,
+        },
+      ]}
+      outputParam="value"
     />
   );
 }

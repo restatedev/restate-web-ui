@@ -1,48 +1,52 @@
-import { SetStateJournalEntryType } from '@restate/data-access/admin-api';
+import { JournalEntryV2 } from '@restate/data-access/admin-api';
 import { EntryProps } from './types';
-import { Expression, InputOutput } from '../Expression';
+import { EntryExpression } from './EntryExpression';
+import { InputOutput } from '../Expression';
 import { Value } from '../Value';
-import { Failure } from '../Failure';
 
 export function SetState({
   entry,
-  failed,
   invocation,
-  error,
-  isRetrying,
-  wasRetrying,
-}: EntryProps<SetStateJournalEntryType>) {
+}: EntryProps<
+  Extract<JournalEntryV2, { type?: 'SetState'; category?: 'command' }>
+>) {
   return (
-    <Expression
-      isFunction={false}
-      name={entry.key ?? ''}
-      operationSymbol={'='}
-      prefix="set"
-      output={
+    <EntryExpression
+      entry={entry}
+      invocation={invocation}
+      inputParams={[
+        {
+          paramName: 'key',
+          title: 'Key',
+          placeholderLabel: 'key',
+          shouldStringified: true,
+        },
+        { paramName: 'value', title: 'Value', placeholderLabel: 'value' },
+      ]}
+      input={
         <>
-          {typeof entry.value === 'string' && (
-            <InputOutput
-              name={entry.value}
-              popoverTitle="Value"
-              popoverContent={
-                <Value value={entry.value} className="text-xs font-mono py-3" />
-              }
-            />
-          )}
-          {typeof entry.value === 'undefined' && !error && (
-            <div className="text-zinc-400 font-semibold font-mono text-2xs">
-              void
-            </div>
-          )}
-          {error?.message && (
-            <Failure
-              message={error.message}
-              restate_code={error.restate_code}
-              isRetrying={isRetrying || wasRetrying}
-            />
-          )}
+          <InputOutput
+            name={JSON.stringify(entry.key)}
+            popoverTitle="Key"
+            popoverContent={
+              <Value value={entry.key} className="text-xs font-mono py-3" />
+            }
+          />
+          <div>,</div>
+          <InputOutput
+            name="value"
+            popoverTitle="Value"
+            isValueHidden
+            popoverContent={
+              <Value
+                value={entry.value}
+                className="text-xs font-mono py-3 mx-0.5"
+              />
+            }
+          />
         </>
       }
+      operationSymbol=""
     />
   );
 }

@@ -1985,6 +1985,229 @@
         }
       }
     },
+    "/query/invocations/{invocationId}/journal/{entryIndex}": {
+      "get": {
+        "tags": ["get-journal-entry"],
+        "summary": "Get journal entry",
+        "description": "Get journal entry",
+        "operationId": "get_journal_entry",
+        "parameters": [
+          {
+            "name": "invocationId",
+            "in": "path",
+            "description": "Invocation id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entryIndex",
+            "in": "path",
+            "description": "Entry index",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JournalEntryV2"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query/v2/invocations/{invocationId}": {
+      "get": {
+        "tags": ["get-invocation"],
+        "summary": "Get invocation and journal",
+        "description": "Get invocation journal v2",
+        "operationId": "get_invocation_journal_v2",
+        "parameters": [
+          {
+            "name": "invocationId",
+            "in": "path",
+            "description": "Invocation id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "journal",
+            "in": "query",
+            "description": "Should include journal",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Invocation"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "journal": {
+                          "type": "object",
+                          "properties": {
+                            "version": {
+                              "type": "integer"
+                            },
+                            "entries": {
+                              "type": "array",
+                              "items": {
+                                "$ref": "#/components/schemas/JournalEntryV2"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/query/virtualObjects/{name}/keys/{key}/queue": {
       "get": {
         "tags": ["query-invocations"],
@@ -3747,6 +3970,133 @@
           }
         ]
       },
+      "JournalEntryV2": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/JournalBaseEntryV2"
+          },
+          {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/InputJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/GetStateJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/SetStateJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/GetStateKeysJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/ClearStateJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/ClearAllStateJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/CallJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/RunJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/OutputJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/NotificationCallJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/NotificationCallInvocationIdJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/NotificationRunJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/OneWayCallJournalEntryTypeV2"
+              },
+              {
+                "$ref": "#/components/schemas/SleepJournalEntryTypeV2"
+              },
+              {
+                "$ref": "#/components/schemas/NotificationSleepJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/CompleteAwakeableJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/NotificationCompleteAwakeableJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/AwakeableJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/AttachInvocationJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/NotificationAttachInvocationJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/CancelJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/NotificationCancelJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/GetPromiseJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/PeakPromiseJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/CompletePromiseJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/NotificationGetPromiseJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/NotificationPeakPromiseJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/NotificationCompletePromiseJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/TransientErrorJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/CreatedLifecycleJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/RunningLifecycleJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/RetryingLifecycleJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/ScheduledLifecycleJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/SuspendedLifecycleJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/PendingLifecycleJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/CompletionLifecycleJournalEntryV2"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
       "JournalRawEntry": {
         "type": "object",
         "required": ["index", "entry_type"],
@@ -3778,6 +4128,9 @@
             "type": "string"
           },
           "entry_json": {
+            "type": "string"
+          },
+          "entry_lite_json": {
             "type": "string"
           },
           "appended_at": {
@@ -3813,7 +4166,38 @@
               "AttachInvocation",
               "GetInvocationOutput",
               "Custom",
-              "CancelSignal"
+              "Command: Input",
+              "Command: Output",
+              "Command: GetState",
+              "Command: GetEagerState",
+              "Command: SetState",
+              "Command: GetStateKeys",
+              "Command: GetEagerStateKeys",
+              "Command: ClearState",
+              "Command: ClearAllState",
+              "Command: Sleep",
+              "Command: GetPromise",
+              "Command: PeekPromise",
+              "Command: CompletePromise",
+              "Command: OneWayCall",
+              "Command: Call",
+              "Command: Awakeable",
+              "Command: CompleteAwakeable",
+              "Command: Run",
+              "Command: AttachInvocation",
+              "Command: GetInvocationOutput",
+              "Command: Custom",
+              "Command: SendSignal",
+              "Event",
+              "Notification: Signal",
+              "Notification: Sleep",
+              "Notification: Call",
+              "Notification: CallInvocationId",
+              "Notification: AttachInvocation",
+              "Notification: GetPromise",
+              "Notification: PeekPromise",
+              "Notification: CompletePromise",
+              "Notification: Run"
             ]
           }
         }
@@ -3844,6 +4228,74 @@
           }
         }
       },
+      "JournalBaseEntryV2": {
+        "type": "object",
+        "properties": {
+          "isPending": {
+            "type": "boolean"
+          },
+          "resultType": {
+            "type": "string",
+            "enum": ["success", "failure", "void"]
+          },
+          "isRetrying": {
+            "type": "boolean"
+          },
+          "isLoaded": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "object",
+            "properties": {
+              "count": {
+                "type": "integer"
+              },
+              "code": {
+                "type": "integer"
+              },
+              "message": {
+                "type": "string"
+              },
+              "stack": {
+                "type": "string"
+              },
+              "restateCode": {
+                "type": "string"
+              }
+            }
+          },
+          "start": {
+            "type": "string",
+            "format": "datetime"
+          },
+          "end": {
+            "type": "string",
+            "format": "datetime"
+          },
+          "index": {
+            "type": "integer"
+          },
+          "relatedIndexes": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "completionId": {
+            "type": "integer"
+          },
+          "commandIndex": {
+            "type": "integer"
+          },
+          "category": {
+            "type": "string",
+            "enum": ["notification", "command", "event"]
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
       "FailureEntry": {
         "type": "object",
         "properties": {
@@ -3871,6 +4323,134 @@
             }
           }
         ]
+      },
+      "TransientErrorJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": ["event"]
+          },
+          "type": {
+            "type": "string",
+            "enum": ["TransientError"]
+          },
+          "stackTrace": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "code": {
+            "type": "integer"
+          },
+          "errorCount": {
+            "type": "integer"
+          },
+          "relatedCommandName": {
+            "type": "string"
+          },
+          "relatedCommandType": {
+            "type": "string"
+          },
+          "relatedRestateErrorCode": {
+            "type": "string"
+          },
+          "relatedCommandIndex": {
+            "type": "integer"
+          }
+        }
+      },
+      "CreatedLifecycleJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": ["event"]
+          },
+          "type": {
+            "type": "string",
+            "enum": ["Created"]
+          }
+        }
+      },
+      "RunningLifecycleJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": ["event"]
+          },
+          "type": {
+            "type": "string",
+            "enum": ["Running"]
+          }
+        }
+      },
+      "RetryingLifecycleJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": ["event"]
+          },
+          "type": {
+            "type": "string",
+            "enum": ["Retrying"]
+          }
+        }
+      },
+      "ScheduledLifecycleJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": ["event"]
+          },
+          "type": {
+            "type": "string",
+            "enum": ["Scheduled"]
+          }
+        }
+      },
+      "SuspendedLifecycleJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": ["event"]
+          },
+          "type": {
+            "type": "string",
+            "enum": ["Suspended"]
+          }
+        }
+      },
+      "PendingLifecycleJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": ["event"]
+          },
+          "type": {
+            "type": "string",
+            "enum": ["Pending"]
+          }
+        }
+      },
+      "CompletionLifecycleJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": ["event"]
+          },
+          "type": {
+            "type": "string",
+            "enum": ["Completion"]
+          }
+        }
       },
       "InputJournalEntryType": {
         "type": "object",
@@ -3907,6 +4487,40 @@
           }
         ]
       },
+      "InputJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": ["command"]
+          },
+          "type": {
+            "type": "string",
+            "enum": ["Input"]
+          },
+          "handlerName": {
+            "type": "string"
+          },
+          "parameters": {
+            "type": "string"
+          },
+          "headers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["key", "value"],
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
       "OutputJournalEntryType": {
         "type": "object",
         "allOf": [
@@ -3929,6 +4543,22 @@
             }
           }
         ]
+      },
+      "OutputJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["Output"]
+          },
+          "value": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string",
+            "enum": ["command"]
+          }
+        }
       },
       "GetStateJournalEntryType": {
         "type": "object",
@@ -3959,6 +4589,25 @@
           }
         ]
       },
+      "GetStateJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["GetState", "GetEagerState"]
+          },
+          "key": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string",
+            "enum": ["command"]
+          }
+        }
+      },
       "SetStateJournalEntryType": {
         "type": "object",
         "allOf": [
@@ -3981,6 +4630,25 @@
             }
           }
         ]
+      },
+      "SetStateJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["SetState"]
+          },
+          "key": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string",
+            "enum": ["command"]
+          }
+        }
       },
       "GetStateKeysJournalEntryType": {
         "type": "object",
@@ -4011,6 +4679,25 @@
           }
         ]
       },
+      "GetStateKeysJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["GetStateKeys", "GetEagerStateKeys"]
+          },
+          "category": {
+            "type": "string",
+            "enum": ["command"]
+          },
+          "keys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
       "ClearStateJournalEntryType": {
         "type": "object",
         "allOf": [
@@ -4031,6 +4718,22 @@
           }
         ]
       },
+      "ClearStateJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["ClearState"]
+          },
+          "category": {
+            "type": "string",
+            "enum": ["command"]
+          }
+        }
+      },
       "ClearAllStateJournalEntryType": {
         "type": "object",
         "allOf": [
@@ -4047,6 +4750,19 @@
             }
           }
         ]
+      },
+      "ClearAllStateJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["ClearAllState"]
+          },
+          "category": {
+            "type": "string",
+            "enum": ["command"]
+          }
+        }
       },
       "SleepJournalEntryType": {
         "type": "object",
@@ -4078,6 +4794,39 @@
           }
         ]
       },
+      "SleepJournalEntryTypeV2": {
+        "type": "object",
+        "properties": {
+          "wakeupAt": {
+            "type": "string",
+            "format": "data-time"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["Sleep"]
+          },
+          "category": {
+            "type": "string",
+            "enum": ["command"]
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "NotificationSleepJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["Sleep"]
+          },
+          "category": {
+            "type": "string",
+            "enum": ["notification"]
+          }
+        }
+      },
       "GetPromiseJournalEntryType": {
         "type": "object",
         "allOf": [
@@ -4106,6 +4855,108 @@
             }
           }
         ]
+      },
+      "GetPromiseJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["GetPromise"]
+          },
+          "category": {
+            "type": "string",
+            "enum": ["command"]
+          },
+          "promiseName": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      },
+      "PeakPromiseJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["PeekPromise"]
+          },
+          "category": {
+            "type": "string",
+            "enum": ["command"]
+          },
+          "promiseName": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      },
+      "CompletePromiseJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["CompletePromise"]
+          },
+          "category": {
+            "type": "string",
+            "enum": ["command"]
+          },
+          "promiseName": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      },
+      "NotificationGetPromiseJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["GetPromise"]
+          },
+          "category": {
+            "type": "string",
+            "enum": ["notification"]
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      },
+      "NotificationPeakPromiseJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["PeekPromise"]
+          },
+          "category": {
+            "type": "string",
+            "enum": ["notification"]
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      },
+      "NotificationCompletePromiseJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["CompletePromise"]
+          },
+          "category": {
+            "type": "string",
+            "enum": ["notification"]
+          }
+        }
       },
       "PeekPromiseJournalEntryType": {
         "type": "object",
@@ -4227,6 +5078,53 @@
           }
         ]
       },
+      "OneWayCallJournalEntryTypeV2": {
+        "type": "object",
+        "properties": {
+          "invocationId": {
+            "type": "string"
+          },
+          "serviceKey": {
+            "type": "string"
+          },
+          "serviceName": {
+            "type": "string"
+          },
+          "handlerName": {
+            "type": "string"
+          },
+          "parameters": {
+            "type": "string"
+          },
+          "headers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["key", "value"],
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "invokeTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["OneWayCall"]
+          },
+          "category": {
+            "type": "string",
+            "enum": ["command"]
+          }
+        }
+      },
       "CallJournalEntryType": {
         "type": "object",
         "allOf": [
@@ -4286,6 +5184,100 @@
           }
         ]
       },
+      "CallJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "invocationId": {
+            "type": "string"
+          },
+          "serviceKey": {
+            "type": "string"
+          },
+          "serviceName": {
+            "type": "string"
+          },
+          "handlerName": {
+            "type": "string"
+          },
+          "parameters": {
+            "type": "string"
+          },
+          "headers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["key", "value"],
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "value": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["Call"]
+          },
+          "category": {
+            "type": "string",
+            "enum": ["command"]
+          }
+        }
+      },
+      "NotificationCallJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["Call"]
+          },
+          "category": {
+            "type": "string",
+            "enum": ["notification"]
+          }
+        }
+      },
+      "NotificationCallInvocationIdJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["CallInvocationId"]
+          },
+          "category": {
+            "type": "string",
+            "enum": ["notification"]
+          }
+        }
+      },
+      "NotificationRunJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["Run"]
+          },
+          "category": {
+            "type": "string",
+            "enum": ["notification"]
+          }
+        }
+      },
       "AwakeableJournalEntryType": {
         "type": "object",
         "allOf": [
@@ -4312,6 +5304,25 @@
           }
         ]
       },
+      "AwakeableJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["Awakeable"]
+          },
+          "category": {
+            "type": "string",
+            "enum": ["command"]
+          },
+          "value": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          }
+        }
+      },
       "CompleteAwakeableJournalEntryType": {
         "type": "object",
         "allOf": [
@@ -4337,6 +5348,73 @@
             }
           }
         ]
+      },
+      "CompleteAwakeableJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["CompleteAwakeable"]
+          },
+          "category": {
+            "type": "string",
+            "enum": ["command"]
+          },
+          "value": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          }
+        }
+      },
+      "NotificationCompleteAwakeableJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["CompleteAwakeable"]
+          },
+          "category": {
+            "type": "string",
+            "enum": ["notification"]
+          },
+          "value": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          }
+        }
+      },
+      "NotificationCancelJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["Cancel"]
+          },
+          "category": {
+            "type": "string",
+            "enum": ["notification"]
+          }
+        }
+      },
+      "CancelJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["Cancel"]
+          },
+          "category": {
+            "type": "string",
+            "enum": ["command"]
+          },
+          "invocationId": {
+            "type": "string"
+          }
+        }
       },
       "CancelInvocationJournalEntryType": {
         "type": "object",
@@ -4401,6 +5479,41 @@
           }
         ]
       },
+      "AttachInvocationJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["AttachInvocation"]
+          },
+          "category": {
+            "type": "string",
+            "enum": ["command"]
+          },
+          "invocationId": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      },
+      "NotificationAttachInvocationJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["AttachInvocation"]
+          },
+          "category": {
+            "type": "string",
+            "enum": ["notification"]
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      },
       "GetInvocationOutputJournalEntryType": {
         "type": "object",
         "allOf": [
@@ -4461,6 +5574,25 @@
             }
           }
         ]
+      },
+      "RunJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["Run"]
+          },
+          "category": {
+            "type": "string",
+            "enum": ["command"]
+          },
+          "value": {
+            "type": "string"
+          }
+        }
       },
       "InboxResponse": {
         "type": "object",
@@ -4529,6 +5661,9 @@
             "format": "date-time"
           },
           "id": {
+            "type": "string"
+          },
+          "created_using_restate_version": {
             "type": "string"
           },
           "invoked_by": {

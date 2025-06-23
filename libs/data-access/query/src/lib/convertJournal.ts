@@ -327,7 +327,7 @@ const JOURNAL_ENTRY_CONVERT_MAP: Record<
     | JournalEntry {
     const entryMessage = signal(entry, allEntries);
 
-    return entryMessage;
+    return entryMessage as any;
   },
   //TODO: should be remove. it's only here to pass type check
   CancelSignal: function (
@@ -336,6 +336,6 @@ const JOURNAL_ENTRY_CONVERT_MAP: Record<
   ): CancelInvocationJournalEntryType | JournalEntry {
     const entryMessage = signal(entry, allEntries);
 
-    return entryMessage;
+    return entryMessage as any;
   },
 };

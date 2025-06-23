@@ -17,7 +17,7 @@ export function WorkflowKeySection({
   invocation,
   isPending,
   className,
-  raised = false,
+  raised = true,
 }: {
   invocation?: Invocation;
   isPending?: boolean;
@@ -43,8 +43,8 @@ export function WorkflowKeySection({
     return (
       <Section className={styles({ className })}>
         <SectionTitle>{invocation.target_service_name}</SectionTitle>
-        <SectionContent className="p-0 rounded-b-none" raised={raised}>
-          <div className="flex px-1.5 py-1 items-center">
+        <SectionContent className="p-0" raised={raised}>
+          <div className="flex px-1.5 py-1 items-center [&:not(:last-child)]:border-b h-9">
             <span className="flex-auto pl-1 text-code text-gray-500 font-medium">
               Key
             </span>
@@ -59,10 +59,8 @@ export function WorkflowKeySection({
               />
             </Badge>
           </div>
-        </SectionContent>
-        {invocation?.target_service_key !== undefined && (
-          <SectionContent className="rounded-t-none -mt-px p-0" raised={raised}>
-            <div className="flex px-1.5 py-1 items-center gap-1">
+          {invocation?.target_service_key !== undefined && (
+            <div className="flex px-1.5 py-1 items-center gap-1 h-9">
               <span className="pl-1 text-code text-gray-500 font-medium">
                 State
               </span>
@@ -96,8 +94,8 @@ export function WorkflowKeySection({
                 </PopoverContent>
               </Popover>
             </div>
-          </SectionContent>
-        )}
+          )}
+        </SectionContent>
       </Section>
     );
   }

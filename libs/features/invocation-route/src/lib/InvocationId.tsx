@@ -34,9 +34,17 @@ const styles = tv({
         container: '',
         linkIcon: 'w-3.5 h-3.5',
       },
+      md: {
+        base: 'text-2xs',
+        icon: 'h-6 w-6 rounded-lg shadow-sm',
+        text: 'text-2xs',
+        link: 'before:rounded-lg',
+        container: '',
+        linkIcon: 'w-3.5 h-3.5',
+      },
       default: {
         base: '',
-        icon: 'h-6 w-6 rounded-lg shadow-sm',
+        icon: 'h-6 w-6 rounded-lg shadow-sm ',
         text: '',
         link: 'before:rounded-lg m-0.5',
         container: 'p-px',
@@ -44,8 +52,8 @@ const styles = tv({
       },
       icon: {
         base: '',
-        icon: 'h-6 w-6 rounded-lg shadow-sm',
-        text: 'w-0',
+        icon: 'h-6 w-6 rounded-lg shadow-sm  mr-0',
+        text: 'w-0 text-2xs',
         link: 'before:rounded-lg m-0.5 inset-[-1px] absolute rounded-lg',
         container: 'p-px',
         linkIcon: 'w-0 h-0',
@@ -88,7 +96,7 @@ export function InvocationId({
 }: {
   id: Invocation['id'];
   className?: string;
-  size?: 'sm' | 'default' | 'icon';
+  size?: 'sm' | 'default' | 'icon' | 'md';
 }) {
   const linkRef = useRef<HTMLAnchorElement>(null);
   const { base, icon, text, link, container, linkIcon } = styles({ size });

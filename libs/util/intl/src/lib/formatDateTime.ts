@@ -5,7 +5,7 @@ const formatter = new Intl.DateTimeFormat('en', {
   hour: 'numeric',
   minute: 'numeric',
   second: 'numeric',
-
+  fractionalSecondDigits: 3,
   timeZoneName: 'short',
 });
 const utcFormatter = new Intl.DateTimeFormat('en', {
@@ -15,6 +15,7 @@ const utcFormatter = new Intl.DateTimeFormat('en', {
   hour: 'numeric',
   minute: 'numeric',
   second: 'numeric',
+  fractionalSecondDigits: 3,
   timeZone: 'UTC',
   timeZoneName: 'short',
 });

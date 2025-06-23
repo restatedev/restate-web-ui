@@ -1,15 +1,9 @@
-import {
-  createContext,
-  Dispatch,
-  PropsWithChildren,
-  RefObject,
-  SetStateAction,
-  use,
-} from 'react';
+import { createContext, PropsWithChildren, RefObject, use } from 'react';
 
 const JournalContext = createContext<{
   invocationIds: string[];
-  setInvocationIds?: Dispatch<SetStateAction<string[]>>;
+  addInvocationId?: (id: string) => void;
+  removeInvocationId?: (id: string) => void;
   start: number;
   end: number;
   cancelTime?: string;
@@ -26,7 +20,8 @@ const JournalContext = createContext<{
 
 export function JournalContextProvider({
   invocationIds,
-  setInvocationIds,
+  addInvocationId,
+  removeInvocationId,
   children,
   start,
   end,
@@ -37,7 +32,8 @@ export function JournalContextProvider({
   containerRef,
 }: PropsWithChildren<{
   invocationIds: string[];
-  setInvocationIds?: Dispatch<SetStateAction<string[]>>;
+  addInvocationId?: (id: string) => void;
+  removeInvocationId?: (id: string) => void;
   start: number;
   end: number;
   cancelTime?: string;
@@ -50,7 +46,8 @@ export function JournalContextProvider({
     <JournalContext.Provider
       value={{
         invocationIds,
-        setInvocationIds,
+        addInvocationId,
+        removeInvocationId,
         start,
         end,
         dataUpdatedAt,

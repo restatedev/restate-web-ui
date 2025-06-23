@@ -2,10 +2,21 @@ import ky, { HTTPError } from 'ky';
 import { convertInvocation } from './convertInvocation';
 import { match } from 'path-to-regexp';
 import { convertJournal } from './convertJournal';
-import type { FilterItem, Handler } from '@restate/data-access/admin-api/spec';
+import type {
+  FilterItem,
+  Handler,
+  Invocation,
+  JournalEntryV2,
+  JournalRawEntry,
+} from '@restate/data-access/admin-api/spec';
 import { RestateError } from '@restate/util/errors';
 import { convertFilters } from './convertFilters';
 import { stateVersion } from './stateVersion';
+import { convertJournalV2 } from './convertJournalV2';
+import {
+  JournalRawEntryWithCommandIndex,
+  lifeCycles,
+} from '@restate/features/service-protocol';
 
 function queryFetcher(
   query: string,
@@ -87,7 +98,7 @@ async function getInvocation(
   return new Response(
     JSON.stringify({
       message:
-        'Invocation not found. Please note that completed invocations are retained only for workflows and those with idempotency keys, and solely for the retention period specified by the service.',
+        'Either the invocation cannot be found or it may have already completed. Please note that completed invocations are retained only for workflows or those with idempotency keys, and solely for the specified retention period.',
     }),
     {
       status: 404,
@@ -116,6 +127,143 @@ async function getInvocationJournal(
     status: 200,
     headers: { 'Content-Type': 'application/json' },
   });
+}
+
+async function getJournalEntryV2(
+  invocationId: string,
+  entryIndex: number,
+  baseUrl: string,
+  headers: Headers
+) {
+  const journalQuery = await queryFetcher(
+    `SELECT id, index, appended_at, entry_type, name, entry_json, version, raw, completed, sleep_wakeup_at, invoked_id, invoked_target, promise_name FROM sys_journal WHERE id = '${invocationId}' AND index = '${entryIndex}`,
+    {
+      baseUrl,
+      headers,
+    }
+  );
+
+  const entry = convertJournalV2(journalQuery.rows?.at(0), [], undefined);
+
+  if (!entry) {
+    return new Response(JSON.stringify({ message: 'Not found' }), {
+      status: 404,
+      statusText: 'Not found',
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  return new Response(JSON.stringify(entry), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+async function getInvocationJournalV2(
+  invocationId: string,
+  baseUrl: string,
+  headers: Headers
+) {
+  const [invocationQuery, journalQuery] = await Promise.all([
+    queryFetcher(`SELECT * FROM sys_invocation WHERE id = '${invocationId}'`, {
+      baseUrl,
+      headers,
+    }),
+    queryFetcher(
+      `SELECT id, index, appended_at, entry_type, name, entry_json, version, raw, completed, sleep_wakeup_at, invoked_id, invoked_target, promise_name FROM sys_journal WHERE id = '${invocationId}'`,
+      {
+        baseUrl,
+        headers,
+      }
+    ),
+  ]);
+  const invocation = invocationQuery.rows
+    .map(convertInvocation)
+    .at(0) as Invocation;
+
+  if (!invocation) {
+    return new Response(
+      JSON.stringify({
+        message:
+          'Either the invocation cannot be found or it may have already completed. Please note that completed invocations are retained only for workflows or those with idempotency keys, and solely for the specified retention period.',
+      }),
+      {
+        status: 404,
+        statusText: 'Not found',
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+  }
+
+  const version = journalQuery.rows.at(0)?.version;
+
+  let commandCount = 0;
+  const entriesWithCommandIndex = (
+    journalQuery.rows as JournalRawEntry[]
+  ).reduce((results, rawEntry) => {
+    if (rawEntry.entry_type?.startsWith('Command:')) {
+      results.push({ ...rawEntry, command_index: commandCount });
+      commandCount++;
+    } else {
+      results.push(rawEntry);
+    }
+
+    return results;
+  }, [] as JournalRawEntryWithCommandIndex[]);
+
+  const entries = entriesWithCommandIndex
+    .reduceRight((results, entry) => {
+      const convertedEntry = convertJournalV2(entry, results, invocation);
+      return [...results, convertedEntry];
+    }, [] as JournalEntryV2[])
+    .reverse();
+
+  const entriesWithLifeCycleEvents = [
+    ...lifeCycles(entries, invocation),
+    ...entries,
+  ].sort((a, b) => {
+    if (typeof a.index === 'number' && typeof b.index === 'number') {
+      return a.index - b.index;
+    } else if (typeof a.start === 'string' && typeof b.start === 'string') {
+      return new Date(a.start).getTime() - new Date(b.start).getTime();
+    } else {
+      return 0;
+    }
+  });
+
+  if (
+    invocation.last_failure &&
+    ((invocation.last_failure_related_entry_index !== undefined &&
+      invocation.last_failure_related_entry_index >=
+        journalQuery.rows.length) ||
+      invocation.last_failure_related_command_index === undefined)
+  ) {
+    entriesWithLifeCycleEvents.push({
+      category: invocation.last_failure_related_entry_name
+        ? 'command'
+        : 'event',
+      type: invocation.last_failure_related_entry_type ?? 'TransientError',
+      index: invocation.last_failure_related_entry_index,
+      ...(invocation.last_failure_related_entry_type && {
+        commandIndex: journalQuery.rows.length,
+      }),
+      error: {
+        code: Number(invocation.last_failure_error_code),
+        message: invocation.last_failure,
+      },
+    });
+  }
+
+  return new Response(
+    JSON.stringify({
+      ...invocation,
+      journal: { entries: entriesWithLifeCycleEvents, version },
+    }),
+    {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    }
+  );
 }
 
 async function getInbox(
@@ -497,6 +645,32 @@ async function queryHandler(req: Request) {
     const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
     const { keys = [] } = await req.json();
     return listState(getListStateParams.params.name, baseUrl, headers, keys);
+  }
+
+  const getInvocationJournalParamsV2 = match<{ invocationId: string }>(
+    '/query/v2/invocations/:invocationId'
+  )(urlObj.pathname);
+  if (getInvocationJournalParamsV2 && method.toUpperCase() === 'GET') {
+    const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
+    return getInvocationJournalV2(
+      getInvocationJournalParamsV2.params.invocationId,
+      baseUrl,
+      req.headers
+    );
+  }
+
+  const getJournalEntryParamsV2 = match<{
+    invocationId: string;
+    entryIndex: string;
+  }>('/query/invocations/:invocationId/journal/:entryIndex')(urlObj.pathname);
+  if (getJournalEntryParamsV2 && method.toUpperCase() === 'GET') {
+    const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
+    return getJournalEntryV2(
+      getJournalEntryParamsV2.params.invocationId,
+      Number(getJournalEntryParamsV2.params.entryIndex),
+      baseUrl,
+      req.headers
+    );
   }
 
   return new Response('Not implemented', { status: 501 });

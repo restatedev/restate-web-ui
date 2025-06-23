@@ -40,10 +40,14 @@ function withStatusTimeline(
     prefix?: string;
     tooltipTitle: string;
     field: keyof Invocation;
+    condition?: (inv: Invocation) => boolean;
   }[]
 ) {
   return (props: { invocation: Invocation }) => {
-    const index = params.findIndex(({ field }) => props.invocation[field]);
+    const index = params.findIndex(
+      ({ field, condition }) =>
+        props.invocation[field] && (!condition || condition(props.invocation))
+    );
     const param = params.at(index);
     if (!param) {
       return null;
@@ -105,9 +109,10 @@ const STATUS_TIMELINE_COMPONENTS: Partial<
   ]),
   running: withStatusTimeline([
     {
-      prefix: 'for',
+      prefix: 'Current attempt in progress for',
       field: 'last_start_at',
-      tooltipTitle: 'Running since',
+      tooltipTitle: 'Current attempt in progress since',
+      condition: (inv) => Boolean(inv.retry_count && inv.retry_count > 1),
     },
     {
       prefix: 'for',

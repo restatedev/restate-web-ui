@@ -22,6 +22,7 @@ export type InvocationComputedStatus2 =
 
 export type RawInvocation = components['schemas']['RawInvocation'];
 export type JournalEntry = components['schemas']['JournalEntry'];
+export type JournalEntryV2 = components['schemas']['JournalEntryV2'];
 export type JournalRawEntry = components['schemas']['JournalRawEntry'];
 export type InputJournalEntryType =
   components['schemas']['InputJournalEntryType'];

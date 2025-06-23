@@ -27,7 +27,7 @@ import type {
   Invocation,
   JournalEntry,
 } from './type';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { RestateError } from '@restate/util/errors';
 import { useAPIStatus } from '../APIStatusProvider';
 
@@ -436,6 +436,36 @@ export function useGetInvocationJournal(
   };
 }
 
+export function useGetInvocationJournalEntry(
+  invocationId: string,
+  entryIndex: number,
+  options?: HookQueryOptions<
+    '/query/invocations/{invocationId}/journal/{entryIndex}',
+    'get'
+  >
+) {
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi(
+    'query',
+    '/query/invocations/{invocationId}/journal/{entryIndex}',
+    'get',
+    {
+      baseUrl,
+      parameters: { path: { invocationId, entryIndex } },
+    }
+  );
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+  };
+}
+
 export function useGetInvocationJournalWithInvocation(
   invocationId: string,
   options?: HookQueryOptions<'/query/invocations/{invocationId}/journal', 'get'>
@@ -536,6 +566,193 @@ export function useGetInvocationJournalWithInvocation(
         }),
       ]);
     },
+  };
+}
+
+export function useGetInvocationJournalWithInvocationV2(
+  invocationId: string,
+  options?: HookQueryOptions<'/query/v2/invocations/{invocationId}', 'get'>
+) {
+  const baseUrl = useAdminBaseUrl();
+  const query = adminApi(
+    'query',
+    '/query/v2/invocations/{invocationId}',
+    'get',
+    {
+      baseUrl,
+      parameters: { path: { invocationId }, query: { journal: true } },
+    }
+  );
+  const results = useQuery({
+    ...query,
+    ...options,
+  });
+
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    queryClient.setQueriesData(
+      {
+        predicate: (query) => {
+          return (
+            Array.isArray(query.queryKey) &&
+            query.queryKey.at(0) === '/query/invocations'
+          );
+        },
+      },
+      (oldData: ReturnType<typeof useListInvocations>['data']) => {
+        if (results.data && oldData) {
+          const { journal, ...newInvocation } = results.data ?? {};
+          if (newInvocation) {
+            return {
+              ...oldData,
+              rows: oldData.rows.map((oldInvocation) => {
+                if (oldInvocation.id === newInvocation.id) {
+                  return newInvocation;
+                } else {
+                  return oldInvocation;
+                }
+              }),
+            };
+          }
+        }
+        return oldData;
+      }
+    );
+  }, [queryClient, results]);
+
+  return { queryKey: query.queryKey, ...results };
+}
+
+export function useGetInvocationsJournalWithInvocationsV2(
+  invocationIds: string[],
+  options?: HookQueryOptions<'/query/v2/invocations/{invocationId}', 'get'>
+) {
+  const baseUrl = useAdminBaseUrl();
+  const invocationQueries = useMemo(
+    () =>
+      invocationIds.map((invocationId) =>
+        adminApi('query', '/query/v2/invocations/{invocationId}', 'get', {
+          baseUrl,
+          parameters: { path: { invocationId }, query: { journal: true } },
+        })
+      ),
+    [baseUrl, invocationIds]
+  );
+
+  const combine = useCallback(
+    (
+      results: UseQueryResult<
+        | ReturnType<typeof useGetInvocationJournalWithInvocationV2>['data']
+        | undefined,
+        Error
+      >[]
+    ) => {
+      return {
+        data: invocationIds.reduce((combined, invocationId, index) => {
+          return {
+            ...combined,
+            [invocationId]: results.at(index)?.data,
+          };
+        }, {} as Record<string, ReturnType<typeof useGetInvocationJournalWithInvocationV2>['data']>),
+        isPending: invocationIds.reduce((combined, invocationId, index) => {
+          return {
+            ...combined,
+            [invocationId]: results.at(index)?.isPending,
+          };
+        }, {} as Record<string, boolean | undefined>),
+        isSuccess: invocationIds.reduce((combined, invocationId, index) => {
+          return {
+            ...combined,
+            [invocationId]: results.at(index)?.isSuccess,
+          };
+        }, {} as Record<string, boolean | undefined>),
+        error: invocationIds.reduce((combined, invocationId, index) => {
+          return {
+            ...combined,
+            [invocationId]: results.at(index)?.error,
+          };
+        }, {} as Record<string, Error | null | undefined>),
+        dataUpdatedAt: invocationIds.reduce((combined, invocationId, index) => {
+          return {
+            ...combined,
+            [invocationId]: results.at(index)?.dataUpdatedAt,
+          };
+        }, {} as Record<string, number | undefined>),
+      };
+    },
+    [invocationIds]
+  );
+
+  const results = useQueries({
+    queries: [
+      ...invocationQueries.map((invocationQuery) => ({
+        ...invocationQuery,
+        refetchOnMount: options?.refetchOnMount !== false,
+        enabled: options?.enabled !== false,
+        staleTime: 0,
+      })),
+    ],
+    combine,
+  });
+
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    queryClient.setQueriesData(
+      {
+        predicate: (query) => {
+          return (
+            Array.isArray(query.queryKey) &&
+            query.queryKey.at(0) === '/query/invocations'
+          );
+        },
+      },
+      (oldData: ReturnType<typeof useListInvocations>['data']) => {
+        if (!oldData) {
+          return oldData;
+        } else {
+          return {
+            ...oldData,
+            rows: oldData.rows.map((oldInvocation) => {
+              const invResult = results.data?.[oldInvocation.id];
+              if (invResult) {
+                const { journal, ...newInvocation } = invResult;
+                if (newInvocation) {
+                  return newInvocation;
+                }
+              }
+
+              return oldInvocation;
+            }),
+          };
+        }
+      }
+    );
+  }, [queryClient, results]);
+
+  const invalidate = useCallback(() => {
+    return Promise.all([
+      ...invocationQueries.map((invocationQuery) =>
+        queryClient.invalidateQueries({
+          queryKey: invocationQuery.queryKey,
+        })
+      ),
+    ]);
+  }, [invocationQueries, queryClient]);
+
+  return {
+    ...results,
+    refetch: () => {
+      return Promise.all([
+        ...invocationQueries.map((invocationQuery) =>
+          queryClient.refetchQueries({
+            queryKey: invocationQuery.queryKey,
+          })
+        ),
+      ]);
+    },
+    invalidate,
   };
 }
 

@@ -1,58 +1,78 @@
-import { InputJournalEntryType } from '@restate/data-access/admin-api';
+import { JournalEntryV2 } from '@restate/data-access/admin-api';
 import { EntryProps } from './types';
-import { Expression, InputOutput } from '../Expression';
+import { InputOutput } from '../Expression';
 import { Headers } from '../Headers';
 import { Value } from '../Value';
-import { Failure } from '../Failure';
+import { Target } from '../Target';
+import { tv } from 'tailwind-variants';
+import { EntryExpression } from './EntryExpression';
+import { Icon, IconName } from '@restate/ui/icons';
+
+const inputStyles = tv({
+  base: 'target [font-size:inherit] border-b border-t-[1px] border-white h-12 [&_[data-target]>*]:h-12 [&]:rounded-r-none [&_[data-target]]:font-medium [&_[data-target]]:font-sans  shadow-none self-start  ring-0 [--rounded-radius-right:0px] [--rounded-radius:calc(1rem-1px)] [&&&>*:last-child>*]:rounded-r-none',
+});
 
 export function Input({
   entry,
   failed,
   invocation,
-  error,
   isRetrying,
   wasRetrying,
   className,
-}: EntryProps<InputJournalEntryType>) {
+}: Partial<
+  EntryProps<Extract<JournalEntryV2, { type?: 'Input'; category?: 'command' }>>
+>) {
   return (
-    <>
-      <Expression
-        className={className}
-        isHandler
-        name={invocation.target_handler_name}
-        input={
-          <>
-            {entry.body && (
-              <InputOutput
-                name="parameters"
-                popoverTitle="Parameters"
-                popoverContent={
-                  <Value
-                    value={entry.body}
-                    className="text-xs font-mono py-3"
+    <Target
+      target={invocation?.target}
+      showHandler={!entry}
+      className={inputStyles({
+        className,
+      })}
+    >
+      {entry ? (
+        <div className="flex items-center ">
+          <Icon
+            name={IconName.Function}
+            className="w-4 h-4 text-zinc-400 shrink-0 -mr-0.5"
+          />
+          <EntryExpression
+            entry={entry}
+            invocation={invocation}
+            name={invocation?.target_handler_name}
+            operationSymbol={''}
+            input={
+              <>
+                {entry.parameters && (
+                  <InputOutput
+                    name="parameters"
+                    popoverTitle="Parameters"
+                    popoverContent={
+                      <Value
+                        value={entry.parameters}
+                        className="text-xs font-mono py-3"
+                      />
+                    }
                   />
-                }
-              />
-            )}
-            {entry.body && entry.headers && entry.headers.length > 0 && ', '}
-            {entry.headers && entry.headers.length > 0 && (
-              <InputOutput
-                name="headers"
-                popoverTitle=""
-                className="px-0 bg-transparent border-none mx-0 [&&&]:mb-1"
-                popoverContent={<Headers headers={entry.headers} />}
-              />
-            )}
-          </>
-        }
-      />
-      {error?.message && (
-        <Failure
-          message={error.message}
-          restate_code={error.restate_code}
-          isRetrying={isRetrying || wasRetrying}
-        />
-      )}
-    </>
+                )}
+                {entry.parameters &&
+                  entry.headers &&
+                  entry.headers.length > 0 &&
+                  ', '}
+                {entry.headers && entry.headers.length > 0 && (
+                  <InputOutput
+                    name="headers"
+                    popoverTitle=""
+                    className="px-0 bg-transparent border-none mx-0 [&&&]:mb-1"
+                    popoverContent={<Headers headers={entry.headers} />}
+                  />
+                )}
+              </>
+            }
+          />
+          <div data-fill />
+        </div>
+      ) : null}
+    </Target>
   );
 }

@@ -483,6 +483,11 @@ export const TABLES = [
           'The entry serialized as a JSON string (only relevant for journal version 2)',
       },
       {
+        name: 'entry_lite_json',
+        description:
+          'The entry serialized as a JSON string, excluding any values (only relevant for journal version 2)',
+      },
+      {
         name: 'appended_at',
         description: 'When the entry was appended to the journal',
       },

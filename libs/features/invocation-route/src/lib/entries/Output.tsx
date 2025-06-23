@@ -1,8 +1,6 @@
-import { OutputJournalEntryType } from '@restate/data-access/admin-api';
+import { JournalEntryV2 } from '@restate/data-access/admin-api';
 import { EntryProps } from './types';
-import { Expression, InputOutput } from '../Expression';
-import { Value } from '../Value';
-import { Failure } from '../Failure';
+import { EntryExpression } from './EntryExpression';
 
 export function Output({
   entry,
@@ -11,40 +9,14 @@ export function Output({
   error,
   isRetrying,
   wasRetrying,
-}: EntryProps<OutputJournalEntryType>) {
-  const entryError = entry.failure || error;
-
+}: EntryProps<
+  Extract<JournalEntryV2, { type?: 'Output'; category?: 'command' }>
+>) {
   return (
-    <Expression
-      prefix="return"
-      isFunction={false}
-      operationSymbol={''}
-      name={''}
-      output={
-        <>
-          {typeof entry.body === 'string' && (
-            <InputOutput
-              name={entry.body}
-              popoverTitle="Response"
-              popoverContent={
-                <Value value={entry.body} className="text-xs font-mono py-3" />
-              }
-            />
-          )}
-          {typeof entry.body === 'undefined' && !entryError && (
-            <div className="text-zinc-400 font-semibold font-mono text-2xs">
-              void
-            </div>
-          )}
-          {entryError?.message && (
-            <Failure
-              message={entryError.message}
-              restate_code={entryError.restate_code}
-              isRetrying={isRetrying || wasRetrying}
-            />
-          )}
-        </>
-      }
+    <EntryExpression
+      entry={entry}
+      invocation={invocation}
+      outputParam="value"
     />
   );
 }

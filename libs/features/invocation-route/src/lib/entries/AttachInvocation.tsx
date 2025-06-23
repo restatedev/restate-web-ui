@@ -1,65 +1,84 @@
-import { AttachInvocationJournalEntryType } from '@restate/data-access/admin-api';
+import { JournalEntryV2 } from '@restate/data-access/admin-api';
 import { EntryProps } from './types';
-import { Expression, InputOutput } from '../Expression';
-import { Value } from '../Value';
-import { Failure } from '../Failure';
-import { Ellipsis } from '@restate/ui/loading';
 import { InvocationId } from '../InvocationId';
+import { EntryExpression } from './EntryExpression';
+import { tv } from 'tailwind-variants';
+import { useJournalContext } from '../JournalContext';
+import { CallInvokedLoadingError } from './CallInvokedLoadingError';
+import { Button } from '@restate/ui/button';
+import { Spinner } from '@restate/ui/loading';
+import { Icon, IconName } from '@restate/ui/icons';
+
+const styles = tv({
+  base: 'flex flex-row gap-1.5 items-center relative flex-auto',
+});
 
 export function AttachInvocation({
   entry,
-  failed,
   invocation,
-  error,
-  isRetrying,
-  wasRetrying,
-}: EntryProps<AttachInvocationJournalEntryType>) {
-  const entryError = entry.failure || error;
+  className,
+}: EntryProps<
+  Extract<JournalEntryV2, { type?: 'AttachInvocation'; category?: 'command' }>
+>) {
+  const {
+    addInvocationId,
+    removeInvocationId,
+    isPending,
+    invocationIds,
+    error: invocationsError,
+  } = useJournalContext();
+  const isExpanded =
+    entry.invocationId &&
+    invocationIds.includes(entry.invocationId) &&
+    !isPending;
+
+  const invokedIsPending = isPending?.[String(entry.invocationId)];
+  const invokedError = invocationsError?.[String(entry.invocationId)];
 
   return (
-    <Expression
-      name={'ctx.attach'}
-      prefix="async"
-      className="pr-0"
-      {...(typeof entry.invocationId === 'string' && {
-        input: (
-          <InvocationId
-            id={String(entry.invocationId)}
-            size="sm"
-            className="truncate max-w-[15ch]"
-          />
-        ),
-      })}
-      output={
-        <>
-          {typeof entry.value === 'string' && (
-            <InputOutput
-              name={entry.value}
-              popoverTitle="Value"
-              popoverContent={
-                <Value value={entry.value} className="text-xs font-mono py-3" />
+    <>
+      <div className={styles({ className })}>
+        <EntryExpression
+          entry={entry}
+          invocation={invocation}
+          input={
+            <InvocationId
+              id={String(entry.invocationId)}
+              className="truncate max-w-[15ch] text-2xs not-italic font-semibold text-gray-500 mx-0.5 "
+              size="md"
+            />
+          }
+          outputParam="value"
+        />
+      </div>
+      <div className="flex items-center absolute right-1 top-0 bottom-0">
+        {invokedError ? (
+          <CallInvokedLoadingError error={invokedError} className="" />
+        ) : (
+          <Button
+            onClick={() => {
+              if (entry.invocationId) {
+                if (invocationIds.includes(entry.invocationId)) {
+                  removeInvocationId?.(entry.invocationId);
+                } else {
+                  addInvocationId?.(entry.invocationId);
+                }
               }
-            />
-          )}
-          {!entry.completed && (!entryError || isRetrying) && <Ellipsis />}
-          {(typeof entry.value === 'undefined' ||
-            (entry.version === 1 && entry.value === '')) &&
-            !entryError &&
-            entry.completed && (
-              <div className="text-zinc-400 font-semibold font-mono text-2xs">
-                void
-              </div>
+            }}
+            variant="icon"
+            className="bg-black/[0.03] z-10"
+          >
+            {invokedIsPending ? (
+              <Spinner />
+            ) : (
+              <Icon
+                name={isExpanded ? IconName.X : IconName.Plus}
+                className="w-3.5 h-3.5"
+              />
             )}
-          {entryError?.message && (
-            <Failure
-              message={entryError.message}
-              restate_code={entryError.restate_code}
-              isRetrying={isRetrying || wasRetrying}
-              className="-mr-1.5"
-            />
-          )}
-        </>
-      }
-    />
+          </Button>
+        )}
+      </div>
+    </>
   );
 }

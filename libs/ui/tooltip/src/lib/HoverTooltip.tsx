@@ -20,11 +20,13 @@ export function HoverTooltip({
   className,
   offset = 5,
   crossOffset,
+  size = 'sm',
 }: PropsWithChildren<{
   content: ReactNode;
   className?: string;
   offset?: number;
   crossOffset?: number;
+  size?: 'sm' | 'default' | 'lg';
 }>) {
   const triggerRef = useRef<HTMLElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -51,7 +53,7 @@ export function HoverTooltip({
           {children}
         </span>
         <TooltipContent
-          size="sm"
+          size={size}
           offset={offset}
           crossOffset={crossOffset}
           triggerRef={triggerRef}

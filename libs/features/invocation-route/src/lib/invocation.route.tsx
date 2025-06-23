@@ -1,4 +1,4 @@
-import { useGetInvocationJournalWithInvocation } from '@restate/data-access/admin-api';
+import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api';
 import { ErrorBanner } from '@restate/ui/error';
 import { useParams } from 'react-router';
 import { getRestateError, Status } from './Status';
@@ -6,7 +6,6 @@ import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { DeploymentSection } from './DeploymentSection';
 import { VirtualObjectSection } from './VirtualObjectSection';
 import { KeysIdsSection } from './KeysIdsSection';
-import { tv } from 'tailwind-variants';
 import { Link } from '@restate/ui/link';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Spinner } from '@restate/ui/loading';
@@ -16,25 +15,23 @@ import { JournalV2 } from './JournalV2';
 import { useRestateContext } from '@restate/features/restate-context';
 import { InvocationPageProvider } from './InvocationPageContext';
 import { WorkflowKeySection } from './WorkflowKeySection';
+import { tv } from 'tailwind-variants';
 
-const itemsContainer = tv({
-  base: 'flex gap-2 w-full [&>*]:flex-auto [&>*]:min-w-0 [&>*]:basis-1/2',
+const metadataContainerStyles = tv({
+  base: 'mt-6 rounded-xl grid grid-cols-1 md:grid-cols-2 gap-2 gap-y-4',
   variants: {
-    withError: {
-      true: 'flex-col',
-      false: 'flex-col @2xl/all-cards:flex-row ',
+    isVirtualObject: {
+      true: 'lg:grid-cols-2 2xl:grid-cols-4',
+      false: '',
+    },
+    isWorkflow: {
+      true: 'lg:grid-cols-3',
+      false: '',
     },
   },
 });
-
-const smCardsStyles = tv({
-  base: 'flex flex-col gap-2 flex-auto [&>*]:basis-1/2 [&>*]:flex-auto [&>*]:min-2w-0 self-start w-full',
-  variants: {
-    isVirtualObject: {
-      true: '',
-      false: '@[687px]/sm-cards:flex-row',
-    },
-  },
+const lastFailureContainer = tv({
+  base: 'min-w-0 p-0 col-span-full rounded-xl border bg-gray-200/50 rounded-xl ',
 });
 
 function Component() {
@@ -43,12 +40,11 @@ function Component() {
     data: journalAndInvocationData,
     isPending,
     error,
-  } = useGetInvocationJournalWithInvocation(String(id), {
+  } = useGetInvocationJournalWithInvocationV2(String(id), {
     refetchOnMount: true,
     staleTime: 0,
   });
 
-  const invocation = journalAndInvocationData?.invocation;
   const { baseUrl } = useRestateContext();
 
   if (isPending) {
@@ -58,82 +54,96 @@ function Component() {
     return <ErrorBanner error={error} />;
   }
 
-  const lastError = getRestateError(invocation);
+  const lastError = getRestateError(journalAndInvocationData);
   const shouldShowFailure = Boolean(lastError);
   const hasStack = lastError?.message.includes('\n');
-  const isFailed = invocation?.status === 'failed';
+  const isFailed = !!journalAndInvocationData?.completion_failure;
+
+  const isVirtualObject =
+    journalAndInvocationData?.target_service_ty === 'virtual_object';
+  const isWorkflow = journalAndInvocationData?.target_service_ty === 'workflow';
 
   return (
     <InvocationPageProvider isInInvocationPage>
       <div className="flex flex-col">
         <div className="flex flex-col gap-1 @container">
           <Link
-            className="flex items-center gap-1 text-sm"
+            className="flex items-center gap-1 text-sm text-gray-500"
             variant="secondary"
             href={`${baseUrl}/invocations${window.location.search}`}
           >
             <Icon name={IconName.ArrowLeft} className="w-4 h-4 mt-0.5" />{' '}
             Invocations
           </Link>
-          <div className="flex @2xl:flex-row flex-col gap-x-2 gap-y-1.5 @2xl:items-center relative">
-            <h1 className="text-lg flex items-center font-semibold tracking-tight text-gray-900 sm:text-xl max-w-[16ch] truncate">
-              <div className="mr-1.5 shrink-0 bg-zinc-50 border rounded-lg">
+          <div className="flex @2xl:flex-row flex-col gap-x-2 gap-y-1.5 @2xl:items-center relative ">
+            <h1 className="text-lg flex items-center font-semibold font-mono pb-1 text-gray-900 sm:text-lg max-w-[20ch] truncate gap-1">
+              <div className="mr-1.5 shrink-0 bg-white border rounded-xl shadow-sm ">
                 <Icon
                   name={IconName.Invocation}
-                  className="w-6 h-6 text-zinc-500 p-1"
+                  className="w-8 h-8 fill-blue-50 text-blue-400 drop-shadow-md p-1.5"
                 />
               </div>
 
               <TruncateWithTooltip>{id}</TruncateWithTooltip>
             </h1>
-            {invocation && <Status invocation={invocation} />}
+            {journalAndInvocationData && (
+              <div className="[&>*]:scale-[1.1] [&>*]:[transform-origin:center_left] ">
+                <Status invocation={journalAndInvocationData} className="" />
+              </div>
+            )}
             <div className="absolute right-0">
               <Actions
-                invocation={invocation}
+                invocation={journalAndInvocationData}
                 mini={false}
                 className="text-sm"
               />
             </div>
           </div>
         </div>
-        <div className="flex flex-col gap-2 mt-8 md:flex-row">
-          <div className="@container/all-cards flex-auto">
-            <div className={itemsContainer({ withError: shouldShowFailure })}>
-              <div className="@container/sm-cards w-full">
-                <div
-                  className={smCardsStyles({
-                    isVirtualObject:
-                      invocation?.target_service_ty === 'virtual_object',
-                  })}
-                >
-                  <KeysIdsSection invocation={invocation} />
-                  <DeploymentSection invocation={invocation} raised />
-                </div>
-              </div>
-              <VirtualObjectSection
-                invocation={invocation}
-                raised
-                className=""
-              />
-              <WorkflowKeySection invocation={invocation} raised className="" />
-            </div>
-          </div>
+
+        <div
+          className={metadataContainerStyles({ isVirtualObject, isWorkflow })}
+        >
+          <KeysIdsSection
+            invocation={journalAndInvocationData}
+            className="p-0 rounded-xl border bg-gray-200/50 h-fit  [&>*:last-child]:border-white/50 [&>*:last-child]:rounded-xl [&>*:last-child]:bg-gradient-to-b [&>*:last-child]:to-gray-50/80 [&>*:last-child]:from-gray-50  [&>*:last-child]:shadow-zinc-800/[0.03]"
+          />
+          <DeploymentSection
+            invocation={journalAndInvocationData}
+            className="p-0 rounded-xl border h-fit bg-gray-200/50  [&>*:last-child]:border-white/50 [&>*:last-child]:rounded-xl [&>*:last-child]:bg-gradient-to-b [&>*:last-child]:to-gray-50/80 [&>*:last-child]:from-gray-50  [&>*:last-child]:shadow-zinc-800/[0.03]"
+            raised
+          />
+          <VirtualObjectSection
+            invocation={journalAndInvocationData}
+            raised
+            className="contents [&>*:last-child>h3]:mt-0 [&>*]:rounded-xl  [&>*]:border [&>*]:h-fit [&>*]:bg-gray-200/50  [&>*>*:last-child]:rounded-xl  [&>*>*:last-child]:border-white/50 [&>*>*:last-child]:bg-gradient-to-b [&>*>*:last-child]:to-gray-50/80 [&>*>*:last-child]:from-gray-50  [&>*>*:last-child]:shadow-zinc-800/[0.03]"
+          />
+          <WorkflowKeySection
+            invocation={journalAndInvocationData}
+            raised
+            className="p-0 rounded-xl border h-fit bg-gray-200/50  [&>*:last-child]:border-white/50 [&>*:last-child]:rounded-xl [&>*:last-child]:bg-gradient-to-b [&>*:last-child]:to-gray-50/80 [&>*:last-child]:from-gray-50  [&>*:last-child]:shadow-zinc-800/[0.03]"
+          />
           {shouldShowFailure && (
-            <Section className="basis-4/6 min-w-0">
+            <Section className={lastFailureContainer()}>
               <SectionTitle>
                 {isFailed ? 'Completion failure' : 'Last failure'}
               </SectionTitle>
-              <SectionContent className="flex-auto">
+              <SectionContent className="flex-auto rounded-xl border-white/50 bg-gradient-to-b to-gray-50/80 from-gray-50 shadow-zinc-800/[0.03]">
                 <ErrorBanner
                   error={lastError}
                   wrap={hasStack}
-                  className="bg-transparent p-0 [&_code]:bg-gray-200/50 h-full [&_details]:max-h-full"
+                  className="bg-transparent p-0 [&_code]:bg-gray-200/50 h-full [&_details]:max-h-48"
                 />
               </SectionContent>
             </Section>
           )}
         </div>
-        <JournalV2 invocationId={String(id)} />
+
+        <div className="flex flex-col mt-24 ">
+          <div className="rounded-2xl border bg-gray-200/50 relative">
+            <JournalV2 invocationId={String(id)} key={String(id)} />
+          </div>
+        </div>
       </div>
     </InvocationPageProvider>
   );
