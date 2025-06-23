@@ -8,9 +8,10 @@ import { CSSProperties, PropsWithChildren } from 'react';
 import { tv } from 'tailwind-variants';
 import { useJournalContext } from './JournalContext';
 import { Ellipsis } from '@restate/ui/loading';
+import { EntryTooltip } from './EntryTooltip';
 
 const pointStyles = tv({
-  base: 'w-[2px] rounded-full h-full relative',
+  base: 'w-[2px] rounded-full h-full relative ',
   slots: {
     line: 'absolute left-px top-1/2  rounded-full  h-1 w-1 -translate-x-1/2 -translate-y-1/2',
     circle:
@@ -143,7 +144,7 @@ function Line({
 }
 
 const progressStyles = tv({
-  base: 'h-full relative flex flex-col gap-0.5 items-start justify-center min-w-[4px] -translate-x-[1px] translate-y-[2px]',
+  base: 'h-full relative flex flex-col gap-0.5 items-start justify-center min-w-[4px] -translate-x-[1px] ',
   slots: {
     segmentContainer: 'w-full',
   },
@@ -154,13 +155,13 @@ const progressStyles = tv({
         segmentContainer: 'h-3.5',
       },
       false: {
-        base: 'translate-y-1.5',
+        base: '',
         segmentContainer: 'h-2',
       },
     },
     isPoint: {
       true: {
-        base: 'translate-y-[calc(0.25rem-1px)]',
+        base: '',
         segmentContainer: '',
       },
       false: {
@@ -263,7 +264,11 @@ export function EntryProgress({
 
   if (entry?.type === 'Scheduled') {
     return (
-      <EntryProgressContainer entry={entry} className={base({ className })}>
+      <EntryProgressContainer
+        entry={entry}
+        className={base({ className })}
+        style={{ zIndex: 2 }}
+      >
         <div className="flex items-center w-full">
           <div>
             <Point variant="default" />
@@ -289,7 +294,7 @@ export function EntryProgress({
         )}
       </div>
       {showDuration && (
-        <div className="text-xs text-gray-500 ml-auto leading-3 whitespace-nowrap font-sans ">
+        <div className="text-xs text-gray-500 ml-auto leading-3 whitespace-nowrap font-sans translate-y-1 ">
           {entry?.isPending ? <Ellipsis>{pendingDuration}</Ellipsis> : duration}
         </div>
       )}
@@ -329,19 +334,22 @@ export function EntryProgressContainer({
     : undefined;
 
   return (
-    <div
-      style={{
-        ...style,
-        ...(relativeStart && {
-          left: `${relativeStart * 100}%`,
-        }),
-        width: isPoint
-          ? '2px'
-          : `${((relativeEnd || 0) - (relativeStart || 0)) * 100}%`,
-      }}
-      className={className}
-    >
-      {children}
-    </div>
+    <EntryTooltip entry={entry}>
+      <div
+        style={{
+          ...(relativeStart && {
+            left: `${relativeStart * 100}%`,
+          }),
+          width: isPoint
+            ? '2px'
+            : `${((relativeEnd || 0) - (relativeStart || 0)) * 100}%`,
+          zIndex: isPoint ? 2 : 0,
+          ...style,
+        }}
+        className={className}
+      >
+        {children}
+      </div>
+    </EntryTooltip>
   );
 }
