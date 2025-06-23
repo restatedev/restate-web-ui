@@ -98,7 +98,7 @@ async function getInvocation(
   return new Response(
     JSON.stringify({
       message:
-        'Invocation not found. Please note that completed invocations are retained only for workflows and those with idempotency keys, and solely for the retention period specified by the service.',
+        'Either the invocation cannot be found or it may have already completed. Please note that completed invocations are retained only for workflows or those with idempotency keys, and solely for the specified retention period.',
     }),
     {
       status: 404,
@@ -185,7 +185,7 @@ async function getInvocationJournalV2(
     return new Response(
       JSON.stringify({
         message:
-          'Invocation not found. Please note that completed invocations are retained only for workflows and those with idempotency keys, and solely for the retention period specified by the service.',
+          'Either the invocation cannot be found or it may have already completed. Please note that completed invocations are retained only for workflows or those with idempotency keys, and solely for the specified retention period.',
       }),
       {
         status: 404,
