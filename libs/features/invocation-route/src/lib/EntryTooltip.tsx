@@ -157,7 +157,7 @@ export const ENTRY_EVENTS_TITLES: {
   Running: 'Running',
   Retrying: 'Next retry at',
   Scheduled: 'Scheduled to run at',
-  Suspended: 'Suspended at',
-  Pending: 'Pending since',
+  Suspended: 'Suspended',
+  Pending: 'Pending',
   Completion: '',
 };
