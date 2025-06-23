@@ -24,16 +24,14 @@ const metadataContainerStyles = tv({
       true: 'lg:grid-cols-2 2xl:grid-cols-4',
       false: '',
     },
-  },
-});
-const lastFailureContainer = tv({
-  base: 'min-w-0 p-0 md:col-span-2 rounded-xl border bg-gray-200/50 rounded-xl 2xl:col-span-4',
-  variants: {
-    isVirtualObject: {
-      true: '',
+    isWorkflow: {
+      true: 'lg:grid-cols-3',
       false: '',
     },
   },
+});
+const lastFailureContainer = tv({
+  base: 'min-w-0 p-0 col-span-full rounded-xl border bg-gray-200/50 rounded-xl ',
 });
 
 function Component() {
@@ -63,6 +61,7 @@ function Component() {
 
   const isVirtualObject =
     journalAndInvocationData?.target_service_ty === 'virtual_object';
+  const isWorkflow = journalAndInvocationData?.target_service_ty === 'workflow';
 
   return (
     <InvocationPageProvider isInInvocationPage>
@@ -102,7 +101,9 @@ function Component() {
           </div>
         </div>
 
-        <div className={metadataContainerStyles({ isVirtualObject })}>
+        <div
+          className={metadataContainerStyles({ isVirtualObject, isWorkflow })}
+        >
           <KeysIdsSection
             invocation={journalAndInvocationData}
             className="p-0 rounded-xl border bg-gray-200/50 h-fit  [&>*:last-child]:border-white/50 [&>*:last-child]:rounded-xl [&>*:last-child]:bg-gradient-to-b [&>*:last-child]:to-gray-50/80 [&>*:last-child]:from-gray-50  [&>*:last-child]:shadow-zinc-800/[0.03]"
@@ -123,7 +124,7 @@ function Component() {
             className="p-0 rounded-xl border h-fit bg-gray-200/50  [&>*:last-child]:border-white/50 [&>*:last-child]:rounded-xl [&>*:last-child]:bg-gradient-to-b [&>*:last-child]:to-gray-50/80 [&>*:last-child]:from-gray-50  [&>*:last-child]:shadow-zinc-800/[0.03]"
           />
           {shouldShowFailure && (
-            <Section className={lastFailureContainer({ isVirtualObject })}>
+            <Section className={lastFailureContainer()}>
               <SectionTitle>
                 {isFailed ? 'Completion failure' : 'Last failure'}
               </SectionTitle>
