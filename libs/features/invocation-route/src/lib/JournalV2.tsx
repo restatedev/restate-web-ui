@@ -37,11 +37,13 @@ export function JournalV2({
   className,
   timelineWidth = 0.5,
   showApiError = true,
+  withTimeline = true,
 }: {
   invocationId: string;
   className?: string;
   timelineWidth?: number;
   showApiError?: boolean;
+  withTimeline?: boolean;
 }) {
   const [invocationIds, setInvocationIds] = useState([String(invocationId)]);
 
@@ -74,7 +76,9 @@ export function JournalV2({
 
   const { baseUrl } = useRestateContext();
 
-  const combinedEntries = getCombinedJournal(invocationId, data);
+  const combinedEntries = getCombinedJournal(invocationId, data)?.filter(
+    ({ entry }) => withTimeline || entry?.category === 'command'
+  );
 
   const invocationApiError = apiError?.[invocationId];
 
@@ -100,6 +104,42 @@ export function JournalV2({
         : -1
     ) ?? []),
     !journalAndInvocationData.completed_at ? dataUpdatedAt : -1
+  );
+
+  const entriesElements = (
+    <>
+      <div className="ring-1 ring-black/5 shadow-sm z-10 h-12 box-border border-b border-transparent last:border-none flex items-center bg-gray-100 rounded-bl-2xl">
+        <Input
+          entry={
+            combinedEntries?.find(
+              (combinedEntry) =>
+                combinedEntry.invocationId === invocationId &&
+                combinedEntry.entry?.type === 'Input'
+            )?.entry as Extract<
+              JournalEntryV2,
+              { type?: 'Input'; category?: 'command' }
+            >
+          }
+          invocation={data?.[invocationId]}
+          className="w-full "
+        />
+      </div>
+      {combinedEntries?.map(({ invocationId, entry, depth }, index) => {
+        const invocation = data?.[invocationId];
+        if (entry?.type === 'Input') {
+          return null;
+        }
+
+        return (
+          <Entry
+            invocation={invocation}
+            entry={entry}
+            depth={depth}
+            key={invocationId + entry?.category + entry?.type + index}
+          />
+        );
+      })}
+    </>
   );
 
   return (
@@ -158,90 +198,57 @@ export function JournalV2({
               </div>
             </div>
             <div className="relative text-code font-mono">
-              <LazyPanelGroup
-                direction="horizontal"
-                className={'gap-0'}
-                style={{ overflow: 'visible' }}
-              >
-                <LazyPanel
-                  defaultSize={(1 - timelineWidth) * 100}
-                  className="z-10 "
-                >
-                  <div className="border-0 border-white/50 border-r-0  bg-gradient-to-b from-gray-50 to-white shadow-sm rounded-2xl rounded-r-none relative overflow-hidden ">
-                    <div className="ring-1 ring-black/5 shadow-sm z-10 h-12 box-border border-b border-transparent last:border-none flex items-center bg-gray-100 rounded-bl-2xl">
-                      <Input
-                        entry={
-                          combinedEntries?.find(
-                            (combinedEntry) =>
-                              combinedEntry.invocationId === invocationId &&
-                              combinedEntry.entry?.type === 'Input'
-                          )?.entry as Extract<
-                            JournalEntryV2,
-                            { type?: 'Input'; category?: 'command' }
-                          >
-                        }
-                        invocation={data?.[invocationId]}
-                        className="w-full "
-                      />
-                    </div>
-                    {combinedEntries?.map(
-                      ({ invocationId, entry, depth }, index) => {
-                        const invocation = data?.[invocationId];
-                        if (entry?.type === 'Input') {
-                          return null;
-                        }
-
-                        return (
-                          <Entry
-                            invocation={invocation}
-                            entry={entry}
-                            depth={depth}
-                            key={
-                              invocationId +
-                              entry?.category +
-                              entry?.type +
-                              index
-                            }
-                          />
-                        );
-                      }
-                    )}
-                  </div>
-                </LazyPanel>
-                <LazyPanelResizeHandle className="w-px hidden md:flex justify-center items-center group relative">
-                  <div className="w-px group-hover:w-[2px] absolute left-0 top-3 bottom-3 bg-transparent group-hover:bg-blue-500" />
-                </LazyPanelResizeHandle>
-                <LazyPanel
-                  defaultSize={timelineWidth * 100}
-                  className="hidden md:block relative"
+              {withTimeline ? (
+                <LazyPanelGroup
+                  direction="horizontal"
+                  className={'gap-0'}
                   style={{ overflow: 'visible' }}
                 >
-                  <Units
-                    className=" absolute inset-0"
-                    invocation={journalAndInvocationData}
-                  />
-                  <div className=" border border-transparent">
-                    <LifeCycleProgress
-                      className=" h-12 px-2"
+                  <LazyPanel
+                    defaultSize={(1 - timelineWidth) * 100}
+                    className="z-10 "
+                  >
+                    <div className="border-0 border-white/50 border-r-0  bg-gradient-to-b from-gray-50 to-white shadow-sm rounded-2xl rounded-r-none relative overflow-hidden ">
+                      {entriesElements}
+                    </div>
+                  </LazyPanel>
+                  <LazyPanelResizeHandle className="w-px hidden md:flex justify-center items-center group relative">
+                    <div className="w-px group-hover:w-[2px] absolute left-0 top-3 bottom-3 bg-transparent group-hover:bg-blue-500" />
+                  </LazyPanelResizeHandle>
+                  <LazyPanel
+                    defaultSize={timelineWidth * 100}
+                    className="hidden md:block relative"
+                    style={{ overflow: 'visible' }}
+                  >
+                    <Units
+                      className=" absolute inset-0"
                       invocation={journalAndInvocationData}
                     />
-                  </div>
-                  {combinedEntries
-                    ?.filter(({ entry }) => entry?.type !== 'Input')
-                    .map(({ entry, invocationId }) => (
-                      <TimelineContainer
-                        invocationId={invocationId}
-                        entry={entry}
-                        key={getTimelineId(
-                          invocationId,
-                          entry?.index,
-                          entry?.type,
-                          entry?.category
-                        )}
+                    <div className=" border border-transparent">
+                      <LifeCycleProgress
+                        className=" h-12 px-2"
+                        invocation={journalAndInvocationData}
                       />
-                    ))}
-                </LazyPanel>
-              </LazyPanelGroup>
+                    </div>
+                    {combinedEntries
+                      ?.filter(({ entry }) => entry?.type !== 'Input')
+                      .map(({ entry, invocationId }) => (
+                        <TimelineContainer
+                          invocationId={invocationId}
+                          entry={entry}
+                          key={getTimelineId(
+                            invocationId,
+                            entry?.index,
+                            entry?.type,
+                            entry?.category
+                          )}
+                        />
+                      ))}
+                  </LazyPanel>
+                </LazyPanelGroup>
+              ) : (
+                <div className={className}>{entriesElements}</div>
+              )}
             </div>
           </Suspense>
         </SnapshotTimeProvider>

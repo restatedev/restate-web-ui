@@ -34,6 +34,7 @@ import { Link } from '@restate/ui/link';
 import { useRestateContext } from '@restate/features/restate-context';
 import { useLocation } from 'react-router';
 import { getSearchParams } from './InvocationId';
+import { InvokedBySection } from './InvokedBySection';
 
 function Footnote({ dataUpdatedAt }: { dataUpdatedAt?: number }) {
   const [now, setNow] = useState(() => Date.now());
@@ -209,6 +210,7 @@ function InvocationPanelContent() {
       <VirtualObjectSection className="mt-2" invocation={data} raised />
       <WorkflowKeySection className="mt-2" invocation={data} />
       <DeploymentSection className="mt-2" invocation={data} raised />
+      <InvokedBySection className="mt-2" invocation={data} />
       <JournalSection className="mt-2" invocation={data} />
     </SnapshotTimeProvider>
   );

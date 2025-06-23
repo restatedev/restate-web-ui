@@ -9,7 +9,7 @@ import { EntryExpression } from './EntryExpression';
 import { Icon, IconName } from '@restate/ui/icons';
 
 const inputStyles = tv({
-  base: '[font-size:inherit] border-b border-t-[1px] border-white h-12 [&_[data-target]>*]:h-12 [&]:rounded-r-none [&_[data-target]]:font-medium [&_[data-target]]:font-sans  shadow-none self-start  ring-0 [--rounded-radius-right:0px] [--rounded-radius:calc(1rem-1px)] [&&&>*:last-child>*]:rounded-r-none',
+  base: 'target [font-size:inherit] border-b border-t-[1px] border-white h-12 [&_[data-target]>*]:h-12 [&]:rounded-r-none [&_[data-target]]:font-medium [&_[data-target]]:font-sans  shadow-none self-start  ring-0 [--rounded-radius-right:0px] [--rounded-radius:calc(1rem-1px)] [&&&>*:last-child>*]:rounded-r-none',
 });
 
 export function Input({

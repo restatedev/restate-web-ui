@@ -16,6 +16,7 @@ import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 import { tv } from 'tailwind-variants';
 import {
   Actions,
+  getSearchParams,
   InvocationDeployment,
   InvocationId,
   Journal,
@@ -27,6 +28,9 @@ import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
 import { Button } from '@restate/ui/button';
 import { DropdownSection } from '@restate/ui/dropdown';
 import { Icon, IconName } from '@restate/ui/icons';
+import { Link } from '@restate/ui/link';
+import { useRestateContext } from '@restate/features/restate-context';
+import { useLocation } from 'react-router';
 
 function withDate({
   tooltipTitle,
@@ -152,6 +156,9 @@ function withCell(Component: ComponentType<CellProps>, id: ColumnKey) {
 }
 
 function JournalCell({ invocation }: CellProps) {
+  const { baseUrl } = useRestateContext();
+  const location = useLocation();
+
   if (!invocation.journal_size) {
     return null;
   }
@@ -175,11 +182,32 @@ function JournalCell({ invocation }: CellProps) {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="max-w-2xl">
-        <JournalV2
-          invocationId={invocation.id}
-          className="mt-0 pt-3 pl-4 pr-4 pb-1 bg-gray-200/20"
-          timelineWidth={0}
-        />
+        <DropdownSection
+          title={
+            <div className="flex items-center ">
+              <div className="mr-12">Journal</div>
+              <Link
+                variant="secondary-button"
+                href={`${baseUrl}/invocations/${invocation.id}${getSearchParams(
+                  location.search
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ml-auto px-1.5 py-0.5 text-xs font-normal font-sans rounded-md flex items-center gap-1"
+              >
+                Timeline
+                <Icon name={IconName.ExternalLink} className="w-3 h-3" />
+              </Link>
+            </div>
+          }
+          className="rounded-2xl overflow-hidden bg-gray-50 "
+        >
+          <JournalV2
+            invocationId={invocation.id}
+            className="[&>*]:text-xs [&>*:first-child]:mb-2 [&>*:first-child]:h-9 [&>*:first-child>*:last-child]:h-9 [&>*:first-child_[data-target]>*]:h-9 [&>*]:rounded-[1rem] [&_.target]:rounded-r-[1rem] [&&&_.target>*:last-child>*]:rounded-r-[1rem]"
+            withTimeline={false}
+          />
+        </DropdownSection>
       </PopoverContent>
     </Popover>
   );
