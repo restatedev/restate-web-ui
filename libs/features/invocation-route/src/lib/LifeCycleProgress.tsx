@@ -68,15 +68,16 @@ export function LifeCycleProgress({
 
   const lifeCycleEntries = invocation?.journal?.entries?.filter(
     (entry) =>
-      entry.category === 'event' &&
-      [
-        'Created',
-        'Running',
-        'Pending',
-        'Scheduled',
-        'Suspended',
-        'Retrying',
-      ].includes(String(entry.type))
+      (entry.category === 'event' &&
+        [
+          'Created',
+          'Running',
+          'Pending',
+          'Scheduled',
+          'Suspended',
+          'Retrying',
+        ].includes(String(entry.type))) ||
+      (entry.category === 'notification' && entry.type === 'Cancel')
   );
 
   return (

@@ -20,13 +20,17 @@ const utcFormatter = new Intl.DateTimeFormat('en', {
   timeZoneName: 'short',
 });
 
-export function formatDateTime(value: Date, timezone: 'UTC' | 'system') {
-  if (isNaN(value.valueOf())) {
+export function formatRange(
+  start: Date,
+  end: Date,
+  timezone: 'UTC' | 'system' = 'system'
+) {
+  if (isNaN(start.valueOf()) || isNaN(end.valueOf())) {
     return '';
   }
   if (timezone === 'UTC') {
-    return utcFormatter.format(value);
+    return utcFormatter.formatRange(start, end);
   } else {
-    return formatter.format(value);
+    return formatter.formatRange(start, end);
   }
 }
