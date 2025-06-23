@@ -244,6 +244,9 @@ async function getInvocationJournalV2(
         : 'event',
       type: invocation.last_failure_related_entry_type ?? 'TransientError',
       index: invocation.last_failure_related_entry_index,
+      ...(invocation.last_failure_related_entry_type && {
+        commandIndex: journalQuery.rows.length,
+      }),
       error: {
         code: Number(invocation.last_failure_error_code),
         message: invocation.last_failure,

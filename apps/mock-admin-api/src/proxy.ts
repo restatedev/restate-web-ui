@@ -33,7 +33,10 @@ const proxyHandler: RequestHandler = async (req, res) => {
         },
       })
     );
-  } catch (error) {}
+  } catch (error) {
+    res.sendStatus(500);
+    res.end();
+  }
 };
 
 app.all('*', proxyHandler);

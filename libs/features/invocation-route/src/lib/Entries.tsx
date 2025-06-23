@@ -427,6 +427,7 @@ export const ENTRY_NOTIFICATIONS_COMPONENTS: {
   Run: undefined,
   AttachInvocation: undefined,
   Cancel: CancelSignal,
+  CallInvocationId: undefined,
 };
 export const ENTRY_EVENTS_COMPONENTS: {
   [K in EventEntryType]:
