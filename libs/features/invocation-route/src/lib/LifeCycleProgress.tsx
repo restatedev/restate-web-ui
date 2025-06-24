@@ -2,12 +2,15 @@ import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/ad
 import { tv } from 'tailwind-variants';
 import { EntryProgress, EntryProgressContainer } from './EntryProgress';
 import { useJournalContext } from './JournalContext';
-import { formatDateTime, formatDurations } from '@restate/util/intl';
+import { formatDurations } from '@restate/util/intl';
 import { getDuration } from '@restate/util/snapshot-time';
 import { DateTooltip } from '@restate/ui/tooltip';
 
 function unitInterval(duration: number) {
   const niceIntervals = [
+    10, // 10 ms
+    100, // 100 ms
+    500, // 500 ms
     1000, // 1 second
     2000, // 2 seconds
     5000, // 5 seconds

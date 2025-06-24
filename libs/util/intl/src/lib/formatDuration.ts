@@ -2,8 +2,8 @@ import { DurationFormat } from '@formatjs/intl-durationformat';
 
 const formatter = new DurationFormat('en', {
   style: 'narrow',
-  fractionalDigits: 0,
   round: true,
+  milliseconds: 'numeric',
 });
 
 export function formatDurations({

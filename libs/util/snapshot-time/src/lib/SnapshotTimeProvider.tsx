@@ -63,7 +63,7 @@ export function getDuration(duration?: number) {
   const hours = duration % HOURS_IN_DAY;
   const days = (duration - hours) / HOURS_IN_DAY;
 
-  if (days || hours || minutes || seconds) {
+  if (days || hours || minutes) {
     milliseconds = 0;
   }
   if (days || hours) {
