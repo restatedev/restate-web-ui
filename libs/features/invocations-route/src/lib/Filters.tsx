@@ -124,7 +124,11 @@ function EditQueryTrigger({
                         -1
                       ) as QueryClauseOperationId,
                     });
-                    onUpdate?.(newClause);
+                    Promise.resolve(newClause.schema.loadOptions?.()).then(
+                      () => {
+                        onUpdate?.(newClause);
+                      }
+                    );
                   }
                 }}
               >
