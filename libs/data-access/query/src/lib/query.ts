@@ -10,7 +10,7 @@ import type {
   JournalRawEntry,
 } from '@restate/data-access/admin-api/spec';
 import { RestateError } from '@restate/util/errors';
-import { convertFilters } from './convertFilters';
+import { convertFilters, convertInvocationsFilters } from './convertFilters';
 import { stateVersion } from './stateVersion';
 import { convertJournalV2 } from './convertJournalV2';
 import {
@@ -43,13 +43,13 @@ async function listInvocations(
   filters: FilterItem[]
 ) {
   const totalCountPromise = queryFetcher(
-    `SELECT COUNT(*) AS total_count FROM sys_invocation ${convertFilters(
+    `SELECT COUNT(*) AS total_count FROM sys_invocation ${convertInvocationsFilters(
       filters
     )}`,
     { baseUrl, headers }
   ).then(({ rows }) => rows?.at(0)?.total_count as number);
   const invocationsPromise = queryFetcher(
-    `SELECT * FROM sys_invocation ${convertFilters(
+    `SELECT * FROM sys_invocation ${convertInvocationsFilters(
       filters
     )} ORDER BY modified_at DESC LIMIT ${INVOCATIONS_LIMIT}`,
     {
@@ -170,7 +170,7 @@ async function getInvocationJournalV2(
       headers,
     }),
     queryFetcher(
-      `SELECT id, index, appended_at, entry_type, name, entry_json, version, raw, completed, sleep_wakeup_at, invoked_id, invoked_target, promise_name FROM sys_journal WHERE id = '${invocationId}'`,
+      `SELECT id, index, appended_at, entry_type, name, entry_lite_json, version, completed, sleep_wakeup_at, invoked_id, invoked_target, promise_name FROM sys_journal WHERE id = '${invocationId}'`,
       {
         baseUrl,
         headers,
