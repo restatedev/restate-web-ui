@@ -170,7 +170,7 @@ function Component() {
         ],
       },
       {
-        id: 'last_attempt_deployment_id',
+        id: 'deployment',
         label: 'Deployment',
         operations: [
           { value: 'IN', label: 'is' },

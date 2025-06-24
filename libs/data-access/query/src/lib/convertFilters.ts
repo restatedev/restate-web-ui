@@ -279,14 +279,81 @@ function getStatusFilterString(value?: string): {
   }
 }
 
-export function convertFilters(filters: FilterItem[]) {
+function deploymentPositiveFilter(value?: string) {
+  return `(${convertFilterStringToSqlClause({
+    field: 'last_attempt_deployment_id',
+    operation: 'EQUALS',
+    type: 'STRING',
+    value,
+  })} OR ${convertFilterStringToSqlClause({
+    field: 'pinned_deployment_id',
+    operation: 'EQUALS',
+    type: 'STRING',
+    value,
+  })})`;
+}
+
+function deploymentNegativeFilter(value?: string) {
+  return `((${convertFilterStringToSqlClause({
+    field: 'last_attempt_deployment_id',
+    operation: 'NOT_EQUALS',
+    type: 'STRING',
+    value,
+  })} OR ${convertFilterNullToSqlClause({
+    field: 'last_attempt_deployment_id',
+    operation: 'IS',
+    type: 'NULL',
+  })}) AND (${convertFilterStringToSqlClause({
+    field: 'pinned_deployment_id',
+    operation: 'NOT_EQUALS',
+    type: 'STRING',
+    value,
+  })} OR ${convertFilterNullToSqlClause({
+    field: 'pinned_deployment_id',
+    operation: 'IS',
+    type: 'NULL',
+  })}))`;
+}
+
+export function convertInvocationsFilters(filters: FilterItem[]) {
   const statusFilter = filters.find((filter) => filter.field === 'status');
+  const deploymentFilter = filters.find(
+    (filter) => filter.field === 'deployment'
+  );
 
   const mappedFilters = filters
-    .filter((filter) => filter.field !== 'status')
+    .filter(
+      (filter) => filter.field !== 'status' && filter.field !== 'deployment'
+    )
     .map(convertFilterToSqlClause)
     .filter(Boolean);
 
+  if (deploymentFilter) {
+    if (deploymentFilter.type === 'STRING') {
+      if (deploymentFilter.operation === 'EQUALS') {
+        mappedFilters.push(deploymentPositiveFilter(deploymentFilter.value));
+      }
+      if (deploymentFilter.operation === 'NOT_EQUALS') {
+        mappedFilters.push(deploymentNegativeFilter(deploymentFilter.value));
+      }
+    }
+    if (deploymentFilter.type === 'STRING_LIST') {
+      if (deploymentFilter.operation === 'IN') {
+        mappedFilters.push(
+          `(${deploymentFilter.value
+            .map((value) => deploymentPositiveFilter(value))
+            .join(' OR ')})`
+        );
+      }
+      if (deploymentFilter.operation === 'NOT_IN') {
+        mappedFilters.push(
+          `(${deploymentFilter.value
+            .map((value) => deploymentNegativeFilter(value))
+            .join(' AND ')})`
+        );
+      }
+    }
+  }
   if (statusFilter) {
     if (statusFilter.type === 'STRING') {
       const { groups, operator } = getStatusFilterString(statusFilter.value);
@@ -357,6 +424,16 @@ export function convertFilters(filters: FilterItem[]) {
       );
     }
   }
+
+  if (mappedFilters.length === 0) {
+    return '';
+  } else {
+    return `WHERE ${mappedFilters.join(' AND ')}`;
+  }
+}
+
+export function convertFilters(filters: FilterItem[]) {
+  const mappedFilters = filters.map(convertFilterToSqlClause).filter(Boolean);
 
   if (mappedFilters.length === 0) {
     return '';
