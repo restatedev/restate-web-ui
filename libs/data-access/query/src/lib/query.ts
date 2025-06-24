@@ -170,7 +170,7 @@ async function getInvocationJournalV2(
       headers,
     }),
     queryFetcher(
-      `SELECT id, index, appended_at, entry_type, name, entry_lite_json, version, completed, sleep_wakeup_at, invoked_id, invoked_target, promise_name FROM sys_journal WHERE id = '${invocationId}'`,
+      `SELECT id, index, appended_at, entry_type, name, entry_json, raw, version, completed, sleep_wakeup_at, invoked_id, invoked_target, promise_name FROM sys_journal WHERE id = '${invocationId}'`,
       {
         baseUrl,
         headers,
