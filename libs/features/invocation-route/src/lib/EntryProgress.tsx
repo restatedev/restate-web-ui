@@ -257,7 +257,7 @@ export function EntryProgress({
     isPoint,
   });
   const executionTime = entry?.start
-    ? new Date(entry.end ?? entry.start).getTime() -
+    ? new Date(entry.end ?? (isPoint ? entry.start : dataUpdatedAt)).getTime() -
       new Date(entry.start).getTime()
     : 0;
   const pendingTime = entry?.start
@@ -280,6 +280,9 @@ export function EntryProgress({
             <Point variant="default" />
           </div>
         </div>
+        <EntryTooltip entry={entry} className="absolute h-full w-full">
+          <div className="h-full w-full" />
+        </EntryTooltip>
       </EntryProgressContainer>
     );
   }
@@ -299,11 +302,14 @@ export function EntryProgress({
           </Line>
         )}
       </div>
-      {showDuration && (
+      {showDuration && !isPoint && (
         <div className="text-xs text-gray-500 ml-auto leading-3 whitespace-nowrap font-sans translate-y-1 ">
           {isPending ? <Ellipsis>{pendingDuration}</Ellipsis> : duration}
         </div>
       )}
+      <EntryTooltip entry={entry} className="absolute h-full w-full">
+        <div className="h-full w-full" />
+      </EntryTooltip>
     </EntryProgressContainer>
   );
 }
@@ -341,22 +347,20 @@ export function EntryProgressContainer({
     : undefined;
 
   return (
-    <EntryTooltip entry={entry}>
-      <div
-        style={{
-          ...(relativeStart && {
-            left: `${relativeStart * 100}%`,
-          }),
-          width: isPoint
-            ? '2px'
-            : `${((relativeEnd || 0) - (relativeStart || 0)) * 100}%`,
-          zIndex: isPoint ? 2 : 0,
-          ...style,
-        }}
-        className={className}
-      >
-        {children}
-      </div>
-    </EntryTooltip>
+    <div
+      style={{
+        ...(relativeStart && {
+          left: `${relativeStart * 100}%`,
+        }),
+        width: isPoint
+          ? '2px'
+          : `${((relativeEnd || 0) - (relativeStart || 0)) * 100}%`,
+        zIndex: isPoint ? 2 : 0,
+        ...style,
+      }}
+      className={className}
+    >
+      {children}
+    </div>
   );
 }

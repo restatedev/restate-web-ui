@@ -48,8 +48,11 @@ export function useDurationSinceLastSnapshot() {
 }
 
 export function getDuration(duration?: number) {
-  if (!duration) {
+  if (duration === undefined) {
     return {};
+  }
+  if (duration === 0) {
+    return { milliseconds: 0 };
   }
 
   const isPast = duration < 0;
