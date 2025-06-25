@@ -90,6 +90,7 @@ export function LifeCycleProgress({
           <EntryProgressContainer
             className="absolute top-1"
             entry={createdEvent}
+            invocation={invocation}
           >
             <div className=" w-full h-6 rounded-md" />
           </EntryProgressContainer>

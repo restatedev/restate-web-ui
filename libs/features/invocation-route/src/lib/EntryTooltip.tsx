@@ -1,4 +1,8 @@
-import { JournalEntryV2 } from '@restate/data-access/admin-api';
+import {
+  Invocation,
+  JournalEntryV2,
+  useGetInvocationJournalWithInvocationV2,
+} from '@restate/data-access/admin-api';
 import { Ellipsis } from '@restate/ui/loading';
 import {
   formatDateTime,
@@ -15,6 +19,8 @@ import {
   NotificationEntryType,
 } from './entries/types';
 import { tv } from 'tailwind-variants';
+import { Icon, IconName } from '@restate/ui/icons';
+import { isEntryCompletionAmbiguous } from './entries/isEntryCompletionAmbiguous';
 
 const entryTooltipStyles = tv({
   base: 'flex h-full',
@@ -23,8 +29,10 @@ export function EntryTooltip({
   className,
   children,
   entry,
+  invocation,
 }: {
   entry?: JournalEntryV2;
+  invocation?: Invocation;
   className?: string;
   children: ReactElement<DOMAttributes<HTMLElement>, string>;
 }) {
@@ -34,7 +42,7 @@ export function EntryTooltip({
 
   return (
     <HoverTooltip
-      content={<EntryContent entry={entry} />}
+      content={<EntryContent entry={entry} invocation={invocation} />}
       className={entryTooltipStyles({ className })}
       size="lg"
     >
@@ -43,9 +51,24 @@ export function EntryTooltip({
   );
 }
 
-function EntryContent({ entry }: { entry: JournalEntryV2 }) {
+function EntryContent({
+  entry,
+  invocation,
+}: {
+  entry: JournalEntryV2;
+  invocation?: ReturnType<
+    typeof useGetInvocationJournalWithInvocationV2
+  >['data'];
+}) {
   const isPoint = !entry.end && !entry.isPending;
-  const inProgress = !entry.end && !!entry.isPending;
+  const entryCompletionIsAmbiguous = isEntryCompletionAmbiguous(
+    entry,
+    invocation
+  );
+  const inProgress =
+    entry?.isPending &&
+    !entryCompletionIsAmbiguous &&
+    (!entry.isRetrying || invocation?.status !== 'backing-off');
   const isFinished = !!entry.end;
   const { end } = useJournalContext();
   const categoryTitles: Record<string, string> =
@@ -83,13 +106,23 @@ function EntryContent({ entry }: { entry: JournalEntryV2 }) {
                     )}
                   </div>
                 )}
-                {inProgress && (
-                  <div className="opacity-80">
+                {(inProgress || entryCompletionIsAmbiguous) && (
+                  <div className="opacity-80 flex items-center gap-1">
                     {`${formatDateTime(
                       new Date(String(entry.start)),
                       'system'
                     )} – `}
-                    <Ellipsis> </Ellipsis>
+                    {entryCompletionIsAmbiguous ? (
+                      <span className=" flex items-center gap-1">
+                        <Icon
+                          name={IconName.ClockAlert}
+                          className="w-3.5 h-3.5"
+                        />
+                        Completion not detected!
+                      </span>
+                    ) : (
+                      <Ellipsis> </Ellipsis>
+                    )}
                   </div>
                 )}
 

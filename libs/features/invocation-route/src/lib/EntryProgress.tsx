@@ -1,4 +1,5 @@
 import {
+  Invocation,
   JournalEntryV2,
   useGetInvocationJournalWithInvocationV2,
 } from '@restate/data-access/admin-api';
@@ -9,6 +10,8 @@ import { tv } from 'tailwind-variants';
 import { useJournalContext } from './JournalContext';
 import { Ellipsis } from '@restate/ui/loading';
 import { EntryTooltip } from './EntryTooltip';
+import { Icon, IconName } from '@restate/ui/icons';
+import { isEntryCompletionAmbiguous } from './entries/isEntryCompletionAmbiguous';
 
 const pointStyles = tv({
   base: 'w-[2px] rounded-full h-full relative ',
@@ -256,6 +259,11 @@ export function EntryProgress({
     isPending: entry?.isPending,
     isPoint,
   });
+  const entryCompletionIsAmbiguous = isEntryCompletionAmbiguous(
+    entry,
+    invocation
+  );
+
   const executionTime = entry?.start
     ? new Date(entry.end ?? (isPoint ? entry.start : dataUpdatedAt)).getTime() -
       new Date(entry.start).getTime()
@@ -273,6 +281,7 @@ export function EntryProgress({
         entry={entry}
         className={base({ className })}
         style={{ zIndex: 2 }}
+        invocation={invocation}
       >
         <div className="flex items-center w-full">
           <div className="flex-auto border-b-2 border-gray-500/30 border-dotted" />
@@ -280,7 +289,11 @@ export function EntryProgress({
             <Point variant="default" />
           </div>
         </div>
-        <EntryTooltip entry={entry} className="absolute h-full w-full">
+        <EntryTooltip
+          entry={entry}
+          invocation={invocation}
+          className="absolute h-full w-full"
+        >
           <div className="h-full w-full" />
         </EntryTooltip>
       </EntryProgressContainer>
@@ -289,10 +302,15 @@ export function EntryProgress({
 
   const isPending =
     entry?.isPending &&
+    !entryCompletionIsAmbiguous &&
     (!entry.isRetrying || invocation?.status !== 'backing-off');
 
   return (
-    <EntryProgressContainer entry={entry} className={base({ className })}>
+    <EntryProgressContainer
+      entry={entry}
+      className={base({ className })}
+      invocation={invocation}
+    >
       <div className={segmentContainer({})}>
         {isPoint ? (
           <Point variant={getPointVariant(entry)} />
@@ -304,10 +322,20 @@ export function EntryProgress({
       </div>
       {showDuration && !isPoint && (
         <div className="text-xs text-gray-500 ml-auto leading-3 whitespace-nowrap font-sans translate-y-1 ">
-          {isPending ? <Ellipsis>{pendingDuration}</Ellipsis> : duration}
+          {isPending ? (
+            <Ellipsis>{pendingDuration}</Ellipsis>
+          ) : entryCompletionIsAmbiguous ? (
+            <Icon name={IconName.ClockAlert} className="w-3 h-3" />
+          ) : (
+            duration
+          )}
         </div>
       )}
-      <EntryTooltip entry={entry} className="absolute h-full w-full">
+      <EntryTooltip
+        entry={entry}
+        invocation={invocation}
+        className="absolute h-full w-full"
+      >
         <div className="h-full w-full" />
       </EntryTooltip>
     </EntryProgressContainer>
@@ -319,19 +347,28 @@ export function EntryProgressContainer({
   children,
   style,
   entry,
+  invocation,
 }: PropsWithChildren<{
   entry?: JournalEntryV2;
   className?: string;
   style?: CSSProperties;
+  invocation?: ReturnType<
+    typeof useGetInvocationJournalWithInvocationV2
+  >['data'];
 }>) {
   const { start, end, dataUpdatedAt } = useJournalContext();
 
   if (!entry) {
     return null;
   }
-
+  const entryCompletionIsAmbiguous = isEntryCompletionAmbiguous(
+    entry,
+    invocation
+  );
   const entryStart = entry?.start ? new Date(entry.start).getTime() : undefined;
-  const entryEnd = entry?.end
+  const entryEnd = entryCompletionIsAmbiguous
+    ? new Date(String(invocation?.completed_at)).getTime()
+    : entry?.end
     ? new Date(entry.end ?? entry.start).getTime()
     : undefined;
 

@@ -9,6 +9,9 @@ import { Ellipsis } from '@restate/ui/loading';
 import { Failure } from '../Failure';
 import { Value } from '../Value';
 import { tv } from 'tailwind-variants';
+import { Icon, IconName } from '@restate/ui/icons';
+import { HoverTooltip } from '@restate/ui/tooltip';
+import { isEntryCompletionAmbiguous } from './isEntryCompletionAmbiguous';
 
 const NAME_COMMANDS_COMPONENTS: {
   [K in CommandEntryType]: string;
@@ -185,6 +188,15 @@ export function EntryExpression({
       </>
     ));
 
+  const entryCompletionIsAmbiguous = isEntryCompletionAmbiguous(
+    entry,
+    invocation
+  );
+  const isPending =
+    entry?.isPending &&
+    !entryCompletionIsAmbiguous &&
+    (!entry.isRetrying || invocation?.status !== 'backing-off');
+
   return (
     <Expression
       namePrefix={
@@ -212,7 +224,12 @@ export function EntryExpression({
       input={input}
       output={
         <>
-          {entry.isPending && <Ellipsis />}
+          {entryCompletionIsAmbiguous && (
+            <HoverTooltip content="Completion not detected!">
+              <Icon name={IconName.ClockAlert} className="w-3.5 h-3.5" />
+            </HoverTooltip>
+          )}
+          {isPending && <Ellipsis />}
           <div className="[&:has(+.comma+*)>.comma]:block" />
           {output}
           {entry.error &&
