@@ -45,6 +45,7 @@ import {
   Download,
   CornerDownLeft,
   Radio,
+  ClockAlert,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from 'tailwind-variants';
@@ -132,6 +133,7 @@ export const enum IconName {
   Return = 'Return',
   Radio = 'Radio',
   Eye = 'Eye',
+  ClockAlert = 'ClockAlert',
 }
 export interface IconsProps {
   name: IconName;
@@ -203,6 +205,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Download]: Download,
   [IconName.Return]: CornerDownLeft,
   [IconName.Radio]: Radio,
+  [IconName.ClockAlert]: ClockAlert,
   [IconName.Eye]: Eye,
 };
 
