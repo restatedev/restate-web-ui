@@ -169,7 +169,7 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
   const goToConfirm = useCallback(() => {
     dispatch({ type: 'NavigateToConfirmAction' });
   }, []);
-  console.log(state);
+
   const updateServices = useCallback(
     ({
       services,
