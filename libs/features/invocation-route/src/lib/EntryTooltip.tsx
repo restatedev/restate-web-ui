@@ -14,7 +14,11 @@ import {
   EventEntryType,
   NotificationEntryType,
 } from './entries/types';
+import { tv } from 'tailwind-variants';
 
+const entryTooltipStyles = tv({
+  base: 'flex h-full',
+});
 export function EntryTooltip({
   className,
   children,
@@ -31,7 +35,7 @@ export function EntryTooltip({
   return (
     <HoverTooltip
       content={<EntryContent entry={entry} />}
-      className="flex h-full"
+      className={entryTooltipStyles({ className })}
       size="lg"
     >
       {children}

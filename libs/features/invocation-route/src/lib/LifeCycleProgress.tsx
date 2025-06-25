@@ -4,7 +4,7 @@ import { EntryProgress, EntryProgressContainer } from './EntryProgress';
 import { useJournalContext } from './JournalContext';
 import { formatDurations } from '@restate/util/intl';
 import { getDuration } from '@restate/util/snapshot-time';
-import { DateTooltip } from '@restate/ui/tooltip';
+import { DateTooltip, HoverTooltip } from '@restate/ui/tooltip';
 
 function unitInterval(duration: number) {
   const niceIntervals = [
@@ -176,7 +176,11 @@ export function Units({
               }% - 2px - 0.5rem)`,
             }}
             className="absolute border-l-2 text-gray-500  text-2xs font-sans border-white/80  bottom-0 top-px "
-          ></div>
+          >
+            <HoverTooltip content="Now">
+              <div className="absolute left-0 top-0 h-full w-2 z-[1]" />
+            </HoverTooltip>
+          </div>
         )}
 
         <div className="w-full h-full flex pointer-events-none overflow-hidden rounded-r-2xl ">

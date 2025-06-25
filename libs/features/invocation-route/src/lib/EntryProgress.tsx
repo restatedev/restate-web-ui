@@ -245,7 +245,7 @@ export function EntryProgress({
     typeof useGetInvocationJournalWithInvocationV2
   >['data'];
 }>) {
-  const { end } = useJournalContext();
+  const { dataUpdatedAt } = useJournalContext();
 
   const entryEnd = entry?.end
     ? new Date(entry.end ?? entry.start).getTime()
@@ -257,10 +257,12 @@ export function EntryProgress({
     isPoint,
   });
   const executionTime = entry?.start
-    ? new Date(entry.end ?? entry.start).getTime() -
+    ? new Date(entry.end ?? (isPoint ? entry.start : dataUpdatedAt)).getTime() -
       new Date(entry.start).getTime()
     : 0;
-  const pendingTime = entry?.start ? end - new Date(entry.start).getTime() : 0;
+  const pendingTime = entry?.start
+    ? dataUpdatedAt - new Date(entry.start).getTime()
+    : 0;
   const { isPast, ...parts } = getDuration(executionTime);
   const duration = formatDurations(parts);
   const pendingDuration = formatDurations(getDuration(pendingTime));
@@ -278,9 +280,16 @@ export function EntryProgress({
             <Point variant="default" />
           </div>
         </div>
+        <EntryTooltip entry={entry} className="absolute h-full w-full">
+          <div className="h-full w-full" />
+        </EntryTooltip>
       </EntryProgressContainer>
     );
   }
+
+  const isPending =
+    entry?.isPending &&
+    (!entry.isRetrying || invocation?.status !== 'backing-off');
 
   return (
     <EntryProgressContainer entry={entry} className={base({ className })}>
@@ -289,15 +298,18 @@ export function EntryProgress({
           <Point variant={getPointVariant(entry)} />
         ) : (
           <Line variant={getLineVariant(entry)}>
-            {entry?.isPending && <Pending />}
+            {isPending && <Pending />}
           </Line>
         )}
       </div>
-      {showDuration && (
+      {showDuration && !isPoint && (
         <div className="text-xs text-gray-500 ml-auto leading-3 whitespace-nowrap font-sans translate-y-1 ">
-          {entry?.isPending ? <Ellipsis>{pendingDuration}</Ellipsis> : duration}
+          {isPending ? <Ellipsis>{pendingDuration}</Ellipsis> : duration}
         </div>
       )}
+      <EntryTooltip entry={entry} className="absolute h-full w-full">
+        <div className="h-full w-full" />
+      </EntryTooltip>
     </EntryProgressContainer>
   );
 }
@@ -312,7 +324,7 @@ export function EntryProgressContainer({
   className?: string;
   style?: CSSProperties;
 }>) {
-  const { start, end } = useJournalContext();
+  const { start, end, dataUpdatedAt } = useJournalContext();
 
   if (!entry) {
     return null;
@@ -322,6 +334,7 @@ export function EntryProgressContainer({
   const entryEnd = entry?.end
     ? new Date(entry.end ?? entry.start).getTime()
     : undefined;
+
   const isPoint = Boolean(!entryEnd && !entry?.isPending);
 
   const relativeStart = entryStart
@@ -330,26 +343,24 @@ export function EntryProgressContainer({
   const relativeEnd = entryEnd
     ? (entryEnd - start) / (end - start)
     : entry?.isPending
-    ? 1
+    ? (dataUpdatedAt - start) / (end - start)
     : undefined;
 
   return (
-    <EntryTooltip entry={entry}>
-      <div
-        style={{
-          ...(relativeStart && {
-            left: `${relativeStart * 100}%`,
-          }),
-          width: isPoint
-            ? '2px'
-            : `${((relativeEnd || 0) - (relativeStart || 0)) * 100}%`,
-          zIndex: isPoint ? 2 : 0,
-          ...style,
-        }}
-        className={className}
-      >
-        {children}
-      </div>
-    </EntryTooltip>
+    <div
+      style={{
+        ...(relativeStart && {
+          left: `${relativeStart * 100}%`,
+        }),
+        width: isPoint
+          ? '2px'
+          : `${((relativeEnd || 0) - (relativeStart || 0)) * 100}%`,
+        zIndex: isPoint ? 2 : 0,
+        ...style,
+      }}
+      className={className}
+    >
+      {children}
+    </div>
   );
 }
