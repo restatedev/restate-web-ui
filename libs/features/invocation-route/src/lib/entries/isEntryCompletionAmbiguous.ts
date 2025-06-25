@@ -16,7 +16,7 @@ export function isEntryCompletionAmbiguous(
   const cancelledAfterEntry = invocation.journal?.entries?.some(
     (entry) =>
       entry.category === 'notification' &&
-      entry.type === 'cancel' &&
+      entry.type === 'Cancel' &&
       entry.start &&
       refEntry?.start &&
       entry.start > refEntry?.start

@@ -192,6 +192,7 @@ export function EntryExpression({
     entry,
     invocation
   );
+
   const isPending =
     entry?.isPending &&
     !entryCompletionIsAmbiguous &&
@@ -226,7 +227,7 @@ export function EntryExpression({
         <>
           {entryCompletionIsAmbiguous && (
             <HoverTooltip content="Completion not detected!">
-              <Icon name={IconName.ClockAlert} className="w-3.5 h-3.5" />
+              <Icon name={IconName.ClockAlert} className="w-3 h-3 opacity-80" />
             </HoverTooltip>
           )}
           {isPending && <Ellipsis />}

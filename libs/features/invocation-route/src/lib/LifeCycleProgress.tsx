@@ -142,13 +142,13 @@ export function Units({
       <div className="absolute h-12 -left-6 right-0 border-transparent bg-gray-100 border-white rounded-2xl shadow-sm border border-t-[2px] z-[0]"></div>
       {cancelEvent && (
         <div
-          className="h-full pointer-events-none mix-blend-overlay border-l-2  bottom-0 absolute bg-zinc-900/50 [background:repeating-linear-gradient(-45deg,theme(colors.black/.6),theme(colors.black/.6)_2px,theme(colors.white/0)_2px,theme(colors.white/0)_4px)] right-0 rounded-r-2xl"
+          className="top-12 pointer-events-none mix-blend-overlay border-l-2  bottom-0 absolute bg-zinc-900/50 [background:repeating-linear-gradient(-45deg,theme(colors.black/.6),theme(colors.black/.6)_2px,theme(colors.white/0)_2px,theme(colors.white/0)_4px)] right-0 rounded-br-2xl"
           style={{
             left: `calc(${
               ((new Date(String(cancelEvent.start)).getTime() - start) /
                 executionTime) *
               100
-            }% - 2px)`,
+            }% + 2px)`,
           }}
         />
       )}
