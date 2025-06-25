@@ -96,10 +96,10 @@ export function JournalV2({
       new Date(dataUpdatedAt).toISOString()
   ).getTime();
   const end = Math.max(
-    ...(journalAndInvocationData.journal?.entries?.map((entry) =>
-      entry.end
+    ...(combinedEntries?.map(({ entry }) =>
+      entry?.end
         ? new Date(entry.end).getTime()
-        : entry.start
+        : entry?.start
         ? new Date(entry.start).getTime()
         : -1
     ) ?? []),

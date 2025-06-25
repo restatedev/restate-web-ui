@@ -245,7 +245,7 @@ export function EntryProgress({
     typeof useGetInvocationJournalWithInvocationV2
   >['data'];
 }>) {
-  const { end } = useJournalContext();
+  const { dataUpdatedAt } = useJournalContext();
 
   const entryEnd = entry?.end
     ? new Date(entry.end ?? entry.start).getTime()
@@ -260,7 +260,9 @@ export function EntryProgress({
     ? new Date(entry.end ?? entry.start).getTime() -
       new Date(entry.start).getTime()
     : 0;
-  const pendingTime = entry?.start ? end - new Date(entry.start).getTime() : 0;
+  const pendingTime = entry?.start
+    ? dataUpdatedAt - new Date(entry.start).getTime()
+    : 0;
   const { isPast, ...parts } = getDuration(executionTime);
   const duration = formatDurations(parts);
   const pendingDuration = formatDurations(getDuration(pendingTime));
@@ -282,6 +284,10 @@ export function EntryProgress({
     );
   }
 
+  const isPending =
+    entry?.isPending &&
+    (!entry.isRetrying || invocation?.status !== 'backing-off');
+
   return (
     <EntryProgressContainer entry={entry} className={base({ className })}>
       <div className={segmentContainer({})}>
@@ -289,13 +295,13 @@ export function EntryProgress({
           <Point variant={getPointVariant(entry)} />
         ) : (
           <Line variant={getLineVariant(entry)}>
-            {entry?.isPending && <Pending />}
+            {isPending && <Pending />}
           </Line>
         )}
       </div>
       {showDuration && (
         <div className="text-xs text-gray-500 ml-auto leading-3 whitespace-nowrap font-sans translate-y-1 ">
-          {entry?.isPending ? <Ellipsis>{pendingDuration}</Ellipsis> : duration}
+          {isPending ? <Ellipsis>{pendingDuration}</Ellipsis> : duration}
         </div>
       )}
     </EntryProgressContainer>
@@ -312,7 +318,7 @@ export function EntryProgressContainer({
   className?: string;
   style?: CSSProperties;
 }>) {
-  const { start, end } = useJournalContext();
+  const { start, end, dataUpdatedAt } = useJournalContext();
 
   if (!entry) {
     return null;
@@ -322,6 +328,7 @@ export function EntryProgressContainer({
   const entryEnd = entry?.end
     ? new Date(entry.end ?? entry.start).getTime()
     : undefined;
+
   const isPoint = Boolean(!entryEnd && !entry?.isPending);
 
   const relativeStart = entryStart
@@ -330,7 +337,7 @@ export function EntryProgressContainer({
   const relativeEnd = entryEnd
     ? (entryEnd - start) / (end - start)
     : entry?.isPending
-    ? 1
+    ? (dataUpdatedAt - start) / (end - start)
     : undefined;
 
   return (
