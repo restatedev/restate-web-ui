@@ -88,6 +88,15 @@ export function JournalV2({
 
   const dataUpdatedAt = allQueriesDataUpdatedAt[invocationId]!;
 
+  if (isPending[invocationId]) {
+    return (
+      <div className="flex items-center gap-1.5 text-sm text-zinc-500 px-4 py-2">
+        <Spinner className="w-4 h-4" />
+        Loading…
+      </div>
+    );
+  }
+
   if (!journalAndInvocationData) {
     return null;
   }

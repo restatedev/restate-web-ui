@@ -8,7 +8,6 @@ import { VirtualObjectSection } from './VirtualObjectSection';
 import { KeysIdsSection } from './KeysIdsSection';
 import { Link } from '@restate/ui/link';
 import { Icon, IconName } from '@restate/ui/icons';
-import { Spinner } from '@restate/ui/loading';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { Actions } from './Actions';
 import { JournalV2 } from './JournalV2';
@@ -18,7 +17,7 @@ import { WorkflowKeySection } from './WorkflowKeySection';
 import { tv } from 'tailwind-variants';
 
 const metadataContainerStyles = tv({
-  base: 'mt-6 rounded-xl grid grid-cols-1 md:grid-cols-2 gap-2 gap-y-4',
+  base: 'mt-6 rounded-xl grid-cols-1 md:grid-cols-2 gap-2 gap-y-4 [&:has(*)]:grid hidden',
   variants: {
     isVirtualObject: {
       true: 'lg:grid-cols-2 2xl:grid-cols-4',
@@ -27,6 +26,10 @@ const metadataContainerStyles = tv({
     isWorkflow: {
       true: 'lg:grid-cols-3',
       false: '',
+    },
+    isPending: {
+      true: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
+      false: 'mb-24',
     },
   },
 });
@@ -46,13 +49,6 @@ function Component() {
   });
 
   const { baseUrl } = useRestateContext();
-
-  if (isPending) {
-    return <Spinner />;
-  }
-  if (error) {
-    return <ErrorBanner error={error} />;
-  }
 
   const lastError = getRestateError(journalAndInvocationData);
   const shouldShowFailure = Boolean(lastError);
@@ -102,8 +98,20 @@ function Component() {
         </div>
 
         <div
-          className={metadataContainerStyles({ isVirtualObject, isWorkflow })}
+          className={metadataContainerStyles({
+            isVirtualObject,
+            isPending,
+            isWorkflow,
+          })}
         >
+          {isPending && (
+            <>
+              <div className="animate-pulse min-h-24 w-full rounded-xl bg-slate-200" />
+              <div className="animate-pulse min-h-24 w-full rounded-xl bg-slate-200" />
+              <div className="animate-pulse min-h-24 w-full rounded-xl bg-slate-200 lg:block hidden" />
+              <div className="animate-pulse min-h-24 w-full rounded-xl bg-slate-200 lg:block hidden" />
+            </>
+          )}
           <KeysIdsSection
             invocation={journalAndInvocationData}
             className="p-0 rounded-xl border bg-gray-200/50 h-fit  [&>*:last-child]:border-white/50 [&>*:last-child]:rounded-xl [&>*:last-child]:bg-gradient-to-b [&>*:last-child]:to-gray-50/80 [&>*:last-child]:from-gray-50  [&>*:last-child]:shadow-zinc-800/[0.03]"
@@ -139,7 +147,7 @@ function Component() {
           )}
         </div>
 
-        <div className="flex flex-col mt-24 ">
+        <div className="flex flex-col mt-4">
           <div className="rounded-2xl border bg-gray-200/50 relative">
             <JournalV2 invocationId={String(id)} key={String(id)} />
           </div>
