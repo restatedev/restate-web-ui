@@ -1,7 +1,6 @@
 export { JournalV2 } from './lib/JournalV2';
 export { State } from './lib/State';
 export { Value } from './lib/Value';
-export { Journal } from './lib/Journal';
 export { Actions } from './lib/Actions';
 export { DeleteInvocation } from './lib/DeleteInvocation';
 export { Status } from './lib/Status';
