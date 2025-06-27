@@ -1,4 +1,4 @@
-import { RefObject, useEffect, useRef } from 'react';
+import { RefObject, useEffect } from 'react';
 import { languages } from 'monaco-editor/esm/vs/editor/editor.api';
 import * as monaco from 'monaco-editor';
 import {
@@ -244,6 +244,9 @@ export function SQLEditor({
           showInlineDetails: true,
           snippetsPreventQuickSuggestions: false,
         },
+        stickyScroll: {
+          enabled: false,
+        },
         lineHeight: 28,
         automaticLayout: true,
         scrollBeyondLastLine: false,
@@ -311,7 +314,14 @@ export function SQLEditor({
         window.removeEventListener('resize', updateStyles);
       };
     }
-  }, [containerRef, hostRef, initialQuery, placeholderRef, setQuery]);
+  }, [
+    containerRef,
+    editorRef,
+    hostRef,
+    initialQuery,
+    placeholderRef,
+    setQuery,
+  ]);
 
   useEffect(() => {
     const keyHandler = (event: KeyboardEvent) => {
@@ -357,7 +367,7 @@ export function SQLEditor({
     return () => {
       document.removeEventListener('keydown', keyHandler);
     };
-  }, [setQuery]);
+  }, [editorRef, setQuery]);
 
   return <div ref={hostRef} className={className} />;
 }
