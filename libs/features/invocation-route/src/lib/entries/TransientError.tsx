@@ -89,7 +89,6 @@ export function NoCommandTransientError({
 }: EntryProps<
   Extract<JournalEntryV2, { type?: 'TransientError'; category?: 'event' }>
 >) {
-  console.log(entry);
   if (isTransientError(entry) && entry.relatedCommandIndex === undefined) {
     return (
       <div className="flex item-center gap-2 mr-2">
