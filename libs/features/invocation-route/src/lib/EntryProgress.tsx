@@ -96,7 +96,7 @@ const lineStyles = tv({
   variants: {
     variant: {
       success: {
-        line: 'from-green-300 to-from-green-300 ',
+        line: 'from-green-300 to-green-300 ',
       },
       danger: {
         line: 'from-red-300 to-red-300',
