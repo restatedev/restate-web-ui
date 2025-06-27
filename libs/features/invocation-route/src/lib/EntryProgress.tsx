@@ -108,13 +108,13 @@ const lineStyles = tv({
         line: 'from-blue-300 to-blue-300',
       },
       default: {
-        line: 'bg-transparent border-dashed [&>*]:mix-blend-color-burn border-zinc-600/40',
+        line: 'h-3 bg-transparent border-dashed [&>*]:mix-blend-color-burn border-zinc-600/40',
       },
       idleWarning: {
-        line: 'from-orange-400/10 to-orange-400/10 border-dashed border-orange-600/60',
+        line: 'h-3 from-orange-400/10 to-orange-400/10 border-dashed border-orange-600/60',
       },
       idleNeutral: {
-        line: 'from-zinc-400/20 to-zinc-400/20 border-dashed border-zinc-600/40',
+        line: 'h-3 from-zinc-400/20 to-zinc-400/20 border-dashed border-zinc-600/40',
       },
     },
     isAmbiguous: {
@@ -187,7 +187,7 @@ function Line({
 const progressStyles = tv({
   base: 'h-full relative flex flex-col gap-0.5 items-start justify-center min-w-[4px] -translate-x-[1px] ',
   slots: {
-    segmentContainer: 'w-full',
+    segmentContainer: 'w-full flex [&>*]:w-full items-center',
   },
   variants: {
     isPending: {

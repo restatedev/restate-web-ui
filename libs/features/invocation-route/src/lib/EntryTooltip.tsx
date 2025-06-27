@@ -127,18 +127,20 @@ function EntryContent({
                   </div>
                 )}
 
-                {entry.start && (entry.end || entry.isPending) && (
-                  <div className="font-semibold">
-                    (
-                    {formatDurations(
-                      getDuration(
-                        new Date(entry.end || end).getTime() -
-                          new Date(entry.start).getTime()
+                {entry.start &&
+                  (entry.end || entry.isPending) &&
+                  !entryCompletionIsAmbiguous && (
+                    <div className="font-semibold">
+                      (
+                      {formatDurations(
+                        getDuration(
+                          new Date(entry.end || end).getTime() -
+                            new Date(entry.start).getTime()
+                        )
+                      )}
                       )
-                    )}
-                    )
-                  </div>
-                )}
+                    </div>
+                  )}
               </>
             )}
           </div>
