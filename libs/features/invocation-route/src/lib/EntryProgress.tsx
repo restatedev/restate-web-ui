@@ -91,34 +91,70 @@ function Point({
 const lineStyles = tv({
   base: '',
   slots: {
-    line: 'relative h-full rounded-md shadow-sm border border-white/80',
+    line: 'relative h-full rounded-md shadow-sm border border-white/80 bg-gradient-to-r',
   },
   variants: {
     variant: {
       success: {
-        line: 'bg-green-300 ',
+        line: 'from-green-300 to-from-green-300 ',
       },
       danger: {
-        line: 'bg-red-300',
+        line: 'from-red-300 to-red-300',
       },
       warning: {
-        line: 'bg-orange-300',
+        line: 'from-orange-300 to-orange-300',
       },
       info: {
-        line: 'bg-blue-300',
+        line: 'from-blue-300 to-blue-300',
       },
       default: {
-        line: 'bg-transparent  border-dashed [&>*]:mix-blend-color-burn border-zinc-600/40',
+        line: 'bg-transparent border-dashed [&>*]:mix-blend-color-burn border-zinc-600/40',
       },
       idleWarning: {
-        line: 'bg-orange-400/10 border-dashed border-orange-600/60',
+        line: 'from-orange-400/10 to-orange-400/10 border-dashed border-orange-600/60',
       },
       idleNeutral: {
-        line: 'bg-zinc-400/20 border-dashed border-zinc-600/40',
+        line: 'from-zinc-400/20 to-zinc-400/20 border-dashed border-zinc-600/40',
       },
     },
+    isAmbiguous: {
+      true: {
+        line: 'to-zinc-400/20',
+      },
+      false: {},
+    },
   },
-  defaultVariants: { variant: 'info' },
+  compoundVariants: [
+    {
+      variant: 'success',
+      isAmbiguous: true,
+      className: {
+        line: 'via-green-300 ',
+      },
+    },
+    {
+      variant: 'danger',
+      isAmbiguous: true,
+      className: {
+        line: 'via-red-300',
+      },
+    },
+    {
+      variant: 'warning',
+      isAmbiguous: true,
+      className: {
+        line: 'via-orange-300',
+      },
+    },
+    {
+      variant: 'info',
+      isAmbiguous: true,
+      className: {
+        line: 'via-blue-300',
+      },
+    },
+  ],
+  defaultVariants: { variant: 'info', isAmbiguous: false },
 });
 
 function Line({
@@ -126,9 +162,11 @@ function Line({
   style,
   variant,
   children,
+  isAmbiguous,
 }: PropsWithChildren<{
   className?: string;
   style?: CSSProperties;
+  isAmbiguous?: boolean;
   variant?:
     | 'success'
     | 'info'
@@ -138,7 +176,7 @@ function Line({
     | 'idleNeutral'
     | 'idleWarning';
 }>) {
-  const { line } = lineStyles({ variant });
+  const { line } = lineStyles({ variant, isAmbiguous });
   return (
     <div style={style} className={line({ className })}>
       {children}
@@ -259,10 +297,12 @@ export function EntryProgress({
     isPending: entry?.isPending,
     isPoint,
   });
-  const entryCompletionIsAmbiguous = isEntryCompletionAmbiguous(
-    entry,
-    invocation
-  );
+  const { isAmbiguous: entryCompletionIsAmbiguous, unambiguousEnd } =
+    isEntryCompletionAmbiguous(entry, invocation);
+
+  const unambiguousEndTime = unambiguousEnd
+    ? new Date(unambiguousEnd).getTime()
+    : entryEnd;
 
   const executionTime = entry?.start
     ? new Date(entry.end ?? (isPoint ? entry.start : dataUpdatedAt)).getTime() -
@@ -315,7 +355,21 @@ export function EntryProgress({
         {isPoint ? (
           <Point variant={getPointVariant(entry)} />
         ) : (
-          <Line variant={getLineVariant(entry)}>
+          <Line
+            variant={getLineVariant(entry)}
+            isAmbiguous={entryCompletionIsAmbiguous}
+            style={
+              {
+                '--tw-gradient-via-position':
+                  entry?.start && unambiguousEndTime
+                    ? `${
+                        (unambiguousEndTime - new Date(entry.start).getTime()) /
+                        executionTime
+                      }%`
+                    : '100%',
+              } as any
+            }
+          >
             {isPending && <Pending />}
           </Line>
         )}
@@ -361,10 +415,8 @@ export function EntryProgressContainer({
   if (!entry || !entry.start) {
     return null;
   }
-  const entryCompletionIsAmbiguous = isEntryCompletionAmbiguous(
-    entry,
-    invocation
-  );
+  const { isAmbiguous: entryCompletionIsAmbiguous } =
+    isEntryCompletionAmbiguous(entry, invocation);
   const entryStart = entry?.start ? new Date(entry.start).getTime() : undefined;
   const entryEnd = entryCompletionIsAmbiguous
     ? new Date(String(invocation?.completed_at)).getTime()

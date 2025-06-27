@@ -188,10 +188,8 @@ export function EntryExpression({
       </>
     ));
 
-  const entryCompletionIsAmbiguous = isEntryCompletionAmbiguous(
-    entry,
-    invocation
-  );
+  const { isAmbiguous: entryCompletionIsAmbiguous } =
+    isEntryCompletionAmbiguous(entry, invocation);
 
   const isPending =
     entry?.isPending &&

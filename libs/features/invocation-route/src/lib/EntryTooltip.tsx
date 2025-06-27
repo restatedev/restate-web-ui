@@ -61,10 +61,8 @@ function EntryContent({
   >['data'];
 }) {
   const isPoint = !entry.end && !entry.isPending;
-  const entryCompletionIsAmbiguous = isEntryCompletionAmbiguous(
-    entry,
-    invocation
-  );
+  const { isAmbiguous: entryCompletionIsAmbiguous } =
+    isEntryCompletionAmbiguous(entry, invocation);
   const inProgress =
     entry?.isPending &&
     !entryCompletionIsAmbiguous &&
