@@ -9,11 +9,11 @@ export function isEntryCompletionAmbiguous(
     typeof useGetInvocationJournalWithInvocationV2
   >['data']
 ) {
-  if (!refEntry || !invocation) {
+  if (!refEntry || !invocation || refEntry?.category !== 'command') {
     return false;
   }
-  const invocationIsCompleted = Boolean(invocation.completed_at);
-  const cancelledAfterEntry = invocation.journal?.entries?.some(
+  const invocationIsCompleted = Boolean(invocation?.completed_at);
+  const cancelledAfterEntry = invocation?.journal?.entries?.some(
     (entry) =>
       entry.category === 'notification' &&
       entry.type === 'Cancel' &&

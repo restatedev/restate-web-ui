@@ -19,7 +19,6 @@ import {
   getSearchParams,
   InvocationDeployment,
   InvocationId,
-  Journal,
   JournalV2,
   Status,
   Target,

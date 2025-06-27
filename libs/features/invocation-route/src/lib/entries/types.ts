@@ -1,10 +1,15 @@
-import { Invocation, JournalEntryV2 } from '@restate/data-access/admin-api';
+import {
+  JournalEntryV2,
+  useGetInvocationJournalWithInvocationV2,
+} from '@restate/data-access/admin-api';
 import { RestateError } from '@restate/util/errors';
 
 export interface EntryProps<T extends JournalEntryV2> {
   entry: T;
   failed?: boolean;
-  invocation: Invocation;
+  invocation: ReturnType<
+    typeof useGetInvocationJournalWithInvocationV2
+  >['data'];
   appended?: boolean;
   error?: RestateError;
   isRetrying?: boolean;

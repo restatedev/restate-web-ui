@@ -60,12 +60,16 @@ export function TransientError({
           </Popover>
           <div className="text-2xs font-mono">
             <Failure
-              restate_code={entry.relatedRestateErrorCode ?? String(entry.code)}
-              message={
-                entry.stackTrace ??
-                entry.message + '\n\n' + entry.stackTrace ??
-                entry.message
-              }
+              restate_code={String(
+                entry.relatedRestateErrorCode ||
+                  entry.code ||
+                  entry?.error?.restateCode ||
+                  entry?.error?.code ||
+                  ''
+              )}
+              message={[entry.message, entry?.error?.message, entry.stackTrace]
+                .filter(Boolean)
+                .join('\n\n')}
               isRetrying
               className="bg-transparent ml-0 border-none shadow-none py-0 hover:bg-orange-100 pressed:bg-orange-200/50 rounded-md my-[-2px] h-5"
             />
@@ -89,7 +93,15 @@ export function NoCommandTransientError({
 }: EntryProps<
   Extract<JournalEntryV2, { type?: 'TransientError'; category?: 'event' }>
 >) {
-  if (isTransientError(entry) && entry.relatedCommandIndex === undefined) {
+  if (
+    isTransientError(entry) &&
+    (entry.relatedCommandIndex === undefined ||
+      !invocation?.journal?.entries?.some(
+        (e) =>
+          e.commandIndex === entry.relatedCommandIndex &&
+          Number(e.index) < Number(entry.index)
+      ))
+  ) {
     return (
       <div className="flex item-center gap-2 mr-2">
         <Badge
@@ -106,12 +118,9 @@ export function NoCommandTransientError({
                   entry?.error?.code ||
                   ''
               )}
-              message={
-                entry.stackTrace ??
-                [entry.message, entry?.error?.message, entry.stackTrace]
-                  .filter(Boolean)
-                  .join('\n\n')
-              }
+              message={[entry.message, entry?.error?.message, entry.stackTrace]
+                .filter(Boolean)
+                .join('\n\n')}
               isRetrying
               className="bg-transparent ml-0 border-none shadow-none py-0 hover:bg-orange-100 pressed:bg-orange-200/50 rounded-md my-[-2px] h-5"
             />

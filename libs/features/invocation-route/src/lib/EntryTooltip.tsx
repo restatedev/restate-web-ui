@@ -106,7 +106,7 @@ function EntryContent({
                     )}
                   </div>
                 )}
-                {(inProgress || entryCompletionIsAmbiguous) && (
+                {(entry.isPending || entryCompletionIsAmbiguous) && (
                   <div className="opacity-80 flex items-center gap-1">
                     {`${formatDateTime(
                       new Date(String(entry.start)),
@@ -121,12 +121,15 @@ function EntryContent({
                         Completion not detected!
                       </span>
                     ) : (
-                      <Ellipsis> </Ellipsis>
+                      <>
+                        now
+                        {inProgress && <Ellipsis> </Ellipsis>}
+                      </>
                     )}
                   </div>
                 )}
 
-                {entry.start && (entry.end || inProgress) && (
+                {entry.start && (entry.end || entry.isPending) && (
                   <div className="font-semibold">
                     (
                     {formatDurations(
