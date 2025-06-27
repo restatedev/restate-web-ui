@@ -52,6 +52,13 @@ function Component() {
 
   const lastError = getRestateError(journalAndInvocationData);
   const shouldShowFailure = Boolean(lastError);
+  const shouldLastErrorBeExpanded = Boolean(
+    shouldShowFailure &&
+      (journalAndInvocationData?.completed_at ||
+        journalAndInvocationData?.journal?.entries?.some(
+          (entry) => entry.isRetrying || entry.type === 'Retrying'
+        ))
+  );
   const hasStack = lastError?.message.includes('\n');
   const isFailed = !!journalAndInvocationData?.completion_failure;
 
@@ -141,6 +148,7 @@ function Component() {
                   error={lastError}
                   wrap={hasStack}
                   className="bg-transparent p-0 [&_code]:bg-gray-200/50 h-full [&_details]:max-h-48"
+                  open={shouldLastErrorBeExpanded}
                 />
               </SectionContent>
             </Section>
