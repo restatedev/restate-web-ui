@@ -10,10 +10,10 @@ export function isEntryCompletionAmbiguous(
   >['data']
 ) {
   if (!refEntry || !invocation || refEntry?.category !== 'command') {
-    return false;
+    return { isAmbiguous: false };
   }
   const invocationIsCompleted = Boolean(invocation?.completed_at);
-  const cancelledAfterEntry = invocation?.journal?.entries?.some(
+  const cancelledAfterEntry = invocation?.journal?.entries?.find(
     (entry) =>
       entry.category === 'notification' &&
       entry.type === 'Cancel' &&
@@ -22,7 +22,10 @@ export function isEntryCompletionAmbiguous(
       entry.start > refEntry?.start
   );
 
-  return Boolean(
-    refEntry?.isPending && (invocationIsCompleted || cancelledAfterEntry)
-  );
+  return {
+    isAmbiguous: Boolean(
+      refEntry?.isPending && (invocationIsCompleted || cancelledAfterEntry)
+    ),
+    unambiguousEnd: cancelledAfterEntry?.start || invocation?.completed_at,
+  };
 }

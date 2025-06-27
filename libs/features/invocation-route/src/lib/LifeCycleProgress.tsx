@@ -141,16 +141,18 @@ export function Units({
     <>
       <div className="absolute h-12 -left-6 right-0 border-transparent bg-gray-100 border-white rounded-2xl shadow-sm border border-t-[2px] z-[0]"></div>
       {cancelEvent && (
-        <div
-          className="top-12 pointer-events-none mix-blend-overlay border-l-2  bottom-0  absolute bg-zinc-900/50 [background:repeating-linear-gradient(-45deg,theme(colors.black/.6),theme(colors.black/.6)_2px,theme(colors.white/0)_2px,theme(colors.white/0)_4px)] right-0 rounded-br-2xl"
-          style={{
-            left: `calc(${
-              ((new Date(String(cancelEvent.start)).getTime() - start) /
-                executionTime) *
-              100
-            }% - 0px - 0.5rem)`,
-          }}
-        />
+        <div className="overflow-hidden px-2 top-12 pointer-events-none bottom-0 absolute right-0 left-0">
+          <div
+            className="  mix-blend-overlay border-l-2  w-full h-full  bg-zinc-900/50 [background:repeating-linear-gradient(-45deg,theme(colors.black/.6),theme(colors.black/.6)_2px,theme(colors.white/0)_2px,theme(colors.white/0)_4px)]  rounded-br-2xl"
+            style={{
+              marginLeft: `calc(${
+                ((new Date(String(cancelEvent.start)).getTime() - start) /
+                  executionTime) *
+                100
+              }% - 1px)`,
+            }}
+          />
+        </div>
       )}
       <div className={unitsStyles({ className })}>
         <div className="absolute left-2 border-l text-gray-500 border-dashed text-2xs font-sans border-gray-500/40  bottom-0 -top-8">
