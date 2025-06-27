@@ -107,10 +107,10 @@ function ServiceDetailsContent() {
       },
       body: {
         public: isPublic,
-        idempotency_retention: idempotency_retention ?? null,
-        workflow_completion_retention: workflow_completion_retention ?? null,
-        inactivity_timeout: inactivity_timeout ?? null,
-        abort_timeout: abort_timeout ?? null,
+        idempotency_retention: idempotency_retention || null,
+        workflow_completion_retention: workflow_completion_retention || null,
+        inactivity_timeout: inactivity_timeout || null,
+        abort_timeout: abort_timeout || null,
       },
     });
   };
