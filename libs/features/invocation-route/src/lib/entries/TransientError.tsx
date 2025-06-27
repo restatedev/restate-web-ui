@@ -7,6 +7,7 @@ import { Badge } from '@restate/ui/badge';
 import { Failure } from '../Failure';
 import { TimelinePortal } from '../Portals';
 import { EntryProgress } from '../EntryProgress';
+import { EntryProps } from './types';
 
 function isTransientError(
   entry: JournalEntryV2
@@ -64,6 +65,52 @@ export function TransientError({
                 entry.stackTrace ??
                 entry.message + '\n\n' + entry.stackTrace ??
                 entry.message
+              }
+              isRetrying
+              className="bg-transparent ml-0 border-none shadow-none py-0 hover:bg-orange-100 pressed:bg-orange-200/50 rounded-md my-[-2px] h-5"
+            />
+          </div>
+        </Badge>
+        <TimelinePortal invocationId={invocation?.id ?? ''} entry={entry}>
+          <div className="h-9 border-b border-transparent w-full relative">
+            <EntryProgress entry={entry} invocation={invocation} />
+          </div>
+        </TimelinePortal>
+      </div>
+    );
+  }
+
+  return null;
+}
+
+export function NoCommandTransientError({
+  entry,
+  invocation,
+}: EntryProps<
+  Extract<JournalEntryV2, { type?: 'TransientError'; category?: 'event' }>
+>) {
+  if (isTransientError(entry) && entry.relatedCommandIndex === undefined) {
+    return (
+      <div className="flex item-center gap-2 mr-2">
+        <Badge
+          variant="warning"
+          size="sm"
+          className="font-sans font-normal gap-0 px-0 py-0.5"
+        >
+          <div className="text-2xs font-mono">
+            <Failure
+              restate_code={String(
+                entry.relatedRestateErrorCode ||
+                  entry.code ||
+                  entry?.error?.restateCode ||
+                  entry?.error?.code ||
+                  ''
+              )}
+              message={
+                entry.stackTrace ??
+                [entry.message, entry?.error?.message, entry.stackTrace]
+                  .filter(Boolean)
+                  .join('\n\n')
               }
               isRetrying
               className="bg-transparent ml-0 border-none shadow-none py-0 hover:bg-orange-100 pressed:bg-orange-200/50 rounded-md my-[-2px] h-5"

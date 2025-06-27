@@ -247,10 +247,10 @@ async function getInvocationJournalV2(
       ...(invocation.last_failure_related_entry_type && {
         commandIndex: journalQuery.rows.length,
       }),
-      error: {
-        code: Number(invocation.last_failure_error_code),
-        message: invocation.last_failure,
-      },
+      error: new RestateError(
+        invocation.last_failure,
+        invocation.last_failure_error_code
+      ),
     });
   }
 

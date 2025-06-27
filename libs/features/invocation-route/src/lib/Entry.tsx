@@ -35,6 +35,7 @@ import { RelatedEntries } from './RelatedEntries';
 import { Cancel } from './entries/Cancel';
 import { LifeCycle } from './entries/LifeCycle';
 import { Link } from '@restate/ui/link';
+import { NoCommandTransientError } from './entries/TransientError';
 
 export const ENTRY_COMMANDS_COMPONENTS: {
   [K in CommandEntryType]:
@@ -92,7 +93,7 @@ export const ENTRY_EVENTS_COMPONENTS: {
       >
     | undefined;
 } = {
-  TransientError: undefined,
+  TransientError: NoCommandTransientError,
   Created: LifeCycle,
   Running: LifeCycle,
   Suspended: LifeCycle,
