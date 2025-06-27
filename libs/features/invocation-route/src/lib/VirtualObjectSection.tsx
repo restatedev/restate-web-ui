@@ -214,13 +214,11 @@ export function VirtualObjectSection({
               <div className="text-xs text-zinc-500/80">
                 {position === 0 && (
                   <>
-                    Invocation is{' '}
-                    <span className="font-medium text-zinc-500">in-flight</span>{' '}
-                    while{' '}
+                    <span className="font-medium ">In-flight</span> while{' '}
                     {size - position - 1 === 0 ? (
                       'no'
                     ) : (
-                      <span className="font-medium text-zinc-500">
+                      <span className="font-medium text-orange-600">
                         {formatNumber(size - position - 1)}
                       </span>
                     )}{' '}
@@ -229,10 +227,9 @@ export function VirtualObjectSection({
                 )}
                 {typeof position === 'number' && position > 0 && (
                   <>
-                    Invocation is{' '}
-                    <span className="font-medium text-zinc-500">pending</span>{' '}
+                    <span className="font-medium text-orange-600">Pending</span>{' '}
                     until{' '}
-                    <span className="font-medium text-zinc-500">
+                    <span className="font-medium text-orange-600">
                       {formatNumber(position)}
                     </span>{' '}
                     prior invocation(s) in the queue have completed.
