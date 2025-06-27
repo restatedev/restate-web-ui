@@ -21,6 +21,18 @@ export function formatDurations({
   if (!isValid) {
     return '';
   }
-  const formatted = formatter.format(duration);
+  const parts = formatter.formatToParts(duration);
+  const shouldShowFraction =
+    !duration.minutes && !duration.hours && !duration.days;
+  const formatted = parts.reduce((result, { type, value, unit }) => {
+    if (unit === 'second' && ['fraction', 'decimal'].includes(type as string)) {
+      if (shouldShowFraction) {
+        return result + value.substring(0, 3);
+      } else {
+        return result;
+      }
+    }
+    return result + value;
+  }, '');
   return formatted;
 }
