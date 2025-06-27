@@ -358,7 +358,7 @@ export function EntryProgressContainer({
 }>) {
   const { start, end, dataUpdatedAt } = useJournalContext();
 
-  if (!entry) {
+  if (!entry || !entry.start) {
     return null;
   }
   const entryCompletionIsAmbiguous = isEntryCompletionAmbiguous(

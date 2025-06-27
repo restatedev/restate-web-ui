@@ -202,7 +202,7 @@ export function Units({
               );
             })}
           <div className="flex-auto text-right pointer-events-none even:bg-gray-400/5 rounded-r-2xl"></div>
-          <div className="w-2 shrink-0" />
+          <div className="w-2 shrink-0 odd:bg-gray-400/5" />
         </div>
       </div>
     </>
