@@ -12,6 +12,7 @@ import { Ellipsis } from '@restate/ui/loading';
 import { EntryTooltip } from './EntryTooltip';
 import { Icon, IconName } from '@restate/ui/icons';
 import { isEntryCompletionAmbiguous } from './entries/isEntryCompletionAmbiguous';
+import { ErrorBoundary } from './ErrorBoundry';
 
 const pointStyles = tv({
   base: 'w-[2px] rounded-full h-full relative ',
@@ -270,7 +271,25 @@ function getLineVariant(entry?: JournalEntryV2) {
   return 'info';
 }
 
-export function EntryProgress({
+export function EntryProgress(
+  props: PropsWithChildren<{
+    entry?: JournalEntryV2;
+    className?: string;
+    style?: CSSProperties;
+    showDuration?: boolean;
+    invocation?: ReturnType<
+      typeof useGetInvocationJournalWithInvocationV2
+    >['data'];
+  }>
+) {
+  return (
+    <ErrorBoundary entry={props.entry}>
+      <InnerEntryProgress {...props} />
+    </ErrorBoundary>
+  );
+}
+
+function InnerEntryProgress({
   className,
   children,
   style,
@@ -287,6 +306,10 @@ export function EntryProgress({
   >['data'];
 }>) {
   const { dataUpdatedAt } = useJournalContext();
+
+  if (!entry?.start) {
+    return null;
+  }
 
   const entryEnd = entry?.end
     ? new Date(entry.end ?? entry.start).getTime()
@@ -363,7 +386,9 @@ export function EntryProgress({
                 '--tw-gradient-via-position':
                   entry?.start && unambiguousEndTime
                     ? `${
-                        (unambiguousEndTime - new Date(entry.start).getTime()) /
+                        (100 *
+                          (unambiguousEndTime -
+                            new Date(entry.start).getTime())) /
                         executionTime
                       }%`
                     : '100%',
@@ -412,7 +437,7 @@ export function EntryProgressContainer({
 }>) {
   const { start, end, dataUpdatedAt } = useJournalContext();
 
-  if (!entry || !entry.start) {
+  if (!entry?.start) {
     return null;
   }
   const { isAmbiguous: entryCompletionIsAmbiguous } =
