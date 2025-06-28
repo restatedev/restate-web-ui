@@ -17,6 +17,7 @@ import { Entry } from './Entry';
 import { Input } from './entries/Input';
 import { getTimelineId, PortalProvider, usePortals } from './Portals';
 import { LifeCycleProgress, Units } from './LifeCycleProgress';
+import { ErrorBoundary } from './ErrorBoundry';
 
 const LazyPanel = lazy(() =>
   import('react-resizable-panels').then((m) => ({ default: m.Panel }))
@@ -140,12 +141,14 @@ export function JournalV2({
         }
 
         return (
-          <Entry
-            invocation={invocation}
-            entry={entry}
-            depth={depth}
-            key={invocationId + entry?.category + entry?.type + index}
-          />
+          <ErrorBoundary entry={entry} className="h-9">
+            <Entry
+              invocation={invocation}
+              entry={entry}
+              depth={depth}
+              key={invocationId + entry?.category + entry?.type + index}
+            />
+          </ErrorBoundary>
         );
       })}
     </>
