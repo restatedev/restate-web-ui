@@ -12,6 +12,7 @@ import {
   createContext,
   Dispatch,
   FormEvent,
+  FormEventHandler,
   PropsWithChildren,
   ReactNode,
   use,
@@ -127,8 +128,6 @@ function EditStateInner({
   });
   const isPartial = typeof key === 'string';
 
-  const error = query.error || mutation.error;
-
   const {
     data: queue,
     queryKey,
@@ -140,6 +139,23 @@ function EditStateInner({
   });
   const queryClient = useQueryClient();
   const hasActiveInvocations = (queue?.size ?? 0) > 0;
+
+  const submitHandler = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const value = isDeleting ? '{}' : formData.get('value');
+    if (typeof value === 'string') {
+      try {
+        const obj: Record<string, string | undefined> = isPartial
+          ? { [key]: value || undefined }
+          : stringifyValues(JSON.parse(value));
+        mutation.mutate({ state: obj, partial: isPartial });
+      } catch (error) {
+        mutation.mutate({ state: value as any, partial: isPartial });
+      }
+    }
+  };
+  const error = query.error || mutation.error;
 
   return (
     <Dialog
@@ -154,12 +170,13 @@ function EditStateInner({
     >
       <StateDialogContent
         service={service}
-        objectKey={objectKey}
         stateKey={key}
         hasActiveInvocations={hasActiveInvocations}
-        onOpenChange={onOpenChange}
         isDeleting={isDeleting}
         isFetching={isFetching}
+        error={error}
+        onSubmit={submitHandler}
+        isSubmitting={mutation.isPending}
         title={
           isPartial ? (
             <>
@@ -263,22 +280,24 @@ function stringifyValues(state: Record<string, any>) {
 function StateDialogContent({
   children,
   service,
-  objectKey,
   stateKey: key,
   hasActiveInvocations,
-  onOpenChange,
   isDeleting,
   isFetching,
   title,
+  onSubmit,
+  error,
+  isSubmitting,
 }: PropsWithChildren<{
   service?: string;
-  objectKey?: string;
   stateKey?: string;
   hasActiveInvocations?: boolean;
-  onOpenChange: (isOpen: boolean) => void;
   isDeleting?: boolean;
   isFetching?: boolean;
+  isSubmitting?: boolean;
   title?: ReactNode;
+  onSubmit: FormEventHandler<HTMLFormElement>;
+  error?: Error | null;
 }>) {
   const isPartial = typeof key === 'string';
   const { banner, bannerIcon } = styles({
@@ -286,34 +305,6 @@ function StateDialogContent({
   });
 
   const formId = useId();
-
-  const { mutation, query } = useEditState(String(service), String(objectKey), {
-    enabled: Boolean(service && objectKey),
-    onSuccess(data, variables) {
-      onOpenChange(false);
-      showSuccessNotification(
-        'The state mutation has been successfully accepted for processing.'
-      );
-    },
-  });
-
-  const submitHandler = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const value = isDeleting ? '{}' : formData.get('value');
-    if (typeof value === 'string') {
-      try {
-        const obj: Record<string, string | undefined> = isPartial
-          ? { [key]: value || undefined }
-          : stringifyValues(JSON.parse(value));
-        mutation.mutate({ state: obj, partial: isPartial });
-      } catch (error) {
-        mutation.mutate({ state: value as any, partial: isPartial });
-      }
-    }
-  };
-
-  const error = query.error || mutation.error;
 
   return (
     <DialogContent className="max-w-2xl">
@@ -357,7 +348,7 @@ function StateDialogContent({
           id={formId}
           method="POST"
           action={`/services/${service}/state`}
-          onSubmit={submitHandler}
+          onSubmit={onSubmit}
         >
           {children}
 
@@ -369,7 +360,7 @@ function StateDialogContent({
                   <Button
                     variant="secondary"
                     className="flex-auto"
-                    disabled={mutation.isPending}
+                    disabled={isSubmitting}
                   >
                     Cancel
                   </Button>

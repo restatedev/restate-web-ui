@@ -1,10 +1,14 @@
-import { useEffect, useRef, useState } from 'react';
+import { RefObject, useEffect, useState } from 'react';
 import * as monaco from 'monaco-editor';
-import type { editor } from 'monaco-editor';
 import './languageSetup';
 
-export function ValueMonaco({ value }: { value?: string }) {
-  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+export function ValueMonaco({
+  value,
+  editorRef,
+}: {
+  value?: string;
+  editorRef: RefObject<monaco.editor.IStandaloneCodeEditor | null>;
+}) {
   const [el, setEl] = useState<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -64,12 +68,12 @@ export function ValueMonaco({ value }: { value?: string }) {
       editorRef.current.onDidChangeModelContent(updateStyles);
       updateStyles();
     }
-  }, [value, el]);
+  }, [value, el, editorRef]);
 
   if (typeof value === 'undefined') {
     return null;
   }
-  return <div ref={setEl} className="max-w-full h-full min-h-4 min-w-64" />;
+  return <div ref={setEl} className="max-w-full h-full min-h-4 min-w-24" />;
 }
 
 function formatValue(value?: string) {

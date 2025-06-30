@@ -1,6 +1,14 @@
 import { Icon, IconName } from '@restate/ui/icons';
 import { Spinner } from '@restate/ui/loading';
-import { Component, ErrorInfo, lazy, PropsWithChildren, Suspense } from 'react';
+import {
+  Component,
+  ErrorInfo,
+  lazy,
+  PropsWithChildren,
+  Suspense,
+  useRef,
+} from 'react';
+import type { editor } from 'monaco-editor';
 
 const ValueMonaco = lazy(() =>
   import('./.client/ValueMonaco').then((m) => ({ default: m.ValueMonaco }))
@@ -13,6 +21,8 @@ export function Value({
   value?: string;
   className?: string;
 }) {
+  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+
   if (typeof value === 'undefined') {
     return null;
   }
@@ -28,7 +38,7 @@ export function Value({
             </div>
           }
         >
-          <ValueMonaco value={value} />
+          <ValueMonaco value={value} editorRef={editorRef} />
         </Suspense>
       </div>
     </ErrorBoundary>
