@@ -1,6 +1,10 @@
 import { Icon, IconName } from '@restate/ui/icons';
-import JsonView from '@uiw/react-json-view';
-import { Component, ErrorInfo, PropsWithChildren, useMemo } from 'react';
+import { Spinner } from '@restate/ui/loading';
+import { Component, ErrorInfo, lazy, PropsWithChildren, Suspense } from 'react';
+
+const ValueMonaco = lazy(() =>
+  import('./.client/ValueMonaco').then((m) => ({ default: m.ValueMonaco }))
+);
 
 export function Value({
   value,
@@ -9,35 +13,26 @@ export function Value({
   value?: string;
   className?: string;
 }) {
-  const object = useMemo(() => {
-    if (value) {
-      try {
-        return JSON.parse(value);
-        // eslint-disable-next-line no-empty
-      } catch (_) {}
-      return undefined;
-    }
-  }, [value]);
-
   if (typeof value === 'undefined') {
     return null;
   }
 
-  if (object && typeof object === 'object') {
-    return (
-      <ErrorBoundary>
-        <JsonView
-          value={object}
-          className={className}
-          displayDataTypes={false}
-          displayObjectSize={false}
-          enableClipboard={false}
-        />
-      </ErrorBoundary>
-    );
-  }
-
-  return <div className={className}>{value}</div>;
+  return (
+    <ErrorBoundary>
+      <div className={className}>
+        <Suspense
+          fallback={
+            <div className="flex items-center gap-1.5 text-sm text-zinc-500">
+              <Spinner className="w-4 h-4" />
+              Loading…
+            </div>
+          }
+        >
+          <ValueMonaco value={value} />
+        </Suspense>
+      </div>
+    </ErrorBoundary>
+  );
 }
 
 class ErrorBoundary extends Component<

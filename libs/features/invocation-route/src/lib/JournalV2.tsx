@@ -2,7 +2,7 @@ import {
   JournalEntryV2,
   useGetInvocationsJournalWithInvocationsV2,
 } from '@restate/data-access/admin-api';
-import { lazy, Suspense, useCallback, useState } from 'react';
+import { Fragment, lazy, Suspense, useCallback, useState } from 'react';
 import { InvocationId } from './InvocationId';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
 import { Link } from '@restate/ui/link';
@@ -141,13 +141,12 @@ export function JournalV2({
         }
 
         return (
-          <ErrorBoundary entry={entry} className="h-9">
-            <Entry
-              invocation={invocation}
-              entry={entry}
-              depth={depth}
-              key={invocationId + entry?.category + entry?.type + index}
-            />
+          <ErrorBoundary
+            entry={entry}
+            className="h-9"
+            key={invocationId + entry?.category + entry?.type + index}
+          >
+            <Entry invocation={invocation} entry={entry} depth={depth} />
           </ErrorBoundary>
         );
       })}

@@ -66,6 +66,7 @@ function StateKey({
             close?.();
             setEditState({
               isEditing: true,
+              isDeleting: false,
               service,
               objectKey: serviceKey,
               key: name,

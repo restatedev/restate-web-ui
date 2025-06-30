@@ -465,7 +465,7 @@ function Component() {
                                 </PopoverHoverTrigger>
                                 <PopoverContent>
                                   <DropdownSection
-                                    className="min-w-80 overflow-auto max-w-[min(90vw,600px)] px-4 mb-1"
+                                    className="overflow-auto max-w-[min(90vw,600px)] px-4 mb-1"
                                     title={
                                       <div className="flex items-center text-code">
                                         {id}
