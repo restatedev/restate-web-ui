@@ -41,6 +41,8 @@ export function ValueMonaco({ value }: { value?: string }) {
         },
         wordWrap: 'off',
         scrollBeyondLastLine: false,
+        renderLineHighlight: 'none',
+        domReadOnly: true,
       });
       const updateStyles = () => {
         const contentWidth = editorRef.current?.getContentWidth();

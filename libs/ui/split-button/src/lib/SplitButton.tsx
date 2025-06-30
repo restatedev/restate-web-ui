@@ -29,9 +29,9 @@ const styles = tv({
     mini: {
       true: {
         base: '[&:has(.trigger[data-pressed=true])>.primary]:hidden [&:hover:has(.trigger:not([data-pressed=true]))_.trigger]:rounded-l-none',
-        primary: 'primary',
+        primary: 'contents primary',
       },
-      false: { base: '', primary: '' },
+      false: { base: '', primary: 'contents' },
     },
   },
 });

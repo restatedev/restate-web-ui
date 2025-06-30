@@ -55,10 +55,7 @@ function StateKey({
         <TruncateWithTooltip copyText={name}>{name}</TruncateWithTooltip>
       </div>
       <div className="truncate py-1 relative ">
-        <Value
-          value={value}
-          className="mono text-xs [&_*]:mono [&_*]:text-xs"
-        />
+        <Value value={value} className="mono text-xs" />
         <Button
           variant="icon"
           className="absolute top-1 right-0 invisible group-hover:visible"
