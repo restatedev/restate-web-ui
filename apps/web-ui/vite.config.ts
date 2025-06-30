@@ -73,10 +73,6 @@ export default defineConfig(({ mode }) => {
         transformMixedEsModules: true,
       },
     },
-    ssr: {
-      noExternal: ['@uiw/react-json-view'],
-    },
-
     server: {
       headers: SERVER_HEADERS,
       hmr: {
