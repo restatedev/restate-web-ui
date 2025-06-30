@@ -19,7 +19,9 @@ export function MonacoEditor({
     if (el && !editorRef.current) {
       monaco.editor.defineTheme('restate', {
         base: 'vs',
-        colors: {},
+        colors: {
+          'editor.background': '#00000000',
+        },
         rules: [],
         inherit: true,
       });
@@ -47,6 +49,7 @@ export function MonacoEditor({
           enabled: false,
         },
         wordWrap: 'off',
+        stickyScroll: { enabled: false },
         scrollBeyondLastLine: false,
         renderLineHighlight: 'none',
         ...(readonly && {
@@ -84,7 +87,12 @@ export function MonacoEditor({
   if (typeof value === 'undefined') {
     return null;
   }
-  return <div ref={setEl} className="max-w-full h-full min-h-4 min-w-24" />;
+  return (
+    <div
+      ref={setEl}
+      className="max-w-full h-full min-h-4 min-w-24 [&_.monaco-editor]:outline-none"
+    />
+  );
 }
 
 function formatValue(value?: string) {
