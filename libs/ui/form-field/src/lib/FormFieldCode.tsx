@@ -1,6 +1,8 @@
 import { focusRing } from '@restate/ui/focus';
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { tv } from 'tailwind-variants';
+import type { editor } from 'monaco-editor';
+import { Editor } from '@restate/ui/editor';
 
 const inputStyles = tv({
   extend: focusRing,
@@ -20,33 +22,29 @@ export function FormFieldCode({
   className?: string;
   onInput?: (value: string) => void;
 }) {
-  const [content] = useState(() => parseValue(value));
+  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+
+  const [content] = useState(() => value);
   const textareaRef = useRef<HTMLInputElement | null>(null);
+
+  const onContentChange = useCallback(
+    (value: string) => {
+      onInput?.(value ?? '');
+      if (textareaRef.current) {
+        textareaRef.current.value = value ?? '';
+      }
+    },
+    [onInput]
+  );
 
   return (
     <>
-      <pre>
-        <code
-          tabIndex={0}
-          autoFocus={autoFocus}
-          className={inputStyles({ className })}
-          contentEditable
-          onInput={(e) => {
-            if (textareaRef.current) {
-              textareaRef.current.value = stringifyValue(
-                e.currentTarget.innerText
-              );
-              onInput?.(textareaRef.current.value);
-            }
-          }}
-          ref={(el) => {
-            if (el && !el.innerText) {
-              el.innerText = content ?? '';
-            }
-          }}
-          spellCheck="false"
-        />
-      </pre>
+      <Editor
+        value={content}
+        className={inputStyles({ className })}
+        editorRef={editorRef}
+        onInput={onContentChange}
+      />
       <input
         type="hidden"
         className="hidden"
@@ -56,23 +54,4 @@ export function FormFieldCode({
       />
     </>
   );
-}
-
-function parseValue(value?: string) {
-  if (!value) {
-    return value;
-  }
-  try {
-    return JSON.stringify(JSON.parse(value), null, 2);
-  } catch (error) {
-    return value;
-  }
-}
-
-function stringifyValue(value: string) {
-  try {
-    return JSON.stringify(JSON.parse(value));
-  } catch (error) {
-    return value;
-  }
 }

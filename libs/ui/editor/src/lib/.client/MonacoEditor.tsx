@@ -6,10 +6,12 @@ export function MonacoEditor({
   value,
   editorRef,
   readonly,
+  onInput,
 }: {
   value?: string;
   editorRef: RefObject<monaco.editor.IStandaloneCodeEditor | null>;
   readonly?: boolean;
+  onInput?: (value: string) => void;
 }) {
   const [el, setEl] = useState<HTMLDivElement | null>(null);
 
@@ -69,10 +71,15 @@ export function MonacoEditor({
       editorRef.current?.onDidChangeModelLanguageConfiguration(updateStyles);
       editorRef.current?.onDidLayoutChange(updateStyles);
       editorRef.current?.onDidContentSizeChange(updateStyles);
-      editorRef.current.onDidChangeModelContent(updateStyles);
+      editorRef.current.onDidChangeModelContent(() => {
+        const value = editorRef.current?.getValue();
+
+        updateStyles();
+        onInput?.(value ?? '');
+      });
       updateStyles();
     }
-  }, [value, el, editorRef, readonly]);
+  }, [value, el, editorRef, readonly, onInput]);
 
   if (typeof value === 'undefined') {
     return null;

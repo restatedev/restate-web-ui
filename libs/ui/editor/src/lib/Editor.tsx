@@ -19,11 +19,13 @@ export function Editor({
   className,
   editorRef,
   readonly,
+  onInput,
 }: {
   value?: string;
   className?: string;
   editorRef: RefObject<editor.IStandaloneCodeEditor | null>;
   readonly?: boolean;
+  onInput?: (value: string) => void;
 }) {
   if (typeof value === 'undefined') {
     return null;
@@ -44,6 +46,7 @@ export function Editor({
             value={value}
             editorRef={editorRef}
             readonly={readonly}
+            onInput={onInput}
           />
         </Suspense>
       </div>

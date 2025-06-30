@@ -231,7 +231,7 @@ function EditStateInner({
               autoFocus
               name="value"
               className="mt-2 font-mono overflow-auto"
-              onInput={() => error && mutation.reset()}
+              onInput={mutation.reset}
               {...(typeof key === 'undefined'
                 ? {
                     value: JSON.stringify(
@@ -310,7 +310,7 @@ function StateDialogContent({
     <DialogContent className="max-w-2xl">
       <div className="flex flex-col gap-2">
         <h3 className="text-lg font-medium leading-6 text-gray-900">{title}</h3>
-        <p className={banner()}>
+        <div className={banner()}>
           {isFetching ? (
             <div className="h-5 w-5 shrink-0 px-0.5">
               <Spinner className="h-full w-full text-orange-500" />
@@ -343,7 +343,7 @@ function StateDialogContent({
               </>
             )}
           </span>
-        </p>
+        </div>
         <Form
           id={formId}
           method="POST"
