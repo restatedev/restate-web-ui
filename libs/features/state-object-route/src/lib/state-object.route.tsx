@@ -75,6 +75,7 @@ import { STATE_QUERY_NAME } from './constants';
 import { Link } from '@restate/ui/link';
 import { useEditStateContext } from '@restate/features/edit-state';
 import { toStateParam } from './toStateParam';
+import { SplitButton } from '@restate/ui/split-button';
 
 function getQuery(
   searchParams: URLSearchParams,
@@ -104,6 +105,10 @@ function EditStateTrigger(props: ComponentProps<typeof Button>) {
     />
   );
 }
+
+const actionButtonStyles = tv({
+  base: 'absolute invisible drop-shadow-[-20px_2px_4px_rgba(255,255,255,0.8)] group-hover:visible right-full z-[2] rounded-r-none px-2 py-0.5 translate-x-px [font-size:inherit] [line-height:inherit] rounded-l-md ',
+});
 
 function Component() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -392,23 +397,51 @@ function Component() {
                       );
                     } else if (id === '__actions__') {
                       return (
-                        <Cell>
-                          <EditStateTrigger
-                            className=""
-                            variant="icon"
-                            onClick={() =>
-                              setEditState({
-                                isEditing: true,
-                                objectKey: row.key!,
-                                service: virtualObject,
-                              })
+                        <Cell className="align-top [&&&]:overflow-visible">
+                          <SplitButton
+                            menus={
+                              <>
+                                <DropdownItem value="edit">Edit…</DropdownItem>
+                                <DropdownItem destructive value="delete">
+                                  Delete…
+                                </DropdownItem>
+                              </>
                             }
+                            mini
+                            onSelect={(key) => {
+                              if (key === 'edit') {
+                                setEditState({
+                                  isEditing: true,
+                                  isDeleting: false,
+                                  objectKey: row.key!,
+                                  service: virtualObject,
+                                });
+                              }
+                              if (key === 'delete') {
+                                setEditState({
+                                  isEditing: true,
+                                  isDeleting: true,
+                                  objectKey: row.key!,
+                                  service: virtualObject,
+                                });
+                              }
+                            }}
                           >
-                            <Icon
-                              name={IconName.Pencil}
-                              className="w-3 h-3 fill-current opacity-70"
-                            />
-                          </EditStateTrigger>
+                            <EditStateTrigger
+                              className={actionButtonStyles()}
+                              variant="secondary"
+                              onClick={() =>
+                                setEditState({
+                                  isEditing: true,
+                                  isDeleting: false,
+                                  objectKey: row.key!,
+                                  service: virtualObject,
+                                })
+                              }
+                            >
+                              Edit
+                            </EditStateTrigger>
+                          </SplitButton>
                         </Cell>
                       );
                     } else {
@@ -440,6 +473,7 @@ function Component() {
                                           onClick={() =>
                                             setEditState({
                                               isEditing: true,
+                                              isDeleting: false,
                                               key: id,
                                               objectKey: row.key!,
                                               service: virtualObject,
@@ -469,6 +503,7 @@ function Component() {
                               onClick={() =>
                                 setEditState({
                                   isEditing: true,
+                                  isDeleting: false,
                                   key: id,
                                   objectKey: row.key!,
                                   service: virtualObject,
@@ -560,7 +595,6 @@ function Component() {
             sortedOldSearchParams.sort();
 
             setSearchParams(newSearchParams, { preventScrollReset: true });
-            console.log(query.items);
             setQueryFilters(
               query.items
                 .filter((clause) => clause.isValid)

@@ -1,31 +1,14 @@
 import { Invocation } from '@restate/data-access/admin-api';
-import {
-  Dropdown,
-  DropdownTrigger,
-  DropdownPopover,
-  DropdownMenu,
-  DropdownItem,
-  DropdownSection,
-} from '@restate/ui/dropdown';
-import { Icon, IconName } from '@restate/ui/icons';
+import { DropdownItem } from '@restate/ui/dropdown';
 import {
   CANCEL_INVOCATION_QUERY_PARAM,
   KILL_INVOCATION_QUERY_PARAM,
   PURGE_INVOCATION_QUERY_PARAM,
 } from './constants';
-import { Button } from '@restate/ui/button';
 import { Link } from '@restate/ui/link';
 import { tv } from 'tailwind-variants';
+import { SplitButton } from '@restate/ui/split-button';
 
-const menuTriggerStyles = tv({
-  base: 'group-focus-within:z-[2] rounded-l-md px-1 py-1 [font-size:inherit] [line-height:inherit] rounded-r-md text-gray-600',
-  variants: {
-    mini: {
-      false: 'rounded-l-none',
-      true: 'group-hover:rounded-l-none',
-    },
-  },
-});
 const mainButtonStyles = tv({
   base: 'rounded-r-none px-2 py-0.5 translate-x-px [font-size:inherit] [line-height:inherit] rounded-l-md text-red-500',
   variants: {
@@ -34,10 +17,6 @@ const mainButtonStyles = tv({
       false: '',
     },
   },
-});
-
-const styles = tv({
-  base: 'flex items-stretch relative overflow-visible group text-xs',
 });
 
 export function Actions({
@@ -55,7 +34,38 @@ export function Actions({
   const isCompleted = Boolean(invocation.completion_result);
 
   return (
-    <div className={styles({ className })}>
+    <SplitButton
+      mini={mini}
+      className={className}
+      menus={
+        <>
+          {!isCompleted && (
+            <DropdownItem
+              destructive
+              href={`?${CANCEL_INVOCATION_QUERY_PARAM}=${invocation.id}`}
+            >
+              Cancel…
+            </DropdownItem>
+          )}
+          {!isCompleted && (
+            <DropdownItem
+              destructive
+              href={`?${KILL_INVOCATION_QUERY_PARAM}=${invocation.id}`}
+            >
+              Kill…
+            </DropdownItem>
+          )}
+          {isCompleted && (
+            <DropdownItem
+              destructive
+              href={`?${PURGE_INVOCATION_QUERY_PARAM}=${invocation.id}`}
+            >
+              Delete…
+            </DropdownItem>
+          )}
+        </>
+      }
+    >
       <Link
         variant="secondary-button"
         href={
@@ -67,43 +77,6 @@ export function Actions({
       >
         {isCompleted ? 'Delete…' : 'Cancel…'}
       </Link>
-      <Dropdown>
-        <DropdownTrigger>
-          <Button variant="secondary" className={menuTriggerStyles({ mini })}>
-            <Icon name={IconName.ChevronsUpDown} className="w-[1em] h-[1em]" />
-          </Button>
-        </DropdownTrigger>
-        <DropdownPopover>
-          <DropdownSection title="Actions">
-            <DropdownMenu>
-              {!isCompleted && (
-                <DropdownItem
-                  destructive
-                  href={`?${CANCEL_INVOCATION_QUERY_PARAM}=${invocation.id}`}
-                >
-                  Cancel…
-                </DropdownItem>
-              )}
-              {!isCompleted && (
-                <DropdownItem
-                  destructive
-                  href={`?${KILL_INVOCATION_QUERY_PARAM}=${invocation.id}`}
-                >
-                  Kill…
-                </DropdownItem>
-              )}
-              {isCompleted && (
-                <DropdownItem
-                  destructive
-                  href={`?${PURGE_INVOCATION_QUERY_PARAM}=${invocation.id}`}
-                >
-                  Delete…
-                </DropdownItem>
-              )}
-            </DropdownMenu>
-          </DropdownSection>
-        </DropdownPopover>
-      </Dropdown>
-    </div>
+    </SplitButton>
   );
 }

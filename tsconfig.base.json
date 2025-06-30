@@ -83,6 +83,7 @@
       "@restate/ui/query-builder": ["libs/ui/query-builder/src/index.ts"],
       "@restate/ui/radio-group": ["libs/ui/radio-group/src/index.ts"],
       "@restate/ui/section": ["libs/ui/section/src/index.ts"],
+      "@restate/ui/split-button": ["libs/ui/split-button/src/index.ts"],
       "@restate/ui/table": ["libs/ui/table/src/index.ts"],
       "@restate/ui/tooltip": ["libs/ui/tooltip/src/index.ts"],
       "@restate/util/errors": ["libs/util/errors/src/index.ts"],
