@@ -77,6 +77,7 @@
       "@restate/ui/link": ["libs/ui/link/src/index.ts"],
       "@restate/ui/listbox": ["libs/ui/listbox/src/index.ts"],
       "@restate/ui/loading": ["libs/ui/loading/src/index.ts"],
+      "@restate/ui/meditor": ["libs/ui/editor/src/index.ts"],
       "@restate/ui/nav": ["libs/ui/nav/src/index.ts"],
       "@restate/ui/notification": ["libs/ui/notification/src/index.ts"],
       "@restate/ui/popover": ["libs/ui/popover/src/index.ts"],
