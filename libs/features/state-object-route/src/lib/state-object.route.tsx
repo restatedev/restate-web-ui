@@ -107,7 +107,7 @@ function EditStateTrigger(props: ComponentProps<typeof Button>) {
 }
 
 const actionButtonStyles = tv({
-  base: 'absolute invisible drop-shadow-[-20px_2px_4px_rgba(255,255,255,0.8)] group-hover:visible right-full z-[2] rounded-r-none px-2 py-0.5 translate-x-px [font-size:inherit] [line-height:inherit] rounded-l-md ',
+  base: 'absolute invisible drop-shadow-[-20px_2px_4px_rgba(255,255,255,0.4)] group-hover:visible right-full z-[2] rounded-r-none px-2 py-0.5 translate-x-px [font-size:inherit] [line-height:inherit] rounded-l-md ',
 });
 
 function Component() {
