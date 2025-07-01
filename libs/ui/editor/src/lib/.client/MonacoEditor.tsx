@@ -21,6 +21,8 @@ export function MonacoEditor({
         base: 'vs',
         colors: {
           'editor.background': '#00000000',
+          'editorLineNumber.foreground': '#00000080',
+          'editorLineNumber.activeForeground': '#00000080',
         },
         rules: [],
         inherit: true,
@@ -28,7 +30,7 @@ export function MonacoEditor({
       editorRef.current = monaco.editor.create(el, {
         value: formatValue(value),
         language: 'json',
-        folding: false,
+        folding: true,
         theme: 'restate',
         formatOnPaste: true,
         formatOnType: true,
