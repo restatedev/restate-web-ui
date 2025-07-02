@@ -9,7 +9,12 @@ export function isEntryCompletionAmbiguous(
     typeof useGetInvocationJournalWithInvocationV2
   >['data']
 ) {
-  if (!refEntry || !invocation || refEntry?.category !== 'command') {
+  if (
+    !refEntry ||
+    !invocation ||
+    refEntry?.category !== 'command' ||
+    (refEntry.type !== 'Run' && !invocation.completed_at)
+  ) {
     return { isAmbiguous: false };
   }
   const invocationIsCompleted = Boolean(invocation?.completed_at);

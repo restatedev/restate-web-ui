@@ -328,8 +328,9 @@ function InnerEntryProgress({
     : entryEnd;
 
   const executionTime = entry?.start
-    ? new Date(entry.end ?? (isPoint ? entry.start : dataUpdatedAt)).getTime() -
-      new Date(entry.start).getTime()
+    ? new Date(
+        entry.end ?? (isPoint ? entry.start : unambiguousEnd ?? dataUpdatedAt)
+      ).getTime() - new Date(entry.start).getTime()
     : 0;
   const pendingTime = entry?.start
     ? dataUpdatedAt - new Date(entry.start).getTime()
