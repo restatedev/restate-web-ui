@@ -11,11 +11,13 @@ const JournalContext = createContext<{
   isPending?: Record<string, boolean | undefined>;
   error?: Record<string, Error | null | undefined>;
   containerRef?: RefObject<HTMLDivElement | null>;
+  isLive: boolean;
 }>({
   invocationIds: [],
   start: 0,
   end: 0,
   dataUpdatedAt: 0,
+  isLive: false,
 });
 
 export function JournalContextProvider({
@@ -30,6 +32,7 @@ export function JournalContextProvider({
   isPending,
   error,
   containerRef,
+  isLive,
 }: PropsWithChildren<{
   invocationIds: string[];
   addInvocationId?: (id: string) => void;
@@ -41,6 +44,7 @@ export function JournalContextProvider({
   isPending?: Record<string, boolean | undefined>;
   error?: Record<string, Error | null | undefined>;
   containerRef?: RefObject<HTMLDivElement | null>;
+  isLive: boolean;
 }>) {
   return (
     <JournalContext.Provider
@@ -55,6 +59,7 @@ export function JournalContextProvider({
         containerRef,
         isPending,
         error,
+        isLive,
       }}
     >
       {children}

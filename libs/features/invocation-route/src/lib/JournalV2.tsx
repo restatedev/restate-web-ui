@@ -39,12 +39,14 @@ export function JournalV2({
   timelineWidth = 0.5,
   showApiError = true,
   withTimeline = true,
+  isLive = false,
 }: {
   invocationId: string;
   className?: string;
   timelineWidth?: number;
   showApiError?: boolean;
   withTimeline?: boolean;
+  isLive?: boolean;
 }) {
   const [invocationIds, setInvocationIds] = useState([String(invocationId)]);
 
@@ -164,6 +166,7 @@ export function JournalV2({
         dataUpdatedAt={dataUpdatedAt}
         isPending={isPending}
         error={apiError}
+        isLive={isLive}
       >
         <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
           <Suspense

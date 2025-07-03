@@ -1,6 +1,6 @@
 import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api';
 import { ErrorBanner } from '@restate/ui/error';
-import { useParams } from 'react-router';
+import { useParams, useSearchParams } from 'react-router';
 import { getRestateError, Status } from './Status';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { DeploymentSection } from './DeploymentSection';
@@ -39,6 +39,8 @@ const lastFailureContainer = tv({
 
 function Component() {
   const { id } = useParams<{ id: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const {
     data: journalAndInvocationData,
     isPending,
@@ -46,6 +48,17 @@ function Component() {
   } = useGetInvocationJournalWithInvocationV2(String(id), {
     refetchOnMount: true,
     staleTime: 0,
+    refetchInterval(query) {
+      if (
+        !query.state.data?.completed_at &&
+        searchParams.get('live') === 'true' &&
+        query.state.status === 'success'
+      ) {
+        return 1000;
+      } else {
+        return false;
+      }
+    },
   });
 
   const { baseUrl } = useRestateContext();
@@ -65,6 +78,11 @@ function Component() {
   const isVirtualObject =
     journalAndInvocationData?.target_service_ty === 'virtual_object';
   const isWorkflow = journalAndInvocationData?.target_service_ty === 'workflow';
+
+  const isLive =
+    searchParams.get('live') === 'true' &&
+    !journalAndInvocationData?.completed_at &&
+    !error;
 
   return (
     <InvocationPageProvider isInInvocationPage>
@@ -157,7 +175,11 @@ function Component() {
 
         <div className="flex flex-col mt-4">
           <div className="rounded-2xl border bg-gray-200/50 relative">
-            <JournalV2 invocationId={String(id)} key={String(id)} />
+            <JournalV2
+              invocationId={String(id)}
+              key={String(id)}
+              isLive={isLive}
+            />
           </div>
         </div>
       </div>

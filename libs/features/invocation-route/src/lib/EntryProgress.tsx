@@ -49,7 +49,7 @@ const pointStyles = tv({
 });
 
 const pendingStyles = tv({
-  base: 'transition-all mix-blend-overlay max-w-[223px] right-0 left-[calc(100%-200px)] rounded-md absolute top-0 bottom-0 [background:repeating-linear-gradient(-45deg,theme(colors.black/.15),theme(colors.black/.15)_8px,theme(colors.white/.40)_8px,theme(colors.white/.40)_16px)] [mask-image:linear-gradient(to_right,transparent_calc(100%-200px),black_100%)]',
+  base: 'transition-all duration-1000 mix-blend-overlay max-w-[223px] right-0 left-[calc(100%-200px)] rounded-md absolute top-0 bottom-0 [background:repeating-linear-gradient(-45deg,theme(colors.black/.15),theme(colors.black/.15)_8px,theme(colors.white/.40)_8px,theme(colors.white/.40)_16px)] [mask-image:linear-gradient(to_right,transparent_calc(100%-200px),black_100%)]',
   variants: {
     isLive: {
       true: 'animate-moveAndGrow',
@@ -92,7 +92,7 @@ function Point({
 const lineStyles = tv({
   base: '',
   slots: {
-    line: 'relative h-full rounded-md shadow-sm border border-white/80 bg-gradient-to-r',
+    line: 'via-100% relative h-full rounded-md shadow-sm border border-white/80 bg-gradient-to-r',
   },
   variants: {
     variant: {
@@ -186,9 +186,10 @@ function Line({
 }
 
 const progressStyles = tv({
-  base: 'h-full relative flex flex-col gap-0.5 items-start justify-center min-w-[4px] -translate-x-[1px] ',
+  base: 'transition-all duration-1000 h-full relative flex flex-col gap-0.5 items-start justify-center min-w-[4px] -translate-x-[1px] ',
   slots: {
-    segmentContainer: 'w-full flex [&>*]:w-full items-center',
+    segmentContainer:
+      'transition-all duration-1000 w-full flex [&>*]:w-full items-center',
   },
   variants: {
     isPending: {
@@ -305,7 +306,7 @@ function InnerEntryProgress({
     typeof useGetInvocationJournalWithInvocationV2
   >['data'];
 }>) {
-  const { dataUpdatedAt } = useJournalContext();
+  const { dataUpdatedAt, isLive } = useJournalContext();
 
   if (!entry?.start) {
     return null;
@@ -382,23 +383,10 @@ function InnerEntryProgress({
           <Line
             variant={getLineVariant(entry)}
             isAmbiguous={entryCompletionIsAmbiguous}
-            style={
-              {
-                '--tw-gradient-via-position':
-                  entry?.start && unambiguousEndTime
-                    ? `${
-                        (100 *
-                          (unambiguousEndTime -
-                            new Date(entry.start).getTime())) /
-                        executionTime
-                      }%`
-                    : '100%',
-              } as any
-            }
           >
             {isPending && (
               <div className="absolute inset-0 overflow-hidden rounded-md">
-                <Pending />
+                <Pending isLive={isLive} />
               </div>
             )}
           </Line>
@@ -445,11 +433,10 @@ export function EntryProgressContainer({
   if (!entry?.start) {
     return null;
   }
-  const { isAmbiguous: entryCompletionIsAmbiguous } =
-    isEntryCompletionAmbiguous(entry, invocation);
+  const { unambiguousEnd } = isEntryCompletionAmbiguous(entry, invocation);
   const entryStart = entry?.start ? new Date(entry.start).getTime() : undefined;
-  const entryEnd = entryCompletionIsAmbiguous
-    ? new Date(String(invocation?.completed_at)).getTime()
+  const entryEnd = unambiguousEnd
+    ? new Date(unambiguousEnd).getTime()
     : entry?.end
     ? new Date(entry.end ?? entry.start).getTime()
     : undefined;

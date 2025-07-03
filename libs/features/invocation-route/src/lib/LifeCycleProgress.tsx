@@ -116,7 +116,7 @@ export function LifeCycleProgress({
 }
 
 const unitsStyles = tv({
-  base: '',
+  base: 'transition-all duration-1000',
 });
 export function Units({
   className,
@@ -141,9 +141,9 @@ export function Units({
     <>
       <div className="absolute h-12 -left-6 right-0 border-transparent bg-gray-100 border-white rounded-2xl shadow-sm border border-t-[2px] z-[0]"></div>
       {cancelEvent && (
-        <div className="overflow-hidden px-2 top-12 pointer-events-none bottom-0 absolute right-0 left-0">
+        <div className="transition-all duration-1000 overflow-hidden px-2 top-12 pointer-events-none bottom-0 absolute right-0 left-0">
           <div
-            className="  mix-blend-overlay border-l-2  w-full h-full  bg-zinc-900/50 [background:repeating-linear-gradient(-45deg,theme(colors.black/.6),theme(colors.black/.6)_2px,theme(colors.white/0)_2px,theme(colors.white/0)_4px)]  rounded-br-2xl"
+            className=" transition-all duration-1000 mix-blend-overlay border-l-2 border-black w-full h-full  bg-zinc-900/50 [background:repeating-linear-gradient(-45deg,theme(colors.black/.6),theme(colors.black/.6)_2px,theme(colors.white/0)_2px,theme(colors.white/0)_4px)]  rounded-br-2xl"
             style={{
               marginLeft: `calc(${
                 ((new Date(String(cancelEvent.start)).getTime() - start) /
@@ -152,6 +152,24 @@ export function Units({
               }% - 1px)`,
             }}
           />
+        </div>
+      )}
+      {dataUpdatedAt < end && (
+        <div
+          style={{
+            left: `calc(${
+              ((dataUpdatedAt - start) / executionTime) * 100
+            }% - 2px - 0.5rem)`,
+          }}
+          className="transition-all duration-1000 right-0 rounded-r-2xl [background:repeating-linear-gradient(-45deg,theme(colors.white/.6),theme(colors.white/.6)_2px,theme(colors.white/0)_2px,theme(colors.white/0)_4px)] absolute border-l-2 text-gray-500  text-2xs font-sans border-white/80  bottom-0 top-px "
+        >
+          <div className="absolute left-0 top-0 h-full w-2 z-[1]">
+            <div className="h-full w-full relative">
+              <HoverTooltip content="Now">
+                <div className="absolute h-full w-full " />
+              </HoverTooltip>
+            </div>
+          </div>
         </div>
       )}
       <div className={unitsStyles({ className })}>
@@ -171,22 +189,8 @@ export function Units({
             </DateTooltip>
           </div>
         </div>
-        {dataUpdatedAt < end && (
-          <div
-            style={{
-              left: `calc(${
-                ((dataUpdatedAt - start) / executionTime) * 100
-              }% - 2px - 0.5rem)`,
-            }}
-            className="absolute border-l-2 text-gray-500  text-2xs font-sans border-white/80  bottom-0 top-px "
-          >
-            <HoverTooltip content="Now">
-              <div className="absolute left-0 top-0 h-full w-2 z-[1]" />
-            </HoverTooltip>
-          </div>
-        )}
 
-        <div className="w-full h-full flex pointer-events-none overflow-hidden rounded-r-2xl ">
+        <div className="transition-all duration-1000 w-full h-full flex pointer-events-none overflow-hidden rounded-r-2xl ">
           <div className="w-2 shrink-0" />
           {Array(numOfInterval)
             .fill(null)
@@ -194,7 +198,7 @@ export function Units({
               return (
                 <div
                   key={i}
-                  className="text-right text-2xs font-sans pr-0.5 pt-1 text-gray-500  border-r border-black/10 border-dotted pointer-events-none even:bg-gray-400/5"
+                  className="transition-all duration-1000 text-right text-2xs font-sans pr-0.5 pt-1 text-gray-500  border-r border-black/10 border-dotted pointer-events-none even:bg-gray-400/5"
                   style={{
                     width: `${(unit / executionTime) * 100}%`,
                   }}
