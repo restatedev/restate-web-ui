@@ -60,6 +60,17 @@ export function JournalV2({
   } = useGetInvocationsJournalWithInvocationsV2(invocationIds, {
     refetchOnMount: true,
     staleTime: 0,
+    refetchInterval(query) {
+      if (
+        isLive &&
+        query.state.status === 'success' &&
+        !query.state.data?.completed_at
+      ) {
+        return 1000;
+      } else {
+        return false;
+      }
+    },
   });
 
   const addInvocationId = useCallback(
@@ -115,7 +126,11 @@ export function JournalV2({
         ? new Date(entry.start).getTime()
         : -1
     ) ?? []),
-    !journalAndInvocationData.completed_at ? dataUpdatedAt : -1
+    !invocationIds.every((id) => data[id]?.completed_at)
+      ? Math.max(
+          ...Array.from(Object.values(allQueriesDataUpdatedAt).map(Number))
+        )
+      : -1
   );
 
   const entriesElements = (

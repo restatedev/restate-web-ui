@@ -698,6 +698,7 @@ export function useGetInvocationsJournalWithInvocationsV2(
     queries: [
       ...invocationQueries.map((invocationQuery) => ({
         ...invocationQuery,
+        ...options,
         refetchOnMount: options?.refetchOnMount !== false,
         enabled: options?.enabled !== false,
         staleTime: 0,
