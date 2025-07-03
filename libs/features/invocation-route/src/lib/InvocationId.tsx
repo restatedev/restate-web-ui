@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Icon, IconName } from '@restate/ui/icons';
 import { HoverTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Link } from '@restate/ui/link';
@@ -108,7 +108,28 @@ export function InvocationId({
   const location = useLocation();
 
   const isInInvocationsPage = useIsInInvocationPage();
-  const openInSidebar = Boolean(isInInvocationsPage);
+  const [isMetaKeyPressed, setIsMetaKeyPressed] = useState(false);
+  const openInSidebar = Boolean(isInInvocationsPage) && !isMetaKeyPressed;
+
+  useEffect(() => {
+    const keyDownHandler = (e: KeyboardEvent) => {
+      if (e.key === 'Meta' || e.key === 'Shift') {
+        setIsMetaKeyPressed(true);
+      }
+    };
+    const keyUpHandler = (e: KeyboardEvent) => {
+      if (e.key === 'Meta' || e.key === 'Shift') {
+        setIsMetaKeyPressed(false);
+      }
+    };
+    window.addEventListener('keydown', keyDownHandler);
+    window.addEventListener('keyup', keyUpHandler);
+
+    return () => {
+      window.removeEventListener('keydown', keyDownHandler);
+      window.removeEventListener('keyup', keyUpHandler);
+    };
+  }, []);
 
   const linkElement = (
     <Link
