@@ -324,10 +324,6 @@ function InnerEntryProgress({
   const { isAmbiguous: entryCompletionIsAmbiguous, unambiguousEnd } =
     isEntryCompletionAmbiguous(entry, invocation);
 
-  const unambiguousEndTime = unambiguousEnd
-    ? new Date(unambiguousEnd).getTime()
-    : entryEnd;
-
   const executionTime = entry?.start
     ? new Date(
         entry.end ?? (isPoint ? entry.start : unambiguousEnd ?? dataUpdatedAt)
