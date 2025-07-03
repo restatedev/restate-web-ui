@@ -49,10 +49,10 @@ const pointStyles = tv({
 });
 
 const pendingStyles = tv({
-  base: 'mix-blend-overlay rounded-md absolute inset-0 [background:repeating-linear-gradient(-45deg,theme(colors.black/.15),theme(colors.black/.15)_8px,theme(colors.white/.40)_8px,theme(colors.white/.40)_16px)] [mask-image:linear-gradient(to_right,transparent_calc(100%-200px),black_100%)]',
+  base: 'transition-all mix-blend-overlay max-w-[223px] right-0 left-[calc(100%-200px)] rounded-md absolute top-0 bottom-0 [background:repeating-linear-gradient(-45deg,theme(colors.black/.15),theme(colors.black/.15)_8px,theme(colors.white/.40)_8px,theme(colors.white/.40)_16px)] [mask-image:linear-gradient(to_right,transparent_calc(100%-200px),black_100%)]',
   variants: {
     isLive: {
-      true: '[animation-duration:2000ms] animate-in slide-in-from-left-[34px] repeat-infinite',
+      true: 'animate-moveAndGrow',
       false: '',
     },
   },
@@ -396,7 +396,11 @@ function InnerEntryProgress({
               } as any
             }
           >
-            {isPending && <Pending />}
+            {isPending && (
+              <div className="absolute inset-0 overflow-hidden rounded-md">
+                <Pending />
+              </div>
+            )}
           </Line>
         )}
       </div>
