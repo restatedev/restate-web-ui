@@ -9,15 +9,13 @@ import type { Key, Selection } from 'react-aria-components';
 export type DropdownMenuSelection = Selection;
 
 const styles = tv({
-  base: 'p-1 outline outline-0 max-h-[inherit] overflow-auto [clip-path:inset(0_0_0_0_round_.75rem)] [&~.dropdown-menu]:pt-0',
+  base: 'dropdown-menu p-1 outline outline-0 max-h-[inherit] overflow-auto [clip-path:inset(0_0_0_0_round_.75rem)] [&~.dropdown-menu]:pt-0',
 });
 function StyledDropdownMenu<T extends object>({
   className,
   ...props
-}: AriaMenuProps<T>) {
-  return (
-    <AriaMenu {...props} className={`${styles({ className })} dropdown-menu`} />
-  );
+}: Omit<AriaMenuProps<T>, 'className'> & { className?: string }) {
+  return <AriaMenu {...props} className={styles({ className })} />;
 }
 
 export interface DropdownMenuProps {

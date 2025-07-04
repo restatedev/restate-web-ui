@@ -184,7 +184,12 @@ export function Notification({ state, className, ...props }: ToastProps) {
         </div>
       </div>
       <PressResponder onPress={closeButtonProps.onPress}>
-        <Button {...closeButtonProps} variant="icon" className={close()}>
+        <Button
+          {...closeButtonProps}
+          onClick={closeButtonProps.onPress}
+          variant="icon"
+          className={close()}
+        >
           <Icon name={IconName.X} />
         </Button>
       </PressResponder>

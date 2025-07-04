@@ -42,26 +42,22 @@ async function listInvocations(
   headers: Headers,
   filters: FilterItem[]
 ) {
-  const totalCountPromise = queryFetcher(
-    `SELECT COUNT(*) AS total_count FROM sys_invocation ${convertInvocationsFilters(
-      filters
-    )}`,
-    { baseUrl, headers }
-  ).then(({ rows }) => rows?.at(0)?.total_count as number);
   const invocationsPromise = queryFetcher(
-    `SELECT * FROM sys_invocation ${convertInvocationsFilters(
+    `SELECT *, COUNT(*) OVER() AS total_count FROM sys_invocation ${convertInvocationsFilters(
       filters
     )} ORDER BY modified_at DESC LIMIT ${INVOCATIONS_LIMIT}`,
     {
       baseUrl,
       headers,
     }
-  ).then(({ rows }) => rows.map(convertInvocation));
+  ).then(({ rows }) => {
+    return {
+      invocations: rows.map(convertInvocation),
+      total_count: rows.at(0)?.total_count ?? 0,
+    };
+  });
 
-  const [total_count, invocations] = await Promise.all([
-    totalCountPromise,
-    invocationsPromise,
-  ]);
+  const { total_count, invocations } = await invocationsPromise;
 
   return new Response(
     JSON.stringify({

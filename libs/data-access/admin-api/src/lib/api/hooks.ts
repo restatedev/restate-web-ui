@@ -49,6 +49,8 @@ type HookMutationOptions<
   'mutationFn' | 'mutationKey'
 >;
 
+const SERVICE_TIMESTAMP = new Map<string, Date>();
+
 function listDeploymentsSelector(
   data:
     | {
@@ -85,6 +87,20 @@ function listDeploymentsSelector(
 
         deployments.set(deployment.id, deployment);
       });
+
+      services.forEach(
+        ({ deployments: deploymentIds, sortedRevisions }, service) => {
+          if (!SERVICE_TIMESTAMP.get(service)) {
+            const deploymentId =
+              deploymentIds[sortedRevisions.at(0) ?? 1]?.at(0);
+            const date =
+              (deploymentId && deployments.get(deploymentId)?.created_at) ||
+              Date.now();
+
+            SERVICE_TIMESTAMP.set(service, new Date(date));
+          }
+        }
+      );
       return { services, deployments };
     },
     {
@@ -100,19 +116,13 @@ function listDeploymentsSelector(
   );
 
   const sortedServiceNames = Array.from(services.keys()).sort((a, b) => {
-    const aRevision = services.get(a)?.sortedRevisions[0] ?? 1;
-    const bRevision = services.get(b)?.sortedRevisions[0] ?? 1;
-    const aDeploymentId = services.get(a)?.deployments[aRevision]?.[0];
-    const bDeploymentId = services.get(b)?.deployments[bRevision]?.[0];
-    const aDeployment = aDeploymentId && deployments.get(aDeploymentId);
-    const bDeployment = bDeploymentId && deployments.get(bDeploymentId);
-    if (!aDeployment || !bDeployment) {
-      return Number(bDeployment) - Number(aDeployment);
+    const bTimestamp = SERVICE_TIMESTAMP.get(b);
+    const aTimestamp = SERVICE_TIMESTAMP.get(a);
+    if (!aTimestamp || !bTimestamp) {
+      return a.localeCompare(b);
     }
-    const { created_at: aCreated } = aDeployment;
-    const { created_at: bCreated } = bDeployment;
 
-    return new Date(bCreated).valueOf() - new Date(aCreated).valueOf();
+    return bTimestamp.getTime() - aTimestamp.getTime() || a.localeCompare(b);
   });
   return { services, deployments, sortedServiceNames };
 }
@@ -688,6 +698,7 @@ export function useGetInvocationsJournalWithInvocationsV2(
     queries: [
       ...invocationQueries.map((invocationQuery) => ({
         ...invocationQuery,
+        ...options,
         refetchOnMount: options?.refetchOnMount !== false,
         enabled: options?.enabled !== false,
         staleTime: 0,

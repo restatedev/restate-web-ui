@@ -27,6 +27,19 @@ module.exports = withTV({
       screens: {
         '3xl': '1950px',
       },
+      keyframes: {
+        moveAndGrow: {
+          '0%': {
+            right: '0',
+          },
+          '100%': {
+            right: '-23px',
+          },
+        },
+      },
+      animation: {
+        moveAndGrow: 'moveAndGrow 2s ease-in-out infinite',
+      },
     },
   },
   plugins: [
