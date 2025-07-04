@@ -4,7 +4,7 @@ import { EntryProgress, EntryProgressContainer } from './EntryProgress';
 import { useJournalContext } from './JournalContext';
 import { formatDurations } from '@restate/util/intl';
 import { getDuration } from '@restate/util/snapshot-time';
-import { DateTooltip, HoverTooltip } from '@restate/ui/tooltip';
+import { DateTooltip } from '@restate/ui/tooltip';
 
 function unitInterval(duration: number) {
   const niceIntervals = [
@@ -143,7 +143,7 @@ export function Units({
       {cancelEvent && (
         <div className="transition-all duration-1000 overflow-hidden px-2 top-12 pointer-events-none bottom-0 absolute right-0 left-0">
           <div
-            className=" transition-all duration-1000 mix-blend-overlay border-l-2 border-black w-full h-full  bg-zinc-900/50 [background:repeating-linear-gradient(-45deg,theme(colors.black/.6),theme(colors.black/.6)_2px,theme(colors.white/0)_2px,theme(colors.white/0)_4px)]  rounded-br-2xl"
+            className=" transition-all duration-1000 mix-blend-multiply border-l-2 border-black/[0.08] w-full h-full  bg-zinc-900/50 [background:repeating-linear-gradient(-45deg,theme(colors.black/0.04),theme(colors.black/0.04)_2px,theme(colors.white/0)_2px,theme(colors.white/0)_4px)]  rounded-br-2xl"
             style={{
               marginLeft: `calc(${
                 ((new Date(String(cancelEvent.start)).getTime() - start) /
@@ -161,14 +161,11 @@ export function Units({
               ((dataUpdatedAt - start) / executionTime) * 100
             }% - 2px - 0.5rem)`,
           }}
-          className="transition-all duration-1000 right-0 rounded-r-2xl [background:repeating-linear-gradient(-45deg,theme(colors.white/.6),theme(colors.white/.6)_2px,theme(colors.white/0)_2px,theme(colors.white/0)_4px)] absolute border-l-2 text-gray-500  text-2xs font-sans border-white/80  bottom-0 top-px "
+          className=" transition-all duration-1000 right-0 rounded-r-2xl absolute border-l-2 text-gray-500  text-2xs font-sans border-white/80  bottom-0 top-px "
         >
-          <div className="absolute left-0 top-0 h-full w-2 z-[1]">
-            <div className="h-full w-full relative">
-              <HoverTooltip content="Now">
-                <div className="absolute h-full w-full " />
-              </HoverTooltip>
-            </div>
+          <div className="absolute inset-0 rounded-r-2xl  mix-blend-screen [background:repeating-linear-gradient(-45deg,theme(colors.white/.6),theme(colors.white/.6)_2px,theme(colors.white/0)_2px,theme(colors.white/0)_4px)] "></div>
+          <div className="absolute mt-0.5 ml-px text-white border border-white text-2xs bg-zinc-500 px-1 rounded z-[4]">
+            Now
           </div>
         </div>
       )}
@@ -198,7 +195,7 @@ export function Units({
               return (
                 <div
                   key={i}
-                  className="transition-all duration-1000 text-right text-2xs font-sans pr-0.5 pt-1 text-gray-500  border-r border-black/10 border-dotted pointer-events-none even:bg-gray-400/5"
+                  className="transition-all duration-1000 z-[3] text-right text-2xs font-sans pr-0.5 pt-1 text-gray-500  border-r border-black/10 border-dotted pointer-events-none even:bg-gray-400/5"
                   style={{
                     width: `${(unit / executionTime) * 100}%`,
                   }}

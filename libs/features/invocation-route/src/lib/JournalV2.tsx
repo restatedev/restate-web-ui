@@ -298,7 +298,7 @@ function TimelineContainer({
   );
   return (
     <div
-      className="w-full [content-visibility:auto] pl-2 pr-2 h-9 border-b  border-transparent relative [&:not(:has(>*+*))]:hidden"
+      className="w-full  [content-visibility:auto] pl-2 pr-2 h-9 border-b  border-transparent relative [&:not(:has(>*+*))]:hidden"
       ref={setPortal}
     >
       <div className="absolute left-0 right-0 h-px top-1/2 border-gray-300/70  translate-y-[-1px] border-dashed border-b border-spacing-10" />

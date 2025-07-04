@@ -189,7 +189,7 @@ const progressStyles = tv({
   base: 'transition-all duration-1000 h-full relative flex flex-col gap-0.5 items-start justify-center min-w-[4px] -translate-x-[1px] ',
   slots: {
     segmentContainer:
-      'transition-all duration-1000 w-full flex [&>*]:w-full items-center',
+      'transition-all duration-1000 w-full flex [&>*]:w-full items-center ',
   },
   variants: {
     isPending: {
