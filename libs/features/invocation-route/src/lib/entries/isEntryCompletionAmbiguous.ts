@@ -3,6 +3,7 @@ import {
   useGetInvocationJournalWithInvocationV2,
 } from '@restate/data-access/admin-api';
 
+// TODO: move to middleware
 export function isEntryCompletionAmbiguous(
   refEntry?: JournalEntryV2,
   invocation?: ReturnType<
@@ -13,7 +14,8 @@ export function isEntryCompletionAmbiguous(
     !refEntry ||
     !invocation ||
     refEntry?.category !== 'command' ||
-    (refEntry.type !== 'Run' && !invocation.completed_at)
+    (refEntry.type !== 'Run' && !invocation.completed_at) ||
+    !refEntry.isPending
   ) {
     return { isAmbiguous: false };
   }
