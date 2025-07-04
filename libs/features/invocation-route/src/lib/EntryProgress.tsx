@@ -361,11 +361,15 @@ function InnerEntryProgress({
     );
   }
 
+  // TODO: move to middleware
   const isPending =
     entry?.isPending &&
     !entryCompletionIsAmbiguous &&
-    (!entry.isRetrying || invocation?.status !== 'backing-off');
-
+    !(
+      entry.type === 'Run' &&
+      entry.category === 'command' &&
+      invocation?.status !== 'running'
+    );
   return (
     <EntryProgressContainer
       entry={entry}
