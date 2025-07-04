@@ -2,7 +2,7 @@ import {
   JournalEntryV2,
   useGetInvocationsJournalWithInvocationsV2,
 } from '@restate/data-access/admin-api';
-import { Fragment, lazy, Suspense, useCallback, useState } from 'react';
+import { lazy, Suspense, useCallback, useState } from 'react';
 import { InvocationId } from './InvocationId';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
 import { Link } from '@restate/ui/link';
@@ -12,12 +12,13 @@ import { HoverTooltip } from '@restate/ui/tooltip';
 import { useRestateContext } from '@restate/features/restate-context';
 import { ErrorBanner } from '@restate/ui/error';
 import { JournalContextProvider } from './JournalContext';
-import { Spinner } from '@restate/ui/loading';
+import { Indicator, Spinner } from '@restate/ui/loading';
 import { Entry } from './Entry';
 import { Input } from './entries/Input';
 import { getTimelineId, PortalProvider, usePortals } from './Portals';
 import { LifeCycleProgress, Units } from './LifeCycleProgress';
 import { ErrorBoundary } from './ErrorBoundry';
+import { tv } from 'tailwind-variants';
 
 const LazyPanel = lazy(() =>
   import('react-resizable-panels').then((m) => ({ default: m.Panel }))
@@ -33,6 +34,16 @@ const LazyPanelResizeHandle = lazy(() =>
   }))
 );
 
+const liveStyles = tv({
+  base: 'rounded text-gray-500 text-xs font-semibold uppercase flex items-center gap-1 px-2',
+  variants: {
+    isLive: {
+      true: '',
+      false: '',
+    },
+  },
+});
+
 export function JournalV2({
   invocationId,
   className,
@@ -40,6 +51,7 @@ export function JournalV2({
   showApiError = true,
   withTimeline = true,
   isLive = false,
+  setIsLive,
 }: {
   invocationId: string;
   className?: string;
@@ -47,6 +59,7 @@ export function JournalV2({
   showApiError?: boolean;
   withTimeline?: boolean;
   isLive?: boolean;
+  setIsLive?: (value: boolean) => void;
 }) {
   const [invocationIds, setInvocationIds] = useState([String(invocationId)]);
 
@@ -118,6 +131,9 @@ export function JournalV2({
     journalAndInvocationData?.created_at ??
       new Date(dataUpdatedAt).toISOString()
   ).getTime();
+  const areAllInvocationsCompleted = invocationIds.every(
+    (id) => data[id]?.completed_at
+  );
   const end = Math.max(
     ...(combinedEntries?.map(({ entry }) =>
       entry?.end
@@ -126,7 +142,7 @@ export function JournalV2({
         ? new Date(entry.start).getTime()
         : -1
     ) ?? []),
-    !invocationIds.every((id) => data[id]?.completed_at)
+    !areAllInvocationsCompleted
       ? Math.max(
           ...Array.from(Object.values(allQueriesDataUpdatedAt).map(Number))
         )
@@ -209,12 +225,30 @@ export function JournalV2({
                   />
                 ) : null}
               </div>
-              <div className="ml-auto flex flex-row gap-2 items-center justify-end z-10 h-full bg-gradient-to-l from-gray-100 via-gray-100 to-gray-100/0 rounded-lg pl-10">
-                <HoverTooltip content="Refresh">
-                  <Button variant="icon" onClick={refetch}>
-                    <Icon name={IconName.Retry} className="w-4 h-4" />
+              <div className="ml-auto flex flex-row gap-1 items-center justify-end z-10 h-full bg-gradient-to-l from-gray-100 via-gray-100 to-gray-100/0 rounded-lg pl-10">
+                {!areAllInvocationsCompleted && setIsLive && (
+                  <Button
+                    variant="icon"
+                    className={liveStyles({ isLive })}
+                    onClick={() => setIsLive?.(!isLive)}
+                  >
+                    <div className="">Live</div>
+                    {isLive && <Indicator status="INFO" className="mb-0.5" />}
+                    {!isLive && (
+                      <Icon
+                        name={IconName.Play}
+                        className="mb-px  w-2.5 h-2.5  fill-current"
+                      />
+                    )}
                   </Button>
-                </HoverTooltip>
+                )}
+                {areAllInvocationsCompleted && (
+                  <HoverTooltip content="Refresh">
+                    <Button variant="icon" onClick={refetch}>
+                      <Icon name={IconName.Retry} className="w-4 h-4" />
+                    </Button>
+                  </HoverTooltip>
+                )}
                 <HoverTooltip content="Introspect">
                   <Link
                     variant="icon"

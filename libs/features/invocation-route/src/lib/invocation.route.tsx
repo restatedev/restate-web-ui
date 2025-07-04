@@ -165,6 +165,12 @@ function Component() {
               invocationId={String(id)}
               key={String(id)}
               isLive={isLive}
+              setIsLive={(value) => {
+                setSearchParams((old) => {
+                  old.set('live', String(value));
+                  return old;
+                });
+              }}
             />
           </div>
         </div>
