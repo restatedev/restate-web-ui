@@ -76,13 +76,11 @@ export function lifeCycles(
       end:
         invocation.status === 'running'
           ? undefined
-          : invocation.status === 'suspended'
+          : invocation.status === 'suspended' || invocation.status === 'ready'
           ? invocation.modified_at
           : invocation.status === 'backing-off'
-          ? invocation.modified_at
-          : invocation.completed_at
-          ? invocation.completed_at
-          : undefined,
+          ? datesMax(invocation.last_start_at, invocation.modified_at)
+          : invocation.completed_at,
       isPending: invocation.status === 'running',
     });
   }
@@ -95,4 +93,14 @@ export function lifeCycles(
   }
 
   return events;
+}
+
+function datesMax(a?: string, b?: string) {
+  try {
+    return new Date(
+      Math.max(new Date(a || 0).getTime(), new Date(b || 0).getTime())
+    ).toISOString();
+  } catch (error) {
+    return undefined;
+  }
 }
