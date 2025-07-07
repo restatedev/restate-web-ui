@@ -191,10 +191,15 @@ export function EntryExpression({
   const { isAmbiguous: entryCompletionIsAmbiguous } =
     isEntryCompletionAmbiguous(entry, invocation);
 
+  // TODO: move to middleware
   const isPending =
     entry?.isPending &&
     !entryCompletionIsAmbiguous &&
-    (!entry.isRetrying || invocation?.status !== 'backing-off');
+    !(
+      entry.type === 'Run' &&
+      entry.category === 'command' &&
+      invocation?.status !== 'running'
+    );
 
   return (
     <Expression
