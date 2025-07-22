@@ -8,9 +8,9 @@
     "@buf/restatedev_service-protocol.bufbuild_es": "2.2.3-20240606160341-127256df3b4d.1",
     "@bufbuild/protobuf": "2.2.3",
     "@formatjs/intl-durationformat": "0.7.4",
-    "@react-aria/toast": "3.0.0-beta.18",
     "@internationalized/date": "3.8.2",
     "@react-aria/interactions": "3.25.3",
+    "@react-aria/toast": "3.0.0-beta.18",
     "@react-aria/utils": "3.29.1",
     "@react-router/node": "7.5.3",
     "@react-router/serve": "7.5.3",
@@ -134,7 +134,8 @@
       "prismjs@<1.30.0": ">=1.30.0",
       "@babel/runtime@<7.26.10": ">=7.26.10",
       "@babel/helpers@<7.26.10": ">=7.26.10",
-      "koa@>=2.0.0 <2.15.4": ">=2.15.4"
+      "koa@>=2.0.0 <2.15.4": ">=2.15.4",
+      "form-data@>=4.0.0 <4.0.4": ">=4.0.4"
     },
     "peerDependencyRules": {
       "allowAny": [
