@@ -203,9 +203,7 @@ export function EntryExpression({
 
   return (
     <Expression
-      namePrefix={
-        ['Input', 'Output'].includes(String(entry.type)) ? '' : 'ctx.'
-      }
+      namePrefix={''}
       name={
         NAME_COMMANDS_COMPONENTS[entry.type as CommandEntryType] || name || ''
       }
