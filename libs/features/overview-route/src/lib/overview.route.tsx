@@ -234,7 +234,9 @@ function Component() {
         >
           {sortedServiceNames?.map((serviceName) => (
             <Service
-              key={serviceName}
+              key={
+                serviceName + services?.get(serviceName)?.sortedRevisions?.at(0)
+              }
               serviceName={serviceName}
               className="max-w-lg"
               filterText={filterQuery}

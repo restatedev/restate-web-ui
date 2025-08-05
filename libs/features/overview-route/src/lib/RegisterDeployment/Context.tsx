@@ -19,7 +19,6 @@ import {
 import { useDialog } from '@restate/ui/dialog';
 import { showSuccessNotification } from '@restate/ui/notification';
 import { RestateError } from '@restate/util/errors';
-import { useQueryClient } from '@tanstack/react-query';
 
 type NavigateToAdvancedAction = {
   type: 'NavigateToAdvancedAction';
@@ -203,7 +202,6 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
     []
   );
   const { refetch, data: listDeployments } = useListDeployments();
-  const queryClient = useQueryClient();
   const { mutate, isPending, error, reset } = useRegisterDeployment({
     onSuccess(data) {
       updateServices({
@@ -215,18 +213,6 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
 
       if (state.stage === 'confirm') {
         refetch();
-        queryClient.refetchQueries(
-          {
-            // TODO, remove hard coded predicate
-            predicate(query) {
-              return (
-                Array.isArray(query.queryKey) &&
-                query.queryKey.at(0) === '/services/{service}'
-              );
-            },
-          },
-          { cancelRefetch: true }
-        );
         close?.();
         showSuccessNotification(
           <>
