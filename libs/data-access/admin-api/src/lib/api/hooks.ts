@@ -1130,7 +1130,7 @@ export function useEditState(
     state: Record<string, string | undefined>;
     partial?: boolean;
   }) => {
-    if (!query.data?.version) {
+    if (!query.data?.version && variables.partial) {
       throw new RestateError(
         'Modifying the state is only allowed in an HTTPS context.'
       );
