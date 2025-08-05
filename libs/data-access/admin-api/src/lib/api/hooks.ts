@@ -1151,9 +1151,12 @@ export function useEditState(
           version: query.data?.version,
         }),
         new_state: {
-          ...(variables.partial && {
-            ...convertStateToUnit8Array(convertStateToObject(query.data.state)),
-          }),
+          ...(variables.partial &&
+            query.data && {
+              ...convertStateToUnit8Array(
+                convertStateToObject(query.data.state)
+              ),
+            }),
           ...convertStateToUnit8Array(variables.state),
         },
       },
