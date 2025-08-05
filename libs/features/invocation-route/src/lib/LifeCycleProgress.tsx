@@ -8,7 +8,10 @@ import { DateTooltip } from '@restate/ui/tooltip';
 
 function unitInterval(duration: number) {
   const niceIntervals = [
+    5, // 5 ms
     10, // 10 ms
+    25, // 25 ms
+    50, // 50 ms
     100, // 100 ms
     500, // 500 ms
     1000, // 1 second
@@ -46,7 +49,10 @@ function unitInterval(duration: number) {
 
   if (Math.ceil(duration / matchedInterval) >= 3) {
     return niceIntervals.at(matchedIntervalIndex) as number;
-  } else if (matchedIntervalIndex >= 1) {
+  } else if (
+    matchedIntervalIndex >= 1 &&
+    Math.ceil(duration / Number(niceIntervals.at(matchedIntervalIndex - 1))) < 6
+  ) {
     return niceIntervals.at(matchedIntervalIndex - 1) as number;
   } else {
     return Math.ceil(idealInterval);

@@ -94,7 +94,7 @@ async function getInvocation(
   return new Response(
     JSON.stringify({
       message:
-        'Either the invocation cannot be found or it may have already completed. Please note that completed invocations are retained only for workflows or those with idempotency keys, and solely for the specified retention period.',
+        'Invocation not found or no longer available.\n\nThe requested invocation either does not exist or has already completed and has been removed after its retention period expired. Completed invocations are only retained if a journal retention period is explicitly set, if they are part of a workflow, or if they were invoked with an idempotency key. In all cases, they are retained only for the duration of the specified retention period.',
     }),
     {
       status: 404,
@@ -181,7 +181,7 @@ async function getInvocationJournalV2(
     return new Response(
       JSON.stringify({
         message:
-          'Either the invocation cannot be found or it may have already completed. Please note that completed invocations are retained only for workflows or those with idempotency keys, and solely for the specified retention period.',
+          'Invocation not found or no longer available.\n\nThe requested invocation either does not exist or has already completed and has been removed after its retention period expired. Completed invocations are only retained if a journal retention period is explicitly set, if they are part of a workflow, or if they were invoked with an idempotency key. In all cases, they are retained only for the duration of the specified retention period.',
       }),
       {
         status: 404,
