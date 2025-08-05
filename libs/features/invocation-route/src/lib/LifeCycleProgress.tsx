@@ -51,7 +51,7 @@ function unitInterval(duration: number) {
     return niceIntervals.at(matchedIntervalIndex) as number;
   } else if (
     matchedIntervalIndex >= 1 &&
-    Math.ceil(duration / niceIntervals.at(matchedIntervalIndex - 1)) < 6
+    Math.ceil(duration / Number(niceIntervals.at(matchedIntervalIndex - 1))) < 6
   ) {
     return niceIntervals.at(matchedIntervalIndex - 1) as number;
   } else {
