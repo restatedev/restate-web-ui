@@ -202,7 +202,6 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
     []
   );
   const { refetch, data: listDeployments } = useListDeployments();
-
   const { mutate, isPending, error, reset } = useRegisterDeployment({
     onSuccess(data) {
       updateServices({
