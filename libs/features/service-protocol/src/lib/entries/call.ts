@@ -57,11 +57,12 @@ export function callV1(
         ...metadata,
         isLoaded: true,
         resultType: 'failure',
-        error:
-          new RestateError(
-            message.result.value.message,
-            message.result.value.code.toString()
-          ) || error,
+        error: message.result.value.message
+          ? new RestateError(
+              message.result.value.message,
+              message.result.value.code.toString()
+            )
+          : error,
       };
     case 'value':
       return {

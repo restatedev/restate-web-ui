@@ -78,13 +78,12 @@ function completePromiseV1(
     case 'failure':
       return {
         ...metadata,
-        error:
-          new RestateError(
-            message.result.value.message,
-            message.result.value.code.toString()
-          ) ||
-          completion?.error ||
-          error,
+        error: message.result.value.message
+          ? new RestateError(
+              message.result.value.message,
+              message.result.value.code.toString()
+            )
+          : completion?.error || error,
       };
     case 'empty':
       return {
