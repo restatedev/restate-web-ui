@@ -65,7 +65,7 @@
     "@nx/vite": "21.3.11",
     "@nx/web": "21.3.11",
     "@nx/workspace": "21.3.11",
-    "@playwright/test": "1.49.1",
+    "@playwright/test": "^1.54.2",
     "@react-router/dev": "7.7.1",
     "@redocly/cli": "1.34.1",
     "@swc-node/register": "1.9.2",
