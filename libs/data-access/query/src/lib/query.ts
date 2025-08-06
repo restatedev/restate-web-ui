@@ -43,7 +43,7 @@ async function listInvocations(
   filters: FilterItem[]
 ) {
   const invocationsPromise = queryFetcher(
-    `SELECT *, COUNT(*) OVER() AS total_count FROM sys_invocation ${convertInvocationsFilters(
+    `SELECT *, completed_at + completion_retention AS completion_expiration, completed_at + journal_retention AS journal_expiration, COUNT(*) OVER() AS total_count FROM sys_invocation ${convertInvocationsFilters(
       filters
     )} ORDER BY modified_at DESC LIMIT ${INVOCATIONS_LIMIT}`,
     {
@@ -78,7 +78,7 @@ async function getInvocation(
   headers: Headers
 ) {
   const invocations = await queryFetcher(
-    `SELECT * FROM sys_invocation WHERE id = '${invocationId}'`,
+    `SELECT *, completed_at + completion_retention AS completion_expiration, completed_at + journal_retention AS journal_expiration FROM sys_invocation WHERE id = '${invocationId}'`,
     {
       baseUrl,
       headers,
@@ -161,10 +161,13 @@ async function getInvocationJournalV2(
   headers: Headers
 ) {
   const [invocationQuery, journalQuery] = await Promise.all([
-    queryFetcher(`SELECT * FROM sys_invocation WHERE id = '${invocationId}'`, {
-      baseUrl,
-      headers,
-    }),
+    queryFetcher(
+      `SELECT *, completed_at + completion_retention AS completion_expiration, completed_at + journal_retention AS journal_expiration FROM sys_invocation WHERE id = '${invocationId}'`,
+      {
+        baseUrl,
+        headers,
+      }
+    ),
     queryFetcher(
       `SELECT id, index, appended_at, entry_type, name, entry_json, raw, version, completed, sleep_wakeup_at, invoked_id, invoked_target, promise_name FROM sys_journal WHERE id = '${invocationId}'`,
       {

@@ -38,7 +38,12 @@ function withDate({
   tooltipTitle: string;
   field: Extract<
     keyof Invocation,
-    'created_at' | 'modified_at' | 'scheduled_at' | 'running_at'
+    | 'created_at'
+    | 'modified_at'
+    | 'scheduled_at'
+    | 'running_at'
+    | 'completion_expiration'
+    | 'journal_expiration'
   >;
 }) {
   return (props: { invocation: Invocation }) => {
@@ -261,6 +266,20 @@ const CELLS: Record<ColumnKey, ComponentType<CellProps>> = {
     <Cell className="align-top [&&&]:overflow-visible">
       <Actions invocation={invocation} />
     </Cell>
+  ),
+  completion_expiration: withCell(
+    withDate({
+      field: 'completion_expiration',
+      tooltipTitle: 'Completion retained until',
+    }),
+    'completion_expiration'
+  ),
+  journal_expiration: withCell(
+    withDate({
+      field: 'journal_expiration',
+      tooltipTitle: 'Journal retained until',
+    }),
+    'journal_expiration'
   ),
 };
 
