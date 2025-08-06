@@ -1,7 +1,6 @@
 /* @import 'https://unpkg.com/@stoplight/elements/styles.min.css'; */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
 @layer base {
   html {
     font-family: InterVariable, 'Helvetica', system-ui, sans-serif;

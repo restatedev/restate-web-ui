@@ -5,6 +5,7 @@ import license from 'rollup-plugin-license';
 import path from 'path';
 import { BASE_URL } from './constants';
 import { defaultClientConditions, defaultServerConditions } from 'vite';
+import tailwindcss from '@tailwindcss/vite';
 
 // Add this plugin to your Vite config
 const prismaFixPlugin = {
@@ -62,6 +63,7 @@ export default defineConfig(({ mode }) => {
         },
       },
       !process.env.VITEST && reactRouter(),
+      tailwindcss(),
       nxViteTsPaths(),
     ] as Plugin[],
     // Uncomment this if you are using workers.
@@ -69,6 +71,9 @@ export default defineConfig(({ mode }) => {
       plugins: () => [nxViteTsPaths()],
     },
     build: {
+      outDir: './dist',
+      emptyOutDir: true,
+      reportCompressedSize: true,
       commonjsOptions: {
         transformMixedEsModules: true,
       },
