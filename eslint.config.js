@@ -9,6 +9,8 @@ module.exports = [
       '**/dist',
       'vite.config.*.timestamp*',
       'vitest.config.*.timestamp*',
+      '**/vite.config.*.timestamp*',
+      '**/vitest.config.*.timestamp*',
     ],
   },
   {
