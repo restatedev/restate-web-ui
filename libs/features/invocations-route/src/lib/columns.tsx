@@ -20,6 +20,8 @@ const COLUMNS_KEYS = [
   'target_service_key',
   'target_handler_name',
   'pinned_service_protocol_version',
+  'completion_expiration',
+  'journal_expiration',
   'actions',
 ] as const;
 export type ColumnKey = (typeof COLUMNS_KEYS)[number];
@@ -43,6 +45,8 @@ export const COLUMN_NAMES: Record<ColumnKey, string> = {
   target_handler_name: 'Handler',
   pinned_service_protocol_version: 'Service Protocol Version',
   actions: 'Actions',
+  completion_expiration: 'Completion retention ends',
+  journal_expiration: 'Journal retention ends',
 };
 
 const SORT_ORDER: Record<ColumnKey, number> = Object.entries(

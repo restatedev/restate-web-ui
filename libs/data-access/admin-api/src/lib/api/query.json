@@ -2860,6 +2860,14 @@
           "target_service_ty"
         ],
         "properties": {
+          "completion_expiration": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "journal_expiration": {
+            "type": "string",
+            "format": "date-time"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time"
@@ -3030,6 +3038,14 @@
           "target_service_ty"
         ],
         "properties": {
+          "completion_expiration": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "journal_expiration": {
+            "type": "string",
+            "format": "date-time"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time"
