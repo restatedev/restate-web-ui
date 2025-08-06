@@ -1,13 +1,20 @@
-export async function stateVersion(
+import { sha256 } from 'js-sha256';
+
+export function stateVersion(
   state: {
     name: string;
     value: string;
   }[]
 ) {
-  return stateVersionInternal(state).catch(() => undefined);
+  try {
+    return stateVersionInternal(state);
+  } catch (error) {
+    console.error(error);
+    return undefined;
+  }
 }
 
-async function stateVersionInternal(
+function stateVersionInternal(
   state: {
     name: string;
     value: string;
@@ -40,8 +47,8 @@ async function stateVersionInternal(
       new Uint8Array([0x03])
     );
   }
-
-  const hash = await crypto.subtle.digest('SHA-256', mergeUint8Arrays(chunks));
+  // TODO: remove third party lib
+  const hash = sha256.arrayBuffer(mergeUint8Arrays(chunks));
   return bufferToUrlSafe(hash);
 }
 

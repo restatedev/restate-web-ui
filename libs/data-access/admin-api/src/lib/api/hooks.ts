@@ -1132,7 +1132,7 @@ export function useEditState(
   }) => {
     if (!query.data?.version && variables.partial) {
       throw new RestateError(
-        'Modifying the state is only allowed in an HTTPS context.'
+        'Partial updates to the state are not supported. Please replace the entire state instead.'
       );
     }
     if (

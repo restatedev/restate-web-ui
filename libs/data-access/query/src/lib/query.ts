@@ -364,7 +364,7 @@ async function getState(
         bytes: row.value,
       }))
     );
-  const version = await stateVersion(state);
+  const version = stateVersion(state);
 
   return new Response(JSON.stringify({ state, version }), {
     status: 200,
