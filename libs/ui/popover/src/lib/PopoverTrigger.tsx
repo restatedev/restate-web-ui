@@ -123,7 +123,7 @@ export function PopoverHoverTrigger({
   children,
 }: PropsWithChildren<NonNullable<unknown>>) {
   const popoverContext = useContext(PopoverContext);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const triggerEl = getTriggerElement(popoverContext);
 
