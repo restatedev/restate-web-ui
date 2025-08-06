@@ -61,9 +61,9 @@ export function RestateServerError({
                 learnMoreHref: `https://docs.restate.dev/references/errors/#${code}`,
               })}
               description={
-                <Markdown className="[&_li]:list-disc [&_li]:list-inside [&_ul]:mt-2">
-                  {help}
-                </Markdown>
+                <div className="[&_li]:list-disc [&_li]:list-inside [&_ul]:mt-2">
+                  <Markdown>{help}</Markdown>
+                </div>
               }
             >
               <Markdown>{summary}</Markdown>
