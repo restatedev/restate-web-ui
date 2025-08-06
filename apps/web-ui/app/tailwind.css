@@ -11,10 +11,6 @@
   }
 }
 
-*[data-testid='underlay'] {
-  pointer-events: none;
-}
-
 *[tabindex='0']:not(:has(*)) {
   outline: none;
 }
