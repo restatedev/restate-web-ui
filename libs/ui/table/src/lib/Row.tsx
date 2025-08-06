@@ -104,7 +104,7 @@ export function PerformantRow<T extends { id?: string }>({
 
 const cellStyles = tv({
   extend: focusRing,
-  base: 'pl-2 last:pr-2 focus-visible:outline-2 text-xs text-zinc-600 font-medium border-b group-last/row:border-b-0 [--selected-border:theme(colors.blue.200)] group-selected/row:border-[--selected-border] [:has(+[data-selected])_&]:border-[--selected-border] py-2 truncate -outline-offset-2',
+  base: 'pl-2 last:pr-2 focus-visible:outline-2 text-xs text-zinc-600 font-medium border-b group-last/row:border-b-0 [--selected-border:var(--color-blue-200)] group-selected/row:border-[--selected-border] in-[:has(+[data-selected])]:border-(--selected-border) py-2 truncate -outline-offset-2',
 });
 
 interface CellProps extends Pick<AriaCellProps, 'id'> {

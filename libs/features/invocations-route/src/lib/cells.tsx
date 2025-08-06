@@ -208,7 +208,7 @@ function JournalCell({ invocation }: CellProps) {
         >
           <JournalV2
             invocationId={invocation.id}
-            className="[&>*]:text-xs [&>*:first-child]:mb-2 [&>*:first-child]:h-9 [&>*:first-child>*:last-child]:h-9 [&>*:first-child_[data-target]>*]:h-9 [&>*]:rounded-[1rem] [&_.target]:rounded-r-[1rem] [&&&_.target>*:last-child>*]:rounded-r-[1rem]"
+            className="*:text-xs [&>*:first-child]:mb-2 [&>*:first-child]:h-9 [&>*:first-child>*:last-child]:h-9 [&>*:first-child_[data-target]>*]:h-9 *:rounded-2xl [&_.target]:rounded-r-2xl [&&&_.target>*:last-child>*]:rounded-r-2xl"
             withTimeline={false}
           />
         </DropdownSection>

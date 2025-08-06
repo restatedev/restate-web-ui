@@ -11,7 +11,7 @@ import { tv } from 'tailwind-variants';
 import { PropsWithChildren, ReactNode } from 'react';
 
 const menuTriggerStyles = tv({
-  base: 'group-focus-within:z-[2] trigger rounded-l-md px-1 py-1 [font-size:inherit] [line-height:inherit] rounded-r-md text-gray-600',
+  base: 'group-focus-within:z-2 trigger rounded-l-md px-1 py-1 [font-size:inherit] [line-height:inherit] rounded-r-md text-gray-600',
   variants: {
     mini: {
       false: 'rounded-l-none',

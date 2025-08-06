@@ -59,7 +59,7 @@ const failureStyle = tv({
       hasStack: false,
       isRetrying: false,
       className: {
-        errorBanner: 'w-[32rem]',
+        errorBanner: 'w-lg',
       },
     },
     {
@@ -67,7 +67,7 @@ const failureStyle = tv({
       hasStack: false,
       isRetrying: true,
       className: {
-        errorBanner: 'w-[32rem]',
+        errorBanner: 'w-lg',
       },
     },
   ],

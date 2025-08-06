@@ -121,7 +121,7 @@ function Attribution() {
         focusable="false"
         data-prefix="fas"
         data-icon="bolt"
-        className="[color:rgb(144,97,249)] svg-inline--fa fa-bolt sl-icon fa-fw mr-1"
+        className="text-[rgb(144,97,249)] svg-inline--fa fa-bolt sl-icon fa-fw mr-1"
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 384 512"
       >

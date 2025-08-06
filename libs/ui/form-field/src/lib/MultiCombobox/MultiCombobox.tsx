@@ -94,7 +94,7 @@ const multiSelectStyles = tv({
 });
 
 const inputStyles = tv({
-  base: 'min-h-[2.125rem] py-1.5 pl-0 pr-10 w-full min-w-0 text-sm text-current border-0 focus:border-0 focus:shadow-none focus:ring-0 focus:outline-0 bg-transparent',
+  base: 'min-h-8.5 py-1.5 pl-0 pr-10 w-full min-w-0 text-sm text-current border-0 focus:border-0 focus:shadow-none focus:ring-0 focus:outline-0 bg-transparent',
 });
 export function FormFieldMultiCombobox<
   T extends {
@@ -298,7 +298,7 @@ export function FormFieldMultiCombobox<
           </div>
 
           {availableList.items.length > 0 && (
-            <PopoverOverlay className="w-[--trigger-width] min-w-fit p-0 bg-gray-100/90">
+            <PopoverOverlay className="w-(--trigger-width) min-w-fit p-0 bg-gray-100/90">
               {multiple || selectedKeys.length === 0 ? (
                 <ListBox
                   multiple

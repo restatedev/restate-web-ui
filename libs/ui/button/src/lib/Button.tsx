@@ -29,11 +29,11 @@ const styles = tv({
   variants: {
     variant: {
       primary:
-        'bg-gradient-to-b from-blue-600/90 to-blue-600 disabled:shadow-none disabled:drop-shadow-none hover:from-blue-700 hover:to-blue-700 pressed:from-blue-800 pressed:to-blue-800 text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2)] drop-shadow-sm hover:shadow-none pressed:shadow-none',
+        'bg-linear-to-b from-blue-600/90 to-blue-600 disabled:shadow-none disabled:drop-shadow-none hover:from-blue-700 hover:to-blue-700 pressed:from-blue-800 pressed:to-blue-800 text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2)] drop-shadow-sm hover:shadow-none pressed:shadow-none',
       secondary: 'bg-white hover:bg-gray-100 pressed:bg-gray-200 text-gray-800',
       destructive:
-        'bg-gradient-to-b from-red-700/95 to-red-700  shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)] drop-shadow-sm hover:from-red-800 hover:to-red-800 pressed:from-red-900 pressed:to-red-900 text-white hover:shadow-none pressed:shadow-none',
-      icon: 'shadow-none border-0 p-1 flex items-center justify-center text-gray-600 hover:bg-black/[5%] pressed:bg-black/10 disabled:bg-transparent',
+        'bg-linear-to-b from-red-700/95 to-red-700  shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)] drop-shadow-sm hover:from-red-800 hover:to-red-800 pressed:from-red-900 pressed:to-red-900 text-white hover:shadow-none pressed:shadow-none',
+      icon: 'shadow-none border-0 p-1 flex items-center justify-center text-gray-600 hover:bg-black/5 pressed:bg-black/10 disabled:bg-transparent',
     },
     isDisabled: {
       true: 'bg-none bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-600 forced-colors:text-[GrayText] border-black/5 dark:border-white/5',

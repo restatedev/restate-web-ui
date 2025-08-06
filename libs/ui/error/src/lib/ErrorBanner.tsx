@@ -53,7 +53,7 @@ function SingleError({
   return (
     <div className={styles({ className })}>
       <div className="flex items-start gap-2">
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           <Icon
             className="h-5 w-5 fill-red-500 text-red-500"
             name={IconName.CircleX}
@@ -62,7 +62,7 @@ function SingleError({
         <output className="flex-auto text-red-700 [word-break:break-word] max-h-28 overflow-auto">
           {typeof error === 'string' ? error : error.message}
         </output>
-        {children && <div className="flex-shrink-0">{children}</div>}
+        {children && <div className="shrink-0">{children}</div>}
       </div>
     </div>
   );
@@ -108,7 +108,7 @@ export function ErrorBanner({
   return (
     <div className={styles({ className })}>
       <div className="flex">
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           <Icon
             className="h-5 w-5 fill-red-500 text-red-500"
             name={IconName.CircleX}

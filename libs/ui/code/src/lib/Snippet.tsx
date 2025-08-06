@@ -73,7 +73,7 @@ interface SnippetCopyProps {
 }
 
 const snippetCopyStyles = tv({
-  base: 'copy flex-shrink-0 flex items-center gap-1 ml-auto p-2 text-xs',
+  base: 'copy shrink-0 flex items-center gap-1 ml-auto p-2 text-xs',
 });
 export function SnippetCopy({
   className,
@@ -126,7 +126,7 @@ export function SnippetTabs({
         className,
       })}
     >
-      <div className="absolute top-0 right-0 bg-black/[0.03] rounded-xl">
+      <div className="absolute top-0 right-0 bg-black/3 rounded-xl">
         <Nav ariaCurrentValue="true" className="gap-0">
           {languages.map((language) => (
             <NavButtonItem

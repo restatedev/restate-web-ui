@@ -21,7 +21,7 @@ const styles = tv({
     icon: 'mr-1.5 shrink-0 bg-white border rounded-lg',
     text: '',
     container: 'inline-flex items-center w-full align-middle',
-    link: "text-zinc-500 outline-offset-0 ml-0 rounded-full  before:absolute before:inset-0 before:content-[''] hover:before:bg-black/[0.03] pressed:before:bg-black/5",
+    link: "text-zinc-500 outline-offset-0 ml-0 rounded-full  before:absolute before:inset-0 before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5",
     linkIcon: 'text-current shrink-0',
   },
   variants: {
@@ -54,7 +54,7 @@ const styles = tv({
         base: '',
         icon: 'h-6 w-6 rounded-lg shadow-sm  mr-0',
         text: 'w-0 text-2xs',
-        link: 'before:rounded-lg m-0.5 inset-[-1px] absolute rounded-lg',
+        link: 'before:rounded-lg m-0.5 -inset-px absolute rounded-lg',
         container: 'p-px',
         linkIcon: 'w-0 h-0',
       },

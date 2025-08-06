@@ -70,7 +70,7 @@ export function AdditionalHeaders() {
           >
             <Icon
               name={IconName.Trash}
-              className="w-[1.25rem] h-[1.25rem] m-[0.25rem]"
+              className="w-5 h-5 m-1"
             />
           </Button>
         </div>
@@ -84,9 +84,9 @@ export function AdditionalHeaders() {
           })
         }
         variant="secondary"
-        className="flex gap-2 items-center px-3 rounded-lg h-[2.125rem]"
+        className="flex gap-2 items-center px-3 rounded-lg h-8.5"
       >
-        <Icon name={IconName.Plus} className="w-[1.125rem] h-[1.125rem]" />
+        <Icon name={IconName.Plus} className="w-4.5 h-4.5" />
         Add header
       </Button>
     </FormFieldGroup>

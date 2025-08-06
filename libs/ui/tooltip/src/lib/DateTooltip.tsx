@@ -47,7 +47,7 @@ export function DateTooltip({
         <TooltipContent size="sm" offset={5} triggerRef={triggerRef}>
           <div
             ref={contentRef}
-            className="flex items-start gap-4 [&_*]:text-gray-200 [&_*]:text-xs break-all py-1"
+            className="flex items-start gap-4 **:text-gray-200 **:text-xs break-all py-1"
           >
             <div className="flex flex-col gap-1 items-start">
               <h6 className="text-sm font-semibold text-gray-100 mb-2">

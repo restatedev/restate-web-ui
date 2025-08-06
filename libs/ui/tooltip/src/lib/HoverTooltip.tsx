@@ -60,7 +60,7 @@ export function HoverTooltip({
         >
           <div
             ref={contentRef}
-            className="flex items-start gap-4 [&_*]:text-gray-200 [&_*]:text-xs break-all py-0"
+            className="flex items-start gap-4 **:text-gray-200 **:text-xs break-all py-0"
           >
             <div className="flex flex-col gap-1 items-start">{content}</div>
           </div>

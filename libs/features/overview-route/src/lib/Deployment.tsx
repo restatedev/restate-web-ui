@@ -18,7 +18,7 @@ const styles = tv({
   base: 'flex flex-row items-center gap-2 relative border -m-1 p-1 transition-all ease-in-out text-code',
   variants: {
     isSelected: {
-      true: 'bg-white shadow-sm shadow-zinc-800/[0.03] rounded-lg border -mx-[0.25rem] px-[0.25rem] z-10 font-medium',
+      true: 'bg-white shadow-sm shadow-zinc-800/3 rounded-lg border -mx-1 px-1 z-10 font-medium',
       false: 'border-transparent',
     },
   },
@@ -73,7 +73,7 @@ export function Deployment({
           aria-label={deploymentEndpoint}
           variant="secondary"
           href={`?${DEPLOYMENT_QUERY_PARAM}=${deployment.id}`}
-          className="outline-offset-0 m-1 ml-0 rounded-full before:absolute before:inset-0 before:content-[''] before:rounded-lg hover:before:bg-black/[0.03] pressed:before:bg-black/5"
+          className="outline-offset-0 m-1 ml-0 rounded-full before:absolute before:inset-0 before:content-[''] before:rounded-lg hover:before:bg-black/3 pressed:before:bg-black/5"
         >
           <Icon
             name={IconName.ChevronRight}
@@ -81,7 +81,7 @@ export function Deployment({
           />
         </Link>
       </div>
-      {revision && <Revision revision={revision} className="ml-auto z-[2]" />}
+      {revision && <Revision revision={revision} className="ml-auto z-2" />}
     </div>
   );
 }

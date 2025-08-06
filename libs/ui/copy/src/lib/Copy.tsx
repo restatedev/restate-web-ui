@@ -10,7 +10,7 @@ interface CopyProps {
 }
 
 const copyStyles = tv({
-  base: 'copy flex-shrink-0 flex items-center gap-1 ml-auto p-2 text-xs',
+  base: 'copy shrink-0 flex items-center gap-1 ml-auto p-2 text-xs',
 });
 export function Copy({
   className,

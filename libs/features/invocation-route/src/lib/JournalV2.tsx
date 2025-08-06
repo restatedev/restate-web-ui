@@ -225,7 +225,7 @@ export function JournalV2({
                   />
                 ) : null}
               </div>
-              <div className="ml-auto flex flex-row gap-1 items-center justify-end z-10 h-full bg-gradient-to-l from-gray-100 via-gray-100 to-gray-100/0 rounded-lg pl-10">
+              <div className="ml-auto flex flex-row gap-1 items-center justify-end z-10 h-full bg-linear-to-l from-gray-100 via-gray-100 to-gray-100/0 rounded-lg pl-10">
                 {!areAllInvocationsCompleted && setIsLive && (
                   <Button
                     variant="icon"
@@ -271,7 +271,7 @@ export function JournalV2({
                     defaultSize={(1 - timelineWidth) * 100}
                     className="z-10 "
                   >
-                    <div className="border-0 border-white/50 border-r-0  bg-gradient-to-b from-gray-50 to-white shadow-sm rounded-2xl rounded-r-none relative overflow-hidden ">
+                    <div className="border-0 border-white/50 border-r-0  bg-linear-to-b from-gray-50 to-white shadow-sm rounded-2xl rounded-r-none relative overflow-hidden ">
                       {entriesElements}
                     </div>
                   </LazyPanel>
@@ -335,7 +335,7 @@ function TimelineContainer({
       className="w-full  [content-visibility:auto] pl-2 pr-2 h-9 border-b  border-transparent relative [&:not(:has(>*+*))]:hidden"
       ref={setPortal}
     >
-      <div className="absolute left-0 right-0 h-px top-1/2 border-gray-300/70  translate-y-[-1px] border-dashed border-b border-spacing-10" />
+      <div className="absolute left-0 right-0 h-px top-1/2 border-gray-300/70  -translate-y-px border-dashed border-b border-spacing-10" />
     </div>
   );
 }

@@ -5,7 +5,7 @@ import { tv } from 'tailwind-variants';
 import { Placement } from 'react-aria';
 
 const styles = tv({
-  base: 'rounded-[1rem]',
+  base: 'rounded-2xl',
 });
 export function PopoverContent({
   children,
@@ -18,7 +18,7 @@ export function PopoverContent({
 }>) {
   return (
     <PopoverOverlay {...props} className={styles({ className })}>
-      <AriaDialog className="outline bg-gray-100 rounded-[1rem] outline-0 overflow-auto relative">
+      <AriaDialog className="outline bg-gray-100 rounded-2xl outline-0 overflow-auto relative">
         {children}
       </AriaDialog>
     </PopoverOverlay>

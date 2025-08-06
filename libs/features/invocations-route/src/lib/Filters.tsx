@@ -44,7 +44,7 @@ export function ClauseChip({
         autoFocus={isNew}
         data-filter-id={item.id}
         variant="secondary"
-        className="min-w-0 flex gap-[0.7ch] items-center py-1 rounded-lg bg-white/[0.25] hover:bg-white/30 pressed:bg-white/30 text-zinc-50 text-xs px-1.5"
+        className="min-w-0 flex gap-[0.7ch] items-center py-1 rounded-lg bg-white/25 hover:bg-white/30 pressed:bg-white/30 text-zinc-50 text-xs px-1.5"
       >
         <span className="whitespace-nowrap shrink-0">{item.label}</span>
         {item.operationLabel?.split(' ').map((segment) => (

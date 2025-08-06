@@ -27,7 +27,7 @@ export function InvocationDeployment({
 
     return revision ? (
       <div className={styles({ className })}>
-        <div className="flex px-1.5 py-1 h-9 items-center [&:not(:last-child)]:border-b w-full">
+        <div className="flex px-1.5 py-1 h-9 items-center not-last:border-b w-full">
           <Deployment
             deploymentId={deploymentId}
             revision={revision}
@@ -37,14 +37,14 @@ export function InvocationDeployment({
         </div>
         {showSdk &&
           (invocation.last_attempt_server || deployment.sdk_version) && (
-            <div className="flex px-1.5 py-1 h-9 items-center [&:not(:last-child)]:border-b w-full">
+            <div className="flex px-1.5 py-1 h-9 items-center not-last:border-b w-full">
               <SDK
                 lastAttemptServer={
                   invocation.last_attempt_server ??
                   deployment.sdk_version ??
                   undefined
                 }
-                className="[font-size:85%] font-medium text-zinc-600 gap-2 max-w-[calc(100%-1.75rem)] -mt-0.5"
+                className="text-[85%] font-medium text-zinc-600 gap-2 max-w-[calc(100%-1.75rem)] -mt-0.5"
               />
             </div>
           )}

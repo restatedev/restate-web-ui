@@ -41,7 +41,7 @@ export function OneWayCall({
             target={[entry.serviceName, entry.serviceKey, entry.handlerName]
               .filter((v) => typeof v === 'string')
               .join('/')}
-            className="font-sans not-italic mx-0.5 basis-20 text-2xs h-6 [&_a]:my-0 [&_[data-target]]:h-6"
+            className="font-sans not-italic mx-0.5 basis-20 text-2xs h-6 [&_a]:my-0 **:data-target:h-6"
           />
         }
         chain={

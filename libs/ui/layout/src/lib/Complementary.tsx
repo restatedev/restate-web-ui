@@ -40,7 +40,7 @@ export function Complementary({
       <LayoutOutlet zone={LayoutZone.Complementary}>
         <div
           data-top={isOnTop}
-          className="[&[data-top=false]]:overflow-hidden duration-250 [&[data-top=false]:has(~[data-top=false])]:shadow-none [&[data-top=true]]:z-[1] [&[data-top=true]]:order-1 transition-all min-h-0 min-w-0 p-1.5 border shadow-lg 3xl:shadow-sm shadow-zinc-800/5 bg-gray-50/80 backdrop-blur-xl backdrop-saturate-200 rounded-[1.125rem] max-h-[inherit] flex flex-col w-full"
+          className="data-[top=false]:overflow-hidden duration-250 [&[data-top=false]:has(~[data-top=false])]:shadow-none data-[top=true]:z-1 data-[top=true]:order-1 transition-all min-h-0 min-w-0 p-1.5 border shadow-lg 3xl:shadow-sm shadow-zinc-800/5 bg-gray-50/80 backdrop-blur-xl backdrop-saturate-200 rounded-[1.125rem] max-h-[inherit] flex flex-col w-full"
         >
           <FocusScope restoreFocus autoFocus>
             <div
@@ -57,7 +57,7 @@ export function Complementary({
             </div>
             <div
               ref={setFooterEl}
-              className="[&:not(:has(*))]:hidden flex gap-2 has-[*]:py-1 has-[*]:pb-0 has-[*]:mt-1 [&>*]:min-w-0 3xl:sticky 3xl:bottom-0 3xl:bg-gray-50/80 3xl:backdrop-blur-xl 3xl:backdrop-saturate-200 rounded-[1rem] 3xl:-mx-1.5 3xl:-mb-1.5 3xl:p-1.5 3xl:pb-1.5 z-10"
+              className="[&:not(:has(*))]:hidden flex gap-2 has-[*]:py-1 has-[*]:pb-0 has-[*]:mt-1 *:min-w-0 3xl:sticky 3xl:bottom-0 3xl:bg-gray-50/80 3xl:backdrop-blur-xl 3xl:backdrop-saturate-200 rounded-2xl 3xl:-mx-1.5 3xl:-mb-1.5 3xl:p-1.5 3xl:pb-1.5 z-10"
             />
           </FocusScope>
         </div>

@@ -45,7 +45,7 @@ export function RestateServerError({
   return (
     <div className={styles({ className })}>
       <div className="flex items-start gap-2">
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           <Icon
             className="h-5 w-5 fill-red-500 text-red-500"
             name={IconName.CircleX}
@@ -77,11 +77,11 @@ export function RestateServerError({
         <Code className={codeStyles({ wrap })}>
           <Snippet language="bash" className="px-0 h-full">
             <details
-              className="group [font-size:90%] overflow-auto  max-h-28 w-full h-full"
+              className="group text-[90%] overflow-auto  max-h-28 w-full h-full"
               open={open}
             >
               <summary className="group-open:h-4">
-                <span className="group-open:invisible group-open:[font-size:0px] truncate w-[calc(100%-5ch)] inline-block align-middle">
+                <span className="group-open:invisible group-open:text-[0px] truncate w-[calc(100%-5ch)] inline-block align-middle">
                   {message}
                 </span>
                 <br className="group-open:hidden" />
@@ -90,7 +90,7 @@ export function RestateServerError({
             </details>
           </Snippet>
         </Code>
-        {children && <div className="flex-shrink-0">{children}</div>}
+        {children && <div className="shrink-0">{children}</div>}
       </div>
     </div>
   );

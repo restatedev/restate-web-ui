@@ -41,7 +41,7 @@ export function JournalSection({
             timelineWidth={0}
             showApiError={false}
             withTimeline={false}
-            className="[&>*:first-child]:mb-2 [&>*]:text-xs [&>*:first-child]:h-9 [&>*:first-child>*:last-child]:h-9 [&>*:first-child_[data-target]>*]:h-9 [&>*]:overflow-hidden [&>*]:rounded-[calc(0.75rem-0.125rem)] [&_.target]:[--rounded-radius:calc(0.75rem-0.125rem)] [&_.target]:rounded-r-[calc(0.75rem-0.125rem)] [&_.target]:[--rounded-right-radius:calc(0.75rem-0.125rem)] [&&&_.target>*:last-child>*]:[--rounded-radius-radius:calc(0.75rem-0.125rem)] [&&&_.target>*:last-child>*]:rounded-r-[calc(0.75rem-0.125rem)]"
+            className="[&>*:first-child]:mb-2 *:text-xs [&>*:first-child]:h-9 [&>*:first-child>*:last-child]:h-9 [&>*:first-child_[data-target]>*]:h-9 *:overflow-hidden *:rounded-[calc(0.75rem-0.125rem)] [&_.target]:[--rounded-radius:calc(0.75rem-0.125rem)] [&_.target]:rounded-r-[calc(0.75rem-0.125rem)] [&_.target]:[--rounded-right-radius:calc(0.75rem-0.125rem)] [&&&_.target>*:last-child>*]:[--rounded-radius-radius:calc(0.75rem-0.125rem)] [&&&_.target>*:last-child>*]:rounded-r-[calc(0.75rem-0.125rem)]"
           />
         </div>
       </SectionContent>

@@ -37,7 +37,7 @@ const styles = tv({
 });
 
 const serviceLinkStyles = tv({
-  base: "outline-offset-0 rounded-full before:absolute before:inset-0 before:content-[''] hover:before:bg-black/[0.03] pressed:before:bg-black/5",
+  base: "outline-offset-0 rounded-full before:absolute before:inset-0 before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5",
   variants: {
     isMatching: {
       true: 'before:rounded-t-[0.9rem]',
@@ -50,12 +50,12 @@ const serviceLinkStyles = tv({
 });
 
 const serviceStyles = tv({
-  base: 'w-full rounded-2xl border  shadow-zinc-800/[0.03] transform transition overflow-hidden',
+  base: 'w-full rounded-2xl border  shadow-zinc-800/3 transform transition overflow-hidden',
   variants: {
     isSelected: {
       true: 'bg-white shadow-md scale-105',
       false:
-        'border-white/50 bg-gradient-to-b to-gray-50/80 from-gray-50 shadow-sm scale-100',
+        'border-white/50 bg-linear-to-b to-gray-50/80 from-gray-50 shadow-sm scale-100',
     },
   },
   defaultVariants: { isSelected: false },
@@ -164,7 +164,7 @@ export function Service({
               />
             </div>
           </div>
-          <div className="flex flex-row gap-1 items-center font-medium [font-size:0.9rem] text-zinc-600 min-w-0">
+          <div className="flex flex-row gap-1 items-center font-medium text-[0.9rem] text-zinc-600 min-w-0">
             <TruncateWithTooltip copyText={serviceName} triggerRef={linkRef}>
               {serviceName}
             </TruncateWithTooltip>
@@ -204,7 +204,7 @@ export function Service({
                     href={`?${SERVICE_QUERY_PARAM}=${serviceName}`}
                     variant="secondary"
                     aria-label={serviceName}
-                    className="text-gray-500 text-code bg-transparent no-underline border-none shadow-none text-left px-8 py-1 cursor-pointer rounded-lg  hover:bg-black/[0.03] pressed:bg-black/5"
+                    className="text-gray-500 text-code bg-transparent no-underline border-none shadow-none text-left px-8 py-1 cursor-pointer rounded-lg  hover:bg-black/3 pressed:bg-black/5"
                   >
                     +{filteredHandlers.length - MAX_NUMBER_OF_HANDLERS} handler
                     {filteredHandlers.length - MAX_NUMBER_OF_HANDLERS > 1
@@ -235,7 +235,7 @@ export function Service({
                 href={`?${SERVICE_QUERY_PARAM}=${serviceName}`}
                 variant="secondary"
                 aria-label={serviceName}
-                className="text-gray-500 text-code bg-transparent no-underline border-none shadow-none text-left px-8 py-1 cursor-pointer rounded-lg  hover:bg-black/[0.03] pressed:bg-black/5"
+                className="text-gray-500 text-code bg-transparent no-underline border-none shadow-none text-left px-8 py-1 cursor-pointer rounded-lg  hover:bg-black/3 pressed:bg-black/5"
               >
                 +{filteredDeployments.length - MAX_NUMBER_OF_DEPLOYMENTS}{' '}
                 deployment

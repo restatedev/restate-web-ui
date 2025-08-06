@@ -139,7 +139,7 @@ export function VirtualObjectSection({
         <div>
           <SectionTitle className="mt-2">queue</SectionTitle>
           <SectionContent raised={raised} className="pt-0 pb-0">
-            <div className="flex flex-col min-h-[4.5rem] justify-center pt-8 pr-1">
+            <div className="flex flex-col min-h-18 justify-center pt-8 pr-1">
               <div className="relative">
                 <div className="absolute left-0 right-0 bottom-2  ">
                   <div className=" [clip-path:polygon(0%_0%,100%_50%,0%_50%)] bg-zinc-200 rounded-sm h-3" />
@@ -182,7 +182,7 @@ export function VirtualObjectSection({
                       }}
                       className="absolute -top-4 -translate-y-1/2 flex flex-col items-center"
                     >
-                      <div className="w-[1.125rem] h-[1.125rem] mt-2 absolute top-1 ">
+                      <div className="w-4.5 h-4.5 mt-2 absolute top-1 ">
                         <HoverTooltip
                           content={
                             <div>
@@ -202,7 +202,7 @@ export function VirtualObjectSection({
                             </div>
                           }
                         >
-                          <div className="inset-0 shadow-sm w-[1.125rem] h-[1.125rem] bg-white rounded-full p-1.5">
+                          <div className="inset-0 shadow-sm w-4.5 h-4.5 bg-white rounded-full p-1.5">
                             <div className="bg-blue-600 rounded-full h-full w-full" />
                           </div>
                         </HoverTooltip>

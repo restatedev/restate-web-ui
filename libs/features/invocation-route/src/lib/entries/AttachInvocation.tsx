@@ -66,7 +66,7 @@ export function AttachInvocation({
               }
             }}
             variant="icon"
-            className="bg-black/[0.03] z-10"
+            className="bg-black/3 z-10"
           >
             {invokedIsPending ? (
               <Spinner />

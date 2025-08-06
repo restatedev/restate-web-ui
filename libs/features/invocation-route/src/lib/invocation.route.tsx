@@ -94,7 +94,7 @@ function Component() {
               <TruncateWithTooltip>{id}</TruncateWithTooltip>
             </h1>
             {journalAndInvocationData && (
-              <div className="[&>*]:scale-[1.1] [&>*]:[transform-origin:center_left] ">
+              <div className="*:scale-[1.1] *:origin-[center_left] ">
                 <Status invocation={journalAndInvocationData} className="" />
               </div>
             )}
@@ -125,29 +125,29 @@ function Component() {
           )}
           <KeysIdsSection
             invocation={journalAndInvocationData}
-            className="p-0 rounded-xl border bg-gray-200/50 h-fit  [&>*:last-child]:border-white/50 [&>*:last-child]:rounded-xl [&>*:last-child]:bg-gradient-to-b [&>*:last-child]:to-gray-50/80 [&>*:last-child]:from-gray-50  [&>*:last-child]:shadow-zinc-800/[0.03]"
+            className="p-0 rounded-xl border bg-gray-200/50 h-fit  [&>*:last-child]:border-white/50 [&>*:last-child]:rounded-xl [&>*:last-child]:bg-linear-to-b [&>*:last-child]:to-gray-50/80 [&>*:last-child]:from-gray-50  [&>*:last-child]:shadow-zinc-800/3"
           />
           <DeploymentSection
             invocation={journalAndInvocationData}
-            className="p-0 rounded-xl border h-fit bg-gray-200/50  [&>*:last-child]:border-white/50 [&>*:last-child]:rounded-xl [&>*:last-child]:bg-gradient-to-b [&>*:last-child]:to-gray-50/80 [&>*:last-child]:from-gray-50  [&>*:last-child]:shadow-zinc-800/[0.03]"
+            className="p-0 rounded-xl border h-fit bg-gray-200/50  [&>*:last-child]:border-white/50 [&>*:last-child]:rounded-xl [&>*:last-child]:bg-linear-to-b [&>*:last-child]:to-gray-50/80 [&>*:last-child]:from-gray-50  [&>*:last-child]:shadow-zinc-800/3"
             raised
           />
           <VirtualObjectSection
             invocation={journalAndInvocationData}
             raised
-            className="contents [&>*:last-child>h3]:mt-0 [&>*]:rounded-xl  [&>*]:border [&>*]:h-fit [&>*]:bg-gray-200/50  [&>*>*:last-child]:rounded-xl  [&>*>*:last-child]:border-white/50 [&>*>*:last-child]:bg-gradient-to-b [&>*>*:last-child]:to-gray-50/80 [&>*>*:last-child]:from-gray-50  [&>*>*:last-child]:shadow-zinc-800/[0.03]"
+            className="contents [&>*:last-child>h3]:mt-0 *:rounded-xl  *:border *:h-fit *:bg-gray-200/50  [&>*>*:last-child]:rounded-xl  [&>*>*:last-child]:border-white/50 [&>*>*:last-child]:bg-linear-to-b [&>*>*:last-child]:to-gray-50/80 [&>*>*:last-child]:from-gray-50  [&>*>*:last-child]:shadow-zinc-800/3"
           />
           <WorkflowKeySection
             invocation={journalAndInvocationData}
             raised
-            className="p-0 rounded-xl border h-fit bg-gray-200/50  [&>*:last-child]:border-white/50 [&>*:last-child]:rounded-xl [&>*:last-child]:bg-gradient-to-b [&>*:last-child]:to-gray-50/80 [&>*:last-child]:from-gray-50  [&>*:last-child]:shadow-zinc-800/[0.03]"
+            className="p-0 rounded-xl border h-fit bg-gray-200/50  [&>*:last-child]:border-white/50 [&>*:last-child]:rounded-xl [&>*:last-child]:bg-linear-to-b [&>*:last-child]:to-gray-50/80 [&>*:last-child]:from-gray-50  [&>*:last-child]:shadow-zinc-800/3"
           />
           {shouldShowFailure && (
             <Section className={lastFailureContainer()}>
               <SectionTitle>
                 {isFailed ? 'Completion failure' : 'Last failure'}
               </SectionTitle>
-              <SectionContent className="flex-auto rounded-xl border-white/50 bg-gradient-to-b to-gray-50/80 from-gray-50 shadow-zinc-800/[0.03]">
+              <SectionContent className="flex-auto rounded-xl border-white/50 bg-linear-to-b to-gray-50/80 from-gray-50 shadow-zinc-800/3">
                 <ErrorBanner
                   error={lastError}
                   wrap={hasStack}

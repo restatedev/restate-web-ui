@@ -140,7 +140,7 @@ function DeploymentContent({ deployment }: { deployment: string }) {
           <SectionTitle>Additional headers</SectionTitle>
           <SectionContent className="p-0" raised={false}>
             <>
-              <div className="mt-2 grid [grid-template-columns:1fr_2fr] text-xs font-medium text-gray-400">
+              <div className="mt-2 grid grid-cols-[1fr_2fr] text-xs font-medium text-gray-400">
                 <div className="pl-2">Name</div>
                 <div className="pl-2">Value</div>
               </div>
@@ -170,7 +170,7 @@ function DeploymentContent({ deployment }: { deployment: string }) {
           </ProtocolTypeExplainer>
         </SectionTitle>
         <SectionContent className="p-0">
-          <div className="flex px-1.5 py-1 items-center [&:not(:last-child)]:border-b">
+          <div className="flex px-1.5 py-1 items-center not-last:border-b">
             <span className="flex-auto pl-1 text-code text-gray-500 font-medium">
               Type
             </span>
@@ -179,7 +179,7 @@ function DeploymentContent({ deployment }: { deployment: string }) {
             </Badge>
           </div>
           {data && isHttpDeployment(data) && (
-            <div className="flex px-1.5 py-1 items-center [&:not(:last-child)]:border-b">
+            <div className="flex px-1.5 py-1 items-center not-last:border-b">
               <span className="flex-auto pl-1 text-code text-gray-500 font-medium">
                 <code>HTTP</code> version
               </span>
@@ -195,7 +195,7 @@ function DeploymentContent({ deployment }: { deployment: string }) {
           </ServiceCompatibility>
         </SectionTitle>
         <SectionContent className="p-0">
-          <div className="flex px-1.5 py-1 items-center [&:not(:last-child)]:border-b">
+          <div className="flex px-1.5 py-1 items-center not-last:border-b">
             <span className="flex-auto pl-1 text-code text-gray-500 font-medium">
               Min protocol version
             </span>
@@ -203,7 +203,7 @@ function DeploymentContent({ deployment }: { deployment: string }) {
               {data?.min_protocol_version}
             </Badge>
           </div>
-          <div className="flex px-1.5 py-1 items-center [&:not(:last-child)]:border-b">
+          <div className="flex px-1.5 py-1 items-center not-last:border-b">
             <span className="flex-auto pl-1 text-code text-gray-500 font-medium">
               Max protocol version
             </span>
@@ -214,7 +214,7 @@ function DeploymentContent({ deployment }: { deployment: string }) {
         </SectionContent>
         <SectionTitle className="mt-2">SDK</SectionTitle>
         <SectionContent className="p-0">
-          <div className="flex px-1.5 py-1 items-center [&:not(:last-child)]:border-b">
+          <div className="flex px-1.5 py-1 items-center not-last:border-b">
             <SDK
               lastAttemptServer={data?.sdk_version ?? undefined}
               className="text-xs font-medium text-zinc-600 gap-1"
@@ -260,7 +260,7 @@ function DeploymentContent({ deployment }: { deployment: string }) {
 
 function Header({ name, value }: { name: string; value: string }) {
   return (
-    <div className="bg-white [&:not(:last-child)]:border-b [&:first-child]:rounded-t-[calc(0.75rem-0.125rem)] [&:last-child]:rounded-b-[calc(0.75rem-0.125rem)] gap-1 px-2 py-0 items-center text-code text-zinc-600 truncate grid [grid-template-columns:1fr_2fr]">
+    <div className="bg-white not-last:border-b first:rounded-t-[calc(0.75rem-0.125rem)] last:rounded-b-[calc(0.75rem-0.125rem)] gap-1 px-2 py-0 items-center text-code text-zinc-600 truncate grid grid-cols-[1fr_2fr]">
       <div className="items-start flex min-w-0 border-r py-1 pr-1 relative">
         <TruncateWithTooltip copyText={name}>{name}</TruncateWithTooltip>
       </div>

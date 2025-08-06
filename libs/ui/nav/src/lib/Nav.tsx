@@ -93,7 +93,7 @@ export function Nav({ children, className, ariaCurrentValue }: NavProps) {
   return (
     <NavContext.Provider value={{ value: ariaCurrentValue }}>
       <div
-        className="hidden lg:block relative  [&:has(a:hover)]:bg-black/[.03] [&:has(a:focus)]:bg-black/[.03] [&:has(a:hover)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] [&:has(a:focus)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] border-[0.5px] border-transparent [&:has(a:focus)]:border-zinc-800/5 [&:has(a:hover)]:border-zinc-800/5 [&:has(a:hover)]:border-[0.5px] [&:has(a:focus)]:border-[0.5px] rounded-xl"
+        className="hidden lg:block relative  [&:has(a:hover)]:bg-black/3 [&:has(a:focus)]:bg-black/3 [&:has(a:hover)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] [&:has(a:focus)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] border-[0.5px] border-transparent [&:has(a:focus)]:border-zinc-800/5 [&:has(a:hover)]:border-zinc-800/5 [&:has(a:hover)]:border-[0.5px] [&:has(a:focus)]:border-[0.5px] rounded-xl"
         ref={containerElementRef}
       >
         <div

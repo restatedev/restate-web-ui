@@ -74,7 +74,7 @@ export const FormFieldNumberInput = forwardRef<
       >
         {!label && <Label className="sr-only">{placeholder}</Label>}
         {label && <FormFieldLabel>{label}</FormFieldLabel>}
-        <div className="relative min-h-[2.125rem]">
+        <div className="relative min-h-8.5">
           <Group className="flex relative">
             <Button
               variant="secondary"

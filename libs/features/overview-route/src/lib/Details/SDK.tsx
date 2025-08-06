@@ -22,7 +22,7 @@ const langStyles = tv({
     lang: {
       typescript: 'py-1',
       go: 'mr-0.5',
-      kotlin: 'py-[0.3125rem]',
+      kotlin: 'py-1.25',
       rust: 'py-0.5',
       python: 'py-1',
       java: '-mt-2',

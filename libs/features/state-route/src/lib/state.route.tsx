@@ -63,7 +63,7 @@ function Component() {
 
   if (!isPending && !defaultService) {
     return (
-      <div className="mb-[-6rem] pb-8 pt-24 flex-auto w-full justify-center rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] flex flex-col items-center">
+      <div className="-mb-24 pb-8 pt-24 flex-auto w-full justify-center rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] flex flex-col items-center">
         <div className="flex flex-col gap-2 items-center relative w-full text-center mt-6">
           <Icon name={IconName.Database} className="w-8 h-8 text-gray-500" />
           <h3 className="text-sm font-semibold text-gray-600">

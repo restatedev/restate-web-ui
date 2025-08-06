@@ -31,7 +31,7 @@ interface TableProps
 }
 
 const tableStyles = tv({
-  base: 'to-gray-50 from-gray-100 bg-gradient-to-b [&:has([data-table-empty=true])]:bg-gray-50/50 shadow-sm shadow-zinc-800/5 [&:has([data-table-empty=true])]:shadow-none border rounded-xl overflow-hidden',
+  base: 'to-gray-50 from-gray-100 bg-linear-to-b [&:has([data-table-empty=true])]:bg-gray-50/50 shadow-sm shadow-zinc-800/5 [&:has([data-table-empty=true])]:shadow-none border rounded-xl overflow-hidden',
 });
 export function Table({ className, ...props }: PropsWithChildren<TableProps>) {
   return (
@@ -59,7 +59,7 @@ const resizerStyles = tv({
 });
 
 const columnStyles = tv({
-  base: 'py-2 [&:last-child]:pr-2 pl-2 [&:not(:last-child)_.resizer]:translate-x-[10px] [&:hover]:z-20 [&:focus-within]:z-20 text-start text-sm font-semibold text-gray-700 cursor-default',
+  base: 'py-2 last:pr-2 pl-2 [&:not(:last-child)_.resizer]:translate-x-[10px] [&:hover]:z-20 focus-within:z-20 text-start text-sm font-semibold text-gray-700 cursor-default',
 });
 
 interface ColumnProps

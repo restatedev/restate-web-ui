@@ -100,7 +100,7 @@ export function TruncateWithTooltip({
         </span>
         <TooltipContent size={size} offset={5} triggerRef={containerRef}>
           <div
-            className="flex items-start gap-4 [&_*]:text-gray-200 [&_*]:text-xs whitespace-pre-wrap"
+            className="flex items-start gap-4 **:text-gray-200 **:text-xs whitespace-pre-wrap"
             ref={tooltipHoverRef}
           >
             <div className={contentStyles({ size })}>{tooltipContent}</div>

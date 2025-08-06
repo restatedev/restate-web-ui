@@ -13,7 +13,7 @@ interface NavItemProps {
 
 const styles = tv({
   extend: focusRing,
-  base: 'group no-underline isolate flex py-1.5 px-3 text-sm text-center transition rounded-xl cursor-default hover:bg-black/[0.03] pressed:bg-gray-200',
+  base: 'group no-underline isolate flex py-1.5 px-3 text-sm text-center transition rounded-xl cursor-default hover:bg-black/3 pressed:bg-gray-200',
   variants: {
     isCurrent: {
       true: 'text-gray-800',
@@ -113,7 +113,7 @@ interface NavButtonItemProps {
   onClick?: VoidFunction;
 }
 const buttonStyles = tv({
-  base: 'group no-underline font-sans bg-transparent border-none shadow-none isolate flex py-1.5 px-3 text-xs text-center transition rounded-xl cursor-default hover:bg-black/[0.03] pressed:bg-black/[0.06]',
+  base: 'group no-underline font-sans bg-transparent border-none shadow-none isolate flex py-1.5 px-3 text-xs text-center transition rounded-xl cursor-default hover:bg-black/3 pressed:bg-black/[0.06]',
   variants: {
     isActive: {
       true: 'text-gray-800',

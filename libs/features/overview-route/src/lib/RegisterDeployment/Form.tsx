@@ -142,7 +142,7 @@ function EndpointForm() {
             '^arn:aws:lambda:[a-z0-9\\-]+:\\d+:function:[a-zA-Z0-9\\-_]+:.+$',
         })}
         name="endpoint"
-        className="[&_.error]:absolute [&_.error]:pt-1 [&_input:not([type=radio])]:absolute left-0 right-0 my-2 [&_input:not([type=radio])]:pr-[4.75rem]"
+        className="[&_.error]:absolute [&_.error]:pt-1 [&_input:not([type=radio])]:absolute left-0 right-0 my-2 [&_input:not([type=radio])]:pr-19"
         placeholder={
           isLambda
             ? 'arn:aws:lambda:{region}:{account}:function:{function-name}:{version}'
@@ -169,7 +169,7 @@ function EndpointForm() {
           });
         }}
       >
-        <div className="w-fit top-[2px] absolute right-[2px] self-start [&_ul]:bg-black/[0.025] [&_button]:px-2 [&_.active]:px-2 [&_ul]:rounded-[0.35rem] [&_button]:rounded-[0.35rem] [&_.active]:rounded-[0.35rem]">
+        <div className="w-fit top-[2px] absolute right-[2px] self-start [&_ul]:bg-black/2.5 [&_button]:px-2 [&_.active]:px-2 [&_ul]:rounded-[0.35rem] [&_button]:rounded-[0.35rem] [&_.active]:rounded-[0.35rem]">
           <RadioGroup
             value={String(isLambda)}
             name="isLambda"
@@ -183,7 +183,7 @@ function EndpointForm() {
             }
             disabled={isPending}
           >
-            <FormFieldLabel className="sr-only w-[1px]">
+            <FormFieldLabel className="sr-only w-px">
               Endpoint type
             </FormFieldLabel>
             <Tooltip>

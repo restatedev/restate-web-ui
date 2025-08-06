@@ -176,7 +176,7 @@ const lastErrorStyles = tv({
       hasStack: false,
       isRetrying: false,
       className: {
-        errorBanner: 'w-[32rem]',
+        errorBanner: 'w-lg',
       },
     },
     {
@@ -184,7 +184,7 @@ const lastErrorStyles = tv({
       hasStack: false,
       isRetrying: true,
       className: {
-        errorBanner: 'w-[32rem]',
+        errorBanner: 'w-lg',
       },
     },
   ],

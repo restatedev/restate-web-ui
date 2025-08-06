@@ -67,7 +67,7 @@ function MultipleDeploymentsPlaceholder({
             value={filterText}
             onChange={onFilter}
             placeholder="Filter services, handlers, or deployments…"
-            className="[&_input::-webkit-search-cancel-button]:invert min-w-0 w-[40ch] [&>*]:min-h-0 [&>*]:h-6 [&_input]:border-0 [&_input]:h-full [&_input[data-focused=true]]:outline-0  [&_input]:placeholder-zinc-400 [&_input[data-focused=true]]:border-transparent [&_input]:text-current [&_input]:border-transparent [&_input]:bg-transparent shadow-none"
+            className="[&_input::-webkit-search-cancel-button]:invert min-w-0 w-[40ch] *:min-h-0 *:h-6 [&_input]:border-0 [&_input]:h-full [&_input[data-focused=true]]:outline-0  [&_input]:placeholder-zinc-400 [&_input[data-focused=true]]:border-transparent [&_input]:text-current [&_input]:border-transparent [&_input]:bg-transparent shadow-none"
           />
           <TriggerRegisterDeploymentDialog
             variant="button"
@@ -131,7 +131,7 @@ const deploymentsStyles = tv({
   variants: {
     isEmpty: {
       true: 'hidden',
-      false: 'min-h-[calc(100vh-9rem-9rem)] sticky top-[9rem]',
+      false: 'min-h-[calc(100vh-9rem-9rem)] sticky top-36',
     },
   },
   defaultVariants: {
@@ -139,7 +139,7 @@ const deploymentsStyles = tv({
   },
 });
 const layoutStyles = tv({
-  base: 'min-h-full [&>*]:items-center [&>*:first-child_[data-anchor]]:rounded-br-none [&>*:first-child_[data-anchor]]:rounded-tr-none [&>*:first-child_[data-anchor]]:rounded-bl-full [&>*:first-child_[data-anchor]]:rounded-tl-full [&>*:first-child_[data-anchor]]:right-0 [&>*:first-child_[data-anchor]]:left-auto',
+  base: 'min-h-full *:items-center [&>*:first-child_[data-anchor]]:rounded-br-none [&>*:first-child_[data-anchor]]:rounded-tr-none [&>*:first-child_[data-anchor]]:rounded-bl-full [&>*:first-child_[data-anchor]]:rounded-tl-full [&>*:first-child_[data-anchor]]:right-0 [&>*:first-child_[data-anchor]]:left-auto',
   variants: {
     isScrolling: {
       true: 'items-start',
@@ -155,7 +155,7 @@ const reactServerStyles = tv({
   base: 'justify-center flex flex-col items-center w-fit',
   variants: {
     isEmpty: {
-      true: 'mb-[-6rem] pb-8 pt-24 flex-auto w-full justify-center rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]',
+      true: '-mb-24 pb-8 pt-24 flex-auto w-full justify-center rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]',
       false:
         'hidden lg:block lg:fixed top-[50vh] left-[50vw] -translate-y-1/2 -translate-x-1/2',
     },

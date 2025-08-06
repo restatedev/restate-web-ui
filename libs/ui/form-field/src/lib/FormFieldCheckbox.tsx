@@ -125,18 +125,18 @@ const checkboxStyles = tv({
 
 const boxStyles = tv({
   extend: focusRing,
-  base: 'w-5 h-5 flex-shrink-0 rounded-md flex items-center justify-center border transition shadow-[inset_0_0.5px_0.5px_0px_rgba(0,0,0,0.08)]',
+  base: 'w-5 h-5 shrink-0 rounded-md flex items-center justify-center border transition shadow-[inset_0_0.5px_0.5px_0px_rgba(0,0,0,0.08)]',
   variants: {
     isSelected: {
       false:
-        'bg-[--color] border-gray-200 [--color:theme(colors.gray.100)] group-pressed:[--color:theme(colors.gray.200)]',
-      true: 'bg-[--color] border-[--color] [--color:theme(colors.blue.600)] group-pressed:[--color:theme(colors.blue.800)]',
+        'bg-(--color) border-gray-200 [--color:var(--color-gray-100)] group-pressed:[--color:theme(colors.gray.200)]',
+      true: 'bg-(--color) border-(--color) [--color:var(--color-blue-600)] group-pressed:[--color:theme(colors.blue.800)]',
     },
     isInvalid: {
-      true: '[--color:theme(colors.red.100)] group-pressed:[--color:theme(colors.red.200)] border-red-600',
+      true: '[--color:var(--color-red-100)] group-pressed:[--color:theme(colors.red.200)] border-red-600',
     },
     isDisabled: {
-      true: '[--color:theme(colors.gray.100)] border-gray-100 shadow-none',
+      true: '[--color:var(--color-gray-100)] border-gray-100 shadow-none',
     },
   },
 });

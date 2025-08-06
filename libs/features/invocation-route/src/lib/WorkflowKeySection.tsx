@@ -44,7 +44,7 @@ export function WorkflowKeySection({
       <Section className={styles({ className })}>
         <SectionTitle>{invocation.target_service_name}</SectionTitle>
         <SectionContent className="p-0" raised={raised}>
-          <div className="flex px-1.5 py-1 items-center [&:not(:last-child)]:border-b h-9">
+          <div className="flex px-1.5 py-1 items-center not-last:border-b h-9">
             <span className="flex-auto pl-1 text-code text-gray-500 font-medium">
               Key
             </span>

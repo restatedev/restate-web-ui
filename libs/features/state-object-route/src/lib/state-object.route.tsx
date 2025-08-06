@@ -107,7 +107,7 @@ function EditStateTrigger(props: ComponentProps<typeof Button>) {
 }
 
 const actionButtonStyles = tv({
-  base: 'absolute invisible drop-shadow-[-20px_2px_4px_rgba(255,255,255,0.4)] group-hover:visible right-full z-[2] rounded-r-none px-2 py-0.5 translate-x-px [font-size:inherit] [line-height:inherit] rounded-l-md ',
+  base: 'absolute invisible drop-shadow-[-20px_2px_4px_rgba(255,255,255,0.4)] group-hover:visible right-full z-2 rounded-r-none px-2 py-0.5 translate-x-px [font-size:inherit] [line-height:inherit] rounded-l-md ',
 });
 
 function Component() {
@@ -653,7 +653,7 @@ const stylesKey = tv({
   slots: {
     text: '',
     container: 'pl-1 inline-flex items-center w-full align-middle',
-    link: "before:rounded-lg m-0.5 text-zinc-500 outline-offset-0 ml-0 rounded-full  before:absolute before:inset-0 before:content-[''] hover:before:bg-black/[0.03] pressed:before:bg-black/5",
+    link: "before:rounded-lg m-0.5 text-zinc-500 outline-offset-0 ml-0 rounded-full  before:absolute before:inset-0 before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5",
     linkIcon: 'w-4 h-4 text-current shrink-0',
   },
 });
@@ -817,7 +817,7 @@ function ServiceSelector() {
       <DropdownTrigger>
         <Button
           variant="secondary"
-          className="shrink-0 min-w-0 flex gap-[0.7ch] items-center py-1 rounded-lg bg-white/[0.25] hover:bg-white/30 pressed:bg-white/30 text-zinc-50 text-xs px-1.5"
+          className="shrink-0 min-w-0 flex gap-[0.7ch] items-center py-1 rounded-lg bg-white/25 hover:bg-white/30 pressed:bg-white/30 text-zinc-50 text-xs px-1.5"
         >
           <span className="whitespace-nowrap shrink-0">
             {virtualObjects.includes(serviceParam)

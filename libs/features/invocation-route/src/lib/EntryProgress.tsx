@@ -49,7 +49,7 @@ const pointStyles = tv({
 });
 
 const pendingStyles = tv({
-  base: 'transition-all duration-1000 mix-blend-overlay max-w-[223px] right-0 left-[calc(100%-200px)] rounded-md absolute top-0 bottom-0 [background:repeating-linear-gradient(-45deg,theme(colors.black/.15),theme(colors.black/.15)_8px,theme(colors.white/.40)_8px,theme(colors.white/.40)_16px)] [mask-image:linear-gradient(to_right,transparent_calc(100%-200px),black_100%)]',
+  base: 'transition-all duration-1000 mix-blend-overlay max-w-[223px] right-0 left-[calc(100%-200px)] rounded-md absolute top-0 bottom-0 [background:repeating-linear-gradient(-45deg,--theme(--color-black/.15),--theme(--color-black/.15)_8px,--theme(--color-white/.40)_8px,--theme(--color-white/.40)_16px)] mask-[linear-gradient(to_right,transparent_calc(100%-200px),black_100%)]',
   variants: {
     isLive: {
       true: 'animate-moveAndGrow',
@@ -92,7 +92,7 @@ function Point({
 const lineStyles = tv({
   base: '',
   slots: {
-    line: 'via-100% relative h-full rounded-md shadow-sm border border-white/80 bg-gradient-to-r',
+    line: 'via-100% relative h-full rounded-md shadow-sm border border-white/80 bg-linear-to-r',
   },
   variants: {
     variant: {
@@ -109,7 +109,7 @@ const lineStyles = tv({
         line: 'from-blue-300 to-blue-300',
       },
       default: {
-        line: 'h-3 bg-transparent border-dashed [&>*]:mix-blend-color-burn border-zinc-600/40',
+        line: 'h-3 bg-transparent border-dashed *:mix-blend-color-burn border-zinc-600/40',
       },
       idleWarning: {
         line: 'h-3 from-orange-400/10 to-orange-400/10 border-dashed border-orange-600/60',
@@ -186,10 +186,10 @@ function Line({
 }
 
 const progressStyles = tv({
-  base: 'transition-all duration-1000 h-full relative flex flex-col gap-0.5 items-start justify-center min-w-[4px] -translate-x-[1px] ',
+  base: 'transition-all duration-1000 h-full relative flex flex-col gap-0.5 items-start justify-center min-w-[4px] -translate-x-px ',
   slots: {
     segmentContainer:
-      'transition-all duration-1000 w-full flex [&>*]:w-full items-center ',
+      'transition-all duration-1000 w-full flex *:w-full items-center ',
   },
   variants: {
     isPending: {

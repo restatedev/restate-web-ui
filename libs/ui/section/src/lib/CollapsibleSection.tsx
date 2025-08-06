@@ -34,7 +34,7 @@ export function CollapsibleSectionTitle({
       <Button
         variant="icon"
         slot="trigger"
-        className=" p-2 text-zinc-400 text-sm inset-0 absolute justify-end rounded-[calc(0.75rem-0.175rem)] hover:bg-black/[0.03] pressed:bg-black/5"
+        className=" p-2 text-zinc-400 text-sm inset-0 absolute justify-end rounded-[calc(0.75rem-0.175rem)] hover:bg-black/3 pressed:bg-black/5"
       >
         <Icon
           name={IconName.ChevronDown}

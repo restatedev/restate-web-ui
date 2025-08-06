@@ -35,7 +35,7 @@ export function MiniService({
           aria-label={service.name}
           variant="secondary"
           href={`?${SERVICE_QUERY_PARAM}=${service.name}`}
-          className="outline-offset-0 m-1 ml-0 rounded-full before:absolute before:inset-0 before:content-[''] before:rounded-lg hover:before:bg-black/[0.03] pressed:before:bg-black/5"
+          className="outline-offset-0 m-1 ml-0 rounded-full before:absolute before:inset-0 before:content-[''] before:rounded-lg hover:before:bg-black/3 pressed:before:bg-black/5"
         >
           <Icon
             name={IconName.ChevronRight}
@@ -43,7 +43,7 @@ export function MiniService({
           />
         </Link>
       </div>
-      <Revision revision={service.revision} className="ml-auto z-[2]" />
+      <Revision revision={service.revision} className="ml-auto z-2" />
     </div>
   );
 }

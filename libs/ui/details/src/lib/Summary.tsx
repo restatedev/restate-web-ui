@@ -11,7 +11,7 @@ interface SummaryProps {
 
 const summaryStyles = tv({
   extend: focusRing,
-  base: 'flex gap-2 px-3 py-2 pressed:bg-gray-200 hover:bg-gray-100 rounded-[calc(.75rem_-_1px_-.25rem)] list-none group-open:mb-2 pr-2.5 [&::-webkit-details-marker]:hidden cursor-default',
+  base: 'flex gap-2 px-3 py-2 pressed:bg-gray-200 hover:bg-gray-100 rounded-[calc(.75rem-1px-.25rem)] list-none group-open:mb-2 pr-2.5 [&::-webkit-details-marker]:hidden cursor-default',
 });
 
 export function Summary({
@@ -40,7 +40,7 @@ export function Summary({
       <div>{children}</div>
       <Icon
         name={IconName.ChevronDown}
-        className="flex-shrink-0 group-open:rotate-180 text-gray-500 ml-auto text-sm"
+        className="shrink-0 group-open:rotate-180 text-gray-500 ml-auto text-sm"
       />
     </summary>
   );

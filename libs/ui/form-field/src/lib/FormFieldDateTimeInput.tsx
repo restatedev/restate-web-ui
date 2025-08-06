@@ -101,7 +101,7 @@ export const FormFieldDateTimeInput = forwardRef<
       >
         {!label && <Label className="sr-only">{placeholder}</Label>}
         {label && <FormFieldLabel>{label}</FormFieldLabel>}
-        <div className="relative min-h-[2.125rem]">
+        <div className="relative min-h-8.5">
           <AriaDateInput ref={ref} className={inputStyles()}>
             {(segment) => (
               <DateSegment segment={segment} className={segmentStyles} />

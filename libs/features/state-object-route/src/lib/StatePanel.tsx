@@ -172,7 +172,7 @@ function StatePanelContent() {
       <Section className="mt-5">
         <SectionTitle>{virtualObject}</SectionTitle>
         <SectionContent className="p-0">
-          <div className="flex px-1.5 py-1 items-center [&:not(:last-child)]:border-b">
+          <div className="flex px-1.5 py-1 items-center not-last:border-b">
             <span className="flex-auto pl-1 text-code text-gray-500 font-medium">
               Key
             </span>
