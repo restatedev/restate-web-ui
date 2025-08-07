@@ -55,7 +55,7 @@ export function InlineTooltip({
 }
 
 const helpStyles = tv({
-  base: 'group inline-flex cursor-help items-center underline decoration-dashed decoration-from-font underline-offset-4',
+  base: 'group inline-flex cursor-help items-center underline decoration-dashed decoration-from-font underline-offset-4 outline-none',
 });
 
 const HelpTooltipTrigger = forwardRef<
@@ -87,7 +87,7 @@ const HelpTooltipTrigger = forwardRef<
 });
 
 const infoStyles = tv({
-  base: 'group inline-flex items-center gap-1',
+  base: 'group inline-flex items-center gap-1 outline-none',
 });
 
 const InfoTooltipTrigger = forwardRef<

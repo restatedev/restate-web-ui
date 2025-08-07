@@ -1,7 +1,7 @@
 import { tv } from '@restate/util/styles';
 
 export const focusRing = tv({
-  base: 'outline outline-offset-2 outline-blue-600',
+  base: 'outline-2 outline-offset-2 outline-blue-600',
   variants: {
     isFocusVisible: {
       false: 'outline-0',
