@@ -140,7 +140,7 @@ export function PopoverHoverTrigger({
     clearCloseTimeout();
     timeoutRef.current = setTimeout(() => {
       setIsOpen?.(false);
-    }, 50);
+    }, 10);
   }, [clearCloseTimeout, setIsOpen]);
 
   const isPointInSafeArea = useCallback(
