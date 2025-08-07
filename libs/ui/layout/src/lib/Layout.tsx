@@ -3,16 +3,8 @@ import { createPortal } from 'react-dom';
 import { AppBar } from './AppBar';
 import { ZONE_IDS, LayoutZone } from './LayoutZone';
 import { ComplementaryOutlet } from './ComplementaryOutlet';
-import { defaultConfig } from '@restate/util/styles';
 import { NotificationRegion } from '@restate/ui/notification';
 import { Toolbar } from './Toolbar';
-
-// TODO: refactor to a separate pacakge
-defaultConfig.twMergeConfig = {
-  classGroups: {
-    'font-size': [{ text: ['code', '2xs', '3xs'] }],
-  },
-};
 
 /* eslint-disable-next-line */
 export interface LayoutProps {}
