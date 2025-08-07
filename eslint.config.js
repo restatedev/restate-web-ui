@@ -4,15 +4,6 @@ module.exports = [
   ...nx.configs['flat/base'],
   ...nx.configs['flat/typescript'],
   ...nx.configs['flat/javascript'],
-  // TODO: uncomment
-  // {
-  //   files: ['**/*.json'],
-  //   // Override or add rules here
-  //   rules: {},
-  //   languageOptions: {
-  //     parser: require('jsonc-eslint-parser'),
-  //   },
-  // },
   {
     ignores: [
       '**/dist',
