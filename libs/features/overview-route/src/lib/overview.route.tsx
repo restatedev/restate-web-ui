@@ -56,9 +56,9 @@ function MultipleDeploymentsPlaceholder({
 
   return (
     <LayoutOutlet zone={LayoutZone.Toolbar}>
-      <div className="p-0.5 flex items-center rounded-xl border-transparent ring-1 ring-transparent border has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500">
-        <div className="items-center flex gap-0 p-px w-full">
-          <kbd className="bg-zinc-600 text-zinc-400 px-1.5 rounded-sm ml-2 text-sm">
+      <div className="flex items-center rounded-xl border border-transparent p-0.5 ring-1 ring-transparent has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500">
+        <div className="flex w-full items-center gap-0 p-px">
+          <kbd className="ml-2 rounded-sm bg-zinc-600 px-1.5 text-sm text-zinc-400">
             /
           </kbd>
           <FormFieldInput
@@ -67,11 +67,11 @@ function MultipleDeploymentsPlaceholder({
             value={filterText}
             onChange={onFilter}
             placeholder="Filter services, handlers, or deployments…"
-            className="[&_input::-webkit-search-cancel-button]:invert min-w-0 w-[40ch] *:min-h-0 *:h-6 [&_input]:border-0 [&_input]:h-full [&_input[data-focused=true]]:outline-0  [&_input]:placeholder-zinc-400 [&_input[data-focused=true]]:border-transparent [&_input]:text-current [&_input]:border-transparent [&_input]:bg-transparent shadow-none"
+            className="w-[40ch] min-w-0 shadow-none *:h-6 *:min-h-0 [&_input]:h-full [&_input]:border-0 [&_input]:border-transparent [&_input]:bg-transparent [&_input]:text-current [&_input]:placeholder-zinc-400 [&_input::-webkit-search-cancel-button]:invert [&_input[data-focused=true]]:border-transparent [&_input[data-focused=true]]:outline-0"
           />
           <TriggerRegisterDeploymentDialog
             variant="button"
-            className="py-0 h-7 rounded-lg ml-auto"
+            className="ml-auto h-7 rounded-lg py-0"
           >
             Deployment
           </TriggerRegisterDeploymentDialog>
@@ -83,8 +83,8 @@ function MultipleDeploymentsPlaceholder({
 
 function OneDeploymentPlaceholder() {
   return (
-    <div className="max-w-lg flex p-4 flex-col gap-2 items-center relative w-full text-center rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
-      <p className="text-sm text-gray-500 max-w-md">
+    <div className="relative flex w-full max-w-lg flex-col items-center gap-2 rounded-xl border bg-gray-200/50 p-4 text-center shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
+      <p className="max-w-md text-sm text-gray-500">
         Point Restate to your{' '}
         <ServiceDeploymentExplainer>
           service deployments
@@ -102,20 +102,20 @@ function OneDeploymentPlaceholder() {
 function NoDeploymentPlaceholder({ error }: { error?: Error | null }) {
   if (error) {
     return (
-      <div className="flex flex-col gap-2 items-center relative w-full  mt-6">
+      <div className="relative mt-6 flex w-full flex-col items-center gap-2">
         <ErrorBanner error={error} />
       </div>
     );
   }
   return (
-    <div className="flex flex-col gap-2 items-center relative w-full text-center mt-6">
+    <div className="relative mt-6 flex w-full flex-col items-center gap-2 text-center">
       <h3 className="text-sm font-semibold text-gray-600">
         No{' '}
         <ServiceDeploymentExplainer>
           service deployments
         </ServiceDeploymentExplainer>
       </h3>
-      <p className="text-sm text-gray-500 px-4 max-w-md">
+      <p className="max-w-md px-4 text-sm text-gray-500">
         Point Restate to your deployed services so Restate can register your{' '}
         <ServiceExplainer>services</ServiceExplainer> and handlers
       </p>
@@ -202,12 +202,12 @@ function Component() {
           document.querySelector(`.${escapedMasonryId}`)?.clientHeight ?? 0;
         const columnHeight = Math.max(
           ...Array.from(
-            document.querySelectorAll(`.${escapedMasonryId} > *`)
-          ).map((el) => el.clientHeight)
+            document.querySelectorAll(`.${escapedMasonryId} > *`),
+          ).map((el) => el.clientHeight),
         );
         setIsScrolling(
           document.body.scrollHeight > document.body.clientHeight &&
-            masonryContainerHeight <= columnHeight
+            masonryContainerHeight <= columnHeight,
         );
       }
     });
@@ -242,7 +242,7 @@ function Component() {
               filterText={filterQuery}
             >
               <div
-                className="absolute w-0 h-0 top-1/2 left-0 rounded-tr-full rounded-br-full"
+                className="absolute top-1/2 left-0 h-0 w-0 rounded-tr-full rounded-br-full"
                 data-anchor
               />
             </Service>

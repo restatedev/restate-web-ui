@@ -3,7 +3,7 @@ import { SyncGeneratorResult } from 'nx/src/utils/sync-generators';
 import { join } from 'path';
 
 export async function updateTailwindGlobsGenerator(
-  tree: Tree
+  tree: Tree,
 ): Promise<SyncGeneratorResult> {
   const appName = 'web-ui';
 

@@ -40,7 +40,7 @@ export function Details({
         open={open}
       >
         {summary}
-        <div className="px-4 py-6 border-t bg-gray-50 -m-1 rounded-b-xl group-has-[+details]:rounded-b-none">
+        <div className="-m-1 rounded-b-xl border-t bg-gray-50 px-4 py-6 group-has-[+details]:rounded-b-none">
           {detailChildren}
         </div>
       </details>

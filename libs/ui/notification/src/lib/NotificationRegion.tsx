@@ -13,7 +13,7 @@ export function NotificationRegion(props: AriaToastRegionProps) {
     <div
       {...regionProps}
       ref={ref}
-      className="min-h-10 h-10 top-20 mx-4 sm:top-24 flex-none sticky [&:has(*)]:z-80 flex flex-col flex-nowrap items-stretch justify-between "
+      className="sticky top-20 mx-4 flex h-10 min-h-10 flex-none flex-col flex-nowrap items-stretch justify-between sm:top-24 [&:has(*)]:z-80"
     >
       {state.visibleToasts.map((toast) => (
         <Notification key={toast.key} toast={toast} state={state} />

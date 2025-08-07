@@ -53,7 +53,7 @@ export default defineConfig(({ mode }) => {
               file: path.join(
                 __dirname,
                 '../../dist/apps/web-ui',
-                'vendor.LICENSE.txt'
+                'vendor.LICENSE.txt',
               ),
             },
           },

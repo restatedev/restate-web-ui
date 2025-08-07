@@ -24,11 +24,11 @@ function Component() {
   const { data, isPending } = useListServices(services);
   const virtualObjectsOrWorkflows = Array.from(data.entries())
     .filter(([service, data]) =>
-      ['VirtualObject', 'Workflow'].includes(data.ty)
+      ['VirtualObject', 'Workflow'].includes(data.ty),
     )
     .map(([service, data]) => service);
   const defaultService = getDefaultVirtualObjectOrWorkflow(
-    virtualObjectsOrWorkflows
+    virtualObjectsOrWorkflows,
   );
   const navigate = useNavigate();
 
@@ -46,7 +46,7 @@ function Component() {
 
   if (isPending) {
     return (
-      <div className="flex flex-col flex-auto gap-2 relative">
+      <div className="relative flex flex-auto flex-col gap-2">
         <Table aria-label="State">
           <TableHeader>
             <Column isRowHeader></Column>
@@ -63,13 +63,13 @@ function Component() {
 
   if (!isPending && !defaultService) {
     return (
-      <div className="-mb-24 pb-8 pt-24 flex-auto w-full justify-center rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] flex flex-col items-center">
-        <div className="flex flex-col gap-2 items-center relative w-full text-center mt-6">
-          <Icon name={IconName.Database} className="w-8 h-8 text-gray-500" />
+      <div className="-mb-24 flex w-full flex-auto flex-col items-center justify-center rounded-xl border bg-gray-200/50 pt-24 pb-8 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
+        <div className="relative mt-6 flex w-full flex-col items-center gap-2 text-center">
+          <Icon name={IconName.Database} className="h-8 w-8 text-gray-500" />
           <h3 className="text-sm font-semibold text-gray-600">
             No Virtual Object or Workflow
           </h3>
-          <p className="text-sm text-gray-500 px-4 max-w-md">
+          <p className="max-w-md px-4 text-sm text-gray-500">
             <Link
               href="https://docs.restate.dev/concepts/services"
               variant="secondary"

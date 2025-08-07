@@ -31,10 +31,10 @@ export function Input({
       })}
     >
       {entry ? (
-        <div className="flex items-center ">
+        <div className="flex items-center">
           <Icon
             name={IconName.Function}
-            className="w-4 h-4 text-zinc-400 shrink-0 -mr-0.5"
+            className="-mr-0.5 h-4 w-4 shrink-0 text-zinc-400"
           />
           <EntryExpression
             entry={entry}
@@ -50,7 +50,7 @@ export function Input({
                     popoverContent={
                       <Value
                         value={entry.parameters}
-                        className="text-xs font-mono py-3"
+                        className="py-3 font-mono text-xs"
                       />
                     }
                   />
@@ -63,7 +63,7 @@ export function Input({
                   <InputOutput
                     name="headers"
                     popoverTitle=""
-                    className="px-0 bg-transparent border-none mx-0 [&&&]:mb-1"
+                    className="mx-0 border-none bg-transparent px-0 [&&&]:mb-1"
                     popoverContent={<Headers headers={entry.headers} />}
                   />
                 )}

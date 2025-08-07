@@ -33,19 +33,19 @@ export function InlineTooltip({
         {children}
       </Trigger>
       <InternalTooltipContent triggerRef={triggerRef}>
-        <div className="flex flex-col gap-2 items-start">
+        <div className="flex flex-col items-start gap-2">
           <h6 className="text-sm font-semibold text-gray-100">{title}</h6>
           {description}
           {learnMoreHref && (
             <Link
-              className="mt-2 bg-zinc-600 hover:bg-zinc-500 pressed:bg-zinc-400 text-gray-100 px-2 py-1 text-sm rounded-lg inline-flex items-center gap-2"
+              className="mt-2 inline-flex items-center gap-2 rounded-lg bg-zinc-600 px-2 py-1 text-sm text-gray-100 hover:bg-zinc-500 pressed:bg-zinc-400"
               rel="noopener noreferrer"
               target="_blank"
               variant="button"
               href={learnMoreHref}
             >
               Learn more
-              <Icon name={IconName.ExternalLink} className="w-[1em] h-[1em]" />
+              <Icon name={IconName.ExternalLink} className="h-[1em] w-[1em]" />
             </Link>
           )}
         </div>
@@ -71,13 +71,13 @@ const HelpTooltipTrigger = forwardRef<
       {...focusableProps}
       className={helpStyles({ className })}
     >
-      <span className="group-hover:bg-black/5 rounded-xs mx-[-0.1em] px-[0.1em] ">
+      <span className="mx-[-0.1em] rounded-xs px-[0.1em] group-hover:bg-black/5">
         {children}{' '}
       </span>
-      <sup className="-ml-[0.1em] -mr-[0.4em]">
+      <sup className="-mr-[0.4em] -ml-[0.1em]">
         <Button
           variant="icon"
-          className="[font-size:inherit] -outline-offset-2 p-0 -mb-[0.4em] inline [&_svg]:w-[1em] [&_svg]:h-[1em] [&_svg]:stroke-[0.18em] text-current opacity-80"
+          className="-mb-[0.4em] inline p-0 [font-size:inherit] text-current opacity-80 -outline-offset-2 [&_svg]:h-[1em] [&_svg]:w-[1em] [&_svg]:stroke-[0.18em]"
         >
           <Icon name={IconName.Help} />
         </Button>
@@ -106,7 +106,7 @@ const InfoTooltipTrigger = forwardRef<
       {children}
       <Button
         variant="icon"
-        className="[font-size:inherit] p-0 inline [&_svg]:w-[1em] [&_svg]:h-[1em] [&_svg]:stroke-[0.18em] text-current"
+        className="inline p-0 [font-size:inherit] text-current [&_svg]:h-[1em] [&_svg]:w-[1em] [&_svg]:stroke-[0.18em]"
       >
         <Icon name={IconName.Info} />
       </Button>

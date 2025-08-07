@@ -47,22 +47,22 @@ export function DateTooltip({
         <TooltipContent size="sm" offset={5} triggerRef={triggerRef}>
           <div
             ref={contentRef}
-            className="flex items-start gap-4 **:text-gray-200 **:text-xs break-all py-1"
+            className="flex items-start gap-4 py-1 break-all **:text-xs **:text-gray-200"
           >
-            <div className="flex flex-col gap-1 items-start">
-              <h6 className="text-sm font-semibold text-gray-100 mb-2">
+            <div className="flex flex-col items-start gap-1">
+              <h6 className="mb-2 text-sm font-semibold text-gray-100">
                 {title}
               </h6>
-              <div className="bg-zinc-700 rounded-sm px-1 font-mono">
+              <div className="rounded-sm bg-zinc-700 px-1 font-mono">
                 {formatDateTime(date, 'system')}
               </div>
-              <div className="bg-zinc-700 rounded-sm px-1 font-mono">
+              <div className="rounded-sm bg-zinc-700 px-1 font-mono">
                 {formatDateTime(date, 'UTC')}
               </div>
             </div>
             <Copy
               copyText={formatDateToISO(date)}
-              className="p-1 -m-1 -mt-0.5 [&_svg]:w-3 [&_svg]:h-3  [&_svg]:text-gray-200 bg-transparent hover:bg-zinc-600 pressed:bg-zinc-500 rounded-xs"
+              className="-m-1 -mt-0.5 rounded-xs bg-transparent p-1 hover:bg-zinc-600 pressed:bg-zinc-500 [&_svg]:h-3 [&_svg]:w-3 [&_svg]:text-gray-200"
             />
           </div>
         </TooltipContent>

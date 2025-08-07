@@ -10,7 +10,7 @@ import { PressEvents } from '@react-aria/interactions';
 
 export interface ButtonProps {
   onClick?: (
-    event: Omit<PressEvent, 'target'> & { target: HTMLButtonElement }
+    event: Omit<PressEvent, 'target'> & { target: HTMLButtonElement },
   ) => void;
   type?: 'button' | 'submit' | 'reset';
   name?: string;
@@ -55,7 +55,7 @@ export const Button = forwardRef<
       isDisabled={disabled}
       onPress={onClick as PressEvents['onPress']}
       className={composeRenderProps(props.className, (className, renderProps) =>
-        styles({ ...renderProps, variant, className })
+        styles({ ...renderProps, variant, className }),
       )}
     />
   );

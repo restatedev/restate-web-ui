@@ -115,7 +115,7 @@ export function SnippetTabs({
   languages: Exclude<SnippetProps['language'], undefined>[];
   defaultLanguage: Exclude<SnippetProps['language'], undefined>;
   children: (
-    language: Exclude<SnippetProps['language'], undefined>
+    language: Exclude<SnippetProps['language'], undefined>,
   ) => ReactNode;
 }) {
   const [currentLanguage, setCurrentLanguage] =
@@ -126,7 +126,7 @@ export function SnippetTabs({
         className,
       })}
     >
-      <div className="absolute top-0 right-0 bg-black/3 rounded-xl">
+      <div className="absolute top-0 right-0 rounded-xl bg-black/3">
         <Nav ariaCurrentValue="true" className="gap-0">
           {languages.map((language) => (
             <NavButtonItem

@@ -55,7 +55,7 @@ export function SplitButton({
       <Dropdown>
         <DropdownTrigger>
           <Button variant="secondary" className={menuTriggerStyles({ mini })}>
-            <Icon name={IconName.ChevronsUpDown} className="w-[1em] h-[1em]" />
+            <Icon name={IconName.ChevronsUpDown} className="h-[1em] w-[1em]" />
           </Button>
         </DropdownTrigger>
         <DropdownPopover>

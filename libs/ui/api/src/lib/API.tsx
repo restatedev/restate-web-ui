@@ -52,8 +52,8 @@ export const JsonSchemaViewer = ({
     <ErrorBoundary>
       <Suspense
         fallback={
-          <div className="flex items-center gap-1.5 text-sm text-zinc-500 py-2">
-            <Spinner className="w-4 h-4" />
+          <div className="flex items-center gap-1.5 py-2 text-sm text-zinc-500">
+            <Spinner className="h-4 w-4" />
             Loading…
           </div>
         }
@@ -93,8 +93,8 @@ class ErrorBoundary extends Component<
   render() {
     if (this.state.hasError) {
       return (
-        <div className="truncate max-w-full flex items-center text-red-500 gap-2 flex-wrap w-full min-w-0 my-1  px-2  py-1 text-code rounded-lg ">
-          <Icon name={IconName.TriangleAlert} className="w-3.5 h-3.5" /> Failed
+        <div className="my-1 flex w-full max-w-full min-w-0 flex-wrap items-center gap-2 truncate rounded-lg px-2 py-1 text-code text-red-500">
+          <Icon name={IconName.TriangleAlert} className="h-3.5 w-3.5" /> Failed
           to display the content type
         </div>
       );

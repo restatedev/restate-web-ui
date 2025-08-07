@@ -78,7 +78,7 @@ export function useHrefWithQueryParams({
           existingSearchParams
             .toString()
             .replace(`${key}=${value}`, '')
-            .replace(`${key}=${encodeURIComponent(value)}`, '')
+            .replace(`${key}=${encodeURIComponent(value)}`, ''),
         );
       });
       const combinedSearchParams = new URLSearchParams([
@@ -108,10 +108,10 @@ export const Link = forwardRef<HTMLAnchorElement, LinkProps>(
         className={composeRenderProps(
           props.className,
           (className, renderProps) =>
-            styles({ ...renderProps, className, variant: props.variant })
+            styles({ ...renderProps, className, variant: props.variant }),
         )}
         onPress={onClick}
       />
     );
-  }
+  },
 );

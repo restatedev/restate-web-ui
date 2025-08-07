@@ -44,18 +44,18 @@ export function ClauseChip({
         autoFocus={isNew}
         data-filter-id={item.id}
         variant="secondary"
-        className="min-w-0 flex gap-[0.7ch] items-center py-1 rounded-lg bg-white/25 hover:bg-white/30 pressed:bg-white/30 text-zinc-50 text-xs px-1.5"
+        className="flex min-w-0 items-center gap-[0.7ch] rounded-lg bg-white/25 px-1.5 py-1 text-xs text-zinc-50 hover:bg-white/30 pressed:bg-white/30"
       >
-        <span className="whitespace-nowrap shrink-0">{item.label}</span>
+        <span className="shrink-0 whitespace-nowrap">{item.label}</span>
         {item.operationLabel?.split(' ').map((segment) => (
           <span className="font-mono" key={segment}>
             {segment}
           </span>
         ))}
-        <span className="font-semibold truncate">{item.valueLabel}</span>
+        <span className="truncate font-semibold">{item.valueLabel}</span>
         <Icon
           name={IconName.ChevronsUpDown}
-          className="w-3.5 h-3.5 ml-2 shrink-0"
+          className="ml-2 h-3.5 w-3.5 shrink-0"
         />
       </Button>
     </EditQueryTrigger>
@@ -76,7 +76,7 @@ function EditQueryTrigger({
 }>) {
   const selectedOperations = useMemo(
     () => (clause.value.operation ? [clause.value.operation] : []),
-    [clause.value.operation]
+    [clause.value.operation],
   );
 
   const [isOpen, setIsOpen] = useState(false);
@@ -121,13 +121,13 @@ function EditQueryTrigger({
                     const newClause = new QueryClause(clause.schema, {
                       ...clause.value,
                       operation: Array.from(operations).at(
-                        -1
+                        -1,
                       ) as QueryClauseOperationId,
                     });
                     Promise.resolve(newClause.schema.loadOptions?.()).then(
                       () => {
                         onUpdate?.(newClause);
-                      }
+                      },
                     );
                   }
                 }}
@@ -145,7 +145,7 @@ function EditQueryTrigger({
             <ValueSelector clause={clause} onUpdate={onUpdate} />
           </DropdownSection>
           {clause.id === 'status' && (
-            <p className="text-xs text-gray-500 px-5 py-1 max-w-xs mb-2">
+            <p className="mb-2 max-w-xs px-5 py-1 text-xs text-gray-500">
               Completed invocations (succeeded, failed, cancelled, or killed)
               are retained only for workflows and those with idempotency keys,
               and solely for the retention period specified by the service.
@@ -182,7 +182,7 @@ function ValueSelector({
               {
                 ...clause.value,
                 value: Array.from(values as Set<string>),
-              }
+              },
             );
             onUpdate?.(newClause);
           }}
@@ -312,7 +312,7 @@ function ValueSelector({
 
 export function FiltersTrigger() {
   return (
-    <kbd className="bg-zinc-600 text-zinc-400 px-1.5 rounded-sm ml-1 mr-1 text-sm">
+    <kbd className="mr-1 ml-1 rounded-sm bg-zinc-600 px-1.5 text-sm text-zinc-400">
       /
     </kbd>
   );

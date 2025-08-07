@@ -20,14 +20,14 @@ export interface LayoutProps {}
 export function LayoutProvider({ children }: PropsWithChildren<LayoutProps>) {
   return (
     <>
-      <div className="fixed top-0 h-6 z-30 left-0 right-0 bg-linear-to-t from-gray-100/60 to-gray-100" />
-      <div className="flex w-full flex-col min-h-screen mx-auto max-w-6xl 3xl:max-w-[min(100rem,calc(100vw-800px-4rem))] py-3 sm:py-6 px-3 sm:px-6 lg:px-8">
+      <div className="fixed top-0 right-0 left-0 z-30 h-6 bg-linear-to-t from-gray-100/60 to-gray-100" />
+      <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-3 py-3 3xl:max-w-[min(100rem,calc(100vw-800px-4rem))] sm:px-6 sm:py-6 lg:px-8">
         <AppBar id={ZONE_IDS[LayoutZone.AppBar]} />
         <NotificationRegion />
-        <div className="flex-auto flex flex-row 3xl:w-[calc(100%+800px+4rem)] 3xl:ml-[calc(-400px-2rem)] 3xl:grid 3xl:[grid-template-columns:400px_1fr_400px] 3xl:gap-8">
+        <div className="flex flex-auto flex-row 3xl:ml-[calc(-400px-2rem)] 3xl:grid 3xl:w-[calc(100%+800px+4rem)] 3xl:[grid-template-columns:400px_1fr_400px] 3xl:gap-8">
           <main
             id={ZONE_IDS[LayoutZone.Content]}
-            className="min-w-0 max-w-full pb-32 pt-8 px-4 flex-auto flex flex-col relative col-start-2 col-end-3"
+            className="relative col-start-2 col-end-3 flex max-w-full min-w-0 flex-auto flex-col px-4 pt-8 pb-32"
           ></main>
           <ComplementaryOutlet id={ZONE_IDS[LayoutZone.Complementary]} />
         </div>
@@ -54,7 +54,7 @@ export function LayoutOutlet({
         {children}
         {zone === LayoutZone.AppBar && <div data-variant={variant} />}
       </>,
-      document.getElementById(ZONE_IDS[zone])!
+      document.getElementById(ZONE_IDS[zone])!,
     );
   } else {
     return null;

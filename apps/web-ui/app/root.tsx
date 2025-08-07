@@ -99,7 +99,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     (to: string | Partial<Path>) => {
       remixNavigate(to, { preventScrollReset: true });
     },
-    [remixNavigate]
+    [remixNavigate],
   );
 
   return (
@@ -148,8 +148,8 @@ export default function App() {
               <Outlet />
             </LayoutOutlet>
             <LayoutOutlet zone={LayoutZone.AppBar}>
-              <div className="flex items-stretch gap-2 flex-1 min-w-0">
-                <div className="flex gap-2 items-center rounded-xl border bg-white p-3 shadow-xs h-full">
+              <div className="flex min-w-0 flex-1 items-stretch gap-2">
+                <div className="flex h-full items-center gap-2 rounded-xl border bg-white p-3 shadow-xs">
                   <Icon
                     name={IconName.RestateEnvironment}
                     className="text-xl text-[#222452]"
@@ -157,12 +157,12 @@ export default function App() {
                 </div>
                 <Button
                   variant="secondary"
-                  className="flex items-center gap-2 px-2 my-1 bg-transparent border-none shadow-none min-w-0"
+                  className="my-1 flex min-w-0 items-center gap-2 border-none bg-transparent px-2 shadow-none"
                 >
-                  <div className="truncate row-start-1 col-start-2 w-full flex items-center gap-2">
+                  <div className="col-start-2 row-start-1 flex w-full items-center gap-2 truncate">
                     <HealthIndicator mini className="-mt-0.5" />
                     <HealthCheckNotification />
-                    <span className="flex-auto truncate min-w-0 block">
+                    <span className="block min-w-0 flex-auto truncate">
                       Restate server
                     </span>
                     <Version />
@@ -240,7 +240,7 @@ export default function App() {
 // TODO: implement proper loader
 export function HydrateFallback() {
   return (
-    <p className="flex gap-2 items-center">
+    <p className="flex items-center gap-2">
       <Spinner />
       Loading...
     </p>

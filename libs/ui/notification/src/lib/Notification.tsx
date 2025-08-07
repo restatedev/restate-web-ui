@@ -107,7 +107,7 @@ export function Notification({ state, className, ...props }: ToastProps) {
     animation: props.toast.animation ?? 'entering',
   });
   const notificationIndex = state.visibleToasts.findIndex(
-    ({ key }) => key === props.toast.key
+    ({ key }) => key === props.toast.key,
   );
   const isVisible = notificationIndex === 0;
   const timeOut = TIMEOUTS[props.toast.content.type];

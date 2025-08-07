@@ -71,7 +71,7 @@ export const FormFieldCheckbox = forwardRef<
       slot,
       ...props
     },
-    ref
+    ref,
   ) => {
     const { input, container, label, error } = styles({ direction });
     const inputRef = useObjectRef(ref);
@@ -103,7 +103,7 @@ export const FormFieldCheckbox = forwardRef<
         <FormFieldError children={errorMessage} className={error()} />
       </CheckboxGroup>
     );
-  }
+  },
 );
 
 const checkboxStyles = tv({
@@ -155,7 +155,7 @@ export const Checkbox = forwardRef<
       inputRef={inputRef}
       {...props}
       className={composeRenderProps(props.className, (className, renderProps) =>
-        checkboxStyles({ ...renderProps, className })
+        checkboxStyles({ ...renderProps, className }),
       )}
     >
       {({ isSelected, isIndeterminate, ...renderProps }) => (

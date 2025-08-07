@@ -66,7 +66,7 @@ export function ServicePlaygroundTrigger({
       }`}
       className={styles({ className })}
     >
-      Playground <Icon name={IconName.ExternalLink} className="w-3 h-3" />
+      Playground <Icon name={IconName.ExternalLink} className="h-3 w-3" />
     </Link>
   );
 }
@@ -114,14 +114,14 @@ function Attribution() {
       href="https://stoplight.io/?utm_source=elements&amp;utm_medium=counter2&amp;utm_campaign=powered_by&amp;utm_content=/operations/add"
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center px-4 py-3 border-t"
+      className="flex items-center border-t px-4 py-3"
     >
       <svg
         aria-hidden="true"
         focusable="false"
         data-prefix="fas"
         data-icon="bolt"
-        className="text-[rgb(144,97,249)] svg-inline--fa fa-bolt sl-icon fa-fw mr-1"
+        className="svg-inline--fa fa-bolt sl-icon fa-fw mr-1 text-[rgb(144,97,249)]"
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 384 512"
       >
@@ -143,7 +143,7 @@ function useApiSpec(service?: string | null) {
     String(service),
     {
       enabled,
-    }
+    },
   );
   const { ingressUrl } = useRestateContext();
 
@@ -157,11 +157,11 @@ function useApiSpec(service?: string | null) {
         })
       : undefined;
     const handlers = Array.from(
-      Object.values((data as any)?.paths ?? {})
+      Object.values((data as any)?.paths ?? {}),
     ).reduce(
       (
         results: Map<string, { name: string; id: string; method: string }[]>,
-        endpoint: any
+        endpoint: any,
       ) => {
         const allMethods = Array.from(Object.entries(endpoint)).map(
           ([method, metadata]: any[]) => ({
@@ -169,7 +169,7 @@ function useApiSpec(service?: string | null) {
             name: metadata?.summary,
             id: metadata?.operationId,
             method,
-          })
+          }),
         );
         allMethods.forEach(({ category, name, id, method }) => {
           results.set(category, [
@@ -179,7 +179,7 @@ function useApiSpec(service?: string | null) {
         });
         return results;
       },
-      new Map<string, { name: string; id: string; method: string }[]>()
+      new Map<string, { name: string; id: string; method: string }[]>(),
     );
 
     return { apiSpec, handlers };
@@ -213,11 +213,11 @@ function ServicePlaygroundComplementaryContent({
   const isSelectedHandlerFromURLValid =
     !handlers.size ||
     Array.from(handlers.values()).some((methods) =>
-      methods.some(({ id }) => id === selectedHandlerFromURL)
+      methods.some(({ id }) => id === selectedHandlerFromURL),
     );
 
   const [selectedHandler, _setSelectedHandler] = useState(
-    selectedHandlerFromURL
+    selectedHandlerFromURL,
   );
 
   const setSelectedHandler = useCallback(
@@ -226,7 +226,7 @@ function ServicePlaygroundComplementaryContent({
       location.hash = `#/operations/${value}`;
       _setSelectedHandler(value);
     },
-    [location]
+    [location],
   );
 
   const defaultHandler = handlers.get(DEFAULT_CATEGORY)?.at(0)?.id;
@@ -265,7 +265,7 @@ function ServicePlaygroundComplementaryContent({
   }
 
   const selectedCategory = Array.from(handlers.keys()).find((category) =>
-    handlers.get(category)?.some(({ id }) => id === selectedHandler)
+    handlers.get(category)?.some(({ id }) => id === selectedHandler),
   );
   const selectedName = handlers
     .get(String(selectedCategory))
@@ -274,12 +274,12 @@ function ServicePlaygroundComplementaryContent({
   return (
     <>
       <ComplementaryFooter>
-        <div className="flex gap-2 flex-col flex-auto">
+        <div className="flex flex-auto flex-col gap-2">
           {error && <ErrorBanner errors={[error]} />}
-          <div className="flex gap-2 w-full">
+          <div className="flex w-full gap-2">
             <ComplementaryClose>
               <Button
-                className="flex-auto  grow-0 basis-1/2"
+                className="flex-auto grow-0 basis-1/2"
                 variant="secondary"
                 onClick={() => {
                   _setSelectedHandler(undefined);
@@ -299,17 +299,17 @@ function ServicePlaygroundComplementaryContent({
           </div>
         </div>
       </ComplementaryFooter>
-      <div className="flex flex-col min-h-full [&_.sl-text-lg]:text-code [&_.sl-rounded-lg]:rounded-xl [&_h1]:hidden [&_[dir=ltr]>[dir=ltr]]:hidden [&_h1]:mb-2 [&_.sl-stack--8]:gap-6 [&_.sl-stack--5]:gap-2 [&_.sl-pt-8]:pt-2 [&_p]:text-sm [&_.sl-inverted_input]:text-gray-700 [&_input]:text-sm [&_h1]:text-2xl [&_elements-api_h2]:text-xl [&_h3]:text-lg [&_.sl-elements-api>*:first-child]:hidden [&_.sl-elements-api>*:nth-child(2)]:px-2 [&_.sl-elements-api>*:nth-child(2)>*]:pt-2 [&_.sl-elements-api>*:nth-child(2)>*>*>*:last-child]:flex-col-reverse [&_.sl-elements-api>*:nth-child(2)>*>*>*>*]:mx-0 [&_.sl-elements-api>*:nth-child(2)>*>*>*>*]:w-full">
-        <h2 className="mb-0.5 text-lg font-medium leading-6 text-gray-900 flex gap-2 items-center">
+      <div className="flex min-h-full flex-col [&_.sl-elements-api>*:first-child]:hidden [&_.sl-elements-api>*:nth-child(2)]:px-2 [&_.sl-elements-api>*:nth-child(2)>*]:pt-2 [&_.sl-elements-api>*:nth-child(2)>*>*>*:last-child]:flex-col-reverse [&_.sl-elements-api>*:nth-child(2)>*>*>*>*]:mx-0 [&_.sl-elements-api>*:nth-child(2)>*>*>*>*]:w-full [&_.sl-inverted_input]:text-gray-700 [&_.sl-pt-8]:pt-2 [&_.sl-rounded-lg]:rounded-xl [&_.sl-stack--5]:gap-2 [&_.sl-stack--8]:gap-6 [&_.sl-text-lg]:text-code [&_[dir=ltr]>[dir=ltr]]:hidden [&_elements-api_h2]:text-xl [&_h1]:mb-2 [&_h1]:hidden [&_h1]:text-2xl [&_h3]:text-lg [&_input]:text-sm [&_p]:text-sm">
+        <h2 className="mb-0.5 flex items-center gap-2 text-lg leading-6 font-medium text-gray-900">
           <div className="h-10 w-10 shrink-0 text-blue-400">
             <Icon
               name={IconName.Function}
-              className="w-full h-full p-0.5 fill-blue-50 text-blue-400 drop-shadow-md"
+              className="h-full w-full fill-blue-50 p-0.5 text-blue-400 drop-shadow-md"
             />
           </div>{' '}
-          <div className="flex flex-col flex-auto items-start gap-1 min-w-0">
-            <div className="flex items-center w-full pr-3 ">
-              <span className="text-gray-500 truncate min-w-0 block mr-[0.5ch]">
+          <div className="flex min-w-0 flex-auto flex-col items-start gap-1">
+            <div className="flex w-full items-center pr-3">
+              <span className="mr-[0.5ch] block min-w-0 truncate text-gray-500">
                 {service}
               </span>
               <span className="shrink-0 text-gray-500">/</span>
@@ -317,14 +317,14 @@ function ServicePlaygroundComplementaryContent({
                 <DropdownTrigger>
                   <Button
                     variant="icon"
-                    className="flex px-1.5 text-lg italic gap-2 grow-0 items-center justify-center min-w-0"
+                    className="flex min-w-0 grow-0 items-center justify-center gap-2 px-1.5 text-lg italic"
                   >
-                    <span className="block text-gray-900 truncate min-w-0 font-medium">
+                    <span className="block min-w-0 truncate font-medium text-gray-900">
                       {selectedName?.name}
                     </span>
                     <Icon
                       name={IconName.ChevronsUpDown}
-                      className="text-gray-500 w-4 h-4"
+                      className="h-4 w-4 text-gray-500"
                     />
                   </Button>
                 </DropdownTrigger>
@@ -349,9 +349,9 @@ function ServicePlaygroundComplementaryContent({
                       >
                         {methods.map(({ name, id, method }) => (
                           <DropdownItem key={id} value={id}>
-                            <span className="font-mono ">
+                            <span className="font-mono">
                               <Badge size="sm">
-                                <span className="uppercase text-gray-500">
+                                <span className="text-gray-500 uppercase">
                                   {method}
                                 </span>
                               </Badge>{' '}
@@ -379,7 +379,7 @@ function ServicePlaygroundComplementaryContent({
         <Attribution />
         <Button
           variant="icon"
-          className="absolute right-1 top-1"
+          className="absolute top-1 right-1"
           onClick={() => {
             setIsSidebar((old) => {
               if (service) {
@@ -389,7 +389,7 @@ function ServicePlaygroundComplementaryContent({
             });
           }}
         >
-          <Icon name={IconName.Maximize} className="w-4 h-4 text-gray-500" />
+          <Icon name={IconName.Maximize} className="h-4 w-4 text-gray-500" />
         </Button>
       </div>
     </>
@@ -416,20 +416,20 @@ function ServicePlaygroundSheetContent({
       >
         {apiSpec ? <API apiDescriptionDocument={apiSpec} /> : null}
         {error && (
-          <div className="mt-12 mx-8">
+          <div className="mx-8 mt-12">
             <ErrorBanner errors={[error]} />
           </div>
         )}
         {!apiSpec && isFetching && (
-          <div className="w-full h-full items-center justify-center flex">
+          <div className="flex h-full w-full items-center justify-center">
             <div className="flex items-center gap-2.5 text-lg text-zinc-500">
-              <Spinner className="w-6 h-6" />
+              <Spinner className="h-6 w-6" />
               Loading…
             </div>
           </div>
         )}
 
-        <div className="absolute right-3 top-3 flex items-center gap-2">
+        <div className="absolute top-3 right-3 flex items-center gap-2">
           {handlers.size > 0 && (
             <Button
               variant="icon"
@@ -451,7 +451,7 @@ function ServicePlaygroundSheetContent({
                 });
               }}
             >
-              <Icon name={IconName.Minimize} className="w-5 h-5" />
+              <Icon name={IconName.Minimize} className="h-5 w-5" />
             </Button>
           )}
           <DialogClose>
@@ -467,17 +467,17 @@ function ServicePlaygroundSheetContent({
                     valuesToBeDeleted.forEach((serviceName) => {
                       search = search.replace(
                         `${SERVICE_PLAYGROUND_QUERY_PARAM}=${serviceName}`,
-                        ''
+                        '',
                       );
                     });
 
                     return new URLSearchParams(search);
                   },
-                  { preventScrollReset: true }
+                  { preventScrollReset: true },
                 );
               }}
             >
-              <Icon name={IconName.X} className="w-5 h-5" />
+              <Icon name={IconName.X} className="h-5 w-5" />
             </Button>
           </DialogClose>
         </div>

@@ -63,7 +63,7 @@ export const FormFieldInput = forwardRef<
       form,
       ...props
     },
-    ref
+    ref,
   ) => {
     return (
       <TextField
@@ -90,5 +90,5 @@ export const FormFieldInput = forwardRef<
         <FormFieldError children={errorMessage} />
       </TextField>
     );
-  }
+  },
 );

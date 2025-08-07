@@ -21,17 +21,17 @@ import { ErrorBoundary } from './ErrorBoundry';
 import { tv } from 'tailwind-variants';
 
 const LazyPanel = lazy(() =>
-  import('react-resizable-panels').then((m) => ({ default: m.Panel }))
+  import('react-resizable-panels').then((m) => ({ default: m.Panel })),
 );
 const LazyPanelGroup = lazy(() =>
   import('react-resizable-panels').then((m) => ({
     default: m.PanelGroup,
-  }))
+  })),
 );
 const LazyPanelResizeHandle = lazy(() =>
   import('react-resizable-panels').then((m) => ({
     default: m.PanelResizeHandle,
-  }))
+  })),
 );
 
 const liveStyles = tv({
@@ -91,7 +91,7 @@ export function JournalV2({
       invalidate();
       setInvocationIds((ids) => [...ids, id]);
     },
-    [invalidate]
+    [invalidate],
   );
   const removeInvocationId = useCallback((idToBeRemoved: string) => {
     setInvocationIds((ids) => {
@@ -104,7 +104,7 @@ export function JournalV2({
   const { baseUrl } = useRestateContext();
 
   const combinedEntries = getCombinedJournal(invocationId, data)?.filter(
-    ({ entry }) => withTimeline || entry?.category === 'command'
+    ({ entry }) => withTimeline || entry?.category === 'command',
   );
 
   const invocationApiError = apiError?.[invocationId];
@@ -117,8 +117,8 @@ export function JournalV2({
 
   if (isPending[invocationId]) {
     return (
-      <div className="flex items-center gap-1.5 text-sm text-zinc-500 px-4 py-2">
-        <Spinner className="w-4 h-4" />
+      <div className="flex items-center gap-1.5 px-4 py-2 text-sm text-zinc-500">
+        <Spinner className="h-4 w-4" />
         Loading…
       </div>
     );
@@ -129,42 +129,42 @@ export function JournalV2({
   }
   const start = new Date(
     journalAndInvocationData?.created_at ??
-      new Date(dataUpdatedAt).toISOString()
+      new Date(dataUpdatedAt).toISOString(),
   ).getTime();
   const areAllInvocationsCompleted = invocationIds.every(
-    (id) => data[id]?.completed_at
+    (id) => data[id]?.completed_at,
   );
   const end = Math.max(
     ...(combinedEntries?.map(({ entry }) =>
       entry?.end
         ? new Date(entry.end).getTime()
         : entry?.start
-        ? new Date(entry.start).getTime()
-        : -1
+          ? new Date(entry.start).getTime()
+          : -1,
     ) ?? []),
     !areAllInvocationsCompleted
       ? Math.max(
-          ...Array.from(Object.values(allQueriesDataUpdatedAt).map(Number))
+          ...Array.from(Object.values(allQueriesDataUpdatedAt).map(Number)),
         )
-      : -1
+      : -1,
   );
 
   const entriesElements = (
     <>
-      <div className="ring-1 ring-black/5 shadow-xs z-10 h-12 box-border border-b border-transparent last:border-none flex items-center bg-gray-100 rounded-bl-2xl">
+      <div className="z-10 box-border flex h-12 items-center rounded-bl-2xl border-b border-transparent bg-gray-100 shadow-xs ring-1 ring-black/5 last:border-none">
         <Input
           entry={
             combinedEntries?.find(
               (combinedEntry) =>
                 combinedEntry.invocationId === invocationId &&
-                combinedEntry.entry?.type === 'Input'
+                combinedEntry.entry?.type === 'Input',
             )?.entry as Extract<
               JournalEntryV2,
               { type?: 'Input'; category?: 'command' }
             >
           }
           invocation={data?.[invocationId]}
-          className="w-full "
+          className="w-full"
         />
       </div>
       {combinedEntries?.map(({ invocationId, entry, depth }, index) => {
@@ -202,18 +202,18 @@ export function JournalV2({
         <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
           <Suspense
             fallback={
-              <div className="flex items-center gap-1.5 text-sm text-zinc-500 p-4">
-                <Spinner className="w-4 h-4" />
+              <div className="flex items-center gap-1.5 p-4 text-sm text-zinc-500">
+                <Spinner className="h-4 w-4" />
                 Loading…
               </div>
             }
           >
-            <div className="flex h-9 items-center absolute -top-9 w-full">
-              <div className="flex items-center gap-1.5 w-full h-full relative">
-                <div className="w-2 bg-zinc-300 absolute left-2.5 h-2 rounded-full">
-                  <div className="w-px absolute  left-1/2 h-3.5 top-full -translate-x-1/2  border-zinc-300 border border-dashed" />
+            <div className="absolute -top-9 flex h-9 w-full items-center">
+              <div className="relative flex h-full w-full items-center gap-1.5">
+                <div className="absolute left-2.5 h-2 w-2 rounded-full bg-zinc-300">
+                  <div className="absolute top-full left-1/2 h-3.5 w-px -translate-x-1/2 border border-dashed border-zinc-300" />
                 </div>
-                <div className="shrink-0 text-xs uppercase font-semibold text-gray-400 pl-6">
+                <div className="shrink-0 pl-6 text-xs font-semibold text-gray-400 uppercase">
                   Invoked by
                 </div>
                 {journalAndInvocationData?.invoked_by === 'ingress' ? (
@@ -221,11 +221,11 @@ export function JournalV2({
                 ) : journalAndInvocationData?.invoked_by_id ? (
                   <InvocationId
                     id={journalAndInvocationData?.invoked_by_id}
-                    className="min-w-0 max-w-[20ch] font-semibold text-code"
+                    className="max-w-[20ch] min-w-0 text-code font-semibold"
                   />
                 ) : null}
               </div>
-              <div className="ml-auto flex flex-row gap-1 items-center justify-end z-10 h-full bg-linear-to-l from-gray-100 via-gray-100 to-gray-100/0 rounded-lg pl-10">
+              <div className="z-10 ml-auto flex h-full flex-row items-center justify-end gap-1 rounded-lg bg-linear-to-l from-gray-100 via-gray-100 to-gray-100/0 pl-10">
                 {!areAllInvocationsCompleted && setIsLive && (
                   <Button
                     variant="icon"
@@ -237,7 +237,7 @@ export function JournalV2({
                     {!isLive && (
                       <Icon
                         name={IconName.Play}
-                        className="mb-px  w-2.5 h-2.5  fill-current"
+                        className="mb-px h-2.5 w-2.5 fill-current"
                       />
                     )}
                   </Button>
@@ -245,7 +245,7 @@ export function JournalV2({
                 {areAllInvocationsCompleted && (
                   <HoverTooltip content="Refresh">
                     <Button variant="icon" onClick={refetch}>
-                      <Icon name={IconName.Retry} className="w-4 h-4" />
+                      <Icon name={IconName.Retry} className="h-4 w-4" />
                     </Button>
                   </HoverTooltip>
                 )}
@@ -255,12 +255,12 @@ export function JournalV2({
                     href={`${baseUrl}/introspection?query=SELECT id, index, appended_at, entry_type, name, entry_lite_json AS metadata FROM sys_journal WHERE id = '${journalAndInvocationData?.id}'`}
                     target="_blank"
                   >
-                    <Icon name={IconName.ScanSearch} className="w-4 h-4" />
+                    <Icon name={IconName.ScanSearch} className="h-4 w-4" />
                   </Link>
                 </HoverTooltip>
               </div>
             </div>
-            <div className="relative text-code font-mono">
+            <div className="relative font-mono text-code">
               {withTimeline ? (
                 <LazyPanelGroup
                   direction="horizontal"
@@ -269,27 +269,27 @@ export function JournalV2({
                 >
                   <LazyPanel
                     defaultSize={(1 - timelineWidth) * 100}
-                    className="z-10 "
+                    className="z-10"
                   >
-                    <div className="border-0 border-white/50 border-r-0  bg-linear-to-b from-gray-50 to-white shadow-xs rounded-2xl rounded-r-none relative overflow-hidden ">
+                    <div className="relative overflow-hidden rounded-2xl rounded-r-none border-0 border-r-0 border-white/50 bg-linear-to-b from-gray-50 to-white shadow-xs">
                       {entriesElements}
                     </div>
                   </LazyPanel>
-                  <LazyPanelResizeHandle className="w-px hidden md:flex justify-center items-center group relative">
-                    <div className="w-px group-hover:w-[2px] absolute left-0 top-3 bottom-3 bg-transparent group-hover:bg-blue-500" />
+                  <LazyPanelResizeHandle className="group relative hidden w-px items-center justify-center md:flex">
+                    <div className="absolute top-3 bottom-3 left-0 w-px bg-transparent group-hover:w-[2px] group-hover:bg-blue-500" />
                   </LazyPanelResizeHandle>
                   <LazyPanel
                     defaultSize={timelineWidth * 100}
-                    className="hidden md:block relative"
+                    className="relative hidden md:block"
                     style={{ overflow: 'visible' }}
                   >
                     <Units
-                      className=" absolute inset-0"
+                      className="absolute inset-0"
                       invocation={journalAndInvocationData}
                     />
-                    <div className=" border border-transparent">
+                    <div className="border border-transparent">
                       <LifeCycleProgress
-                        className=" h-12 px-2"
+                        className="h-12 px-2"
                         invocation={journalAndInvocationData}
                       />
                     </div>
@@ -303,7 +303,7 @@ export function JournalV2({
                             invocationId,
                             entry?.index,
                             entry?.type,
-                            entry?.category
+                            entry?.category,
                           )}
                         />
                       ))}
@@ -328,20 +328,20 @@ function TimelineContainer({
   entry?: JournalEntryV2;
 }) {
   const { setPortal } = usePortals(
-    getTimelineId(invocationId, entry?.index, entry?.type, entry?.category)
+    getTimelineId(invocationId, entry?.index, entry?.type, entry?.category),
   );
   return (
     <div
-      className="w-full  [content-visibility:auto] pl-2 pr-2 h-9 border-b  border-transparent relative [&:not(:has(>*+*))]:hidden"
+      className="relative h-9 w-full border-b border-transparent pr-2 pl-2 [content-visibility:auto] [&:not(:has(>*+*))]:hidden"
       ref={setPortal}
     >
-      <div className="absolute left-0 right-0 h-px top-1/2 border-gray-300/70  -translate-y-px border-dashed border-b border-spacing-10" />
+      <div className="absolute top-1/2 right-0 left-0 h-px border-spacing-10 -translate-y-px border-b border-dashed border-gray-300/70" />
     </div>
   );
 }
 
 function isExpandable(
-  entry: JournalEntryV2
+  entry: JournalEntryV2,
 ): entry is
   | Extract<JournalEntryV2, { type?: 'Call'; category?: 'command' }>
   | Extract<
@@ -351,14 +351,14 @@ function isExpandable(
   return Boolean(
     entry.type &&
       ['Call', 'AttachInvocation'].includes(entry.type) &&
-      entry.category === 'command'
+      entry.category === 'command',
   );
 }
 
 function getCombinedJournal(
   invocationId: string,
   data?: ReturnType<typeof useGetInvocationsJournalWithInvocationsV2>['data'],
-  depth = 0
+  depth = 0,
 ):
   | {
       invocationId: string;

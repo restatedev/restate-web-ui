@@ -75,7 +75,7 @@ export const FormFieldDateTimeInput = forwardRef<
       placeholderValue,
       ...props
     },
-    ref
+    ref,
   ) => {
     return (
       <AriaDateField<ZonedDateTime>
@@ -111,5 +111,5 @@ export const FormFieldDateTimeInput = forwardRef<
         <FormFieldError children={errorMessage} />
       </AriaDateField>
     );
-  }
+  },
 );

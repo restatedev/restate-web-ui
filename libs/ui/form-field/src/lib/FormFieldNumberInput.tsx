@@ -62,7 +62,7 @@ export const FormFieldNumberInput = forwardRef<
       form,
       ...props
     },
-    ref
+    ref,
   ) => {
     return (
       <NumberField
@@ -75,13 +75,13 @@ export const FormFieldNumberInput = forwardRef<
         {!label && <Label className="sr-only">{placeholder}</Label>}
         {label && <FormFieldLabel>{label}</FormFieldLabel>}
         <div className="relative min-h-8.5">
-          <Group className="flex relative">
+          <Group className="relative flex">
             <Button
               variant="secondary"
               slot="decrement"
-              className="absolute left-0 top-0 bottom-0 z-10 p-0 aspect-square rounded-lg flex items-center justify-center"
+              className="absolute top-0 bottom-0 left-0 z-10 flex aspect-square items-center justify-center rounded-lg p-0"
             >
-              <Icon name={IconName.Minus} className="w-4 h-4" />
+              <Icon name={IconName.Minus} className="h-4 w-4" />
             </Button>
             <AriaInput
               className={inputStyles}
@@ -93,14 +93,14 @@ export const FormFieldNumberInput = forwardRef<
             <Button
               variant="secondary"
               slot="increment"
-              className="absolute right-0 top-0 bottom-0 z-10 p-0 aspect-square rounded-lg flex items-center justify-center"
+              className="absolute top-0 right-0 bottom-0 z-10 flex aspect-square items-center justify-center rounded-lg p-0"
             >
-              <Icon name={IconName.Plus} className="w-4 h-4" />
+              <Icon name={IconName.Plus} className="h-4 w-4" />
             </Button>
           </Group>
         </div>
         <FormFieldError children={errorMessage} />
       </NumberField>
     );
-  }
+  },
 );

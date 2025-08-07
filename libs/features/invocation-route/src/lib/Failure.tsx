@@ -88,7 +88,7 @@ export function Failure({
 }) {
   const error = useMemo(
     () => new RestateError(message, restate_code),
-    [message, restate_code]
+    [message, restate_code],
   );
   const hasStack = error?.message.includes('\n');
   const isLargeError = error?.message.length > 200;
@@ -110,10 +110,10 @@ export function Failure({
             name={isRetrying ? IconName.TriangleAlert : IconName.CircleX}
             className={errorIcon()}
           />
-          <span className="truncate min-w-0 block mr-1">{restate_code}</span>
+          <span className="mr-1 block min-w-0 truncate">{restate_code}</span>
           <Icon
             name={IconName.ChevronsUpDown}
-            className="h-3 w-3 text-gray-500 shrink-0 mr-1"
+            className="mr-1 h-3 w-3 shrink-0 text-gray-500"
           />
         </Button>
       </PopoverTrigger>

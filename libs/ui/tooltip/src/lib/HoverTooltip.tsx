@@ -60,9 +60,9 @@ export function HoverTooltip({
         >
           <div
             ref={contentRef}
-            className="flex items-start gap-4 **:text-gray-200 **:text-xs break-all py-0"
+            className="flex items-start gap-4 py-0 break-all **:text-xs **:text-gray-200"
           >
-            <div className="flex flex-col gap-1 items-start">{content}</div>
+            <div className="flex flex-col items-start gap-1">{content}</div>
           </div>
         </TooltipContent>
       </TooltipTriggerStateContext.Provider>

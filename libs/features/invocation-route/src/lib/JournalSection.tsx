@@ -21,7 +21,7 @@ export function JournalSection({
     {
       enabled: Boolean(invocation?.id),
       refetchOnMount: true,
-    }
+    },
   );
   if (!data || !invocation?.id) {
     return null;
@@ -32,7 +32,7 @@ export function JournalSection({
       <SectionTitle>Journal</SectionTitle>
 
       <SectionContent
-        className="px-0 overflow-hidden pb-0 pt-0 bg-gray-50 "
+        className="overflow-hidden bg-gray-50 px-0 pt-0 pb-0"
         raised={true}
       >
         <div>
@@ -41,7 +41,7 @@ export function JournalSection({
             timelineWidth={0}
             showApiError={false}
             withTimeline={false}
-            className="[&>*:first-child]:mb-2 *:text-xs [&>*:first-child]:h-9 [&>*:first-child>*:last-child]:h-9 [&>*:first-child_[data-target]>*]:h-9 *:overflow-hidden *:rounded-[calc(0.75rem-0.125rem)] [&_.target]:[--rounded-radius:calc(0.75rem-0.125rem)] [&_.target]:rounded-r-[calc(0.75rem-0.125rem)] [&_.target]:[--rounded-right-radius:calc(0.75rem-0.125rem)] [&&&_.target>*:last-child>*]:[--rounded-radius-radius:calc(0.75rem-0.125rem)] [&&&_.target>*:last-child>*]:rounded-r-[calc(0.75rem-0.125rem)]"
+            className="*:overflow-hidden *:rounded-[calc(0.75rem-0.125rem)] *:text-xs [&_.target]:rounded-r-[calc(0.75rem-0.125rem)] [&_.target]:[--rounded-radius:calc(0.75rem-0.125rem)] [&_.target]:[--rounded-right-radius:calc(0.75rem-0.125rem)] [&&&_.target>*:last-child>*]:rounded-r-[calc(0.75rem-0.125rem)] [&&&_.target>*:last-child>*]:[--rounded-radius-radius:calc(0.75rem-0.125rem)] [&>*:first-child]:mb-2 [&>*:first-child]:h-9 [&>*:first-child_[data-target]>*]:h-9 [&>*:first-child>*:last-child]:h-9"
           />
         </div>
       </SectionContent>

@@ -79,14 +79,14 @@ import { SplitButton } from '@restate/ui/split-button';
 
 function getQuery(
   searchParams: URLSearchParams,
-  schema: QueryClauseSchema<QueryClauseType>[]
+  schema: QueryClauseSchema<QueryClauseType>[],
 ) {
   return schema
     .filter((schemaClause) => searchParams.get(`filter_${schemaClause.id}`))
     .map((schemaClause) => {
       return QueryClause.fromJSON(
         schemaClause,
-        searchParams.get(`filter_${schemaClause.id}`) ?? ''
+        searchParams.get(`filter_${schemaClause.id}`) ?? '',
       );
     });
 }
@@ -124,7 +124,7 @@ function Component() {
         ...Array.from(new URLSearchParams(window.location.search).keys())
           .filter((key) => key.startsWith('filter_'))
           .map((key) => key.replace('filter_', '')),
-      ])
+      ]),
   );
   const keys = Array.from(keysSet.values());
 
@@ -142,7 +142,7 @@ function Component() {
             { value: 'NOT_CONTAINS', label: 'does not contain' },
           ],
           type: 'STRING',
-        } as QueryClauseSchema<QueryClauseType>)
+        }) as QueryClauseSchema<QueryClauseType>,
     ) satisfies QueryClauseSchema<QueryClauseType>[];
   }, [keysSet, virtualObject]);
 
@@ -156,7 +156,7 @@ function Component() {
           type: clause.type,
           value: clause.value.value,
         } as FilterItem;
-      })
+      }),
   );
   const {
     dataUpdatedAt,
@@ -181,7 +181,7 @@ function Component() {
   }, [pageIndex, serviceKeysData?.keys]);
   const listObjects = useListVirtualObjectState(
     virtualObject,
-    currentPageItems
+    currentPageItems,
   );
 
   const flattenedData = useMemo(() => {
@@ -190,7 +190,7 @@ function Component() {
         ...obj,
         state: obj.state.reduce(
           (p, c) => ({ ...p, [c.name]: c.value }),
-          {} as Record<string, string>
+          {} as Record<string, string>,
         ),
       })) ?? []
     );
@@ -208,8 +208,8 @@ function Component() {
             [
               ...Array.from(s.values()).filter((v) => keys.includes(v)),
               ...keys,
-            ].sort()
-          )
+            ].sort(),
+          ),
       );
     }
   }, [listObjects.data, isPending]);
@@ -224,11 +224,11 @@ function Component() {
         _setPageIndex(arg);
       });
     },
-    []
+    [],
   );
 
   const [selectedColumns, setSelectedColumns] = useState<DropdownMenuSelection>(
-    new Set(['service_key'])
+    new Set(['service_key']),
   );
 
   useEffect(() => {
@@ -270,7 +270,7 @@ function Component() {
   }, [selectedColumns, virtualObject]);
 
   const totalSize = Math.ceil(
-    (serviceKeysData?.keys.length ?? 0) / STATE_PAGE_SIZE
+    (serviceKeysData?.keys.length ?? 0) / STATE_PAGE_SIZE,
   );
   const dataUpdate = error ? errorUpdatedAt : dataUpdatedAt;
   const setEditState = useEditStateContext();
@@ -284,7 +284,7 @@ function Component() {
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdate}>
-      <div className="flex flex-col flex-auto gap-2 relative">
+      <div className="relative flex flex-auto flex-col gap-2">
         <Table
           aria-label="State"
           sortDescriptor={sortDescriptor}
@@ -308,7 +308,7 @@ function Component() {
                           >
                             <Icon
                               name={IconName.TableProperties}
-                              className="h-4 w-4 aspect-square text-gray-500"
+                              className="aspect-square h-4 w-4 text-gray-500"
                             />
                           </Button>
                         )}
@@ -365,11 +365,11 @@ function Component() {
             }
             numOfColumns={selectedColumnsArray.length}
             emptyPlaceholder={
-              <div className="flex flex-col items-center py-14 gap-4">
-                <div className="shrink-0 h-12 w-12 p-1 bg-gray-200/50  rounded-xl">
+              <div className="flex flex-col items-center gap-4 py-14">
+                <div className="h-12 w-12 shrink-0 rounded-xl bg-gray-200/50 p-1">
                   <Icon
                     name={IconName.Database}
-                    className="w-full h-full text-zinc-400 p-1"
+                    className="h-full w-full p-1 text-zinc-400"
                   />
                 </div>
                 <h3 className="text-sm font-semibold text-zinc-400">
@@ -383,7 +383,7 @@ function Component() {
                 <Row
                   id={row.key + '_'}
                   columns={selectedColumnsArray}
-                  className="[&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50 bg-transparent aaa"
+                  className="aaa bg-transparent [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"
                 >
                   {({ id }) => {
                     if (id === 'service_key') {
@@ -448,14 +448,14 @@ function Component() {
                       return (
                         <Cell
                           key={id}
-                          className="group [&:has(*:hover)_*]:visible [&:has(*:focus)_*]:visible"
+                          className="group [&:has(*:focus)_*]:visible [&:has(*:hover)_*]:visible"
                         >
-                          <div className="min-h-5 flex item-center justify-start gap-1 w-full h-full">
+                          <div className="item-center flex h-full min-h-5 w-full justify-start gap-1">
                             {row.state?.[id] && (
                               <Popover>
                                 <PopoverHoverTrigger>
                                   <Button
-                                    className="truncate font-mono text-inherit [font-size:inherit] px-0.5 py-0 rounded-xs underline-offset-4 decoration-from-font decoration-dashed "
+                                    className="truncate rounded-xs px-0.5 py-0 font-mono [font-size:inherit] text-inherit decoration-dashed decoration-from-font underline-offset-4"
                                     variant="icon"
                                   >
                                     <span className="truncate pr-0.5">
@@ -465,7 +465,7 @@ function Component() {
                                 </PopoverHoverTrigger>
                                 <PopoverContent>
                                   <DropdownSection
-                                    className="overflow-auto max-w-[min(90vw,600px)] px-4 mb-1"
+                                    className="mb-1 max-w-[min(90vw,600px)] overflow-auto px-4"
                                     title={
                                       <div className="flex items-center text-code">
                                         {id}
@@ -480,12 +480,12 @@ function Component() {
                                             })
                                           }
                                           variant="secondary"
-                                          className="shrink-0 ml-auto flex items-center gap-1 text-xs font-normal rounded-sm px-1.5 py-0"
+                                          className="ml-auto flex shrink-0 items-center gap-1 rounded-sm px-1.5 py-0 text-xs font-normal"
                                         >
                                           Edit
                                           <Icon
                                             name={IconName.ExternalLink}
-                                            className="w-3 h-3"
+                                            className="h-3 w-3"
                                           />
                                         </EditStateTrigger>
                                       </div>
@@ -493,7 +493,7 @@ function Component() {
                                   >
                                     <Value
                                       value={row.state?.[id]}
-                                      className="text-xs font-mono py-3"
+                                      className="py-3 font-mono text-xs"
                                     />
                                   </DropdownSection>
                                 </PopoverContent>
@@ -510,11 +510,11 @@ function Component() {
                                 })
                               }
                               variant="icon"
-                              className="shrink-0 invisible group-hover:visible"
+                              className="invisible shrink-0 group-hover:visible"
                             >
                               <Icon
                                 name={IconName.Pencil}
-                                className="w-3 h-3 fill-current opacity-70"
+                                className="h-3 w-3 fill-current opacity-70"
                               />
                             </EditStateTrigger>
                           </div>
@@ -533,13 +533,13 @@ function Component() {
           key={dataUpdate}
         >
           {!isPending && !error && totalSize > 1 && (
-            <div className="flex items-center bg-zinc-50 shadow-xs border rounded-lg py-0.5">
+            <div className="flex items-center rounded-lg border bg-zinc-50 py-0.5 shadow-xs">
               <Button
                 variant="icon"
                 disabled={pageIndex === 0}
                 onClick={() => setPageIndex(0)}
               >
-                <Icon name={IconName.ChevronFirst} className="w-4 h-4" />
+                <Icon name={IconName.ChevronFirst} className="h-4 w-4" />
               </Button>
               <Button
                 variant="icon"
@@ -547,9 +547,9 @@ function Component() {
                 onClick={() => setPageIndex(pageIndex - 1)}
                 className=""
               >
-                <Icon name={IconName.ChevronLeft} className="w-4 h-4" />
+                <Icon name={IconName.ChevronLeft} className="h-4 w-4" />
               </Button>
-              <div className="flex items-center gap-0.5 mx-2 text-code">
+              <div className="mx-2 flex items-center gap-0.5 text-code">
                 {pageIndex + 1} / {totalSize}
               </div>
 
@@ -559,14 +559,14 @@ function Component() {
                 onClick={() => setPageIndex(pageIndex + 1)}
                 className=""
               >
-                <Icon name={IconName.ChevronRight} className="w-4 h-4" />
+                <Icon name={IconName.ChevronRight} className="h-4 w-4" />
               </Button>
               <Button
                 variant="icon"
                 disabled={pageIndex + 1 === totalSize}
                 onClick={() => setPageIndex(totalSize - 1)}
               >
-                <Icon name={IconName.ChevronLast} className="w-4 h-4" />
+                <Icon name={IconName.ChevronLast} className="h-4 w-4" />
               </Button>
             </div>
           )}
@@ -576,7 +576,7 @@ function Component() {
         <Form
           action={`/query/services/${virtualObject}/state`}
           method="POST"
-          className="flex relative items-center"
+          className="relative flex items-center"
           onSubmit={async (event) => {
             event.preventDefault();
 
@@ -605,8 +605,8 @@ function Component() {
                       operation: clause.value.operation!,
                       type: clause.type,
                       value: clause.value.value,
-                    } as FilterItem)
-                )
+                    }) as FilterItem,
+                ),
             );
             await queryCLient.invalidateQueries({ queryKey });
             await queryCLient.invalidateQueries({
@@ -631,14 +631,14 @@ function Component() {
               placeholder={`Filter state…`}
               prefix={<ServiceSelector />}
               title="Filters"
-              className="rounded-xl [&_input::-webkit-search-cancel-button]:invert has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500 [&_input]:placeholder-zinc-400 border-transparent pr-24 w-full  [&_input+*]:right-24 [&_input]:min-w-[25ch]"
+              className="w-full rounded-xl border-transparent pr-24 has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500 [&_input]:min-w-[25ch] [&_input]:placeholder-zinc-400 [&_input+*]:right-24 [&_input::-webkit-search-cancel-button]:invert"
             >
               {ClauseChip}
             </AddQueryTrigger>
           </QueryBuilder>
           <SubmitButton
             isPending={isFetching}
-            className="absolute right-1 top-1 bottom-1 rounded-lg py-0 disabled:bg-gray-400  disabled:text-gray-200"
+            className="absolute top-1 right-1 bottom-1 rounded-lg py-0 disabled:bg-gray-400 disabled:text-gray-200"
           >
             Query
           </SubmitButton>
@@ -723,7 +723,7 @@ function Footnote({
   const duration = formatDurations(parts);
 
   return (
-    <div className="flex flex-row-reverse flex-wrap items-center w-full text-center text-xs text-gray-500/80 ">
+    <div className="flex w-full flex-row-reverse flex-wrap items-center text-center text-xs text-gray-500/80">
       {data && (
         <div className="ml-auto">
           {data.keys && data.keys.length > 0 ? (
@@ -775,7 +775,7 @@ function useValidateVirtualObject() {
   const virtualObjectsAndWorkflows = [...virtualObjects, ...workflows];
   const navigate = useNavigate();
   const newService = getDefaultVirtualObjectOrWorkflow(
-    virtualObjectsAndWorkflows
+    virtualObjectsAndWorkflows,
   );
 
   const base = useHref('/');
@@ -817,20 +817,20 @@ function ServiceSelector() {
       <DropdownTrigger>
         <Button
           variant="secondary"
-          className="shrink-0 min-w-0 flex gap-[0.7ch] items-center py-1 rounded-lg bg-white/25 hover:bg-white/30 pressed:bg-white/30 text-zinc-50 text-xs px-1.5"
+          className="flex min-w-0 shrink-0 items-center gap-[0.7ch] rounded-lg bg-white/25 px-1.5 py-1 text-xs text-zinc-50 hover:bg-white/30 pressed:bg-white/30"
         >
-          <span className="whitespace-nowrap shrink-0">
+          <span className="shrink-0 whitespace-nowrap">
             {virtualObjects.includes(serviceParam)
               ? 'Virtual Object'
               : workflows.includes(serviceParam)
-              ? 'Workflow'
-              : 'Service'}
+                ? 'Workflow'
+                : 'Service'}
           </span>
           <span className="font-mono">is</span>
-          <span className="font-semibold truncate">{serviceParam}</span>
+          <span className="truncate font-semibold">{serviceParam}</span>
           <Icon
             name={IconName.ChevronsUpDown}
-            className="w-3.5 h-3.5 ml-2 shrink-0"
+            className="ml-2 h-3.5 w-3.5 shrink-0"
           />
         </Button>
       </DropdownTrigger>

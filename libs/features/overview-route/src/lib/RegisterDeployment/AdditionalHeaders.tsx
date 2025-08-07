@@ -11,17 +11,17 @@ export function AdditionalHeaders() {
   const { additionalHeaders: list } = useRegisterDeploymentContext();
 
   return (
-    <FormFieldGroup className="h-auto flex gap-1 flex-col items-start">
+    <FormFieldGroup className="flex h-auto flex-col items-start gap-1">
       <FormFieldLabel>
         <span slot="title" className="text-sm font-medium text-gray-700">
           Additional headers
         </span>
-        <span slot="description" className="leading-5 text-code block">
+        <span slot="description" className="block text-code leading-5">
           Headers added to the register/invoke requests to the deployment.
         </span>
       </FormFieldLabel>
       {list?.items.map((item) => (
-        <div key={item.index} className="flex gap-1.5 items-center w-full">
+        <div key={item.index} className="flex w-full items-center gap-1.5">
           <FormFieldInput
             name="key"
             className="basis-1/3"
@@ -65,13 +65,10 @@ export function AdditionalHeaders() {
               list.getItem(item.index)?.key === '' &&
               list.getItem(item.index)?.value === ''
                 ? 'invisible p-1'
-                : ' p-1'
+                : 'p-1'
             }
           >
-            <Icon
-              name={IconName.Trash}
-              className="w-5 h-5 m-1"
-            />
+            <Icon name={IconName.Trash} className="m-1 h-5 w-5" />
           </Button>
         </div>
       ))}
@@ -84,9 +81,9 @@ export function AdditionalHeaders() {
           })
         }
         variant="secondary"
-        className="flex gap-2 items-center px-3 rounded-lg h-8.5"
+        className="flex h-8.5 items-center gap-2 rounded-lg px-3"
       >
-        <Icon name={IconName.Plus} className="w-4.5 h-4.5" />
+        <Icon name={IconName.Plus} className="h-4.5 w-4.5" />
         Add header
       </Button>
     </FormFieldGroup>

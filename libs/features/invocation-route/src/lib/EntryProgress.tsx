@@ -281,7 +281,7 @@ export function EntryProgress(
     invocation?: ReturnType<
       typeof useGetInvocationJournalWithInvocationV2
     >['data'];
-  }>
+  }>,
 ) {
   return (
     <ErrorBoundary entry={props.entry}>
@@ -326,7 +326,8 @@ function InnerEntryProgress({
 
   const executionTime = entry?.start
     ? new Date(
-        entry.end ?? (isPoint ? entry.start : unambiguousEnd ?? dataUpdatedAt)
+        entry.end ??
+          (isPoint ? entry.start : (unambiguousEnd ?? dataUpdatedAt)),
       ).getTime() - new Date(entry.start).getTime()
     : 0;
   const pendingTime = entry?.start
@@ -344,8 +345,8 @@ function InnerEntryProgress({
         style={{ zIndex: 2 }}
         invocation={invocation}
       >
-        <div className="flex items-center w-full">
-          <div className="flex-auto border-b-2 border-gray-500/30 border-dotted" />
+        <div className="flex w-full items-center">
+          <div className="flex-auto border-b-2 border-dotted border-gray-500/30" />
           <div className="">
             <Point variant="default" />
           </div>
@@ -393,11 +394,11 @@ function InnerEntryProgress({
         )}
       </div>
       {showDuration && !isPoint && (
-        <div className="text-xs text-gray-500 ml-auto leading-3 whitespace-nowrap font-sans translate-y-1 ">
+        <div className="ml-auto translate-y-1 font-sans text-xs leading-3 whitespace-nowrap text-gray-500">
           {isPending ? (
             <Ellipsis>{pendingDuration}</Ellipsis>
           ) : entryCompletionIsAmbiguous ? (
-            <Icon name={IconName.ClockAlert} className="w-3 h-3" />
+            <Icon name={IconName.ClockAlert} className="h-3 w-3" />
           ) : (
             duration
           )}
@@ -438,8 +439,8 @@ export function EntryProgressContainer({
   const entryEnd = unambiguousEnd
     ? new Date(unambiguousEnd).getTime()
     : entry?.end
-    ? new Date(entry.end ?? entry.start).getTime()
-    : undefined;
+      ? new Date(entry.end ?? entry.start).getTime()
+      : undefined;
 
   const isPoint = Boolean(!entryEnd && !entry?.isPending);
 
@@ -449,8 +450,8 @@ export function EntryProgressContainer({
   const relativeEnd = entryEnd
     ? (entryEnd - start) / (end - start)
     : entry?.isPending
-    ? (dataUpdatedAt - start) / (end - start)
-    : undefined;
+      ? (dataUpdatedAt - start) / (end - start)
+      : undefined;
 
   return (
     <div

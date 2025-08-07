@@ -82,8 +82,8 @@ export function PerformantRow<T extends { id?: string }>({
           root: null,
           rootMargin: '10% 0px 10% 0px',
           threshold: 0.1,
-        }
-      )
+        },
+      ),
   );
 
   return (

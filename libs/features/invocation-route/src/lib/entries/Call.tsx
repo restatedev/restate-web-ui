@@ -48,7 +48,7 @@ export function Call({
               target={[entry.serviceName, entry.serviceKey, entry.handlerName]
                 .filter((v) => typeof v === 'string')
                 .join('/')}
-              className="font-sans not-italic mx-0.5 basis-20 text-2xs h-6 [&_a]:my-0 **:data-target:h-6 "
+              className="mx-0.5 h-6 basis-20 font-sans text-2xs not-italic **:data-target:h-6 [&_a]:my-0"
             />
           }
           chain={
@@ -65,7 +65,7 @@ export function Call({
                       popoverContent={
                         <Value
                           value={entry.parameters}
-                          className="text-xs font-mono py-3"
+                          className="py-3 font-mono text-xs"
                         />
                       }
                     />
@@ -78,7 +78,7 @@ export function Call({
                     <InputOutput
                       name="headers"
                       popoverTitle=""
-                      className="px-0 bg-transparent border-none mx-0 [&&&]:mb-1"
+                      className="mx-0 border-none bg-transparent px-0 [&&&]:mb-1"
                       popoverContent={<Headers headers={entry.headers} />}
                     />
                   )}
@@ -90,16 +90,16 @@ export function Call({
         />
         {entry.invocationId && (
           <>
-            <div className="text-gray-400 -ml-1.5">,</div>
+            <div className="-ml-1.5 text-gray-400">,</div>
             <InvocationId
               id={entry.invocationId}
-              className="-ml-1 mr-2"
+              className="mr-2 -ml-1"
               size="icon"
             />
           </>
         )}
       </div>
-      <div className="flex items-center absolute right-1 top-0 bottom-0 ">
+      <div className="absolute top-0 right-1 bottom-0 flex items-center">
         {invokedError ? (
           <CallInvokedLoadingError error={invokedError} className="" />
         ) : (
@@ -114,14 +114,14 @@ export function Call({
               }
             }}
             variant="icon"
-            className="bg-black/3 z-10"
+            className="z-10 bg-black/3"
           >
             {invokedIsPending ? (
               <Spinner />
             ) : (
               <Icon
                 name={isExpanded ? IconName.X : IconName.Plus}
-                className="w-3.5 h-3.5"
+                className="h-3.5 w-3.5"
               />
             )}
           </Button>

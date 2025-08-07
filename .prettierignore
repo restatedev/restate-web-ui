@@ -6,6 +6,7 @@
 pnpm-lock.yaml
 inter.css
 elements-web-components.min.js
+elements-web-components.min.scoped.css
 elements-web-components.min.css
 inter.css
 merge.mjs

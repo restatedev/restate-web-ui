@@ -40,7 +40,7 @@ export function Summary({
       <div>{children}</div>
       <Icon
         name={IconName.ChevronDown}
-        className="shrink-0 group-open:rotate-180 text-gray-500 ml-auto text-sm"
+        className="ml-auto shrink-0 text-sm text-gray-500 group-open:rotate-180"
       />
     </summary>
   );

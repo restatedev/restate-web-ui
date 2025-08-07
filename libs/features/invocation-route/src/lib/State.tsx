@@ -20,7 +20,7 @@ export function State({
         <div className="pl-2">Key</div>
         <div className="pl-2">Value</div>
       </div>
-      <div className="flex flex-col shadow-xs border rounded-[calc(0.75rem-0.125rem)]">
+      <div className="flex flex-col rounded-[calc(0.75rem-0.125rem)] border shadow-xs">
         {state.map(({ name, value }) => (
           <StateKey
             name={name}
@@ -50,15 +50,15 @@ function StateKey({
   const { close } = usePopover();
 
   return (
-    <div className="group bg-white not-last:border-b first:rounded-t-[calc(0.75rem-0.125rem)] last:rounded-b-[calc(0.75rem-0.125rem)] gap-1 px-2 py-0 items-center text-code text-zinc-600 truncate grid grid-cols-[1fr_2fr]">
-      <div className="items-start flex min-w-0 border-r py-1 pr-1 relative h-full">
+    <div className="group grid grid-cols-[1fr_2fr] items-center gap-1 truncate bg-white px-2 py-0 text-code text-zinc-600 not-last:border-b first:rounded-t-[calc(0.75rem-0.125rem)] last:rounded-b-[calc(0.75rem-0.125rem)]">
+      <div className="relative flex h-full min-w-0 items-start border-r py-1 pr-1">
         <TruncateWithTooltip copyText={name}>{name}</TruncateWithTooltip>
       </div>
-      <div className="truncate py-1 relative ">
+      <div className="relative truncate py-1">
         <Value value={value} className="mono text-xs" />
         <Button
           variant="icon"
-          className="absolute top-1 right-0 invisible group-hover:visible"
+          className="invisible absolute top-1 right-0 group-hover:visible"
           onClick={() => {
             close?.();
             setEditState({
@@ -72,7 +72,7 @@ function StateKey({
         >
           <Icon
             name={IconName.Pencil}
-            className="w-3 h-3 fill-current opacity-70"
+            className="h-3 w-3 fill-current opacity-70"
           />
         </Button>
       </div>

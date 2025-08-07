@@ -40,12 +40,12 @@ export function Complementary({
       <LayoutOutlet zone={LayoutZone.Complementary}>
         <div
           data-top={isOnTop}
-          className="data-[top=false]:overflow-hidden duration-250 [&[data-top=false]:has(~[data-top=false])]:shadow-none data-[top=true]:z-1 data-[top=true]:order-1 transition-all min-h-0 min-w-0 p-1.5 border shadow-lg 3xl:shadow-xs shadow-zinc-800/5 bg-gray-50/80 backdrop-blur-xl backdrop-saturate-200 rounded-[1.125rem] max-h-[inherit] flex flex-col w-full"
+          className="flex max-h-[inherit] min-h-0 w-full min-w-0 flex-col rounded-[1.125rem] border bg-gray-50/80 p-1.5 shadow-lg shadow-zinc-800/5 backdrop-blur-xl backdrop-saturate-200 transition-all duration-250 data-[top=false]:overflow-hidden data-[top=true]:z-1 data-[top=true]:order-1 3xl:shadow-xs [&[data-top=false]:has(~[data-top=false])]:shadow-none"
         >
           <FocusScope restoreFocus autoFocus>
             <div
               data-complementary-content
-              className="overflow-y-auto bg-white p-3 pt-7 border rounded-xl flex-auto flex flex-col min-h-[50vh] overflow-auto relative max-h-[inherit]"
+              className="relative flex max-h-[inherit] min-h-[50vh] flex-auto flex-col overflow-auto overflow-y-auto rounded-xl border bg-white p-3 pt-7"
               onKeyDown={(e) => {
                 if (e.key === 'Escape') {
                   onClose?.();
@@ -57,7 +57,7 @@ export function Complementary({
             </div>
             <div
               ref={setFooterEl}
-              className="[&:not(:has(*))]:hidden flex gap-2 has-[*]:py-1 has-[*]:pb-0 has-[*]:mt-1 *:min-w-0 3xl:sticky 3xl:bottom-0 3xl:bg-gray-50/80 3xl:backdrop-blur-xl 3xl:backdrop-saturate-200 rounded-2xl 3xl:-mx-1.5 3xl:-mb-1.5 3xl:p-1.5 3xl:pb-1.5 z-10"
+              className="z-10 flex gap-2 rounded-2xl *:min-w-0 has-[*]:mt-1 has-[*]:py-1 has-[*]:pb-0 3xl:sticky 3xl:bottom-0 3xl:-mx-1.5 3xl:-mb-1.5 3xl:bg-gray-50/80 3xl:p-1.5 3xl:pb-1.5 3xl:backdrop-blur-xl 3xl:backdrop-saturate-200 [&:not(:has(*))]:hidden"
             />
           </FocusScope>
         </div>
@@ -138,10 +138,10 @@ function ComplementaryWithSearchParamValue({
           prev
             .toString()
             .replace(`${paramName}=${paramValue}`, '')
-            .replace(`${paramName}=${encodeURIComponent(paramValue)}`, '')
+            .replace(`${paramName}=${encodeURIComponent(paramValue)}`, ''),
         );
       },
-      { preventScrollReset: true }
+      { preventScrollReset: true },
     );
   }, [paramName, paramValue, setSearchParams]);
   const isOnTop =

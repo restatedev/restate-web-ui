@@ -26,7 +26,7 @@ export function getRestateError(invocation?: Invocation) {
 
 function getBadgeVariant(
   status: InvocationComputedStatus2,
-  isRetrying?: boolean
+  isRetrying?: boolean,
 ) {
   if (isRetrying) {
     return 'warning';
@@ -101,7 +101,7 @@ export function Status({
   const error = getRestateError(invocation);
 
   return (
-    <div className="flex items-baseline flex-wrap flex-row gap-0.5">
+    <div className="flex flex-row flex-wrap items-baseline gap-0.5">
       <Badge
         variant={variant}
         className={styles({
@@ -234,7 +234,7 @@ export function LastError({
           {error && (
             <Icon
               name={IconName.ChevronsUpDown}
-              className="h-3 w-3 text-gray-500 shrink-0"
+              className="h-3 w-3 shrink-0 text-gray-500"
             />
           )}
         </Button>

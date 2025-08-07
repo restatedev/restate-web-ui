@@ -47,16 +47,16 @@ export function Expression({
 }) {
   return (
     <div className={styles({ className, isFunction })}>
-      <div className="text-inherits w-full text-zinc-600  flex-auto">
-        <span className="flex items-center min-w-0">
+      <div className="text-inherits w-full flex-auto text-zinc-600">
+        <span className="flex min-w-0 items-center">
           {prefix && (
-            <span className="text-blue-500 font-normal shrink-0">{prefix}</span>
+            <span className="shrink-0 font-normal text-blue-500">{prefix}</span>
           )}
-          <span className="flex items-center font-medium  max-w-fit basis-20 grow min-w-0 shrink-0">
+          <span className="flex max-w-fit min-w-0 shrink-0 grow basis-20 items-center font-medium">
             {isHandler && (
               <Icon
                 name={IconName.Function}
-                className="w-4 h-4 text-zinc-400 shrink-0 -ml-1"
+                className="-ml-1 h-4 w-4 shrink-0 text-zinc-400"
               />
             )}
             <TruncateWithTooltip copyText={name}>
@@ -71,14 +71,14 @@ export function Expression({
           {input}
           <span className="shrink-0 text-zinc-400">{isFunction && ')'}</span>
           {chain && (
-            <span className="min-w-0 truncate base-20">
+            <span className="base-20 min-w-0 truncate">
               <span className="text-zinc-600">{chain}</span>
               {typeof chain === 'string' ? '()' : null}
             </span>
           )}
           <span className="shrink-0 text-zinc-400">
             {output && (
-              <span className="text-zinc-500 mx-[0.5ch] font-sans">
+              <span className="mx-[0.5ch] font-sans text-zinc-500">
                 {operationSymbol}
               </span>
             )}
@@ -119,7 +119,7 @@ export function InputOutput({
         <span
           className={value({
             className:
-              'basis-20 text-zinc-600 font-normal font-sans leading-5 text-xs not-italic grow max-w-fit truncate px-0.5 py-0',
+              'max-w-fit grow basis-20 truncate px-0.5 py-0 font-sans text-xs leading-5 font-normal text-zinc-600 not-italic',
           })}
         >
           <span className="truncate px-0.5">{name}</span>
@@ -135,20 +135,20 @@ export function InputOutput({
           {isValueHidden ? (
             <PopoverTrigger>
               <Button
-                className="min-w-6 font-medium rounded-lg text-gray-500 h-6 gap-0 p-0 font-sans flex justify-center items-center text-2xs"
+                className="flex h-6 min-w-6 items-center justify-center gap-0 rounded-lg p-0 font-sans text-2xs font-medium text-gray-500"
                 variant="secondary"
               >
-                <Icon name={IconName.Eye} className="mx-1.5 w-3 h-3 shrink-0" />
-                <span className="truncate min-w-0 block">
+                <Icon name={IconName.Eye} className="mx-1.5 h-3 w-3 shrink-0" />
+                <span className="block min-w-0 truncate">
                   {popoverTitle}
-                  <span className="w-3 inline-block" />
+                  <span className="inline-block w-3" />
                 </span>
               </Button>
             </PopoverTrigger>
           ) : (
             <PopoverHoverTrigger>
               <Button
-                className="basis-20 grow max-w-fit truncate font-mono text-inherit [font-size:inherit] px-0.5 py-0 rounded-xs underline-offset-4 decoration-from-font decoration-dashed underline "
+                className="max-w-fit grow basis-20 truncate rounded-xs px-0.5 py-0 font-mono [font-size:inherit] text-inherit underline decoration-dashed decoration-from-font underline-offset-4"
                 variant="icon"
               >
                 <span className="truncate pr-0.5">{name}</span>

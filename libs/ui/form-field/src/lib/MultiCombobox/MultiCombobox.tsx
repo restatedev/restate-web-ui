@@ -38,13 +38,13 @@ function DefaultTag<
   T extends {
     id: Key;
     textValue: string;
-  }
+  },
 >({ item, onRemove }: { item: T; onRemove?: VoidFunction }) {
   return (
     <div className={tagStyles()}>
       {item.textValue}
       <Button onClick={onRemove} variant="icon">
-        <Icon name={IconName.X} className="w-3 h-3" />
+        <Icon name={IconName.X} className="h-3 w-3" />
       </Button>
     </div>
   );
@@ -100,7 +100,7 @@ export function FormFieldMultiCombobox<
   T extends {
     id: Key;
     textValue: string;
-  }
+  },
 >({
   label,
   items,
@@ -134,7 +134,7 @@ export function FormFieldMultiCombobox<
         !selectedKeys.includes(item.id) && contains(item.textValue, filterText)
       );
     },
-    [contains, selectedKeys]
+    [contains, selectedKeys],
   );
 
   const availableList = useListData({
@@ -164,7 +164,7 @@ export function FormFieldMultiCombobox<
         setMenuTrigger('focus');
       });
     },
-    [selectedList, onItemRemove, inputRefObject]
+    [selectedList, onItemRemove, inputRefObject],
   );
 
   const onUpdate = useCallback(
@@ -176,7 +176,7 @@ export function FormFieldMultiCombobox<
       });
       onItemUpdated?.(newValue.id);
     },
-    [onItemUpdated, selectedList]
+    [onItemUpdated, selectedList],
   );
 
   const onSelectionChange = (id: Key | null) => {
@@ -235,7 +235,7 @@ export function FormFieldMultiCombobox<
         deleteLast();
       }
     },
-    [deleteLast, fieldState.inputValue]
+    [deleteLast, fieldState.inputValue],
   );
 
   const tagGroupId = useId();
@@ -247,7 +247,7 @@ export function FormFieldMultiCombobox<
         <Label className="sr-only">{label}</Label>
 
         <div
-          className="hidden gap-1.5 flex-wrap px-1 py-1 has-[>*]:flex max-w-full"
+          className="hidden max-w-full flex-wrap gap-1.5 px-1 py-1 has-[>*]:flex"
           id={tagGroupId}
         >
           {prefix}
@@ -298,12 +298,12 @@ export function FormFieldMultiCombobox<
           </div>
 
           {availableList.items.length > 0 && (
-            <PopoverOverlay className="w-(--trigger-width) min-w-fit p-0 bg-gray-100/90">
+            <PopoverOverlay className="w-(--trigger-width) min-w-fit bg-gray-100/90 p-0">
               {multiple || selectedKeys.length === 0 ? (
                 <ListBox
                   multiple
                   selectable
-                  className="outline-0 p-1 max-h-[inherit] overflow-auto border-none"
+                  className="max-h-[inherit] overflow-auto border-none p-1 outline-0"
                 >
                   <ListBoxSection title={label}>
                     {availableList.items.map((item) => (
@@ -314,7 +314,7 @@ export function FormFieldMultiCombobox<
                   </ListBoxSection>
                 </ListBox>
               ) : (
-                <div className="flex items-center gap-1.5 text-sm text-zinc-500 px-4 py-2">
+                <div className="flex items-center gap-1.5 px-4 py-2 text-sm text-zinc-500">
                   You can apply only one filter at a time.
                 </div>
               )}
@@ -392,7 +392,7 @@ function InputWithFocusManager({
           break;
       }
     },
-    [focusManager, onKeyDownCapture]
+    [focusManager, onKeyDownCapture],
   );
   return <AriaInput {...props} onKeyDownCapture={onKeyDownCaptureInner} />;
 }

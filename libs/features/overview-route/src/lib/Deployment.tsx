@@ -42,7 +42,7 @@ export function Deployment({
   });
   const deployment = deploymentId ? deployments?.get(deploymentId) : undefined;
   const activeDeploymentInSidebar = useActiveSidebarParam(
-    DEPLOYMENT_QUERY_PARAM
+    DEPLOYMENT_QUERY_PARAM,
   );
 
   const isSelected =
@@ -57,14 +57,14 @@ export function Deployment({
 
   return (
     <div className={styles({ className, isSelected })}>
-      <div className="shrink-0 h-6 w-6 bg-white border shadow-xs rounded-md">
+      <div className="h-6 w-6 shrink-0 rounded-md border bg-white shadow-xs">
         <Icon
           name={isHttpDeployment(deployment) ? IconName.Http : IconName.Lambda}
-          className="w-full h-full text-zinc-400 p-1"
+          className="h-full w-full p-1 text-zinc-400"
         />
       </div>
 
-      <div className="flex flex-row gap-1 items-center  text-zinc-600 truncate min-w-[6ch]">
+      <div className="flex min-w-[6ch] flex-row items-center gap-1 truncate text-zinc-600">
         <TruncateWithTooltip copyText={deploymentEndpoint} triggerRef={linkRef}>
           {showEndpoint ? deploymentEndpoint : deploymentId}
         </TruncateWithTooltip>
@@ -73,15 +73,15 @@ export function Deployment({
           aria-label={deploymentEndpoint}
           variant="secondary"
           href={`?${DEPLOYMENT_QUERY_PARAM}=${deployment.id}`}
-          className="outline-offset-0 m-1 ml-0 rounded-full before:absolute before:inset-0 before:content-[''] before:rounded-lg hover:before:bg-black/3 pressed:before:bg-black/5"
+          className="m-1 ml-0 rounded-full outline-offset-0 before:absolute before:inset-0 before:rounded-lg before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5"
         >
           <Icon
             name={IconName.ChevronRight}
-            className="w-4 h-4 text-gray-500"
+            className="h-4 w-4 text-gray-500"
           />
         </Link>
       </div>
-      {revision && <Revision revision={revision} className="ml-auto z-2" />}
+      {revision && <Revision revision={revision} className="z-2 ml-auto" />}
     </div>
   );
 }

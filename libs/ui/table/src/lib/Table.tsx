@@ -36,11 +36,11 @@ const tableStyles = tv({
 export function Table({ className, ...props }: PropsWithChildren<TableProps>) {
   return (
     <div className={`${tableStyles({ className })}`}>
-      <div className="relative overflow-auto h-full [scrollbar-gutter:stable] [scrollbar-width:thin]">
+      <div className="relative h-full overflow-auto [scrollbar-gutter:stable] [scrollbar-width:thin]">
         <ResizableTableContainer>
           <AriaTable
             {...props}
-            className="bg-gray-50 border-collapse border-spacing-0 rounded-xl"
+            className="border-collapse border-spacing-0 rounded-xl bg-gray-50"
           />
         </ResizableTableContainer>
       </div>
@@ -85,7 +85,7 @@ export function Column({
       {composeRenderProps(
         props.children,
         (children, { allowsSorting, sortDirection }) => (
-          <div className="flex items-center relative">
+          <div className="relative flex items-center">
             <Group
               role="presentation"
               tabIndex={-1}
@@ -94,14 +94,14 @@ export function Column({
               <TruncateWithTooltip hideCopy>{children}</TruncateWithTooltip>
               {allowsSorting && (
                 <span
-                  className={`w-4 h-4 flex items-center justify-center transition ${
+                  className={`flex h-4 w-4 items-center justify-center transition ${
                     sortDirection === 'descending' ? 'rotate-180' : ''
                   }`}
                 >
                   {sortDirection && (
                     <Icon
                       name={IconName.ChevronUp}
-                      className="w-4 h-4 text-gray-500 dark:text-zinc-400 forced-colors:text-[ButtonText]"
+                      className="h-4 w-4 text-gray-500 dark:text-zinc-400 forced-colors:text-[ButtonText]"
                     />
                   )}
                 </span>
@@ -109,7 +109,7 @@ export function Column({
             </Group>
             {!props.width && <ColumnResizer className={resizerStyles()} />}
           </div>
-        )
+        ),
       )}
     </AriaColumn>
   );
@@ -142,7 +142,7 @@ export function TableHeader<T extends object>({
         <AriaColumn
           width={36}
           minWidth={36}
-          className="text-start text-sm font-semibold cursor-default p-2"
+          className="cursor-default p-2 text-start text-sm font-semibold"
         >
           {selectionMode === 'multiple' && <Checkbox slot="selection" />}
         </AriaColumn>

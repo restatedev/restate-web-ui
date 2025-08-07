@@ -12,7 +12,7 @@ function removeGlobalSelectors() {
 
       const banned = ['html', 'body'];
       const shouldRemove = rule.selectors.some((sel) =>
-        banned.some((ban) => sel.trim().startsWith(ban))
+        banned.some((ban) => sel.trim().startsWith(ban)),
       );
 
       if (shouldRemove) {

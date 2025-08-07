@@ -9,14 +9,11 @@ interface AppBarProps {
 export function AppBar(props: PropsWithChildren<AppBarProps>) {
   return (
     <header
-      className={`${styles.header} [&:has(>*>*)]:animate-in [&:has(>*>*)]:slide-in-from-top duration-300 [&:has([data-variant="hidden"])]:invisible [&:has([data-variant="secondary"])]:shadow-none [&:has([data-variant="secondary"])]:border-none [&:has([data-variant="secondary"])]:bg-transparent [&:has([data-variant="secondary"])]:backdrop-blur-0 sticky top-3 sm:top-6 rounded-xl border z-100 flex flex-none items-stretch justify-between gap-4 backdrop-blur-xl backdrop-saturate-200 shadow-lg shadow-zinc-800/5 bg-gray-50/80`}
+      className={`${styles.header} [&:has([data-variant="secondary"])]:backdrop-blur-0 sticky top-3 z-100 flex flex-none items-stretch justify-between gap-4 rounded-xl border bg-gray-50/80 shadow-lg shadow-zinc-800/5 backdrop-blur-xl backdrop-saturate-200 duration-300 sm:top-6 [&:has(>*>*)]:animate-in [&:has(>*>*)]:slide-in-from-top [&:has([data-variant="hidden"])]:invisible [&:has([data-variant="secondary"])]:border-none [&:has([data-variant="secondary"])]:bg-transparent [&:has([data-variant="secondary"])]:shadow-none`}
     >
-      <div
-        {...props}
-        className="-m-px flex items-stretch flex-auto min-w-0"
-      />
+      <div {...props} className="-m-px flex min-w-0 flex-auto items-stretch" />
       <nav
-        className="ml-auto pr-4 flex gap-2 items-center"
+        className="ml-auto flex items-center gap-2 pr-4"
         id={ZONE_IDS[LayoutZone.Nav]}
       />
     </header>

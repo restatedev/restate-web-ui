@@ -76,21 +76,21 @@ export function FormFieldCombobox<T extends object>({
           aria-label={placeholder}
           pattern={pattern}
         />
-        <div className="absolute right-1 top-0 bottom-0 flex items-center">
+        <div className="absolute top-0 right-1 bottom-0 flex items-center">
           <Button
             variant="secondary"
             className="rounded-lg p-1 outline-offset-0"
           >
             <Icon
               name={IconName.ChevronsUpDown}
-              className="w-[1.25em] h-[1.25em] text-gray-500"
+              className="h-[1.25em] w-[1.25em] text-gray-500"
             />
           </Button>
         </div>
       </Group>
       <FormFieldError>{errorMessage}</FormFieldError>
       <PopoverOverlay className="w-(--trigger-width) min-w-fit bg-gray-100/90">
-        <ListBox className="outline-0 p-1 max-h-[inherit] overflow-auto border-none">
+        <ListBox className="max-h-[inherit] overflow-auto border-none p-1 outline-0">
           {children}
         </ListBox>
       </PopoverOverlay>

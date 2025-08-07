@@ -55,21 +55,21 @@ export function FormFieldSelect({
     >
       {!label && <Label className="sr-only">{placeholder}</Label>}
       {label && <FormFieldLabel>{label}</FormFieldLabel>}
-      <div className="shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] p-px bg-gray-100 rounded-xl border border-gray-200">
+      <div className="rounded-xl border border-gray-200 bg-gray-100 p-px shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
         <Button
           autoFocus
           variant="secondary"
-          className="group-invalid:border-red-600 group-invalid:bg-red-100/70 flex items-center gap-2 px-2 pt-1.5 text-sm w-full rounded-[0.625rem]"
+          className="flex w-full items-center gap-2 rounded-[0.625rem] px-2 pt-1.5 text-sm group-invalid:border-red-600 group-invalid:bg-red-100/70"
         >
           <SelectValue className="flex-auto text-left placeholder-shown:text-gray-500" />
           <Icon
             name={IconName.ChevronsUpDown}
-            className="w-[1.25em] h-[1.25em] text-gray-500"
+            className="h-[1.25em] w-[1.25em] text-gray-500"
           />
         </Button>
       </div>
-      <PopoverOverlay className="w-(--trigger-width) min-w-fit p-0 bg-gray-100/90">
-        <ListBox className="rounded-xl m-0 border-none" selectable multiple>
+      <PopoverOverlay className="w-(--trigger-width) min-w-fit bg-gray-100/90 p-0">
+        <ListBox className="m-0 rounded-xl border-none" selectable multiple>
           {children}
         </ListBox>
       </PopoverOverlay>
@@ -86,7 +86,7 @@ export function Option({
   value?: string;
 }) {
   return (
-    <ListBoxItem className="px-2 rounded-lg" value={value}>
+    <ListBoxItem className="rounded-lg px-2" value={value}>
       {children}
     </ListBoxItem>
   );

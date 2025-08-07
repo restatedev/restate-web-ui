@@ -67,7 +67,7 @@ const styles = tv({
 
 export function getSearchParams(
   search: string,
-  excludingInvocationId?: string
+  excludingInvocationId?: string,
 ) {
   const searchParams = new URLSearchParams(search);
   Array.from(searchParams.keys()).forEach((key) => {
@@ -155,7 +155,7 @@ export function InvocationId({
         <div className={icon()}>
           <Icon
             name={IconName.Invocation}
-            className="w-full h-full text-zinc-500 p-1"
+            className="h-full w-full p-1 text-zinc-500"
           />
         </div>
 

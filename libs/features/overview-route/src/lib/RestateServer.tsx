@@ -114,7 +114,7 @@ export function RestateServer({
             fillRule="evenodd"
             clipRule="evenodd"
             d="M60 0C10.59 0 0 10.59 0 60C0 109.41 10.59 120 60 120C109.41 120 120 109.41 120 60C120 10.59 109.41 0 60 0Z"
-            className="fill-gray-200/50 stroke-gray-200 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] border"
+            className="border fill-gray-200/50 stroke-gray-200 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]"
           />
         </svg>
       )}
@@ -127,7 +127,7 @@ export function RestateServer({
                 return Boolean(query.meta?.isAdmin);
               },
             },
-            { cancelRefetch: true }
+            { cancelRefetch: true },
           );
           if (timeoutRef.current) {
             clearTimeout(timeoutRef.current);
@@ -142,7 +142,7 @@ export function RestateServer({
           isAnimating.current = true;
           try {
             const elements = Array.from(
-              document.querySelectorAll('[data-anchor]')
+              document.querySelectorAll('[data-anchor]'),
             )
               .filter((el) => el instanceof HTMLElement)
               .filter((el) => {
@@ -199,7 +199,7 @@ export function RestateServer({
                     width: '30px',
                   },
                 ],
-                { duration: 1000, easing: 'ease-in' }
+                { duration: 1000, easing: 'ease-in' },
               );
               await animation.finished;
               animation.cancel();
@@ -212,7 +212,7 @@ export function RestateServer({
                   { transform: `scale(${originalScale})` },
                   { transform: `scale(${originalScale * 1.02})` },
                 ],
-                { duration: 300, fill: 'both', easing: 'ease-in' }
+                { duration: 300, fill: 'both', easing: 'ease-in' },
               );
               el.style.backgroundColor = 'rgb(69, 82, 204)';
               const ripple = el.animate(
@@ -242,7 +242,7 @@ export function RestateServer({
                     transform: 'translateY(0)',
                   },
                 ],
-                { duration: 1000, easing: 'ease-in' }
+                { duration: 1000, easing: 'ease-in' },
               );
               await Promise.all([
                 ripple.finished,
@@ -278,7 +278,7 @@ export function RestateServer({
             fillRule="evenodd"
             clipRule="evenodd"
             d="M60 0C10.59 0 0 10.59 0 60C0 109.41 10.59 120 60 120C109.41 120 120 109.41 120 60C120 10.59 109.41 0 60 0Z"
-            className="background backdrop-blur-3xl backdrop-saturate-200 fill-gray-50/70"
+            className="background fill-gray-50/70 backdrop-blur-3xl backdrop-saturate-200"
           />
         </svg>
         <svg

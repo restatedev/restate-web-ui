@@ -76,7 +76,7 @@ export function SDK({
 
   return (
     <div className={sdkStyles({ className })}>
-      <LanguageIcon lang={sdk} className="w-6 h-6 shrink-0 opacity-70" />
+      <LanguageIcon lang={sdk} className="h-6 w-6 shrink-0 opacity-70" />
       <div className="inline-flex items-center">
         SDK/
         {version && <div className="truncate">{version}</div>}

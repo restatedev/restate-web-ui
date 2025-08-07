@@ -12,9 +12,9 @@ export function DeploymentProtocolCheck() {
 
   if (max_protocol_version && max_protocol_version <= 4) {
     return (
-      <p className="mt-2 text-code flex rounded-xl p-3 gap-2 bg-orange-50 text-orange-600">
+      <p className="mt-2 flex gap-2 rounded-xl bg-orange-50 p-3 text-code text-orange-600">
         <Icon
-          className="h-5 w-5 shrink-0 text-orange-100 fill-orange-600"
+          className="h-5 w-5 shrink-0 fill-orange-600 text-orange-100"
           name={IconName.TriangleAlert}
         />
         <span className="inline-block">
@@ -44,16 +44,16 @@ export function RegisterDeploymentResults() {
   const { services = [] } = useRegisterDeploymentContext();
   if (services.length === 0) {
     return (
-      <div className="p-4 flex flex-col gap-2 items-center relative w-full text-center mt-6 justify-center rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
+      <div className="relative mt-6 flex w-full flex-col items-center justify-center gap-2 rounded-xl border bg-gray-200/50 p-4 text-center shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
         <h3 className="text-sm font-semibold text-gray-600">No services</h3>
-        <p className="text-sm text-gray-500 px-4 max-w-md">
+        <p className="max-w-md px-4 text-sm text-gray-500">
           This deployment does not expose any services.
         </p>
       </div>
     );
   }
   return (
-    <div className="flex flex-col gap-2 items-start w-full mt-6">
+    <div className="mt-6 flex w-full flex-col items-start gap-2">
       {services.map((service) => (
         <Service
           service={service}
@@ -73,48 +73,48 @@ function Service({
   defaultExpanded?: boolean;
 }) {
   return (
-    <div className="w-full rounded-xl p-0.5 border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
+    <div className="w-full rounded-xl border bg-gray-200/50 p-0.5 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
       <Disclosure
         defaultExpanded={defaultExpanded}
         className={({ isExpanded }) =>
           isExpanded ? '[&_.disclosure-icon]:rotate-180' : ''
         }
       >
-        <div className="relative w-full rounded-[calc(0.75rem-0.125rem)] bg-white border shadow-xs flex items-center flex-row p-0 pr-2 text-sm">
+        <div className="relative flex w-full flex-row items-center rounded-[calc(0.75rem-0.125rem)] border bg-white p-0 pr-2 text-sm shadow-xs">
           <Button
             variant="icon"
             slot="trigger"
-            className="p-2 text-zinc-400 text-sm inset-0 absolute justify-end rounded-[calc(0.75rem-0.175rem)] hover:bg-black/3 pressed:bg-black/5"
+            className="absolute inset-0 justify-end rounded-[calc(0.75rem-0.175rem)] p-2 text-sm text-zinc-400 hover:bg-black/3 pressed:bg-black/5"
           >
             <Icon name={IconName.ChevronDown} className="disclosure-icon" />
           </Button>
-          <div className="h-12 aspect-square p-1">
-            <div className="rounded-lg text-blue-400 h-full w-full flex items-center justify-center">
-              <div className="p-1 w-8 h-8">
+          <div className="aspect-square h-12 p-1">
+            <div className="flex h-full w-full items-center justify-center rounded-lg text-blue-400">
+              <div className="h-8 w-8 p-1">
                 <Icon
                   name={IconName.Box}
-                  className="w-full h-full fill-blue-50 text-blue-400 drop-shadow-md"
+                  className="h-full w-full fill-blue-50 text-blue-400 drop-shadow-md"
                 />
               </div>
             </div>
           </div>
-          <div className="flex flex-col gap-1 items-start">
+          <div className="flex flex-col items-start gap-1">
             <div className="flex items-center gap-2">
               <div className="font-medium">{service.name}</div>
               <ServiceType type={service.ty} className="ml-auto" />
             </div>
           </div>
-          <div className="ml-auto mr-7 uppercase font-semibold text-2xs font-mono items-center rounded-xl px-2 leading-4 bg-gray-50 ring-1 ring-inset ring-zinc-500/20 text-zinc-500">
+          <div className="mr-7 ml-auto items-center rounded-xl bg-gray-50 px-2 font-mono text-2xs leading-4 font-semibold text-zinc-500 uppercase ring-1 ring-zinc-500/20 ring-inset">
             rev. {service.revision}
           </div>
         </div>
         <DisclosurePanel>
           {(service.handlers ?? []).length > 0 && (
-            <div className="flex flex-col mt-2 mx-1.5 mb-1.5">
-              <div className="ml-2 uppercase text-xs font-semibold text-gray-400 mt-2 mb-1 flex gap-2 items-center">
+            <div className="mx-1.5 mt-2 mb-1.5 flex flex-col">
+              <div className="mt-2 mb-1 ml-2 flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase">
                 Handlers
               </div>
-              <div className="flex flex-col gap-2 pl-1.5 mt-2">
+              <div className="mt-2 flex flex-col gap-2 pl-1.5">
                 {service.handlers.map((handler) => (
                   <Handler
                     handler={handler}

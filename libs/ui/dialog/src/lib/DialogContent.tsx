@@ -102,7 +102,7 @@ export function DialogContent({
       <AriaModal
         isDismissable
         className={composeRenderProps(className, (className, renderProps) =>
-          modalStyles({ ...renderProps, className, variant })
+          modalStyles({ ...renderProps, className, variant }),
         )}
       >
         <AriaDialog className={dialogStyles({ variant })}>

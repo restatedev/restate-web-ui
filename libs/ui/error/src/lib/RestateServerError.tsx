@@ -39,7 +39,7 @@ export function RestateServerError({
 }>) {
   const { restate_code: code, message } = error;
   const { summary, help } = code
-    ? ERROR_CODES[code] ?? DEFAULT_ERROR
+    ? (ERROR_CODES[code] ?? DEFAULT_ERROR)
     : DEFAULT_ERROR;
 
   return (
@@ -51,17 +51,17 @@ export function RestateServerError({
             name={IconName.CircleX}
           />
         </div>
-        <output className="flex-auto text-red-700 [word-break:break-word] max-h-28 overflow-auto">
+        <output className="max-h-28 flex-auto overflow-auto [word-break:break-word] text-red-700">
           {help ? (
             <InlineTooltip
               variant="indicator-button"
-              className="[&_button]:self-start [&_button]:mt-1 [&_button]:mr-1"
+              className="[&_button]:mt-1 [&_button]:mr-1 [&_button]:self-start"
               title={code}
               {...(code && {
                 learnMoreHref: `https://docs.restate.dev/references/errors/#${code}`,
               })}
               description={
-                <div className="[&_li]:list-disc [&_li]:list-inside [&_ul]:mt-2">
+                <div className="[&_li]:list-inside [&_li]:list-disc [&_ul]:mt-2">
                   <Markdown>{help}</Markdown>
                 </div>
               }
@@ -73,15 +73,15 @@ export function RestateServerError({
           )}
         </output>
       </div>
-      <div className="flex flex-col gap-2 w-full flex-auto min-h-0">
+      <div className="flex min-h-0 w-full flex-auto flex-col gap-2">
         <Code className={codeStyles({ wrap })}>
-          <Snippet language="bash" className="px-0 h-full">
+          <Snippet language="bash" className="h-full px-0">
             <details
-              className="group text-[90%] overflow-auto  max-h-28 w-full h-full"
+              className="group h-full max-h-28 w-full overflow-auto text-[90%]"
               open={open}
             >
               <summary className="group-open:h-4">
-                <span className="group-open:invisible group-open:text-[0px] truncate w-[calc(100%-5ch)] inline-block align-middle">
+                <span className="inline-block w-[calc(100%-5ch)] truncate align-middle group-open:invisible group-open:text-[0px]">
                   {message}
                 </span>
                 <br className="group-open:hidden" />

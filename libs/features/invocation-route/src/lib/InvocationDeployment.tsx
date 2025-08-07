@@ -22,42 +22,42 @@ export function InvocationDeployment({
   if (deploymentId) {
     const deployment = data?.deployments.get(deploymentId);
     const revision = deployment?.services.find(
-      ({ name }) => name === invocation.target_service_name
+      ({ name }) => name === invocation.target_service_name,
     )?.revision;
 
     return revision ? (
       <div className={styles({ className })}>
-        <div className="flex px-1.5 py-1 h-9 items-center not-last:border-b w-full">
+        <div className="flex h-9 w-full items-center px-1.5 py-1 not-last:border-b">
           <Deployment
             deploymentId={deploymentId}
             revision={revision}
-            className="text-inherit p-0 pr-0.5 m-0 [&_a:before]:rounded-md max-w-full w-full"
+            className="m-0 w-full max-w-full p-0 pr-0.5 text-inherit [&_a:before]:rounded-md"
             highlightSelection={false}
           />
         </div>
         {showSdk &&
           (invocation.last_attempt_server || deployment.sdk_version) && (
-            <div className="flex px-1.5 py-1 h-9 items-center not-last:border-b w-full">
+            <div className="flex h-9 w-full items-center px-1.5 py-1 not-last:border-b">
               <SDK
                 lastAttemptServer={
                   invocation.last_attempt_server ??
                   deployment.sdk_version ??
                   undefined
                 }
-                className="text-[85%] font-medium text-zinc-600 gap-2 max-w-[calc(100%-1.75rem)] -mt-0.5"
+                className="-mt-0.5 max-w-[calc(100%-1.75rem)] gap-2 text-[85%] font-medium text-zinc-600"
               />
             </div>
           )}
       </div>
     ) : (
-      <div className="font-mono text-zinc-600  gap-1.5 text-xs truncate">
-        <div className="py-0.5 min-w-0 truncate font-sans text-xs text-zinc-500 flex items-center gap-[0.5ch]">
-          <div className="min-w-[5ch] basis-[5ch] flex-auto">
+      <div className="gap-1.5 truncate font-mono text-xs text-zinc-600">
+        <div className="flex min-w-0 items-center gap-[0.5ch] truncate py-0.5 font-sans text-xs text-zinc-500">
+          <div className="min-w-[5ch] flex-auto basis-[5ch]">
             <TruncateWithTooltip copyText={deploymentId}>
               {deploymentId}
             </TruncateWithTooltip>
           </div>
-          <div className="truncate flex-auto">no longer exists.</div>
+          <div className="flex-auto truncate">no longer exists.</div>
         </div>
       </div>
     );
