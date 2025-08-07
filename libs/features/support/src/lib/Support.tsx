@@ -85,7 +85,7 @@ function Help() {
     <PopoverTrigger>
       <Button
         variant="secondary"
-        className="fixed bottom-2 left-2 z-50 hidden h-11 w-11 items-center justify-center rounded-full bg-white/80 p-0 text-gray-700 shadow-lg shadow-zinc-800/5 backdrop-blur-xl backdrop-saturate-200 3xl:bottom-6 3xl:left-[calc(50vw-min(50rem,calc(50vw-400px-2rem))-2rem)] sm:right-4 sm:bottom-4 md:flex pressed:scale-95 pressed:shadow-xs"
+        className="fixed bottom-2 left-2 z-50 hidden h-11 w-11 items-center justify-center rounded-full bg-white/80 p-0 text-gray-700 shadow-lg shadow-zinc-800/5 backdrop-blur-xl backdrop-saturate-200 sm:right-4 sm:bottom-4 md:flex 3xl:bottom-6 3xl:left-[calc(50vw-min(50rem,calc(50vw-400px-2rem))-2rem)] pressed:scale-95 pressed:shadow-xs"
       >
         {isOpen ? (
           <Icon name={IconName.X} className="h-5 w-5" />

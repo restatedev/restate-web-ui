@@ -21,7 +21,7 @@ export function LayoutProvider({ children }: PropsWithChildren<LayoutProps>) {
   return (
     <>
       <div className="fixed top-0 right-0 left-0 z-30 h-6 bg-linear-to-t from-gray-100/60 to-gray-100" />
-      <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-3 py-3 3xl:max-w-[min(100rem,calc(100vw-800px-4rem))] sm:px-6 sm:py-6 lg:px-8">
+      <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-3 py-3 sm:px-6 sm:py-6 lg:px-8 3xl:max-w-[min(100rem,calc(100vw-800px-4rem))]">
         <AppBar id={ZONE_IDS[LayoutZone.AppBar]} />
         <NotificationRegion />
         <div className="flex flex-auto flex-row 3xl:ml-[calc(-400px-2rem)] 3xl:grid 3xl:w-[calc(100%+800px+4rem)] 3xl:[grid-template-columns:400px_1fr_400px] 3xl:gap-8">
