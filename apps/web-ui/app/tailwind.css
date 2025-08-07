@@ -4,54 +4,7 @@
 @plugin "@tailwindcss/forms";
 
 @custom-variant dark (&:where(.dark, .dark *));
-
-@source "../../../libs/data-access/admin-api";
-@source "../../../libs/data-access/middleware-service-worker";
-@source "../../../libs/data-access/query";
-@source "../../../libs/features/edit-state";
-@source "../../../libs/features/explainers";
-@source "../../../libs/features/health";
-@source "../../../libs/features/introspection-route";
-@source "../../../libs/features/invocation-route";
-@source "../../../libs/features/invocations-route";
-@source "../../../libs/features/overview-route";
-@source "../../../libs/features/restate-context";
-@source "../../../libs/features/service-protocol";
-@source "../../../libs/features/state-object-route";
-@source "../../../libs/features/state-route";
-@source "../../../libs/features/support";
-@source "../../../libs/features/version";
-@source "../../../libs/ui/api";
-@source "../../../libs/ui/badge";
-@source "../../../libs/ui/button";
-@source "../../../libs/ui/code";
-@source "../../../libs/ui/copy";
-@source "../../../libs/ui/dialog";
-@source "../../../libs/ui/dropdown";
-@source "../../../libs/ui/editor";
-@source "../../../libs/ui/error";
-@source "../../../libs/ui/focus";
-@source "../../../libs/ui/form-field";
-@source "../../../libs/ui/icons";
-@source "../../../libs/ui/layout";
-@source "../../../libs/ui/link";
-@source "../../../libs/ui/listbox";
-@source "../../../libs/ui/loading";
-@source "../../../libs/ui/nav";
-@source "../../../libs/ui/notification";
-@source "../../../libs/ui/popover";
-@source "../../../libs/ui/query-builder";
-@source "../../../libs/ui/radio-group";
-@source "../../../libs/ui/section";
-@source "../../../libs/ui/split-button";
-@source "../../../libs/ui/table";
-@source "../../../libs/ui/tooltip";
-@source "../../../libs/util/errors";
-@source "../../../libs/util/feature-flag";
-@source "../../../libs/util/humantime";
-@source "../../../libs/util/intl";
-@source "../../../libs/util/react-query";
-@source "../../../libs/util/snapshot-time";
+@source "../../../libs";
 
 @layer base {
   html {
@@ -60,19 +13,20 @@
   body {
     padding-left: calc(100vw - 100%);
   }
-}
-
-*[tabindex='0']:not(:has(*)) {
-  outline: none;
-}
-
-@layer base {
   *,
   ::after,
   ::before,
   ::backdrop,
   ::file-selector-button {
     border-color: var(--color-gray-200, currentColor);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-gray-400);
+  }
+  *[tabindex='0']:not(:has(*)) {
+    outline: none;
   }
 }
 
@@ -98,11 +52,4 @@
     }
   }
   --animate-moveAndGrow: moveAndGrow 2s ease-in-out infinite;
-}
-
-@layer base {
-  input::placeholder,
-  textarea::placeholder {
-    color: var(--color-gray-400);
-  }
 }

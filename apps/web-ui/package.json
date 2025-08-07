@@ -19,21 +19,7 @@
     "typescript": "~5.5.2"
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=20"
   },
-  "sideEffects": false,
-  "nx": {
-    "targets": {
-      "build": {
-        "syncGenerators": [
-          "@restate/tailwind-sync-plugin:update-tailwind-globs"
-        ]
-      },
-      "serve": {
-        "syncGenerators": [
-          "@restate/tailwind-sync-plugin:update-tailwind-globs"
-        ]
-      }
-    }
-  }
+  "sideEffects": false
 }
