@@ -36,6 +36,7 @@ export const API = ({
       router="hash"
       layout={layout}
       tryItCredentialsPolicy="include"
+      className="spotlight"
     />
   );
 };
@@ -58,7 +59,7 @@ export const JsonSchemaViewer = ({
         }
       >
         <JsonSchemaViewerInner
-          className={className}
+          className={'spotlight ' + className}
           schema={schema as any}
           disableCrumbs
           renderRootTreeLines

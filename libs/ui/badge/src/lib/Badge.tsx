@@ -8,7 +8,7 @@ interface BadgeProps {
 }
 
 const styles = tv({
-  base: 'badge inline-flex items-center font-medium border in-[&]:rounded-md in-[&]:bg-white in-[&]:border-zinc-600/10 in-[&]:ml-1.5 in-[&]:py-0.5 in-[&]:px-1.5 [&:has(>_.badge)]:py-0.5 [&:has(>_.badge)]:pr-0.5',
+  base: 'badge inline-flex items-center font-medium border [&_&]:rounded-md [&_&]:bg-white [&_&]:border-zinc-600/10 [&_&]:ml-1.5 [&_&]:py-0.5 [&_&]:px-1.5 [&:has(>_.badge)]:py-0.5 [&:has(>_.badge)]:pr-0.5',
   variants: {
     variant: {
       success: 'bg-green-50 text-green-700 border-green-600/20',

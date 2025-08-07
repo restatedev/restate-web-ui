@@ -158,7 +158,7 @@ function DeploymentContent({ deployment }: { deployment: string }) {
               )}
             </>
           </SectionContent>
-          <span className="px-3 py-2 text-xs text-gray-500 leading-1">
+          <span className="px-3 py-2 text-xs text-gray-500 leading-4">
             Headers added to the register/invoke requests to the deployment.
           </span>
         </Section>

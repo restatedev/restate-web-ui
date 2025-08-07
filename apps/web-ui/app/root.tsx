@@ -50,7 +50,7 @@ export const links: LinksFunction = () => [
   // TODO: move to the its own lib
   {
     rel: 'stylesheet',
-    href: '/ui/elements-web-components.min.css',
+    href: '/ui/elements-web-components.min.scoped.css',
   },
   {
     rel: 'stylesheet',
@@ -149,7 +149,7 @@ export default function App() {
             </LayoutOutlet>
             <LayoutOutlet zone={LayoutZone.AppBar}>
               <div className="flex items-stretch gap-2 flex-1 min-w-0">
-                <div className="flex gap-2 items-center rounded-xl border bg-white p-3 shadow-sm h-full">
+                <div className="flex gap-2 items-center rounded-xl border bg-white p-3 shadow-xs h-full">
                   <Icon
                     name={IconName.RestateEnvironment}
                     className="text-xl text-[#222452]"

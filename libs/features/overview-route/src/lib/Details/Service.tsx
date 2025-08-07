@@ -222,7 +222,7 @@ function ServiceForm({
                 />
               ))}
               {handlers.length === 0 && (
-                <div className="text-xs text-gray-400 leading-1">
+                <div className="text-xs text-gray-400 leading-4">
                   No handler
                 </div>
               )}
@@ -244,7 +244,7 @@ function ServiceForm({
             <span className="text-zinc-500 font-medium text-sm">Public</span>
           </FormFieldCheckbox>
         </SectionContent>
-        <span className="px-3 py-2 text-xs text-gray-500 leading-1">
+        <span className="px-3 py-2 text-xs text-gray-500 leading-4">
           Public services are accessible through the ingress, while private
           services can only be accessed from another Restate service.
         </span>

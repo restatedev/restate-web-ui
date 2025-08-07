@@ -63,8 +63,8 @@ export default defineConfig(({ mode }) => {
         },
       },
       !process.env.VITEST && reactRouter(),
-      tailwindcss(),
       nxViteTsPaths(),
+      tailwindcss(),
     ] as Plugin[],
     // Uncomment this if you are using workers.
     worker: {

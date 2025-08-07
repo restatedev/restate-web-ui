@@ -6,6 +6,16 @@
   "tags": [],
   "// targets": "to see all targets run: nx show project web-ui --web",
   "targets": {
+    "update-css": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          {
+            "command": "pnpm exec postcss apps/web-ui/public/elements-web-components.min.css -o apps/web-ui/public/elements-web-components.min.scoped.css --config ./apps/web-ui/.spotlight/postcss.config.cjs"
+          }
+        ]
+      }
+    },
     "serve": {
       "executor": "nx:run-commands",
       "options": {

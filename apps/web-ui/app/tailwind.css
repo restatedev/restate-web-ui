@@ -1,4 +1,7 @@
 @import 'tailwindcss';
+@plugin "tailwindcss-react-aria-components";
+@plugin "tailwindcss-animate";
+@plugin "@tailwindcss/forms";
 
 @source "../../../libs/data-access/admin-api";
 @source "../../../libs/data-access/middleware-service-worker";
@@ -59,4 +62,35 @@
 
 *[tabindex='0']:not(:has(*)) {
   outline: none;
+}
+
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+}
+
+@theme {
+  --default-ring-width: 3px;
+  --default-ring-color: var(--color-blue-500);
+
+  --text-3xs: 0.625rem;
+  --text-2xs: 0.6875rem;
+  --text-code: 0.8125rem;
+
+  --breakpoint-3xl: 1950px;
+
+  --font-sans: InterVariable, sans-serif;
+  --font-mono: JetBrainsMonoVariable, monospace;
+}
+
+@layer base {
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-gray-400);
+  }
 }
