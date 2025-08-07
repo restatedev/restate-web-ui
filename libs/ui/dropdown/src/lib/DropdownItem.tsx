@@ -47,16 +47,16 @@ function StyledDropdownItem({
         props.children,
         (children, { selectionMode, isSelected }) => (
           <>
-            <span className="flex items-center flex-1 gap-2 font-normal truncate group-selected:font-semibold">
+            <span className="flex flex-1 items-center gap-2 truncate font-normal group-selected:font-semibold">
               {children}
             </span>
             {selectionMode !== 'none' && (
-              <span className="flex items-center w-4">
+              <span className="flex w-4 items-center">
                 {isSelected && <Icon name={IconName.Check} aria-hidden />}
               </span>
             )}
           </>
-        )
+        ),
       )}
     </AriaMenuItem>
   );
@@ -86,13 +86,13 @@ interface DropdownNavItemProps
 }
 
 function isNavItem(
-  props: BaseDropdownItemProps | DropdownCustomItemProps | DropdownNavItemProps
+  props: BaseDropdownItemProps | DropdownCustomItemProps | DropdownNavItemProps,
 ): props is DropdownNavItemProps {
   return Boolean(props.href);
 }
 
 function isCustomItem(
-  props: BaseDropdownItemProps | DropdownCustomItemProps | DropdownNavItemProps
+  props: BaseDropdownItemProps | DropdownCustomItemProps | DropdownNavItemProps,
 ): props is DropdownCustomItemProps {
   return typeof props.value === 'string';
 }

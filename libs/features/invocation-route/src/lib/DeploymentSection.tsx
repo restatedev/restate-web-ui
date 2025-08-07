@@ -21,8 +21,8 @@ export function DeploymentSection({
   const title = invocation?.last_attempt_deployment_id
     ? 'Last attempt deployment'
     : invocation?.pinned_deployment_id
-    ? 'Pinned deployment'
-    : undefined;
+      ? 'Pinned deployment'
+      : undefined;
   if (!deployment) {
     return null;
   }

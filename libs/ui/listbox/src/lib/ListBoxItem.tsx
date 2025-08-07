@@ -38,23 +38,23 @@ function StyledListBoxItem({
       {...props}
       textValue={textValue}
       className={composeRenderProps(className, (className, renderProps) =>
-        listBoxItemStyles({ ...renderProps, className })
+        listBoxItemStyles({ ...renderProps, className }),
       )}
     >
       {composeRenderProps(
         props.children,
         (children, { selectionMode, isSelected }) => (
           <>
-            <span className="flex items-center flex-1 gap-2 font-normal truncate group-selected:font-semibold">
+            <span className="flex flex-1 items-center gap-2 truncate font-normal group-selected:font-semibold">
               {children}
             </span>
             {selectionMode !== 'none' && (
-              <span className="flex items-center w-4">
+              <span className="flex w-4 items-center">
                 {isSelected && <Icon name={IconName.Check} aria-hidden />}
               </span>
             )}
           </>
-        )
+        ),
       )}
     </AriaListBoxItem>
   );
@@ -82,13 +82,13 @@ interface ListBoxNavItemProps
 }
 
 function isNavItem(
-  props: BaseListBoxItemProps | ListBoxCustomItemProps | ListBoxNavItemProps
+  props: BaseListBoxItemProps | ListBoxCustomItemProps | ListBoxNavItemProps,
 ): props is ListBoxNavItemProps {
   return Boolean(props.href);
 }
 
 function isCustomItem(
-  props: BaseListBoxItemProps | ListBoxCustomItemProps | ListBoxNavItemProps
+  props: BaseListBoxItemProps | ListBoxCustomItemProps | ListBoxNavItemProps,
 ): props is ListBoxCustomItemProps {
   return typeof props.value === 'string';
 }

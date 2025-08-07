@@ -1,5 +1,6 @@
 {
   "singleQuote": true,
   "plugins": ["prettier-plugin-tailwindcss"],
-  "tailwindStylesheet": "./apps/web-ui/app/tailwind.css"
+  "tailwindStylesheet": "./apps/web-ui/app/tailwind.css",
+  "trailingComma": "all"
 }

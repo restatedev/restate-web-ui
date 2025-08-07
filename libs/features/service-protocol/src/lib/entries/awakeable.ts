@@ -18,7 +18,7 @@ import {
 
 function awakeableV1(
   entry: JournalRawEntry,
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<JournalEntryV2, { type?: 'Awakeable'; category?: 'command' }> {
   const { raw } = entry;
   if (!raw) {
@@ -52,7 +52,7 @@ function awakeableV1(
         error: message.result.value.message
           ? new RestateError(
               message.result.value.message,
-              message.result.value.code.toString()
+              message.result.value.code.toString(),
             )
           : error,
         resultType: 'failure',
@@ -71,7 +71,7 @@ function awakeableV1(
 function awakeableV2(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<JournalEntryV2, { type?: 'Awakeable'; category?: 'command' }> {
   const entryJSON = parseEntryJson(entry.entry_json ?? entry.entry_lite_json);
   const commandIndex = entry.command_index;
@@ -89,7 +89,7 @@ function awakeableV2(
     invocation,
     nextEntries,
     undefined,
-    [completionEntry?.index]
+    [completionEntry?.index],
   );
 
   return {
@@ -116,7 +116,7 @@ function awakeableV2(
 export function awakeable(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ) {
   if (entry.version === 1 || !entry.version) {
     return awakeableV1(entry, invocation);

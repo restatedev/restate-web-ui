@@ -19,5 +19,5 @@ export const RestateEnvironment = forwardRef<SVGSVGElement, LucideProps>(
         />
       </svg>
     );
-  }
+  },
 );

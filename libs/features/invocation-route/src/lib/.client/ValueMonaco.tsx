@@ -73,7 +73,7 @@ export function ValueMonaco({
   if (typeof value === 'undefined') {
     return null;
   }
-  return <div ref={setEl} className="max-w-full h-full min-h-4 min-w-24" />;
+  return <div ref={setEl} className="h-full min-h-4 max-w-full min-w-24" />;
 }
 
 function formatValue(value?: string) {

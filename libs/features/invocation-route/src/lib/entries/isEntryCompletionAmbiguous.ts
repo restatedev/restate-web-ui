@@ -8,7 +8,7 @@ export function isEntryCompletionAmbiguous(
   refEntry?: JournalEntryV2,
   invocation?: ReturnType<
     typeof useGetInvocationJournalWithInvocationV2
-  >['data']
+  >['data'],
 ) {
   if (
     !refEntry ||
@@ -26,12 +26,12 @@ export function isEntryCompletionAmbiguous(
       entry.type === 'Cancel' &&
       entry.start &&
       refEntry?.start &&
-      entry.start > refEntry?.start
+      entry.start > refEntry?.start,
   );
 
   return {
     isAmbiguous: Boolean(
-      refEntry?.isPending && (invocationIsCompleted || cancelledAfterEntry)
+      refEntry?.isPending && (invocationIsCompleted || cancelledAfterEntry),
     ),
     unambiguousEnd: cancelledAfterEntry?.start || invocation?.completed_at,
   };

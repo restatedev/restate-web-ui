@@ -18,7 +18,7 @@ import {
 
 function getPromiseV1(
   entry: JournalRawEntry,
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<JournalEntryV2, { type?: 'GetPromise'; category?: 'command' }> {
   const { raw } = entry;
   if (!raw) {
@@ -53,7 +53,7 @@ function getPromiseV1(
         error: message.result.value.message
           ? new RestateError(
               message.result.value.message,
-              message.result.value.code.toString()
+              message.result.value.code.toString(),
             )
           : error,
       };
@@ -71,7 +71,7 @@ function getPromiseV1(
 function getPromiseV2(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<JournalEntryV2, { type?: 'GetPromise'; category?: 'command' }> {
   const entryJSON = parseEntryJson(entry.entry_json ?? entry.entry_lite_json);
   const commandIndex = entry.command_index;
@@ -86,7 +86,7 @@ function getPromiseV2(
     invocation,
     nextEntries,
     undefined,
-    [completionEntry?.index]
+    [completionEntry?.index],
   );
 
   return {
@@ -113,7 +113,7 @@ function getPromiseV2(
 export function getPromise(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ) {
   if (entry.version === 1 || !entry.version) {
     return getPromiseV1(entry, invocation);
@@ -129,7 +129,7 @@ export function getPromise(
 export function notificationGetPromise(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<JournalEntryV2, { type?: 'GetPromise'; category?: 'notification' }> {
   const entryJSON = parseEntryJson(entry.entry_json);
   const entryLiteJSON = parseEntryJson(entry.entry_lite_json);
@@ -144,7 +144,7 @@ export function notificationGetPromise(
     entry,
     invocation,
     nextEntries,
-    result
+    result,
   );
 
   return {

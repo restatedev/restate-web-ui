@@ -15,7 +15,7 @@ export function LifeCycle({
   | Extract<JournalEntryV2, { type?: 'Retrying'; category?: 'event' }>
 >) {
   return (
-    <div className="text-zinc-500 font-sans mr-2">
+    <div className="mr-2 font-sans text-zinc-500">
       {{ ...ENTRY_EVENTS_TITLES }[String(entry.type)]}
     </div>
   );

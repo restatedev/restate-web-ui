@@ -21,9 +21,9 @@ export const Ellipsis = ({
     <div className={base()}>
       {children}
       <div className={ellipsis()}>
-        <div className="w-[0.15em] aspect-square bg-current [animation-duration:2000ms] rounded-full animate-ping" />
-        <div className="w-[0.15em] aspect-square bg-current [animation-delay:750ms]  [animation-duration:2000ms] rounded-full animate-ping" />
-        <div className="w-[0.15em] aspect-square bg-current [animation-delay:1250ms]  [animation-duration:2000ms] rounded-full animate-ping" />
+        <div className="aspect-square w-[0.15em] animate-ping rounded-full bg-current [animation-duration:2000ms]" />
+        <div className="aspect-square w-[0.15em] animate-ping rounded-full bg-current [animation-delay:750ms] [animation-duration:2000ms]" />
+        <div className="aspect-square w-[0.15em] animate-ping rounded-full bg-current [animation-delay:1250ms] [animation-duration:2000ms]" />
       </div>
     </div>
   );

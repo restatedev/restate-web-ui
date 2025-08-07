@@ -11,7 +11,7 @@ import {
 export function signal(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ):
   | Extract<
       JournalEntryV2,
@@ -31,7 +31,7 @@ export function signal(
       entry,
       invocation,
       nextEntries,
-      undefined
+      undefined,
     );
 
     return {
@@ -64,7 +64,7 @@ export function signal(
       entry,
       invocation,
       nextEntries,
-      result
+      result,
     );
 
     return {

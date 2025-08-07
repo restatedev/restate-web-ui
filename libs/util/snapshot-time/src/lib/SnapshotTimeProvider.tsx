@@ -41,7 +41,7 @@ export function useDurationSinceLastSnapshot() {
 
       return getDuration(date.getTime() - lastSnapshot);
     },
-    [lastSnapshot]
+    [lastSnapshot],
   );
 
   return durationSinceLastSnapshot;

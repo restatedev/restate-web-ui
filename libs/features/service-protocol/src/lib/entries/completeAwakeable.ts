@@ -17,7 +17,7 @@ import {
 
 function completeAwakeableV1(
   entry: JournalRawEntry,
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<
   JournalEntryV2,
   { type?: 'CompleteAwakeable'; category?: 'command' }
@@ -28,7 +28,7 @@ function completeAwakeableV1(
   }
   const message = fromBinary(
     CompleteAwakeableEntryMessageSchema,
-    toUnit8Array(raw)
+    toUnit8Array(raw),
   );
   const error = getLastFailureV1(entry, invocation);
 
@@ -58,7 +58,7 @@ function completeAwakeableV1(
         error: message.result.value.message
           ? new RestateError(
               message.result.value.message,
-              message.result.value.code.toString()
+              message.result.value.code.toString(),
             )
           : error,
       };
@@ -77,7 +77,7 @@ function completeAwakeableV1(
 function completeAwakeableV2(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<
   JournalEntryV2,
   { type?: 'CompleteAwakeable'; category?: 'command' }
@@ -90,7 +90,7 @@ function completeAwakeableV2(
       entry,
       invocation,
       nextEntries,
-      entryJSON?.Command?.CompleteAwakeable?.result
+      entryJSON?.Command?.CompleteAwakeable?.result,
     );
 
   return {
@@ -115,7 +115,7 @@ function completeAwakeableV2(
 export function completeAwakeable(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ) {
   if (entry.version === 1 || !entry.version) {
     return completeAwakeableV1(entry, invocation);

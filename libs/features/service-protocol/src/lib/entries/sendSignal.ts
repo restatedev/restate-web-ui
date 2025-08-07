@@ -11,7 +11,7 @@ import {
 export function sendSignal(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<JournalEntryV2, { type?: 'Cancel'; category?: 'command' }> {
   const entryJSON = parseEntryJson(entry.entry_json ?? entry.entry_lite_json);
 
@@ -24,7 +24,7 @@ export function sendSignal(
       entry,
       invocation,
       nextEntries,
-      undefined
+      undefined,
     );
 
     return {

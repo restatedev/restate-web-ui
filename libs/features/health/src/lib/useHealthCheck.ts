@@ -10,7 +10,7 @@ export function useHealthCheckNotification() {
     let hide: VoidFunction | undefined = undefined;
     if (isDegraded) {
       const notification = showWarningNotification(
-        'Your Restate server is currently experiencing issues.'
+        'Your Restate server is currently experiencing issues.',
       );
       hide = notification.hide;
     }

@@ -40,7 +40,7 @@ export function CompleteAwakeable({
                   popoverContent={
                     <Value
                       value={entry.value}
-                      className="text-xs font-mono py-3"
+                      className="py-3 font-mono text-xs"
                     />
                   }
                 />

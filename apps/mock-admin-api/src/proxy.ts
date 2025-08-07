@@ -31,7 +31,7 @@ const proxyHandler: RequestHandler = async (req, res) => {
         close() {
           res.end();
         },
-      })
+      }),
     );
   } catch (error) {
     res.sendStatus(500);

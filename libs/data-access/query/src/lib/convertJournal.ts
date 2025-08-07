@@ -47,7 +47,7 @@ import {
 
 export function convertJournal(
   entry: JournalRawEntry,
-  allEntries: JournalRawEntry[]
+  allEntries: JournalRawEntry[],
 ): JournalEntry {
   /**
    * TODO:
@@ -76,7 +76,7 @@ export function convertJournal(
 
 function GetState(
   entry: JournalRawEntry,
-  allEntries: JournalRawEntry[]
+  allEntries: JournalRawEntry[],
 ): GetStateJournalEntryType {
   const entryMessage = getState(entry, allEntries);
 
@@ -89,7 +89,7 @@ function GetState(
 
 function GetStateKeys(
   entry: JournalRawEntry,
-  allEntries: JournalRawEntry[]
+  allEntries: JournalRawEntry[],
 ): GetStateKeysJournalEntryType {
   const entryMessage = getStateKeys(entry, allEntries);
   return {
@@ -105,7 +105,7 @@ const JOURNAL_ENTRY_CONVERT_MAP: Record<
 > = {
   Input: function (
     entry: JournalRawEntry,
-    allEntries: JournalRawEntry[]
+    allEntries: JournalRawEntry[],
   ): InputJournalEntryType {
     const entryMessage = input(entry, allEntries);
     return {
@@ -116,7 +116,7 @@ const JOURNAL_ENTRY_CONVERT_MAP: Record<
   },
   Output: function (
     entry: JournalRawEntry,
-    allEntries: JournalRawEntry[]
+    allEntries: JournalRawEntry[],
   ): OutputJournalEntryType {
     const entryMessage = output(entry, allEntries);
     return {
@@ -130,7 +130,7 @@ const JOURNAL_ENTRY_CONVERT_MAP: Record<
 
   SetState: function (
     entry: JournalRawEntry,
-    allEntries: JournalRawEntry[]
+    allEntries: JournalRawEntry[],
   ): SetStateJournalEntryType {
     const entryMessage = setState(entry, allEntries);
 
@@ -144,7 +144,7 @@ const JOURNAL_ENTRY_CONVERT_MAP: Record<
   GetEagerStateKeys: GetStateKeys,
   ClearState: function (
     entry: JournalRawEntry,
-    allEntries: JournalRawEntry[]
+    allEntries: JournalRawEntry[],
   ): ClearStateJournalEntryType {
     const entryMessage = clearState(entry, allEntries);
     return {
@@ -155,7 +155,7 @@ const JOURNAL_ENTRY_CONVERT_MAP: Record<
   },
   ClearAllState: function (
     entry: JournalRawEntry,
-    allEntries: JournalRawEntry[]
+    allEntries: JournalRawEntry[],
   ): ClearAllStateJournalEntryType {
     const entryMessage = clearAllState(entry, allEntries);
 
@@ -167,7 +167,7 @@ const JOURNAL_ENTRY_CONVERT_MAP: Record<
   },
   Sleep: function (
     entry: JournalRawEntry,
-    allEntries: JournalRawEntry[]
+    allEntries: JournalRawEntry[],
   ): SleepJournalEntryType {
     const entryMessage = sleep(entry, allEntries);
     return {
@@ -178,7 +178,7 @@ const JOURNAL_ENTRY_CONVERT_MAP: Record<
   },
   GetPromise: function (
     entry: JournalRawEntry,
-    allEntries: JournalRawEntry[]
+    allEntries: JournalRawEntry[],
   ): GetPromiseJournalEntryType {
     const entryMessage = getPromise(entry, allEntries);
 
@@ -190,7 +190,7 @@ const JOURNAL_ENTRY_CONVERT_MAP: Record<
   },
   PeekPromise: function (
     entry: JournalRawEntry,
-    allEntries: JournalRawEntry[]
+    allEntries: JournalRawEntry[],
   ): PeekPromiseJournalEntryType {
     const entryMessage = peekPromise(entry, allEntries);
 
@@ -202,7 +202,7 @@ const JOURNAL_ENTRY_CONVERT_MAP: Record<
   },
   CompletePromise: function (
     entry: JournalRawEntry,
-    allEntries: JournalRawEntry[]
+    allEntries: JournalRawEntry[],
   ): CompletePromiseJournalEntryType {
     const entryMessage = completePromise(entry, allEntries);
 
@@ -214,7 +214,7 @@ const JOURNAL_ENTRY_CONVERT_MAP: Record<
   },
   OneWayCall: function (
     entry: JournalRawEntry,
-    allEntries: JournalRawEntry[]
+    allEntries: JournalRawEntry[],
   ): OneWayCallJournalEntryType {
     const entryMessage = oneWayCall(entry, allEntries);
 
@@ -226,7 +226,7 @@ const JOURNAL_ENTRY_CONVERT_MAP: Record<
   },
   Call: function (
     entry: JournalRawEntry,
-    allEntries: JournalRawEntry[]
+    allEntries: JournalRawEntry[],
   ): CallJournalEntryType {
     const entryMessage = call(entry, allEntries);
 
@@ -238,7 +238,7 @@ const JOURNAL_ENTRY_CONVERT_MAP: Record<
   },
   Awakeable: function (
     entry: JournalRawEntry,
-    allEntries: JournalRawEntry[]
+    allEntries: JournalRawEntry[],
   ): AwakeableJournalEntryType {
     const entryMessage = awakeable(entry, allEntries);
 
@@ -250,7 +250,7 @@ const JOURNAL_ENTRY_CONVERT_MAP: Record<
   },
   CompleteAwakeable: function (
     entry: JournalRawEntry,
-    allEntries: JournalRawEntry[]
+    allEntries: JournalRawEntry[],
   ): CompleteAwakeableJournalEntryType {
     const entryMessage = completeAwakeable(entry, allEntries);
 
@@ -262,7 +262,7 @@ const JOURNAL_ENTRY_CONVERT_MAP: Record<
   },
   Run: function (
     entry: JournalRawEntry,
-    allEntries: JournalRawEntry[]
+    allEntries: JournalRawEntry[],
   ): RunJournalEntryType {
     const entryMessage = run(entry, allEntries);
 
@@ -274,7 +274,7 @@ const JOURNAL_ENTRY_CONVERT_MAP: Record<
     };
   },
   CancelInvocation: function (
-    entry: JournalRawEntry
+    entry: JournalRawEntry,
   ): CancelInvocationJournalEntryType {
     return {
       entry_type: 'CancelInvocation',
@@ -282,7 +282,7 @@ const JOURNAL_ENTRY_CONVERT_MAP: Record<
     };
   },
   GetCallInvocationId: function (
-    entry: JournalRawEntry
+    entry: JournalRawEntry,
   ): GetCallInvocationIdJournalEntryType {
     return {
       entry_type: 'GetCallInvocationId',
@@ -291,7 +291,7 @@ const JOURNAL_ENTRY_CONVERT_MAP: Record<
   },
   AttachInvocation: function (
     entry: JournalRawEntry,
-    allEntries: JournalRawEntry[]
+    allEntries: JournalRawEntry[],
   ): AttachInvocationJournalEntryType {
     const entryMessage = attachInvocation(entry, allEntries);
 
@@ -302,7 +302,7 @@ const JOURNAL_ENTRY_CONVERT_MAP: Record<
     };
   },
   GetInvocationOutput: function (
-    entry: JournalRawEntry
+    entry: JournalRawEntry,
   ): GetInvocationOutputJournalEntryType {
     return {
       entry_type: 'GetInvocationOutput',
@@ -311,7 +311,7 @@ const JOURNAL_ENTRY_CONVERT_MAP: Record<
   },
   Custom: function (
     entry: JournalRawEntry,
-    allEntries: JournalRawEntry[]
+    allEntries: JournalRawEntry[],
   ): CustomJournalEntryType {
     return {
       entry_type: 'Custom',
@@ -320,7 +320,7 @@ const JOURNAL_ENTRY_CONVERT_MAP: Record<
   },
   'Notification: Signal': function (
     entry: JournalRawEntry,
-    allEntries: JournalRawEntry[]
+    allEntries: JournalRawEntry[],
   ):
     | CancelInvocationJournalEntryType
     | CompleteAwakeableJournalEntryType
@@ -332,7 +332,7 @@ const JOURNAL_ENTRY_CONVERT_MAP: Record<
   //TODO: should be remove. it's only here to pass type check
   CancelSignal: function (
     entry: JournalRawEntry,
-    allEntries: JournalRawEntry[]
+    allEntries: JournalRawEntry[],
   ): CancelInvocationJournalEntryType | JournalEntry {
     const entryMessage = signal(entry, allEntries);
 

@@ -15,7 +15,7 @@ type LifeCycleEvent =
 
 export function lifeCycles(
   entries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ): LifeCycleEvent[] {
   if (!invocation) {
     return [];
@@ -77,10 +77,10 @@ export function lifeCycles(
         invocation.status === 'running'
           ? undefined
           : invocation.status === 'suspended' || invocation.status === 'ready'
-          ? invocation.modified_at
-          : invocation.status === 'backing-off'
-          ? datesMax(invocation.last_start_at, invocation.modified_at)
-          : invocation.completed_at,
+            ? invocation.modified_at
+            : invocation.status === 'backing-off'
+              ? datesMax(invocation.last_start_at, invocation.modified_at)
+              : invocation.completed_at,
       isPending: invocation.status === 'running',
     });
   }
@@ -98,7 +98,7 @@ export function lifeCycles(
 function datesMax(a?: string, b?: string) {
   try {
     return new Date(
-      Math.max(new Date(a || 0).getTime(), new Date(b || 0).getTime())
+      Math.max(new Date(a || 0).getTime(), new Date(b || 0).getTime()),
     ).toISOString();
   } catch (error) {
     return undefined;

@@ -33,7 +33,7 @@ const QueryBuilderContext = createContext<{
 
 // TODO: update state if schema changes
 export function useQueryBuilder(
-  initialClauses: QueryClause<QueryClauseType>[] = []
+  initialClauses: QueryClause<QueryClauseType>[] = [],
 ) {
   const selectedClauses = useListData<QueryClause<QueryClauseType>>({
     initialItems: initialClauses,
@@ -122,13 +122,13 @@ export function AddQueryTrigger({
     (key: Key) => {
       setNewId?.(String(key));
     },
-    [setNewId]
+    [setNewId],
   );
   const onRemove = useCallback(
     (key: Key) => {
       setNewId?.(undefined);
     },
-    [setNewId]
+    [setNewId],
   );
 
   if (!query) {

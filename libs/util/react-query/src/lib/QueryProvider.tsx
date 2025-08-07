@@ -45,7 +45,7 @@ export function QueryProvider({
             experimental_prefetchInRender: true,
           },
         },
-      })
+      }),
   );
   useDehydratedState(queryClient);
   return (

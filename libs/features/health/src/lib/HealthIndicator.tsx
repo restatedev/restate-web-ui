@@ -28,7 +28,7 @@ const styles = tv({
 });
 
 function isStatusDefined(
-  status?: Status
+  status?: Status,
 ): status is Extract<Status, 'PENDING' | 'HEALTHY' | 'DEGRADED'> {
   return Boolean(status && ['PENDING', 'HEALTHY', 'DEGRADED'].includes(status));
 }

@@ -32,7 +32,7 @@ export function PopoverOverlay({
       offset={12}
       {...props}
       className={composeRenderProps(className, (className, renderProps) =>
-        styles({ ...renderProps, className })
+        styles({ ...renderProps, className }),
       )}
     >
       {children}

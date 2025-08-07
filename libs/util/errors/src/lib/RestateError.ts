@@ -2,7 +2,10 @@ export class RestateError extends Error {
   get restateCode() {
     return this.restate_code;
   }
-  constructor(message: string, public restate_code?: string) {
+  constructor(
+    message: string,
+    public restate_code?: string,
+  ) {
     super(message);
   }
   toJSON() {

@@ -16,7 +16,7 @@ import {
 
 function clearStateV1(
   entry: JournalRawEntry,
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<JournalEntryV2, { type?: 'ClearState' }> {
   const { raw } = entry;
 
@@ -48,7 +48,7 @@ function clearStateV1(
 function clearStateV2(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<JournalEntryV2, { type?: 'ClearState' }> {
   const entryJSON = parseEntryJson(entry.entry_json ?? entry.entry_lite_json);
   const commandIndex = entry.command_index;
@@ -57,7 +57,7 @@ function clearStateV2(
     entry,
     invocation,
     nextEntries,
-    undefined
+    undefined,
   );
 
   return {
@@ -81,7 +81,7 @@ function clearStateV2(
 export function clearState(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ) {
   if (entry.version === 1 || !entry.version) {
     return clearStateV1(entry, invocation);

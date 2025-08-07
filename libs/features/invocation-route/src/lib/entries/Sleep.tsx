@@ -28,8 +28,8 @@ export function Sleep({
         },
       ]}
       output={
-        <div className="inline-flex items-center truncate min-w-0 font-sans text-xs">
-          <span className="font-normal text-zinc-500 mr-[0.5ch] min-w-0 truncate">
+        <div className="inline-flex min-w-0 items-center truncate font-sans text-xs">
+          <span className="mr-[0.5ch] min-w-0 truncate font-normal text-zinc-500">
             {isPast ? 'Woke up ' : 'Wakes up in '}
           </span>
           {entry.wakeupAt && (
@@ -43,7 +43,7 @@ export function Sleep({
               {duration}
             </DateTooltip>
           )}
-          <span className="font-normal text-zinc-500 ml-[0.5ch]">
+          <span className="ml-[0.5ch] font-normal text-zinc-500">
             {isPast && ' ago'}
           </span>
         </div>

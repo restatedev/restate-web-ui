@@ -32,7 +32,7 @@ function RegisterDeploymentFooter() {
   } = useRegisterDeploymentContext();
   return (
     <DialogFooter>
-      <div className="flex gap-2 flex-col">
+      <div className="flex flex-col gap-2">
         {error && <ErrorBanner errors={[error]} />}
         <div className="flex gap-2">
           <DialogClose>
@@ -40,7 +40,7 @@ function RegisterDeploymentFooter() {
               Close
             </Button>
           </DialogClose>
-          <div className="flex-auto flex flex-row-reverse gap-2">
+          <div className="flex flex-auto flex-row-reverse gap-2">
             {(isEndpoint || isAdvanced) && (
               <SubmitButton
                 variant="primary"
@@ -113,7 +113,7 @@ export function TriggerRegisterDeploymentDialog({
           className={triggerStyles({ className })}
           href={`?${REGISTER_DEPLOYMENT_QUERY}=true`}
         >
-          <Icon name={IconName.Plus} className="w-4 h-4" />
+          <Icon name={IconName.Plus} className="h-4 w-4" />
           {children}
         </Link>
       </DialogTrigger>

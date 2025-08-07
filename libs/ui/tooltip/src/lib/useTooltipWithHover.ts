@@ -39,7 +39,7 @@ export function useTooltipWithHover({
         () => {
           timeout && clearTimeout(timeout);
         },
-        { once: true }
+        { once: true },
       );
       if (!isHoverElementTooltip) {
         timeout && clearTimeout(timeout);

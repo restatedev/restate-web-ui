@@ -24,7 +24,7 @@ export function CallInvokedLoadingError({
         <Button variant="icon" className={styles({ className })}>
           <Icon
             name={IconName.CircleX}
-            className="h-3 w-3 text-red-500 shrink-0"
+            className="h-3 w-3 shrink-0 text-red-500"
           />
         </Button>
       </PopoverTrigger>

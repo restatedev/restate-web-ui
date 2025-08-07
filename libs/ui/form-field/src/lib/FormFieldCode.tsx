@@ -34,7 +34,7 @@ export function FormFieldCode({
         textareaRef.current.value = value ?? '';
       }
     },
-    [onInput]
+    [onInput],
   );
 
   return (

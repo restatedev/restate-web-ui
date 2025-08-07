@@ -78,7 +78,7 @@ export function RelatedEntries({
         entry.relatedIndexes.length > 0 &&
         entry.relatedIndexes.map((relatedIndex) => {
           const relatedEntry = invocation?.journal?.entries?.find(
-            (entry) => entry.index === relatedIndex
+            (entry) => entry.index === relatedIndex,
           );
 
           if (
@@ -95,8 +95,8 @@ export function RelatedEntries({
                   relatedEntry?.type as NotificationEntryType
                 ]
               : relatedEntry.category === 'event'
-              ? EVENTS_COMPONENTS[relatedEntry?.type as EventEntryType]
-              : undefined;
+                ? EVENTS_COMPONENTS[relatedEntry?.type as EventEntryType]
+                : undefined;
 
           if (Component && invocation) {
             return (

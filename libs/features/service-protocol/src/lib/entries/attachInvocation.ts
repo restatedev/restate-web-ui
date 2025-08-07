@@ -12,7 +12,7 @@ import {
 function attachInvocationV2(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<
   JournalEntryV2,
   { type?: 'AttachInvocation'; category?: 'command' }
@@ -35,7 +35,7 @@ function attachInvocationV2(
     entry,
     invocation,
     nextEntries,
-    undefined
+    undefined,
   );
 
   return {
@@ -65,7 +65,7 @@ function attachInvocationV2(
 export function attachInvocation(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ) {
   if (entry.version === 2 && (entry.entry_json || entry.entry_lite_json)) {
     return attachInvocationV2(entry, nextEntries, invocation);
@@ -77,7 +77,7 @@ export function attachInvocation(
 export function notificationAttachInvocation(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<
   JournalEntryV2,
   { type?: 'AttachInvocation'; category?: 'notification' }
@@ -96,7 +96,7 @@ export function notificationAttachInvocation(
     entry,
     invocation,
     nextEntries,
-    result
+    result,
   );
 
   return {

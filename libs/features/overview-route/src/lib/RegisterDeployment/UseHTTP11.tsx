@@ -6,19 +6,19 @@ export function UseHTTP11() {
 
   return (
     <div>
-      <div slot="title" className="text-sm font-medium text-gray-700 mb-2">
+      <div slot="title" className="mb-2 text-sm font-medium text-gray-700">
         Use <code>HTTP1.1</code>
       </div>
       <FormFieldCheckbox
         name="use_http_11"
-        className="self-baseline mt-0.5"
+        className="mt-0.5 self-baseline"
         value="true"
         checked={useHttp11}
         onChange={updateUseHttp11Arn}
       >
         <span
           slot="description"
-          className="leading-5 text-code block text-gray-500"
+          className="block text-code leading-5 text-gray-500"
         >
           <code>HTTP1.1</code> will be used for service registration.
         </span>

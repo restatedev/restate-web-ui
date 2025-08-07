@@ -17,7 +17,7 @@ import {
 
 function outputV1(
   entry: JournalRawEntry,
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<JournalEntryV2, { type?: 'Output'; category?: 'command' }> {
   const { raw } = entry;
   if (!raw) {
@@ -51,7 +51,7 @@ function outputV1(
         error: message.result.value.message
           ? new RestateError(
               message.result.value.message,
-              message.result.value.code.toString()
+              message.result.value.code.toString(),
             )
           : error,
       };
@@ -72,7 +72,7 @@ function outputV1(
 function outputV2(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<JournalEntryV2, { type?: 'Output'; category?: 'command' }> {
   const entryJSON = parseEntryJson(entry.entry_json ?? entry.entry_lite_json);
   const commandIndex = entry.command_index;
@@ -82,7 +82,7 @@ function outputV2(
       entry,
       invocation,
       nextEntries,
-      entryJSON?.Command?.Output?.result
+      entryJSON?.Command?.Output?.result,
     );
 
   return {
@@ -106,7 +106,7 @@ function outputV2(
 export function output(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ) {
   if (entry.version === 1 || !entry.version) {
     return outputV1(entry, invocation);

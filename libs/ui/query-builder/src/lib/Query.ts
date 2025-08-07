@@ -30,12 +30,12 @@ export interface QueryClauseSchema<T extends QueryClauseType> {
 type QueryClauseValue<T extends QueryClauseType> = T extends 'STRING'
   ? string
   : T extends 'NUMBER'
-  ? number
-  : T extends 'STRING_LIST'
-  ? string[]
-  : T extends 'DATE'
-  ? Date
-  : never;
+    ? number
+    : T extends 'STRING_LIST'
+      ? string[]
+      : T extends 'DATE'
+        ? Date
+        : never;
 
 export class QueryClause<T extends QueryClauseType> {
   get id() {
@@ -64,7 +64,7 @@ export class QueryClause<T extends QueryClauseType> {
 
   get operationLabel() {
     return this.schema.operations.find(
-      (op) => op.value === this.value.operation
+      (op) => op.value === this.value.operation,
     )?.label;
   }
 
@@ -103,7 +103,7 @@ export class QueryClause<T extends QueryClauseType> {
     public readonly value: {
       operation?: QueryClauseOperationId;
       value?: QueryClauseValue<T>;
-    } = { operation: schema.operations[0]?.value, value: undefined }
+    } = { operation: schema.operations[0]?.value, value: undefined },
   ) {
     this._options = schema.options;
     this.schema

@@ -39,11 +39,11 @@ export function QueryDialog({
               } else {
                 const value = prev.get(query);
                 return new URLSearchParams(
-                  prev.toString().replace(`${query}=${value}`, '')
+                  prev.toString().replace(`${query}=${value}`, ''),
                 );
               }
             },
-            { preventScrollReset: true }
+            { preventScrollReset: true },
           );
         }
       }}

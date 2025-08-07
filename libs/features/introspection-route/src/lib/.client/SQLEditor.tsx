@@ -37,7 +37,7 @@ import { TokenClassConsts, postfixTokenClass } from 'monaco-sql-languages';
 
 const COLUMNS: ICompletionItem[] = [
   ...Array.from(
-    new Set(TABLES.map((table) => table.columns.map((col) => col.name)).flat())
+    new Set(TABLES.map((table) => table.columns.map((col) => col.name)).flat()),
   ).map((col) => ({
     kind: languages.CompletionItemKind.Variable,
     label: `${col}`,
@@ -56,7 +56,7 @@ function getColumns(item: SyntaxSuggestion<WordRange>) {
   if (item.wordRanges.length === 2) {
     return (
       TABLES.find(
-        (table) => table.name === item.wordRanges?.[0]?.text
+        (table) => table.name === item.wordRanges?.[0]?.text,
       )?.columns.map((col) => ({
         kind: languages.CompletionItemKind.Variable,
         label: `${col.name}`,
@@ -74,7 +74,7 @@ const completionService: CompletionService = function (
   position,
   completionContext,
   suggestions, // syntax context info at caretPosition
-  entities // tables, columns in the syntax context of the editor text
+  entities, // tables, columns in the syntax context of the editor text
 ) {
   return new Promise((resolve, reject) => {
     if (!suggestions) {
@@ -86,7 +86,7 @@ const completionService: CompletionService = function (
         kind: languages.CompletionItemKind.Keyword,
         detail: 'keyword',
         sortText: '3' + kw,
-      })
+      }),
     );
     const { syntax } = suggestions;
 
@@ -299,13 +299,13 @@ export function SQLEditor({
         monaco.KeyCode.Enter | monaco.KeyMod.WinCtrl,
         function () {
           setQuery(editorRef.current?.getValue() ?? '');
-        }
+        },
       );
       editorRef.current.addCommand(
         monaco.KeyCode.Enter | monaco.KeyMod.CtrlCmd,
         function () {
           setQuery(editorRef.current?.getValue() ?? '');
-        }
+        },
       );
 
       window.addEventListener('resize', updateStyles);

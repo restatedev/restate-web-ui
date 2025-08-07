@@ -18,7 +18,7 @@ import {
 
 function peekPromiseV1(
   entry: JournalRawEntry,
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<JournalEntryV2, { type?: 'PeekPromise'; category?: 'command' }> {
   const { raw } = entry;
   if (!raw) {
@@ -53,7 +53,7 @@ function peekPromiseV1(
         error: message.result.value.message
           ? new RestateError(
               message.result.value.message,
-              message.result.value.code.toString()
+              message.result.value.code.toString(),
             )
           : error,
       };
@@ -77,7 +77,7 @@ function peekPromiseV1(
 function peekPromiseV2(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<JournalEntryV2, { type?: 'PeekPromise'; category?: 'command' }> {
   const entryJSON = parseEntryJson(entry.entry_json ?? entry.entry_lite_json);
   const commandIndex = entry.command_index;
@@ -92,7 +92,7 @@ function peekPromiseV2(
     invocation,
     nextEntries,
     undefined,
-    [completionEntry?.index]
+    [completionEntry?.index],
   );
 
   return {
@@ -119,7 +119,7 @@ function peekPromiseV2(
 export function peekPromise(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ) {
   if (entry.version === 1 || !entry.version) {
     return peekPromiseV1(entry, invocation);
@@ -135,7 +135,7 @@ export function peekPromise(
 export function notificationPeekPromise(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<
   JournalEntryV2,
   { type?: 'PeekPromise'; category?: 'notification' }
@@ -153,7 +153,7 @@ export function notificationPeekPromise(
     entry,
     invocation,
     nextEntries,
-    result
+    result,
   );
 
   return {

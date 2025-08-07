@@ -19,7 +19,7 @@ import {
 
 function oneWayCallV1(
   entry: JournalRawEntry,
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<JournalEntryV2, { type?: 'OneWayCall'; category?: 'command' }> {
   const { raw } = entry;
   if (!raw) {
@@ -56,7 +56,7 @@ function oneWayCallV1(
 function oneWayCallV2(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<JournalEntryV2, { type?: 'OneWayCall'; category?: 'command' }> {
   const entryJSON = parseEntryJson(entry.entry_json ?? entry.entry_lite_json);
   const commandIndex = entry.command_index;
@@ -82,7 +82,7 @@ function oneWayCallV2(
     entry,
     invocation,
     nextEntries,
-    undefined
+    undefined,
   );
 
   return {
@@ -103,7 +103,7 @@ function oneWayCallV2(
         ({
           key: name,
           value,
-        } as { key: string; value: string })
+        }) as { key: string; value: string },
     ),
     parameters: decodeBinary(parameters),
     isLoaded: typeof entry.entry_json !== 'undefined',
@@ -120,7 +120,7 @@ function oneWayCallV2(
 export function oneWayCall(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ) {
   if (entry.version === 1 || !entry.version) {
     return oneWayCallV1(entry, invocation);
@@ -136,7 +136,7 @@ export function oneWayCall(
 export function notificationCallInvocationId(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<
   JournalEntryV2,
   { type?: 'CallInvocationId'; category?: 'notification' }

@@ -3,8 +3,8 @@ import { useState, useCallback } from 'react';
 
 export function useFetcherWithError<
   TData extends (
-    params: ClientActionFunctionArgs
-  ) => Promise<{ errors?: Error[] } | any>
+    params: ClientActionFunctionArgs,
+  ) => Promise<{ errors?: Error[] } | any>,
 >({ key, method }: { key: string; method: string }) {
   const fetcher = useFetcher<TData>({ key });
   const [errors, setErrors] = useState<Error[]>();

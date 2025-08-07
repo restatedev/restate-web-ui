@@ -9,7 +9,7 @@ register().then(() => {
       document,
       <StrictMode>
         <HydratedRouter />
-      </StrictMode>
+      </StrictMode>,
     );
   });
 });

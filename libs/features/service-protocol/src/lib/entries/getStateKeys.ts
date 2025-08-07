@@ -16,7 +16,7 @@ import {
 
 function getStateKeysV1(
   entry: JournalRawEntryWithCommandIndex,
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<JournalEntryV2, { type?: 'GetStateKeys' | 'GetEagerStateKeys' }> {
   const { raw } = entry;
 
@@ -50,7 +50,7 @@ function getStateKeysV1(
         error: message.result.value.message
           ? new RestateError(
               message.result.value.message,
-              message.result.value.code.toString()
+              message.result.value.code.toString(),
             )
           : error,
       };
@@ -72,7 +72,7 @@ function getStateKeysV1(
 function getStateKeysV2(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<JournalEntryV2, { type?: 'GetStateKeys' | 'GetEagerStateKeys' }> {
   const entryJSON = parseEntryJson(entry.entry_json ?? entry.entry_lite_json);
   const commandIndex = entry.command_index;
@@ -81,7 +81,7 @@ function getStateKeysV2(
     entry,
     invocation,
     nextEntries,
-    undefined
+    undefined,
   );
 
   return {
@@ -105,7 +105,7 @@ function getStateKeysV2(
 export function getStateKeys(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ) {
   if (entry.version === 1 || !entry.version) {
     return getStateKeysV1(entry, invocation);

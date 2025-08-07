@@ -12,7 +12,7 @@ export function getTimelineId(
   invocationId: string,
   index?: number,
   type?: string,
-  category?: string
+  category?: string,
 ) {
   return `${invocationId}-journal-timeline-${category}-${type}-${index}`;
 }
@@ -21,7 +21,7 @@ export function getEntryId(
   invocationId: string,
   index?: number,
   type?: string,
-  category?: string
+  category?: string,
 ) {
   return `${invocationId}-journal-entry-${category}-${type}-${index}`;
 }
@@ -35,7 +35,7 @@ export function TimelinePortal({
   entry?: JournalEntryV2;
 }>) {
   const { getPortal } = usePortals(
-    getTimelineId(invocationId, entry?.index, entry?.type, entry?.category)
+    getTimelineId(invocationId, entry?.index, entry?.type, entry?.category),
   );
   const element = getPortal?.();
 
@@ -59,7 +59,7 @@ export function EntryPortal({
   category?: string;
 }>) {
   const { getPortal } = usePortals(
-    getEntryId(invocationId, index, type, category)
+    getEntryId(invocationId, index, type, category),
   );
   const element = getPortal?.();
 
@@ -84,7 +84,7 @@ export function PortalProvider({ children }: PropsWithChildren) {
     (id: string) => {
       return portals[id];
     },
-    [portals]
+    [portals],
   );
 
   const setPortal = useCallback((id: string, element: HTMLElement | null) => {
@@ -110,7 +110,7 @@ export function usePortals(id: string) {
     (element: HTMLElement | null) => {
       return contextSetPortal?.(id, element);
     },
-    [contextSetPortal, id]
+    [contextSetPortal, id],
   );
 
   return { getPortal, setPortal };

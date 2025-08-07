@@ -19,7 +19,7 @@ export function PopoverTrigger({
 }
 
 export function getTriggerElement(
-  context: ContextValue<PopoverProps, HTMLElement>
+  context: ContextValue<PopoverProps, HTMLElement>,
 ) {
   if (
     context &&
@@ -35,7 +35,7 @@ export function getTriggerElement(
 function isPointInPolygon(
   x: number,
   y: number,
-  polygon: Array<[number, number]>
+  polygon: Array<[number, number]>,
 ): boolean {
   let inside = false;
 
@@ -64,7 +64,7 @@ function isPointInPolygon(
 
 function getPolygon(
   triggerEl: HTMLElement,
-  popoverEl: HTMLElement
+  popoverEl: HTMLElement,
 ): [number, number][] {
   const triggerRect = triggerEl.getBoundingClientRect();
   const popoverRect = popoverEl.getBoundingClientRect();
@@ -148,7 +148,7 @@ export function PopoverHoverTrigger({
       const popoverEl =
         typeof document !== 'undefined' &&
         document.querySelector(
-          `[data-trigger][aria-labelledby="${triggerEl?.id}"]`
+          `[data-trigger][aria-labelledby="${triggerEl?.id}"]`,
         );
       if (
         !(triggerEl instanceof HTMLElement && popoverEl instanceof HTMLElement)
@@ -158,7 +158,7 @@ export function PopoverHoverTrigger({
 
       return isPointInPolygon(x, y, getPolygon(triggerEl, popoverEl));
     },
-    [triggerEl]
+    [triggerEl],
   );
 
   const handleMouseMove = useCallback(
@@ -173,7 +173,7 @@ export function PopoverHoverTrigger({
         scheduleClose();
       }
     },
-    [isOpen, clearCloseTimeout, scheduleClose, isPointInSafeArea]
+    [isOpen, clearCloseTimeout, scheduleClose, isPointInSafeArea],
   );
 
   const handleTriggerMouseEnter = useCallback(() => {

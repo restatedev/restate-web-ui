@@ -7,7 +7,7 @@ import { JournalRawEntryWithCommandIndex, parseEntryJson } from './util';
 export function event(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ):
   | Extract<JournalEntryV2, { type?: 'TransientError'; category?: 'event' }>
   | JournalEntryV2 {

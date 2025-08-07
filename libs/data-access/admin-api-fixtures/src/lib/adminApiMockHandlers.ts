@@ -112,7 +112,7 @@ const registerDeploymentHandler = http.post<
         handlers: Array(Math.floor(Math.random() * 6))
           .fill(null)
           .map(() => adminApiDb.handler.create({ name: getName() })),
-      })
+      }),
     );
 
   return HttpResponse.json({
@@ -190,7 +190,7 @@ const deploymentDetailsHandler = http.get<
   if (!deployment) {
     return HttpResponse.json(
       { code: 500, message: 'Server internal error' } as any,
-      { status: 500 }
+      { status: 500 },
     );
   }
   return HttpResponse.json({

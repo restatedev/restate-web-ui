@@ -22,7 +22,7 @@ export function Duration({
   return (
     <Badge
       size="sm"
-      className="text-2xs py-0 bg-transparent border-none text-zinc-500/80 font-normal max-w-full truncate"
+      className="max-w-full truncate border-none bg-transparent py-0 text-2xs font-normal text-zinc-500/80"
     >
       <span className="truncate">
         {prefix && `${prefix} `}
@@ -41,12 +41,12 @@ function withStatusTimeline(
     tooltipTitle: string;
     field: keyof Invocation;
     condition?: (inv: Invocation) => boolean;
-  }[]
+  }[],
 ) {
   return (props: { invocation: Invocation }) => {
     const index = params.findIndex(
       ({ field, condition }) =>
-        props.invocation[field] && (!condition || condition(props.invocation))
+        props.invocation[field] && (!condition || condition(props.invocation)),
     );
     const param = params.at(index);
     if (!param) {

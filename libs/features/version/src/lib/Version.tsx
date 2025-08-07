@@ -8,7 +8,7 @@ export function Version() {
   }
 
   return (
-    <span className="text-2xs font-mono items-center rounded-xl px-2 leading-4 bg-white/50 ring-1 ring-inset ring-gray-500/20 text-gray-500 mt-0.5">
+    <span className="mt-0.5 items-center rounded-xl bg-white/50 px-2 font-mono text-2xs leading-4 text-gray-500 ring-1 ring-gray-500/20 ring-inset">
       v{version}
     </span>
   );

@@ -20,7 +20,7 @@ import {
 
 function queryFetcher(
   query: string,
-  { baseUrl, headers = new Headers() }: { baseUrl: string; headers: Headers }
+  { baseUrl, headers = new Headers() }: { baseUrl: string; headers: Headers },
 ) {
   const queryHeaders = new Headers(headers);
   queryHeaders.set('accept', 'application/json');
@@ -40,16 +40,16 @@ const INVOCATIONS_LIMIT = 500;
 async function listInvocations(
   baseUrl: string,
   headers: Headers,
-  filters: FilterItem[]
+  filters: FilterItem[],
 ) {
   const invocationsPromise = queryFetcher(
     `SELECT *, completed_at + completion_retention AS completion_expiration, completed_at + journal_retention AS journal_expiration, COUNT(*) OVER() AS total_count FROM sys_invocation ${convertInvocationsFilters(
-      filters
+      filters,
     )} ORDER BY modified_at DESC LIMIT ${INVOCATIONS_LIMIT}`,
     {
       baseUrl,
       headers,
-    }
+    },
   ).then(({ rows }) => {
     return {
       invocations: rows.map(convertInvocation),
@@ -68,21 +68,21 @@ async function listInvocations(
     {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
-    }
+    },
   );
 }
 
 async function getInvocation(
   invocationId: string,
   baseUrl: string,
-  headers: Headers
+  headers: Headers,
 ) {
   const invocations = await queryFetcher(
     `SELECT *, completed_at + completion_retention AS completion_expiration, completed_at + journal_retention AS journal_expiration FROM sys_invocation WHERE id = '${invocationId}'`,
     {
       baseUrl,
       headers,
-    }
+    },
   ).then(({ rows }) => rows.map(convertInvocation));
   if (invocations.length > 0) {
     return new Response(JSON.stringify(invocations.at(0)), {
@@ -100,7 +100,7 @@ async function getInvocation(
       status: 404,
       statusText: 'Not found',
       headers: { 'Content-Type': 'application/json' },
-    }
+    },
   );
 }
 
@@ -108,16 +108,16 @@ async function getInvocation(
 async function getInvocationJournal(
   invocationId: string,
   baseUrl: string,
-  headers: Headers
+  headers: Headers,
 ) {
   const entries = await queryFetcher(
     `SELECT * FROM sys_journal WHERE id = '${invocationId}'`,
     {
       baseUrl,
       headers,
-    }
+    },
   ).then(({ rows }) =>
-    rows.map((entry, _, allEntries) => convertJournal(entry, allEntries))
+    rows.map((entry, _, allEntries) => convertJournal(entry, allEntries)),
   );
   return new Response(JSON.stringify({ entries }), {
     status: 200,
@@ -129,14 +129,14 @@ async function getJournalEntryV2(
   invocationId: string,
   entryIndex: number,
   baseUrl: string,
-  headers: Headers
+  headers: Headers,
 ) {
   const journalQuery = await queryFetcher(
     `SELECT id, index, appended_at, entry_type, name, entry_json, version, raw, completed, sleep_wakeup_at, invoked_id, invoked_target, promise_name FROM sys_journal WHERE id = '${invocationId}' AND index = '${entryIndex}`,
     {
       baseUrl,
       headers,
-    }
+    },
   );
 
   const entry = convertJournalV2(journalQuery.rows?.at(0), [], undefined);
@@ -158,7 +158,7 @@ async function getJournalEntryV2(
 async function getInvocationJournalV2(
   invocationId: string,
   baseUrl: string,
-  headers: Headers
+  headers: Headers,
 ) {
   const [invocationQuery, journalQuery] = await Promise.all([
     queryFetcher(
@@ -166,14 +166,14 @@ async function getInvocationJournalV2(
       {
         baseUrl,
         headers,
-      }
+      },
     ),
     queryFetcher(
       `SELECT id, index, appended_at, entry_type, name, entry_json, raw, version, completed, sleep_wakeup_at, invoked_id, invoked_target, promise_name FROM sys_journal WHERE id = '${invocationId}'`,
       {
         baseUrl,
         headers,
-      }
+      },
     ),
   ]);
   const invocation = invocationQuery.rows
@@ -190,7 +190,7 @@ async function getInvocationJournalV2(
         status: 404,
         statusText: 'Not found',
         headers: { 'Content-Type': 'application/json' },
-      }
+      },
     );
   }
 
@@ -248,7 +248,7 @@ async function getInvocationJournalV2(
       }),
       error: new RestateError(
         invocation.last_failure,
-        invocation.last_failure_error_code
+        invocation.last_failure_error_code,
       ),
     });
   }
@@ -261,7 +261,7 @@ async function getInvocationJournalV2(
     {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
-    }
+    },
   );
 }
 
@@ -270,7 +270,7 @@ async function getInbox(
   key: string,
   invocationId: string | undefined,
   baseUrl: string,
-  headers: Headers
+  headers: Headers,
 ) {
   const [head, size, position] = await Promise.all([
     ky
@@ -279,20 +279,20 @@ async function getInbox(
       .then(({ handlers }) =>
         handlers
           .filter((handler) => handler.ty === 'Exclusive')
-          .map((handler) => `'${handler.name}'`)
+          .map((handler) => `'${handler.name}'`),
       )
       .then((handlers) =>
         handlers.length > 0
           ? queryFetcher(
               `SELECT id FROM sys_invocation WHERE target_service_key = '${key}' AND target_service_name = '${service}' AND status NOT IN ('completed', 'pending', 'scheduled') AND target_handler_name IN (${handlers.join(
-                ', '
+                ', ',
               )})`,
               {
                 baseUrl,
                 headers,
-              }
+              },
             )
-          : { rows: [] }
+          : { rows: [] },
       )
       .then(({ rows }) => rows.at(0)?.id),
     queryFetcher(
@@ -300,12 +300,12 @@ async function getInbox(
       {
         baseUrl,
         headers,
-      }
+      },
     ).then(({ rows }) => rows.at(0)?.size),
     invocationId
       ? queryFetcher(
           `SELECT sequence_number FROM sys_inbox WHERE id = '${invocationId}'`,
-          { baseUrl, headers }
+          { baseUrl, headers },
         )
           .then(({ rows }) =>
             rows.length === 0
@@ -317,8 +317,8 @@ async function getInbox(
                   {
                     baseUrl,
                     headers,
-                  }
-                )
+                  },
+                ),
           )
           .then(({ rows }) => rows.at(0)?.position)
       : null,
@@ -339,7 +339,7 @@ async function getInbox(
       {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
-      }
+      },
     );
   }
 
@@ -354,18 +354,18 @@ async function getState(
   service: string,
   key: string,
   baseUrl: string,
-  headers: Headers
+  headers: Headers,
 ) {
   const state: { name: string; value: string; bytes: string }[] =
     await queryFetcher(
       `SELECT key, value_utf8, value FROM state WHERE service_name = '${service}' AND service_key = '${key}'`,
-      { baseUrl, headers }
+      { baseUrl, headers },
     ).then(({ rows }) =>
       rows.map((row) => ({
         name: row.key,
         value: row.value_utf8,
         bytes: row.value,
-      }))
+      })),
     );
   const version = stateVersion(state);
 
@@ -379,11 +379,11 @@ async function getState(
 async function getStateInterface(
   service: string,
   baseUrl: string,
-  headers: Headers
+  headers: Headers,
 ) {
   const keys: { name: string }[] = await queryFetcher(
     `SELECT DISTINCT key FROM state WHERE service_name = '${service}' GROUP BY key`,
-    { baseUrl, headers }
+    { baseUrl, headers },
   ).then(({ rows }) => rows.map((row) => ({ name: row.key })));
 
   return new Response(JSON.stringify({ keys }), {
@@ -396,7 +396,7 @@ async function queryState(
   service: string,
   baseUrl: string,
   headers: Headers,
-  filters: FilterItem[]
+  filters: FilterItem[],
 ) {
   if (filters.length > 1) {
     throw new Error('Only one filter is supported');
@@ -452,7 +452,7 @@ async function listState(
   service: string,
   baseUrl: string,
   headers: Headers,
-  keys: string[]
+  keys: string[],
 ) {
   if (keys.length === 0) {
     return new Response(JSON.stringify({ objects: [] }), {
@@ -495,7 +495,7 @@ async function listState(
       },
       keys.reduce((p, c) => {
         return { ...p, [c]: { key: c, state: {} } };
-      }, {})
+      }, {}),
     );
     return Object.values(results).map((object) => ({
       key: object.key,
@@ -529,7 +529,7 @@ export async function query(req: Request) {
         {
           status: 500,
           headers: { 'Content-Type': 'application/json' },
-        }
+        },
       );
     }
   });
@@ -546,35 +546,35 @@ async function queryHandler(req: Request) {
   }
 
   const getInvocationJournalParams = match<{ invocationId: string }>(
-    '/query/invocations/:invocationId/journal'
+    '/query/invocations/:invocationId/journal',
   )(urlObj.pathname);
   if (getInvocationJournalParams && method.toUpperCase() === 'GET') {
     const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
     return getInvocationJournal(
       getInvocationJournalParams.params.invocationId,
       baseUrl,
-      req.headers
+      req.headers,
     );
   }
 
   const getInvocationParams = match<{ invocationId: string }>(
-    '/query/invocations/:invocationId'
+    '/query/invocations/:invocationId',
   )(urlObj.pathname);
   if (getInvocationParams && method.toUpperCase() === 'GET') {
     const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
     return getInvocation(
       getInvocationParams.params.invocationId,
       baseUrl,
-      headers
+      headers,
     );
   }
 
   const getInboxParams =
     match<{ key: string; name: string }>(
-      '/query/virtualObjects/:name/keys/:key/queue'
+      '/query/virtualObjects/:name/keys/:key/queue',
     )(urlObj.pathname) ||
     match<{ key: string; name: string }>(
-      '/query/virtualObjects/:name/keys//queue'
+      '/query/virtualObjects/:name/keys//queue',
     )(urlObj.pathname);
 
   if (getInboxParams && method.toUpperCase() === 'GET') {
@@ -586,16 +586,16 @@ async function queryHandler(req: Request) {
         ? String(urlObj.searchParams.get('invocationId'))
         : undefined,
       baseUrl,
-      headers
+      headers,
     );
   }
 
   const getStateParams =
     match<{ key: string; name: string }>(
-      '/query/services/:name/keys/:key/state'
+      '/query/services/:name/keys/:key/state',
     )(urlObj.pathname) ||
     match<{ key: string; name: string }>('/query/services/:name/keys//state')(
-      urlObj.pathname
+      urlObj.pathname,
     );
 
   if (getStateParams && method.toUpperCase() === 'GET') {
@@ -604,12 +604,12 @@ async function queryHandler(req: Request) {
       getStateParams.params.name,
       getStateParams.params.key ?? '',
       baseUrl,
-      headers
+      headers,
     );
   }
 
   const getStateInterfaceParams = match<{ name: string }>(
-    '/query/services/:name/state/keys'
+    '/query/services/:name/state/keys',
   )(urlObj.pathname);
 
   if (getStateInterfaceParams && method.toUpperCase() === 'GET') {
@@ -617,12 +617,12 @@ async function queryHandler(req: Request) {
     return getStateInterface(
       getStateInterfaceParams.params.name,
       baseUrl,
-      headers
+      headers,
     );
   }
 
   const getQueryStateParams = match<{ name: string }>(
-    '/query/services/:name/state/query'
+    '/query/services/:name/state/query',
   )(urlObj.pathname);
 
   if (getQueryStateParams && method.toUpperCase() === 'POST') {
@@ -632,12 +632,12 @@ async function queryHandler(req: Request) {
       getQueryStateParams.params.name,
       baseUrl,
       headers,
-      filters
+      filters,
     );
   }
 
   const getListStateParams = match<{ name: string }>(
-    '/query/services/:name/state'
+    '/query/services/:name/state',
   )(urlObj.pathname);
 
   if (getListStateParams && method.toUpperCase() === 'POST') {
@@ -647,14 +647,14 @@ async function queryHandler(req: Request) {
   }
 
   const getInvocationJournalParamsV2 = match<{ invocationId: string }>(
-    '/query/v2/invocations/:invocationId'
+    '/query/v2/invocations/:invocationId',
   )(urlObj.pathname);
   if (getInvocationJournalParamsV2 && method.toUpperCase() === 'GET') {
     const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
     return getInvocationJournalV2(
       getInvocationJournalParamsV2.params.invocationId,
       baseUrl,
-      req.headers
+      req.headers,
     );
   }
 
@@ -668,7 +668,7 @@ async function queryHandler(req: Request) {
       getJournalEntryParamsV2.params.invocationId,
       Number(getJournalEntryParamsV2.params.entryIndex),
       baseUrl,
-      req.headers
+      req.headers,
     );
   }
 

@@ -30,7 +30,7 @@ export function DeleteDeployment() {
     : undefined;
 
   const [deploymentEndpoint, setDeploymentEndpoint] = useState(
-    getEndpoint(deployment)
+    getEndpoint(deployment),
   );
   if (
     deployment &&
@@ -48,17 +48,17 @@ export function DeleteDeployment() {
             old.delete(DEPLOYMENT_QUERY_PARAM);
             return old;
           },
-          { preventScrollReset: true }
+          { preventScrollReset: true },
         );
         showSuccessNotification(
           <>
             <code>{variables.parameters?.path.deployment}</code> has been
             successfully deleted.
-          </>
+          </>,
         );
         refetch();
       },
-    }
+    },
   );
 
   const submitHandler = (event: FormEvent<HTMLFormElement>) => {
@@ -76,12 +76,12 @@ export function DeleteDeployment() {
     <QueryDialog query={DELETE_DEPLOYMENT_QUERY_PARAM}>
       <DialogContent>
         <div className="flex flex-col gap-2">
-          <h3 className="text-lg font-medium leading-6 text-gray-900">
+          <h3 className="text-lg leading-6 font-medium text-gray-900">
             Confirm Deployment deletion
           </h3>
           <p className="text-sm text-gray-500">
             Are you sure you want to delete{' '}
-            <code className="bg-red-50 text-red-700 ring-red-600/10 p-0.5 inline-block rounded-md">
+            <code className="inline-block rounded-md bg-red-50 p-0.5 text-red-700 ring-red-600/10">
               {deploymentEndpoint}
             </code>
             ? This might break in-flight invocations, use with{' '}
@@ -93,7 +93,7 @@ export function DeleteDeployment() {
             action={`/deployments/${deploymentId}`}
             onSubmit={submitHandler}
           >
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="mt-2 text-sm text-gray-500">
               Please confirm to proceed or close to keep the Deployment.
             </p>
             <FormFieldInput
@@ -114,7 +114,7 @@ export function DeleteDeployment() {
               }}
             />
             <DialogFooter>
-              <div className="flex gap-2 flex-col">
+              <div className="flex flex-col gap-2">
                 {error && <ErrorBanner errors={[error]} />}
                 <div className="flex gap-2">
                   <DialogClose>

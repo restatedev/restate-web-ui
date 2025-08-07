@@ -27,16 +27,16 @@ export function PurgeInvocation() {
             old.delete(PURGE_INVOCATION_QUERY_PARAM);
             return old;
           },
-          { preventScrollReset: true }
+          { preventScrollReset: true },
         );
         showSuccessNotification(
           <>
             <code>{variables.parameters?.path.invocation_id}</code> has been
             successfully deleted.
-          </>
+          </>,
         );
       },
-    }
+    },
   );
 
   const submitHandler = (event: FormEvent<HTMLFormElement>) => {
@@ -54,13 +54,13 @@ export function PurgeInvocation() {
     <QueryDialog query={PURGE_INVOCATION_QUERY_PARAM}>
       <DialogContent className="max-w-lg">
         <div className="flex flex-col gap-2">
-          <h3 className="text-lg font-medium leading-6 text-gray-900">
+          <h3 className="text-lg leading-6 font-medium text-gray-900">
             Confirm invocation deletion
           </h3>
-          <div className="text-sm text-gray-500 flex flex-col gap-2">
+          <div className="flex flex-col gap-2 text-sm text-gray-500">
             <p>
               Are you sure you want to delete{' '}
-              <code className="bg-red-50 text-red-700 ring-red-600/10 p-0.5 inline-block rounded-md">
+              <code className="inline-block rounded-md bg-red-50 p-0.5 text-red-700 ring-red-600/10">
                 {invocationId}
               </code>
               ?
@@ -72,7 +72,7 @@ export function PurgeInvocation() {
             action={`/invocations/${invocationId}`}
             onSubmit={submitHandler}
           >
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="mt-2 text-sm text-gray-500">
               Please confirm to proceed or close to keep the Invocation.
             </p>
             <FormFieldInput
@@ -93,7 +93,7 @@ export function PurgeInvocation() {
               }}
             />
             <DialogFooter>
-              <div className="flex gap-2 flex-col">
+              <div className="flex flex-col gap-2">
                 {error && <ErrorBanner errors={[error]} />}
                 <div className="flex gap-2">
                   <DialogClose>

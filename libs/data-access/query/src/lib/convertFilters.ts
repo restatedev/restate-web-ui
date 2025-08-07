@@ -8,7 +8,7 @@ import type {
 } from '@restate/data-access/admin-api/spec';
 
 function convertFilterNumberToSqlClause(
-  filter: FilterNumberItem & Pick<FilterItem, 'field'>
+  filter: FilterNumberItem & Pick<FilterItem, 'field'>,
 ) {
   switch (filter.operation) {
     case 'EQUALS':
@@ -27,7 +27,7 @@ function convertFilterNumberToSqlClause(
 }
 
 function convertFilterStringToSqlClause(
-  filter: FilterStringItem & Pick<FilterItem, 'field'>
+  filter: FilterStringItem & Pick<FilterItem, 'field'>,
 ) {
   switch (filter.operation) {
     case 'EQUALS':
@@ -42,7 +42,7 @@ function convertFilterStringToSqlClause(
 }
 
 function convertFilterNullToSqlClause(
-  filter: FilterNullItem & Pick<FilterItem, 'field'>
+  filter: FilterNullItem & Pick<FilterItem, 'field'>,
 ) {
   switch (filter.operation) {
     case 'IS':
@@ -53,7 +53,7 @@ function convertFilterNullToSqlClause(
 }
 
 function convertFilterDateToSqlClause(
-  filter: FilterDateItem & Pick<FilterItem, 'field'>
+  filter: FilterDateItem & Pick<FilterItem, 'field'>,
 ) {
   switch (filter.operation) {
     case 'AFTER':
@@ -64,7 +64,7 @@ function convertFilterDateToSqlClause(
 }
 
 function convertFilterStringListToSqlClause(
-  filter: FilterStringListItem & Pick<FilterItem, 'field'>
+  filter: FilterStringListItem & Pick<FilterItem, 'field'>,
 ) {
   switch (filter.operation) {
     case 'IN':
@@ -326,12 +326,12 @@ function deploymentNegativeFilter(value?: string) {
 export function convertInvocationsFilters(filters: FilterItem[]) {
   const statusFilter = filters.find((filter) => filter.field === 'status');
   const deploymentFilter = filters.find(
-    (filter) => filter.field === 'deployment'
+    (filter) => filter.field === 'deployment',
   );
 
   const mappedFilters = filters
     .filter(
-      (filter) => filter.field !== 'status' && filter.field !== 'deployment'
+      (filter) => filter.field !== 'status' && filter.field !== 'deployment',
     )
     .map(convertFilterToSqlClause)
     .filter(Boolean);
@@ -350,14 +350,14 @@ export function convertInvocationsFilters(filters: FilterItem[]) {
         mappedFilters.push(
           `(${deploymentFilter.value
             .map((value) => deploymentPositiveFilter(value))
-            .join(' OR ')})`
+            .join(' OR ')})`,
         );
       }
       if (deploymentFilter.operation === 'NOT_IN') {
         mappedFilters.push(
           `(${deploymentFilter.value
             .map((value) => deploymentNegativeFilter(value))
-            .join(' AND ')})`
+            .join(' AND ')})`,
         );
       }
     }
@@ -372,10 +372,10 @@ export function convertInvocationsFilters(filters: FilterItem[]) {
               `(${filters
                 .map(convertFilterToSqlClause)
                 .filter(Boolean)
-                .join(` ${operator} `)})`
+                .join(` ${operator} `)})`,
           )
           .filter(Boolean)
-          .join(` ${operator} `)
+          .join(` ${operator} `),
       );
     } else if (
       statusFilter.type === 'STRING_LIST' &&
@@ -391,14 +391,14 @@ export function convertInvocationsFilters(filters: FilterItem[]) {
                   `(${filters
                     .map(convertFilterToSqlClause)
                     .filter(Boolean)
-                    .join(` ${operator} `)})`
+                    .join(` ${operator} `)})`,
               )
               .filter(Boolean)
               .map((clause) => `(${clause})`)
               .join(` ${operator} `);
           })
           .map((clause) => `(${clause})`)
-          .join(' OR ')})`
+          .join(' OR ')})`,
       );
     } else if (
       statusFilter.type === 'STRING_LIST' &&
@@ -417,18 +417,18 @@ export function convertInvocationsFilters(filters: FilterItem[]) {
                       ({
                         ...filter,
                         operation: negateOperation(filter.operation),
-                      } as FilterItem)
+                      }) as FilterItem,
                   )
                   .map(convertFilterToSqlClause)
                   .filter(Boolean)
-                  .join(` ${negateOperator(operator)} `)
+                  .join(` ${negateOperator(operator)} `),
               )
               .filter(Boolean)
               .map((clause) => `(${clause})`)
               .join(` ${negateOperator(operator)} `);
           })
           .map((clause) => `(${clause})`)
-          .join(' AND ')})`
+          .join(' AND ')})`,
       );
     }
   }

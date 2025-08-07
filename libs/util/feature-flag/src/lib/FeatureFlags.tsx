@@ -37,7 +37,7 @@ function onFlagChange(callback: VoidFunction) {
           ...result,
           [flag]: isFeatureEnabled(flag),
         }),
-        {} as Record<FeatureFlag, boolean>
+        {} as Record<FeatureFlag, boolean>,
       );
       callback();
     }

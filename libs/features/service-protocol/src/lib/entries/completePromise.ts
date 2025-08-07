@@ -26,7 +26,7 @@ function getCompletion(completion: CompletePromiseEntryMessage['completion']) {
         value: undefined,
         error: new RestateError(
           completion.value.message,
-          completion.value.code.toString()
+          completion.value.code.toString(),
         ),
         resultType: 'failure',
       } as const;
@@ -43,7 +43,7 @@ function getCompletion(completion: CompletePromiseEntryMessage['completion']) {
 
 function completePromiseV1(
   entry: JournalRawEntry,
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<JournalEntryV2, { type?: 'CompletePromise'; category?: 'command' }> {
   const { raw } = entry;
   if (!raw) {
@@ -51,7 +51,7 @@ function completePromiseV1(
   }
   const message = fromBinary(
     CompletePromiseEntryMessageSchema,
-    toUnit8Array(raw)
+    toUnit8Array(raw),
   );
   const error = getLastFailureV1(entry, invocation);
   const completion = getCompletion(message.completion);
@@ -81,7 +81,7 @@ function completePromiseV1(
         error: message.result.value.message
           ? new RestateError(
               message.result.value.message,
-              message.result.value.code.toString()
+              message.result.value.code.toString(),
             )
           : completion?.error || error,
       };
@@ -98,7 +98,7 @@ function completePromiseV1(
 function completePromiseV2(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<JournalEntryV2, { type?: 'CompletePromise'; category?: 'command' }> {
   const entryJSON = parseEntryJson(entry.entry_json ?? entry.entry_lite_json);
   const commandIndex = entry.command_index;
@@ -115,7 +115,7 @@ function completePromiseV2(
     entry,
     invocation,
     nextEntries,
-    entryJSON?.Command?.CompletePromise?.value
+    entryJSON?.Command?.CompletePromise?.value,
   );
 
   return {
@@ -145,7 +145,7 @@ function completePromiseV2(
 export function completePromise(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ) {
   if (entry.version === 1 || !entry.version) {
     return completePromiseV1(entry, invocation);
@@ -161,7 +161,7 @@ export function completePromise(
 export function notificationCompletePromise(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<
   JournalEntryV2,
   { type?: 'CompletePromise'; category?: 'notification' }
@@ -176,7 +176,7 @@ export function notificationCompletePromise(
     entry,
     invocation,
     nextEntries,
-    undefined
+    undefined,
   );
 
   return {

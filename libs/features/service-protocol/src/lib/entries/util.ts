@@ -18,7 +18,7 @@ export function parseResults(result?: any): {
       value: undefined,
       failure: new RestateError(
         result?.Failure?.message,
-        result?.Failure?.code
+        result?.Failure?.code,
       ),
     };
   }
@@ -59,14 +59,14 @@ export function parseResults2(result?: any) {
 
 export function getLastFailureV1(
   entry: JournalRawEntry,
-  invocation?: Invocation
+  invocation?: Invocation,
 ) {
   const hasLastFailure =
     invocation?.last_failure_related_entry_index === entry.index;
   const lastFailure = hasLastFailure
     ? new RestateError(
         invocation?.last_failure || '',
-        invocation?.last_failure_error_code
+        invocation?.last_failure_error_code,
       )
     : undefined;
 
@@ -76,7 +76,7 @@ export function getLastFailureV1(
 export function getCompletionEntry<T extends JournalEntryV2>(
   completionId: number,
   type: string,
-  nextEntries: JournalEntryV2[]
+  nextEntries: JournalEntryV2[],
 ) {
   for (let index = nextEntries.length - 1; index >= 0; index--) {
     const completionEntry = nextEntries[index];
@@ -96,7 +96,7 @@ export function getEntryResultV2(
   invocation: Invocation | undefined,
   nextEntries: JournalEntryV2[],
   result?: any,
-  relatedIndexes: (number | undefined)[] = []
+  relatedIndexes: (number | undefined)[] = [],
 ): {
   resultType?: 'success' | 'void' | 'failure';
   value?: string;
@@ -111,7 +111,7 @@ export function getEntryResultV2(
   const lastFailure = hasLastFailure
     ? new RestateError(
         invocation?.last_failure || '',
-        invocation?.last_failure_error_code
+        invocation?.last_failure_error_code,
       )
     : undefined;
 
@@ -124,7 +124,7 @@ export function getEntryResultV2(
           JournalEntryV2,
           { type?: 'TransientError'; category?: 'event' }
         >
-      ).relatedCommandIndex === commandIndex
+      ).relatedCommandIndex === commandIndex,
   );
 
   const hasTransientFailures = transientFailures.length > 0;
@@ -150,7 +150,7 @@ export function getEntryResultV2(
       ...transientFailures.map((entry) => entry.index),
       ...relatedIndexes,
     ].filter(
-      (num: number | undefined): num is number => typeof num === 'number'
+      (num: number | undefined): num is number => typeof num === 'number',
     ),
   };
 }
@@ -158,7 +158,7 @@ export function getEntryResultV2(
 export function findEntryAfter(
   entry: JournalRawEntry,
   allEntries: JournalRawEntry[],
-  cb: (jsno?: Record<string, any>) => boolean
+  cb: (jsno?: Record<string, any>) => boolean,
 ) {
   const initialIndex =
     allEntries.at(entry.index) === entry

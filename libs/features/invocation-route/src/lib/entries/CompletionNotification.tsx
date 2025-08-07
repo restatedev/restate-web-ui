@@ -21,26 +21,26 @@ export function CompletionNotification({
   invocation?: Invocation;
 }>) {
   return (
-    <div className="flex item-center gap-2 mr-2">
+    <div className="item-center mr-2 flex gap-2">
       <Badge
         variant={entry.resultType === 'failure' ? 'danger' : 'success'}
         size="sm"
-        className="font-sans font-normal gap-1 px-0 py-0 rounded-lg text-2xs"
+        className="gap-1 rounded-lg px-0 py-0 font-sans text-2xs font-normal"
       >
         <Popover>
           <PopoverTrigger>
             <Button
-              className=" font-mono rounded-md text-xs py-0 px-1 text-gray-400 translate-x-[-0.5px] my-[-0.5px]"
+              className="my-[-0.5px] translate-x-[-0.5px] rounded-md px-1 py-0 font-mono text-xs text-gray-400"
               variant="secondary"
             >
-              <div className="h-5 flex items-center">#{commandIndex}</div>
+              <div className="flex h-5 items-center">#{commandIndex}</div>
             </Button>
           </PopoverTrigger>
           <PopoverContent>
             <DropdownSection
-              className="px-3 py-2 text-code relative pr-8"
+              className="relative px-3 py-2 pr-8 text-code"
               title={
-                <span className="text-2xs uppercase text-gray-400">{`Command #${commandIndex}`}</span>
+                <span className="text-2xs text-gray-400 uppercase">{`Command #${commandIndex}`}</span>
               }
             >
               {children}
@@ -51,21 +51,21 @@ export function CompletionNotification({
           <>
             Failed{' '}
             {entry.error && (
-              <div className="text-2xs font-mono">
+              <div className="font-mono text-2xs">
                 <Failure
                   restate_code={entry.error?.restateCode}
                   message={entry.error?.message ?? ''}
-                  className="bg-transparent border-none shadow-none py-0 hover:bg-red-100 pressed:bg-red-200/70 [&_button]:h-5 my-[-2px]"
+                  className="my-[-2px] border-none bg-transparent py-0 shadow-none hover:bg-red-100 pressed:bg-red-200/70 [&_button]:h-5"
                 />
               </div>
             )}
           </>
         ) : (
-          <div className="mr-2 ">Completed</div>
+          <div className="mr-2">Completed</div>
         )}
       </Badge>
       <TimelinePortal invocationId={invocation?.id ?? ''} entry={entry}>
-        <div className="h-9 border-b border-transparent w-full relative">
+        <div className="relative h-9 w-full border-b border-transparent">
           <EntryProgress entry={entry} invocation={invocation} />
         </div>
       </TimelinePortal>
