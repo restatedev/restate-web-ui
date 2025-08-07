@@ -17,7 +17,7 @@
     "@react-stately/toast": "3.0.0-beta.7",
     "@stoplight/json-schema-viewer": "4.16.4",
     "@tailwindcss/vite": "^4.1.11",
-    "@tanstack/react-query": "5.62.11",
+    "@tanstack/react-query": "5.84.1",
     "axios": "1.8.2",
     "cors": "2.8.5",
     "express": "4.21.2",
@@ -76,7 +76,7 @@
     "@swc/core": "1.5.7",
     "@swc/helpers": "0.5.11",
     "@tailwindcss/forms": "^0.5.10",
-    "@tanstack/eslint-plugin-query": "5.51.15",
+    "@tanstack/eslint-plugin-query": "5.83.1",
     "@testing-library/dom": "10.1.0",
     "@testing-library/jest-dom": "6.4.6",
     "@testing-library/react": "16.1.0",
@@ -131,16 +131,6 @@
   "pnpm": {
     "overrides": {
       "form-data@>=4.0.0 <4.0.4": ">=4.0.4"
-    },
-    "peerDependencyRules": {
-      "allowAny": [
-        "@types/react",
-        "@types/react-dom"
-      ],
-      "allowedVersions": {
-        "react": "19.0.0",
-        "react-dom": "19.0.0"
-      }
     }
   },
   "packageManager": "pnpm@10.14.0+sha512.ad27a79641b49c3e481a16a805baa71817a04bbe06a38d17e60e2eaee83f6a146c6a688125f5792e48dd5ba30e7da52a5cda4c3992b9ccf333f9ce223af84748"
