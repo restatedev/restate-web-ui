@@ -86,6 +86,16 @@
 
   --font-sans: InterVariable, sans-serif;
   --font-mono: JetBrainsMonoVariable, monospace;
+
+  @keyframes moveAndGrow {
+    0% {
+      right: 0px;
+    }
+    100% {
+      right: -23px;
+    }
+  }
+  --animate-moveAndGrow: moveAndGrow 2s ease-in-out infinite;
 }
 
 @layer base {
