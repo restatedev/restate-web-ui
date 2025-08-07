@@ -15,7 +15,7 @@ import { useRef } from 'react';
 import { useActiveSidebarParam } from '@restate/ui/layout';
 
 const styles = tv({
-  base: 'relative -m-1 flex flex-row items-center gap-2 border p-1 text-code transition-all ease-in-out',
+  base: 'relative -m-1 flex flex-row items-center gap-2 border p-1 text-0.5xs transition-all ease-in-out',
   variants: {
     isSelected: {
       true: 'z-10 -mx-1 rounded-lg border bg-white px-1 font-medium shadow-xs shadow-zinc-800/3',

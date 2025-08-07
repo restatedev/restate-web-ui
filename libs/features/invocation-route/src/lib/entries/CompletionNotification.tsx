@@ -38,7 +38,7 @@ export function CompletionNotification({
           </PopoverTrigger>
           <PopoverContent>
             <DropdownSection
-              className="relative px-3 py-2 pr-8 text-code"
+              className="relative px-3 py-2 pr-8 text-0.5xs"
               title={
                 <span className="text-2xs text-gray-400 uppercase">{`Command #${commandIndex}`}</span>
               }

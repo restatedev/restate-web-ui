@@ -16,7 +16,7 @@ export function AdditionalHeaders() {
         <span slot="title" className="text-sm font-medium text-gray-700">
           Additional headers
         </span>
-        <span slot="description" className="block text-code leading-5">
+        <span slot="description" className="block text-0.5xs leading-5">
           Headers added to the register/invoke requests to the deployment.
         </span>
       </FormFieldLabel>

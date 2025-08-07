@@ -231,7 +231,7 @@ function EndpointForm() {
 
           <span
             slot="description"
-            className="mt-2 block pl-7 text-code leading-5 text-orange-600"
+            className="mt-2 block pl-7 text-0.5xs leading-5 text-orange-600"
           >
             An existing deployment with the same {isLambda ? 'ARN' : 'URL'}{' '}
             already exists. Would you like to override it? Please note that this

@@ -45,7 +45,7 @@ export function WorkflowKeySection({
         <SectionTitle>{invocation.target_service_name}</SectionTitle>
         <SectionContent className="p-0" raised={raised}>
           <div className="flex h-9 items-center px-1.5 py-1 not-last:border-b">
-            <span className="flex-auto pl-1 text-code font-medium text-gray-500">
+            <span className="flex-auto pl-1 text-0.5xs font-medium text-gray-500">
               Key
             </span>
             <Badge
@@ -61,7 +61,7 @@ export function WorkflowKeySection({
           </div>
           {invocation?.target_service_key !== undefined && (
             <div className="flex h-9 items-center gap-1 px-1.5 py-1">
-              <span className="pl-1 text-code font-medium text-gray-500">
+              <span className="pl-1 text-0.5xs font-medium text-gray-500">
                 State
               </span>
               <Popover>

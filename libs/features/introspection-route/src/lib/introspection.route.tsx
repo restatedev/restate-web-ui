@@ -218,7 +218,7 @@ function Component() {
                 >
                   <Icon name={IconName.ChevronLeft} className="h-4 w-4" />
                 </Button>
-                <div className="mx-2 flex items-center gap-0.5 text-code">
+                <div className="mx-2 flex items-center gap-0.5 text-0.5xs">
                   {pageIndex + 1} / {totalSize}
                 </div>
 

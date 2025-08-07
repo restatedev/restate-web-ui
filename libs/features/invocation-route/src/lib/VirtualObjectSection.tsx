@@ -81,7 +81,7 @@ export function VirtualObjectSection({
         </SectionTitle>
         <SectionContent className="p-0" raised={raised}>
           <div className="flex h-9 items-center gap-1 border-b px-1.5 py-1.5">
-            <span className="pl-1 text-code font-medium text-gray-500">
+            <span className="pl-1 text-0.5xs font-medium text-gray-500">
               Key
             </span>
             <Badge
@@ -96,7 +96,7 @@ export function VirtualObjectSection({
             </Badge>
           </div>
           <div className="flex h-9 items-center gap-1 px-1.5 py-1.5">
-            <span className="pl-1 text-code font-medium text-gray-500">
+            <span className="pl-1 text-0.5xs font-medium text-gray-500">
               State
             </span>
             <Popover>

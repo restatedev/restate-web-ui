@@ -173,7 +173,7 @@ function StatePanelContent() {
         <SectionTitle>{virtualObject}</SectionTitle>
         <SectionContent className="p-0">
           <div className="flex items-center px-1.5 py-1 not-last:border-b">
-            <span className="flex-auto pl-1 text-code font-medium text-gray-500">
+            <span className="flex-auto pl-1 text-0.5xs font-medium text-gray-500">
               Key
             </span>
             <Badge

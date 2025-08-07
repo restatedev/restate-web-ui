@@ -18,7 +18,7 @@ export function UseHTTP11() {
       >
         <span
           slot="description"
-          className="block text-code leading-5 text-gray-500"
+          className="block text-0.5xs leading-5 text-gray-500"
         >
           <code>HTTP1.1</code> will be used for service registration.
         </span>

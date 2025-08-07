@@ -26,7 +26,7 @@ export function MiniService({
         <Icon name={IconName.Box} className="h-full w-full p-1 text-zinc-400" />
       </div>
 
-      <div className="flex flex-row items-center gap-1 truncate text-code font-medium text-zinc-600">
+      <div className="flex flex-row items-center gap-1 truncate text-0.5xs font-medium text-zinc-600">
         <TruncateWithTooltip copyText={service.name} triggerRef={linkRef}>
           {service.name}
         </TruncateWithTooltip>

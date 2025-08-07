@@ -27,7 +27,7 @@ export function KeysIdsSection({
       <SectionTitle>Invocation Metadata</SectionTitle>
       <SectionContent className="p-0">
         <div className="flex h-9 items-center px-1.5 py-1 not-last:border-b">
-          <span className="flex-auto pl-1 text-code font-medium whitespace-nowrap text-gray-500">
+          <span className="flex-auto pl-1 text-0.5xs font-medium whitespace-nowrap text-gray-500">
             Invocation Id
           </span>
           <Badge
@@ -44,7 +44,7 @@ export function KeysIdsSection({
 
         {restateVersion && !restateVersion.startsWith('0.0.0') && (
           <div className="flex h-9 items-center px-1.5 py-1 not-last:border-b">
-            <span className="flex-auto shrink-0 pl-1 text-code font-medium text-gray-500">
+            <span className="flex-auto shrink-0 pl-1 text-0.5xs font-medium text-gray-500">
               Create by Restate
             </span>
             <Badge
@@ -62,7 +62,7 @@ export function KeysIdsSection({
         )}
         {idempotencyId && (
           <div className="flex h-9 items-center px-1.5 py-1 not-last:border-b">
-            <span className="flex-auto pl-1 text-code font-medium text-gray-500">
+            <span className="flex-auto pl-1 text-0.5xs font-medium text-gray-500">
               Idempotency Key
             </span>
             <Badge
@@ -81,7 +81,7 @@ export function KeysIdsSection({
 
         {traceId && (
           <div className="flex h-9 items-center px-1.5 py-1 not-last:border-b">
-            <span className="flex-auto pl-1 text-code font-medium text-gray-500">
+            <span className="flex-auto pl-1 text-0.5xs font-medium text-gray-500">
               Trace ID
             </span>
             <Badge

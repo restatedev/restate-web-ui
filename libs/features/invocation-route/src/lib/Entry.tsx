@@ -157,7 +157,7 @@ export function Entry({
       >
         <div
           style={{ width: `${numOfDigits + 2}ch` }}
-          className="relative flex h-full shrink-0 items-center justify-center font-mono text-code text-gray-400/70 group-first:rounded-tl-2xl group-last:rounded-bl-2xl"
+          className="relative flex h-full shrink-0 items-center justify-center font-mono text-0.5xs text-gray-400/70 group-first:rounded-tl-2xl group-last:rounded-bl-2xl"
         >
           <div
             data-border
@@ -190,7 +190,7 @@ export function Entry({
       ) : (
         entry.commandIndex === 1 && (
           <TimelinePortal invocationId={invocation?.id} entry={entry}>
-            <div className="absolute w-full px-6 text-center font-sans text-code text-zinc-500">
+            <div className="absolute w-full px-6 text-center font-sans text-0.5xs text-zinc-500">
               Update to the latest SDK to see more details in your journal.
               Check the{' '}
               <Link

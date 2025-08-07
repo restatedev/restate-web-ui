@@ -204,7 +204,7 @@ export function Service({
                     href={`?${SERVICE_QUERY_PARAM}=${serviceName}`}
                     variant="secondary"
                     aria-label={serviceName}
-                    className="cursor-pointer rounded-lg border-none bg-transparent px-8 py-1 text-left text-code text-gray-500 no-underline shadow-none hover:bg-black/3 pressed:bg-black/5"
+                    className="cursor-pointer rounded-lg border-none bg-transparent px-8 py-1 text-left text-0.5xs text-gray-500 no-underline shadow-none hover:bg-black/3 pressed:bg-black/5"
                   >
                     +{filteredHandlers.length - MAX_NUMBER_OF_HANDLERS} handler
                     {filteredHandlers.length - MAX_NUMBER_OF_HANDLERS > 1
@@ -235,7 +235,7 @@ export function Service({
                 href={`?${SERVICE_QUERY_PARAM}=${serviceName}`}
                 variant="secondary"
                 aria-label={serviceName}
-                className="cursor-pointer rounded-lg border-none bg-transparent px-8 py-1 text-left text-code text-gray-500 no-underline shadow-none hover:bg-black/3 pressed:bg-black/5"
+                className="cursor-pointer rounded-lg border-none bg-transparent px-8 py-1 text-left text-0.5xs text-gray-500 no-underline shadow-none hover:bg-black/3 pressed:bg-black/5"
               >
                 +{filteredDeployments.length - MAX_NUMBER_OF_DEPLOYMENTS}{' '}
                 deployment

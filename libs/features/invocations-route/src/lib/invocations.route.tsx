@@ -459,7 +459,7 @@ function Component() {
                 <h3 className="text-sm font-semibold text-zinc-400">
                   No invocations found
                 </h3>
-                <p className="max-w-md px-4 text-center text-code text-zinc-400">
+                <p className="max-w-md px-4 text-center text-0.5xs text-zinc-400">
                   Completed invocations (succeeded, failed, cancelled, or
                   killed) are retained only for workflows and those with
                   idempotency keys, and solely for the retention period
@@ -506,7 +506,7 @@ function Component() {
               >
                 <Icon name={IconName.ChevronLeft} className="h-4 w-4" />
               </Button>
-              <div className="mx-2 flex items-center gap-0.5 text-code">
+              <div className="mx-2 flex items-center gap-0.5 text-0.5xs">
                 {pageIndex + 1} / {totalSize}
               </div>
 

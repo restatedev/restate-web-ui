@@ -10,7 +10,7 @@ const styles = tv({
   base: 'flex min-h-0 flex-col gap-2 rounded-xl bg-red-100 p-3 text-sm',
 });
 const codeStyles = tv({
-  base: 'h-full flex-auto border bg-red-200 py-4 text-code text-red-700 shadow-[inset_0_0.5px_0.5px_0px_rgba(0,0,0,0.08)]',
+  base: 'h-full flex-auto border bg-red-200 py-4 text-0.5xs text-red-700 shadow-[inset_0_0.5px_0.5px_0px_rgba(0,0,0,0.08)]',
   variants: {
     wrap: { true: 'whitespace-pre', false: '' },
   },

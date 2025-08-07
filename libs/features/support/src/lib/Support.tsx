@@ -24,7 +24,7 @@ export function Support() {
               href="https://docs.restate.dev/"
               target="_blank"
               rel="noreferrer noopener"
-              className="flex items-center gap-2 text-code font-medium"
+              className="flex items-center gap-2 text-0.5xs font-medium"
             >
               <Icon
                 name={IconName.Docs}
@@ -37,7 +37,7 @@ export function Support() {
               href="https://discord.gg/skW3AZ6uGd"
               target="_blank"
               rel="noreferrer noopener"
-              className="justify2-center flex items-center gap-2 text-code font-medium"
+              className="justify2-center flex items-center gap-2 text-0.5xs font-medium"
             >
               <Icon
                 name={IconName.Discord}
@@ -50,7 +50,7 @@ export function Support() {
               href="https://join.slack.com/t/restatecommunity/shared_invite/zt-2v9gl005c-WBpr167o5XJZI1l7HWKImA"
               target="_blank"
               rel="noreferrer noopener"
-              className="justify2-center flex items-center gap-2 text-code font-medium"
+              className="justify2-center flex items-center gap-2 text-0.5xs font-medium"
             >
               <Icon
                 name={IconName.Slack}
@@ -63,7 +63,7 @@ export function Support() {
               href="https://github.com/restatedev/restate/issues/new"
               target="_blank"
               rel="noreferrer noopener"
-              className="justify2-center flex items-center gap-2 text-code font-medium"
+              className="justify2-center flex items-center gap-2 text-0.5xs font-medium"
             >
               <Icon
                 name={IconName.Github}

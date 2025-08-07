@@ -278,7 +278,7 @@ function ServiceForm({
                 title="Idempotency completion"
                 description="Modify the retention of idempotent requests for this service."
               >
-                <span slot="title" className="text-code">
+                <span slot="title" className="text-0.5xs">
                   Idempotency completion
                 </span>
               </InlineTooltip>
@@ -324,7 +324,7 @@ function ServiceForm({
                   description="Modify the retention of the workflow completion. This
                           can be modified only for workflow services."
                 >
-                  <span slot="title" className="text-code">
+                  <span slot="title" className="text-0.5xs">
                     Workflow completion
                   </span>
                 </InlineTooltip>
@@ -387,7 +387,7 @@ function ServiceForm({
                 title="Inactivity timeout"
                 description="This timer guards against stalled service/handler invocations. Once it expires, Restate triggers a graceful termination by asking the service invocation to suspend (which preserves intermediate progress)"
               >
-                <span slot="title" className="text-code">
+                <span slot="title" className="text-0.5xs">
                   Inactivity
                 </span>
               </InlineTooltip>
@@ -433,7 +433,7 @@ function ServiceForm({
                 title="Abort timeout"
                 description="This timer guards against stalled service/handler invocations that are supposed to terminate. The abort timeout is started after the 'inactivity timeout' has expired and the service/handler invocation has been asked to gracefully terminate. Once the timer expires, it will abort the service/handler invocation."
               >
-                <span slot="title" className="text-code">
+                <span slot="title" className="text-0.5xs">
                   Abort
                 </span>
               </InlineTooltip>

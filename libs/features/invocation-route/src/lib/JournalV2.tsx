@@ -221,7 +221,7 @@ export function JournalV2({
                 ) : journalAndInvocationData?.invoked_by_id ? (
                   <InvocationId
                     id={journalAndInvocationData?.invoked_by_id}
-                    className="max-w-[20ch] min-w-0 text-code font-semibold"
+                    className="max-w-[20ch] min-w-0 text-0.5xs font-semibold"
                   />
                 ) : null}
               </div>
@@ -260,7 +260,7 @@ export function JournalV2({
                 </HoverTooltip>
               </div>
             </div>
-            <div className="relative font-mono text-code">
+            <div className="relative font-mono text-0.5xs">
               {withTimeline ? (
                 <LazyPanelGroup
                   direction="horizontal"

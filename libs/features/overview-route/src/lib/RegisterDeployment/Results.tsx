@@ -12,7 +12,7 @@ export function DeploymentProtocolCheck() {
 
   if (max_protocol_version && max_protocol_version <= 4) {
     return (
-      <p className="mt-2 flex gap-2 rounded-xl bg-orange-50 p-3 text-code text-orange-600">
+      <p className="mt-2 flex gap-2 rounded-xl bg-orange-50 p-3 text-0.5xs text-orange-600">
         <Icon
           className="h-5 w-5 shrink-0 fill-orange-600 text-orange-100"
           name={IconName.TriangleAlert}

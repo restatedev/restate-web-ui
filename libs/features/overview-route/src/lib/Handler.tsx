@@ -85,7 +85,7 @@ export function Handler({
               </HandlerTypeExplainer>
             </Badge>
           )}
-          <div className="min-w-0 flex-auto text-code font-medium text-zinc-600 italic">
+          <div className="min-w-0 flex-auto text-0.5xs font-medium text-zinc-600 italic">
             <span className="flex items-center">
               <TruncateWithTooltip copyText={handler.name}>
                 {withPlayground ? (
@@ -210,7 +210,7 @@ function HandlerInputOutput({
               </span>
             </Link>
           </PopoverHoverTrigger>
-          <PopoverContent className="[&_header]:font-mono [&_header]:text-code">
+          <PopoverContent className="[&_header]:font-mono [&_header]:text-0.5xs">
             <DropdownSection
               className="mb-1 max-w-[min(90vw,600px)] min-w-80 overflow-auto px-4"
               title={
@@ -234,7 +234,7 @@ function HandlerInputOutput({
                   schema={schema}
                 />
               ) : (
-                <div className="flex items-center gap-2 py-2 font-mono text-code text-zinc-500">
+                <div className="flex items-center gap-2 py-2 font-mono text-0.5xs text-zinc-500">
                   Content-Type:<Badge size="sm">{contentType}</Badge>
                 </div>
               )}

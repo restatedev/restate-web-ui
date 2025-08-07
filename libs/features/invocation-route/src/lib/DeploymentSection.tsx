@@ -33,7 +33,7 @@ export function DeploymentSection({
       <SectionContent className="p-0" raised={raised}>
         <InvocationDeployment
           invocation={invocation!}
-          className="items-stretch text-code"
+          className="items-stretch text-0.5xs"
           showSdk={true}
         />
       </SectionContent>

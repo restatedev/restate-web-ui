@@ -467,7 +467,7 @@ function Component() {
                                   <DropdownSection
                                     className="mb-1 max-w-[min(90vw,600px)] overflow-auto px-4"
                                     title={
-                                      <div className="flex items-center text-code">
+                                      <div className="flex items-center text-0.5xs">
                                         {id}
                                         <EditStateTrigger
                                           onClick={() =>
@@ -549,7 +549,7 @@ function Component() {
               >
                 <Icon name={IconName.ChevronLeft} className="h-4 w-4" />
               </Button>
-              <div className="mx-2 flex items-center gap-0.5 text-code">
+              <div className="mx-2 flex items-center gap-0.5 text-0.5xs">
                 {pageIndex + 1} / {totalSize}
               </div>
 

@@ -159,7 +159,7 @@ export function InputOutput({
             <DropdownSection
               className={content({ className })}
               title={
-                <div className="flex items-center text-code">
+                <div className="flex items-center text-0.5xs">
                   <span>{popoverTitle}</span>
                 </div>
               }

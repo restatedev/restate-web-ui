@@ -50,7 +50,7 @@ function StateKey({
   const { close } = usePopover();
 
   return (
-    <div className="group grid grid-cols-[1fr_2fr] items-center gap-1 truncate bg-white px-2 py-0 text-code text-zinc-600 not-last:border-b first:rounded-t-[calc(0.75rem-0.125rem)] last:rounded-b-[calc(0.75rem-0.125rem)]">
+    <div className="group grid grid-cols-[1fr_2fr] items-center gap-1 truncate bg-white px-2 py-0 text-0.5xs text-zinc-600 not-last:border-b first:rounded-t-[calc(0.75rem-0.125rem)] last:rounded-b-[calc(0.75rem-0.125rem)]">
       <div className="relative flex h-full min-w-0 items-start border-r py-1 pr-1">
         <TruncateWithTooltip copyText={name}>{name}</TruncateWithTooltip>
       </div>

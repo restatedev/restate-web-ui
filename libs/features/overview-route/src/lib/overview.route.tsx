@@ -179,6 +179,10 @@ const reactServerStyles = tv({
   },
 });
 
+const s = tv({
+  base: 'text-sm text-red-500',
+});
+
 // TODO: refactor layout
 function Component() {
   const {
@@ -230,6 +234,9 @@ function Component() {
 
   return (
     <>
+      <h1 className={s({ className: 'text-0.5xs' })}>AAAA</h1>
+      <h1 className={s({ className: 'text-1.5sm' })}>AAAA</h1>
+      <h1 className={s({ className: 'text-0.5xs' })}>AAAA</h1>
       <Button
         onClick={() =>
           setSearchParams((prev) => {

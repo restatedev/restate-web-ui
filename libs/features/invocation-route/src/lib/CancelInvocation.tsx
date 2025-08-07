@@ -68,7 +68,7 @@ export function CancelInvocation() {
               ?
             </p>
 
-            <p className="mt-2 flex gap-2 rounded-xl bg-blue-50 p-3 text-code text-blue-600">
+            <p className="mt-2 flex gap-2 rounded-xl bg-blue-50 p-3 text-0.5xs text-blue-600">
               <Icon
                 className="h-5 w-5 shrink-0 fill-blue-600 text-blue-100"
                 name={IconName.Info}

@@ -171,7 +171,7 @@ function DeploymentContent({ deployment }: { deployment: string }) {
         </SectionTitle>
         <SectionContent className="p-0">
           <div className="flex items-center px-1.5 py-1 not-last:border-b">
-            <span className="flex-auto pl-1 text-code font-medium text-gray-500">
+            <span className="flex-auto pl-1 text-0.5xs font-medium text-gray-500">
               Type
             </span>
             <Badge size="sm" className="py-0 align-middle font-mono">
@@ -180,7 +180,7 @@ function DeploymentContent({ deployment }: { deployment: string }) {
           </div>
           {data && isHttpDeployment(data) && (
             <div className="flex items-center px-1.5 py-1 not-last:border-b">
-              <span className="flex-auto pl-1 text-code font-medium text-gray-500">
+              <span className="flex-auto pl-1 text-0.5xs font-medium text-gray-500">
                 <code>HTTP</code> version
               </span>
               <Badge size="sm" className="py-0 align-middle font-mono">
@@ -196,7 +196,7 @@ function DeploymentContent({ deployment }: { deployment: string }) {
         </SectionTitle>
         <SectionContent className="p-0">
           <div className="flex items-center px-1.5 py-1 not-last:border-b">
-            <span className="flex-auto pl-1 text-code font-medium text-gray-500">
+            <span className="flex-auto pl-1 text-0.5xs font-medium text-gray-500">
               Min protocol version
             </span>
             <Badge size="sm" className="py-0 align-middle font-mono">
@@ -204,7 +204,7 @@ function DeploymentContent({ deployment }: { deployment: string }) {
             </Badge>
           </div>
           <div className="flex items-center px-1.5 py-1 not-last:border-b">
-            <span className="flex-auto pl-1 text-code font-medium text-gray-500">
+            <span className="flex-auto pl-1 text-0.5xs font-medium text-gray-500">
               Max protocol version
             </span>
             <Badge size="sm" className="py-0 align-middle font-mono">
@@ -232,7 +232,7 @@ function DeploymentContent({ deployment }: { deployment: string }) {
                 Assume role ARN
               </InlineTooltip>
             </SectionTitle>
-            <SectionContent className="px-2 py-1 text-code font-medium text-gray-500">
+            <SectionContent className="px-2 py-1 text-0.5xs font-medium text-gray-500">
               <TruncateWithTooltip copyText={data.assume_role_arn}>
                 {data.assume_role_arn}
               </TruncateWithTooltip>
@@ -243,7 +243,7 @@ function DeploymentContent({ deployment }: { deployment: string }) {
       {data && (
         <Section className="mt-4">
           <SectionTitle>Id</SectionTitle>
-          <SectionContent className="flex items-center py-1 pr-0.5 font-mono text-code text-zinc-600">
+          <SectionContent className="flex items-center py-1 pr-0.5 font-mono text-0.5xs text-zinc-600">
             <div>{data?.id}</div>
             {data?.id && (
               <Copy
@@ -260,7 +260,7 @@ function DeploymentContent({ deployment }: { deployment: string }) {
 
 function Header({ name, value }: { name: string; value: string }) {
   return (
-    <div className="grid grid-cols-[1fr_2fr] items-center gap-1 truncate bg-white px-2 py-0 text-code text-zinc-600 not-last:border-b first:rounded-t-[calc(0.75rem-0.125rem)] last:rounded-b-[calc(0.75rem-0.125rem)]">
+    <div className="grid grid-cols-[1fr_2fr] items-center gap-1 truncate bg-white px-2 py-0 text-0.5xs text-zinc-600 not-last:border-b first:rounded-t-[calc(0.75rem-0.125rem)] last:rounded-b-[calc(0.75rem-0.125rem)]">
       <div className="relative flex min-w-0 items-start border-r py-1 pr-1">
         <TruncateWithTooltip copyText={name}>{name}</TruncateWithTooltip>
       </div>
