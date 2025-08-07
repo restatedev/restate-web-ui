@@ -19,10 +19,6 @@ import {
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import { FormFieldInput } from '@restate/ui/form-field';
 import { ErrorBanner } from '@restate/ui/error';
-import { Button } from 'react-aria-components';
-import { ServiceDetails } from './Details/Service';
-import { useSearchParams } from 'react-router';
-import { SERVICE_QUERY_PARAM } from './constants';
 
 function MultipleDeploymentsPlaceholder({
   filterText,
@@ -229,27 +225,8 @@ function Component() {
 
   // TODO: Handle isLoading & isError
 
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [first, setfirst] = useState(false);
-
   return (
     <>
-      <h1 className={s({ className: 'text-0.5xs' })}>AAAA</h1>
-      <h1 className={s({ className: 'text-1.5sm' })}>AAAA</h1>
-      <h1 className={s({ className: 'text-0.5xs' })}>AAAA</h1>
-      <Button
-        onClick={() =>
-          setSearchParams((prev) => {
-            prev.set(SERVICE_QUERY_PARAM, 'loan-application2');
-            return prev;
-          })
-        }
-      >
-        show url
-      </Button>
-      <Button onClick={() => setfirst((s) => !s)}>show</Button>
-      {<ServiceDetails />}
-      {/* {first && <ServiceDetailsContent service={'loan-application'} />} */}
       <ResponsiveMasonry
         columnsCountBreakPoints={{ 0: 1, 1024: 2 }}
         className={deploymentsStyles({ isEmpty })}
