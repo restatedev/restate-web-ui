@@ -32,7 +32,7 @@ import { mergeRefs, useObjectRef } from '@react-aria/utils';
 
 const tagStyles = tv({
   extend: focusRing,
-  base: 'bg-white/90 border text-zinc-800 shadow-xs  flex max-w-fit cursor-default items-center gap-x-1 rounded-md pl-1.5 py-0.5 text-xs font-medium outline-0 transition ',
+  base: 'flex max-w-fit cursor-default items-center gap-x-1 rounded-md border bg-white/90 py-0.5 pl-1.5 text-xs font-medium text-zinc-800 shadow-xs outline-0 transition',
 });
 function DefaultTag<
   T extends {
@@ -90,11 +90,11 @@ export interface MultiSelectProps<T extends object>
 }
 
 const multiSelectStyles = tv({
-  base: 'relative flex flex-row flex-wrap items-center rounded-lg border has-[input[data-focused=true]]:border-blue-500 has-[input[data-invalid=true][data-focused=true]]:border-blue-500 has-[input[data-invalid=true]]:border-destructive has-[input[data-focused=true]]:ring-1 has-[input[data-focused=true]]:ring-blue-500',
+  base: 'has-[input[data-invalid=true]]:border-destructive relative flex flex-row flex-wrap items-center rounded-lg border has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-1 has-[input[data-focused=true]]:ring-blue-500 has-[input[data-invalid=true][data-focused=true]]:border-blue-500',
 });
 
 const inputStyles = tv({
-  base: 'min-h-8.5 py-1.5 pl-0 pr-10 w-full min-w-0 text-sm text-current border-0 focus:border-0 focus:shadow-none focus:ring-0 focus:outline-0 bg-transparent',
+  base: 'min-h-8.5 w-full min-w-0 border-0 bg-transparent py-1.5 pr-10 pl-0 text-sm text-current focus:border-0 focus:shadow-none focus:ring-0 focus:outline-0',
 });
 export function FormFieldMultiCombobox<
   T extends {

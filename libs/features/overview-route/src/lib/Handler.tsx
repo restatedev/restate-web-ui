@@ -21,7 +21,7 @@ import { Link } from '@restate/ui/link';
 import { SERVICE_PLAYGROUND_QUERY_PARAM } from './constants';
 
 const styles = tv({
-  base: 'flex flex-row flex-wrap relative items-center  pr-2',
+  base: 'relative flex flex-row flex-wrap items-center pr-2',
 });
 
 function getContentTypeLabel(contentType: string) {
@@ -131,9 +131,9 @@ export function Handler({
 }
 
 const inputOutputStyles = tv({
-  base: 'contents text-2xs gap-1 rounded-md pl-0.5 py-0  items-center text-zinc-700',
+  base: 'contents items-center gap-1 rounded-md py-0 pl-0.5 text-2xs text-zinc-700',
   slots: {
-    value: 'contents text-zinc-500 font-semibold font-mono leading-5 mr-0.5',
+    value: 'mr-0.5 contents font-mono leading-5 font-semibold text-zinc-500',
   },
   variants: {
     hasSchema: {

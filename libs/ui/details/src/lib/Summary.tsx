@@ -11,7 +11,7 @@ interface SummaryProps {
 
 const summaryStyles = tv({
   extend: focusRing,
-  base: 'flex gap-2 px-3 py-2 pressed:bg-gray-200 hover:bg-gray-100 rounded-[calc(.75rem-1px-.25rem)] list-none group-open:mb-2 pr-2.5 [&::-webkit-details-marker]:hidden cursor-default',
+  base: 'flex cursor-default list-none gap-2 rounded-[calc(.75rem-1px-.25rem)] px-3 py-2 pr-2.5 group-open:mb-2 hover:bg-gray-100 pressed:bg-gray-200 [&::-webkit-details-marker]:hidden',
 });
 
 export function Summary({

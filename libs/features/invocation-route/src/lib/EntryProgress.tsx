@@ -15,33 +15,33 @@ import { isEntryCompletionAmbiguous } from './entries/isEntryCompletionAmbiguous
 import { ErrorBoundary } from './ErrorBoundry';
 
 const pointStyles = tv({
-  base: 'w-[2px] rounded-full h-full relative ',
+  base: 'relative h-full w-[2px] rounded-full',
   slots: {
-    line: 'absolute left-px top-1/2  rounded-full  h-1 w-1 -translate-x-1/2 -translate-y-1/2',
+    line: 'absolute top-1/2 left-px h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full',
     circle:
-      'absolute shadow-xs left-px top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full h-2.5 w-2.5 bg-inherit border',
+      'absolute top-1/2 left-px h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border bg-inherit shadow-xs',
   },
   variants: {
     variant: {
       success: {
-        line: 'bg-green-600 ',
-        circle: 'bg-green-200 border-white',
+        line: 'bg-green-600',
+        circle: 'border-white bg-green-200',
       },
       danger: {
         line: 'bg-red-500',
-        circle: 'bg-red-50 border-white',
+        circle: 'border-white bg-red-50',
       },
       warning: {
         line: 'bg-orange-500',
-        circle: 'bg-orange-100 border-white',
+        circle: 'border-white bg-orange-100',
       },
       info: {
         line: 'bg-blue-500',
-        circle: 'bg-blue-100 border-white',
+        circle: 'border-white bg-blue-100',
       },
       default: {
         line: 'bg-zinc-400',
-        circle: 'bg-zinc-50 border-white',
+        circle: 'border-white bg-zinc-50',
       },
     },
   },
@@ -49,7 +49,7 @@ const pointStyles = tv({
 });
 
 const pendingStyles = tv({
-  base: 'transition-all duration-1000 mix-blend-overlay max-w-[223px] right-0 left-[calc(100%-200px)] rounded-md absolute top-0 bottom-0 [background:repeating-linear-gradient(-45deg,--theme(--color-black/.15),--theme(--color-black/.15)_8px,--theme(--color-white/.40)_8px,--theme(--color-white/.40)_16px)] mask-[linear-gradient(to_right,transparent_calc(100%-200px),black_100%)]',
+  base: 'absolute top-0 right-0 bottom-0 left-[calc(100%-200px)] max-w-[223px] rounded-md mask-[linear-gradient(to_right,transparent_calc(100%-200px),black_100%)] mix-blend-overlay transition-all duration-1000 [background:repeating-linear-gradient(-45deg,--theme(--color-black/.15),--theme(--color-black/.15)_8px,--theme(--color-white/.40)_8px,--theme(--color-white/.40)_16px)]',
   variants: {
     isLive: {
       true: 'animate-moveAndGrow',
@@ -92,12 +92,12 @@ function Point({
 const lineStyles = tv({
   base: '',
   slots: {
-    line: 'via-100% relative h-full rounded-md shadow-xs border border-white/80 bg-linear-to-r',
+    line: 'relative h-full rounded-md border border-white/80 bg-linear-to-r via-100% shadow-xs',
   },
   variants: {
     variant: {
       success: {
-        line: 'from-green-300 to-green-300 ',
+        line: 'from-green-300 to-green-300',
       },
       danger: {
         line: 'from-red-300 to-red-300',
@@ -109,13 +109,13 @@ const lineStyles = tv({
         line: 'from-blue-300 to-blue-300',
       },
       default: {
-        line: 'h-3 bg-transparent border-dashed *:mix-blend-color-burn border-zinc-600/40',
+        line: 'h-3 border-dashed border-zinc-600/40 bg-transparent *:mix-blend-color-burn',
       },
       idleWarning: {
-        line: 'h-3 from-orange-400/10 to-orange-400/10 border-dashed border-orange-600/60',
+        line: 'h-3 border-dashed border-orange-600/60 from-orange-400/10 to-orange-400/10',
       },
       idleNeutral: {
-        line: 'h-3 from-zinc-400/20 to-zinc-400/20 border-dashed border-zinc-600/40',
+        line: 'h-3 border-dashed border-zinc-600/40 from-zinc-400/20 to-zinc-400/20',
       },
     },
     isAmbiguous: {
@@ -130,7 +130,7 @@ const lineStyles = tv({
       variant: 'success',
       isAmbiguous: true,
       className: {
-        line: 'via-green-300 ',
+        line: 'via-green-300',
       },
     },
     {
@@ -186,10 +186,10 @@ function Line({
 }
 
 const progressStyles = tv({
-  base: 'transition-all duration-1000 h-full relative flex flex-col gap-0.5 items-start justify-center min-w-[4px] -translate-x-px ',
+  base: 'relative flex h-full min-w-[4px] -translate-x-px flex-col items-start justify-center gap-0.5 transition-all duration-1000',
   slots: {
     segmentContainer:
-      'transition-all duration-1000 w-full flex *:w-full items-center ',
+      'flex w-full items-center transition-all duration-1000 *:w-full',
   },
   variants: {
     isPending: {

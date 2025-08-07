@@ -47,7 +47,7 @@ function getBadgeVariant(
 }
 
 const styles = tv({
-  base: 'max-w-full inline-flex gap-2 relative',
+  base: 'relative inline-flex max-w-full gap-2',
   variants: {
     variant: {
       success: '',
@@ -58,19 +58,19 @@ const styles = tv({
     },
     status: {
       pending:
-        'border-dashed bg-transparent border-orange-300/90 text-orange-700',
-      scheduled: 'border-dashed bg-transparent border-zinc-400/60',
-      ready: 'border-dashed bg-transparent border-zinc-300 text-zinc-500',
+        'border-dashed border-orange-300/90 bg-transparent text-orange-700',
+      scheduled: 'border-dashed border-zinc-400/60 bg-transparent',
+      ready: 'border-dashed border-zinc-300 bg-transparent text-zinc-500',
       running: 'border-dashed',
       suspended: 'border-dashed border-zinc-400/60 bg-zinc-200/40',
       succeeded: '',
-      failed: 'pr-0.5 py-0.5',
+      failed: 'py-0.5 pr-0.5',
       cancelled: '',
       killed: '',
       'backing-off': '',
     },
     isRetrying: {
-      true: 'border-dashed border border-orange-300/80 pr-0.5 py-0.5',
+      true: 'border border-dashed border-orange-300/80 py-0.5 pr-0.5',
       false: '',
     },
   },
@@ -132,10 +132,10 @@ const lastErrorStyles = tv({
   base: '',
   slots: {
     trigger:
-      'truncate bg-white/70 border-gray-200/80 px-1.5 py-0.5 flex rounded-md items-center gap-1 text-2xs h-5 shadow-none',
+      'flex h-5 items-center gap-1 truncate rounded-md border-gray-200/80 bg-white/70 px-1.5 py-0.5 text-2xs shadow-none',
     errorIcon: 'h-3 w-3 shrink-0',
     errorBanner:
-      'rounded-lg flex-auto  max-w-[min(50rem,90vw)] [&_details]:max-h-full [&:has(details[open])]:h-[min(50vh,16rem)]  overflow-auto resize  max-h-full',
+      'max-h-full max-w-[min(50rem,90vw)] flex-auto resize overflow-auto rounded-lg [&_details]:max-h-full [&:has(details[open])]:h-[min(50vh,16rem)]',
   },
   variants: {
     isRetrying: {

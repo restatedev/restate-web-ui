@@ -10,11 +10,11 @@ import { tv } from 'tailwind-variants';
 
 export const listBoxItemStyles = tv({
   extend: focusRing,
-  base: 'peer relative flex items-center gap-8 cursor-default select-none py-1.5 px-2.5 rounded-md will-change-transform text-sm',
+  base: 'peer relative flex cursor-default items-center gap-8 rounded-md px-2.5 py-1.5 text-sm will-change-transform select-none',
   variants: {
     isSelected: {
       false: 'text-gray-700 hover:bg-blue-600 hover:text-white',
-      true: 'peer-focus:bg-transparent peer-hover:bg-transparent peer-focus:text-gray-700 peer-hover:text-gray-700 focus:bg-blue-600 hover:text-white focus:bg-blue-600 hover:text-white',
+      true: 'peer-hover:bg-transparent peer-hover:text-gray-700 peer-focus:bg-transparent peer-focus:text-gray-700 hover:text-white focus:bg-blue-600',
     },
     isDisabled: {
       true: 'text-slate-300',

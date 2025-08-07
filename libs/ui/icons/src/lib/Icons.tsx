@@ -213,7 +213,7 @@ const ICONS: Record<IconName, LucideIcon> = {
 };
 
 const styles = tv({
-  base: 'w-[1.5em] h-[1.5em] text-current',
+  base: 'h-[1.5em] w-[1.5em] text-current',
 });
 
 export function Icon({ name, className, ...props }: IconsProps) {

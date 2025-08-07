@@ -13,10 +13,10 @@ import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Icon, IconName } from '@restate/ui/icons';
 
 const styles = tv({
-  base: 'flex flex-row max-w-full flex-wrap relative items-center pr-2',
+  base: 'relative flex max-w-full flex-row flex-wrap items-center pr-2',
   variants: {
     isFunction: {
-      true: 'italic font-medium',
+      true: 'font-medium italic',
       false: 'font-medium',
     },
   },
@@ -91,10 +91,10 @@ export function Expression({
 }
 
 const inputOutputStyles = tv({
-  base: 'contents text-2xs gap-1 rounded-md pl-0.5 py-0  items-center text-zinc-700 ',
+  base: 'contents items-center gap-1 rounded-md py-0 pl-0.5 text-2xs text-zinc-700',
   slots: {
-    value: 'contents text-zinc-500 font-semibold font-mono leading-5 mr-0.5 ',
-    content: 'min-w-80 overflow-auto max-w-[min(90vw,600px)] px-4 mb-1',
+    value: 'mr-0.5 contents font-mono leading-5 font-semibold text-zinc-500',
+    content: 'mb-1 max-w-[min(90vw,600px)] min-w-80 overflow-auto px-4',
   },
 });
 

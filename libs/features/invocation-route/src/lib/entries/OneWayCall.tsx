@@ -12,7 +12,7 @@ import { tv } from 'tailwind-variants';
 import { EntryExpression } from './EntryExpression';
 
 const styles = tv({
-  base: 'flex flex-row gap-1.5 items-center pr-2 relative flex-auto',
+  base: 'relative flex flex-auto flex-row items-center gap-1.5 pr-2',
 });
 
 export function OneWayCall({

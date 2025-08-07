@@ -33,18 +33,18 @@ import { Spinner } from '@restate/ui/loading';
 const styles = tv({
   base: '',
   slots: {
-    banner: 'mt-2 text-code flex rounded-xl p-3  gap-2',
-    bannerIcon: 'h-5 w-5  shrink-0',
+    banner: 'mt-2 flex gap-2 rounded-xl p-3 text-code',
+    bannerIcon: 'h-5 w-5 shrink-0',
   },
   variants: {
     isWarning: {
       true: {
         banner: 'bg-orange-50 text-orange-600',
-        bannerIcon: 'text-orange-100 fill-orange-600',
+        bannerIcon: 'fill-orange-600 text-orange-100',
       },
       false: {
         banner: 'bg-blue-50 text-blue-600',
-        bannerIcon: 'text-blue-100 fill-blue-600',
+        bannerIcon: 'fill-blue-600 text-blue-100',
       },
     },
   },

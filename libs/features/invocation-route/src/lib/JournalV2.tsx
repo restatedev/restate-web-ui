@@ -35,7 +35,7 @@ const LazyPanelResizeHandle = lazy(() =>
 );
 
 const liveStyles = tv({
-  base: 'rounded-sm text-gray-500 text-xs font-semibold uppercase flex items-center gap-1 px-2',
+  base: 'flex items-center gap-1 rounded-sm px-2 text-xs font-semibold text-gray-500 uppercase',
   variants: {
     isLive: {
       true: '',

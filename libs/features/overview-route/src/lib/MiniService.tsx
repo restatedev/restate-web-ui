@@ -8,7 +8,7 @@ import { Link } from '@restate/ui/link';
 import { useRef } from 'react';
 
 const styles = tv({
-  base: 'flex flex-row items-center gap-2 relative -m-1 p-1',
+  base: 'relative -m-1 flex flex-row items-center gap-2 p-1',
 });
 
 export function MiniService({

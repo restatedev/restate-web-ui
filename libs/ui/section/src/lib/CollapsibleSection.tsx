@@ -9,7 +9,7 @@ interface SectionProps {
 }
 
 const styles = tv({
-  base: 'group section flex flex-col bg-gray-100 rounded-xl p-0.5 border2 shadow2-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]',
+  base: 'group section border2 shadow2-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] flex flex-col rounded-xl bg-gray-100 p-0.5',
 });
 export function CollapsibleSection({
   children,
@@ -23,7 +23,7 @@ interface SectionTitleProps {
 }
 
 const stylesSectionTitle = tv({
-  base: 'text-xs uppercase font-semibold text-gray-400 px-2 py-2 relative',
+  base: 'relative px-2 py-2 text-xs font-semibold text-gray-400 uppercase',
 });
 export function CollapsibleSectionTitle({
   children,
@@ -47,10 +47,10 @@ export function CollapsibleSectionTitle({
 }
 
 const stylesSectionContent = tv({
-  base: 'p-3 rounded-[calc(0.75rem-0.125rem)] text-sm',
+  base: 'rounded-[calc(0.75rem-0.125rem)] p-3 text-sm',
   variants: {
     raised: {
-      true: 'bg-white shadow-xs border',
+      true: 'border bg-white shadow-xs',
       false: '',
     },
   },

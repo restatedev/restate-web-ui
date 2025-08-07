@@ -60,7 +60,7 @@ function unitInterval(duration: number) {
 }
 
 const styles = tv({
-  base: 'rounded-sm flex flex-col items-center relative rounded-t-2xl shadow-xs rounded-2xl rounded-l-none border-black/10',
+  base: 'relative flex flex-col items-center rounded-2xl rounded-sm rounded-t-2xl rounded-l-none border-black/10 shadow-xs',
 });
 export function LifeCycleProgress({
   className,

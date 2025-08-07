@@ -71,7 +71,7 @@ function withDate({
 }
 
 const withFieldStyles = tv({
-  base: 'bg-transparent border-none pl-0 w-full',
+  base: 'w-full border-none bg-transparent pl-0',
 });
 function withField({
   field,

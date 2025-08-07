@@ -6,7 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
 import { Component, PropsWithChildren, ErrorInfo } from 'react';
 import { tv } from 'tailwind-variants';
 
-const errorStyles = tv({ base: 'h-full flex items-center pl-2' });
+const errorStyles = tv({ base: 'flex h-full items-center pl-2' });
 export class ErrorBoundary extends Component<
   PropsWithChildren<{ entry?: JournalEntryV2; className?: string }>,
   {

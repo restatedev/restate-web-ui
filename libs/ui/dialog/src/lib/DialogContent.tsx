@@ -9,35 +9,35 @@ import { tv } from 'tailwind-variants';
 import { DialogFooterContainer } from './DialogFooter';
 
 const overlayStyles = tv({
-  base: 'fixed top-0 left-0 w-full isolate z-100 bg-gray-800/30 transition-opacity flex text-center h-screen min-h-screen',
+  base: 'fixed top-0 left-0 isolate z-100 flex h-screen min-h-screen w-full bg-gray-800/30 text-center transition-opacity',
   variants: {
     isEntering: {
-      true: 'animate-in fade-in duration-200 ease-out',
+      true: 'duration-200 ease-out animate-in fade-in',
     },
     isExiting: {
-      true: 'animate-out fade-out duration-200 ease-in',
+      true: 'duration-200 ease-in animate-out fade-out',
     },
     variant: {
-      sheet: 'pb-0 px-0 lg:px-4 pt-4 items-end justify-center',
-      modal: 'p-4 items-center justify-center',
+      sheet: 'items-end justify-center px-0 pt-4 pb-0 lg:px-4',
+      modal: 'items-center justify-center p-4',
     },
   },
   defaultVariants: { variant: 'modal' },
 });
 
 const modalStyles = tv({
-  base: 'flex max-h-full overflow-auto  bg-white text-left align-middle text-slate-700  shadow-lg shadow-zinc-800/5 border border-black/5',
+  base: 'flex max-h-full overflow-auto border border-black/5 bg-white text-left align-middle text-slate-700 shadow-lg shadow-zinc-800/5',
   variants: {
     isEntering: {
-      true: 'animate-in ease-out duration-200',
+      true: 'duration-200 ease-out animate-in',
     },
     isExiting: {
-      true: 'animate-out ease-in duration-200',
+      true: 'duration-200 ease-in animate-out',
     },
     variant: {
-      sheet: 'w-screen lg:w-[95vw] h-[95vh] rounded-t-[1.125rem] border-b-0',
+      sheet: 'h-[95vh] w-screen rounded-t-[1.125rem] border-b-0 lg:w-[95vw]',
       modal:
-        'w-full max-w-sm [clip-path:inset(0_0_0_0_round_1.125rem)] rounded-[1.125rem]',
+        'w-full max-w-sm rounded-[1.125rem] [clip-path:inset(0_0_0_0_round_1.125rem)]',
     },
   },
   compoundVariants: [
@@ -49,7 +49,7 @@ const modalStyles = tv({
     {
       isExiting: true,
       variant: 'sheet',
-      className: 'slide-out-to-bottom fade-out',
+      className: 'fade-out slide-out-to-bottom',
     },
     {
       isEntering: true,
@@ -59,14 +59,14 @@ const modalStyles = tv({
     {
       isExiting: true,
       variant: 'modal',
-      className: 'zoom-out-95 ',
+      className: 'zoom-out-95',
     },
   ],
   defaultVariants: { variant: 'modal' },
 });
 
 const dialogStyles = tv({
-  base: 'flex flex-col outline bg-gray-100 outline-0 p-1.5 [[data-placement]>&]:p-4 max-h-full w-full relative',
+  base: 'relative flex max-h-full w-full flex-col bg-gray-100 p-1.5 outline outline-0 [[data-placement]>&]:p-4',
   variants: {
     variant: {
       sheet: 'rounded-t-[1.125rem] pb-0',
@@ -77,10 +77,10 @@ const dialogStyles = tv({
 });
 
 const contentStyles = tv({
-  base: 'bg-white  border max-h-[inherit] overflow-auto',
+  base: 'max-h-[inherit] overflow-auto border bg-white',
   variants: {
     variant: {
-      sheet: 'rounded-t-xl border-b-0 h-full',
+      sheet: 'h-full rounded-t-xl border-b-0',
       modal: 'rounded-xl p-6',
     },
   },

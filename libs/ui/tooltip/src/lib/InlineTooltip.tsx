@@ -55,7 +55,7 @@ export function InlineTooltip({
 }
 
 const helpStyles = tv({
-  base: 'cursor-help group underline-offset-4 decoration-from-font decoration-dashed underline inline-flex items-center',
+  base: 'group inline-flex cursor-help items-center underline decoration-dashed decoration-from-font underline-offset-4',
 });
 
 const HelpTooltipTrigger = forwardRef<

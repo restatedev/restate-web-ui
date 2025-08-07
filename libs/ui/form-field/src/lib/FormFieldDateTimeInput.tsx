@@ -16,17 +16,17 @@ import {
 import { FormFieldLabel } from './FormFieldLabel';
 import { parseAbsoluteToLocal, ZonedDateTime } from '@internationalized/date';
 const inputStyles = tv({
-  base: 'text-center relative invalid:border-red-600 invalid:bg-red-100/70 focus:outline focus:border-gray-200 disabled:text-gray-500/80 disabled:placeholder:text-gray-300 disabled:border-gray-100 disabled:shadow-none   [&[readonly]]:text-gray-500/80 [&[readonly]]:bg-gray-100 read-only:shadow-none focus:shadow-none focus:outline-blue-600 focus:[box-shadow:inset_0_1px_0px_0px_rgba(0,0,0,0.03)] shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] mt-0 bg-gray-100 rounded-lg border border-gray-200 py-1.5 placeholder:text-gray-500/70 px-10 w-full min-w-0 text-sm text-gray-900',
+  base: 'relative mt-0 w-full min-w-0 rounded-lg border border-gray-200 bg-gray-100 px-10 py-1.5 text-center text-sm text-gray-900 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] placeholder:text-gray-500/70 invalid:border-red-600 invalid:bg-red-100/70 read-only:shadow-none focus:border-gray-200 focus:shadow-none focus:[box-shadow:inset_0_1px_0px_0px_rgba(0,0,0,0.03)] focus:outline focus:outline-blue-600 disabled:border-gray-100 disabled:text-gray-500/80 disabled:shadow-none disabled:placeholder:text-gray-300 [&[readonly]]:bg-gray-100 [&[readonly]]:text-gray-500/80',
 });
 const containerStyles = tv({
   base: 'group flex flex-col gap-1',
 });
 
 const segmentStyles = tv({
-  base: 'inline p-0.5 type-literal:px-0 rounded-sm outline outline-0 forced-color-adjust-none caret-transparent text-gray-800 dark:text-zinc-200 forced-colors:text-[ButtonText]',
+  base: 'inline rounded-sm p-0.5 text-gray-800 caret-transparent outline outline-0 forced-color-adjust-none dark:text-zinc-200 forced-colors:text-[ButtonText] type-literal:px-0',
   variants: {
     isPlaceholder: {
-      true: 'text-gray-600 dark:text-zinc-400 italic',
+      true: 'text-gray-600 italic dark:text-zinc-400',
     },
     isDisabled: {
       true: 'text-gray-200 dark:text-zinc-600 forced-colors:text-[GrayText]',

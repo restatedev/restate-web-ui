@@ -4,7 +4,7 @@ import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { tv } from 'tailwind-variants';
 
 const styles = tv({
-  base: 'text-xs  flex flex-col items-start',
+  base: 'flex flex-col items-start text-xs',
 });
 
 export function InvocationDeployment({

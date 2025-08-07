@@ -31,7 +31,7 @@ interface TableProps
 }
 
 const tableStyles = tv({
-  base: 'to-gray-50 from-gray-100 bg-linear-to-b [&:has([data-table-empty=true])]:bg-gray-50/50 shadow-xs shadow-zinc-800/5 [&:has([data-table-empty=true])]:shadow-none border rounded-xl overflow-hidden',
+  base: 'overflow-hidden rounded-xl border bg-linear-to-b from-gray-100 to-gray-50 shadow-xs shadow-zinc-800/5 [&:has([data-table-empty=true])]:bg-gray-50/50 [&:has([data-table-empty=true])]:shadow-none',
 });
 export function Table({ className, ...props }: PropsWithChildren<TableProps>) {
   return (
@@ -50,16 +50,16 @@ export function Table({ className, ...props }: PropsWithChildren<TableProps>) {
 
 const columnGroupStyles = tv({
   extend: focusRing,
-  base: 'h-5 flex-1 flex gap-1 items-center overflow-hidden',
+  base: 'flex h-5 flex-1 items-center gap-1 overflow-hidden',
 });
 
 const resizerStyles = tv({
   extend: focusRing,
-  base: 'resizer absolute right-0 w-px px-[8px] box-content py-1 h-5 bg-clip-content bg-gray-400 cursor-col-resize rounded-sm resizing:bg-blue-600 resizing:w-[2px] resizing:pl-[7px] -outline-offset-2',
+  base: 'resizer absolute right-0 box-content h-5 w-px cursor-col-resize rounded-sm bg-gray-400 bg-clip-content px-[8px] py-1 -outline-offset-2 resizing:w-[2px] resizing:bg-blue-600 resizing:pl-[7px]',
 });
 
 const columnStyles = tv({
-  base: 'py-2 last:pr-2 pl-2 [&:not(:last-child)_.resizer]:translate-x-[10px] [&:hover]:z-20 focus-within:z-20 text-start text-sm font-semibold text-gray-700 cursor-default',
+  base: 'cursor-default py-2 pl-2 text-start text-sm font-semibold text-gray-700 last:pr-2 focus-within:z-20 [&:hover]:z-20 [&:not(:last-child)_.resizer]:translate-x-[10px]',
 });
 
 interface ColumnProps
@@ -116,7 +116,7 @@ export function Column({
 }
 
 const tableHeaderStyles = tv({
-  base: 'sticky top-0 z-10 bg-gray-100/80 drop-shadow-[0px_1px_0px_rgba(0,0,0,0.1)] [box-shadow2:0_1px_0px_0px_rgba(0,0,0,0.1)] backdrop-blur-xl backdrop-saturate-200 supports-[-moz-appearance:none]:bg-gray-100',
+  base: 'sticky top-0 z-10 bg-gray-100/80 drop-shadow-[0px_1px_0px_rgba(0,0,0,0.1)] backdrop-blur-xl backdrop-saturate-200 [box-shadow2:0_1px_0px_0px_rgba(0,0,0,0.1)] supports-[-moz-appearance:none]:bg-gray-100',
 });
 
 interface TableHeaderProps<T extends object>

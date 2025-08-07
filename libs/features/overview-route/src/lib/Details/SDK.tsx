@@ -59,7 +59,7 @@ function LanguageIcon({
 }
 
 const sdkStyles = tv({
-  base: 'font-mono font-semibold text-zinc-500/80 flex items-center border border-transparent',
+  base: 'flex items-center border border-transparent font-mono font-semibold text-zinc-500/80',
 });
 export function SDK({
   lastAttemptServer,

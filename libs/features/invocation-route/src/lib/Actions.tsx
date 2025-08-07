@@ -10,10 +10,10 @@ import { tv } from 'tailwind-variants';
 import { SplitButton } from '@restate/ui/split-button';
 
 const mainButtonStyles = tv({
-  base: 'rounded-r-none px-2 py-0.5 translate-x-px [font-size:inherit] [line-height:inherit] rounded-l-md text-red-500',
+  base: 'translate-x-px rounded-l-md rounded-r-none px-2 py-0.5 [font-size:inherit] [line-height:inherit] text-red-500',
   variants: {
     mini: {
-      true: 'absolute invisible drop-shadow-[-20px_2px_4px_rgba(255,255,255,0.8)] group-hover:visible right-full z-2 ',
+      true: 'invisible absolute right-full z-2 drop-shadow-[-20px_2px_4px_rgba(255,255,255,0.8)] group-hover:visible',
       false: '',
     },
   },

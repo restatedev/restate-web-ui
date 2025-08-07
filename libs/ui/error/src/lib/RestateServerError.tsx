@@ -7,10 +7,10 @@ import Markdown from 'react-markdown';
 import { tv } from 'tailwind-variants';
 
 const styles = tv({
-  base: 'rounded-xl bg-red-100 p-3 gap-2 flex flex-col text-sm min-h-0',
+  base: 'flex min-h-0 flex-col gap-2 rounded-xl bg-red-100 p-3 text-sm',
 });
 const codeStyles = tv({
-  base: 'shadow-[inset_0_0.5px_0.5px_0px_rgba(0,0,0,0.08)] border bg-red-200 py-4 text-code flex-auto text-red-700 h-full',
+  base: 'h-full flex-auto border bg-red-200 py-4 text-code text-red-700 shadow-[inset_0_0.5px_0.5px_0px_rgba(0,0,0,0.08)]',
   variants: {
     wrap: { true: 'whitespace-pre', false: '' },
   },

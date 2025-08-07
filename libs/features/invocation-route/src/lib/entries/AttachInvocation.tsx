@@ -10,7 +10,7 @@ import { Spinner } from '@restate/ui/loading';
 import { Icon, IconName } from '@restate/ui/icons';
 
 const styles = tv({
-  base: 'flex flex-row gap-1.5 items-center relative flex-auto',
+  base: 'relative flex flex-auto flex-row items-center gap-1.5',
 });
 
 export function AttachInvocation({

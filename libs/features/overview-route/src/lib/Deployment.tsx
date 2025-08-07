@@ -15,10 +15,10 @@ import { useRef } from 'react';
 import { useActiveSidebarParam } from '@restate/ui/layout';
 
 const styles = tv({
-  base: 'flex flex-row items-center gap-2 relative border -m-1 p-1 transition-all ease-in-out text-code',
+  base: 'relative -m-1 flex flex-row items-center gap-2 border p-1 text-code transition-all ease-in-out',
   variants: {
     isSelected: {
-      true: 'bg-white shadow-xs shadow-zinc-800/3 rounded-lg border -mx-1 px-1 z-10 font-medium',
+      true: 'z-10 -mx-1 rounded-lg border bg-white px-1 font-medium shadow-xs shadow-zinc-800/3',
       false: 'border-transparent',
     },
   },

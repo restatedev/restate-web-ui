@@ -10,13 +10,13 @@ import {
 } from '@tanstack/react-query';
 
 const styles = tv({
-  base: 'min-w-[150px] h-[150px] relative',
+  base: 'relative h-[150px] min-w-[150px]',
 });
 const buttonStyles = tv({
-  base: 'flex w-[142px] h-[142px]  focus:outline-hidden bg-none group hover:bg-transparent pressed:bg-transparent shadow-none py-0 px-0 border-none hover:scale-105 pressed:scale-95 [&:not(:hover):has([data-status=active])]:scale-[1.025] [&:has([data-status=pause])_canvas]:hue-rotate-180 [&:has([data-status=active])_.server]:filter-[drop-shadow(0_6px_3px_--theme(--color-zinc-800/5%))_drop-shadow(0_10px_8px_--theme(--color-blue-500/20%))]',
+  base: 'group flex h-[142px] w-[142px] border-none bg-none px-0 py-0 shadow-none hover:scale-105 hover:bg-transparent focus:outline-hidden pressed:scale-95 pressed:bg-transparent [&:has([data-status=active])_.server]:filter-[drop-shadow(0_6px_3px_--theme(--color-zinc-800/5%))_drop-shadow(0_10px_8px_--theme(--color-blue-500/20%))] [&:has([data-status=pause])_canvas]:hue-rotate-180 [&:not(:hover):has([data-status=active])]:scale-[1.025]',
   variants: {
     isEmpty: {
-      true: 'm-[4px] relative',
+      true: 'relative m-[4px]',
       false: 'absolute inset-1',
     },
   },

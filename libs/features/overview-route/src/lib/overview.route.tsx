@@ -19,6 +19,10 @@ import {
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import { FormFieldInput } from '@restate/ui/form-field';
 import { ErrorBanner } from '@restate/ui/error';
+import { Button } from 'react-aria-components';
+import { ServiceDetails } from './Details/Service';
+import { useSearchParams } from 'react-router';
+import { SERVICE_QUERY_PARAM } from './constants';
 
 function MultipleDeploymentsPlaceholder({
   filterText,
@@ -131,7 +135,7 @@ const deploymentsStyles = tv({
   variants: {
     isEmpty: {
       true: 'hidden',
-      false: 'min-h-[calc(100vh-9rem-9rem)] sticky top-36',
+      false: 'sticky top-36 min-h-[calc(100vh-9rem-9rem)]',
     },
   },
   defaultVariants: {
@@ -139,7 +143,7 @@ const deploymentsStyles = tv({
   },
 });
 const layoutStyles = tv({
-  base: 'min-h-full *:items-center [&>*:first-child_[data-anchor]]:rounded-br-none [&>*:first-child_[data-anchor]]:rounded-tr-none [&>*:first-child_[data-anchor]]:rounded-bl-full [&>*:first-child_[data-anchor]]:rounded-tl-full [&>*:first-child_[data-anchor]]:right-0 [&>*:first-child_[data-anchor]]:left-auto',
+  base: 'min-h-full *:items-center [&>*:first-child_[data-anchor]]:right-0 [&>*:first-child_[data-anchor]]:left-auto [&>*:first-child_[data-anchor]]:rounded-tl-full [&>*:first-child_[data-anchor]]:rounded-tr-none [&>*:first-child_[data-anchor]]:rounded-br-none [&>*:first-child_[data-anchor]]:rounded-bl-full',
   variants: {
     isScrolling: {
       true: 'items-start',
@@ -152,19 +156,19 @@ const layoutStyles = tv({
 });
 
 const reactServerStyles = tv({
-  base: 'justify-center flex flex-col items-center w-fit',
+  base: 'flex w-fit flex-col items-center justify-center',
   variants: {
     isEmpty: {
-      true: '-mb-24 pb-8 pt-24 flex-auto w-full justify-center rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]',
+      true: '-mb-24 w-full flex-auto justify-center rounded-xl border bg-gray-200/50 pt-24 pb-8 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]',
       false:
-        'hidden lg:block lg:fixed top-[50vh] left-[50vw] -translate-y-1/2 -translate-x-1/2',
+        'top-[50vh] left-[50vw] hidden -translate-x-1/2 -translate-y-1/2 lg:fixed lg:block',
     },
     isError: {
       true: '[&>svg:first-child>path]:fill-red-100',
       false: '',
     },
     isPending: {
-      true: 'flex fixed',
+      true: 'fixed flex',
       false: '',
     },
   },
@@ -221,8 +225,24 @@ function Component() {
 
   // TODO: Handle isLoading & isError
 
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [first, setfirst] = useState(false);
+
   return (
     <>
+      <Button
+        onClick={() =>
+          setSearchParams((prev) => {
+            prev.set(SERVICE_QUERY_PARAM, 'loan-application2');
+            return prev;
+          })
+        }
+      >
+        show url
+      </Button>
+      <Button onClick={() => setfirst((s) => !s)}>show</Button>
+      {<ServiceDetails />}
+      {/* {first && <ServiceDetailsContent service={'loan-application'} />} */}
       <ResponsiveMasonry
         columnsCountBreakPoints={{ 0: 1, 1024: 2 }}
         className={deploymentsStyles({ isEmpty })}

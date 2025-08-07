@@ -9,7 +9,7 @@ interface FormFieldErrorProps extends Pick<FieldErrorProps, 'children'> {
 }
 
 const styles = tv({
-  base: 'error text-xs px-1 pt-0.5 text-red-600 forced-colors:text-[Mark]',
+  base: 'error px-1 pt-0.5 text-xs text-red-600 forced-colors:text-[Mark]',
 });
 export function FormFieldError({ className, ...props }: FormFieldErrorProps) {
   return <AriaFieldError {...props} className={styles({ className })} />;

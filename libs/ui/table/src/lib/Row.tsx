@@ -20,7 +20,7 @@ import {
 
 const rowStyles = tv({
   extend: focusRing,
-  base: '[content-visibility:auto] group/row transform transition relative cursor-default -outline-offset-2 text-gray-900 disabled:text-gray-300 text-sm hover:bg-gray-100 selected:bg-blue-100 selected:hover:bg-blue-200',
+  base: 'group/row relative transform cursor-default text-sm text-gray-900 -outline-offset-2 transition [content-visibility:auto] hover:bg-gray-100 disabled:text-gray-300 selected:bg-blue-100 selected:hover:bg-blue-200',
 });
 
 interface RowProps<T extends object>
@@ -104,7 +104,7 @@ export function PerformantRow<T extends { id?: string }>({
 
 const cellStyles = tv({
   extend: focusRing,
-  base: 'pl-2 last:pr-2 focus-visible:outline-2 text-xs text-zinc-600 font-medium border-b group-last/row:border-b-0 [--selected-border:var(--color-blue-200)] group-selected/row:border-[--selected-border] in-[:has(+[data-selected])]:border-(--selected-border) py-2 truncate -outline-offset-2',
+  base: 'truncate border-b py-2 pl-2 text-xs font-medium text-zinc-600 -outline-offset-2 [--selected-border:var(--color-blue-200)] group-last/row:border-b-0 group-selected/row:border-[--selected-border] last:pr-2 focus-visible:outline-2 in-[:has(+[data-selected])]:border-(--selected-border)',
 });
 
 interface CellProps extends Pick<AriaCellProps, 'id'> {

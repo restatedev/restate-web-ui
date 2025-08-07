@@ -11,7 +11,7 @@ import { tv } from 'tailwind-variants';
 import { PropsWithChildren, ReactNode } from 'react';
 
 const menuTriggerStyles = tv({
-  base: 'group-focus-within:z-2 trigger rounded-l-md px-1 py-1 [font-size:inherit] [line-height:inherit] rounded-r-md text-gray-600',
+  base: 'trigger rounded-l-md rounded-r-md px-1 py-1 [font-size:inherit] [line-height:inherit] text-gray-600 group-focus-within:z-2',
   variants: {
     mini: {
       false: 'rounded-l-none',
@@ -21,7 +21,7 @@ const menuTriggerStyles = tv({
 });
 
 const styles = tv({
-  base: 'group flex items-stretch relative overflow-visible group text-xs ',
+  base: 'group group relative flex items-stretch overflow-visible text-xs',
   slots: {
     primary: '',
   },
@@ -29,7 +29,7 @@ const styles = tv({
     mini: {
       true: {
         base: '[&:has(.trigger[data-pressed=true])>.primary]:hidden [&:hover:has(.trigger:not([data-pressed=true]))_.trigger]:rounded-l-none',
-        primary: 'contents primary',
+        primary: 'primary contents',
       },
       false: { base: '', primary: 'contents' },
     },

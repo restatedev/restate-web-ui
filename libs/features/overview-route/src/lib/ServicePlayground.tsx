@@ -37,7 +37,7 @@ import { ErrorBanner } from '@restate/ui/error';
 import { Spinner } from '@restate/ui/loading';
 
 const styles = tv({
-  base: 'px-1.5 py-0.5 text-xs font-normal font-sans rounded-md flex items-center gap-1',
+  base: 'flex items-center gap-1 rounded-md px-1.5 py-0.5 font-sans text-xs font-normal',
 });
 export function ServicePlaygroundTrigger({
   service,

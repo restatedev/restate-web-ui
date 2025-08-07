@@ -10,10 +10,10 @@ const failureStyle = tv({
   base: '',
   slots: {
     trigger:
-      ' bg-white/70 border px-0 py-0 flex rounded-lg items-center gap-0 [font-size:inherit] h-6 min-w-6',
-    errorIcon: 'h-3 w-3 shrink-0 mx-[0.3rem]',
+      'flex h-6 min-w-6 items-center gap-0 rounded-lg border bg-white/70 px-0 py-0 [font-size:inherit]',
+    errorIcon: 'mx-[0.3rem] h-3 w-3 shrink-0',
     errorBanner:
-      'rounded-lg flex-auto max-w-[min(50rem,90vw)] mr-1 [&_details]:max-h-full [&:has(details[open])]:h-[min(50vh,16rem)]  overflow-auto resize max-h-full',
+      'mr-1 max-h-full max-w-[min(50rem,90vw)] flex-auto resize overflow-auto rounded-lg [&_details]:max-h-full [&:has(details[open])]:h-[min(50vh,16rem)]',
   },
   variants: {
     isRetrying: {

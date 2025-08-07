@@ -10,11 +10,11 @@ interface DetailsProps {
 }
 
 const styles = tv({
-  base: 'group bg-white rounded-xl border text-gray-800 shadow-xs p-1 has-[+details]:rounded-b-none has-[+details]:border-b-0 [&+details]:rounded-t-none [&:not([open]):has(+details)>summary]:rounded-b-none [&[open]>summary]:rounded-b-none [&+details>summary]:rounded-t-none',
+  base: 'group rounded-xl border bg-white p-1 text-gray-800 shadow-xs has-[+details]:rounded-b-none has-[+details]:border-b-0 [&+details]:rounded-t-none [&+details>summary]:rounded-t-none [&:not([open]):has(+details)>summary]:rounded-b-none [&[open]>summary]:rounded-b-none',
   variants: {
     isDisabled: {
       false: '',
-      true: '[&>summary]:pointer-events-none cursor-not-allowed',
+      true: 'cursor-not-allowed [&>summary]:pointer-events-none',
     },
   },
   defaultVariants: {

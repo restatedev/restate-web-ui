@@ -6,7 +6,7 @@ import {
 import { tv } from 'tailwind-variants';
 
 const styles = tv({
-  base: 'outline-0 p-1 border border-gray-300 flex flex-col gap-1 rounded-md',
+  base: 'flex flex-col gap-1 rounded-md border border-gray-300 p-1 outline-0',
 });
 
 export function StyledListBox<T extends object>({

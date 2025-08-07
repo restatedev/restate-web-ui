@@ -8,7 +8,7 @@ import { useTooltipWithHover } from './useTooltipWithHover';
 import { tv } from 'tailwind-variants';
 
 const styles = tv({
-  base: 'hover:bg-black/5 decoration-zinc-400 rounded-xs mx-[-0.1em] px-[0.1em] underline-offset-[0.2em] decoration-from-font decoration-dashed underline max-w-full truncate',
+  base: 'mx-[-0.1em] max-w-full truncate rounded-xs px-[0.1em] underline decoration-zinc-400 decoration-dashed decoration-from-font underline-offset-[0.2em] hover:bg-black/5',
 });
 export function DateTooltip({
   date,

@@ -9,7 +9,7 @@ import type { Key, Selection } from 'react-aria-components';
 export type DropdownMenuSelection = Selection;
 
 const styles = tv({
-  base: 'dropdown-menu p-1 outline outline-0 max-h-[inherit] overflow-auto [clip-path:inset(0_0_0_0_round_.75rem)] [&~.dropdown-menu]:pt-0',
+  base: 'dropdown-menu max-h-[inherit] overflow-auto p-1 outline outline-0 [clip-path:inset(0_0_0_0_round_.75rem)] [&~.dropdown-menu]:pt-0',
 });
 function StyledDropdownMenu<T extends object>({
   className,

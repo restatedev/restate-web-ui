@@ -9,7 +9,7 @@ import {
 import { tv } from 'tailwind-variants';
 
 const styles = tv({
-  base: 'group dropdown-item flex rounded-xl items-center gap-4 cursor-default select-none py-2 px-3 outline outline-0 text-sm forced-color-adjust-none',
+  base: 'group dropdown-item flex cursor-default items-center gap-4 rounded-xl px-3 py-2 text-sm outline outline-0 forced-color-adjust-none select-none',
   variants: {
     isDisabled: {
       false: 'text-gray-900 dark:text-zinc-100',
@@ -22,7 +22,7 @@ const styles = tv({
 });
 
 const destructiveStyles = tv({
-  base: 'group dropdown-item flex rounded-xl items-center gap-4 cursor-default select-none py-2 px-3 outline outline-0 text-sm forced-color-adjust-none',
+  base: 'group dropdown-item flex cursor-default items-center gap-4 rounded-xl px-3 py-2 text-sm outline outline-0 forced-color-adjust-none select-none',
   variants: {
     isDisabled: {
       false: 'text-red-600 dark:text-zinc-100',

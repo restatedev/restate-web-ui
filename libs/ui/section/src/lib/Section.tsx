@@ -14,8 +14,8 @@ const styles = tv({
   base: 'section',
   variants: {
     variant: {
-      standard: 'flex flex-col bg-gray-100 rounded-xl p-0.5',
-      'two-cols': 'grid gap-x-10 gap-y-4 grid-cols-1 sm:grid-cols-[20ch_1fr]',
+      standard: 'flex flex-col rounded-xl bg-gray-100 p-0.5',
+      'two-cols': 'grid grid-cols-1 gap-x-10 gap-y-4 sm:grid-cols-[20ch_1fr]',
     },
   },
   defaultVariants: {
@@ -42,9 +42,9 @@ const stylesSectionTitle = tv({
   base: '',
   variants: {
     variant: {
-      standard: 'text-xs uppercase font-semibold text-gray-400 px-2 pt-2 pb-1',
+      standard: 'px-2 pt-2 pb-1 text-xs font-semibold text-gray-400 uppercase',
       'two-cols':
-        'flex flex-col gap-1 col-start-1 text-base sm:pt-3 font-semibold leading-7 text-gray-900 [&_p]:text-sm [&_p]:leading-6 [&_p]:text-gray-600 [&_p]:font-normal',
+        'col-start-1 flex flex-col gap-1 text-base leading-7 font-semibold text-gray-900 sm:pt-3 [&_p]:text-sm [&_p]:leading-6 [&_p]:font-normal [&_p]:text-gray-600',
     },
   },
 });
@@ -62,12 +62,12 @@ const stylesSectionContent = tv({
   base: '',
   variants: {
     raised: {
-      true: 'bg-white shadow-xs border',
+      true: 'border bg-white shadow-xs',
       false: '',
     },
     variant: {
-      standard: 'p-3 rounded-[calc(0.75rem-0.125rem)] text-sm',
-      'two-cols': 'col-start-1 sm:col-start-2 min-w-0',
+      standard: 'rounded-[calc(0.75rem-0.125rem)] p-3 text-sm',
+      'two-cols': 'col-start-1 min-w-0 sm:col-start-2',
     },
   },
   defaultVariants: {

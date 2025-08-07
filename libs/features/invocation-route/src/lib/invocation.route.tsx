@@ -17,7 +17,7 @@ import { WorkflowKeySection } from './WorkflowKeySection';
 import { tv } from 'tailwind-variants';
 
 const metadataContainerStyles = tv({
-  base: 'mt-6 rounded-xl grid-cols-1 md:grid-cols-2 gap-2 gap-y-4 [&:has(*)]:grid hidden',
+  base: 'mt-6 hidden grid-cols-1 gap-2 gap-y-4 rounded-xl md:grid-cols-2 [&:has(*)]:grid',
   variants: {
     isVirtualObject: {
       true: 'lg:grid-cols-2 2xl:grid-cols-4',
@@ -34,7 +34,7 @@ const metadataContainerStyles = tv({
   },
 });
 const lastFailureContainer = tv({
-  base: 'min-w-0 p-0 col-span-full rounded-xl border bg-gray-200/50 rounded-xl ',
+  base: 'col-span-full min-w-0 rounded-xl border bg-gray-200/50 p-0',
 });
 
 function Component() {

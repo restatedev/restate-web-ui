@@ -107,7 +107,7 @@ function EditStateTrigger(props: ComponentProps<typeof Button>) {
 }
 
 const actionButtonStyles = tv({
-  base: 'absolute invisible drop-shadow-[-20px_2px_4px_rgba(255,255,255,0.4)] group-hover:visible right-full z-2 rounded-r-none px-2 py-0.5 translate-x-px [font-size:inherit] [line-height:inherit] rounded-l-md ',
+  base: 'invisible absolute right-full z-2 translate-x-px rounded-l-md rounded-r-none px-2 py-0.5 [font-size:inherit] [line-height:inherit] drop-shadow-[-20px_2px_4px_rgba(255,255,255,0.4)] group-hover:visible',
 });
 
 function Component() {
@@ -649,12 +649,12 @@ function Component() {
 }
 
 const stylesKey = tv({
-  base: 'relative text-zinc-600 font-mono -ml-1 w-fit max-w-full',
+  base: 'relative -ml-1 w-fit max-w-full font-mono text-zinc-600',
   slots: {
     text: '',
-    container: 'pl-1 inline-flex items-center w-full align-middle',
-    link: "before:rounded-lg m-0.5 text-zinc-500 outline-offset-0 ml-0 rounded-full  before:absolute before:inset-0 before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5",
-    linkIcon: 'w-4 h-4 text-current shrink-0',
+    container: 'inline-flex w-full items-center pl-1 align-middle',
+    link: "m-0.5 ml-0 rounded-full text-zinc-500 outline-offset-0 before:absolute before:inset-0 before:rounded-lg before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5",
+    linkIcon: 'h-4 w-4 shrink-0 text-current',
   },
 });
 

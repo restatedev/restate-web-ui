@@ -12,7 +12,7 @@ export const fieldBorderStyles = tv({
   variants: {
     isFocusWithin: {
       false: 'border-gray-300 dark:border-zinc-500',
-      true: 'border-gray-600 dark:border-zinc-300 rounded-[0.625rem] outline-offset-8',
+      true: 'rounded-[0.625rem] border-gray-600 outline-offset-8 dark:border-zinc-300',
     },
     isInvalid: {
       true: 'border-red-600 dark:border-red-600 forced-colors:border-[Mark]',
@@ -25,7 +25,7 @@ export const fieldBorderStyles = tv({
 
 const fieldGroupStyles = tv({
   extend: focusRing,
-  base: 'group flex items-start flex-col',
+  base: 'group flex flex-col items-start',
   variants: fieldBorderStyles.variants,
 });
 

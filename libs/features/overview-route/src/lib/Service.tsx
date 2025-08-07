@@ -17,7 +17,7 @@ import { useActiveSidebarParam } from '@restate/ui/layout';
 import { Handler } from './Handler';
 
 const styles = tv({
-  base: ' w-full rounded-2xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] transform transition',
+  base: 'w-full transform rounded-2xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] transition',
   variants: {
     isMatching: {
       true: '',
@@ -37,7 +37,7 @@ const styles = tv({
 });
 
 const serviceLinkStyles = tv({
-  base: "outline-offset-0 rounded-full before:absolute before:inset-0 before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5",
+  base: "rounded-full outline-offset-0 before:absolute before:inset-0 before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5",
   variants: {
     isMatching: {
       true: 'before:rounded-t-[0.9rem]',
@@ -50,12 +50,12 @@ const serviceLinkStyles = tv({
 });
 
 const serviceStyles = tv({
-  base: 'w-full rounded-2xl border  shadow-zinc-800/3 transform transition overflow-hidden',
+  base: 'w-full transform overflow-hidden rounded-2xl border shadow-zinc-800/3 transition',
   variants: {
     isSelected: {
-      true: 'bg-white shadow-md scale-105',
+      true: 'scale-105 bg-white shadow-md',
       false:
-        'border-white/50 bg-linear-to-b to-gray-50/80 from-gray-50 shadow-xs scale-100',
+        'scale-100 border-white/50 bg-linear-to-b from-gray-50 to-gray-50/80 shadow-xs',
     },
   },
   defaultVariants: { isSelected: false },

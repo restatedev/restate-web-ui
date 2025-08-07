@@ -14,7 +14,7 @@ import { EntryExpression } from './EntryExpression';
 import { Headers } from '../Headers';
 
 const styles = tv({
-  base: 'flex flex-row gap-1.5 items-center relative flex-auto',
+  base: 'relative flex flex-auto flex-row items-center gap-1.5',
 });
 export function Call({
   entry,

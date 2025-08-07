@@ -2,7 +2,7 @@ import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { tv } from 'tailwind-variants';
 
 const styles = tv({
-  base: 'uppercase max-w-[12ch] truncate shrink-0 font-semibold text-[85%] font-mono items-center rounded-xl px-2 leading-4 bg-white/50 ring-1 ring-inset ring-zinc-500/20 text-zinc-500',
+  base: 'max-w-[12ch] shrink-0 items-center truncate rounded-xl bg-white/50 px-2 font-mono text-[85%] leading-4 font-semibold text-zinc-500 uppercase ring-1 ring-zinc-500/20 ring-inset',
 });
 export function Revision({
   revision,

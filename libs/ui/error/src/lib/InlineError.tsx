@@ -7,7 +7,7 @@ export interface InlineErrorProps {
 }
 
 const styles = tv({
-  base: 'inline-flex gap-1 items-center text-start text-red-600',
+  base: 'inline-flex items-center gap-1 text-start text-red-600',
 });
 export function InlineError({
   children,
