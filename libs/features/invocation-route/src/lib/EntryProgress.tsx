@@ -19,7 +19,7 @@ const pointStyles = tv({
   slots: {
     line: 'absolute left-px top-1/2  rounded-full  h-1 w-1 -translate-x-1/2 -translate-y-1/2',
     circle:
-      'absolute shadow-sm left-px top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full h-2.5 w-2.5 bg-inherit border',
+      'absolute shadow-xs left-px top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full h-2.5 w-2.5 bg-inherit border',
   },
   variants: {
     variant: {
@@ -92,7 +92,7 @@ function Point({
 const lineStyles = tv({
   base: '',
   slots: {
-    line: 'via-100% relative h-full rounded-md shadow-sm border border-white/80 bg-linear-to-r',
+    line: 'via-100% relative h-full rounded-md shadow-xs border border-white/80 bg-linear-to-r',
   },
   variants: {
     variant: {

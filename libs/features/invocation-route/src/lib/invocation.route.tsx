@@ -84,7 +84,7 @@ function Component() {
           </Link>
           <div className="flex @2xl:flex-row flex-col gap-x-2 gap-y-1.5 @2xl:items-center relative ">
             <h1 className="text-lg flex items-center font-semibold font-mono pb-1 text-gray-900 sm:text-lg max-w-[20ch] truncate gap-1">
-              <div className="mr-1.5 shrink-0 bg-white border rounded-xl shadow-sm ">
+              <div className="mr-1.5 shrink-0 bg-white border rounded-xl shadow-xs ">
                 <Icon
                   name={IconName.Invocation}
                   className="w-8 h-8 fill-blue-50 text-blue-400 drop-shadow-md p-1.5"

@@ -150,7 +150,7 @@ function DeploymentContent({ deployment }: { deployment: string }) {
                   <div className="w-full h-6 animate-pulse delay-200 rounded-b-[calc(0.75rem-0.125rem)] bg-white" />
                 </div>
               ) : (
-                <div className="flex flex-col shadow-sm border rounded-[calc(0.75rem-0.125rem)]">
+                <div className="flex flex-col shadow-xs border rounded-[calc(0.75rem-0.125rem)]">
                   {additionalHeaders.map(([name, value]) => (
                     <Header name={name} value={value} key={name} />
                   ))}

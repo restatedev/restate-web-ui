@@ -148,7 +148,7 @@ export function InputOutput({
           ) : (
             <PopoverHoverTrigger>
               <Button
-                className="basis-20 grow max-w-fit truncate font-mono text-inherit [font-size:inherit] px-0.5 py-0 rounded-sm underline-offset-4 decoration-from-font decoration-dashed underline "
+                className="basis-20 grow max-w-fit truncate font-mono text-inherit [font-size:inherit] px-0.5 py-0 rounded-xs underline-offset-4 decoration-from-font decoration-dashed underline "
                 variant="icon"
               >
                 <span className="truncate pr-0.5">{name}</span>

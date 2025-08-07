@@ -97,7 +97,7 @@ export function Nav({ children, className, ariaCurrentValue }: NavProps) {
         ref={containerElementRef}
       >
         <div
-          className="h-full [&:not(:has(+ul>li>a[data-active=true]))]:hidden bg-white absolute top-0 transition-all ease-in-out duration-300 border border-black/10 shadow-sm rounded-xl"
+          className="h-full [&:not(:has(+ul>li>a[data-active=true]))]:hidden bg-white absolute top-0 transition-all ease-in-out duration-300 border border-black/10 shadow-xs rounded-xl"
           ref={activeIndicatorElement}
         />
         <ul className={styles({ className })}>{children}</ul>

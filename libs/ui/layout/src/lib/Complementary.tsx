@@ -40,7 +40,7 @@ export function Complementary({
       <LayoutOutlet zone={LayoutZone.Complementary}>
         <div
           data-top={isOnTop}
-          className="data-[top=false]:overflow-hidden duration-250 [&[data-top=false]:has(~[data-top=false])]:shadow-none data-[top=true]:z-1 data-[top=true]:order-1 transition-all min-h-0 min-w-0 p-1.5 border shadow-lg 3xl:shadow-sm shadow-zinc-800/5 bg-gray-50/80 backdrop-blur-xl backdrop-saturate-200 rounded-[1.125rem] max-h-[inherit] flex flex-col w-full"
+          className="data-[top=false]:overflow-hidden duration-250 [&[data-top=false]:has(~[data-top=false])]:shadow-none data-[top=true]:z-1 data-[top=true]:order-1 transition-all min-h-0 min-w-0 p-1.5 border shadow-lg 3xl:shadow-xs shadow-zinc-800/5 bg-gray-50/80 backdrop-blur-xl backdrop-saturate-200 rounded-[1.125rem] max-h-[inherit] flex flex-col w-full"
         >
           <FocusScope restoreFocus autoFocus>
             <div

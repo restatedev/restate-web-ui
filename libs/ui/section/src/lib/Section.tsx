@@ -62,7 +62,7 @@ const stylesSectionContent = tv({
   base: '',
   variants: {
     raised: {
-      true: 'bg-white shadow-sm border',
+      true: 'bg-white shadow-xs border',
       false: '',
     },
     variant: {

@@ -71,7 +71,7 @@ const HelpTooltipTrigger = forwardRef<
       {...focusableProps}
       className={helpStyles({ className })}
     >
-      <span className="group-hover:bg-black/5 rounded-sm mx-[-0.1em] px-[0.1em] ">
+      <span className="group-hover:bg-black/5 rounded-xs mx-[-0.1em] px-[0.1em] ">
         {children}{' '}
       </span>
       <sup className="-ml-[0.1em] -mr-[0.4em]">

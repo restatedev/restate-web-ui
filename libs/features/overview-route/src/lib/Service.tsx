@@ -55,7 +55,7 @@ const serviceStyles = tv({
     isSelected: {
       true: 'bg-white shadow-md scale-105',
       false:
-        'border-white/50 bg-linear-to-b to-gray-50/80 from-gray-50 shadow-sm scale-100',
+        'border-white/50 bg-linear-to-b to-gray-50/80 from-gray-50 shadow-xs scale-100',
     },
   },
   defaultVariants: { isSelected: false },
@@ -157,7 +157,7 @@ export function Service({
       <div className={serviceStyles({ isSelected })} data-selected={isSelected}>
         <div className="relative p-2 w-full rounded-[calc(0.75rem-0.125rem)] flex items-center gap-2 flex-row text-sm">
           <div className="h-8 w-8 shrink-0">
-            <div className="rounded-lg bg-white border shadow-sm text-blue-400 h-full w-full flex items-center justify-center">
+            <div className="rounded-lg bg-white border shadow-xs text-blue-400 h-full w-full flex items-center justify-center">
               <Icon
                 name={IconName.Box}
                 className="w-full h-full p-1.5 fill-blue-50 text-blue-400 drop-shadow-md"

@@ -181,9 +181,9 @@ function EditStateInner({
           isPartial ? (
             <>
               Update "
-              <code className="rounded bg-gray-100 px-[0.5ch]">{key}</code>"{' '}
+              <code className="rounded-sm bg-gray-100 px-[0.5ch]">{key}</code>"{' '}
               value in <code>{service}</code> state for{' '}
-              <code className="rounded bg-gray-100 px-[0.5ch]">
+              <code className="rounded-sm bg-gray-100 px-[0.5ch]">
                 {objectKey}
               </code>
             </>
@@ -191,7 +191,7 @@ function EditStateInner({
             <>
               {isDeleting ? 'Delete' : 'Replace'} <code>{service}</code> state
               for{' '}
-              <code className="rounded bg-gray-100 px-[0.5ch]">
+              <code className="rounded-sm bg-gray-100 px-[0.5ch]">
                 {objectKey}
               </code>
             </>

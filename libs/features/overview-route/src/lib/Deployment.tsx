@@ -18,7 +18,7 @@ const styles = tv({
   base: 'flex flex-row items-center gap-2 relative border -m-1 p-1 transition-all ease-in-out text-code',
   variants: {
     isSelected: {
-      true: 'bg-white shadow-sm shadow-zinc-800/3 rounded-lg border -mx-1 px-1 z-10 font-medium',
+      true: 'bg-white shadow-xs shadow-zinc-800/3 rounded-lg border -mx-1 px-1 z-10 font-medium',
       false: 'border-transparent',
     },
   },
@@ -57,7 +57,7 @@ export function Deployment({
 
   return (
     <div className={styles({ className, isSelected })}>
-      <div className="shrink-0 h-6 w-6 bg-white border shadow-sm rounded-md">
+      <div className="shrink-0 h-6 w-6 bg-white border shadow-xs rounded-md">
         <Icon
           name={isHttpDeployment(deployment) ? IconName.Http : IconName.Lambda}
           className="w-full h-full text-zinc-400 p-1"

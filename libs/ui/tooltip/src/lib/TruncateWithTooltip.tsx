@@ -107,7 +107,7 @@ export function TruncateWithTooltip({
             {!hideCopy && (
               <Copy
                 copyText={copyTextProp ?? triggerRef.current?.textContent ?? ''}
-                className="sticky top-0 right-0 translate-x-1 p-1 [&_svg]:w-3 [&_svg]:h-3  [&_svg]:text-gray-200 bg-zinc-800/90 hover:bg-zinc-600 pressed:bg-zinc-500 rounded-sm"
+                className="sticky top-0 right-0 translate-x-1 p-1 [&_svg]:w-3 [&_svg]:h-3  [&_svg]:text-gray-200 bg-zinc-800/90 hover:bg-zinc-600 pressed:bg-zinc-500 rounded-xs"
               />
             )}
           </div>

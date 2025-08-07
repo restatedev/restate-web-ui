@@ -195,7 +195,7 @@ function StatePanelContent() {
               <div>
                 <div className="relative mt-12">
                   <div className="absolute left-0 right-0 bottom-2  ">
-                    <div className=" [clip-path:polygon(0%_0%,100%_50%,0%_50%)] bg-zinc-200 rounded-sm h-3" />
+                    <div className=" [clip-path:polygon(0%_0%,100%_50%,0%_50%)] bg-zinc-200 rounded-xs h-3" />
                     <div className="-top-1 absolute right-2 -translate-y-1/2 translate-x-1/2 flex flex-col items-center">
                       <span className="text-xs font-medium text-zinc-400 font-mono">
                         Head
@@ -206,7 +206,7 @@ function StatePanelContent() {
                             href={`?${INVOCATION_QUERY_NAME}=${queueData?.head}`}
                             aria-label={queueData?.head}
                             variant="secondary"
-                            className="w-6 h-6 bg-white shadow-sm border rounded-lg block"
+                            className="w-6 h-6 bg-white shadow-xs border rounded-lg block"
                           >
                             <Icon
                               name={IconName.Invocation}

@@ -11,7 +11,7 @@ export function Headers({
         <div className="pl-2">Name</div>
         <div className="pl-2">Value</div>
       </div>
-      <div className="flex flex-col shadow-sm border rounded-[calc(0.75rem-0.125rem)]">
+      <div className="flex flex-col shadow-xs border rounded-[calc(0.75rem-0.125rem)]">
         {headers.map(({ key: name, value }) => (
           <Header name={name} value={value} key={name} />
         ))}

@@ -32,7 +32,7 @@ import { mergeRefs, useObjectRef } from '@react-aria/utils';
 
 const tagStyles = tv({
   extend: focusRing,
-  base: 'bg-white/90 border text-zinc-800 shadow-sm  flex max-w-fit cursor-default items-center gap-x-1 rounded-md pl-1.5 py-0.5 text-xs font-medium outline-0 transition ',
+  base: 'bg-white/90 border text-zinc-800 shadow-xs  flex max-w-fit cursor-default items-center gap-x-1 rounded-md pl-1.5 py-0.5 text-xs font-medium outline-0 transition ',
 });
 function DefaultTag<
   T extends {

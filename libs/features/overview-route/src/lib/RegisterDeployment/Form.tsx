@@ -36,7 +36,7 @@ function CustomRadio({
         isPressed,
         isDisabled,
       }) => `${className}
-        group relative flex cursor-default rounded-lg shadow-none outline-none bg-clip-padding border
+        group relative flex cursor-default rounded-lg shadow-none outline-hidden bg-clip-padding border
         ${
           isFocusVisible
             ? 'ring-2 ring-blue-600 ring-offset-1 ring-offset-white/80'
@@ -46,7 +46,7 @@ function CustomRadio({
           isSelected
             ? `${
                 isPressed ? 'bg-gray-50' : 'bg-white'
-              } border shadow-sm text-gray-800 scale-105 z-10`
+              } border shadow-xs text-gray-800 scale-105 z-10`
             : 'border-transparent text-gray-500'
         }
         ${isPressed && !isSelected ? 'bg-gray-100' : ''}

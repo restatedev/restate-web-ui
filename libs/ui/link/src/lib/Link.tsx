@@ -40,11 +40,11 @@ const styles = tv({
   variants: {
     variant: {
       button:
-        'no-underline bg-linear-to-b from-blue-600/90 to-blue-600 hover:from-blue-700 hover:to-blue-700 pressed:from-blue-800 pressed:to-blue-800 text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2)] drop-shadow-sm hover:shadow-none pressed:shadow-none px-5 py-2 text-sm text-center transition rounded-xl border border-black/10',
+        'no-underline bg-linear-to-b from-blue-600/90 to-blue-600 hover:from-blue-700 hover:to-blue-700 pressed:from-blue-800 pressed:to-blue-800 text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2)] drop-shadow-xs hover:shadow-none pressed:shadow-none px-5 py-2 text-sm text-center transition rounded-xl border border-black/10',
       'secondary-button':
-        'bg-white hover:bg-gray-100 pressed:bg-gray-200 text-gray-800 no-underline shadow-sm px-5 py-2 text-sm text-center transition rounded-xl border',
+        'bg-white hover:bg-gray-100 pressed:bg-gray-200 text-gray-800 no-underline shadow-xs px-5 py-2 text-sm text-center transition rounded-xl border',
       'destructive-button':
-        'border border-black/10 bg-linear-to-b from-red-700/95 to-red-700 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)] drop-shadow-sm hover:from-red-800 hover:to-red-800 pressed:from-red-900 pressed:to-red-900 text-white hover:shadow-none pressed:shadow-none no-underline px-5 py-2 text-sm text-center transition rounded-xl border',
+        'border border-black/10 bg-linear-to-b from-red-700/95 to-red-700 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)] drop-shadow-xs hover:from-red-800 hover:to-red-800 pressed:from-red-900 pressed:to-red-900 text-white hover:shadow-none pressed:shadow-none no-underline px-5 py-2 text-sm text-center transition rounded-xl border',
       primary:
         'text-blue-600 dark:text-blue-500 underline decoration-blue-600/60 hover:decoration-blue-600',
       secondary:

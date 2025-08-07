@@ -80,7 +80,7 @@ function Service({
           isExpanded ? '[&_.disclosure-icon]:rotate-180' : ''
         }
       >
-        <div className="relative w-full rounded-[calc(0.75rem-0.125rem)] bg-white border shadow-sm flex items-center flex-row p-0 pr-2 text-sm">
+        <div className="relative w-full rounded-[calc(0.75rem-0.125rem)] bg-white border shadow-xs flex items-center flex-row p-0 pr-2 text-sm">
           <Button
             variant="icon"
             slot="trigger"

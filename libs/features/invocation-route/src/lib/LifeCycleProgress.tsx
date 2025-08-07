@@ -60,7 +60,7 @@ function unitInterval(duration: number) {
 }
 
 const styles = tv({
-  base: 'rounded flex flex-col items-center relative rounded-t-2xl shadow-sm rounded-2xl rounded-l-none border-black/10',
+  base: 'rounded-sm flex flex-col items-center relative rounded-t-2xl shadow-xs rounded-2xl rounded-l-none border-black/10',
 });
 export function LifeCycleProgress({
   className,
@@ -145,7 +145,7 @@ export function Units({
 
   return (
     <>
-      <div className="absolute h-12 -left-6 right-0 border-transparent bg-gray-100 border-white rounded-2xl shadow-sm border border-t-2 z-0"></div>
+      <div className="absolute h-12 -left-6 right-0 border-transparent bg-gray-100 border-white rounded-2xl shadow-xs border border-t-2 z-0"></div>
       {cancelEvent && (
         <div className="transition-all duration-1000 overflow-hidden px-2 top-12 pointer-events-none bottom-0 absolute right-0 left-0">
           <div
@@ -170,7 +170,7 @@ export function Units({
           className=" transition-all duration-1000 right-0 rounded-r-2xl absolute border-l-2 text-gray-500  text-2xs font-sans border-white/80  bottom-0 top-px "
         >
           <div className="absolute inset-0 rounded-r-2xl  mix-blend-screen [background:repeating-linear-gradient(-45deg,--theme(--color-white/.6),--theme(--color-white/.6)_2px,--theme(--color-white/0)_2px,--theme(--color-white/0)_4px)] "></div>
-          <div className="absolute mt-0.5 ml-px text-white border border-white text-2xs bg-zinc-500 px-1 rounded z-4">
+          <div className="absolute mt-0.5 ml-px text-white border border-white text-2xs bg-zinc-500 px-1 rounded-sm z-4">
             Now
           </div>
         </div>

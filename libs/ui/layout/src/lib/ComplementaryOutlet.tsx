@@ -11,7 +11,7 @@ export function ComplementaryOutlet(
   return (
     <>
       <div
-        className={`${styles.overlay} sm:pointer-events-none bg-none 3xl:[background-image:none] sm:bg-linear-to-l from-zinc-800/20 to-transparent to-50% fixed z-100 sm:z-30 inset-0 bg-gray-800 sm:bg-transparent bg-opacity-30 transition-opacity`}
+        className={`${styles.overlay} sm:pointer-events-none bg-none 3xl:[background-image:none] sm:bg-linear-to-l from-zinc-800/20 to-transparent to-50% fixed z-100 sm:z-30 inset-0 bg-gray-800/30 sm:bg-transparent transition-opacity`}
       />
       <aside className="transition translate-x-[calc(-50%-50vw)] left-[100vw] sm:translate-x-[calc(-100%-1.5rem)] lg:translate-x-[calc(-100%-2rem)] 3xl:translate-x-[calc(-50vw+min(50rem,calc(50vw-400px-2rem)))] [&:has(>*>*)]:duration-250 [&:has(>*>*)]:animate-in [&:has(>*>*)]:slide-in-from-right [&:has(>*>*)]:fade-in [&:not(has(>*>*))]:duration-250 flex flex-col top-[50%] -translate-y-1/2 sm:translate-y-0  sm:top-24 3xl:top-[calc(0.75rem+3.5rem+2.5rem)] 3xl:pt-10 [&:not(:has([data-complementary-content]>*))]:hidden fixed z-100 sm:z-50 lg:bottom-6 sm:bottom-6 max-h-[90vh] max-w-screen sm:max-h-none lg:max-h-none 3xl:h2-fit 3xl:max-h-[1400px] ">
         <div

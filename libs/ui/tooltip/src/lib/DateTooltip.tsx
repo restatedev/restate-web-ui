@@ -8,7 +8,7 @@ import { useTooltipWithHover } from './useTooltipWithHover';
 import { tv } from 'tailwind-variants';
 
 const styles = tv({
-  base: 'hover:bg-black/5 decoration-zinc-400 rounded-sm mx-[-0.1em] px-[0.1em] underline-offset-[0.2em] decoration-from-font decoration-dashed underline max-w-full truncate',
+  base: 'hover:bg-black/5 decoration-zinc-400 rounded-xs mx-[-0.1em] px-[0.1em] underline-offset-[0.2em] decoration-from-font decoration-dashed underline max-w-full truncate',
 });
 export function DateTooltip({
   date,
@@ -53,16 +53,16 @@ export function DateTooltip({
               <h6 className="text-sm font-semibold text-gray-100 mb-2">
                 {title}
               </h6>
-              <div className="bg-zinc-700 rounded px-1 font-mono">
+              <div className="bg-zinc-700 rounded-sm px-1 font-mono">
                 {formatDateTime(date, 'system')}
               </div>
-              <div className="bg-zinc-700 rounded px-1 font-mono">
+              <div className="bg-zinc-700 rounded-sm px-1 font-mono">
                 {formatDateTime(date, 'UTC')}
               </div>
             </div>
             <Copy
               copyText={formatDateToISO(date)}
-              className="p-1 -m-1 -mt-0.5 [&_svg]:w-3 [&_svg]:h-3  [&_svg]:text-gray-200 bg-transparent hover:bg-zinc-600 pressed:bg-zinc-500 rounded-sm"
+              className="p-1 -m-1 -mt-0.5 [&_svg]:w-3 [&_svg]:h-3  [&_svg]:text-gray-200 bg-transparent hover:bg-zinc-600 pressed:bg-zinc-500 rounded-xs"
             />
           </div>
         </TooltipContent>

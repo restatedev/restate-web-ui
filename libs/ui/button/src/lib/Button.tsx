@@ -25,14 +25,14 @@ export interface ButtonProps {
 
 const styles = tv({
   extend: focusRing,
-  base: 'px-5 py-2 text-sm text-center transition rounded-xl border border-black/10 dark:border-white/10 shadow-sm dark:shadow-none cursor-default',
+  base: 'px-5 py-2 text-sm text-center transition rounded-xl border border-black/10 dark:border-white/10 shadow-xs dark:shadow-none cursor-default',
   variants: {
     variant: {
       primary:
-        'bg-linear-to-b from-blue-600/90 to-blue-600 disabled:shadow-none disabled:drop-shadow-none hover:from-blue-700 hover:to-blue-700 pressed:from-blue-800 pressed:to-blue-800 text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2)] drop-shadow-sm hover:shadow-none pressed:shadow-none',
+        'bg-linear-to-b from-blue-600/90 to-blue-600 disabled:shadow-none disabled:drop-shadow-none hover:from-blue-700 hover:to-blue-700 pressed:from-blue-800 pressed:to-blue-800 text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2)] drop-shadow-xs hover:shadow-none pressed:shadow-none',
       secondary: 'bg-white hover:bg-gray-100 pressed:bg-gray-200 text-gray-800',
       destructive:
-        'bg-linear-to-b from-red-700/95 to-red-700  shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)] drop-shadow-sm hover:from-red-800 hover:to-red-800 pressed:from-red-900 pressed:to-red-900 text-white hover:shadow-none pressed:shadow-none',
+        'bg-linear-to-b from-red-700/95 to-red-700  shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)] drop-shadow-xs hover:from-red-800 hover:to-red-800 pressed:from-red-900 pressed:to-red-900 text-white hover:shadow-none pressed:shadow-none',
       icon: 'shadow-none border-0 p-1 flex items-center justify-center text-gray-600 hover:bg-black/5 pressed:bg-black/10 disabled:bg-transparent',
     },
     isDisabled: {

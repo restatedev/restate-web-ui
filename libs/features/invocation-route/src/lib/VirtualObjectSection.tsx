@@ -142,7 +142,7 @@ export function VirtualObjectSection({
             <div className="flex flex-col min-h-18 justify-center pt-8 pr-1">
               <div className="relative">
                 <div className="absolute left-0 right-0 bottom-2  ">
-                  <div className=" [clip-path:polygon(0%_0%,100%_50%,0%_50%)] bg-zinc-200 rounded-sm h-3" />
+                  <div className=" [clip-path:polygon(0%_0%,100%_50%,0%_50%)] bg-zinc-200 rounded-xs h-3" />
                   {((typeof position === 'number' && position > 0) ||
                     position === undefined) && (
                     <div className="top-1 absolute right-2 -translate-y-1/2 translate-x-1/2 flex flex-col items-center">
@@ -152,7 +152,7 @@ export function VirtualObjectSection({
                             href={`?${INVOCATION_QUERY_NAME}=${head}`}
                             aria-label={head}
                             variant="secondary"
-                            className="w-6 h-6 bg-white shadow-sm border rounded-lg block"
+                            className="w-6 h-6 bg-white shadow-xs border rounded-lg block"
                           >
                             <Icon
                               name={IconName.Invocation}
@@ -202,7 +202,7 @@ export function VirtualObjectSection({
                             </div>
                           }
                         >
-                          <div className="inset-0 shadow-sm w-4.5 h-4.5 bg-white rounded-full p-1.5">
+                          <div className="inset-0 shadow-xs w-4.5 h-4.5 bg-white rounded-full p-1.5">
                             <div className="bg-blue-600 rounded-full h-full w-full" />
                           </div>
                         </HoverTooltip>

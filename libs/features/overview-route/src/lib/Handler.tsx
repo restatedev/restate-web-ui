@@ -68,7 +68,7 @@ export function Handler({
   return (
     <div className={styles({ className })}>
       <div className="flex flex-row items-end gap-2 flex-auto min-w-0">
-        <div className="shrink-0 h-6 w-6 bg-white border shadow-sm rounded-md -mb-0.5">
+        <div className="shrink-0 h-6 w-6 bg-white border shadow-xs rounded-md -mb-0.5">
           <Icon
             name={IconName.Function}
             className="w-full h-full text-zinc-400"
@@ -176,7 +176,7 @@ function HandlerInputOutput({
 
   if (!isObjectSchema && hasSchema) {
     return (
-      <span className="basis-20 text-2xs text-zinc-500 grow max-w-fit truncate font-mono text-inherit px-0.5 py-0 rounded-sm ">
+      <span className="basis-20 text-2xs text-zinc-500 grow max-w-fit truncate font-mono text-inherit px-0.5 py-0 rounded-xs ">
         {schema.type ?? getContentTypeLabel(contentType)}
       </span>
     );
@@ -184,7 +184,7 @@ function HandlerInputOutput({
 
   if (!hasSchema && contentType === 'none') {
     return labelProp === 'Request' ? null : (
-      <span className="basis-20 text-2xs text-zinc-500 grow max-w-fit truncate font-mono text-inherit px-0.5 py-0 rounded-sm ">
+      <span className="basis-20 text-2xs text-zinc-500 grow max-w-fit truncate font-mono text-inherit px-0.5 py-0 rounded-xs ">
         void
       </span>
     );
@@ -195,7 +195,7 @@ function HandlerInputOutput({
         <Popover>
           <PopoverHoverTrigger>
             <Link
-              className="[&:not([href])]:cursor-default basis-20 grow max-w-fit truncate font-mono text-inherit [font-style:inherit] [font-size:inherit] px-0.5 py-0 rounded-sm underline-offset-4 decoration-from-font decoration-dashed underline "
+              className="[&:not([href])]:cursor-default basis-20 grow max-w-fit truncate font-mono text-inherit [font-style:inherit] [font-size:inherit] px-0.5 py-0 rounded-xs underline-offset-4 decoration-from-font decoration-dashed underline "
               variant="icon"
               {...(withPlayground && {
                 href: `?${SERVICE_PLAYGROUND_QUERY_PARAM}=${service}#/operations/${handler}`,

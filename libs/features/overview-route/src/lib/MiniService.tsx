@@ -22,7 +22,7 @@ export function MiniService({
 
   return (
     <div className={styles({ className })}>
-      <div className="shrink-0 h-6 w-6 bg-white border shadow-sm rounded-md">
+      <div className="shrink-0 h-6 w-6 bg-white border shadow-xs rounded-md">
         <Icon name={IconName.Box} className="w-full h-full text-zinc-400 p-1" />
       </div>
 

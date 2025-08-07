@@ -455,7 +455,7 @@ function Component() {
                               <Popover>
                                 <PopoverHoverTrigger>
                                   <Button
-                                    className="truncate font-mono text-inherit [font-size:inherit] px-0.5 py-0 rounded-sm underline-offset-4 decoration-from-font decoration-dashed "
+                                    className="truncate font-mono text-inherit [font-size:inherit] px-0.5 py-0 rounded-xs underline-offset-4 decoration-from-font decoration-dashed "
                                     variant="icon"
                                   >
                                     <span className="truncate pr-0.5">
@@ -480,7 +480,7 @@ function Component() {
                                             })
                                           }
                                           variant="secondary"
-                                          className="shrink-0 ml-auto flex items-center gap-1 text-xs font-normal rounded px-1.5 py-0"
+                                          className="shrink-0 ml-auto flex items-center gap-1 text-xs font-normal rounded-sm px-1.5 py-0"
                                         >
                                           Edit
                                           <Icon
@@ -533,7 +533,7 @@ function Component() {
           key={dataUpdate}
         >
           {!isPending && !error && totalSize > 1 && (
-            <div className="flex items-center bg-zinc-50 shadow-sm border rounded-lg py-0.5">
+            <div className="flex items-center bg-zinc-50 shadow-xs border rounded-lg py-0.5">
               <Button
                 variant="icon"
                 disabled={pageIndex === 0}

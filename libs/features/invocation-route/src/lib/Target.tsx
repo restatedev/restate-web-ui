@@ -34,7 +34,7 @@ function TargetTooltipContent({
   );
 }
 const styles = tv({
-  base: 'min-w-10 *:flex-auto *:basis-0 max-w-full flex-auto [&:has([data-pressed=true])]:shadow-none transition-all inline-flex relative shadow-sm pl-2 text-xs [--rounded-radius:0.5rem] [--rounded-radius-right:0.5rem] rounded-(--rounded-radius) bg-white ring-gray-200 text-zinc-600 font-medium ring-1 ring-inset',
+  base: 'min-w-10 *:flex-auto *:basis-0 max-w-full flex-auto [&:has([data-pressed=true])]:shadow-none transition-all inline-flex relative shadow-xs pl-2 text-xs [--rounded-radius:0.5rem] [--rounded-radius-right:0.5rem] rounded-(--rounded-radius) bg-white ring-gray-200 text-zinc-600 font-medium ring-1 ring-inset',
   variants: {
     withChildren: {
       true: '[&>*:first-child]:max-w-fit [&>*:first-child]:basis-auto',

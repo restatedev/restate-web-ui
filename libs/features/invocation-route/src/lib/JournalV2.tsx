@@ -35,7 +35,7 @@ const LazyPanelResizeHandle = lazy(() =>
 );
 
 const liveStyles = tv({
-  base: 'rounded text-gray-500 text-xs font-semibold uppercase flex items-center gap-1 px-2',
+  base: 'rounded-sm text-gray-500 text-xs font-semibold uppercase flex items-center gap-1 px-2',
   variants: {
     isLive: {
       true: '',
@@ -151,7 +151,7 @@ export function JournalV2({
 
   const entriesElements = (
     <>
-      <div className="ring-1 ring-black/5 shadow-sm z-10 h-12 box-border border-b border-transparent last:border-none flex items-center bg-gray-100 rounded-bl-2xl">
+      <div className="ring-1 ring-black/5 shadow-xs z-10 h-12 box-border border-b border-transparent last:border-none flex items-center bg-gray-100 rounded-bl-2xl">
         <Input
           entry={
             combinedEntries?.find(
@@ -271,7 +271,7 @@ export function JournalV2({
                     defaultSize={(1 - timelineWidth) * 100}
                     className="z-10 "
                   >
-                    <div className="border-0 border-white/50 border-r-0  bg-linear-to-b from-gray-50 to-white shadow-sm rounded-2xl rounded-r-none relative overflow-hidden ">
+                    <div className="border-0 border-white/50 border-r-0  bg-linear-to-b from-gray-50 to-white shadow-xs rounded-2xl rounded-r-none relative overflow-hidden ">
                       {entriesElements}
                     </div>
                   </LazyPanel>

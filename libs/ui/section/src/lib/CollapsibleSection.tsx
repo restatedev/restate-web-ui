@@ -50,7 +50,7 @@ const stylesSectionContent = tv({
   base: 'p-3 rounded-[calc(0.75rem-0.125rem)] text-sm',
   variants: {
     raised: {
-      true: 'bg-white shadow-sm border',
+      true: 'bg-white shadow-xs border',
       false: '',
     },
   },

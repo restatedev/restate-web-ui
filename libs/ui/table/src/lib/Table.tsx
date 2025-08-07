@@ -31,7 +31,7 @@ interface TableProps
 }
 
 const tableStyles = tv({
-  base: 'to-gray-50 from-gray-100 bg-linear-to-b [&:has([data-table-empty=true])]:bg-gray-50/50 shadow-sm shadow-zinc-800/5 [&:has([data-table-empty=true])]:shadow-none border rounded-xl overflow-hidden',
+  base: 'to-gray-50 from-gray-100 bg-linear-to-b [&:has([data-table-empty=true])]:bg-gray-50/50 shadow-xs shadow-zinc-800/5 [&:has([data-table-empty=true])]:shadow-none border rounded-xl overflow-hidden',
 });
 export function Table({ className, ...props }: PropsWithChildren<TableProps>) {
   return (
@@ -55,7 +55,7 @@ const columnGroupStyles = tv({
 
 const resizerStyles = tv({
   extend: focusRing,
-  base: 'resizer absolute right-0 w-px px-[8px] box-content py-1 h-5 bg-clip-content bg-gray-400 cursor-col-resize rounded resizing:bg-blue-600 resizing:w-[2px] resizing:pl-[7px] -outline-offset-2',
+  base: 'resizer absolute right-0 w-px px-[8px] box-content py-1 h-5 bg-clip-content bg-gray-400 cursor-col-resize rounded-sm resizing:bg-blue-600 resizing:w-[2px] resizing:pl-[7px] -outline-offset-2',
 });
 
 const columnStyles = tv({

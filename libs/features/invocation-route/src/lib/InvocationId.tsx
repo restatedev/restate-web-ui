@@ -28,7 +28,7 @@ const styles = tv({
     size: {
       sm: {
         base: 'text-xs',
-        icon: 'h-4 w-4 rounded [&>svg]:p-px bg-transparent border-none',
+        icon: 'h-4 w-4 rounded-sm [&>svg]:p-px bg-transparent border-none',
         text: 'text-2xs',
         link: 'before:rounded',
         container: '',
@@ -36,7 +36,7 @@ const styles = tv({
       },
       md: {
         base: 'text-2xs',
-        icon: 'h-6 w-6 rounded-lg shadow-sm',
+        icon: 'h-6 w-6 rounded-lg shadow-xs',
         text: 'text-2xs',
         link: 'before:rounded-lg',
         container: '',
@@ -44,7 +44,7 @@ const styles = tv({
       },
       default: {
         base: '',
-        icon: 'h-6 w-6 rounded-lg shadow-sm ',
+        icon: 'h-6 w-6 rounded-lg shadow-xs ',
         text: '',
         link: 'before:rounded-lg m-0.5',
         container: 'p-px',
@@ -52,7 +52,7 @@ const styles = tv({
       },
       icon: {
         base: '',
-        icon: 'h-6 w-6 rounded-lg shadow-sm  mr-0',
+        icon: 'h-6 w-6 rounded-lg shadow-xs  mr-0',
         text: 'w-0 text-2xs',
         link: 'before:rounded-lg m-0.5 -inset-px absolute rounded-lg',
         container: 'p-px',

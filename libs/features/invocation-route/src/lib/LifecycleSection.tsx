@@ -26,7 +26,7 @@ export function LifecycleSection({
         <div className="flex flex-col relative">
           <div className="flex items-baseline relative pl-6">
             <div className="absolute border-l left-[0.35rem] top-3.25  bottom-0" />
-            <div className="w-3 h-3 rounded-full shrink-0 bg-zinc-100 border border-zinc-200 shadow-sm absolute left-0 top-3.25 -translate-y-1/2" />
+            <div className="w-3 h-3 rounded-full shrink-0 bg-zinc-100 border border-zinc-200 shadow-xs absolute left-0 top-3.25 -translate-y-1/2" />
             <Badge className="border-transparent bg-transparent  text-zinc-500">
               Created
             </Badge>
@@ -39,7 +39,7 @@ export function LifecycleSection({
           {invocation.status !== 'running' && invocation.running_at && (
             <div className="flex items-baseline relative pl-6 pt-2">
               <div className="absolute border-l left-[0.35rem] top-0 bottom-0" />
-              <div className="w-3 h-3 rounded-full shrink-0 bg-zinc-100 border border-zinc-200 shadow-sm absolute left-0 top-5.25 -translate-y-1/2" />
+              <div className="w-3 h-3 rounded-full shrink-0 bg-zinc-100 border border-zinc-200 shadow-xs absolute left-0 top-5.25 -translate-y-1/2" />
 
               <Badge className="border-transparent bg-transparent  text-zinc-500">
                 Started to run
@@ -53,7 +53,7 @@ export function LifecycleSection({
           )}
           <div className="flex items-baseline relative pl-6 pt-2">
             <div className="absolute border-l left-[0.35rem] top-0 h-5.25 " />
-            <div className="w-3 h-3 rounded-full shrink-0 bg-white border border-zinc-200 shadow-sm absolute left-0 top-5.25 -translate-y-1/2 p-0.5">
+            <div className="w-3 h-3 rounded-full shrink-0 bg-white border border-zinc-200 shadow-xs absolute left-0 top-5.25 -translate-y-1/2 p-0.5">
               <div className="w-full h-full rounded-full shrink-0 bg-zinc-400" />
             </div>
             <Status invocation={invocation} />
