@@ -92,7 +92,7 @@ export function MonacoEditor({
   return (
     <div
       ref={setEl}
-      className="max-w-full h-full min-h-4 min-w-24 [&_.monaco-editor]:outline-hidden"
+      className="max-w-full h-full min-h-4 min-w-24 [&_.monaco-editor]:outline-hidden!"
     />
   );
 }

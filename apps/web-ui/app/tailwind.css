@@ -3,6 +3,8 @@
 @plugin "tailwindcss-animate";
 @plugin "@tailwindcss/forms";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @source "../../../libs/data-access/admin-api";
 @source "../../../libs/data-access/middleware-service-worker";
 @source "../../../libs/data-access/query";
