@@ -1,7 +1,7 @@
 import { PopoverContent } from '@restate/ui/popover';
 import type { PropsWithChildren } from 'react';
 import { Placement } from 'react-aria';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 interface DropdownPopoverProps {
   className?: string;

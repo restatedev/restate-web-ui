@@ -3,7 +3,7 @@ import {
   MenuProps as AriaMenuProps,
 } from 'react-aria-components';
 import { PropsWithChildren } from 'react';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import type { Key, Selection } from 'react-aria-components';
 
 export type DropdownMenuSelection = Selection;

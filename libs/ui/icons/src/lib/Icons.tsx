@@ -49,7 +49,7 @@ import {
   Play,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { RestateEnvironment } from './custom-icons/RestateEnvironment';
 import { Restate } from './custom-icons/Restate';
 import { CircleX } from './custom-icons/CircleX';

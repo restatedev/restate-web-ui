@@ -1,5 +1,5 @@
 import { forwardRef, type PropsWithChildren } from 'react';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import {
   PressEvent,
   Button as RACButton,

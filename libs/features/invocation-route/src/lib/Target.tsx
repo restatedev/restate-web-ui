@@ -5,7 +5,7 @@ import {
   TruncateTooltipTrigger,
 } from '@restate/ui/tooltip';
 import { PropsWithChildren, useRef } from 'react';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { SERVICE_QUERY_PARAM } from '@restate/features/overview-route';
 
 function TargetTooltipContent({

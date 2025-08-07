@@ -2,7 +2,7 @@ import {
   FieldError as AriaFieldError,
   FieldErrorProps,
 } from 'react-aria-components';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 interface FormFieldErrorProps extends Pick<FieldErrorProps, 'children'> {
   className?: string;

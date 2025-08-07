@@ -4,7 +4,7 @@ import { InlineTooltip } from '@restate/ui/tooltip';
 import { ERROR_CODES, RestateError } from '@restate/util/errors';
 import { PropsWithChildren } from 'react';
 import Markdown from 'react-markdown';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 const styles = tv({
   base: 'flex min-h-0 flex-col gap-2 rounded-xl bg-red-100 p-3 text-sm',

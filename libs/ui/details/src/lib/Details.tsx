@@ -1,5 +1,5 @@
 import { Children, PropsWithChildren, useId } from 'react';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { DetailsProvider } from './DetailsContext';
 import { isSummary } from './Summary';
 

@@ -3,7 +3,7 @@ import {
   ListBox as AriaListBox,
   ListBoxProps as AriaListBoxProps,
 } from 'react-aria-components';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 const styles = tv({
   base: 'flex flex-col gap-1 rounded-md border border-gray-300 p-1 outline-0',

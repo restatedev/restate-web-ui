@@ -1,5 +1,5 @@
 import { focusRing } from '@restate/ui/focus';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import {
   Cell as AriaCell,
   Row as AriaRow,

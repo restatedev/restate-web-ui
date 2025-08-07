@@ -6,7 +6,7 @@ import {
   PURGE_INVOCATION_QUERY_PARAM,
 } from './constants';
 import { Link } from '@restate/ui/link';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { SplitButton } from '@restate/ui/split-button';
 
 const mainButtonStyles = tv({

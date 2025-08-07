@@ -6,7 +6,7 @@ import {
   MenuItemProps as AriaMenuItemProps,
   composeRenderProps,
 } from 'react-aria-components';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 const styles = tv({
   base: 'group dropdown-item flex cursor-default items-center gap-4 rounded-xl px-3 py-2 text-sm outline outline-0 forced-color-adjust-none select-none',

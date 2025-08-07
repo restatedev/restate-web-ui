@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { AppBar } from './AppBar';
 import { ZONE_IDS, LayoutZone } from './LayoutZone';
 import { ComplementaryOutlet } from './ComplementaryOutlet';
-import { defaultConfig } from 'tailwind-variants';
+import { defaultConfig } from '@restate/util/styles';
 import { NotificationRegion } from '@restate/ui/notification';
 import { Toolbar } from './Toolbar';
 

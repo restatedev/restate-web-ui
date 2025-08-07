@@ -9,7 +9,7 @@ import { ErrorBanner } from '@restate/ui/error';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
 import { RestateError } from '@restate/util/errors';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { formatOrdinals } from '@restate/util/intl';
 import { Ellipsis } from '@restate/ui/loading';
 import { StatusTimeline } from './StatusTimeline';

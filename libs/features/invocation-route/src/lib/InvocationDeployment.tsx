@@ -1,7 +1,7 @@
 import { Invocation, useListDeployments } from '@restate/data-access/admin-api';
 import { Deployment, SDK } from '@restate/features/overview-route';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 const styles = tv({
   base: 'flex flex-col items-start text-xs',

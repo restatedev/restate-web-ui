@@ -1,6 +1,6 @@
 import { Button } from '@restate/ui/button';
 import { DropdownSection } from '@restate/ui/dropdown';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import {
   Popover,
   PopoverContent,

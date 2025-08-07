@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { LabelContext, GroupContext } from 'react-aria-components';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 const styles = tv({
   base: '',

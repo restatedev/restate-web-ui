@@ -14,7 +14,7 @@ import { JournalV2 } from './JournalV2';
 import { useRestateContext } from '@restate/features/restate-context';
 import { InvocationPageProvider } from './InvocationPageContext';
 import { WorkflowKeySection } from './WorkflowKeySection';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 const metadataContainerStyles = tv({
   base: 'mt-6 hidden grid-cols-1 gap-2 gap-y-4 rounded-xl md:grid-cols-2 [&:has(*)]:grid',

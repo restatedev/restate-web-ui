@@ -5,7 +5,7 @@ import {
   OverlayArrow,
   Tooltip,
 } from 'react-aria-components';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 interface TooltipContentProps {
   className?: string;

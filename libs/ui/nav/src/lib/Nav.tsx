@@ -6,7 +6,7 @@ import {
   useEffect,
   useRef,
 } from 'react';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { NavContext } from './NavContext';
 import {
   Dropdown,

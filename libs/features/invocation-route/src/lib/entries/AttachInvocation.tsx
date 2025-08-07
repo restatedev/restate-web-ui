@@ -2,7 +2,7 @@ import { JournalEntryV2 } from '@restate/data-access/admin-api';
 import { EntryProps } from './types';
 import { InvocationId } from '../InvocationId';
 import { EntryExpression } from './EntryExpression';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { useJournalContext } from '../JournalContext';
 import { CallInvokedLoadingError } from './CallInvokedLoadingError';
 import { Button } from '@restate/ui/button';

@@ -4,7 +4,7 @@ import {
   Select,
   SelectValue,
 } from 'react-aria-components';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { FormFieldError } from './FormFieldError';
 import { ComponentProps, PropsWithChildren, ReactNode } from 'react';
 import { Button } from '@restate/ui/button';

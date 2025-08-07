@@ -4,7 +4,7 @@ import { InputOutput } from '../Expression';
 import { Headers } from '../Headers';
 import { Value } from '../Value';
 import { Target } from '../Target';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { EntryExpression } from './EntryExpression';
 import { Icon, IconName } from '@restate/ui/icons';
 

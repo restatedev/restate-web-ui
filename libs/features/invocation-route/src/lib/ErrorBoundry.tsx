@@ -4,7 +4,7 @@ import { DropdownSection } from '@restate/ui/dropdown';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
 import { Component, PropsWithChildren, ErrorInfo } from 'react';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 const errorStyles = tv({ base: 'flex h-full items-center pl-2' });
 export class ErrorBoundary extends Component<

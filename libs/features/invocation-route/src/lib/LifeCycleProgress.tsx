@@ -1,5 +1,5 @@
 import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { EntryProgress, EntryProgressContainer } from './EntryProgress';
 import { useJournalContext } from './JournalContext';
 import { formatDurations } from '@restate/util/intl';

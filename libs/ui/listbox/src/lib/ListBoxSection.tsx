@@ -4,7 +4,7 @@ import {
   ListBoxSection as Section,
   ListBoxItem,
 } from 'react-aria-components';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 export interface ListBoxSectionProps extends PropsWithChildren<object> {
   title?: ReactNode;

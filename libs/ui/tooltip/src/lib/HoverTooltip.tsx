@@ -9,7 +9,7 @@ import { TooltipTriggerStateContext } from 'react-aria-components';
 import { Tooltip } from './Tooltip';
 import { TooltipContent } from './TooltipContent';
 import { useTooltipWithHover } from './useTooltipWithHover';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 const styles = tv({
   base: 'block',

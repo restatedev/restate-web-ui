@@ -13,7 +13,7 @@ import {
   formatPlurals,
 } from '@restate/util/intl';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import {
   Actions,
   getSearchParams,

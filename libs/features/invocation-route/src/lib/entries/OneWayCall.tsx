@@ -8,7 +8,7 @@ import { InvocationId } from '../InvocationId';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 import { formatDurations } from '@restate/util/intl';
 import { DateTooltip } from '@restate/ui/tooltip';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { EntryExpression } from './EntryExpression';
 
 const styles = tv({

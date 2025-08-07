@@ -1,5 +1,5 @@
 import { PropsWithChildren } from 'react';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 interface CodeProps {
   className?: string;

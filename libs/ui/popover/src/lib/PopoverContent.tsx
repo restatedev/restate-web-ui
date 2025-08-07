@@ -1,7 +1,7 @@
 import { PropsWithChildren, RefObject } from 'react';
 import { Dialog as AriaDialog } from 'react-aria-components';
 import { PopoverOverlay } from './PopoverOverlay';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { Placement } from 'react-aria';
 
 const styles = tv({

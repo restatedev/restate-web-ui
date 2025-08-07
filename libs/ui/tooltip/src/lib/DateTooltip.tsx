@@ -5,7 +5,7 @@ import { TooltipContent } from './TooltipContent';
 import { Copy } from '@restate/ui/copy';
 import { formatDateTime, formatDateToISO } from '@restate/util/intl';
 import { useTooltipWithHover } from './useTooltipWithHover';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 const styles = tv({
   base: 'mx-[-0.1em] max-w-full truncate rounded-xs px-[0.1em] underline decoration-zinc-400 decoration-dashed decoration-from-font underline-offset-[0.2em] hover:bg-black/5',

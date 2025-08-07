@@ -16,7 +16,7 @@ import {
   DeploymentRegistrationState,
   useRegisterDeploymentContext,
 } from './Context';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 function RegisterDeploymentFooter() {
   const {

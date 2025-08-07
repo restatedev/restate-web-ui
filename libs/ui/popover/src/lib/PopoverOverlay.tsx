@@ -4,7 +4,7 @@ import {
   Popover as AriaPopover,
   composeRenderProps,
 } from 'react-aria-components';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 const styles = tv({
   base: 'max-w-[90%] overflow-auto rounded-xl border border-black/10 bg-gray-100/80 bg-clip-padding text-slate-700 shadow-lg backdrop-blur-xl backdrop-saturate-200',

@@ -1,5 +1,5 @@
 import { Label, CheckboxGroup } from 'react-aria-components';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { FormFieldError } from './FormFieldError';
 import { ComponentProps, PropsWithChildren, forwardRef } from 'react';
 import {

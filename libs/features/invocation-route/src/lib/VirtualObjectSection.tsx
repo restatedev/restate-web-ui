@@ -4,7 +4,7 @@ import {
   useGetVirtualObjectState,
 } from '@restate/data-access/admin-api';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Link } from '@restate/ui/link';
 import { INVOCATION_QUERY_NAME } from './constants';

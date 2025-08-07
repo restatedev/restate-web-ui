@@ -70,7 +70,7 @@ import {
 } from '@restate/ui/popover';
 import { Value } from '@restate/features/invocation-route';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { STATE_QUERY_NAME } from './constants';
 import { Link } from '@restate/ui/link';
 import { useEditStateContext } from '@restate/features/edit-state';

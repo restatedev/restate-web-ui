@@ -13,7 +13,7 @@ import {
   useState,
 } from 'react';
 import { useRestateContext } from '@restate/features/restate-context';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { API } from '@restate/ui/api';
 import {
   ComplementaryClose,

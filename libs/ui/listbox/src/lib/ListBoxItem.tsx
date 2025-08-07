@@ -6,7 +6,7 @@ import {
   ListBoxItemProps as AriaListBoxItemProps,
   composeRenderProps,
 } from 'react-aria-components';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 export const listBoxItemStyles = tv({
   extend: focusRing,

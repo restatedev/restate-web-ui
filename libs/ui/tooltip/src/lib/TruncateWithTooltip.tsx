@@ -13,7 +13,7 @@ import { Tooltip } from './Tooltip';
 import { TooltipContent } from './TooltipContent';
 import { Copy } from '@restate/ui/copy';
 import { useTooltipWithHover } from './useTooltipWithHover';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 export const TruncateTooltipTrigger = forwardRef<
   HTMLElement,

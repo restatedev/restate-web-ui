@@ -8,7 +8,7 @@ import { ReactNode } from 'react';
 import { Ellipsis } from '@restate/ui/loading';
 import { Failure } from '../Failure';
 import { Value } from '../Value';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { Icon, IconName } from '@restate/ui/icons';
 import { HoverTooltip } from '@restate/ui/tooltip';
 import { isEntryCompletionAmbiguous } from './isEntryCompletionAmbiguous';

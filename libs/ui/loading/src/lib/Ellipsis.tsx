@@ -1,5 +1,5 @@
 import { PropsWithChildren } from 'react';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 const styles = tv({
   base: 'inline-flex items-baseline gap-[0.15em]',

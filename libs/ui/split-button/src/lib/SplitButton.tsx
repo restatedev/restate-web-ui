@@ -7,7 +7,7 @@ import {
 } from '@restate/ui/dropdown';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Button } from '@restate/ui/button';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { PropsWithChildren, ReactNode } from 'react';
 
 const menuTriggerStyles = tv({

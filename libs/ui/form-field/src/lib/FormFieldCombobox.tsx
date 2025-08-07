@@ -18,7 +18,7 @@ import {
   ListBoxSection,
   ListBoxSectionProps,
 } from '@restate/ui/listbox';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 export interface ComboBoxProps<T extends object> {
   className?: string;

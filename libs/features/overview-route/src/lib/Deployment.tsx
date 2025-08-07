@@ -1,5 +1,5 @@
 import { Icon, IconName } from '@restate/ui/icons';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import {
   DeploymentId,

@@ -6,7 +6,7 @@ import {
 import { formatDurations } from '@restate/util/intl';
 import { getDuration } from '@restate/util/snapshot-time';
 import { CSSProperties, PropsWithChildren } from 'react';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { useJournalContext } from './JournalContext';
 import { Ellipsis } from '@restate/ui/loading';
 import { EntryTooltip } from './EntryTooltip';

@@ -7,7 +7,7 @@ import {
   useServiceDetails,
 } from '@restate/data-access/admin-api';
 import { Icon, IconName } from '@restate/ui/icons';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { Deployment } from './Deployment';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Link } from '@restate/ui/link';

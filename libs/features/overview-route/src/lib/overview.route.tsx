@@ -1,6 +1,6 @@
 import { useListDeployments } from '@restate/data-access/admin-api';
 import { RestateServer } from './RestateServer';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { TriggerRegisterDeploymentDialog } from './RegisterDeployment/Dialog';
 import {
   ServiceDeploymentExplainer,

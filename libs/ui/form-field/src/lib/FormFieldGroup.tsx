@@ -1,5 +1,5 @@
 import { focusRing } from '@restate/ui/focus';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { Group as AriaGroup } from 'react-aria-components';
 import { ComponentProps } from 'react';
 

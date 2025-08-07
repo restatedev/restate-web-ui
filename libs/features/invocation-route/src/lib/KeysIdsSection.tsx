@@ -1,6 +1,6 @@
 import { Invocation } from '@restate/data-access/admin-api';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { Copy } from '@restate/ui/copy';
 import { Badge } from '@restate/ui/badge';
 

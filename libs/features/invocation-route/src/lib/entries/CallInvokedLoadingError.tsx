@@ -2,7 +2,7 @@ import { Button } from '@restate/ui/button';
 import { ErrorBanner } from '@restate/ui/error';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 const styles = tv({
   base: 'text-red-500',

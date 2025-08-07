@@ -18,7 +18,7 @@ import {
   EventEntryType,
   NotificationEntryType,
 } from './entries/types';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { Icon, IconName } from '@restate/ui/icons';
 import { isEntryCompletionAmbiguous } from './entries/isEntryCompletionAmbiguous';
 

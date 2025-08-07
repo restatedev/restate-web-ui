@@ -1,6 +1,6 @@
 import { Invocation } from '@restate/data-access/admin-api';
 import { Icon, IconName } from '@restate/ui/icons';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 const RESTATE_SDK_REGEXP =
   /restate-sdk-(?<sdk>[typescript|go|kotlin|java|rust|python]+)\/(?<version>[\d\\.]+)?/;

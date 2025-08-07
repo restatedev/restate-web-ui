@@ -2,7 +2,7 @@ import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/ad
 import { Invocation } from '@restate/data-access/admin-api/spec';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { JournalV2 } from './JournalV2';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 const sectionStyles = tv({
   base: '',

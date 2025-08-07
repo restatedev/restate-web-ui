@@ -23,7 +23,7 @@ import { useListData, ListData } from 'react-stately';
 import { FocusScope, useFilter, useFocusManager } from 'react-aria';
 import { ListBox, ListBoxItem, ListBoxSection } from '@restate/ui/listbox';
 import { LabeledGroup } from './LabeledGroup';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import { PopoverOverlay } from '@restate/ui/popover';

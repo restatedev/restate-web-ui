@@ -1,7 +1,7 @@
 import { useRef, type PropsWithChildren, useDeferredValue } from 'react';
 import { useFetchers, useHref, useNavigation } from 'react-router';
 import { Button } from './Button';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { useIsMutating } from '@tanstack/react-query';
 import { Spinner } from '@restate/ui/loading';
 

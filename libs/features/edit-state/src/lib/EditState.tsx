@@ -26,7 +26,7 @@ import {
 } from '@restate/data-access/admin-api';
 import { showSuccessNotification } from '@restate/ui/notification';
 import { Icon, IconName } from '@restate/ui/icons';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { useQueryClient } from '@tanstack/react-query';
 import { Spinner } from '@restate/ui/loading';
 

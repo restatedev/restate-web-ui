@@ -1,5 +1,5 @@
 import { PropsWithChildren, ReactNode } from 'react';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { Disclosure, DisclosurePanel, Heading } from 'react-aria-components';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';

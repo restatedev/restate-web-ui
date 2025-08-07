@@ -1,6 +1,6 @@
 import { focusRing } from '@restate/ui/focus';
 import { useCallback, useRef, useState } from 'react';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import type { editor } from 'monaco-editor';
 import { Editor } from '@restate/ui/editor';
 

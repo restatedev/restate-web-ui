@@ -5,7 +5,7 @@ import {
 import { HandlerTypeExplainer } from '@restate/features/explainers';
 import { DropdownSection } from '@restate/ui/dropdown';
 import { Icon, IconName } from '@restate/ui/icons';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import {
   Popover,
   PopoverContent,

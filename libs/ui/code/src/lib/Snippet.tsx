@@ -1,7 +1,7 @@
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Children, PropsWithChildren, ReactNode, memo, useState } from 'react';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { syntaxHighlighter } from './SyntaxHighlighter';
 import { Nav, NavButtonItem } from '@restate/ui/nav';
 

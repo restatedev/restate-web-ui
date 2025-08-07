@@ -5,7 +5,7 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
 import { RestateError } from '@restate/util/errors';
 import { useMemo } from 'react';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 const failureStyle = tv({
   base: '',
   slots: {

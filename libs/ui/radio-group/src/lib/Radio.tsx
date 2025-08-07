@@ -1,7 +1,7 @@
 import { focusRing } from '@restate/ui/focus';
 import { PropsWithChildren } from 'react';
 import { Radio as AriaRadio } from 'react-aria-components';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 interface RadioProps {
   value: string;

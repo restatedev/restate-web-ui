@@ -1,6 +1,6 @@
 import { PropsWithChildren } from 'react';
 import { Label as AriaLabel } from 'react-aria-components';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 interface FormFieldLabelProps {
   className?: string;

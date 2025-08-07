@@ -1,5 +1,5 @@
 import { createContext, PropsWithChildren, use } from 'react';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 interface SectionProps {
   className?: string;

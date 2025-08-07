@@ -1,7 +1,7 @@
 import { Button } from '@restate/ui/button';
 import { PropsWithChildren, useEffect, useRef, useState } from 'react';
 import { Blob } from './canvas';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { useRestateContext } from '@restate/features/restate-context';
 import {
   useIsFetching,

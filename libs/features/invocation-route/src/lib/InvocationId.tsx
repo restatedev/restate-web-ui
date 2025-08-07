@@ -3,7 +3,7 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { HoverTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Link } from '@restate/ui/link';
 import { Invocation } from '@restate/data-access/admin-api';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { INVOCATION_QUERY_NAME } from './constants';
 import { useActiveSidebarParam } from '@restate/ui/layout';
 import { useLocation } from 'react-router';

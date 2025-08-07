@@ -18,7 +18,7 @@ import { Input } from './entries/Input';
 import { getTimelineId, PortalProvider, usePortals } from './Portals';
 import { LifeCycleProgress, Units } from './LifeCycleProgress';
 import { ErrorBoundary } from './ErrorBoundry';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 const LazyPanel = lazy(() =>
   import('react-resizable-panels').then((m) => ({ default: m.Panel })),

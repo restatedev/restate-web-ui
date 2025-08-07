@@ -7,7 +7,7 @@ import {
   PressEvent,
 } from 'react-aria-components';
 import { useSearchParams } from 'react-router';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 interface LinkProps
   extends Pick<

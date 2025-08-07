@@ -5,7 +5,7 @@ import {
   ModalOverlay as AriaModalOverlay,
   composeRenderProps,
 } from 'react-aria-components';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { DialogFooterContainer } from './DialogFooter';
 
 const overlayStyles = tv({

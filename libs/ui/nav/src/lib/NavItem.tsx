@@ -2,7 +2,7 @@ import { useLocation, useNavigation } from 'react-router';
 import { focusRing } from '@restate/ui/focus';
 import { Link } from '@restate/ui/link';
 import { PropsWithChildren, useContext, useMemo } from 'react';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { NavContext } from './NavContext';
 import { Button } from '@restate/ui/button';
 
