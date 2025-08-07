@@ -7,7 +7,8 @@
   "types": "./src/index.d.ts",
   "dependencies": {
     "@nx/devkit": "21.3.11",
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.0",
+    "nx": "21.3.11"
   },
   "generators": "./generators.json"
 }
