@@ -46,9 +46,9 @@ const styles = tv({
       'destructive-button':
         'rounded-xl border border-black/10 bg-linear-to-b from-red-700/95 to-red-700 px-5 py-2 text-center text-sm text-white no-underline shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)] drop-shadow-xs transition hover:from-red-800 hover:to-red-800 hover:shadow-none pressed:from-red-900 pressed:to-red-900 pressed:shadow-none',
       primary:
-        'text-blue-600 underline decoration-blue-600/60 hover:decoration-blue-600 dark:text-blue-500',
+        'text-blue-600 decoration-blue-600/60 hover:decoration-blue-600 dark:text-blue-500',
       secondary:
-        'text-gray-700 underline decoration-gray-700/50 hover:decoration-gray-700 dark:text-zinc-300',
+        'text-gray-700 decoration-gray-700/50 hover:decoration-gray-700 dark:text-zinc-300',
       icon: 'flex items-center justify-center border-0 p-1 text-gray-600 no-underline shadow-none hover:bg-black/5 disabled:bg-transparent pressed:bg-black/10',
     },
   },
