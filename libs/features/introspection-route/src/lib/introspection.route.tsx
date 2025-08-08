@@ -54,7 +54,7 @@ function Component() {
         return searchParams;
       });
     },
-    [queryCLient, setSearchParams]
+    [queryCLient, setSearchParams],
   );
 
   const [, startTransition] = useTransition();
@@ -67,7 +67,7 @@ function Component() {
         _setPageIndex(arg);
       });
     },
-    []
+    [],
   );
 
   const sortedItems = useMemo(() => {
@@ -80,7 +80,7 @@ function Component() {
   const currentPageItems = useMemo(() => {
     return sortedItems.slice(
       pageIndex * PAGE_SIZE,
-      (pageIndex + 1) * PAGE_SIZE
+      (pageIndex + 1) * PAGE_SIZE,
     );
   }, [pageIndex, sortedItems]);
 
@@ -92,7 +92,7 @@ function Component() {
 
   const hash = useMemo(
     () => 'hash' + currentPageItems.map(({ hash }) => hash).join(''),
-    [currentPageItems]
+    [currentPageItems],
   );
 
   const allColumns = useMemo(() => {
@@ -119,7 +119,7 @@ function Component() {
   return (
     <div>
       <SnapshotTimeProvider lastSnapshot={dataUpdate}>
-        <div className="flex flex-col flex-auto gap-2 relative">
+        <div className="relative flex flex-auto flex-col gap-2">
           <Table aria-label="Introspection SQL" key={hash}>
             <TableHeader>
               {selectedColumnsArray.map((col) => (
@@ -142,11 +142,11 @@ function Component() {
               numOfColumns={selectedColumnsArray.length}
               emptyPlaceholder={
                 query ? (
-                  <div className="flex flex-col items-center py-14 gap-4">
-                    <div className="mr-1.5 shrink-0 h-12 w-12 p-1 bg-gray-200/50  rounded-xl">
+                  <div className="flex flex-col items-center gap-4 py-14">
+                    <div className="mr-1.5 h-12 w-12 shrink-0 rounded-xl bg-gray-200/50 p-1">
                       <Icon
                         name={IconName.ScanSearch}
-                        className="w-full h-full text-zinc-400 p-1"
+                        className="h-full w-full p-1 text-zinc-400"
                       />
                     </div>
                     <h3 className="text-sm font-semibold text-zinc-400">
@@ -154,15 +154,15 @@ function Component() {
                     </h3>
                   </div>
                 ) : (
-                  <div className="flex flex-col gap-2 items-center relative w-full text-center my-12">
+                  <div className="relative my-12 flex w-full flex-col items-center gap-2 text-center">
                     <Icon
                       name={IconName.ScanSearch}
-                      className="w-8 h-8 text-gray-500"
+                      className="h-8 w-8 text-gray-500"
                     />
                     <h3 className="text-sm font-semibold text-gray-600">
                       Introspection SQL
                     </h3>
-                    <p className="text-sm text-gray-500 px-4 max-w-lg">
+                    <p className="max-w-lg px-4 text-sm text-gray-500">
                       Restate exposes information on invocations and application
                       state via Introspection SQL. You can use this to gain
                       insight into the status of invocations and the service
@@ -185,7 +185,7 @@ function Component() {
                   <Row
                     id={hash}
                     columns={selectedColumnsArray}
-                    className={` [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50 bg-transparent [content-visibility:auto]`}
+                    className={`bg-transparent [content-visibility:auto] [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50`}
                   >
                     {({ id }) => {
                       return <IntrospectionCell col={id} row={row} key={id} />;
@@ -202,13 +202,13 @@ function Component() {
             query={query}
           >
             {!isPending && !error && totalSize > 1 && (
-              <div className="flex items-center bg-zinc-50 shadow-sm border rounded-lg py-0.5">
+              <div className="flex items-center rounded-lg border bg-zinc-50 py-0.5 shadow-xs">
                 <Button
                   variant="icon"
                   disabled={pageIndex === 0}
                   onClick={() => setPageIndex(0)}
                 >
-                  <Icon name={IconName.ChevronFirst} className="w-4 h-4" />
+                  <Icon name={IconName.ChevronFirst} className="h-4 w-4" />
                 </Button>
                 <Button
                   variant="icon"
@@ -216,9 +216,9 @@ function Component() {
                   onClick={() => setPageIndex((s) => s - 1)}
                   className=""
                 >
-                  <Icon name={IconName.ChevronLeft} className="w-4 h-4" />
+                  <Icon name={IconName.ChevronLeft} className="h-4 w-4" />
                 </Button>
-                <div className="flex items-center gap-0.5 mx-2 text-code">
+                <div className="mx-2 flex items-center gap-0.5 text-0.5xs">
                   {pageIndex + 1} / {totalSize}
                 </div>
 
@@ -228,14 +228,14 @@ function Component() {
                   onClick={() => setPageIndex((s) => s + 1)}
                   className=""
                 >
-                  <Icon name={IconName.ChevronRight} className="w-4 h-4" />
+                  <Icon name={IconName.ChevronRight} className="h-4 w-4" />
                 </Button>
                 <Button
                   variant="icon"
                   disabled={pageIndex + 1 === totalSize}
                   onClick={() => setPageIndex(totalSize - 1)}
                 >
-                  <Icon name={IconName.ChevronLast} className="w-4 h-4" />
+                  <Icon name={IconName.ChevronLast} className="h-4 w-4" />
                 </Button>
               </div>
             )}
@@ -284,7 +284,7 @@ function Footnote({
   const duration = formatDurations(parts);
 
   return (
-    <div className="flex flex-row-reverse flex-wrap items-center w-full text-center text-xs text-gray-500/80 ">
+    <div className="flex w-full flex-row-reverse flex-wrap items-center text-center text-xs text-gray-500/80">
       {data && (
         <div className="ml-auto">
           {data.rows && data.rows.length > 0 ? (
@@ -305,7 +305,7 @@ function Footnote({
         <Download
           data={data}
           query={query}
-          className="px-1.5 py-1.5 rounded-md bg-zinc-50 text-gray-600 block"
+          className="block rounded-md bg-zinc-50 px-1.5 py-1.5 text-gray-600"
         />
         {children}
       </div>
@@ -356,7 +356,7 @@ function Download({
           variant="secondary-button"
           className={className}
         >
-          <Icon name={IconName.Download} className="w-4 h-4" />
+          <Icon name={IconName.Download} className="h-4 w-4" />
         </Link>
       </HoverTooltip>
     </RouterProvider>

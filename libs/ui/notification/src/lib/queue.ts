@@ -25,7 +25,7 @@ function showNotificationWithType(type: NotificationContent['type']) {
       { content: message, type },
       {
         priority: PRIORITIES[type] + notificationQueue.visibleToasts.length,
-      }
+      },
     );
 
     return {

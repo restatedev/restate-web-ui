@@ -1,6 +1,6 @@
 import { Invocation } from '@restate/data-access/admin-api';
 import { Icon, IconName } from '@restate/ui/icons';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 const RESTATE_SDK_REGEXP =
   /restate-sdk-(?<sdk>[typescript|go|kotlin|java|rust|python]+)\/(?<version>[\d\\.]+)?/;
@@ -22,7 +22,7 @@ const langStyles = tv({
     lang: {
       typescript: 'py-1',
       go: 'mr-0.5',
-      kotlin: 'py-[0.3125rem]',
+      kotlin: 'py-1.25',
       rust: 'py-0.5',
       python: 'py-1',
       java: '-mt-2',
@@ -59,7 +59,7 @@ function LanguageIcon({
 }
 
 const sdkStyles = tv({
-  base: 'font-mono font-semibold text-zinc-500/80 flex items-center border border-transparent',
+  base: 'flex items-center border border-transparent font-mono font-semibold text-zinc-500/80',
 });
 export function SDK({
   lastAttemptServer,
@@ -76,7 +76,7 @@ export function SDK({
 
   return (
     <div className={sdkStyles({ className })}>
-      <LanguageIcon lang={sdk} className="w-6 h-6 shrink-0 opacity-70" />
+      <LanguageIcon lang={sdk} className="h-6 w-6 shrink-0 opacity-70" />
       <div className="inline-flex items-center">
         SDK/
         {version && <div className="truncate">{version}</div>}

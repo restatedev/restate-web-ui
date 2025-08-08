@@ -13,7 +13,7 @@ import {
   formatPlurals,
 } from '@restate/util/intl';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import {
   Actions,
   getSearchParams,
@@ -57,7 +57,7 @@ function withDate({
     const duration = formatDurations(parts);
 
     return (
-      <Badge className="bg-transparent border-none pl-0 w-full">
+      <Badge className="w-full border-none bg-transparent pl-0">
         <span className="w-full truncate">
           <span className="font-normal text-zinc-500">{!isPast && 'in '}</span>
           <DateTooltip date={new Date(value)} title={tooltipTitle}>
@@ -71,7 +71,7 @@ function withDate({
 }
 
 const withFieldStyles = tv({
-  base: 'bg-transparent border-none pl-0 w-full',
+  base: 'w-full border-none bg-transparent pl-0',
 });
 function withField({
   field,
@@ -102,12 +102,12 @@ const SERVICE_TYPE_NAME: Record<Invocation['target_service_ty'], ServiceType> =
 function Type({ invocation }: CellProps) {
   const type = SERVICE_TYPE_NAME[invocation.target_service_ty];
   return (
-    <Badge className="bg-zinc-100/80 max-w-full">
+    <Badge className="max-w-full bg-zinc-100/80">
       <span className="truncate">{type}</span>
       <ServiceTypeExplainer
         type={type}
         variant="indicator-button"
-        className="flex-row-reverse ml-1"
+        className="ml-1 flex-row-reverse"
       />
     </Badge>
   );
@@ -118,12 +118,12 @@ function InvokedBy({ invocation }: CellProps) {
     return <Badge className="border-none">Ingress</Badge>;
   } else if (invocation.invoked_by_target) {
     return (
-      <div className="flex flex-col gap-0.5 items-start w-full">
+      <div className="flex w-full flex-col items-start gap-0.5">
         <Target target={invocation.invoked_by_target} />
         {invocation.invoked_by_id && (
           <InvocationId
             id={invocation.invoked_by_id}
-            className="max-w-full w-[20ch] pl-1.5 pr-1 min-w-0 text-zinc-500"
+            className="w-[20ch] max-w-full min-w-0 pr-1 pl-1.5 text-zinc-500"
             size="sm"
           />
         )}
@@ -150,7 +150,7 @@ function withCell(Component: ComponentType<CellProps>, id: ColumnKey) {
         {isVisible ? (
           <Component {...props} />
         ) : (
-          <div className="min-h-6 text-transparent rounded-md bg-slate-200/70 w-fit max-w-full truncate">
+          <div className="min-h-6 w-fit max-w-full truncate rounded-md bg-slate-200/70 text-transparent">
             {key && props.invocation[key]}
           </div>
         )}
@@ -172,7 +172,7 @@ function JournalCell({ invocation }: CellProps) {
       <PopoverTrigger>
         <Button
           variant="secondary"
-          className="px-1.5 py-0.5 flex rounded-md items-center gap-1 text-2xs"
+          className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-2xs"
         >
           {invocation.journal_commands_size || invocation.journal_size}{' '}
           {formatPlurals(invocation.journal_size, {
@@ -181,34 +181,34 @@ function JournalCell({ invocation }: CellProps) {
           })}
           <Icon
             name={IconName.ChevronsUpDown}
-            className="h-3 w-3 text-gray-500 shrink-0"
+            className="h-3 w-3 shrink-0 text-gray-500"
           />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="max-w-2xl">
         <DropdownSection
           title={
-            <div className="flex items-center ">
+            <div className="flex items-center">
               <div className="mr-12">Journal</div>
               <Link
                 variant="secondary-button"
                 href={`${baseUrl}/invocations/${invocation.id}${getSearchParams(
-                  location.search
+                  location.search,
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="ml-auto px-1.5 py-0.5 text-xs font-normal font-sans rounded-md flex items-center gap-1"
+                className="ml-auto flex items-center gap-1 rounded-md px-1.5 py-0.5 font-sans text-xs font-normal"
               >
                 Timeline
-                <Icon name={IconName.ExternalLink} className="w-3 h-3" />
+                <Icon name={IconName.ExternalLink} className="h-3 w-3" />
               </Link>
             </div>
           }
-          className="rounded-2xl overflow-hidden bg-gray-50 "
+          className="overflow-hidden rounded-2xl bg-gray-50"
         >
           <JournalV2
             invocationId={invocation.id}
-            className="[&>*]:text-xs [&>*:first-child]:mb-2 [&>*:first-child]:h-9 [&>*:first-child>*:last-child]:h-9 [&>*:first-child_[data-target]>*]:h-9 [&>*]:rounded-[1rem] [&_.target]:rounded-r-[1rem] [&&&_.target>*:last-child>*]:rounded-r-[1rem]"
+            className="*:rounded-2xl *:text-xs [&_.target]:rounded-r-2xl [&&&_.target>*:last-child>*]:rounded-r-2xl [&>*:first-child]:mb-2 [&>*:first-child]:h-9 [&>*:first-child_[data-target]>*]:h-9 [&>*:first-child>*:last-child]:h-9"
             withTimeline={false}
           />
         </DropdownSection>
@@ -225,42 +225,42 @@ const CELLS: Record<ColumnKey, ComponentType<CellProps>> = {
   invoked_by: withCell(InvokedBy, 'invoked_by'),
   created_at: withCell(
     withDate({ field: 'created_at', tooltipTitle: 'Created at' }),
-    'created_at'
+    'created_at',
   ),
   modified_at: withCell(
     withDate({ field: 'modified_at', tooltipTitle: 'Modified at' }),
-    'modified_at'
+    'modified_at',
   ),
   scheduled_at: withCell(
     withDate({ field: 'scheduled_at', tooltipTitle: 'Scheduled at' }),
-    'scheduled_at'
+    'scheduled_at',
   ),
   running_at: withCell(
     withDate({ field: 'running_at', tooltipTitle: 'Running since' }),
-    'running_at'
+    'running_at',
   ),
   idempotency_key: withCell(
     withField({ field: 'idempotency_key', className: 'font-mono' }),
-    'idempotency_key'
+    'idempotency_key',
   ),
   journal_size: withCell(JournalCell, 'journal_size'),
   retry_count: withCell(withField({ field: 'retry_count' }), 'retry_count'),
   deployment: withCell(InvocationDeployment, 'deployment'),
   target_service_key: withCell(
     withField({ field: 'target_service_key' }),
-    'target_service_key'
+    'target_service_key',
   ),
   target_service_name: withCell(
     withField({ field: 'target_service_name' }),
-    'target_handler_name'
+    'target_handler_name',
   ),
   target_handler_name: withCell(
     withField({ field: 'target_handler_name' }),
-    'target_handler_name'
+    'target_handler_name',
   ),
   pinned_service_protocol_version: withCell(
     withField({ field: 'pinned_service_protocol_version' }),
-    'pinned_service_protocol_version'
+    'pinned_service_protocol_version',
   ),
   actions: ({ invocation }) => (
     <Cell className="align-top [&&&]:overflow-visible">
@@ -272,14 +272,14 @@ const CELLS: Record<ColumnKey, ComponentType<CellProps>> = {
       field: 'completion_expiration',
       tooltipTitle: 'Completion retained until',
     }),
-    'completion_expiration'
+    'completion_expiration',
   ),
   journal_expiration: withCell(
     withDate({
       field: 'journal_expiration',
       tooltipTitle: 'Journal retained until',
     }),
-    'journal_expiration'
+    'journal_expiration',
   ),
 };
 

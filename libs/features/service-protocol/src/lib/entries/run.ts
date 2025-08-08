@@ -18,7 +18,7 @@ import {
 
 function runV1(
   entry: JournalRawEntry,
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<JournalEntryV2, { type?: 'Run'; category?: 'command' }> {
   const { raw } = entry;
   if (!raw) {
@@ -54,7 +54,7 @@ function runV1(
         error: message.result.value.message
           ? new RestateError(
               message.result.value.message,
-              message.result.value.code.toString()
+              message.result.value.code.toString(),
             )
           : error,
         value: undefined,
@@ -74,7 +74,7 @@ function runV1(
 function runV2(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<JournalEntryV2, { type?: 'Run'; category?: 'command' }> {
   const entryJSON = parseEntryJson(entry.entry_json ?? entry.entry_lite_json);
   const commandIndex = entry.command_index;
@@ -89,7 +89,7 @@ function runV2(
     invocation,
     nextEntries,
     undefined,
-    [completionEntry?.index]
+    [completionEntry?.index],
   );
 
   return {
@@ -116,7 +116,7 @@ function runV2(
 export function run(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ) {
   if (entry.version === 1 || !entry.version) {
     return runV1(entry, invocation);
@@ -132,7 +132,7 @@ export function run(
 export function notificationRun(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<JournalEntryV2, { type?: 'Run'; category?: 'notification' }> {
   const entryJSON = parseEntryJson(entry.entry_json);
   const entryLiteJSON = parseEntryJson(entry.entry_lite_json);
@@ -147,7 +147,7 @@ export function notificationRun(
     entry,
     invocation,
     nextEntries,
-    result
+    result,
   );
 
   return {

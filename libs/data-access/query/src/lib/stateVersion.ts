@@ -4,7 +4,7 @@ export function stateVersion(
   state: {
     name: string;
     value: string;
-  }[]
+  }[],
 ) {
   try {
     return stateVersionInternal(state);
@@ -18,7 +18,7 @@ function stateVersionInternal(
   state: {
     name: string;
     value: string;
-  }[]
+  }[],
 ) {
   const kvs = [...state]
     .sort((a, b) => a.name.localeCompare(b.name))
@@ -26,8 +26,8 @@ function stateVersionInternal(
       ({ name, value }) =>
         [new TextEncoder().encode(name), new TextEncoder().encode(value)] as [
           Uint8Array,
-          Uint8Array
-        ]
+          Uint8Array,
+        ],
     );
 
   const chunks: Uint8Array[] = [];
@@ -44,7 +44,7 @@ function stateVersionInternal(
       k,
       new Uint8Array([0x02]),
       v,
-      new Uint8Array([0x03])
+      new Uint8Array([0x03]),
     );
   }
   // TODO: remove third party lib

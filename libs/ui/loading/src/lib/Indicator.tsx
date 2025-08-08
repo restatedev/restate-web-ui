@@ -1,13 +1,13 @@
 import { Icon, IconName } from '@restate/ui/icons';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 const miniStyles = tv({
   base: '',
   slots: {
-    container: 'relative w-3 h-3 text-xs',
-    icon: 'absolute left-0 top-[1px] w-3 h-3 stroke-0 fill-current',
+    container: 'relative h-3 w-3 text-xs',
+    icon: 'absolute top-px left-0 h-3 w-3 fill-current stroke-0',
     animation:
-      'absolute inset-left-0 top-[1px] w-3 h-3 stroke-[4px] fill-current opacity-20',
+      'inset-left-0 absolute top-px h-3 w-3 fill-current stroke-[4px] opacity-20',
   },
   variants: {
     status: {

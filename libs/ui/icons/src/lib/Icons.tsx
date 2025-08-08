@@ -49,7 +49,7 @@ import {
   Play,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { RestateEnvironment } from './custom-icons/RestateEnvironment';
 import { Restate } from './custom-icons/Restate';
 import { CircleX } from './custom-icons/CircleX';
@@ -213,7 +213,7 @@ const ICONS: Record<IconName, LucideIcon> = {
 };
 
 const styles = tv({
-  base: 'w-[1.5em] h-[1.5em] text-current',
+  base: 'h-[1.5em] w-[1.5em] text-current',
 });
 
 export function Icon({ name, className, ...props }: IconsProps) {

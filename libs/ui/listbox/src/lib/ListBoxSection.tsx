@@ -4,7 +4,7 @@ import {
   ListBoxSection as Section,
   ListBoxItem,
 } from 'react-aria-components';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 export interface ListBoxSectionProps extends PropsWithChildren<object> {
   title?: ReactNode;
@@ -15,10 +15,10 @@ export interface ListBoxSectionProps extends PropsWithChildren<object> {
 const styles = tv({
   slots: {
     container:
-      'px-1 py-1 bg-white relative mt-8 rounded-xl border [&_.dropdown-item]:rounded-lg',
+      'relative mt-8 rounded-xl border bg-white px-1 py-1 [&_.dropdown-item]:rounded-lg',
     header:
-      'text-sm absolute -top-8 font-semibold text-gray-400 px-2 py-1 pt-2 truncate w-full',
-    description: 'text-xs text-gray-400 px-2 py-1',
+      'absolute -top-8 w-full truncate px-2 py-1 pt-2 text-sm font-semibold text-gray-400',
+    description: 'px-2 py-1 text-xs text-gray-400',
   },
 });
 

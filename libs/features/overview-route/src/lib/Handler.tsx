@@ -5,7 +5,7 @@ import {
 import { HandlerTypeExplainer } from '@restate/features/explainers';
 import { DropdownSection } from '@restate/ui/dropdown';
 import { Icon, IconName } from '@restate/ui/icons';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import {
   Popover,
   PopoverContent,
@@ -21,7 +21,7 @@ import { Link } from '@restate/ui/link';
 import { SERVICE_PLAYGROUND_QUERY_PARAM } from './constants';
 
 const styles = tv({
-  base: 'flex flex-row flex-wrap relative items-center  pr-2',
+  base: 'relative flex flex-row flex-wrap items-center pr-2',
 });
 
 function getContentTypeLabel(contentType: string) {
@@ -34,7 +34,7 @@ function getContentTypeLabel(contentType: string) {
       let parsedContentType = contentType;
       if (contentType.startsWith('one of [')) {
         parsedContentType = JSON.parse(contentType.replace('one of ', '')).at(
-          1
+          1,
         );
       }
       return (
@@ -67,25 +67,25 @@ export function Handler({
 }) {
   return (
     <div className={styles({ className })}>
-      <div className="flex flex-row items-end gap-2 flex-auto min-w-0">
-        <div className="shrink-0 h-6 w-6 bg-white border shadow-sm rounded-md -mb-0.5">
+      <div className="flex min-w-0 flex-auto flex-row items-end gap-2">
+        <div className="-mb-0.5 h-6 w-6 shrink-0 rounded-md border bg-white shadow-xs">
           <Icon
             name={IconName.Function}
-            className="w-full h-full text-zinc-400"
+            className="h-full w-full text-zinc-400"
           />
         </div>
-        <div className="flex items-center flex-row gap-x-1.5 flex-wrap flex-auto justify-start min-w-0">
+        <div className="flex min-w-0 flex-auto flex-row flex-wrap items-center justify-start gap-x-1.5">
           {handler.ty && serviceType && serviceType !== 'Service' && (
             <Badge
               size="sm"
-              className="text-xs py-0 font-medium bg-transparent border-none text-zinc-500/80 px-0"
+              className="border-none bg-transparent px-0 py-0 text-xs font-medium text-zinc-500/80"
             >
               <HandlerTypeExplainer type={handler.ty} variant="inline-help">
                 {handler.ty}
               </HandlerTypeExplainer>
             </Badge>
           )}
-          <div className="text-code min-w-0 text-zinc-600 italic font-medium flex-auto">
+          <div className="min-w-0 flex-auto text-0.5xs font-medium text-zinc-600 italic">
             <span className="flex items-center">
               <TruncateWithTooltip copyText={handler.name}>
                 {withPlayground ? (
@@ -112,7 +112,7 @@ export function Handler({
               />
               <span className="shrink-0 text-zinc-400">
                 {')'}
-                <span className="text-zinc-500 mx-[0.5ch]">→</span>
+                <span className="mx-[0.5ch] text-zinc-500">→</span>
               </span>
               <HandlerInputOutput
                 schema={handler.output_json_schema}
@@ -131,9 +131,9 @@ export function Handler({
 }
 
 const inputOutputStyles = tv({
-  base: 'contents text-2xs gap-1 rounded-md pl-0.5 py-0  items-center text-zinc-700',
+  base: 'contents items-center gap-1 rounded-md py-0 pl-0.5 text-2xs text-zinc-700',
   slots: {
-    value: 'contents text-zinc-500 font-semibold font-mono leading-5 mr-0.5',
+    value: 'mr-0.5 contents font-mono leading-5 font-semibold text-zinc-500',
   },
   variants: {
     hasSchema: {
@@ -176,7 +176,7 @@ function HandlerInputOutput({
 
   if (!isObjectSchema && hasSchema) {
     return (
-      <span className="basis-20 text-2xs text-zinc-500 grow max-w-fit truncate font-mono text-inherit px-0.5 py-0 rounded-sm ">
+      <span className="max-w-fit grow basis-20 truncate rounded-xs px-0.5 py-0 font-mono text-2xs text-inherit text-zinc-500">
         {schema.type ?? getContentTypeLabel(contentType)}
       </span>
     );
@@ -184,7 +184,7 @@ function HandlerInputOutput({
 
   if (!hasSchema && contentType === 'none') {
     return labelProp === 'Request' ? null : (
-      <span className="basis-20 text-2xs text-zinc-500 grow max-w-fit truncate font-mono text-inherit px-0.5 py-0 rounded-sm ">
+      <span className="max-w-fit grow basis-20 truncate rounded-xs px-0.5 py-0 font-mono text-2xs text-inherit text-zinc-500">
         void
       </span>
     );
@@ -195,7 +195,7 @@ function HandlerInputOutput({
         <Popover>
           <PopoverHoverTrigger>
             <Link
-              className="[&:not([href])]:cursor-default basis-20 grow max-w-fit truncate font-mono text-inherit [font-style:inherit] [font-size:inherit] px-0.5 py-0 rounded-sm underline-offset-4 decoration-from-font decoration-dashed underline "
+              className="max-w-fit grow basis-20 truncate rounded-xs px-0.5 py-0 font-mono [font-size:inherit] text-inherit [font-style:inherit] underline decoration-dashed decoration-from-font underline-offset-4 [&:not([href])]:cursor-default"
               variant="icon"
               {...(withPlayground && {
                 href: `?${SERVICE_PLAYGROUND_QUERY_PARAM}=${service}#/operations/${handler}`,
@@ -203,16 +203,16 @@ function HandlerInputOutput({
             >
               <span className="truncate pr-0.5">
                 {schema?.title ?? schema?.type ?? (
-                  <span className="uppercase ">
+                  <span className="uppercase">
                     {getContentTypeLabel(contentType)}
                   </span>
                 )}
               </span>
             </Link>
           </PopoverHoverTrigger>
-          <PopoverContent className="[&_header]:font-mono [&_header]:text-code">
+          <PopoverContent className="[&_header]:font-mono [&_header]:text-0.5xs">
             <DropdownSection
-              className="min-w-80 overflow-auto max-w-[min(90vw,600px)] px-4 mb-1"
+              className="mb-1 max-w-[min(90vw,600px)] min-w-80 overflow-auto px-4"
               title={
                 <div className="flex items-center">
                   <span>{hasSchema ? schema.title : labelProp}</span>
@@ -230,11 +230,11 @@ function HandlerInputOutput({
             >
               {isObjectSchema ? (
                 <JsonSchemaViewer
-                  className="font-mono [&>*>[aria-haspopup]]:mt-2 [&>*[data-test='property-description']]:mt-2 [&:has([aria-haspopup])]:min-h-32"
+                  className="font-mono [&:has([aria-haspopup])]:min-h-32 [&>*>[aria-haspopup]]:mt-2 [&>*[data-test='property-description']]:mt-2"
                   schema={schema}
                 />
               ) : (
-                <div className="font-mono text-code text-zinc-500 py-2 flex items-center gap-2">
+                <div className="flex items-center gap-2 py-2 font-mono text-0.5xs text-zinc-500">
                   Content-Type:<Badge size="sm">{contentType}</Badge>
                 </div>
               )}
@@ -247,7 +247,7 @@ function HandlerInputOutput({
 }
 
 function ServicePlaygroundTriggerWithClosePopover(
-  props: ComponentProps<typeof ServicePlaygroundTrigger>
+  props: ComponentProps<typeof ServicePlaygroundTrigger>,
 ) {
   const { close } = usePopover();
 

@@ -1,5 +1,5 @@
 import { PropsWithChildren, ReactNode } from 'react';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { Disclosure, DisclosurePanel, Heading } from 'react-aria-components';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -9,7 +9,7 @@ interface SectionProps {
 }
 
 const styles = tv({
-  base: 'group section flex flex-col bg-gray-100 rounded-xl p-0.5 border2 shadow2-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]',
+  base: 'group section border2 shadow2-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] flex flex-col rounded-xl bg-gray-100 p-0.5',
 });
 export function CollapsibleSection({
   children,
@@ -23,7 +23,7 @@ interface SectionTitleProps {
 }
 
 const stylesSectionTitle = tv({
-  base: 'text-xs uppercase font-semibold text-gray-400 px-2 py-2 relative',
+  base: 'relative px-2 py-2 text-xs font-semibold text-gray-400 uppercase',
 });
 export function CollapsibleSectionTitle({
   children,
@@ -34,7 +34,7 @@ export function CollapsibleSectionTitle({
       <Button
         variant="icon"
         slot="trigger"
-        className=" p-2 text-zinc-400 text-sm inset-0 absolute justify-end rounded-[calc(0.75rem-0.175rem)] hover:bg-black/[0.03] pressed:bg-black/5"
+        className="absolute inset-0 justify-end rounded-[calc(0.75rem-0.175rem)] p-2 text-sm text-zinc-400 hover:bg-black/3 pressed:bg-black/5"
       >
         <Icon
           name={IconName.ChevronDown}
@@ -47,10 +47,10 @@ export function CollapsibleSectionTitle({
 }
 
 const stylesSectionContent = tv({
-  base: 'p-3 rounded-[calc(0.75rem-0.125rem)] text-sm',
+  base: 'rounded-[calc(0.75rem-0.125rem)] p-3 text-sm',
   variants: {
     raised: {
-      true: 'bg-white shadow-sm border',
+      true: 'border bg-white shadow-xs',
       false: '',
     },
   },

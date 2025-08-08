@@ -67,12 +67,12 @@ function Component() {
   const { promise: listDeploymentPromise, data: listDeploymentsData } =
     useListDeployments();
   const { promise: listServicesPromise } = useListServices(
-    listDeploymentsData?.sortedServiceNames
+    listDeploymentsData?.sortedServiceNames,
   );
   const [searchParams, setSearchParams] = useSearchParams();
   const schema = useMemo(() => {
     const serviceNamesPromise = listDeploymentPromise.then((results) =>
-      [...(results?.sortedServiceNames ?? [])].sort()
+      [...(results?.sortedServiceNames ?? [])].sort(),
     );
     return [
       {
@@ -142,16 +142,16 @@ function Component() {
                   services
                     .filter(Boolean)
                     .map((service) =>
-                      (service!.handlers ?? []).map((handler) => handler.name)
+                      (service!.handlers ?? []).map((handler) => handler.name),
                     )
-                    .flat()
-                ).values()
+                    .flat(),
+                ).values(),
               )
                 .sort()
                 .map((name) => ({
                   label: name,
                   value: name,
-                })) ?? []
+                })) ?? [],
           );
         },
       },
@@ -184,8 +184,8 @@ function Component() {
                 label: String(getEndpoint(deployment)),
                 value: deployment.id,
                 description: deployment.id,
-              })
-            )
+              }),
+            ),
           ),
       },
       {
@@ -211,7 +211,7 @@ function Component() {
             results.map((name) => ({
               label: name,
               value: name,
-            }))
+            })),
           ),
       },
       {
@@ -272,7 +272,7 @@ function Component() {
       .map((schemaClause) => {
         return QueryClause.fromJSON(
           schemaClause,
-          searchParams.get(`filter_${schemaClause.id}`)!
+          searchParams.get(`filter_${schemaClause.id}`)!,
         );
       })
       .filter((clause) => clause.isValid)
@@ -283,7 +283,7 @@ function Component() {
           type: clause.type,
           value: clause.value.value,
         } as FilterItem;
-      })
+      }),
   );
   const {
     dataUpdatedAt,
@@ -313,7 +313,7 @@ function Component() {
         _setPageIndex(arg);
       });
     },
-    []
+    [],
   );
 
   const sortedItems = useMemo(() => {
@@ -326,7 +326,7 @@ function Component() {
           )?.toString() ?? '',
           (
             b.last_attempt_deployment_id ?? b.pinned_deployment_id
-          )?.toString() ?? ''
+          )?.toString() ?? '',
         );
       } else {
         cmp = collator.compare(
@@ -341,7 +341,7 @@ function Component() {
               ColumnKey,
               'deployment' | 'actions'
             >
-          ]?.toString() ?? ''
+          ]?.toString() ?? '',
         );
       }
 
@@ -357,7 +357,7 @@ function Component() {
   const currentPageItems = useMemo(() => {
     return sortedItems.slice(
       pageIndex * PAGE_SIZE,
-      (pageIndex + 1) * PAGE_SIZE
+      (pageIndex + 1) * PAGE_SIZE,
     );
   }, [pageIndex, sortedItems]);
 
@@ -373,9 +373,9 @@ function Component() {
       .map((schemaClause) => {
         return QueryClause.fromJSON(
           schemaClause,
-          searchParams.get(`filter_${schemaClause.id}`)!
+          searchParams.get(`filter_${schemaClause.id}`)!,
         );
-      })
+      }),
   );
 
   const totalSize = Math.ceil((data?.rows ?? []).length / PAGE_SIZE);
@@ -383,7 +383,7 @@ function Component() {
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdate}>
-      <div className="flex flex-col flex-auto gap-2 relative">
+      <div className="relative flex flex-auto flex-col gap-2">
         <Table
           aria-label="Invocations"
           sortDescriptor={sortDescriptor}
@@ -414,7 +414,7 @@ function Component() {
                       >
                         <Icon
                           name={IconName.TableProperties}
-                          className="h-4 w-4 aspect-square text-gray-500"
+                          className="aspect-square h-4 w-4 text-gray-500"
                         />
                       </Button>
                     </DropdownTrigger>
@@ -439,7 +439,7 @@ function Component() {
                   </Dropdown>
                   <span className="sr-only">Actions</span>
                 </Column>
-              )
+              ),
             )}
           </TableHeader>
           <TableBody
@@ -449,17 +449,17 @@ function Component() {
             isLoading={isPending}
             numOfColumns={sortedColumnsList.length}
             emptyPlaceholder={
-              <div className="flex flex-col items-center py-14 gap-4">
-                <div className="mr-1.5 shrink-0 h-12 w-12 p-1 bg-gray-200/50  rounded-xl">
+              <div className="flex flex-col items-center gap-4 py-14">
+                <div className="mr-1.5 h-12 w-12 shrink-0 rounded-xl bg-gray-200/50 p-1">
                   <Icon
                     name={IconName.Invocation}
-                    className="w-full h-full text-zinc-400 p-1"
+                    className="h-full w-full p-1 text-zinc-400"
                   />
                 </div>
                 <h3 className="text-sm font-semibold text-zinc-400">
                   No invocations found
                 </h3>
-                <p className="text-code text-center text-zinc-400 px-4 max-w-md">
+                <p className="max-w-md px-4 text-center text-0.5xs text-zinc-400">
                   Completed invocations (succeeded, failed, cancelled, or
                   killed) are retained only for workflows and those with
                   idempotency keys, and solely for the retention period
@@ -472,7 +472,7 @@ function Component() {
               <Row
                 id={row.id}
                 columns={sortedColumnsList}
-                className={` [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50 bg-transparent [content-visibility:auto]`}
+                className={`bg-transparent [content-visibility:auto] [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50`}
               >
                 {({ id }) => {
                   return (
@@ -490,13 +490,13 @@ function Component() {
         </Table>
         <Footnote data={data} isFetching={isFetching} key={dataUpdate}>
           {!isPending && !error && totalSize > 1 && (
-            <div className="flex items-center bg-zinc-50 shadow-sm border rounded-lg py-0.5">
+            <div className="flex items-center rounded-lg border bg-zinc-50 py-0.5 shadow-xs">
               <Button
                 variant="icon"
                 disabled={pageIndex === 0}
                 onClick={() => setPageIndex(0)}
               >
-                <Icon name={IconName.ChevronFirst} className="w-4 h-4" />
+                <Icon name={IconName.ChevronFirst} className="h-4 w-4" />
               </Button>
               <Button
                 variant="icon"
@@ -504,9 +504,9 @@ function Component() {
                 onClick={() => setPageIndex((s) => s - 1)}
                 className=""
               >
-                <Icon name={IconName.ChevronLeft} className="w-4 h-4" />
+                <Icon name={IconName.ChevronLeft} className="h-4 w-4" />
               </Button>
-              <div className="flex items-center gap-0.5 mx-2 text-code">
+              <div className="mx-2 flex items-center gap-0.5 text-0.5xs">
                 {pageIndex + 1} / {totalSize}
               </div>
 
@@ -516,14 +516,14 @@ function Component() {
                 onClick={() => setPageIndex((s) => s + 1)}
                 className=""
               >
-                <Icon name={IconName.ChevronRight} className="w-4 h-4" />
+                <Icon name={IconName.ChevronRight} className="h-4 w-4" />
               </Button>
               <Button
                 variant="icon"
                 disabled={pageIndex + 1 === totalSize}
                 onClick={() => setPageIndex(totalSize - 1)}
               >
-                <Icon name={IconName.ChevronLast} className="w-4 h-4" />
+                <Icon name={IconName.ChevronLast} className="h-4 w-4" />
               </Button>
             </div>
           )}
@@ -533,7 +533,7 @@ function Component() {
         <Form
           action="/query/invocations"
           method="POST"
-          className="flex relative"
+          className="relative flex"
           onSubmit={async (event) => {
             event.preventDefault();
             const newSearchParams = new URLSearchParams(searchParams);
@@ -567,8 +567,8 @@ function Component() {
                       operation: clause.value.operation!,
                       type: clause.type,
                       value: clause.value.value,
-                    } as FilterItem)
-                )
+                    }) as FilterItem,
+                ),
             );
             await queryCLient.invalidateQueries({ queryKey });
           }}
@@ -578,14 +578,14 @@ function Component() {
               MenuTrigger={FiltersTrigger}
               placeholder="Filter invocations…"
               title="Filters"
-              className="rounded-xl [&_input::-webkit-search-cancel-button]:invert has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500 [&_input]:placeholder-zinc-400 border-transparent pr-24 w-full  [&_input+*]:right-24 [&_input]:min-w-[25ch]"
+              className="w-full rounded-xl border-transparent pr-24 has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500 [&_input]:min-w-[25ch] [&_input]:placeholder-zinc-400 [&_input+*]:right-24 [&_input::-webkit-search-cancel-button]:invert"
             >
               {ClauseChip}
             </AddQueryTrigger>
           </QueryBuilder>
           <SubmitButton
             isPending={isFetching}
-            className="absolute right-1 top-1 bottom-1 rounded-lg py-0 disabled:bg-gray-400  disabled:text-gray-200"
+            className="absolute top-1 right-1 bottom-1 rounded-lg py-0 disabled:bg-gray-400 disabled:text-gray-200"
           >
             Query
           </SubmitButton>
@@ -625,7 +625,7 @@ function Footnote({
   const duration = formatDurations(parts);
 
   return (
-    <div className="flex flex-row-reverse flex-wrap items-center w-full text-center text-xs text-gray-500/80 ">
+    <div className="flex w-full flex-row-reverse flex-wrap items-center text-center text-xs text-gray-500/80">
       {data && (
         <div className="ml-auto">
           {data.total_count ? (

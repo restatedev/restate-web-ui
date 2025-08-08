@@ -20,7 +20,7 @@ import {
 
 export function callV1(
   entry: JournalRawEntry,
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<JournalEntryV2, { type?: 'Call'; category?: 'command' }> {
   const { raw } = entry;
   if (!raw) {
@@ -60,7 +60,7 @@ export function callV1(
         error: message.result.value.message
           ? new RestateError(
               message.result.value.message,
-              message.result.value.code.toString()
+              message.result.value.code.toString(),
             )
           : error,
       };
@@ -79,7 +79,7 @@ export function callV1(
 function callV2(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<JournalEntryV2, { type?: 'Call'; category?: 'command' }> {
   const entryJSON = parseEntryJson(entry.entry_json ?? entry.entry_lite_json);
   const commandIndex = entry.command_index;
@@ -103,7 +103,7 @@ function callV2(
     invocation,
     nextEntries,
     undefined,
-    [completionEntry?.index]
+    [completionEntry?.index],
   );
 
   return {
@@ -124,7 +124,7 @@ function callV2(
         ({
           key: name,
           value,
-        } as { key: string; value: string })
+        }) as { key: string; value: string },
     ),
     parameters: decodeBinary(parameters),
     isLoaded:
@@ -141,7 +141,7 @@ function callV2(
 export function call(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ) {
   if (entry.version === 1 || !entry.version) {
     return callV1(entry, invocation);
@@ -157,7 +157,7 @@ export function call(
 export function notificationCall(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<JournalEntryV2, { type?: 'Call'; category?: 'notification' }> {
   const entryJSON = parseEntryJson(entry.entry_json);
   const entryLiteJSON = parseEntryJson(entry.entry_lite_json);
@@ -172,7 +172,7 @@ export function notificationCall(
     entry,
     invocation,
     nextEntries,
-    result
+    result,
   );
 
   return {

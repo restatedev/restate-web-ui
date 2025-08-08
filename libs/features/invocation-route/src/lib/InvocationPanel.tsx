@@ -61,7 +61,7 @@ function Footnote({ dataUpdatedAt }: { dataUpdatedAt?: number }) {
   const { isPast, ...parts } = durationSinceLastSnapshot(now);
   const duration = formatDurations(parts);
   return (
-    <div className="w-full text-xs text-gray-500/80 ">
+    <div className="w-full text-xs text-gray-500/80">
       Last updated{' '}
       <span className="font-medium text-gray-500">{duration} ago</span>
     </div>
@@ -99,14 +99,14 @@ function InvocationPanelContent() {
     String(data?.id),
     {
       enabled: false,
-    }
+    },
   );
   const { queryKey: stateQuery } = useGetVirtualObjectState(
     String(data?.target_service_name),
     String(data?.target_service_key),
     {
       enabled: false,
-    }
+    },
   );
 
   const queryClient = useQueryClient();
@@ -122,17 +122,17 @@ function InvocationPanelContent() {
       lastSnapshot={getInvocationError ? errorUpdatedAt : dataUpdatedAt}
     >
       <ComplementaryFooter>
-        <div className="flex gap-2 flex-col flex-auto">
+        <div className="flex flex-auto flex-col gap-2">
           {getInvocationError && <ErrorBanner error={getInvocationError} />}
 
           <div className="flex gap-2">
             <ComplementaryClose>
-              <Button className="flex-auto grow-0 w-full" variant="secondary">
+              <Button className="w-full flex-auto grow-0" variant="secondary">
                 Close
               </Button>
             </ComplementaryClose>
             <SubmitButton
-              className="flex-auto grow-0 w-full"
+              className="w-full flex-auto grow-0"
               variant="primary"
               onClick={() => {
                 refetchGetInvocation();
@@ -160,32 +160,32 @@ function InvocationPanelContent() {
       </ComplementaryFooter>
       <Link
         variant="icon"
-        className="absolute right-1 top-1 rounded-lg"
+        className="absolute top-1 right-1 rounded-lg"
         href={`${baseUrl}/invocations/${invocationId}${getSearchParams(
           location.search,
-          invocationId
+          invocationId,
         )}`}
       >
-        <Icon name={IconName.Maximize} className="w-4 h-4 text-gray-500" />
+        <Icon name={IconName.Maximize} className="h-4 w-4 text-gray-500" />
       </Link>
       <div className="flex flex-col items-start">
-        <h2 className="mb-3 text-lg font-medium leading-6 text-gray-900 flex gap-2 items-center w-full">
+        <h2 className="mb-3 flex w-full items-center gap-2 text-lg leading-6 font-medium text-gray-900">
           <div className="h-10 w-10 shrink-0 text-blue-400">
             <Icon
               name={IconName.Invocation}
-              className="w-full h-full p-1.5 fill-blue-50 text-blue-400 drop-shadow-md"
+              className="h-full w-full fill-blue-50 p-1.5 text-blue-400 drop-shadow-md"
             />
           </div>
-          <div className="flex flex-col items-start gap-1 min-w-0 flex-auto">
+          <div className="flex min-w-0 flex-auto flex-col items-start gap-1">
             {isPending ? (
               <>
-                <div className="w-[16ch] h-5 animate-pulse rounded-md bg-gray-200 mt-1" />
-                <div className="w-[8ch] h-5 animate-pulse rounded-md bg-gray-200" />
+                <div className="mt-1 h-5 w-[16ch] animate-pulse rounded-md bg-gray-200" />
+                <div className="h-5 w-[8ch] animate-pulse rounded-md bg-gray-200" />
               </>
             ) : (
               <>
                 <div className="flex w-full items-center">Invocation</div>
-                <div className="min-h-4 flex w-full items-center">
+                <div className="flex min-h-4 w-full items-center">
                   <Footnote
                     dataUpdatedAt={
                       getInvocationError ? errorUpdatedAt : dataUpdatedAt

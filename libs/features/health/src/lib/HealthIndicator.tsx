@@ -1,13 +1,13 @@
 import { Status, useRestateContext } from '@restate/features/restate-context';
 import { StatusIndicator } from './StatusIndicator';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 const styles = tv({
   base: '',
   slots: {
     container:
-      'inline-flex gap-1 items-center rounded-lg px-2 py-0 text-2xs font-medium ring-1 ring-inset',
-    icon: 'w-3 h-3 text-xs stroke-0 fill-current',
+      'inline-flex items-center gap-1 rounded-lg px-2 py-0 text-2xs font-medium ring-1 ring-inset',
+    icon: 'h-3 w-3 fill-current stroke-0 text-xs',
   },
   variants: {
     status: {
@@ -28,7 +28,7 @@ const styles = tv({
 });
 
 function isStatusDefined(
-  status?: Status
+  status?: Status,
 ): status is Extract<Status, 'PENDING' | 'HEALTHY' | 'DEGRADED'> {
   return Boolean(status && ['PENDING', 'HEALTHY', 'DEGRADED'].includes(status));
 }

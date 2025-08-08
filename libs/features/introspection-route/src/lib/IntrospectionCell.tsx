@@ -42,7 +42,7 @@ export function IntrospectionCell({
       <Cell>
         <Deployment
           deploymentId={value}
-          className="text-inherit p-0 pr-0.5 m-0 [&_a:before]:rounded-md max-w-full"
+          className="m-0 max-w-full p-0 pr-0.5 text-inherit [&_a:before]:rounded-md"
           highlightSelection={false}
           showEndpoint={false}
         />

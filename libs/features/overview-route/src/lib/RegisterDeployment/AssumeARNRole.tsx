@@ -29,7 +29,7 @@ export function AssumeARNRole() {
               Role ARN
             </InlineTooltip>
           </span>
-          <span slot="description" className="leading-5 text-code block">
+          <span slot="description" className="block text-0.5xs leading-5">
             AWS role ARN that Restate Cloud can assume to invoke the Lambda
             function
           </span>

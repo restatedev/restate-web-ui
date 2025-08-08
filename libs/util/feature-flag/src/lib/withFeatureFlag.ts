@@ -4,7 +4,7 @@ import { isFeatureEnabled } from './FeatureFlags';
 
 export function withFeatureFlag(
   featureFlag: FeatureFlag,
-  loader: ClientLoaderFunction
+  loader: ClientLoaderFunction,
 ): ClientLoaderFunction {
   if (isFeatureEnabled(featureFlag)) {
     return loader;

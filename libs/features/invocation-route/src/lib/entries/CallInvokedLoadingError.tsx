@@ -2,7 +2,7 @@ import { Button } from '@restate/ui/button';
 import { ErrorBanner } from '@restate/ui/error';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 const styles = tv({
   base: 'text-red-500',
@@ -24,7 +24,7 @@ export function CallInvokedLoadingError({
         <Button variant="icon" className={styles({ className })}>
           <Icon
             name={IconName.CircleX}
-            className="h-3 w-3 text-red-500 shrink-0"
+            className="h-3 w-3 shrink-0 text-red-500"
           />
         </Button>
       </PopoverTrigger>

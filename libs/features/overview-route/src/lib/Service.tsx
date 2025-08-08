@@ -7,7 +7,7 @@ import {
   useServiceDetails,
 } from '@restate/data-access/admin-api';
 import { Icon, IconName } from '@restate/ui/icons';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { Deployment } from './Deployment';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Link } from '@restate/ui/link';
@@ -17,7 +17,7 @@ import { useActiveSidebarParam } from '@restate/ui/layout';
 import { Handler } from './Handler';
 
 const styles = tv({
-  base: ' w-full rounded-2xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] transform transition',
+  base: 'w-full transform rounded-2xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] transition',
   variants: {
     isMatching: {
       true: '',
@@ -37,7 +37,7 @@ const styles = tv({
 });
 
 const serviceLinkStyles = tv({
-  base: "outline-offset-0 rounded-full before:absolute before:inset-0 before:content-[''] hover:before:bg-black/[0.03] pressed:before:bg-black/5",
+  base: "rounded-full outline-offset-0 before:absolute before:inset-0 before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5",
   variants: {
     isMatching: {
       true: 'before:rounded-t-[0.9rem]',
@@ -50,12 +50,12 @@ const serviceLinkStyles = tv({
 });
 
 const serviceStyles = tv({
-  base: 'w-full rounded-2xl border  shadow-zinc-800/[0.03] transform transition overflow-hidden',
+  base: 'w-full transform overflow-hidden rounded-2xl border shadow-zinc-800/3 transition',
   variants: {
     isSelected: {
-      true: 'bg-white shadow-md scale-105',
+      true: 'scale-105 bg-white shadow-md',
       false:
-        'border-white/50 bg-gradient-to-b to-gray-50/80 from-gray-50 shadow-sm scale-100',
+        'scale-100 border-white/50 bg-linear-to-b from-gray-50 to-gray-50/80 shadow-xs',
     },
   },
   defaultVariants: { isSelected: false },
@@ -67,7 +67,7 @@ const MAX_NUMBER_OF_HANDLERS = 3;
 function filterHandler(
   serviceType: ServiceType,
   handler: HandlerType,
-  filterText?: string
+  filterText?: string,
 ) {
   const lowerCaseFilter = filterText?.toLowerCase();
   return (
@@ -85,7 +85,7 @@ function filterDeployment(deployment?: DeploymentType, filterText?: string) {
       getEndpoint(deployment)
         ?.toLowerCase()
         .includes(filterText.toLowerCase()) ||
-      (filterText.startsWith('dp_') && deployment?.id.includes(filterText))
+      (filterText.startsWith('dp_') && deployment?.id.includes(filterText)),
   );
 }
 
@@ -111,7 +111,7 @@ export function Service({
 
   const deploymentRevisionPairs = revisions
     .map((revision) =>
-      serviceDeployments?.[revision]?.map((id) => ({ id, revision }))
+      serviceDeployments?.[revision]?.map((id) => ({ id, revision })),
     )
     .flat()
     .filter(Boolean) as {
@@ -124,12 +124,12 @@ export function Service({
     serviceName.toLowerCase().includes(filterText.toLowerCase()) ||
     serviceDetails?.ty.toLowerCase().includes(filterText.toLowerCase());
   const isMatchingAnyHandlerName = serviceDetails?.handlers?.some((handler) =>
-    filterHandler(serviceDetails?.ty, handler, filterText)
+    filterHandler(serviceDetails?.ty, handler, filterText),
   );
   const isMatchingAnyDeployment = Object.values(service?.deployments ?? {})
     .flat()
     .some((deploymentId) =>
-      filterDeployment(deployments?.get(deploymentId), filterText)
+      filterDeployment(deployments?.get(deploymentId), filterText),
     );
 
   const isMatching =
@@ -142,29 +142,29 @@ export function Service({
       (handler) =>
         isMatchingServiceName ||
         isMatchingAnyDeployment ||
-        filterHandler(serviceDetails?.ty, handler, filterText)
+        filterHandler(serviceDetails?.ty, handler, filterText),
     ) ?? [];
   const filteredDeployments =
     deploymentRevisionPairs.filter(
       ({ id: deploymentId }) =>
         isMatchingServiceName ||
         isMatchingAnyHandlerName ||
-        filterDeployment(deployments?.get(deploymentId), filterText)
+        filterDeployment(deployments?.get(deploymentId), filterText),
     ) ?? [];
 
   return (
     <div className={styles({ className, isMatching, isSelected })}>
       <div className={serviceStyles({ isSelected })} data-selected={isSelected}>
-        <div className="relative p-2 w-full rounded-[calc(0.75rem-0.125rem)] flex items-center gap-2 flex-row text-sm">
+        <div className="relative flex w-full flex-row items-center gap-2 rounded-[calc(0.75rem-0.125rem)] p-2 text-sm">
           <div className="h-8 w-8 shrink-0">
-            <div className="rounded-lg bg-white border shadow-sm text-blue-400 h-full w-full flex items-center justify-center">
+            <div className="flex h-full w-full items-center justify-center rounded-lg border bg-white text-blue-400 shadow-xs">
               <Icon
                 name={IconName.Box}
-                className="w-full h-full p-1.5 fill-blue-50 text-blue-400 drop-shadow-md"
+                className="h-full w-full fill-blue-50 p-1.5 text-blue-400 drop-shadow-md"
               />
             </div>
           </div>
-          <div className="flex flex-row gap-1 items-center font-medium [font-size:0.9rem] text-zinc-600 min-w-0">
+          <div className="flex min-w-0 flex-row items-center gap-1 text-[0.9rem] font-medium text-zinc-600">
             <TruncateWithTooltip copyText={serviceName} triggerRef={linkRef}>
               {serviceName}
             </TruncateWithTooltip>
@@ -177,7 +177,7 @@ export function Service({
             >
               <Icon
                 name={IconName.ChevronRight}
-                className="w-4 h-4 text-gray-500"
+                className="h-4 w-4 text-gray-500"
               />
             </Link>
           </div>
@@ -185,7 +185,7 @@ export function Service({
         {isMatching &&
           serviceDetails &&
           serviceDetails?.handlers?.length > 0 && (
-            <div className="mb-1 px-3 pb-3 pt-1 flex flex-col rounded-md rounded-t-sm gap-1">
+            <div className="mb-1 flex flex-col gap-1 rounded-md rounded-t-sm px-3 pt-1 pb-3">
               <div className="flex flex-col gap-1.5">
                 {filteredHandlers
                   .slice(0, MAX_NUMBER_OF_HANDLERS)
@@ -204,7 +204,7 @@ export function Service({
                     href={`?${SERVICE_QUERY_PARAM}=${serviceName}`}
                     variant="secondary"
                     aria-label={serviceName}
-                    className="text-gray-500 text-code bg-transparent no-underline border-none shadow-none text-left px-8 py-1 cursor-pointer rounded-lg  hover:bg-black/[0.03] pressed:bg-black/5"
+                    className="cursor-pointer rounded-lg border-none bg-transparent px-8 py-1 text-left text-0.5xs text-gray-500 no-underline shadow-none hover:bg-black/3 pressed:bg-black/5"
                   >
                     +{filteredHandlers.length - MAX_NUMBER_OF_HANDLERS} handler
                     {filteredHandlers.length - MAX_NUMBER_OF_HANDLERS > 1
@@ -219,8 +219,8 @@ export function Service({
         {children}
       </div>
       {isMatching && revisions.length > 0 && (
-        <div className="px-3 mt-1.5 pb-3 pt-1 flex flex-col rounded-md rounded-t-sm gap-1">
-          <div className="pl-1 uppercase text-2xs font-semibold text-gray-400 flex gap-2 items-center">
+        <div className="mt-1.5 flex flex-col gap-1 rounded-md rounded-t-sm px-3 pt-1 pb-3">
+          <div className="flex items-center gap-2 pl-1 text-2xs font-semibold text-gray-400 uppercase">
             Deployments
           </div>
           <div className="flex flex-col gap-1.5">
@@ -235,7 +235,7 @@ export function Service({
                 href={`?${SERVICE_QUERY_PARAM}=${serviceName}`}
                 variant="secondary"
                 aria-label={serviceName}
-                className="text-gray-500 text-code bg-transparent no-underline border-none shadow-none text-left px-8 py-1 cursor-pointer rounded-lg  hover:bg-black/[0.03] pressed:bg-black/5"
+                className="cursor-pointer rounded-lg border-none bg-transparent px-8 py-1 text-left text-0.5xs text-gray-500 no-underline shadow-none hover:bg-black/3 pressed:bg-black/5"
               >
                 +{filteredDeployments.length - MAX_NUMBER_OF_DEPLOYMENTS}{' '}
                 deployment

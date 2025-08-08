@@ -31,7 +31,7 @@ const errorMiddleware: Middleware = {
         throw new RestateError(body.message, body.restate_code ?? '');
       }
       throw new Error(
-        body || 'An unexpected error occurred. Please try again later.'
+        body || 'An unexpected error occurred. Please try again later.',
       );
     }
     if (response.ok && request.url.endsWith('health')) {
@@ -69,7 +69,7 @@ export type SupportedMethods<Path extends keyof paths> = keyof {
 
 export type OperationParameters<
   Path extends keyof paths,
-  Method extends SupportedMethods<Path>
+  Method extends SupportedMethods<Path>,
 > = paths[Path][Method] extends {
   parameters: {
     query?: unknown;
@@ -83,7 +83,7 @@ export type OperationParameters<
 
 export type OperationBody<
   Path extends keyof paths,
-  Method extends SupportedMethods<Path>
+  Method extends SupportedMethods<Path>,
 > = paths[Path][Method] extends {
   requestBody: {
     content: {
@@ -96,7 +96,7 @@ export type OperationBody<
 
 export type QueryOptions<
   Path extends keyof paths,
-  Method extends SupportedMethods<Path>
+  Method extends SupportedMethods<Path>,
 > = paths[Path][Method] extends {
   responses: Record<number, any>;
 }
@@ -108,19 +108,19 @@ export type QueryOptions<
 
 type QueryFn<
   Path extends keyof paths,
-  Method extends SupportedMethods<Path>
+  Method extends SupportedMethods<Path>,
 > = Extract<QueryOptions<Path, Method>['queryFn'], Function>;
 
 type QueryKey<
   Path extends keyof paths,
-  Method extends SupportedMethods<Path>
+  Method extends SupportedMethods<Path>,
 > = QueryOptions<Path, Method>['queryKey'];
 
 export type MutationOptions<
   Path extends keyof paths,
   Method extends SupportedMethods<Path>,
   Parameters extends OperationParameters<Path, Method>,
-  Body extends OperationBody<Path, Method>
+  Body extends OperationBody<Path, Method>,
 > = paths[Path][Method] extends { responses: Record<number, any> }
   ? UseMutationOptions<
       FetchResponse<paths[Path][Method], {}, 'application/json'>['data'],
@@ -136,7 +136,7 @@ type MutationFn<
   Path extends keyof paths,
   Method extends SupportedMethods<Path>,
   Parameters extends OperationParameters<Path, Method>,
-  Body extends OperationBody<Path, Method>
+  Body extends OperationBody<Path, Method>,
 > = Extract<
   MutationOptions<Path, Method, Parameters, Body>['mutationFn'],
   Function
@@ -146,14 +146,14 @@ type MutationKey<
   Path extends keyof paths,
   Method extends SupportedMethods<Path>,
   Parameters extends OperationParameters<Path, Method>,
-  Body extends OperationBody<Path, Method>
+  Body extends OperationBody<Path, Method>,
 > = MutationOptions<Path, Method, Parameters, Body>['mutationKey'];
 
 export function adminApi<
   Path extends keyof paths,
   Method extends SupportedMethods<Path>,
   Parameters extends OperationParameters<Path, Method>,
-  Body extends OperationBody<Path, Method>
+  Body extends OperationBody<Path, Method>,
 >(
   type: 'query',
   path: Path,
@@ -163,7 +163,7 @@ export function adminApi<
     parameters?: Parameters;
     body?: Body;
     resolvedPath?: string;
-  }
+  },
 ): {
   queryFn: QueryFn<Path, Method>;
   queryKey: QueryKey<Path, Method>;
@@ -175,7 +175,7 @@ export function adminApi<
   Path extends keyof paths,
   Method extends SupportedMethods<Path>,
   Parameters extends OperationParameters<Path, Method>,
-  Body extends OperationBody<Path, Method>
+  Body extends OperationBody<Path, Method>,
 >(
   type: 'mutate',
   path: Path,
@@ -183,7 +183,7 @@ export function adminApi<
   init: {
     baseUrl: string;
     resolvedPath?: string;
-  }
+  },
 ): {
   mutationFn: MutationFn<Path, Method, Parameters, Body>;
   mutationKey: MutationKey<Path, Method, Parameters, Body>;
@@ -193,7 +193,7 @@ export function adminApi<
   Path extends keyof paths,
   Method extends SupportedMethods<Path>,
   Parameters extends OperationParameters<Path, Method>,
-  Body extends OperationBody<Path, Method>
+  Body extends OperationBody<Path, Method>,
 >(
   type: 'query' | 'mutate',
   path: Path,
@@ -203,7 +203,7 @@ export function adminApi<
     parameters?: Parameters;
     body?: Body;
     resolvedPath?: string;
-  }
+  },
 ):
   | {
       queryFn: QueryFn<Path, Method>;
@@ -236,7 +236,7 @@ export function adminApi<
             body: init.body,
             params: init.parameters,
             ...(path === '/health' && { parseAs: 'stream' }),
-          }
+          },
         );
         return data;
       }) as any,
@@ -256,7 +256,7 @@ export function adminApi<
             baseUrl: init.baseUrl,
             body: variables.body,
             params: variables.parameters,
-          }
+          },
         );
         return data;
       }) as any,

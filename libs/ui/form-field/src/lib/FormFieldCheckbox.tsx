@@ -1,5 +1,5 @@
 import { Label, CheckboxGroup } from 'react-aria-components';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { FormFieldError } from './FormFieldError';
 import { ComponentProps, PropsWithChildren, forwardRef } from 'react';
 import {
@@ -27,9 +27,9 @@ interface FormFieldCheckboxProps
 const styles = tv({
   slots: {
     label: 'row-start-1 text-base',
-    container: 'grid gap-x-2 items-center',
+    container: 'grid items-center gap-x-2',
     error: 'error row-start-2 px-0',
-    input: 'row-start-1  min-w-0',
+    input: 'row-start-1 min-w-0',
   },
   variants: {
     direction: {
@@ -41,7 +41,7 @@ const styles = tv({
       },
       right: {
         container: 'grid-cols-[1fr_1.25rem]',
-        input: 'self-baseline col-start-2',
+        input: 'col-start-2 self-baseline',
         label: 'col-start-1',
         error: 'col-start-1',
       },
@@ -71,7 +71,7 @@ export const FormFieldCheckbox = forwardRef<
       slot,
       ...props
     },
-    ref
+    ref,
   ) => {
     const { input, container, label, error } = styles({ direction });
     const inputRef = useObjectRef(ref);
@@ -103,11 +103,11 @@ export const FormFieldCheckbox = forwardRef<
         <FormFieldError children={errorMessage} className={error()} />
       </CheckboxGroup>
     );
-  }
+  },
 );
 
 const checkboxStyles = tv({
-  base: 'flex gap-2 items-center group text-sm transition',
+  base: 'group flex items-center gap-2 text-sm transition',
   variants: {
     isDisabled: {
       false: 'text-gray-800 dark:text-zinc-200',
@@ -115,7 +115,7 @@ const checkboxStyles = tv({
     },
     direction: {
       left: 'col-start-1',
-      right: 'self-baseline col-start-2',
+      right: 'col-start-2 self-baseline',
     },
   },
   defaultVariants: {
@@ -125,18 +125,18 @@ const checkboxStyles = tv({
 
 const boxStyles = tv({
   extend: focusRing,
-  base: 'w-5 h-5 flex-shrink-0 rounded-md flex items-center justify-center border transition shadow-[inset_0_0.5px_0.5px_0px_rgba(0,0,0,0.08)]',
+  base: 'flex h-5 w-5 shrink-0 items-center justify-center rounded-md border shadow-[inset_0_0.5px_0.5px_0px_rgba(0,0,0,0.08)] transition',
   variants: {
     isSelected: {
       false:
-        'bg-[--color] border-gray-200 [--color:theme(colors.gray.100)] group-pressed:[--color:theme(colors.gray.200)]',
-      true: 'bg-[--color] border-[--color] [--color:theme(colors.blue.600)] group-pressed:[--color:theme(colors.blue.800)]',
+        'border-gray-200 bg-(--color) [--color:var(--color-gray-100)] group-pressed:[--color:theme(colors.gray.200)]',
+      true: 'border-(--color) bg-(--color) [--color:var(--color-blue-600)] group-pressed:[--color:theme(colors.blue.800)]',
     },
     isInvalid: {
-      true: '[--color:theme(colors.red.100)] group-pressed:[--color:theme(colors.red.200)] border-red-600',
+      true: 'border-red-600 [--color:var(--color-red-100)] group-pressed:[--color:theme(colors.red.200)]',
     },
     isDisabled: {
-      true: '[--color:theme(colors.gray.100)] border-gray-100 shadow-none',
+      true: 'border-gray-100 shadow-none [--color:var(--color-gray-100)]',
     },
   },
 });
@@ -155,7 +155,7 @@ export const Checkbox = forwardRef<
       inputRef={inputRef}
       {...props}
       className={composeRenderProps(props.className, (className, renderProps) =>
-        checkboxStyles({ ...renderProps, className })
+        checkboxStyles({ ...renderProps, className }),
       )}
     >
       {({ isSelected, isIndeterminate, ...renderProps }) => (

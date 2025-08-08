@@ -9,6 +9,6 @@ declare module globalThis {
     | undefined
     | ((
         input: string | URL | globalThis.Request,
-        init?: RequestInit
+        init?: RequestInit,
       ) => Promise<Response>);
 }

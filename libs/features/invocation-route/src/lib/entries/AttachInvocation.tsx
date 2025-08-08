@@ -2,7 +2,7 @@ import { JournalEntryV2 } from '@restate/data-access/admin-api';
 import { EntryProps } from './types';
 import { InvocationId } from '../InvocationId';
 import { EntryExpression } from './EntryExpression';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { useJournalContext } from '../JournalContext';
 import { CallInvokedLoadingError } from './CallInvokedLoadingError';
 import { Button } from '@restate/ui/button';
@@ -10,7 +10,7 @@ import { Spinner } from '@restate/ui/loading';
 import { Icon, IconName } from '@restate/ui/icons';
 
 const styles = tv({
-  base: 'flex flex-row gap-1.5 items-center relative flex-auto',
+  base: 'relative flex flex-auto flex-row items-center gap-1.5',
 });
 
 export function AttachInvocation({
@@ -44,14 +44,14 @@ export function AttachInvocation({
           input={
             <InvocationId
               id={String(entry.invocationId)}
-              className="truncate max-w-[15ch] text-2xs not-italic font-semibold text-gray-500 mx-0.5 "
+              className="mx-0.5 max-w-[15ch] truncate text-2xs font-semibold text-gray-500 not-italic"
               size="md"
             />
           }
           outputParam="value"
         />
       </div>
-      <div className="flex items-center absolute right-1 top-0 bottom-0">
+      <div className="absolute top-0 right-1 bottom-0 flex items-center">
         {invokedError ? (
           <CallInvokedLoadingError error={invokedError} className="" />
         ) : (
@@ -66,14 +66,14 @@ export function AttachInvocation({
               }
             }}
             variant="icon"
-            className="bg-black/[0.03] z-10"
+            className="z-10 bg-black/3"
           >
             {invokedIsPending ? (
               <Spinner />
             ) : (
               <Icon
                 name={isExpanded ? IconName.X : IconName.Plus}
-                className="w-3.5 h-3.5"
+                className="h-3.5 w-3.5"
               />
             )}
           </Button>

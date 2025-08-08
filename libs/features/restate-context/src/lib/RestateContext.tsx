@@ -43,10 +43,10 @@ function InternalRestateContextProvider({
   const status: Status | undefined = isPending
     ? 'PENDING'
     : failureCount > 0
-    ? 'DEGRADED'
-    : isSuccess
-    ? 'HEALTHY'
-    : 'PENDING';
+      ? 'DEGRADED'
+      : isSuccess
+        ? 'HEALTHY'
+        : 'PENDING';
 
   return (
     <InternalRestateContext.Provider

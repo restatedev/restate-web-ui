@@ -26,25 +26,25 @@ import {
 } from '@restate/data-access/admin-api';
 import { showSuccessNotification } from '@restate/ui/notification';
 import { Icon, IconName } from '@restate/ui/icons';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { useQueryClient } from '@tanstack/react-query';
 import { Spinner } from '@restate/ui/loading';
 
 const styles = tv({
   base: '',
   slots: {
-    banner: 'mt-2 text-code flex rounded-xl p-3  gap-2',
-    bannerIcon: 'h-5 w-5  shrink-0',
+    banner: 'mt-2 flex gap-2 rounded-xl p-3 text-0.5xs',
+    bannerIcon: 'h-5 w-5 shrink-0',
   },
   variants: {
     isWarning: {
       true: {
         banner: 'bg-orange-50 text-orange-600',
-        bannerIcon: 'text-orange-100 fill-orange-600',
+        bannerIcon: 'fill-orange-600 text-orange-100',
       },
       false: {
         banner: 'bg-blue-50 text-blue-600',
-        bannerIcon: 'text-blue-100 fill-blue-600',
+        bannerIcon: 'fill-blue-600 text-blue-100',
       },
     },
   },
@@ -122,7 +122,7 @@ function EditStateInner({
     onSuccess(data, variables) {
       onOpenChange(false);
       showSuccessNotification(
-        'The state mutation has been successfully accepted for processing.'
+        'The state mutation has been successfully accepted for processing.',
       );
     },
   });
@@ -181,9 +181,9 @@ function EditStateInner({
           isPartial ? (
             <>
               Update "
-              <code className="rounded bg-gray-100 px-[0.5ch]">{key}</code>"{' '}
+              <code className="rounded-sm bg-gray-100 px-[0.5ch]">{key}</code>"{' '}
               value in <code>{service}</code> state for{' '}
-              <code className="rounded bg-gray-100 px-[0.5ch]">
+              <code className="rounded-sm bg-gray-100 px-[0.5ch]">
                 {objectKey}
               </code>
             </>
@@ -191,7 +191,7 @@ function EditStateInner({
             <>
               {isDeleting ? 'Delete' : 'Replace'} <code>{service}</code> state
               for{' '}
-              <code className="rounded bg-gray-100 px-[0.5ch]">
+              <code className="rounded-sm bg-gray-100 px-[0.5ch]">
                 {objectKey}
               </code>
             </>
@@ -200,7 +200,7 @@ function EditStateInner({
       >
         {isDeleting && (
           <>
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="mt-2 text-sm text-gray-500">
               Please confirm to proceed or close to keep the state.
             </p>
             <FormFieldInput
@@ -224,13 +224,13 @@ function EditStateInner({
         )}
         {query.data && !isDeleting && (
           <>
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="mt-2 text-sm text-gray-500">
               Please update the current value:
             </p>
             <FormFieldCode
               autoFocus
               name="value"
-              className="mt-2 font-mono overflow-auto"
+              className="mt-2 overflow-auto font-mono"
               onInput={mutation.reset}
               {...(typeof key === 'undefined'
                 ? {
@@ -239,10 +239,10 @@ function EditStateInner({
                         query.data?.state.map((a) => ({
                           ...a,
                           value: safeParse(a.value),
-                        }))
+                        })),
                       ),
                       null,
-                      4
+                      4,
                     ),
                   }
                 : {
@@ -273,7 +273,7 @@ function stringifyValues(state: Record<string, any>) {
     Array.from(Object.entries(state)).map(([name, value]) => ({
       name,
       value: JSON.stringify(value),
-    }))
+    })),
   );
 }
 
@@ -309,7 +309,7 @@ function StateDialogContent({
   return (
     <DialogContent className="max-w-2xl">
       <div className="flex flex-col gap-2">
-        <h3 className="text-lg font-medium leading-6 text-gray-900">{title}</h3>
+        <h3 className="text-lg leading-6 font-medium text-gray-900">{title}</h3>
         <div className={banner()}>
           {isFetching ? (
             <div className="h-5 w-5 shrink-0 px-0.5">
@@ -353,7 +353,7 @@ function StateDialogContent({
           {children}
 
           <DialogFooter>
-            <div className="flex gap-2 flex-col">
+            <div className="flex flex-col gap-2">
               {error && <ErrorBanner error={error} />}
               <div className="flex gap-2">
                 <DialogClose>

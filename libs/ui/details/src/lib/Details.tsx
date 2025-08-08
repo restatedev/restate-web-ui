@@ -1,5 +1,5 @@
 import { Children, PropsWithChildren, useId } from 'react';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { DetailsProvider } from './DetailsContext';
 import { isSummary } from './Summary';
 
@@ -10,11 +10,11 @@ interface DetailsProps {
 }
 
 const styles = tv({
-  base: 'group bg-white rounded-xl border text-gray-800 shadow-sm p-1 has-[+details]:rounded-b-none has-[+details]:border-b-0 [&+details]:rounded-t-none [&:not([open]):has(+details)>summary]:rounded-b-none [&[open]>summary]:rounded-b-none [&+details>summary]:rounded-t-none',
+  base: 'group rounded-xl border bg-white p-1 text-gray-800 shadow-xs has-[+details]:rounded-b-none has-[+details]:border-b-0 [&+details]:rounded-t-none [&+details>summary]:rounded-t-none [&:not([open]):has(+details)>summary]:rounded-b-none [&[open]>summary]:rounded-b-none',
   variants: {
     isDisabled: {
       false: '',
-      true: '[&>summary]:pointer-events-none cursor-not-allowed',
+      true: 'cursor-not-allowed [&>summary]:pointer-events-none',
     },
   },
   defaultVariants: {
@@ -40,7 +40,7 @@ export function Details({
         open={open}
       >
         {summary}
-        <div className="px-4 py-6 border-t bg-gray-50 -m-1 rounded-b-xl group-has-[+details]:rounded-b-none">
+        <div className="-m-1 rounded-b-xl border-t bg-gray-50 px-4 py-6 group-has-[+details]:rounded-b-none">
           {detailChildren}
         </div>
       </details>

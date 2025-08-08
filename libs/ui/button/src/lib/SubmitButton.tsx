@@ -1,7 +1,7 @@
 import { useRef, type PropsWithChildren, useDeferredValue } from 'react';
 import { useFetchers, useHref, useNavigation } from 'react-router';
 import { Button } from './Button';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { useIsMutating } from '@tanstack/react-query';
 import { Spinner } from '@restate/ui/loading';
 
@@ -36,7 +36,7 @@ function useIsSubmitting(action?: string) {
       : actionUrl?.pathname.split(basename.replace(/\/$/, '')).at(-1);
   const fetchers = useFetchers();
   const submitFetcher = fetchers.find(
-    (fetcher) => fetcher.formAction === formActionPathname
+    (fetcher) => fetcher.formAction === formActionPathname,
   );
 
   const isMutating = useIsMutating({

@@ -23,7 +23,7 @@ import { useListData, ListData } from 'react-stately';
 import { FocusScope, useFilter, useFocusManager } from 'react-aria';
 import { ListBox, ListBoxItem, ListBoxSection } from '@restate/ui/listbox';
 import { LabeledGroup } from './LabeledGroup';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import { PopoverOverlay } from '@restate/ui/popover';
@@ -32,19 +32,19 @@ import { mergeRefs, useObjectRef } from '@react-aria/utils';
 
 const tagStyles = tv({
   extend: focusRing,
-  base: 'bg-white/90 border text-zinc-800 shadow-sm  flex max-w-fit cursor-default items-center gap-x-1 rounded-md pl-1.5 py-0.5 text-xs font-medium outline-0 transition ',
+  base: 'flex max-w-fit cursor-default items-center gap-x-1 rounded-md border bg-white/90 py-0.5 pl-1.5 text-xs font-medium text-zinc-800 shadow-xs outline-0 transition',
 });
 function DefaultTag<
   T extends {
     id: Key;
     textValue: string;
-  }
+  },
 >({ item, onRemove }: { item: T; onRemove?: VoidFunction }) {
   return (
     <div className={tagStyles()}>
       {item.textValue}
       <Button onClick={onRemove} variant="icon">
-        <Icon name={IconName.X} className="w-3 h-3" />
+        <Icon name={IconName.X} className="h-3 w-3" />
       </Button>
     </div>
   );
@@ -90,17 +90,17 @@ export interface MultiSelectProps<T extends object>
 }
 
 const multiSelectStyles = tv({
-  base: 'relative flex flex-row flex-wrap items-center rounded-lg border has-[input[data-focused=true]]:border-blue-500 has-[input[data-invalid=true][data-focused=true]]:border-blue-500 has-[input[data-invalid=true]]:border-destructive has-[input[data-focused=true]]:ring-1 has-[input[data-focused=true]]:ring-blue-500',
+  base: 'has-[input[data-invalid=true]]:border-destructive relative flex flex-row flex-wrap items-center rounded-lg border has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-1 has-[input[data-focused=true]]:ring-blue-500 has-[input[data-invalid=true][data-focused=true]]:border-blue-500',
 });
 
 const inputStyles = tv({
-  base: 'min-h-[2.125rem] py-1.5 pl-0 pr-10 w-full min-w-0 text-sm text-current border-0 focus:border-0 focus:shadow-none focus:ring-0 focus:outline-0 bg-transparent',
+  base: 'min-h-8.5 w-full min-w-0 border-0 bg-transparent py-1.5 pr-10 pl-0 text-sm text-current focus:border-0 focus:shadow-none focus:ring-0 focus:outline-0',
 });
 export function FormFieldMultiCombobox<
   T extends {
     id: Key;
     textValue: string;
-  }
+  },
 >({
   label,
   items,
@@ -134,7 +134,7 @@ export function FormFieldMultiCombobox<
         !selectedKeys.includes(item.id) && contains(item.textValue, filterText)
       );
     },
-    [contains, selectedKeys]
+    [contains, selectedKeys],
   );
 
   const availableList = useListData({
@@ -164,7 +164,7 @@ export function FormFieldMultiCombobox<
         setMenuTrigger('focus');
       });
     },
-    [selectedList, onItemRemove, inputRefObject]
+    [selectedList, onItemRemove, inputRefObject],
   );
 
   const onUpdate = useCallback(
@@ -176,7 +176,7 @@ export function FormFieldMultiCombobox<
       });
       onItemUpdated?.(newValue.id);
     },
-    [onItemUpdated, selectedList]
+    [onItemUpdated, selectedList],
   );
 
   const onSelectionChange = (id: Key | null) => {
@@ -235,7 +235,7 @@ export function FormFieldMultiCombobox<
         deleteLast();
       }
     },
-    [deleteLast, fieldState.inputValue]
+    [deleteLast, fieldState.inputValue],
   );
 
   const tagGroupId = useId();
@@ -247,7 +247,7 @@ export function FormFieldMultiCombobox<
         <Label className="sr-only">{label}</Label>
 
         <div
-          className="hidden gap-1.5 flex-wrap px-1 py-1 has-[>*]:flex max-w-full"
+          className="hidden max-w-full flex-wrap gap-1.5 px-1 py-1 has-[>*]:flex"
           id={tagGroupId}
         >
           {prefix}
@@ -298,12 +298,12 @@ export function FormFieldMultiCombobox<
           </div>
 
           {availableList.items.length > 0 && (
-            <PopoverOverlay className="w-[--trigger-width] min-w-fit p-0 bg-gray-100/90">
+            <PopoverOverlay className="w-(--trigger-width) min-w-fit bg-gray-100/90 p-0">
               {multiple || selectedKeys.length === 0 ? (
                 <ListBox
                   multiple
                   selectable
-                  className="outline-0 p-1 max-h-[inherit] overflow-auto border-none"
+                  className="max-h-[inherit] overflow-auto border-none p-1 outline-0"
                 >
                   <ListBoxSection title={label}>
                     {availableList.items.map((item) => (
@@ -314,7 +314,7 @@ export function FormFieldMultiCombobox<
                   </ListBoxSection>
                 </ListBox>
               ) : (
-                <div className="flex items-center gap-1.5 text-sm text-zinc-500 px-4 py-2">
+                <div className="flex items-center gap-1.5 px-4 py-2 text-sm text-zinc-500">
                   You can apply only one filter at a time.
                 </div>
               )}
@@ -392,7 +392,7 @@ function InputWithFocusManager({
           break;
       }
     },
-    [focusManager, onKeyDownCapture]
+    [focusManager, onKeyDownCapture],
   );
   return <AriaInput {...props} onKeyDownCapture={onKeyDownCaptureInner} />;
 }

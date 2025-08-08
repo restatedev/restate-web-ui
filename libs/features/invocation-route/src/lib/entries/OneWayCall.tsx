@@ -8,11 +8,11 @@ import { InvocationId } from '../InvocationId';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 import { formatDurations } from '@restate/util/intl';
 import { DateTooltip } from '@restate/ui/tooltip';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { EntryExpression } from './EntryExpression';
 
 const styles = tv({
-  base: 'flex flex-row gap-1.5 items-center pr-2 relative flex-auto',
+  base: 'relative flex flex-auto flex-row items-center gap-1.5 pr-2',
 });
 
 export function OneWayCall({
@@ -41,7 +41,7 @@ export function OneWayCall({
             target={[entry.serviceName, entry.serviceKey, entry.handlerName]
               .filter((v) => typeof v === 'string')
               .join('/')}
-            className="font-sans not-italic mx-0.5 basis-20 text-2xs h-6 [&_a]:my-0 [&_[data-target]]:h-6"
+            className="mx-0.5 h-6 basis-20 font-sans text-2xs not-italic **:data-target:h-6 [&_a]:my-0"
           />
         }
         chain={
@@ -58,7 +58,7 @@ export function OneWayCall({
                     popoverContent={
                       <Value
                         value={entry.parameters}
-                        className="text-xs font-mono py-3"
+                        className="py-3 font-mono text-xs"
                       />
                     }
                   />
@@ -71,7 +71,7 @@ export function OneWayCall({
                   <InputOutput
                     name="headers"
                     popoverTitle=""
-                    className="px-0 bg-transparent border-none mx-0 [&&&]:mb-1"
+                    className="mx-0 border-none bg-transparent px-0 [&&&]:mb-1"
                     popoverContent={<Headers headers={entry.headers} />}
                   />
                 )}
@@ -85,7 +85,7 @@ export function OneWayCall({
         <InvocationId id={entry.invocationId} className="-ml-1" size="icon" />
       )}
       {duration && invokeTime && !isPast && (
-        <div className="inline-flex items-center gap-[0.5ch] truncate ml-auto font-sans text-xs">
+        <div className="ml-auto inline-flex items-center gap-[0.5ch] truncate font-sans text-xs">
           {!isPast && <span className="font-normal text-zinc-500">in </span>}
           <DateTooltip date={new Date(invokeTime)} title={'Call scheduled at'}>
             {duration}

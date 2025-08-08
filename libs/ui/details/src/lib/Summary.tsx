@@ -2,7 +2,7 @@ import { Children, PropsWithChildren } from 'react';
 import { usePress } from '@react-aria/interactions';
 import { useFocusRing } from 'react-aria';
 import { focusRing } from '@restate/ui/focus';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { Icon, IconName } from '@restate/ui/icons';
 
 interface SummaryProps {
@@ -11,7 +11,7 @@ interface SummaryProps {
 
 const summaryStyles = tv({
   extend: focusRing,
-  base: 'flex gap-2 px-3 py-2 pressed:bg-gray-200 hover:bg-gray-100 rounded-[calc(.75rem_-_1px_-.25rem)] list-none group-open:mb-2 pr-2.5 [&::-webkit-details-marker]:hidden cursor-default',
+  base: 'flex cursor-default list-none gap-2 rounded-[calc(.75rem-1px-.25rem)] px-3 py-2 pr-2.5 group-open:mb-2 hover:bg-gray-100 pressed:bg-gray-200 [&::-webkit-details-marker]:hidden',
 });
 
 export function Summary({
@@ -40,7 +40,7 @@ export function Summary({
       <div>{children}</div>
       <Icon
         name={IconName.ChevronDown}
-        className="flex-shrink-0 group-open:rotate-180 text-gray-500 ml-auto text-sm"
+        className="ml-auto shrink-0 text-sm text-gray-500 group-open:rotate-180"
       />
     </summary>
   );

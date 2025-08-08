@@ -6,10 +6,10 @@ import {
   MenuItemProps as AriaMenuItemProps,
   composeRenderProps,
 } from 'react-aria-components';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 const styles = tv({
-  base: 'group dropdown-item flex rounded-xl items-center gap-4 cursor-default select-none py-2 px-3 outline outline-0 text-sm forced-color-adjust-none',
+  base: 'group dropdown-item flex cursor-default items-center gap-4 rounded-xl px-3 py-2 text-sm outline outline-0 forced-color-adjust-none select-none',
   variants: {
     isDisabled: {
       false: 'text-gray-900 dark:text-zinc-100',
@@ -22,7 +22,7 @@ const styles = tv({
 });
 
 const destructiveStyles = tv({
-  base: 'group dropdown-item flex rounded-xl items-center gap-4 cursor-default select-none py-2 px-3 outline outline-0 text-sm forced-color-adjust-none',
+  base: 'group dropdown-item flex cursor-default items-center gap-4 rounded-xl px-3 py-2 text-sm outline outline-0 forced-color-adjust-none select-none',
   variants: {
     isDisabled: {
       false: 'text-red-600 dark:text-zinc-100',
@@ -47,16 +47,16 @@ function StyledDropdownItem({
         props.children,
         (children, { selectionMode, isSelected }) => (
           <>
-            <span className="flex items-center flex-1 gap-2 font-normal truncate group-selected:font-semibold">
+            <span className="flex flex-1 items-center gap-2 truncate font-normal group-selected:font-semibold">
               {children}
             </span>
             {selectionMode !== 'none' && (
-              <span className="flex items-center w-4">
+              <span className="flex w-4 items-center">
                 {isSelected && <Icon name={IconName.Check} aria-hidden />}
               </span>
             )}
           </>
-        )
+        ),
       )}
     </AriaMenuItem>
   );
@@ -86,13 +86,13 @@ interface DropdownNavItemProps
 }
 
 function isNavItem(
-  props: BaseDropdownItemProps | DropdownCustomItemProps | DropdownNavItemProps
+  props: BaseDropdownItemProps | DropdownCustomItemProps | DropdownNavItemProps,
 ): props is DropdownNavItemProps {
   return Boolean(props.href);
 }
 
 function isCustomItem(
-  props: BaseDropdownItemProps | DropdownCustomItemProps | DropdownNavItemProps
+  props: BaseDropdownItemProps | DropdownCustomItemProps | DropdownNavItemProps,
 ): props is DropdownCustomItemProps {
   return typeof props.value === 'string';
 }

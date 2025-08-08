@@ -50,10 +50,10 @@ export const COLUMN_NAMES: Record<ColumnKey, string> = {
 };
 
 const SORT_ORDER: Record<ColumnKey, number> = Object.entries(
-  COLUMNS_KEYS
+  COLUMNS_KEYS,
 ).reduce(
   (p, [sort, col]) => ({ ...p, [col]: Number(sort) }),
-  {} as Record<ColumnKey, number>
+  {} as Record<ColumnKey, number>,
 );
 
 function sortColumns(a: Key, b: Key) {
@@ -69,7 +69,7 @@ export function useColumns() {
       'status',
       'invoked_by',
       'journal_size',
-    ])
+    ]),
   );
   const sortedColumnsList = useMemo(() => {
     return [...Array.from(selectedColumns).sort(sortColumns), 'actions'].map(
@@ -77,7 +77,7 @@ export function useColumns() {
         name: COLUMN_NAMES[id as ColumnKey],
         id,
         isRowHeader: index === 0,
-      })
+      }),
     ) as { id: ColumnKey; name: string; isRowHeader: boolean }[];
   }, [selectedColumns]);
 

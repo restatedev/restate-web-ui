@@ -1,7 +1,7 @@
 import type { ServiceType } from '@restate/data-access/admin-api';
 import { ServiceTypeExplainer } from '@restate/features/explainers';
 import { Badge } from '@restate/ui/badge';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 const styles = tv({
   base: '',

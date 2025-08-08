@@ -128,13 +128,18 @@ export function Entry({
       ? entry.category === 'command'
         ? ENTRY_COMMANDS_COMPONENTS[entry.type as CommandEntryType]
         : entry.category === 'notification'
-        ? ENTRY_NOTIFICATIONS_COMPONENTS[entry.type as NotificationEntryType]
-        : ENTRY_EVENTS_COMPONENTS[entry.type as EventEntryType]
+          ? ENTRY_NOTIFICATIONS_COMPONENTS[entry.type as NotificationEntryType]
+          : ENTRY_EVENTS_COMPONENTS[entry.type as EventEntryType]
       : undefined
   ) as ComponentType<EntryProps<JournalEntryV2>> | undefined;
 
   const { setPortal } = usePortals(
-    getEntryId(invocation?.id ?? '', entry?.index, entry?.type, entry?.category)
+    getEntryId(
+      invocation?.id ?? '',
+      entry?.index,
+      entry?.type,
+      entry?.category,
+    ),
   );
 
   if (!invocation || !entry) {
@@ -148,32 +153,32 @@ export function Entry({
           paddingLeft: `${depth * 3}em`,
         }}
         data-depth={Boolean(depth)}
-        className=" [content-visibility:auto] [&[data-depth='true']_[data-border]]:border-l peer min-w-0 h-9 border-b-transparent  last:border-none flex items-center group [&:not(:has([data-entry]>*))]:hidden "
+        className="peer group flex h-9 min-w-0 items-center border-b-transparent [content-visibility:auto] last:border-none [&:not(:has([data-entry]>*))]:hidden [&[data-depth='true']_[data-border]]:border-l"
       >
         <div
           style={{ width: `${numOfDigits + 2}ch` }}
-          className="font-mono relative shrink-0 text-gray-400/70 text-code flex items-center h-full justify-center group-first:rounded-tl-2xl group-last:rounded-bl-2xl"
+          className="relative flex h-full shrink-0 items-center justify-center font-mono text-0.5xs text-gray-400/70 group-first:rounded-tl-2xl group-last:rounded-bl-2xl"
         >
           <div
             data-border
-            className="absolute top-0 bottom-0 left-0  border-dashed  border-gray-400/40"
+            className="absolute top-0 bottom-0 left-0 border-dashed border-gray-400/40"
           />
           {entry?.category === 'command' ? (
-            entry?.commandIndex ?? entry?.index ?? 0
+            (entry?.commandIndex ?? entry?.index ?? 0)
           ) : (
-            <div className="w-full hidden border-b border-gray-400/30 border-dashed mr-1 mt-0.5" />
+            <div className="mt-0.5 mr-1 hidden w-full border-b border-dashed border-gray-400/30" />
           )}
         </div>
 
-        <div className="flex-auto min-w-0 max-w-fit" data-entry ref={setPortal}>
+        <div className="max-w-fit min-w-0 flex-auto" data-entry ref={setPortal}>
           {EntrySpecificComponent && (
             <RelatedEntries invocation={invocation} entry={entry}>
               <EntrySpecificComponent entry={entry} invocation={invocation} />
             </RelatedEntries>
           )}
         </div>
-        <div className="relative flex-auto min-w-20">
-          <div className="absolute left-0 right-0 h2-px bg2-gray-400/50 translate-y-[0.5px] border-b border-gray-300/50 border-dashed" />
+        <div className="relative min-w-20 flex-auto">
+          <div className="h2-px bg2-gray-400/50 absolute right-0 left-0 translate-y-[0.5px] border-b border-dashed border-gray-300/50" />
         </div>
       </div>
       {invocation.journal?.version !== 1 || entry.category === 'event' ? (
@@ -185,7 +190,7 @@ export function Entry({
       ) : (
         entry.commandIndex === 1 && (
           <TimelinePortal invocationId={invocation?.id} entry={entry}>
-            <div className="text-code px-6 text-zinc-500 text-center absolute font-sans w-full ">
+            <div className="absolute w-full px-6 text-center font-sans text-0.5xs text-zinc-500">
               Update to the latest SDK to see more details in your journal.
               Check the{' '}
               <Link

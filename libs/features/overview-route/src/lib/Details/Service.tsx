@@ -75,7 +75,7 @@ function ServiceDetailsContent() {
       showSuccessNotification(
         <>
           "{variables.parameters?.path.service}" has been successfully updated.
-        </>
+        </>,
       );
       setKey((k) => k + 1);
     },
@@ -94,7 +94,7 @@ function ServiceDetailsContent() {
       | string
       | null;
     const workflow_completion_retention = formData.get(
-      'workflow_completion_retention'
+      'workflow_completion_retention',
     ) as string | null;
     const inactivity_timeout = formData.get('inactivity_timeout') as
       | string
@@ -118,12 +118,12 @@ function ServiceDetailsContent() {
   return (
     <>
       <ComplementaryFooter>
-        <div className="flex gap-2 flex-col flex-auto">
+        <div className="flex flex-auto flex-col gap-2">
           {error && <ErrorBanner errors={[error]} />}
           <div className="flex gap-2">
             <ComplementaryClose>
               <Button
-                className="flex-auto w-1/2 grow-0"
+                className="w-1/2 flex-auto grow-0"
                 variant="secondary"
                 disabled={isPending || isSubmitting}
               >
@@ -132,7 +132,7 @@ function ServiceDetailsContent() {
             </ComplementaryClose>
             <SubmitButton
               form={formId}
-              className="flex-auto w-1/2 grow-0"
+              className="w-1/2 flex-auto grow-0"
               isPending={isPending}
             >
               Save
@@ -141,7 +141,7 @@ function ServiceDetailsContent() {
         </div>
       </ComplementaryFooter>
       <Form
-        className="flex [&_.section+.section]:mt-2 flex-col"
+        className="flex flex-col [&_.section+.section]:mt-2"
         id={formId}
         method="patch"
         action={`/services/${String(service)}`}
@@ -170,18 +170,18 @@ function ServiceForm({
 
   return (
     <>
-      <h2 className="mb-3 text-lg font-medium leading-6 text-gray-900 flex gap-2 items-center">
+      <h2 className="mb-3 flex items-center gap-2 text-lg leading-6 font-medium text-gray-900">
         <div className="h-10 w-10 shrink-0 text-blue-400">
           <Icon
             name={IconName.Box}
-            className="w-full h-full p-1.5 fill-blue-50 text-blue-400 drop-shadow-md"
+            className="h-full w-full fill-blue-50 p-1.5 text-blue-400 drop-shadow-md"
           />
         </div>{' '}
-        <div className="flex flex-col flex-auto items-start gap-1 min-w-0">
+        <div className="flex min-w-0 flex-auto flex-col items-start gap-1">
           {isPendingOrSubmitting ? (
             <>
-              <div className="w-[16ch] h-5 animate-pulse rounded-md bg-gray-200 mt-1" />
-              <div className="w-[8ch] h-5 animate-pulse rounded-md bg-gray-200" />
+              <div className="mt-1 h-5 w-[16ch] animate-pulse rounded-md bg-gray-200" />
+              <div className="h-5 w-[8ch] animate-pulse rounded-md bg-gray-200" />
             </>
           ) : (
             <>
@@ -189,7 +189,7 @@ function ServiceForm({
                 {data?.name ?? 'Service'}
               </TruncateWithTooltip>
               {data && (
-                <div className="flex items-center w-full gap-2">
+                <div className="flex w-full items-center gap-2">
                   <ServiceType type={data?.ty} className="" />
                   {data?.name && (
                     <ServicePlaygroundTrigger
@@ -208,7 +208,7 @@ function ServiceForm({
         <SectionTitle>Handlers</SectionTitle>
         <SectionContent className="px-2 pt-2" raised={false}>
           {isPendingOrSubmitting ? (
-            <div className="w-full h-6 animate-pulse rounded-md bg-white" />
+            <div className="h-6 w-full animate-pulse rounded-md bg-white" />
           ) : (
             <div className="flex flex-col gap-2">
               {handlers.map((handler) => (
@@ -222,7 +222,7 @@ function ServiceForm({
                 />
               ))}
               {handlers.length === 0 && (
-                <div className="text-xs text-gray-400 leading-1">
+                <div className="text-xs leading-4 text-gray-400">
                   No handler
                 </div>
               )}
@@ -241,10 +241,10 @@ function ServiceForm({
             className="[&_label]:self-center"
             disabled={isPendingOrSubmitting}
           >
-            <span className="text-zinc-500 font-medium text-sm">Public</span>
+            <span className="text-sm font-medium text-zinc-500">Public</span>
           </FormFieldCheckbox>
         </SectionContent>
-        <span className="px-3 py-2 text-xs text-gray-500 leading-1">
+        <span className="px-3 py-2 text-xs leading-4 text-gray-500">
           Public services are accessible through the ingress, while private
           services can only be accessed from another Restate service.
         </span>
@@ -254,7 +254,7 @@ function ServiceForm({
         <CollapsibleSectionContent
           className="flex flex-col gap-4"
           footer={
-            <span className="text-gray-500 px-4 pb-2 block text-xs normal-case font-normal mt-2">
+            <span className="mt-2 block px-4 pb-2 text-xs font-normal text-gray-500 normal-case">
               Configured using the{' '}
               <Link
                 href="https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html"
@@ -278,7 +278,7 @@ function ServiceForm({
                 title="Idempotency completion"
                 description="Modify the retention of idempotent requests for this service."
               >
-                <span slot="title" className="text-code">
+                <span slot="title" className="text-0.5xs">
                   Idempotency completion
                 </span>
               </InlineTooltip>
@@ -324,7 +324,7 @@ function ServiceForm({
                   description="Modify the retention of the workflow completion. This
                           can be modified only for workflow services."
                 >
-                  <span slot="title" className="text-code">
+                  <span slot="title" className="text-0.5xs">
                     Workflow completion
                   </span>
                 </InlineTooltip>
@@ -363,7 +363,7 @@ function ServiceForm({
         <CollapsibleSectionContent
           className="flex flex-col gap-4"
           footer={
-            <span className="text-gray-500 px-4 pb-2 block text-xs normal-case font-normal mt-2">
+            <span className="mt-2 block px-4 pb-2 text-xs font-normal text-gray-500 normal-case">
               Configured using the{' '}
               <Link
                 href="https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html"
@@ -387,7 +387,7 @@ function ServiceForm({
                 title="Inactivity timeout"
                 description="This timer guards against stalled service/handler invocations. Once it expires, Restate triggers a graceful termination by asking the service invocation to suspend (which preserves intermediate progress)"
               >
-                <span slot="title" className="text-code">
+                <span slot="title" className="text-0.5xs">
                   Inactivity
                 </span>
               </InlineTooltip>
@@ -433,7 +433,7 @@ function ServiceForm({
                 title="Abort timeout"
                 description="This timer guards against stalled service/handler invocations that are supposed to terminate. The abort timeout is started after the 'inactivity timeout' has expired and the service/handler invocation has been asked to gracefully terminate. Once the timer expires, it will abort the service/handler invocation."
               >
-                <span slot="title" className="text-code">
+                <span slot="title" className="text-0.5xs">
                   Abort
                 </span>
               </InlineTooltip>
@@ -470,7 +470,7 @@ function ServiceForm({
         <SectionTitle>Deployments</SectionTitle>
         <SectionContent className="px-2 pt-2" raised={false}>
           {isPendingOrSubmitting ? (
-            <div className="w-full h-6 animate-pulse rounded-md bg-white" />
+            <div className="h-6 w-full animate-pulse rounded-md bg-white" />
           ) : (
             <div className="flex flex-col gap-2">
               {sortedRevisions.map((revision) =>
@@ -481,7 +481,7 @@ function ServiceForm({
                     key={id}
                     highlightSelection={false}
                   />
-                ))
+                )),
               )}
             </div>
           )}

@@ -7,7 +7,7 @@ import {
   PressEvent,
 } from 'react-aria-components';
 import { useSearchParams } from 'react-router';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 interface LinkProps
   extends Pick<
@@ -36,20 +36,20 @@ interface LinkProps
 
 const styles = tv({
   extend: focusRing,
-  base: 'underline disabled:no-underline disabled:cursor-default transition rounded',
+  base: 'rounded underline transition disabled:cursor-default disabled:no-underline',
   variants: {
     variant: {
       button:
-        'no-underline bg-gradient-to-b from-blue-600/90 to-blue-600 hover:from-blue-700 hover:to-blue-700 pressed:from-blue-800 pressed:to-blue-800 text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2)] drop-shadow-sm hover:shadow-none pressed:shadow-none px-5 py-2 text-sm text-center transition rounded-xl border border-black/10',
+        'rounded-xl border border-black/10 bg-linear-to-b from-blue-600/90 to-blue-600 px-5 py-2 text-center text-sm text-white no-underline shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2)] drop-shadow-xs transition hover:from-blue-700 hover:to-blue-700 hover:shadow-none pressed:from-blue-800 pressed:to-blue-800 pressed:shadow-none',
       'secondary-button':
-        'bg-white hover:bg-gray-100 pressed:bg-gray-200 text-gray-800 no-underline shadow-sm px-5 py-2 text-sm text-center transition rounded-xl border',
+        'rounded-xl border bg-white px-5 py-2 text-center text-sm text-gray-800 no-underline shadow-xs transition hover:bg-gray-100 pressed:bg-gray-200',
       'destructive-button':
-        'border border-black/10 bg-gradient-to-b from-red-700/95 to-red-700 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)] drop-shadow-sm hover:from-red-800 hover:to-red-800 pressed:from-red-900 pressed:to-red-900 text-white hover:shadow-none pressed:shadow-none no-underline px-5 py-2 text-sm text-center transition rounded-xl border',
+        'rounded-xl border border-black/10 bg-linear-to-b from-red-700/95 to-red-700 px-5 py-2 text-center text-sm text-white no-underline shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)] drop-shadow-xs transition hover:from-red-800 hover:to-red-800 hover:shadow-none pressed:from-red-900 pressed:to-red-900 pressed:shadow-none',
       primary:
-        'text-blue-600 dark:text-blue-500 underline decoration-blue-600/60 hover:decoration-blue-600',
+        'text-blue-600 decoration-blue-600/60 hover:decoration-blue-600 dark:text-blue-500',
       secondary:
-        'text-gray-700 dark:text-zinc-300 underline decoration-gray-700/50 hover:decoration-gray-700',
-      icon: 'no-underline shadow-none border-0 p-1 flex items-center justify-center text-gray-600 hover:bg-black/[5%] pressed:bg-black/10 disabled:bg-transparent',
+        'text-gray-700 decoration-gray-700/50 hover:decoration-gray-700 dark:text-zinc-300',
+      icon: 'flex items-center justify-center border-0 p-1 text-gray-600 no-underline shadow-none hover:bg-black/5 disabled:bg-transparent pressed:bg-black/10',
     },
   },
   defaultVariants: {
@@ -78,7 +78,7 @@ export function useHrefWithQueryParams({
           existingSearchParams
             .toString()
             .replace(`${key}=${value}`, '')
-            .replace(`${key}=${encodeURIComponent(value)}`, '')
+            .replace(`${key}=${encodeURIComponent(value)}`, ''),
         );
       });
       const combinedSearchParams = new URLSearchParams([
@@ -108,10 +108,10 @@ export const Link = forwardRef<HTMLAnchorElement, LinkProps>(
         className={composeRenderProps(
           props.className,
           (className, renderProps) =>
-            styles({ ...renderProps, className, variant: props.variant })
+            styles({ ...renderProps, className, variant: props.variant }),
         )}
         onPress={onClick}
       />
     );
-  }
+  },
 );

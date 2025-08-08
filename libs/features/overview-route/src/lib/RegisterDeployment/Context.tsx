@@ -193,13 +193,13 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
         },
       });
     },
-    []
+    [],
   );
   const updateShouldForce = useCallback(
     (shouldForce: DeploymentRegistrationContextInterface['shouldForce']) => {
       dispatch({ type: 'UpdateShouldForce', payload: { shouldForce } });
     },
-    []
+    [],
   );
   const { refetch, data: listDeployments } = useListDeployments();
   const { mutate, isPending, error, reset } = useRegisterDeployment({
@@ -217,7 +217,7 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
         showSuccessNotification(
           <>
             <code>{data?.id}</code> has been successfully registered.
-          </>
+          </>,
         );
       } else {
         goToConfirm();
@@ -232,11 +232,11 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
         formRef.current?.reset();
       }
       const isDuplicate = Array.from(
-        listDeployments?.deployments.values() ?? []
+        listDeployments?.deployments.values() ?? [],
       ).some(
         (deployment) =>
           withoutTrailingSlash(getEndpoint(deployment)) ===
-          withoutTrailingSlash(value.endpoint)
+          withoutTrailingSlash(value.endpoint),
       );
       dispatch({
         type: 'UpdateEndpointAction',
@@ -247,21 +247,21 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
         },
       });
     },
-    [listDeployments, state.isLambda, reset]
+    [listDeployments, state.isLambda, reset],
   );
   const updateAssumeRoleArn = useCallback(
     (assumeRoleArn: string) => {
       reset();
       dispatch({ type: 'UpdateRoleArnAction', payload: { assumeRoleArn } });
     },
-    [reset]
+    [reset],
   );
   const updateUseHttp11Arn = useCallback(
     (useHttp11: boolean) => {
       reset();
       dispatch({ type: 'UpdateUseHttp11Action', payload: { useHttp11 } });
     },
-    [reset]
+    [reset],
   );
 
   const submitHandler = (event: FormEvent<HTMLFormElement>) => {
@@ -367,7 +367,7 @@ export function useRegisterDeploymentContext() {
   const hasAdditionalHeaders = Boolean(
     additionalHeaders &&
       additionalHeaders.items &&
-      additionalHeaders.items.some(({ key, value }) => key && value)
+      additionalHeaders.items.some(({ key, value }) => key && value),
   );
   const canSkipAdvanced =
     !hasAdditionalHeaders && !useHttp11 && !assumeRoleArn && !isLambda;

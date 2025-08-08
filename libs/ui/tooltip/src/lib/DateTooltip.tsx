@@ -5,10 +5,10 @@ import { TooltipContent } from './TooltipContent';
 import { Copy } from '@restate/ui/copy';
 import { formatDateTime, formatDateToISO } from '@restate/util/intl';
 import { useTooltipWithHover } from './useTooltipWithHover';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 const styles = tv({
-  base: 'hover:bg-black/5 decoration-zinc-400 rounded-sm mx-[-0.1em] px-[0.1em] underline-offset-[0.2em] decoration-from-font decoration-dashed underline max-w-full truncate',
+  base: 'mx-[-0.1em] max-w-full truncate rounded-xs px-[0.1em] underline decoration-zinc-400 decoration-dashed decoration-from-font underline-offset-[0.2em] hover:bg-black/5',
 });
 export function DateTooltip({
   date,
@@ -47,22 +47,22 @@ export function DateTooltip({
         <TooltipContent size="sm" offset={5} triggerRef={triggerRef}>
           <div
             ref={contentRef}
-            className="flex items-start gap-4 [&_*]:text-gray-200 [&_*]:text-xs break-all py-1"
+            className="flex items-start gap-4 py-1 break-all **:text-xs **:text-gray-200"
           >
-            <div className="flex flex-col gap-1 items-start">
-              <h6 className="text-sm font-semibold text-gray-100 mb-2">
+            <div className="flex flex-col items-start gap-1">
+              <h6 className="mb-2 text-sm font-semibold text-gray-100">
                 {title}
               </h6>
-              <div className="bg-zinc-700 rounded px-1 font-mono">
+              <div className="rounded-sm bg-zinc-700 px-1 font-mono">
                 {formatDateTime(date, 'system')}
               </div>
-              <div className="bg-zinc-700 rounded px-1 font-mono">
+              <div className="rounded-sm bg-zinc-700 px-1 font-mono">
                 {formatDateTime(date, 'UTC')}
               </div>
             </div>
             <Copy
               copyText={formatDateToISO(date)}
-              className="p-1 -m-1 -mt-0.5 [&_svg]:w-3 [&_svg]:h-3  [&_svg]:text-gray-200 bg-transparent hover:bg-zinc-600 pressed:bg-zinc-500 rounded-sm"
+              className="-m-1 -mt-0.5 rounded-xs bg-transparent p-1 hover:bg-zinc-600 pressed:bg-zinc-500 [&_svg]:h-3 [&_svg]:w-3 [&_svg]:text-gray-200"
             />
           </div>
         </TooltipContent>

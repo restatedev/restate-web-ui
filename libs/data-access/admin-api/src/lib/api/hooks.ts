@@ -33,7 +33,7 @@ import { useAPIStatus } from '../APIStatusProvider';
 
 type HookQueryOptions<
   Path extends keyof paths,
-  Method extends SupportedMethods<Path>
+  Method extends SupportedMethods<Path>,
 > = Omit<QueryOptions<Path, Method>, 'queryFn' | 'queryKey'>;
 
 type HookMutationOptions<
@@ -43,7 +43,7 @@ type HookMutationOptions<
     Path,
     Method
   >,
-  Body extends OperationBody<Path, Method> = OperationBody<Path, Method>
+  Body extends OperationBody<Path, Method> = OperationBody<Path, Method>,
 > = Omit<
   MutationOptions<Path, Method, Parameters, Body>,
   'mutationFn' | 'mutationKey'
@@ -56,7 +56,7 @@ function listDeploymentsSelector(
     | {
         deployments: components['schemas']['DeploymentResponse'][];
       }
-    | undefined
+    | undefined,
 ) {
   if (!data) {
     return undefined;
@@ -99,7 +99,7 @@ function listDeploymentsSelector(
 
             SERVICE_TIMESTAMP.set(service, new Date(date));
           }
-        }
+        },
       );
       return { services, deployments };
     },
@@ -112,7 +112,7 @@ function listDeploymentsSelector(
         }
       >(),
       deployments: new Map<DeploymentId, Deployment>(),
-    }
+    },
   );
 
   const sortedServiceNames = Array.from(services.keys()).sort((a, b) => {
@@ -128,7 +128,7 @@ function listDeploymentsSelector(
 }
 
 export function useListDeployments(
-  options?: HookQueryOptions<'/deployments', 'get'>
+  options?: HookQueryOptions<'/deployments', 'get'>,
 ) {
   const enabled = useAPIStatus();
 
@@ -151,7 +151,7 @@ export function useListDeployments(
 
 export function useSqlQuery(
   query: string,
-  options?: HookQueryOptions<'/query', 'post'>
+  options?: HookQueryOptions<'/query', 'post'>,
 ) {
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi('query', '/query', 'post', {
@@ -199,7 +199,7 @@ export function useVersion(options?: HookQueryOptions<'/version', 'get'>) {
 }
 
 export function useRegisterDeployment(
-  options?: HookMutationOptions<'/deployments', 'post'>
+  options?: HookMutationOptions<'/deployments', 'post'>,
 ) {
   const baseUrl = useAdminBaseUrl();
 
@@ -218,7 +218,7 @@ function getServiceAdminApi(init: {
     'query',
     '/services/{service}',
     'get',
-    init
+    init,
   );
 
   return {
@@ -238,7 +238,7 @@ function getServiceAdminApi(init: {
 
 export function useServiceDetails(
   service: string,
-  options?: HookQueryOptions<'/services/{service}', 'get'>
+  options?: HookQueryOptions<'/services/{service}', 'get'>,
 ) {
   const baseUrl = useAdminBaseUrl();
   const { queryFn, ...queryOptions } = getServiceAdminApi({
@@ -267,7 +267,7 @@ export function useServiceDetails(
 
 export function useListServices(
   services: string[] = [],
-  options?: HookQueryOptions<'/services/{service}', 'get'>
+  options?: HookQueryOptions<'/services/{service}', 'get'>,
 ) {
   const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
@@ -301,7 +301,7 @@ export function useListServices(
 
 export function useDeploymentDetails(
   deployment: string,
-  options?: HookQueryOptions<'/deployments/{deployment}', 'get'>
+  options?: HookQueryOptions<'/deployments/{deployment}', 'get'>,
 ) {
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi('query', '/deployments/{deployment}', 'get', {
@@ -320,7 +320,7 @@ export function useDeploymentDetails(
 
 export function useModifyService(
   service: string,
-  options?: HookMutationOptions<'/services/{service}', 'patch'>
+  options?: HookMutationOptions<'/services/{service}', 'patch'>,
 ) {
   const baseUrl = useAdminBaseUrl();
 
@@ -335,7 +335,7 @@ export function useModifyService(
 
 export function useDeleteDeployment(
   deployment: string,
-  options?: HookMutationOptions<'/deployments/{deployment}', 'delete'>
+  options?: HookMutationOptions<'/deployments/{deployment}', 'delete'>,
 ) {
   const baseUrl = useAdminBaseUrl();
 
@@ -350,7 +350,7 @@ export function useDeleteDeployment(
 
 export function useServiceOpenApi(
   service: string,
-  options?: HookQueryOptions<'/services/{service}/openapi', 'get'>
+  options?: HookQueryOptions<'/services/{service}/openapi', 'get'>,
 ) {
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi('query', '/services/{service}/openapi', 'get', {
@@ -369,7 +369,7 @@ export function useServiceOpenApi(
 
 export function useListInvocations(
   filters?: FilterItem[],
-  options?: HookQueryOptions<'/query/invocations', 'post'>
+  options?: HookQueryOptions<'/query/invocations', 'post'>,
 ) {
   const enabled = useAPIStatus();
 
@@ -396,7 +396,7 @@ export function useListInvocations(
 
 export function useGetInvocation(
   invocationId: string,
-  options?: HookQueryOptions<'/query/invocations/{invocationId}', 'get'>
+  options?: HookQueryOptions<'/query/invocations/{invocationId}', 'get'>,
 ) {
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi(
@@ -406,7 +406,7 @@ export function useGetInvocation(
     {
       baseUrl,
       parameters: { path: { invocationId } },
-    }
+    },
   );
 
   const results = useQuery({
@@ -422,7 +422,10 @@ export function useGetInvocation(
 
 export function useGetInvocationJournal(
   invocationId: string,
-  options?: HookQueryOptions<'/query/invocations/{invocationId}/journal', 'get'>
+  options?: HookQueryOptions<
+    '/query/invocations/{invocationId}/journal',
+    'get'
+  >,
 ) {
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi(
@@ -432,7 +435,7 @@ export function useGetInvocationJournal(
     {
       baseUrl,
       parameters: { path: { invocationId } },
-    }
+    },
   );
 
   const results = useQuery({
@@ -452,7 +455,7 @@ export function useGetInvocationJournalEntry(
   options?: HookQueryOptions<
     '/query/invocations/{invocationId}/journal/{entryIndex}',
     'get'
-  >
+  >,
 ) {
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi(
@@ -462,7 +465,7 @@ export function useGetInvocationJournalEntry(
     {
       baseUrl,
       parameters: { path: { invocationId, entryIndex } },
-    }
+    },
   );
 
   const results = useQuery({
@@ -478,7 +481,10 @@ export function useGetInvocationJournalEntry(
 
 export function useGetInvocationJournalWithInvocation(
   invocationId: string,
-  options?: HookQueryOptions<'/query/invocations/{invocationId}/journal', 'get'>
+  options?: HookQueryOptions<
+    '/query/invocations/{invocationId}/journal',
+    'get'
+  >,
 ) {
   const baseUrl = useAdminBaseUrl();
   const journalQuery = adminApi(
@@ -488,7 +494,7 @@ export function useGetInvocationJournalWithInvocation(
     {
       baseUrl,
       parameters: { path: { invocationId } },
-    }
+    },
   );
   const invocationQuery = adminApi(
     'query',
@@ -497,7 +503,7 @@ export function useGetInvocationJournalWithInvocation(
     {
       baseUrl,
       parameters: { path: { invocationId } },
-    }
+    },
   );
   const results = useQueries({
     queries: [
@@ -525,7 +531,7 @@ export function useGetInvocationJournalWithInvocation(
         isSuccess: journalResults.isSuccess && invocationResults.isSuccess,
         dataUpdatedAt: Math.max(
           journalResults.dataUpdatedAt,
-          invocationResults.dataUpdatedAt
+          invocationResults.dataUpdatedAt,
         ),
         error: journalResults.error || invocationResults.error,
       };
@@ -560,7 +566,7 @@ export function useGetInvocationJournalWithInvocation(
             }),
           };
         }
-      }
+      },
     );
   }, [queryClient, results]);
 
@@ -581,7 +587,7 @@ export function useGetInvocationJournalWithInvocation(
 
 export function useGetInvocationJournalWithInvocationV2(
   invocationId: string,
-  options?: HookQueryOptions<'/query/v2/invocations/{invocationId}', 'get'>
+  options?: HookQueryOptions<'/query/v2/invocations/{invocationId}', 'get'>,
 ) {
   const baseUrl = useAdminBaseUrl();
   const query = adminApi(
@@ -591,7 +597,7 @@ export function useGetInvocationJournalWithInvocationV2(
     {
       baseUrl,
       parameters: { path: { invocationId }, query: { journal: true } },
-    }
+    },
   );
   const results = useQuery({
     ...query,
@@ -627,7 +633,7 @@ export function useGetInvocationJournalWithInvocationV2(
           }
         }
         return oldData;
-      }
+      },
     );
   }, [queryClient, results]);
 
@@ -636,7 +642,7 @@ export function useGetInvocationJournalWithInvocationV2(
 
 export function useGetInvocationsJournalWithInvocationsV2(
   invocationIds: string[],
-  options?: HookQueryOptions<'/query/v2/invocations/{invocationId}', 'get'>
+  options?: HookQueryOptions<'/query/v2/invocations/{invocationId}', 'get'>,
 ) {
   const baseUrl = useAdminBaseUrl();
   const invocationQueries = useMemo(
@@ -645,9 +651,9 @@ export function useGetInvocationsJournalWithInvocationsV2(
         adminApi('query', '/query/v2/invocations/{invocationId}', 'get', {
           baseUrl,
           parameters: { path: { invocationId }, query: { journal: true } },
-        })
+        }),
       ),
-    [baseUrl, invocationIds]
+    [baseUrl, invocationIds],
   );
 
   const combine = useCallback(
@@ -656,42 +662,60 @@ export function useGetInvocationsJournalWithInvocationsV2(
         | ReturnType<typeof useGetInvocationJournalWithInvocationV2>['data']
         | undefined,
         Error
-      >[]
+      >[],
     ) => {
       return {
-        data: invocationIds.reduce((combined, invocationId, index) => {
-          return {
-            ...combined,
-            [invocationId]: results.at(index)?.data,
-          };
-        }, {} as Record<string, ReturnType<typeof useGetInvocationJournalWithInvocationV2>['data']>),
-        isPending: invocationIds.reduce((combined, invocationId, index) => {
-          return {
-            ...combined,
-            [invocationId]: results.at(index)?.isPending,
-          };
-        }, {} as Record<string, boolean | undefined>),
-        isSuccess: invocationIds.reduce((combined, invocationId, index) => {
-          return {
-            ...combined,
-            [invocationId]: results.at(index)?.isSuccess,
-          };
-        }, {} as Record<string, boolean | undefined>),
-        error: invocationIds.reduce((combined, invocationId, index) => {
-          return {
-            ...combined,
-            [invocationId]: results.at(index)?.error,
-          };
-        }, {} as Record<string, Error | null | undefined>),
-        dataUpdatedAt: invocationIds.reduce((combined, invocationId, index) => {
-          return {
-            ...combined,
-            [invocationId]: results.at(index)?.dataUpdatedAt,
-          };
-        }, {} as Record<string, number | undefined>),
+        data: invocationIds.reduce(
+          (combined, invocationId, index) => {
+            return {
+              ...combined,
+              [invocationId]: results.at(index)?.data,
+            };
+          },
+          {} as Record<
+            string,
+            ReturnType<typeof useGetInvocationJournalWithInvocationV2>['data']
+          >,
+        ),
+        isPending: invocationIds.reduce(
+          (combined, invocationId, index) => {
+            return {
+              ...combined,
+              [invocationId]: results.at(index)?.isPending,
+            };
+          },
+          {} as Record<string, boolean | undefined>,
+        ),
+        isSuccess: invocationIds.reduce(
+          (combined, invocationId, index) => {
+            return {
+              ...combined,
+              [invocationId]: results.at(index)?.isSuccess,
+            };
+          },
+          {} as Record<string, boolean | undefined>,
+        ),
+        error: invocationIds.reduce(
+          (combined, invocationId, index) => {
+            return {
+              ...combined,
+              [invocationId]: results.at(index)?.error,
+            };
+          },
+          {} as Record<string, Error | null | undefined>,
+        ),
+        dataUpdatedAt: invocationIds.reduce(
+          (combined, invocationId, index) => {
+            return {
+              ...combined,
+              [invocationId]: results.at(index)?.dataUpdatedAt,
+            };
+          },
+          {} as Record<string, number | undefined>,
+        ),
       };
     },
-    [invocationIds]
+    [invocationIds],
   );
 
   const results = useQueries({
@@ -738,7 +762,7 @@ export function useGetInvocationsJournalWithInvocationsV2(
             }),
           };
         }
-      }
+      },
     );
   }, [queryClient, results]);
 
@@ -747,7 +771,7 @@ export function useGetInvocationsJournalWithInvocationsV2(
       ...invocationQueries.map((invocationQuery) =>
         queryClient.invalidateQueries({
           queryKey: invocationQuery.queryKey,
-        })
+        }),
       ),
     ]);
   }, [invocationQueries, queryClient]);
@@ -759,7 +783,7 @@ export function useGetInvocationsJournalWithInvocationsV2(
         ...invocationQueries.map((invocationQuery) =>
           queryClient.refetchQueries({
             queryKey: invocationQuery.queryKey,
-          })
+          }),
         ),
       ]);
     },
@@ -769,20 +793,23 @@ export function useGetInvocationsJournalWithInvocationsV2(
 
 export function useGetInvocationsJournalWithInvocations(
   invocationIds: string[],
-  options?: HookQueryOptions<'/query/invocations/{invocationId}/journal', 'get'>
+  options?: HookQueryOptions<
+    '/query/invocations/{invocationId}/journal',
+    'get'
+  >,
 ) {
   const baseUrl = useAdminBaseUrl();
   const journalQueries = invocationIds.map((invocationId) =>
     adminApi('query', '/query/invocations/{invocationId}/journal', 'get', {
       baseUrl,
       parameters: { path: { invocationId } },
-    })
+    }),
   );
   const invocationQueries = invocationIds.map((invocationId) =>
     adminApi('query', '/query/invocations/{invocationId}', 'get', {
       baseUrl,
       parameters: { path: { invocationId } },
-    })
+    }),
   );
 
   const combine = useCallback(
@@ -794,51 +821,66 @@ export function useGetInvocationsJournalWithInvocations(
         | Invocation
         | undefined,
         Error
-      >[]
+      >[],
     ) => {
       return {
-        data: invocationIds.reduce((combined, invocationId, index) => {
-          return {
-            ...combined,
-            [invocationId]: {
-              journal: results.at(index)?.data as {
-                entries: JournalEntry[];
+        data: invocationIds.reduce(
+          (combined, invocationId, index) => {
+            return {
+              ...combined,
+              [invocationId]: {
+                journal: results.at(index)?.data as {
+                  entries: JournalEntry[];
+                },
+                invocation: results.at(index + invocationIds.length)
+                  ?.data as Invocation,
               },
-              invocation: results.at(index + invocationIds.length)
-                ?.data as Invocation,
-            },
-          };
-        }, {} as Record<string, { journal: { entries: JournalEntry[] }; invocation: Invocation }>),
-        isPending: invocationIds.reduce((combined, invocationId, index) => {
-          return {
-            ...combined,
-            [invocationId]:
-              results.at(index)?.isPending ||
-              results.at(index + invocationIds.length)?.isPending,
-          };
-        }, {} as Record<string, boolean | undefined>),
-        isSuccess: invocationIds.reduce((combined, invocationId, index) => {
-          return {
-            ...combined,
-            [invocationId]:
-              results.at(index)?.isSuccess &&
-              results.at(index + invocationIds.length)?.isSuccess,
-          };
-        }, {} as Record<string, boolean | undefined>),
-        error: invocationIds.reduce((combined, invocationId, index) => {
-          return {
-            ...combined,
-            [invocationId]:
-              results.at(index)?.error ||
-              results.at(index + invocationIds.length)?.error,
-          };
-        }, {} as Record<string, Error | null | undefined>),
+            };
+          },
+          {} as Record<
+            string,
+            { journal: { entries: JournalEntry[] }; invocation: Invocation }
+          >,
+        ),
+        isPending: invocationIds.reduce(
+          (combined, invocationId, index) => {
+            return {
+              ...combined,
+              [invocationId]:
+                results.at(index)?.isPending ||
+                results.at(index + invocationIds.length)?.isPending,
+            };
+          },
+          {} as Record<string, boolean | undefined>,
+        ),
+        isSuccess: invocationIds.reduce(
+          (combined, invocationId, index) => {
+            return {
+              ...combined,
+              [invocationId]:
+                results.at(index)?.isSuccess &&
+                results.at(index + invocationIds.length)?.isSuccess,
+            };
+          },
+          {} as Record<string, boolean | undefined>,
+        ),
+        error: invocationIds.reduce(
+          (combined, invocationId, index) => {
+            return {
+              ...combined,
+              [invocationId]:
+                results.at(index)?.error ||
+                results.at(index + invocationIds.length)?.error,
+            };
+          },
+          {} as Record<string, Error | null | undefined>,
+        ),
         dataUpdatedAt: Math.max(
-          ...results.map((result) => result.dataUpdatedAt)
+          ...results.map((result) => result.dataUpdatedAt),
         ),
       };
     },
-    [invocationIds]
+    [invocationIds],
   );
 
   const results = useQueries({
@@ -888,7 +930,7 @@ export function useGetInvocationsJournalWithInvocations(
             }),
           };
         }
-      }
+      },
     );
   }, [queryClient, results]);
 
@@ -899,12 +941,12 @@ export function useGetInvocationsJournalWithInvocations(
         ...journalQueries.map((journalQuery) =>
           queryClient.refetchQueries({
             queryKey: journalQuery.queryKey,
-          })
+          }),
         ),
         ...invocationQueries.map((invocationQuery) =>
           queryClient.refetchQueries({
             queryKey: invocationQuery.queryKey,
-          })
+          }),
         ),
       ]);
     },
@@ -913,12 +955,12 @@ export function useGetInvocationsJournalWithInvocations(
         ...journalQueries.map((journalQuery) =>
           queryClient.invalidateQueries({
             queryKey: journalQuery.queryKey,
-          })
+          }),
         ),
         ...invocationQueries.map((invocationQuery) =>
           queryClient.invalidateQueries({
             queryKey: invocationQuery.queryKey,
-          })
+          }),
         ),
       ]);
     },
@@ -932,7 +974,7 @@ export function useGetVirtualObjectQueue(
   options?: HookQueryOptions<
     '/query/virtualObjects/{name}/keys/{key}/queue',
     'get'
-  >
+  >,
 ) {
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi(
@@ -942,7 +984,7 @@ export function useGetVirtualObjectQueue(
     {
       baseUrl,
       parameters: { path: { key, name: serviceName }, query: { invocationId } },
-    }
+    },
   );
 
   const results = useQuery({
@@ -959,7 +1001,7 @@ export function useGetVirtualObjectQueue(
 export function useGetVirtualObjectState(
   serviceName: string,
   key: string,
-  options?: HookQueryOptions<'/query/services/{name}/keys/{key}/state', 'get'>
+  options?: HookQueryOptions<'/query/services/{name}/keys/{key}/state', 'get'>,
 ) {
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi(
@@ -969,7 +1011,7 @@ export function useGetVirtualObjectState(
     {
       baseUrl,
       parameters: { path: { key, name: serviceName } },
-    }
+    },
   );
 
   const results = useQuery({
@@ -986,7 +1028,7 @@ export function useGetVirtualObjectState(
 export function useQueryVirtualObjectState(
   serviceName: string,
   filters?: FilterItem[],
-  options?: HookQueryOptions<'/query/services/{name}/state/query', 'post'>
+  options?: HookQueryOptions<'/query/services/{name}/state/query', 'post'>,
 ) {
   const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
@@ -1001,7 +1043,7 @@ export function useQueryVirtualObjectState(
         filters,
       },
       resolvedPath: `/query/services/${serviceName}/state/query`,
-    }
+    },
   );
   const results = useQuery({
     ...queryOptions,
@@ -1019,7 +1061,7 @@ export function useQueryVirtualObjectState(
 export function useListVirtualObjectState(
   serviceName: string,
   keys: string[],
-  options?: HookQueryOptions<'/query/services/{name}/state', 'post'>
+  options?: HookQueryOptions<'/query/services/{name}/state', 'post'>,
 ) {
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi(
@@ -1033,7 +1075,7 @@ export function useListVirtualObjectState(
         keys,
       },
       resolvedPath: `/query/services/${serviceName}/state`,
-    }
+    },
   );
 
   const results = useQuery({
@@ -1050,7 +1092,7 @@ export function useListVirtualObjectState(
 
 export function useDeleteInvocation(
   invocation_id: string,
-  options?: HookMutationOptions<'/invocations/{invocation_id}', 'delete'>
+  options?: HookMutationOptions<'/invocations/{invocation_id}', 'delete'>,
 ) {
   const baseUrl = useAdminBaseUrl();
 
@@ -1069,14 +1111,14 @@ function convertStateToUnit8Array(state: Record<string, string | undefined>) {
       ...results,
       [k]: Array.from(new TextEncoder().encode(v)),
     }),
-    {} as Record<string, number[]>
+    {} as Record<string, number[]>,
   );
 }
 
 export function convertStateToObject(state: { name: string; value: string }[]) {
   return state.reduce(
     (p, c) => ({ ...p, [c.name]: c.value }),
-    {} as Record<string, string>
+    {} as Record<string, string>,
   );
 }
 
@@ -1100,7 +1142,7 @@ export function useEditState(
       state: Record<string, string | undefined>;
       partial?: boolean;
     }
-  > & { enabled?: boolean } = {}
+  > & { enabled?: boolean } = {},
 ) {
   const baseUrl = useAdminBaseUrl();
 
@@ -1111,7 +1153,7 @@ export function useEditState(
     {
       baseUrl,
       parameters: { path: { key: objectKey, name: service } },
-    }
+    },
   );
 
   const query = useQuery({ ...queryOptions, enabled });
@@ -1123,7 +1165,7 @@ export function useEditState(
     {
       baseUrl,
       resolvedPath: `/services/${service}/state`,
-    }
+    },
   );
 
   const mutate = (variables: {
@@ -1132,7 +1174,7 @@ export function useEditState(
   }) => {
     if (!query.data?.version && variables.partial) {
       throw new RestateError(
-        'Partial updates to the state are not supported. Please replace the entire state instead.'
+        'Partial updates to the state are not supported. Please replace the entire state instead.',
       );
     }
     if (
@@ -1154,7 +1196,7 @@ export function useEditState(
           ...(variables.partial &&
             query.data && {
               ...convertStateToUnit8Array(
-                convertStateToObject(query.data.state)
+                convertStateToObject(query.data.state),
               ),
             }),
           ...convertStateToUnit8Array(variables.state),
@@ -1202,7 +1244,7 @@ export function useEditState(
               }),
             };
           }
-        }
+        },
       );
     },
   });

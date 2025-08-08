@@ -2,7 +2,7 @@ import { useLocation, useNavigation } from 'react-router';
 import { focusRing } from '@restate/ui/focus';
 import { Link } from '@restate/ui/link';
 import { PropsWithChildren, useContext, useMemo } from 'react';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { NavContext } from './NavContext';
 import { Button } from '@restate/ui/button';
 
@@ -13,11 +13,11 @@ interface NavItemProps {
 
 const styles = tv({
   extend: focusRing,
-  base: 'group no-underline isolate flex py-1.5 px-3 text-sm text-center transition rounded-xl cursor-default hover:bg-black/[0.03] pressed:bg-gray-200',
+  base: 'group isolate flex cursor-default rounded-xl px-3 py-1.5 text-center text-sm no-underline transition hover:bg-black/3 pressed:bg-gray-200',
   variants: {
     isCurrent: {
       true: 'text-gray-800',
-      false: ' text-gray-500',
+      false: 'text-gray-500',
     },
   },
   defaultVariants: {
@@ -113,11 +113,11 @@ interface NavButtonItemProps {
   onClick?: VoidFunction;
 }
 const buttonStyles = tv({
-  base: 'group no-underline font-sans bg-transparent border-none shadow-none isolate flex py-1.5 px-3 text-xs text-center transition rounded-xl cursor-default hover:bg-black/[0.03] pressed:bg-black/[0.06]',
+  base: 'group isolate flex cursor-default rounded-xl border-none bg-transparent px-3 py-1.5 text-center font-sans text-xs no-underline shadow-none transition hover:bg-black/3 pressed:bg-black/[0.06]',
   variants: {
     isActive: {
       true: 'text-gray-800',
-      false: ' text-gray-600',
+      false: 'text-gray-600',
     },
   },
   defaultVariants: {

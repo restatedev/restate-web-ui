@@ -4,12 +4,12 @@ import { InputOutput } from '../Expression';
 import { Headers } from '../Headers';
 import { Value } from '../Value';
 import { Target } from '../Target';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { EntryExpression } from './EntryExpression';
 import { Icon, IconName } from '@restate/ui/icons';
 
 const inputStyles = tv({
-  base: 'target [font-size:inherit] border-b border-t-[1px] border-white h-12 [&_[data-target]>*]:h-12 [&]:rounded-r-none [&_[data-target]]:font-medium [&_[data-target]]:font-sans  shadow-none self-start  ring-0 [--rounded-radius-right:0px] [--rounded-radius:calc(1rem-1px)] [&&&>*:last-child>*]:rounded-r-none',
+  base: 'target h-12 self-start border-t border-b border-white [font-size:inherit] shadow-none ring-0 [--rounded-radius-right:0px] [--rounded-radius:calc(1rem-1px)] **:data-target:font-sans **:data-target:font-medium [&]:rounded-r-none [&_[data-target]>*]:h-12 [&&&>*:last-child>*]:rounded-r-none',
 });
 
 export function Input({
@@ -31,10 +31,10 @@ export function Input({
       })}
     >
       {entry ? (
-        <div className="flex items-center ">
+        <div className="flex items-center">
           <Icon
             name={IconName.Function}
-            className="w-4 h-4 text-zinc-400 shrink-0 -mr-0.5"
+            className="-mr-0.5 h-4 w-4 shrink-0 text-zinc-400"
           />
           <EntryExpression
             entry={entry}
@@ -50,7 +50,7 @@ export function Input({
                     popoverContent={
                       <Value
                         value={entry.parameters}
-                        className="text-xs font-mono py-3"
+                        className="py-3 font-mono text-xs"
                       />
                     }
                   />
@@ -63,7 +63,7 @@ export function Input({
                   <InputOutput
                     name="headers"
                     popoverTitle=""
-                    className="px-0 bg-transparent border-none mx-0 [&&&]:mb-1"
+                    className="mx-0 border-none bg-transparent px-0 [&&&]:mb-1"
                     popoverContent={<Headers headers={entry.headers} />}
                   />
                 )}

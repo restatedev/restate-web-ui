@@ -1,5 +1,5 @@
 import { Icon, IconName } from '@restate/ui/icons';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Service } from '@restate/data-access/admin-api';
 import { Revision } from './Revision';
@@ -8,7 +8,7 @@ import { Link } from '@restate/ui/link';
 import { useRef } from 'react';
 
 const styles = tv({
-  base: 'flex flex-row items-center gap-2 relative -m-1 p-1',
+  base: 'relative -m-1 flex flex-row items-center gap-2 p-1',
 });
 
 export function MiniService({
@@ -22,11 +22,11 @@ export function MiniService({
 
   return (
     <div className={styles({ className })}>
-      <div className="shrink-0 h-6 w-6 bg-white border shadow-sm rounded-md">
-        <Icon name={IconName.Box} className="w-full h-full text-zinc-400 p-1" />
+      <div className="h-6 w-6 shrink-0 rounded-md border bg-white shadow-xs">
+        <Icon name={IconName.Box} className="h-full w-full p-1 text-zinc-400" />
       </div>
 
-      <div className="flex flex-row gap-1 items-center font-medium text-code text-zinc-600 truncate">
+      <div className="flex flex-row items-center gap-1 truncate text-0.5xs font-medium text-zinc-600">
         <TruncateWithTooltip copyText={service.name} triggerRef={linkRef}>
           {service.name}
         </TruncateWithTooltip>
@@ -35,15 +35,15 @@ export function MiniService({
           aria-label={service.name}
           variant="secondary"
           href={`?${SERVICE_QUERY_PARAM}=${service.name}`}
-          className="outline-offset-0 m-1 ml-0 rounded-full before:absolute before:inset-0 before:content-[''] before:rounded-lg hover:before:bg-black/[0.03] pressed:before:bg-black/5"
+          className="m-1 ml-0 rounded-full outline-offset-0 before:absolute before:inset-0 before:rounded-lg before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5"
         >
           <Icon
             name={IconName.ChevronRight}
-            className="w-4 h-4 text-gray-500"
+            className="h-4 w-4 text-gray-500"
           />
         </Link>
       </div>
-      <Revision revision={service.revision} className="ml-auto z-[2]" />
+      <Revision revision={service.revision} className="z-2 ml-auto" />
     </div>
   );
 }

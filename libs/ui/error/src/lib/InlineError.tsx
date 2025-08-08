@@ -1,13 +1,13 @@
 import { Icon, IconName } from '@restate/ui/icons';
 import { PropsWithChildren } from 'react';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 export interface InlineErrorProps {
   className?: string;
 }
 
 const styles = tv({
-  base: 'inline-flex gap-1 items-center text-start text-red-600',
+  base: 'inline-flex items-center gap-1 text-start text-red-600',
 });
 export function InlineError({
   children,
@@ -16,7 +16,7 @@ export function InlineError({
   return (
     <output className={styles({ className })}>
       <Icon
-        className="group-focus:text-current text-red-500 w-[0.85em] h-[0.85em]"
+        className="h-[0.85em] w-[0.85em] text-red-500 group-focus:text-current"
         name={IconName.CircleX}
       />
       {children}

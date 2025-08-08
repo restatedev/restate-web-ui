@@ -1,8 +1,8 @@
 import type { ComponentProps } from 'react';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 const spinnerStyles = tv({
-  base: 'animate-spin h-5 w-5',
+  base: 'h-5 w-5 animate-spin',
 });
 
 export const Spinner = ({

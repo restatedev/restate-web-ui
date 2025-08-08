@@ -1,10 +1,10 @@
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 export const focusRing = tv({
-  base: 'outline outline-blue-600 outline-offset-2',
+  base: 'outline-offset-2 outline-blue-600',
   variants: {
     isFocusVisible: {
-      false: 'outline-0',
+      false: 'outline-none',
       true: 'outline-2',
     },
   },

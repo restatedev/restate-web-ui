@@ -17,5 +17,5 @@ export const Typescript = forwardRef<SVGSVGElement, LucideProps>(
         />
       </svg>
     );
-  }
+  },
 );

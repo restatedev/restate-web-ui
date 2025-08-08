@@ -52,16 +52,16 @@ function DeploymentDetailsContents() {
   return (
     <>
       <ComplementaryFooter>
-        <div className="flex gap-2 flex-col flex-auto">
+        <div className="flex flex-auto flex-col gap-2">
           {error && <ErrorBanner errors={[error]} />}
           <div className="flex gap-2">
             <ComplementaryClose>
-              <Button className="flex-auto grow-0 w-1/2" variant="secondary">
+              <Button className="w-1/2 flex-auto grow-0" variant="secondary">
                 Close
               </Button>
             </ComplementaryClose>
             <Button
-              className="flex-auto grow-0 w-1/2"
+              className="w-1/2 flex-auto grow-0"
               variant="destructive"
               onClick={() =>
                 setSearchParams(
@@ -69,7 +69,7 @@ function DeploymentDetailsContents() {
                     old.set(DELETE_DEPLOYMENT_QUERY_PARAM, deployment);
                     return old;
                   },
-                  { preventScrollReset: true }
+                  { preventScrollReset: true },
                 )
               }
             >
@@ -89,7 +89,7 @@ function DeploymentContent({ deployment }: { deployment: string }) {
   const additionalHeaders = Object.entries(data?.additional_headers ?? {});
   return (
     <>
-      <h2 className="mb-3 text-lg font-medium leading-6 text-gray-900 flex gap-2 items-center">
+      <h2 className="mb-3 flex items-center gap-2 text-lg leading-6 font-medium text-gray-900">
         <div className="h-10 w-10 shrink-0 text-blue-400">
           <Icon
             name={
@@ -99,19 +99,19 @@ function DeploymentContent({ deployment }: { deployment: string }) {
                   : IconName.Lambda
                 : IconName.Http
             }
-            className="w-full h-full p-1.5 fill-blue-50 text-blue-400 drop-shadow-md"
+            className="h-full w-full fill-blue-50 p-1.5 text-blue-400 drop-shadow-md"
           />
         </div>{' '}
-        <div className="flex flex-col items-start gap-1 min-w-0">
+        <div className="flex min-w-0 flex-col items-start gap-1">
           {isPending ? (
             <>
-              <div className="w-[16ch] h-5 animate-pulse rounded-md bg-gray-200 mt-1" />
-              <div className="w-[8ch] h-5 animate-pulse rounded-md bg-gray-200" />
+              <div className="mt-1 h-5 w-[16ch] animate-pulse rounded-md bg-gray-200" />
+              <div className="h-5 w-[8ch] animate-pulse rounded-md bg-gray-200" />
             </>
           ) : (
             <>
               Deployment
-              <span className="text-sm text-gray-500 contents font-mono">
+              <span className="contents font-mono text-sm text-gray-500">
                 <TruncateWithTooltip>{getEndpoint(data)}</TruncateWithTooltip>
               </span>
             </>
@@ -123,8 +123,8 @@ function DeploymentContent({ deployment }: { deployment: string }) {
         <SectionContent className="px-2 pt-2" raised={false}>
           {isPending ? (
             <div className="flex flex-col gap-2">
-              <div className="w-full h-6 animate-pulse rounded-md bg-white" />
-              <div className="w-full h-6 animate-pulse rounded-md bg-white" />
+              <div className="h-6 w-full animate-pulse rounded-md bg-white" />
+              <div className="h-6 w-full animate-pulse rounded-md bg-white" />
             </div>
           ) : (
             <div className="flex flex-col gap-2">
@@ -140,17 +140,17 @@ function DeploymentContent({ deployment }: { deployment: string }) {
           <SectionTitle>Additional headers</SectionTitle>
           <SectionContent className="p-0" raised={false}>
             <>
-              <div className="mt-2 grid [grid-template-columns:1fr_2fr] text-xs font-medium text-gray-400">
+              <div className="mt-2 grid grid-cols-[1fr_2fr] text-xs font-medium text-gray-400">
                 <div className="pl-2">Name</div>
                 <div className="pl-2">Value</div>
               </div>
               {isPending ? (
-                <div className="flex flex-col border-transparent rounded-[calc(0.75rem-0.125rem)]">
-                  <div className="w-full h-6 animate-pulse border-b rounded-t-[calc(0.75rem-0.125rem)] bg-white" />
-                  <div className="w-full h-6 animate-pulse delay-200 rounded-b-[calc(0.75rem-0.125rem)] bg-white" />
+                <div className="flex flex-col rounded-[calc(0.75rem-0.125rem)] border-transparent">
+                  <div className="h-6 w-full animate-pulse rounded-t-[calc(0.75rem-0.125rem)] border-b bg-white" />
+                  <div className="h-6 w-full animate-pulse rounded-b-[calc(0.75rem-0.125rem)] bg-white delay-200" />
                 </div>
               ) : (
-                <div className="flex flex-col shadow-sm border rounded-[calc(0.75rem-0.125rem)]">
+                <div className="flex flex-col rounded-[calc(0.75rem-0.125rem)] border shadow-xs">
                   {additionalHeaders.map(([name, value]) => (
                     <Header name={name} value={value} key={name} />
                   ))}
@@ -158,7 +158,7 @@ function DeploymentContent({ deployment }: { deployment: string }) {
               )}
             </>
           </SectionContent>
-          <span className="px-3 py-2 text-xs text-gray-500 leading-1">
+          <span className="px-3 py-2 text-xs leading-4 text-gray-500">
             Headers added to the register/invoke requests to the deployment.
           </span>
         </Section>
@@ -170,20 +170,20 @@ function DeploymentContent({ deployment }: { deployment: string }) {
           </ProtocolTypeExplainer>
         </SectionTitle>
         <SectionContent className="p-0">
-          <div className="flex px-1.5 py-1 items-center [&:not(:last-child)]:border-b">
-            <span className="flex-auto pl-1 text-code text-gray-500 font-medium">
+          <div className="flex items-center px-1.5 py-1 not-last:border-b">
+            <span className="flex-auto pl-1 text-0.5xs font-medium text-gray-500">
               Type
             </span>
-            <Badge size="sm" className="font-mono py-0  align-middle">
+            <Badge size="sm" className="py-0 align-middle font-mono">
               {getProtocolType(data)}
             </Badge>
           </div>
           {data && isHttpDeployment(data) && (
-            <div className="flex px-1.5 py-1 items-center [&:not(:last-child)]:border-b">
-              <span className="flex-auto pl-1 text-code text-gray-500 font-medium">
+            <div className="flex items-center px-1.5 py-1 not-last:border-b">
+              <span className="flex-auto pl-1 text-0.5xs font-medium text-gray-500">
                 <code>HTTP</code> version
               </span>
-              <Badge size="sm" className="font-mono py-0  align-middle">
+              <Badge size="sm" className="py-0 align-middle font-mono">
                 {data.http_version}
               </Badge>
             </div>
@@ -195,29 +195,29 @@ function DeploymentContent({ deployment }: { deployment: string }) {
           </ServiceCompatibility>
         </SectionTitle>
         <SectionContent className="p-0">
-          <div className="flex px-1.5 py-1 items-center [&:not(:last-child)]:border-b">
-            <span className="flex-auto pl-1 text-code text-gray-500 font-medium">
+          <div className="flex items-center px-1.5 py-1 not-last:border-b">
+            <span className="flex-auto pl-1 text-0.5xs font-medium text-gray-500">
               Min protocol version
             </span>
-            <Badge size="sm" className="font-mono py-0  align-middle">
+            <Badge size="sm" className="py-0 align-middle font-mono">
               {data?.min_protocol_version}
             </Badge>
           </div>
-          <div className="flex px-1.5 py-1 items-center [&:not(:last-child)]:border-b">
-            <span className="flex-auto pl-1 text-code text-gray-500 font-medium">
+          <div className="flex items-center px-1.5 py-1 not-last:border-b">
+            <span className="flex-auto pl-1 text-0.5xs font-medium text-gray-500">
               Max protocol version
             </span>
-            <Badge size="sm" className="font-mono py-0  align-middle">
+            <Badge size="sm" className="py-0 align-middle font-mono">
               {data?.max_protocol_version}
             </Badge>
           </div>
         </SectionContent>
         <SectionTitle className="mt-2">SDK</SectionTitle>
         <SectionContent className="p-0">
-          <div className="flex px-1.5 py-1 items-center [&:not(:last-child)]:border-b">
+          <div className="flex items-center px-1.5 py-1 not-last:border-b">
             <SDK
               lastAttemptServer={data?.sdk_version ?? undefined}
-              className="text-xs font-medium text-zinc-600 gap-1"
+              className="gap-1 text-xs font-medium text-zinc-600"
             />
           </div>
         </SectionContent>
@@ -232,7 +232,7 @@ function DeploymentContent({ deployment }: { deployment: string }) {
                 Assume role ARN
               </InlineTooltip>
             </SectionTitle>
-            <SectionContent className="px-2 py-1 text-code text-gray-500 font-medium">
+            <SectionContent className="px-2 py-1 text-0.5xs font-medium text-gray-500">
               <TruncateWithTooltip copyText={data.assume_role_arn}>
                 {data.assume_role_arn}
               </TruncateWithTooltip>
@@ -243,12 +243,12 @@ function DeploymentContent({ deployment }: { deployment: string }) {
       {data && (
         <Section className="mt-4">
           <SectionTitle>Id</SectionTitle>
-          <SectionContent className="font-mono py-1 flex items-center pr-0.5 text-zinc-600 text-code">
+          <SectionContent className="flex items-center py-1 pr-0.5 font-mono text-0.5xs text-zinc-600">
             <div>{data?.id}</div>
             {data?.id && (
               <Copy
                 copyText={data?.id}
-                className=" [&_svg]:w-3 [&_svg]:h-3 shrink-0 text-2xs p-1"
+                className="shrink-0 p-1 text-2xs [&_svg]:h-3 [&_svg]:w-3"
               />
             )}
           </SectionContent>
@@ -260,11 +260,11 @@ function DeploymentContent({ deployment }: { deployment: string }) {
 
 function Header({ name, value }: { name: string; value: string }) {
   return (
-    <div className="bg-white [&:not(:last-child)]:border-b [&:first-child]:rounded-t-[calc(0.75rem-0.125rem)] [&:last-child]:rounded-b-[calc(0.75rem-0.125rem)] gap-1 px-2 py-0 items-center text-code text-zinc-600 truncate grid [grid-template-columns:1fr_2fr]">
-      <div className="items-start flex min-w-0 border-r py-1 pr-1 relative">
+    <div className="grid grid-cols-[1fr_2fr] items-center gap-1 truncate bg-white px-2 py-0 text-0.5xs text-zinc-600 not-last:border-b first:rounded-t-[calc(0.75rem-0.125rem)] last:rounded-b-[calc(0.75rem-0.125rem)]">
+      <div className="relative flex min-w-0 items-start border-r py-1 pr-1">
         <TruncateWithTooltip copyText={name}>{name}</TruncateWithTooltip>
       </div>
-      <div className="min-w-0 flex py-1 pl-1">
+      <div className="flex min-w-0 py-1 pl-1">
         <TruncateWithTooltip copyText={value}>{value}</TruncateWithTooltip>
       </div>
     </div>

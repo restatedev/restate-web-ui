@@ -20,7 +20,10 @@ export class Point {
     return this.parent?.radius ?? 0;
   }
 
-  constructor(azimuth: number, public parent?: Shape) {
+  constructor(
+    azimuth: number,
+    public parent?: Shape,
+  ) {
     this.azimuth = Math.PI - azimuth;
     this.acceleration =
       (-ACCELERATION_UNIT + Math.random() * ACCELERATION_UNIT * 2) *
@@ -99,11 +102,14 @@ export class Shape {
 
   public readonly points: Point[];
 
-  constructor(private parent: Blob, private _center?: Position) {
+  constructor(
+    private parent: Blob,
+    private _center?: Position,
+  ) {
     this.points = Array(32)
       .fill(null)
       .map(
-        (_, i, arr) => new Point(((Math.PI * 2) / arr.length) * (i + 1), this)
+        (_, i, arr) => new Point(((Math.PI * 2) / arr.length) * (i + 1), this),
       );
   }
 
@@ -124,13 +130,13 @@ export class Shape {
     path.moveTo(center.x, center.y);
     path.moveTo(
       (lastPoint.x + nextPoint.x) / 2,
-      (lastPoint.y + nextPoint.y) / 2
+      (lastPoint.y + nextPoint.y) / 2,
     );
     for (let index = 1; index < this.points.length; index++) {
       const point = this.points.at(index)!;
       point.moveWithRespectToNeighbors(
         this.points.at(index - 1)!,
-        this.points.at(index + 1) ?? this.points.at(0)!
+        this.points.at(index + 1) ?? this.points.at(0)!,
       );
       const centerX = (nextPoint.x + point.position.x) / 2;
       const centerY = (nextPoint.y + point.position.y) / 2;
@@ -263,7 +269,7 @@ export class Blob {
         this.minRadius / 3,
         center.x,
         center.y,
-        this.maxRadius * 1.15
+        this.maxRadius * 1.15,
       );
       const lightGradient = ctx.createRadialGradient(
         center.x + this.radius / 2,
@@ -271,7 +277,7 @@ export class Blob {
         0,
         center.x + this.radius / 2,
         center.y - this.radius / 2,
-        this.radius
+        this.radius,
       );
       const darkGradient = ctx.createRadialGradient(
         center.x + (this.radius * 0) / 2,
@@ -279,7 +285,7 @@ export class Blob {
         this.radius / 3,
         center.x + (this.radius * 0) / 2,
         center.y - (this.radius * 0) / 2,
-        this.maxRadius * 1
+        this.maxRadius * 1,
       );
 
       primaryGradient.addColorStop(0, 'rgba(69, 82, 204, 1)'); // dark blue with 50% opacity
@@ -343,10 +349,10 @@ export class Blob {
       y: oldPosition.y - center.y,
     };
     const newVectorLength = Math.sqrt(
-      newVector.x * newVector.x + newVector.y * newVector.y
+      newVector.x * newVector.x + newVector.y * newVector.y,
     );
     const oldVectorLength = Math.sqrt(
-      oldVector.x * oldVector.x + oldVector.y * oldVector.y
+      oldVector.x * oldVector.x + oldVector.y * oldVector.y,
     );
     const sign = newVectorLength > oldVectorLength ? 1 : -1;
 
@@ -362,11 +368,11 @@ export class Blob {
         Math.sqrt(
           Math.min(
             Math.sqrt(strength.x * strength.x + strength.y * strength.y) * 2,
-            4 * this.radius * this.radius
+            4 * this.radius * this.radius,
           ) /
-            (2 * this.radius)
+            (2 * this.radius),
         ) / this.radius,
-        ACCELERATION_UNIT / factor
+        ACCELERATION_UNIT / factor,
       ) *
       sign *
       this.radius
@@ -410,7 +416,7 @@ export class Blob {
   private convertViewPositionToCanvasPosition(
     canvas: HTMLElement,
     x: number,
-    y: number
+    y: number,
   ) {
     const rect = canvas.getBoundingClientRect();
     const mouseX = x - rect.left;
@@ -427,7 +433,7 @@ export class Blob {
       mousePosition = this.convertViewPositionToCanvasPosition(
         arg.currentTarget,
         arg.clientX,
-        arg.clientY
+        arg.clientY,
       );
     } else {
       mousePosition = arg;
@@ -444,7 +450,7 @@ export class Blob {
         .forEach((shape) => {
           shape.moveToward(
             mousePosition,
-            factor * ACCELERATION_UNIT * this.radius
+            factor * ACCELERATION_UNIT * this.radius,
           );
         });
     }
@@ -458,7 +464,7 @@ export class Blob {
       mousePosition = this.convertViewPositionToCanvasPosition(
         arg.currentTarget,
         arg.clientX,
-        arg.clientY
+        arg.clientY,
       );
     } else {
       mousePosition = arg;
@@ -475,7 +481,7 @@ export class Blob {
         .forEach((shape) => {
           shape.moveToward(
             mousePosition,
-            this.movementAcceleration(mousePosition)
+            this.movementAcceleration(mousePosition),
           );
         });
 

@@ -1,5 +1,5 @@
 import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { EntryProgress, EntryProgressContainer } from './EntryProgress';
 import { useJournalContext } from './JournalContext';
 import { formatDurations } from '@restate/util/intl';
@@ -39,7 +39,7 @@ function unitInterval(duration: number) {
   const idealInterval = duration / idealTicks;
 
   const matchedIntervalIndex = niceIntervals.findIndex(
-    (interval) => interval >= idealInterval
+    (interval) => interval >= idealInterval,
   );
 
   if (matchedIntervalIndex === -1) {
@@ -60,7 +60,7 @@ function unitInterval(duration: number) {
 }
 
 const styles = tv({
-  base: 'rounded flex flex-col items-center relative rounded-t-2xl shadow-sm rounded-2xl rounded-l-none border-black/10',
+  base: 'relative flex flex-col items-center rounded-2xl rounded-sm rounded-t-2xl rounded-l-none border-black/10 shadow-xs',
 });
 export function LifeCycleProgress({
   className,
@@ -72,7 +72,7 @@ export function LifeCycleProgress({
   >['data'];
 }) {
   const createdEvent = invocation?.journal?.entries?.find(
-    (entry) => entry.category === 'event' && entry.type === 'Created'
+    (entry) => entry.category === 'event' && entry.type === 'Created',
   );
 
   const lifeCycleEntries = invocation?.journal?.entries?.filter(
@@ -86,19 +86,19 @@ export function LifeCycleProgress({
           'Suspended',
           'Retrying',
         ].includes(String(entry.type))) ||
-      (entry.category === 'notification' && entry.type === 'Cancel')
+      (entry.category === 'notification' && entry.type === 'Cancel'),
   );
 
   return (
     <div className={styles({ className })}>
-      <div className="relative h-6 w-full mt-4">
+      <div className="relative mt-4 h-6 w-full">
         {createdEvent && (
           <EntryProgressContainer
             className="absolute top-1"
             entry={createdEvent}
             invocation={invocation}
           >
-            <div className=" w-full h-6 rounded-md" />
+            <div className="h-6 w-full rounded-md" />
           </EntryProgressContainer>
         )}
 
@@ -112,7 +112,7 @@ export function LifeCycleProgress({
               invocation={invocation}
               entry={entry}
               showDuration={false}
-              className="[&>*]:h-3.5"
+              className="*:h-3.5"
             />
           </div>
         ))}
@@ -140,16 +140,16 @@ export function Units({
   const numOfInterval = Math.floor(executionTime / unit);
 
   const cancelEvent = invocation?.journal?.entries?.find(
-    (entry) => entry.category === 'notification' && entry.type === 'Cancel'
+    (entry) => entry.category === 'notification' && entry.type === 'Cancel',
   );
 
   return (
     <>
-      <div className="absolute h-12 -left-6 right-0 border-transparent bg-gray-100 border-white rounded-2xl shadow-sm border border-t-[2px] z-[0]"></div>
+      <div className="absolute right-0 -left-6 z-0 h-12 rounded-2xl border border-t-2 border-transparent border-white bg-gray-100 shadow-xs"></div>
       {cancelEvent && (
-        <div className="transition-all duration-1000 overflow-hidden px-2 top-12 pointer-events-none bottom-0 absolute right-0 left-0">
+        <div className="pointer-events-none absolute top-12 right-0 bottom-0 left-0 overflow-hidden px-2 transition-all duration-1000">
           <div
-            className=" transition-all duration-1000 mix-blend-multiply border-l-2 border-black/[0.08] w-full h-full  bg-zinc-900/50 [background:repeating-linear-gradient(-45deg,theme(colors.black/0.04),theme(colors.black/0.04)_2px,theme(colors.white/0)_2px,theme(colors.white/0)_4px)]  rounded-br-2xl"
+            className="h-full w-full rounded-br-2xl border-l-2 border-black/8 bg-zinc-900/50 mix-blend-multiply transition-all duration-1000 [background:repeating-linear-gradient(-45deg,--theme(--color-black/0.04),--theme(--color-black/0.04)_2px,--theme(--color-white/0)_2px,--theme(--color-white/0)_4px)]"
             style={{
               marginLeft: `calc(${
                 ((new Date(String(cancelEvent.start)).getTime() - start) /
@@ -167,17 +167,17 @@ export function Units({
               ((dataUpdatedAt - start) / executionTime) * 100
             }% - 2px - 0.5rem)`,
           }}
-          className=" transition-all duration-1000 right-0 rounded-r-2xl absolute border-l-2 text-gray-500  text-2xs font-sans border-white/80  bottom-0 top-px "
+          className="absolute top-px right-0 bottom-0 rounded-r-2xl border-l-2 border-white/80 font-sans text-2xs text-gray-500 transition-all duration-1000"
         >
-          <div className="absolute inset-0 rounded-r-2xl  mix-blend-screen [background:repeating-linear-gradient(-45deg,theme(colors.white/.6),theme(colors.white/.6)_2px,theme(colors.white/0)_2px,theme(colors.white/0)_4px)] "></div>
-          <div className="absolute mt-0.5 ml-px text-white border border-white text-2xs bg-zinc-500 px-1 rounded z-[4]">
+          <div className="absolute inset-0 rounded-r-2xl mix-blend-screen [background:repeating-linear-gradient(-45deg,--theme(--color-white/.6),--theme(--color-white/.6)_2px,--theme(--color-white/0)_2px,--theme(--color-white/0)_4px)]"></div>
+          <div className="absolute z-4 mt-0.5 ml-px rounded-sm border border-white bg-zinc-500 px-1 text-2xs text-white">
             Now
           </div>
         </div>
       )}
       <div className={unitsStyles({ className })}>
-        <div className="absolute left-2 border-l text-gray-500 border-dashed text-2xs font-sans border-gray-500/40  bottom-0 -top-8">
-          <div className=" text-left ml-1 flex justify-start flex-col  -translate-y-1 w-28">
+        <div className="absolute -top-8 bottom-0 left-2 border-l border-dashed border-gray-500/40 font-sans text-2xs text-gray-500">
+          <div className="ml-1 flex w-28 -translate-y-1 flex-col justify-start text-left">
             <DateTooltip date={new Date(start)} title="">
               {new Date(start).toLocaleDateString('en', {
                 year: 'numeric',
@@ -193,7 +193,7 @@ export function Units({
           </div>
         </div>
 
-        <div className="transition-all duration-1000 w-full h-full flex pointer-events-none overflow-hidden rounded-r-2xl ">
+        <div className="pointer-events-none flex h-full w-full overflow-hidden rounded-r-2xl transition-all duration-1000">
           <div className="w-2 shrink-0" />
           {Array(numOfInterval)
             .fill(null)
@@ -201,7 +201,7 @@ export function Units({
               return (
                 <div
                   key={i}
-                  className="transition-all duration-1000 z-[3] text-right text-2xs font-sans pr-0.5 pt-1 text-gray-500  border-r border-black/10 border-dotted pointer-events-none even:bg-gray-400/5"
+                  className="pointer-events-none z-3 border-r border-dotted border-black/10 pt-1 pr-0.5 text-right font-sans text-2xs text-gray-500 transition-all duration-1000 even:bg-gray-400/5"
                   style={{
                     width: `${(unit / executionTime) * 100}%`,
                   }}
@@ -210,7 +210,7 @@ export function Units({
                 </div>
               );
             })}
-          <div className="flex-auto text-right pointer-events-none even:bg-gray-400/5 rounded-r-2xl"></div>
+          <div className="pointer-events-none flex-auto rounded-r-2xl text-right even:bg-gray-400/5"></div>
           <div className="w-2 shrink-0 odd:bg-gray-400/5" />
         </div>
       </div>

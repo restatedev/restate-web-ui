@@ -5,7 +5,7 @@ import {
   OverlayArrow,
   Tooltip,
 } from 'react-aria-components';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 interface TooltipContentProps {
   className?: string;
@@ -17,19 +17,19 @@ interface TooltipContentProps {
 }
 
 const styles = tv({
-  base: 'max-w-sm group border border-zinc-900/80 text-gray-300 drop-shadow-xl will-change-transform ',
+  base: 'group max-w-sm border border-zinc-900/80 text-gray-300 drop-shadow-xl will-change-transform',
   variants: {
     isEntering: {
-      true: 'animate-in fade-in placement-bottom:slide-in-from-top-0.5 placement-top:slide-in-from-bottom-0.5 placement-left:slide-in-from-right-0.5 placement-right:slide-in-from-left-0.5 ease-out duration-200',
+      true: 'duration-200 ease-out animate-in fade-in placement-left:slide-in-from-right-0.5 placement-right:slide-in-from-left-0.5 placement-top:slide-in-from-bottom-0.5 placement-bottom:slide-in-from-top-0.5',
     },
     isExiting: {
-      true: 'animate-out fade-out placement-bottom:slide-out-to-top-0.5 placement-top:slide-out-to-bottom-0.5 placement-left:slide-out-to-right-0.5 placement-right:slide-out-to-left-0.5 ease-in duration-150',
+      true: 'duration-150 ease-in animate-out fade-out placement-left:slide-out-to-right-0.5 placement-right:slide-out-to-left-0.5 placement-top:slide-out-to-bottom-0.5 placement-bottom:slide-out-to-top-0.5',
     },
     size: {
-      sm: 'text-xs px-2 py-1 rounded-md shadow-[inset_0_0.5px_0_0_theme(colors.gray.500)] bg-zinc-800 [&_.content]:break-all [&_.content]:max-w-full',
-      lg: 'max-w-2xl px-3 py-2 overflow-auto text-sm rounded-xl shadow-[inset_0_1px_0_0_theme(colors.gray.500)] bg-zinc-800/90 backdrop-blur-xl whitespace-pre',
+      sm: 'rounded-md bg-zinc-800 px-2 py-1 text-xs shadow-[inset_0_0.5px_0_0_var(--color-gray-500)] [&_.content]:max-w-full [&_.content]:break-all',
+      lg: 'max-w-2xl overflow-auto rounded-xl bg-zinc-800/90 px-3 py-2 text-sm whitespace-pre shadow-[inset_0_1px_0_0_var(--color-gray-500)] backdrop-blur-xl',
       default:
-        'text-sm p-4 rounded-xl shadow-[inset_0_1px_0_0_theme(colors.gray.500)] bg-zinc-800/90 backdrop-blur-xl',
+        'rounded-xl bg-zinc-800/90 p-4 text-sm shadow-[inset_0_1px_0_0_var(--color-gray-500)] backdrop-blur-xl',
     },
   },
   defaultVariants: {
@@ -38,7 +38,7 @@ const styles = tv({
 });
 
 const contentStyles = tv({
-  base: 'content w-fit flex items-center h-full',
+  base: 'content flex h-full w-fit items-center',
 });
 
 export function InternalTooltipContent({
@@ -56,7 +56,7 @@ export function InternalTooltipContent({
       offset={offset}
       crossOffset={crossOffset}
       className={composeRenderProps(props.className, (className, renderProps) =>
-        styles({ ...renderProps, className, size })
+        styles({ ...renderProps, className, size }),
       )}
     >
       {size === 'sm' && (
@@ -65,7 +65,7 @@ export function InternalTooltipContent({
             width={8}
             height={8}
             viewBox="0 0 8 8"
-            className="fill-zinc-800 stroke-zinc-900/80 group-placement-bottom:rotate-180 group-placement-left:-rotate-90 group-placement-right:rotate-90"
+            className="fill-zinc-800 stroke-zinc-900/80 group-placement-left:-rotate-90 group-placement-right:rotate-90 group-placement-bottom:rotate-180"
           >
             <path d="M0 0 L4 4 L8 0" />
           </svg>

@@ -17,7 +17,7 @@ import {
 
 function getStateV1(
   entry: JournalRawEntry,
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<JournalEntryV2, { type?: 'GetState' | 'GetEagerState' }> {
   const { raw } = entry;
 
@@ -58,7 +58,7 @@ function getStateV1(
         error: message.result.value.message
           ? new RestateError(
               message.result.value.message,
-              message.result.value.code.toString()
+              message.result.value.code.toString(),
             )
           : error,
       };
@@ -81,7 +81,7 @@ function getStateV1(
 function getStateV2(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<JournalEntryV2, { type?: 'GetState' | 'GetEagerState' }> {
   const entryJSON = parseEntryJson(entry.entry_json ?? entry.entry_lite_json);
   const commandIndex = entry.command_index;
@@ -114,7 +114,7 @@ function getStateV2(
 export function getState(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ) {
   if (entry.version === 1 || !entry.version) {
     return getStateV1(entry, invocation);

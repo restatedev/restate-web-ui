@@ -169,7 +169,7 @@ export const STRING_FUNCTIONS = [
 ].map((s) => s.toLowerCase());
 
 export const BINARY_STRING_FUNCTIONS = ['DECODE', 'ENCODE'].map((s) =>
-  s.toLowerCase()
+  s.toLowerCase(),
 );
 
 export const REG_EXPRESSION_FUNCTIONS = [
@@ -355,7 +355,7 @@ export const ARRAY_FUNCTIONS = [
 ].map((s) => s.toLowerCase());
 
 export const STRUCT_FUNCTIONS = ['NAMED_STRUCT', 'ROW', 'STRUCT'].map((s) =>
-  s.toLowerCase()
+  s.toLowerCase(),
 );
 
 export const MAP_FUNCTIONS = [

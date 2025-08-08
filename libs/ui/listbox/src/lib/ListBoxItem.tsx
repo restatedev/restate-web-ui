@@ -6,15 +6,15 @@ import {
   ListBoxItemProps as AriaListBoxItemProps,
   composeRenderProps,
 } from 'react-aria-components';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 export const listBoxItemStyles = tv({
   extend: focusRing,
-  base: 'peer relative flex items-center gap-8 cursor-default select-none py-1.5 px-2.5 rounded-md will-change-transform text-sm',
+  base: 'peer relative flex cursor-default items-center gap-8 rounded-md px-2.5 py-1.5 text-sm will-change-transform select-none',
   variants: {
     isSelected: {
       false: 'text-gray-700 hover:bg-blue-600 hover:text-white',
-      true: 'peer-focus:bg-transparent peer-hover:bg-transparent peer-focus:text-gray-700 peer-hover:text-gray-700 focus:bg-blue-600 hover:text-white focus:bg-blue-600 hover:text-white',
+      true: 'peer-hover:bg-transparent peer-hover:text-gray-700 peer-focus:bg-transparent peer-focus:text-gray-700 hover:text-white focus:bg-blue-600',
     },
     isDisabled: {
       true: 'text-slate-300',
@@ -38,23 +38,23 @@ function StyledListBoxItem({
       {...props}
       textValue={textValue}
       className={composeRenderProps(className, (className, renderProps) =>
-        listBoxItemStyles({ ...renderProps, className })
+        listBoxItemStyles({ ...renderProps, className }),
       )}
     >
       {composeRenderProps(
         props.children,
         (children, { selectionMode, isSelected }) => (
           <>
-            <span className="flex items-center flex-1 gap-2 font-normal truncate group-selected:font-semibold">
+            <span className="flex flex-1 items-center gap-2 truncate font-normal group-selected:font-semibold">
               {children}
             </span>
             {selectionMode !== 'none' && (
-              <span className="flex items-center w-4">
+              <span className="flex w-4 items-center">
                 {isSelected && <Icon name={IconName.Check} aria-hidden />}
               </span>
             )}
           </>
-        )
+        ),
       )}
     </AriaListBoxItem>
   );
@@ -82,13 +82,13 @@ interface ListBoxNavItemProps
 }
 
 function isNavItem(
-  props: BaseListBoxItemProps | ListBoxCustomItemProps | ListBoxNavItemProps
+  props: BaseListBoxItemProps | ListBoxCustomItemProps | ListBoxNavItemProps,
 ): props is ListBoxNavItemProps {
   return Boolean(props.href);
 }
 
 function isCustomItem(
-  props: BaseListBoxItemProps | ListBoxCustomItemProps | ListBoxNavItemProps
+  props: BaseListBoxItemProps | ListBoxCustomItemProps | ListBoxNavItemProps,
 ): props is ListBoxCustomItemProps {
   return typeof props.value === 'string';
 }

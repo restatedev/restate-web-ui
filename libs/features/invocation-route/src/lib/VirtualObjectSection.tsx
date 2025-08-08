@@ -4,7 +4,7 @@ import {
   useGetVirtualObjectState,
 } from '@restate/data-access/admin-api';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Link } from '@restate/ui/link';
 import { INVOCATION_QUERY_NAME } from './constants';
@@ -43,10 +43,10 @@ export function VirtualObjectSection({
         typeof invocation?.target_service_key === 'string' &&
           invocation &&
           !invocation.completed_at &&
-          invocation.target_service_ty === 'virtual_object'
+          invocation.target_service_ty === 'virtual_object',
       ),
       staleTime: 0,
-    }
+    },
   );
   const { data: stateData } = useGetVirtualObjectState(
     String(invocation?.target_service_name),
@@ -55,10 +55,10 @@ export function VirtualObjectSection({
       enabled: Boolean(
         typeof invocation?.target_service_key === 'string' &&
           invocation &&
-          invocation.target_service_ty === 'virtual_object'
+          invocation.target_service_ty === 'virtual_object',
       ),
       staleTime: 0,
-    }
+    },
   );
 
   if (
@@ -80,23 +80,23 @@ export function VirtualObjectSection({
           {invocation.target_service_name}
         </SectionTitle>
         <SectionContent className="p-0" raised={raised}>
-          <div className="flex px-1.5 py-1.5 items-center gap-1 h-9 border-b">
-            <span className="pl-1 text-code text-gray-500 font-medium">
+          <div className="flex h-9 items-center gap-1 border-b px-1.5 py-1.5">
+            <span className="pl-1 text-0.5xs font-medium text-gray-500">
               Key
             </span>
             <Badge
               size="sm"
-              className="font-mono py-0 pr-0 align-middle min-w-0 ml-auto"
+              className="ml-auto min-w-0 py-0 pr-0 align-middle font-mono"
             >
               <div className="truncate">{invocation?.target_service_key}</div>
               <Copy
                 copyText={String(invocation?.target_service_key)}
-                className="shrink-0 [&_svg]:w-2.5 [&_svg]:h-2.5 p-1 ml-1"
+                className="ml-1 shrink-0 p-1 [&_svg]:h-2.5 [&_svg]:w-2.5"
               />
             </Badge>
           </div>
-          <div className="flex px-1.5 py-1.5 items-center gap-1 h-9">
-            <span className="pl-1 text-code text-gray-500 font-medium">
+          <div className="flex h-9 items-center gap-1 px-1.5 py-1.5">
+            <span className="pl-1 text-0.5xs font-medium text-gray-500">
               State
             </span>
             <Popover>
@@ -104,7 +104,7 @@ export function VirtualObjectSection({
                 <Button
                   variant="secondary"
                   disabled={state.length === 0}
-                  className="bg-white/70 border disabled:border-transparent disabled:shadow-none disabled:text-zinc-500 px-1.5 text-zinc-600 font-mono font-medium py-0 flex rounded-md items-center gap-1 text-xs h-5 ml-auto"
+                  className="ml-auto flex h-5 items-center gap-1 rounded-md border bg-white/70 px-1.5 py-0 font-mono text-xs font-medium text-zinc-600 disabled:border-transparent disabled:text-zinc-500 disabled:shadow-none"
                 >
                   {state.length > 0 ? (
                     `(${state.length})`
@@ -114,7 +114,7 @@ export function VirtualObjectSection({
                   {(stateData?.state ?? [])?.length > 0 && (
                     <Icon
                       name={IconName.ChevronsUpDown}
-                      className="h-3 w-3 text-gray-500 shrink-0"
+                      className="h-3 w-3 shrink-0 text-gray-500"
                     />
                   )}
                 </Button>
@@ -122,7 +122,7 @@ export function VirtualObjectSection({
               <PopoverContent className="max-w-lg">
                 <DropdownSection
                   title=""
-                  className="px-0 bg-transparent border-none mx-0 [&&&]:mb-1 font-mono"
+                  className="mx-0 border-none bg-transparent px-0 font-mono [&&&]:mb-1"
                 >
                   <State
                     state={stateData?.state}
@@ -139,24 +139,24 @@ export function VirtualObjectSection({
         <div>
           <SectionTitle className="mt-2">queue</SectionTitle>
           <SectionContent raised={raised} className="pt-0 pb-0">
-            <div className="flex flex-col min-h-[4.5rem] justify-center pt-8 pr-1">
+            <div className="flex min-h-18 flex-col justify-center pt-8 pr-1">
               <div className="relative">
-                <div className="absolute left-0 right-0 bottom-2  ">
-                  <div className=" [clip-path:polygon(0%_0%,100%_50%,0%_50%)] bg-zinc-200 rounded-sm h-3" />
+                <div className="absolute right-0 bottom-2 left-0">
+                  <div className="h-3 rounded-xs bg-zinc-200 [clip-path:polygon(0%_0%,100%_50%,0%_50%)]" />
                   {((typeof position === 'number' && position > 0) ||
                     position === undefined) && (
-                    <div className="top-1 absolute right-2 -translate-y-1/2 translate-x-1/2 flex flex-col items-center">
+                    <div className="absolute top-1 right-2 flex translate-x-1/2 -translate-y-1/2 flex-col items-center">
                       <Tooltip>
                         <TooltipTrigger>
                           <Link
                             href={`?${INVOCATION_QUERY_NAME}=${head}`}
                             aria-label={head}
                             variant="secondary"
-                            className="w-6 h-6 bg-white shadow-sm border rounded-lg block"
+                            className="block h-6 w-6 rounded-lg border bg-white shadow-xs"
                           >
                             <Icon
                               name={IconName.Invocation}
-                              className="w-full h-full text-zinc-500 p-1 animate-pulse"
+                              className="h-full w-full animate-pulse p-1 text-zinc-500"
                             />
                           </Link>
                         </TooltipTrigger>
@@ -180,9 +180,9 @@ export function VirtualObjectSection({
                           position === 0 ? '0rem' : '2rem'
                         }, calc(${position * 2}rem) , calc(100% - 0.5rem))`,
                       }}
-                      className="absolute -top-4 -translate-y-1/2 flex flex-col items-center"
+                      className="absolute -top-4 flex -translate-y-1/2 flex-col items-center"
                     >
-                      <div className="w-[1.125rem] h-[1.125rem] mt-2 absolute top-1 ">
+                      <div className="absolute top-1 mt-2 h-4.5 w-4.5">
                         <HoverTooltip
                           content={
                             <div>
@@ -196,14 +196,14 @@ export function VirtualObjectSection({
                                 </div>
                               ) : (
                                 `This invocation is ${formatOrdinals(
-                                  position + 1
+                                  position + 1,
                                 )}  in the queue`
                               )}
                             </div>
                           }
                         >
-                          <div className="inset-0 shadow-sm w-[1.125rem] h-[1.125rem] bg-white rounded-full p-1.5">
-                            <div className="bg-blue-600 rounded-full h-full w-full" />
+                          <div className="inset-0 h-4.5 w-4.5 rounded-full bg-white p-1.5 shadow-xs">
+                            <div className="h-full w-full rounded-full bg-blue-600" />
                           </div>
                         </HoverTooltip>
                       </div>
@@ -214,7 +214,7 @@ export function VirtualObjectSection({
               <div className="text-xs text-zinc-500/80">
                 {position === 0 && (
                   <>
-                    <span className="font-medium ">In-flight</span> while{' '}
+                    <span className="font-medium">In-flight</span> while{' '}
                     {size - position - 1 === 0 ? (
                       'no'
                     ) : (

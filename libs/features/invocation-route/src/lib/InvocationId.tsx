@@ -3,7 +3,7 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { HoverTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Link } from '@restate/ui/link';
 import { Invocation } from '@restate/data-access/admin-api';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { INVOCATION_QUERY_NAME } from './constants';
 import { useActiveSidebarParam } from '@restate/ui/layout';
 import { useLocation } from 'react-router';
@@ -16,47 +16,47 @@ import {
 import { useIsInInvocationPage } from './InvocationPageContext';
 
 const styles = tv({
-  base: 'relative text-zinc-600 font-mono',
+  base: 'relative font-mono text-zinc-600',
   slots: {
-    icon: 'mr-1.5 shrink-0 bg-white border rounded-lg',
+    icon: 'mr-1.5 shrink-0 rounded-lg border bg-white',
     text: '',
-    container: 'inline-flex items-center w-full align-middle',
-    link: "text-zinc-500 outline-offset-0 ml-0 rounded-full  before:absolute before:inset-0 before:content-[''] hover:before:bg-black/[0.03] pressed:before:bg-black/5",
-    linkIcon: 'text-current shrink-0',
+    container: 'inline-flex w-full items-center align-middle',
+    link: "ml-0 rounded-full text-zinc-500 outline-offset-0 before:absolute before:inset-0 before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5",
+    linkIcon: 'shrink-0 text-current',
   },
   variants: {
     size: {
       sm: {
         base: 'text-xs',
-        icon: 'h-4 w-4 rounded [&>svg]:p-px bg-transparent border-none',
+        icon: 'h-4 w-4 rounded-sm border-none bg-transparent [&>svg]:p-px',
         text: 'text-2xs',
         link: 'before:rounded',
         container: '',
-        linkIcon: 'w-3.5 h-3.5',
+        linkIcon: 'h-3.5 w-3.5',
       },
       md: {
         base: 'text-2xs',
-        icon: 'h-6 w-6 rounded-lg shadow-sm',
+        icon: 'h-6 w-6 rounded-lg shadow-xs',
         text: 'text-2xs',
         link: 'before:rounded-lg',
         container: '',
-        linkIcon: 'w-3.5 h-3.5',
+        linkIcon: 'h-3.5 w-3.5',
       },
       default: {
         base: '',
-        icon: 'h-6 w-6 rounded-lg shadow-sm ',
+        icon: 'h-6 w-6 rounded-lg shadow-xs',
         text: '',
-        link: 'before:rounded-lg m-0.5',
+        link: 'm-0.5 before:rounded-lg',
         container: 'p-px',
-        linkIcon: 'w-4 h-4',
+        linkIcon: 'h-4 w-4',
       },
       icon: {
         base: '',
-        icon: 'h-6 w-6 rounded-lg shadow-sm  mr-0',
+        icon: 'mr-0 h-6 w-6 rounded-lg shadow-xs',
         text: 'w-0 text-2xs',
-        link: 'before:rounded-lg m-0.5 inset-[-1px] absolute rounded-lg',
+        link: 'absolute -inset-px m-0.5 rounded-lg before:rounded-lg',
         container: 'p-px',
-        linkIcon: 'w-0 h-0',
+        linkIcon: 'h-0 w-0',
       },
     },
   },
@@ -67,7 +67,7 @@ const styles = tv({
 
 export function getSearchParams(
   search: string,
-  excludingInvocationId?: string
+  excludingInvocationId?: string,
 ) {
   const searchParams = new URLSearchParams(search);
   Array.from(searchParams.keys()).forEach((key) => {
@@ -155,7 +155,7 @@ export function InvocationId({
         <div className={icon()}>
           <Icon
             name={IconName.Invocation}
-            className="w-full h-full text-zinc-500 p-1"
+            className="h-full w-full p-1 text-zinc-500"
           />
         </div>
 

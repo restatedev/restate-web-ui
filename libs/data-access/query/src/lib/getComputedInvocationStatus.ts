@@ -16,13 +16,13 @@ export function getComputedInvocationStatus(invocation: RawInvocation): {
         '[409] cancelled',
         '[409 aborted] canceled',
         '[409 aborted] cancelled',
-      ].includes(invocation.completion_failure?.toLowerCase())
+      ].includes(invocation.completion_failure?.toLowerCase()),
   );
   const isKilled = Boolean(
     invocation.completion_result === 'failure' &&
       ['[409] killed', '[409 aborted] killed'].includes(
-        invocation.completion_failure?.toLowerCase() ?? ''
-      )
+        invocation.completion_failure?.toLowerCase() ?? '',
+      ),
   );
   const isRunning = invocation.status === 'running';
   const isCompleted = invocation.status === 'completed';
@@ -33,7 +33,7 @@ export function getComputedInvocationStatus(invocation: RawInvocation): {
       (invocation.retry_count &&
         invocation.retry_count > 1 &&
         isRunning &&
-        hasLastFailure)
+        hasLastFailure),
   );
 
   if (isCompleted) {
@@ -70,7 +70,7 @@ export function getComputedInvocationStatus(invocation: RawInvocation): {
       console.warn(
         invocation.status,
         invocation.completion_result,
-        invocation.completion_failure
+        invocation.completion_failure,
       );
       throw new Error('Cannot calculate status');
     }

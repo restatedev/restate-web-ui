@@ -9,7 +9,7 @@ import { ErrorBanner } from '@restate/ui/error';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
 import { RestateError } from '@restate/util/errors';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { formatOrdinals } from '@restate/util/intl';
 import { Ellipsis } from '@restate/ui/loading';
 import { StatusTimeline } from './StatusTimeline';
@@ -26,7 +26,7 @@ export function getRestateError(invocation?: Invocation) {
 
 function getBadgeVariant(
   status: InvocationComputedStatus2,
-  isRetrying?: boolean
+  isRetrying?: boolean,
 ) {
   if (isRetrying) {
     return 'warning';
@@ -47,7 +47,7 @@ function getBadgeVariant(
 }
 
 const styles = tv({
-  base: 'max-w-full inline-flex gap-2 relative',
+  base: 'relative inline-flex max-w-full gap-2',
   variants: {
     variant: {
       success: '',
@@ -58,19 +58,19 @@ const styles = tv({
     },
     status: {
       pending:
-        'border-dashed bg-transparent border-orange-300/90 text-orange-700',
-      scheduled: 'border-dashed bg-transparent border-zinc-400/60',
-      ready: 'border-dashed bg-transparent border-zinc-300 text-zinc-500',
+        'border-dashed border-orange-300/90 bg-transparent text-orange-700',
+      scheduled: 'border-dashed border-zinc-400/60 bg-transparent',
+      ready: 'border-dashed border-zinc-300 bg-transparent text-zinc-500',
       running: 'border-dashed',
       suspended: 'border-dashed border-zinc-400/60 bg-zinc-200/40',
       succeeded: '',
-      failed: 'pr-0.5 py-0.5',
+      failed: 'py-0.5 pr-0.5',
       cancelled: '',
       killed: '',
       'backing-off': '',
     },
     isRetrying: {
-      true: 'border-dashed border border-orange-300/80 pr-0.5 py-0.5',
+      true: 'border border-dashed border-orange-300/80 py-0.5 pr-0.5',
       false: '',
     },
   },
@@ -101,7 +101,7 @@ export function Status({
   const error = getRestateError(invocation);
 
   return (
-    <div className="flex items-baseline flex-wrap flex-row gap-0.5">
+    <div className="flex flex-row flex-wrap items-baseline gap-0.5">
       <Badge
         variant={variant}
         className={styles({
@@ -132,10 +132,10 @@ const lastErrorStyles = tv({
   base: '',
   slots: {
     trigger:
-      'truncate bg-white/70 border-gray-200/80 px-1.5 py-0.5 flex rounded-md items-center gap-1 text-2xs h-5 shadow-none',
+      'flex h-5 items-center gap-1 truncate rounded-md border-gray-200/80 bg-white/70 px-1.5 py-0.5 text-2xs shadow-none',
     errorIcon: 'h-3 w-3 shrink-0',
     errorBanner:
-      'rounded-lg flex-auto  max-w-[min(50rem,90vw)] [&_details]:max-h-full [&:has(details[open])]:h-[min(50vh,16rem)]  overflow-auto resize  max-h-full',
+      'max-h-full max-w-[min(50rem,90vw)] flex-auto resize overflow-auto rounded-lg [&_details]:max-h-full [&:has(details[open])]:h-[min(50vh,16rem)]',
   },
   variants: {
     isRetrying: {
@@ -176,7 +176,7 @@ const lastErrorStyles = tv({
       hasStack: false,
       isRetrying: false,
       className: {
-        errorBanner: 'w-[32rem]',
+        errorBanner: 'w-lg',
       },
     },
     {
@@ -184,7 +184,7 @@ const lastErrorStyles = tv({
       hasStack: false,
       isRetrying: true,
       className: {
-        errorBanner: 'w-[32rem]',
+        errorBanner: 'w-lg',
       },
     },
   ],
@@ -234,7 +234,7 @@ export function LastError({
           {error && (
             <Icon
               name={IconName.ChevronsUpDown}
-              className="h-3 w-3 text-gray-500 shrink-0"
+              className="h-3 w-3 shrink-0 text-gray-500"
             />
           )}
         </Button>

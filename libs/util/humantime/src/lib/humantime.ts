@@ -31,7 +31,7 @@ const HUMANTIME_UNITS_VALUES = [
 ] as const;
 
 export const HUMANTIME_PATTERN_INPUT = HUMANTIME_UNITS_VALUES.map(
-  () => `(\\d+\\s*(${HUMANTIME_UNITS_VALUES.join('|')}))?`
+  () => `(\\d+\\s*(${HUMANTIME_UNITS_VALUES.join('|')}))?`,
 ).join('\\s*');
 type HUMANTIME_UNITS = (typeof HUMANTIME_UNITS_VALUES)[number];
 const UNIT_MAPS: Record<

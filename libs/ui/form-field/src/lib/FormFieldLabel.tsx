@@ -1,13 +1,13 @@
 import { PropsWithChildren } from 'react';
 import { Label as AriaLabel } from 'react-aria-components';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 interface FormFieldLabelProps {
   className?: string;
 }
 
 const styles = tv({
-  base: 'text-sm text-gray-700 flex flex-col gap-0.5 mb-1.5 font-medium cursor-default w-fit [&_[slot="title"]]:block [&_[slot="description"]]:block [&_[slot="description"]]:text-code [&_[slot="description"]]:font-normal [&_[slot="description"]]:text-gray-500',
+  base: 'mb-1.5 flex w-fit cursor-default flex-col gap-0.5 text-sm font-medium text-gray-700 [&_[slot="description"]]:block [&_[slot="description"]]:text-0.5xs [&_[slot="description"]]:font-normal [&_[slot="description"]]:text-gray-500 [&_[slot="title"]]:block',
 });
 
 export function FormFieldLabel({

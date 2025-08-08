@@ -1,12 +1,12 @@
 import { PropsWithChildren } from 'react';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 interface CodeProps {
   className?: string;
 }
 
 const styles = tv({
-  base: 'group/code flex flex-col gap-2 gap-y-0 items-stretch font-mono [overflow-wrap:anywhere] rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] text-code p-2 sm:py-3 whitespace-break-spaces',
+  base: 'group/code flex flex-col items-stretch gap-2 gap-y-0 rounded-xl border bg-gray-200/50 p-2 font-mono text-0.5xs wrap-anywhere whitespace-break-spaces shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] sm:py-3',
 });
 
 export function Code({ children, className }: PropsWithChildren<CodeProps>) {

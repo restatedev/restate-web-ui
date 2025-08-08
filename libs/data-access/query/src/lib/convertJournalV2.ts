@@ -37,13 +37,13 @@ import {
 export function convertJournalV2(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ): JournalEntryV2 {
   const newEntry =
     JOURNAL_ENTRY_CONVERT_MAP[entry.entry_type]?.(
       entry,
       nextEntries,
-      invocation
+      invocation,
     ) ?? (entry as JournalEntryV2);
   return newEntry;
 }
@@ -54,7 +54,7 @@ const JOURNAL_ENTRY_CONVERT_MAP: Partial<
     (
       entry: JournalRawEntryWithCommandIndex,
       nextEntries: JournalEntryV2[],
-      invocation?: Invocation
+      invocation?: Invocation,
     ) => JournalEntryV2
   >
 > = {

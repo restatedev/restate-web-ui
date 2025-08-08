@@ -9,7 +9,7 @@ import { TooltipTriggerStateContext } from 'react-aria-components';
 import { Tooltip } from './Tooltip';
 import { TooltipContent } from './TooltipContent';
 import { useTooltipWithHover } from './useTooltipWithHover';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 const styles = tv({
   base: 'block',
@@ -60,9 +60,9 @@ export function HoverTooltip({
         >
           <div
             ref={contentRef}
-            className="flex items-start gap-4 [&_*]:text-gray-200 [&_*]:text-xs break-all py-0"
+            className="flex items-start gap-4 py-0 break-all **:text-xs **:text-gray-200"
           >
-            <div className="flex flex-col gap-1 items-start">{content}</div>
+            <div className="flex flex-col items-start gap-1">{content}</div>
           </div>
         </TooltipContent>
       </TooltipTriggerStateContext.Provider>

@@ -5,15 +5,15 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
 import { RestateError } from '@restate/util/errors';
 import { useMemo } from 'react';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 const failureStyle = tv({
   base: '',
   slots: {
     trigger:
-      ' bg-white/70 border px-0 py-0 flex rounded-lg items-center gap-0 [font-size:inherit] h-6 min-w-6',
-    errorIcon: 'h-3 w-3 shrink-0 mx-[0.3rem]',
+      'flex h-6 min-w-6 items-center gap-0 rounded-lg border bg-white/70 px-0 py-0 [font-size:inherit]',
+    errorIcon: 'mx-[0.3rem] h-3 w-3 shrink-0',
     errorBanner:
-      'rounded-lg flex-auto max-w-[min(50rem,90vw)] mr-1 [&_details]:max-h-full [&:has(details[open])]:h-[min(50vh,16rem)]  overflow-auto resize max-h-full',
+      'mr-1 max-h-full max-w-[min(50rem,90vw)] flex-auto resize overflow-auto rounded-lg [&_details]:max-h-full [&:has(details[open])]:h-[min(50vh,16rem)]',
   },
   variants: {
     isRetrying: {
@@ -59,7 +59,7 @@ const failureStyle = tv({
       hasStack: false,
       isRetrying: false,
       className: {
-        errorBanner: 'w-[32rem]',
+        errorBanner: 'w-lg',
       },
     },
     {
@@ -67,7 +67,7 @@ const failureStyle = tv({
       hasStack: false,
       isRetrying: true,
       className: {
-        errorBanner: 'w-[32rem]',
+        errorBanner: 'w-lg',
       },
     },
   ],
@@ -88,7 +88,7 @@ export function Failure({
 }) {
   const error = useMemo(
     () => new RestateError(message, restate_code),
-    [message, restate_code]
+    [message, restate_code],
   );
   const hasStack = error?.message.includes('\n');
   const isLargeError = error?.message.length > 200;
@@ -110,10 +110,10 @@ export function Failure({
             name={isRetrying ? IconName.TriangleAlert : IconName.CircleX}
             className={errorIcon()}
           />
-          <span className="truncate min-w-0 block mr-1">{restate_code}</span>
+          <span className="mr-1 block min-w-0 truncate">{restate_code}</span>
           <Icon
             name={IconName.ChevronsUpDown}
-            className="h-3 w-3 text-gray-500 shrink-0 mr-1"
+            className="mr-1 h-3 w-3 shrink-0 text-gray-500"
           />
         </Button>
       </PopoverTrigger>

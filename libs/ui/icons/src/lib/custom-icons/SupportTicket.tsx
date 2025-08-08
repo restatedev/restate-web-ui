@@ -17,5 +17,5 @@ export const SupportTicket = forwardRef<SVGSVGElement, LucideProps>(
         />
       </svg>
     );
-  }
+  },
 );

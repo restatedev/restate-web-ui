@@ -1,7 +1,7 @@
 import { Icon, IconName } from '@restate/ui/icons';
 import { RestateError } from '@restate/util/errors';
 import { PropsWithChildren } from 'react';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { RestateServerError } from './RestateServerError';
 
 export interface ErrorProps {
@@ -53,16 +53,16 @@ function SingleError({
   return (
     <div className={styles({ className })}>
       <div className="flex items-start gap-2">
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           <Icon
             className="h-5 w-5 fill-red-500 text-red-500"
             name={IconName.CircleX}
           />
         </div>
-        <output className="flex-auto text-red-700 [word-break:break-word] max-h-28 overflow-auto">
+        <output className="max-h-28 flex-auto overflow-auto [word-break:break-word] text-red-700">
           {typeof error === 'string' ? error : error.message}
         </output>
-        {children && <div className="flex-shrink-0">{children}</div>}
+        {children && <div className="shrink-0">{children}</div>}
       </div>
     </div>
   );
@@ -108,7 +108,7 @@ export function ErrorBanner({
   return (
     <div className={styles({ className })}>
       <div className="flex">
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           <Icon
             className="h-5 w-5 fill-red-500 text-red-500"
             name={IconName.CircleX}
@@ -118,7 +118,7 @@ export function ErrorBanner({
           <h3 className="font-medium text-red-800">
             There were {filteredErrors.length} errors:
           </h3>
-          <output className=" text-red-700 [word-break:break-word] max-h-20 overflow-auto">
+          <output className="max-h-20 overflow-auto [word-break:break-word] text-red-700">
             <ul className="list-disc space-y-1 pl-5">
               {filteredErrors.map((error) => (
                 <li key={typeof error === 'string' ? error : error?.message}>

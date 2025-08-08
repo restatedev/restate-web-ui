@@ -14,10 +14,10 @@ import { JournalV2 } from './JournalV2';
 import { useRestateContext } from '@restate/features/restate-context';
 import { InvocationPageProvider } from './InvocationPageContext';
 import { WorkflowKeySection } from './WorkflowKeySection';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 const metadataContainerStyles = tv({
-  base: 'mt-6 rounded-xl grid-cols-1 md:grid-cols-2 gap-2 gap-y-4 [&:has(*)]:grid hidden',
+  base: 'mt-6 hidden grid-cols-1 gap-2 gap-y-4 rounded-xl md:grid-cols-2 [&:has(*)]:grid',
   variants: {
     isVirtualObject: {
       true: 'lg:grid-cols-2 2xl:grid-cols-4',
@@ -34,7 +34,7 @@ const metadataContainerStyles = tv({
   },
 });
 const lastFailureContainer = tv({
-  base: 'min-w-0 p-0 col-span-full rounded-xl border bg-gray-200/50 rounded-xl ',
+  base: 'col-span-full min-w-0 rounded-xl border bg-gray-200/50 p-0',
 });
 
 function Component() {
@@ -58,8 +58,8 @@ function Component() {
     shouldShowFailure &&
       (journalAndInvocationData?.completed_at ||
         journalAndInvocationData?.journal?.entries?.some(
-          (entry) => entry.isRetrying || entry.type === 'Retrying'
-        ))
+          (entry) => entry.isRetrying || entry.type === 'Retrying',
+        )),
   );
   const hasStack = lastError?.message.includes('\n');
   const isFailed = !!journalAndInvocationData?.completion_failure;
@@ -73,28 +73,28 @@ function Component() {
   return (
     <InvocationPageProvider isInInvocationPage>
       <div className="flex flex-col">
-        <div className="flex flex-col gap-1 @container">
+        <div className="@container flex flex-col gap-1">
           <Link
             className="flex items-center gap-1 text-sm text-gray-500"
             variant="secondary"
             href={`${baseUrl}/invocations${window.location.search}`}
           >
-            <Icon name={IconName.ArrowLeft} className="w-4 h-4 mt-0.5" />{' '}
+            <Icon name={IconName.ArrowLeft} className="mt-0.5 h-4 w-4" />{' '}
             Invocations
           </Link>
-          <div className="flex @2xl:flex-row flex-col gap-x-2 gap-y-1.5 @2xl:items-center relative ">
-            <h1 className="text-lg flex items-center font-semibold font-mono pb-1 text-gray-900 sm:text-lg max-w-[20ch] truncate gap-1">
-              <div className="mr-1.5 shrink-0 bg-white border rounded-xl shadow-sm ">
+          <div className="relative flex flex-col gap-x-2 gap-y-1.5 @2xl:flex-row @2xl:items-center">
+            <h1 className="flex max-w-[20ch] items-center gap-1 truncate pb-1 font-mono text-lg font-semibold text-gray-900 sm:text-lg">
+              <div className="mr-1.5 shrink-0 rounded-xl border bg-white shadow-xs">
                 <Icon
                   name={IconName.Invocation}
-                  className="w-8 h-8 fill-blue-50 text-blue-400 drop-shadow-md p-1.5"
+                  className="h-8 w-8 fill-blue-50 p-1.5 text-blue-400 drop-shadow-md"
                 />
               </div>
 
               <TruncateWithTooltip>{id}</TruncateWithTooltip>
             </h1>
             {journalAndInvocationData && (
-              <div className="[&>*]:scale-[1.1] [&>*]:[transform-origin:center_left] ">
+              <div className="*:origin-[center_left] *:scale-[1.1]">
                 <Status invocation={journalAndInvocationData} className="" />
               </div>
             )}
@@ -117,41 +117,41 @@ function Component() {
         >
           {isPending && (
             <>
-              <div className="animate-pulse min-h-24 w-full rounded-xl bg-slate-200" />
-              <div className="animate-pulse min-h-24 w-full rounded-xl bg-slate-200" />
-              <div className="animate-pulse min-h-24 w-full rounded-xl bg-slate-200 lg:block hidden" />
-              <div className="animate-pulse min-h-24 w-full rounded-xl bg-slate-200 lg:block hidden" />
+              <div className="min-h-24 w-full animate-pulse rounded-xl bg-slate-200" />
+              <div className="min-h-24 w-full animate-pulse rounded-xl bg-slate-200" />
+              <div className="hidden min-h-24 w-full animate-pulse rounded-xl bg-slate-200 lg:block" />
+              <div className="hidden min-h-24 w-full animate-pulse rounded-xl bg-slate-200 lg:block" />
             </>
           )}
           <KeysIdsSection
             invocation={journalAndInvocationData}
-            className="p-0 rounded-xl border bg-gray-200/50 h-fit  [&>*:last-child]:border-white/50 [&>*:last-child]:rounded-xl [&>*:last-child]:bg-gradient-to-b [&>*:last-child]:to-gray-50/80 [&>*:last-child]:from-gray-50  [&>*:last-child]:shadow-zinc-800/[0.03]"
+            className="h-fit rounded-xl border bg-gray-200/50 p-0 [&>*:last-child]:rounded-xl [&>*:last-child]:border-white/50 [&>*:last-child]:bg-linear-to-b [&>*:last-child]:from-gray-50 [&>*:last-child]:to-gray-50/80 [&>*:last-child]:shadow-zinc-800/3"
           />
           <DeploymentSection
             invocation={journalAndInvocationData}
-            className="p-0 rounded-xl border h-fit bg-gray-200/50  [&>*:last-child]:border-white/50 [&>*:last-child]:rounded-xl [&>*:last-child]:bg-gradient-to-b [&>*:last-child]:to-gray-50/80 [&>*:last-child]:from-gray-50  [&>*:last-child]:shadow-zinc-800/[0.03]"
+            className="h-fit rounded-xl border bg-gray-200/50 p-0 [&>*:last-child]:rounded-xl [&>*:last-child]:border-white/50 [&>*:last-child]:bg-linear-to-b [&>*:last-child]:from-gray-50 [&>*:last-child]:to-gray-50/80 [&>*:last-child]:shadow-zinc-800/3"
             raised
           />
           <VirtualObjectSection
             invocation={journalAndInvocationData}
             raised
-            className="contents [&>*:last-child>h3]:mt-0 [&>*]:rounded-xl  [&>*]:border [&>*]:h-fit [&>*]:bg-gray-200/50  [&>*>*:last-child]:rounded-xl  [&>*>*:last-child]:border-white/50 [&>*>*:last-child]:bg-gradient-to-b [&>*>*:last-child]:to-gray-50/80 [&>*>*:last-child]:from-gray-50  [&>*>*:last-child]:shadow-zinc-800/[0.03]"
+            className="contents *:h-fit *:rounded-xl *:border *:bg-gray-200/50 [&>*:last-child>h3]:mt-0 [&>*>*:last-child]:rounded-xl [&>*>*:last-child]:border-white/50 [&>*>*:last-child]:bg-linear-to-b [&>*>*:last-child]:from-gray-50 [&>*>*:last-child]:to-gray-50/80 [&>*>*:last-child]:shadow-zinc-800/3"
           />
           <WorkflowKeySection
             invocation={journalAndInvocationData}
             raised
-            className="p-0 rounded-xl border h-fit bg-gray-200/50  [&>*:last-child]:border-white/50 [&>*:last-child]:rounded-xl [&>*:last-child]:bg-gradient-to-b [&>*:last-child]:to-gray-50/80 [&>*:last-child]:from-gray-50  [&>*:last-child]:shadow-zinc-800/[0.03]"
+            className="h-fit rounded-xl border bg-gray-200/50 p-0 [&>*:last-child]:rounded-xl [&>*:last-child]:border-white/50 [&>*:last-child]:bg-linear-to-b [&>*:last-child]:from-gray-50 [&>*:last-child]:to-gray-50/80 [&>*:last-child]:shadow-zinc-800/3"
           />
           {shouldShowFailure && (
             <Section className={lastFailureContainer()}>
               <SectionTitle>
                 {isFailed ? 'Completion failure' : 'Last failure'}
               </SectionTitle>
-              <SectionContent className="flex-auto rounded-xl border-white/50 bg-gradient-to-b to-gray-50/80 from-gray-50 shadow-zinc-800/[0.03]">
+              <SectionContent className="flex-auto rounded-xl border-white/50 bg-linear-to-b from-gray-50 to-gray-50/80 shadow-zinc-800/3">
                 <ErrorBanner
                   error={lastError}
                   wrap={hasStack}
-                  className="bg-transparent p-0 [&_code]:bg-gray-200/50 h-full [&_details]:max-h-48"
+                  className="h-full bg-transparent p-0 [&_code]:bg-gray-200/50 [&_details]:max-h-48"
                   open={shouldLastErrorBeExpanded}
                 />
               </SectionContent>
@@ -159,8 +159,8 @@ function Component() {
           )}
         </div>
 
-        <div className="flex flex-col mt-4">
-          <div className="rounded-2xl border bg-gray-200/50 relative">
+        <div className="mt-4 flex flex-col">
+          <div className="relative rounded-2xl border bg-gray-200/50">
             <JournalV2
               invocationId={String(id)}
               key={String(id)}

@@ -29,7 +29,7 @@ export function SetState({
             name={JSON.stringify(entry.key)}
             popoverTitle="Key"
             popoverContent={
-              <Value value={entry.key} className="text-xs font-mono py-3" />
+              <Value value={entry.key} className="py-3 font-mono text-xs" />
             }
           />
           <div>,</div>
@@ -40,7 +40,7 @@ export function SetState({
             popoverContent={
               <Value
                 value={entry.value}
-                className="text-xs font-mono py-3 mx-0.5"
+                className="mx-0.5 py-3 font-mono text-xs"
               />
             }
           />

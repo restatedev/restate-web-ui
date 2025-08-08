@@ -1,7 +1,7 @@
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import { PropsWithChildren, useState } from 'react';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 interface CopyProps {
   className?: string;
@@ -10,7 +10,7 @@ interface CopyProps {
 }
 
 const copyStyles = tv({
-  base: 'copy flex-shrink-0 flex items-center gap-1 ml-auto p-2 text-xs',
+  base: 'copy ml-auto flex shrink-0 items-center gap-1 p-2 text-xs',
 });
 export function Copy({
   className,

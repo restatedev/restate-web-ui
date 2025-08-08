@@ -1,7 +1,7 @@
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Children, PropsWithChildren, ReactNode, memo, useState } from 'react';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { syntaxHighlighter } from './SyntaxHighlighter';
 import { Nav, NavButtonItem } from '@restate/ui/nav';
 
@@ -43,7 +43,7 @@ function SyntaxHighlighter({
 const OptimizedSyntaxHighlighter = memo(SyntaxHighlighter);
 
 const snippetStyles = tv({
-  base: 'flex gap-2 gap-x-2 items-start group/snippet p-2 py-0 has-[.copy]:-my-1 has-[.copy]:pr-1 [&:not(:has(.copy))]:group-has-[.copy]/code:pr-16 [&_.copy]:-mr-2',
+  base: 'group/snippet flex items-start gap-2 gap-x-2 p-2 py-0 has-[.copy]:-my-1 has-[.copy]:pr-1 [&_.copy]:-mr-2 [&:not(:has(.copy))]:group-has-[.copy]/code:pr-16',
 });
 export function Snippet({
   children,
@@ -73,7 +73,7 @@ interface SnippetCopyProps {
 }
 
 const snippetCopyStyles = tv({
-  base: 'copy flex-shrink-0 flex items-center gap-1 ml-auto p-2 text-xs',
+  base: 'copy ml-auto flex shrink-0 items-center gap-1 p-2 text-xs',
 });
 export function SnippetCopy({
   className,
@@ -103,7 +103,7 @@ export function SnippetCopy({
 }
 
 const snippetTabsStyles = tv({
-  base: 'relative @container',
+  base: '@container relative',
 });
 export function SnippetTabs({
   children,
@@ -115,7 +115,7 @@ export function SnippetTabs({
   languages: Exclude<SnippetProps['language'], undefined>[];
   defaultLanguage: Exclude<SnippetProps['language'], undefined>;
   children: (
-    language: Exclude<SnippetProps['language'], undefined>
+    language: Exclude<SnippetProps['language'], undefined>,
   ) => ReactNode;
 }) {
   const [currentLanguage, setCurrentLanguage] =
@@ -126,7 +126,7 @@ export function SnippetTabs({
         className,
       })}
     >
-      <div className="absolute top-0 right-0 bg-black/[0.03] rounded-xl">
+      <div className="absolute top-0 right-0 rounded-xl bg-black/3">
         <Nav ariaCurrentValue="true" className="gap-0">
           {languages.map((language) => (
             <NavButtonItem

@@ -12,7 +12,7 @@ export async function register() {
           // This will make sure always the updated worker gets registered
           // Also works with hard reload
           return registration.unregister();
-        })
+        }),
       );
 
       await navigator.serviceWorker.register(workerUrl, {

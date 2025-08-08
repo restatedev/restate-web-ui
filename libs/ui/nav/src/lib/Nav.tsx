@@ -6,7 +6,7 @@ import {
   useEffect,
   useRef,
 } from 'react';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { NavContext } from './NavContext';
 import {
   Dropdown,
@@ -60,8 +60,8 @@ export function Nav({ children, className, ariaCurrentValue }: NavProps) {
     const updateStyleWithDetails = () =>
       updateStyle(
         containerElement?.querySelector(
-          'a[data-active=true],button[data-active=true]'
-        ) ?? null
+          'a[data-active=true],button[data-active=true]',
+        ) ?? null,
       );
     if (containerElement) {
       observer.observe(containerElement, {
@@ -75,8 +75,8 @@ export function Nav({ children, className, ariaCurrentValue }: NavProps) {
       });
       updateStyle(
         containerElement.querySelector(
-          'a[data-active=true],button[data-active=true]'
-        )
+          'a[data-active=true],button[data-active=true]',
+        ),
       );
     }
 
@@ -93,11 +93,11 @@ export function Nav({ children, className, ariaCurrentValue }: NavProps) {
   return (
     <NavContext.Provider value={{ value: ariaCurrentValue }}>
       <div
-        className="hidden lg:block relative  [&:has(a:hover)]:bg-black/[.03] [&:has(a:focus)]:bg-black/[.03] [&:has(a:hover)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] [&:has(a:focus)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] border-[0.5px] border-transparent [&:has(a:focus)]:border-zinc-800/5 [&:has(a:hover)]:border-zinc-800/5 [&:has(a:hover)]:border-[0.5px] [&:has(a:focus)]:border-[0.5px] rounded-xl"
+        className="relative hidden rounded-xl border-[0.5px] border-transparent lg:block [&:has(a:focus)]:border-[0.5px] [&:has(a:focus)]:border-zinc-800/5 [&:has(a:focus)]:bg-black/3 [&:has(a:focus)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] [&:has(a:hover)]:border-[0.5px] [&:has(a:hover)]:border-zinc-800/5 [&:has(a:hover)]:bg-black/3 [&:has(a:hover)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]"
         ref={containerElementRef}
       >
         <div
-          className="h-full [&:not(:has(+ul>li>a[data-active=true]))]:hidden bg-white absolute top-0 transition-all ease-in-out duration-300 border border-black/10 shadow-sm rounded-xl"
+          className="absolute top-0 h-full rounded-xl border border-black/10 bg-white shadow-xs transition-all duration-300 ease-in-out [&:not(:has(+ul>li>a[data-active=true]))]:hidden"
           ref={activeIndicatorElement}
         />
         <ul className={styles({ className })}>{children}</ul>
@@ -107,7 +107,7 @@ export function Nav({ children, className, ariaCurrentValue }: NavProps) {
           <DropdownTrigger>
             <Button
               variant="secondary"
-              className="flex items-center gap-2 pr-1.5 pl-3 py-1.5 "
+              className="flex items-center gap-2 py-1.5 pr-1.5 pl-3"
             >
               {Children.map(children, (child) => (
                 <span
@@ -122,7 +122,7 @@ export function Nav({ children, className, ariaCurrentValue }: NavProps) {
               ))}
               <Icon
                 name={IconName.ChevronsUpDown}
-                className="text-gray-500 w-4 h-4"
+                className="h-4 w-4 text-gray-500"
               />
             </Button>
           </DropdownTrigger>
@@ -133,7 +133,7 @@ export function Nav({ children, className, ariaCurrentValue }: NavProps) {
                 .map(
                   (child) =>
                     (child as ReactElement<ComponentProps<typeof NavItem>>)
-                      .props.href
+                      .props.href,
                 )
                 .filter((href) => location.pathname.startsWith(href))}
             >

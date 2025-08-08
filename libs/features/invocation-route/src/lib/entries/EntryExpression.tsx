@@ -8,7 +8,7 @@ import { ReactNode } from 'react';
 import { Ellipsis } from '@restate/ui/loading';
 import { Failure } from '../Failure';
 import { Value } from '../Value';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { Icon, IconName } from '@restate/ui/icons';
 import { HoverTooltip } from '@restate/ui/tooltip';
 import { isEntryCompletionAmbiguous } from './isEntryCompletionAmbiguous';
@@ -64,7 +64,7 @@ const CHAIN_COMMANDS_COMPONENTS: {
   PeekPromise: undefined,
   CompletePromise: { failure: 'reject', success: 'resolve', void: '' },
 };
-const styles = tv({ base: 'pr-0 overflow-hidden mr-2' });
+const styles = tv({ base: 'mr-2 overflow-hidden pr-0' });
 
 export function EntryExpression({
   entry,
@@ -115,7 +115,7 @@ export function EntryExpression({
       ?.filter(
         (param) =>
           (entry as any)[param.paramName] &&
-          (!param.isArray || (entry as any)[param.paramName].length > 0)
+          (!param.isArray || (entry as any)[param.paramName].length > 0),
       )
       .map((param) => {
         const paramValue = (entry as any)[param.paramName];
@@ -128,14 +128,14 @@ export function EntryExpression({
               JSON.stringify(paramValue)
             )
           ) : (
-            <span className="bg-white block">{param.placeholderLabel}</span>
+            <span className="block bg-white">{param.placeholderLabel}</span>
           );
         return (
           <InputOutput
             name={displayedValuedPlaceholder}
             popoverTitle={param.title}
             popoverContent={
-              <Value value={paramValue} className="text-xs font-mono py-3" />
+              <Value value={paramValue} className="py-3 font-mono text-xs" />
             }
             key={param.paramName}
           />
@@ -160,7 +160,7 @@ export function EntryExpression({
             popoverContent={
               <Value
                 value={(entry as any)[outputParam]}
-                className="text-xs font-mono py-3"
+                className="py-3 font-mono text-xs"
               />
             }
           />
@@ -174,7 +174,7 @@ export function EntryExpression({
               popoverContent={
                 <Value
                   value={JSON.stringify((entry as any)[outputParam])}
-                  className="text-xs font-mono py-3"
+                  className="py-3 font-mono text-xs"
                 />
               }
             />
@@ -182,9 +182,9 @@ export function EntryExpression({
         {((typeof (entry as any)[outputParam] === 'undefined' &&
           entry.resultType === 'success') ||
           entry.resultType === 'void') && (
-          <div className="text-zinc-400 font-normal">void</div>
+          <div className="font-normal text-zinc-400">void</div>
         )}
-        <div className="text-gray-400 comma hidden">,</div>
+        <div className="comma hidden text-gray-400">,</div>
       </>
     ));
 
@@ -228,7 +228,7 @@ export function EntryExpression({
         <>
           {entryCompletionIsAmbiguous && (
             <HoverTooltip content="Completion not detected!">
-              <Icon name={IconName.ClockAlert} className="w-3 h-3 opacity-80" />
+              <Icon name={IconName.ClockAlert} className="h-3 w-3 opacity-80" />
             </HoverTooltip>
           )}
           {isPending && <Ellipsis />}
@@ -236,7 +236,7 @@ export function EntryExpression({
           {output}
           {entry.error &&
             (!hideErrorForFailureResult || entry.resultType !== 'failure') && (
-              <div className="text-2xs ml-1 min-w-6">
+              <div className="ml-1 min-w-6 text-2xs">
                 <Failure
                   message={entry.error.message!}
                   restate_code={entry.error.restateCode}

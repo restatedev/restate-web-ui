@@ -11,7 +11,7 @@ import {
 
 function clearAllStateV1(
   entry: JournalRawEntry,
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<JournalEntryV2, { type?: 'ClearAllState' }> {
   const { raw } = entry;
 
@@ -41,7 +41,7 @@ function clearAllStateV1(
 function clearAllStateV2(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<JournalEntryV2, { type?: 'ClearAllState' }> {
   const commandIndex = entry.command_index;
 
@@ -49,7 +49,7 @@ function clearAllStateV2(
     entry,
     invocation,
     nextEntries,
-    undefined
+    undefined,
   );
 
   return {
@@ -72,7 +72,7 @@ function clearAllStateV2(
 export function clearAllState(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ) {
   if (entry.version === 1 || !entry.version) {
     return clearAllStateV1(entry, invocation);

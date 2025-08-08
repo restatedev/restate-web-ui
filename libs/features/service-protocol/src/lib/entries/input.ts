@@ -17,7 +17,7 @@ import {
 
 function inputV1(
   entry: JournalRawEntry,
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<JournalEntryV2, { type?: 'Input' }> {
   const { raw } = entry;
   if (!raw) {
@@ -49,7 +49,7 @@ function inputV1(
 function inputV2(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ): Extract<JournalEntryV2, { type?: 'Input' }> {
   const entryJSON = parseEntryJson(entry.entry_json ?? entry.entry_lite_json);
   const commandIndex = entry.command_index;
@@ -58,7 +58,7 @@ function inputV2(
     entry,
     invocation,
     nextEntries,
-    undefined
+    undefined,
   );
 
   return {
@@ -79,7 +79,7 @@ function inputV2(
         ({
           key: name,
           value,
-        } as { key: string; value: string })
+        }) as { key: string; value: string },
     ),
     parameters: decodeBinary(entryJSON?.Command?.Input?.payload),
     isLoaded: typeof entry.entry_json !== 'undefined',
@@ -90,7 +90,7 @@ function inputV2(
 export function input(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
-  invocation?: Invocation
+  invocation?: Invocation,
 ) {
   if (entry.version === 1 || !entry.version) {
     return inputV1(entry, invocation);

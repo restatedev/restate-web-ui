@@ -17,12 +17,12 @@ export function LoadingRows({
           .map((_, i) => (
             <Cell key={i} className="p-0">
               <div
-                className="p-2 min-h-10 flex"
+                className="flex min-h-10 p-2"
                 style={{
                   paddingRight: `${hashCode((index + 1) * 11, (i + 1) * 13)}%`,
                 }}
               >
-                <div className="animate-pulse min-h-full w-full rounded-md bg-slate-200" />
+                <div className="min-h-full w-full animate-pulse rounded-md bg-slate-200" />
               </div>
             </Cell>
           ))}
@@ -32,7 +32,7 @@ export function LoadingRows({
 
 export function TableError({ error }: { error: Error }) {
   return (
-    <div className="flex flex-col items-stretch p-2 gap-4">
+    <div className="flex flex-col items-stretch gap-4 p-2">
       <ErrorBanner error={error} className="rounded-md" />
     </div>
   );

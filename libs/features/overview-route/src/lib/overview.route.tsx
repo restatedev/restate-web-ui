@@ -1,6 +1,6 @@
 import { useListDeployments } from '@restate/data-access/admin-api';
 import { RestateServer } from './RestateServer';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { TriggerRegisterDeploymentDialog } from './RegisterDeployment/Dialog';
 import {
   ServiceDeploymentExplainer,
@@ -56,9 +56,9 @@ function MultipleDeploymentsPlaceholder({
 
   return (
     <LayoutOutlet zone={LayoutZone.Toolbar}>
-      <div className="p-0.5 flex items-center rounded-xl border-transparent ring-1 ring-transparent border has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500">
-        <div className="items-center flex gap-0 p-px w-full">
-          <kbd className="bg-zinc-600 text-zinc-400 px-1.5 rounded ml-2 text-sm">
+      <div className="flex items-center rounded-xl border border-transparent p-0.5 ring-1 ring-transparent has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500">
+        <div className="flex w-full items-center gap-0 p-px">
+          <kbd className="ml-2 rounded-sm bg-zinc-600 px-1.5 text-sm text-zinc-400">
             /
           </kbd>
           <FormFieldInput
@@ -67,11 +67,11 @@ function MultipleDeploymentsPlaceholder({
             value={filterText}
             onChange={onFilter}
             placeholder="Filter services, handlers, or deployments…"
-            className="[&_input::-webkit-search-cancel-button]:invert min-w-0 w-[40ch] [&>*]:min-h-0 [&>*]:h-6 [&_input]:border-0 [&_input]:h-full [&_input[data-focused=true]]:outline-0  [&_input]:placeholder-zinc-400 [&_input[data-focused=true]]:border-transparent [&_input]:text-current [&_input]:border-transparent [&_input]:bg-transparent shadow-none"
+            className="w-[40ch] min-w-0 shadow-none *:h-6 *:min-h-0 [&_input]:h-full [&_input]:border-0 [&_input]:border-transparent [&_input]:bg-transparent [&_input]:text-current [&_input]:placeholder-zinc-400 [&_input::-webkit-search-cancel-button]:invert [&_input[data-focused=true]]:border-transparent [&_input[data-focused=true]]:outline-0"
           />
           <TriggerRegisterDeploymentDialog
             variant="button"
-            className="py-0 h-7 rounded-lg ml-auto"
+            className="ml-auto h-7 rounded-lg py-0"
           >
             Deployment
           </TriggerRegisterDeploymentDialog>
@@ -83,8 +83,8 @@ function MultipleDeploymentsPlaceholder({
 
 function OneDeploymentPlaceholder() {
   return (
-    <div className="max-w-lg flex p-4 flex-col gap-2 items-center relative w-full text-center rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
-      <p className="text-sm text-gray-500 max-w-md">
+    <div className="relative flex w-full max-w-lg flex-col items-center gap-2 rounded-xl border bg-gray-200/50 p-4 text-center shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
+      <p className="max-w-md text-sm text-gray-500">
         Point Restate to your{' '}
         <ServiceDeploymentExplainer>
           service deployments
@@ -102,20 +102,20 @@ function OneDeploymentPlaceholder() {
 function NoDeploymentPlaceholder({ error }: { error?: Error | null }) {
   if (error) {
     return (
-      <div className="flex flex-col gap-2 items-center relative w-full  mt-6">
+      <div className="relative mt-6 flex w-full flex-col items-center gap-2">
         <ErrorBanner error={error} />
       </div>
     );
   }
   return (
-    <div className="flex flex-col gap-2 items-center relative w-full text-center mt-6">
+    <div className="relative mt-6 flex w-full flex-col items-center gap-2 text-center">
       <h3 className="text-sm font-semibold text-gray-600">
         No{' '}
         <ServiceDeploymentExplainer>
           service deployments
         </ServiceDeploymentExplainer>
       </h3>
-      <p className="text-sm text-gray-500 px-4 max-w-md">
+      <p className="max-w-md px-4 text-sm text-gray-500">
         Point Restate to your deployed services so Restate can register your{' '}
         <ServiceExplainer>services</ServiceExplainer> and handlers
       </p>
@@ -131,7 +131,7 @@ const deploymentsStyles = tv({
   variants: {
     isEmpty: {
       true: 'hidden',
-      false: 'min-h-[calc(100vh-9rem-9rem)] sticky top-[9rem]',
+      false: 'sticky top-36 min-h-[calc(100vh-9rem-9rem)]',
     },
   },
   defaultVariants: {
@@ -139,7 +139,7 @@ const deploymentsStyles = tv({
   },
 });
 const layoutStyles = tv({
-  base: 'min-h-full [&>*]:items-center [&>*:first-child_[data-anchor]]:rounded-br-none [&>*:first-child_[data-anchor]]:rounded-tr-none [&>*:first-child_[data-anchor]]:rounded-bl-full [&>*:first-child_[data-anchor]]:rounded-tl-full [&>*:first-child_[data-anchor]]:right-0 [&>*:first-child_[data-anchor]]:left-auto',
+  base: 'min-h-full *:items-center [&>*:first-child_[data-anchor]]:right-0 [&>*:first-child_[data-anchor]]:left-auto [&>*:first-child_[data-anchor]]:rounded-tl-full [&>*:first-child_[data-anchor]]:rounded-tr-none [&>*:first-child_[data-anchor]]:rounded-br-none [&>*:first-child_[data-anchor]]:rounded-bl-full',
   variants: {
     isScrolling: {
       true: 'items-start',
@@ -152,19 +152,19 @@ const layoutStyles = tv({
 });
 
 const reactServerStyles = tv({
-  base: 'justify-center flex flex-col items-center w-fit',
+  base: 'flex w-fit flex-col items-center justify-center',
   variants: {
     isEmpty: {
-      true: 'mb-[-6rem] pb-8 pt-24 flex-auto w-full justify-center rounded-xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]',
+      true: '-mb-24 w-full flex-auto justify-center rounded-xl border bg-gray-200/50 pt-24 pb-8 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]',
       false:
-        'hidden lg:block lg:fixed top-[50vh] left-[50vw] -translate-y-1/2 -translate-x-1/2',
+        'top-[50vh] left-[50vw] hidden -translate-x-1/2 -translate-y-1/2 lg:fixed lg:block',
     },
     isError: {
       true: '[&>svg:first-child>path]:fill-red-100',
       false: '',
     },
     isPending: {
-      true: 'flex fixed',
+      true: 'fixed flex',
       false: '',
     },
   },
@@ -173,6 +173,10 @@ const reactServerStyles = tv({
     isError: false,
     isPending: false,
   },
+});
+
+const s = tv({
+  base: 'text-sm text-red-500',
 });
 
 // TODO: refactor layout
@@ -202,12 +206,12 @@ function Component() {
           document.querySelector(`.${escapedMasonryId}`)?.clientHeight ?? 0;
         const columnHeight = Math.max(
           ...Array.from(
-            document.querySelectorAll(`.${escapedMasonryId} > *`)
-          ).map((el) => el.clientHeight)
+            document.querySelectorAll(`.${escapedMasonryId} > *`),
+          ).map((el) => el.clientHeight),
         );
         setIsScrolling(
           document.body.scrollHeight > document.body.clientHeight &&
-            masonryContainerHeight <= columnHeight
+            masonryContainerHeight <= columnHeight,
         );
       }
     });
@@ -242,7 +246,7 @@ function Component() {
               filterText={filterQuery}
             >
               <div
-                className="absolute w-0 h-0 top-1/2 left-0 rounded-tr-full rounded-br-full"
+                className="absolute top-1/2 left-0 h-0 w-0 rounded-tr-full rounded-br-full"
                 data-anchor
               />
             </Service>

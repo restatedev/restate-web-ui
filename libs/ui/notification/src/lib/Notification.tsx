@@ -4,7 +4,7 @@ import { useToast as useAriaToast } from '@react-aria/toast';
 import { useEffect, useRef } from 'react';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { PressResponder } from '@react-aria/interactions';
 import { NotificationContent, notificationQueue } from './queue';
 import { Spinner } from '@restate/ui/loading';
@@ -15,11 +15,11 @@ interface ToastProps extends AriaToastProps<NotificationContent> {
 }
 
 const styles = tv({
-  base: 'absolute peer z-[80] [&:first-child+*]:scale-95 [&:first-child+*]:z-[70] [&:first-child+*+*]:scale-90 [&:first-child+*+*~*]:scale-50 [&:first-child+*+*~*]:z-[60] [&:first-child+*+*]:z-[60] top-0 [&:first-child+*]:-translate-y-1 [&:first-child+*+*]:-translate-y-1.5 left-0 right-0 flex shrink-0 duration-300 items-center gap-2 flex-auto pl-3 pr-1 py-1 text-sm border rounded-xl backdrop-blur-xl backdrop-saturate-200 min-h-10 shadow-lg shadow-zinc-800/5 transform transition',
+  base: 'peer absolute top-0 right-0 left-0 z-80 flex min-h-10 flex-auto shrink-0 transform items-center gap-2 rounded-xl border py-1 pr-1 pl-3 text-sm shadow-lg shadow-zinc-800/5 backdrop-blur-xl backdrop-saturate-200 transition duration-300 [&:first-child+*]:z-70 [&:first-child+*]:-translate-y-1 [&:first-child+*]:scale-95 [&:first-child+*+*]:z-60 [&:first-child+*+*]:-translate-y-1.5 [&:first-child+*+*]:scale-90 [&:first-child+*+*~*]:z-60 [&:first-child+*+*~*]:scale-50',
   slots: {
     content: 'flex-auto',
     close: 'ml-auto text-inherit',
-    icon: 'w-4 h-4 shrink-0',
+    icon: 'h-4 w-4 shrink-0',
   },
   variants: {
     animation: {
@@ -30,36 +30,36 @@ const styles = tv({
         base: 'animate-in fade-in slide-in-from-top-16 zoom-in-95',
       },
       exiting: {
-        base: 'z-0 animate-out fade-out slide-out-to-top-16 [&:first-child+*]:scale-100 [&:first-child+*]:translate-y-0',
+        base: 'z-0 animate-out fade-out slide-out-to-top-16 [&:first-child+*]:translate-y-0 [&:first-child+*]:scale-100',
       },
     },
     type: {
       error: {
-        base: 'bg-red-200/90 border-red-300/30 text-red-800',
+        base: 'border-red-300/30 bg-red-200/90 text-red-800',
         content: '',
         icon: '',
         close: '',
       },
       info: {
-        base: 'bg-sky-200/90 border-sky-300/30 text-sky-800',
+        base: 'border-sky-300/30 bg-sky-200/90 text-sky-800',
         content: '',
         icon: '',
         close: '',
       },
       pending: {
-        base: 'bg-orange-200/90 border-orange-300/30 text-orange-800',
+        base: 'border-orange-300/30 bg-orange-200/90 text-orange-800',
         content: '',
         icon: '',
         close: '',
       },
       success: {
-        base: 'bg-green-200/90 border-green-400/30 text-green-800',
+        base: 'border-green-400/30 bg-green-200/90 text-green-800',
         content: '',
         icon: '',
         close: '',
       },
       warning: {
-        base: 'bg-orange-200/90 border-orange-300/30 text-orange-800',
+        base: 'border-orange-300/30 bg-orange-200/90 text-orange-800',
         content: '',
         icon: '',
         close: '',
@@ -107,7 +107,7 @@ export function Notification({ state, className, ...props }: ToastProps) {
     animation: props.toast.animation ?? 'entering',
   });
   const notificationIndex = state.visibleToasts.findIndex(
-    ({ key }) => key === props.toast.key
+    ({ key }) => key === props.toast.key,
   );
   const isVisible = notificationIndex === 0;
   const timeOut = TIMEOUTS[props.toast.content.type];

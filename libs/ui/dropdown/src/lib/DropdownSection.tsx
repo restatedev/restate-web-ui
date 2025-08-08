@@ -1,6 +1,6 @@
 import { PropsWithChildren, ReactNode } from 'react';
 import { Header } from 'react-aria-components';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 export interface DropdownSectionProps extends PropsWithChildren<object> {
   title?: ReactNode;
@@ -10,8 +10,8 @@ export interface DropdownSectionProps extends PropsWithChildren<object> {
 const styles = tv({
   slots: {
     container: 'px-1',
-    header: 'text-sm font-semibold text-gray-500 px-4 py-1 pt-2 truncate',
-    menu: 'bg-white [&:not(:has(*))]:hidden rounded-xl border [&_.dropdown-item]:rounded-lg [&:last-child]:mb-1',
+    header: 'truncate px-4 py-1 pt-2 text-sm font-semibold text-gray-500',
+    menu: 'rounded-xl border bg-white last:mb-1 [&_.dropdown-item]:rounded-lg [&:not(:has(*))]:hidden',
   },
 });
 export function DropdownSection({

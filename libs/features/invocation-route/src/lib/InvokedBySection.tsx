@@ -1,6 +1,6 @@
 import { Invocation } from '@restate/data-access/admin-api';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { Target } from './Target';
 import { InvocationId } from './InvocationId';
 
@@ -23,7 +23,7 @@ export function InvokedBySection({
       <SectionTitle>Invoked by</SectionTitle>
       {invocation.invoked_by === 'ingress' && (
         <SectionContent className="p-0" raised={true}>
-          <div className="text-code text-gray-500 font-medium pl-2.5 py-1">
+          <div className="py-1 pl-2.5 text-0.5xs font-medium text-gray-500">
             Ingress
           </div>
         </SectionContent>
@@ -31,11 +31,11 @@ export function InvokedBySection({
       {invocation.invoked_by === 'service' && (
         <SectionContent className="px-2 py-2" raised={false}>
           <div className="relative">
-            <InvocationId id={invocation.invoked_by_id!} className="text-xs " />
-            <div className="absolute w-7 border-l border-b  border-black/20 border-dashed left-3 top-6 bottom-[0.65rem] rounded-b" />
+            <InvocationId id={invocation.invoked_by_id!} className="text-xs" />
+            <div className="absolute top-6 bottom-[0.65rem] left-3 w-7 rounded-b border-b border-l border-dashed border-black/20" />
             <Target
               target={invocation.invoked_by_target}
-              className="text-code mt-1.5 ml-7 font-normal max-w-[calc(100%-1.75rem)]"
+              className="mt-1.5 ml-7 max-w-[calc(100%-1.75rem)] text-0.5xs font-normal"
             />
           </div>
         </SectionContent>

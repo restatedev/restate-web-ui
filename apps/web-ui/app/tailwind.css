@@ -1,7 +1,11 @@
-/* @import 'https://unpkg.com/@stoplight/elements/styles.min.css'; */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+@plugin "tailwindcss-react-aria-components";
+@plugin "tailwindcss-animate";
+@plugin "@tailwindcss/forms";
+
+@custom-variant dark (&:where(.dark, .dark *));
+@source "../../../libs";
+
 @layer base {
   html {
     font-family: InterVariable, 'Helvetica', system-ui, sans-serif;
@@ -9,8 +13,43 @@
   body {
     padding-left: calc(100vw - 100%);
   }
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-gray-400);
+  }
+  *[tabindex='0']:not(:has(*)) {
+    outline: none;
+  }
 }
 
-*[tabindex='0']:not(:has(*)) {
-  outline: none;
+@theme {
+  --default-ring-width: 3px;
+  --default-ring-color: var(--color-blue-500);
+
+  --text-3xs: 0.625rem;
+  --text-2xs: 0.6875rem;
+  --text-0.5xs: 0.8125rem;
+
+  --breakpoint-3xl: 122rem;
+
+  --font-sans: InterVariable, sans-serif;
+  --font-mono: JetBrainsMonoVariable, monospace;
+
+  @keyframes moveAndGrow {
+    0% {
+      right: 0px;
+    }
+    100% {
+      right: -23px;
+    }
+  }
+  --animate-moveAndGrow: moveAndGrow 2s ease-in-out infinite;
 }

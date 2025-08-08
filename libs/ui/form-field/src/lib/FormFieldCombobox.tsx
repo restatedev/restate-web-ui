@@ -18,7 +18,7 @@ import {
   ListBoxSection,
   ListBoxSectionProps,
 } from '@restate/ui/listbox';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 
 export interface ComboBoxProps<T extends object> {
   className?: string;
@@ -37,7 +37,7 @@ export interface ComboBoxProps<T extends object> {
 }
 
 const inputStyles = tv({
-  base: 'invalid:border-red-600 invalid:bg-red-100/70 focus:outline focus:border-gray-200 disabled:text-gray-500/80 disabled:placeholder:text-gray-300 disabled:border-gray-100 disabled:shadow-none   [&[readonly]]:text-gray-500/80 [&[readonly]]:bg-gray-100 read-only:shadow-none focus:shadow-none focus:outline-blue-600 focus:[box-shadow:inset_0_1px_0px_0px_rgba(0,0,0,0.03)] shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] mt-0 bg-gray-100 rounded-lg border border-gray-200 py-1.5 placeholder:text-gray-500/70 px-2 w-full min-w-0 text-sm text-gray-900',
+  base: 'mt-0 w-full min-w-0 rounded-lg border border-gray-200 bg-gray-100 px-2 py-1.5 text-sm text-gray-900 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] placeholder:text-gray-500/70 invalid:border-red-600 invalid:bg-red-100/70 read-only:shadow-none focus:border-gray-200 focus:shadow-none focus:[box-shadow:inset_0_1px_0px_0px_rgba(0,0,0,0.03)] focus:outline-2 focus:outline-blue-600 disabled:border-gray-100 disabled:text-gray-500/80 disabled:shadow-none disabled:placeholder:text-gray-300 [&[readonly]]:bg-gray-100 [&[readonly]]:text-gray-500/80',
 });
 
 const containerStyles = tv({
@@ -76,21 +76,21 @@ export function FormFieldCombobox<T extends object>({
           aria-label={placeholder}
           pattern={pattern}
         />
-        <div className="absolute right-1 top-0 bottom-0 flex items-center">
+        <div className="absolute top-0 right-1 bottom-0 flex items-center">
           <Button
             variant="secondary"
             className="rounded-lg p-1 outline-offset-0"
           >
             <Icon
               name={IconName.ChevronsUpDown}
-              className="w-[1.25em] h-[1.25em] text-gray-500"
+              className="h-[1.25em] w-[1.25em] text-gray-500"
             />
           </Button>
         </div>
       </Group>
       <FormFieldError>{errorMessage}</FormFieldError>
-      <PopoverOverlay className="w-[--trigger-width] min-w-fit bg-gray-100/90">
-        <ListBox className="outline-0 p-1 max-h-[inherit] overflow-auto border-none">
+      <PopoverOverlay className="w-(--trigger-width) min-w-fit bg-gray-100/90">
+        <ListBox className="max-h-[inherit] overflow-auto border-none p-1 outline-0">
           {children}
         </ListBox>
       </PopoverOverlay>

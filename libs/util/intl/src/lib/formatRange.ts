@@ -23,7 +23,7 @@ const utcFormatter = new Intl.DateTimeFormat('en', {
 export function formatRange(
   start: Date,
   end: Date,
-  timezone: 'UTC' | 'system' = 'system'
+  timezone: 'UTC' | 'system' = 'system',
 ) {
   if (isNaN(start.valueOf()) || isNaN(end.valueOf())) {
     return '';

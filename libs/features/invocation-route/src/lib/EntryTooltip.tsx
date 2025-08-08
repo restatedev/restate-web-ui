@@ -18,7 +18,7 @@ import {
   EventEntryType,
   NotificationEntryType,
 } from './entries/types';
-import { tv } from 'tailwind-variants';
+import { tv } from '@restate/util/styles';
 import { Icon, IconName } from '@restate/ui/icons';
 import { isEntryCompletionAmbiguous } from './entries/isEntryCompletionAmbiguous';
 
@@ -73,14 +73,14 @@ function EntryContent({
     entry.category === 'command'
       ? ENTRY_COMMANDS_TITLES
       : entry.category === 'notification'
-      ? ENTRY_NOTIFICATIONS_TITLES
-      : entry.category === 'event'
-      ? ENTRY_EVENTS_TITLES
-      : {};
+        ? ENTRY_NOTIFICATIONS_TITLES
+        : entry.category === 'event'
+          ? ENTRY_EVENTS_TITLES
+          : {};
   const title = categoryTitles[String(entry.type)];
   return (
     <div className="flex flex-col gap-3">
-      <div className=" font-semibold text-base">{title}</div>
+      <div className="text-base font-semibold">{title}</div>
 
       <div className="flex gap-5 font-medium">
         <div className="text-right font-normal">
@@ -100,21 +100,21 @@ function EntryContent({
                   <div className="opacity-80">
                     {formatRange(
                       new Date(String(entry.start)),
-                      new Date(String(entry.end))
+                      new Date(String(entry.end)),
                     )}
                   </div>
                 )}
                 {(entry.isPending || entryCompletionIsAmbiguous) && (
-                  <div className="opacity-80 flex items-center gap-1">
+                  <div className="flex items-center gap-1 opacity-80">
                     {`${formatDateTime(
                       new Date(String(entry.start)),
-                      'system'
+                      'system',
                     )} – `}
                     {entryCompletionIsAmbiguous ? (
-                      <span className=" flex items-center gap-1">
+                      <span className="flex items-center gap-1">
                         <Icon
                           name={IconName.ClockAlert}
-                          className="w-3.5 h-3.5"
+                          className="h-3.5 w-3.5"
                         />
                         Completion not detected!
                       </span>
@@ -135,8 +135,8 @@ function EntryContent({
                       {formatDurations(
                         getDuration(
                           new Date(entry.end || end).getTime() -
-                            new Date(entry.start).getTime()
-                        )
+                            new Date(entry.start).getTime(),
+                        ),
                       )}
                       )
                     </div>
