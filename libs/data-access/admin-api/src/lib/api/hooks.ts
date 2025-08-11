@@ -192,7 +192,7 @@ export function useOpenApi(options?: HookQueryOptions<'/openapi', 'get'>) {
 
 export function isVersionQuery(
   data: unknown,
-  query: Query,
+  query: Query<unknown, unknown, unknown>,
 ): data is components['schemas']['VersionInformation'] {
   const { queryKey } = query;
   return Array.isArray(queryKey) && queryKey[0] === '/version';
