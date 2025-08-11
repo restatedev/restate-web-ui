@@ -22,18 +22,26 @@ const useDehydratedState = (queryClient: QueryClient) => {
 export function QueryProvider({
   children,
   logOut,
-}: PropsWithChildren<{
-  logOut?: (params: { persistRedirectUrl?: boolean }) => void;
-}>) {
+  onError,
+  onSettled,
+  onSuccess,
+}: PropsWithChildren<
+  {
+    logOut?: (params: { persistRedirectUrl?: boolean }) => void;
+  } & NonNullable<ConstructorParameters<typeof QueryCache>[0]>
+>) {
   const [queryClient] = useState(
     () =>
       new QueryClient({
         queryCache: new QueryCache({
-          onError: (error) => {
+          onError: (error, query) => {
             if (error instanceof UnauthorizedError) {
               logOut?.({ persistRedirectUrl: true });
             }
+            onError?.(error, query);
           },
+          onSettled,
+          onSuccess,
         }),
         defaultOptions: {
           queries: {
