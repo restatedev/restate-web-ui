@@ -45,6 +45,7 @@ import {
 } from '@restate/features/state-object-route';
 import { EditState } from '@restate/features/edit-state';
 import { FeatureFlags } from '@restate/util/feature-flag';
+import { QueryClient } from '@tanstack/react-query';
 
 export const links: LinksFunction = () => [
   // TODO: move to the its own lib
@@ -91,6 +92,19 @@ function useRefWithSupportForAbsolutePath(path: To) {
 
   return url;
 }
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // With SSR, we usually want to set some default staleTime
+      // above 0 to avoid refetching immediately on the client
+      staleTime: 5 * 60 * 1000,
+      retry: false,
+      refetchOnMount: false,
+      experimental_prefetchInRender: true,
+    },
+  },
+});
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const remixNavigate = useNavigate();
@@ -141,7 +155,7 @@ function getCookieValue(name: string) {
 export default function App() {
   return (
     <FeatureFlags>
-      <QueryProvider>
+      <QueryProvider queryClient={queryClient}>
         <RestateContextProvider adminBaseUrl={getCookieValue('adminBaseUrl')}>
           <EditState>
             <LayoutOutlet zone={LayoutZone.Content}>
