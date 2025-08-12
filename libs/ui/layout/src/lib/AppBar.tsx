@@ -1,5 +1,4 @@
 import { PropsWithChildren } from 'react';
-import styles from './AppBar.module.css';
 import { ZONE_IDS, LayoutZone } from './LayoutZone';
 
 interface AppBarProps {
@@ -9,7 +8,7 @@ interface AppBarProps {
 export function AppBar(props: PropsWithChildren<AppBarProps>) {
   return (
     <header
-      className={`${styles.header} [&:has([data-variant="secondary"])]:backdrop-blur-0 sticky top-3 z-100 flex flex-none items-stretch justify-between gap-4 rounded-xl border bg-gray-50/80 shadow-lg shadow-zinc-800/5 backdrop-blur-xl backdrop-saturate-200 duration-300 sm:top-6 [&:has(>*>*)]:animate-in [&:has(>*>*)]:slide-in-from-top [&:has([data-variant="hidden"])]:invisible [&:has([data-variant="secondary"])]:border-none [&:has([data-variant="secondary"])]:bg-transparent [&:has([data-variant="secondary"])]:shadow-none`}
+      className={`[&:has([data-variant="secondary"])]:backdrop-blur-0 invisible sticky top-3 z-100 flex flex-none items-stretch justify-between gap-4 rounded-xl border bg-gray-50/80 shadow-lg shadow-zinc-800/5 backdrop-blur-xl backdrop-saturate-200 duration-300 sm:top-6 [&:has(>*>*)]:visible [&:has(>*>*)]:animate-in [&:has(>*>*)]:slide-in-from-top [&:has([data-variant="hidden"])]:invisible [&:has([data-variant="secondary"])]:border-none [&:has([data-variant="secondary"])]:bg-transparent [&:has([data-variant="secondary"])]:shadow-none`}
     >
       <div {...props} className="-m-px flex min-w-0 flex-auto items-stretch" />
       <nav
