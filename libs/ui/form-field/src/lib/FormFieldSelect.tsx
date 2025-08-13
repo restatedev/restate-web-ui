@@ -59,7 +59,7 @@ export function FormFieldSelect({
         <Button
           autoFocus
           variant="secondary"
-          className="flex w-full items-center gap-2 rounded-[0.625rem] px-2 pt-1.5 text-sm group-invalid:border-red-600 group-invalid:bg-red-100/70"
+          className="flex w-full items-center gap-2 rounded-[0.625rem] px-2 py-1.5 text-sm group-invalid:border-red-600 group-invalid:bg-red-100/70"
         >
           <SelectValue className="flex-auto text-left placeholder-shown:text-gray-500" />
           <Icon
