@@ -89,11 +89,14 @@ const registerDeploymentHandler = http.post<
           ty: service.ty,
           idempotency_retention: service.idempotency_retention,
           workflow_completion_retention: service.idempotency_retention,
+          journal_retention: service.journal_retention,
+          enable_lazy_state: service.enable_lazy_state,
           handlers: service.handlers.map((handler) => ({
             name: handler.name,
             ty: handler.ty,
             input_description: handler.input_description,
             output_description: handler.output_description,
+            public: true,
           })),
         })),
     });
@@ -132,6 +135,7 @@ const registerDeploymentHandler = http.post<
         ty: handler.ty,
         input_description: handler.input_description,
         output_description: handler.output_description,
+        public: true,
       })),
     })),
   });

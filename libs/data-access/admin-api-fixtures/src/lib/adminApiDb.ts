@@ -18,6 +18,7 @@ export const adminApiDb = factory({
     input_description: () =>
       'one of ["none", "value of content-type \'application/json\'"]',
     output_description: () => "value of content-type 'application/json'",
+    public: () => faker.datatype.boolean(),
   },
   service: {
     id: primaryKey<number>(() => faker.number.int()),
@@ -33,7 +34,9 @@ export const adminApiDb = factory({
     revision: () => faker.number.int(),
     idempotency_retention: () => '1Day',
     workflow_completion_retention: () => '1Day',
+    journal_retention: () => '1Day',
     public: () => faker.datatype.boolean(),
+    enable_lazy_state: () => faker.datatype.boolean(),
   },
   deployment: {
     id: primaryKey(() => `dp_${faker.string.nanoid(27)}`),
