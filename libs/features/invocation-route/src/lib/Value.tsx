@@ -1,20 +1,28 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import type { editor } from 'monaco-editor';
 import { Editor } from '@restate/ui/editor';
 import { useQuery } from '@tanstack/react-query';
 
-import { Ellipsis } from '@restate/ui/loading';
+import { Ellipsis, Spinner } from '@restate/ui/loading';
 import { Badge } from '@restate/ui/badge';
 import { Icon, IconName } from '@restate/ui/icons';
 
-const encoder = new TextEncoder();
-const decoder = new TextDecoder('utf-8');
-const MAGIC = encoder.encode('RTv1\0');
+const MAGIC = new TextEncoder().encode('RTv1\0');
+
+function base64ToBytes(base64: string) {
+  const binary = atob(base64); // decode to binary string
+  const len = binary.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+}
 
 function getBinary(value: string) {
   try {
-    if (value.startsWith('RTv1\0')) {
-      return encoder.encode(value);
+    if (value.startsWith('UlR2MQA')) {
+      return base64ToBytes(value);
     }
     return new Uint8Array(Object.values(JSON.parse(value)));
   } catch (error) {
@@ -53,10 +61,10 @@ export function Value({
     ? localStorage.getItem('baseUrlEncryption')?.replace(/\/$/, '') + '/decrypt'
     : undefined;
 
-  const { data: decryptedValue, isPending } = useQuery({
+  const { data: decryptedValue, isFetching } = useQuery({
     queryKey: [binary, 'decrypt'],
     queryFn: ({ queryKey }) => {
-      const [] = queryKey;
+      const [binary] = queryKey;
       return fetch(String(decryptEndpoint), {
         method: 'POST',
         body: binary,
@@ -68,7 +76,7 @@ export function Value({
         .then((res) => res.arrayBuffer())
         .then((buffer) => {
           const receivedBinary = new Uint8Array(buffer);
-          return decoder.decode(receivedBinary);
+          return new TextDecoder('utf-8').decode(receivedBinary);
         });
     },
     enabled: Boolean(isEncrypted && decryptEndpoint),
@@ -89,7 +97,7 @@ export function Value({
 
   if (isEncrypted) {
     return (
-      <div>
+      <div className="flex min-h-12 items-center">
         {isEncrypted && (
           <Badge
             className="absolute top-2 right-1.5 flex items-center gap-1 rounded-sm p-1 py-0 text-2xs"
@@ -99,13 +107,19 @@ export function Value({
             <Icon name={IconName.Security} className="h-3 w-3" /> Encrypted
           </Badge>
         )}
-        {isPending && isEncrypted && <Ellipsis>Decrypting</Ellipsis>}
-        <Editor
-          value={decryptedValue}
-          editorRef={editorRef}
-          readonly
-          className={className}
-        />
+        {isFetching && isEncrypted ? (
+          <div className="flex items-center gap-1.5 font-mono text-sm text-zinc-500">
+            <Spinner className="h-4 w-4" />
+            Loading…
+          </div>
+        ) : (
+          <Editor
+            value={decryptedValue}
+            editorRef={editorRef}
+            readonly
+            className={className}
+          />
+        )}
       </div>
     );
   }
