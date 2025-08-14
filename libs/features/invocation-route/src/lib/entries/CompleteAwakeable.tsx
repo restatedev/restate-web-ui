@@ -41,6 +41,7 @@ export function CompleteAwakeable({
                     <Value
                       value={entry.value}
                       className="py-3 font-mono text-xs"
+                      isBase64
                     />
                   }
                 />
@@ -84,6 +85,7 @@ export function CompleteAwakeableNotification({
         },
       ]}
       outputParam="value"
+      isOutputBase64
     />
   );
 }

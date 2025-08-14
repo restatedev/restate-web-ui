@@ -41,6 +41,7 @@ export function SetState({
               <Value
                 value={entry.value}
                 className="mx-0.5 py-3 font-mono text-xs"
+                isBase64
               />
             }
           />

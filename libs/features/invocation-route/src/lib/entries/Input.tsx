@@ -51,6 +51,7 @@ export function Input({
                       <Value
                         value={entry.parameters}
                         className="py-3 font-mono text-xs"
+                        isBase64
                       />
                     }
                   />

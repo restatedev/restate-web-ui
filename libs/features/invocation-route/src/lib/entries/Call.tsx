@@ -66,6 +66,7 @@ export function Call({
                         <Value
                           value={entry.parameters}
                           className="py-3 font-mono text-xs"
+                          isBase64
                         />
                       }
                     />
@@ -87,6 +88,7 @@ export function Call({
             />
           }
           outputParam="value"
+          isOutputBase64
         />
         {entry.invocationId && (
           <>

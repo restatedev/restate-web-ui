@@ -79,6 +79,7 @@ export function EntryExpression({
   className,
   outputParamPlaceholder = 'Result',
   hideErrorForFailureResult,
+  isOutputBase64,
 }: {
   invocation?: ReturnType<
     typeof useGetInvocationJournalWithInvocationV2
@@ -92,9 +93,11 @@ export function EntryExpression({
     title: string;
     isArray?: boolean;
     shouldStringified?: boolean;
+    isBase64?: boolean;
   }[];
   outputParam?: string;
   outputParamPlaceholder?: string;
+  isOutputBase64?: boolean;
   name?: string;
   operationSymbol?: string;
   chain?: ReactNode;
@@ -135,7 +138,11 @@ export function EntryExpression({
             name={displayedValuedPlaceholder}
             popoverTitle={param.title}
             popoverContent={
-              <Value value={paramValue} className="py-3 font-mono text-xs" />
+              <Value
+                value={paramValue}
+                className="py-3 font-mono text-xs"
+                isBase64={param.isBase64}
+              />
             }
             key={param.paramName}
           />
@@ -161,6 +168,7 @@ export function EntryExpression({
               <Value
                 value={(entry as any)[outputParam]}
                 className="py-3 font-mono text-xs"
+                isBase64={isOutputBase64}
               />
             }
           />
@@ -175,6 +183,7 @@ export function EntryExpression({
                 <Value
                   value={JSON.stringify((entry as any)[outputParam])}
                   className="py-3 font-mono text-xs"
+                  isBase64={isOutputBase64}
                 />
               }
             />

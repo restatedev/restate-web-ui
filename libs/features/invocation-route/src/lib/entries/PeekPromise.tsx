@@ -26,6 +26,7 @@ export function PeekPromise({
       ]}
       outputParam="value"
       chain=".peak"
+      isOutputBase64
     />
   );
 }
