@@ -1386,7 +1386,6 @@ export function useEditState(
   > & { enabled?: boolean } = {},
 ) {
   const baseUrl = useAdminBaseUrl();
-
   const queryOptions = adminApi(
     'query',
     '/query/services/{name}/keys/{key}/state',
@@ -1398,6 +1397,12 @@ export function useEditState(
   );
 
   const query = useQuery({ ...queryOptions, enabled });
+  const version = query.data?.version;
+  const decodedQuery = useDecodeState(
+    query.data?.state,
+    query.data?.version,
+    true,
+  );
 
   const { mutationFn, mutationKey, meta } = adminApi(
     'mutate',
@@ -1413,7 +1418,7 @@ export function useEditState(
     state: Record<string, string | undefined>;
     partial?: boolean;
   }) => {
-    if (!query.data?.version && variables.partial) {
+    if (!version && variables.partial) {
       throw new RestateError(
         'Partial updates to the state are not supported. Please replace the entire state instead.',
       );
@@ -1431,7 +1436,7 @@ export function useEditState(
       body: {
         object_key: objectKey,
         ...(variables.partial && {
-          version: query.data?.version,
+          version,
         }),
         new_state: {
           ...(variables.partial &&
@@ -1490,7 +1495,15 @@ export function useEditState(
     },
   });
 
-  return { mutation, query };
+  return {
+    mutation,
+    decodedQuery: {
+      ...decodedQuery,
+      isPending: query.isPending || decodedQuery.isPending,
+      error: query.error || decodedQuery.error,
+      data: query.data ? decodedQuery.data : undefined,
+    },
+  };
 }
 
 export function useDecode(value?: string, isBase64?: boolean) {
@@ -1507,6 +1520,58 @@ export function useDecode(value?: string, isBase64?: boolean) {
     placeholderData: value,
     enabled: isBase64,
     initialData: isBase64 ? undefined : value,
+  });
+}
+
+function safeParse(value: string) {
+  try {
+    return JSON.parse(value);
+  } catch (error) {
+    if (value === '') {
+      return undefined;
+    } else {
+      return value;
+    }
+  }
+}
+export function useDecodeState(
+  state: {
+    name: string;
+    value: string;
+  }[] = [],
+  version?: string,
+  isBase64?: boolean,
+) {
+  const { decoder } = useRestateContext();
+
+  return useQueries({
+    queries: state.map(({ name, value }) => ({
+      queryKey: [value, 'decode'],
+      queryFn: async ({ queryKey }: { queryKey: string[] }) => {
+        const [value] = queryKey;
+        return decoder(value);
+      },
+      staleTime: Infinity,
+      refetchOnMount: false,
+      placeholderData: value,
+      enabled: isBase64,
+      initialData: isBase64 ? undefined : value,
+    })),
+    combine: (results) => {
+      return {
+        data: {
+          state: convertStateToObject(
+            results.filter(Boolean).map((r, i) => ({
+              value: safeParse(r.data ?? ''),
+              name: state.at(i)!.name,
+            })),
+          ),
+          version,
+        },
+        error: results.find((r) => r.error)?.error,
+        isPending: results.some((r) => r.isFetching),
+      };
+    },
   });
 }
 
