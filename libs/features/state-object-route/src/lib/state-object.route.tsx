@@ -76,6 +76,7 @@ import { Link } from '@restate/ui/link';
 import { useEditStateContext } from '@restate/features/edit-state';
 import { toStateParam } from './toStateParam';
 import { SplitButton } from '@restate/ui/split-button';
+import { useRestateContext } from '@restate/features/restate-context';
 
 function getQuery(
   searchParams: URLSearchParams,
@@ -274,6 +275,7 @@ function Component() {
   );
   const dataUpdate = error ? errorUpdatedAt : dataUpdatedAt;
   const setEditState = useEditStateContext();
+  const { EncodingWaterMark } = useRestateContext();
 
   useEffect(() => {
     if ((serviceKeysData?.keys ?? []).length <= STATE_PAGE_SIZE * pageIndex) {
@@ -458,7 +460,14 @@ function Component() {
                                     className="truncate rounded-xs px-0.5 py-0 font-mono [font-size:inherit] text-inherit decoration-dashed decoration-from-font underline-offset-4"
                                     variant="icon"
                                   >
-                                    <span className="truncate pr-0.5">
+                                    <span className="inline-flex items-center truncate pr-0.5">
+                                      {EncodingWaterMark && (
+                                        <EncodingWaterMark
+                                          value={row.state?.[id]}
+                                          mini
+                                          className="mr-1"
+                                        />
+                                      )}
                                       <DecodedValue
                                         value={row.state?.[id]}
                                         isBase64

@@ -4,6 +4,7 @@ import { Expression, InputOutput } from '../Expression';
 import { Value } from '../Value';
 import { Failure } from '../Failure';
 import { EntryExpression } from './EntryExpression';
+import { useRestateContext } from '@restate/features/restate-context';
 
 export function CompletePromise({
   entry,
@@ -15,6 +16,7 @@ export function CompletePromise({
 }: EntryProps<
   Extract<JournalEntryV2, { type?: 'CompletePromise'; category?: 'command' }>
 >) {
+  const { EncodingWaterMark } = useRestateContext();
   return (
     <EntryExpression
       entry={entry}
@@ -48,6 +50,9 @@ export function CompletePromise({
                       isBase64
                     />
                   }
+                  {...(EncodingWaterMark && {
+                    waterMark: <EncodingWaterMark value={entry.value} />,
+                  })}
                 />
               )}
               {entry.error && (

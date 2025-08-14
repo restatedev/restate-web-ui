@@ -10,6 +10,7 @@ import { formatDurations } from '@restate/util/intl';
 import { DateTooltip } from '@restate/ui/tooltip';
 import { tv } from '@restate/util/styles';
 import { EntryExpression } from './EntryExpression';
+import { useRestateContext } from '@restate/features/restate-context';
 
 const styles = tv({
   base: 'relative flex flex-auto flex-row items-center gap-1.5 pr-2',
@@ -29,6 +30,7 @@ export function OneWayCall({
     ? durationSinceLastSnapshot(invokeTime)
     : { isPast: undefined };
   const duration = invokeTime ? formatDurations(parts) : undefined;
+  const { EncodingWaterMark } = useRestateContext();
 
   return (
     <div className={styles({ className })}>
@@ -62,6 +64,9 @@ export function OneWayCall({
                         isBase64
                       />
                     }
+                    {...(EncodingWaterMark && {
+                      waterMark: <EncodingWaterMark value={entry.parameters} />,
+                    })}
                   />
                 )}
                 {entry.parameters &&

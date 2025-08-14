@@ -12,6 +12,7 @@ import { tv } from '@restate/util/styles';
 import { Icon, IconName } from '@restate/ui/icons';
 import { HoverTooltip } from '@restate/ui/tooltip';
 import { isEntryCompletionAmbiguous } from './isEntryCompletionAmbiguous';
+import { useRestateContext } from '@restate/features/restate-context';
 
 const NAME_COMMANDS_COMPONENTS: {
   [K in CommandEntryType]: string;
@@ -104,6 +105,8 @@ export function EntryExpression({
   className?: string;
   hideErrorForFailureResult?: boolean;
 }) {
+  const { EncodingWaterMark } = useRestateContext();
+
   if (
     !entry ||
     (entry?.category !== 'command' &&
@@ -145,6 +148,10 @@ export function EntryExpression({
               />
             }
             key={param.paramName}
+            {...(EncodingWaterMark &&
+              param.isBase64 && {
+                waterMark: <EncodingWaterMark value={paramValue} />,
+              })}
           />
         );
       })
@@ -171,6 +178,12 @@ export function EntryExpression({
                 isBase64={isOutputBase64}
               />
             }
+            {...(EncodingWaterMark &&
+              isOutputBase64 && {
+                waterMark: (
+                  <EncodingWaterMark value={(entry as any)[outputParam]} />
+                ),
+              })}
           />
         )}
         {(entry as any)[outputParam] &&
@@ -184,6 +197,14 @@ export function EntryExpression({
                   value={JSON.stringify((entry as any)[outputParam])}
                   className="py-3 font-mono text-xs"
                   isBase64={isOutputBase64}
+                  {...(EncodingWaterMark &&
+                    isOutputBase64 && {
+                      waterMark: (
+                        <EncodingWaterMark
+                          value={JSON.stringify((entry as any)[outputParam])}
+                        />
+                      ),
+                    })}
                 />
               }
             />

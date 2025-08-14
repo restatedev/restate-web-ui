@@ -4,6 +4,7 @@ import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import { useEditStateContext } from '@restate/features/edit-state';
 import { usePopover } from '@restate/ui/popover';
+import { useRestateContext } from '@restate/features/restate-context';
 
 export function State({
   state = [],
@@ -48,6 +49,7 @@ function StateKey({
 }) {
   const setEditState = useEditStateContext();
   const { close } = usePopover();
+  const { EncodingWaterMark } = useRestateContext();
 
   return (
     <div className="group grid grid-cols-[1fr_2fr] items-center gap-1 truncate bg-white px-2 py-0 text-0.5xs text-zinc-600 not-last:border-b first:rounded-t-[calc(0.75rem-0.125rem)] last:rounded-b-[calc(0.75rem-0.125rem)]">
@@ -56,25 +58,30 @@ function StateKey({
       </div>
       <div className="relative truncate py-1">
         <Value value={value} className="mono text-xs" isBase64 />
-        <Button
-          variant="icon"
-          className="invisible absolute top-1 right-0 group-hover:visible"
-          onClick={() => {
-            close?.();
-            setEditState({
-              isEditing: true,
-              isDeleting: false,
-              service,
-              objectKey: serviceKey,
-              key: name,
-            });
-          }}
-        >
-          <Icon
-            name={IconName.Pencil}
-            className="h-3 w-3 fill-current opacity-70"
-          />
-        </Button>
+        <div className="absolute top-1 right-0 flex items-center gap-2">
+          <Button
+            variant="icon"
+            className="invisible group-hover:visible"
+            onClick={() => {
+              close?.();
+              setEditState({
+                isEditing: true,
+                isDeleting: false,
+                service,
+                objectKey: serviceKey,
+                key: name,
+              });
+            }}
+          >
+            <Icon
+              name={IconName.Pencil}
+              className="h-3 w-3 fill-current opacity-70"
+            />
+          </Button>
+          {EncodingWaterMark && (
+            <EncodingWaterMark value={value} mini className="" />
+          )}
+        </div>
       </div>
     </div>
   );

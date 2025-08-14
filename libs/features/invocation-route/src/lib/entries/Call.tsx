@@ -12,6 +12,7 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { CallInvokedLoadingError } from './CallInvokedLoadingError';
 import { EntryExpression } from './EntryExpression';
 import { Headers } from '../Headers';
+import { useRestateContext } from '@restate/features/restate-context';
 
 const styles = tv({
   base: 'relative flex flex-auto flex-row items-center gap-1.5',
@@ -35,6 +36,7 @@ export function Call({
 
   const invokedIsPending = isPending?.[String(entry.invocationId)];
   const invokedError = invocationsError?.[String(entry.invocationId)];
+  const { EncodingWaterMark } = useRestateContext();
 
   return (
     <>
@@ -69,6 +71,11 @@ export function Call({
                           isBase64
                         />
                       }
+                      {...(EncodingWaterMark && {
+                        waterMark: (
+                          <EncodingWaterMark value={entry.parameters} />
+                        ),
+                      })}
                     />
                   )}
                   {entry.parameters &&
