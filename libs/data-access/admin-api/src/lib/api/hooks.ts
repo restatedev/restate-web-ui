@@ -1121,6 +1121,8 @@ export function useKillInvocation(
 ) {
   const baseUrl = useAdminBaseUrl();
   const isSupported = useNewDeleteInvocationEndpointsSupported();
+  const queryCLient = useQueryClient();
+
   const { onMutate, onSuccess, onSettled, onError, ...oldOptions } =
     options ?? {};
   const old = useOldDeleteInvocation(invocation_id, {
@@ -1139,6 +1141,26 @@ export function useKillInvocation(
       resolvedPath: `/invocations/${invocation_id}/kill`,
     }),
     ...options,
+    onSuccess(data, variables, context) {
+      onSuccess?.(data, variables, context);
+
+      queryCLient.invalidateQueries({
+        queryKey: adminApi(
+          'query',
+          '/query/v2/invocations/{invocationId}',
+          'get',
+          {
+            baseUrl,
+            parameters: {
+              path: {
+                invocationId: String(variables.parameters?.path.invocation_id),
+              },
+              query: { journal: true },
+            },
+          },
+        ).queryKey,
+      });
+    },
   });
 
   if (!isSupported) {
@@ -1174,8 +1196,10 @@ export function useCancelInvocation(
 ) {
   const baseUrl = useAdminBaseUrl();
   const isSupported = useNewDeleteInvocationEndpointsSupported();
+  const queryCLient = useQueryClient();
   const { onMutate, onSuccess, onSettled, onError, ...oldOptions } =
     options ?? {};
+
   const old = useOldDeleteInvocation(invocation_id, {
     ...oldOptions,
     onSuccess(data, variables, context) {
@@ -1192,6 +1216,26 @@ export function useCancelInvocation(
       resolvedPath: `/invocations/${invocation_id}/cancel`,
     }),
     ...options,
+    onSuccess(data, variables, context) {
+      onSuccess?.(data, variables, context);
+
+      queryCLient.invalidateQueries({
+        queryKey: adminApi(
+          'query',
+          '/query/v2/invocations/{invocationId}',
+          'get',
+          {
+            baseUrl,
+            parameters: {
+              path: {
+                invocationId: String(variables.parameters?.path.invocation_id),
+              },
+              query: { journal: true },
+            },
+          },
+        ).queryKey,
+      });
+    },
   });
 
   if (!isSupported) {
