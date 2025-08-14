@@ -1492,3 +1492,37 @@ export function useEditState(
 
   return { mutation, query };
 }
+
+export function useDecode(value?: string, isBase64?: boolean) {
+  const { decoder } = useRestateContext();
+
+  return useQuery({
+    queryKey: [value, 'decode'],
+    queryFn: ({ queryKey }) => {
+      const [value] = queryKey;
+      return decoder(value);
+    },
+    staleTime: Infinity,
+    refetchOnMount: false,
+    placeholderData: value,
+    enabled: isBase64,
+    initialData: isBase64 ? undefined : value,
+  });
+}
+
+export function useEncode(value?: string, isBase64?: boolean) {
+  const { encoder } = useRestateContext();
+
+  return useQuery({
+    queryKey: [value, 'decode'],
+    queryFn: ({ queryKey }) => {
+      const [value] = queryKey;
+      return encoder(value);
+    },
+    staleTime: Infinity,
+    refetchOnMount: false,
+    placeholderData: value,
+    enabled: isBase64,
+    initialData: isBase64 ? undefined : value,
+  });
+}

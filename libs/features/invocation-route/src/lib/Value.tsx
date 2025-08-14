@@ -1,9 +1,8 @@
 import { useRef } from 'react';
 import type { editor } from 'monaco-editor';
 import { Editor } from '@restate/ui/editor';
-import { useQuery } from '@tanstack/react-query';
-import { useRestateContext } from '@restate/features/restate-context';
-import { Spinner } from '@restate/ui/loading';
+import { Ellipsis, Spinner } from '@restate/ui/loading';
+import { useDecode } from '@restate/data-access/admin-api';
 
 export function Value({
   value,
@@ -15,18 +14,7 @@ export function Value({
   isBase64?: boolean;
 }) {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
-  const { decoder } = useRestateContext();
-
-  const { data: decodedValue, isFetching } = useQuery({
-    queryKey: [value, 'decrypt'],
-    queryFn: ({ queryKey }) => {
-      const [value] = queryKey;
-      return decoder(value);
-    },
-    staleTime: Infinity,
-    refetchOnMount: false,
-    placeholderData: value,
-  });
+  const { data: decodedValue, isFetching } = useDecode(value, isBase64);
 
   if (typeof decodedValue === 'undefined') {
     return null;
@@ -49,4 +37,24 @@ export function Value({
       )}
     </div>
   );
+}
+
+export function DecodedValue({
+  value,
+  className,
+  isBase64,
+}: {
+  value?: string;
+  className?: string;
+  isBase64?: boolean;
+}) {
+  const { data: decodedValue, isFetching } = useDecode(value, isBase64);
+
+  if (typeof decodedValue === 'undefined') {
+    return null;
+  } else if (isFetching) {
+    return <Ellipsis />;
+  } else {
+    return decodedValue;
+  }
 }
