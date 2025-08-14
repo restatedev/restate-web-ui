@@ -68,7 +68,7 @@ import {
   PopoverHoverTrigger,
   usePopover,
 } from '@restate/ui/popover';
-import { Value } from '@restate/features/invocation-route';
+import { DecodedValue, Value } from '@restate/features/invocation-route';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { tv } from '@restate/util/styles';
 import { STATE_QUERY_NAME } from './constants';
@@ -459,7 +459,10 @@ function Component() {
                                     variant="icon"
                                   >
                                     <span className="truncate pr-0.5">
-                                      {row.state?.[id]}
+                                      <DecodedValue
+                                        value={row.state?.[id]}
+                                        isBase64
+                                      />
                                     </span>
                                   </Button>
                                 </PopoverHoverTrigger>
