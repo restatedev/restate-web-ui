@@ -10,7 +10,7 @@ import { Button, SubmitButton } from '@restate/ui/button';
 import { ErrorBanner } from '@restate/ui/error';
 import { FormFieldInput } from '@restate/ui/form-field';
 import { FormEvent, useId } from 'react';
-import { useDeleteInvocation } from '@restate/data-access/admin-api';
+import { usePurgeInvocation } from '@restate/data-access/admin-api';
 import { showSuccessNotification } from '@restate/ui/notification';
 
 export function PurgeInvocation() {
@@ -18,7 +18,7 @@ export function PurgeInvocation() {
   const [searchParams, setSearchParams] = useSearchParams();
   const invocationId = searchParams.get(PURGE_INVOCATION_QUERY_PARAM);
 
-  const { mutate, isPending, error } = useDeleteInvocation(
+  const { mutate, isPending, error } = usePurgeInvocation(
     String(invocationId),
     {
       onSuccess(data, variables) {
@@ -45,7 +45,6 @@ export function PurgeInvocation() {
     mutate({
       parameters: {
         path: { invocation_id: String(invocationId) },
-        query: { mode: 'Purge' },
       },
     });
   };

@@ -31,6 +31,7 @@ import type {
 import { useCallback, useEffect, useMemo } from 'react';
 import { RestateError } from '@restate/util/errors';
 import { useAPIStatus } from '../APIStatusProvider';
+import { useRestateContext } from '@restate/features/restate-context';
 
 type HookQueryOptions<
   Path extends keyof paths,
@@ -1099,7 +1100,7 @@ export function useListVirtualObjectState(
   };
 }
 
-export function useDeleteInvocation(
+export function useOldDeleteInvocation(
   invocation_id: string,
   options?: HookMutationOptions<'/invocations/{invocation_id}', 'delete'>,
 ) {
@@ -1112,6 +1113,170 @@ export function useDeleteInvocation(
     }),
     ...options,
   });
+}
+
+export function useKillInvocation(
+  invocation_id: string,
+  options?: HookMutationOptions<'/invocations/{invocation_id}/kill', 'patch'>,
+) {
+  const baseUrl = useAdminBaseUrl();
+  const isSupported = useNewDeleteInvocationEndpointsSupported();
+  const { onMutate, onSuccess, onSettled, onError, ...oldOptions } =
+    options ?? {};
+  const old = useOldDeleteInvocation(invocation_id, {
+    ...oldOptions,
+    onSuccess(data, variables, context) {
+      onSuccess?.(
+        undefined,
+        { parameters: { path: variables.parameters!.path } },
+        context,
+      );
+    },
+  });
+  const newApi = useMutation({
+    ...adminApi('mutate', '/invocations/{invocation_id}/kill', 'patch', {
+      baseUrl,
+      resolvedPath: `/invocations/${invocation_id}/kill`,
+    }),
+    ...options,
+  });
+
+  if (!isSupported) {
+    return {
+      ...old,
+      mutate: (
+        variables: Parameters<typeof newApi.mutate>[0],
+        options?: Parameters<typeof newApi.mutate>[1],
+      ) => {
+        const { onSuccess, onSettled, onError, ...oldOptions } = options ?? {};
+        return old.mutate(
+          {
+            parameters: {
+              ...variables.parameters,
+              path: {
+                invocation_id: variables.parameters!.path.invocation_id,
+              },
+              query: { mode: 'Kill' },
+            },
+          },
+          oldOptions,
+        );
+      },
+    };
+  } else {
+    return newApi;
+  }
+}
+
+export function useCancelInvocation(
+  invocation_id: string,
+  options?: HookMutationOptions<'/invocations/{invocation_id}/cancel', 'patch'>,
+) {
+  const baseUrl = useAdminBaseUrl();
+  const isSupported = useNewDeleteInvocationEndpointsSupported();
+  const { onMutate, onSuccess, onSettled, onError, ...oldOptions } =
+    options ?? {};
+  const old = useOldDeleteInvocation(invocation_id, {
+    ...oldOptions,
+    onSuccess(data, variables, context) {
+      onSuccess?.(
+        undefined,
+        { parameters: { path: variables.parameters!.path } },
+        context,
+      );
+    },
+  });
+  const newApi = useMutation({
+    ...adminApi('mutate', '/invocations/{invocation_id}/cancel', 'patch', {
+      baseUrl,
+      resolvedPath: `/invocations/${invocation_id}/cancel`,
+    }),
+    ...options,
+  });
+
+  if (!isSupported) {
+    return {
+      ...old,
+      mutate: (
+        variables: Parameters<typeof newApi.mutate>[0],
+        options?: Parameters<typeof newApi.mutate>[1],
+      ) => {
+        const { onSuccess, onSettled, onError, ...oldOptions } = options ?? {};
+        return old.mutate(
+          {
+            parameters: {
+              ...variables.parameters,
+              path: {
+                invocation_id: variables.parameters!.path.invocation_id,
+              },
+              query: { mode: 'Cancel' },
+            },
+          },
+          oldOptions,
+        );
+      },
+    };
+  } else {
+    return newApi;
+  }
+}
+
+export function usePurgeInvocation(
+  invocation_id: string,
+  options?: HookMutationOptions<'/invocations/{invocation_id}/purge', 'patch'>,
+) {
+  const baseUrl = useAdminBaseUrl();
+  const isSupported = useNewDeleteInvocationEndpointsSupported();
+  const { onMutate, onSuccess, onSettled, onError, ...oldOptions } =
+    options ?? {};
+  const old = useOldDeleteInvocation(invocation_id, {
+    ...oldOptions,
+    onSuccess(data, variables, context) {
+      onSuccess?.(
+        undefined,
+        { parameters: { path: variables.parameters!.path } },
+        context,
+      );
+    },
+  });
+  const newApi = useMutation({
+    ...adminApi('mutate', '/invocations/{invocation_id}/purge', 'patch', {
+      baseUrl,
+      resolvedPath: `/invocations/${invocation_id}/purge`,
+    }),
+    ...options,
+  });
+
+  if (!isSupported) {
+    return {
+      ...old,
+      mutate: (
+        variables: Parameters<typeof newApi.mutate>[0],
+        options?: Parameters<typeof newApi.mutate>[1],
+      ) => {
+        const { onSuccess, onSettled, onError, ...oldOptions } = options ?? {};
+        return old.mutate(
+          {
+            parameters: {
+              ...variables.parameters,
+              path: {
+                invocation_id: variables.parameters!.path.invocation_id,
+              },
+              query: { mode: 'Purge' },
+            },
+          },
+          oldOptions,
+        );
+      },
+    };
+  } else {
+    return newApi;
+  }
+}
+
+function useNewDeleteInvocationEndpointsSupported() {
+  const { isVersionGte } = useRestateContext();
+  return Boolean(isVersionGte?.('1.5.0'));
 }
 
 export function useRestartInvocationAsNew(
