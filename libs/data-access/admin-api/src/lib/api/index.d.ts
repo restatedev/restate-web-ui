@@ -2055,10 +2055,10 @@ export interface components {
       [key: string]: number;
     };
     Invocation: {
-      /** Format: date-time */
-      completion_expiration?: string;
-      /** Format: date-time */
-      journal_expiration?: string;
+      /** Format: duration */
+      completion_retention?: string;
+      /** Format: duration */
+      journal_retention?: string;
       /** Format: date-time */
       created_at: string;
       /** Format: date-time */
@@ -2131,10 +2131,10 @@ export interface components {
       isRetrying?: boolean;
     };
     RawInvocation: {
-      /** Format: date-time */
-      completion_expiration?: string;
-      /** Format: date-time */
-      journal_expiration?: string;
+      /** Format: duration */
+      completion_retention?: string;
+      /** Format: duration */
+      journal_retention?: string;
       /** Format: date-time */
       created_at: string;
       /** Format: date-time */

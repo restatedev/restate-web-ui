@@ -6090,13 +6090,13 @@
           "target_service_ty"
         ],
         "properties": {
-          "completion_expiration": {
+          "completion_retention": {
             "type": "string",
-            "format": "date-time"
+            "format": "duration"
           },
-          "journal_expiration": {
+          "journal_retention": {
             "type": "string",
-            "format": "date-time"
+            "format": "duration"
           },
           "created_at": {
             "type": "string",
@@ -6268,13 +6268,13 @@
           "target_service_ty"
         ],
         "properties": {
-          "completion_expiration": {
+          "completion_retention": {
             "type": "string",
-            "format": "date-time"
+            "format": "duration"
           },
-          "journal_expiration": {
+          "journal_retention": {
             "type": "string",
-            "format": "date-time"
+            "format": "duration"
           },
           "created_at": {
             "type": "string",

@@ -17,8 +17,6 @@ import {
   JournalRawEntryWithCommandIndex,
   lifeCycles,
 } from '@restate/features/service-protocol';
-import semverGt from 'semver/functions/gt';
-import { getVersion } from './getVersion';
 
 function queryFetcher(
   query: string,
@@ -45,7 +43,7 @@ async function listInvocations(
   filters: FilterItem[],
 ) {
   const invocationsPromise = queryFetcher(
-    `SELECT *${semverGt(getVersion(headers), '1.4.4') ? `, completed_at + completion_retention AS completion_expiration, completed_at + journal_retention AS journal_expiration` : ''} ,COUNT(*) OVER() AS total_count FROM sys_invocation ${convertInvocationsFilters(
+    `SELECT *, COUNT(*) OVER() AS total_count FROM sys_invocation ${convertInvocationsFilters(
       filters,
     )} ORDER BY modified_at DESC LIMIT ${INVOCATIONS_LIMIT}`,
     {
@@ -80,7 +78,7 @@ async function getInvocation(
   headers: Headers,
 ) {
   const invocations = await queryFetcher(
-    `SELECT *${semverGt(getVersion(headers), '1.4.4') ? `, completed_at + completion_retention AS completion_expiration, completed_at + journal_retention AS journal_expiration` : ''} FROM sys_invocation WHERE id = '${invocationId}'`,
+    `SELECT * FROM sys_invocation WHERE id = '${invocationId}'`,
     {
       baseUrl,
       headers,
@@ -163,13 +161,10 @@ async function getInvocationJournalV2(
   headers: Headers,
 ) {
   const [invocationQuery, journalQuery] = await Promise.all([
-    queryFetcher(
-      `SELECT * ${semverGt(getVersion(headers), '1.4.4') ? `, completed_at + completion_retention AS completion_expiration, completed_at + journal_retention AS journal_expiration` : ''} FROM sys_invocation WHERE id = '${invocationId}'`,
-      {
-        baseUrl,
-        headers,
-      },
-    ),
+    queryFetcher(`SELECT * FROM sys_invocation WHERE id = '${invocationId}'`, {
+      baseUrl,
+      headers,
+    }),
     queryFetcher(
       `SELECT id, index, appended_at, entry_type, name, entry_json, raw, version, completed, sleep_wakeup_at, invoked_id, invoked_target, promise_name FROM sys_journal WHERE id = '${invocationId}'`,
       {
