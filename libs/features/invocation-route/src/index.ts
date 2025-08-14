@@ -1,6 +1,6 @@
 export { JournalV2 } from './lib/JournalV2';
 export { State } from './lib/State';
-export { Value } from './lib/Value';
+export { Value, DecodedValue } from './lib/Value';
 export { Actions } from './lib/Actions';
 export { InvocationActions } from './lib/InvocationActions';
 export { Status } from './lib/Status';

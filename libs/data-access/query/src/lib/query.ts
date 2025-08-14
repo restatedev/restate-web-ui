@@ -14,6 +14,8 @@ import { convertFilters, convertInvocationsFilters } from './convertFilters';
 import { stateVersion } from './stateVersion';
 import { convertJournalV2 } from './convertJournalV2';
 import {
+  base64ToHex,
+  hexToBase64,
   JournalRawEntryWithCommandIndex,
   lifeCycles,
 } from '@restate/features/service-protocol';
@@ -353,17 +355,15 @@ async function getState(
   baseUrl: string,
   headers: Headers,
 ) {
-  const state: { name: string; value: string; bytes: string }[] =
-    await queryFetcher(
-      `SELECT key, value_utf8, value FROM state WHERE service_name = '${service}' AND service_key = '${key}'`,
-      { baseUrl, headers },
-    ).then(({ rows }) =>
-      rows.map((row) => ({
-        name: row.key,
-        value: row.value_utf8,
-        bytes: row.value,
-      })),
-    );
+  const state: { name: string; value: string }[] = await queryFetcher(
+    `SELECT key, value_utf8, value FROM state WHERE service_name = '${service}' AND service_key = '${key}'`,
+    { baseUrl, headers },
+  ).then(({ rows }) =>
+    rows.map((row) => ({
+      name: row.key,
+      value: hexToBase64(row.value) as string,
+    })),
+  );
   const version = stateVersion(state);
 
   return new Response(JSON.stringify({ state, version }), {
@@ -417,7 +417,7 @@ async function queryState(
           },
           {
             ...filter,
-            field: 'value_utf8',
+            field: 'value',
           },
         ] as FilterItem[])
       : []),
@@ -460,7 +460,7 @@ async function listState(
 
   const query = keys
     .map((key) => {
-      return `SELECT service_key, key, value_utf8
+      return `SELECT service_key, key, value
     FROM state WHERE service_name = '${service}' AND service_key = '${key}'`;
     })
     .join(' UNION ALL ');
@@ -485,7 +485,7 @@ async function listState(
             ...p[c.service_key],
             state: {
               ...p[c.service_key].state,
-              [c.key]: c.value_utf8,
+              [c.key]: hexToBase64(c.value),
             },
           },
         };
