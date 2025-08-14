@@ -1114,6 +1114,29 @@ export function useDeleteInvocation(
   });
 }
 
+export function useRestartInvocationAsNew(
+  invocation_id: string,
+  options?: HookMutationOptions<
+    '/invocations/{invocation_id}/restart-as-new',
+    'patch'
+  >,
+) {
+  const baseUrl = useAdminBaseUrl();
+
+  return useMutation({
+    ...adminApi(
+      'mutate',
+      '/invocations/{invocation_id}/restart-as-new',
+      'patch',
+      {
+        baseUrl,
+        resolvedPath: `/invocations/${invocation_id}/restart-as-new`,
+      },
+    ),
+    ...options,
+  });
+}
+
 function convertStateToUnit8Array(state: Record<string, string | undefined>) {
   return Object.entries(state).reduce(
     (results, [k, v]) => ({

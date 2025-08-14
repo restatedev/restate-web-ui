@@ -4,12 +4,19 @@ import {
   useHealth,
   useVersion,
 } from '@restate/data-access/admin-api';
-import { createContext, PropsWithChildren, useContext } from 'react';
+import {
+  createContext,
+  PropsWithChildren,
+  useCallback,
+  useContext,
+} from 'react';
+import semverGt from 'semver/functions/gte';
 
 export type Status = 'HEALTHY' | 'DEGRADED' | 'PENDING' | (string & {});
 type RestateContext = {
   status: Status;
   version?: string;
+  isVersionGte?: (version: string) => boolean;
   ingressUrl: string;
   baseUrl: string;
 };
@@ -32,6 +39,7 @@ function InternalRestateContextProvider({
 }>) {
   const { data } = useVersion({ enabled: !isPending });
   const version = data?.version;
+  const releasedVersion = version?.split('-')?.at(0);
   const resolvedIngress =
     ingressUrl || data?.ingress_endpoint || 'http://localhost:8080';
 
@@ -48,9 +56,22 @@ function InternalRestateContextProvider({
         ? 'HEALTHY'
         : 'PENDING';
 
+  const isVersionGte = useCallback(
+    (targetVersion: string) => {
+      return releasedVersion ? semverGt(releasedVersion, targetVersion) : false;
+    },
+    [releasedVersion],
+  );
+
   return (
     <InternalRestateContext.Provider
-      value={{ version, status, ingressUrl: resolvedIngress, baseUrl }}
+      value={{
+        version,
+        status,
+        ingressUrl: resolvedIngress,
+        isVersionGte,
+        baseUrl,
+      }}
     >
       <APIStatusProvider enabled={status === 'HEALTHY'}>
         {children}

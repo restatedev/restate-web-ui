@@ -34,7 +34,7 @@ import {
 } from '@restate/features/overview-route';
 import { Spinner } from '@restate/ui/loading';
 import {
-  DeleteInvocation,
+  InvocationActions,
   INVOCATION_QUERY_NAME,
   InvocationPanel,
 } from '@restate/features/invocation-route';
@@ -242,7 +242,7 @@ export default function App() {
             <ServicePlayground />
             <InvocationPanel />
             <StatePanel />
-            <DeleteInvocation />
+            <InvocationActions />
             <Support />
           </EditState>
         </RestateContextProvider>
