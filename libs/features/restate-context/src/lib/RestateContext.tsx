@@ -5,7 +5,7 @@ import {
   useVersion,
 } from '@restate/data-access/admin-api';
 import {
-  Component,
+  ComponentType,
   createContext,
   PropsWithChildren,
   useCallback,
@@ -23,7 +23,11 @@ type RestateContext = {
   baseUrl: string;
   decoder: (value?: string) => Promise<string> | string | undefined;
   encoder: (value?: string) => Promise<string> | string | undefined;
-  EncodingWaterMark?: Component<{ value?: string }>;
+  EncodingWaterMark?: ComponentType<{
+    value?: string;
+    className?: string;
+    mini?: boolean;
+  }>;
 };
 
 const InternalRestateContext = createContext<RestateContext>({
@@ -48,7 +52,11 @@ function InternalRestateContextProvider({
   baseUrl?: string;
   decoder: (value?: string) => Promise<string> | string | undefined;
   encoder: (value?: string) => Promise<string> | string | undefined;
-  EncodingWaterMark?: Component<{ value?: string }>;
+  EncodingWaterMark?: ComponentType<{
+    value?: string;
+    className?: string;
+    mini?: boolean;
+  }>;
 }>) {
   const { data } = useVersion({ enabled: !isPending });
   const version = data?.version;
@@ -112,7 +120,11 @@ export function RestateContextProvider({
   baseUrl?: string;
   decoder?: (value?: string) => Promise<string> | string | undefined;
   encoder?: (value?: string) => Promise<string> | string | undefined;
-  EncodingWaterMark?: Component<{ value?: string }>;
+  EncodingWaterMark?: ComponentType<{
+    value?: string;
+    className?: string;
+    mini?: boolean;
+  }>;
 }>) {
   return (
     <AdminBaseURLProvider baseUrl={adminBaseUrl}>

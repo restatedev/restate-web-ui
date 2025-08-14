@@ -21,7 +21,7 @@ export function Value({
   }
 
   return (
-    <div className="flex min-h-12 items-center">
+    <div className="flex items-center">
       {isFetching ? (
         <div className="flex items-center gap-1.5 font-mono text-sm text-zinc-500">
           <Spinner className="h-4 w-4" />

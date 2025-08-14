@@ -56,12 +56,12 @@ function StateKey({
       <div className="relative flex h-full min-w-0 items-start border-r py-1 pr-1">
         <TruncateWithTooltip copyText={name}>{name}</TruncateWithTooltip>
       </div>
-      <div className="relative truncate py-1">
-        <Value value={value} className="mono text-xs" isBase64 />
-        <div className="absolute top-1 right-0 flex items-center gap-2">
+      <div className="truncate py-1">
+        <Value value={value} className="mono max-w-full text-xs" isBase64 />
+        <div className="absolute top-1 right-1 flex items-center gap-2">
           <Button
             variant="icon"
-            className="invisible group-hover:visible"
+            className="invisible backdrop-blur-lg group-hover:visible"
             onClick={() => {
               close?.();
               setEditState({
