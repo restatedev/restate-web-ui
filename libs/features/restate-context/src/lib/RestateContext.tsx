@@ -5,13 +5,14 @@ import {
   useVersion,
 } from '@restate/data-access/admin-api';
 import {
+  Component,
   createContext,
   PropsWithChildren,
   useCallback,
   useContext,
 } from 'react';
 import semverGt from 'semver/functions/gte';
-import { base64ToUtf8 } from '@restate/features/service-protocol';
+import { base64ToUtf8, utf8ToBase64 } from '@restate/features/service-protocol';
 
 export type Status = 'HEALTHY' | 'DEGRADED' | 'PENDING' | (string & {});
 type RestateContext = {
@@ -21,6 +22,8 @@ type RestateContext = {
   ingressUrl: string;
   baseUrl: string;
   decoder: (value?: string) => Promise<string> | string | undefined;
+  encoder: (value?: string) => Promise<string> | string | undefined;
+  EncodingWaterMark?: Component<{ value?: string }>;
 };
 
 const InternalRestateContext = createContext<RestateContext>({
@@ -28,6 +31,7 @@ const InternalRestateContext = createContext<RestateContext>({
   ingressUrl: '',
   baseUrl: '',
   decoder: base64ToUtf8,
+  encoder: utf8ToBase64,
 });
 
 function InternalRestateContextProvider({
@@ -36,11 +40,15 @@ function InternalRestateContextProvider({
   ingressUrl,
   baseUrl = '',
   decoder,
+  encoder,
+  EncodingWaterMark,
 }: PropsWithChildren<{
   isPending?: boolean;
   ingressUrl?: string;
   baseUrl?: string;
   decoder: (value?: string) => Promise<string> | string | undefined;
+  encoder: (value?: string) => Promise<string> | string | undefined;
+  EncodingWaterMark?: Component<{ value?: string }>;
 }>) {
   const { data } = useVersion({ enabled: !isPending });
   const version = data?.version;
@@ -77,6 +85,8 @@ function InternalRestateContextProvider({
         isVersionGte,
         baseUrl,
         decoder,
+        encoder,
+        EncodingWaterMark,
       }}
     >
       <APIStatusProvider enabled={status === 'HEALTHY'}>
@@ -93,12 +103,16 @@ export function RestateContextProvider({
   isPending,
   baseUrl,
   decoder = base64ToUtf8,
+  encoder = utf8ToBase64,
+  EncodingWaterMark,
 }: PropsWithChildren<{
   adminBaseUrl?: string;
   ingressUrl?: string;
   isPending?: boolean;
   baseUrl?: string;
   decoder?: (value?: string) => Promise<string> | string | undefined;
+  encoder?: (value?: string) => Promise<string> | string | undefined;
+  EncodingWaterMark?: Component<{ value?: string }>;
 }>) {
   return (
     <AdminBaseURLProvider baseUrl={adminBaseUrl}>
@@ -107,6 +121,8 @@ export function RestateContextProvider({
         isPending={isPending}
         baseUrl={baseUrl}
         decoder={decoder}
+        encoder={encoder}
+        EncodingWaterMark={EncodingWaterMark}
       >
         {children}
       </InternalRestateContextProvider>
