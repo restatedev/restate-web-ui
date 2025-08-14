@@ -197,6 +197,26 @@ export interface paths {
     patch: operations['purge_journal'];
     trace?: never;
   };
+  '/invocations/{invocation_id}/restart-as-new': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /**
+     * Restart as new invocation
+     * @description Restart the given invocation as new. This will restart the invocation, given its input is available, as a new invocation with a different invocation id.
+     */
+    patch: operations['restart_as_new_invocation'];
+    trace?: never;
+  };
   '/openapi': {
     parameters: {
       query?: never;
@@ -1175,6 +1195,10 @@ export interface components {
         };
     /** @enum {string} */
     DeletionMode: 'Cancel' | 'Kill' | 'Purge';
+    RestartAsNewInvocationResponse: {
+      /** @description The invocation id of the new invocation. */
+      new_invocation_id: components['schemas']['String'];
+    };
     ListServicesResponse: {
       services: components['schemas']['ServiceMetadata'][];
     };
@@ -2872,6 +2896,89 @@ export interface operations {
       };
       /** @description The invocation is not yet completed. An invocation can be purged only when completed. */
       '409 Conflict': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  restart_as_new_invocation: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Invocation identifier. */
+        invocation_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['RestartAsNewInvocationResponse'];
+        };
+      };
+      '404 Not Found': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      /** @description Error when routing the request within restate. */
+      '503 Service Unavailable': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      '400 Bad Request': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      /** @description The invocation is still running. An invocation can be restarted only when completed. */
+      '409 Conflict': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      /** @description Restarting the invocation is not supported. Restarting workflows is not supported, and restarting invocations created using the old service protocol. */
+      '422 Unprocessable Entity': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      /** @description The invocation cannot be restarted because the input is not available. In order to restart an invocation, the journal must be available in order to read the input again. Journal can be retained after completion by enabling journal retention. */
+      '410 Gone': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      /** @description The invocation cannot be restarted because it's not running yet, meaning it might have been scheduled or inboxed. */
+      '425 Too Early': {
         headers: {
           [name: string]: unknown;
         };

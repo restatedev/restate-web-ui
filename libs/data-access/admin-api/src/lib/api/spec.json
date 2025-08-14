@@ -815,6 +815,105 @@
         }
       }
     },
+    "/invocations/{invocation_id}/restart-as-new": {
+      "patch": {
+        "tags": ["invocation"],
+        "summary": "Restart as new invocation",
+        "description": "Restart the given invocation as new. This will restart the invocation, given its input is available, as a new invocation with a different invocation id.",
+        "operationId": "restart_as_new_invocation",
+        "parameters": [
+          {
+            "name": "invocation_id",
+            "in": "path",
+            "description": "Invocation identifier.",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestartAsNewInvocationResponse"
+                }
+              }
+            }
+          },
+          "404 Not Found": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503 Service Unavailable": {
+            "description": "Error when routing the request within restate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "400 Bad Request": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409 Conflict": {
+            "description": "The invocation is still running. An invocation can be restarted only when completed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "422 Unprocessable Entity": {
+            "description": "Restarting the invocation is not supported. Restarting workflows is not supported, and restarting invocations created using the old service protocol.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "410 Gone": {
+            "description": "The invocation cannot be restarted because the input is not available. In order to restart an invocation, the journal must be available in order to read the input again. Journal can be retained after completion by enabling journal retention.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "425 Too Early": {
+            "description": "The invocation cannot be restarted because it's not running yet, meaning it might have been scheduled or inboxed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/openapi": {
       "get": {
         "tags": ["openapi"],
@@ -2452,6 +2551,16 @@
         ]
       },
       "DeletionMode": { "type": "string", "enum": ["Cancel", "Kill", "Purge"] },
+      "RestartAsNewInvocationResponse": {
+        "type": "object",
+        "required": ["new_invocation_id"],
+        "properties": {
+          "new_invocation_id": {
+            "description": "The invocation id of the new invocation.",
+            "allOf": [{ "$ref": "#/components/schemas/String" }]
+          }
+        }
+      },
       "ListServicesResponse": {
         "type": "object",
         "required": ["services"],
