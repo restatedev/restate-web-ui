@@ -11,6 +11,7 @@ import {
   useContext,
 } from 'react';
 import semverGt from 'semver/functions/gte';
+import { base64ToUtf8 } from '@restate/features/service-protocol';
 
 export type Status = 'HEALTHY' | 'DEGRADED' | 'PENDING' | (string & {});
 type RestateContext = {
@@ -19,12 +20,14 @@ type RestateContext = {
   isVersionGte?: (version: string) => boolean;
   ingressUrl: string;
   baseUrl: string;
+  decoder: (value?: string) => Promise<string> | string | undefined;
 };
 
 const InternalRestateContext = createContext<RestateContext>({
   status: 'PENDING',
   ingressUrl: '',
   baseUrl: '',
+  decoder: base64ToUtf8,
 });
 
 function InternalRestateContextProvider({
@@ -32,10 +35,12 @@ function InternalRestateContextProvider({
   isPending,
   ingressUrl,
   baseUrl = '',
+  decoder,
 }: PropsWithChildren<{
   isPending?: boolean;
   ingressUrl?: string;
   baseUrl?: string;
+  decoder: (value?: string) => Promise<string> | string | undefined;
 }>) {
   const { data } = useVersion({ enabled: !isPending });
   const version = data?.version;
@@ -71,6 +76,7 @@ function InternalRestateContextProvider({
         ingressUrl: resolvedIngress,
         isVersionGte,
         baseUrl,
+        decoder,
       }}
     >
       <APIStatusProvider enabled={status === 'HEALTHY'}>
@@ -86,11 +92,13 @@ export function RestateContextProvider({
   ingressUrl,
   isPending,
   baseUrl,
+  decoder = base64ToUtf8,
 }: PropsWithChildren<{
   adminBaseUrl?: string;
   ingressUrl?: string;
   isPending?: boolean;
   baseUrl?: string;
+  decoder?: (value?: string) => Promise<string> | string | undefined;
 }>) {
   return (
     <AdminBaseURLProvider baseUrl={adminBaseUrl}>
@@ -98,6 +106,7 @@ export function RestateContextProvider({
         ingressUrl={ingressUrl}
         isPending={isPending}
         baseUrl={baseUrl}
+        decoder={decoder}
       >
         {children}
       </InternalRestateContextProvider>

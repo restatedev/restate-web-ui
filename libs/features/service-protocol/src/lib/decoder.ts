@@ -7,7 +7,10 @@ export function bytesToBase64(bytes: Uint8Array) {
   return btoa(binary);
 }
 
-export function base64ToUtf8(base64: string) {
+export function base64ToUtf8(base64?: string) {
+  if (!base64) {
+    return base64;
+  }
   const binary = atob(base64);
   const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
   return new TextDecoder().decode(bytes);

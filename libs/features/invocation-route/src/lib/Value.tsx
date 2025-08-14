@@ -1,7 +1,9 @@
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import type { editor } from 'monaco-editor';
 import { Editor } from '@restate/ui/editor';
-import { base64ToUtf8 } from '@restate/features/service-protocol';
+import { useQuery } from '@tanstack/react-query';
+import { useRestateContext } from '@restate/features/restate-context';
+import { Spinner } from '@restate/ui/loading';
 
 export function Value({
   value,
@@ -13,17 +15,17 @@ export function Value({
   isBase64?: boolean;
 }) {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
-  const [decodedValue] = useState(() => {
-    console.log(value, typeof value);
-    if (isBase64) {
-      try {
-        return base64ToUtf8(value || '');
-      } catch (error) {
-        return value;
-      }
-    } else {
-      return value;
-    }
+  const { decoder } = useRestateContext();
+
+  const { data: decodedValue, isFetching } = useQuery({
+    queryKey: [value, 'decrypt'],
+    queryFn: ({ queryKey }) => {
+      const [value] = queryKey;
+      return decoder(value);
+    },
+    staleTime: Infinity,
+    refetchOnMount: false,
+    placeholderData: value,
   });
 
   if (typeof decodedValue === 'undefined') {
@@ -31,11 +33,20 @@ export function Value({
   }
 
   return (
-    <Editor
-      value={decodedValue}
-      editorRef={editorRef}
-      readonly
-      className={className}
-    />
+    <div className="flex min-h-12 items-center">
+      {isFetching ? (
+        <div className="flex items-center gap-1.5 font-mono text-sm text-zinc-500">
+          <Spinner className="h-4 w-4" />
+          Loading…
+        </div>
+      ) : (
+        <Editor
+          value={decodedValue}
+          editorRef={editorRef}
+          readonly
+          className={className}
+        />
+      )}
+    </div>
   );
 }
