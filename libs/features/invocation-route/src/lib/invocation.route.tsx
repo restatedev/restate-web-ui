@@ -15,6 +15,7 @@ import { useRestateContext } from '@restate/features/restate-context';
 import { InvocationPageProvider } from './InvocationPageContext';
 import { WorkflowKeySection } from './WorkflowKeySection';
 import { tv } from '@restate/util/styles';
+import { RetentionSection } from './RetentionSection';
 
 const metadataContainerStyles = tv({
   base: 'mt-6 hidden grid-cols-1 gap-2 gap-y-4 rounded-xl md:grid-cols-2 [&:has(*)]:grid',
@@ -124,6 +125,10 @@ function Component() {
             </>
           )}
           <KeysIdsSection
+            invocation={journalAndInvocationData}
+            className="h-fit rounded-xl border bg-gray-200/50 p-0 [&>*:last-child]:rounded-xl [&>*:last-child]:border-white/50 [&>*:last-child]:bg-linear-to-b [&>*:last-child]:from-gray-50 [&>*:last-child]:to-gray-50/80 [&>*:last-child]:shadow-zinc-800/3"
+          />
+          <RetentionSection
             invocation={journalAndInvocationData}
             className="h-fit rounded-xl border bg-gray-200/50 p-0 [&>*:last-child]:rounded-xl [&>*:last-child]:border-white/50 [&>*:last-child]:bg-linear-to-b [&>*:last-child]:from-gray-50 [&>*:last-child]:to-gray-50/80 [&>*:last-child]:shadow-zinc-800/3"
           />
