@@ -61,3 +61,28 @@ export function base64ToHex(base64: string) {
 
   return hex;
 }
+
+export function hexToUint8Array(hex: string) {
+  if (typeof hex !== 'string' || hex.length % 2 !== 0) {
+    throw new Error('Invalid hex string');
+  }
+
+  const array = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < hex.length; i += 2) {
+    array[i / 2] = parseInt(hex.substring(i, i + 2), 16);
+  }
+
+  return array;
+}
+
+export function base64ToUint8Array(base64?: string) {
+  if (base64 === undefined) {
+    return new Uint8Array();
+  }
+  const binary = atob(base64); // Base64 → binary string
+  const array = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    array[i] = binary.charCodeAt(i);
+  }
+  return array;
+}

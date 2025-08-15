@@ -32,6 +32,7 @@ import { useCallback, useEffect, useMemo } from 'react';
 import { RestateError } from '@restate/util/errors';
 import { useAPIStatus } from '../APIStatusProvider';
 import { useRestateContext } from '@restate/features/restate-context';
+import { base64ToUint8Array } from '@restate/features/service-protocol';
 
 type HookQueryOptions<
   Path extends keyof paths,
@@ -1346,20 +1347,10 @@ export function useRestartInvocationAsNew(
   });
 }
 
-function convertStateToUnit8Array(state: Record<string, string | undefined>) {
-  return Object.entries(state).reduce(
-    (results, [k, v]) => ({
-      ...results,
-      [k]: Array.from(new TextEncoder().encode(v)),
-    }),
-    {} as Record<string, number[]>,
-  );
-}
-
-export function convertStateToObject(state: { name: string; value: string }[]) {
+export function convertStateToObject<T>(state: { name: string; value: T }[]) {
   return state.reduce(
     (p, c) => ({ ...p, [c.name]: c.value }),
-    {} as Record<string, string>,
+    {} as Record<string, T>,
   );
 }
 
@@ -1403,6 +1394,7 @@ export function useEditState(
     query.data?.version,
     true,
   );
+  const { encoder } = useRestateContext();
 
   const { mutationFn, mutationKey, meta } = adminApi(
     'mutate',
@@ -1414,7 +1406,7 @@ export function useEditState(
     },
   );
 
-  const mutate = (variables: {
+  const mutate = async (variables: {
     state: Record<string, string | undefined>;
     partial?: boolean;
   }) => {
@@ -1431,6 +1423,17 @@ export function useEditState(
       throw new RestateError('Please enter a valid value');
     }
 
+    const encodedVariables = convertStateToObject(
+      await Promise.all(
+        Object.entries(variables.state).map(([k, v]) =>
+          Promise.resolve(encoder(v)).then((encodedV) => ({
+            name: k,
+            value: Array.from(base64ToUint8Array(encodedV)),
+          })),
+        ),
+      ),
+    );
+
     return mutationFn({
       parameters: { path: { service } },
       body: {
@@ -1441,11 +1444,14 @@ export function useEditState(
         new_state: {
           ...(variables.partial &&
             query.data && {
-              ...convertStateToUnit8Array(
-                convertStateToObject(query.data.state),
+              ...convertStateToObject(
+                query.data.state.map(({ name, value }) => ({
+                  name,
+                  value: Array.from(base64ToUint8Array(value)),
+                })),
               ),
             }),
-          ...convertStateToUnit8Array(variables.state),
+          ...encodedVariables,
         },
       },
     }).then(async (res) => {
