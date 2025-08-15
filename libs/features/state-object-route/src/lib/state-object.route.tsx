@@ -1,10 +1,10 @@
+import type { FilterItem } from '@restate/data-access/admin-api';
 import {
-  FilterItem,
   useListDeployments,
   useListServices,
   useListVirtualObjectState,
   useQueryVirtualObjectState,
-} from '@restate/data-access/admin-api';
+} from '@restate/data-access/admin-api-hooks';
 import { Button, SubmitButton } from '@restate/ui/button';
 import {
   Cell,

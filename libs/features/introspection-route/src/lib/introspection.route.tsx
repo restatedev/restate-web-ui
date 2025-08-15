@@ -1,4 +1,4 @@
-import { useSqlQuery } from '@restate/data-access/admin-api';
+import { useSqlQuery } from '@restate/data-access/admin-api-hooks';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Column, Row, Table, TableBody, TableHeader } from '@restate/ui/table';

@@ -9,7 +9,7 @@ import { Form, useHref, useNavigate, useSearchParams } from 'react-router';
 import { Button, SubmitButton } from '@restate/ui/button';
 import { ErrorBanner } from '@restate/ui/error';
 import { FormEvent, useId } from 'react';
-import { useRestartInvocationAsNew } from '@restate/data-access/admin-api';
+import { useRestartInvocationAsNew } from '@restate/data-access/admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui/notification';
 
 export function RestartInvocation() {

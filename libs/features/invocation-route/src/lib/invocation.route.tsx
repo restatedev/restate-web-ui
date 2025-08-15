@@ -1,4 +1,4 @@
-import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api';
+import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api-hooks';
 import { ErrorBanner } from '@restate/ui/error';
 import { useParams, useSearchParams } from 'react-router';
 import { getRestateError, Status } from './Status';

@@ -3,8 +3,6 @@ import {
   getEndpoint,
   Handler as HandlerType,
   ServiceType,
-  useListDeployments,
-  useServiceDetails,
 } from '@restate/data-access/admin-api';
 import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from '@restate/util/styles';
@@ -15,6 +13,10 @@ import { SERVICE_QUERY_PARAM } from './constants';
 import { PropsWithChildren, useRef } from 'react';
 import { useActiveSidebarParam } from '@restate/ui/layout';
 import { Handler } from './Handler';
+import {
+  useListDeployments,
+  useServiceDetails,
+} from '@restate/data-access/admin-api-hooks';
 
 const styles = tv({
   base: 'w-full transform rounded-2xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] transition',

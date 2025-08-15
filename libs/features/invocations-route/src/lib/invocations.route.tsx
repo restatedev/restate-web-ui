@@ -1,10 +1,4 @@
-import {
-  FilterItem,
-  getEndpoint,
-  useListDeployments,
-  useListInvocations,
-  useListServices,
-} from '@restate/data-access/admin-api';
+import { FilterItem, getEndpoint } from '@restate/data-access/admin-api';
 import { Button, SubmitButton } from '@restate/ui/button';
 import { Column, Row, Table, TableBody, TableHeader } from '@restate/ui/table';
 import { useCollator } from 'react-aria';
@@ -45,6 +39,11 @@ import { ClauseChip, FiltersTrigger } from './Filters';
 import { Form, useSearchParams } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTransition } from 'react';
+import {
+  useListDeployments,
+  useListInvocations,
+  useListServices,
+} from '@restate/data-access/admin-api-hooks';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: 80,

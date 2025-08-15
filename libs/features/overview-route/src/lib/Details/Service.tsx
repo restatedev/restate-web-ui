@@ -18,7 +18,7 @@ import {
   useListDeployments,
   useModifyService,
   useServiceDetails,
-} from '@restate/data-access/admin-api';
+} from '@restate/data-access/admin-api-hooks';
 import { Form } from 'react-router';
 import { Handler } from '../Handler';
 import { Icon, IconName } from '@restate/ui/icons';

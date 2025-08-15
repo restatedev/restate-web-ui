@@ -101,15 +101,15 @@ export function normaliseDuration(input: {
     toBigInt(input.milliseconds) * MS;
 
   // break down to normalized parts (weeks folded into days)
-  let days = total / D;
+  const days = total / D;
   total %= D;
-  let hours = total / H;
+  const hours = total / H;
   total %= H;
-  let minutes = total / M;
+  const minutes = total / M;
   total %= M;
-  let seconds = total / S;
+  const seconds = total / S;
   total %= S;
-  let milliseconds = total;
+  const milliseconds = total;
 
   return {
     days: bnToNum(days),

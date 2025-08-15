@@ -4,7 +4,6 @@ import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import {
   DeploymentId,
   Revision as ServiceRevision,
-  useListDeployments,
   getEndpoint,
   isHttpDeployment,
 } from '@restate/data-access/admin-api';
@@ -13,6 +12,7 @@ import { DEPLOYMENT_QUERY_PARAM } from './constants';
 import { Link } from '@restate/ui/link';
 import { useRef } from 'react';
 import { useActiveSidebarParam } from '@restate/ui/layout';
+import { useListDeployments } from '@restate/data-access/admin-api-hooks';
 
 const styles = tv({
   base: 'relative -m-1 flex flex-row items-center gap-2 border p-1 text-0.5xs transition-all ease-in-out',

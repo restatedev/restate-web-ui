@@ -23,7 +23,7 @@ import {
   convertStateToObject,
   useEditState,
   useGetVirtualObjectQueue,
-} from '@restate/data-access/admin-api';
+} from '@restate/data-access/admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui/notification';
 import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from '@restate/util/styles';
@@ -250,7 +250,6 @@ function EditStateInner({
     </Dialog>
   );
 }
-
 
 function stringifyValues(state: Record<string, any>) {
   return convertStateToObject(

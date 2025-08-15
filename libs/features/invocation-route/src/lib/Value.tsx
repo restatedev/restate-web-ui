@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import type { editor } from 'monaco-editor';
 import { Editor } from '@restate/ui/editor';
 import { Ellipsis, Spinner } from '@restate/ui/loading';
-import { useDecode } from '@restate/data-access/admin-api';
+import { useDecode } from '@restate/data-access/admin-api-hooks';
 
 export function Value({
   value,

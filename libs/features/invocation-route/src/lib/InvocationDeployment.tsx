@@ -1,4 +1,5 @@
-import { Invocation, useListDeployments } from '@restate/data-access/admin-api';
+import type { Invocation } from '@restate/data-access/admin-api';
+import { useListDeployments } from '@restate/data-access/admin-api-hooks';
 import { Deployment, SDK } from '@restate/features/overview-route';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { tv } from '@restate/util/styles';

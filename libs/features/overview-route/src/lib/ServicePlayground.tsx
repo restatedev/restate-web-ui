@@ -1,5 +1,5 @@
 import { useLocation, useSearchParams } from 'react-router';
-import { useServiceOpenApi } from '@restate/data-access/admin-api';
+import { useServiceOpenApi } from '@restate/data-access/admin-api-hooks';
 import { Button, SubmitButton } from '@restate/ui/button';
 import { QueryDialog, DialogContent, DialogClose } from '@restate/ui/dialog';
 import { Icon, IconName } from '@restate/ui/icons';

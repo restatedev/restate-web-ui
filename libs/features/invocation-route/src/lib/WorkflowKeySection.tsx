@@ -1,7 +1,4 @@
-import {
-  Invocation,
-  useGetVirtualObjectState,
-} from '@restate/data-access/admin-api';
+import { Invocation } from '@restate/data-access/admin-api';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { tv } from '@restate/util/styles';
 import { Copy } from '@restate/ui/copy';
@@ -11,6 +8,7 @@ import { Button } from '@restate/ui/button';
 import { DropdownSection } from '@restate/ui/dropdown';
 import { State } from './State';
 import { Icon, IconName } from '@restate/ui/icons';
+import { useGetVirtualObjectState } from '@restate/data-access/admin-api-hooks';
 
 const styles = tv({ base: '' });
 export function WorkflowKeySection({

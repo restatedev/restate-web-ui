@@ -10,7 +10,7 @@ import {
   useGetInvocationJournalWithInvocationV2,
   useGetVirtualObjectQueue,
   useGetVirtualObjectState,
-} from '@restate/data-access/admin-api';
+} from '@restate/data-access/admin-api-hooks';
 import { Icon, IconName } from '@restate/ui/icons';
 import { DeploymentSection } from './DeploymentSection';
 import { KeysIdsSection } from './KeysIdsSection';

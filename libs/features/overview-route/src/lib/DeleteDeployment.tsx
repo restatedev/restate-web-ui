@@ -13,11 +13,11 @@ import { Button, SubmitButton } from '@restate/ui/button';
 import { ErrorBanner } from '@restate/ui/error';
 import { FormFieldInput } from '@restate/ui/form-field';
 import { FormEvent, useId, useState } from 'react';
+import { getEndpoint } from '@restate/data-access/admin-api';
 import {
   useDeleteDeployment,
   useListDeployments,
-  getEndpoint,
-} from '@restate/data-access/admin-api';
+} from '@restate/data-access/admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui/notification';
 
 export function DeleteDeployment() {

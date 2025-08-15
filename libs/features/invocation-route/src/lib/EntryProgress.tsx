@@ -1,8 +1,5 @@
-import {
-  Invocation,
-  JournalEntryV2,
-  useGetInvocationJournalWithInvocationV2,
-} from '@restate/data-access/admin-api';
+import type { JournalEntryV2 } from '@restate/data-access/admin-api';
+import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api-hooks';
 import { formatDurations } from '@restate/util/intl';
 import { getDuration } from '@restate/util/snapshot-time';
 import { CSSProperties, PropsWithChildren } from 'react';

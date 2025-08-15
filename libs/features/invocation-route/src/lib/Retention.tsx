@@ -27,7 +27,6 @@ export function Retention({
   className?: string;
 }) {
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
-  const isInvocationCompleted = Boolean(invocation?.completed_at);
   const durationValue =
     type === 'completion'
       ? invocation?.completion_retention
@@ -37,8 +36,8 @@ export function Retention({
   }
 
   const durationObject = normaliseDuration(parseISODuration(durationValue));
-  if (isInvocationCompleted) {
-    const date = addDurationToDate(invocation?.completed_at!, durationObject);
+  if (invocation?.completed_at) {
+    const date = addDurationToDate(invocation?.completed_at, durationObject);
     const { isPast, ...parts } = durationSinceLastSnapshot(date);
     const duration = formatDurations(parts);
 

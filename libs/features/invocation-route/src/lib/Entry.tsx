@@ -1,7 +1,5 @@
-import {
-  JournalEntryV2,
-  useGetInvocationJournalWithInvocationV2,
-} from '@restate/data-access/admin-api';
+import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api-hooks';
+import type { JournalEntryV2 } from '@restate/data-access/admin-api';
 import { ComponentType } from 'react';
 import { AttachInvocation } from './entries/AttachInvocation';
 import { Awakeable } from './entries/Awakeable';

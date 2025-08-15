@@ -10,7 +10,7 @@ import { Button, SubmitButton } from '@restate/ui/button';
 import { ErrorBanner } from '@restate/ui/error';
 import { FormFieldInput } from '@restate/ui/form-field';
 import { FormEvent, useId } from 'react';
-import { usePurgeInvocation } from '@restate/data-access/admin-api';
+import { usePurgeInvocation } from '@restate/data-access/admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui/notification';
 
 export function PurgeInvocation() {

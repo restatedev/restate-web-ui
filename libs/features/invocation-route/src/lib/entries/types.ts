@@ -1,7 +1,5 @@
-import {
-  JournalEntryV2,
-  useGetInvocationJournalWithInvocationV2,
-} from '@restate/data-access/admin-api';
+import type { JournalEntryV2 } from '@restate/data-access/admin-api';
+import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api-hooks';
 import { RestateError } from '@restate/util/errors';
 
 export interface EntryProps<T extends JournalEntryV2> {

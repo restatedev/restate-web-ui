@@ -9,7 +9,7 @@ import { STATE_QUERY_NAME } from './constants';
 import {
   useGetVirtualObjectQueue,
   useGetVirtualObjectState,
-} from '@restate/data-access/admin-api';
+} from '@restate/data-access/admin-api-hooks';
 import { Icon, IconName } from '@restate/ui/icons';
 import { ErrorBanner } from '@restate/ui/error';
 import {

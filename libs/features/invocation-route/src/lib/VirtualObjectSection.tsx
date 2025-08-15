@@ -1,8 +1,8 @@
+import type { Invocation } from '@restate/data-access/admin-api';
 import {
-  Invocation,
   useGetVirtualObjectQueue,
   useGetVirtualObjectState,
-} from '@restate/data-access/admin-api';
+} from '@restate/data-access/admin-api-hooks';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { tv } from '@restate/util/styles';
 import { Icon, IconName } from '@restate/ui/icons';

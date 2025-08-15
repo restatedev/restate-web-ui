@@ -1,7 +1,4 @@
-import {
-  JournalEntryV2,
-  useGetInvocationJournalWithInvocationV2,
-} from '@restate/data-access/admin-api';
+import type { JournalEntryV2 } from '@restate/data-access/admin-api';
 import { Expression, InputOutput } from '../Expression';
 import { CommandEntryType } from './types';
 import { ReactNode } from 'react';
@@ -13,6 +10,7 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { HoverTooltip } from '@restate/ui/tooltip';
 import { isEntryCompletionAmbiguous } from './isEntryCompletionAmbiguous';
 import { useRestateContext } from '@restate/features/restate-context';
+import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api-hooks';
 
 const NAME_COMMANDS_COMPONENTS: {
   [K in CommandEntryType]: string;

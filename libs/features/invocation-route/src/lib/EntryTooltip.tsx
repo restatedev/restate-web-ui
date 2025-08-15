@@ -1,7 +1,6 @@
-import {
+import type {
   Invocation,
   JournalEntryV2,
-  useGetInvocationJournalWithInvocationV2,
 } from '@restate/data-access/admin-api';
 import { Ellipsis } from '@restate/ui/loading';
 import {
@@ -21,6 +20,7 @@ import {
 import { tv } from '@restate/util/styles';
 import { Icon, IconName } from '@restate/ui/icons';
 import { isEntryCompletionAmbiguous } from './entries/isEntryCompletionAmbiguous';
+import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api-hooks';
 
 const entryTooltipStyles = tv({
   base: 'flex h-full',

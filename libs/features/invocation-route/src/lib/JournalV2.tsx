@@ -1,7 +1,4 @@
-import {
-  JournalEntryV2,
-  useGetInvocationsJournalWithInvocationsV2,
-} from '@restate/data-access/admin-api';
+import { JournalEntryV2 } from '@restate/data-access/admin-api';
 import { lazy, Suspense, useCallback, useState } from 'react';
 import { InvocationId } from './InvocationId';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
@@ -20,6 +17,7 @@ import { LifeCycleProgress, Units } from './LifeCycleProgress';
 import { ErrorBoundary } from './ErrorBoundry';
 import { tv } from '@restate/util/styles';
 import { Retention } from './Retention';
+import { useGetInvocationsJournalWithInvocationsV2 } from '@restate/data-access/admin-api-hooks';
 
 const LazyPanel = lazy(() =>
   import('react-resizable-panels').then((m) => ({ default: m.Panel })),
