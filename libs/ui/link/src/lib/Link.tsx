@@ -36,15 +36,15 @@ interface LinkProps
 
 const styles = tv({
   extend: focusRing,
-  base: 'rounded underline transition disabled:cursor-default disabled:no-underline',
+  base: 'rounded underline disabled:cursor-default disabled:no-underline',
   variants: {
     variant: {
       button:
-        'rounded-xl border border-black/10 bg-linear-to-b from-blue-600/90 to-blue-600 px-5 py-2 text-center text-sm text-white no-underline shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2)] drop-shadow-xs transition hover:from-blue-700 hover:to-blue-700 hover:shadow-none pressed:from-blue-800 pressed:to-blue-800 pressed:shadow-none',
+        'inline-block rounded-xl border border-black/10 bg-linear-to-b from-blue-600/90 to-blue-600 px-5 py-2 text-center text-sm text-white no-underline shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2)] drop-shadow-xs hover:from-blue-700 hover:to-blue-700 hover:shadow-none pressed:from-blue-800 pressed:to-blue-800 pressed:shadow-none',
       'secondary-button':
-        'rounded-xl border bg-white px-5 py-2 text-center text-sm text-gray-800 no-underline shadow-xs transition hover:bg-gray-100 pressed:bg-gray-200',
+        'inline-block rounded-xl border bg-white px-5 py-2 text-center text-sm text-gray-800 no-underline shadow-xs hover:bg-gray-100 pressed:bg-gray-200',
       'destructive-button':
-        'rounded-xl border border-black/10 bg-linear-to-b from-red-700/95 to-red-700 px-5 py-2 text-center text-sm text-white no-underline shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)] drop-shadow-xs transition hover:from-red-800 hover:to-red-800 hover:shadow-none pressed:from-red-900 pressed:to-red-900 pressed:shadow-none',
+        'inline-block rounded-xl border border-black/10 bg-linear-to-b from-red-700/95 to-red-700 px-5 py-2 text-center text-sm text-white no-underline shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)] drop-shadow-xs hover:from-red-800 hover:to-red-800 hover:shadow-none pressed:from-red-900 pressed:to-red-900 pressed:shadow-none',
       primary:
         'text-blue-600 decoration-blue-600/60 hover:decoration-blue-600 dark:text-blue-500',
       secondary:
