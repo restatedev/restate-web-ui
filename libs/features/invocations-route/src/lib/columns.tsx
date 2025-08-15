@@ -62,14 +62,7 @@ function sortColumns(a: Key, b: Key) {
 
 export function useColumns() {
   const [selectedColumns, setSelectedColumns] = useState<DropdownMenuSelection>(
-    new Set([
-      'id',
-      'created_at',
-      'target',
-      'status',
-      'invoked_by',
-      'journal_size',
-    ]),
+    new Set(['id', 'created_at', 'target', 'status', 'journal_size']),
   );
   const sortedColumnsList = useMemo(() => {
     return [...Array.from(selectedColumns).sort(sortColumns), 'actions'].map(
