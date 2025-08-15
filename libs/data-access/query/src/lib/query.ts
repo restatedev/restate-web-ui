@@ -14,11 +14,10 @@ import { convertFilters, convertInvocationsFilters } from './convertFilters';
 import { stateVersion } from './stateVersion';
 import { convertJournalV2 } from './convertJournalV2';
 import {
-  base64ToHex,
-  hexToBase64,
   JournalRawEntryWithCommandIndex,
   lifeCycles,
 } from '@restate/features/service-protocol';
+import { hexToBase64 } from '@restate/util/binary';
 
 function queryFetcher(
   query: string,

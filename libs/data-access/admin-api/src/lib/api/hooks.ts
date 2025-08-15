@@ -32,7 +32,7 @@ import { useCallback, useEffect, useMemo } from 'react';
 import { RestateError } from '@restate/util/errors';
 import { useAPIStatus } from '../APIStatusProvider';
 import { useRestateContext } from '@restate/features/restate-context';
-import { base64ToUint8Array } from '@restate/features/service-protocol';
+import { base64ToUint8Array } from '@restate/util/binary';
 
 type HookQueryOptions<
   Path extends keyof paths,

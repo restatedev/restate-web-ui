@@ -1,7 +1,4 @@
-import {
-  base64ToUint8Array,
-  hexToUint8Array,
-} from '@restate/features/service-protocol';
+import { base64ToUint8Array } from '@restate/util/binary';
 import { sha256 } from 'js-sha256';
 
 export function stateVersion(

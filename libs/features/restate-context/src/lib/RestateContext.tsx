@@ -12,7 +12,7 @@ import {
   useContext,
 } from 'react';
 import semverGt from 'semver/functions/gte';
-import { base64ToUtf8, utf8ToBase64 } from '@restate/features/service-protocol';
+import { base64ToUtf8, utf8ToBase64 } from '@restate/util/binary';
 
 export type Status = 'HEALTHY' | 'DEGRADED' | 'PENDING' | (string & {});
 type RestateContext = {
