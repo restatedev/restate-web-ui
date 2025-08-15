@@ -2156,6 +2156,8 @@ export interface components {
       id: string;
       /** @enum {string} */
       invoked_by: 'ingress' | 'service';
+      /** Format: uint64 */
+      min_count?: number;
       /** @enum {string} */
       status:
         | 'pending'
@@ -3857,7 +3859,8 @@ export interface operations {
         content: {
           'application/json': {
             rows: components['schemas']['Invocation'][];
-            total_count: number;
+            total_count?: number;
+            min_count?: number;
             limit?: number;
           };
         };
