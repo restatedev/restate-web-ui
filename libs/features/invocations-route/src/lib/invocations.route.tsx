@@ -25,7 +25,7 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { formatDurations } from '@restate/util/intl';
+import { formatDurations, formatNumber } from '@restate/util/intl';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import {
   AddQueryTrigger,
@@ -640,8 +640,10 @@ function Footnote({
               {' of '}
               <span className="font-medium text-gray-500">
                 {data.total_count
-                  ? `${data.total_count}`
-                  : `${data.min_count}+`}
+                  ? `${formatNumber(data.total_count)}`
+                  : data.min_count
+                    ? `${formatNumber(data.min_count, true)}+`
+                    : ''}
               </span>{' '}
               recently modified invocations
             </>
