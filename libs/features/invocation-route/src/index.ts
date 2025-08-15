@@ -10,3 +10,4 @@ export * from './lib/InvocationPanel';
 export * from './lib/InvocationId';
 export * from './lib/invocation.route';
 export { Target } from './lib/Target';
+export { Retention } from './lib/Retention';
