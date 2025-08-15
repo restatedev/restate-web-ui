@@ -89,7 +89,7 @@ function InternalRestateContextProvider({
 
   const queryClient = useQueryClient();
   const refreshCodec = useCallback(() => {
-    queryClient.invalidateQueries({
+    queryClient.removeQueries({
       predicate(query) {
         const { queryKey } = query;
         if (
