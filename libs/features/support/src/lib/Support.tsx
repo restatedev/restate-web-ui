@@ -7,9 +7,10 @@ import {
   PopoverTrigger,
   usePopover,
 } from '@restate/ui/popover';
+import { PropsWithChildren } from 'react';
 import { Header } from 'react-aria-components';
 
-export function Support() {
+export function Support({ children }: PropsWithChildren) {
   return (
     <Popover>
       <Help />
@@ -71,6 +72,7 @@ export function Support() {
               />
               Open Github issue…
             </Link>
+            {children}
           </div>
         </div>
       </PopoverContent>
