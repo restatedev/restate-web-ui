@@ -21,8 +21,8 @@ type RestateContext = {
   isVersionGte?: (version: string) => boolean;
   ingressUrl: string;
   baseUrl: string;
-  decoder: (value?: string) => Promise<string> | string | undefined;
-  encoder: (value?: string) => Promise<string> | string | undefined;
+  decoder: (value?: string) => Promise<string | undefined> | string | undefined;
+  encoder: (value?: string) => Promise<string | undefined> | string | undefined;
   EncodingWaterMark?: ComponentType<{
     value?: string;
     className?: string;
@@ -50,8 +50,8 @@ function InternalRestateContextProvider({
   isPending?: boolean;
   ingressUrl?: string;
   baseUrl?: string;
-  decoder: (value?: string) => Promise<string> | string | undefined;
-  encoder: (value?: string) => Promise<string> | string | undefined;
+  decoder: (value?: string) => Promise<string | undefined> | string | undefined;
+  encoder: (value?: string) => Promise<string | undefined> | string | undefined;
   EncodingWaterMark?: ComponentType<{
     value?: string;
     className?: string;
@@ -118,8 +118,12 @@ export function RestateContextProvider({
   ingressUrl?: string;
   isPending?: boolean;
   baseUrl?: string;
-  decoder?: (value?: string) => Promise<string> | string | undefined;
-  encoder?: (value?: string) => Promise<string> | string | undefined;
+  decoder?: (
+    value?: string,
+  ) => Promise<string | undefined> | string | undefined;
+  encoder?: (
+    value?: string,
+  ) => Promise<string | undefined> | string | undefined;
   EncodingWaterMark?: ComponentType<{
     value?: string;
     className?: string;
