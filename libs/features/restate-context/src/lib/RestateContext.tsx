@@ -10,9 +10,11 @@ import {
   PropsWithChildren,
   useCallback,
   useContext,
+  useEffect,
 } from 'react';
 import semverGt from 'semver/functions/gte';
 import { base64ToUtf8, utf8ToBase64 } from '@restate/util/binary';
+import { useQueryClient } from '@tanstack/react-query';
 
 export type Status = 'HEALTHY' | 'DEGRADED' | 'PENDING' | (string & {});
 type RestateContext = {
@@ -23,6 +25,7 @@ type RestateContext = {
   baseUrl: string;
   decoder: (value?: string) => Promise<string | undefined> | string | undefined;
   encoder: (value?: string) => Promise<string | undefined> | string | undefined;
+  refreshCodec?: VoidFunction;
   EncodingWaterMark?: ComponentType<{
     value?: string;
     className?: string;
@@ -84,6 +87,22 @@ function InternalRestateContextProvider({
     [releasedVersion],
   );
 
+  const queryClient = useQueryClient();
+  const refreshCodec = useCallback(() => {
+    queryClient.invalidateQueries({
+      predicate(query) {
+        const { queryKey } = query;
+        if (
+          Array.isArray(queryKey) &&
+          ['decode', 'encode'].includes(queryKey.at(1))
+        ) {
+          return true;
+        }
+        return false;
+      },
+    });
+  }, [queryClient]);
+
   return (
     <InternalRestateContext.Provider
       value={{
@@ -95,6 +114,7 @@ function InternalRestateContextProvider({
         decoder,
         encoder,
         EncodingWaterMark,
+        refreshCodec,
       }}
     >
       <APIStatusProvider enabled={status === 'HEALTHY'}>
