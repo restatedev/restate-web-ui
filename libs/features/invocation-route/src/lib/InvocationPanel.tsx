@@ -7,13 +7,10 @@ import {
 } from '@restate/ui/layout';
 import { INVOCATION_QUERY_NAME } from './constants';
 import {
-  useGetInvocation,
-  useGetInvocationJournal,
-  useGetInvocationJournalWithInvocation,
   useGetInvocationJournalWithInvocationV2,
   useGetVirtualObjectQueue,
   useGetVirtualObjectState,
-} from '@restate/data-access/admin-api';
+} from '@restate/data-access/admin-api-hooks';
 import { Icon, IconName } from '@restate/ui/icons';
 import { DeploymentSection } from './DeploymentSection';
 import { KeysIdsSection } from './KeysIdsSection';
@@ -35,6 +32,7 @@ import { useRestateContext } from '@restate/features/restate-context';
 import { useLocation } from 'react-router';
 import { getSearchParams } from './InvocationId';
 import { InvokedBySection } from './InvokedBySection';
+import { RetentionSection } from './RetentionSection';
 
 function Footnote({ dataUpdatedAt }: { dataUpdatedAt?: number }) {
   const [now, setNow] = useState(() => Date.now());
@@ -211,6 +209,7 @@ function InvocationPanelContent() {
       <WorkflowKeySection className="mt-2" invocation={data} />
       <DeploymentSection className="mt-2" invocation={data} raised />
       <InvokedBySection className="mt-2" invocation={data} />
+      <RetentionSection className="mt-2" invocation={data} />
       <JournalSection className="mt-2" invocation={data} />
     </SnapshotTimeProvider>
   );

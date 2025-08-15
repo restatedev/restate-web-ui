@@ -21,6 +21,7 @@ export function Awakeable({
         },
       ]}
       outputParam="value"
+      isOutputBase64
     />
   );
 }

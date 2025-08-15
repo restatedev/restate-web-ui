@@ -53,6 +53,7 @@ export function MonacoEditor({
         wordWrap: 'off',
         stickyScroll: { enabled: false },
         scrollBeyondLastLine: false,
+        scrollBeyondLastColumn: 5,
         renderLineHighlight: 'none',
         ...(readonly && {
           readOnly: true,

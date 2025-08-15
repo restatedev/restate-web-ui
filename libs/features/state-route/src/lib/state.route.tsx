@@ -1,7 +1,7 @@
 import {
   useListDeployments,
   useListServices,
-} from '@restate/data-access/admin-api';
+} from '@restate/data-access/admin-api-hooks';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Link } from '@restate/ui/link';
 import { Column, Table, TableBody, TableHeader } from '@restate/ui/table';

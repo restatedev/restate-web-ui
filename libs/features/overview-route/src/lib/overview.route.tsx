@@ -1,4 +1,4 @@
-import { useListDeployments } from '@restate/data-access/admin-api';
+import { useListDeployments } from '@restate/data-access/admin-api-hooks';
 import { RestateServer } from './RestateServer';
 import { tv } from '@restate/util/styles';
 import { TriggerRegisterDeploymentDialog } from './RegisterDeployment/Dialog';

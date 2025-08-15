@@ -1,3 +1,4 @@
+import { base64ToUint8Array } from '@restate/util/binary';
 import { sha256 } from 'js-sha256';
 
 export function stateVersion(
@@ -24,7 +25,7 @@ function stateVersionInternal(
     .sort((a, b) => a.name.localeCompare(b.name))
     .map(
       ({ name, value }) =>
-        [new TextEncoder().encode(name), new TextEncoder().encode(value)] as [
+        [new TextEncoder().encode(name), base64ToUint8Array(value)] as [
           Uint8Array,
           Uint8Array,
         ],

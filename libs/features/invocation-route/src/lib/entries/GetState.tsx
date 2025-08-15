@@ -28,6 +28,7 @@ export function GetState({
         },
       ]}
       outputParam="value"
+      isOutputBase64
     />
   );
 }

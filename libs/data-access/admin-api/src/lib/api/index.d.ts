@@ -108,12 +108,113 @@ export interface paths {
     post?: never;
     /**
      * Delete an invocation
-     * @description Delete the given invocation. By default, an invocation is terminated by gracefully cancelling it. This ensures virtual object state consistency. Alternatively, an invocation can be killed which does not guarantee consistency for virtual object instance state, in-flight invocations to other services, etc. A stored completed invocation can also be purged
+     * @deprecated
+     * @description Use kill_invocation/cancel_invocation/purge_invocation instead.
      */
     delete: operations['delete_invocation'];
     options?: never;
     head?: never;
     patch?: never;
+    trace?: never;
+  };
+  '/invocations/{invocation_id}/cancel': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /**
+     * Cancel an invocation
+     * @description Cancel the given invocation. Canceling an invocation allows it to free any resources it is holding and roll back any changes it has made so far, running compensation code. For more details, checkout https://docs.restate.dev/guides/sagas
+     */
+    patch: operations['cancel_invocation'];
+    trace?: never;
+  };
+  '/invocations/{invocation_id}/kill': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /**
+     * Kill an invocation
+     * @description Kill the given invocation. This does not guarantee consistency for virtual object instance state, in-flight invocations to other services, etc.
+     */
+    patch: operations['kill_invocation'];
+    trace?: never;
+  };
+  '/invocations/{invocation_id}/purge': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /**
+     * Purge an invocation
+     * @description Purge the given invocation. This cleanups all the state for the given invocation. This command applies only to completed invocations.
+     */
+    patch: operations['purge_invocation'];
+    trace?: never;
+  };
+  '/invocations/{invocation_id}/purge-journal': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /**
+     * Purge an invocation journal
+     * @description Purge the given invocation journal. This cleanups only the journal for the given invocation, retaining the metadata. This command applies only to completed invocations.
+     */
+    patch: operations['purge_journal'];
+    trace?: never;
+  };
+  '/invocations/{invocation_id}/restart-as-new': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /**
+     * Restart as new invocation
+     * @description Restart the given invocation as new. This will restart the invocation, given its input is available, as a new invocation with a different invocation id.
+     */
+    patch: operations['restart_as_new_invocation'];
     trace?: never;
   };
   '/openapi': {
@@ -815,12 +916,79 @@ export interface components {
        * Idempotency retention
        * @description The retention duration of idempotent requests for this service.
        */
-      idempotency_retention: string;
+      idempotency_retention?: string | null;
       /**
        * Workflow completion retention
        * @description The retention duration of workflows. Only available on workflow services.
        */
       workflow_completion_retention?: string | null;
+      /**
+       * Journal retention
+       * @description The journal retention. When set, this applies to all requests to all handlers of this service.
+       *
+       *     In case the invocation has an idempotency key, the `idempotency_retention` caps the maximum `journal_retention` time. In case the invocation targets a workflow handler, the `workflow_completion_retention` caps the maximum `journal_retention` time.
+       */
+      journal_retention?: string | null;
+      /**
+       * Inactivity timeout
+       * @description This timer guards against stalled service/handler invocations. Once it expires, Restate triggers a graceful termination by asking the service invocation to suspend (which preserves intermediate progress).
+       *
+       *     The 'abort timeout' is used to abort the invocation, in case it doesn't react to the request to suspend.
+       *
+       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
+       *
+       *     This overrides the default inactivity timeout set in invoker options.
+       */
+      inactivity_timeout?: string | null;
+      /**
+       * Abort timeout
+       * @description This timer guards against stalled service/handler invocations that are supposed to terminate. The abort timeout is started after the 'inactivity timeout' has expired and the service/handler invocation has been asked to gracefully terminate. Once the timer expires, it will abort the service/handler invocation.
+       *
+       *     This timer potentially **interrupts** user code. If the user code needs longer to gracefully terminate, then this value needs to be set accordingly.
+       *
+       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
+       *
+       *     This overrides the default abort timeout set in invoker options.
+       */
+      abort_timeout?: string | null;
+      /**
+       * Enable lazy state
+       * @description If true, lazy state will be enabled for all invocations to this service. This is relevant only for Workflows and Virtual Objects.
+       */
+      enable_lazy_state?: boolean | null;
+    };
+    HandlerMetadata: {
+      name: string;
+      ty?: components['schemas']['HandlerMetadataType'] | null;
+      /**
+       * Documentation
+       * @description Documentation of the handler, as propagated by the SDKs.
+       */
+      documentation?: string | null;
+      /**
+       * Metadata
+       * @description Additional handler metadata, as propagated by the SDKs.
+       */
+      metadata?: {
+        [key: string]: string;
+      };
+      /**
+       * Idempotency retention
+       * @description The retention duration of idempotent requests for this service.
+       */
+      idempotency_retention?: string | null;
+      /**
+       * Workflow completion retention
+       * @description The retention duration of workflows. Only available on workflow services.
+       */
+      workflow_completion_retention?: string | null;
+      /**
+       * Journal retention
+       * @description The journal retention. When set, this applies to all requests to this handler.
+       *
+       *     In case the invocation has an idempotency key, the `idempotency_retention` caps the maximum `journal_retention` time. In case this handler is a workflow handler, the `workflow_completion_retention` caps the maximum `journal_retention` time.
+       */
+      journal_retention?: string | null;
       /**
        * Inactivity timeout
        * @description This timer guards against stalled service/handler invocations. Once it expires, Restate triggers a graceful termination by asking the service invocation to suspend (which preserves intermediate progress).
@@ -843,22 +1011,17 @@ export interface components {
        *     This overrides the default abort timeout set in invoker options.
        */
       abort_timeout?: string | null;
-    };
-    HandlerMetadata: {
-      name: string;
-      ty?: components['schemas']['HandlerMetadataType'] | null;
       /**
-       * Documentation
-       * @description Documentation of the handler, as propagated by the SDKs.
+       * Enable lazy state
+       * @description If true, lazy state will be enabled for all invocations to this service. This is relevant only for Workflows and Virtual Objects.
        */
-      documentation?: string | null;
+      enable_lazy_state?: boolean | null;
       /**
-       * Metadata
-       * @description Additional handler metadata, as propagated by the SDKs.
+       * Public
+       * @description If true, this handler can be invoked through the ingress. If false, this handler can be invoked only from another Restate service.
+       * @default true
        */
-      metadata?: {
-        [key: string]: string;
-      };
+      public: boolean;
       /**
        * Human readable input description
        * @description If empty, no schema was provided by the user at discovery time.
@@ -1032,6 +1195,10 @@ export interface components {
         };
     /** @enum {string} */
     DeletionMode: 'Cancel' | 'Kill' | 'Purge';
+    RestartAsNewInvocationResponse: {
+      /** @description The invocation id of the new invocation. */
+      new_invocation_id: components['schemas']['String'];
+    };
     ListServicesResponse: {
       services: components['schemas']['ServiceMetadata'][];
     };
@@ -1046,43 +1213,61 @@ export interface components {
        * Idempotency retention
        * @description Modify the retention of idempotent requests for this service.
        *
-       *     Can be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format or the ISO8601.
+       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
        * @default null
        */
-      idempotency_retention: string | null;
+      idempotency_retention: components['schemas']['DurationString'] | null;
       /**
        * Workflow completion retention
        * @description Modify the retention of the workflow completion. This can be modified only for workflow services!
        *
-       *     Can be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format or the ISO8601.
+       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
        * @default null
        */
-      workflow_completion_retention: string | null;
+      workflow_completion_retention:
+        | components['schemas']['DurationString']
+        | null;
+      /**
+       * Journal retention
+       * @description Modify the journal retention for this service. When set, this applies to all requests to all handlers of this service.
+       *
+       *     In case the invocation has an idempotency key, the `idempotency_retention` caps the maximum `journal_retention` time. In case the invocation targets a workflow handler, the `workflow_completion_retention` caps the maximum `journal_retention` time.
+       *
+       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
+       * @default null
+       */
+      journal_retention: components['schemas']['DurationString'] | null;
       /**
        * Inactivity timeout
        * @description This timer guards against stalled service/handler invocations. Once it expires, Restate triggers a graceful termination by asking the service invocation to suspend (which preserves intermediate progress).
        *
        *     The 'abort timeout' is used to abort the invocation, in case it doesn't react to the request to suspend.
        *
-       *     Can be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format or the ISO8601.
+       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
        *
        *     This overrides the default inactivity timeout set in invoker options.
        * @default null
        */
-      inactivity_timeout: string | null;
+      inactivity_timeout: components['schemas']['DurationString'] | null;
       /**
        * Abort timeout
        * @description This timer guards against stalled service/handler invocations that are supposed to terminate. The abort timeout is started after the 'inactivity timeout' has expired and the service/handler invocation has been asked to gracefully terminate. Once the timer expires, it will abort the service/handler invocation.
        *
        *     This timer potentially **interrupts** user code. If the user code needs longer to gracefully terminate, then this value needs to be set accordingly.
        *
-       *     Can be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format or the ISO8601.
+       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
        *
        *     This overrides the default abort timeout set in invoker options.
        * @default null
        */
-      abort_timeout: string | null;
+      abort_timeout: components['schemas']['DurationString'] | null;
     };
+    /**
+     * DurationString
+     * @description Duration string in either jiff human friendly or ISO8601 format. Check https://docs.rs/jiff/latest/jiff/struct.Span.html#parsing-and-printing for more details.
+     * @example 10 hours
+     */
+    DurationString: string;
     ListServiceHandlersResponse: {
       handlers: components['schemas']['HandlerMetadata'][];
     };
@@ -1870,10 +2055,10 @@ export interface components {
       [key: string]: number;
     };
     Invocation: {
-      /** Format: date-time */
-      completion_expiration?: string;
-      /** Format: date-time */
-      journal_expiration?: string;
+      /** Format: duration */
+      completion_retention?: string;
+      /** Format: duration */
+      journal_retention?: string;
       /** Format: date-time */
       created_at: string;
       /** Format: date-time */
@@ -1946,10 +2131,10 @@ export interface components {
       isRetrying?: boolean;
     };
     RawInvocation: {
-      /** Format: date-time */
-      completion_expiration?: string;
-      /** Format: date-time */
-      journal_expiration?: string;
+      /** Format: duration */
+      completion_retention?: string;
+      /** Format: duration */
+      journal_retention?: string;
       /** Format: date-time */
       created_at: string;
       /** Format: date-time */
@@ -2487,6 +2672,313 @@ export interface operations {
         };
       };
       503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  cancel_invocation: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Invocation identifier. */
+        invocation_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The invocation has been cancelled. */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description The cancellation signal was appended to the journal and will be processed by the SDK. */
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      '404 Not Found': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      /** @description Error when routing the request within restate. */
+      '503 Service Unavailable': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      '400 Bad Request': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      /** @description The invocation was already completed, so it cannot be cancelled nor killed. You can instead purge the invocation, in order for restate to forget it. */
+      '409 Conflict': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  kill_invocation: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Invocation identifier. */
+        invocation_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      '404 Not Found': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      /** @description Error when routing the request within restate. */
+      '503 Service Unavailable': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      '400 Bad Request': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      /** @description The invocation was already completed, so it cannot be cancelled nor killed. You can instead purge the invocation, in order for restate to forget it. */
+      '409 Conflict': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  purge_invocation: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Invocation identifier. */
+        invocation_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      '404 Not Found': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      /** @description Error when routing the request within restate. */
+      '503 Service Unavailable': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      '400 Bad Request': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      /** @description The invocation is not yet completed. An invocation can be purged only when completed. */
+      '409 Conflict': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  purge_journal: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Invocation identifier. */
+        invocation_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      '404 Not Found': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      /** @description Error when routing the request within restate. */
+      '503 Service Unavailable': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      '400 Bad Request': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      /** @description The invocation is not yet completed. An invocation can be purged only when completed. */
+      '409 Conflict': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  restart_as_new_invocation: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Invocation identifier. */
+        invocation_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['RestartAsNewInvocationResponse'];
+        };
+      };
+      '404 Not Found': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      /** @description Error when routing the request within restate. */
+      '503 Service Unavailable': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      '400 Bad Request': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      /** @description The invocation is still running. An invocation can be restarted only when completed. */
+      '409 Conflict': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      /** @description Restarting the invocation is not supported. Restarting workflows is not supported, and restarting invocations created using the old service protocol. */
+      '422 Unprocessable Entity': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      /** @description The invocation cannot be restarted because the input is not available. In order to restart an invocation, the journal must be available in order to read the input again. Journal can be retained after completion by enabling journal retention. */
+      '410 Gone': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      /** @description The invocation cannot be restarted because it's not running yet, meaning it might have been scheduled or inboxed. */
+      '425 Too Early': {
         headers: {
           [name: string]: unknown;
         };

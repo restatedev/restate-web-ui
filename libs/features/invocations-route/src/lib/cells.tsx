@@ -17,9 +17,11 @@ import { tv } from '@restate/util/styles';
 import {
   Actions,
   getSearchParams,
+  invocation,
   InvocationDeployment,
   InvocationId,
   JournalV2,
+  Retention,
   Status,
   Target,
 } from '@restate/features/invocation-route';
@@ -67,6 +69,23 @@ function withDate({
         </span>
       </Badge>
     );
+  };
+}
+
+function withRetention({
+  field,
+}: {
+  field: Extract<
+    keyof Invocation,
+    'completion_retention' | 'journal_retention'
+  >;
+}) {
+  return (props: { invocation: Invocation }) => {
+    if (field === 'completion_retention') {
+      return <Retention invocation={props.invocation} type="completion" />;
+    } else {
+      return <Retention invocation={props.invocation} type="journal" />;
+    }
   };
 }
 
@@ -164,7 +183,17 @@ function JournalCell({ invocation }: CellProps) {
   const location = useLocation();
 
   if (!invocation.journal_size) {
-    return null;
+    if (invocation.completed_at) {
+      return (
+        <Retention
+          invocation={invocation}
+          type="journal"
+          prefixForCompletion="retention "
+        />
+      );
+    } else {
+      return null;
+    }
   }
 
   return (
@@ -189,7 +218,15 @@ function JournalCell({ invocation }: CellProps) {
         <DropdownSection
           title={
             <div className="flex items-center">
-              <div className="mr-12">Journal</div>
+              <div className="mr-12">
+                Journal{' '}
+                <Retention
+                  invocation={invocation}
+                  type="journal"
+                  prefixForCompletion="retention "
+                  prefixForInProgress="retained "
+                />
+              </div>
               <Link
                 variant="secondary-button"
                 href={`${baseUrl}/invocations/${invocation.id}${getSearchParams(
@@ -267,19 +304,17 @@ const CELLS: Record<ColumnKey, ComponentType<CellProps>> = {
       <Actions invocation={invocation} />
     </Cell>
   ),
-  completion_expiration: withCell(
-    withDate({
-      field: 'completion_expiration',
-      tooltipTitle: 'Completion retained until',
+  completion_retention: withCell(
+    withRetention({
+      field: 'completion_retention',
     }),
-    'completion_expiration',
+    'completion_retention',
   ),
-  journal_expiration: withCell(
-    withDate({
-      field: 'journal_expiration',
-      tooltipTitle: 'Journal retained until',
+  journal_retention: withCell(
+    withRetention({
+      field: 'journal_retention',
     }),
-    'journal_expiration',
+    'journal_retention',
   ),
 };
 

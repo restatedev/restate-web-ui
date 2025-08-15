@@ -1,4 +1,4 @@
-import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api';
+import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api-hooks';
 import { tv } from '@restate/util/styles';
 import { EntryProgress, EntryProgressContainer } from './EntryProgress';
 import { useJournalContext } from './JournalContext';

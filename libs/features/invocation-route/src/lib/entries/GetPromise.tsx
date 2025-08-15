@@ -21,6 +21,7 @@ export function GetPromise({
         },
       ]}
       outputParam="value"
+      isOutputBase64
     />
   );
 }

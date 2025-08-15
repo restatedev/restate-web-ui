@@ -11,14 +11,14 @@ import {
 } from 'react';
 import { ListData, useListData } from 'react-stately';
 import * as adminApi from '@restate/data-access/admin-api/spec';
-import {
-  getEndpoint,
-  useListDeployments,
-  useRegisterDeployment,
-} from '@restate/data-access/admin-api';
+import { getEndpoint } from '@restate/data-access/admin-api';
 import { useDialog } from '@restate/ui/dialog';
 import { showSuccessNotification } from '@restate/ui/notification';
 import { RestateError } from '@restate/util/errors';
+import {
+  useListDeployments,
+  useRegisterDeployment,
+} from '@restate/data-access/admin-api-hooks';
 
 type NavigateToAdvancedAction = {
   type: 'NavigateToAdvancedAction';

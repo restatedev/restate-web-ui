@@ -18,7 +18,7 @@ import {
   useListDeployments,
   useModifyService,
   useServiceDetails,
-} from '@restate/data-access/admin-api';
+} from '@restate/data-access/admin-api-hooks';
 import { Form } from 'react-router';
 import { Handler } from '../Handler';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -93,6 +93,9 @@ function ServiceDetailsContent() {
     const idempotency_retention = formData.get('idempotency_retention') as
       | string
       | null;
+    const journal_retention = formData.get('journal_retention') as
+      | string
+      | null;
     const workflow_completion_retention = formData.get(
       'workflow_completion_retention',
     ) as string | null;
@@ -111,6 +114,7 @@ function ServiceDetailsContent() {
         workflow_completion_retention: workflow_completion_retention || null,
         inactivity_timeout: inactivity_timeout || null,
         abort_timeout: abort_timeout || null,
+        journal_retention: journal_retention || null,
       },
     });
   };
@@ -270,21 +274,22 @@ function ServiceForm({
           <FormFieldCombobox
             pattern={HUMANTIME_PATTERN_INPUT}
             allowsCustomValue
-            defaultValue={data?.idempotency_retention}
+            defaultValue={data?.journal_retention ?? ''}
             disabled={isPendingOrSubmitting}
             label={
               <InlineTooltip
                 variant="indicator-button"
-                title="Idempotency completion"
-                description="Modify the retention of idempotent requests for this service."
+                title="Journal retention"
+                description="How long journal entries are kept after invocation completion"
               >
                 <span slot="title" className="text-0.5xs">
-                  Idempotency completion
+                  Journal retention
                 </span>
               </InlineTooltip>
             }
-            name="idempotency_retention"
+            name="journal_retention"
             className="[&_label]:text-zinc-500"
+            placeholder="1day"
           >
             <ComboBoxSection
               title="Examples"
@@ -307,7 +312,49 @@ function ServiceForm({
               <ComboBoxItem value="12h">12h</ComboBoxItem>
               <ComboBoxItem value="1day">1day</ComboBoxItem>
               <ComboBoxItem value="7days">7days</ComboBoxItem>
-              <ComboBoxItem value="1month">1month</ComboBoxItem>
+            </ComboBoxSection>
+          </FormFieldCombobox>
+          <FormFieldCombobox
+            pattern={HUMANTIME_PATTERN_INPUT}
+            allowsCustomValue
+            defaultValue={data?.idempotency_retention ?? ''}
+            disabled={isPendingOrSubmitting}
+            label={
+              <InlineTooltip
+                variant="indicator-button"
+                title="Idempotency completion"
+                description="How long the completion result of idempotent invocations is stored"
+              >
+                <span slot="title" className="text-0.5xs">
+                  Idempotency completion
+                </span>
+              </InlineTooltip>
+            }
+            name="idempotency_retention"
+            className="[&_label]:text-zinc-500"
+            placeholder="1day"
+          >
+            <ComboBoxSection
+              title="Examples"
+              description={
+                <>
+                  Choose from the example options above, or enter a custom value
+                  in the{' '}
+                  <Link
+                    href="https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    jiff friendly
+                  </Link>{' '}
+                  format.
+                </>
+              }
+            >
+              <ComboBoxItem value="1h 30m">1h 30m</ComboBoxItem>
+              <ComboBoxItem value="12h">12h</ComboBoxItem>
+              <ComboBoxItem value="1day">1day</ComboBoxItem>
+              <ComboBoxItem value="7days">7days</ComboBoxItem>
             </ComboBoxSection>
           </FormFieldCombobox>
           {data?.ty === 'Workflow' && (
@@ -321,8 +368,7 @@ function ServiceForm({
                 <InlineTooltip
                   variant="indicator-button"
                   title="Workflow completion"
-                  description="Modify the retention of the workflow completion. This
-                          can be modified only for workflow services."
+                  description="How long the completion result of workflows is retained (available only for workflow services)"
                 >
                   <span slot="title" className="text-0.5xs">
                     Workflow completion
@@ -330,6 +376,7 @@ function ServiceForm({
                 </InlineTooltip>
               }
               name="workflow_completion_retention"
+              placeholder="1day"
             >
               <ComboBoxSection
                 title="Examples"
@@ -352,7 +399,6 @@ function ServiceForm({
                 <ComboBoxItem value="12h">12h</ComboBoxItem>
                 <ComboBoxItem value="1day">1day</ComboBoxItem>
                 <ComboBoxItem value="7days">7days</ComboBoxItem>
-                <ComboBoxItem value="1month">1month</ComboBoxItem>
               </ComboBoxSection>
             </FormFieldCombobox>
           )}

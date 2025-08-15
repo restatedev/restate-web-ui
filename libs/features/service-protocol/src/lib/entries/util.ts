@@ -1,6 +1,6 @@
 import { RestateError } from '@restate/util/errors';
 import { decode } from '../decoder';
-import {
+import type {
   Invocation,
   JournalEntryV2,
   JournalRawEntry,

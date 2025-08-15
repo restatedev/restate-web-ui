@@ -4,6 +4,7 @@ import { Expression, InputOutput } from '../Expression';
 import { Value } from '../Value';
 import { Failure } from '../Failure';
 import { EntryExpression } from './EntryExpression';
+import { useRestateContext } from '@restate/features/restate-context';
 
 export function CompleteAwakeable({
   entry,
@@ -11,6 +12,8 @@ export function CompleteAwakeable({
 }: EntryProps<
   Extract<JournalEntryV2, { type?: 'CompleteAwakeable'; category?: 'command' }>
 >) {
+  const { EncodingWaterMark } = useRestateContext();
+
   return (
     <EntryExpression
       entry={entry}
@@ -41,8 +44,12 @@ export function CompleteAwakeable({
                     <Value
                       value={entry.value}
                       className="py-3 font-mono text-xs"
+                      isBase64
                     />
                   }
+                  {...(EncodingWaterMark && {
+                    waterMark: <EncodingWaterMark value={entry.value} />,
+                  })}
                 />
               )}
               {entry.error && (
@@ -84,6 +91,7 @@ export function CompleteAwakeableNotification({
         },
       ]}
       outputParam="value"
+      isOutputBase64
     />
   );
 }

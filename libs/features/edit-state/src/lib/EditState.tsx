@@ -23,7 +23,7 @@ import {
   convertStateToObject,
   useEditState,
   useGetVirtualObjectQueue,
-} from '@restate/data-access/admin-api';
+} from '@restate/data-access/admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui/notification';
 import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from '@restate/util/styles';
@@ -117,15 +117,19 @@ function EditStateInner({
   onOpenChange: (isOpen: boolean) => void;
   isDeleting?: boolean;
 }>) {
-  const { mutation, query } = useEditState(String(service), String(objectKey), {
-    enabled: Boolean(service && objectKey),
-    onSuccess(data, variables) {
-      onOpenChange(false);
-      showSuccessNotification(
-        'The state mutation has been successfully accepted for processing.',
-      );
+  const { mutation, decodedQuery: query } = useEditState(
+    String(service),
+    String(objectKey),
+    {
+      enabled: Boolean(service && objectKey),
+      onSuccess(data, variables) {
+        onOpenChange(false);
+        showSuccessNotification(
+          'The state mutation has been successfully accepted for processing.',
+        );
+      },
     },
-  });
+  );
   const isPartial = typeof key === 'string';
 
   const {
@@ -234,19 +238,10 @@ function EditStateInner({
               onInput={mutation.reset}
               {...(typeof key === 'undefined'
                 ? {
-                    value: JSON.stringify(
-                      convertStateToObject(
-                        query.data?.state.map((a) => ({
-                          ...a,
-                          value: safeParse(a.value),
-                        })),
-                      ),
-                      null,
-                      4,
-                    ),
+                    value: JSON.stringify(query.data?.state, null, 4),
                   }
                 : {
-                    value: query.data?.state.find((s) => s.name === key)?.value,
+                    value: JSON.stringify(query.data?.state?.[key], null, 4),
                   })}
             />
           </>
@@ -254,18 +249,6 @@ function EditStateInner({
       </StateDialogContent>
     </Dialog>
   );
-}
-
-function safeParse(value: string) {
-  try {
-    return JSON.parse(value);
-  } catch (error) {
-    if (value === '') {
-      return undefined;
-    } else {
-      return value;
-    }
-  }
 }
 
 function stringifyValues(state: Record<string, any>) {

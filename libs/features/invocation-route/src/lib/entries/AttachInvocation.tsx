@@ -49,6 +49,7 @@ export function AttachInvocation({
             />
           }
           outputParam="value"
+          isOutputBase64
         />
       </div>
       <div className="absolute top-0 right-1 bottom-0 flex items-center">

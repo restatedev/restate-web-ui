@@ -1,4 +1,4 @@
-import {
+import type {
   Invocation,
   JournalEntryV2,
 } from '@restate/data-access/admin-api/spec';

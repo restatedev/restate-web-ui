@@ -20,8 +20,8 @@ const COLUMNS_KEYS = [
   'target_service_key',
   'target_handler_name',
   'pinned_service_protocol_version',
-  'completion_expiration',
-  'journal_expiration',
+  'completion_retention',
+  'journal_retention',
   'actions',
 ] as const;
 export type ColumnKey = (typeof COLUMNS_KEYS)[number];
@@ -45,8 +45,8 @@ export const COLUMN_NAMES: Record<ColumnKey, string> = {
   target_handler_name: 'Handler',
   pinned_service_protocol_version: 'Service Protocol Version',
   actions: 'Actions',
-  completion_expiration: 'Completion retention ends',
-  journal_expiration: 'Journal retention ends',
+  completion_retention: 'Completion retention',
+  journal_retention: 'Journal retention',
 };
 
 const SORT_ORDER: Record<ColumnKey, number> = Object.entries(
@@ -62,14 +62,7 @@ function sortColumns(a: Key, b: Key) {
 
 export function useColumns() {
   const [selectedColumns, setSelectedColumns] = useState<DropdownMenuSelection>(
-    new Set([
-      'id',
-      'created_at',
-      'target',
-      'status',
-      'invoked_by',
-      'journal_size',
-    ]),
+    new Set(['id', 'created_at', 'target', 'status', 'journal_size']),
   );
   const sortedColumnsList = useMemo(() => {
     return [...Array.from(selectedColumns).sort(sortColumns), 'actions'].map(

@@ -21,6 +21,7 @@ export function Run({
         },
       ]}
       outputParam="value"
+      isOutputBase64
     />
   );
 }

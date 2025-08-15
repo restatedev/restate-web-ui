@@ -500,7 +500,7 @@
       "delete": {
         "tags": ["invocation"],
         "summary": "Delete an invocation",
-        "description": "Delete the given invocation. By default, an invocation is terminated by gracefully cancelling it. This ensures virtual object state consistency. Alternatively, an invocation can be killed which does not guarantee consistency for virtual object instance state, in-flight invocations to other services, etc. A stored completed invocation can also be purged",
+        "description": "Use kill_invocation/cancel_invocation/purge_invocation instead.",
         "operationId": "delete_invocation",
         "parameters": [
           {
@@ -578,6 +578,370 @@
           },
           "503": {
             "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": true
+      }
+    },
+    "/invocations/{invocation_id}/cancel": {
+      "patch": {
+        "tags": ["invocation"],
+        "summary": "Cancel an invocation",
+        "description": "Cancel the given invocation. Canceling an invocation allows it to free any resources it is holding and roll back any changes it has made so far, running compensation code. For more details, checkout https://docs.restate.dev/guides/sagas",
+        "externalDocs": {
+          "url": "https://docs.restate.dev/guides/sagas"
+        },
+        "operationId": "cancel_invocation",
+        "parameters": [
+          {
+            "name": "invocation_id",
+            "in": "path",
+            "description": "Invocation identifier.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The invocation has been cancelled."
+          },
+          "202": {
+            "description": "The cancellation signal was appended to the journal and will be processed by the SDK."
+          },
+          "404 Not Found": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503 Service Unavailable": {
+            "description": "Error when routing the request within restate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "400 Bad Request": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409 Conflict": {
+            "description": "The invocation was already completed, so it cannot be cancelled nor killed. You can instead purge the invocation, in order for restate to forget it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/invocations/{invocation_id}/kill": {
+      "patch": {
+        "tags": ["invocation"],
+        "summary": "Kill an invocation",
+        "description": "Kill the given invocation. This does not guarantee consistency for virtual object instance state, in-flight invocations to other services, etc.",
+        "operationId": "kill_invocation",
+        "parameters": [
+          {
+            "name": "invocation_id",
+            "in": "path",
+            "description": "Invocation identifier.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "404 Not Found": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503 Service Unavailable": {
+            "description": "Error when routing the request within restate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "400 Bad Request": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409 Conflict": {
+            "description": "The invocation was already completed, so it cannot be cancelled nor killed. You can instead purge the invocation, in order for restate to forget it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/invocations/{invocation_id}/purge": {
+      "patch": {
+        "tags": ["invocation"],
+        "summary": "Purge an invocation",
+        "description": "Purge the given invocation. This cleanups all the state for the given invocation. This command applies only to completed invocations.",
+        "operationId": "purge_invocation",
+        "parameters": [
+          {
+            "name": "invocation_id",
+            "in": "path",
+            "description": "Invocation identifier.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "404 Not Found": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503 Service Unavailable": {
+            "description": "Error when routing the request within restate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "400 Bad Request": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409 Conflict": {
+            "description": "The invocation is not yet completed. An invocation can be purged only when completed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/invocations/{invocation_id}/purge-journal": {
+      "patch": {
+        "tags": ["invocation"],
+        "summary": "Purge an invocation journal",
+        "description": "Purge the given invocation journal. This cleanups only the journal for the given invocation, retaining the metadata. This command applies only to completed invocations.",
+        "operationId": "purge_journal",
+        "parameters": [
+          {
+            "name": "invocation_id",
+            "in": "path",
+            "description": "Invocation identifier.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "404 Not Found": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503 Service Unavailable": {
+            "description": "Error when routing the request within restate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "400 Bad Request": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409 Conflict": {
+            "description": "The invocation is not yet completed. An invocation can be purged only when completed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/invocations/{invocation_id}/restart-as-new": {
+      "patch": {
+        "tags": ["invocation"],
+        "summary": "Restart as new invocation",
+        "description": "Restart the given invocation as new. This will restart the invocation, given its input is available, as a new invocation with a different invocation id.",
+        "operationId": "restart_as_new_invocation",
+        "parameters": [
+          {
+            "name": "invocation_id",
+            "in": "path",
+            "description": "Invocation identifier.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestartAsNewInvocationResponse"
+                }
+              }
+            }
+          },
+          "404 Not Found": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503 Service Unavailable": {
+            "description": "Error when routing the request within restate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "400 Bad Request": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409 Conflict": {
+            "description": "The invocation is still running. An invocation can be restarted only when completed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "422 Unprocessable Entity": {
+            "description": "Restarting the invocation is not supported. Restarting workflows is not supported, and restarting invocations created using the old service protocol.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "410 Gone": {
+            "description": "The invocation cannot be restarted because the input is not available. In order to restart an invocation, the journal must be available in order to read the input again. Journal can be retained after completion by enabling journal retention.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "425 Too Early": {
+            "description": "The invocation cannot be restarted because it's not running yet, meaning it might have been scheduled or inboxed.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3139,7 +3503,6 @@
         "required": [
           "deployment_id",
           "handlers",
-          "idempotency_retention",
           "name",
           "public",
           "revision",
@@ -3194,7 +3557,8 @@
           "idempotency_retention": {
             "title": "Idempotency retention",
             "description": "The retention duration of idempotent requests for this service.",
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "workflow_completion_retention": {
             "title": "Workflow completion retention",
@@ -3202,16 +3566,28 @@
             "type": "string",
             "nullable": true
           },
+          "journal_retention": {
+            "title": "Journal retention",
+            "description": "The journal retention. When set, this applies to all requests to all handlers of this service.\n\nIn case the invocation has an idempotency key, the `idempotency_retention` caps the maximum `journal_retention` time. In case the invocation targets a workflow handler, the `workflow_completion_retention` caps the maximum `journal_retention` time.",
+            "type": "string",
+            "nullable": true
+          },
           "inactivity_timeout": {
             "title": "Inactivity timeout",
-            "description": "This timer guards against stalled service/handler invocations. Once it expires, Restate triggers a graceful termination by asking the service invocation to suspend (which preserves intermediate progress).\n\nThe 'abort timeout' is used to abort the invocation, in case it doesn't react to the request to suspend.\n\nCan be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format.\n\nThis overrides the default inactivity timeout set in invoker options.",
+            "description": "This timer guards against stalled service/handler invocations. Once it expires, Restate triggers a graceful termination by asking the service invocation to suspend (which preserves intermediate progress).\n\nThe 'abort timeout' is used to abort the invocation, in case it doesn't react to the request to suspend.\n\nCan be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.\n\nThis overrides the default inactivity timeout set in invoker options.",
             "type": "string",
             "nullable": true
           },
           "abort_timeout": {
             "title": "Abort timeout",
-            "description": "This timer guards against stalled service/handler invocations that are supposed to terminate. The abort timeout is started after the 'inactivity timeout' has expired and the service/handler invocation has been asked to gracefully terminate. Once the timer expires, it will abort the service/handler invocation.\n\nThis timer potentially **interrupts** user code. If the user code needs longer to gracefully terminate, then this value needs to be set accordingly.\n\nCan be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format.\n\nThis overrides the default abort timeout set in invoker options.",
+            "description": "This timer guards against stalled service/handler invocations that are supposed to terminate. The abort timeout is started after the 'inactivity timeout' has expired and the service/handler invocation has been asked to gracefully terminate. Once the timer expires, it will abort the service/handler invocation.\n\nThis timer potentially **interrupts** user code. If the user code needs longer to gracefully terminate, then this value needs to be set accordingly.\n\nCan be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.\n\nThis overrides the default abort timeout set in invoker options.",
             "type": "string",
+            "nullable": true
+          },
+          "enable_lazy_state": {
+            "title": "Enable lazy state",
+            "description": "If true, lazy state will be enabled for all invocations to this service. This is relevant only for Workflows and Virtual Objects.",
+            "type": "boolean",
             "nullable": true
           }
         }
@@ -3244,6 +3620,48 @@
             "additionalProperties": {
               "type": "string"
             }
+          },
+          "idempotency_retention": {
+            "title": "Idempotency retention",
+            "description": "The retention duration of idempotent requests for this service.",
+            "type": "string",
+            "nullable": true
+          },
+          "workflow_completion_retention": {
+            "title": "Workflow completion retention",
+            "description": "The retention duration of workflows. Only available on workflow services.",
+            "type": "string",
+            "nullable": true
+          },
+          "journal_retention": {
+            "title": "Journal retention",
+            "description": "The journal retention. When set, this applies to all requests to this handler.\n\nIn case the invocation has an idempotency key, the `idempotency_retention` caps the maximum `journal_retention` time. In case this handler is a workflow handler, the `workflow_completion_retention` caps the maximum `journal_retention` time.",
+            "type": "string",
+            "nullable": true
+          },
+          "inactivity_timeout": {
+            "title": "Inactivity timeout",
+            "description": "This timer guards against stalled service/handler invocations. Once it expires, Restate triggers a graceful termination by asking the service invocation to suspend (which preserves intermediate progress).\n\nThe 'abort timeout' is used to abort the invocation, in case it doesn't react to the request to suspend.\n\nCan be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format.\n\nThis overrides the default inactivity timeout set in invoker options.",
+            "type": "string",
+            "nullable": true
+          },
+          "abort_timeout": {
+            "title": "Abort timeout",
+            "description": "This timer guards against stalled service/handler invocations that are supposed to terminate. The abort timeout is started after the 'inactivity timeout' has expired and the service/handler invocation has been asked to gracefully terminate. Once the timer expires, it will abort the service/handler invocation.\n\nThis timer potentially **interrupts** user code. If the user code needs longer to gracefully terminate, then this value needs to be set accordingly.\n\nCan be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format.\n\nThis overrides the default abort timeout set in invoker options.",
+            "type": "string",
+            "nullable": true
+          },
+          "enable_lazy_state": {
+            "title": "Enable lazy state",
+            "description": "If true, lazy state will be enabled for all invocations to this service. This is relevant only for Workflows and Virtual Objects.",
+            "type": "boolean",
+            "nullable": true
+          },
+          "public": {
+            "title": "Public",
+            "description": "If true, this handler can be invoked through the ingress. If false, this handler can be invoked only from another Restate service.",
+            "default": true,
+            "type": "boolean"
           },
           "input_description": {
             "title": "Human readable input description",
@@ -3507,6 +3925,20 @@
         "type": "string",
         "enum": ["Cancel", "Kill", "Purge"]
       },
+      "RestartAsNewInvocationResponse": {
+        "type": "object",
+        "required": ["new_invocation_id"],
+        "properties": {
+          "new_invocation_id": {
+            "description": "The invocation id of the new invocation.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/String"
+              }
+            ]
+          }
+        }
+      },
       "ListServicesResponse": {
         "type": "object",
         "required": ["services"],
@@ -3531,33 +3963,67 @@
           },
           "idempotency_retention": {
             "title": "Idempotency retention",
-            "description": "Modify the retention of idempotent requests for this service.\n\nCan be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format or the ISO8601.",
+            "description": "Modify the retention of idempotent requests for this service.\n\nCan be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.",
             "default": null,
-            "type": "string",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DurationString"
+              }
+            ],
             "nullable": true
           },
           "workflow_completion_retention": {
             "title": "Workflow completion retention",
-            "description": "Modify the retention of the workflow completion. This can be modified only for workflow services!\n\nCan be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format or the ISO8601.",
+            "description": "Modify the retention of the workflow completion. This can be modified only for workflow services!\n\nCan be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.",
             "default": null,
-            "type": "string",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DurationString"
+              }
+            ],
+            "nullable": true
+          },
+          "journal_retention": {
+            "title": "Journal retention",
+            "description": "Modify the journal retention for this service. When set, this applies to all requests to all handlers of this service.\n\nIn case the invocation has an idempotency key, the `idempotency_retention` caps the maximum `journal_retention` time. In case the invocation targets a workflow handler, the `workflow_completion_retention` caps the maximum `journal_retention` time.\n\nCan be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.",
+            "default": null,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DurationString"
+              }
+            ],
             "nullable": true
           },
           "inactivity_timeout": {
             "title": "Inactivity timeout",
-            "description": "This timer guards against stalled service/handler invocations. Once it expires, Restate triggers a graceful termination by asking the service invocation to suspend (which preserves intermediate progress).\n\nThe 'abort timeout' is used to abort the invocation, in case it doesn't react to the request to suspend.\n\nCan be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format or the ISO8601.\n\nThis overrides the default inactivity timeout set in invoker options.",
+            "description": "This timer guards against stalled service/handler invocations. Once it expires, Restate triggers a graceful termination by asking the service invocation to suspend (which preserves intermediate progress).\n\nThe 'abort timeout' is used to abort the invocation, in case it doesn't react to the request to suspend.\n\nCan be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.\n\nThis overrides the default inactivity timeout set in invoker options.",
             "default": null,
-            "type": "string",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DurationString"
+              }
+            ],
             "nullable": true
           },
           "abort_timeout": {
             "title": "Abort timeout",
-            "description": "This timer guards against stalled service/handler invocations that are supposed to terminate. The abort timeout is started after the 'inactivity timeout' has expired and the service/handler invocation has been asked to gracefully terminate. Once the timer expires, it will abort the service/handler invocation.\n\nThis timer potentially **interrupts** user code. If the user code needs longer to gracefully terminate, then this value needs to be set accordingly.\n\nCan be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format or the ISO8601.\n\nThis overrides the default abort timeout set in invoker options.",
+            "description": "This timer guards against stalled service/handler invocations that are supposed to terminate. The abort timeout is started after the 'inactivity timeout' has expired and the service/handler invocation has been asked to gracefully terminate. Once the timer expires, it will abort the service/handler invocation.\n\nThis timer potentially **interrupts** user code. If the user code needs longer to gracefully terminate, then this value needs to be set accordingly.\n\nCan be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.\n\nThis overrides the default abort timeout set in invoker options.",
             "default": null,
-            "type": "string",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DurationString"
+              }
+            ],
             "nullable": true
           }
         }
+      },
+      "DurationString": {
+        "title": "DurationString",
+        "description": "Duration string in either jiff human friendly or ISO8601 format. Check https://docs.rs/jiff/latest/jiff/struct.Span.html#parsing-and-printing for more details.",
+        "type": "string",
+        "minLength": 1,
+        "example": "10 hours"
       },
       "ListServiceHandlersResponse": {
         "type": "object",
@@ -5624,13 +6090,13 @@
           "target_service_ty"
         ],
         "properties": {
-          "completion_expiration": {
+          "completion_retention": {
             "type": "string",
-            "format": "date-time"
+            "format": "duration"
           },
-          "journal_expiration": {
+          "journal_retention": {
             "type": "string",
-            "format": "date-time"
+            "format": "duration"
           },
           "created_at": {
             "type": "string",
@@ -5802,13 +6268,13 @@
           "target_service_ty"
         ],
         "properties": {
-          "completion_expiration": {
+          "completion_retention": {
             "type": "string",
-            "format": "date-time"
+            "format": "duration"
           },
-          "journal_expiration": {
+          "journal_retention": {
             "type": "string",
-            "format": "date-time"
+            "format": "duration"
           },
           "created_at": {
             "type": "string",

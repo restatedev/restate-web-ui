@@ -1,13 +1,13 @@
-import {
+import type {
   Invocation,
   JournalEntryV2,
-  useGetInvocationJournalWithInvocationV2,
 } from '@restate/data-access/admin-api';
 import { EntryPortal } from './Portals';
 import { EventEntryType, NotificationEntryType } from './entries/types';
 import { ComponentType, PropsWithChildren } from 'react';
 import { CompletionNotification } from './entries/CompletionNotification';
 import { TransientError } from './entries/TransientError';
+import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api-hooks';
 
 const NOTIFICATIONS_COMPONENTS: {
   [K in NotificationEntryType]:

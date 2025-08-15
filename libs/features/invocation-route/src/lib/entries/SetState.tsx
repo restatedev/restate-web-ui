@@ -3,6 +3,7 @@ import { EntryProps } from './types';
 import { EntryExpression } from './EntryExpression';
 import { InputOutput } from '../Expression';
 import { Value } from '../Value';
+import { useRestateContext } from '@restate/features/restate-context';
 
 export function SetState({
   entry,
@@ -10,6 +11,7 @@ export function SetState({
 }: EntryProps<
   Extract<JournalEntryV2, { type?: 'SetState'; category?: 'command' }>
 >) {
+  const { EncodingWaterMark } = useRestateContext();
   return (
     <EntryExpression
       entry={entry}
@@ -41,8 +43,12 @@ export function SetState({
               <Value
                 value={entry.value}
                 className="mx-0.5 py-3 font-mono text-xs"
+                isBase64
               />
             }
+            {...(EncodingWaterMark && {
+              waterMark: <EncodingWaterMark value={entry.value} />,
+            })}
           />
         </>
       }

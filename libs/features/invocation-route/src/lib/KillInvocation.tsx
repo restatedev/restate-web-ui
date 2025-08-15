@@ -10,7 +10,7 @@ import { Button, SubmitButton } from '@restate/ui/button';
 import { ErrorBanner } from '@restate/ui/error';
 import { FormFieldInput } from '@restate/ui/form-field';
 import { FormEvent, useId } from 'react';
-import { useDeleteInvocation } from '@restate/data-access/admin-api';
+import { useKillInvocation } from '@restate/data-access/admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui/notification';
 import { Link } from '@restate/ui/link';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -20,26 +20,23 @@ export function KillInvocation() {
   const [searchParams, setSearchParams] = useSearchParams();
   const invocationId = searchParams.get(KILL_INVOCATION_QUERY_PARAM);
 
-  const { mutate, isPending, error } = useDeleteInvocation(
-    String(invocationId),
-    {
-      onSuccess(data, variables) {
-        setSearchParams(
-          (old) => {
-            old.delete(KILL_INVOCATION_QUERY_PARAM);
-            return old;
-          },
-          { preventScrollReset: true },
-        );
-        showSuccessNotification(
-          <>
-            <code>{variables.parameters?.path.invocation_id}</code> has been
-            successfully killed.
-          </>,
-        );
-      },
+  const { mutate, isPending, error } = useKillInvocation(String(invocationId), {
+    onSuccess(data, variables) {
+      setSearchParams(
+        (old) => {
+          old.delete(KILL_INVOCATION_QUERY_PARAM);
+          return old;
+        },
+        { preventScrollReset: true },
+      );
+      showSuccessNotification(
+        <>
+          <code>{variables.parameters?.path.invocation_id}</code> has been
+          successfully killed.
+        </>,
+      );
     },
-  );
+  });
 
   const submitHandler = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -47,7 +44,6 @@ export function KillInvocation() {
     mutate({
       parameters: {
         path: { invocation_id: String(invocationId) },
-        query: { mode: 'Kill' },
       },
     });
   };

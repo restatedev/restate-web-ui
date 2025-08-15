@@ -4,26 +4,30 @@ import { DateTooltip } from '@restate/ui/tooltip';
 import { formatDurations } from '@restate/util/intl';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 import { ComponentType } from 'react';
+import { Retention } from './Retention';
+import { tv } from '@restate/util/styles';
 
+const styles = tv({
+  base: 'max-w-full truncate border-none bg-transparent py-0 text-2xs font-normal text-zinc-500/80',
+});
 export function Duration({
   prefix,
   suffix,
   date,
   tooltipTitle,
+  className,
 }: {
   prefix?: string;
   suffix?: string;
   date: string;
   tooltipTitle: string;
+  className?: string;
 }) {
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
   const duration = formatDurations(durationSinceLastSnapshot(date));
 
   return (
-    <Badge
-      size="sm"
-      className="max-w-full truncate border-none bg-transparent py-0 text-2xs font-normal text-zinc-500/80"
-    >
+    <Badge size="sm" className={styles({ className })}>
       <span className="truncate">
         {prefix && `${prefix} `}
         <DateTooltip date={new Date(date)} title={tooltipTitle}>
@@ -42,6 +46,7 @@ function withStatusTimeline(
     field: keyof Invocation;
     condition?: (inv: Invocation) => boolean;
   }[],
+  showRetention?: boolean,
 ) {
   return (props: { invocation: Invocation }) => {
     const index = params.findIndex(
@@ -59,12 +64,24 @@ function withStatusTimeline(
     }
 
     return (
-      <Duration
-        prefix={prefix}
-        suffix={suffix}
-        tooltipTitle={tooltipTitle}
-        date={value}
-      />
+      <div className="item-center inline-flex max-w-full">
+        <Duration
+          prefix={prefix}
+          suffix={suffix}
+          tooltipTitle={tooltipTitle}
+          date={value}
+          className="shrink-0"
+        />
+        {showRetention && (
+          <Retention
+            invocation={props.invocation}
+            type="completion"
+            prefixForCompletion=", retention "
+            prefixForInProgress=", retained "
+            className="-ml-1.5 min-w-0 truncate"
+          />
+        )}
+      </div>
     );
   };
 }
@@ -72,34 +89,46 @@ function withStatusTimeline(
 const STATUS_TIMELINE_COMPONENTS: Partial<
   Record<Invocation['status'], ComponentType<{ invocation: Invocation }>>
 > = {
-  succeeded: withStatusTimeline([
-    {
-      suffix: 'ago',
-      tooltipTitle: 'Succeeded at',
-      field: 'completed_at',
-    },
-  ]),
-  failed: withStatusTimeline([
-    {
-      suffix: 'ago',
-      tooltipTitle: 'Failed at',
-      field: 'completed_at',
-    },
-  ]),
-  cancelled: withStatusTimeline([
-    {
-      suffix: 'ago',
-      tooltipTitle: 'Cancelled at',
-      field: 'completed_at',
-    },
-  ]),
-  killed: withStatusTimeline([
-    {
-      suffix: 'ago',
-      tooltipTitle: 'Killed at',
-      field: 'completed_at',
-    },
-  ]),
+  succeeded: withStatusTimeline(
+    [
+      {
+        suffix: 'ago',
+        tooltipTitle: 'Succeeded at',
+        field: 'completed_at',
+      },
+    ],
+    true,
+  ),
+  failed: withStatusTimeline(
+    [
+      {
+        suffix: 'ago',
+        tooltipTitle: 'Failed at',
+        field: 'completed_at',
+      },
+    ],
+    true,
+  ),
+  cancelled: withStatusTimeline(
+    [
+      {
+        suffix: 'ago',
+        tooltipTitle: 'Cancelled at',
+        field: 'completed_at',
+      },
+    ],
+    true,
+  ),
+  killed: withStatusTimeline(
+    [
+      {
+        suffix: 'ago',
+        tooltipTitle: 'Killed at',
+        field: 'completed_at',
+      },
+    ],
+    true,
+  ),
   'backing-off': withStatusTimeline([
     {
       prefix: 'for',

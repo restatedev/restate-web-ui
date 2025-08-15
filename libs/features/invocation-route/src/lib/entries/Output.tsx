@@ -17,6 +17,7 @@ export function Output({
       entry={entry}
       invocation={invocation}
       outputParam="value"
+      isOutputBase64
     />
   );
 }

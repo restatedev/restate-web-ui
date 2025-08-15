@@ -1,10 +1,4 @@
-import {
-  FilterItem,
-  getEndpoint,
-  useListDeployments,
-  useListInvocations,
-  useListServices,
-} from '@restate/data-access/admin-api';
+import { FilterItem, getEndpoint } from '@restate/data-access/admin-api';
 import { Button, SubmitButton } from '@restate/ui/button';
 import { Column, Row, Table, TableBody, TableHeader } from '@restate/ui/table';
 import { useCollator } from 'react-aria';
@@ -42,9 +36,21 @@ import {
   useQueryBuilder,
 } from '@restate/ui/query-builder';
 import { ClauseChip, FiltersTrigger } from './Filters';
-import { Form, useSearchParams } from 'react-router';
+import {
+  ClientLoaderFunction,
+  ClientLoaderFunctionArgs,
+  Form,
+  redirect,
+  ShouldRevalidateFunctionArgs,
+  useSearchParams,
+} from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTransition } from 'react';
+import {
+  useListDeployments,
+  useListInvocations,
+  useListServices,
+} from '@restate/data-access/admin-api-hooks';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: 80,
@@ -649,4 +655,26 @@ function Footnote({
   );
 }
 
-export const invocations = { Component };
+export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
+  const url = new URL(request.url);
+  const hasFilters = Array.from(url.searchParams.keys()).some((key) =>
+    key.startsWith('filter_'),
+  );
+
+  if (!hasFilters) {
+    url.searchParams.append(
+      'filter_invoked_by',
+      JSON.stringify({
+        operation: 'EQUALS',
+        value: 'ingress',
+      }),
+    );
+    return redirect(url.search + window.location.hash);
+  }
+};
+
+export function shouldRevalidate(arg: ShouldRevalidateFunctionArgs) {
+  return false;
+}
+
+export const invocations = { Component, clientLoader, shouldRevalidate };

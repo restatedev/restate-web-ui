@@ -1,4 +1,4 @@
-import { useListDeployments } from '@restate/data-access/admin-api';
+import { useListDeployments } from '@restate/data-access/admin-api-hooks';
 import { InvocationId, Target } from '@restate/features/invocation-route';
 import { Deployment } from '@restate/features/overview-route';
 import { Cell } from '@restate/ui/table';

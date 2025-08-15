@@ -10,7 +10,7 @@ import { Button, SubmitButton } from '@restate/ui/button';
 import { ErrorBanner } from '@restate/ui/error';
 import { FormFieldInput } from '@restate/ui/form-field';
 import { FormEvent, useId } from 'react';
-import { useDeleteInvocation } from '@restate/data-access/admin-api';
+import { useCancelInvocation } from '@restate/data-access/admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui/notification';
 import { Link } from '@restate/ui/link';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -20,7 +20,7 @@ export function CancelInvocation() {
   const [searchParams, setSearchParams] = useSearchParams();
   const invocationId = searchParams.get(CANCEL_INVOCATION_QUERY_PARAM);
 
-  const { mutate, isPending, error } = useDeleteInvocation(
+  const { mutate, isPending, error } = useCancelInvocation(
     String(invocationId),
     {
       onSuccess(data, variables) {
@@ -47,7 +47,6 @@ export function CancelInvocation() {
     mutate({
       parameters: {
         path: { invocation_id: String(invocationId) },
-        query: { mode: 'Cancel' },
       },
     });
   };

@@ -104,11 +104,13 @@ export function InputOutput({
   popoverContent,
   popoverTitle,
   isValueHidden = false,
+  waterMark,
 }: {
   className?: string;
   name: ReactNode;
   popoverContent?: ReactNode;
   popoverTitle?: string;
+  waterMark?: ReactNode;
   isValueHidden?: boolean;
 }) {
   const { base, value, content } = inputOutputStyles();
@@ -161,6 +163,7 @@ export function InputOutput({
               title={
                 <div className="flex items-center text-0.5xs">
                   <span>{popoverTitle}</span>
+                  <div className="ml-auto">{waterMark}</div>
                 </div>
               }
             >

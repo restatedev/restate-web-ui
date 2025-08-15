@@ -14,7 +14,6 @@ import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { Icon, IconName } from '@restate/ui/icons';
 import {
   Deployment,
-  useDeploymentDetails,
   getEndpoint,
   isHttpDeployment,
   isLambdaDeployment,
@@ -29,6 +28,7 @@ import { ErrorBanner } from '@restate/ui/error';
 import { Copy } from '@restate/ui/copy';
 import { Badge } from '@restate/ui/badge';
 import { SDK } from './SDK';
+import { useDeploymentDetails } from '@restate/data-access/admin-api-hooks';
 
 export function DeploymentDetails() {
   return (

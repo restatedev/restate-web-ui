@@ -1,7 +1,4 @@
-import {
-  JournalEntryV2,
-  useGetInvocationJournalWithInvocationV2,
-} from '@restate/data-access/admin-api';
+import type { JournalEntryV2 } from '@restate/data-access/admin-api';
 import { Expression, InputOutput } from '../Expression';
 import { CommandEntryType } from './types';
 import { ReactNode } from 'react';
@@ -12,6 +9,8 @@ import { tv } from '@restate/util/styles';
 import { Icon, IconName } from '@restate/ui/icons';
 import { HoverTooltip } from '@restate/ui/tooltip';
 import { isEntryCompletionAmbiguous } from './isEntryCompletionAmbiguous';
+import { useRestateContext } from '@restate/features/restate-context';
+import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api-hooks';
 
 const NAME_COMMANDS_COMPONENTS: {
   [K in CommandEntryType]: string;
@@ -79,6 +78,7 @@ export function EntryExpression({
   className,
   outputParamPlaceholder = 'Result',
   hideErrorForFailureResult,
+  isOutputBase64,
 }: {
   invocation?: ReturnType<
     typeof useGetInvocationJournalWithInvocationV2
@@ -92,15 +92,19 @@ export function EntryExpression({
     title: string;
     isArray?: boolean;
     shouldStringified?: boolean;
+    isBase64?: boolean;
   }[];
   outputParam?: string;
   outputParamPlaceholder?: string;
+  isOutputBase64?: boolean;
   name?: string;
   operationSymbol?: string;
   chain?: ReactNode;
   className?: string;
   hideErrorForFailureResult?: boolean;
 }) {
+  const { EncodingWaterMark } = useRestateContext();
+
   if (
     !entry ||
     (entry?.category !== 'command' &&
@@ -135,9 +139,17 @@ export function EntryExpression({
             name={displayedValuedPlaceholder}
             popoverTitle={param.title}
             popoverContent={
-              <Value value={paramValue} className="py-3 font-mono text-xs" />
+              <Value
+                value={paramValue}
+                className="py-3 font-mono text-xs"
+                isBase64={param.isBase64}
+              />
             }
             key={param.paramName}
+            {...(EncodingWaterMark &&
+              param.isBase64 && {
+                waterMark: <EncodingWaterMark value={paramValue} />,
+              })}
           />
         );
       })
@@ -161,8 +173,15 @@ export function EntryExpression({
               <Value
                 value={(entry as any)[outputParam]}
                 className="py-3 font-mono text-xs"
+                isBase64={isOutputBase64}
               />
             }
+            {...(EncodingWaterMark &&
+              isOutputBase64 && {
+                waterMark: (
+                  <EncodingWaterMark value={(entry as any)[outputParam]} />
+                ),
+              })}
           />
         )}
         {(entry as any)[outputParam] &&
@@ -175,6 +194,15 @@ export function EntryExpression({
                 <Value
                   value={JSON.stringify((entry as any)[outputParam])}
                   className="py-3 font-mono text-xs"
+                  isBase64={isOutputBase64}
+                  {...(EncodingWaterMark &&
+                    isOutputBase64 && {
+                      waterMark: (
+                        <EncodingWaterMark
+                          value={JSON.stringify((entry as any)[outputParam])}
+                        />
+                      ),
+                    })}
                 />
               }
             />

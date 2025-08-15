@@ -1,8 +1,8 @@
 export { JournalV2 } from './lib/JournalV2';
 export { State } from './lib/State';
-export { Value } from './lib/Value';
+export { Value, DecodedValue } from './lib/Value';
 export { Actions } from './lib/Actions';
-export { DeleteInvocation } from './lib/DeleteInvocation';
+export { InvocationActions } from './lib/InvocationActions';
 export { Status } from './lib/Status';
 export { InvocationDeployment } from './lib/InvocationDeployment';
 export * from './lib/constants';
@@ -10,3 +10,4 @@ export * from './lib/InvocationPanel';
 export * from './lib/InvocationId';
 export * from './lib/invocation.route';
 export { Target } from './lib/Target';
+export { Retention } from './lib/Retention';

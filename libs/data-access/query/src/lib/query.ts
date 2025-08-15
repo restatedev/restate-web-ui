@@ -17,8 +17,7 @@ import {
   JournalRawEntryWithCommandIndex,
   lifeCycles,
 } from '@restate/features/service-protocol';
-import semverGt from 'semver/functions/gt';
-import { getVersion } from './getVersion';
+import { hexToBase64 } from '@restate/util/binary';
 
 function queryFetcher(
   query: string,
@@ -45,7 +44,7 @@ async function listInvocations(
   filters: FilterItem[],
 ) {
   const invocationsPromise = queryFetcher(
-    `SELECT *${semverGt(getVersion(headers), '1.4.4') ? `, completed_at + completion_retention AS completion_expiration, completed_at + journal_retention AS journal_expiration` : ''} ,COUNT(*) OVER() AS total_count FROM sys_invocation ${convertInvocationsFilters(
+    `SELECT *, COUNT(*) OVER() AS total_count FROM sys_invocation ${convertInvocationsFilters(
       filters,
     )} ORDER BY modified_at DESC LIMIT ${INVOCATIONS_LIMIT}`,
     {
@@ -80,7 +79,7 @@ async function getInvocation(
   headers: Headers,
 ) {
   const invocations = await queryFetcher(
-    `SELECT *${semverGt(getVersion(headers), '1.4.4') ? `, completed_at + completion_retention AS completion_expiration, completed_at + journal_retention AS journal_expiration` : ''} FROM sys_invocation WHERE id = '${invocationId}'`,
+    `SELECT * FROM sys_invocation WHERE id = '${invocationId}'`,
     {
       baseUrl,
       headers,
@@ -163,13 +162,10 @@ async function getInvocationJournalV2(
   headers: Headers,
 ) {
   const [invocationQuery, journalQuery] = await Promise.all([
-    queryFetcher(
-      `SELECT * ${semverGt(getVersion(headers), '1.4.4') ? `, completed_at + completion_retention AS completion_expiration, completed_at + journal_retention AS journal_expiration` : ''} FROM sys_invocation WHERE id = '${invocationId}'`,
-      {
-        baseUrl,
-        headers,
-      },
-    ),
+    queryFetcher(`SELECT * FROM sys_invocation WHERE id = '${invocationId}'`, {
+      baseUrl,
+      headers,
+    }),
     queryFetcher(
       `SELECT id, index, appended_at, entry_type, name, entry_json, raw, version, completed, sleep_wakeup_at, invoked_id, invoked_target, promise_name FROM sys_journal WHERE id = '${invocationId}'`,
       {
@@ -358,17 +354,15 @@ async function getState(
   baseUrl: string,
   headers: Headers,
 ) {
-  const state: { name: string; value: string; bytes: string }[] =
-    await queryFetcher(
-      `SELECT key, value_utf8, value FROM state WHERE service_name = '${service}' AND service_key = '${key}'`,
-      { baseUrl, headers },
-    ).then(({ rows }) =>
-      rows.map((row) => ({
-        name: row.key,
-        value: row.value_utf8,
-        bytes: row.value,
-      })),
-    );
+  const state: { name: string; value: string }[] = await queryFetcher(
+    `SELECT key, value_utf8, value FROM state WHERE service_name = '${service}' AND service_key = '${key}'`,
+    { baseUrl, headers },
+  ).then(({ rows }) =>
+    rows.map((row) => ({
+      name: row.key,
+      value: hexToBase64(row.value) as string,
+    })),
+  );
   const version = stateVersion(state);
 
   return new Response(JSON.stringify({ state, version }), {
@@ -422,7 +416,7 @@ async function queryState(
           },
           {
             ...filter,
-            field: 'value_utf8',
+            field: 'value',
           },
         ] as FilterItem[])
       : []),
@@ -465,7 +459,7 @@ async function listState(
 
   const query = keys
     .map((key) => {
-      return `SELECT service_key, key, value_utf8
+      return `SELECT service_key, key, value
     FROM state WHERE service_name = '${service}' AND service_key = '${key}'`;
     })
     .join(' UNION ALL ');
@@ -490,7 +484,7 @@ async function listState(
             ...p[c.service_key],
             state: {
               ...p[c.service_key].state,
-              [c.key]: c.value_utf8,
+              [c.key]: hexToBase64(c.value),
             },
           },
         };
