@@ -25,7 +25,7 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { formatDurations } from '@restate/util/intl';
+import { formatDurations, formatNumber } from '@restate/util/intl';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import {
   AddQueryTrigger,
@@ -634,12 +634,16 @@ function Footnote({
     <div className="flex w-full flex-row-reverse flex-wrap items-center text-center text-xs text-gray-500/80">
       {data && (
         <div className="ml-auto">
-          {data.total_count ? (
+          {data.total_count || data.min_count ? (
             <>
               <span>{data.rows.length}</span>
               {' of '}
               <span className="font-medium text-gray-500">
-                {data.total_count}
+                {data.total_count
+                  ? `${formatNumber(data.total_count)}`
+                  : data.min_count
+                    ? `${formatNumber(data.min_count, true)}+`
+                    : ''}
               </span>{' '}
               recently modified invocations
             </>

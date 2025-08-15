@@ -2076,7 +2076,7 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "required": ["rows", "total_count"],
+                  "required": ["rows"],
                   "properties": {
                     "rows": {
                       "type": "array",
@@ -2085,6 +2085,9 @@
                       }
                     },
                     "total_count": {
+                      "type": "integer"
+                    },
+                    "min_count": {
                       "type": "integer"
                     },
                     "limit": {
@@ -6318,6 +6321,10 @@
           "invoked_by": {
             "type": "string",
             "enum": ["ingress", "service"]
+          },
+          "min_count": {
+            "type": "integer",
+            "format": "uint64"
           },
           "status": {
             "type": "string",

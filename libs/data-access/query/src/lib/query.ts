@@ -44,26 +44,35 @@ async function listInvocations(
   filters: FilterItem[],
 ) {
   const invocationsPromise = queryFetcher(
-    `SELECT *, COUNT(*) OVER() AS total_count FROM sys_invocation ${convertInvocationsFilters(
-      filters,
-    )} ORDER BY modified_at DESC LIMIT ${INVOCATIONS_LIMIT}`,
+    `WITH invocations AS(SELECT *, row_number() over () as row from sys_invocation ${convertInvocationsFilters(filters)}),
+    recent_invocations AS (SELECT * FROM invocations ORDER BY modified_at DESC LIMIT ${INVOCATIONS_LIMIT})
+    SELECT *, max(row) over () as min_count from recent_invocations`,
     {
       baseUrl,
       headers,
     },
   ).then(({ rows }) => {
+    if (rows.length < INVOCATIONS_LIMIT) {
+      return {
+        invocations: rows.map(convertInvocation),
+        min_count: rows.length,
+        total_count: rows.length,
+      };
+    }
     return {
       invocations: rows.map(convertInvocation),
-      total_count: rows.at(0)?.total_count ?? 0,
+      min_count: rows.at(0)?.min_count ?? 0,
+      total_count: undefined,
     };
   });
 
-  const { total_count, invocations } = await invocationsPromise;
+  const { min_count, total_count, invocations } = await invocationsPromise;
 
   return new Response(
     JSON.stringify({
       limit: INVOCATIONS_LIMIT,
       total_count,
+      min_count,
       rows: invocations,
     }),
     {
