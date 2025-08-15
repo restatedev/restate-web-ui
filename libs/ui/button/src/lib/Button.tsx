@@ -25,7 +25,7 @@ export interface ButtonProps {
 
 const styles = tv({
   extend: focusRing,
-  base: 'cursor-default rounded-xl border border-black/10 px-5 py-2 text-center text-sm shadow-xs transition dark:border-white/10 dark:shadow-none',
+  base: 'cursor-default rounded-xl border border-black/10 px-5 py-2 text-center text-sm shadow-xs',
   variants: {
     variant: {
       primary:
