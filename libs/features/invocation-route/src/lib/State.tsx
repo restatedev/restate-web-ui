@@ -56,7 +56,7 @@ function StateKey({
       <div className="relative flex h-full min-w-0 items-start border-r py-1 pr-1">
         <TruncateWithTooltip copyText={name}>{name}</TruncateWithTooltip>
       </div>
-      <div className="truncate py-1">
+      <div className="relative truncate py-1">
         <Value value={value} className="mono max-w-full text-xs" isBase64 />
         <div className="absolute top-1 right-1 flex items-center gap-2">
           <Button

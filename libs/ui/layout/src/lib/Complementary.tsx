@@ -45,7 +45,7 @@ export function Complementary({
           <FocusScope restoreFocus autoFocus>
             <div
               data-complementary-content
-              className="relative flex max-h-[inherit] min-h-[50vh] flex-auto flex-col overflow-auto overflow-y-auto rounded-xl border bg-white p-3 pt-7"
+              className="relative flex max-h-[inherit] min-h-[50vh] flex-auto flex-col overflow-x-hidden overflow-y-auto rounded-xl border bg-white p-3 pt-7"
               onKeyDown={(e) => {
                 if (e.key === 'Escape') {
                   onClose?.();

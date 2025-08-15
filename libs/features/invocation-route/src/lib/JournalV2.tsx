@@ -19,6 +19,7 @@ import { getTimelineId, PortalProvider, usePortals } from './Portals';
 import { LifeCycleProgress, Units } from './LifeCycleProgress';
 import { ErrorBoundary } from './ErrorBoundry';
 import { tv } from '@restate/util/styles';
+import { Retention } from './Retention';
 
 const LazyPanel = lazy(() =>
   import('react-resizable-panels').then((m) => ({ default: m.Panel })),
@@ -209,21 +210,32 @@ export function JournalV2({
             }
           >
             <div className="absolute -top-9 flex h-9 w-full items-center">
-              <div className="relative flex h-full w-full items-center gap-1.5">
-                <div className="absolute left-2.5 h-2 w-2 rounded-full bg-zinc-300">
-                  <div className="absolute top-full left-1/2 h-3.5 w-px -translate-x-1/2 border border-dashed border-zinc-300" />
+              <div className="flex flex-col">
+                <div className="relative flex h-full w-full items-center gap-1.5">
+                  <div className="absolute left-2.5 h-2 w-2 rounded-full bg-zinc-300">
+                    <div className="absolute top-full left-1/2 h-8 w-px -translate-x-1/2 border border-dashed border-zinc-300" />
+                  </div>
+                  <div className="shrink-0 pl-6 text-xs font-semibold text-gray-400 uppercase">
+                    Invoked by
+                  </div>
+                  {journalAndInvocationData?.invoked_by === 'ingress' ? (
+                    <div className="text-xs font-medium">Ingress</div>
+                  ) : journalAndInvocationData?.invoked_by_id ? (
+                    <InvocationId
+                      id={journalAndInvocationData?.invoked_by_id}
+                      className="max-w-[20ch] min-w-0 text-0.5xs font-semibold"
+                    />
+                  ) : null}
                 </div>
-                <div className="shrink-0 pl-6 text-xs font-semibold text-gray-400 uppercase">
-                  Invoked by
-                </div>
-                {journalAndInvocationData?.invoked_by === 'ingress' ? (
-                  <div className="text-xs font-medium">Ingress</div>
-                ) : journalAndInvocationData?.invoked_by_id ? (
-                  <InvocationId
-                    id={journalAndInvocationData?.invoked_by_id}
-                    className="max-w-[20ch] min-w-0 text-0.5xs font-semibold"
+                <div className="pb-4 pl-6">
+                  <Retention
+                    invocation={journalAndInvocationData}
+                    type="journal"
+                    prefixForCompletion="retention "
+                    prefixForInProgress="retained "
+                    className="text-xs"
                   />
-                ) : null}
+                </div>
               </div>
               <div className="z-10 ml-auto flex h-full flex-row items-center justify-end gap-1 rounded-lg bg-linear-to-l from-gray-100 via-gray-100 to-gray-100/0 pl-10">
                 {!areAllInvocationsCompleted && setIsLive && (

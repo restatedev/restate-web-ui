@@ -8,12 +8,9 @@ import { ServiceTypeExplainer } from '@restate/features/explainers';
 import { CellProps } from './cells/types';
 import { InvocationIdCell } from './cells/InvocationId';
 import {
-  addDurationToDate,
   formatDurations,
   formatNumber,
   formatPlurals,
-  normaliseDuration,
-  parseISODuration,
 } from '@restate/util/intl';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 import { tv } from '@restate/util/styles';
@@ -186,7 +183,17 @@ function JournalCell({ invocation }: CellProps) {
   const location = useLocation();
 
   if (!invocation.journal_size) {
-    return null;
+    if (invocation.completed_at) {
+      return (
+        <Retention
+          invocation={invocation}
+          type="journal"
+          prefixForCompletion="retention "
+        />
+      );
+    } else {
+      return null;
+    }
   }
 
   return (

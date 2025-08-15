@@ -1,9 +1,7 @@
 import { Invocation } from '@restate/data-access/admin-api';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { tv } from '@restate/util/styles';
-import { DateTooltip } from '@restate/ui/tooltip';
-import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
-import { formatDurations } from '@restate/util/intl';
+import { Retention } from './Retention';
 
 const styles = tv({ base: '' });
 export function RetentionSection({
@@ -15,17 +13,7 @@ export function RetentionSection({
   isPending?: boolean;
   className?: string;
 }) {
-  const completionExpiration = invocation?.completion_expiration;
-  const journalExpiration = invocation?.journal_expiration;
-  const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
-  const completionDuration = completionExpiration
-    ? durationSinceLastSnapshot(completionExpiration)
-    : undefined;
-  const journalDuration = journalExpiration
-    ? durationSinceLastSnapshot(completionExpiration)
-    : undefined;
-
-  if (!completionExpiration && !journalExpiration) {
+  if (!invocation?.completion_retention && !invocation?.journal_retention) {
     return null;
   }
 
@@ -33,41 +21,29 @@ export function RetentionSection({
     <Section className={styles({ className })}>
       <SectionTitle>Invocation Retention</SectionTitle>
       <SectionContent className="p-0">
-        {completionExpiration && completionDuration && (
+        {invocation?.completion_retention && (
           <div className="flex h-9 items-center px-1.5 py-1 not-last:border-b">
             <span className="flex-auto pl-1 text-0.5xs font-medium whitespace-nowrap text-gray-500">
-              Completion retention ends{' '}
-              <DateTooltip
-                date={new Date(completionExpiration)}
-                title="Completion retained until"
-              >
-                {!completionDuration?.isPast && (
-                  <span className="font-normal text-zinc-500">in </span>
-                )}
-                {formatDurations(completionDuration)}
-                {completionDuration?.isPast && (
-                  <span className="font-normal text-zinc-500"> ago</span>
-                )}
-              </DateTooltip>
+              <Retention
+                invocation={invocation}
+                type="completion"
+                prefixForCompletion="Completion retention "
+                prefixForInProgress="Completion retained "
+                className="text-0.5xs [&_*]:font-medium [&_*]:text-gray-500 [&_.value]:text-zinc-600"
+              />
             </span>
           </div>
         )}
-        {journalExpiration && journalDuration && (
+        {invocation?.journal_retention && (
           <div className="flex h-9 items-center px-1.5 py-1 not-last:border-b">
             <span className="flex-auto pl-1 text-0.5xs font-medium whitespace-nowrap text-gray-500">
-              Journal retention ends{' '}
-              <DateTooltip
-                date={new Date(journalExpiration)}
-                title="Journal retained until"
-              >
-                {!journalDuration?.isPast && (
-                  <span className="font-normal text-zinc-500">in </span>
-                )}
-                {formatDurations(journalDuration)}
-                {journalDuration?.isPast && (
-                  <span className="font-normal text-zinc-500"> ago</span>
-                )}
-              </DateTooltip>
+              <Retention
+                invocation={invocation}
+                type="journal"
+                prefixForCompletion="Journal retention "
+                prefixForInProgress="Journal retained "
+                className="text-0.5xs [&_*]:font-medium [&_*]:text-gray-500 [&_.value]:text-zinc-600"
+              />
             </span>
           </div>
         )}

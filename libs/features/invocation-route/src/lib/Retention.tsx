@@ -11,7 +11,7 @@ import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 import { tv } from '@restate/util/styles';
 
 const styles = tv({
-  base: 'w-full border-none bg-transparent pl-0 text-zinc-500/80',
+  base: 'w-full border-none bg-transparent pl-0 text-2xs font-normal text-zinc-500/80',
 });
 export function Retention({
   invocation,
@@ -45,17 +45,18 @@ export function Retention({
     return (
       <Badge className={styles({ className })}>
         <span className="w-full truncate">
-          <span className="font-normal">
-            {prefixForCompletion}ends {!isPast && 'in '}
+          <span className="">
+            {prefixForCompletion}
+            {isPast ? 'ended' : 'ends'} {!isPast && 'in '}
           </span>
           <DateTooltip
             date={date}
-            className="text-zinc-500/90"
+            className="value font-medium text-zinc-500/90"
             title={`${type === 'completion' ? 'Completion' : 'Journal'} retained until`}
           >
             {duration}
           </DateTooltip>
-          <span className="font-normal">{isPast && ' ago'}</span>
+          <span className="">{isPast && ' ago'}</span>
         </span>
       </Badge>
     );
@@ -63,11 +64,11 @@ export function Retention({
     return (
       <Badge className={styles({ className })}>
         <span className="w-full truncate">
-          <span className="font-normal">{prefixForInProgress}for </span>
-          <span className="text-zinc-500/90">
+          <span className="">{prefixForInProgress}for </span>
+          <span className="value font-medium text-zinc-500/90">
             {formatDurations(durationObject)}{' '}
           </span>
-          <span className="font-normal">after completion</span>
+          <span className="">after completion</span>
         </span>
       </Badge>
     );
