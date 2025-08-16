@@ -1,4 +1,5 @@
 import { Invocation } from '@restate/data-access/admin-api';
+import { RetentionExplainer } from '@restate/features/explainers';
 import { Badge } from '@restate/ui/badge';
 import { DateTooltip } from '@restate/ui/tooltip';
 import {
@@ -36,6 +37,9 @@ export function Retention({
   }
 
   const durationObject = normaliseDuration(parseISODuration(durationValue));
+  const isDurationZero =
+    Array.from(Object.values(durationObject)).reduce((p, c) => p + c, 0) === 0;
+
   if (invocation?.completed_at) {
     const date = addDurationToDate(invocation?.completed_at, durationObject);
     const { isPast, ...parts } = durationSinceLastSnapshot(date);
@@ -48,14 +52,24 @@ export function Retention({
             {prefixForCompletion}
             {isPast ? 'ended' : 'ends'} {!isPast && 'in '}
           </span>
-          <DateTooltip
-            date={date}
-            className="value font-medium text-zinc-500/90"
-            title={`${type === 'completion' ? 'Completion' : 'Journal'} retained until`}
-          >
-            {duration}
-          </DateTooltip>
-          <span className="">{isPast && ' ago'}</span>
+          {isDurationZero ? (
+            <span>at completion</span>
+          ) : (
+            <>
+              <DateTooltip
+                date={date}
+                className="value font-medium text-zinc-500/90"
+                title={`${type === 'completion' ? 'Completion' : 'Journal'} retained until`}
+              >
+                {duration}
+              </DateTooltip>
+              <span className="">{isPast && ' ago'}</span>
+            </>
+          )}
+          <RetentionExplainer
+            variant="indicator-button"
+            className="ml-1 align-middle"
+          />
         </span>
       </Badge>
     );
@@ -67,7 +81,13 @@ export function Retention({
           <span className="value font-medium text-zinc-500/90">
             {formatDurations(durationObject)}{' '}
           </span>
-          <span className="">after completion</span>
+          <span className="">
+            after completion {isDurationZero ? '(no retention)' : ''}
+          </span>
+          <RetentionExplainer
+            variant="indicator-button"
+            className="ml-1 align-middle"
+          />
         </span>
       </Badge>
     );

@@ -12,8 +12,9 @@ export function formatDurations({
   ...duration
 }: Parameters<DurationFormat['format']>[0] & { isPast?: boolean }) {
   const allEntries = Object.values(duration);
-  if (allEntries.length === 1 && allEntries.at(0) === 0) {
-    return '0 ms';
+  const isDurationZero = allEntries.reduce((p, c) => p + c, 0) === 0;
+  if (isDurationZero) {
+    return '0ms';
   }
 
   const isValid =
