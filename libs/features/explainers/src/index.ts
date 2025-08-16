@@ -4,3 +4,4 @@ export * from './lib/ServiceType';
 export * from './lib/HandlerType';
 export * from './lib/ProtocolType';
 export * from './lib/ServiceCompatibility';
+export * from './lib/Retention';
