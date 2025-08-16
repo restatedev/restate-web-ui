@@ -1,4 +1,9 @@
-import { useRef, type PropsWithChildren, useDeferredValue } from 'react';
+import {
+  type PropsWithChildren,
+  useCallback,
+  useDeferredValue,
+  useState,
+} from 'react';
 import { useFetchers, useHref, useNavigation } from 'react-router';
 import { Button } from './Button';
 import { tv } from '@restate/util/styles';
@@ -32,8 +37,9 @@ function useIsSubmitting(action?: string) {
   }
   const formActionPathname =
     basename === '/'
-      ? actionUrl?.pathname
-      : actionUrl?.pathname.split(basename.replace(/\/$/, '')).at(-1);
+      ? String(actionUrl?.pathname) + actionUrl?.search
+      : String(actionUrl?.pathname.split(basename.replace(/\/$/, '')).at(-1)) +
+        actionUrl?.search;
   const fetchers = useFetchers();
   const submitFetcher = fetchers.find(
     (fetcher) => fetcher.formAction === formActionPathname,
@@ -59,16 +65,18 @@ export function SubmitButton({
   isPending,
   ...props
 }: PropsWithChildren<SubmitButtonProps>) {
-  const ref = useRef<HTMLButtonElement | null>(null);
-  const formElement = ref.current?.form;
-  const isSubmitting =
-    useIsSubmitting(formElement?.action) || Boolean(isPending);
+  const [action, setAction] = useState<string>();
+  const isSubmitting = useIsSubmitting(action) || Boolean(isPending);
   const deferredIsSubmitting = useDeferredValue(isSubmitting);
+  const setFormAction = useCallback((el: HTMLButtonElement | null) => {
+    setAction(el?.form?.action);
+  }, []);
+
   return (
     <Button
       {...props}
       type="submit"
-      ref={ref}
+      ref={setFormAction}
       disabled={deferredIsSubmitting || disabled}
     >
       {deferredIsSubmitting && !hideSpinner ? (
