@@ -1,3 +1,4 @@
+export { RestateMinimumVersion } from './lib/RestateMinimumVersion';
 export * from './lib/FeatureFlag';
 export { useIsFeatureFlagEnabled, FeatureFlags } from './lib/FeatureFlags';
 export * from './lib/withFeatureFlag';

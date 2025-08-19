@@ -37,7 +37,6 @@ import {
 } from '@restate/ui/query-builder';
 import { ClauseChip, FiltersTrigger } from './Filters';
 import {
-  ClientLoaderFunction,
   ClientLoaderFunctionArgs,
   Form,
   redirect,
@@ -56,7 +55,7 @@ const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: 80,
   created_at: 100,
   deployment: 220,
-  journal_size: 135,
+  journal_size: 180,
   pinned_service_protocol_version: 80,
 };
 const MIN_COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
