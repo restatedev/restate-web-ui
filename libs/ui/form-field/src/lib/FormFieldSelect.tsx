@@ -57,7 +57,7 @@ export function FormFieldSelect({
       {label && <FormFieldLabel>{label}</FormFieldLabel>}
       <div className="rounded-xl border border-gray-200 bg-gray-100 p-px shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
         <Button
-          autoFocus
+          autoFocus={autoFocus}
           variant="secondary"
           className="flex w-full items-center gap-2 rounded-[0.625rem] px-2 py-1.5 text-sm group-invalid:border-red-600 group-invalid:bg-red-100/70"
         >
