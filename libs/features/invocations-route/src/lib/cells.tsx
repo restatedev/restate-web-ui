@@ -17,7 +17,6 @@ import { tv } from '@restate/util/styles';
 import {
   Actions,
   getSearchParams,
-  invocation,
   InvocationDeployment,
   InvocationId,
   JournalV2,
