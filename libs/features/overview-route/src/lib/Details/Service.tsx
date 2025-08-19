@@ -38,6 +38,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { ErrorBanner } from '@restate/ui/error';
 import { ServicePlaygroundTrigger } from '../ServicePlayground';
 import { showSuccessNotification } from '@restate/ui/notification';
+import { RestateMinimumVersion } from '@restate/util/feature-flag';
 
 export function ServiceDetails() {
   return (
@@ -271,49 +272,51 @@ function ServiceForm({
             </span>
           }
         >
-          <FormFieldCombobox
-            pattern={HUMANTIME_PATTERN_INPUT}
-            allowsCustomValue
-            defaultValue={data?.journal_retention ?? ''}
-            disabled={isPendingOrSubmitting}
-            label={
-              <InlineTooltip
-                variant="indicator-button"
-                title="Journal retention"
-                description="How long journal entries are kept after invocation completion"
-              >
-                <span slot="title" className="text-0.5xs">
-                  Journal retention
-                </span>
-              </InlineTooltip>
-            }
-            name="journal_retention"
-            className="[&_label]:text-zinc-500"
-            placeholder="1day"
-          >
-            <ComboBoxSection
-              title="Examples"
-              description={
-                <>
-                  Choose from the example options above, or enter a custom value
-                  in the{' '}
-                  <Link
-                    href="https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    jiff friendly
-                  </Link>{' '}
-                  format.
-                </>
+          <RestateMinimumVersion minVersion="1.5.0">
+            <FormFieldCombobox
+              pattern={HUMANTIME_PATTERN_INPUT}
+              allowsCustomValue
+              defaultValue={data?.journal_retention ?? ''}
+              disabled={isPendingOrSubmitting}
+              label={
+                <InlineTooltip
+                  variant="indicator-button"
+                  title="Journal retention"
+                  description="How long journal entries are kept after invocation completion"
+                >
+                  <span slot="title" className="text-0.5xs">
+                    Journal retention
+                  </span>
+                </InlineTooltip>
               }
+              name="journal_retention"
+              className="[&_label]:text-zinc-500"
+              placeholder="1day"
             >
-              <ComboBoxItem value="1h 30m">1h 30m</ComboBoxItem>
-              <ComboBoxItem value="12h">12h</ComboBoxItem>
-              <ComboBoxItem value="1day">1day</ComboBoxItem>
-              <ComboBoxItem value="7days">7days</ComboBoxItem>
-            </ComboBoxSection>
-          </FormFieldCombobox>
+              <ComboBoxSection
+                title="Examples"
+                description={
+                  <>
+                    Choose from the example options above, or enter a custom
+                    value in the{' '}
+                    <Link
+                      href="https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      jiff friendly
+                    </Link>{' '}
+                    format.
+                  </>
+                }
+              >
+                <ComboBoxItem value="1h 30m">1h 30m</ComboBoxItem>
+                <ComboBoxItem value="12h">12h</ComboBoxItem>
+                <ComboBoxItem value="1day">1day</ComboBoxItem>
+                <ComboBoxItem value="7days">7days</ComboBoxItem>
+              </ComboBoxSection>
+            </FormFieldCombobox>
+          </RestateMinimumVersion>
           <FormFieldCombobox
             pattern={HUMANTIME_PATTERN_INPUT}
             allowsCustomValue
