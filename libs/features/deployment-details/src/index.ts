@@ -1,1 +1,1 @@
-export * from './lib/deployment-details';
+export * from './lib/DeploymentDetails';

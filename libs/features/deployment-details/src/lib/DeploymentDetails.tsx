@@ -5,10 +5,6 @@ import {
   ComplementaryFooter,
   useParamValue,
 } from '@restate/ui/layout';
-import {
-  DELETE_DEPLOYMENT_QUERY_PARAM,
-  DEPLOYMENT_QUERY_PARAM,
-} from './constants';
 import { useSearchParams } from 'react-router';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -26,9 +22,13 @@ import {
 import { ErrorBanner } from '@restate/ui/error';
 import { Copy } from '@restate/ui/copy';
 import { Badge } from '@restate/ui/badge';
-import { SDK } from './SDK';
 import { useDeploymentDetails } from '@restate/data-access/admin-api-hooks';
 import { MiniService } from '@restate/features/service';
+import {
+  DEPLOYMENT_QUERY_PARAM,
+  DELETE_DEPLOYMENT_QUERY_PARAM,
+  SDK,
+} from '@restate/features/deployment';
 
 export function DeploymentDetails() {
   return (

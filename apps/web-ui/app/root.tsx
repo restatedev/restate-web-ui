@@ -39,15 +39,15 @@ import { FeatureFlags } from '@restate/util/feature-flag';
 import { QueryClient } from '@tanstack/react-query';
 import {
   DEPLOYMENT_QUERY_PARAM,
-  DeploymentDetails,
   DeleteDeployment,
 } from '@restate/features/deployment';
 import {
   SERVICE_PLAYGROUND_QUERY_PARAM,
   SERVICE_QUERY_PARAM,
-  ServiceDetails,
   ServicePlayground,
 } from '@restate/features/service';
+import { DeploymentDetails } from '@restate/features/deployment-details';
+import { ServiceDetails } from '@restate/features/service-details';
 
 export const links: LinksFunction = () => [
   // TODO: move to the its own lib

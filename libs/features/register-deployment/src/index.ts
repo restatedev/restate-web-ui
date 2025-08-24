@@ -1,1 +1,1 @@
-export * from './lib/register-deployment';
+export { TriggerRegisterDeploymentDialog } from './lib/Dialog';

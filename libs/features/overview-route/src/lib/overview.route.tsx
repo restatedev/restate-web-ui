@@ -18,7 +18,7 @@ import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import { FormFieldInput } from '@restate/ui/form-field';
 import { ErrorBanner } from '@restate/ui/error';
 import { ServiceCard } from '@restate/features/service';
-import { TriggerRegisterDeploymentDialog } from '@restate/features/deployment';
+import { TriggerRegisterDeploymentDialog } from '@restate/features/register-deployment';
 
 function MultipleDeploymentsPlaceholder({
   filterText,
