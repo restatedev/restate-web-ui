@@ -1,12 +1,10 @@
 import { useListDeployments } from '@restate/data-access/admin-api-hooks';
 import { RestateServer } from './RestateServer';
 import { tv } from '@restate/util/styles';
-import { TriggerRegisterDeploymentDialog } from './RegisterDeployment/Dialog';
 import {
   ServiceDeploymentExplainer,
   ServiceExplainer,
 } from '@restate/features/explainers';
-import { Service } from './Service';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 import {
   useDeferredValue,
@@ -19,6 +17,8 @@ import {
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import { FormFieldInput } from '@restate/ui/form-field';
 import { ErrorBanner } from '@restate/ui/error';
+import { ServiceCard } from '@restate/features/service';
+import { TriggerRegisterDeploymentDialog } from '@restate/features/deployment';
 
 function MultipleDeploymentsPlaceholder({
   filterText,
@@ -237,7 +237,7 @@ function Component() {
           className={layoutStyles({ isScrolling, className: masonryId })}
         >
           {sortedServiceNames?.map((serviceName) => (
-            <Service
+            <ServiceCard
               key={
                 serviceName + services?.get(serviceName)?.sortedRevisions?.at(0)
               }
@@ -249,7 +249,7 @@ function Component() {
                 className="absolute top-1/2 left-0 h-0 w-0 rounded-tr-full rounded-br-full"
                 data-anchor
               />
-            </Service>
+            </ServiceCard>
           ))}
           {size === 1 && <OneDeploymentPlaceholder />}
         </Masonry>

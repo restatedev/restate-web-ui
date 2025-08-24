@@ -5,7 +5,7 @@ import {
   useParamValue,
   ComplementaryFooter,
 } from '@restate/ui/layout';
-import { SERVICE_QUERY_PARAM } from '../constants';
+import { SERVICE_QUERY_PARAM } from './constants';
 import {
   CollapsibleSection,
   CollapsibleSectionContent,
@@ -20,10 +20,9 @@ import {
   useServiceDetails,
 } from '@restate/data-access/admin-api-hooks';
 import { Form } from 'react-router';
-import { Handler } from '../Handler';
+import { Handler } from './Handler';
 import { Icon, IconName } from '@restate/ui/icons';
-import { ServiceType } from '../ServiceType';
-import { Deployment } from '../Deployment';
+import { ServiceType } from './ServiceType';
 import {
   ComboBoxItem,
   ComboBoxSection,
@@ -36,9 +35,10 @@ import { FormEvent, useEffect, useId, useState } from 'react';
 import { Link } from '@restate/ui/link';
 import { useQueryClient } from '@tanstack/react-query';
 import { ErrorBanner } from '@restate/ui/error';
-import { ServicePlaygroundTrigger } from '../ServicePlayground';
+import { ServicePlaygroundTrigger } from './ServicePlayground';
 import { showSuccessNotification } from '@restate/ui/notification';
 import { RestateMinimumVersion } from '@restate/util/feature-flag';
+import { Deployment } from '@restate/features/deployment';
 
 export function ServiceDetails() {
   return (

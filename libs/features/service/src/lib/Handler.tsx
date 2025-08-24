@@ -12,15 +12,13 @@ import {
   PopoverHoverTrigger,
   usePopover,
 } from '@restate/ui/popover';
+import { ServicePlaygroundTrigger } from './ServicePlayground';
 import { ComponentProps } from 'react';
 import { JsonSchemaViewer } from '@restate/ui/api';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Badge } from '@restate/ui/badge';
 import { Link } from '@restate/ui/link';
-import {
-  SERVICE_PLAYGROUND_QUERY_PARAM,
-  ServicePlaygroundTrigger,
-} from '@restate/features/service';
+import { SERVICE_PLAYGROUND_QUERY_PARAM } from './constants';
 
 const styles = tv({
   base: 'relative flex flex-row flex-wrap items-center pr-2',

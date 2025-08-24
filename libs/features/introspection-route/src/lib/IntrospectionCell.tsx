@@ -1,6 +1,6 @@
 import { useListDeployments } from '@restate/data-access/admin-api-hooks';
 import { InvocationId, Target } from '@restate/features/invocation-route';
-import { Deployment } from '@restate/features/overview-route';
+import { Deployment } from '@restate/features/deployment';
 import { Cell } from '@restate/ui/table';
 import { DateTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
 import { formatDurations } from '@restate/util/intl';

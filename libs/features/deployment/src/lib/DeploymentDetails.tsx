@@ -8,7 +8,7 @@ import {
 import {
   DELETE_DEPLOYMENT_QUERY_PARAM,
   DEPLOYMENT_QUERY_PARAM,
-} from '../constants';
+} from './constants';
 import { useSearchParams } from 'react-router';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -19,7 +19,6 @@ import {
   isLambdaDeployment,
 } from '@restate/data-access/admin-api';
 import { InlineTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
-import { MiniService } from '../MiniService';
 import {
   ProtocolTypeExplainer,
   ServiceCompatibility,
@@ -29,6 +28,7 @@ import { Copy } from '@restate/ui/copy';
 import { Badge } from '@restate/ui/badge';
 import { SDK } from './SDK';
 import { useDeploymentDetails } from '@restate/data-access/admin-api-hooks';
+import { MiniService } from '@restate/features/service';
 
 export function DeploymentDetails() {
   return (

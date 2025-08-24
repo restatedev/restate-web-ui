@@ -3,8 +3,7 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { useRegisterDeploymentContext } from './Context';
 import { Disclosure, DisclosurePanel } from 'react-aria-components';
 import { Button } from '@restate/ui/button';
-import { Handler } from '../Handler';
-import { ServiceType } from '../ServiceType';
+import { ServiceType, Handler } from '@restate/features/service';
 import { Link } from '@restate/ui/link';
 
 export function DeploymentProtocolCheck() {

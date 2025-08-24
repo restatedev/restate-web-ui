@@ -2,10 +2,10 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from '@restate/util/styles';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Service } from '@restate/data-access/admin-api';
-import { Revision } from './Revision';
 import { SERVICE_QUERY_PARAM } from './constants';
 import { Link } from '@restate/ui/link';
 import { useRef } from 'react';
+import { Revision } from '@restate/features/deployment';
 
 const styles = tv({
   base: 'relative -m-1 flex flex-row items-center gap-2 p-1',

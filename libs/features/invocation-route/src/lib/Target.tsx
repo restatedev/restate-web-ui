@@ -6,7 +6,7 @@ import {
 } from '@restate/ui/tooltip';
 import { PropsWithChildren, useRef } from 'react';
 import { tv } from '@restate/util/styles';
-import { SERVICE_QUERY_PARAM } from '@restate/features/overview-route';
+import { SERVICE_QUERY_PARAM } from '@restate/features/service';
 
 function TargetTooltipContent({
   service,
