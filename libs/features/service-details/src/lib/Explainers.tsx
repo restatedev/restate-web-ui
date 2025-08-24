@@ -6,8 +6,8 @@ function Warning({ children }: PropsWithChildren) {
   return (
     <div className="mt-2 flex gap-2 rounded-xl bg-orange-100 p-3 text-xs text-orange-500">
       <Icon
-        className="h-5 w-5 shrink-0 fill-orange-500 text-orange-100"
-        name={IconName.TriangleAlert}
+        className="h-4.5 w-4.5 shrink-0 fill-orange-400 text-orange-100"
+        name={IconName.Info}
       />
       <span className="inline-block">{children}</span>
     </div>

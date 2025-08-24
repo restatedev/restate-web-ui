@@ -238,6 +238,27 @@ function ServiceForm({
         </SectionContent>
       </Section>
       <Section>
+        <SectionTitle>Deployments</SectionTitle>
+        <SectionContent className="px-2 pt-2" raised={false}>
+          {isPendingOrSubmitting ? (
+            <div className="h-6 w-full animate-pulse rounded-md bg-white" />
+          ) : (
+            <div className="flex flex-col gap-2">
+              {sortedRevisions.map((revision) =>
+                deployments?.[revision]?.map((id) => (
+                  <Deployment
+                    deploymentId={id}
+                    revision={revision}
+                    key={id}
+                    highlightSelection={false}
+                  />
+                )),
+              )}
+            </div>
+          )}
+        </SectionContent>
+      </Section>
+      <Section>
         <SectionTitle>Access</SectionTitle>
         <SectionContent className="py-1.5">
           <FormFieldCheckbox
@@ -369,27 +390,6 @@ function ServiceForm({
           </FormFieldCombobox>
         </CollapsibleSectionContent>
       </CollapsibleSection>
-      <Section>
-        <SectionTitle>Deployments</SectionTitle>
-        <SectionContent className="px-2 pt-2" raised={false}>
-          {isPendingOrSubmitting ? (
-            <div className="h-6 w-full animate-pulse rounded-md bg-white" />
-          ) : (
-            <div className="flex flex-col gap-2">
-              {sortedRevisions.map((revision) =>
-                deployments?.[revision]?.map((id) => (
-                  <Deployment
-                    deploymentId={id}
-                    revision={revision}
-                    key={id}
-                    highlightSelection={false}
-                  />
-                )),
-              )}
-            </div>
-          )}
-        </SectionContent>
-      </Section>
     </>
   );
 }
