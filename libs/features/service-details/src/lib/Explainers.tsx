@@ -14,44 +14,56 @@ function Warning({ children }: PropsWithChildren) {
   );
 }
 
-function WithLearnMore({ children }: PropsWithChildren) {
+function WithLearnMore({
+  children,
+  learnMore,
+}: PropsWithChildren<{ learnMore?: boolean }>) {
   return (
     <div className="inline">
       {children}
-      <Link
-        className="ml-1 inline-block"
-        rel="noopener noreferrer"
-        target="_blank"
-        variant="secondary"
-        href="https://docs.restate.dev/operate/configuration/services/"
-      >
-        Learn more…
-      </Link>
+      {learnMore && (
+        <Link
+          className="ml-1 inline-block text-inherit"
+          rel="noopener noreferrer"
+          target="_blank"
+          variant="secondary"
+          href="https://docs.restate.dev/operate/configuration/services/"
+        >
+          Learn more…
+        </Link>
+      )}
     </div>
   );
 }
-export const WorkflowRetentionExplanation = () => (
-  <WithLearnMore>
+export const WorkflowRetentionExplanation = ({
+  learnMore,
+}: PropsWithChildren<{ learnMore?: boolean }>) => (
+  <WithLearnMore learnMore={learnMore}>
     The period for which a workflow's result is retained after{' '}
-    <span className="font-mono font-medium text-gray-600 italic">run()</span>{' '}
-    completes.
+    <span className="font-mono font-medium italic">run()</span> completes.
   </WithLearnMore>
 );
 
-export const WorkflowIdempotencyExplanation = () => (
-  <WithLearnMore>
+export const WorkflowIdempotencyExplanation = ({
+  learnMore,
+}: PropsWithChildren<{ learnMore?: boolean }>) => (
+  <WithLearnMore learnMore={learnMore}>
     The period for which a shared handler's result is retained when invoked with
     an idempotency key.
   </WithLearnMore>
 );
-export const IdempotencyExplanation = () => (
-  <WithLearnMore>
+export const IdempotencyExplanation = ({
+  learnMore,
+}: PropsWithChildren<{ learnMore?: boolean }>) => (
+  <WithLearnMore learnMore={learnMore}>
     The period for which an invocation's result is retained when invoked with an
     idempotency key.
   </WithLearnMore>
 );
-export const JournalExplanation = () => (
-  <WithLearnMore>
+export const JournalExplanation = ({
+  learnMore,
+}: PropsWithChildren<{ learnMore?: boolean }>) => (
+  <WithLearnMore learnMore={learnMore}>
     The period for which an invocation's journal entries are retained.
   </WithLearnMore>
 );
