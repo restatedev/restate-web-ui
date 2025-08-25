@@ -1,14 +1,7 @@
 import { useServiceDetails } from '@restate/data-access/admin-api-hooks';
 import { Badge } from '@restate/ui/badge';
 import { Button } from '@restate/ui/button';
-import {
-  FormFieldCombobox,
-  ComboBoxSection,
-  ComboBoxItem,
-} from '@restate/ui/form-field';
-import { Link } from '@restate/ui/link';
 import { SectionTitle, SectionContent, Section } from '@restate/ui/section';
-import { InlineTooltip } from '@restate/ui/tooltip';
 import { RestateMinimumVersion } from '@restate/util/feature-flag';
 import { humanTimeToMs } from '@restate/util/humantime';
 import { useSearchParams } from 'react-router';
@@ -52,7 +45,7 @@ export function RetentionSection({
               { preventScrollReset: true },
             )
           }
-          className="ml-auto flex items-center gap-1 rounded-md px-1.5 py-0.5 font-sans text-xs font-normal"
+          className="ml-auto flex items-center gap-1 rounded-md bg-gray-50 px-1.5 py-0.5 font-sans text-xs font-normal shadow-none"
         >
           Edit…
         </Button>
