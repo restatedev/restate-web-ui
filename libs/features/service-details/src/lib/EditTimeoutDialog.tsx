@@ -91,7 +91,6 @@ export function EditTimeoutDialog() {
   };
 
   const isPendingOrSubmitting = isPending || isSubmitting;
-  const isWorkflow = data?.ty === 'Workflow';
 
   return (
     <QueryDialog query={SERVICE_TIMEOUT_EDIT}>

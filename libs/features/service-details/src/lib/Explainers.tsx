@@ -4,7 +4,7 @@ import { PropsWithChildren } from 'react';
 
 export function Warning({ children }: PropsWithChildren) {
   return (
-    <div className="mt-2 flex gap-2 rounded-xl bg-blue-100 p-3 text-xs text-blue-600/80">
+    <div className="mt-2 flex gap-2 rounded-xl bg-blue-100/70 p-3 text-xs text-blue-600/80">
       <Icon
         className="h-4.5 w-4.5 shrink-0 fill-blue-400 text-blue-100"
         name={IconName.Info}
