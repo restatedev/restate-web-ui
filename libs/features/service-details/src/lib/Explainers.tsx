@@ -2,11 +2,11 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { Link } from '@restate/ui/link';
 import { PropsWithChildren } from 'react';
 
-function Warning({ children }: PropsWithChildren) {
+export function Warning({ children }: PropsWithChildren) {
   return (
-    <div className="mt-2 flex gap-2 rounded-xl bg-orange-100 p-3 text-xs text-orange-500">
+    <div className="mt-2 flex gap-2 rounded-xl bg-blue-100 p-3 text-xs text-blue-600/80">
       <Icon
-        className="h-4.5 w-4.5 shrink-0 fill-orange-400 text-orange-100"
+        className="h-4.5 w-4.5 shrink-0 fill-blue-400 text-blue-100"
         name={IconName.Info}
       />
       <span className="inline-block">{children}</span>
@@ -77,7 +77,7 @@ export const WarningIdempotencyCapExplanation = ({
     <Warning>
       For invocations with an idempotency key, the journal retention period is
       capped at{' '}
-      <span className="font-mono font-medium text-orange-600">{cap}</span>
+      <span className="font-mono font-medium text-blue-600">{cap}</span>
     </Warning>
   );
 export const WarningWorkflowCapExplanation = ({
@@ -88,6 +88,6 @@ export const WarningWorkflowCapExplanation = ({
   cap && (
     <Warning>
       For workflow executions, the journal retention period is capped at{' '}
-      <span className="font-mono font-medium text-orange-600">{cap}</span>
+      <span className="font-mono font-medium text-blue-600">{cap}</span>
     </Warning>
   );

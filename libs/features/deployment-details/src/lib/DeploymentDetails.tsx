@@ -13,6 +13,7 @@ import {
   getEndpoint,
   isHttpDeployment,
   isLambdaDeployment,
+  getProtocolType,
 } from '@restate/data-access/admin-api';
 import { InlineTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
 import {
@@ -269,14 +270,4 @@ function Header({ name, value }: { name: string; value: string }) {
       </div>
     </div>
   );
-}
-
-function getProtocolType(deployment?: Deployment) {
-  if (!deployment) {
-    return undefined;
-  }
-  if (isHttpDeployment(deployment)) {
-    return deployment.protocol_type;
-  }
-  return 'RequestResponse';
 }

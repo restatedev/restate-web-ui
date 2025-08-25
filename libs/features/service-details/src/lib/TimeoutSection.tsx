@@ -1,4 +1,7 @@
-import { useServiceDetails } from '@restate/data-access/admin-api-hooks';
+import {
+  useListDeployments,
+  useServiceDetails,
+} from '@restate/data-access/admin-api-hooks';
 import { Button } from '@restate/ui/button';
 import { SectionTitle, Section } from '@restate/ui/section';
 import { useSearchParams } from 'react-router';
@@ -9,6 +12,9 @@ import { PropsWithChildren } from 'react';
 import { Icon, IconName } from '@restate/ui/icons';
 import { InlineTooltip } from '@restate/ui/tooltip';
 import { Link } from '@restate/ui/link';
+import { getProtocolType } from '@restate/data-access/admin-api';
+import { Warning } from './Explainers';
+import { Badge } from '@restate/ui/badge';
 
 export function TimeoutSection({
   serviceDetails: data,
@@ -20,6 +26,16 @@ export function TimeoutSection({
   serviceDetails?: ReturnType<typeof useServiceDetails>['data'];
 }) {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { data: listDeploymentsData } = useListDeployments();
+  const deploymentId =
+    listDeploymentsData?.services.get(String(data?.name))?.deployments?.[
+      Number(data?.revision)
+    ] ?? [];
+  const isRequestResponse = deploymentId.some(
+    (id) =>
+      getProtocolType(listDeploymentsData?.deployments.get(id)) ===
+      'RequestResponse',
+  );
 
   return (
     <Section>
@@ -47,81 +63,90 @@ export function TimeoutSection({
           label="Inactivity"
           isPending={isPending}
           footer={
-            <JournalContainer>
-              <Entry
-                className="col-start-1 col-end-2 row-start-1 row-end-2"
-                variant="completed"
-              />
-              <Entry
-                className="col-start-2 col-end-3 row-start-3 row-end-4"
-                variant="running"
-              />
-              <Entry
-                className="col-start-3 col-end-5 row-start-3 row-end-4"
-                variant="runningInBackground"
-              />
-              <Entry
-                className="col-start-3 col-end-5 row-start-5 row-end-6"
-                variant="suspended"
-              />
-              <Label
-                className="col-start-2 col-end-5 row-start-1 row-end-3"
-                fade
-              >
-                <InlineTooltip
-                  variant="indicator-button"
-                  title="Inactivity timeout"
-                  description={
-                    <ul className="space-y-3">
-                      <EntryReceived className="" />
-                      <InactivityTimeoutReached className="opacity-70" />
-                      <ResumeOnUpdate className="opacity-70" />
-                      <LearnMore />
-                    </ul>
-                  }
+            <div>
+              <JournalContainer>
+                <Entry
+                  className="col-start-1 col-end-2 row-start-1 row-end-2"
+                  variant="completed"
+                />
+                <Entry
+                  className="col-start-2 col-end-3 row-start-3 row-end-4"
+                  variant="running"
+                />
+                <Entry
+                  className="col-start-3 col-end-5 row-start-3 row-end-4"
+                  variant="runningInBackground"
+                />
+                <Entry
+                  className="col-start-3 col-end-5 row-start-5 row-end-6"
+                  variant="suspended"
+                />
+                <Label
+                  className="col-start-2 col-end-5 row-start-1 row-end-3"
+                  fade
                 >
-                  New entry
-                </InlineTooltip>
-              </Label>
-              <Label
-                className="col-start-2 col-end-3 row-start-4 row-end-5"
-                align="center"
-              >
-                <InlineTooltip
-                  variant="indicator-button"
-                  title="Inactivity timeout"
-                  description={
-                    <ul className="space-y-3">
-                      <EntryReceived className="opacity-70" />
-                      <InactivityTimeoutReached />
-                      <ResumeOnUpdate className="opacity-70" />
-                      <LearnMore />
-                    </ul>
-                  }
+                  <InlineTooltip
+                    variant="indicator-button"
+                    title="Inactivity timeout"
+                    description={
+                      <ul className="space-y-3">
+                        <EntryReceived className="" />
+                        <InactivityTimeoutReached className="opacity-70" />
+                        <ResumeOnUpdate className="opacity-70" />
+                        <LearnMore />
+                      </ul>
+                    }
+                  >
+                    New entry
+                  </InlineTooltip>
+                </Label>
+                <Label
+                  className="col-start-2 col-end-3 row-start-4 row-end-5"
+                  align="center"
                 >
-                  Inactivity
-                </InlineTooltip>
-              </Label>
-              <Label
-                className="col-start-3 col-end-5 row-start-6 row-end-7"
-                fade
-              >
-                <InlineTooltip
-                  variant="indicator-button"
-                  title="Inactivity timeout"
-                  description={
-                    <ul className="space-y-3">
-                      <EntryReceived className="opacity-70" />
-                      <InactivityTimeoutReached className="opacity-70" />
-                      <ResumeOnUpdate />
-                      <LearnMore />
-                    </ul>
-                  }
+                  <InlineTooltip
+                    variant="indicator-button"
+                    title="Inactivity timeout"
+                    description={
+                      <ul className="space-y-3">
+                        <EntryReceived className="opacity-70" />
+                        <InactivityTimeoutReached />
+                        <ResumeOnUpdate className="opacity-70" />
+                        <LearnMore />
+                      </ul>
+                    }
+                  >
+                    Inactivity
+                  </InlineTooltip>
+                </Label>
+                <Label
+                  className="col-start-3 col-end-5 row-start-6 row-end-7"
+                  fade
                 >
-                  Suspended
-                </InlineTooltip>
-              </Label>
-            </JournalContainer>
+                  <InlineTooltip
+                    variant="indicator-button"
+                    title="Inactivity timeout"
+                    description={
+                      <ul className="space-y-3">
+                        <EntryReceived className="opacity-70" />
+                        <InactivityTimeoutReached className="opacity-70" />
+                        <ResumeOnUpdate />
+                        <LearnMore />
+                      </ul>
+                    }
+                  >
+                    Suspended
+                  </InlineTooltip>
+                </Label>
+              </JournalContainer>
+              {isRequestResponse && (
+                <Warning>
+                  Inactivity timer not supported in this deployment. (Available
+                  only in <code className="font-mono">Bidirectional</code>{' '}
+                  deployments.)
+                </Warning>
+              )}
+            </div>
           }
         />
         <SubSection
@@ -359,9 +384,9 @@ const AbortTimeoutReached = ({ className }: { className?: string }) => (
 );
 const ResumeOnUpdate = ({ className }: { className?: string }) => (
   <li className={liStyles({ className })}>
-    <strong className="font-medium">Resume on update:</strong> When the journal
-    entry updates (e.g. sleep finishes, service call returns), Restate resumes
-    the invocation and continues execution.
+    <strong className="font-medium">Resume on update:</strong> When Restate
+    receives updates for the journal entry (e.g. sleep finishes, service call
+    returns), it resumes the invocation and continues execution.
   </li>
 );
 
@@ -372,7 +397,7 @@ const LearnMore = () => (
       rel="noopener noreferrer"
       target="_blank"
       variant="button"
-      href="https://docs.restate.dev/guides/error-handling/#inactivity-timeout"
+      href="https://docs.restate.dev/guides/error-handling/#timeouts-between-restate-and-the-service"
     >
       Learn more
       <Icon name={IconName.ExternalLink} className="h-[1em] w-[1em]" />
