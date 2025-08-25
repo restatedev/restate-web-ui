@@ -47,10 +47,7 @@ import {
   ServicePlayground,
 } from '@restate/features/service';
 import { DeploymentDetails } from '@restate/features/deployment-details';
-import {
-  EditRetentionDialog,
-  ServiceDetails,
-} from '@restate/features/service-details';
+import { EditService, ServiceDetails } from '@restate/features/service-details';
 
 export const links: LinksFunction = () => [
   // TODO: move to the its own lib
@@ -243,11 +240,11 @@ export default function App() {
             </LayoutOutlet>
             <DeploymentDetails />
             <ServiceDetails />
-            <EditRetentionDialog />
             <DeleteDeployment />
             <ServicePlayground />
             <InvocationPanel />
             <StatePanel />
+            <EditService />
             <InvocationActions />
             <Support />
           </EditState>

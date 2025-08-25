@@ -5,14 +5,7 @@ import {
   useParamValue,
   ComplementaryFooter,
 } from '@restate/ui/layout';
-import {
-  CollapsibleSection,
-  CollapsibleSectionContent,
-  CollapsibleSectionTitle,
-  Section,
-  SectionContent,
-  SectionTitle,
-} from '@restate/ui/section';
+import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import {
   useListDeployments,
   useModifyService,
@@ -20,16 +13,9 @@ import {
 } from '@restate/data-access/admin-api-hooks';
 import { Form } from 'react-router';
 import { Icon, IconName } from '@restate/ui/icons';
-import {
-  ComboBoxItem,
-  ComboBoxSection,
-  FormFieldCheckbox,
-  FormFieldCombobox,
-} from '@restate/ui/form-field';
-import { InlineTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
-import { HUMANTIME_PATTERN_INPUT } from '@restate/util/humantime';
+import { FormFieldCheckbox } from '@restate/ui/form-field';
+import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { FormEvent, useEffect, useId, useState } from 'react';
-import { Link } from '@restate/ui/link';
 import { useQueryClient } from '@tanstack/react-query';
 import { ErrorBanner } from '@restate/ui/error';
 import { showSuccessNotification } from '@restate/ui/notification';
@@ -41,6 +27,7 @@ import {
   SERVICE_QUERY_PARAM,
 } from '@restate/features/service';
 import { RetentionSection } from './RetentionSection';
+import { TimeoutSection } from './TimeoutSection';
 
 export function ServiceDetails() {
   return (
@@ -281,115 +268,7 @@ function ServiceForm({
         serviceDetails={data}
         isPending={isPendingOrSubmitting}
       />
-
-      <CollapsibleSection>
-        <CollapsibleSectionTitle>Timeouts</CollapsibleSectionTitle>
-        <CollapsibleSectionContent
-          className="flex flex-col gap-4"
-          footer={
-            <span className="mt-2 block px-4 pb-2 text-xs font-normal text-gray-500 normal-case">
-              Configured using the{' '}
-              <Link
-                href="https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                jiff friendly
-              </Link>{' '}
-              format.
-            </span>
-          }
-        >
-          <FormFieldCombobox
-            pattern={HUMANTIME_PATTERN_INPUT}
-            allowsCustomValue
-            defaultValue={data?.inactivity_timeout ?? ''}
-            disabled={isPendingOrSubmitting}
-            label={
-              <InlineTooltip
-                variant="indicator-button"
-                title="Inactivity timeout"
-                description="This timer guards against stalled service/handler invocations. Once it expires, Restate triggers a graceful termination by asking the service invocation to suspend (which preserves intermediate progress)"
-              >
-                <span slot="title" className="text-0.5xs">
-                  Inactivity
-                </span>
-              </InlineTooltip>
-            }
-            name="inactivity_timeout"
-            className="[&_label]:text-zinc-500"
-            placeholder="1m"
-          >
-            <ComboBoxSection
-              title="Examples"
-              description={
-                <>
-                  Choose from the example options above, or enter a custom value
-                  in the{' '}
-                  <Link
-                    href="https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    jiff friendly
-                  </Link>{' '}
-                  format.
-                </>
-              }
-            >
-              <ComboBoxItem value="1m">1m</ComboBoxItem>
-              <ComboBoxItem value="5m">5m</ComboBoxItem>
-              <ComboBoxItem value="30m">30m</ComboBoxItem>
-              <ComboBoxItem value="1h 30m">1h 30m</ComboBoxItem>
-              <ComboBoxItem value="1day">1day</ComboBoxItem>
-            </ComboBoxSection>
-          </FormFieldCombobox>
-          <FormFieldCombobox
-            pattern={HUMANTIME_PATTERN_INPUT}
-            allowsCustomValue
-            disabled={isPendingOrSubmitting}
-            className="[&_label]:text-zinc-500"
-            defaultValue={data?.abort_timeout ?? ''}
-            placeholder="1m"
-            label={
-              <InlineTooltip
-                variant="indicator-button"
-                title="Abort timeout"
-                description="This timer guards against stalled service/handler invocations that are supposed to terminate. The abort timeout is started after the 'inactivity timeout' has expired and the service/handler invocation has been asked to gracefully terminate. Once the timer expires, it will abort the service/handler invocation."
-              >
-                <span slot="title" className="text-0.5xs">
-                  Abort
-                </span>
-              </InlineTooltip>
-            }
-            name="abort_timeout"
-          >
-            <ComboBoxSection
-              title="Examples"
-              description={
-                <>
-                  Choose from the example options above, or enter a custom value
-                  in the{' '}
-                  <Link
-                    href="https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    jiff friendly
-                  </Link>{' '}
-                  format.
-                </>
-              }
-            >
-              <ComboBoxItem value="1m">1m</ComboBoxItem>
-              <ComboBoxItem value="5m">5m</ComboBoxItem>
-              <ComboBoxItem value="30m">30m</ComboBoxItem>
-              <ComboBoxItem value="1h 30m">1h 30m</ComboBoxItem>
-              <ComboBoxItem value="1day">1day</ComboBoxItem>
-            </ComboBoxSection>
-          </FormFieldCombobox>
-        </CollapsibleSectionContent>
-      </CollapsibleSection>
+      <TimeoutSection serviceDetails={data} isPending={isPendingOrSubmitting} />
     </>
   );
 }

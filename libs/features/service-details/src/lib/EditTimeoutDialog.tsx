@@ -4,7 +4,7 @@ import {
   DialogFooter,
   QueryDialog,
 } from '@restate/ui/dialog';
-import { SERVICE_RETENTION_EDIT } from './constants';
+import { SERVICE_TIMEOUT_EDIT } from './constants';
 import { FormEvent, useId } from 'react';
 import { Form, useSearchParams } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
@@ -24,18 +24,12 @@ import { HUMANTIME_PATTERN_INPUT } from '@restate/util/humantime';
 import { Link } from '@restate/ui/link';
 import { ErrorBanner } from '@restate/ui/error';
 import { Button, SubmitButton } from '@restate/ui/button';
-import {
-  IdempotencyExplanation,
-  JournalExplanation,
-  WorkflowIdempotencyExplanation,
-  WorkflowRetentionExplanation,
-} from './Explainers';
 import { Icon, IconName } from '@restate/ui/icons';
 
-export function EditRetentionDialog() {
+export function EditTimeoutDialog() {
   const formId = useId();
   const [searchParams] = useSearchParams();
-  const service = searchParams.get(SERVICE_RETENTION_EDIT);
+  const service = searchParams.get(SERVICE_TIMEOUT_EDIT);
 
   const {
     data,
@@ -58,7 +52,7 @@ export function EditRetentionDialog() {
       queryClient.setQueryData(queryKey, data);
       setSearchParams(
         (old) => {
-          old.delete(SERVICE_RETENTION_EDIT);
+          old.delete(SERVICE_TIMEOUT_EDIT);
           return old;
         },
         { preventScrollReset: true },
@@ -75,15 +69,10 @@ export function EditRetentionDialog() {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
-    const idempotency_retention = formData.get('idempotency_retention') as
+    const inactivity_timeout = formData.get('inactivity_timeout') as
       | string
       | null;
-    const journal_retention = formData.get('journal_retention') as
-      | string
-      | null;
-    const workflow_completion_retention = formData.get(
-      'workflow_completion_retention',
-    ) as string | null;
+    const abort_timeout = formData.get('abort_timeout') as string | null;
 
     mutate({
       parameters: {
@@ -91,11 +80,12 @@ export function EditRetentionDialog() {
       },
       body: {
         public: Boolean(data?.public),
-        idempotency_retention: idempotency_retention || null,
-        workflow_completion_retention: workflow_completion_retention || null,
-        journal_retention: journal_retention || null,
-        inactivity_timeout: data?.inactivity_timeout || null,
-        abort_timeout: data?.abort_timeout || null,
+        idempotency_retention: data?.idempotency_retention || null,
+        workflow_completion_retention:
+          data?.workflow_completion_retention || null,
+        journal_retention: data?.journal_retention || null,
+        inactivity_timeout,
+        abort_timeout,
       },
     });
   };
@@ -104,11 +94,11 @@ export function EditRetentionDialog() {
   const isWorkflow = data?.ty === 'Workflow';
 
   return (
-    <QueryDialog query={SERVICE_RETENTION_EDIT}>
+    <QueryDialog query={SERVICE_TIMEOUT_EDIT}>
       <DialogContent className="max-w-lg">
         <div className="flex flex-col gap-2">
           <h3 className="text-lg leading-6 font-medium text-gray-900">
-            Retention configuration for{' '}
+            Timeout configuration for{' '}
             <span className="rounded-sm bg-gray-100 px-[0.5ch] font-mono">
               {service}
             </span>
@@ -124,7 +114,7 @@ export function EditRetentionDialog() {
                   Any changes made here are{' '}
                   <span className="font-semibold">temporary</span> and remain in
                   effect only until the service is next discovered and
-                  registered. Use the SDK to configure retention periods
+                  registered. Use the SDK to configure timeout periods
                   permanently.
                 </span>
               </p>
@@ -138,79 +128,25 @@ export function EditRetentionDialog() {
             className="mt-2 flex flex-col gap-4"
             key={String(isPending)}
           >
-            {isWorkflow && (
-              <FormFieldCombobox
-                pattern={HUMANTIME_PATTERN_INPUT}
-                allowsCustomValue
-                disabled={isPendingOrSubmitting}
-                className="[&_label]:text-zinc-500"
-                defaultValue={data?.workflow_completion_retention ?? ''}
-                label={
-                  <InlineTooltip
-                    variant="indicator-button"
-                    title="Workflow completion"
-                    description={
-                      <WorkflowRetentionExplanation learnMore={false} />
-                    }
-                  >
-                    <span slot="title" className="text-0.5xs">
-                      Workflow completion
-                    </span>
-                  </InlineTooltip>
-                }
-                name="workflow_completion_retention"
-                placeholder="1day"
-              >
-                <ComboBoxSection
-                  title="Examples"
-                  description={
-                    <>
-                      Choose from the example options above, or enter a custom
-                      value in the{' '}
-                      <Link
-                        href="https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        jiff friendly
-                      </Link>{' '}
-                      format.
-                    </>
-                  }
-                >
-                  <ComboBoxItem value="1h 30m">1h 30m</ComboBoxItem>
-                  <ComboBoxItem value="12h">12h</ComboBoxItem>
-                  <ComboBoxItem value="1day">1day</ComboBoxItem>
-                  <ComboBoxItem value="7days">7days</ComboBoxItem>
-                </ComboBoxSection>
-              </FormFieldCombobox>
-            )}
-
             <FormFieldCombobox
               pattern={HUMANTIME_PATTERN_INPUT}
               allowsCustomValue
-              defaultValue={data?.idempotency_retention ?? ''}
+              defaultValue={data?.inactivity_timeout ?? ''}
               disabled={isPendingOrSubmitting}
               label={
                 <InlineTooltip
                   variant="indicator-button"
-                  title="Idempotency completion"
-                  description={
-                    isWorkflow ? (
-                      <WorkflowIdempotencyExplanation learnMore={false} />
-                    ) : (
-                      <IdempotencyExplanation learnMore={false} />
-                    )
-                  }
+                  title="Inactivity timeout"
+                  description="This timer guards against stalled service/handler invocations. Once it expires, Restate triggers a graceful termination by asking the service invocation to suspend (which preserves intermediate progress)"
                 >
                   <span slot="title" className="text-0.5xs">
-                    Idempotency completion
+                    Inactivity
                   </span>
                 </InlineTooltip>
               }
-              name="idempotency_retention"
+              name="inactivity_timeout"
               className="[&_label]:text-zinc-500"
-              placeholder="1day"
+              placeholder="1m"
             >
               <ComboBoxSection
                 title="Examples"
@@ -229,57 +165,57 @@ export function EditRetentionDialog() {
                   </>
                 }
               >
+                <ComboBoxItem value="1m">1m</ComboBoxItem>
+                <ComboBoxItem value="5m">5m</ComboBoxItem>
+                <ComboBoxItem value="30m">30m</ComboBoxItem>
                 <ComboBoxItem value="1h 30m">1h 30m</ComboBoxItem>
-                <ComboBoxItem value="12h">12h</ComboBoxItem>
                 <ComboBoxItem value="1day">1day</ComboBoxItem>
-                <ComboBoxItem value="7days">7days</ComboBoxItem>
               </ComboBoxSection>
             </FormFieldCombobox>
-            <RestateMinimumVersion minVersion="1.4.5">
-              <FormFieldCombobox
-                pattern={HUMANTIME_PATTERN_INPUT}
-                allowsCustomValue
-                defaultValue={data?.journal_retention ?? ''}
-                disabled={isPendingOrSubmitting}
-                label={
-                  <InlineTooltip
-                    variant="indicator-button"
-                    title="Journal retention"
-                    description={<JournalExplanation learnMore={false} />}
-                  >
-                    <span slot="title" className="text-0.5xs">
-                      Journal retention
-                    </span>
-                  </InlineTooltip>
-                }
-                name="journal_retention"
-                className="[&_label]:text-zinc-500"
-                placeholder="1day"
-              >
-                <ComboBoxSection
-                  title="Examples"
-                  description={
-                    <>
-                      Choose from the example options above, or enter a custom
-                      value in the{' '}
-                      <Link
-                        href="https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        jiff friendly
-                      </Link>{' '}
-                      format.
-                    </>
-                  }
+            <FormFieldCombobox
+              pattern={HUMANTIME_PATTERN_INPUT}
+              allowsCustomValue
+              disabled={isPendingOrSubmitting}
+              className="[&_label]:text-zinc-500"
+              defaultValue={data?.abort_timeout ?? ''}
+              placeholder="1m"
+              label={
+                <InlineTooltip
+                  variant="indicator-button"
+                  title="Abort timeout"
+                  description="This timer guards against stalled service/handler invocations that are supposed to terminate. The abort timeout is started after the 'inactivity timeout' has expired and the service/handler invocation has been asked to gracefully terminate. Once the timer expires, it will abort the service/handler invocation."
                 >
-                  <ComboBoxItem value="1h 30m">1h 30m</ComboBoxItem>
-                  <ComboBoxItem value="12h">12h</ComboBoxItem>
-                  <ComboBoxItem value="1day">1day</ComboBoxItem>
-                  <ComboBoxItem value="7days">7days</ComboBoxItem>
-                </ComboBoxSection>
-              </FormFieldCombobox>
-            </RestateMinimumVersion>
+                  <span slot="title" className="text-0.5xs">
+                    Abort
+                  </span>
+                </InlineTooltip>
+              }
+              name="abort_timeout"
+            >
+              <ComboBoxSection
+                title="Examples"
+                description={
+                  <>
+                    Choose from the example options above, or enter a custom
+                    value in the{' '}
+                    <Link
+                      href="https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      jiff friendly
+                    </Link>{' '}
+                    format.
+                  </>
+                }
+              >
+                <ComboBoxItem value="1m">1m</ComboBoxItem>
+                <ComboBoxItem value="5m">5m</ComboBoxItem>
+                <ComboBoxItem value="30m">30m</ComboBoxItem>
+                <ComboBoxItem value="1h 30m">1h 30m</ComboBoxItem>
+                <ComboBoxItem value="1day">1day</ComboBoxItem>
+              </ComboBoxSection>
+            </FormFieldCombobox>
           </Form>
           <DialogFooter>
             <div className="flex flex-col gap-2">

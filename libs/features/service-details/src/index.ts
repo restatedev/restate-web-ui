@@ -1,2 +1,2 @@
 export * from './lib/ServiceDetails';
-export * from './lib/EditRetentionDialog';
+export * from './lib/EditService';
