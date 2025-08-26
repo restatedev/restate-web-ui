@@ -97,7 +97,7 @@ export function IntrospectionCell({
 }
 
 function formattedValue(value?: string) {
-  if (value) {
+  if (value !== null && value !== undefined) {
     try {
       return JSON.stringify(JSON.parse(value), null, 2);
     } catch (_) {

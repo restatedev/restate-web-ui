@@ -42,7 +42,7 @@ export function RetentionSection({
               { preventScrollReset: true },
             )
           }
-          className="ml-auto flex items-center gap-1 rounded-md bg-gray-50 px-1.5 py-0.5 font-sans text-xs font-normal shadow-none"
+          className="ml-auto flex items-center gap-1 rounded-md bg-gray-50/50 px-1.5 py-0.5 font-sans text-xs font-normal shadow-none"
         >
           Edit…
         </Button>

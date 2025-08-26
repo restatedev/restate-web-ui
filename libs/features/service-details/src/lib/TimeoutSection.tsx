@@ -14,7 +14,6 @@ import { InlineTooltip } from '@restate/ui/tooltip';
 import { Link } from '@restate/ui/link';
 import { getProtocolType } from '@restate/data-access/admin-api';
 import { Warning } from './Explainers';
-import { Badge } from '@restate/ui/badge';
 
 export function TimeoutSection({
   serviceDetails: data,
@@ -38,7 +37,7 @@ export function TimeoutSection({
   );
 
   return (
-    <Section>
+    <Section className="group">
       <SectionTitle className="flex items-center">
         Timeouts
         <Button
@@ -52,7 +51,7 @@ export function TimeoutSection({
               { preventScrollReset: true },
             )
           }
-          className="ml-auto flex items-center gap-1 rounded-md bg-gray-50 px-1.5 py-0.5 font-sans text-xs font-normal shadow-none"
+          className="ml-auto flex items-center gap-1 rounded-md bg-gray-50/50 px-1.5 py-0.5 font-sans text-xs font-normal shadow-none"
         >
           Edit…
         </Button>
@@ -63,7 +62,14 @@ export function TimeoutSection({
           label="Inactivity"
           isPending={isPending}
           footer={
-            <div>
+            <div className="flex flex-col gap-4">
+              {isRequestResponse && (
+                <Warning className="mt-0">
+                  Inactivity timer not supported in this deployment. (Available
+                  only in <code className="font-mono">Bidirectional</code>{' '}
+                  mode.)
+                </Warning>
+              )}
               <JournalContainer>
                 <Entry
                   className="col-start-1 col-end-2 row-start-1 row-end-2"
@@ -82,8 +88,8 @@ export function TimeoutSection({
                   variant="suspended"
                 />
                 <Label
-                  className="col-start-2 col-end-5 row-start-1 row-end-3"
-                  fade
+                  className="col-start-2 col-end-5 row-start-1 row-end-3 opacity-90 group-hover:opacity-100"
+                  noLine
                 >
                   <InlineTooltip
                     variant="indicator-button"
@@ -97,11 +103,13 @@ export function TimeoutSection({
                       </ul>
                     }
                   >
-                    New entry
+                    <span className="font-mono italic">
+                      sleep(…) {`> ${data?.inactivity_timeout}`}
+                    </span>
                   </InlineTooltip>
                 </Label>
                 <Label
-                  className="col-start-2 col-end-3 row-start-4 row-end-5"
+                  className="col-start-2 col-end-3 row-start-4 row-end-6"
                   align="center"
                 >
                   <InlineTooltip
@@ -121,7 +129,7 @@ export function TimeoutSection({
                 </Label>
                 <Label
                   className="col-start-3 col-end-5 row-start-6 row-end-7"
-                  fade
+                  noLine
                 >
                   <InlineTooltip
                     variant="indicator-button"
@@ -139,13 +147,6 @@ export function TimeoutSection({
                   </InlineTooltip>
                 </Label>
               </JournalContainer>
-              {isRequestResponse && (
-                <Warning>
-                  Inactivity timer not supported in this deployment. (Available
-                  only in <code className="font-mono">Bidirectional</code>{' '}
-                  deployments.)
-                </Warning>
-              )}
             </div>
           }
         />
@@ -167,20 +168,20 @@ export function TimeoutSection({
                 className="relative col-start-3 col-end-4 row-start-3 row-end-4 rounded-l-none rounded-r-sm bg-orange-200"
                 variant="running"
               >
-                <div className="absolute -top-0.5 -bottom-0.5 -left-0.5 w-1 bg-gray-100" />
+                <div className="absolute -top-0.5 -bottom-0.5 -left-1 w-1 bg-gray-100" />
               </Entry>
 
               <Entry
-                className="col-start-4 col-end-5 row-start-5 row-end-6"
+                className="col-start-4 col-end-5 row-start-3 row-end-4"
                 variant="retrying"
               />
               <Label
-                className="col-start-2 col-end-5 row-start-1 row-end-3"
-                fade
+                className="col-start-2 col-end-5 row-start-1 row-end-3 opacity-90 group-hover:opacity-100"
+                noLine
               >
                 <InlineTooltip
                   variant="indicator-button"
-                  title="Inactivity timeout"
+                  title="Abort timeout"
                   description={
                     <ul className="space-y-3">
                       <EntryReceivedForAbort className="" />
@@ -190,16 +191,19 @@ export function TimeoutSection({
                     </ul>
                   }
                 >
-                  New entry
+                  <span className="font-mono italic">
+                    run(…){' '}
+                    {`> ${data?.inactivity_timeout} + ${data?.abort_timeout}`}
+                  </span>
                 </InlineTooltip>
               </Label>
               <Label
-                className="col-start-2 col-end-3 row-start-4 row-end-5"
+                className="col-start-2 col-end-3 row-start-4 row-end-6"
                 align="center"
               >
                 <InlineTooltip
                   variant="indicator-button"
-                  title="Inactivity timeout"
+                  title="Abort timeout"
                   description={
                     <ul className="space-y-3">
                       <EntryReceivedForAbort className="opacity-70" />
@@ -213,7 +217,7 @@ export function TimeoutSection({
                 </InlineTooltip>
               </Label>
               <Label
-                className="col-start-3 col-end-4 row-start-4 row-end-5"
+                className="col-start-3 col-end-4 row-start-4 row-end-6"
                 align="center"
               >
                 <InlineTooltip
@@ -231,10 +235,7 @@ export function TimeoutSection({
                   Abort
                 </InlineTooltip>
               </Label>
-              <Label
-                className="col-start-4 col-end-5 row-start-6 row-end-7"
-                fade
-              >
+              <Label className="col-start-4 col-end-5 row-start-4 row-end-6">
                 Retrying
               </Label>
             </JournalContainer>
@@ -246,7 +247,7 @@ export function TimeoutSection({
 }
 
 const gridStyles = tv({
-  base: 'grid grid-cols-[2rem_1fr_1fr_12ch] grid-rows-[0.5rem_0.5rem_0.5rem_0.5rem_0.5rem_1rem] text-2xs',
+  base: 'grid grid-cols-[2rem_1fr_1fr_12ch] grid-rows-[0.5rem_0.5rem_0.5rem_0.5rem_0.5rem_1rem] mask-[linear-gradient(to_right,transparent_0,black_20px,black_calc(100%-20px),transparent_100%)] text-2xs',
 });
 
 function JournalContainer({
@@ -260,15 +261,12 @@ const entryStyles = tv({
   base: 'h-full w-full border border-dashed border-transparent',
   variants: {
     variant: {
-      suspended:
-        'rounded-l-sm border-gray-400/70 bg-gray-200 mask-[linear-gradient(to_right,black_calc(100%-50px),transparent_100%)]',
-      completed:
-        'rounded-sm bg-blue-300/70 mask-[linear-gradient(to_right,transparent_0,black_100%)]',
-      running: 'rounded-l-sm bg-blue-300/70',
+      suspended: 'rounded-l-sm border-gray-400 bg-gray-200',
+      completed: 'rounded-sm bg-blue-300/80',
+      running: 'rounded-sm bg-blue-300/80',
       runningInBackground:
-        'border-blue-300/70 bg-blue-300/20 mask-[linear-gradient(to_right,black_calc(100%-50px),transparent_100%)]',
-      retrying:
-        'rounded-l-sm bg-blue-300/70 mask-[linear-gradient(to_right,black_calc(100%-50px),transparent_100%)]',
+        '-ml-1 border-blue-300/80 border-l-transparent bg-blue-300/15',
+      retrying: 'rounded-l-sm bg-blue-300/80',
     },
   },
 });
@@ -308,20 +306,20 @@ const labelStyles = tv({
     align: {
       center: {
         container: 'justify-center',
-        line: 'top-full -translate-y-0.5',
+        line: '',
       },
       start: { container: 'justify-start' },
     },
-    fade: {
+    noLine: {
       true: {
-        base: 'mask-[linear-gradient(to_right,black_calc(100%-50px),transparent_100%)]',
+        line: 'hidden',
       },
       false: {},
     },
   },
   defaultVariants: {
     align: 'start',
-    fade: false,
+    noLine: false,
   },
 });
 
@@ -329,13 +327,13 @@ function Label({
   className,
   children,
   align,
-  fade,
+  noLine,
 }: PropsWithChildren<{
   className?: string;
-  fade?: boolean;
+  noLine?: boolean;
   align?: 'start' | 'center';
 }>) {
-  const { base, container, line } = labelStyles({ align, fade });
+  const { base, container, line } = labelStyles({ align, noLine });
   return (
     <div className={base({ className })}>
       <div className={container()}>
