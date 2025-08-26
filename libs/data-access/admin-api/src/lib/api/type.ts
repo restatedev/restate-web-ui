@@ -104,3 +104,12 @@ export function getEndpoint(deployment?: Deployment) {
     return deployment.arn;
   }
 }
+export function getProtocolType(deployment?: Deployment) {
+  if (!deployment) {
+    return undefined;
+  }
+  if (isHttpDeployment(deployment)) {
+    return deployment.protocol_type;
+  }
+  return 'RequestResponse';
+}

@@ -16,8 +16,7 @@ export function RetentionExplainer({
       description={
         <p>
           The duration an invocation is retained after completion. You can
-          configure the retention period at the service level through the SDK,
-          UI, or CLI.
+          configure the retention period at the service level through the SDK.
         </p>
       }
       className={className}

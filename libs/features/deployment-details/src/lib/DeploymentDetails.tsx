@@ -5,10 +5,6 @@ import {
   ComplementaryFooter,
   useParamValue,
 } from '@restate/ui/layout';
-import {
-  DELETE_DEPLOYMENT_QUERY_PARAM,
-  DEPLOYMENT_QUERY_PARAM,
-} from '../constants';
 import { useSearchParams } from 'react-router';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -17,9 +13,9 @@ import {
   getEndpoint,
   isHttpDeployment,
   isLambdaDeployment,
+  getProtocolType,
 } from '@restate/data-access/admin-api';
 import { InlineTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
-import { MiniService } from '../MiniService';
 import {
   ProtocolTypeExplainer,
   ServiceCompatibility,
@@ -27,8 +23,13 @@ import {
 import { ErrorBanner } from '@restate/ui/error';
 import { Copy } from '@restate/ui/copy';
 import { Badge } from '@restate/ui/badge';
-import { SDK } from './SDK';
 import { useDeploymentDetails } from '@restate/data-access/admin-api-hooks';
+import { MiniService } from '@restate/features/service';
+import {
+  DEPLOYMENT_QUERY_PARAM,
+  DELETE_DEPLOYMENT_QUERY_PARAM,
+  SDK,
+} from '@restate/features/deployment';
 
 export function DeploymentDetails() {
   return (
@@ -269,14 +270,4 @@ function Header({ name, value }: { name: string; value: string }) {
       </div>
     </div>
   );
-}
-
-function getProtocolType(deployment?: Deployment) {
-  if (!deployment) {
-    return undefined;
-  }
-  if (isHttpDeployment(deployment)) {
-    return deployment.protocol_type;
-  }
-  return 'RequestResponse';
 }

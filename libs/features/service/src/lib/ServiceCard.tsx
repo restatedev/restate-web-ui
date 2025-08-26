@@ -6,7 +6,6 @@ import {
 } from '@restate/data-access/admin-api';
 import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from '@restate/util/styles';
-import { Deployment } from './Deployment';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Link } from '@restate/ui/link';
 import { SERVICE_QUERY_PARAM } from './constants';
@@ -17,6 +16,7 @@ import {
   useListDeployments,
   useServiceDetails,
 } from '@restate/data-access/admin-api-hooks';
+import { Deployment } from '@restate/features/deployment';
 
 const styles = tv({
   base: 'w-full transform rounded-2xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] transition',
@@ -91,7 +91,7 @@ function filterDeployment(deployment?: DeploymentType, filterText?: string) {
   );
 }
 
-export function Service({
+export function ServiceCard({
   className,
   serviceName,
   filterText,

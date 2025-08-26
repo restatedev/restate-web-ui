@@ -1,0 +1,9 @@
+{
+  "name": "register-deployment",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/features/register-deployment/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project register-deployment --web",
+  "targets": {}
+}

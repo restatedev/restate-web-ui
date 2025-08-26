@@ -30,6 +30,16 @@ const HUMANTIME_UNITS_VALUES = [
   'd',
 ] as const;
 
+const UNIT_TO_MS: Record<keyof Required<Duration>, number> = {
+  ms: 1,
+  s: 1000,
+  m: 60 * 1000,
+  h: 60 * 60 * 1000,
+  days: 24 * 60 * 60 * 1000,
+  years: 365 * 24 * 60 * 60 * 1000,
+  months: 30 * 24 * 60 * 60 * 1000,
+};
+
 export const HUMANTIME_PATTERN_INPUT = HUMANTIME_UNITS_VALUES.map(
   () => `(\\d+\\s*(${HUMANTIME_UNITS_VALUES.join('|')}))?`,
 ).join('\\s*');
@@ -81,4 +91,31 @@ export function formatHumantime(value?: string | null) {
   return Object.entries(isoDuration)
     .map(([unit, value]) => `${value}${unit}`)
     .join(' ');
+}
+
+export function humanTimeToMs(value?: string | null) {
+  if (!value) {
+    return 0;
+  }
+  const matches = Array.from(value.matchAll(HUMANTIME_REGEXP));
+
+  const isoDuration = matches.reduce((result, match) => {
+    const { groups = {} } = match;
+    const { unitValue, unit } = groups;
+    const unitValueAsNumber = Number(unitValue);
+    const isoUnit = UNIT_MAPS[unit as HUMANTIME_UNITS];
+
+    if (isNaN(unitValueAsNumber)) {
+      return result;
+    }
+
+    return {
+      ...result,
+      [isoUnit]: unitValueAsNumber,
+    };
+  }, {} as Duration);
+
+  return Object.entries(isoDuration)
+    .map(([unit, value]) => value * UNIT_TO_MS[unit as keyof Duration])
+    .reduce((p, c) => p + c, 0);
 }

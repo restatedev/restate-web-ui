@@ -9,11 +9,11 @@ import { useActiveSidebarParam } from '@restate/ui/layout';
 import { useLocation } from 'react-router';
 import { useRestateContext } from '@restate/features/restate-context';
 import {
-  DEPLOYMENT_QUERY_PARAM,
   SERVICE_PLAYGROUND_QUERY_PARAM,
   SERVICE_QUERY_PARAM,
-} from '@restate/features/overview-route';
+} from '@restate/features/service';
 import { useIsInInvocationPage } from './InvocationPageContext';
+import { DEPLOYMENT_QUERY_PARAM } from '@restate/features/deployment';
 
 const styles = tv({
   base: 'relative font-mono text-zinc-600',

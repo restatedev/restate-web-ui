@@ -23,15 +23,6 @@ import {
   HealthCheckNotification,
   HealthIndicator,
 } from '@restate/features/health';
-import {
-  DeleteDeployment,
-  DeploymentDetails,
-  ServicePlayground,
-  ServiceDetails,
-  SERVICE_PLAYGROUND_QUERY_PARAM,
-  SERVICE_QUERY_PARAM,
-  DEPLOYMENT_QUERY_PARAM,
-} from '@restate/features/overview-route';
 import { Spinner } from '@restate/ui/loading';
 import {
   InvocationActions,
@@ -46,6 +37,17 @@ import {
 import { EditState } from '@restate/features/edit-state';
 import { FeatureFlags } from '@restate/util/feature-flag';
 import { QueryClient } from '@tanstack/react-query';
+import {
+  DEPLOYMENT_QUERY_PARAM,
+  DeleteDeployment,
+} from '@restate/features/deployment';
+import {
+  SERVICE_PLAYGROUND_QUERY_PARAM,
+  SERVICE_QUERY_PARAM,
+  ServicePlayground,
+} from '@restate/features/service';
+import { DeploymentDetails } from '@restate/features/deployment-details';
+import { EditService, ServiceDetails } from '@restate/features/service-details';
 
 export const links: LinksFunction = () => [
   // TODO: move to the its own lib
@@ -242,6 +244,7 @@ export default function App() {
             <ServicePlayground />
             <InvocationPanel />
             <StatePanel />
+            <EditService />
             <InvocationActions />
             <Support />
           </EditState>
