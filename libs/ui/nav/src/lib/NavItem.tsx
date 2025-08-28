@@ -16,7 +16,7 @@ const styles = tv({
   base: 'group isolate flex cursor-default rounded-xl px-3 py-1.5 text-center text-sm no-underline transition hover:bg-black/3 pressed:bg-gray-200',
   variants: {
     isCurrent: {
-      true: 'text-gray-800',
+      true: 'font-medium text-gray-700',
       false: 'text-gray-500',
     },
   },
@@ -51,7 +51,7 @@ export function NavItem({
   return (
     <li>
       <Link
-        className={styles()}
+        className={styles({ isCurrent: isActive })}
         href={preserveSearchParams ? `${href}${search}${location.hash}` : href}
         data-active={isActive}
         {...(isActive && { 'aria-current': value })}
