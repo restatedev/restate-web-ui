@@ -47,6 +47,8 @@ import {
   Radio,
   ClockAlert,
   Play,
+  Code,
+  ChartNoAxesColumn,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from '@restate/util/styles';
@@ -136,6 +138,8 @@ export const enum IconName {
   Eye = 'Eye',
   ClockAlert = 'ClockAlert',
   Play = 'Play',
+  Code = 'Code',
+  Usage = 'Usage',
 }
 export interface IconsProps {
   name: IconName;
@@ -210,6 +214,8 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.ClockAlert]: ClockAlert,
   [IconName.Eye]: Eye,
   [IconName.Play]: Play,
+  [IconName.Code]: Code,
+  [IconName.Usage]: ChartNoAxesColumn,
 };
 
 const styles = tv({

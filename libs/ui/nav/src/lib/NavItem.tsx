@@ -1,7 +1,7 @@
 import { useLocation, useNavigation } from 'react-router';
 import { focusRing } from '@restate/ui/focus';
 import { Link } from '@restate/ui/link';
-import { PropsWithChildren, useContext, useMemo } from 'react';
+import { PropsWithChildren, useCallback, useContext, useMemo } from 'react';
 import { tv } from '@restate/util/styles';
 import { NavContext } from './NavContext';
 import { Button } from '@restate/ui/button';
@@ -65,40 +65,56 @@ export function NavItem({
 interface NavSearchItemProps {
   search: string;
 }
+
+export function useGetHrefFromSearch() {
+  const currentLocation = useLocation();
+  const { location: nextLocation, state } = useNavigation();
+  const location = state === 'loading' ? nextLocation : currentLocation;
+
+  const getHref = useCallback(
+    (search: string) => {
+      const currentSearchParams = new URLSearchParams(location.search);
+      currentSearchParams.sort();
+      const targetSearchParams = new URLSearchParams(search);
+      const keys = Array.from(targetSearchParams.keys());
+      const excludingNewParams = keys.reduce((search, key) => {
+        search.delete(key);
+        return search;
+      }, new URLSearchParams(location.search));
+      const withNewParams = new URLSearchParams([
+        ...excludingNewParams,
+        ...new URLSearchParams(search),
+      ]);
+      const withNewParamsSorted = new URLSearchParams(withNewParams);
+      withNewParamsSorted.sort();
+
+      const targetSearch =
+        targetSearchParams.size > 0 ? `?${withNewParams.toString()}` : '';
+      return {
+        href: `${location.pathname}${targetSearch}${location.hash}`,
+        isActive:
+          currentSearchParams.toString() === withNewParamsSorted.toString(),
+      };
+    },
+    [location.hash, location.pathname, location.search],
+  );
+
+  return getHref;
+}
+
 export function NavSearchItem({
   children,
   search,
 }: PropsWithChildren<NavSearchItemProps>) {
-  const currentLocation = useLocation();
-  const { location: nextLocation, state } = useNavigation();
-  const location = state === 'loading' ? nextLocation : currentLocation;
-  const currentSearchParams = new URLSearchParams(location.search);
-  currentSearchParams.sort();
-  const targetSearchParams = new URLSearchParams(search);
-  const keys = Array.from(targetSearchParams.keys());
-  const excludingNewParams = keys.reduce((search, key) => {
-    search.delete(key);
-    return search;
-  }, new URLSearchParams(location.search));
-  const withNewParams = new URLSearchParams([
-    ...excludingNewParams,
-    ...new URLSearchParams(search),
-  ]);
-  const withNewParamsSorted = new URLSearchParams(withNewParams);
-  withNewParamsSorted.sort();
-
-  const isActive =
-    currentSearchParams.toString() === withNewParamsSorted.toString();
-  const targetSearch =
-    targetSearchParams.size > 0 ? `?${withNewParams.toString()}` : '';
-
+  const getHref = useGetHrefFromSearch();
+  const { href, isActive } = getHref(search);
   const { value } = useContext(NavContext);
 
   return (
     <li>
       <Link
         className={styles()}
-        href={`${location.pathname}${targetSearch}${location.hash}`}
+        href={href}
         data-active={isActive}
         {...(isActive && { 'aria-current': value })}
       >

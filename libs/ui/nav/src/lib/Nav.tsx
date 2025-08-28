@@ -15,7 +15,7 @@ import {
   DropdownPopover,
   DropdownTrigger,
 } from '@restate/ui/dropdown';
-import { NavItem } from './NavItem';
+import { NavItem, NavSearchItem, useGetHrefFromSearch } from './NavItem';
 import { Button } from '@restate/ui/button';
 import { useLocation } from 'react-router';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -23,16 +23,38 @@ import { Icon, IconName } from '@restate/ui/icons';
 interface NavProps {
   className?: string;
   ariaCurrentValue?: AriaAttributes['aria-current'];
-  children: ReactElement<ComponentProps<typeof NavItem>>[];
+  children: ReactElement<
+    ComponentProps<typeof NavItem | typeof NavSearchItem>
+  >[];
+  layout?: 'vertical' | 'horizontal';
 }
 
 const styles = tv({
   base: 'flex items-center gap-0',
+  slots: {
+    indicator:
+      'absolute rounded-xl border border-black/10 bg-white shadow-xs transition-all duration-300 ease-in-out [&:not(:has(+ul>li>a[data-active=true]))]:hidden',
+  },
+  variants: {
+    layout: {
+      vertical: { base: 'flex-col [&>*]:w-full', indicator: 'left-0 w-full' },
+      horizontal: {
+        base: '',
+        indicator: 'top-0 h-full',
+      },
+    },
+  },
 });
 
-export function Nav({ children, className, ariaCurrentValue }: NavProps) {
+export function Nav({
+  children,
+  className,
+  ariaCurrentValue,
+  layout = 'horizontal',
+}: NavProps) {
   const containerElementRef = useRef<HTMLDivElement | null>(null);
   const activeIndicatorElement = useRef<HTMLDivElement | null>(null);
+  const { base, indicator } = styles({ layout });
 
   useEffect(() => {
     const updateStyle = (activeElement: Node | null) => {
@@ -41,8 +63,13 @@ export function Nav({ children, className, ariaCurrentValue }: NavProps) {
         activeElement.dataset.active === 'true' &&
         activeIndicatorElement.current
       ) {
-        activeIndicatorElement.current.style.width = `${activeElement.clientWidth}px`;
-        activeIndicatorElement.current.style.left = `${activeElement.offsetLeft}px`;
+        if (layout === 'vertical') {
+          activeIndicatorElement.current.style.height = `${activeElement.clientHeight}px`;
+          activeIndicatorElement.current.style.top = `${activeElement.offsetTop}px`;
+        } else {
+          activeIndicatorElement.current.style.width = `${activeElement.clientWidth}px`;
+          activeIndicatorElement.current.style.left = `${activeElement.offsetLeft}px`;
+        }
       }
     };
     const callback: MutationCallback = (mutationList) => {
@@ -86,9 +113,10 @@ export function Nav({ children, className, ariaCurrentValue }: NavProps) {
       detailsElement?.removeEventListener('toggle', updateStyleWithDetails);
       window.removeEventListener('resize', updateStyleWithDetails);
     };
-  }, []);
+  }, [layout]);
 
   const location = useLocation();
+  const getHref = useGetHrefFromSearch();
 
   return (
     <NavContext.Provider value={{ value: ariaCurrentValue }}>
@@ -96,11 +124,8 @@ export function Nav({ children, className, ariaCurrentValue }: NavProps) {
         className="relative hidden rounded-xl border-[0.5px] border-transparent lg:block [&:has(a:focus)]:border-[0.5px] [&:has(a:focus)]:border-zinc-800/5 [&:has(a:focus)]:bg-black/3 [&:has(a:focus)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] [&:has(a:hover)]:border-[0.5px] [&:has(a:hover)]:border-zinc-800/5 [&:has(a:hover)]:bg-black/3 [&:has(a:hover)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]"
         ref={containerElementRef}
       >
-        <div
-          className="absolute top-0 h-full rounded-xl border border-black/10 bg-white shadow-xs transition-all duration-300 ease-in-out [&:not(:has(+ul>li>a[data-active=true]))]:hidden"
-          ref={activeIndicatorElement}
-        />
-        <ul className={styles({ className })}>{children}</ul>
+        <div className={indicator()} ref={activeIndicatorElement} />
+        <ul className={base({ className })}>{children}</ul>
       </div>
       <div className="lg:hidden">
         <Dropdown>
@@ -112,9 +137,13 @@ export function Nav({ children, className, ariaCurrentValue }: NavProps) {
               {Children.map(children, (child) => (
                 <span
                   className={
-                    location.pathname.startsWith(child.props.href)
-                      ? ''
-                      : 'hidden'
+                    'href' in child.props
+                      ? location.pathname.startsWith(child.props.href)
+                        ? ''
+                        : 'hidden'
+                      : location.search.includes(child.props.search)
+                        ? ''
+                        : 'hidden'
                   }
                 >
                   {child.props.children}
@@ -138,7 +167,18 @@ export function Nav({ children, className, ariaCurrentValue }: NavProps) {
                 .filter((href) => location.pathname.startsWith(href))}
             >
               {Children.map(children, (child) => (
-                <DropdownItem href={child.props.href} value={child.props.href}>
+                <DropdownItem
+                  href={
+                    'href' in child.props
+                      ? child.props.href
+                      : getHref(child.props.search).href
+                  }
+                  value={
+                    'href' in child.props
+                      ? child.props.href
+                      : child.props.search
+                  }
+                >
                   {child.props.children}
                 </DropdownItem>
               ))}
