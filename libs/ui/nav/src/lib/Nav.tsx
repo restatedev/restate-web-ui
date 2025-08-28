@@ -33,7 +33,7 @@ const styles = tv({
   base: 'flex items-center gap-0',
   slots: {
     indicator:
-      'absolute rounded-xl border border-black/10 bg-white shadow-xs transition-all duration-300 ease-in-out [&:not(:has(+ul>li>a[data-active=true]))]:hidden',
+      'absolute rounded-xl border border-black/10 bg-white shadow-xs transition-all duration-300 ease-in-out [&:not(:has(+ul>li>*[data-active=true]))]:hidden',
   },
   variants: {
     layout: {
