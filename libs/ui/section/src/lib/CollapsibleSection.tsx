@@ -6,16 +6,28 @@ import { Icon, IconName } from '@restate/ui/icons';
 
 interface SectionProps {
   className?: string;
+  isExpanded?: boolean;
+  onExpandedChange?: (isExpanded: boolean) => void;
 }
 
 const styles = tv({
-  base: 'group section border2 shadow2-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] flex flex-col rounded-xl bg-gray-100 p-0.5',
+  base: 'group section flex flex-col rounded-xl bg-gray-100 p-0.5',
 });
 export function CollapsibleSection({
   children,
   className,
+  isExpanded,
+  onExpandedChange,
 }: PropsWithChildren<SectionProps>) {
-  return <Disclosure className={styles({ className })}>{children}</Disclosure>;
+  return (
+    <Disclosure
+      className={styles({ className })}
+      isExpanded={isExpanded}
+      onExpandedChange={onExpandedChange}
+    >
+      {children}
+    </Disclosure>
+  );
 }
 
 interface SectionTitleProps {
