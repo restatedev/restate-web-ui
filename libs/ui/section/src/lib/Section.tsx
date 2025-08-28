@@ -1,41 +1,23 @@
-import { createContext, PropsWithChildren, use } from 'react';
+import { PropsWithChildren } from 'react';
 import { tv } from '@restate/util/styles';
 
 interface SectionProps {
   className?: string;
-  variant?: 'standard' | 'two-cols';
 }
 
-const SectionContext = createContext<{ variant: 'standard' | 'two-cols' }>({
-  variant: 'standard',
-});
-
 const styles = tv({
-  base: 'section',
-  variants: {
-    variant: {
-      standard: 'flex flex-col rounded-xl bg-gray-100 p-0.5',
-      'two-cols': 'grid grid-cols-1 gap-x-10 gap-y-4 sm:grid-cols-[20ch_1fr]',
-    },
-  },
-  defaultVariants: {
-    variant: 'standard',
-  },
+  base: 'section flex flex-col rounded-xl bg-gray-100 p-0.5',
 });
 export function Section({
   children,
   className,
-  variant = 'standard',
 }: PropsWithChildren<SectionProps>) {
-  return (
-    <SectionContext.Provider value={{ variant }}>
-      <section className={styles({ className, variant })}>{children}</section>
-    </SectionContext.Provider>
-  );
+  return <section className={styles({ className })}>{children}</section>;
 }
 
 interface SectionTitleProps {
   className?: string;
+  variant?: 'standard' | 'settings';
 }
 
 const stylesSectionTitle = tv({
@@ -43,31 +25,27 @@ const stylesSectionTitle = tv({
   variants: {
     variant: {
       standard: 'px-2 pt-2 pb-1 text-xs font-semibold text-gray-400 uppercase',
-      'two-cols':
-        'col-start-1 flex flex-col gap-1 text-base leading-7 font-semibold text-gray-900 sm:pt-3 [&_p]:text-sm [&_p]:leading-6 [&_p]:font-normal [&_p]:text-gray-600',
+      settings:
+        'mb-2 flex flex-col gap-0.5 px-2 text-base leading-7 font-semibold text-gray-900 sm:pt-3 [&_a]:text-gray-500 [&_p]:text-sm [&_p]:leading-6 [&_p]:font-normal [&_p]:text-gray-500',
     },
   },
 });
 export function SectionTitle({
   children,
   className,
+  variant,
 }: PropsWithChildren<SectionTitleProps>) {
-  const { variant } = use(SectionContext);
   return (
     <h3 className={stylesSectionTitle({ className, variant })}>{children}</h3>
   );
 }
 
 const stylesSectionContent = tv({
-  base: '',
+  base: 'rounded-[calc(0.75rem-0.125rem)] p-3 text-sm',
   variants: {
     raised: {
       true: 'border bg-white shadow-xs',
       false: '',
-    },
-    variant: {
-      standard: 'rounded-[calc(0.75rem-0.125rem)] p-3 text-sm',
-      'two-cols': 'col-start-1 min-w-0 sm:col-start-2',
     },
   },
   defaultVariants: {
@@ -82,10 +60,8 @@ export function SectionContent({
   className?: string;
   raised?: boolean;
 }>) {
-  const { variant } = use(SectionContext);
-
   return (
-    <div className={stylesSectionContent({ className, raised, variant })}>
+    <div className={stylesSectionContent({ className, raised })}>
       {children}
     </div>
   );
