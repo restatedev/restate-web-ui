@@ -49,6 +49,7 @@ import {
   Play,
   Code,
   ChartNoAxesColumn,
+  BadgePercent,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from '@restate/util/styles';
@@ -140,6 +141,7 @@ export const enum IconName {
   Play = 'Play',
   Code = 'Code',
   Usage = 'Usage',
+  Discount = 'Discount',
 }
 export interface IconsProps {
   name: IconName;
@@ -216,6 +218,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Play]: Play,
   [IconName.Code]: Code,
   [IconName.Usage]: ChartNoAxesColumn,
+  [IconName.Discount]: BadgePercent,
 };
 
 const styles = tv({
