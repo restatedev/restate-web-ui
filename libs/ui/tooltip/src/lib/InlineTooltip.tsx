@@ -8,7 +8,7 @@ import { useFocusable, useObjectRef } from 'react-aria';
 import { tv } from '@restate/util/styles';
 
 interface InlineTooltipProps {
-  title: ReactNode;
+  title?: ReactNode;
   description: ReactNode;
   learnMoreHref?: string;
   className?: string;
@@ -32,9 +32,14 @@ export function InlineTooltip({
       <Trigger ref={triggerRef} className={className}>
         {children}
       </Trigger>
-      <InternalTooltipContent triggerRef={triggerRef}>
+      <InternalTooltipContent
+        triggerRef={triggerRef}
+        size={title ? undefined : 'sm'}
+      >
         <div className="flex flex-col items-start gap-2">
-          <h6 className="text-sm font-semibold text-gray-100">{title}</h6>
+          {title && (
+            <h6 className="text-sm font-semibold text-gray-100">{title}</h6>
+          )}
           {description}
           {learnMoreHref && (
             <Link
