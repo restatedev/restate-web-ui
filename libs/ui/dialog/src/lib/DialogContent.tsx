@@ -9,7 +9,7 @@ import { tv } from '@restate/util/styles';
 import { DialogFooterContainer } from './DialogFooter';
 
 const overlayStyles = tv({
-  base: 'fixed top-0 left-0 isolate z-100 flex h-screen min-h-screen w-full bg-gray-800/30 text-center transition-opacity',
+  base: 'fixed top-0 left-0 isolate z-100 flex h-screen min-h-screen w-full bg-gray-800/30 text-center backdrop-blur-[0.5px] transition-opacity',
   variants: {
     isEntering: {
       true: 'duration-200 ease-out animate-in fade-in',
