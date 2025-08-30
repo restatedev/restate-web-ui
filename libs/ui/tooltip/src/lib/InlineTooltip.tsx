@@ -8,7 +8,7 @@ import { useFocusable, useObjectRef } from 'react-aria';
 import { tv } from '@restate/util/styles';
 
 interface InlineTooltipProps {
-  title: ReactNode;
+  title?: ReactNode;
   description: ReactNode;
   learnMoreHref?: string;
   className?: string;
@@ -32,9 +32,14 @@ export function InlineTooltip({
       <Trigger ref={triggerRef} className={className}>
         {children}
       </Trigger>
-      <InternalTooltipContent triggerRef={triggerRef}>
+      <InternalTooltipContent
+        triggerRef={triggerRef}
+        size={title ? undefined : 'sm'}
+      >
         <div className="flex flex-col items-start gap-2">
-          <h6 className="text-sm font-semibold text-gray-100">{title}</h6>
+          {title && (
+            <h6 className="text-sm font-semibold text-gray-100">{title}</h6>
+          )}
           {description}
           {learnMoreHref && (
             <Link
@@ -55,7 +60,7 @@ export function InlineTooltip({
 }
 
 const helpStyles = tv({
-  base: 'group inline-flex cursor-help items-center underline decoration-dashed decoration-from-font underline-offset-4 outline-none',
+  base: 'group/tooltip inline-flex cursor-help items-center underline decoration-dashed decoration-from-font underline-offset-4 outline-none',
 });
 
 const HelpTooltipTrigger = forwardRef<
@@ -71,7 +76,7 @@ const HelpTooltipTrigger = forwardRef<
       {...focusableProps}
       className={helpStyles({ className })}
     >
-      <span className="mx-[-0.1em] rounded-xs px-[0.1em] group-hover:bg-black/5">
+      <span className="mx-[-0.1em] rounded-xs px-[0.1em] group-hover/tooltip:bg-black/5">
         {children}{' '}
       </span>
       <sup className="-mr-[0.4em] -ml-[0.1em]">
@@ -87,7 +92,7 @@ const HelpTooltipTrigger = forwardRef<
 });
 
 const infoStyles = tv({
-  base: 'group inline-flex items-center gap-1 outline-none',
+  base: 'group/tooltip inline-flex items-center gap-1 outline-none',
 });
 
 const InfoTooltipTrigger = forwardRef<
