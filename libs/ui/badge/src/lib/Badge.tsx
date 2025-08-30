@@ -8,7 +8,7 @@ interface BadgeProps {
 }
 
 const styles = tv({
-  base: 'badge inline-flex items-center border font-medium [&_&]:ml-1.5 [&_&]:rounded-md [&_&]:border-zinc-600/10 [&_&]:bg-white [&_&]:px-1.5 [&_&]:py-0.5 [&:has(>_.badge)]:py-0.5 [&:has(>_.badge)]:pr-0.5',
+  base: 'badge inline-flex items-center border font-medium [&_&]:ml-1.5 [&_&]:rounded-md [&_&]:border-zinc-600/10 [&_&]:bg-white [&_&]:px-1.5 [&_&]:py-0.5 [&:has(>_.badge)]:py-0.5 [&:has(>_.badge)]:pr-0.5 [&:has(>_.badge)]:pl-2',
   variants: {
     variant: {
       success: 'border-green-600/20 bg-green-50 text-green-700',
@@ -18,7 +18,7 @@ const styles = tv({
       default: 'border-zinc-600/10 bg-zinc-50 text-zinc-600',
     },
     size: {
-      xs: 'rounded-full px-1.5 py-[0.05rem] text-2xs leading-3 font-normal',
+      xs: 'rounded-full px-1.5 py-0 text-2xs leading-4 font-normal [&_&]:-my-px [&_&]:-mr-px [&_&]:rounded-full [&_&]:py-0 [&:has(>_.badge)]:py-0 [&:has(>_.badge)]:pr-0',
       sm: 'rounded-md px-1.5 py-0.5 text-xs',
       base: 'rounded-lg px-2 py-1 text-xs',
     },
