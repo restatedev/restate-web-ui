@@ -32,6 +32,7 @@ interface LinkProps
     | 'icon';
   preserveQueryParams?: boolean;
   onClick?: (event: Omit<PressEvent, 'target'>) => void;
+  disabled?: boolean;
 }
 
 const styles = tv({
@@ -93,8 +94,9 @@ export function useHrefWithQueryParams({
   }, [preserveQueryParams, href, searchParams, mode]);
   return hrefWithQueryParams;
 }
+
 export const Link = forwardRef<HTMLAnchorElement, LinkProps>(
-  ({ href, preserveQueryParams = true, onClick, ...props }, ref) => {
+  ({ href, preserveQueryParams = true, onClick, disabled, ...props }, ref) => {
     const hrefWithQueryParams = useHrefWithQueryParams({
       href,
       preserveQueryParams,
@@ -103,6 +105,7 @@ export const Link = forwardRef<HTMLAnchorElement, LinkProps>(
     return (
       <AriaLink
         {...props}
+        isDisabled={disabled}
         href={hrefWithQueryParams}
         ref={ref}
         className={composeRenderProps(
