@@ -627,16 +627,12 @@ function Footnote({
     <div className="flex w-full flex-row-reverse flex-wrap items-center text-center text-xs text-gray-500/80">
       {data && (
         <div className="ml-auto">
-          {data.total_count || data.min_count ? (
+          {data.total_count ? (
             <>
               <span>{data.rows.length}</span>
               {' of '}
               <span className="font-medium text-gray-500">
-                {data.total_count
-                  ? `${formatNumber(data.total_count)}`
-                  : data.min_count
-                    ? `${formatNumber(data.min_count, true)}+`
-                    : ''}
+                {data.total_count ? `${formatNumber(data.total_count)}` : ''}
               </span>{' '}
               recently modified invocations
             </>
