@@ -9,6 +9,7 @@ import { Button } from '@restate/ui/button';
 interface NavItemProps {
   href: string;
   preserveSearchParams?: boolean | string[];
+  disabled?: boolean;
 }
 
 const styles = tv({
@@ -18,6 +19,10 @@ const styles = tv({
     isCurrent: {
       true: 'font-medium text-gray-700',
       false: 'text-gray-500',
+    },
+    isDisabled: {
+      true: 'text-gray-400',
+      false: '',
     },
   },
   defaultVariants: {
@@ -29,6 +34,7 @@ export function NavItem({
   children,
   href,
   preserveSearchParams = false,
+  disabled,
 }: PropsWithChildren<NavItemProps>) {
   const location = useLocation();
   const isActive = location.pathname.startsWith(href);
@@ -51,7 +57,8 @@ export function NavItem({
   return (
     <li>
       <Link
-        className={styles({ isCurrent: isActive })}
+        disabled={disabled}
+        className={styles({ isCurrent: isActive, isDisabled: disabled })}
         href={preserveSearchParams ? `${href}${search}${location.hash}` : href}
         data-active={isActive}
         {...(isActive && { 'aria-current': value })}
