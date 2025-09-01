@@ -205,12 +205,13 @@ function Component() {
           .flat() ?? [];
       setKeysSet(
         (s) =>
-          new Set(
-            [
+          new Set([
+            'service_key',
+            ...[
               ...Array.from(s.values()).filter((v) => keys.includes(v)),
               ...keys,
             ].sort(),
-          ),
+          ]),
       );
     }
   }, [listObjects.data, isPending]);

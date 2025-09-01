@@ -1280,7 +1280,7 @@ export function usePurgeInvocation(
 
 function useNewDeleteInvocationEndpointsSupported() {
   const { isVersionGte } = useRestateContext();
-  return Boolean(isVersionGte?.('1.5.0'));
+  return Boolean(isVersionGte?.('1.4.5'));
 }
 
 export function useRestartInvocationAsNew(

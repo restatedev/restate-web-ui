@@ -478,12 +478,8 @@ async function listState(
     });
   }
 
-  const query = keys
-    .map((key) => {
-      return `SELECT service_key, key, value
-    FROM state WHERE service_name = '${service}' AND service_key = '${key}'`;
-    })
-    .join(' UNION ALL ');
+  const query = `SELECT service_key, key, value
+    FROM state WHERE service_name = '${service}' AND service_key IN (${keys.map((key) => `'${key}'`).join(', ')})`;
 
   const resultsPromise: Promise<
     {
