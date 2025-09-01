@@ -61,17 +61,17 @@ function InternalRestateContextProvider({
     mini?: boolean;
   }>;
 }>) {
-  const { data } = useVersion({ enabled: !isPending });
-  const version = data?.version;
-  const releasedVersion = version?.split('-')?.at(0);
-  const resolvedIngress =
-    ingressUrl || data?.ingress_endpoint || 'http://localhost:8080';
-
   const { isSuccess, failureCount } = useHealth({
     enabled: !isPending,
     retry: true,
     refetchInterval: 1000 * 60,
   });
+  const { data } = useVersion({ enabled: !isPending && isSuccess });
+  const version = data?.version;
+  const releasedVersion = version?.split('-')?.at(0);
+  const resolvedIngress =
+    ingressUrl || data?.ingress_endpoint || 'http://localhost:8080';
+
   const status: Status | undefined = isPending
     ? 'PENDING'
     : failureCount > 0
