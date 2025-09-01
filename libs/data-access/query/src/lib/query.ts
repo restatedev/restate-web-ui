@@ -36,43 +36,55 @@ function queryFetcher(
     .json<{ rows: any[] }>();
 }
 
-const INVOCATIONS_LIMIT = 500;
+const INVOCATIONS_LIMIT = 250;
 
 async function listInvocations(
   baseUrl: string,
   headers: Headers,
   filters: FilterItem[],
 ) {
-  const invocationsPromise = queryFetcher(
-    `WITH invocations AS(SELECT *, row_number() over () as row from sys_invocation ${convertInvocationsFilters(filters)}),
-    recent_invocations AS (SELECT * FROM invocations ORDER BY modified_at DESC LIMIT ${INVOCATIONS_LIMIT})
-    SELECT *, max(row) over () as min_count from recent_invocations`,
+  const totalCountPromise = queryFetcher(
+    `SELECT count(1) AS total_count from sys_invocation ${convertInvocationsFilters(filters)}`,
     {
       baseUrl,
       headers,
     },
-  ).then(({ rows }) => {
-    if (rows.length < INVOCATIONS_LIMIT) {
-      return {
-        invocations: rows.map(convertInvocation),
-        min_count: rows.length,
-        total_count: rows.length,
-      };
-    }
-    return {
-      invocations: rows.map(convertInvocation),
-      min_count: rows.at(0)?.min_count ?? 0,
-      total_count: undefined,
-    };
-  });
+  ).then(({ rows }) => rows?.at(0)?.total_count);
+  const invocationsPromise = queryFetcher(
+    `SELECT id from sys_invocation ${convertInvocationsFilters(filters)} ORDER BY modified_at DESC LIMIT ${INVOCATIONS_LIMIT}`,
+    {
+      baseUrl,
+      headers,
+    },
+  )
+    .then(async ({ rows }) =>
+      queryFetcher(
+        `SELECT * from sys_invocation ${convertInvocationsFilters([
+          {
+            field: 'id',
+            type: 'STRING_LIST',
+            operation: 'IN',
+            value: rows.map(({ id }) => id),
+          },
+          ...filters,
+        ])}`,
+        {
+          baseUrl,
+          headers,
+        },
+      ),
+    )
+    .then(({ rows }) => rows.map(convertInvocation));
 
-  const { min_count, total_count, invocations } = await invocationsPromise;
+  const [total_count, invocations] = await Promise.all([
+    totalCountPromise,
+    invocationsPromise,
+  ]);
 
   return new Response(
     JSON.stringify({
       limit: INVOCATIONS_LIMIT,
       total_count,
-      min_count,
       rows: invocations,
     }),
     {
