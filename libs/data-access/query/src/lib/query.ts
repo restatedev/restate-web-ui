@@ -68,7 +68,7 @@ async function listInvocations(
               value: rows.map(({ id }) => id),
             },
             ...filters,
-          ])}`,
+          ])} ORDER BY modified_at DESC`,
           {
             baseUrl,
             headers,
