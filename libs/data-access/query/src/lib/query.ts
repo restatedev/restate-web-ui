@@ -57,23 +57,27 @@ async function listInvocations(
       headers,
     },
   )
-    .then(async ({ rows }) =>
-      queryFetcher(
-        `SELECT * from sys_invocation ${convertInvocationsFilters([
+    .then(async ({ rows }) => {
+      if (rows.length > 0) {
+        return queryFetcher(
+          `SELECT * from sys_invocation ${convertInvocationsFilters([
+            {
+              field: 'id',
+              type: 'STRING_LIST',
+              operation: 'IN',
+              value: rows.map(({ id }) => id),
+            },
+            ...filters,
+          ])}`,
           {
-            field: 'id',
-            type: 'STRING_LIST',
-            operation: 'IN',
-            value: rows.map(({ id }) => id),
+            baseUrl,
+            headers,
           },
-          ...filters,
-        ])}`,
-        {
-          baseUrl,
-          headers,
-        },
-      ),
-    )
+        );
+      } else {
+        return { rows: [] };
+      }
+    })
     .then(({ rows }) => rows.map(convertInvocation));
 
   const [total_count, invocations] = await Promise.all([
