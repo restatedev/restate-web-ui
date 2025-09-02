@@ -29,6 +29,9 @@ const stylesSectionTitle = tv({
         'mb-2 flex flex-col gap-0.5 px-2 text-base leading-7 font-semibold text-gray-900 sm:pt-3 [&_a]:text-gray-500 [&_p]:text-sm [&_p]:leading-6 [&_p]:font-normal [&_p]:text-gray-500 [&+*]:pt-0',
     },
   },
+  defaultVariants: {
+    variant: 'standard',
+  },
 });
 export function SectionTitle({
   children,
