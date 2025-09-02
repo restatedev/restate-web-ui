@@ -2,7 +2,7 @@ import { useRestateContext } from '@restate/features/restate-context';
 import { showWarningNotification } from '@restate/ui/notification';
 import { useEffect } from 'react';
 
-export function useHealthCheckNotification() {
+export function useHealthCheckNotification(props?: { message?: string }) {
   const { status } = useRestateContext();
   const isDegraded = status === 'DEGRADED';
 
@@ -10,7 +10,8 @@ export function useHealthCheckNotification() {
     let hide: VoidFunction | undefined = undefined;
     if (isDegraded) {
       const notification = showWarningNotification(
-        'Your Restate server is currently experiencing issues.',
+        props?.message ??
+          'Your Restate server is currently experiencing issues.',
       );
       hide = notification.hide;
     }
@@ -18,5 +19,5 @@ export function useHealthCheckNotification() {
     return () => {
       hide?.();
     };
-  }, [isDegraded]);
+  }, [isDegraded, props?.message]);
 }
