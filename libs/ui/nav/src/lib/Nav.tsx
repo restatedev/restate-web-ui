@@ -74,9 +74,12 @@ export function Nav({
     };
     const callback: MutationCallback = (mutationList) => {
       for (const mutation of mutationList) {
-        if (mutation.type === 'attributes') {
-          updateStyle(mutation.target);
-        }
+        containerElement &&
+          updateStyle(
+            containerElement.querySelector(
+              'a[data-active=true],button[data-active=true]',
+            ),
+          );
       }
     };
 
