@@ -16,7 +16,7 @@ import { Button } from '@restate/ui/button';
 import { useCallback } from 'react';
 import { QueryProvider } from '@restate/util/react-query';
 import { Nav, NavItem } from '@restate/ui/nav';
-import { Icon, IconName } from '@restate/ui/icons';
+import { Icon, IconName, Restate } from '@restate/ui/icons';
 import { RestateContextProvider } from '@restate/features/restate-context';
 import { Version } from '@restate/features/version';
 import {
@@ -164,18 +164,15 @@ export default function App() {
               <Outlet />
             </LayoutOutlet>
             <LayoutOutlet zone={LayoutZone.AppBar}>
-              <div className="flex min-w-0 flex-1 items-stretch gap-2">
-                <div className="flex h-full items-center gap-2 rounded-xl border bg-white p-3 shadow-xs">
-                  <Icon
-                    name={IconName.RestateEnvironment}
-                    className="text-xl text-[#222452]"
-                  />
+              <div className="flex min-w-0 flex-1 items-stretch gap-1">
+                <div className="border1 bg1-white shadow2-xs flex h-full items-center gap-2 rounded-xl p-3 pr-0">
+                  <Restate />
                 </div>
                 <Button
                   variant="secondary"
                   className="my-1 flex min-w-0 items-center gap-2 border-none bg-transparent px-2 shadow-none"
                 >
-                  <div className="col-start-2 row-start-1 flex w-full items-center gap-2 truncate">
+                  <div className="flex w-full items-center gap-2 truncate">
                     <HealthIndicator mini className="-mt-0.5" />
                     <HealthCheckNotification />
                     <span className="block min-w-0 flex-auto truncate">

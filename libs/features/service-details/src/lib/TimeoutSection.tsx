@@ -10,7 +10,7 @@ import { SubSection } from './SubSection';
 import { tv } from '@restate/util/styles';
 import { PropsWithChildren } from 'react';
 import { Icon, IconName } from '@restate/ui/icons';
-import { InlineTooltip } from '@restate/ui/tooltip';
+import { HoverTooltip, InlineTooltip } from '@restate/ui/tooltip';
 import { Link } from '@restate/ui/link';
 import { getProtocolType } from '@restate/data-access/admin-api';
 import { Warning } from './Explainers';
@@ -161,7 +161,7 @@ export function TimeoutSection({
                 variant="completed"
               />
               <Entry
-                className="col-start-2 col-end-3 row-start-3 row-end-4 bg-orange-200"
+                className="col-start-2 col-end-3 row-start-3 row-end-4"
                 variant="running"
               />
               <Entry
@@ -170,9 +170,15 @@ export function TimeoutSection({
               >
                 <div className="absolute -top-0.5 -bottom-0.5 -left-1 w-1 bg-gray-100" />
               </Entry>
+              <div className="relative col-start-4 col-end-5 row-start-3 row-end-4 fill-orange-400 pl-1">
+                <Icon
+                  name={IconName.TriangleAlert}
+                  className="h-3.5 w-3.5 -translate-y-1 fill-orange-100 text-orange-400/70"
+                />
+              </div>
 
               <Entry
-                className="col-start-4 col-end-5 row-start-3 row-end-4"
+                className="col-start-4 col-end-5 row-start-5 row-end-6 ml-4"
                 variant="retrying"
               />
               <Label
@@ -235,7 +241,7 @@ export function TimeoutSection({
                   Abort
                 </InlineTooltip>
               </Label>
-              <Label className="col-start-4 col-end-5 row-start-4 row-end-6">
+              <Label className="col-start-4 col-end-5 row-start-6 row-end-7 ml-4">
                 Retrying
               </Label>
             </JournalContainer>
