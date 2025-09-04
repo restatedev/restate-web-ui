@@ -12,7 +12,7 @@ export function JournalRetentionExplainer({
   return (
     <InlineTooltip
       variant={variant}
-      title="Service access"
+      title="Journal retention"
       description={
         <p>
           The period for which an invocation's journal entries are retained.
