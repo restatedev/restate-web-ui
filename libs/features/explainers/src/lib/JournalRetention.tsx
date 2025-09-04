@@ -15,9 +15,7 @@ export function JournalRetentionExplainer({
       title="Service access"
       description={
         <p>
-          Public services and their handlers are accessible via the ingress
-          (HTTP or Kafka), while private services are accessible only from other
-          Restate services.
+          The period for which an invocation's journal entries are retained.
         </p>
       }
       className={className}
