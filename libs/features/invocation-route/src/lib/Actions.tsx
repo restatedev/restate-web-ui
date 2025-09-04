@@ -21,7 +21,7 @@ const mainButtonStyles = tv({
     },
     destructive: {
       true: 'text-red-500',
-      false: 'text-blue-500',
+      false: '',
     },
   },
 });
@@ -56,7 +56,7 @@ export function Actions({
       className={className}
       menus={
         <>
-          {isPaused && (
+          {(isPaused || isSuspended) && (
             <DropdownItem
               href={`?${RESUME_INVOCATION_QUERY_PARAM}=${invocation.id}`}
             >
@@ -92,13 +92,6 @@ export function Actions({
               href={`?${PURGE_INVOCATION_QUERY_PARAM}=${invocation.id}`}
             >
               Delete…
-            </DropdownItem>
-          )}
-          {isSuspended && (
-            <DropdownItem
-              href={`?${RESUME_INVOCATION_QUERY_PARAM}=${invocation.id}`}
-            >
-              Resume…
             </DropdownItem>
           )}
         </>

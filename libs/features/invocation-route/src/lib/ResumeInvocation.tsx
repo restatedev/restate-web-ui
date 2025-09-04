@@ -117,39 +117,48 @@ export function ResumeInvocation() {
               defaultValue={invocation?.pinned_deployment_id}
               name="deployment"
             >
-              {deployments.map(({ revision, deployment }) => (
-                <ListBoxItem
-                  className="w-full"
-                  value={deployment!.id}
-                  key={deployment?.id}
-                >
-                  <div className="flex w-full min-w-0 flex-auto items-center gap-2 truncate">
-                    <div className="h-6 w-6 shrink-0 rounded-md border bg-white shadow-xs">
-                      <Icon
-                        name={
-                          isHttpDeployment(deployment!)
-                            ? IconName.Http
-                            : IconName.Lambda
-                        }
-                        className="h-full w-full p-1 text-zinc-400"
+              {deployments.map(({ revision, deployment }) => {
+                const isCurrent =
+                  deployment?.id === invocation?.pinned_deployment_id;
+                const isLatest = service?.sortedRevisions.at(0) === revision;
+                return (
+                  <ListBoxItem
+                    className="w-full"
+                    value={deployment!.id}
+                    key={deployment?.id}
+                  >
+                    <div className="flex w-full min-w-0 flex-auto items-center gap-2 truncate">
+                      <div className="h-6 w-6 shrink-0 rounded-md border bg-white shadow-xs">
+                        <Icon
+                          name={
+                            isHttpDeployment(deployment!)
+                              ? IconName.Http
+                              : IconName.Lambda
+                          }
+                          className="h-full w-full p-1 text-zinc-400"
+                        />
+                      </div>
+                      <div className="min-w-0 truncate">
+                        {getEndpoint(deployment)}
+                      </div>
+                      {isCurrent && (
+                        <Badge size="xs" variant="info">
+                          CURRENT
+                        </Badge>
+                      )}
+                      {isLatest && !isCurrent && (
+                        <Badge size="xs" variant="info">
+                          LATEST
+                        </Badge>
+                      )}
+                      <Revision
+                        revision={revision}
+                        className="z-2 ml-auto bg-white"
                       />
                     </div>
-                    <div className="min-w-0 truncate">
-                      {getEndpoint(deployment)}
-                    </div>
-                    {deployment?.id === invocation?.pinned_deployment_id && (
-                      <Badge size="xs">CURRENT</Badge>
-                    )}
-                    {service?.sortedRevisions.at(0) === revision && (
-                      <Badge size="xs">LATEST</Badge>
-                    )}
-                    <Revision
-                      revision={revision}
-                      className="z-2 ml-auto bg-white"
-                    />
-                  </div>
-                </ListBoxItem>
-              ))}
+                  </ListBoxItem>
+                );
+              })}
             </FormFieldSelect>
             <DialogFooter>
               <div className="flex flex-col gap-2">
