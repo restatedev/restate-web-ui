@@ -26,7 +26,7 @@ export function SubSection({
 }: {
   className?: string;
   label: ReactNode;
-  value?: string | null;
+  value?: string | number | null;
   isPending?: boolean;
   footer?: ReactNode;
 }) {

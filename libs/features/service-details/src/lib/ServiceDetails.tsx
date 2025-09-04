@@ -24,6 +24,7 @@ import {
 import { RetentionSection } from './RetentionSection';
 import { TimeoutSection } from './TimeoutSection';
 import { IngressAccessSection } from './IngressAccessSection';
+import { RetryPolicySection } from './RetryPolicy';
 
 export function ServiceDetails() {
   return (
@@ -171,6 +172,7 @@ function ServiceContent({ service }: { service: string }) {
         </Section>
         <IngressAccessSection serviceDetails={data} isPending={isPending} />
         <RetentionSection serviceDetails={data} isPending={isPending} />
+        <RetryPolicySection serviceDetails={data} isPending={isPending} />
         <TimeoutSection serviceDetails={data} isPending={isPending} />
       </div>
     </>

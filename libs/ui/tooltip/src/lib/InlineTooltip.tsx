@@ -111,7 +111,7 @@ const InfoTooltipTrigger = forwardRef<
       {children}
       <Button
         variant="icon"
-        className="inline p-0 [font-size:inherit] text-current [&_svg]:h-[1em] [&_svg]:w-[1em] [&_svg]:stroke-[0.18em]"
+        className="inline p-0 [font-size:inherit] text-current opacity-70 [&_svg]:h-[1em] [&_svg]:w-[1em] [&_svg]:stroke-[0.18em]"
       >
         <Icon name={IconName.Info} />
       </Button>
