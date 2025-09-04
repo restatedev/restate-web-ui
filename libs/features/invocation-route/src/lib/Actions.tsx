@@ -20,7 +20,7 @@ const mainButtonStyles = tv({
     },
     destructive: {
       true: 'text-red-500',
-      false: '',
+      false: 'text-blue-500',
     },
   },
 });
@@ -39,6 +39,7 @@ export function Actions({
     return null;
   }
   const isCompleted = Boolean(invocation.completion_result);
+  const isPaused = Boolean(invocation.status === 'paused');
   const isNotWorkflow = invocation.target_service_ty !== 'workflow';
   const isRestateAsNewSupported = Boolean(
     isVersionGte?.('1.5.0') &&
@@ -53,6 +54,13 @@ export function Actions({
       className={className}
       menus={
         <>
+          {isPaused && (
+            <DropdownItem
+              href={`?${RESTART_AS_NEW_INVOCATION_QUERY_PARAM}=${invocation.id}`}
+            >
+              Resume…
+            </DropdownItem>
+          )}
           {!isCompleted && (
             <DropdownItem
               destructive
@@ -98,14 +106,16 @@ export function Actions({
         }
         className={mainButtonStyles({
           mini,
-          destructive: !isRestateAsNewSupported,
+          destructive: !isRestateAsNewSupported && !isPaused,
         })}
       >
-        {isRestateAsNewSupported
-          ? 'Restart as new…'
-          : isCompleted
-            ? 'Delete…'
-            : 'Cancel…'}
+        {isPaused
+          ? 'Resume…'
+          : isRestateAsNewSupported
+            ? 'Restart as new…'
+            : isCompleted
+              ? 'Delete…'
+              : 'Cancel…'}
       </Link>
     </SplitButton>
   );
