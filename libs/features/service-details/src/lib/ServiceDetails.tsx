@@ -25,6 +25,7 @@ import { RetentionSection } from './RetentionSection';
 import { TimeoutSection } from './TimeoutSection';
 import { IngressAccessSection } from './IngressAccessSection';
 import { RetryPolicySection } from './RetryPolicy';
+import { RestateMinimumVersion } from '@restate/util/feature-flag';
 
 export function ServiceDetails() {
   return (
@@ -172,7 +173,9 @@ function ServiceContent({ service }: { service: string }) {
         </Section>
         <IngressAccessSection serviceDetails={data} isPending={isPending} />
         <RetentionSection serviceDetails={data} isPending={isPending} />
-        <RetryPolicySection serviceDetails={data} isPending={isPending} />
+        <RestateMinimumVersion minVersion="1.4.5">
+          <RetryPolicySection serviceDetails={data} isPending={isPending} />
+        </RestateMinimumVersion>
         <TimeoutSection serviceDetails={data} isPending={isPending} />
       </div>
     </>

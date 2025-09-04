@@ -48,7 +48,7 @@ export function RetentionSection({
           Edit…
         </Button>
       </SectionTitle>
-      <div className="flex flex-col pt-2">
+      <div className="flex flex-col">
         {isWorkflow && (
           <SubSection
             value={data?.workflow_completion_retention}
