@@ -18,6 +18,7 @@ export type InvocationComputedStatus2 =
   | 'suspended'
   | 'scheduled'
   | 'pending'
+  | 'paused'
   | 'ready';
 
 export type RawInvocation = components['schemas']['RawInvocation'];

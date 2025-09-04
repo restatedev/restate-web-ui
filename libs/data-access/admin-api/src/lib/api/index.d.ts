@@ -2245,6 +2245,7 @@ export interface components {
         | 'scheduled'
         | 'pending'
         | 'ready'
+        | 'paused'
         | 'backing-off';
       target: string;
       target_handler_name: string;
@@ -2317,7 +2318,8 @@ export interface components {
         | 'running'
         | 'backing-off'
         | 'suspended'
-        | 'completed';
+        | 'completed'
+        | 'paused';
       target: string;
       target_handler_name: string;
       target_service_key?: string;

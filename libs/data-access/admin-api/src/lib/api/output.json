@@ -6453,6 +6453,7 @@
               "scheduled",
               "pending",
               "ready",
+              "paused",
               "backing-off"
             ]
           },
@@ -6625,7 +6626,8 @@
               "running",
               "backing-off",
               "suspended",
-              "completed"
+              "completed",
+              "paused"
             ]
           },
           "target": {

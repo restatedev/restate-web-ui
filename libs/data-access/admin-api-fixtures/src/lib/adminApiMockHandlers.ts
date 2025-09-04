@@ -73,6 +73,13 @@ const registerDeploymentHandler = http.post<
       data: { dryRun: false },
     });
 
+    const retry_policy: adminApi.Service['retry_policy'] = {
+      exponentiation_factor: 2,
+      initial_interval: '100ms',
+      max_attempts: null,
+      max_interval: null,
+      on_max_attempts: 'Pause',
+    };
     return HttpResponse.json({
       id: existingDeployment.id,
       min_protocol_version: 0,
@@ -91,12 +98,16 @@ const registerDeploymentHandler = http.post<
           workflow_completion_retention: service.idempotency_retention,
           journal_retention: service.journal_retention,
           enable_lazy_state: service.enable_lazy_state,
+          abort_timeout: '1m',
+          inactivity_timeout: '1m',
+          retry_policy,
           handlers: service.handlers.map((handler) => ({
             name: handler.name,
             ty: handler.ty,
             input_description: handler.input_description,
             output_description: handler.output_description,
             public: true,
+            retry_policy,
           })),
         })),
     });
@@ -117,7 +128,13 @@ const registerDeploymentHandler = http.post<
           .map(() => adminApiDb.handler.create({ name: getName() })),
       }),
     );
-
+  const retry_policy: adminApi.Service['retry_policy'] = {
+    exponentiation_factor: 2,
+    initial_interval: '100ms',
+    max_attempts: null,
+    max_interval: null,
+    on_max_attempts: 'Pause',
+  };
   return HttpResponse.json({
     id: newDeployment.id,
     min_protocol_version: 0,
@@ -136,7 +153,13 @@ const registerDeploymentHandler = http.post<
         input_description: handler.input_description,
         output_description: handler.output_description,
         public: true,
+        retry_policy,
       })),
+      journal_retention: '1m',
+      inactivity_timeout: '1m',
+      abort_timeout: '1m',
+      enable_lazy_state: false,
+      retry_policy,
     })),
   });
 });
@@ -197,6 +220,13 @@ const deploymentDetailsHandler = http.get<
       { status: 500 },
     );
   }
+  const retry_policy: adminApi.Service['retry_policy'] = {
+    exponentiation_factor: 2,
+    initial_interval: '100ms',
+    max_attempts: null,
+    max_interval: null,
+    on_max_attempts: 'Pause',
+  };
   return HttpResponse.json({
     id: deployment.id,
     services: adminApiDb.service
@@ -211,9 +241,15 @@ const deploymentDetailsHandler = http.get<
         ty: service.ty,
         idempotency_retention: service.idempotency_retention,
         workflow_completion_retention: service.idempotency_retention,
-        handlers: adminApiDb.handler.findMany({
-          where: { service: { name: { equals: service.name } } },
-        }),
+        handlers: adminApiDb.handler
+          .findMany({
+            where: { service: { name: { equals: service.name } } },
+          })
+          .map((handler) => ({ ...handler, retry_policy })),
+        retry_policy,
+        abort_timeout: '1m',
+        inactivity_timeout: '1m',
+        enable_lazy_state: false,
       })),
     uri: deployment.endpoint,
     protocol_type: 'RequestResponse',
@@ -238,6 +274,14 @@ const serviceDetailsHandler = http.get<
     },
   })!;
 
+  const retry_policy: adminApi.Service['retry_policy'] = {
+    exponentiation_factor: 2,
+    initial_interval: '100ms',
+    max_attempts: null,
+    max_interval: null,
+    on_max_attempts: 'Pause',
+  };
+
   return HttpResponse.json({
     name: service.name,
     deployment_id: service.deployment!.id!,
@@ -246,9 +290,15 @@ const serviceDetailsHandler = http.get<
     ty: service.ty,
     idempotency_retention: service.idempotency_retention,
     workflow_completion_retention: service.idempotency_retention,
-    handlers: adminApiDb.handler.findMany({
-      where: { service: { name: { equals: service.name } } },
-    }),
+    handlers: adminApiDb.handler
+      .findMany({
+        where: { service: { name: { equals: service.name } } },
+      })
+      .map((handler) => ({ ...handler, retry_policy })),
+    enable_lazy_state: false,
+    abort_timeout: '1m',
+    inactivity_timeout: '1m',
+    retry_policy,
   });
 });
 
