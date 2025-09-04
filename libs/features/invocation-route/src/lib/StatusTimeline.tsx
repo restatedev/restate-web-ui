@@ -156,6 +156,13 @@ const STATUS_TIMELINE_COMPONENTS: Partial<
       tooltipTitle: 'Suspended at',
     },
   ]),
+  paused: withStatusTimeline([
+    {
+      prefix: 'for',
+      field: 'modified_at',
+      tooltipTitle: 'Paused at',
+    },
+  ]),
   scheduled: withStatusTimeline([
     {
       prefix: 'in',
