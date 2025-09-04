@@ -5,6 +5,7 @@ import {
   KILL_INVOCATION_QUERY_PARAM,
   PURGE_INVOCATION_QUERY_PARAM,
   RESTART_AS_NEW_INVOCATION_QUERY_PARAM,
+  RESUME_INVOCATION_QUERY_PARAM,
 } from './constants';
 import { Link } from '@restate/ui/link';
 import { tv } from '@restate/util/styles';
@@ -56,7 +57,7 @@ export function Actions({
         <>
           {isPaused && (
             <DropdownItem
-              href={`?${RESTART_AS_NEW_INVOCATION_QUERY_PARAM}=${invocation.id}`}
+              href={`?${RESUME_INVOCATION_QUERY_PARAM}=${invocation.id}`}
             >
               Resume…
             </DropdownItem>
@@ -98,11 +99,13 @@ export function Actions({
       <Link
         variant="secondary-button"
         href={
-          isRestateAsNewSupported
-            ? `?${RESTART_AS_NEW_INVOCATION_QUERY_PARAM}=${invocation.id}`
-            : isCompleted
-              ? `?${PURGE_INVOCATION_QUERY_PARAM}=${invocation.id}`
-              : `?${CANCEL_INVOCATION_QUERY_PARAM}=${invocation.id}`
+          isPaused
+            ? `?${RESUME_INVOCATION_QUERY_PARAM}=${invocation.id}`
+            : isRestateAsNewSupported
+              ? `?${RESTART_AS_NEW_INVOCATION_QUERY_PARAM}=${invocation.id}`
+              : isCompleted
+                ? `?${PURGE_INVOCATION_QUERY_PARAM}=${invocation.id}`
+                : `?${CANCEL_INVOCATION_QUERY_PARAM}=${invocation.id}`
         }
         className={mainButtonStyles({
           mini,
