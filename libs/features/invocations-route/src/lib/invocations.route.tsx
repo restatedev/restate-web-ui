@@ -97,14 +97,15 @@ function Component() {
         options: [
           { value: 'scheduled', label: 'Scheduled' },
           { value: 'pending', label: 'Pending' },
-          { value: 'ready', label: 'Ready' },
           { value: 'running', label: 'Running' },
           { value: 'backing-off', label: 'Backing-off' },
           { value: 'suspended', label: 'Suspended' },
+          { value: 'paused', label: 'Paused' },
           { value: 'killed', label: 'Killed' },
           { value: 'cancelled', label: 'Cancelled' },
           { value: 'succeeded', label: 'Succeeded' },
           { value: 'failed', label: 'Failed' },
+          { value: 'ready', label: 'Ready' },
         ],
       },
       {
