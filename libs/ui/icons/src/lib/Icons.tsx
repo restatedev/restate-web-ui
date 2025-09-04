@@ -51,6 +51,9 @@ import {
   ChartNoAxesColumn,
   BadgePercent,
   Grid2x2Check,
+  Pause,
+  CirclePause,
+  OctagonPause,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from '@restate/util/styles';
@@ -144,6 +147,7 @@ export const enum IconName {
   Usage = 'Usage',
   Discount = 'Discount',
   Plan = 'Plan',
+  Pause = 'Pause',
 }
 export interface IconsProps {
   name: IconName;
@@ -222,6 +226,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Usage]: ChartNoAxesColumn,
   [IconName.Discount]: BadgePercent,
   [IconName.Plan]: Grid2x2Check,
+  [IconName.Pause]: OctagonPause,
 };
 
 const styles = tv({

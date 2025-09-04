@@ -216,7 +216,7 @@ export function EntryExpression({
       </>
     ));
 
-  const { isAmbiguous: entryCompletionIsAmbiguous } =
+  const { isAmbiguous: entryCompletionIsAmbiguous, invocationIspaused } =
     isEntryCompletionAmbiguous(entry, invocation);
 
   // TODO: move to middleware
@@ -255,8 +255,17 @@ export function EntryExpression({
       output={
         <>
           {entryCompletionIsAmbiguous && (
-            <HoverTooltip content="Completion not detected!">
-              <Icon name={IconName.ClockAlert} className="h-3 w-3 opacity-80" />
+            <HoverTooltip
+              content={
+                invocationIspaused
+                  ? 'Invocation is paused!'
+                  : 'Completion not detected!'
+              }
+            >
+              <Icon
+                name={invocationIspaused ? IconName.Pause : IconName.ClockAlert}
+                className="h-3 w-3 opacity-80"
+              />
             </HoverTooltip>
           )}
           {isPending && <Ellipsis />}

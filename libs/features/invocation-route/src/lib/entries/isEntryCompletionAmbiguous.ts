@@ -18,6 +18,7 @@ export function isEntryCompletionAmbiguous(
     return { isAmbiguous: false };
   }
   const invocationIsCompleted = Boolean(invocation?.completed_at);
+  const invocationIspaused = Boolean(invocation?.status === 'paused');
   const cancelledAfterEntry = invocation?.journal?.entries?.find(
     (entry) =>
       entry.category === 'notification' &&
@@ -29,8 +30,13 @@ export function isEntryCompletionAmbiguous(
 
   return {
     isAmbiguous: Boolean(
-      refEntry?.isPending && (invocationIsCompleted || cancelledAfterEntry),
+      refEntry?.isPending &&
+        (invocationIsCompleted || cancelledAfterEntry || invocationIspaused),
     ),
-    unambiguousEnd: cancelledAfterEntry?.start || invocation?.completed_at,
+    invocationIspaused,
+    unambiguousEnd:
+      cancelledAfterEntry?.start ||
+      invocation?.completed_at ||
+      (invocationIspaused ? invocation.modified_at : undefined),
   };
 }
