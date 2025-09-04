@@ -21,7 +21,7 @@ const mainButtonStyles = tv({
     },
     destructive: {
       true: 'text-red-500',
-      false: '',
+      false: 'text-blue-900',
     },
   },
 });
