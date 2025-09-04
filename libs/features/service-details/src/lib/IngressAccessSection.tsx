@@ -4,6 +4,7 @@ import { SectionTitle, Section } from '@restate/ui/section';
 import { useSearchParams } from 'react-router';
 import { SERVICE_ACCESS_EDIT } from './constants';
 import { SubSection } from './SubSection';
+import { IngressAccessExplainer } from '@restate/features/explainers';
 
 export function IngressAccessSection({
   serviceDetails: data,
@@ -41,13 +42,10 @@ export function IngressAccessSection({
           value={
             data?.public ? 'Public' : data?.public === false ? 'Private' : ''
           }
-          label="Service access"
-          footer={
-            <>
-              Public services and their handlers are accessible via the ingress
-              (HTTP or Kafka), while private services are accessible only from
-              other Restate services.
-            </>
+          label={
+            <IngressAccessExplainer variant="indicator-button">
+              Service access
+            </IngressAccessExplainer>
           }
           isPending={isPending}
         />

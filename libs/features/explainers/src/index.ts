@@ -5,3 +5,7 @@ export * from './lib/HandlerType';
 export * from './lib/ProtocolType';
 export * from './lib/ServiceCompatibility';
 export * from './lib/Retention';
+export * from './lib/IngressAccess';
+export * from './lib/IdempotencyRetention';
+export * from './lib/WorkflowRetention';
+export * from './lib/JournalRetention';

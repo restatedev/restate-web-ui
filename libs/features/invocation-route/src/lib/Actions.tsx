@@ -11,6 +11,7 @@ import { Link } from '@restate/ui/link';
 import { tv } from '@restate/util/styles';
 import { SplitButton } from '@restate/ui/split-button';
 import { useRestateContext } from '@restate/features/restate-context';
+import { RestateMinimumVersion } from '@restate/util/feature-flag';
 
 const mainButtonStyles = tv({
   base: 'translate-x-px rounded-l-md rounded-r-none px-2 py-0.5 [font-size:inherit] [line-height:inherit]',
@@ -57,11 +58,13 @@ export function Actions({
       menus={
         <>
           {(isPaused || isSuspended) && (
-            <DropdownItem
-              href={`?${RESUME_INVOCATION_QUERY_PARAM}=${invocation.id}`}
-            >
-              Resume…
-            </DropdownItem>
+            <RestateMinimumVersion minVersion="1.4.5">
+              <DropdownItem
+                href={`?${RESUME_INVOCATION_QUERY_PARAM}=${invocation.id}`}
+              >
+                Resume…
+              </DropdownItem>
+            </RestateMinimumVersion>
           )}
           {!isCompleted && (
             <DropdownItem
