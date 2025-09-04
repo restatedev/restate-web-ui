@@ -16,7 +16,6 @@ import {
 } from '@restate/data-access/admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui/notification';
 import { FormFieldSelect } from '@restate/ui/form-field';
-import { invocation } from './invocation.route';
 import {
   Deployment,
   getEndpoint,
@@ -100,8 +99,8 @@ export function ResumeInvocation() {
               <code className="inline-block rounded-md bg-blue-50 p-0.5 text-blue-600 ring-blue-600/10">
                 {invocationId}
               </code>{' '}
-              is currently paused. Select the deployment you'd like to run it
-              on, then resume execution.
+              is currently {invocation?.status}. Select the deployment you'd
+              like to run it on, then resume execution.
             </p>
           </div>
           <Form

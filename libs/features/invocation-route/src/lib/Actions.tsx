@@ -41,6 +41,7 @@ export function Actions({
   }
   const isCompleted = Boolean(invocation.completion_result);
   const isPaused = Boolean(invocation.status === 'paused');
+  const isSuspended = Boolean(invocation.status === 'suspended');
   const isNotWorkflow = invocation.target_service_ty !== 'workflow';
   const isRestateAsNewSupported = Boolean(
     isVersionGte?.('1.5.0') &&
@@ -91,6 +92,13 @@ export function Actions({
               href={`?${PURGE_INVOCATION_QUERY_PARAM}=${invocation.id}`}
             >
               Delete…
+            </DropdownItem>
+          )}
+          {isSuspended && (
+            <DropdownItem
+              href={`?${RESUME_INVOCATION_QUERY_PARAM}=${invocation.id}`}
+            >
+              Resume…
             </DropdownItem>
           )}
         </>
