@@ -4,7 +4,10 @@ import { SectionTitle, Section } from '@restate/ui/section';
 import { useSearchParams } from 'react-router';
 import { SERVICE_ACCESS_EDIT } from './constants';
 import { SubSection } from './SubSection';
-import { IngressAccessExplainer } from '@restate/features/explainers';
+import {
+  IngressAccessExplainer,
+  LazyStateExplainer,
+} from '@restate/features/explainers';
 
 export function IngressAccessSection({
   serviceDetails: data,
@@ -20,7 +23,7 @@ export function IngressAccessSection({
   return (
     <Section>
       <SectionTitle className="flex items-center">
-        Ingress access
+        Options
         <Button
           variant="secondary"
           onClick={() =>
@@ -44,8 +47,19 @@ export function IngressAccessSection({
           }
           label={
             <IngressAccessExplainer variant="indicator-button">
-              Service access
+              Ingress access
             </IngressAccessExplainer>
+          }
+          isPending={isPending}
+        />
+      </div>
+      <div className="mt-3 flex flex-col gap-2">
+        <SubSection
+          value={String(data?.enable_lazy_state ? 'Enabled' : 'Disabled')}
+          label={
+            <LazyStateExplainer variant="indicator-button">
+              Lazy state
+            </LazyStateExplainer>
           }
           isPending={isPending}
         />

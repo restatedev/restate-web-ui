@@ -10,3 +10,4 @@ export * from './lib/IdempotencyRetention';
 export * from './lib/WorkflowRetention';
 export * from './lib/JournalRetention';
 export * from './lib/RetryPolicy';
+export * from './lib/LazyState';
