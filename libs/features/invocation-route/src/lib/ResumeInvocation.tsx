@@ -95,13 +95,11 @@ export function ResumeInvocation() {
     mutate({
       parameters: {
         path: { invocation_id: String(invocationId) },
-        query: {
-          deployment: isKeep
-            ? 'Keep'
-            : isLatest
-              ? 'Latest'
-              : (String(deployment) as any),
-        },
+        ...(!isKeep && {
+          query: {
+            deployment: isLatest ? 'Latest' : (String(deployment) as any),
+          },
+        }),
       },
     });
   };

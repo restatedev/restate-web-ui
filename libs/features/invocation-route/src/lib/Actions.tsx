@@ -6,6 +6,7 @@ import {
   PURGE_INVOCATION_QUERY_PARAM,
   RESTART_AS_NEW_INVOCATION_QUERY_PARAM,
   RESUME_INVOCATION_QUERY_PARAM,
+  RETRY_NOW_INVOCATION_QUERY_PARAM,
 } from './constants';
 import { Link } from '@restate/ui/link';
 import { tv } from '@restate/util/styles';
@@ -22,7 +23,7 @@ const mainButtonStyles = tv({
     },
     destructive: {
       true: 'text-red-500',
-      false: 'text-blue-900',
+      false: 'text-blue-700',
     },
   },
 });
@@ -42,6 +43,7 @@ export function Actions({
   }
   const isCompleted = Boolean(invocation.completion_result);
   const isPaused = Boolean(invocation.status === 'paused');
+  const isBackingOff = Boolean(invocation.status === 'backing-off');
   const isNotWorkflow = invocation.target_service_ty !== 'workflow';
   const isRestateAsNewSupported = Boolean(
     isVersionGte?.('1.5.0') &&
@@ -62,6 +64,15 @@ export function Actions({
                 href={`?${RESUME_INVOCATION_QUERY_PARAM}=${invocation.id}`}
               >
                 Resume…
+              </DropdownItem>
+            </RestateMinimumVersion>
+          )}
+          {isBackingOff && (
+            <RestateMinimumVersion minVersion="1.4.5">
+              <DropdownItem
+                href={`?${RETRY_NOW_INVOCATION_QUERY_PARAM}=${invocation.id}`}
+              >
+                Retry now…
               </DropdownItem>
             </RestateMinimumVersion>
           )}
