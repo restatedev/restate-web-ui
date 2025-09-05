@@ -51,7 +51,19 @@ export function ResumeInvocation() {
       },
       [] as { revision: number; deployment?: Deployment }[],
     )
-    .filter(({ deployment }) => deployment);
+    .filter(({ deployment }) => {
+      if (!deployment) {
+        return false;
+      }
+      const isProtocolMatch = invocation?.pinned_service_protocol_version
+        ? deployment.min_protocol_version <=
+            invocation?.pinned_service_protocol_version &&
+          deployment.max_protocol_version >=
+            invocation?.pinned_service_protocol_version
+        : true;
+
+      return isProtocolMatch;
+    });
 
   const { mutate, isPending, error, reset } = useResumeInvocation(
     invocationId ?? '',
@@ -76,12 +88,20 @@ export function ResumeInvocation() {
   const submitHandler = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    const deploymentId = formData.get('deployment');
+    const deployment = formData.get('deployment');
+    const isKeep = deployment === 'Keep';
+    const isLatest = deployment === 'Latest';
 
     mutate({
       parameters: {
         path: { invocation_id: String(invocationId) },
-        query: { deployment: { Id: String(deploymentId) } },
+        query: {
+          deployment: isKeep
+            ? 'Keep'
+            : isLatest
+              ? 'Latest'
+              : (String(deployment) as any),
+        },
       },
     });
   };
@@ -114,51 +134,58 @@ export function ResumeInvocation() {
               className="mt-4 min-w-xs flex-auto basis-[calc(50%-var(--spacing)*2)] [&_button>*]:max-w-full"
               label="Deployment"
               placeholder="deployment"
-              defaultValue={invocation?.pinned_deployment_id}
+              defaultValue={'Keep'}
               name="deployment"
             >
-              {deployments.map(({ revision, deployment }) => {
-                const isCurrent =
-                  deployment?.id === invocation?.pinned_deployment_id;
-                const isLatest = service?.sortedRevisions.at(0) === revision;
-                return (
-                  <ListBoxItem
-                    className="w-full"
-                    value={deployment!.id}
-                    key={deployment?.id}
-                  >
-                    <div className="flex w-full min-w-0 flex-auto items-center gap-2 truncate">
-                      <div className="h-6 w-6 shrink-0 rounded-md border bg-white shadow-xs">
-                        <Icon
-                          name={
-                            isHttpDeployment(deployment!)
-                              ? IconName.Http
-                              : IconName.Lambda
-                          }
-                          className="h-full w-full p-1 text-zinc-400"
+              {invocation &&
+                deployments.map(({ revision, deployment }) => {
+                  const isCurrent =
+                    deployment?.id === invocation?.pinned_deployment_id;
+                  const isLatest = service?.sortedRevisions.at(0) === revision;
+                  return (
+                    <ListBoxItem
+                      className="w-full"
+                      value={
+                        isCurrent
+                          ? 'Keep'
+                          : isLatest
+                            ? 'Latest'
+                            : deployment!.id
+                      }
+                      key={deployment?.id}
+                    >
+                      <div className="flex w-full min-w-0 flex-auto items-center gap-2 truncate">
+                        <div className="h-6 w-6 shrink-0 rounded-md border bg-white shadow-xs">
+                          <Icon
+                            name={
+                              isHttpDeployment(deployment!)
+                                ? IconName.Http
+                                : IconName.Lambda
+                            }
+                            className="h-full w-full p-1 text-zinc-400"
+                          />
+                        </div>
+                        <div className="min-w-0 truncate">
+                          {getEndpoint(deployment)}
+                        </div>
+                        {isCurrent && (
+                          <Badge size="xs" variant="info">
+                            CURRENT
+                          </Badge>
+                        )}
+                        {isLatest && !isCurrent && (
+                          <Badge size="xs" variant="info">
+                            LATEST
+                          </Badge>
+                        )}
+                        <Revision
+                          revision={revision}
+                          className="z-2 ml-auto bg-white"
                         />
                       </div>
-                      <div className="min-w-0 truncate">
-                        {getEndpoint(deployment)}
-                      </div>
-                      {isCurrent && (
-                        <Badge size="xs" variant="info">
-                          CURRENT
-                        </Badge>
-                      )}
-                      {isLatest && !isCurrent && (
-                        <Badge size="xs" variant="info">
-                          LATEST
-                        </Badge>
-                      )}
-                      <Revision
-                        revision={revision}
-                        className="z-2 ml-auto bg-white"
-                      />
-                    </div>
-                  </ListBoxItem>
-                );
-              })}
+                    </ListBoxItem>
+                  );
+                })}
             </FormFieldSelect>
             <DialogFooter>
               <div className="flex flex-col gap-2">
