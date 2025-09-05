@@ -1306,6 +1306,29 @@ export function useRestartInvocationAsNew(
   });
 }
 
+export function useResumeInvocation(
+  invocationId: string,
+  options?: HookMutationOptions<'/invocations/{invocation_id}/resume', 'patch'>,
+) {
+  const baseUrl = useAdminBaseUrl();
+  const { refetch } = useGetInvocationJournalWithInvocationV2(invocationId, {
+    refetchOnMount: false,
+    enabled: Boolean(invocationId),
+  });
+
+  return useMutation({
+    ...adminApi('mutate', '/invocations/{invocation_id}/resume', 'patch', {
+      baseUrl,
+      resolvedPath: `/invocations/${invocationId}/resume`,
+    }),
+    ...options,
+    async onSuccess(data, variables, context) {
+      await refetch();
+      options?.onSuccess?.(data, variables, context);
+    },
+  });
+}
+
 export function convertStateToObject<T>(state: { name: string; value: T }[]) {
   return state.reduce(
     (p, c) => ({ ...p, [c.name]: c.value }),

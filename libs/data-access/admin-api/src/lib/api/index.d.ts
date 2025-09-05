@@ -217,6 +217,26 @@ export interface paths {
     patch: operations['restart_as_new_invocation'];
     trace?: never;
   };
+  '/invocations/{invocation_id}/resume': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /**
+     * Resume an invocation
+     * @description Resume the given invocation. In case the invocation is backing-off, this will immediately trigger the retry timer. If the invocation is suspended or paused, this will resume it.
+     */
+    patch: operations['resume_invocation'];
+    trace?: never;
+  };
   '/openapi': {
     parameters: {
       query?: never;
@@ -273,7 +293,7 @@ export interface paths {
     head?: never;
     /**
      * Modify a service
-     * @description Modify a registered service.
+     * @description Modify a registered service configuration. NOTE: Service re-discovery will update the settings based on the service endpoint configuration.
      */
     patch: operations['modify_service'];
     trace?: never;
@@ -741,6 +761,13 @@ export interface components {
            */
           assume_role_arn?: string | null;
           /**
+           * Compression
+           * @description Compression algorithm used for invoking Lambda.
+           */
+          compression?:
+            | components['schemas']['EndpointLambdaCompression']
+            | null;
+          /**
            * Additional headers
            * @description Additional headers used to invoke this service deployment.
            */
@@ -781,6 +808,11 @@ export interface components {
     };
     /** Format: arn */
     LambdaARN: string;
+    /**
+     * @description Lambda compression
+     * @enum {string}
+     */
+    EndpointLambdaCompression: 'Zstd';
     RegisterDeploymentRequest:
       | {
           /**
@@ -882,8 +914,16 @@ export interface components {
        * @description Fully qualified name of the service
        */
       name: string;
-      handlers: components['schemas']['HandlerMetadata'][];
+      /**
+       * Type
+       * @description Service type
+       */
       ty: components['schemas']['ServiceType'];
+      /**
+       * Handlers
+       * @description Handlers for this service.
+       */
+      handlers: components['schemas']['HandlerMetadata'][];
       /**
        * Documentation
        * @description Documentation of the service, as propagated by the SDKs.
@@ -900,7 +940,7 @@ export interface components {
        * Deployment Id
        * @description Deployment exposing the latest revision of the service.
        */
-      deployment_id: string;
+      deployment_id: components['schemas']['String'];
       /**
        * Revision
        * Format: uint32
@@ -910,25 +950,31 @@ export interface components {
       /**
        * Public
        * @description If true, the service can be invoked through the ingress. If false, the service can be invoked only from another Restate service.
+       * @default true
        */
       public: boolean;
       /**
        * Idempotency retention
        * @description The retention duration of idempotent requests for this service.
+       *
+       *     If not configured, this returns the default idempotency retention.
+       * @default 1d
        */
-      idempotency_retention?: string | null;
+      idempotency_retention: components['schemas']['DurationString'];
       /**
        * Workflow completion retention
        * @description The retention duration of workflows. Only available on workflow services.
        */
-      workflow_completion_retention?: string | null;
+      workflow_completion_retention?:
+        | components['schemas']['DurationString']
+        | null;
       /**
        * Journal retention
        * @description The journal retention. When set, this applies to all requests to all handlers of this service.
        *
        *     In case the invocation has an idempotency key, the `idempotency_retention` caps the maximum `journal_retention` time. In case the invocation targets a workflow handler, the `workflow_completion_retention` caps the maximum `journal_retention` time.
        */
-      journal_retention?: string | null;
+      journal_retention?: components['schemas']['DurationString'] | null;
       /**
        * Inactivity timeout
        * @description This timer guards against stalled service/handler invocations. Once it expires, Restate triggers a graceful termination by asking the service invocation to suspend (which preserves intermediate progress).
@@ -937,9 +983,10 @@ export interface components {
        *
        *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
        *
-       *     This overrides the default inactivity timeout set in invoker options.
+       *     If unset, this returns the default inactivity timeout configured in invoker options.
+       * @default 1m
        */
-      inactivity_timeout?: string | null;
+      inactivity_timeout: components['schemas']['DurationString'];
       /**
        * Abort timeout
        * @description This timer guards against stalled service/handler invocations that are supposed to terminate. The abort timeout is started after the 'inactivity timeout' has expired and the service/handler invocation has been asked to gracefully terminate. Once the timer expires, it will abort the service/handler invocation.
@@ -948,17 +995,43 @@ export interface components {
        *
        *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
        *
-       *     This overrides the default abort timeout set in invoker options.
+       *     If unset, this returns the default abort timeout configured in invoker options.
+       * @default 1m
        */
-      abort_timeout?: string | null;
+      abort_timeout: components['schemas']['DurationString'];
       /**
        * Enable lazy state
        * @description If true, lazy state will be enabled for all invocations to this service. This is relevant only for Workflows and Virtual Objects.
+       * @default false
        */
-      enable_lazy_state?: boolean | null;
+      enable_lazy_state: boolean;
+      /**
+       * Retry policy
+       * @description Retry policy applied to invocations of this service.
+       *
+       *     If unset, it returns the default values configured in the Restate configuration.
+       * @default {
+       *       "exponentiation_factor": 2,
+       *       "initial_interval": "100ms",
+       *       "max_attempts": null,
+       *       "max_interval": null,
+       *       "on_max_attempts": "Pause"
+       *     }
+       */
+      retry_policy: components['schemas']['ServiceRetryPolicyMetadata'];
     };
+    /** @enum {string} */
+    ServiceType: 'Service' | 'VirtualObject' | 'Workflow';
     HandlerMetadata: {
+      /**
+       * Name
+       * @description The handler name.
+       */
       name: string;
+      /**
+       * Type
+       * @description The handler type.
+       */
       ty?: components['schemas']['HandlerMetadataType'] | null;
       /**
        * Documentation
@@ -974,19 +1047,16 @@ export interface components {
       };
       /**
        * Idempotency retention
-       * @description The retention duration of idempotent requests for this service.
+       * @description The retention duration of idempotent requests for this handler. If set, it overrides the value set in the service.
        */
       idempotency_retention?: string | null;
-      /**
-       * Workflow completion retention
-       * @description The retention duration of workflows. Only available on workflow services.
-       */
-      workflow_completion_retention?: string | null;
       /**
        * Journal retention
        * @description The journal retention. When set, this applies to all requests to this handler.
        *
        *     In case the invocation has an idempotency key, the `idempotency_retention` caps the maximum `journal_retention` time. In case this handler is a workflow handler, the `workflow_completion_retention` caps the maximum `journal_retention` time.
+       *
+       *     If set, it overrides the value set in the service.
        */
       journal_retention?: string | null;
       /**
@@ -997,7 +1067,7 @@ export interface components {
        *
        *     Can be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format.
        *
-       *     This overrides the default inactivity timeout set in invoker options.
+       *     If set, it overrides the value set in the service.
        */
       inactivity_timeout?: string | null;
       /**
@@ -1008,12 +1078,14 @@ export interface components {
        *
        *     Can be configured using the [`humantime`](https://docs.rs/humantime/latest/humantime/fn.parse_duration.html) format.
        *
-       *     This overrides the default abort timeout set in invoker options.
+       *     If set, it overrides the value set in the service.
        */
       abort_timeout?: string | null;
       /**
        * Enable lazy state
        * @description If true, lazy state will be enabled for all invocations to this service. This is relevant only for Workflows and Virtual Objects.
+       *
+       *     If set, it overrides the value set in the service.
        */
       enable_lazy_state?: boolean | null;
       /**
@@ -1042,11 +1114,86 @@ export interface components {
        * @description JSON Schema of the handler output
        */
       output_json_schema?: unknown;
+      /**
+       * Retry policy
+       * @description Retry policy overrides applied for this handler.
+       */
+      retry_policy: components['schemas']['HandlerRetryPolicyMetadata'];
     };
     /** @enum {string} */
     HandlerMetadataType: 'Exclusive' | 'Shared' | 'Workflow';
-    /** @enum {string} */
-    ServiceType: 'Service' | 'VirtualObject' | 'Workflow';
+    /** Handler retry policy overrides */
+    HandlerRetryPolicyMetadata: {
+      /**
+       * Initial Interval
+       * @description Initial interval for the first retry attempt.
+       */
+      initial_interval?: components['schemas']['DurationString'];
+      /**
+       * Factor
+       * Format: float
+       * @description The factor to use to compute the next retry attempt.
+       */
+      exponentiation_factor?: number | null;
+      /**
+       * Max attempts
+       * Format: uint
+       * @description Number of maximum attempts before giving up. Infinite retries if unset.
+       */
+      max_attempts?: number | null;
+      /**
+       * Max interval
+       * @description Maximum interval between retries.
+       */
+      max_interval?: components['schemas']['DurationString'] | null;
+      /**
+       * On max attempts
+       * @description Behavior when max attempts are reached.
+       */
+      on_max_attempts?: components['schemas']['OnMaxAttempts'] | null;
+    };
+    /**
+     * DurationString
+     * @description Duration string in either jiff human friendly or ISO8601 format. Check https://docs.rs/jiff/latest/jiff/struct.Span.html#parsing-and-printing for more details.
+     * @example 10 hours
+     */
+    DurationString: string;
+    OnMaxAttempts: 'Pause' | 'Kill';
+    /** Service retry policy */
+    ServiceRetryPolicyMetadata: {
+      /**
+       * Initial Interval
+       * @description Initial interval for the first retry attempt.
+       * @default 100ms
+       */
+      initial_interval: components['schemas']['DurationString'];
+      /**
+       * Factor
+       * Format: float
+       * @description The factor to use to compute the next retry attempt. Default: `2.0`.
+       * @default 2
+       */
+      exponentiation_factor: number;
+      /**
+       * Max attempts
+       * Format: uint
+       * @description Number of maximum attempts before giving up. Infinite retries if unset.
+       * @default null
+       */
+      max_attempts: number | null;
+      /**
+       * Max interval
+       * @description Maximum interval between retries.
+       * @default null
+       */
+      max_interval: components['schemas']['DurationString'] | null;
+      /**
+       * On max attempts
+       * @description Behavior when max attempts are reached.
+       * @default Pause
+       */
+      on_max_attempts: components['schemas']['OnMaxAttempts'];
+    };
     DetailedDeploymentResponse:
       | {
           /** Deployment ID */
@@ -1110,6 +1257,13 @@ export interface components {
            * @description Assume role ARN used to invoke this deployment. Check https://docs.restate.dev/category/aws-lambda for more details.
            */
           assume_role_arn?: string | null;
+          /**
+           * Compression
+           * @description Compression algorithm used for invoking Lambda.
+           */
+          compression?:
+            | components['schemas']['EndpointLambdaCompression']
+            | null;
           /**
            * Additional headers
            * @description Additional headers used to invoke this service deployment.
@@ -1199,6 +1353,11 @@ export interface components {
       /** @description The invocation id of the new invocation. */
       new_invocation_id: components['schemas']['String'];
     };
+    ResumeInvocationDeploymentId:
+      | ('Keep' | 'Latest')
+      | {
+          Id: string;
+        };
     ListServicesResponse: {
       services: components['schemas']['ServiceMetadata'][];
     };
@@ -1262,12 +1421,6 @@ export interface components {
        */
       abort_timeout: components['schemas']['DurationString'] | null;
     };
-    /**
-     * DurationString
-     * @description Duration string in either jiff human friendly or ISO8601 format. Check https://docs.rs/jiff/latest/jiff/struct.Span.html#parsing-and-printing for more details.
-     * @example 10 hours
-     */
-    DurationString: string;
     ListServiceHandlersResponse: {
       handlers: components['schemas']['HandlerMetadata'][];
     };
@@ -1482,6 +1635,7 @@ export interface components {
         | components['schemas']['RetryingLifecycleJournalEntryV2']
         | components['schemas']['ScheduledLifecycleJournalEntryV2']
         | components['schemas']['SuspendedLifecycleJournalEntryV2']
+        | components['schemas']['PausedLifecycleJournalEntryV2']
         | components['schemas']['PendingLifecycleJournalEntryV2']
         | components['schemas']['CompletionLifecycleJournalEntryV2']
         | {
@@ -1499,11 +1653,13 @@ export interface components {
       invoked_target?: string;
       invoked_id?: string;
       name?: string;
+      event_json?: string;
       entry_json?: string;
       entry_lite_json?: string;
       /** Format: data-time */
       appended_at?: string;
       version?: number;
+      event_type?: string;
       /** @enum {string} */
       entry_type:
         | 'Input'
@@ -1529,6 +1685,7 @@ export interface components {
         | 'AttachInvocation'
         | 'GetInvocationOutput'
         | 'Custom'
+        | 'Paused'
         | 'Command: Input'
         | 'Command: Output'
         | 'Command: GetState'
@@ -1648,6 +1805,19 @@ export interface components {
       category?: 'event';
       /** @enum {string} */
       type?: 'Suspended';
+    };
+    PausedLifecycleJournalEntryV2: {
+      /** @enum {string} */
+      category?: 'event';
+      /** @enum {string} */
+      type?: 'Paused';
+      stackTrace?: string;
+      message?: string;
+      code?: number;
+      relatedCommandName?: string;
+      relatedCommandType?: string;
+      relatedRestateErrorCode?: string;
+      relatedCommandIndex?: number;
     };
     PendingLifecycleJournalEntryV2: {
       /** @enum {string} */
@@ -2092,6 +2262,7 @@ export interface components {
         | 'scheduled'
         | 'pending'
         | 'ready'
+        | 'paused'
         | 'backing-off';
       target: string;
       target_handler_name: string;
@@ -2164,7 +2335,8 @@ export interface components {
         | 'running'
         | 'backing-off'
         | 'suspended'
-        | 'completed';
+        | 'completed'
+        | 'paused';
       target: string;
       target_handler_name: string;
       target_service_key?: string;
@@ -2979,6 +3151,76 @@ export interface operations {
       };
       /** @description The invocation cannot be restarted because it's not running yet, meaning it might have been scheduled or inboxed. */
       '425 Too Early': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  resume_invocation: {
+    parameters: {
+      query?: {
+        /** @description When resuming from paused/suspended, provide a deployment id to use to replace the currently pinned deployment id. If latest, use the latest deployment id. When not provided, the invocation will resume on the pinned deployment id.When provided and the invocation is either running, or no deployment is pinned, this operation will fail. */
+        deployment?: components['schemas']['ResumeInvocationDeploymentId'];
+      };
+      header?: never;
+      path: {
+        /** @description Invocation identifier. */
+        invocation_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      '404 Not Found': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      /** @description Error when routing the request within restate. */
+      '503 Service Unavailable': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      /** @description
+       *     The given deployment was not found.
+       *     The selected deployment id to resume the invocation doesn't support the currently pinned service protocol version. */
+      '400 Bad Request': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      /** @description The invocation is either inboxed or scheduled. An invocation can be resumed only when running, paused or suspended. */
+      '425 Too Early': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      /** @description The invocation is completed. An invocation can be resumed only when running, paused or suspended.
+       *     The invocation is still running or the deployment id is not pinned yet, deployment id cannot be changed. The deployment id can be changed only if the invocation is paused or suspended, and a deployment id is already pinned. */
+      '409 Conflict': {
         headers: {
           [name: string]: unknown;
         };

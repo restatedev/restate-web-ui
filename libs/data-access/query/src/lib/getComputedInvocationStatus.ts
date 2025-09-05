@@ -63,6 +63,7 @@ export function getComputedInvocationStatus(invocation: RawInvocation): {
     case 'ready':
     case 'scheduled':
     case 'running':
+    case 'paused':
     case 'suspended':
       return { status: invocation.status, isRetrying: false };
 
@@ -72,7 +73,7 @@ export function getComputedInvocationStatus(invocation: RawInvocation): {
         invocation.completion_result,
         invocation.completion_failure,
       );
-      throw new Error('Cannot calculate status');
+      return { status: invocation.status as any, isRetrying: false };
     }
   }
 }

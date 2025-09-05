@@ -144,13 +144,6 @@ function EditQueryTrigger({
           <DropdownSection>
             <ValueSelector clause={clause} onUpdate={onUpdate} />
           </DropdownSection>
-          {clause.id === 'status' && (
-            <p className="mb-2 max-w-xs px-5 py-1 text-xs text-gray-500">
-              Completed invocations (succeeded, failed, cancelled, or killed)
-              are retained only for workflows and those with idempotency keys,
-              and solely for the retention period specified by the service.
-            </p>
-          )}
           <DropdownMenu onSelect={onRemove} autoFocus={false}>
             <DropdownItem destructive>Remove</DropdownItem>
           </DropdownMenu>

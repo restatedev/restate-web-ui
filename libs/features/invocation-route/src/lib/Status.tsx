@@ -35,6 +35,7 @@ function getBadgeVariant(
     case 'succeeded':
       return 'success';
     case 'pending':
+    case 'paused':
       return 'warning';
     case 'running':
       return 'info';
@@ -68,6 +69,7 @@ const styles = tv({
       cancelled: '',
       killed: '',
       'backing-off': '',
+      paused: '',
     },
     isRetrying: {
       true: 'border border-dashed border-orange-300/80 py-0.5 pr-0.5',
@@ -87,6 +89,7 @@ const STATUS_LABEL: Record<InvocationComputedStatus2, string> = {
   cancelled: 'Cancelled',
   killed: 'Killed',
   'backing-off': 'Backing-off',
+  paused: 'Paused',
 };
 
 export function Status({
@@ -99,7 +102,6 @@ export function Status({
   const { status } = invocation;
   const variant = getBadgeVariant(status, invocation.isRetrying);
   const error = getRestateError(invocation);
-
   return (
     <div className="flex flex-row flex-wrap items-baseline gap-0.5">
       <Badge

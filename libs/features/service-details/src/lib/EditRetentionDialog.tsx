@@ -24,13 +24,12 @@ import { HUMANTIME_PATTERN_INPUT } from '@restate/util/humantime';
 import { Link } from '@restate/ui/link';
 import { ErrorBanner } from '@restate/ui/error';
 import { Button, SubmitButton } from '@restate/ui/button';
-import {
-  IdempotencyExplanation,
-  JournalExplanation,
-  WorkflowIdempotencyExplanation,
-  WorkflowRetentionExplanation,
-} from './Explainers';
 import { Icon, IconName } from '@restate/ui/icons';
+import {
+  IdempotencyRetentionExplainer,
+  JournalRetentionExplainer,
+  WorkflowRetentionExplainer,
+} from '@restate/features/explainers';
 
 export function EditRetentionDialog() {
   const formId = useId();
@@ -146,17 +145,9 @@ export function EditRetentionDialog() {
                 className="[&_label]:text-zinc-500"
                 defaultValue={data?.workflow_completion_retention ?? ''}
                 label={
-                  <InlineTooltip
-                    variant="indicator-button"
-                    title="Workflow completion"
-                    description={
-                      <WorkflowRetentionExplanation learnMore={false} />
-                    }
-                  >
-                    <span slot="title" className="text-0.5xs">
-                      Workflow completion
-                    </span>
-                  </InlineTooltip>
+                  <WorkflowRetentionExplainer variant="indicator-button">
+                    Workflow completion
+                  </WorkflowRetentionExplainer>
                 }
                 name="workflow_completion_retention"
                 placeholder="1day"
@@ -192,21 +183,12 @@ export function EditRetentionDialog() {
               defaultValue={data?.idempotency_retention ?? ''}
               disabled={isPendingOrSubmitting}
               label={
-                <InlineTooltip
+                <IdempotencyRetentionExplainer
                   variant="indicator-button"
-                  title="Idempotency completion"
-                  description={
-                    isWorkflow ? (
-                      <WorkflowIdempotencyExplanation learnMore={false} />
-                    ) : (
-                      <IdempotencyExplanation learnMore={false} />
-                    )
-                  }
+                  isWorkflow={isWorkflow}
                 >
-                  <span slot="title" className="text-0.5xs">
-                    Idempotency completion
-                  </span>
-                </InlineTooltip>
+                  Idempotency completion
+                </IdempotencyRetentionExplainer>
               }
               name="idempotency_retention"
               className="[&_label]:text-zinc-500"
@@ -242,15 +224,9 @@ export function EditRetentionDialog() {
                 defaultValue={data?.journal_retention ?? ''}
                 disabled={isPendingOrSubmitting}
                 label={
-                  <InlineTooltip
-                    variant="indicator-button"
-                    title="Journal retention"
-                    description={<JournalExplanation learnMore={false} />}
-                  >
-                    <span slot="title" className="text-0.5xs">
-                      Journal retention
-                    </span>
-                  </InlineTooltip>
+                  <JournalRetentionExplainer variant="indicator-button">
+                    Journal retention
+                  </JournalRetentionExplainer>
                 }
                 name="journal_retention"
                 className="[&_label]:text-zinc-500"

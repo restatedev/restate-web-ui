@@ -99,6 +99,7 @@ export const ENTRY_EVENTS_COMPONENTS: {
   Completion: undefined,
   Retrying: LifeCycle,
   Scheduled: LifeCycle,
+  Paused: LifeCycle,
 };
 
 function digitCount(n: number) {

@@ -253,7 +253,11 @@ function getLineVariant(entry?: JournalEntryV2) {
   if (entry?.resultType === 'failure') {
     return 'danger';
   }
-  if (entry?.type === 'Suspended' || entry?.type === 'Sleep') {
+  if (
+    entry?.type === 'Suspended' ||
+    entry?.type === 'Sleep' ||
+    entry?.type === 'Paused'
+  ) {
     return 'idleNeutral';
   }
   if (entry?.type === 'Pending') {
@@ -318,8 +322,11 @@ function InnerEntryProgress({
     isPending: entry?.isPending,
     isPoint,
   });
-  const { isAmbiguous: entryCompletionIsAmbiguous, unambiguousEnd } =
-    isEntryCompletionAmbiguous(entry, invocation);
+  const {
+    isAmbiguous: entryCompletionIsAmbiguous,
+    unambiguousEnd,
+    invocationIspaused,
+  } = isEntryCompletionAmbiguous(entry, invocation);
 
   const executionTime = entry?.start
     ? new Date(
@@ -395,7 +402,10 @@ function InnerEntryProgress({
           {isPending ? (
             <Ellipsis>{pendingDuration}</Ellipsis>
           ) : entryCompletionIsAmbiguous ? (
-            <Icon name={IconName.ClockAlert} className="h-3 w-3" />
+            <Icon
+              name={invocationIspaused ? IconName.Pause : IconName.ClockAlert}
+              className="h-3 w-3"
+            />
           ) : (
             duration
           )}

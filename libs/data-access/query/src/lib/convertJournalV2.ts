@@ -55,7 +55,7 @@ const JOURNAL_ENTRY_CONVERT_MAP: Partial<
       entry: JournalRawEntryWithCommandIndex,
       nextEntries: JournalEntryV2[],
       invocation?: Invocation,
-    ) => JournalEntryV2
+    ) => JournalEntryV2 | undefined
   >
 > = {
   Input: input,
@@ -77,6 +77,7 @@ const JOURNAL_ENTRY_CONVERT_MAP: Partial<
   CompleteAwakeable: completeAwakeable,
   Run: run,
   AttachInvocation: attachInvocation,
+  Paused: event,
 
   'Command: Input': input,
   'Command: Output': output,

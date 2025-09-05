@@ -86,7 +86,7 @@ export function Retention({
           </span>
           <RetentionExplainer
             variant="indicator-button"
-            className="ml-1 align-middle"
+            className="ml-0 -translate-y-px align-middle"
           />
         </span>
       </Badge>

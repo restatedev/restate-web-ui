@@ -4,6 +4,10 @@ import { SectionTitle, Section } from '@restate/ui/section';
 import { useSearchParams } from 'react-router';
 import { SERVICE_ACCESS_EDIT } from './constants';
 import { SubSection } from './SubSection';
+import {
+  IngressAccessExplainer,
+  LazyStateExplainer,
+} from '@restate/features/explainers';
 
 export function IngressAccessSection({
   serviceDetails: data,
@@ -19,7 +23,7 @@ export function IngressAccessSection({
   return (
     <Section>
       <SectionTitle className="flex items-center">
-        Ingress access
+        Access
         <Button
           variant="secondary"
           onClick={() =>
@@ -36,18 +40,27 @@ export function IngressAccessSection({
           Edit…
         </Button>
       </SectionTitle>
-      <div className="flex flex-col gap-2 pt-2">
+      <div className="flex flex-col gap-2">
         <SubSection
           value={
             data?.public ? 'Public' : data?.public === false ? 'Private' : ''
           }
-          label="Service access"
-          footer={
-            <>
-              Public services and their handlers are accessible via the ingress
-              (HTTP or Kafka), while private services are accessible only from
-              other Restate services.
-            </>
+          label={
+            <IngressAccessExplainer variant="indicator-button">
+              Ingress access
+            </IngressAccessExplainer>
+          }
+          isPending={isPending}
+        />
+      </div>
+      <SectionTitle className="mt-3">State</SectionTitle>
+      <div className="flex flex-col gap-2">
+        <SubSection
+          value={String(data?.enable_lazy_state ? 'Enabled' : 'Disabled')}
+          label={
+            <LazyStateExplainer variant="indicator-button">
+              Lazy
+            </LazyStateExplainer>
           }
           isPending={isPending}
         />

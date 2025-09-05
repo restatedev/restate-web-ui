@@ -42,38 +42,6 @@ function WithLearnMore({
     </div>
   );
 }
-export const WorkflowRetentionExplanation = ({
-  learnMore,
-}: PropsWithChildren<{ learnMore?: boolean }>) => (
-  <WithLearnMore learnMore={learnMore}>
-    The period for which a workflow's result is retained after{' '}
-    <span className="font-mono font-medium italic">run()</span> completes.
-  </WithLearnMore>
-);
-
-export const WorkflowIdempotencyExplanation = ({
-  learnMore,
-}: PropsWithChildren<{ learnMore?: boolean }>) => (
-  <WithLearnMore learnMore={learnMore}>
-    The period for which a shared handler's result is retained when invoked with
-    an idempotency key.
-  </WithLearnMore>
-);
-export const IdempotencyExplanation = ({
-  learnMore,
-}: PropsWithChildren<{ learnMore?: boolean }>) => (
-  <WithLearnMore learnMore={learnMore}>
-    The period for which an invocation's result is retained when invoked with an
-    idempotency key.
-  </WithLearnMore>
-);
-export const JournalExplanation = ({
-  learnMore,
-}: PropsWithChildren<{ learnMore?: boolean }>) => (
-  <WithLearnMore learnMore={learnMore}>
-    The period for which an invocation's journal entries are retained.
-  </WithLearnMore>
-);
 
 export const WarningIdempotencyCapExplanation = ({
   cap,

@@ -1,19 +1,20 @@
 import { useServiceDetails } from '@restate/data-access/admin-api-hooks';
 import { Button } from '@restate/ui/button';
-import { SectionTitle, SectionContent, Section } from '@restate/ui/section';
+import { SectionTitle, Section } from '@restate/ui/section';
 import { RestateMinimumVersion } from '@restate/util/feature-flag';
 import { humanTimeToMs } from '@restate/util/humantime';
 import { useSearchParams } from 'react-router';
 import { SERVICE_RETENTION_EDIT } from './constants';
 import {
-  WorkflowRetentionExplanation,
-  WorkflowIdempotencyExplanation,
-  IdempotencyExplanation,
-  JournalExplanation,
   WarningWorkflowCapExplanation,
   WarningIdempotencyCapExplanation,
 } from './Explainers';
 import { SubSection } from './SubSection';
+import {
+  IdempotencyRetentionExplainer,
+  JournalRetentionExplainer,
+  WorkflowRetentionExplainer,
+} from '@restate/features/explainers';
 
 export function RetentionSection({
   serviceDetails: data,
@@ -47,34 +48,40 @@ export function RetentionSection({
           Edit…
         </Button>
       </SectionTitle>
-      <div className="flex flex-col gap-2 pt-2">
+      <div className="flex flex-col">
         {isWorkflow && (
           <SubSection
             value={data?.workflow_completion_retention}
-            label="Workflow"
-            footer={<WorkflowRetentionExplanation />}
+            label={
+              <WorkflowRetentionExplainer variant="indicator-button">
+                Workflow
+              </WorkflowRetentionExplainer>
+            }
             isPending={isPending}
           />
         )}
         <SubSection
           value={data?.idempotency_retention}
-          label="Idempotency"
-          footer={
-            isWorkflow ? (
-              <WorkflowIdempotencyExplanation />
-            ) : (
-              <IdempotencyExplanation />
-            )
+          label={
+            <IdempotencyRetentionExplainer
+              variant="indicator-button"
+              isWorkflow={isWorkflow}
+            >
+              Idempotency
+            </IdempotencyRetentionExplainer>
           }
           isPending={isPending}
         />
         <RestateMinimumVersion minVersion="1.4.5">
           <SubSection
             value={data?.journal_retention}
-            label="Journal"
+            label={
+              <JournalRetentionExplainer variant="indicator-button">
+                Journal
+              </JournalRetentionExplainer>
+            }
             footer={
               <>
-                <JournalExplanation />
                 {isWorkflow &&
                   humanTimeToMs(data?.workflow_completion_retention) <
                     humanTimeToMs(data?.journal_retention) && (
