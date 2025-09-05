@@ -61,7 +61,7 @@ function EntryContent({
   >['data'];
 }) {
   const isPoint = !entry.end && !entry.isPending;
-  const { isAmbiguous: entryCompletionIsAmbiguous, invocationIspaused } =
+  const { isAmbiguous: entryCompletionIsAmbiguous, mode } =
     isEntryCompletionAmbiguous(entry, invocation);
   const inProgress =
     entry?.isPending &&
@@ -114,13 +114,13 @@ function EntryContent({
                       <span className="flex items-center gap-1">
                         <Icon
                           name={
-                            invocationIspaused
+                            mode === 'paused'
                               ? IconName.Pause
                               : IconName.ClockAlert
                           }
                           className="h-3.5 w-3.5"
                         />
-                        {invocationIspaused
+                        {mode === 'paused'
                           ? 'Paused!'
                           : 'Completion not detected!'}
                       </span>
