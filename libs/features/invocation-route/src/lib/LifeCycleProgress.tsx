@@ -143,23 +143,17 @@ export function Units({
   const cancelEvent = invocation?.journal?.entries?.find(
     (entry) => entry.category === 'notification' && entry.type === 'Cancel',
   );
-  const pauseEvent = invocation?.journal?.entries?.find(
-    (entry) => entry.category === 'event' && entry.type === 'Paused',
-  );
 
   return (
     <>
       <div className="absolute right-0 -left-6 z-0 h-12 rounded-2xl border border-t-2 border-white bg-gray-100 shadow-xs"></div>
-      {(cancelEvent || pauseEvent) && (
+      {cancelEvent && (
         <div className="pointer-events-none absolute top-12 right-0 bottom-0 left-0 overflow-hidden px-2 transition-all duration-1000">
           <div
             className="h-full w-full rounded-br-2xl border-l-2 border-black/8 bg-zinc-900/50 mix-blend-multiply transition-all duration-1000 [background:repeating-linear-gradient(-45deg,--theme(--color-black/0.04),--theme(--color-black/0.04)_2px,--theme(--color-white/0)_2px,--theme(--color-white/0)_4px)]"
             style={{
               marginLeft: `calc(${
-                ((new Date(
-                  String(cancelEvent?.start || pauseEvent?.start),
-                ).getTime() -
-                  start) /
+                ((new Date(String(cancelEvent?.start)).getTime() - start) /
                   executionTime) *
                 100
               }% - 1px)`,
