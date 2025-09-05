@@ -59,6 +59,7 @@ import {
   RotateCcw,
   CirclePlay,
   CopyPlus,
+  ChevronsUp,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from '@restate/util/styles';
@@ -158,6 +159,7 @@ export const enum IconName {
   Restart = 'Restart',
   Resume = 'Resume',
   RetryNow = 'RetryNow',
+  Upgrade = 'Upgrade',
 }
 export interface IconsProps {
   name: IconName;
@@ -243,6 +245,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Restart]: CopyPlus,
   [IconName.Resume]: Play,
   [IconName.RetryNow]: RotateCcw,
+  [IconName.Upgrade]: ChevronsUp,
 };
 
 const styles = tv({
