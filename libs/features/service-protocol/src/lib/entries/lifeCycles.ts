@@ -66,7 +66,7 @@ export function lifeCycles(
       start: invocation.modified_at,
       category: 'event',
       end: undefined,
-      isPending: false,
+      isPending: true,
     });
   }
   if (invocation.status === 'suspended') {
