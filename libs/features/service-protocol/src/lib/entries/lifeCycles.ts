@@ -11,6 +11,7 @@ type LifeCycleEvent =
   | Extract<JournalEntryV2, { type?: 'Running'; category?: 'event' }>
   | Extract<JournalEntryV2, { type?: 'Created'; category?: 'event' }>
   | Extract<JournalEntryV2, { type?: 'Scheduled'; category?: 'event' }>
+  | Extract<JournalEntryV2, { type?: 'Paused'; category?: 'event' }>
   | Extract<JournalEntryV2, { type?: 'Retrying'; category?: 'event' }>;
 
 export function lifeCycles(
@@ -59,6 +60,15 @@ export function lifeCycles(
       isPending: false, // TODO check if it's being delivered to PP
     });
   }
+  if (invocation.status === 'paused') {
+    events.push({
+      type: 'Paused',
+      start: invocation.modified_at,
+      category: 'event',
+      end: undefined,
+      isPending: false,
+    });
+  }
   if (invocation.status === 'suspended') {
     events.push({
       type: 'Suspended',
@@ -76,7 +86,9 @@ export function lifeCycles(
       end:
         invocation.status === 'running'
           ? undefined
-          : invocation.status === 'suspended' || invocation.status === 'ready'
+          : invocation.status === 'suspended' ||
+              invocation.status === 'ready' ||
+              invocation.status === 'paused'
             ? invocation.modified_at
             : invocation.status === 'backing-off'
               ? datesMax(invocation.last_start_at, invocation.modified_at)

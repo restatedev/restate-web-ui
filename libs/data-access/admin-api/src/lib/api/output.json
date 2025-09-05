@@ -4843,6 +4843,9 @@
                 "$ref": "#/components/schemas/SuspendedLifecycleJournalEntryV2"
               },
               {
+                "$ref": "#/components/schemas/PausedLifecycleJournalEntryV2"
+              },
+              {
                 "$ref": "#/components/schemas/PendingLifecycleJournalEntryV2"
               },
               {
@@ -5186,6 +5189,19 @@
           "type": {
             "type": "string",
             "enum": ["Suspended"]
+          }
+        }
+      },
+      "PausedLifecycleJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": ["event"]
+          },
+          "type": {
+            "type": "string",
+            "enum": ["Paused"]
           }
         }
       },

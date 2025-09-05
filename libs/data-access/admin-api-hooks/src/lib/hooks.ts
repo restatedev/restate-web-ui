@@ -1313,6 +1313,7 @@ export function useResumeInvocation(
   const baseUrl = useAdminBaseUrl();
   const { refetch } = useGetInvocationJournalWithInvocationV2(invocationId, {
     refetchOnMount: false,
+    enabled: Boolean(invocationId),
   });
 
   return useMutation({

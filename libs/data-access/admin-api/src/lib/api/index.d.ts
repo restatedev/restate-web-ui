@@ -1635,6 +1635,7 @@ export interface components {
         | components['schemas']['RetryingLifecycleJournalEntryV2']
         | components['schemas']['ScheduledLifecycleJournalEntryV2']
         | components['schemas']['SuspendedLifecycleJournalEntryV2']
+        | components['schemas']['PausedLifecycleJournalEntryV2']
         | components['schemas']['PendingLifecycleJournalEntryV2']
         | components['schemas']['CompletionLifecycleJournalEntryV2']
         | {
@@ -1801,6 +1802,12 @@ export interface components {
       category?: 'event';
       /** @enum {string} */
       type?: 'Suspended';
+    };
+    PausedLifecycleJournalEntryV2: {
+      /** @enum {string} */
+      category?: 'event';
+      /** @enum {string} */
+      type?: 'Paused';
     };
     PendingLifecycleJournalEntryV2: {
       /** @enum {string} */

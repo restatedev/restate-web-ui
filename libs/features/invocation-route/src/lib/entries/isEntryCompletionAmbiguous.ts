@@ -34,9 +34,8 @@ export function isEntryCompletionAmbiguous(
         (invocationIsCompleted || cancelledAfterEntry || invocationIspaused),
     ),
     invocationIspaused,
-    unambiguousEnd:
-      cancelledAfterEntry?.start ||
-      invocation?.completed_at ||
-      (invocationIspaused ? invocation.modified_at : undefined),
+    unambiguousEnd: invocationIspaused
+      ? invocation.modified_at
+      : cancelledAfterEntry?.start || invocation?.completed_at,
   };
 }

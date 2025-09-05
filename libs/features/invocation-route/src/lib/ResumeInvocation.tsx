@@ -54,7 +54,7 @@ export function ResumeInvocation() {
     .filter(({ deployment }) => deployment);
 
   const { mutate, isPending, error, reset } = useResumeInvocation(
-    String(invocationId),
+    invocationId ?? '',
     {
       onSuccess(data, variables) {
         setSearchParams(

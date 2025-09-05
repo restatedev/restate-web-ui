@@ -84,6 +84,7 @@ export function LifeCycleProgress({
           'Pending',
           'Scheduled',
           'Suspended',
+          'Paused',
           'Retrying',
         ].includes(String(entry.type))) ||
       (entry.category === 'notification' && entry.type === 'Cancel'),

@@ -11,6 +11,7 @@ export function LifeCycle({
   | Extract<JournalEntryV2, { type?: 'Scheduled'; category?: 'event' }>
   | Extract<JournalEntryV2, { type?: 'Completion'; category?: 'event' }>
   | Extract<JournalEntryV2, { type?: 'Suspended'; category?: 'event' }>
+  | Extract<JournalEntryV2, { type?: 'Paused'; category?: 'event' }>
   | Extract<JournalEntryV2, { type?: 'Running'; category?: 'event' }>
   | Extract<JournalEntryV2, { type?: 'Retrying'; category?: 'event' }>
 >) {
