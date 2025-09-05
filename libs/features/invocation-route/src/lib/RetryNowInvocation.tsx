@@ -11,6 +11,7 @@ import { ErrorBanner } from '@restate/ui/error';
 import { FormEvent, useId } from 'react';
 import { useResumeInvocation } from '@restate/data-access/admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui/notification';
+import { Icon, IconName } from '@restate/ui/icons';
 
 export function RetryNowInvocation() {
   const formId = useId();
@@ -51,8 +52,12 @@ export function RetryNowInvocation() {
     <QueryDialog query={RETRY_NOW_INVOCATION_QUERY_PARAM}>
       <DialogContent className="max-w-lg">
         <div className="flex flex-col gap-2">
-          <h3 className="text-lg leading-6 font-medium text-gray-900">
-            Retry invocation now
+          <h3 className="flex items-center gap-1 text-lg leading-6 font-medium text-gray-900">
+            <Icon
+              name={IconName.RetryNow}
+              className="-ml-2 h-10 w-10 fill-blue-50 p-1.5 text-blue-400 drop-shadow-md"
+            />
+            Retry Invocation now
           </h3>
           <div className="flex flex-col gap-2 text-sm text-gray-500">
             <p className="mt-2 text-sm text-gray-500">

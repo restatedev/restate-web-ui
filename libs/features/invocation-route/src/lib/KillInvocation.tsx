@@ -52,8 +52,12 @@ export function KillInvocation() {
     <QueryDialog query={KILL_INVOCATION_QUERY_PARAM}>
       <DialogContent className="max-w-lg">
         <div className="flex flex-col gap-2">
-          <h3 className="text-lg leading-6 font-medium text-gray-900">
-            Confirm killing invocation
+          <h3 className="flex items-center gap-1 text-lg leading-6 font-medium text-gray-900">
+            <Icon
+              name={IconName.Kill}
+              className="-ml-2 h-10 w-10 fill-red-50 p-1.5 text-red-400 drop-shadow-md"
+            />
+            Kill Invocation
           </h3>
           <div className="flex flex-col gap-2 text-sm text-gray-500">
             <p>

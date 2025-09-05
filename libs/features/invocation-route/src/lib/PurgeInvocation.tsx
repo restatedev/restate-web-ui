@@ -54,7 +54,7 @@ export function PurgeInvocation() {
       <DialogContent className="max-w-lg">
         <div className="flex flex-col gap-2">
           <h3 className="text-lg leading-6 font-medium text-gray-900">
-            Confirm invocation deletion
+            Delete Invocation
           </h3>
           <div className="flex flex-col gap-2 text-sm text-gray-500">
             <p>
