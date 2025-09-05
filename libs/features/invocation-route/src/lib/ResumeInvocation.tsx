@@ -134,8 +134,11 @@ export function ResumeInvocation() {
               className="mt-4 min-w-xs flex-auto basis-[calc(50%-var(--spacing)*2)] [&_button>*]:max-w-full"
               label="Deployment"
               placeholder="deployment"
-              defaultValue={'Keep'}
+              defaultValue={
+                invocation?.pinned_deployment_id ? 'Keep' : 'Latest'
+              }
               name="deployment"
+              disabled={!invocation?.pinned_deployment_id}
             >
               {invocation &&
                 deployments.map(({ revision, deployment }) => {
