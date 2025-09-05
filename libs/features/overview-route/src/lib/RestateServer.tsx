@@ -13,7 +13,7 @@ const styles = tv({
   base: 'relative h-[150px] min-w-[150px]',
 });
 const buttonStyles = tv({
-  base: 'group flex h-[142px] w-[142px] border-none bg-none px-0 py-0 shadow-none hover:scale-105 hover:bg-transparent focus:outline-hidden pressed:scale-95 pressed:bg-transparent [&:has([data-status=active])_.server]:filter-[drop-shadow(0_6px_3px_--theme(--color-zinc-800/5%))_drop-shadow(0_10px_8px_--theme(--color-blue-500/20%))] [&:has([data-status=pause])_canvas]:hue-rotate-180 [&:not(:hover):has([data-status=active])]:scale-[1.025]',
+  base: 'group flex h-[142px] w-[142px] border-none bg-none px-0 py-0 shadow-none transition-all hover:scale-105 hover:bg-transparent focus:outline-hidden pressed:scale-95 pressed:bg-transparent [&:has([data-status=active])_.server]:filter-[drop-shadow(0_6px_3px_--theme(--color-zinc-800/5%))_drop-shadow(0_10px_8px_--theme(--color-blue-500/20%))] [&:has([data-status=pause])_canvas]:hue-rotate-180 [&:not(:hover):has([data-status=active])]:scale-[1.025]',
   variants: {
     isEmpty: {
       true: 'relative m-[4px]',
