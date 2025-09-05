@@ -13,9 +13,10 @@ import { tv } from '@restate/util/styles';
 import { SplitButton } from '@restate/ui/split-button';
 import { useRestateContext } from '@restate/features/restate-context';
 import { RestateMinimumVersion } from '@restate/util/feature-flag';
+import { Icon, IconName } from '@restate/ui/icons';
 
 const mainButtonStyles = tv({
-  base: 'translate-x-px rounded-l-md rounded-r-none px-2 py-0.5 [font-size:inherit] [line-height:inherit]',
+  base: 'flex translate-x-px items-center gap-1 rounded-l-md rounded-r-none px-2 py-0.5 [font-size:inherit] [line-height:inherit]',
   variants: {
     mini: {
       true: 'invisible absolute right-full z-2 drop-shadow-[-20px_2px_4px_rgba(255,255,255,0.8)] group-hover:visible',
@@ -63,6 +64,10 @@ export function Actions({
               <DropdownItem
                 href={`?${RESUME_INVOCATION_QUERY_PARAM}=${invocation.id}`}
               >
+                <Icon
+                  name={IconName.Resume}
+                  className="h-3.5 w-3.5 opacity-80"
+                />
                 Resume…
               </DropdownItem>
             </RestateMinimumVersion>
@@ -72,6 +77,10 @@ export function Actions({
               <DropdownItem
                 href={`?${RETRY_NOW_INVOCATION_QUERY_PARAM}=${invocation.id}`}
               >
+                <Icon
+                  name={IconName.RetryNow}
+                  className="h-3.5 w-3.5 opacity-80"
+                />
                 Retry now…
               </DropdownItem>
             </RestateMinimumVersion>
@@ -81,6 +90,7 @@ export function Actions({
               destructive
               href={`?${CANCEL_INVOCATION_QUERY_PARAM}=${invocation.id}`}
             >
+              <Icon name={IconName.Cancel} className="h-3.5 w-3.5 opacity-80" />
               Cancel…
             </DropdownItem>
           )}
@@ -89,6 +99,7 @@ export function Actions({
               destructive
               href={`?${KILL_INVOCATION_QUERY_PARAM}=${invocation.id}`}
             >
+              <Icon name={IconName.Kill} className="h-3.5 w-3.5 opacity-80" />
               Kill…
             </DropdownItem>
           )}
@@ -96,6 +107,10 @@ export function Actions({
             <DropdownItem
               href={`?${RESTART_AS_NEW_INVOCATION_QUERY_PARAM}=${invocation.id}`}
             >
+              <Icon
+                name={IconName.Restart}
+                className="h-3.5 w-3.5 opacity-80"
+              />
               Restart as new…
             </DropdownItem>
           )}
@@ -104,6 +119,7 @@ export function Actions({
               destructive
               href={`?${PURGE_INVOCATION_QUERY_PARAM}=${invocation.id}`}
             >
+              <Icon name={IconName.Trash} className="h-3.5 w-3.5 opacity-80" />
               Delete…
             </DropdownItem>
           )}
@@ -126,6 +142,19 @@ export function Actions({
           destructive: !isRestateAsNewSupported && !isPaused,
         })}
       >
+        <Icon
+          name={
+            isPaused
+              ? IconName.Resume
+              : isRestateAsNewSupported
+                ? IconName.Restart
+                : isCompleted
+                  ? IconName.Trash
+                  : IconName.Cancel
+          }
+          className="h-[0.9em] w-[0.9em] opacity-80"
+        />
+
         {isPaused
           ? 'Resume…'
           : isRestateAsNewSupported

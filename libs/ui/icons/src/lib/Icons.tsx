@@ -54,6 +54,11 @@ import {
   Pause,
   CirclePause,
   OctagonPause,
+  CircleSlash,
+  CircleX as Kill,
+  RotateCcw,
+  CirclePlay,
+  CopyPlus,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from '@restate/util/styles';
@@ -148,6 +153,11 @@ export const enum IconName {
   Discount = 'Discount',
   Plan = 'Plan',
   Pause = 'Pause',
+  Cancel = 'Cancel',
+  Kill = 'Kill',
+  Restart = 'Restart',
+  Resume = 'Resume',
+  RetryNow = 'RetryNow',
 }
 export interface IconsProps {
   name: IconName;
@@ -227,6 +237,12 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Discount]: BadgePercent,
   [IconName.Plan]: Grid2x2Check,
   [IconName.Pause]: OctagonPause,
+
+  [IconName.Cancel]: CircleSlash,
+  [IconName.Kill]: Kill,
+  [IconName.Restart]: CopyPlus,
+  [IconName.Resume]: Play,
+  [IconName.RetryNow]: RotateCcw,
 };
 
 const styles = tv({
