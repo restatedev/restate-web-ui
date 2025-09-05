@@ -6,3 +6,4 @@ export * from './lib/formatNumber';
 export * from './lib/formatPlurals';
 export * from './lib/formatDateToISO';
 export * from './lib/formatRange';
+export * from './lib/formatDate';
