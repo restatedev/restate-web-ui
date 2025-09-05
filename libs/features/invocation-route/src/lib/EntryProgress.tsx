@@ -325,7 +325,7 @@ function InnerEntryProgress({
   const {
     isAmbiguous: entryCompletionIsAmbiguous,
     unambiguousEnd,
-    invocationIspaused,
+    mode,
   } = isEntryCompletionAmbiguous(entry, invocation);
 
   const executionTime = entry?.start
@@ -403,7 +403,7 @@ function InnerEntryProgress({
             <Ellipsis>{pendingDuration}</Ellipsis>
           ) : entryCompletionIsAmbiguous ? (
             <Icon
-              name={invocationIspaused ? IconName.Pause : IconName.ClockAlert}
+              name={mode === 'paused' ? IconName.Pause : IconName.ClockAlert}
               className="h-3 w-3"
             />
           ) : (
