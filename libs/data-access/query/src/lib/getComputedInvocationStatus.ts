@@ -73,7 +73,7 @@ export function getComputedInvocationStatus(invocation: RawInvocation): {
         invocation.completion_result,
         invocation.completion_failure,
       );
-      throw new Error('Cannot calculate status');
+      return { status: invocation.status as any, isRetrying: false };
     }
   }
 }
