@@ -53,6 +53,7 @@ const EVENTS_COMPONENTS: {
   Completion: undefined,
   Retrying: undefined,
   Scheduled: undefined,
+  Paused: undefined,
 };
 
 export function RelatedEntries({
