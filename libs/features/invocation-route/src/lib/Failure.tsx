@@ -80,11 +80,13 @@ export function Failure({
   restate_code,
   className,
   isRetrying,
+  title = 'Failure',
 }: {
   restate_code?: string;
   message: string;
   className?: string;
   isRetrying?: boolean;
+  title?: string;
 }) {
   const error = useMemo(
     () => new RestateError(message, restate_code),
@@ -118,7 +120,7 @@ export function Failure({
         </Button>
       </PopoverTrigger>
       <PopoverContent>
-        <DropdownSection title="Failure">
+        <DropdownSection title={title}>
           <ErrorBanner
             error={error}
             wrap={hasStack}

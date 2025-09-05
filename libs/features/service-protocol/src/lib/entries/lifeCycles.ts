@@ -60,15 +60,6 @@ export function lifeCycles(
       isPending: false, // TODO check if it's being delivered to PP
     });
   }
-  if (invocation.status === 'paused') {
-    events.push({
-      type: 'Paused',
-      start: invocation.modified_at,
-      category: 'event',
-      end: undefined,
-      isPending: true,
-    });
-  }
   if (invocation.status === 'suspended') {
     events.push({
       type: 'Suspended',

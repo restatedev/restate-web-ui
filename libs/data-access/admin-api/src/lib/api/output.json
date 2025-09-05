@@ -4893,6 +4893,9 @@
           "name": {
             "type": "string"
           },
+          "event_json": {
+            "type": "string"
+          },
           "entry_json": {
             "type": "string"
           },
@@ -4905,6 +4908,9 @@
           },
           "version": {
             "type": "integer"
+          },
+          "event_type": {
+            "type": "string"
           },
           "entry_type": {
             "type": "string",
@@ -4932,6 +4938,7 @@
               "AttachInvocation",
               "GetInvocationOutput",
               "Custom",
+              "Paused",
               "Command: Input",
               "Command: Output",
               "Command: GetState",
@@ -5202,6 +5209,27 @@
           "type": {
             "type": "string",
             "enum": ["Paused"]
+          },
+          "stackTrace": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "code": {
+            "type": "integer"
+          },
+          "relatedCommandName": {
+            "type": "string"
+          },
+          "relatedCommandType": {
+            "type": "string"
+          },
+          "relatedRestateErrorCode": {
+            "type": "string"
+          },
+          "relatedCommandIndex": {
+            "type": "integer"
           }
         }
       },

@@ -1653,11 +1653,13 @@ export interface components {
       invoked_target?: string;
       invoked_id?: string;
       name?: string;
+      event_json?: string;
       entry_json?: string;
       entry_lite_json?: string;
       /** Format: data-time */
       appended_at?: string;
       version?: number;
+      event_type?: string;
       /** @enum {string} */
       entry_type:
         | 'Input'
@@ -1683,6 +1685,7 @@ export interface components {
         | 'AttachInvocation'
         | 'GetInvocationOutput'
         | 'Custom'
+        | 'Paused'
         | 'Command: Input'
         | 'Command: Output'
         | 'Command: GetState'
@@ -1808,6 +1811,13 @@ export interface components {
       category?: 'event';
       /** @enum {string} */
       type?: 'Paused';
+      stackTrace?: string;
+      message?: string;
+      code?: number;
+      relatedCommandName?: string;
+      relatedCommandType?: string;
+      relatedRestateErrorCode?: string;
+      relatedCommandIndex?: number;
     };
     PendingLifecycleJournalEntryV2: {
       /** @enum {string} */

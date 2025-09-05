@@ -18,6 +18,8 @@ import {
   lifeCycles,
 } from '@restate/features/service-protocol';
 import { hexToBase64 } from '@restate/util/binary';
+import { getVersion } from './getVersion';
+import semverGt from 'semver/functions/gte';
 
 function queryFetcher(
   query: string,
@@ -186,7 +188,8 @@ async function getInvocationJournalV2(
   baseUrl: string,
   headers: Headers,
 ) {
-  const [invocationQuery, journalQuery] = await Promise.all([
+  const restateVersion = getVersion(headers);
+  const [invocationQuery, journalQuery, eventsQuery] = await Promise.all([
     queryFetcher(`SELECT * FROM sys_invocation WHERE id = '${invocationId}'`, {
       baseUrl,
       headers,
@@ -198,6 +201,15 @@ async function getInvocationJournalV2(
         headers,
       },
     ),
+    semverGt(restateVersion, '1.4.5')
+      ? queryFetcher(
+          `SELECT after_journal_entry_index, appended_at, event_type, event_json from sys_journal_events WHERE id = '${invocationId}' AND event_type = 'Paused' ORDER BY appended_at DESC LIMIT 1`,
+          {
+            baseUrl,
+            headers,
+          },
+        )
+      : { rows: [] },
   ]);
   const invocation = invocationQuery.rows
     .map(convertInvocation)
@@ -220,9 +232,17 @@ async function getInvocationJournalV2(
   const version = journalQuery.rows.at(0)?.version;
 
   let commandCount = 0;
-  const entriesWithCommandIndex = (
-    journalQuery.rows as JournalRawEntry[]
-  ).reduce((results, rawEntry) => {
+  const entriesWithCommandIndex = [
+    ...(journalQuery.rows as JournalRawEntry[]),
+    ...eventsQuery.rows.map(
+      (entry, index) =>
+        ({
+          ...entry,
+          entry_type: entry.event_type,
+          index: journalQuery.rows.length + 1,
+        }) as JournalRawEntry,
+    ),
+  ].reduce((results, rawEntry) => {
     if (rawEntry.entry_type?.startsWith('Command:')) {
       results.push({ ...rawEntry, command_index: commandCount });
       commandCount++;
@@ -236,7 +256,11 @@ async function getInvocationJournalV2(
   const entries = entriesWithCommandIndex
     .reduceRight((results, entry) => {
       const convertedEntry = convertJournalV2(entry, results, invocation);
-      return [...results, convertedEntry];
+      if (convertedEntry) {
+        return [...results, convertedEntry];
+      } else {
+        return results;
+      }
     }, [] as JournalEntryV2[])
     .reverse();
 
