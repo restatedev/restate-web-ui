@@ -23,7 +23,7 @@ export function IngressAccessSection({
   return (
     <Section>
       <SectionTitle className="flex items-center">
-        Options
+        Access
         <Button
           variant="secondary"
           onClick={() =>
@@ -53,12 +53,13 @@ export function IngressAccessSection({
           isPending={isPending}
         />
       </div>
-      <div className="mt-3 flex flex-col gap-2">
+      <SectionTitle className="mt-3">State</SectionTitle>
+      <div className="flex flex-col gap-2">
         <SubSection
           value={String(data?.enable_lazy_state ? 'Enabled' : 'Disabled')}
           label={
             <LazyStateExplainer variant="indicator-button">
-              Lazy state
+              Lazy
             </LazyStateExplainer>
           }
           isPending={isPending}

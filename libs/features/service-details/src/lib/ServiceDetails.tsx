@@ -173,10 +173,10 @@ function ServiceContent({ service }: { service: string }) {
         </Section>
         <IngressAccessSection serviceDetails={data} isPending={isPending} />
         <RetentionSection serviceDetails={data} isPending={isPending} />
+        <TimeoutSection serviceDetails={data} isPending={isPending} />
         <RestateMinimumVersion minVersion="1.4.5">
           <RetryPolicySection serviceDetails={data} isPending={isPending} />
         </RestateMinimumVersion>
-        <TimeoutSection serviceDetails={data} isPending={isPending} />
       </div>
     </>
   );
