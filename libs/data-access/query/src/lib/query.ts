@@ -555,26 +555,29 @@ async function listState(
   });
 }
 
-async function extractErrorPayload(res: Response) {
+async function extractErrorPayload(res: Response): Promise<string | undefined> {
   const ct = res.headers.get('content-type') || '';
   if (ct.includes('application/json')) {
     try {
-      return await res.json();
+      return ((await res.json()) as { message?: string })?.message;
     } catch {
       // fall back if server lied
     }
   }
-  return await res.text();
+  return (await res.text()) as string;
 }
 
 export async function query(req: Request) {
   return queryHandler(req).catch(async (error) => {
     if (error instanceof HTTPError) {
       const body = await extractErrorPayload(error.response);
-      return new Response(JSON.stringify(new RestateError(body.message)), {
-        status: error.response.status,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return new Response(
+        JSON.stringify(new RestateError(body || 'Oops something went wrong!')),
+        {
+          status: error.response.status,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
     } else {
       console.log('/query call failed!', error);
       return new Response(
@@ -594,7 +597,7 @@ async function queryHandler(req: Request) {
 
   if (url.endsWith('/query/invocations') && method.toUpperCase() === 'POST') {
     const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
-    const { filters = [] } = await req.json();
+    const { filters = [] }: { filters: FilterItem[] } = await req.json();
     return listInvocations(baseUrl, headers, filters);
   }
 
@@ -680,7 +683,7 @@ async function queryHandler(req: Request) {
 
   if (getQueryStateParams && method.toUpperCase() === 'POST') {
     const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
-    const { filters = [] } = await req.json();
+    const { filters = [] }: { filters: FilterItem[] } = await req.json();
     return queryState(
       getQueryStateParams.params.name,
       baseUrl,
@@ -695,7 +698,7 @@ async function queryHandler(req: Request) {
 
   if (getListStateParams && method.toUpperCase() === 'POST') {
     const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
-    const { keys = [] } = await req.json();
+    const { keys = [] }: { keys: string[] } = await req.json();
     return listState(getListStateParams.params.name, baseUrl, headers, keys);
   }
 
