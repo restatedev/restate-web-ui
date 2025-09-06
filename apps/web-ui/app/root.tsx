@@ -88,7 +88,10 @@ export const links: LinksFunction = () => [
 function useRefWithSupportForAbsolutePath(path: To) {
   const url = useHref(path);
 
-  if (path.toString().startsWith('http')) {
+  if (
+    path.toString().startsWith('http') ||
+    path.toString().startsWith('mailto')
+  ) {
     return path.toString();
   }
 
@@ -113,7 +116,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   const navigate = useCallback(
     (to: string | Partial<Path>) => {
-      remixNavigate(to, { preventScrollReset: true });
+      const hasSearchParams =
+        typeof to === 'string' ? to.includes('?') : Boolean(to.search);
+      remixNavigate(to, { preventScrollReset: hasSearchParams });
     },
     [remixNavigate],
   );
