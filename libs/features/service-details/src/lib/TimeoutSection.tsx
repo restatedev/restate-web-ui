@@ -58,7 +58,7 @@ export function TimeoutSection({
       </SectionTitle>
       <div className="flex flex-col gap-2">
         <SubSection
-          value={data?.inactivity_timeout}
+          value={data?.inactivity_timeout ?? 'Default'}
           label="Inactivity"
           isPending={isPending}
           footer={
@@ -104,7 +104,7 @@ export function TimeoutSection({
                     }
                   >
                     <span className="font-mono italic">
-                      sleep(…) {`> ${data?.inactivity_timeout}`}
+                      sleep(…) {`> ${data?.inactivity_timeout ?? '1m'}`}
                     </span>
                   </InlineTooltip>
                 </Label>
@@ -151,7 +151,7 @@ export function TimeoutSection({
           }
         />
         <SubSection
-          value={data?.abort_timeout}
+          value={data?.abort_timeout ?? 'Default'}
           label="Abort"
           isPending={isPending}
           footer={
@@ -199,7 +199,7 @@ export function TimeoutSection({
                 >
                   <span className="font-mono italic">
                     run(…){' '}
-                    {`> ${data?.inactivity_timeout} + ${data?.abort_timeout}`}
+                    {`> ${data?.inactivity_timeout ?? '1m'} + ${data?.abort_timeout ?? '1m'}`}
                   </span>
                 </InlineTooltip>
               </Label>
