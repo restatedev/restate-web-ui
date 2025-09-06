@@ -555,10 +555,22 @@ async function listState(
   });
 }
 
+async function extractErrorPayload(res: Response) {
+  const ct = res.headers.get('content-type') || '';
+  if (ct.includes('application/json')) {
+    try {
+      return await res.json();
+    } catch {
+      // fall back if server lied
+    }
+  }
+  return await res.text();
+}
+
 export async function query(req: Request) {
   return queryHandler(req).catch(async (error) => {
     if (error instanceof HTTPError) {
-      const body = await error.response.json();
+      const body = await extractErrorPayload(error.response);
       return new Response(JSON.stringify(new RestateError(body.message)), {
         status: error.response.status,
         headers: { 'Content-Type': 'application/json' },
