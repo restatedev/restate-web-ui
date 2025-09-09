@@ -2170,6 +2170,9 @@
                     "total_count": {
                       "type": "integer"
                     },
+                    "total_count_lower_bound": {
+                      "type": "boolean"
+                    },
                     "limit": {
                       "type": "integer"
                     }
