@@ -8,3 +8,11 @@ export function formatDate(value: Date) {
   }
   return formatter.format(value);
 }
+
+export function formatDateRange(start: Date, end: Date) {
+  if (isNaN(start.valueOf()) || isNaN(end.valueOf())) {
+    return '';
+  }
+
+  return formatter.formatRange(start, end);
+}

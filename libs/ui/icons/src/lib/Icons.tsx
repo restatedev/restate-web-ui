@@ -61,6 +61,8 @@ import {
   CopyPlus,
   ChevronsUp,
   Gauge,
+  TrendingUp,
+  TrendingDown,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from '@restate/util/styles';
@@ -162,6 +164,8 @@ export const enum IconName {
   RetryNow = 'RetryNow',
   Upgrade = 'Upgrade',
   Gauge = 'Gauge',
+  TrendingUp = 'TrendingUp',
+  TrendingDown = 'TrendingDown',
 }
 export interface IconsProps {
   name: IconName;
@@ -249,6 +253,8 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.RetryNow]: RotateCcw,
   [IconName.Gauge]: Gauge,
   [IconName.Upgrade]: ChevronsUp,
+  [IconName.TrendingUp]: TrendingUp,
+  [IconName.TrendingDown]: TrendingDown,
 };
 
 const styles = tv({
