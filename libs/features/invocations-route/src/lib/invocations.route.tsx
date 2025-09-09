@@ -633,7 +633,9 @@ function Footnote({
               <span>{data.rows.length}</span>
               {' of '}
               <span className="font-medium text-gray-500">
-                {data.total_count ? `${formatNumber(data.total_count)}` : ''}
+                {data.total_count
+                  ? `${formatNumber(data.total_count)}${data.total_count_lower_bound ? '+' : ''}`
+                  : ''}
               </span>{' '}
               recently modified invocations
             </>

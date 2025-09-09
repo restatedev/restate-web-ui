@@ -39,14 +39,17 @@ function queryFetcher(
 }
 
 const INVOCATIONS_LIMIT = 250;
+const COUNT_LIMIT = 50000;
 
 async function listInvocations(
   baseUrl: string,
   headers: Headers,
   filters: FilterItem[],
 ) {
-  const totalCountPromise = queryFetcher(
-    `SELECT count(1) AS total_count from sys_invocation ${convertInvocationsFilters(filters)}`,
+  // an estimate of the number of rows in the first 50k invocations which match the filter; gives a count lower bound that doesn't require scanning the whole table,
+  // but it can be less than our invocations limit if the filter is very strict, so we need to use it only if its higher than the returned row count.
+  const minimumCountEstimatePromise = queryFetcher(
+    `SELECT COUNT(1) as total_count FROM (SELECT * FROM sys_invocation LIMIT ${COUNT_LIMIT}) ${convertInvocationsFilters(filters)}`,
     {
       baseUrl,
       headers,
@@ -59,15 +62,17 @@ async function listInvocations(
       headers,
     },
   )
-    .then(async ({ rows }) => {
-      if (rows.length > 0) {
-        return queryFetcher(
+    .then(async ({ rows: idRows }) => {
+      const receivedLessThanLimit = idRows.length < INVOCATIONS_LIMIT;
+
+      if (idRows.length > 0) {
+        const { rows: invRows } = await queryFetcher(
           `SELECT * from sys_invocation ${convertInvocationsFilters([
             {
               field: 'id',
               type: 'STRING_LIST',
               operation: 'IN',
-              value: rows.map(({ id }) => id),
+              value: idRows.map(({ id }) => id),
             },
             ...filters,
           ])} ORDER BY modified_at DESC`,
@@ -76,21 +81,31 @@ async function listInvocations(
             headers,
           },
         );
+
+        return { rows: invRows, receivedLessThanLimit };
       } else {
-        return { rows: [] };
+        return { rows: [], receivedLessThanLimit };
       }
     })
-    .then(({ rows }) => rows.map(convertInvocation));
+    .then(({ rows, receivedLessThanLimit }) => ({
+      rows: rows.map(convertInvocation),
+      receivedLessThanLimit,
+    }));
 
-  const [total_count, invocations] = await Promise.all([
-    totalCountPromise,
-    invocationsPromise,
-  ]);
+  const [minimumCountEstimate, { rows: invocations, receivedLessThanLimit }] =
+    await Promise.all([minimumCountEstimatePromise, invocationsPromise]);
+
+  const { total_count, total_count_lower_bound } = countEstimate(
+    receivedLessThanLimit,
+    invocations.length,
+    minimumCountEstimate,
+  );
 
   return new Response(
     JSON.stringify({
       limit: INVOCATIONS_LIMIT,
       total_count,
+      total_count_lower_bound,
       rows: invocations,
     }),
     {
@@ -98,6 +113,27 @@ async function listInvocations(
       headers: { 'Content-Type': 'application/json' },
     },
   );
+}
+
+function countEstimate(
+  receivedLessThanLimit: boolean,
+  rows: number,
+  minimumCountEstimate: number,
+): { total_count: number; total_count_lower_bound: boolean } {
+  if (receivedLessThanLimit) {
+    // if we receive less rows than we asked for, its the full set
+    return { total_count: rows, total_count_lower_bound: false };
+  } else if (rows > minimumCountEstimate) {
+    // if we receive limit rows, and its more than our count estimate, then the rows must be very sparse.
+    // our best guess for a lower bound has to be the number of rows we received
+    return { total_count: rows, total_count_lower_bound: true };
+  } else {
+    // otherwise, the count in the first 50k invocations is a pretty good lower bound
+    return {
+      total_count: minimumCountEstimate,
+      total_count_lower_bound: true,
+    };
+  }
 }
 
 async function getInvocation(
@@ -473,7 +509,7 @@ async function queryState(
   ];
 
   const query = `SELECT DISTINCT service_key
-    FROM state ${convertFilters(filtersWithService)} 
+    FROM state ${convertFilters(filtersWithService)}
     LIMIT 4500`;
 
   const resultsPromise: Promise<{
