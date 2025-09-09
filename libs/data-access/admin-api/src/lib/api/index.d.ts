@@ -4100,6 +4100,7 @@ export interface operations {
           'application/json': {
             rows: components['schemas']['Invocation'][];
             total_count: number;
+            total_count_lower_bound?: boolean;
             limit?: number;
           };
         };
