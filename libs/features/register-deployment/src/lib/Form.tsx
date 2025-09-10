@@ -133,7 +133,7 @@ function EndpointForm() {
     updateShouldForce,
   } = useRegisterDeploymentContext();
   const { tunnel } = useRestateContext();
-  console.log(tunnel);
+
   return (
     <>
       <FormFieldInput
@@ -157,7 +157,7 @@ function EndpointForm() {
           isLambda
             ? 'arn:aws:lambda:{region}:{account}:function:{function-name}:{version}'
             : isTunnel
-              ? 'rstun+http://{tunnel-name}@{host}'
+              ? 'rstun+http://{tunnel-name}@{remote-host}:{port}'
               : 'http://localhost:9080'
         }
         label={

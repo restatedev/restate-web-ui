@@ -36,7 +36,7 @@ type RestateContext = {
     toHttp: (url: string) => string;
     fromHttp: (
       url?: string,
-    ) => { name: string; url: string; tunnelUrl: string } | undefined;
+    ) => { name: string; remoteUrl: string; tunnelUrl: string } | undefined;
   };
 };
 
