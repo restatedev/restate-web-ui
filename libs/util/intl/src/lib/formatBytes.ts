@@ -17,6 +17,7 @@ export function formatBytes(
   const formatter = new Intl.NumberFormat('en', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
+    notation: 'compact',
   });
 
   return `${formatter.format(bytes)} ${units[u]}`;
