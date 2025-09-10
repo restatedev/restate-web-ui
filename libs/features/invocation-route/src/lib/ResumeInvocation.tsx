@@ -25,6 +25,7 @@ import { ListBoxItem } from '@restate/ui/listbox';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Revision } from '@restate/features/deployment';
 import { Badge } from '@restate/ui/badge';
+import { useRestateContext } from '@restate/features/restate-context';
 
 export function ResumeInvocation() {
   const formId = useId();
@@ -84,6 +85,7 @@ export function ResumeInvocation() {
       },
     },
   );
+  const { tunnel } = useRestateContext();
 
   const submitHandler = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -147,6 +149,19 @@ export function ResumeInvocation() {
                   const isCurrent =
                     deployment?.id === invocation?.pinned_deployment_id;
                   const isLatest = service?.sortedRevisions.at(0) === revision;
+
+                  const isTunnel = Boolean(
+                    tunnel?.isEnabled &&
+                      deployment &&
+                      isHttpDeployment(deployment) &&
+                      tunnel.fromHttp(deployment.uri),
+                  );
+                  const endpoint = getEndpoint(deployment);
+
+                  const deploymentEndpoint = isTunnel
+                    ? tunnel?.fromHttp(endpoint)?.tunnelUrl
+                    : endpoint;
+
                   return (
                     <ListBoxItem
                       className="w-full"
@@ -163,15 +178,17 @@ export function ResumeInvocation() {
                         <div className="h-6 w-6 shrink-0 rounded-md border bg-white shadow-xs">
                           <Icon
                             name={
-                              isHttpDeployment(deployment!)
-                                ? IconName.Http
-                                : IconName.Lambda
+                              isTunnel
+                                ? IconName.Tunnel
+                                : isHttpDeployment(deployment!)
+                                  ? IconName.Http
+                                  : IconName.Lambda
                             }
                             className="h-full w-full p-1 text-zinc-400"
                           />
                         </div>
                         <div className="min-w-0 truncate">
-                          {getEndpoint(deployment)}
+                          {deploymentEndpoint}
                         </div>
                         {isCurrent && (
                           <Badge size="xs" variant="info">

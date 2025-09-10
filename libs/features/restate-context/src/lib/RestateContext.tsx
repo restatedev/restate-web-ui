@@ -1,6 +1,7 @@
 import {
   AdminBaseURLProvider,
   APIStatusProvider,
+  Deployment,
   useHealth,
   useVersion,
 } from '@restate/data-access/admin-api';
@@ -10,7 +11,6 @@ import {
   PropsWithChildren,
   useCallback,
   useContext,
-  useEffect,
 } from 'react';
 import semverGt from 'semver/functions/gte';
 import { base64ToUtf8, utf8ToBase64 } from '@restate/util/binary';
@@ -31,6 +31,13 @@ type RestateContext = {
     className?: string;
     mini?: boolean;
   }>;
+  tunnel?: {
+    isEnabled?: boolean;
+    toHttp: (url: string) => string;
+    fromHttp: (
+      url?: string,
+    ) => { name: string; url: string; tunnelUrl: string } | undefined;
+  };
 };
 
 const InternalRestateContext = createContext<RestateContext>({
@@ -49,6 +56,7 @@ function InternalRestateContextProvider({
   decoder,
   encoder,
   EncodingWaterMark,
+  tunnel,
 }: PropsWithChildren<{
   isPending?: boolean;
   ingressUrl?: string;
@@ -60,6 +68,7 @@ function InternalRestateContextProvider({
     className?: string;
     mini?: boolean;
   }>;
+  tunnel?: RestateContext['tunnel'];
 }>) {
   const { isSuccess, failureCount } = useHealth({
     enabled: !isPending,
@@ -115,6 +124,7 @@ function InternalRestateContextProvider({
         encoder,
         EncodingWaterMark,
         refreshCodec,
+        tunnel,
       }}
     >
       <APIStatusProvider enabled={status === 'HEALTHY'}>
@@ -133,6 +143,7 @@ export function RestateContextProvider({
   decoder = base64ToUtf8,
   encoder = utf8ToBase64,
   EncodingWaterMark,
+  tunnel,
 }: PropsWithChildren<{
   adminBaseUrl?: string;
   ingressUrl?: string;
@@ -149,6 +160,7 @@ export function RestateContextProvider({
     className?: string;
     mini?: boolean;
   }>;
+  tunnel?: RestateContext['tunnel'];
 }>) {
   return (
     <AdminBaseURLProvider baseUrl={adminBaseUrl}>
@@ -159,6 +171,7 @@ export function RestateContextProvider({
         decoder={decoder}
         encoder={encoder}
         EncodingWaterMark={EncodingWaterMark}
+        tunnel={tunnel}
       >
         {children}
       </InternalRestateContextProvider>

@@ -9,7 +9,6 @@ import { useSearchParams } from 'react-router';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { Icon, IconName } from '@restate/ui/icons';
 import {
-  Deployment,
   getEndpoint,
   isHttpDeployment,
   isLambdaDeployment,
@@ -30,6 +29,7 @@ import {
   DELETE_DEPLOYMENT_QUERY_PARAM,
   SDK,
 } from '@restate/features/deployment';
+import { useRestateContext } from '@restate/features/restate-context';
 
 export function DeploymentDetails() {
   return (
@@ -86,8 +86,23 @@ function DeploymentDetailsContents() {
 
 function DeploymentContent({ deployment }: { deployment: string }) {
   const { data, isPending } = useDeploymentDetails(deployment);
+  const { tunnel } = useRestateContext();
+
   const services = data?.services ?? [];
   const additionalHeaders = Object.entries(data?.additional_headers ?? {});
+
+  const isTunnel = Boolean(
+    tunnel?.isEnabled &&
+      data &&
+      isHttpDeployment(data) &&
+      tunnel.fromHttp(data.uri),
+  );
+  const endpoint = getEndpoint(data);
+
+  const displayedEndpoint = isTunnel
+    ? tunnel?.fromHttp(getEndpoint(data))?.tunnelUrl
+    : endpoint;
+
   return (
     <>
       <h2 className="mb-3 flex items-center gap-2 text-lg leading-6 font-medium text-gray-900">
@@ -95,9 +110,11 @@ function DeploymentContent({ deployment }: { deployment: string }) {
           <Icon
             name={
               data
-                ? isHttpDeployment(data)
-                  ? IconName.Http
-                  : IconName.Lambda
+                ? isTunnel
+                  ? IconName.Tunnel
+                  : isHttpDeployment(data)
+                    ? IconName.Http
+                    : IconName.Lambda
                 : IconName.Http
             }
             className="h-full w-full fill-blue-50 p-1.5 text-blue-400 drop-shadow-md"
@@ -113,7 +130,7 @@ function DeploymentContent({ deployment }: { deployment: string }) {
             <>
               Deployment
               <span className="contents font-mono text-sm text-gray-500">
-                <TruncateWithTooltip>{getEndpoint(data)}</TruncateWithTooltip>
+                <TruncateWithTooltip>{displayedEndpoint}</TruncateWithTooltip>
               </span>
             </>
           )}

@@ -19,6 +19,7 @@ import {
   useListDeployments,
   useRegisterDeployment,
 } from '@restate/data-access/admin-api-hooks';
+import { useRestateContext } from '@restate/features/restate-context';
 
 type NavigateToAdvancedAction = {
   type: 'NavigateToAdvancedAction';
@@ -35,7 +36,7 @@ type UpdateEndpointAction = {
   type: 'UpdateEndpointAction';
   payload: Pick<
     DeploymentRegistrationContextInterface,
-    'endpoint' | 'isLambda' | 'isDuplicate'
+    'endpoint' | 'isLambda' | 'isDuplicate' | 'isTunnel'
   >;
 };
 type UpdateRoleArnAction = {
@@ -74,6 +75,7 @@ interface DeploymentRegistrationContextInterface {
   assumeRoleArn?: string;
   useHttp11?: boolean;
   isLambda: boolean;
+  isTunnel: boolean;
   formId?: string;
   additionalHeaders?: ListData<{
     key: string;
@@ -102,6 +104,7 @@ type State = Pick<
   DeploymentRegistrationContextInterface,
   | 'endpoint'
   | 'isLambda'
+  | 'isTunnel'
   | 'stage'
   | 'services'
   | 'assumeRoleArn'
@@ -137,6 +140,7 @@ function reducer(state: State, action: Action): State {
 const initialState: DeploymentRegistrationContextInterface = {
   stage: 'endpoint',
   isLambda: false,
+  isTunnel: false,
   error: null,
   endpoint: '',
 };
@@ -149,6 +153,7 @@ function withoutTrailingSlash(url?: string) {
 
 export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
   const id = useId();
+  const { tunnel } = useRestateContext();
   const formRef = useRef<HTMLFormElement>(null);
   const [state, dispatch] = useReducer(reducer, initialState);
   const additionalHeaders = useListData<{
@@ -241,6 +246,7 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
       dispatch({
         type: 'UpdateEndpointAction',
         payload: {
+          isTunnel: value.isTunnel,
           isLambda: value.isLambda,
           endpoint: value.endpoint,
           isDuplicate,
@@ -264,7 +270,7 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
     [reset],
   );
 
-  const submitHandler = (event: FormEvent<HTMLFormElement>) => {
+  const submitHandler = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const submitter = (event.nativeEvent as SubmitEvent)
       .submitter as HTMLButtonElement;
@@ -275,6 +281,7 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
       assumeRoleArn,
       useHttp11,
       shouldForce,
+      isTunnel,
     } = state;
 
     if (action === 'advanced') {
@@ -294,10 +301,15 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
       body: {
         ...(isLambda
           ? { arn: endpoint, assume_role_arn: assumeRoleArn }
-          : {
-              uri: endpoint,
-              use_http_11: Boolean(useHttp11),
-            }),
+          : isTunnel
+            ? {
+                uri: tunnel ? await tunnel?.toHttp(endpoint) : endpoint,
+                use_http_11: false,
+              }
+            : {
+                uri: endpoint,
+                use_http_11: Boolean(useHttp11),
+              }),
         force: Boolean(shouldForce),
         dry_run: action === 'dryRun',
         additional_headers,
@@ -359,6 +371,7 @@ export function useRegisterDeploymentContext() {
     max_protocol_version,
     min_protocol_version,
     sdk_version,
+    isTunnel,
   } = useContext(DeploymentRegistrationContext);
   const isEndpoint = stage === 'endpoint';
   const isAdvanced = stage === 'advanced';
@@ -398,5 +411,6 @@ export function useRegisterDeploymentContext() {
     assumeRoleArn,
     error,
     canSkipAdvanced,
+    isTunnel,
   };
 }
