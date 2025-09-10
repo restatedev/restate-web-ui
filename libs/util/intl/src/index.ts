@@ -8,3 +8,4 @@ export * from './lib/formatDateToISO';
 export * from './lib/formatRange';
 export * from './lib/formatDate';
 export * from './lib/formatPercentage';
+export * from './lib/formatBytes';
