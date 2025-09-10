@@ -84,6 +84,7 @@ import { Kotlin } from './custom-icons/Kotlin';
 import { Typescript } from './custom-icons/Typescript';
 import { Rust } from './custom-icons/Rust';
 import { Python } from './custom-icons/Python';
+import { Tunnel } from './custom-icons/Tunnel';
 
 export const enum IconName {
   Settings = 'Settings',
@@ -166,6 +167,7 @@ export const enum IconName {
   Gauge = 'Gauge',
   TrendingUp = 'TrendingUp',
   TrendingDown = 'TrendingDown',
+  Tunnel = 'Tunnel',
 }
 export interface IconsProps {
   name: IconName;
@@ -255,6 +257,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Upgrade]: ChevronsUp,
   [IconName.TrendingUp]: TrendingUp,
   [IconName.TrendingDown]: TrendingDown,
+  [IconName.Tunnel]: Tunnel,
 };
 
 const styles = tv({

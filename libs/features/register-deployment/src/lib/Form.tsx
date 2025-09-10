@@ -12,9 +12,17 @@ import { AdditionalHeaders } from './AdditionalHeaders';
 import { UseHTTP11 } from './UseHTTP11';
 import { AssumeARNRole } from './AssumeARNRole';
 import { useRegisterDeploymentContext } from './Context';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@restate/ui/tooltip';
+import {
+  InlineTooltip,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@restate/ui/tooltip';
 import { ServiceDeploymentExplainer } from '@restate/features/explainers';
+import { useRestateContext } from '@restate/features/restate-context';
 
+const TUNNEL_REGEX =
+  /^rstun\+https?:\/\/[A-Za-z0-9\-._]+@[A-Za-z0-9.\-]+(:[0-9]+)?$/;
 function CustomRadio({
   value,
   children,
@@ -72,6 +80,7 @@ function Container({
 
 export function RegistrationForm() {
   const { isEndpoint, isAdvanced, isConfirm } = useRegisterDeploymentContext();
+  const { tunnel } = useRestateContext();
 
   return (
     <>
@@ -85,7 +94,11 @@ export function RegistrationForm() {
               </ServiceDeploymentExplainer>
             </>
           }
-          description="Please provide the HTTP endpoint or Lambda function version ARN where your service is running:"
+          description={
+            tunnel?.isEnabled
+              ? "Please provide your service's HTTP endpoint, Lambda function version ARN, or Restate Tunnel endpoint."
+              : "Please provide your service's HTTP endpoint or Lambda function version ARN."
+          }
         >
           <EndpointForm />
         </Container>
@@ -110,6 +123,7 @@ export function RegistrationForm() {
 
 function EndpointForm() {
   const {
+    isTunnel,
     isLambda,
     updateEndpoint,
     endpoint,
@@ -118,6 +132,8 @@ function EndpointForm() {
     shouldForce,
     updateShouldForce,
   } = useRegisterDeploymentContext();
+  const { tunnel } = useRestateContext();
+  console.log(tunnel);
   return (
     <>
       <FormFieldInput
@@ -126,23 +142,45 @@ function EndpointForm() {
         autoComplete="url"
         value={endpoint}
         disabled={isPending}
-        type={isLambda ? 'text' : 'url'}
+        type={isLambda || isTunnel ? 'text' : 'url'}
         {...(isLambda && {
           pattern:
             '^arn:aws:lambda:[a-z0-9\\-]+:\\d+:function:[a-zA-Z0-9\\-_]+:.+$',
         })}
+        {...(tunnel?.isEnabled &&
+          isTunnel && {
+            pattern: TUNNEL_REGEX.source,
+          })}
         name="endpoint"
         className="right-0 left-0 my-2 [&_.error]:absolute [&_.error]:pt-1 [&_input:not([type=radio])]:absolute [&_input:not([type=radio])]:pr-19"
         placeholder={
           isLambda
             ? 'arn:aws:lambda:{region}:{account}:function:{function-name}:{version}'
-            : 'http://localhost:9080'
+            : isTunnel
+              ? 'rstun+http://{tunnel-name}@{host}'
+              : 'http://localhost:9080'
         }
-        label={isLambda ? 'Lambda ARN' : 'HTTP endpoint'}
+        label={
+          isLambda ? (
+            'Lambda ARN'
+          ) : isTunnel && tunnel?.isEnabled ? (
+            <InlineTooltip
+              title="Tunnel"
+              variant="indicator-button"
+              description="A tunnel lets you securely connect a service running in a private environment to Restate Cloud without exposing it to the public internet. The tunnel client runs alongside your service (for example, in your VPC or Kubernetes cluster) and forwards traffic through Restate Cloud as if your service were inside the cloud environment."
+              learnMoreHref="https://docs.restate.dev/cloud/connecting-services#3-run-the-tunnel"
+            >
+              Tunnel
+            </InlineTooltip>
+          ) : (
+            'HTTP endpoint'
+          )
+        }
         onKeyDown={(e) => {
-          if (e.key === 'Tab' && !isLambda && !endpoint) {
+          if (e.key === 'Tab' && !isLambda && !isTunnel && !endpoint) {
             updateEndpoint?.({
               isLambda: false,
+              isTunnel: false,
               endpoint: 'http://localhost:9080',
             });
             e.preventDefault();
@@ -152,22 +190,34 @@ function EndpointForm() {
           updateEndpoint?.({
             isLambda: value.startsWith('arn')
               ? true
-              : value.startsWith('http')
+              : value.startsWith('http') || value.startsWith('rs')
                 ? false
                 : isLambda,
+            isTunnel: value.startsWith('rs')
+              ? true
+              : value.startsWith('http') || value.startsWith('arn')
+                ? false
+                : isTunnel,
             endpoint: value,
           });
         }}
       >
         <div className="absolute top-[2px] right-[2px] w-fit self-start [&_.active]:rounded-[0.35rem] [&_.active]:px-2 [&_button]:rounded-[0.35rem] [&_button]:px-2 [&_ul]:rounded-[0.35rem] [&_ul]:bg-black/2.5">
           <RadioGroup
-            value={String(isLambda)}
-            name="isLambda"
+            value={
+              isLambda
+                ? 'lambda'
+                : isTunnel && tunnel?.isEnabled
+                  ? 'tunnel'
+                  : 'http'
+            }
+            name="name"
             required
             className="bg-black2/[0.05] row-start-1 row-end-1 h-full flex-row gap-[2px] rounded-lg"
             onChange={(value) =>
               updateEndpoint?.({
-                isLambda: value === 'true',
+                isLambda: value === 'lambda',
+                isTunnel: value === 'tunnel',
                 endpoint: '',
               })
             }
@@ -179,7 +229,7 @@ function EndpointForm() {
             <Tooltip>
               <TooltipTrigger>
                 <CustomRadio
-                  value="false"
+                  value="http"
                   className="aspect-square items-center rounded-[0.4rem] p-1.5"
                   aria-label="Http endpoint"
                 >
@@ -193,7 +243,7 @@ function EndpointForm() {
             <Tooltip>
               <TooltipTrigger>
                 <CustomRadio
-                  value="true"
+                  value="lambda"
                   className="aspect-square items-center rounded-[0.4rem] p-1.5"
                   aria-label="AWS lambda"
                 >
@@ -204,6 +254,22 @@ function EndpointForm() {
                 AWS Lambda
               </TooltipContent>
             </Tooltip>
+            {tunnel?.isEnabled && (
+              <Tooltip>
+                <TooltipTrigger>
+                  <CustomRadio
+                    value="tunnel"
+                    className="aspect-square items-center rounded-[0.4rem] p-1.5"
+                    aria-label="Tunnel"
+                  >
+                    <Icon name={IconName.Tunnel} className="h-4 w-4" />
+                  </CustomRadio>
+                </TooltipTrigger>
+                <TooltipContent size="sm" offset={20}>
+                  Tunnel
+                </TooltipContent>
+              </Tooltip>
+            )}
           </RadioGroup>
         </div>
       </FormFieldInput>

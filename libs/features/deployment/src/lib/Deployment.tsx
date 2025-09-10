@@ -13,6 +13,7 @@ import { Link } from '@restate/ui/link';
 import { useRef } from 'react';
 import { useActiveSidebarParam } from '@restate/ui/layout';
 import { useListDeployments } from '@restate/data-access/admin-api-hooks';
+import { useRestateContext } from '@restate/features/restate-context';
 
 const styles = tv({
   base: 'relative -m-1 flex flex-row items-center gap-2 border p-1 text-0.5xs transition-all ease-in-out',
@@ -37,6 +38,7 @@ export function Deployment({
   highlightSelection?: boolean;
   showEndpoint?: boolean;
 }) {
+  const { tunnel } = useRestateContext();
   const { data: { deployments } = {} } = useListDeployments({
     refetchOnMount: false,
   });
@@ -53,21 +55,41 @@ export function Deployment({
     return null;
   }
 
-  const deploymentEndpoint = getEndpoint(deployment);
+  const isTunnel = Boolean(
+    tunnel?.isEnabled &&
+      isHttpDeployment(deployment) &&
+      tunnel.fromHttp(deployment.uri),
+  );
+  const endpoint = getEndpoint(deployment);
+
+  const deploymentEndpoint = isTunnel
+    ? tunnel?.fromHttp(endpoint)?.tunnelUrl
+    : endpoint;
 
   return (
     <div className={styles({ className, isSelected })}>
       <div className="h-6 w-6 shrink-0 rounded-md border bg-white shadow-xs">
         <Icon
-          name={isHttpDeployment(deployment) ? IconName.Http : IconName.Lambda}
+          name={
+            isTunnel
+              ? IconName.Tunnel
+              : isHttpDeployment(deployment)
+                ? IconName.Http
+                : IconName.Lambda
+          }
           className="h-full w-full p-1 text-zinc-400"
         />
       </div>
 
       <div className="flex min-w-[6ch] flex-row items-center gap-1 truncate text-zinc-600">
-        <TruncateWithTooltip copyText={deploymentEndpoint} triggerRef={linkRef}>
-          {showEndpoint ? deploymentEndpoint : deploymentId}
-        </TruncateWithTooltip>
+        {
+          <TruncateWithTooltip
+            copyText={deploymentEndpoint}
+            triggerRef={linkRef}
+          >
+            {showEndpoint ? deploymentEndpoint : deploymentId}
+          </TruncateWithTooltip>
+        }
         <Link
           ref={linkRef}
           aria-label={deploymentEndpoint}
