@@ -33,10 +33,10 @@ type RestateContext = {
   }>;
   tunnel?: {
     isEnabled?: boolean;
-    toHttp: (url: string) => string;
+    toHttp: (name: string, url?: string) => string | undefined;
     fromHttp: (
       url?: string,
-    ) => { name: string; remoteUrl: string; tunnelUrl: string } | undefined;
+    ) => { name: string; remoteUrl?: string; tunnelUrl: string } | undefined;
   };
 };
 
