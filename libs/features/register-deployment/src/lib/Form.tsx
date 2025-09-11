@@ -152,7 +152,7 @@ const tunnelNameStyles = tv({
   },
 });
 
-const CLI_TUNNEL_REGEX = /:\d+$/;
+export const CLI_TUNNEL_REGEX = /:\d+$/;
 function EndpointForm() {
   const {
     tunnelName,
