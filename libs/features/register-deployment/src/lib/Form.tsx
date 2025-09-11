@@ -279,7 +279,14 @@ function EndpointForm() {
                       tunnelName: tunnelUrl.host,
                     });
                     return;
-                  } catch (error) {}
+                  } catch (error) {
+                    updateEndpoint?.({
+                      isLambda: false,
+                      isTunnel: false,
+                      endpoint: value,
+                      tunnelName: '',
+                    });
+                  }
                 }
                 updateEndpoint?.({
                   isLambda: value.startsWith('arn')
