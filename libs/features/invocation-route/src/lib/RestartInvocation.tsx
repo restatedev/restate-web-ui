@@ -32,9 +32,16 @@ export function RestartInvocation() {
             search: searchParams.toString(),
           });
           showSuccessNotification(
-            <>
-              <code>{newInvocationId}</code> has been successfully restarted.
-            </>,
+            <p>
+              <code className="font-semibold">
+                {newInvocationId.substring(0, 8)}…{newInvocationId.slice(-5)}
+              </code>{' '}
+              was created as the new invocation after restarting{' '}
+              <code>
+                {invocationId?.substring(0, 8)}…{invocationId?.slice(-5)}
+              </code>
+              .
+            </p>,
           );
         }
       },
@@ -77,8 +84,11 @@ export function RestartInvocation() {
                 name={IconName.Info}
               />
               <span className="block">
-                Creates a new invocation with the same input (if any) from the
-                original, leaving the original invocation unchanged.
+                Creates a new invocation with the same input (if any) as the
+                original, leaving the original unchanged. The new invocation
+                will have a <span className="font-semibold">different ID</span>,
+                and after a successful restart you'll be{' '}
+                <span className="font-semibold">redirected</span> to it.
               </span>
             </p>
           </div>

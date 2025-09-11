@@ -2,7 +2,7 @@ import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/ad
 import { ErrorBanner } from '@restate/ui/error';
 import { useParams, useSearchParams } from 'react-router';
 import { getRestateError, Status } from './Status';
-import { TruncateWithTooltip } from '@restate/ui/tooltip';
+import { HoverTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
 import { DeploymentSection } from './DeploymentSection';
 import { VirtualObjectSection } from './VirtualObjectSection';
 import { KeysIdsSection } from './KeysIdsSection';
@@ -15,6 +15,7 @@ import { useRestateContext } from '@restate/features/restate-context';
 import { InvocationPageProvider } from './InvocationPageContext';
 import { WorkflowKeySection } from './WorkflowKeySection';
 import { tv } from '@restate/util/styles';
+import { Copy } from '@restate/ui/copy';
 
 const metadataContainerStyles = tv({
   base: 'mt-6 hidden grid-cols-1 gap-2 gap-y-4 rounded-xl md:grid-cols-2 [&:has(*)]:grid',
@@ -92,7 +93,20 @@ function Component() {
                 />
               </div>
 
-              <TruncateWithTooltip>{id}</TruncateWithTooltip>
+              <HoverTooltip
+                size="sm"
+                content={
+                  <div className="flex h-4 items-center gap-4 leading-4">
+                    <div>{id}</div>
+                    <Copy
+                      copyText={String(id)}
+                      className="ml-auto h-5 w-5 rounded-xs bg-zinc-800/90 p-1 hover:bg-zinc-600 pressed:bg-zinc-500"
+                    />
+                  </div>
+                }
+              >
+                {id?.substring(0, 8)}…{id?.slice(-5)}
+              </HoverTooltip>
             </h1>
             {journalAndInvocationData && (
               <div className="*:origin-[center_left] *:scale-[1.1]">
