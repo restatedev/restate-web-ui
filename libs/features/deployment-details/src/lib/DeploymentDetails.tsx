@@ -253,15 +253,19 @@ function DeploymentContent({ deployment }: { deployment: string }) {
             </Badge>
           </div>
         </SectionContent>
-        <SectionTitle className="mt-2">SDK</SectionTitle>
-        <SectionContent className="p-0">
-          <div className="flex items-center px-1.5 py-1 not-last:border-b">
-            <SDK
-              lastAttemptServer={data?.sdk_version ?? undefined}
-              className="gap-1 text-xs font-medium text-zinc-600"
-            />
-          </div>
-        </SectionContent>
+        {data?.sdk_version && (
+          <>
+            <SectionTitle className="mt-2">SDK</SectionTitle>
+            <SectionContent className="p-0">
+              <div className="flex items-center px-1.5 py-1 not-last:border-b">
+                <SDK
+                  lastAttemptServer={data?.sdk_version ?? undefined}
+                  className="gap-1 text-xs font-medium text-zinc-600"
+                />
+              </div>
+            </SectionContent>
+          </>
+        )}
         {data && isLambdaDeployment(data) && data.assume_role_arn && (
           <>
             <SectionTitle className="mt-2">
