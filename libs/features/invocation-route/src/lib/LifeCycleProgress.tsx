@@ -136,8 +136,8 @@ export function Units({
 }) {
   const { start, end, dataUpdatedAt } = useJournalContext();
   const executionTime = end - start;
-  const unit = unitInterval(executionTime);
 
+  const unit = unitInterval(executionTime) || executionTime / 2 || 1;
   const numOfInterval = Math.floor(executionTime / unit);
 
   const cancelEvent = invocation?.journal?.entries?.find(
