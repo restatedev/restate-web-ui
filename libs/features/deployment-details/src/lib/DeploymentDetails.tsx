@@ -14,7 +14,11 @@ import {
   isLambdaDeployment,
   getProtocolType,
 } from '@restate/data-access/admin-api';
-import { InlineTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
+import {
+  HoverTooltip,
+  InlineTooltip,
+  TruncateWithTooltip,
+} from '@restate/ui/tooltip';
 import {
   ProtocolTypeExplainer,
   ServiceCompatibility,
@@ -98,10 +102,9 @@ function DeploymentContent({ deployment }: { deployment: string }) {
       tunnel.fromHttp(data.uri),
   );
   const endpoint = getEndpoint(data);
+  const tunnelEndpoint = isTunnel ? tunnel?.fromHttp(endpoint) : undefined;
 
-  const displayedEndpoint = isTunnel
-    ? tunnel?.fromHttp(getEndpoint(data))?.tunnelUrl
-    : endpoint;
+  const displayedEndpoint = isTunnel ? tunnelEndpoint?.remoteUrl : endpoint;
 
   return (
     <>
@@ -120,7 +123,7 @@ function DeploymentContent({ deployment }: { deployment: string }) {
             className="h-full w-full fill-blue-50 p-1.5 text-blue-400 drop-shadow-md"
           />
         </div>{' '}
-        <div className="flex min-w-0 flex-col items-start gap-1">
+        <div className="flex min-w-0 flex-auto flex-col items-start gap-1">
           {isPending ? (
             <>
               <div className="mt-1 h-5 w-[16ch] animate-pulse rounded-md bg-gray-200" />
@@ -129,7 +132,27 @@ function DeploymentContent({ deployment }: { deployment: string }) {
           ) : (
             <>
               Deployment
-              <span className="contents font-mono text-sm text-gray-500">
+              <span className="flex w-full items-center gap-1.5 text-sm text-gray-500 [&>*]:max-w-fit [&>*]:min-w-0 [&>*]:grow [&>*:last-child]:basis-full">
+                {isTunnel && (
+                  <HoverTooltip
+                    content={
+                      <p>
+                        Tunnel name:{' '}
+                        <code className="inline">{tunnelEndpoint?.name}</code>
+                      </p>
+                    }
+                    className="min-w-0 basis-[12ch]"
+                  >
+                    <Badge
+                      size="sm"
+                      className="relative z-[2] max-w-full flex-auto shrink-0 cursor-default rounded-sm py-0.5 font-mono"
+                    >
+                      <div className="w-full truncate">
+                        {tunnelEndpoint?.name}
+                      </div>
+                    </Badge>
+                  </HoverTooltip>
+                )}
                 <TruncateWithTooltip>{displayedEndpoint}</TruncateWithTooltip>
               </span>
             </>
@@ -230,15 +253,19 @@ function DeploymentContent({ deployment }: { deployment: string }) {
             </Badge>
           </div>
         </SectionContent>
-        <SectionTitle className="mt-2">SDK</SectionTitle>
-        <SectionContent className="p-0">
-          <div className="flex items-center px-1.5 py-1 not-last:border-b">
-            <SDK
-              lastAttemptServer={data?.sdk_version ?? undefined}
-              className="gap-1 text-xs font-medium text-zinc-600"
-            />
-          </div>
-        </SectionContent>
+        {data?.sdk_version && (
+          <>
+            <SectionTitle className="mt-2">SDK</SectionTitle>
+            <SectionContent className="p-0">
+              <div className="flex items-center px-1.5 py-1 not-last:border-b">
+                <SDK
+                  lastAttemptServer={data?.sdk_version ?? undefined}
+                  className="gap-1 text-xs font-medium text-zinc-600"
+                />
+              </div>
+            </SectionContent>
+          </>
+        )}
         {data && isLambdaDeployment(data) && data.assume_role_arn && (
           <>
             <SectionTitle className="mt-2">

@@ -36,7 +36,7 @@ type UpdateEndpointAction = {
   type: 'UpdateEndpointAction';
   payload: Pick<
     DeploymentRegistrationContextInterface,
-    'endpoint' | 'isLambda' | 'isDuplicate' | 'isTunnel'
+    'endpoint' | 'isLambda' | 'isDuplicate' | 'isTunnel' | 'tunnelName'
   >;
 };
 type UpdateRoleArnAction = {
@@ -71,6 +71,7 @@ type Action =
 
 interface DeploymentRegistrationContextInterface {
   endpoint?: string;
+  tunnelName: string;
   stage: 'endpoint' | 'advanced' | 'confirm';
   assumeRoleArn?: string;
   useHttp11?: boolean;
@@ -104,6 +105,7 @@ type State = Pick<
   DeploymentRegistrationContextInterface,
   | 'endpoint'
   | 'isLambda'
+  | 'tunnelName'
   | 'isTunnel'
   | 'stage'
   | 'services'
@@ -143,6 +145,7 @@ const initialState: DeploymentRegistrationContextInterface = {
   isTunnel: false,
   error: null,
   endpoint: '',
+  tunnelName: '',
 };
 const DeploymentRegistrationContext =
   createContext<DeploymentRegistrationContextInterface>(initialState);
@@ -233,7 +236,14 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
   const updateEndpoint = useCallback(
     (value: UpdateEndpointAction['payload']) => {
       reset();
-      if (state.isLambda !== value.isLambda) {
+      let resolvedEndpoint = value.endpoint;
+      if (value.isTunnel && value.endpoint) {
+        resolvedEndpoint = tunnel?.toHttp(value.tunnelName, value.endpoint);
+      }
+      if (
+        state.isLambda !== value.isLambda ||
+        state.isTunnel !== value.isTunnel
+      ) {
         formRef.current?.reset();
       }
       const isDuplicate = Array.from(
@@ -241,7 +251,7 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
       ).some(
         (deployment) =>
           withoutTrailingSlash(getEndpoint(deployment)) ===
-          withoutTrailingSlash(value.endpoint),
+          withoutTrailingSlash(resolvedEndpoint),
       );
       dispatch({
         type: 'UpdateEndpointAction',
@@ -250,6 +260,7 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
           isLambda: value.isLambda,
           endpoint: value.endpoint,
           isDuplicate,
+          tunnelName: value.tunnelName,
         },
       });
     },
@@ -282,6 +293,7 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
       useHttp11,
       shouldForce,
       isTunnel,
+      tunnelName,
     } = state;
 
     if (action === 'advanced') {
@@ -303,7 +315,9 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
           ? { arn: endpoint, assume_role_arn: assumeRoleArn }
           : isTunnel
             ? {
-                uri: tunnel ? await tunnel?.toHttp(endpoint) : endpoint,
+                uri: tunnel
+                  ? String(tunnel.toHttp(tunnelName, endpoint))
+                  : endpoint,
                 use_http_11: false,
               }
             : {
@@ -372,6 +386,7 @@ export function useRegisterDeploymentContext() {
     min_protocol_version,
     sdk_version,
     isTunnel,
+    tunnelName,
   } = useContext(DeploymentRegistrationContext);
   const isEndpoint = stage === 'endpoint';
   const isAdvanced = stage === 'advanced';
@@ -412,5 +427,6 @@ export function useRegisterDeploymentContext() {
     error,
     canSkipAdvanced,
     isTunnel,
+    tunnelName,
   };
 }

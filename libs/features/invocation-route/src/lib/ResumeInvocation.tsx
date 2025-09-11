@@ -157,14 +157,17 @@ export function ResumeInvocation() {
                       tunnel.fromHttp(deployment.uri),
                   );
                   const endpoint = getEndpoint(deployment);
+                  const tunnelEndpoint = isTunnel
+                    ? tunnel?.fromHttp(endpoint)
+                    : undefined;
 
                   const deploymentEndpoint = isTunnel
-                    ? tunnel?.fromHttp(endpoint)?.tunnelUrl
+                    ? tunnelEndpoint?.remoteUrl
                     : endpoint;
 
                   return (
                     <ListBoxItem
-                      className="w-full"
+                      className="w-full max-w-xl"
                       value={
                         isCurrent
                           ? 'Keep'
@@ -187,7 +190,17 @@ export function ResumeInvocation() {
                             className="h-full w-full p-1 text-zinc-400"
                           />
                         </div>
-                        <div className="min-w-0 truncate">
+                        {isTunnel && (
+                          <Badge
+                            size="xs"
+                            className="max-w-fit min-w-0 grow basis-[12ch] rounded-sm py-0.5 font-mono text-2xs leading-3 font-medium"
+                          >
+                            <div className="w-full truncate">
+                              {tunnelEndpoint?.name}
+                            </div>
+                          </Badge>
+                        )}
+                        <div className="max-w-fit min-w-0 grow basis-full truncate">
                           {deploymentEndpoint}
                         </div>
                         {isCurrent && (

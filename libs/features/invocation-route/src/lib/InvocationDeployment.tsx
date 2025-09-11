@@ -28,11 +28,11 @@ export function InvocationDeployment({
 
     return revision ? (
       <div className={styles({ className })}>
-        <div className="flex h-9 w-full items-center px-1.5 py-1 not-last:border-b">
+        <div className="flex h-6 w-full items-center px-1.5 py-1 not-last:border-b">
           <Deployment
             deploymentId={deploymentId}
             revision={revision}
-            className="m-0 w-full max-w-full p-0 pr-0.5 text-inherit [&_a:before]:rounded-md"
+            className="m-0 w-full max-w-full p-0 pr-0.5 font-normal text-inherit [&_a:before]:rounded-md"
             highlightSelection={false}
           />
         </div>

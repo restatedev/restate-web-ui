@@ -4,7 +4,12 @@ import {
   FormFieldLabel,
 } from '@restate/ui/form-field';
 import { Icon, IconName } from '@restate/ui/icons';
-import { ComponentProps, PropsWithChildren, ReactNode } from 'react';
+import {
+  ComponentProps,
+  KeyboardEvent,
+  PropsWithChildren,
+  ReactNode,
+} from 'react';
 import { Radio } from 'react-aria-components';
 import { RadioGroup } from '@restate/ui/radio-group';
 import { DeploymentProtocolCheck, RegisterDeploymentResults } from './Results';
@@ -20,9 +25,9 @@ import {
 } from '@restate/ui/tooltip';
 import { ServiceDeploymentExplainer } from '@restate/features/explainers';
 import { useRestateContext } from '@restate/features/restate-context';
+import { tv } from '@restate/util/styles';
+import { FocusScope, useFocusManager } from 'react-aria';
 
-const TUNNEL_REGEX =
-  /^rstun\+https?:\/\/[A-Za-z0-9\-._]+@[A-Za-z0-9.\-]+(:[0-9]+)?$/;
 function CustomRadio({
   value,
   children,
@@ -39,7 +44,7 @@ function CustomRadio({
       {...props}
       value={value}
       className={({ isFocusVisible, isSelected, isPressed, isDisabled }) =>
-        `${className} group relative flex cursor-default rounded-lg border bg-clip-padding shadow-none outline-hidden ${
+        `${className} group relative flex cursor-default justify-center rounded-lg border bg-clip-padding shadow-none outline-hidden ${
           isFocusVisible
             ? 'ring-2 ring-blue-600 ring-offset-1 ring-offset-white/80'
             : ''
@@ -121,8 +126,36 @@ export function RegistrationForm() {
   );
 }
 
+const inputStyles = tv({
+  base: 'flex-auto basis-full transition-all [&_.error]:absolute [&_.error]:pt-2 [&_input]:border-transparent! [&_input]:bg-transparent! [&_input]:shadow-none! [&_input]:ring-transparent! [&_input]:outline-none!',
+});
+const endpointStyles = tv({
+  extend: inputStyles,
+  variants: {
+    isCliTunnel: {
+      false: 'flex-auto basis-full',
+      true: 'w-0 min-w-0 grow-0 basis-0',
+    },
+  },
+  defaultVariants: {
+    isCliTunnel: false,
+  },
+});
+const tunnelNameStyles = tv({
+  extend: inputStyles,
+  base: '[&_.error]:max-w-[25ch]',
+  variants: {
+    isTunnel: {
+      true: 'w-auto min-w-0 flex-1 basis-[25ch]',
+      false: 'w-0 min-w-0 grow-0 basis-0',
+    },
+  },
+});
+
+export const CLI_TUNNEL_REGEX = /:\d+$/;
 function EndpointForm() {
   const {
+    tunnelName,
     isTunnel,
     isLambda,
     updateEndpoint,
@@ -134,34 +167,39 @@ function EndpointForm() {
   } = useRegisterDeploymentContext();
   const { tunnel } = useRestateContext();
 
+  const focusManager = useFocusManager();
+  const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    const input = e.target instanceof HTMLInputElement ? e.target : undefined;
+
+    const atLeft =
+      input && input.selectionStart === 0 && input.selectionEnd === 0;
+
+    const atRight =
+      input &&
+      input.selectionStart === input.value.length &&
+      input.selectionEnd === input.value.length;
+
+    switch (e.key) {
+      case 'ArrowRight':
+        if (atRight && input.name !== 'endpoint') {
+          focusManager?.focusNext({ wrap: true });
+        }
+        break;
+      case 'ArrowLeft':
+        if (atLeft && input.name !== 'tunnel-name') {
+          focusManager?.focusPrevious({ wrap: true });
+        }
+        break;
+    }
+  };
+
+  const isCliTunnel = Boolean(isTunnel && tunnelName?.match(CLI_TUNNEL_REGEX));
+
   return (
     <>
-      <FormFieldInput
-        autoFocus
-        required
-        autoComplete="url"
-        value={endpoint}
-        disabled={isPending}
-        type={isLambda || isTunnel ? 'text' : 'url'}
-        {...(isLambda && {
-          pattern:
-            '^arn:aws:lambda:[a-z0-9\\-]+:\\d+:function:[a-zA-Z0-9\\-_]+:.+$',
-        })}
-        {...(tunnel?.isEnabled &&
-          isTunnel && {
-            pattern: TUNNEL_REGEX.source,
-          })}
-        name="endpoint"
-        className="right-0 left-0 my-2 [&_.error]:absolute [&_.error]:pt-1 [&_input:not([type=radio])]:absolute [&_input:not([type=radio])]:pr-19"
-        placeholder={
-          isLambda
-            ? 'arn:aws:lambda:{region}:{account}:function:{function-name}:{version}'
-            : isTunnel
-              ? 'rstun+http://{tunnel-name}@{remote-host}:{port}'
-              : 'http://localhost:9080'
-        }
-        label={
-          isLambda ? (
+      <div className="mt-2 flex flex-col gap-0 pb-1">
+        <FormFieldLabel className="mb-0 pl-0.5">
+          {isLambda ? (
             'Lambda ARN'
           ) : isTunnel && tunnel?.isEnabled ? (
             <InlineTooltip
@@ -174,105 +212,169 @@ function EndpointForm() {
             </InlineTooltip>
           ) : (
             'HTTP endpoint'
-          )
-        }
-        onKeyDown={(e) => {
-          if (e.key === 'Tab' && !isLambda && !isTunnel && !endpoint) {
-            updateEndpoint?.({
-              isLambda: false,
-              isTunnel: false,
-              endpoint: 'http://localhost:9080',
-            });
-            e.preventDefault();
-          }
-        }}
-        onChange={(value) => {
-          updateEndpoint?.({
-            isLambda: value.startsWith('arn')
-              ? true
-              : value.startsWith('http') || value.startsWith('rs')
-                ? false
-                : isLambda,
-            isTunnel: value.startsWith('rs')
-              ? true
-              : value.startsWith('http') || value.startsWith('arn')
-                ? false
-                : isTunnel,
-            endpoint: value,
-          });
-        }}
-      >
-        <div className="absolute top-[2px] right-[2px] w-fit self-start [&_.active]:rounded-[0.35rem] [&_.active]:px-2 [&_button]:rounded-[0.35rem] [&_button]:px-2 [&_ul]:rounded-[0.35rem] [&_ul]:bg-black/2.5">
-          <RadioGroup
-            value={
-              isLambda
-                ? 'lambda'
-                : isTunnel && tunnel?.isEnabled
-                  ? 'tunnel'
-                  : 'http'
-            }
-            name="name"
-            required
-            className="bg-black2/[0.05] row-start-1 row-end-1 h-full flex-row gap-[2px] rounded-lg"
-            onChange={(value) =>
-              updateEndpoint?.({
-                isLambda: value === 'lambda',
-                isTunnel: value === 'tunnel',
-                endpoint: '',
-              })
-            }
-            disabled={isPending}
-          >
-            <FormFieldLabel className="sr-only w-px">
-              Endpoint type
-            </FormFieldLabel>
-            <Tooltip>
-              <TooltipTrigger>
-                <CustomRadio
-                  value="http"
-                  className="aspect-square items-center rounded-[0.4rem] p-1.5"
-                  aria-label="Http endpoint"
-                >
-                  <Icon name={IconName.Http} className="h-4 w-4" />
-                </CustomRadio>
-              </TooltipTrigger>
-              <TooltipContent size="sm" offset={20}>
-                HTTP endpoint
-              </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger>
-                <CustomRadio
-                  value="lambda"
-                  className="aspect-square items-center rounded-[0.4rem] p-1.5"
-                  aria-label="AWS lambda"
-                >
-                  <Icon name={IconName.Lambda} className="h-4 w-4" />
-                </CustomRadio>
-              </TooltipTrigger>
-              <TooltipContent size="sm" offset={20}>
-                AWS Lambda
-              </TooltipContent>
-            </Tooltip>
-            {tunnel?.isEnabled && (
+          )}
+        </FormFieldLabel>
+        <div
+          onKeyDownCapture={onKeyDown}
+          className="relative my-2 flex rounded-lg border border-gray-200 bg-gray-100 px-0.5 text-sm text-gray-900 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] outline-2 outline-offset-2 outline-transparent has-[input[data-focused=true2]]:outline-blue-500 has-[input[data-focused=true]]:[box-shadow:inset_0_1px_0px_0px_rgba(0,0,0,0.03)] has-[input[data-focused=true]]:outline-blue-600"
+        >
+          <FocusScope>
+            <FormFieldInput
+              className={tunnelNameStyles({ isTunnel })}
+              placeholder="my-tunnel-name"
+              required={isTunnel}
+              value={tunnelName}
+              name="tunnel-name"
+              onChange={(value) => {
+                updateEndpoint?.({
+                  isLambda: false,
+                  tunnelName: value,
+                  isTunnel: isTunnel,
+                  endpoint,
+                });
+              }}
+            />
+            {isTunnel && !isCliTunnel && (
+              <div className="-my-px h-full min-h-9 w-[2px] shrink-0 bg-white" />
+            )}
+            <FormFieldInput
+              autoFocus
+              required={!isCliTunnel}
+              autoComplete="url"
+              value={endpoint}
+              disabled={isPending}
+              type={isLambda ? 'text' : 'url'}
+              {...(isLambda && {
+                pattern:
+                  '^arn:aws:lambda:[a-z0-9\\-]+:\\d+:function:[a-zA-Z0-9\\-_]+:.+$',
+              })}
+              name="endpoint"
+              className={endpointStyles({ isCliTunnel })}
+              placeholder={
+                isLambda
+                  ? 'arn:aws:lambda:{region}:{account}:function:{function-name}:{version}'
+                  : isTunnel
+                    ? 'Destination:  http://localhost:9080'
+                    : 'http://localhost:9080'
+              }
+              onKeyDown={(e) => {
+                if (e.key === 'Tab' && !isLambda && !isTunnel && !endpoint) {
+                  updateEndpoint?.({
+                    isLambda: false,
+                    isTunnel: false,
+                    endpoint: 'http://localhost:9080',
+                    tunnelName: '',
+                  });
+                  e.preventDefault();
+                }
+              }}
+              onChange={(value) => {
+                if (value.startsWith('tunnel://')) {
+                  try {
+                    const tunnelUrl = new URL(value);
+                    updateEndpoint?.({
+                      isLambda: false,
+                      isTunnel: true,
+                      endpoint: undefined,
+                      tunnelName: tunnelUrl.host,
+                    });
+                    return;
+                  } catch (error) {
+                    updateEndpoint?.({
+                      isLambda: false,
+                      isTunnel: false,
+                      endpoint: value,
+                      tunnelName: '',
+                    });
+                  }
+                }
+                updateEndpoint?.({
+                  isLambda: value.startsWith('arn')
+                    ? true
+                    : value.startsWith('http')
+                      ? false
+                      : isLambda,
+                  isTunnel: value.startsWith('arn') ? false : isTunnel,
+                  endpoint: value,
+                  tunnelName,
+                });
+              }}
+            />
+          </FocusScope>
+          <div className="w-28 shrink-0 py-0.5 [&_.active]:rounded-[0.35rem] [&_.active]:px-2 [&_button]:rounded-[0.35rem] [&_button]:px-2 [&_ul]:rounded-[0.35rem] [&_ul]:bg-black/2.5">
+            <RadioGroup
+              value={
+                isLambda
+                  ? 'lambda'
+                  : isTunnel && tunnel?.isEnabled
+                    ? 'tunnel'
+                    : 'http'
+              }
+              name="name"
+              required
+              className="bg-black2/[0.05] row-start-1 row-end-1 h-full flex-row justify-end gap-[2px] rounded-lg"
+              onChange={(value) =>
+                updateEndpoint?.({
+                  isLambda: value === 'lambda',
+                  isTunnel: value === 'tunnel',
+                  endpoint: '',
+                  tunnelName: '',
+                })
+              }
+              disabled={isPending}
+            >
+              <FormFieldLabel className="sr-only w-px">
+                Endpoint type
+              </FormFieldLabel>
               <Tooltip>
                 <TooltipTrigger>
                   <CustomRadio
-                    value="tunnel"
+                    value="http"
                     className="aspect-square items-center rounded-[0.4rem] p-1.5"
-                    aria-label="Tunnel"
+                    aria-label="Http endpoint"
                   >
-                    <Icon name={IconName.Tunnel} className="h-4 w-4" />
+                    <Icon name={IconName.Http} className="h-4 w-4" />
                   </CustomRadio>
                 </TooltipTrigger>
                 <TooltipContent size="sm" offset={20}>
-                  Tunnel
+                  HTTP endpoint
                 </TooltipContent>
               </Tooltip>
-            )}
-          </RadioGroup>
+              <Tooltip>
+                <TooltipTrigger>
+                  <CustomRadio
+                    value="lambda"
+                    className="aspect-square items-center rounded-[0.4rem] p-1.5"
+                    aria-label="AWS lambda"
+                  >
+                    <Icon name={IconName.Lambda} className="h-4 w-4" />
+                  </CustomRadio>
+                </TooltipTrigger>
+                <TooltipContent size="sm" offset={20}>
+                  AWS Lambda
+                </TooltipContent>
+              </Tooltip>
+              {tunnel?.isEnabled && (
+                <Tooltip>
+                  <TooltipTrigger>
+                    <CustomRadio
+                      value="tunnel"
+                      className="aspect-square items-center rounded-[0.4rem] p-1.5"
+                      aria-label="Tunnel"
+                    >
+                      <Icon name={IconName.Tunnel} className="h-4 w-4" />
+                    </CustomRadio>
+                  </TooltipTrigger>
+                  <TooltipContent size="sm" offset={20}>
+                    Tunnel
+                  </TooltipContent>
+                </Tooltip>
+              )}
+            </RadioGroup>
+          </div>
         </div>
-      </FormFieldInput>
+      </div>
+
       {isDuplicate && (
         <FormFieldCheckbox
           name="force"
