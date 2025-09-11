@@ -200,7 +200,7 @@ function JournalCell({ invocation }: CellProps) {
       <PopoverTrigger>
         <Button
           variant="secondary"
-          className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-2xs"
+          className="mt-1 flex items-center gap-1 rounded-md px-1.5 py-0.5 text-2xs"
         >
           {invocation.journal_commands_size || invocation.journal_size}{' '}
           {formatPlurals(invocation.journal_size, {

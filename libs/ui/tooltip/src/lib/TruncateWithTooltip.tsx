@@ -42,6 +42,9 @@ const contentStyles = tv({
   },
 });
 
+const tooltipContentStyles = tv({
+  base: 'flex items-start gap-4 whitespace-pre-wrap **:text-xs **:text-gray-200',
+});
 export function TruncateWithTooltip({
   children,
   copyText: copyTextProp,
@@ -49,12 +52,14 @@ export function TruncateWithTooltip({
   tooltipContent = children,
   hideCopy,
   size = 'sm',
+  className,
 }: PropsWithChildren<{
   copyText?: string;
   triggerRef?: RefObject<HTMLElement | null>;
   tooltipContent?: ReactNode;
   hideCopy?: boolean;
   size?: ComponentProps<typeof TooltipContent>['size'];
+  className?: string;
 }>) {
   const triggerRef = useRef<HTMLElement>(null);
   const containerRef = useRef<HTMLElement>(null);
@@ -100,7 +105,7 @@ export function TruncateWithTooltip({
         </span>
         <TooltipContent size={size} offset={5} triggerRef={containerRef}>
           <div
-            className="flex items-start gap-4 whitespace-pre-wrap **:text-xs **:text-gray-200"
+            className={tooltipContentStyles({ className })}
             ref={tooltipHoverRef}
           >
             <div className={contentStyles({ size })}>{tooltipContent}</div>

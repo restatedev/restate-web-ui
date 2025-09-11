@@ -1,6 +1,6 @@
 import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from '@restate/util/styles';
-import { TruncateWithTooltip } from '@restate/ui/tooltip';
+import { HoverTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
 import {
   DeploymentId,
   Revision as ServiceRevision,
@@ -14,6 +14,7 @@ import { useRef } from 'react';
 import { useActiveSidebarParam } from '@restate/ui/layout';
 import { useListDeployments } from '@restate/data-access/admin-api-hooks';
 import { useRestateContext } from '@restate/features/restate-context';
+import { Badge } from '@restate/ui/badge';
 
 const styles = tv({
   base: 'relative -m-1 flex flex-row items-center gap-2 border p-1 text-0.5xs transition-all ease-in-out',
@@ -61,10 +62,9 @@ export function Deployment({
       tunnel.fromHttp(deployment.uri),
   );
   const endpoint = getEndpoint(deployment);
+  const tunnelEndpoint = isTunnel ? tunnel?.fromHttp(endpoint) : undefined;
 
-  const deploymentEndpoint = isTunnel
-    ? tunnel?.fromHttp(endpoint)?.tunnelUrl
-    : endpoint;
+  const deploymentEndpoint = isTunnel ? tunnelEndpoint?.remoteUrl : endpoint;
 
   return (
     <div className={styles({ className, isSelected })}>
@@ -81,14 +81,36 @@ export function Deployment({
         />
       </div>
 
-      <div className="flex min-w-[6ch] flex-row items-center gap-1 truncate text-zinc-600">
+      <div className="flex min-w-[6ch] flex-auto flex-row items-center gap-1 text-zinc-600">
         {
-          <TruncateWithTooltip
-            copyText={deploymentEndpoint}
-            triggerRef={linkRef}
-          >
-            {showEndpoint ? deploymentEndpoint : deploymentId}
-          </TruncateWithTooltip>
+          <div className="flex max-w-full min-w-0 items-center gap-1.5 [&>*]:max-w-fit [&>*]:flex-auto [&>*:not(.deployment)]:min-w-[0ch] [&>*:not(.deployment)]:basis-[40ch]">
+            {isTunnel && (
+              <HoverTooltip
+                content={
+                  <p>
+                    Tunnel name:{' '}
+                    <code className="inline">{tunnelEndpoint?.name}</code>
+                  </p>
+                }
+              >
+                <Badge
+                  size="xs"
+                  className="relative z-[2] max-w-full flex-auto shrink-0 cursor-default rounded-sm py-0.5 font-mono text-2xs leading-3 font-medium"
+                >
+                  <div className="w-full truncate">{tunnelEndpoint?.name}</div>
+                </Badge>
+              </HoverTooltip>
+            )}
+            <div className="deployment min-w-0 flex-auto basis-full">
+              <TruncateWithTooltip
+                copyText={deploymentEndpoint}
+                triggerRef={linkRef}
+                className="[&_.badge]:bg-gray-700"
+              >
+                {showEndpoint ? deploymentEndpoint : deploymentId}
+              </TruncateWithTooltip>
+            </div>
+          </div>
         }
         <Link
           ref={linkRef}
