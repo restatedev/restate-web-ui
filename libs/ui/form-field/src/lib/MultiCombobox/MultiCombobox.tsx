@@ -71,7 +71,7 @@ export interface MultiSelectProps<T extends object>
   items: Array<T>;
   selectedList: ListData<T>;
   className?: string;
-  onItemAdd?: (key: Key) => void;
+  onItemAdd?: (key: Key, value?: string) => void;
   onItemRemove?: (key: Key) => void;
   onItemUpdated?: (key: Key) => void;
   renderEmptyState?: (inputValue: string) => React.ReactNode;
@@ -100,6 +100,7 @@ export function FormFieldMultiCombobox<
   T extends {
     id: Key;
     textValue: string;
+    allowCustomValue?: boolean;
   },
 >({
   label,
@@ -130,6 +131,9 @@ export function FormFieldMultiCombobox<
 
   const filter = useCallback(
     (item: T, filterText: string) => {
+      if (item.allowCustomValue) {
+        return Boolean(filterText);
+      }
       return (
         !selectedKeys.includes(item.id) && contains(item.textValue, filterText)
       );
@@ -192,11 +196,12 @@ export function FormFieldMultiCombobox<
 
     if (!selectedKeys.includes(id)) {
       selectedList.append(item);
+      const inputValue = fieldState.inputValue;
       setFieldState({
         inputValue: '',
         selectedKey: id,
       });
-      onItemAdd?.(id);
+      onItemAdd?.(id, inputValue);
     }
 
     availableList.setFilterText('');
@@ -306,16 +311,28 @@ export function FormFieldMultiCombobox<
                   className="max-h-[inherit] overflow-auto border-none p-1 outline-0"
                 >
                   <ListBoxSection title={label}>
-                    {availableList.items.map((item) => (
-                      <ListBoxItem value={String(item.id)} key={item.id}>
-                        {item.textValue}
-                      </ListBoxItem>
-                    ))}
+                    {availableList.items
+                      .filter(
+                        (item, i, arr) =>
+                          !item.allowCustomValue || arr.length === 1,
+                      )
+                      .map((item) => (
+                        <ListBoxItem value={String(item.id)} key={item.id}>
+                          {item.allowCustomValue
+                            ? fieldState.inputValue
+                            : item.textValue}
+                        </ListBoxItem>
+                      ))}
                   </ListBoxSection>
                 </ListBox>
               ) : (
                 <div className="flex items-center gap-1.5 px-4 py-2 text-sm text-zinc-500">
                   You can apply only one filter at a time.
+                </div>
+              )}
+              {items.some((item) => item.allowCustomValue) && (
+                <div className="mb-2 -translate-y-1 px-5 text-xs text-gray-400">
+                  Select an option or enter a custom value.
                 </div>
               )}
             </PopoverOverlay>

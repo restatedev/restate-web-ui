@@ -284,7 +284,7 @@ function Component() {
       .filter((clause) => clause.isValid)
       .map((clause) => {
         return {
-          field: clause.id,
+          field: clause.fieldValue,
           operation: clause.value.operation!,
           type: clause.type,
           value: clause.value.value,
@@ -543,7 +543,7 @@ function Component() {
             query.items
               .filter((clause) => clause.isValid)
               .forEach((item) => {
-                newSearchParams.set(`filter_${item.id}`, String(item));
+                newSearchParams.set(`filter_${item.fieldValue}`, String(item));
               });
             const sortedNewSearchParams = new URLSearchParams(newSearchParams);
             sortedNewSearchParams.sort();
@@ -563,7 +563,7 @@ function Component() {
                 .map(
                   (clause) =>
                     ({
-                      field: clause.id,
+                      field: clause.fieldValue,
                       operation: clause.value.operation!,
                       type: clause.type,
                       value: clause.value.value,

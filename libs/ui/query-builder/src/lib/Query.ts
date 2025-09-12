@@ -1,6 +1,11 @@
 import { formatDateTime } from '@restate/util/intl';
 
-export type QueryClauseType = 'STRING' | 'STRING_LIST' | 'NUMBER' | 'DATE';
+export type QueryClauseType =
+  | 'CUSTOM_STRING'
+  | 'STRING'
+  | 'STRING_LIST'
+  | 'NUMBER'
+  | 'DATE';
 export type QueryClauseOperationId =
   | 'EQUALS'
   | 'NOT_EQUALS'
@@ -29,13 +34,15 @@ export interface QueryClauseSchema<T extends QueryClauseType> {
 }
 type QueryClauseValue<T extends QueryClauseType> = T extends 'STRING'
   ? string
-  : T extends 'NUMBER'
-    ? number
-    : T extends 'STRING_LIST'
-      ? string[]
-      : T extends 'DATE'
-        ? Date
-        : never;
+  : T extends 'CUSTOM_STRING'
+    ? string
+    : T extends 'NUMBER'
+      ? number
+      : T extends 'STRING_LIST'
+        ? string[]
+        : T extends 'DATE'
+          ? Date
+          : never;
 
 export class QueryClause<T extends QueryClauseType> {
   get id() {
@@ -47,15 +54,25 @@ export class QueryClause<T extends QueryClauseType> {
   }
 
   get label() {
+    if (this.type === 'CUSTOM_STRING') {
+      return this.fieldValue;
+    }
     return this.schema.label;
   }
 
   get textValue() {
+    if (this.type === 'CUSTOM_STRING') {
+      return this.fieldValue;
+    }
     return this.schema.label;
   }
 
   get type() {
     return this.schema.type;
+  }
+
+  get allowCustomValue() {
+    return this.type === 'CUSTOM_STRING';
   }
 
   get operations() {
@@ -98,11 +115,16 @@ export class QueryClause<T extends QueryClauseType> {
     }
   }
 
+  get fieldValue() {
+    return this.value.fieldValue ?? this.id;
+  }
+
   constructor(
     public readonly schema: QueryClauseSchema<T>,
     public readonly value: {
       operation?: QueryClauseOperationId;
       value?: QueryClauseValue<T>;
+      fieldValue?: string;
     } = { operation: schema.operations[0]?.value, value: undefined },
   ) {
     this._options = schema.options;
@@ -119,7 +141,10 @@ export class QueryClause<T extends QueryClauseType> {
     if (!this.value.value) {
       return undefined;
     }
-    return JSON.stringify(this.value);
+    return JSON.stringify({
+      operation: this.value.operation,
+      value: this.value.value,
+    });
   }
 
   static fromJSON(schema: QueryClauseSchema<QueryClauseType>, value: string) {
@@ -127,10 +152,12 @@ export class QueryClause<T extends QueryClauseType> {
       const parsedValue = JSON.parse(value) as {
         operation?: QueryClauseOperationId;
         value?: number | string | string[];
+        fieldValue?: string;
       };
       return new QueryClause(schema, {
         operation: parsedValue.operation,
         value: getValue(schema.type, parsedValue.value),
+        fieldValue: parsedValue.fieldValue,
       });
     } catch (error) {
       return new QueryClause(schema);
@@ -139,6 +166,9 @@ export class QueryClause<T extends QueryClauseType> {
 }
 
 function getValue(type: QueryClauseType, value?: number | string | string[]) {
+  if (type === 'CUSTOM_STRING' && typeof value === 'string') {
+    return value;
+  }
   if (type === 'STRING' && typeof value === 'string') {
     return value;
   }

@@ -93,6 +93,7 @@ function getQuery(
 }
 
 const STATE_PAGE_SIZE = 30;
+const CUSTOM_KEY_ID = `__rs-state-key__`;
 
 function EditStateTrigger(props: ComponentProps<typeof Button>) {
   const { close } = usePopover();
@@ -130,7 +131,7 @@ function Component() {
   const keys = Array.from(keysSet.values());
 
   const schema = useMemo(() => {
-    return Array.from(keysSet.values()).map(
+    const clauses = Array.from(keysSet.values()).map(
       (key) =>
         ({
           id: key,
@@ -145,6 +146,18 @@ function Component() {
           type: 'STRING',
         }) as QueryClauseSchema<QueryClauseType>,
     ) satisfies QueryClauseSchema<QueryClauseType>[];
+    clauses.push({
+      id: CUSTOM_KEY_ID,
+      operations: [
+        // TODO: add is null/ is not null
+        { value: 'EQUALS', label: 'is' },
+        { value: 'NOT_EQUALS', label: 'is not' },
+        { value: 'CONTAINS', label: 'contains' },
+        { value: 'NOT_CONTAINS', label: 'does not contain' },
+      ],
+      type: 'CUSTOM_STRING',
+    } as QueryClauseSchema<QueryClauseType>);
+    return clauses;
   }, [keysSet, virtualObject]);
 
   const [queryFilters, setQueryFilters] = useState<FilterItem[]>(() =>
@@ -152,7 +165,7 @@ function Component() {
       .filter((clause) => clause.isValid)
       .map((clause) => {
         return {
-          field: clause.id,
+          field: clause.fieldValue,
           operation: clause.value.operation!,
           type: clause.type,
           value: clause.value.value,
@@ -600,7 +613,7 @@ function Component() {
             query.items
               .filter((clause) => clause.isValid)
               .forEach((item) => {
-                newSearchParams.set(`filter_${item.id}`, String(item));
+                newSearchParams.set(`filter_${item.fieldValue}`, String(item));
               });
             const sortedNewSearchParams = new URLSearchParams(newSearchParams);
             sortedNewSearchParams.sort();
@@ -614,9 +627,12 @@ function Component() {
                 .map(
                   (clause) =>
                     ({
-                      field: clause.id,
+                      field: clause.fieldValue,
                       operation: clause.value.operation!,
-                      type: clause.type,
+                      type:
+                        clause.type === 'CUSTOM_STRING'
+                          ? 'STRING'
+                          : clause.type,
                       value: clause.value.value,
                     }) as FilterItem,
                 ),
