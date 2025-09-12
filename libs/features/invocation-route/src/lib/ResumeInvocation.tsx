@@ -137,7 +137,7 @@ export function ResumeInvocation() {
             <FormFieldSelect
               className="mt-4 min-w-xs flex-auto basis-[calc(50%-var(--spacing)*2)] [&_button>*]:max-w-full"
               label="Deployment"
-              placeholder="deployment"
+              placeholder="Select a deployment"
               defaultValue={
                 invocation?.pinned_deployment_id ? 'Keep' : 'Latest'
               }
