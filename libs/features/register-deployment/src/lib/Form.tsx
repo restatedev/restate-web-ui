@@ -270,22 +270,13 @@ function EndpointForm() {
               }}
               onChange={(value) => {
                 if (value.startsWith('tunnel://')) {
-                  try {
-                    updateEndpoint?.({
-                      isLambda: false,
-                      isTunnel: true,
-                      endpoint: undefined,
-                      tunnelName: value,
-                    });
-                    return;
-                  } catch (error) {
-                    updateEndpoint?.({
-                      isLambda: false,
-                      isTunnel: false,
-                      endpoint: value,
-                      tunnelName: '',
-                    });
-                  }
+                  updateEndpoint?.({
+                    isLambda: false,
+                    isTunnel: true,
+                    endpoint: undefined,
+                    tunnelName: value,
+                  });
+                  return;
                 }
                 updateEndpoint?.({
                   isLambda: value.startsWith('arn')
