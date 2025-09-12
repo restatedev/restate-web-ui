@@ -195,6 +195,11 @@ export function ResumeInvocation() {
                             size="xs"
                             className="max-w-fit min-w-0 grow basis-[12ch] rounded-sm py-0.5 font-mono text-2xs leading-3 font-medium"
                           >
+                            <Icon
+                              name={IconName.AtSign}
+                              className="mr-0.5 h-3 w-3"
+                            />
+
                             <div className="w-full truncate">
                               {tunnelEndpoint?.name}
                             </div>
