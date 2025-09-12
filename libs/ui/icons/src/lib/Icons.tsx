@@ -62,6 +62,7 @@ import {
   ChevronsUp,
   Gauge,
   TrendingUp,
+  AtSign,
   TrendingDown,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -168,6 +169,7 @@ export const enum IconName {
   TrendingUp = 'TrendingUp',
   TrendingDown = 'TrendingDown',
   Tunnel = 'Tunnel',
+  AtSign = 'AtSign',
 }
 export interface IconsProps {
   name: IconName;
@@ -258,6 +260,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.TrendingUp]: TrendingUp,
   [IconName.TrendingDown]: TrendingDown,
   [IconName.Tunnel]: Tunnel,
+  [IconName.AtSign]: AtSign,
 };
 
 const styles = tv({

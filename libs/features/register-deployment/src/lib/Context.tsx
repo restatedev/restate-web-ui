@@ -233,12 +233,18 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
     },
   });
 
+  const toHttp = tunnel?.toHttp;
   const updateEndpoint = useCallback(
     (value: UpdateEndpointAction['payload']) => {
       reset();
       let resolvedEndpoint = value.endpoint;
       if (value.isTunnel && value.endpoint) {
-        resolvedEndpoint = tunnel?.toHttp(value.tunnelName, value.endpoint);
+        try {
+          resolvedEndpoint = toHttp?.(value.tunnelName, value.endpoint);
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (error) {
+          /* empty */
+        }
       }
       if (
         state.isLambda !== value.isLambda ||
@@ -264,7 +270,13 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
         },
       });
     },
-    [listDeployments, state.isLambda, reset],
+    [
+      reset,
+      state.isLambda,
+      state.isTunnel,
+      listDeployments?.deployments,
+      toHttp,
+    ],
   );
   const updateAssumeRoleArn = useCallback(
     (assumeRoleArn: string) => {

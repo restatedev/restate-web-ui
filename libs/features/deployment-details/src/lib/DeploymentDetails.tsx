@@ -136,17 +136,28 @@ function DeploymentContent({ deployment }: { deployment: string }) {
                 {isTunnel && (
                   <HoverTooltip
                     content={
-                      <p>
+                      <p className="flex items-center">
                         Tunnel name:{' '}
-                        <code className="inline">{tunnelEndpoint?.name}</code>
+                        <code className="ml-1 inline-block">
+                          {tunnelEndpoint?.name}
+                        </code>
+                        <Copy
+                          copyText={String(tunnelEndpoint?.name)}
+                          className="ml-4 h-5 w-5 rounded-xs bg-zinc-800/90 p-1 hover:bg-zinc-600 pressed:bg-zinc-500"
+                        />
                       </p>
                     }
                     className="min-w-0 basis-[12ch]"
                   >
                     <Badge
                       size="sm"
-                      className="relative z-[2] max-w-full flex-auto shrink-0 cursor-default rounded-sm py-0.5 font-mono"
+                      className="relative z-[2] max-w-full flex-auto shrink-0 translate-y-px cursor-default rounded-sm py-0.5 font-mono"
                     >
+                      <Icon
+                        name={IconName.AtSign}
+                        className="mr-0.5 h-3.5 w-3.5"
+                      />
+
                       <div className="w-full truncate">
                         {tunnelEndpoint?.name}
                       </div>

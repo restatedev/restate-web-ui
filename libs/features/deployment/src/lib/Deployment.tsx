@@ -15,6 +15,7 @@ import { useActiveSidebarParam } from '@restate/ui/layout';
 import { useListDeployments } from '@restate/data-access/admin-api-hooks';
 import { useRestateContext } from '@restate/features/restate-context';
 import { Badge } from '@restate/ui/badge';
+import { Copy } from '@restate/ui/copy';
 
 const styles = tv({
   base: 'relative -m-1 flex flex-row items-center gap-2 border p-1 text-0.5xs transition-all ease-in-out',
@@ -87,16 +88,23 @@ export function Deployment({
             {isTunnel && (
               <HoverTooltip
                 content={
-                  <p>
+                  <p className="flex items-center">
                     Tunnel name:{' '}
-                    <code className="inline">{tunnelEndpoint?.name}</code>
+                    <code className="ml-1 inline-block">
+                      {tunnelEndpoint?.name}
+                    </code>
+                    <Copy
+                      copyText={String(tunnelEndpoint?.name)}
+                      className="ml-4 h-5 w-5 rounded-xs bg-zinc-800/90 p-1 hover:bg-zinc-600 pressed:bg-zinc-500"
+                    />
                   </p>
                 }
               >
                 <Badge
                   size="xs"
-                  className="relative z-[2] max-w-full flex-auto shrink-0 cursor-default rounded-sm py-0.5 font-mono text-2xs leading-3 font-medium"
+                  className="relative z-[2] max-w-full flex-auto shrink-0 translate-y-px cursor-default rounded-sm py-0.5 font-mono text-2xs leading-3 font-medium"
                 >
+                  <Icon name={IconName.AtSign} className="mr-0.5 h-3 w-3" />
                   <div className="w-full truncate">{tunnelEndpoint?.name}</div>
                 </Badge>
               </HoverTooltip>
