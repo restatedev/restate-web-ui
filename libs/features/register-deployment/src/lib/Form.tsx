@@ -271,12 +271,11 @@ function EndpointForm() {
               onChange={(value) => {
                 if (value.startsWith('tunnel://')) {
                   try {
-                    const tunnelUrl = new URL(value);
                     updateEndpoint?.({
                       isLambda: false,
                       isTunnel: true,
                       endpoint: undefined,
-                      tunnelName: tunnelUrl.host,
+                      tunnelName: value,
                     });
                     return;
                   } catch (error) {
