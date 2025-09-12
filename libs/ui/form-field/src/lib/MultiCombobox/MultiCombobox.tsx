@@ -330,6 +330,11 @@ export function FormFieldMultiCombobox<
                   You can apply only one filter at a time.
                 </div>
               )}
+              {items.some((item) => item.allowCustomValue) && (
+                <div className="mb-2 -translate-y-1 px-5 text-xs text-gray-400">
+                  Select an option or enter a custom value.
+                </div>
+              )}
             </PopoverOverlay>
           )}
         </ComboBox>
