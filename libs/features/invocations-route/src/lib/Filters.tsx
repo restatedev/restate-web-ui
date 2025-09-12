@@ -91,11 +91,10 @@ function EditQueryTrigger({
   }
   const canChangeOperation = clause.operations.length > 1;
   const title = canChangeOperation ? (
-    clause.schema.label
+    clause.label
   ) : (
     <>
-      {clause.schema.label}{' '}
-      <span className="font-mono">{clause.operationLabel}</span>
+      {clause.label} <span className="font-mono">{clause.operationLabel}</span>
     </>
   );
 
@@ -194,7 +193,7 @@ function ValueSelector({
     }
   }
 
-  if (clause.type === 'STRING') {
+  if (clause.type === 'STRING' || clause.type === 'CUSTOM_STRING') {
     if (clause.options) {
       return (
         <DropdownMenu

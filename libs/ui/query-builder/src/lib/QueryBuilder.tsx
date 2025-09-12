@@ -119,7 +119,17 @@ export function AddQueryTrigger({
   }, []);
 
   const onAdd = useCallback(
-    (key: Key) => {
+    (key: Key, value?: string) => {
+      const customClause = items.find(
+        (item) => item.id === key && item.type === 'CUSTOM_STRING',
+      );
+      if (customClause) {
+        const newCustomClause = new QueryClause(customClause.schema, {
+          ...customClause.value,
+          fieldValue: value,
+        });
+        query?.update(key, newCustomClause);
+      }
       setNewId?.(String(key));
     },
     [setNewId],
@@ -134,6 +144,7 @@ export function AddQueryTrigger({
   if (!query) {
     return null;
   }
+
   return (
     <FormFieldMultiCombobox<QueryClause<QueryClauseType>>
       selectedList={query}
