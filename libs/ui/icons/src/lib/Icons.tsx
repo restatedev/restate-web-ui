@@ -66,6 +66,7 @@ import {
   TrendingDown,
   Bot,
   FileCode2,
+  Workflow,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from '@restate/util/styles';
@@ -174,6 +175,7 @@ export const enum IconName {
   AtSign = 'AtSign',
   Example = 'Example',
   AiExample = 'AiExample',
+  Workflow = 'Workflow',
 }
 export interface IconsProps {
   name: IconName;
@@ -267,6 +269,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.AtSign]: AtSign,
   [IconName.Example]: FileCode2,
   [IconName.AiExample]: Bot,
+  [IconName.Workflow]: Workflow,
 };
 
 const styles = tv({

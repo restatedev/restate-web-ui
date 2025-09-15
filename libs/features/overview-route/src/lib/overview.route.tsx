@@ -19,6 +19,7 @@ import { FormFieldInput } from '@restate/ui/form-field';
 import { ErrorBanner } from '@restate/ui/error';
 import { ServiceCard } from '@restate/features/service';
 import { TriggerRegisterDeploymentDialog } from '@restate/features/register-deployment';
+import { useRestateContext } from '@restate/features/restate-context';
 
 function MultipleDeploymentsPlaceholder({
   filterText,
@@ -155,7 +156,7 @@ const reactServerStyles = tv({
   base: 'flex w-fit flex-col items-center justify-center',
   variants: {
     isEmpty: {
-      true: '-mb-24 w-full flex-auto justify-center rounded-xl border bg-gray-200/50 pt-24 pb-8 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]',
+      true: '-mb-24 w-full flex-auto justify-center overflow-hidden rounded-xl border bg-gray-200/50 pt-24 pb-8 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] @tall:pt-10 @tall:pb-40',
       false:
         'top-[50vh] left-[50vw] hidden -translate-x-1/2 -translate-y-1/2 lg:fixed lg:block',
     },
@@ -175,10 +176,6 @@ const reactServerStyles = tv({
   },
 });
 
-const s = tv({
-  base: 'text-sm text-red-500',
-});
-
 // TODO: refactor layout
 function Component() {
   const {
@@ -196,6 +193,7 @@ function Component() {
 
   const [filter, setFilter] = useState('');
   const filterQuery = useDeferredValue(filter);
+  const { GettingStarted } = useRestateContext();
 
   useLayoutEffect(() => {
     let isCanceled = false;
@@ -264,7 +262,12 @@ function Component() {
         isEmpty={isEmpty}
       >
         {isEmpty && <NoDeploymentPlaceholder error={error} />}
+
+        {isEmpty && GettingStarted && (
+          <GettingStarted className="hidden @tall:block" />
+        )}
       </RestateServer>
+
       {size > 1 && (
         <MultipleDeploymentsPlaceholder
           filterText={filter}

@@ -1,3 +1,33 @@
-export function GettingStarted() {
-  return <h1>Welcome to GettingStarted!</h1>;
+import {
+  GettingStartedCard,
+  GettingStartedCardProps,
+} from './GettingStartedCard';
+
+export function GettingStarted({
+  left,
+  right,
+  middle,
+  className,
+}: {
+  left: GettingStartedCardProps;
+  right: GettingStartedCardProps;
+  middle: GettingStartedCardProps;
+  className?: string;
+}) {
+  return (
+    <div className={className}>
+      <GettingStartedCard
+        {...left}
+        className="absolute -bottom-1.5 left-1/2 translate-x-[-150%] translate-y-5 -rotate-12 has-hover:-bottom-0.5 has-hover:z-[2] has-hover:scale-110"
+      />
+      <GettingStartedCard
+        {...right}
+        className="absolute -bottom-1.5 left-1/2 translate-x-[50%] translate-y-5 rotate-12 has-hover:-bottom-0.5 has-hover:z-[2] has-hover:scale-110"
+      />
+      <GettingStartedCard
+        {...middle}
+        className="absolute -bottom-0 left-1/2 -translate-x-1/2 translate-y-0.5 rounded-b-none has-hover:bottom-1 has-hover:z-[2] has-hover:scale-110"
+      />
+    </div>
+  );
 }
