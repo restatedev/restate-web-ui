@@ -64,6 +64,8 @@ import {
   TrendingUp,
   AtSign,
   TrendingDown,
+  BotMessageSquare,
+  MessageSquareCode,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from '@restate/util/styles';
@@ -170,6 +172,8 @@ export const enum IconName {
   TrendingDown = 'TrendingDown',
   Tunnel = 'Tunnel',
   AtSign = 'AtSign',
+  Example = 'Example',
+  AiExample = 'AiExample',
 }
 export interface IconsProps {
   name: IconName;
@@ -261,6 +265,8 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.TrendingDown]: TrendingDown,
   [IconName.Tunnel]: Tunnel,
   [IconName.AtSign]: AtSign,
+  [IconName.Example]: MessageSquareCode,
+  [IconName.AiExample]: BotMessageSquare,
 };
 
 const styles = tv({
