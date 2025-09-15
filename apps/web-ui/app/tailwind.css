@@ -4,6 +4,8 @@
 @plugin "@tailwindcss/forms";
 
 @custom-variant dark (&:where(.dark, .dark *));
+@custom-variant @tall (@container (min-height: 28rem));
+
 @source "../../../libs";
 
 @layer base {

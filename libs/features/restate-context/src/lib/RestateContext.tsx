@@ -1,7 +1,6 @@
 import {
   AdminBaseURLProvider,
   APIStatusProvider,
-  Deployment,
   useHealth,
   useVersion,
 } from '@restate/data-access/admin-api';
@@ -38,6 +37,7 @@ type RestateContext = {
       url?: string,
     ) => { name: string; remoteUrl?: string; tunnelUrl: string } | undefined;
   };
+  GettingStarted?: ComponentType<{ className?: string }>;
 };
 
 const InternalRestateContext = createContext<RestateContext>({
@@ -57,6 +57,7 @@ function InternalRestateContextProvider({
   encoder,
   EncodingWaterMark,
   tunnel,
+  GettingStarted,
 }: PropsWithChildren<{
   isPending?: boolean;
   ingressUrl?: string;
@@ -69,6 +70,7 @@ function InternalRestateContextProvider({
     mini?: boolean;
   }>;
   tunnel?: RestateContext['tunnel'];
+  GettingStarted?: ComponentType<{ className?: string }>;
 }>) {
   const { isSuccess, failureCount } = useHealth({
     enabled: !isPending,
@@ -125,6 +127,7 @@ function InternalRestateContextProvider({
         EncodingWaterMark,
         refreshCodec,
         tunnel,
+        GettingStarted,
       }}
     >
       <APIStatusProvider enabled={status === 'HEALTHY'}>
@@ -144,6 +147,7 @@ export function RestateContextProvider({
   encoder = utf8ToBase64,
   EncodingWaterMark,
   tunnel,
+  GettingStarted,
 }: PropsWithChildren<{
   adminBaseUrl?: string;
   ingressUrl?: string;
@@ -161,6 +165,7 @@ export function RestateContextProvider({
     mini?: boolean;
   }>;
   tunnel?: RestateContext['tunnel'];
+  GettingStarted?: RestateContext['GettingStarted'];
 }>) {
   return (
     <AdminBaseURLProvider baseUrl={adminBaseUrl}>
@@ -172,6 +177,7 @@ export function RestateContextProvider({
         encoder={encoder}
         EncodingWaterMark={EncodingWaterMark}
         tunnel={tunnel}
+        GettingStarted={GettingStarted}
       >
         {children}
       </InternalRestateContextProvider>

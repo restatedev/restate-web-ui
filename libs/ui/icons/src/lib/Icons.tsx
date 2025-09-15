@@ -64,6 +64,9 @@ import {
   TrendingUp,
   AtSign,
   TrendingDown,
+  Bot,
+  FileCode2,
+  Workflow,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from '@restate/util/styles';
@@ -86,6 +89,7 @@ import { Typescript } from './custom-icons/Typescript';
 import { Rust } from './custom-icons/Rust';
 import { Python } from './custom-icons/Python';
 import { Tunnel } from './custom-icons/Tunnel';
+import { RestateCloud } from './custom-icons/RestateCloud';
 
 export const enum IconName {
   Settings = 'Settings',
@@ -170,6 +174,10 @@ export const enum IconName {
   TrendingDown = 'TrendingDown',
   Tunnel = 'Tunnel',
   AtSign = 'AtSign',
+  Example = 'Example',
+  AiExample = 'AiExample',
+  Workflow = 'Workflow',
+  RestateCloud = 'RestateCloud',
 }
 export interface IconsProps {
   name: IconName;
@@ -261,6 +269,10 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.TrendingDown]: TrendingDown,
   [IconName.Tunnel]: Tunnel,
   [IconName.AtSign]: AtSign,
+  [IconName.Example]: FileCode2,
+  [IconName.AiExample]: Bot,
+  [IconName.Workflow]: Workflow,
+  [IconName.RestateCloud]: RestateCloud,
 };
 
 const styles = tv({

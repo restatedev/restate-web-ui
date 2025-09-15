@@ -48,6 +48,7 @@ import {
 } from '@restate/features/service';
 import { DeploymentDetails } from '@restate/features/deployment-details';
 import { EditService, ServiceDetails } from '@restate/features/service-details';
+import { GettingStarted } from '@restate/features/getting-started';
 
 export const links: LinksFunction = () => [
   // TODO: move to the its own lib
@@ -151,6 +152,35 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
+function RestateGettingStarted({ className }: { className?: string }) {
+  return (
+    <GettingStarted
+      className={className}
+      left={{
+        title: 'AI Agents',
+        type: 'Tutorial',
+        description:
+          'Build stateful, observable AI agents that recover from failures.',
+        icon: IconName.AiExample,
+        href: 'https://docs.restate.dev/tour/ai-agents',
+      }}
+      right={{
+        title: 'Workflows',
+        type: 'Tutorial',
+        description:
+          'Build resilient workflows with familiar programming patterns.',
+        icon: IconName.Workflow,
+        href: 'https://docs.restate.dev/tour/workflows',
+      }}
+      middle={{
+        title: 'Getting started',
+        description: 'Develop and run your first Restate service',
+        icon: IconName.Restate,
+        href: 'https://docs.restate.dev/quickstart',
+      }}
+    />
+  );
+}
 function getCookieValue(name: string) {
   const cookies = document.cookie
     .split(';')
@@ -163,7 +193,10 @@ export default function App() {
   return (
     <FeatureFlags>
       <QueryProvider queryClient={queryClient}>
-        <RestateContextProvider adminBaseUrl={getCookieValue('adminBaseUrl')}>
+        <RestateContextProvider
+          adminBaseUrl={getCookieValue('adminBaseUrl')}
+          GettingStarted={RestateGettingStarted}
+        >
           <EditState>
             <LayoutOutlet zone={LayoutZone.Content}>
               <Outlet />
