@@ -41,6 +41,9 @@
       ],
       "@restate/features/edit-state": ["libs/features/edit-state/src/index.ts"],
       "@restate/features/explainers": ["libs/features/explainers/src/index.ts"],
+      "@restate/features/getting-started": [
+        "libs/features/getting-started/src/index.ts"
+      ],
       "@restate/features/health": ["libs/features/health/src/index.ts"],
       "@restate/features/introspection-route": [
         "libs/features/introspection-route/src/index.ts"
