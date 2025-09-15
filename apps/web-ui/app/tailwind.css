@@ -4,7 +4,7 @@
 @plugin "@tailwindcss/forms";
 
 @custom-variant dark (&:where(.dark, .dark *));
-@custom-variant @tall (@container (min-height: 28rem));
+@custom-variant @tall (@media (min-height: 47rem));
 
 @source "../../../libs";
 

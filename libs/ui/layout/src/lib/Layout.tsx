@@ -17,7 +17,7 @@ export function LayoutProvider({ children }: PropsWithChildren<LayoutProps>) {
       <div className="flex flex-auto flex-row 3xl:ml-[calc(-400px-2rem)] 3xl:grid 3xl:w-[calc(100%+800px+4rem)] 3xl:[grid-template-columns:400px_1fr_400px] 3xl:gap-8">
         <main
           id={ZONE_IDS[LayoutZone.Content]}
-          className="@container-[size] relative col-start-2 col-end-3 flex max-w-full min-w-0 flex-auto flex-col px-4 pt-8 pb-32"
+          className="relative col-start-2 col-end-3 flex max-w-full min-w-0 flex-auto flex-col px-4 pt-8 pb-32"
         ></main>
         <ComplementaryOutlet id={ZONE_IDS[LayoutZone.Complementary]} />
       </div>
