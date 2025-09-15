@@ -89,6 +89,7 @@ import { Typescript } from './custom-icons/Typescript';
 import { Rust } from './custom-icons/Rust';
 import { Python } from './custom-icons/Python';
 import { Tunnel } from './custom-icons/Tunnel';
+import { RestateCloud } from './custom-icons/RestateCloud';
 
 export const enum IconName {
   Settings = 'Settings',
@@ -176,6 +177,7 @@ export const enum IconName {
   Example = 'Example',
   AiExample = 'AiExample',
   Workflow = 'Workflow',
+  RestateCloud = 'RestateCloud',
 }
 export interface IconsProps {
   name: IconName;
@@ -270,6 +272,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Example]: FileCode2,
   [IconName.AiExample]: Bot,
   [IconName.Workflow]: Workflow,
+  [IconName.RestateCloud]: RestateCloud,
 };
 
 const styles = tv({
