@@ -168,6 +168,18 @@ export function isVersionQuery(
   return Array.isArray(queryKey) && queryKey[0] === '/version';
 }
 
+export function isListDeployments(
+  data: unknown,
+  query: Query<unknown, unknown, unknown>,
+): data is components['schemas']['ListDeploymentsResponse'] {
+  const { queryKey, meta } = query;
+  return (
+    Array.isArray(queryKey) &&
+    queryKey[0] === '/deployments' &&
+    meta?.method === 'get'
+  );
+}
+
 export function useRegisterDeployment(
   options?: HookMutationOptions<'/deployments', 'post'>,
 ) {
