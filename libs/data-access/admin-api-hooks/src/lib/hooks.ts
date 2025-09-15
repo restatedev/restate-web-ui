@@ -176,7 +176,7 @@ export function isListDeployments(
   return (
     Array.isArray(queryKey) &&
     queryKey[0] === '/deployments' &&
-    meta?.method === 'get'
+    meta?.['method'] === 'get'
   );
 }
 
