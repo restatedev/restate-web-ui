@@ -31,10 +31,10 @@ export function ResumeInvocation() {
   const formId = useId();
   const [searchParams, setSearchParams] = useSearchParams();
   const invocationId = searchParams.get(RESUME_INVOCATION_QUERY_PARAM);
-  const { data: invocation, isPending: isGetInvocationPending } =
-    useGetInvocation(String(invocationId), {
-      enabled: Boolean(invocationId),
-    });
+  const { data: invocation } = useGetInvocation(String(invocationId), {
+    enabled: Boolean(invocationId),
+  });
+
   const { data: listDeployments } = useListDeployments();
   const service = listDeployments?.services.get(
     String(invocation?.target_service_name),
@@ -92,7 +92,7 @@ export function ResumeInvocation() {
     const formData = new FormData(event.currentTarget);
     const deployment = formData.get('deployment');
     const isKeep = deployment === 'Keep';
-    const isLatest = deployment === 'Latest';
+    const isLatest = deployment === 'Latest' || !deployment;
 
     mutate({
       parameters: {
@@ -132,7 +132,7 @@ export function ResumeInvocation() {
             method="PATCH"
             action={`/invocations/${invocationId}/resume`}
             onSubmit={submitHandler}
-            key={String(isGetInvocationPending)}
+            key={String(invocation?.pinned_deployment_id ? 'Keep' : 'Latest')}
           >
             <FormFieldSelect
               className="mt-4 min-w-xs flex-auto basis-[calc(50%-var(--spacing)*2)] [&_button>*]:max-w-full"
@@ -143,6 +143,7 @@ export function ResumeInvocation() {
               }
               name="deployment"
               disabled={!invocation?.pinned_deployment_id}
+              required
             >
               {invocation &&
                 deployments.map(({ revision, deployment }) => {
