@@ -38,7 +38,10 @@ type RestateContext = {
     ) => { name: string; remoteUrl?: string; tunnelUrl: string } | undefined;
   };
   GettingStarted?: ComponentType<{ className?: string }>;
-  DeployOnboardingService?: ComponentType<{ className?: string }>;
+  OnboardingGuide?: ComponentType<{
+    className?: string;
+    stage: 'register-deployment' | 'open-playground' | 'view-invocations';
+  }>;
 };
 
 const InternalRestateContext = createContext<RestateContext>({
@@ -59,7 +62,7 @@ function InternalRestateContextProvider({
   EncodingWaterMark,
   tunnel,
   GettingStarted,
-  DeployOnboardingService,
+  OnboardingGuide,
 }: PropsWithChildren<{
   isPending?: boolean;
   ingressUrl?: string;
@@ -73,7 +76,10 @@ function InternalRestateContextProvider({
   }>;
   tunnel?: RestateContext['tunnel'];
   GettingStarted?: ComponentType<{ className?: string }>;
-  DeployOnboardingService?: ComponentType<{ className?: string }>;
+  OnboardingGuide?: ComponentType<{
+    className?: string;
+    stage: 'register-deployment' | 'open-playground' | 'view-invocations';
+  }>;
 }>) {
   const { isSuccess, failureCount } = useHealth({
     enabled: !isPending,
@@ -131,7 +137,7 @@ function InternalRestateContextProvider({
         refreshCodec,
         tunnel,
         GettingStarted,
-        DeployOnboardingService,
+        OnboardingGuide,
       }}
     >
       <APIStatusProvider enabled={status === 'HEALTHY'}>
@@ -152,7 +158,7 @@ export function RestateContextProvider({
   EncodingWaterMark,
   tunnel,
   GettingStarted,
-  DeployOnboardingService,
+  OnboardingGuide,
 }: PropsWithChildren<{
   adminBaseUrl?: string;
   ingressUrl?: string;
@@ -171,7 +177,10 @@ export function RestateContextProvider({
   }>;
   tunnel?: RestateContext['tunnel'];
   GettingStarted?: RestateContext['GettingStarted'];
-  DeployOnboardingService?: RestateContext['DeployOnboardingService'];
+  OnboardingGuide?: ComponentType<{
+    className?: string;
+    stage: 'register-deployment' | 'open-playground' | 'view-invocations';
+  }>;
 }>) {
   return (
     <AdminBaseURLProvider baseUrl={adminBaseUrl}>
@@ -184,7 +193,7 @@ export function RestateContextProvider({
         EncodingWaterMark={EncodingWaterMark}
         tunnel={tunnel}
         GettingStarted={GettingStarted}
-        DeployOnboardingService={DeployOnboardingService}
+        OnboardingGuide={OnboardingGuide}
       >
         {children}
       </InternalRestateContextProvider>

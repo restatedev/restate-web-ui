@@ -26,6 +26,7 @@ import { TimeoutSection } from './TimeoutSection';
 import { IngressAccessSection } from './IngressAccessSection';
 import { RetryPolicySection } from './RetryPolicy';
 import { RestateMinimumVersion } from '@restate/util/feature-flag';
+import { useRestateContext } from '@restate/features/restate-context';
 
 export function ServiceDetails() {
   return (
@@ -87,6 +88,8 @@ function ServiceContent({ service }: { service: string }) {
   const { deployments, sortedRevisions = [] } =
     listDeploymentsData?.services.get(String(service)) ?? {};
 
+  const { OnboardingGuide } = useRestateContext();
+
   return (
     <>
       <h2 className="mb-3 flex items-center gap-2 text-lg leading-6 font-medium text-gray-900">
@@ -115,6 +118,9 @@ function ServiceContent({ service }: { service: string }) {
                       service={data?.name}
                       className=""
                       variant="button"
+                      {...(data?.handlers?.length === 1 && {
+                        handler: data.handlers.at(0)?.name,
+                      })}
                     />
                   )}
                 </div>
@@ -123,6 +129,7 @@ function ServiceContent({ service }: { service: string }) {
           )}
         </div>
       </h2>
+      {OnboardingGuide && <OnboardingGuide stage="open-playground" />}
       <div className="flex flex-col gap-2">
         <Section className="mt-4">
           <SectionTitle>Handlers</SectionTitle>

@@ -83,7 +83,7 @@ function MultipleDeploymentsPlaceholder({
 }
 
 function OneDeploymentPlaceholder() {
-  const { DeployOnboardingService } = useRestateContext();
+  const { OnboardingGuide } = useRestateContext();
 
   return (
     <div className="relative flex w-full max-w-lg flex-col items-center gap-2 rounded-xl border bg-gray-200/50 p-4 text-center shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
@@ -97,14 +97,14 @@ function OneDeploymentPlaceholder() {
       </p>
       <div className="mt-4 flex gap-2">
         <TriggerRegisterDeploymentDialog />
-        {DeployOnboardingService && <DeployOnboardingService />}
+        {OnboardingGuide && <OnboardingGuide stage="register-deployment" />}
       </div>
     </div>
   );
 }
 
 function NoDeploymentPlaceholder({ error }: { error?: Error | null }) {
-  const { DeployOnboardingService } = useRestateContext();
+  const { OnboardingGuide } = useRestateContext();
 
   if (error) {
     return (
@@ -127,7 +127,7 @@ function NoDeploymentPlaceholder({ error }: { error?: Error | null }) {
       </p>
       <div className="mt-4 flex gap-2">
         <TriggerRegisterDeploymentDialog />
-        {DeployOnboardingService && <DeployOnboardingService />}
+        {OnboardingGuide && <OnboardingGuide stage="register-deployment" />}
       </div>
     </div>
   );
