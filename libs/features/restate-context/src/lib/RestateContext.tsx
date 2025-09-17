@@ -40,7 +40,11 @@ type RestateContext = {
   GettingStarted?: ComponentType<{ className?: string }>;
   OnboardingGuide?: ComponentType<{
     className?: string;
-    stage: 'register-deployment' | 'open-playground' | 'view-invocations';
+    stage:
+      | 'register-deployment'
+      | 'open-playground'
+      | 'view-invocations'
+      | 'view-invocation';
   }>;
 };
 
@@ -78,7 +82,11 @@ function InternalRestateContextProvider({
   GettingStarted?: ComponentType<{ className?: string }>;
   OnboardingGuide?: ComponentType<{
     className?: string;
-    stage: 'register-deployment' | 'open-playground' | 'view-invocations';
+    stage:
+      | 'register-deployment'
+      | 'open-playground'
+      | 'view-invocations'
+      | 'view-invocation';
   }>;
 }>) {
   const { isSuccess, failureCount } = useHealth({
@@ -179,7 +187,12 @@ export function RestateContextProvider({
   GettingStarted?: RestateContext['GettingStarted'];
   OnboardingGuide?: ComponentType<{
     className?: string;
-    stage: 'register-deployment' | 'open-playground' | 'view-invocations';
+    stage:
+      | 'register-deployment'
+      | 'open-playground'
+      | 'view-invocations'
+      | 'view-invocation'
+      | 'view-invocation';
   }>;
 }>) {
   return (

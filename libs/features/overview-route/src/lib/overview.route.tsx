@@ -92,8 +92,8 @@ function OneDeploymentPlaceholder() {
         <ServiceDeploymentExplainer>
           service deployments
         </ServiceDeploymentExplainer>{' '}
-        so Restate can register your{' '}
-        <ServiceExplainer>services</ServiceExplainer> and handlers
+        so it can register your <ServiceExplainer>services</ServiceExplainer>{' '}
+        and handlers
       </p>
       <div className="mt-4 flex gap-2">
         <TriggerRegisterDeploymentDialog />

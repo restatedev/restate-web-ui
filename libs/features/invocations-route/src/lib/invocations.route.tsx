@@ -50,6 +50,7 @@ import {
   useListInvocations,
   useListServices,
 } from '@restate/data-access/admin-api-hooks';
+import { useRestateContext } from '@restate/features/restate-context';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: 80,
@@ -387,6 +388,7 @@ function Component() {
   const totalSize = Math.ceil((data?.rows ?? []).length / PAGE_SIZE);
   const hash = 'hash' + currentPageItems.map(({ id }) => id).join('');
 
+  const { OnboardingGuide } = useRestateContext();
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdate}>
       <div className="relative flex flex-auto flex-col gap-2">
@@ -528,6 +530,8 @@ function Component() {
             </div>
           )}
         </Footnote>
+
+        {OnboardingGuide && <OnboardingGuide stage="view-invocations" />}
       </div>
       <LayoutOutlet zone={LayoutZone.Toolbar}>
         <Form

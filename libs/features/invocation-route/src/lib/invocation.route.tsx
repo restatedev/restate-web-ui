@@ -2,7 +2,7 @@ import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/ad
 import { ErrorBanner } from '@restate/ui/error';
 import { useParams, useSearchParams } from 'react-router';
 import { getRestateError, Status } from './Status';
-import { HoverTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
+import { HoverTooltip } from '@restate/ui/tooltip';
 import { DeploymentSection } from './DeploymentSection';
 import { VirtualObjectSection } from './VirtualObjectSection';
 import { KeysIdsSection } from './KeysIdsSection';
@@ -72,6 +72,8 @@ function Component() {
 
   const isLive = searchParams.get('live') === 'true' && !error;
 
+  const { OnboardingGuide } = useRestateContext();
+
   return (
     <InvocationPageProvider isInInvocationPage>
       <div className="flex flex-col">
@@ -122,6 +124,7 @@ function Component() {
             </div>
           </div>
         </div>
+        {OnboardingGuide && <OnboardingGuide stage="view-invocation" />}
 
         <div
           className={metadataContainerStyles({

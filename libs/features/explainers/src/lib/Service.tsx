@@ -7,13 +7,14 @@ export function ServiceExplainer({ children }: PropsWithChildren<unknown>) {
       title="Service"
       description={
         <p>
-          Contain the handlers which process incoming requests. Services run
-          like regular RPC services (e.g. a NodeJS app in a Docker container).
-          Services can be written in any language for which there is an SDK
-          available.
+          Your business logic lives in <strong>services:</strong> regular
+          applications that embed the Restate SDK.
+          <span className="mb-2 block" />
+          Services contain handlers (durable functions) that process requests
+          and execute business logic.
         </p>
       }
-      learnMoreHref="https://docs.restate.dev/concepts/services#services-1"
+      learnMoreHref="https://docs.restate.dev/foundations/services"
     >
       {children}
     </InlineTooltip>
