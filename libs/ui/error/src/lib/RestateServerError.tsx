@@ -58,7 +58,7 @@ export function RestateServerError({
               className="[&_button]:mt-1 [&_button]:mr-1 [&_button]:self-start"
               title={code}
               {...(code && {
-                learnMoreHref: `https://docs.restate.dev/references/errors#${code}`,
+                learnMoreHref: `https://docs.restate.dev/references/errors#${code?.toLowerCase()}`,
               })}
               description={
                 <div className="[&_li]:list-inside [&_li]:list-disc [&_ul]:mt-2">
