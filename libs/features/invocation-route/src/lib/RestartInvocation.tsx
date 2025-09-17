@@ -12,13 +12,14 @@ import { FormEvent, useId } from 'react';
 import { useRestartInvocationAsNew } from '@restate/data-access/admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui/notification';
 import { Icon, IconName } from '@restate/ui/icons';
+import { useRestateContext } from '@restate/features/restate-context';
 
 export function RestartInvocation() {
   const formId = useId();
   const [searchParams] = useSearchParams();
   const invocationId = searchParams.get(RESTART_AS_NEW_INVOCATION_QUERY_PARAM);
   const navigate = useNavigate();
-  const base = useHref('/');
+  const { baseUrl } = useRestateContext();
 
   const { mutate, isPending, error, reset } = useRestartInvocationAsNew(
     String(invocationId),
@@ -28,7 +29,7 @@ export function RestartInvocation() {
         if (newInvocationId) {
           searchParams.delete(RESTART_AS_NEW_INVOCATION_QUERY_PARAM);
           navigate({
-            pathname: `/invocations/${newInvocationId}`,
+            pathname: `${baseUrl}/invocations/${newInvocationId}`,
             search: searchParams.toString(),
           });
           showSuccessNotification(
