@@ -54,4 +54,20 @@
     }
   }
   --animate-moveAndGrow: moveAndGrow 2s ease-in-out infinite;
+
+  @keyframes pulseButton {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0
+        color-mix(in srgb, var(--color-blue-500) 25%, transparent);
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.02);
+      box-shadow: 0 0 0 4px
+        color-mix(in srgb, var(--color-blue-500) 25%, transparent);
+    }
+  }
+
+  --animate-pulseButton: pulseButton 1.5s ease-in-out infinite;
 }
