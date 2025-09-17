@@ -44,28 +44,19 @@
 
   --font-sans: InterVariable, sans-serif;
   --font-mono: JetBrainsMonoVariable, monospace;
-
-  @keyframes moveAndGrow {
-    0% {
-      right: 0px;
-    }
-    100% {
-      right: -23px;
-    }
-  }
-  --animate-moveAndGrow: moveAndGrow 2s ease-in-out infinite;
+  --pulse-color: color-mix(in srgb, var(--color-blue-500) 25%, transparent);
+  --pulse-size: 4px @keyframes moveAndGrow {0% {right: 0px;} 100%
+    {right: -23px;}} --animate-moveAndGrow: moveAndGrow 2s ease-in-out infinite;
 
   @keyframes pulseButton {
     0%,
     100% {
-      box-shadow: 0 0 0 0
-        color-mix(in srgb, var(--color-blue-500) 25%, transparent);
+      box-shadow: 0 0 0 0 var(--pulse-color);
       transform: scale(1);
     }
     50% {
       transform: scale(1.02);
-      box-shadow: 0 0 0 4px
-        color-mix(in srgb, var(--color-blue-500) 25%, transparent);
+      box-shadow: 0 0 0 var(--pulse-size) var(--pulse-color);
     }
   }
 
