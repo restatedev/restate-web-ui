@@ -20,7 +20,7 @@ export function RetentionExplainer({
         </p>
       }
       className={className}
-      learnMoreHref="https://docs.restate.dev/operate/configuration/services/"
+      learnMoreHref="https://docs.restate.dev/services/configuration#retention-of-completed-invocations"
     >
       {children}
     </InlineTooltip>

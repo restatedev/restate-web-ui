@@ -25,7 +25,7 @@ export function DeploymentProtocolCheck() {
           future releases. Please update the SDK to the latest release and
           re-register the deployment. For more information, refer to the{' '}
           <Link
-            href="https://docs.restate.dev/operate/versioning#deploying-new-service-versions"
+            href="https://docs.restate.dev/services/versioning#deploying-new-service-versions"
             target="_blank"
             rel="noopener noreferrer"
           >

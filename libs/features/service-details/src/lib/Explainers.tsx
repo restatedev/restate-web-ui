@@ -34,7 +34,7 @@ function WithLearnMore({
           rel="noopener noreferrer"
           target="_blank"
           variant="secondary"
-          href="https://docs.restate.dev/operate/configuration/services/"
+          href="https://docs.restate.dev/services/configuration"
         >
           Learn more…
         </Link>

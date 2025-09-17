@@ -81,7 +81,7 @@ export function CancelInvocation() {
                 made so far. It's a non-blocking operation, so cancellation
                 completion is not guaranteed.{' '}
                 <Link
-                  href="https://docs.restate.dev/operate/invocation/#cancelling-invocations"
+                  href="https://docs.restate.dev/services/invocation/managing-invocations#cancel"
                   variant="secondary"
                   className="text-blue-600"
                   target="_blank"

@@ -401,7 +401,7 @@ const LearnMore = () => (
       rel="noopener noreferrer"
       target="_blank"
       variant="button"
-      href="https://docs.restate.dev/guides/error-handling/#timeouts-between-restate-and-the-service"
+      href="https://docs.restate.dev/services/configuration#timeouts"
     >
       Learn more
       <Icon name={IconName.ExternalLink} className="h-[1em] w-[1em]" />

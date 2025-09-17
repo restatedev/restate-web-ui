@@ -3,7 +3,7 @@ import { ComponentProps, PropsWithChildren } from 'react';
 import type { ServiceType } from '@restate/data-access/admin-api';
 
 const TITLES: Record<ServiceType, string> = {
-  Service: 'Service',
+  Service: 'Basic Service',
   VirtualObject: 'Virtual object',
   Workflow: 'Workflow',
 };
@@ -18,9 +18,9 @@ const DESCRIPTIONS: Record<ServiceType, string> = {
 };
 
 const LEARN_MORE: Record<ServiceType, string> = {
-  Service: 'https://docs.restate.dev/concepts/services/#services-1',
-  VirtualObject: 'https://docs.restate.dev/concepts/services/#virtual-objects',
-  Workflow: 'https://docs.restate.dev/concepts/services/#workflows',
+  Service: 'https://docs.restate.dev/foundations/services#basic-service',
+  VirtualObject: 'https://docs.restate.dev/foundations/services#virtual-object',
+  Workflow: 'https://docs.restate.dev/foundations/services#workflow',
 };
 export function ServiceTypeExplainer({
   children,

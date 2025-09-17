@@ -19,7 +19,7 @@ Make sure, when updating a deployment, to assign it a new uri/arn.
 
 You can force the override using the \`"force": true\` field in the discover request, but beware that this can lead in-flight invocations to an unrecoverable error state.  
 
-See the [versioning documentation](https://docs.restate.dev/operate/versioning) for more information.`,
+See the [versioning documentation](https://docs.restate.dev/services/versioning) for more information.`,
   },
   META0005: {
     summary:
@@ -38,7 +38,7 @@ When implementing a new service revision, make sure that:
 * The service type is the same as the previous revision.
 * The new revision contains at least all the handlers of the previous revision.
 
-See the [versioning documentation](https://docs.restate.dev/operate/versioning) for more information.`,
+See the [versioning documentation](https://docs.restate.dev/services/versioning) for more information.`,
   },
   META0009: {
     summary: 'The provided subscription is invalid.',
@@ -48,7 +48,7 @@ See the [versioning documentation](https://docs.restate.dev/operate/versioning) 
 * A \`sink\` field in the format of \`service://<service_NAME>/<HANDLER_NAME>\`. When registering, service and handler should be available already in the registry, meaning they have been previously registered.
 * Additional constraints may apply depending on the sink service type.
 
-Please look at the Kafka documentation (for [TypeScript](https://docs.restate.dev/develop/ts/kafka) and [Java](https://docs.restate.dev/develop/java/kafka)) for more details on subscriptions and event handlers.`,
+Please look at the Kafka [documentation](https://docs.restate.dev/guides/kafka-quickstart#restate-kafka-quickstart) for more details on subscriptions and event handlers.`,
   },
   META0010: {
     summary:
@@ -133,7 +133,7 @@ Suggestions:
     summary: 'Cannot start Restate because the configuration cannot be parsed.',
     help: `Cannot start Restate because the configuration cannot be parsed. Check the configuration file and the environment variables provided.
 
-For a complete list of configuration options, and a sample configuration, check https://docs.restate.dev/operate/configuration`,
+For a complete list of configuration options, and a sample configuration, check https://docs.restate.dev/references/server-config`,
   },
   RT0003: {
     summary:
@@ -178,7 +178,7 @@ We suggest checking the service/deployment logs as well to get any hint on the e
     help: `A retry-able error was received from the service while processing the invocation. Restate will soon retry executing the invocation, replaying from the point where it left. Suggestions:
 
 * Check the service logs to get more info about the error cause, like the stacktrace.
-* Look at the error handling docs for more info about error handling in services (e.g. for [TypeScript](https://docs.restate.dev/develop/ts/error-handling) or [Java](https://docs.restate.dev/develop/java/error-handling)).`,
+* Look at the [error handling docs](https://docs.restate.dev/guides/error-handling#error-handling) for more info about error handling in services.`,
   },
   RT0009: {
     summary:
@@ -239,8 +239,8 @@ This indicates that the SDK was updated to a new version that dropped support fo
 Suggestions:
 
 * For in-flight invocations, downgrade the SDK version back to the previous version.
-* For new invocations, register a new deployment with a new endpoint as described in [here](https://docs.restate.dev/operate/versioning#deploying-new-service-versions).  
-* Make sure the new SDK is compatible with this runtime version, for more info check out [here](https://docs.restate.dev/operate/upgrading#service-compatibility).`,
+* For new invocations, register a new deployment with a new endpoint as described in [here](https://docs.restate.dev/services/versioning#deploying-new-service-versions).  
+* Make sure the new SDK is compatible with this runtime version, for more info check out [here](https://docs.restate.dev/server/upgrading#service-compatibility).`,
   },
   RT0016: {
     summary: `Journal mismatch detected when replaying the invocation: the handler generated a sequence of journal entries (thus context operations) that doesn't exactly match the recorded journal.`,
@@ -250,8 +250,8 @@ Suggestions:
 * A parameter passed to a \`Context\` operation is non-deterministic, for example setting a state key using a random value or the current date-time.
 * Execute a sequence of \`Context\` operations, such as calling other services, while iterating over a data structure with non-deterministic iteration order (such as sets/maps/dictionaries).
     
-For more info about service versioning, check out [here](https://docs.restate.dev/operate/versioning).
-For more info about determinism and journaling of non-deterministic operations, check out [here](https://docs.restate.dev/get_started/tour/#journaling-actions).`,
+For more info about service versioning, check out [here](https://docs.restate.dev/services/versioning).
+For more info about determinism and journaling of non-deterministic operations, check out [here](https://docs.restate.dev/foundations/actions#actions).`,
   },
   RT0017: {
     summary: `The entry cannot be processed due to a failed precondition.`,
