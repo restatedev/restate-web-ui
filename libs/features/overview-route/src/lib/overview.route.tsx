@@ -83,6 +83,8 @@ function MultipleDeploymentsPlaceholder({
 }
 
 function OneDeploymentPlaceholder() {
+  const { DeployOnboardingService } = useRestateContext();
+
   return (
     <div className="relative flex w-full max-w-lg flex-col items-center gap-2 rounded-xl border bg-gray-200/50 p-4 text-center shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
       <p className="max-w-md text-sm text-gray-500">
@@ -93,14 +95,17 @@ function OneDeploymentPlaceholder() {
         so Restate can register your{' '}
         <ServiceExplainer>services</ServiceExplainer> and handlers
       </p>
-      <div className="mt-4">
+      <div className="mt-4 flex gap-2">
         <TriggerRegisterDeploymentDialog />
+        {DeployOnboardingService && <DeployOnboardingService />}
       </div>
     </div>
   );
 }
 
 function NoDeploymentPlaceholder({ error }: { error?: Error | null }) {
+  const { DeployOnboardingService } = useRestateContext();
+
   if (error) {
     return (
       <div className="relative mt-6 flex w-full flex-col items-center gap-2">
@@ -120,8 +125,9 @@ function NoDeploymentPlaceholder({ error }: { error?: Error | null }) {
         Point Restate to your deployed services so Restate can register your{' '}
         <ServiceExplainer>services</ServiceExplainer> and handlers
       </p>
-      <div className="mt-4">
+      <div className="mt-4 flex gap-2">
         <TriggerRegisterDeploymentDialog />
+        {DeployOnboardingService && <DeployOnboardingService />}
       </div>
     </div>
   );
