@@ -97,7 +97,9 @@ function OneDeploymentPlaceholder() {
       </p>
       <div className="mt-4 flex gap-2">
         <TriggerRegisterDeploymentDialog />
-        {OnboardingGuide && <OnboardingGuide stage="register-deployment" />}
+        {OnboardingGuide && (
+          <OnboardingGuide stage="register-deployment-trigger" />
+        )}
       </div>
     </div>
   );
@@ -127,7 +129,9 @@ function NoDeploymentPlaceholder({ error }: { error?: Error | null }) {
       </p>
       <div className="mt-4 flex gap-2">
         <TriggerRegisterDeploymentDialog />
-        {OnboardingGuide && <OnboardingGuide stage="register-deployment" />}
+        {OnboardingGuide && (
+          <OnboardingGuide stage="register-deployment-trigger" />
+        )}
       </div>
     </div>
   );

@@ -85,7 +85,7 @@ function Container({
 
 export function RegistrationForm() {
   const { isEndpoint, isAdvanced, isConfirm } = useRegisterDeploymentContext();
-  const { tunnel } = useRestateContext();
+  const { tunnel, OnboardingGuide } = useRestateContext();
 
   return (
     <>
@@ -121,6 +121,15 @@ export function RegistrationForm() {
           <DeploymentProtocolCheck />
           <RegisterDeploymentResults />
         </Container>
+      )}
+      {OnboardingGuide && (
+        <OnboardingGuide
+          stage={
+            isConfirm
+              ? 'register-deployment-confirm'
+              : 'register-deployment-endpoint'
+          }
+        />
       )}
     </>
   );

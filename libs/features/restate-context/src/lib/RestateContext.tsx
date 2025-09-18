@@ -16,6 +16,16 @@ import { base64ToUtf8, utf8ToBase64 } from '@restate/util/binary';
 import { useQueryClient } from '@tanstack/react-query';
 
 export type Status = 'HEALTHY' | 'DEGRADED' | 'PENDING' | (string & {});
+type OnboardingComponent = ComponentType<{
+  className?: string;
+  stage:
+    | 'register-deployment-trigger'
+    | 'register-deployment-endpoint'
+    | 'register-deployment-confirm'
+    | 'open-playground'
+    | 'view-invocations'
+    | 'view-invocation';
+}>;
 type RestateContext = {
   status: Status;
   version?: string;
@@ -38,14 +48,7 @@ type RestateContext = {
     ) => { name: string; remoteUrl?: string; tunnelUrl: string } | undefined;
   };
   GettingStarted?: ComponentType<{ className?: string }>;
-  OnboardingGuide?: ComponentType<{
-    className?: string;
-    stage:
-      | 'register-deployment'
-      | 'open-playground'
-      | 'view-invocations'
-      | 'view-invocation';
-  }>;
+  OnboardingGuide?: OnboardingComponent;
 };
 
 const InternalRestateContext = createContext<RestateContext>({
@@ -80,14 +83,7 @@ function InternalRestateContextProvider({
   }>;
   tunnel?: RestateContext['tunnel'];
   GettingStarted?: ComponentType<{ className?: string }>;
-  OnboardingGuide?: ComponentType<{
-    className?: string;
-    stage:
-      | 'register-deployment'
-      | 'open-playground'
-      | 'view-invocations'
-      | 'view-invocation';
-  }>;
+  OnboardingGuide?: OnboardingComponent;
 }>) {
   const { isSuccess, failureCount } = useHealth({
     enabled: !isPending,
@@ -185,15 +181,7 @@ export function RestateContextProvider({
   }>;
   tunnel?: RestateContext['tunnel'];
   GettingStarted?: RestateContext['GettingStarted'];
-  OnboardingGuide?: ComponentType<{
-    className?: string;
-    stage:
-      | 'register-deployment'
-      | 'open-playground'
-      | 'view-invocations'
-      | 'view-invocation'
-      | 'view-invocation';
-  }>;
+  OnboardingGuide?: OnboardingComponent;
 }>) {
   return (
     <AdminBaseURLProvider baseUrl={adminBaseUrl}>
