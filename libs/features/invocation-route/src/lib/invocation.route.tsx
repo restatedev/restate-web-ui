@@ -1,6 +1,6 @@
 import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api-hooks';
 import { ErrorBanner } from '@restate/ui/error';
-import { useParams, useSearchParams } from 'react-router';
+import { data, useParams, useSearchParams } from 'react-router';
 import { getRestateError, Status } from './Status';
 import { HoverTooltip } from '@restate/ui/tooltip';
 import { DeploymentSection } from './DeploymentSection';
@@ -124,7 +124,12 @@ function Component() {
             </div>
           </div>
         </div>
-        {OnboardingGuide && <OnboardingGuide stage="view-invocation" />}
+        {OnboardingGuide && (
+          <OnboardingGuide
+            stage="view-invocation"
+            service={journalAndInvocationData?.target_service_name}
+          />
+        )}
 
         <div
           className={metadataContainerStyles({

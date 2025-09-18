@@ -531,7 +531,12 @@ function Component() {
           )}
         </Footnote>
 
-        {OnboardingGuide && <OnboardingGuide stage="view-invocations" />}
+        {OnboardingGuide && (
+          <OnboardingGuide
+            stage="view-invocations"
+            service={data?.rows.at(0)?.target_service_name}
+          />
+        )}
       </div>
       <LayoutOutlet zone={LayoutZone.Toolbar}>
         <Form

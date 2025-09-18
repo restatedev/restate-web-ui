@@ -25,6 +25,8 @@ type OnboardingComponent = ComponentType<{
     | 'open-playground'
     | 'view-invocations'
     | 'view-invocation';
+  endpoint?: string;
+  service?: string;
 }>;
 type RestateContext = {
   status: Status;
