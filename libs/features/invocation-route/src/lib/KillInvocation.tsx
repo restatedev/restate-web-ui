@@ -77,7 +77,7 @@ export function KillInvocation() {
                 compensation logic, potentially leaving the service in an
                 inconsistent state. Use cautiously and try other fixes first.{' '}
                 <Link
-                  href="https://docs.restate.dev/operate/invocation/#killing-invocations"
+                  href="https://docs.restate.dev/services/invocation/managing-invocations#kill"
                   variant="secondary"
                   className="text-orange-600"
                   target="_blank"

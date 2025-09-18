@@ -18,7 +18,7 @@ export function ServiceCompatibility({
           Restate SDKs follow independent versioning from the server.
         </p>
       }
-      learnMoreHref="https://docs.restate.dev/operate/upgrading/#service-compatibility"
+      learnMoreHref="https://docs.restate.dev/server/upgrading#service-compatibility"
     >
       {children}
     </InlineTooltip>

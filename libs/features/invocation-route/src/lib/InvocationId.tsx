@@ -14,6 +14,7 @@ import {
 } from '@restate/features/service';
 import { useIsInInvocationPage } from './InvocationPageContext';
 import { DEPLOYMENT_QUERY_PARAM } from '@restate/features/deployment';
+import { ONBOARDING_QUERY_PARAM } from '@restate/util/feature-flag';
 
 const styles = tv({
   base: 'relative font-mono text-zinc-600',
@@ -77,6 +78,7 @@ export function getSearchParams(
         SERVICE_QUERY_PARAM,
         DEPLOYMENT_QUERY_PARAM,
         INVOCATION_QUERY_NAME,
+        ONBOARDING_QUERY_PARAM,
         'state', // TODO resolve circular dependency
         // STATE_QUERY_NAME,
       ].includes(key)

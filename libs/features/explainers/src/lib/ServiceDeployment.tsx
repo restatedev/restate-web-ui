@@ -11,12 +11,13 @@ export function ServiceDeploymentExplainer({
       title="Service Deployment"
       description={
         <p>
-          Restate services are deployed as Service deployments. A service
-          deployment can be a Lambda function, a Kubernetes pod, a Knative
-          Service, or any other process reachable at a specific URL.
+          A (service) deployment in Restate is a specific, versioned instance of
+          your service code — whether running as an HTTP endpoint, a Lambda
+          function, or another supported environment. Each deployment is
+          immutable: once registered, its code and endpoint must not change.
         </p>
       }
-      learnMoreHref="https://docs.restate.dev/deploy/overview#restate-services"
+      learnMoreHref="https://docs.restate.dev/services/versioning#what-is-a-deployment%3F"
     >
       {children}
     </InlineTooltip>

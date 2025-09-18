@@ -71,7 +71,7 @@ function Component() {
           </h3>
           <p className="max-w-md px-4 text-sm text-gray-500">
             <Link
-              href="https://docs.restate.dev/concepts/services"
+              href="https://docs.restate.dev/foundations/services#virtual-object"
               variant="secondary"
               target="_blank"
               rel="noopener noreferrer"

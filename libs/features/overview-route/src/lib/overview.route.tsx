@@ -92,12 +92,14 @@ function OneDeploymentPlaceholder() {
         <ServiceDeploymentExplainer>
           service deployments
         </ServiceDeploymentExplainer>{' '}
-        so Restate can register your{' '}
-        <ServiceExplainer>services</ServiceExplainer> and handlers
+        so it can register your <ServiceExplainer>services</ServiceExplainer>{' '}
+        and handlers
       </p>
       <div className="mt-4 flex gap-2">
         <TriggerRegisterDeploymentDialog />
-        {OnboardingGuide && <OnboardingGuide stage="register-deployment" />}
+        {OnboardingGuide && (
+          <OnboardingGuide stage="register-deployment-trigger" />
+        )}
       </div>
     </div>
   );
@@ -127,7 +129,9 @@ function NoDeploymentPlaceholder({ error }: { error?: Error | null }) {
       </p>
       <div className="mt-4 flex gap-2">
         <TriggerRegisterDeploymentDialog />
-        {OnboardingGuide && <OnboardingGuide stage="register-deployment" />}
+        {OnboardingGuide && (
+          <OnboardingGuide stage="register-deployment-trigger" />
+        )}
       </div>
     </div>
   );
@@ -171,7 +175,7 @@ const reactServerStyles = tv({
       false: '',
     },
     isPending: {
-      true: 'fixed flex',
+      true: 'flex',
       false: '',
     },
   },
@@ -199,7 +203,7 @@ function Component() {
 
   const [filter, setFilter] = useState('');
   const filterQuery = useDeferredValue(filter);
-  const { GettingStarted } = useRestateContext();
+  const { GettingStarted, status, isNew } = useRestateContext();
 
   useLayoutEffect(() => {
     let isCanceled = false;
@@ -225,7 +229,9 @@ function Component() {
       resizeObserver.unobserve(document.body);
     };
   }, [masonryId, sortedServiceNames, filterQuery]);
-  const isEmpty = isFetched && (!deployments || deployments.size === 0);
+
+  const isEmpty =
+    (isFetched || isNew) && (!deployments || deployments.size === 0);
 
   // TODO: Handle isLoading & isError
 

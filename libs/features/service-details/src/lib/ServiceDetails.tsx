@@ -45,8 +45,6 @@ function ServiceDetailsContent() {
     },
   );
 
-  const queryClient = useQueryClient();
-
   if (!service) {
     return null;
   }
@@ -129,7 +127,9 @@ function ServiceContent({ service }: { service: string }) {
           )}
         </div>
       </h2>
-      {OnboardingGuide && <OnboardingGuide stage="open-playground" />}
+      {OnboardingGuide && (
+        <OnboardingGuide stage="open-playground" service={service} />
+      )}
       <div className="flex flex-col gap-2">
         <Section className="mt-4">
           <SectionTitle>Handlers</SectionTitle>

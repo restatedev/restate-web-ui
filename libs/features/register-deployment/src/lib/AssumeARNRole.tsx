@@ -24,7 +24,7 @@ export function AssumeARNRole() {
                   Lambda function containing the handler.
                 </p>
               }
-              learnMoreHref="https://docs.restate.dev/deploy/server/cloud#aws-lambda-services"
+              learnMoreHref="https://docs.restate.dev/cloud/connecting-services#connecting-aws-lambda-services"
             >
               Role ARN
             </InlineTooltip>

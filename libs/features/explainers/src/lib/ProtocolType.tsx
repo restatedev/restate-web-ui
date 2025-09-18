@@ -34,7 +34,7 @@ export function ProtocolTypeExplainer({
           </ul>
         </>
       }
-      learnMoreHref="https://docs.restate.dev/develop/ts/serving/#creating-a-fetch-handler"
+      learnMoreHref="https://docs.restate.dev/guides/request-lifecycle#request-response-deployment-targets"
     >
       {children}
     </InlineTooltip>

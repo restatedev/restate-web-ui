@@ -16,6 +16,18 @@ import { base64ToUtf8, utf8ToBase64 } from '@restate/util/binary';
 import { useQueryClient } from '@tanstack/react-query';
 
 export type Status = 'HEALTHY' | 'DEGRADED' | 'PENDING' | (string & {});
+type OnboardingComponent = ComponentType<{
+  className?: string;
+  stage:
+    | 'register-deployment-trigger'
+    | 'register-deployment-endpoint'
+    | 'register-deployment-confirm'
+    | 'open-playground'
+    | 'view-invocations'
+    | 'view-invocation';
+  endpoint?: string;
+  service?: string;
+}>;
 type RestateContext = {
   status: Status;
   version?: string;
@@ -38,10 +50,8 @@ type RestateContext = {
     ) => { name: string; remoteUrl?: string; tunnelUrl: string } | undefined;
   };
   GettingStarted?: ComponentType<{ className?: string }>;
-  OnboardingGuide?: ComponentType<{
-    className?: string;
-    stage: 'register-deployment' | 'open-playground' | 'view-invocations';
-  }>;
+  OnboardingGuide?: OnboardingComponent;
+  isNew?: boolean;
 };
 
 const InternalRestateContext = createContext<RestateContext>({
@@ -62,6 +72,7 @@ function InternalRestateContextProvider({
   EncodingWaterMark,
   tunnel,
   GettingStarted,
+  isNew,
   OnboardingGuide,
 }: PropsWithChildren<{
   isPending?: boolean;
@@ -76,10 +87,8 @@ function InternalRestateContextProvider({
   }>;
   tunnel?: RestateContext['tunnel'];
   GettingStarted?: ComponentType<{ className?: string }>;
-  OnboardingGuide?: ComponentType<{
-    className?: string;
-    stage: 'register-deployment' | 'open-playground' | 'view-invocations';
-  }>;
+  OnboardingGuide?: OnboardingComponent;
+  isNew?: boolean;
 }>) {
   const { isSuccess, failureCount } = useHealth({
     enabled: !isPending,
@@ -98,7 +107,7 @@ function InternalRestateContextProvider({
       ? 'DEGRADED'
       : isSuccess
         ? 'HEALTHY'
-        : 'PENDING';
+        : 'HEALTHY';
 
   const isVersionGte = useCallback(
     (targetVersion: string) => {
@@ -138,6 +147,7 @@ function InternalRestateContextProvider({
         tunnel,
         GettingStarted,
         OnboardingGuide,
+        isNew,
       }}
     >
       <APIStatusProvider enabled={status === 'HEALTHY'}>
@@ -159,6 +169,7 @@ export function RestateContextProvider({
   tunnel,
   GettingStarted,
   OnboardingGuide,
+  isNew,
 }: PropsWithChildren<{
   adminBaseUrl?: string;
   ingressUrl?: string;
@@ -177,10 +188,8 @@ export function RestateContextProvider({
   }>;
   tunnel?: RestateContext['tunnel'];
   GettingStarted?: RestateContext['GettingStarted'];
-  OnboardingGuide?: ComponentType<{
-    className?: string;
-    stage: 'register-deployment' | 'open-playground' | 'view-invocations';
-  }>;
+  OnboardingGuide?: OnboardingComponent;
+  isNew?: boolean;
 }>) {
   return (
     <AdminBaseURLProvider baseUrl={adminBaseUrl}>
@@ -194,6 +203,7 @@ export function RestateContextProvider({
         tunnel={tunnel}
         GettingStarted={GettingStarted}
         OnboardingGuide={OnboardingGuide}
+        isNew={isNew}
       >
         {children}
       </InternalRestateContextProvider>

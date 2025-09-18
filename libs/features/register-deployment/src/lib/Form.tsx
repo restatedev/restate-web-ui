@@ -84,8 +84,9 @@ function Container({
 }
 
 export function RegistrationForm() {
-  const { isEndpoint, isAdvanced, isConfirm } = useRegisterDeploymentContext();
-  const { tunnel } = useRestateContext();
+  const { isEndpoint, isAdvanced, isConfirm, endpoint } =
+    useRegisterDeploymentContext();
+  const { tunnel, OnboardingGuide } = useRestateContext();
 
   return (
     <>
@@ -121,6 +122,16 @@ export function RegistrationForm() {
           <DeploymentProtocolCheck />
           <RegisterDeploymentResults />
         </Container>
+      )}
+      {OnboardingGuide && (
+        <OnboardingGuide
+          endpoint={endpoint}
+          stage={
+            isConfirm
+              ? 'register-deployment-confirm'
+              : 'register-deployment-endpoint'
+          }
+        />
       )}
     </>
   );
@@ -164,6 +175,7 @@ function EndpointForm() {
     isDuplicate,
     shouldForce,
     updateShouldForce,
+    isOnboarding,
   } = useRegisterDeploymentContext();
   const { tunnel } = useRestateContext();
 
@@ -238,11 +250,12 @@ function EndpointForm() {
               <div className="-my-px h-full min-h-9 w-[2px] shrink-0 bg-white" />
             )}
             <FormFieldInput
-              autoFocus
+              autoFocus={!isOnboarding}
               required={!isCliTunnel}
               autoComplete="url"
               value={endpoint}
               disabled={isPending}
+              readonly={isOnboarding}
               type={isLambda ? 'text' : 'url'}
               {...(isLambda && {
                 pattern:
@@ -302,6 +315,7 @@ function EndpointForm() {
               }
               name="name"
               required
+              readonly={isOnboarding}
               className="bg-black2/[0.05] row-start-1 row-end-1 h-full flex-row justify-end gap-[2px] rounded-lg"
               onChange={(value) =>
                 updateEndpoint?.({

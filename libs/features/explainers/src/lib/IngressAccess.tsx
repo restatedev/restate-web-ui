@@ -21,7 +21,7 @@ export function IngressAccessExplainer({
         </p>
       }
       className={className}
-      learnMoreHref="https://docs.restate.dev/operate/configuration/services/"
+      learnMoreHref="https://docs.restate.dev/services/configuration#private-services"
     >
       {children}
     </InlineTooltip>

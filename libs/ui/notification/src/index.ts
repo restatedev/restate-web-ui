@@ -5,4 +5,5 @@ export {
   showPendingNotification,
   showSuccessNotification,
   showWarningNotification,
+  showTooltipNotification,
 } from './lib/queue';

@@ -18,6 +18,13 @@ import {
 } from './Context';
 import { tv } from '@restate/util/styles';
 
+const submitButtonStyles = tv({
+  base: 'flex gap-1 pr-3.5',
+  variants: {
+    isOnboarding: { true: '[&:not(:disabled)]:animate-pulseButton', false: '' },
+  },
+});
+
 function RegisterDeploymentFooter() {
   const {
     isAdvanced,
@@ -29,6 +36,7 @@ function RegisterDeploymentFooter() {
     formId,
     canSkipAdvanced,
     isLambda,
+    isOnboarding,
   } = useRegisterDeploymentContext();
   return (
     <DialogFooter>
@@ -45,9 +53,10 @@ function RegisterDeploymentFooter() {
               <SubmitButton
                 variant="primary"
                 form={formId}
-                className="flex gap-1 pr-3.5"
+                className={submitButtonStyles({ isOnboarding })}
                 name="_action"
                 value={canSkipAdvanced || isAdvanced ? 'dryRun' : 'advanced'}
+                autoFocus={isOnboarding}
               >
                 Next
                 <Icon name={IconName.ChevronRight} className="w-[1.25em]" />
@@ -60,11 +69,12 @@ function RegisterDeploymentFooter() {
                 name="_action"
                 value="register"
                 autoFocus
+                className={submitButtonStyles({ isOnboarding })}
               >
                 Confirm
               </SubmitButton>
             )}
-            {isEndpoint && canSkipAdvanced && !isLambda && (
+            {isEndpoint && canSkipAdvanced && !isLambda && !isOnboarding && (
               <SubmitButton
                 variant="secondary"
                 disabled={isPending}
@@ -72,7 +82,7 @@ function RegisterDeploymentFooter() {
                 value="advanced"
                 form={formId}
                 hideSpinner
-                className="flex gap-1 pr-3.5"
+                className={submitButtonStyles({ isOnboarding: false })}
               >
                 Advanced
                 <Icon name={IconName.ChevronRight} className="w-[1.25em]" />
@@ -117,7 +127,7 @@ export function TriggerRegisterDeploymentDialog({
           {children}
         </Link>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-3xl">
         <DeploymentRegistrationState>
           <RegistrationForm />
           <RegisterDeploymentFooter />

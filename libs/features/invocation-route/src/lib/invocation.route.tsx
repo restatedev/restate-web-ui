@@ -1,8 +1,8 @@
 import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api-hooks';
 import { ErrorBanner } from '@restate/ui/error';
-import { useParams, useSearchParams } from 'react-router';
+import { data, useParams, useSearchParams } from 'react-router';
 import { getRestateError, Status } from './Status';
-import { HoverTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
+import { HoverTooltip } from '@restate/ui/tooltip';
 import { DeploymentSection } from './DeploymentSection';
 import { VirtualObjectSection } from './VirtualObjectSection';
 import { KeysIdsSection } from './KeysIdsSection';
@@ -71,6 +71,8 @@ function Component() {
   const isWorkflow = journalAndInvocationData?.target_service_ty === 'workflow';
 
   const isLive = searchParams.get('live') === 'true' && !error;
+
+  const { OnboardingGuide } = useRestateContext();
 
   return (
     <InvocationPageProvider isInInvocationPage>
@@ -175,6 +177,12 @@ function Component() {
         </div>
 
         <div className="mt-4 flex flex-col">
+          {OnboardingGuide && (
+            <OnboardingGuide
+              stage="view-invocation"
+              service={journalAndInvocationData?.target_service_name}
+            />
+          )}
           <div className="relative rounded-2xl border bg-gray-200/50">
             <JournalV2
               invocationId={String(id)}

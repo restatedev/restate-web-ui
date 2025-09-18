@@ -193,7 +193,7 @@ export function Entry({
               Update to the latest SDK to see more details in your journal.
               Check the{' '}
               <Link
-                href="https://docs.restate.dev/operate/versioning#deploying-new-service-versions"
+                href="https://docs.restate.dev/services/versioning#deploying-new-service-versions"
                 target="_blank"
                 rel="noopener noreferrer"
               >

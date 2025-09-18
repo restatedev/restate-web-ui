@@ -3,24 +3,24 @@ import { ComponentProps, PropsWithChildren } from 'react';
 import type { ServiceType } from '@restate/data-access/admin-api';
 
 const TITLES: Record<ServiceType, string> = {
-  Service: 'Service',
-  VirtualObject: 'Virtual object',
+  Service: 'Basic Service',
+  VirtualObject: 'Virtual Object',
   Workflow: 'Workflow',
 };
 
 const DESCRIPTIONS: Record<ServiceType, string> = {
   Service:
-    'Services expose a collection of durably executed handlers. These handlers operate independently, can be invoked concurrently, and do not have access to the Restate K/V store.',
+    'Basic Services group handlers into callable units that run to completion with Durable Execution. They scale horizontally with high concurrency and have no shared state, making them ideal for API calls, sagas, background jobs, parallel tasks, and ETL operations.',
   VirtualObject:
-    'Virtual objects expose a set of durably executed handlers with access to K/V state stored in Restate. To ensure consistent writes to the state, Restate provides concurrency guarantees for Virtual Objects.',
+    'Virtual Objects are stateful entities identified by a unique key. They use Durable Execution, retain key/value state across requests, and scale consistently by allowing only one writer per key while supporting concurrent reads and execution across different keys.',
   Workflow:
-    'A workflow is a special type of Virtual Object that can be used to implement a set of steps that need to be executed durably. Workflows have additional capabilities such as signaling, querying, additional invocation options',
+    'Workflows orchestrate multi-step processes with guaranteed once per ID execution. The run handler executes exactly once per workflow ID, while other handlers can run concurrently to signal, query state, or wait for events, making workflows ideal for approvals, onboarding, multi-step transactions, and complex orchestration.',
 };
 
 const LEARN_MORE: Record<ServiceType, string> = {
-  Service: 'https://docs.restate.dev/concepts/services/#services-1',
-  VirtualObject: 'https://docs.restate.dev/concepts/services/#virtual-objects',
-  Workflow: 'https://docs.restate.dev/concepts/services/#workflows',
+  Service: 'https://docs.restate.dev/foundations/services#basic-service',
+  VirtualObject: 'https://docs.restate.dev/foundations/services#virtual-object',
+  Workflow: 'https://docs.restate.dev/foundations/services#workflow',
 };
 export function ServiceTypeExplainer({
   children,
