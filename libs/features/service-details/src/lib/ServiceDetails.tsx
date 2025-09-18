@@ -45,8 +45,6 @@ function ServiceDetailsContent() {
     },
   );
 
-  const queryClient = useQueryClient();
-
   if (!service) {
     return null;
   }

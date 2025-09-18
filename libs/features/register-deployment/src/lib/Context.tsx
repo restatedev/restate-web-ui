@@ -1,4 +1,4 @@
-import { Form } from 'react-router';
+import { Form, useNavigate, useSearchParams } from 'react-router';
 import {
   createContext,
   FormEvent,
@@ -20,6 +20,9 @@ import {
   useRegisterDeployment,
 } from '@restate/data-access/admin-api-hooks';
 import { useRestateContext } from '@restate/features/restate-context';
+import { REGISTER_DEPLOYMENT_QUERY } from './constant';
+import { ONBOARDING_QUERY_PARAM } from '@restate/util/feature-flag';
+import { SERVICE_QUERY_PARAM } from '@restate/features/service';
 
 type NavigateToAdvancedAction = {
   type: 'NavigateToAdvancedAction';
@@ -84,6 +87,7 @@ interface DeploymentRegistrationContextInterface {
     index: number;
   }>;
   isPending?: boolean;
+  isOnboarding?: boolean;
   isDuplicate?: boolean;
   shouldForce?: boolean;
   services?: adminApi.components['schemas']['ServiceMetadata'][];
@@ -113,6 +117,7 @@ type State = Pick<
   | 'useHttp11'
   | 'shouldForce'
   | 'isDuplicate'
+  | 'isOnboarding'
 >;
 
 function reducer(state: State, action: Action): State {
@@ -139,16 +144,31 @@ function reducer(state: State, action: Action): State {
   }
 }
 
-const initialState: DeploymentRegistrationContextInterface = {
-  stage: 'endpoint',
-  isLambda: false,
-  isTunnel: false,
-  error: null,
-  endpoint: '',
-  tunnelName: '',
+const initialState: (
+  searchParams?: URLSearchParams,
+) => DeploymentRegistrationContextInterface = (searchParams) => {
+  const endpoint = searchParams?.get(REGISTER_DEPLOYMENT_QUERY);
+  const isOnboarding = searchParams?.get(ONBOARDING_QUERY_PARAM) === 'true';
+  const isEndpointValid =
+    endpoint?.startsWith('http') || endpoint?.startsWith('arn');
+
+  return {
+    stage: 'endpoint',
+    isLambda: false,
+    isTunnel: false,
+    error: null,
+    endpoint: '',
+    tunnelName: '',
+    isOnboarding: false,
+    ...(isEndpointValid && {
+      endpoint: String(endpoint),
+      isOnboarding,
+      isLambda: endpoint?.startsWith('arn'),
+    }),
+  };
 };
 const DeploymentRegistrationContext =
-  createContext<DeploymentRegistrationContextInterface>(initialState);
+  createContext<DeploymentRegistrationContextInterface>(initialState());
 
 function withoutTrailingSlash(url?: string) {
   return url?.endsWith('/') ? url.slice(0, -1) : url;
@@ -156,9 +176,10 @@ function withoutTrailingSlash(url?: string) {
 
 export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
   const id = useId();
-  const { tunnel } = useRestateContext();
+  const { tunnel, baseUrl } = useRestateContext();
   const formRef = useRef<HTMLFormElement>(null);
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [searchParams] = useSearchParams();
+  const [state, dispatch] = useReducer(reducer, searchParams, initialState);
   const additionalHeaders = useListData<{
     key: string;
     value: string;
@@ -209,6 +230,8 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
     },
     [],
   );
+
+  const navigate = useNavigate();
   const { refetch, data: listDeployments } = useListDeployments();
   const { mutate, isPending, error, reset } = useRegisterDeployment({
     onSuccess(data) {
@@ -227,6 +250,12 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
             <code>{data?.id}</code> has been successfully registered.
           </>,
         );
+        if (state.isOnboarding && data && data?.services.length > 0) {
+          navigate({
+            pathname: `${baseUrl}/overview`,
+            search: `?${SERVICE_QUERY_PARAM}=${data?.services.at(0)?.name}&${ONBOARDING_QUERY_PARAM}=true`,
+          });
+        }
       } else {
         goToConfirm();
       }
@@ -399,6 +428,7 @@ export function useRegisterDeploymentContext() {
     sdk_version,
     isTunnel,
     tunnelName,
+    isOnboarding,
   } = useContext(DeploymentRegistrationContext);
   const isEndpoint = stage === 'endpoint';
   const isAdvanced = stage === 'advanced';
@@ -410,7 +440,8 @@ export function useRegisterDeploymentContext() {
       additionalHeaders.items.some(({ key, value }) => key && value),
   );
   const canSkipAdvanced =
-    !hasAdditionalHeaders && !useHttp11 && !assumeRoleArn && !isLambda;
+    isOnboarding ||
+    (!hasAdditionalHeaders && !useHttp11 && !assumeRoleArn && !isLambda);
 
   return {
     isAdvanced,
@@ -440,5 +471,6 @@ export function useRegisterDeploymentContext() {
     canSkipAdvanced,
     isTunnel,
     tunnelName,
+    isOnboarding,
   };
 }
