@@ -203,7 +203,8 @@ function Component() {
 
   const [filter, setFilter] = useState('');
   const filterQuery = useDeferredValue(filter);
-  const { GettingStarted } = useRestateContext();
+  const { GettingStarted, status } = useRestateContext();
+  const isRestatePending = status === 'PENDING';
 
   useLayoutEffect(() => {
     let isCanceled = false;
@@ -229,7 +230,9 @@ function Component() {
       resizeObserver.unobserve(document.body);
     };
   }, [masonryId, sortedServiceNames, filterQuery]);
-  const isEmpty = isFetched && (!deployments || deployments.size === 0);
+
+  const isEmpty =
+    (isFetched || isRestatePending) && (!deployments || deployments.size === 0);
 
   // TODO: Handle isLoading & isError
 
