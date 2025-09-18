@@ -124,12 +124,6 @@ function Component() {
             </div>
           </div>
         </div>
-        {OnboardingGuide && (
-          <OnboardingGuide
-            stage="view-invocation"
-            service={journalAndInvocationData?.target_service_name}
-          />
-        )}
 
         <div
           className={metadataContainerStyles({
@@ -183,6 +177,12 @@ function Component() {
         </div>
 
         <div className="mt-4 flex flex-col">
+          {OnboardingGuide && (
+            <OnboardingGuide
+              stage="view-invocation"
+              service={journalAndInvocationData?.target_service_name}
+            />
+          )}
           <div className="relative rounded-2xl border bg-gray-200/50">
             <JournalV2
               invocationId={String(id)}
