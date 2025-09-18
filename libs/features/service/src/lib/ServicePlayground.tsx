@@ -40,7 +40,7 @@ import { useOnboarding } from '@restate/util/feature-flag';
 const styles = tv({
   base: 'flex items-center gap-1 rounded-md px-1.5 py-0.5 font-sans text-xs font-normal',
   variants: {
-    isHighlighted: { true: 'animate-pulseButton', false: '' },
+    isOnboarding: { true: 'animate-pulseButton', false: '' },
   },
 });
 export function ServicePlaygroundTrigger({
@@ -57,7 +57,7 @@ export function ServicePlaygroundTrigger({
   variant?: ComponentProps<typeof Link>['variant'];
 }) {
   const { data } = useServiceOpenApi(service);
-  const isHighlighted = useOnboarding();
+  const isOnboarding = useOnboarding();
 
   if (!data) {
     return null;
@@ -69,7 +69,8 @@ export function ServicePlaygroundTrigger({
       href={`?${SERVICE_PLAYGROUND_QUERY_PARAM}=${service}${
         handler ? `#/operations/${handler}` : ''
       }`}
-      className={styles({ className, isHighlighted })}
+      className={styles({ className, isOnboarding })}
+      autoFocus={isOnboarding}
     >
       Playground <Icon name={IconName.ExternalLink} className="h-3 w-3" />
     </Link>
