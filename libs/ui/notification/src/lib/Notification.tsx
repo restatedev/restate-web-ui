@@ -64,6 +64,12 @@ const styles = tv({
         icon: '',
         close: '',
       },
+      tooltip: {
+        base: 'border border-zinc-900/80 bg-zinc-800/90 text-gray-300 shadow-[inset_0_0.5px_0_0_var(--color-gray-500)]! shadow-gray-500 drop-shadow-xl',
+        content: '',
+        icon: '',
+        close: '',
+      },
     },
   },
 });
@@ -88,7 +94,7 @@ function NotificationIcon({
       return <Spinner className={className} />;
 
     default:
-      break;
+      return null;
   }
 }
 

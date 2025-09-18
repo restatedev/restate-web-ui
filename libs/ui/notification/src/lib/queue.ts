@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 
 export interface NotificationContent {
   content: ReactNode;
-  type: 'error' | 'pending' | 'warning' | 'info' | 'success';
+  type: 'error' | 'pending' | 'warning' | 'info' | 'success' | 'tooltip';
 }
 
 export const notificationQueue = new ToastQueue<NotificationContent>({
@@ -13,6 +13,7 @@ export const notificationQueue = new ToastQueue<NotificationContent>({
 
 const PRIORITIES: Record<NotificationContent['type'], number> = {
   error: 500,
+  tooltip: 500,
   info: 100,
   pending: 400,
   success: 200,
@@ -42,3 +43,4 @@ export const showInfoNotification = showNotificationWithType('info');
 export const showSuccessNotification = showNotificationWithType('success');
 export const showPendingNotification = showNotificationWithType('pending');
 export const showWarningNotification = showNotificationWithType('warning');
+export const showTooltipNotification = showNotificationWithType('tooltip');
