@@ -51,6 +51,7 @@ type RestateContext = {
   };
   GettingStarted?: ComponentType<{ className?: string }>;
   OnboardingGuide?: OnboardingComponent;
+  isNew?: boolean;
 };
 
 const InternalRestateContext = createContext<RestateContext>({
@@ -71,6 +72,7 @@ function InternalRestateContextProvider({
   EncodingWaterMark,
   tunnel,
   GettingStarted,
+  isNew,
   OnboardingGuide,
 }: PropsWithChildren<{
   isPending?: boolean;
@@ -86,6 +88,7 @@ function InternalRestateContextProvider({
   tunnel?: RestateContext['tunnel'];
   GettingStarted?: ComponentType<{ className?: string }>;
   OnboardingGuide?: OnboardingComponent;
+  isNew?: boolean;
 }>) {
   const { isSuccess, failureCount } = useHealth({
     enabled: !isPending,
@@ -104,7 +107,7 @@ function InternalRestateContextProvider({
       ? 'DEGRADED'
       : isSuccess
         ? 'HEALTHY'
-        : 'PENDING';
+        : 'HEALTHY';
 
   const isVersionGte = useCallback(
     (targetVersion: string) => {
@@ -144,6 +147,7 @@ function InternalRestateContextProvider({
         tunnel,
         GettingStarted,
         OnboardingGuide,
+        isNew,
       }}
     >
       <APIStatusProvider enabled={status === 'HEALTHY'}>
@@ -165,6 +169,7 @@ export function RestateContextProvider({
   tunnel,
   GettingStarted,
   OnboardingGuide,
+  isNew,
 }: PropsWithChildren<{
   adminBaseUrl?: string;
   ingressUrl?: string;
@@ -184,6 +189,7 @@ export function RestateContextProvider({
   tunnel?: RestateContext['tunnel'];
   GettingStarted?: RestateContext['GettingStarted'];
   OnboardingGuide?: OnboardingComponent;
+  isNew?: boolean;
 }>) {
   return (
     <AdminBaseURLProvider baseUrl={adminBaseUrl}>
@@ -197,6 +203,7 @@ export function RestateContextProvider({
         tunnel={tunnel}
         GettingStarted={GettingStarted}
         OnboardingGuide={OnboardingGuide}
+        isNew={isNew}
       >
         {children}
       </InternalRestateContextProvider>
