@@ -43,7 +43,7 @@ export function SubSection({
         </div>
       </SectionContent>
       {footer && (
-        <span className="mt-2 block px-3 pb-2 text-xs font-normal text-gray-500 normal-case">
+        <span className="mt-2 block px-3 pb-2 text-xs font-normal text-gray-500 normal-case [&:not(:has(*))]:hidden">
           {footer}
         </span>
       )}

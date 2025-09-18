@@ -14,6 +14,7 @@ interface RadioGroupProps {
   value?: string;
   disabled?: boolean;
   onChange?: AriaRadioGroupProps['onChange'];
+  readonly?: AriaRadioGroupProps['isReadOnly'];
 }
 
 const styles = tv({
@@ -24,6 +25,7 @@ export function RadioGroup({
   required,
   className,
   disabled,
+  readonly,
   ...props
 }: PropsWithChildren<RadioGroupProps>) {
   return (
@@ -32,6 +34,7 @@ export function RadioGroup({
       isRequired={required}
       className={styles({ className })}
       isDisabled={disabled}
+      isReadOnly={readonly}
     >
       {children}
       <FormFieldError />
