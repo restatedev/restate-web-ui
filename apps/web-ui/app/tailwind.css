@@ -30,6 +30,14 @@
   *[tabindex='0']:not(:has(*)) {
     outline: none;
   }
+
+  :root {
+    --pulse-size: 4px;
+  }
+
+  *:focus-visible {
+    --pulse-size: 8px;
+  }
 }
 
 @theme {
@@ -45,7 +53,6 @@
   --font-sans: InterVariable, sans-serif;
   --font-mono: JetBrainsMonoVariable, monospace;
   --pulse-color: color-mix(in srgb, var(--color-blue-500) 25%, transparent);
-  --pulse-size: 4px;
 
   @keyframes moveAndGrow {
     0% {

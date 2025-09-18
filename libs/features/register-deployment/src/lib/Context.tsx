@@ -144,11 +144,13 @@ function reducer(state: State, action: Action): State {
   }
 }
 
-const initialState: (
-  searchParams?: URLSearchParams,
-) => DeploymentRegistrationContextInterface = (searchParams) => {
-  const endpoint = searchParams?.get(REGISTER_DEPLOYMENT_QUERY);
-  const isOnboarding = searchParams?.get(ONBOARDING_QUERY_PARAM) === 'true';
+const initialState: (args?: {
+  searchParams?: URLSearchParams;
+  deployments?: adminApi.Deployment[];
+}) => DeploymentRegistrationContextInterface = (args) => {
+  const endpoint = args?.searchParams?.get(REGISTER_DEPLOYMENT_QUERY);
+  const isOnboarding =
+    args?.searchParams?.get(ONBOARDING_QUERY_PARAM) === 'true';
   const isEndpointValid =
     endpoint?.startsWith('http') || endpoint?.startsWith('arn');
 
@@ -164,6 +166,12 @@ const initialState: (
       endpoint: String(endpoint),
       isOnboarding,
       isLambda: endpoint?.startsWith('arn'),
+      isDuplicate: args?.deployments?.some(
+        (deployment) =>
+          endpoint &&
+          withoutTrailingSlash(getEndpoint(deployment)) ===
+            withoutTrailingSlash(endpoint),
+      ),
     }),
   };
 };
@@ -179,7 +187,16 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
   const { tunnel, baseUrl } = useRestateContext();
   const formRef = useRef<HTMLFormElement>(null);
   const [searchParams] = useSearchParams();
-  const [state, dispatch] = useReducer(reducer, searchParams, initialState);
+  const { refetch, data: listDeployments } = useListDeployments();
+
+  const [state, dispatch] = useReducer(
+    reducer,
+    {
+      searchParams,
+      deployments: Array.from(listDeployments?.deployments.values() ?? []),
+    },
+    initialState,
+  );
   const additionalHeaders = useListData<{
     key: string;
     value: string;
@@ -232,7 +249,6 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
   );
 
   const navigate = useNavigate();
-  const { refetch, data: listDeployments } = useListDeployments();
   const { mutate, isPending, error, reset } = useRegisterDeployment({
     onSuccess(data) {
       updateServices({

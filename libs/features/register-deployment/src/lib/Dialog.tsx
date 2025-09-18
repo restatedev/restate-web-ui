@@ -19,7 +19,7 @@ import {
 import { tv } from '@restate/util/styles';
 
 const submitButtonStyles = tv({
-  base: 'flex gap-1 pr-3.5 focus:[--pulse-size:6px]',
+  base: 'flex gap-1 pr-3.5',
   variants: {
     isOnboarding: { true: '[&:not(:disabled)]:animate-pulseButton', false: '' },
   },
