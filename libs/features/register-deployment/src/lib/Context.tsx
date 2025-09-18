@@ -21,7 +21,10 @@ import {
 } from '@restate/data-access/admin-api-hooks';
 import { useRestateContext } from '@restate/features/restate-context';
 import { REGISTER_DEPLOYMENT_QUERY } from './constant';
-import { ONBOARDING_QUERY_PARAM } from '@restate/util/feature-flag';
+import {
+  ONBOARDING_QUERY_PARAM,
+  useOnboarding,
+} from '@restate/util/feature-flag';
 import { SERVICE_QUERY_PARAM } from '@restate/features/service';
 
 type NavigateToAdvancedAction = {
@@ -87,7 +90,6 @@ interface DeploymentRegistrationContextInterface {
     index: number;
   }>;
   isPending?: boolean;
-  isOnboarding?: boolean;
   isDuplicate?: boolean;
   shouldForce?: boolean;
   services?: adminApi.components['schemas']['ServiceMetadata'][];
@@ -117,7 +119,6 @@ type State = Pick<
   | 'useHttp11'
   | 'shouldForce'
   | 'isDuplicate'
-  | 'isOnboarding'
 >;
 
 function reducer(state: State, action: Action): State {
@@ -161,10 +162,8 @@ const initialState: (args?: {
     error: null,
     endpoint: '',
     tunnelName: '',
-    isOnboarding: false,
     ...(isEndpointValid && {
       endpoint: String(endpoint),
-      isOnboarding,
       isLambda: endpoint?.startsWith('arn'),
       isDuplicate: args?.deployments?.some(
         (deployment) =>
@@ -215,6 +214,7 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
   const goToConfirm = useCallback(() => {
     dispatch({ type: 'NavigateToConfirmAction' });
   }, []);
+  const isOnboarding = useOnboarding();
 
   const updateServices = useCallback(
     ({
@@ -266,7 +266,7 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
             <code>{data?.id}</code> has been successfully registered.
           </>,
         );
-        if (state.isOnboarding && data && data?.services.length > 0) {
+        if (isOnboarding && data && data?.services.length > 0) {
           navigate({
             pathname: `${baseUrl}/overview`,
             search: `?${SERVICE_QUERY_PARAM}=${data?.services.at(0)?.name}&${ONBOARDING_QUERY_PARAM}=true`,
@@ -444,11 +444,12 @@ export function useRegisterDeploymentContext() {
     sdk_version,
     isTunnel,
     tunnelName,
-    isOnboarding,
   } = useContext(DeploymentRegistrationContext);
   const isEndpoint = stage === 'endpoint';
   const isAdvanced = stage === 'advanced';
   const isConfirm = stage === 'confirm';
+
+  const isOnboarding = useOnboarding();
 
   const hasAdditionalHeaders = Boolean(
     additionalHeaders &&
