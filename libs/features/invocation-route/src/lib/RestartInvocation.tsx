@@ -5,7 +5,7 @@ import {
   QueryDialog,
 } from '@restate/ui/dialog';
 import { RESTART_AS_NEW_INVOCATION_QUERY_PARAM } from './constants';
-import { Form, useHref, useNavigate, useSearchParams } from 'react-router';
+import { Form, useNavigate, useSearchParams } from 'react-router';
 import { Button, SubmitButton } from '@restate/ui/button';
 import { ErrorBanner } from '@restate/ui/error';
 import { FormEvent, useId } from 'react';
