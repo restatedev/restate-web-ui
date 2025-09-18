@@ -150,10 +150,11 @@ const initialState: (args?: {
   deployments?: adminApi.Deployment[];
 }) => DeploymentRegistrationContextInterface = (args) => {
   const endpoint = args?.searchParams?.get(REGISTER_DEPLOYMENT_QUERY);
-  const isOnboarding =
-    args?.searchParams?.get(ONBOARDING_QUERY_PARAM) === 'true';
   const isEndpointValid =
-    endpoint?.startsWith('http') || endpoint?.startsWith('arn');
+    endpoint?.startsWith('http') ||
+    endpoint?.startsWith('arn') ||
+    endpoint?.startsWith('tunnel://');
+  const isTunnel = endpoint?.startsWith('tunnel://');
 
   return {
     stage: 'endpoint',
@@ -163,7 +164,7 @@ const initialState: (args?: {
     endpoint: '',
     tunnelName: '',
     ...(isEndpointValid && {
-      endpoint: String(endpoint),
+      endpoint: isTunnel ? '' : String(endpoint),
       isLambda: endpoint?.startsWith('arn'),
       isDuplicate: args?.deployments?.some(
         (deployment) =>
@@ -171,6 +172,8 @@ const initialState: (args?: {
           withoutTrailingSlash(getEndpoint(deployment)) ===
             withoutTrailingSlash(endpoint),
       ),
+      isTunnel,
+      tunnelName: isTunnel ? String(endpoint) : '',
     }),
   };
 };
