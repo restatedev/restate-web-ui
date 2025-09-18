@@ -175,7 +175,7 @@ const reactServerStyles = tv({
       false: '',
     },
     isPending: {
-      true: 'fixed flex',
+      true: 'flex',
       false: '',
     },
   },
