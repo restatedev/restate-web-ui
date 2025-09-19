@@ -17,6 +17,7 @@ import {
   useRegisterDeploymentContext,
 } from './Context';
 import { tv } from '@restate/util/styles';
+import { useRestateContext } from '@restate/features/restate-context';
 
 const submitButtonStyles = tv({
   base: 'flex gap-1 pr-3.5',
@@ -106,7 +107,9 @@ function RegisterDeploymentFooter() {
   );
 }
 
-const triggerStyles = tv({ base: 'flex items-center gap-2 px-3' });
+const triggerStyles = tv({
+  base: 'flex items-center gap-2 px-3 disabled:cursor-progress',
+});
 export function TriggerRegisterDeploymentDialog({
   children = 'Register deployment',
   variant = 'secondary-button',
@@ -115,6 +118,7 @@ export function TriggerRegisterDeploymentDialog({
   variant?: ComponentProps<typeof Link>['variant'];
   className?: string;
 }>) {
+  const { status } = useRestateContext();
   return (
     <QueryDialog query={REGISTER_DEPLOYMENT_QUERY}>
       <DialogTrigger>
@@ -122,6 +126,7 @@ export function TriggerRegisterDeploymentDialog({
           variant={variant}
           className={triggerStyles({ className })}
           href={`?${REGISTER_DEPLOYMENT_QUERY}=true`}
+          disabled={status === 'PENDING'}
         >
           <Icon name={IconName.Plus} className="h-4 w-4" />
           {children}
