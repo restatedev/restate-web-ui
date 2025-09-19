@@ -107,7 +107,9 @@ function RegisterDeploymentFooter() {
   );
 }
 
-const triggerStyles = tv({ base: 'flex items-center gap-2 px-3' });
+const triggerStyles = tv({
+  base: 'flex items-center gap-2 px-3 disabled:cursor-progress',
+});
 export function TriggerRegisterDeploymentDialog({
   children = 'Register deployment',
   variant = 'secondary-button',
