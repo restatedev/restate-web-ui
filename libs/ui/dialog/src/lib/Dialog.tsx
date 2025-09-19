@@ -22,7 +22,8 @@ export function Dialog({
 export function QueryDialog({
   children,
   query,
-}: PropsWithChildren<{ query: string }>) {
+  onClose,
+}: PropsWithChildren<{ query: string; onClose?: VoidFunction }>) {
   const [searchParams, setSearchParams] = useSearchParams();
   const isOpen = Boolean(searchParams.has(query));
 
@@ -31,6 +32,7 @@ export function QueryDialog({
       isOpen={isOpen}
       onOpenChange={(isOpen) => {
         if (!isOpen) {
+          onClose?.();
           setSearchParams(
             (prev) => {
               if (prev.getAll(query).length <= 1) {

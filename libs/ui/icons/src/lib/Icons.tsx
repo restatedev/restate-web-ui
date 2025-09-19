@@ -67,6 +67,7 @@ import {
   Bot,
   FileCode2,
   Workflow,
+  Users,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from '@restate/util/styles';
@@ -178,6 +179,7 @@ export const enum IconName {
   AiExample = 'AiExample',
   Workflow = 'Workflow',
   RestateCloud = 'RestateCloud',
+  Users = 'Users',
 }
 export interface IconsProps {
   name: IconName;
@@ -273,6 +275,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.AiExample]: Bot,
   [IconName.Workflow]: Workflow,
   [IconName.RestateCloud]: RestateCloud,
+  [IconName.Users]: Users,
 };
 
 const styles = tv({
