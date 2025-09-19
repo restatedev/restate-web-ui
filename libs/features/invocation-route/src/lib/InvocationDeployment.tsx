@@ -51,8 +51,8 @@ export function InvocationDeployment({
           )}
       </div>
     ) : (
-      <div className="gap-1.5 truncate font-mono text-xs text-zinc-600">
-        <div className="flex min-w-0 items-center gap-[0.5ch] truncate py-0.5 font-sans text-xs text-zinc-500">
+      <div className="gap-1.5 truncate px-1.5 font-mono text-xs text-zinc-600">
+        <div className="flex h-9 min-w-0 items-center gap-[0.5ch] truncate py-0.5 font-sans text-xs text-zinc-500">
           <div className="min-w-[5ch] flex-auto basis-[5ch]">
             <TruncateWithTooltip copyText={deploymentId}>
               {deploymentId}
