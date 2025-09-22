@@ -120,7 +120,7 @@ export function Actions({
               href={`?${PURGE_INVOCATION_QUERY_PARAM}=${invocation.id}`}
             >
               <Icon name={IconName.Trash} className="h-3.5 w-3.5 opacity-80" />
-              Delete…
+              Purge…
             </DropdownItem>
           )}
         </>
@@ -160,7 +160,7 @@ export function Actions({
           : isRestateAsNewSupported
             ? 'Restart as new…'
             : isCompleted
-              ? 'Delete…'
+              ? 'Purge…'
               : 'Cancel…'}
       </Link>
     </SplitButton>

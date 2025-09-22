@@ -8,7 +8,6 @@ import { KILL_INVOCATION_QUERY_PARAM } from './constants';
 import { Form, useSearchParams } from 'react-router';
 import { Button, SubmitButton } from '@restate/ui/button';
 import { ErrorBanner } from '@restate/ui/error';
-import { FormFieldInput } from '@restate/ui/form-field';
 import { FormEvent, useId } from 'react';
 import { useKillInvocation } from '@restate/data-access/admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui/notification';
@@ -73,9 +72,10 @@ export function KillInvocation() {
                 name={IconName.TriangleAlert}
               />
               <span className="block">
-                Killing an invocation stops all calls in its call tree and skips
-                compensation logic, potentially leaving the service in an
-                inconsistent state. Use cautiously and try other fixes first.{' '}
+                Killing immediately stops all calls in the invocation tree{' '}
+                <strong>without executing compensation logic</strong>. This may
+                leave your service in an inconsistent state. Only use as a last
+                resort after trying other fixes.{' '}
                 <Link
                   href="https://docs.restate.dev/services/invocation/managing-invocations#kill"
                   variant="secondary"
@@ -94,26 +94,6 @@ export function KillInvocation() {
             action={`/invocations/${invocationId}`}
             onSubmit={submitHandler}
           >
-            <p className="mt-2 text-sm text-gray-500">
-              Please confirm to proceed or close to keep the Invocation.
-            </p>
-            <FormFieldInput
-              autoFocus
-              required
-              pattern="kill"
-              name="confirm"
-              className="mt-2"
-              placeholder='Type "kill" to confirm'
-              errorMessage={(errors) => {
-                const isMisMatch =
-                  errors.validationDetails.patternMismatch &&
-                  !errors.validationDetails.valueMissing;
-                if (isMisMatch) {
-                  return 'Type "kill" to confirm';
-                }
-                return errors.validationErrors;
-              }}
-            />
             <DialogFooter>
               <div className="flex flex-col gap-2">
                 {error && <ErrorBanner errors={[error]} />}

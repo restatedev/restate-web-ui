@@ -8,10 +8,11 @@ import { PURGE_INVOCATION_QUERY_PARAM } from './constants';
 import { Form, useSearchParams } from 'react-router';
 import { Button, SubmitButton } from '@restate/ui/button';
 import { ErrorBanner } from '@restate/ui/error';
-import { FormFieldInput } from '@restate/ui/form-field';
 import { FormEvent, useId } from 'react';
 import { usePurgeInvocation } from '@restate/data-access/admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui/notification';
+import { Icon, IconName } from '@restate/ui/icons';
+import { Link } from '@restate/ui/link';
 
 export function PurgeInvocation() {
   const formId = useId();
@@ -54,15 +55,35 @@ export function PurgeInvocation() {
       <DialogContent className="max-w-lg">
         <div className="flex flex-col gap-2">
           <h3 className="text-lg leading-6 font-medium text-gray-900">
-            Delete Invocation
+            Purge Invocation
           </h3>
           <div className="flex flex-col gap-2 text-sm text-gray-500">
             <p>
-              Are you sure you want to delete{' '}
+              Are you sure you want to purge{' '}
               <code className="inline-block rounded-md bg-red-50 p-0.5 text-red-700 ring-red-600/10">
                 {invocationId}
               </code>
               ?
+            </p>
+            <p className="mt-2 flex gap-2 rounded-xl bg-blue-50 p-3 text-0.5xs text-blue-600">
+              <Icon
+                className="h-5 w-5 shrink-0 fill-blue-600 text-blue-100"
+                name={IconName.Info}
+              />
+              <span className="block">
+                After an invocation completes, it will be retained by Restate
+                for some time, in order to introspect it and, in case of
+                idempotent requests, to perform deduplication.{' '}
+                <Link
+                  href="https://docs.restate.dev/services/invocation/managing-invocations#cancel"
+                  variant="secondary"
+                  className="text-blue-600"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Learn more…
+                </Link>
+              </span>
             </p>
           </div>
           <Form
@@ -71,26 +92,6 @@ export function PurgeInvocation() {
             action={`/invocations/${invocationId}`}
             onSubmit={submitHandler}
           >
-            <p className="mt-2 text-sm text-gray-500">
-              Please confirm to proceed or close to keep the Invocation.
-            </p>
-            <FormFieldInput
-              autoFocus
-              required
-              pattern="delete"
-              name="confirm"
-              className="mt-2"
-              placeholder='Type "delete" to confirm'
-              errorMessage={(errors) => {
-                const isMisMatch =
-                  errors.validationDetails.patternMismatch &&
-                  !errors.validationDetails.valueMissing;
-                if (isMisMatch) {
-                  return 'Type "delete" to confirm';
-                }
-                return errors.validationErrors;
-              }}
-            />
             <DialogFooter>
               <div className="flex flex-col gap-2">
                 {error && <ErrorBanner errors={[error]} />}

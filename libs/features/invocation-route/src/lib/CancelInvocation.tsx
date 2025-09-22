@@ -8,7 +8,6 @@ import { CANCEL_INVOCATION_QUERY_PARAM } from './constants';
 import { Form, useSearchParams } from 'react-router';
 import { Button, SubmitButton } from '@restate/ui/button';
 import { ErrorBanner } from '@restate/ui/error';
-import { FormFieldInput } from '@restate/ui/form-field';
 import { FormEvent, useId } from 'react';
 import { useCancelInvocation } from '@restate/data-access/admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui/notification';
@@ -77,9 +76,11 @@ export function CancelInvocation() {
                 name={IconName.Info}
               />
               <span className="block">
-                Canceling an invocation frees resources and rolls back changes
-                made so far. It's a non-blocking operation, so cancellation
-                completion is not guaranteed.{' '}
+                Cancellation frees held resources, cooperates with your handler
+                code to roll back changes, and allows proper cleanup. It is
+                non-blocking, so the call may return before cleanup finishes. In
+                rare cases, cancellation may not take effect, retry the
+                operation if needed.{' '}
                 <Link
                   href="https://docs.restate.dev/services/invocation/managing-invocations#cancel"
                   variant="secondary"
@@ -98,26 +99,6 @@ export function CancelInvocation() {
             action={`/invocations/${invocationId}`}
             onSubmit={submitHandler}
           >
-            <p className="mt-2 text-sm text-gray-500">
-              Please confirm to proceed or close to keep the Invocation.
-            </p>
-            <FormFieldInput
-              autoFocus
-              required
-              pattern="cancel"
-              name="confirm"
-              className="mt-2"
-              placeholder='Type "cancel" to confirm'
-              errorMessage={(errors) => {
-                const isMisMatch =
-                  errors.validationDetails.patternMismatch &&
-                  !errors.validationDetails.valueMissing;
-                if (isMisMatch) {
-                  return 'Type "cancel" to confirm';
-                }
-                return errors.validationErrors;
-              }}
-            />
             <DialogFooter>
               <div className="flex flex-col gap-2">
                 {error && <ErrorBanner errors={[error]} />}
