@@ -52,6 +52,11 @@ export function InternalTooltipContent({
 >) {
   return (
     <AriaTooltip
+      ref={(el) => {
+        setTimeout(() => {
+          el?.parentElement?.removeAttribute('inert');
+        });
+      }}
       {...props}
       offset={offset}
       crossOffset={crossOffset}

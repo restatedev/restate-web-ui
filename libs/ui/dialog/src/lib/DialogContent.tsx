@@ -98,7 +98,14 @@ export function DialogContent({
   variant = 'modal',
 }: PropsWithChildren<DialogContentProps>) {
   return (
-    <AriaModalOverlay className={overlayStyles({ variant })} isDismissable>
+    <AriaModalOverlay
+      className={overlayStyles({ variant })}
+      isDismissable
+      shouldCloseOnInteractOutside={(el) => {
+        const tooltip = el.closest('[role=tooltip]');
+        return !tooltip;
+      }}
+    >
       <AriaModal
         isDismissable
         className={composeRenderProps(className, (className, renderProps) =>

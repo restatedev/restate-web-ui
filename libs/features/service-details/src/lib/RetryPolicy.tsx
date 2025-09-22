@@ -27,7 +27,7 @@ export function RetryPolicySection({
       <SectionTitle className="flex items-center">Retry policy</SectionTitle>
       <div className="flex flex-col">
         <SubSection
-          value={data?.retry_policy.max_attempts}
+          value={data?.retry_policy.max_attempts ?? 'No limit'}
           label={
             <RetryMaxAttemptsExplainer variant="indicator-button">
               Max attempts
