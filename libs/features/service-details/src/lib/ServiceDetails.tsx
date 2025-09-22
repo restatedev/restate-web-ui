@@ -27,6 +27,7 @@ import { IngressAccessSection } from './IngressAccessSection';
 import { RetryPolicySection } from './RetryPolicy';
 import { RestateMinimumVersion } from '@restate/util/feature-flag';
 import { useRestateContext } from '@restate/features/restate-context';
+import { AdvancedSection } from './Advanced';
 
 export function ServiceDetails() {
   return (
@@ -184,6 +185,7 @@ function ServiceContent({ service }: { service: string }) {
         <RestateMinimumVersion minVersion="1.4.5">
           <RetryPolicySection serviceDetails={data} isPending={isPending} />
         </RestateMinimumVersion>
+        <AdvancedSection serviceDetails={data} isPending={isPending} />
       </div>
     </>
   );
