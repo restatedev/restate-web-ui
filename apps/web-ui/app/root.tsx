@@ -158,23 +158,25 @@ function RestateGettingStarted({ className }: { className?: string }) {
       className={className}
       left={{
         title: 'AI Agents',
+        type: 'Tutorial',
         description:
           'Build stateful, observable AI agents that recover from failures.',
         icon: IconName.AiExample,
-        href: 'https://github.com/restatedev/ai-examples',
+        href: 'https://docs.restate.dev/tour/ai-agents',
       }}
       right={{
-        title: 'Examples',
+        title: 'Workflows',
+        type: 'Tutorial',
         description:
-          'A collection of examples that illustrate how to use Restate to solve common application challenges',
-        icon: IconName.Example,
-        href: 'https://github.com/restatedev/examples',
+          'Build resilient workflows with familiar programming patterns.',
+        icon: IconName.Workflow,
+        href: 'https://docs.restate.dev/tour/workflows',
       }}
       middle={{
         title: 'Getting started',
         description: 'Develop and run your first Restate service',
         icon: IconName.Restate,
-        href: 'https://docs.restate.dev/get_started/quickstart/',
+        href: 'https://docs.restate.dev/quickstart',
       }}
     />
   );

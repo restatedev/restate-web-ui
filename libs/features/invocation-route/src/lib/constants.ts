@@ -5,3 +5,4 @@ export const PURGE_INVOCATION_QUERY_PARAM = 'purge-invocation';
 export const RESTART_AS_NEW_INVOCATION_QUERY_PARAM = 'restart-new-invocation';
 export const RESUME_INVOCATION_QUERY_PARAM = 'resume-invocation';
 export const RETRY_NOW_INVOCATION_QUERY_PARAM = 'retry-now-invocation';
+export const LIVE_JOURNAL = 'live';

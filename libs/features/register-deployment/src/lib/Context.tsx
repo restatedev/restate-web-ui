@@ -173,7 +173,7 @@ const initialState: (args?: {
             withoutTrailingSlash(endpoint),
       ),
       isTunnel,
-      tunnelName: isTunnel ? String(endpoint) : '',
+      tunnelName: isTunnel ? String(endpoint)?.replace('tunnel://', '') : '',
     }),
   };
 };

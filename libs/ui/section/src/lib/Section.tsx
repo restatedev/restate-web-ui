@@ -3,6 +3,7 @@ import { tv } from '@restate/util/styles';
 
 interface SectionProps {
   className?: string;
+  id?: string;
 }
 
 const styles = tv({
@@ -11,8 +12,13 @@ const styles = tv({
 export function Section({
   children,
   className,
+  id,
 }: PropsWithChildren<SectionProps>) {
-  return <section className={styles({ className })}>{children}</section>;
+  return (
+    <section className={styles({ className })} id={id}>
+      {children}
+    </section>
+  );
 }
 
 interface SectionTitleProps {

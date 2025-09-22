@@ -12,6 +12,10 @@ const styles = tv({
 export function InvocationIdCell({ invocation }: CellProps) {
   const isOnboarding = useOnboarding();
   return (
-    <InvocationId id={invocation.id} className={styles({ isOnboarding })} />
+    <InvocationId
+      id={invocation.id}
+      className={styles({ isOnboarding })}
+      isLive
+    />
   );
 }
