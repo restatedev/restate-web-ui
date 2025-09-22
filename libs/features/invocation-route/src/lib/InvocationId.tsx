@@ -4,7 +4,7 @@ import { HoverTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Link } from '@restate/ui/link';
 import { Invocation } from '@restate/data-access/admin-api';
 import { tv } from '@restate/util/styles';
-import { INVOCATION_QUERY_NAME } from './constants';
+import { INVOCATION_QUERY_NAME, LIVE_JOURNAL } from './constants';
 import { useActiveSidebarParam } from '@restate/ui/layout';
 import { useLocation } from 'react-router';
 import { useRestateContext } from '@restate/features/restate-context';
@@ -69,6 +69,7 @@ const styles = tv({
 export function getSearchParams(
   search: string,
   excludingInvocationId?: string,
+  isLive?: boolean,
 ) {
   const searchParams = new URLSearchParams(search);
   Array.from(searchParams.keys()).forEach((key) => {
@@ -88,6 +89,9 @@ export function getSearchParams(
     if (key === INVOCATION_QUERY_NAME && excludingInvocationId) {
       searchParams.delete(key, excludingInvocationId);
     }
+    if (isLive) {
+      searchParams.set(LIVE_JOURNAL, 'true');
+    }
   });
   return '?' + searchParams.toString();
 }
@@ -95,10 +99,12 @@ export function InvocationId({
   id,
   className,
   size = 'default',
+  isLive = false,
 }: {
   id: Invocation['id'];
   className?: string;
   size?: 'sm' | 'default' | 'icon' | 'md';
+  isLive?: boolean;
 }) {
   const linkRef = useRef<HTMLAnchorElement>(null);
   const { base, icon, text, link, container, linkIcon } = styles({ size });
@@ -140,7 +146,7 @@ export function InvocationId({
         href: `?${INVOCATION_QUERY_NAME}=${id}`,
       })}
       {...(!openInSidebar && {
-        href: `${baseUrl}/invocations/${id}${getSearchParams(location.search)}`,
+        href: `${baseUrl}/invocations/${id}${getSearchParams(location.search, undefined, isLive)}`,
       })}
       aria-label={id}
       variant="secondary"
