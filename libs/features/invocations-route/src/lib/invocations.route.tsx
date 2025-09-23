@@ -386,8 +386,7 @@ function Component() {
   );
 
   const totalSize = Math.ceil((data?.rows ?? []).length / PAGE_SIZE);
-  const hash =
-    'hash' + dataUpdatedAt + currentPageItems.map(({ id }) => id).join('');
+  const hash = 'hash' + currentPageItems.map(({ id }) => id).join('');
 
   const { OnboardingGuide } = useRestateContext();
   return (
