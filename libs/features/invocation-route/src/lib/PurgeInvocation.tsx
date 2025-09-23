@@ -101,6 +101,7 @@ export function PurgeInvocation() {
                       variant="secondary"
                       className="flex-auto"
                       disabled={isPending}
+                      autoFocus
                     >
                       Close
                     </Button>
@@ -110,7 +111,7 @@ export function PurgeInvocation() {
                     form={formId}
                     className="flex-auto"
                   >
-                    Delete
+                    Purge
                   </SubmitButton>
                 </div>
               </div>
