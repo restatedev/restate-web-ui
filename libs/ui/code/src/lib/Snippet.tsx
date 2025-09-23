@@ -78,6 +78,7 @@ const snippetCopyStyles = tv({
 export function SnippetCopy({
   className,
   copyText,
+  children,
 }: PropsWithChildren<SnippetCopyProps>) {
   const [isCopied, setIsCopied] = useState(false);
 
@@ -93,6 +94,7 @@ export function SnippetCopy({
         }, 1000);
       }}
     >
+      {children}
       {isCopied ? (
         <Icon name={IconName.Check} />
       ) : (

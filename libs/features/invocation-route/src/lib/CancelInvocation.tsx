@@ -108,6 +108,7 @@ export function CancelInvocation() {
                       variant="secondary"
                       className="flex-auto"
                       disabled={isPending}
+                      autoFocus
                     >
                       Close
                     </Button>
