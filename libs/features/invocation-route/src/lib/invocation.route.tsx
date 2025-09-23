@@ -75,6 +75,9 @@ function Component() {
 
   const { OnboardingGuide } = useRestateContext();
 
+  const invocationsSearchParams = new URLSearchParams(searchParams);
+  invocationsSearchParams.delete(LIVE_JOURNAL);
+
   return (
     <InvocationPageProvider isInInvocationPage>
       <div className="flex flex-col">
@@ -82,7 +85,7 @@ function Component() {
           <Link
             className="flex items-center gap-1 text-sm text-gray-500"
             variant="secondary"
-            href={`${baseUrl}/invocations${window.location.search}`}
+            href={`${baseUrl}/invocations?${invocationsSearchParams.toString()}`}
           >
             <Icon name={IconName.ArrowLeft} className="mt-0.5 h-4 w-4" />{' '}
             Invocations
