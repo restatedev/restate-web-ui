@@ -3,6 +3,11 @@ import type { editor } from 'monaco-editor';
 import { Editor } from '@restate/ui/editor';
 import { Ellipsis, Spinner } from '@restate/ui/loading';
 import { useDecode } from '@restate/data-access/admin-api-hooks';
+import { tv } from '@restate/util/styles';
+
+const styles = tv({
+  base: 'max-w-full',
+});
 
 export function Value({
   value,
@@ -32,7 +37,7 @@ export function Value({
           value={decodedValue}
           editorRef={editorRef}
           readonly
-          className={className}
+          className={styles({ className })}
         />
       )}
     </div>
