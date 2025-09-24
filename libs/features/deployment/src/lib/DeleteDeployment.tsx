@@ -141,7 +141,6 @@ export function DeleteDeployment() {
             </DialogFooter>
           </Form>
         </div>
-        <div className="h-10 bg-red-100" />
         {OnboardingGuide && <OnboardingGuide stage="delete-deployment" />}
       </DialogContent>
     </QueryDialog>
