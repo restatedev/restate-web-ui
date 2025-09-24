@@ -110,6 +110,7 @@ function RegisterDeploymentFooter() {
 const triggerStyles = tv({
   base: 'flex items-center gap-2 px-3 disabled:cursor-progress',
 });
+
 export function TriggerRegisterDeploymentDialog({
   children = 'Register deployment',
   variant = 'secondary-button',
@@ -120,18 +121,21 @@ export function TriggerRegisterDeploymentDialog({
 }>) {
   const { status } = useRestateContext();
   return (
+    <Link
+      variant={variant}
+      className={triggerStyles({ className })}
+      href={`?${REGISTER_DEPLOYMENT_QUERY}=true`}
+      disabled={status === 'PENDING'}
+    >
+      <Icon name={IconName.Plus} className="h-4 w-4" />
+      {children}
+    </Link>
+  );
+}
+
+export function RegisterDeploymentDialog() {
+  return (
     <QueryDialog query={REGISTER_DEPLOYMENT_QUERY}>
-      <DialogTrigger>
-        <Link
-          variant={variant}
-          className={triggerStyles({ className })}
-          href={`?${REGISTER_DEPLOYMENT_QUERY}=true`}
-          disabled={status === 'PENDING'}
-        >
-          <Icon name={IconName.Plus} className="h-4 w-4" />
-          {children}
-        </Link>
-      </DialogTrigger>
       <DialogContent className="max-w-3xl">
         <DeploymentRegistrationState>
           <RegistrationForm />

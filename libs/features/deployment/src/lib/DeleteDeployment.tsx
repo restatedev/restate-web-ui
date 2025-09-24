@@ -19,6 +19,7 @@ import {
   useListDeployments,
 } from '@restate/data-access/admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui/notification';
+import { useRestateContext } from '@restate/features/restate-context';
 
 export function DeleteDeployment() {
   const formId = useId();
@@ -32,6 +33,8 @@ export function DeleteDeployment() {
   const [deploymentEndpoint, setDeploymentEndpoint] = useState(
     getEndpoint(deployment),
   );
+  const { OnboardingGuide } = useRestateContext();
+
   if (
     deployment &&
     (!deploymentEndpoint || deploymentEndpoint !== getEndpoint(deployment))
@@ -138,6 +141,8 @@ export function DeleteDeployment() {
             </DialogFooter>
           </Form>
         </div>
+        <div className="h-10 bg-red-100" />
+        {OnboardingGuide && <OnboardingGuide stage="delete-deployment" />}
       </DialogContent>
     </QueryDialog>
   );
