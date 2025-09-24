@@ -49,6 +49,7 @@ import {
 import { DeploymentDetails } from '@restate/features/deployment-details';
 import { EditService, ServiceDetails } from '@restate/features/service-details';
 import { GettingStarted } from '@restate/features/getting-started';
+import { RegisterDeploymentDialog } from '@restate/features/register-deployment';
 
 export const links: LinksFunction = () => [
   // TODO: move to the its own lib
@@ -281,6 +282,7 @@ export default function App() {
             <StatePanel />
             <EditService />
             <InvocationActions />
+            <RegisterDeploymentDialog />
             <Support />
           </EditState>
         </RestateContextProvider>
