@@ -44,7 +44,7 @@ export function QueryDialog({
             await new Promise((r) =>
               setTimeout(() => {
                 r(true);
-              }, 50),
+              }, 200),
             );
 
             const current = new URLSearchParams(window.location.search);
