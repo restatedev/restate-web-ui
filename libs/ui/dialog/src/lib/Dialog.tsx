@@ -48,21 +48,18 @@ export function QueryDialog({
             );
             onClose?.();
 
-            setSearchParams(
-              (old) => {
-                const prev = onCloseQueryParam(old);
-                if (prev.getAll(query).length <= 1) {
-                  prev.delete(query);
-                  return prev;
-                } else {
-                  const value = prev.get(query);
-                  return new URLSearchParams(
-                    prev.toString().replace(`${query}=${value}`, ''),
-                  );
-                }
-              },
-              { preventScrollReset: true },
-            );
+            const current = new URLSearchParams(window.location.search);
+            let currentWithUpdate = onCloseQueryParam(current);
+            if (currentWithUpdate.getAll(query).length <= 1) {
+              currentWithUpdate.delete(query);
+            } else {
+              const value = currentWithUpdate.get(query);
+              currentWithUpdate = new URLSearchParams(
+                currentWithUpdate.toString().replace(`${query}=${value}`, ''),
+              );
+            }
+
+            setSearchParams(currentWithUpdate, { preventScrollReset: true });
             await new Promise((r) =>
               setTimeout(() => {
                 r(true);
