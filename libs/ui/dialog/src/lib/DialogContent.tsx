@@ -32,7 +32,7 @@ const modalStyles = tv({
       true: 'duration-200 ease-out animate-in',
     },
     isExiting: {
-      true: 'duration-200 ease-in animate-out',
+      true: 'duration-200 ease-out animate-out',
     },
     variant: {
       sheet: 'h-[95vh] w-screen rounded-t-[1.125rem] border-b-0 lg:w-[95vw]',
