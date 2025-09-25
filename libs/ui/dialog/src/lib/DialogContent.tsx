@@ -15,7 +15,7 @@ const overlayStyles = tv({
       true: 'duration-200 ease-out animate-in fade-in',
     },
     isExiting: {
-      true: 'duration-100 ease-in animate-out fade-out',
+      true: 'duration-200 ease-in animate-out fade-out',
     },
     variant: {
       sheet: 'items-end justify-center px-0 pt-4 pb-0 lg:px-4',
