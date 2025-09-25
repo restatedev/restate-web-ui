@@ -63,6 +63,11 @@ export function QueryDialog({
               },
               { preventScrollReset: true },
             );
+            await new Promise((r) =>
+              setTimeout(() => {
+                r(true);
+              }, 250),
+            );
           });
         }
       }}
