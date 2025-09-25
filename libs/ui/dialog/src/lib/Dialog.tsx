@@ -44,9 +44,8 @@ export function QueryDialog({
             await new Promise((r) =>
               setTimeout(() => {
                 r(true);
-              }, 250),
+              }, 50),
             );
-            onClose?.();
 
             const current = new URLSearchParams(window.location.search);
             let currentWithUpdate = onCloseQueryParam(current);
@@ -59,7 +58,9 @@ export function QueryDialog({
               );
             }
 
+            onClose?.();
             setSearchParams(currentWithUpdate, { preventScrollReset: true });
+
             await new Promise((r) =>
               setTimeout(() => {
                 r(true);
