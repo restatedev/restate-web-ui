@@ -6,7 +6,17 @@ import {
 } from '@restate/ui/form-field';
 import { IconName, Icon } from '@restate/ui/icons';
 import { useRegisterDeploymentContext } from './Context';
+import { tv } from '@restate/util/styles';
 
+const deleteStyles = tv({
+  base: 'p1',
+  variants: {
+    showDelete: {
+      true: '',
+      false: 'invisible',
+    },
+  },
+});
 export function AdditionalHeaders() {
   const { additionalHeaders: list } = useRegisterDeploymentContext();
 
@@ -20,58 +30,61 @@ export function AdditionalHeaders() {
           Headers added to the register/invoke requests to the deployment.
         </span>
       </FormFieldLabel>
-      {list?.items.map((item) => (
-        <div key={item.index} className="flex w-full items-center gap-1.5">
-          <FormFieldInput
-            name="key"
-            className="basis-1/3"
-            value={item.key}
-            placeholder="Header name"
-            onChange={(key) =>
-              list.update(item.index, {
-                ...item,
-                key,
-              })
-            }
-          />
-          :
-          <FormFieldInput
-            name="value"
-            className="flex-auto"
-            value={item.value}
-            placeholder="Header value"
-            onChange={(value) =>
-              list.update(item.index, {
-                ...item,
-                value,
-              })
-            }
-          />
-          <Button
-            onClick={() => {
-              if (list.items.length === 1) {
+      {list?.items.map((item) => {
+        const showDelete = !(
+          list.items.length === 1 &&
+          list.getItem(item.index)?.key === '' &&
+          list.getItem(item.index)?.value === ''
+        );
+
+        return (
+          <div key={item.index} className="flex w-full items-center gap-1.5">
+            <FormFieldInput
+              name="key"
+              className="basis-1/3"
+              value={item.key}
+              placeholder="Header name"
+              onChange={(key) =>
                 list.update(item.index, {
-                  key: '',
-                  value: '',
-                  index: item.index,
-                });
-              } else {
-                list.remove(item.index);
+                  ...item,
+                  key,
+                })
               }
-            }}
-            variant="icon"
-            className={
-              list.items.length === 1 &&
-              list.getItem(item.index)?.key === '' &&
-              list.getItem(item.index)?.value === ''
-                ? 'invisible p-1'
-                : 'p-1'
-            }
-          >
-            <Icon name={IconName.Trash} className="m-1 h-5 w-5" />
-          </Button>
-        </div>
-      ))}
+            />
+            :
+            <FormFieldInput
+              name="value"
+              className="flex-auto"
+              value={item.value}
+              placeholder="Header value"
+              onChange={(value) =>
+                list.update(item.index, {
+                  ...item,
+                  value,
+                })
+              }
+            />
+            <Button
+              onClick={() => {
+                if (list.items.length === 1) {
+                  list.update(item.index, {
+                    key: '',
+                    value: '',
+                    index: item.index,
+                  });
+                } else {
+                  list.remove(item.index);
+                }
+              }}
+              variant="icon"
+              disabled={!showDelete}
+              className={deleteStyles({ showDelete })}
+            >
+              <Icon name={IconName.Trash} className="m-1 h-5 w-5" />
+            </Button>
+          </div>
+        );
+      })}
       <Button
         onClick={() =>
           list?.append({
