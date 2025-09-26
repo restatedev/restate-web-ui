@@ -12,7 +12,7 @@ export const fieldBorderStyles = tv({
   variants: {
     isFocusWithin: {
       false: 'border-gray-300 dark:border-zinc-500',
-      true: 'rounded-[0.625rem] border-gray-600 outline-offset-8 dark:border-zinc-300',
+      true: 'rounded-[0.625rem] border-gray-600 outline-offset-8 outline-transparent dark:border-zinc-300',
     },
     isInvalid: {
       true: 'border-red-600 dark:border-red-600 forced-colors:border-[Mark]',
