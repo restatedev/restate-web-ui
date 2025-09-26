@@ -18,6 +18,7 @@ import {
 } from './Context';
 import { tv } from '@restate/util/styles';
 import { useRestateContext } from '@restate/features/restate-context';
+import { ONBOARDING_QUERY_PARAM } from '@restate/util/feature-flag';
 
 const submitButtonStyles = tv({
   base: 'flex gap-1 pr-3.5',
@@ -133,9 +134,17 @@ export function TriggerRegisterDeploymentDialog({
   );
 }
 
+function removeOnboarding(prev: URLSearchParams) {
+  prev.delete(ONBOARDING_QUERY_PARAM);
+  return prev;
+}
+
 export function RegisterDeploymentDialog() {
   return (
-    <QueryDialog query={REGISTER_DEPLOYMENT_QUERY}>
+    <QueryDialog
+      query={REGISTER_DEPLOYMENT_QUERY}
+      onCloseQueryParam={removeOnboarding}
+    >
       <DialogContent className="max-w-3xl">
         <DeploymentRegistrationState>
           <RegistrationForm />

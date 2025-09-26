@@ -21,11 +21,7 @@ import {
 } from '@restate/data-access/admin-api-hooks';
 import { useRestateContext } from '@restate/features/restate-context';
 import { REGISTER_DEPLOYMENT_QUERY } from './constant';
-import {
-  ONBOARDING_QUERY_PARAM,
-  useOnboarding,
-} from '@restate/util/feature-flag';
-import { SERVICE_QUERY_PARAM } from '@restate/features/service';
+import { useOnboarding } from '@restate/util/feature-flag';
 
 type NavigateToAdvancedAction = {
   type: 'NavigateToAdvancedAction';
@@ -269,12 +265,6 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
             <code>{data?.id}</code> has been successfully registered.
           </>,
         );
-        if (isOnboarding && data && data?.services.length > 0) {
-          navigate({
-            pathname: `${baseUrl}/overview`,
-            search: `?${SERVICE_QUERY_PARAM}=${data?.services.at(0)?.name}&${ONBOARDING_QUERY_PARAM}=true`,
-          });
-        }
       } else {
         goToConfirm();
       }

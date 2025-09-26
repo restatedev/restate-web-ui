@@ -20,6 +20,7 @@ import {
 } from '@restate/data-access/admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui/notification';
 import { useRestateContext } from '@restate/features/restate-context';
+import { ONBOARDING_QUERY_PARAM } from '@restate/util/feature-flag';
 
 export function DeleteDeployment() {
   const formId = useId();
@@ -49,6 +50,7 @@ export function DeleteDeployment() {
           (old) => {
             old.delete(DELETE_DEPLOYMENT_QUERY_PARAM);
             old.delete(DEPLOYMENT_QUERY_PARAM);
+            old.delete(ONBOARDING_QUERY_PARAM);
             return old;
           },
           { preventScrollReset: true },
