@@ -95,7 +95,7 @@ function OneDeploymentPlaceholder() {
         so it can register your <ServiceExplainer>services</ServiceExplainer>{' '}
         and handlers
       </p>
-      <div className="mt-4 flex gap-2">
+      <div className="mt-4 flex flex-wrap justify-center gap-2">
         <TriggerRegisterDeploymentDialog />
         {OnboardingGuide && (
           <OnboardingGuide stage="register-deployment-trigger" />
