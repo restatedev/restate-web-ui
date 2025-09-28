@@ -9,12 +9,12 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { Link } from '@restate/ui/link';
 
 const containerStyles = tv({
-  base: 'relative',
+  base: 'relative transition-all',
   variants: {
     isOpen: {
       true: '',
       false:
-        'h-8 overflow-hidden mask-[linear-gradient(to_top,transparent_0rem,black_100%)] opacity-60 [&_code]:-mb-2',
+        'max-h-8 overflow-hidden mask-[linear-gradient(to_top,transparent_0rem,black_100%)] opacity-60 [&_code]:-mb-2',
     },
   },
 });
