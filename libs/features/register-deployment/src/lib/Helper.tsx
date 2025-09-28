@@ -97,7 +97,7 @@ export function Helper({
             : 'view-template-http'
       }
       endpoint={endpoint}
-      className="-mx-6 mt-2 px-6"
+      className="-mx-6 mt-2 -mb-6 px-6"
     />
   ) : null;
   if (isOnboarding || !endpoint) {
