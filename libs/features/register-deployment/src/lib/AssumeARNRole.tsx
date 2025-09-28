@@ -17,22 +17,7 @@ export function AssumeARNRole({ className }: { className?: string }) {
       onChange={updateAssumeRoleArn}
       label={
         <>
-          <span slot="title">
-            <InlineTooltip
-              title="Assumed role"
-              variant="indicator-button"
-              description={
-                <p>
-                  This role must exist in your account, it must trust Restate
-                  Cloud to assume it, and it must have permission to invoke the
-                  Lambda function containing the handler.
-                </p>
-              }
-              learnMoreHref="https://docs.restate.dev/cloud/connecting-services#connecting-aws-lambda-services"
-            >
-              Role ARN
-            </InlineTooltip>
-          </span>
+          <span slot="title">Role ARN</span>
           <span slot="description" className="block text-0.5xs leading-5">
             AWS role ARN that Restate can assume to invoke the Lambda function
           </span>

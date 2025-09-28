@@ -53,6 +53,8 @@ type RestateContext = {
   GettingStarted?: ComponentType<{ className?: string }>;
   OnboardingGuide?: OnboardingComponent;
   isNew?: boolean;
+  identityKey?: { value: string; url?: string };
+  awsRolePolicy?: { value: string; url?: string };
 };
 
 const InternalRestateContext = createContext<RestateContext>({
@@ -75,6 +77,8 @@ function InternalRestateContextProvider({
   GettingStarted,
   isNew,
   OnboardingGuide,
+  awsRolePolicy,
+  identityKey,
 }: PropsWithChildren<{
   isPending?: boolean;
   ingressUrl?: string;
@@ -90,6 +94,8 @@ function InternalRestateContextProvider({
   GettingStarted?: ComponentType<{ className?: string }>;
   OnboardingGuide?: OnboardingComponent;
   isNew?: boolean;
+  identityKey?: { value: string; url?: string };
+  awsRolePolicy?: { value: string; url?: string };
 }>) {
   const { isSuccess, failureCount } = useHealth({
     enabled: !isPending,
@@ -149,6 +155,8 @@ function InternalRestateContextProvider({
         GettingStarted,
         OnboardingGuide,
         isNew,
+        awsRolePolicy,
+        identityKey,
       }}
     >
       <APIStatusProvider enabled={status === 'HEALTHY'}>
@@ -171,6 +179,8 @@ export function RestateContextProvider({
   GettingStarted,
   OnboardingGuide,
   isNew,
+  awsRolePolicy,
+  identityKey,
 }: PropsWithChildren<{
   adminBaseUrl?: string;
   ingressUrl?: string;
@@ -191,6 +201,8 @@ export function RestateContextProvider({
   GettingStarted?: RestateContext['GettingStarted'];
   OnboardingGuide?: OnboardingComponent;
   isNew?: boolean;
+  identityKey?: { value: string; url?: string };
+  awsRolePolicy?: { value: string; url?: string };
 }>) {
   return (
     <AdminBaseURLProvider baseUrl={adminBaseUrl}>
@@ -205,6 +217,8 @@ export function RestateContextProvider({
         GettingStarted={GettingStarted}
         OnboardingGuide={OnboardingGuide}
         isNew={isNew}
+        awsRolePolicy={awsRolePolicy}
+        identityKey={identityKey}
       >
         {children}
       </InternalRestateContextProvider>
