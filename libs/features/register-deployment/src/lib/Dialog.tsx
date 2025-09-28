@@ -20,6 +20,7 @@ import { tv } from '@restate/util/styles';
 import { useRestateContext } from '@restate/features/restate-context';
 import { ONBOARDING_QUERY_PARAM } from '@restate/util/feature-flag';
 import { FIX_HTTP_ACTION } from './utils';
+import { FixHttp1 } from './FixHttp1';
 
 const submitButtonStyles = tv({
   base: 'flex gap-1 pr-3.5',
@@ -41,19 +42,13 @@ function RegisterDeploymentFooter() {
     isLambda,
     isOnboarding,
     isHttp1Error,
-    fixHttp1,
+    endpoint,
   } = useRegisterDeploymentContext();
   return (
     <DialogFooter>
       <div className="flex flex-col gap-2">
         {error && !isHttp1Error && <ErrorBanner error={error} />}
-        {isHttp1Error && (
-          <div>
-            <SubmitButton form={formId} value={FIX_HTTP_ACTION}>
-              Fix
-            </SubmitButton>
-          </div>
-        )}
+        {isHttp1Error && <FixHttp1 formId={formId} endpoint={endpoint} />}
         <div className="flex gap-2">
           <DialogClose>
             <Button variant="secondary" disabled={isPending}>

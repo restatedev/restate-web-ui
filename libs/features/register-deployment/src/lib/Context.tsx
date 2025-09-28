@@ -468,10 +468,6 @@ export function useRegisterDeploymentContext() {
   const isHttp1Error =
     error instanceof RestateError && error.restateCode === 'META0014';
 
-  const fixHttp1 = useCallback(() => {
-    updateUseHttp11Arn?.(true);
-  }, []);
-
   return {
     isAdvanced,
     isEndpoint,
@@ -503,6 +499,5 @@ export function useRegisterDeploymentContext() {
     isOnboarding,
     targetType: getTargetType(endpoint, tunnelName),
     isHttp1Error,
-    fixHttp1,
   };
 }
