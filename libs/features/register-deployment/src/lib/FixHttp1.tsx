@@ -40,7 +40,7 @@ export function FixHttp1({
               <Markdown>{help}</Markdown>
             </div>
           }
-        ></InlineTooltip>
+        />
       </div>
       <SubmitButton
         form={formId}
