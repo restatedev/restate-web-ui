@@ -61,6 +61,21 @@ function getHttpScript(
       return NODE_SCRIPT;
   }
 }
+function getDescription(
+  targetType?: 'lambda' | 'deno' | 'cloudflare-worker' | 'vercel' | 'tunnel',
+) {
+  switch (targetType) {
+    case 'cloudflare-worker':
+      return 'An example in TypeScript for Cloudflare Worker is shown below.';
+    case 'vercel':
+      return 'An example in TypeScript for Vercel is shown below.';
+    case 'deno':
+      return 'An example in TypeScript for Deno is shown below.';
+
+    default:
+      return 'An example in TypeScript for Node.js is shown below.';
+  }
+}
 
 export function Helper({
   isLambda,
@@ -103,7 +118,7 @@ export function Helper({
       >
         <div className="mb-3 px-1.5 font-sans text-0.5xs text-gray-500">
           Use the provided identity key to ensure your service only accepts
-          requests from your Restate environment.
+          requests from your Restate environment. {getDescription(targetType)}
         </div>
         <Code className="relative rounded-sm bg-black/4 py-1.5! text-xs">
           <Snippet language="typescript">
