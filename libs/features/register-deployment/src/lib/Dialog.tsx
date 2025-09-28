@@ -3,7 +3,6 @@ import {
   DialogClose,
   DialogContent,
   DialogFooter,
-  DialogTrigger,
   QueryDialog,
 } from '@restate/ui/dialog';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -19,7 +18,6 @@ import {
 import { tv } from '@restate/util/styles';
 import { useRestateContext } from '@restate/features/restate-context';
 import { ONBOARDING_QUERY_PARAM } from '@restate/util/feature-flag';
-import { FIX_HTTP_ACTION } from './utils';
 import { FixHttp1 } from './FixHttp1';
 
 const submitButtonStyles = tv({
@@ -81,7 +79,7 @@ function RegisterDeploymentFooter() {
                 Confirm
               </SubmitButton>
             )}
-            {isEndpoint && canSkipAdvanced && !isLambda && !isOnboarding && (
+            {isEndpoint && canSkipAdvanced && !isOnboarding && (
               <SubmitButton
                 variant="secondary"
                 disabled={isPending}

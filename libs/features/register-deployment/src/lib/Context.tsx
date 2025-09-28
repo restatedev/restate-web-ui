@@ -461,9 +461,7 @@ export function useRegisterDeploymentContext() {
       additionalHeaders.items &&
       additionalHeaders.items.some(({ key, value }) => key && value),
   );
-  const canSkipAdvanced =
-    isOnboarding ||
-    (!hasAdditionalHeaders && !useHttp11 && !assumeRoleArn && !isLambda);
+  const canSkipAdvanced = isOnboarding || (!hasAdditionalHeaders && !useHttp11);
 
   const isHttp1Error =
     error instanceof RestateError && error.restateCode === 'META0014';

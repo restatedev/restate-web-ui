@@ -2,7 +2,7 @@ import { FormFieldInput } from '@restate/ui/form-field';
 import { useRegisterDeploymentContext } from './Context';
 import { InlineTooltip } from '@restate/ui/tooltip';
 
-export function AssumeARNRole() {
+export function AssumeARNRole({ className }: { className?: string }) {
   const { updateAssumeRoleArn, assumeRoleArn } = useRegisterDeploymentContext();
 
   return (
@@ -11,12 +11,14 @@ export function AssumeARNRole() {
       placeholder="arn:aws:iam::{account}:role/{role-name}"
       pattern="^arn:aws:iam::\d{12}:role(\/[\w-]+)*\/[\w+-]+$"
       value={assumeRoleArn}
+      className={className}
       onChange={updateAssumeRoleArn}
       label={
         <>
           <span slot="title">
             <InlineTooltip
               title="Assumed role"
+              variant="indicator-button"
               description={
                 <p>
                   This role must exist in your account, it must trust Restate
@@ -30,8 +32,7 @@ export function AssumeARNRole() {
             </InlineTooltip>
           </span>
           <span slot="description" className="block text-0.5xs leading-5">
-            AWS role ARN that Restate Cloud can assume to invoke the Lambda
-            function
+            AWS role ARN that Restate can assume to invoke the Lambda function
           </span>
         </>
       }

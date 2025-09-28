@@ -389,6 +389,7 @@ function EndpointForm() {
           </div>
         </div>
       </div>
+      {isLambda && <AssumeARNRole className="" />}
 
       {isDuplicate && (
         <FormFieldCheckbox
@@ -433,7 +434,7 @@ function AdvancedForm() {
 
   return (
     <>
-      {isLambda ? <AssumeARNRole /> : <UseHTTP11 />}
+      {isLambda ? null : <UseHTTP11 />}
       <AdditionalHeaders />
     </>
   );
