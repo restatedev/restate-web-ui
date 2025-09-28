@@ -22,7 +22,7 @@ import {
 import { useRestateContext } from '@restate/features/restate-context';
 import { REGISTER_DEPLOYMENT_QUERY } from './constant';
 import { useOnboarding } from '@restate/util/feature-flag';
-import { addProtocol } from './utils';
+import { addProtocol, FIX_HTTP_ACTION, getTargetType } from './utils';
 
 type NavigateToAdvancedAction = {
   type: 'NavigateToAdvancedAction';
@@ -150,7 +150,9 @@ const initialState: (args?: {
   const isTunnel = endpoint?.startsWith('tunnel://');
   const isLambda = endpoint?.startsWith('arn:');
   const isEndpointValid =
-    (!isLambda && !isTunnel && endpoint) || isLambda || isTunnel;
+    (!isLambda && !isTunnel && endpoint && endpoint !== 'true') ||
+    isLambda ||
+    isTunnel;
   const resolvedEndpoint = isTunnel
     ? ''
     : isLambda
@@ -199,6 +201,7 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
     },
     initialState,
   );
+
   const additionalHeaders = useListData<{
     key: string;
     value: string;
@@ -217,7 +220,6 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
   const goToConfirm = useCallback(() => {
     dispatch({ type: 'NavigateToConfirmAction' });
   }, []);
-  const isOnboarding = useOnboarding();
 
   const updateServices = useCallback(
     ({
@@ -353,6 +355,9 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
       tunnelName,
     } = state;
 
+    if (action === FIX_HTTP_ACTION) {
+      updateUseHttp11Arn(true);
+    }
     if (action === 'advanced') {
       goToAdvanced();
       return;
@@ -379,10 +384,10 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
               }
             : {
                 uri: addProtocol(endpoint),
-                use_http_11: Boolean(useHttp11),
+                use_http_11: Boolean(useHttp11) || action === FIX_HTTP_ACTION,
               }),
         force: Boolean(shouldForce),
-        dry_run: action === 'dryRun',
+        dry_run: action === 'dryRun' || action === FIX_HTTP_ACTION,
         additional_headers,
       },
     });
@@ -460,6 +465,13 @@ export function useRegisterDeploymentContext() {
     isOnboarding ||
     (!hasAdditionalHeaders && !useHttp11 && !assumeRoleArn && !isLambda);
 
+  const isHttp1Error =
+    error instanceof RestateError && error.restateCode === 'META0014';
+
+  const fixHttp1 = useCallback(() => {
+    updateUseHttp11Arn?.(true);
+  }, []);
+
   return {
     isAdvanced,
     isEndpoint,
@@ -489,5 +501,8 @@ export function useRegisterDeploymentContext() {
     isTunnel,
     tunnelName,
     isOnboarding,
+    targetType: getTargetType(endpoint, tunnelName),
+    isHttp1Error,
+    fixHttp1,
   };
 }
