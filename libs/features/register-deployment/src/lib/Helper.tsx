@@ -14,7 +14,7 @@ const containerStyles = tv({
     isOpen: {
       true: '',
       false:
-        'h-10 overflow-hidden mask-[linear-gradient(to_top,transparent_0rem,black_100%)] opacity-60 [&_code]:-mb-2',
+        'h-8 overflow-hidden mask-[linear-gradient(to_top,transparent_0rem,black_100%)] opacity-60 [&_code]:-mb-2',
     },
   },
 });
@@ -85,11 +85,23 @@ export function Helper({
   isTunnel: boolean;
 }) {
   const isOnboarding = useOnboarding();
-  const { identityKey, awsRolePolicy } = useRestateContext();
+  const { identityKey, awsRolePolicy, OnboardingGuide } = useRestateContext();
   const { targetType, endpoint } = useRegisterDeploymentContext();
-
+  const templates = OnboardingGuide ? (
+    <OnboardingGuide
+      stage={
+        isLambda
+          ? 'view-template-lambda'
+          : isTunnel
+            ? 'view-template-tunnel'
+            : 'view-template-http'
+      }
+      endpoint={endpoint}
+      className="-mx-6 mt-2 px-6"
+    />
+  ) : null;
   if (isOnboarding || !endpoint) {
-    return null;
+    return templates;
   }
 
   if (!isLambda && !isTunnel && identityKey) {
@@ -98,71 +110,78 @@ export function Helper({
       String(identityKey?.value),
     );
     return (
-      <Container
-        title={
-          <div className="z[2] mb-1.5 flex items-center gap-0.5 px-0 font-sans text-sm">
-            <Icon name={IconName.ShieldCheck} className="h-4 w-4" />
-            Secure your services.{' '}
-            {identityKey.url && (
-              <Link
-                target="_blank"
-                href={identityKey.url}
-                variant="secondary"
-                className="text-sky-600"
-              >
-                Learn more…
-              </Link>
-            )}
+      <>
+        <Container
+          title={
+            <div className="z[2] mb-1.5 flex items-center gap-0.5 px-0 font-sans text-sm">
+              <Icon name={IconName.ShieldCheck} className="h-4 w-4" />
+              Secure your services.{' '}
+              {identityKey.url && (
+                <Link
+                  target="_blank"
+                  href={identityKey.url}
+                  variant="secondary"
+                  className="text-sky-600"
+                >
+                  Learn more…
+                </Link>
+              )}
+            </div>
+          }
+        >
+          <div className="mb-3 px-1.5 font-sans text-0.5xs text-gray-500">
+            Use the provided identity key to ensure your service only accepts
+            requests from your Restate environment. {getDescription(targetType)}
           </div>
-        }
-      >
-        <div className="mb-3 px-1.5 font-sans text-0.5xs text-gray-500">
-          Use the provided identity key to ensure your service only accepts
-          requests from your Restate environment. {getDescription(targetType)}
-        </div>
-        <Code className="relative rounded-sm bg-black/4 py-1.5! text-xs">
-          <Snippet language="typescript">
-            {getHttpScript(targetType).replace(
-              'IDENTITY_KEY',
-              identityKey.value,
-            )}
-            <SnippetCopy copyText={copyText} />
-          </Snippet>
-        </Code>
-      </Container>
+          <Code className="relative rounded-sm bg-black/4 py-1.5! text-xs">
+            <Snippet language="typescript">
+              {getHttpScript(targetType).replace(
+                'IDENTITY_KEY',
+                identityKey.value,
+              )}
+              <SnippetCopy copyText={copyText} />
+            </Snippet>
+          </Code>
+        </Container>
+        {templates}
+      </>
     );
   }
   if (isLambda && awsRolePolicy) {
     return (
-      <Container
-        title={
-          <div className="z[2] mb-1.5 flex items-center gap-0.5 px-0 font-sans text-sm">
-            <Icon name={IconName.ShieldCheck} className="h-4 w-4" />
-            Secure your services.{' '}
-            {awsRolePolicy.url && (
-              <Link
-                target="_blank"
-                href={awsRolePolicy.url}
-                variant="secondary"
-                className="text-sky-600"
-              >
-                Learn more…
-              </Link>
-            )}
+      <>
+        <Container
+          title={
+            <div className="z[2] mb-1.5 flex items-center gap-0.5 px-0 font-sans text-sm">
+              <Icon name={IconName.ShieldCheck} className="h-4 w-4" />
+              Secure your services.{' '}
+              {awsRolePolicy.url && (
+                <Link
+                  target="_blank"
+                  href={awsRolePolicy.url}
+                  variant="secondary"
+                  className="text-sky-600"
+                >
+                  Learn more…
+                </Link>
+              )}
+            </div>
+          }
+        >
+          <div className="mb-3 px-1.5 font-sans text-0.5xs text-gray-500">
+            Create a role in your AWS account that can be assumed, has
+            permission to invoke your Lambda, and includes the trust policy
+            below.
           </div>
-        }
-      >
-        <div className="mb-3 px-1.5 font-sans text-0.5xs text-gray-500">
-          Create a role in your AWS account that can be assumed, has permission
-          to invoke your Lambda, and includes the trust policy below.
-        </div>
-        <Code className="relative rounded-sm bg-black/4 py-1.5! text-xs">
-          <Snippet language="json">
-            {awsRolePolicy.value}
-            <SnippetCopy copyText={awsRolePolicy.value} />
-          </Snippet>
-        </Code>
-      </Container>
+          <Code className="relative rounded-sm bg-black/4 py-1.5! text-xs">
+            <Snippet language="json">
+              {awsRolePolicy.value}
+              <SnippetCopy copyText={awsRolePolicy.value} />
+            </Snippet>
+          </Code>
+        </Container>
+        {templates}
+      </>
     );
   }
 

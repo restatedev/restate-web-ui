@@ -25,7 +25,10 @@ type OnboardingComponent = ComponentType<{
     | 'open-playground'
     | 'view-invocations'
     | 'view-invocation'
-    | 'delete-deployment';
+    | 'delete-deployment'
+    | 'view-template-http'
+    | 'view-template-lambda'
+    | 'view-template-tunnel';
   endpoint?: string;
   service?: string;
 }>;
