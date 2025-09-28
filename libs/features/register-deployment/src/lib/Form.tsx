@@ -28,6 +28,7 @@ import { useRestateContext } from '@restate/features/restate-context';
 import { tv } from '@restate/util/styles';
 import { FocusScope, useFocusManager } from 'react-aria';
 import { addProtocol } from './utils';
+import { Helper } from './Helper';
 
 function CustomRadio({
   value,
@@ -425,6 +426,7 @@ function EndpointForm() {
           </span>
         </FormFieldCheckbox>
       )}
+      <Helper isLambda={isLambda} isTunnel={isTunnel} />
     </>
   );
 }
