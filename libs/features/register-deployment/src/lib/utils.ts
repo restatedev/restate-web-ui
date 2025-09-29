@@ -1,7 +1,13 @@
 export function addProtocol(url: string): string;
 export function addProtocol(url?: undefined): undefined;
 export function addProtocol(url?: string) {
-  if (url && !url.startsWith('http:') && !url.startsWith('https:')) {
+  if (
+    url &&
+    !url.startsWith('http:') &&
+    !url.startsWith('https:') &&
+    !url.startsWith('tunnel:') &&
+    !url.startsWith('arn:')
+  ) {
     return url.startsWith('localhost') ? `http://${url}` : `https://${url}`;
   }
 

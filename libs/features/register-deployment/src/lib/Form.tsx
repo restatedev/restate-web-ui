@@ -266,8 +266,12 @@ function EndpointForm() {
                 : {
                     validate: (value) => {
                       try {
-                        new URL(addProtocol(value));
-                        return null;
+                        if (value) {
+                          new URL(addProtocol(value));
+                          return null;
+                        } else {
+                          return null;
+                        }
                       } catch (error) {
                         return 'Please enter a URL.';
                       }
