@@ -101,6 +101,10 @@ export function Helper({
     />
   ) : null;
   if (isOnboarding) {
+    return null;
+  }
+
+  if (isTunnel) {
     return templates;
   }
 
