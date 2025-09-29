@@ -18,7 +18,7 @@ export function getTargetType(url?: string, tunnelName?: string) {
       return 'lambda' as const;
     }
     try {
-      const urlObject = new URL(url);
+      const urlObject = new URL(addProtocol(url));
       if (urlObject.hostname.endsWith('deno.net')) {
         return 'deno' as const;
       }
