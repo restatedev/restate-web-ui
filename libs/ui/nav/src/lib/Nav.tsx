@@ -15,7 +15,12 @@ import {
   DropdownPopover,
   DropdownTrigger,
 } from '@restate/ui/dropdown';
-import { NavItem, NavSearchItem, useGetHrefFromSearch } from './NavItem';
+import {
+  NavButtonItem,
+  NavItem,
+  NavSearchItem,
+  useGetHrefFromSearch,
+} from './NavItem';
 import { Button } from '@restate/ui/button';
 import { useLocation } from 'react-router';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -137,21 +142,27 @@ export function Nav({
               variant="secondary"
               className="flex items-center gap-2 py-1.5 pr-1.5 pl-3"
             >
-              {Children.map(children, (child) => (
-                <span
-                  className={
-                    'href' in child.props
-                      ? location.pathname.startsWith(child.props.href)
-                        ? ''
-                        : 'hidden'
-                      : location.search.includes(child.props.search)
-                        ? ''
-                        : 'hidden'
-                  }
-                >
-                  {child.props.children}
-                </span>
-              ))}
+              {Children.map(children, (child) => {
+                return (
+                  <span
+                    className={
+                      'href' in child.props
+                        ? location.pathname.startsWith(child.props.href)
+                          ? ''
+                          : 'hidden'
+                        : location.search.includes(child.props.search)
+                          ? ''
+                          : 'isActive' in child.props
+                            ? child.props.isActive
+                              ? ''
+                              : 'hidden'
+                            : 'hidden'
+                    }
+                  >
+                    {child.props.children}
+                  </span>
+                );
+              })}
               <Icon
                 name={IconName.ChevronsUpDown}
                 className="h-4 w-4 text-gray-500"
@@ -161,30 +172,71 @@ export function Nav({
           <DropdownPopover>
             <DropdownMenu
               selectable
+              onSelect={(value) => {
+                Children.forEach(children, (child) => {
+                  const nav = child as ReactElement<
+                    | ComponentProps<typeof NavItem>
+                    | ComponentProps<typeof NavButtonItem>
+                    | ComponentProps<typeof NavSearchItem>
+                  >;
+                  if (
+                    nav.props &&
+                    'isActive' in nav.props &&
+                    'onClick' in nav.props &&
+                    nav.props.children === value
+                  ) {
+                    nav.props.onClick?.();
+                  }
+                });
+              }}
               selectedItems={Children.toArray(children)
-                .map(
-                  (child) =>
-                    (child as ReactElement<ComponentProps<typeof NavItem>>)
-                      .props.href,
-                )
-                .filter((href) => location.pathname.startsWith(href))}
+                .map((child) => {
+                  const nav = child as ReactElement<
+                    | ComponentProps<typeof NavItem>
+                    | ComponentProps<typeof NavButtonItem>
+                    | ComponentProps<typeof NavSearchItem>
+                  >;
+                  if ('href' in nav.props) {
+                    return {
+                      isActive: location.pathname.startsWith(nav.props.href),
+                      value: nav.props.href,
+                    };
+                  } else if ('isActive' in nav.props) {
+                    return {
+                      isActive: nav.props.isActive,
+                      value: nav.props.children?.toString() ?? '',
+                    };
+                  }
+                  return { isActive: false, value: '' };
+                })
+                .filter((opt) => opt.isActive)
+                .map((opt) => opt.value)}
             >
-              {Children.map(children, (child) => (
-                <DropdownItem
-                  href={
-                    'href' in child.props
-                      ? child.props.href
-                      : getHref(child.props.search).href
-                  }
-                  value={
-                    'href' in child.props
-                      ? child.props.href
-                      : child.props.search
-                  }
-                >
-                  {child.props.children}
-                </DropdownItem>
-              ))}
+              {Children.map(children, (child) => {
+                if (child.type === NavButtonItem) {
+                  return (
+                    <DropdownItem value={String(child.props.children)}>
+                      {child.props.children}
+                    </DropdownItem>
+                  );
+                }
+                return (
+                  <DropdownItem
+                    href={
+                      'href' in child.props
+                        ? child.props.href
+                        : getHref(child.props.search).href
+                    }
+                    value={
+                      'href' in child.props
+                        ? child.props.href
+                        : child.props.search
+                    }
+                  >
+                    {child.props.children}
+                  </DropdownItem>
+                );
+              })}
             </DropdownMenu>
           </DropdownPopover>
         </Dropdown>
