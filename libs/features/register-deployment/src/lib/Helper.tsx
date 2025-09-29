@@ -100,7 +100,7 @@ export function Helper({
       className="-mx-6 mt-2 -mb-6 px-6"
     />
   ) : null;
-  if (isOnboarding || !endpoint) {
+  if (isOnboarding) {
     return templates;
   }
 

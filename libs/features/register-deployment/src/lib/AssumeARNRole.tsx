@@ -1,11 +1,11 @@
 import { FormFieldInput } from '@restate/ui/form-field';
 import { useRegisterDeploymentContext } from './Context';
-import { InlineTooltip } from '@restate/ui/tooltip';
 
 const ROLE_REGEX =
   /^arn:aws(?:-cn|-us-gov)?:iam::\d{12}:role(?:\/[\w+=,.@\-]+)+$/;
 export function AssumeARNRole({ className }: { className?: string }) {
-  const { updateAssumeRoleArn, assumeRoleArn } = useRegisterDeploymentContext();
+  const { updateAssumeRoleArn, assumeRoleArn, isPending } =
+    useRegisterDeploymentContext();
 
   return (
     <FormFieldInput
@@ -15,6 +15,7 @@ export function AssumeARNRole({ className }: { className?: string }) {
       value={assumeRoleArn}
       className={className}
       onChange={updateAssumeRoleArn}
+      disabled={isPending}
       label={
         <>
           <span slot="title">Role ARN</span>
