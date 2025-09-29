@@ -1,4 +1,4 @@
-import { Form, useNavigate, useSearchParams } from 'react-router';
+import { Form, useSearchParams } from 'react-router';
 import {
   createContext,
   FormEvent,
@@ -22,6 +22,7 @@ import {
 import { useRestateContext } from '@restate/features/restate-context';
 import { REGISTER_DEPLOYMENT_QUERY } from './constant';
 import { useOnboarding } from '@restate/util/feature-flag';
+import { addProtocol, FIX_HTTP_ACTION, getTargetType } from './utils';
 
 type NavigateToAdvancedAction = {
   type: 'NavigateToAdvancedAction';
@@ -146,12 +147,17 @@ const initialState: (args?: {
   deployments?: adminApi.Deployment[];
 }) => DeploymentRegistrationContextInterface = (args) => {
   const endpoint = args?.searchParams?.get(REGISTER_DEPLOYMENT_QUERY);
-  const isEndpointValid =
-    endpoint?.startsWith('http') ||
-    endpoint?.startsWith('arn') ||
-    endpoint?.startsWith('tunnel://');
   const isTunnel = endpoint?.startsWith('tunnel://');
-
+  const isLambda = endpoint?.startsWith('arn:');
+  const isEndpointValid =
+    (!isLambda && !isTunnel && endpoint && endpoint !== 'true') ||
+    isLambda ||
+    isTunnel;
+  const resolvedEndpoint = isTunnel
+    ? ''
+    : isLambda
+      ? String(endpoint)
+      : addProtocol(String(endpoint));
   return {
     stage: 'endpoint',
     isLambda: false,
@@ -160,13 +166,13 @@ const initialState: (args?: {
     endpoint: '',
     tunnelName: '',
     ...(isEndpointValid && {
-      endpoint: isTunnel ? '' : String(endpoint),
-      isLambda: endpoint?.startsWith('arn'),
+      endpoint: resolvedEndpoint,
+      isLambda,
       isDuplicate: args?.deployments?.some(
         (deployment) =>
           endpoint &&
           withoutTrailingSlash(getEndpoint(deployment)) ===
-            withoutTrailingSlash(endpoint),
+            withoutTrailingSlash(resolvedEndpoint),
       ),
       isTunnel,
       tunnelName: isTunnel ? String(endpoint)?.replace('tunnel://', '') : '',
@@ -195,6 +201,7 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
     },
     initialState,
   );
+
   const additionalHeaders = useListData<{
     key: string;
     value: string;
@@ -213,7 +220,6 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
   const goToConfirm = useCallback(() => {
     dispatch({ type: 'NavigateToConfirmAction' });
   }, []);
-  const isOnboarding = useOnboarding();
 
   const updateServices = useCallback(
     ({
@@ -247,7 +253,6 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
     [],
   );
 
-  const navigate = useNavigate();
   const { mutate, isPending, error, reset } = useRegisterDeployment({
     onSuccess(data) {
       updateServices({
@@ -284,6 +289,9 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
           /* empty */
         }
       }
+      if (!value.isLambda && !value.isTunnel && value.endpoint) {
+        resolvedEndpoint = addProtocol(value.endpoint);
+      }
       if (
         state.isLambda !== value.isLambda ||
         state.isTunnel !== value.isTunnel
@@ -297,6 +305,7 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
           withoutTrailingSlash(getEndpoint(deployment)) ===
           withoutTrailingSlash(resolvedEndpoint),
       );
+
       dispatch({
         type: 'UpdateEndpointAction',
         payload: {
@@ -346,6 +355,9 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
       tunnelName,
     } = state;
 
+    if (action === FIX_HTTP_ACTION) {
+      updateUseHttp11Arn(true);
+    }
     if (action === 'advanced') {
       goToAdvanced();
       return;
@@ -371,11 +383,11 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
                 use_http_11: false,
               }
             : {
-                uri: endpoint,
-                use_http_11: Boolean(useHttp11),
+                uri: addProtocol(endpoint),
+                use_http_11: Boolean(useHttp11) || action === FIX_HTTP_ACTION,
               }),
         force: Boolean(shouldForce),
-        dry_run: action === 'dryRun',
+        dry_run: action === 'dryRun' || action === FIX_HTTP_ACTION,
         additional_headers,
       },
     });
@@ -449,9 +461,10 @@ export function useRegisterDeploymentContext() {
       additionalHeaders.items &&
       additionalHeaders.items.some(({ key, value }) => key && value),
   );
-  const canSkipAdvanced =
-    isOnboarding ||
-    (!hasAdditionalHeaders && !useHttp11 && !assumeRoleArn && !isLambda);
+  const canSkipAdvanced = isOnboarding || (!hasAdditionalHeaders && !useHttp11);
+
+  const isHttp1Error =
+    error instanceof RestateError && error.restateCode === 'META0014';
 
   return {
     isAdvanced,
@@ -482,5 +495,7 @@ export function useRegisterDeploymentContext() {
     isTunnel,
     tunnelName,
     isOnboarding,
+    targetType: getTargetType(endpoint, tunnelName),
+    isHttp1Error,
   };
 }

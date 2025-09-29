@@ -27,6 +27,8 @@ import { ServiceDeploymentExplainer } from '@restate/features/explainers';
 import { useRestateContext } from '@restate/features/restate-context';
 import { tv } from '@restate/util/styles';
 import { FocusScope, useFocusManager } from 'react-aria';
+import { addProtocol } from './utils';
+import { Helper } from './Helper';
 
 function CustomRadio({
   value,
@@ -256,11 +258,21 @@ function EndpointForm() {
               value={endpoint}
               disabled={isPending}
               readonly={isOnboarding}
-              type={isLambda ? 'text' : 'url'}
-              {...(isLambda && {
-                pattern:
-                  '^arn:aws:lambda:[a-z0-9\\-]+:\\d+:function:[a-zA-Z0-9\\-_]+:.+$',
-              })}
+              {...(isLambda
+                ? {
+                    pattern:
+                      '^arn:aws:lambda:[a-z0-9\\-]+:\\d+:function:[a-zA-Z0-9\\-_]+:.+$',
+                  }
+                : {
+                    validate: (value) => {
+                      try {
+                        new URL(addProtocol(value));
+                        return null;
+                      } catch (error) {
+                        return 'Please enter a URL.';
+                      }
+                    },
+                  })}
               name="endpoint"
               className={endpointStyles({ isCliTunnel })}
               placeholder={
@@ -378,6 +390,7 @@ function EndpointForm() {
           </div>
         </div>
       </div>
+      {isLambda && <AssumeARNRole className="" />}
 
       {isDuplicate && (
         <FormFieldCheckbox
@@ -413,6 +426,7 @@ function EndpointForm() {
           </span>
         </FormFieldCheckbox>
       )}
+      <Helper isLambda={isLambda} isTunnel={isTunnel} />
     </>
   );
 }
@@ -422,7 +436,7 @@ function AdvancedForm() {
 
   return (
     <>
-      {isLambda ? <AssumeARNRole /> : <UseHTTP11 />}
+      {isLambda ? null : <UseHTTP11 />}
       <AdditionalHeaders />
     </>
   );

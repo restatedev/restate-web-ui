@@ -71,6 +71,8 @@ import {
   ShieldCheck,
   UserX,
   ArrowUpRight,
+  Wand,
+  Sparkles,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from '@restate/util/styles';
@@ -186,6 +188,8 @@ export const enum IconName {
   ShieldCheck = 'ShieldCheck',
   UserX = 'UserX',
   ArrowUpRight = 'ArrowUpRight',
+  Wand = 'Wand',
+  Sparkles = 'Sparkles',
 }
 export interface IconsProps {
   name: IconName;
@@ -285,6 +289,8 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.ShieldCheck]: ShieldCheck,
   [IconName.UserX]: UserX,
   [IconName.ArrowUpRight]: ArrowUpRight,
+  [IconName.Wand]: Wand,
+  [IconName.Sparkles]: Sparkles,
 };
 
 const styles = tv({

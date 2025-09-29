@@ -1,13 +1,7 @@
 import { useServiceDetails } from '@restate/data-access/admin-api-hooks';
-import { Button } from '@restate/ui/button';
 import { SectionTitle, Section } from '@restate/ui/section';
-import { useSearchParams } from 'react-router';
-import { SERVICE_ACCESS_EDIT } from './constants';
 import { SubSection } from './SubSection';
-import {
-  IngressAccessExplainer,
-  LazyStateExplainer,
-} from '@restate/features/explainers';
+import { LazyStateExplainer } from '@restate/features/explainers';
 
 export function AdvancedSection({
   serviceDetails: data,

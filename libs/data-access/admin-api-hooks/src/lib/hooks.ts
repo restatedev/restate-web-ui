@@ -181,13 +181,33 @@ export function isListDeployments(
 }
 
 export function useRegisterDeployment(
-  options?: HookMutationOptions<'/deployments', 'post'>,
+  options?: Omit<
+    HookMutationOptions<'/deployments', 'post'>,
+    'mutationFn' | 'mutationKey' | 'onSettled'
+  >,
 ) {
   const baseUrl = useAdminBaseUrl();
+  const { onSuccess, ...rest } = options ?? {};
+  const queryCLient = useQueryClient();
 
   return useMutation({
     ...adminApi('mutate', '/deployments', 'post', { baseUrl }),
-    ...options,
+    ...rest,
+    onSuccess(data, variables, context) {
+      if (!variables.body?.dry_run) {
+        data?.services.forEach((service) => {
+          const serviceName = service.name;
+          const { queryKey } = getServiceAdminApi({
+            baseUrl,
+            parameters: { path: { service: serviceName } },
+          });
+          queryCLient.invalidateQueries({
+            queryKey,
+          });
+        });
+      }
+      return onSuccess?.(data, variables, context);
+    },
   });
 }
 

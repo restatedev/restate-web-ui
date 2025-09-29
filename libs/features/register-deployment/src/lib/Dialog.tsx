@@ -3,7 +3,6 @@ import {
   DialogClose,
   DialogContent,
   DialogFooter,
-  DialogTrigger,
   QueryDialog,
 } from '@restate/ui/dialog';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -19,6 +18,7 @@ import {
 import { tv } from '@restate/util/styles';
 import { useRestateContext } from '@restate/features/restate-context';
 import { ONBOARDING_QUERY_PARAM } from '@restate/util/feature-flag';
+import { FixHttp1 } from './FixHttp1';
 
 const submitButtonStyles = tv({
   base: 'flex gap-1 pr-3.5',
@@ -39,11 +39,14 @@ function RegisterDeploymentFooter() {
     canSkipAdvanced,
     isLambda,
     isOnboarding,
+    isHttp1Error,
+    endpoint,
   } = useRegisterDeploymentContext();
   return (
     <DialogFooter>
       <div className="flex flex-col gap-2">
-        {error && <ErrorBanner errors={[error]} />}
+        {error && !isHttp1Error && <ErrorBanner error={error} />}
+        {isHttp1Error && <FixHttp1 formId={formId} endpoint={endpoint} />}
         <div className="flex gap-2">
           <DialogClose>
             <Button variant="secondary" disabled={isPending}>
@@ -76,7 +79,7 @@ function RegisterDeploymentFooter() {
                 Confirm
               </SubmitButton>
             )}
-            {isEndpoint && canSkipAdvanced && !isLambda && !isOnboarding && (
+            {isEndpoint && canSkipAdvanced && !isOnboarding && (
               <SubmitButton
                 variant="secondary"
                 disabled={isPending}
