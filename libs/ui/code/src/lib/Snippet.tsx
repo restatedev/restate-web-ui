@@ -7,7 +7,14 @@ import { Nav, NavButtonItem } from '@restate/ui/nav';
 
 interface SnippetProps {
   className?: string;
-  language?: 'typescript' | 'java' | 'json' | 'bash' | 'python' | 'go';
+  language?:
+    | 'typescript'
+    | 'java'
+    | 'json'
+    | 'bash'
+    | 'python'
+    | 'go'
+    | 'kotlin';
 }
 
 const LANGUAGE_LABEL: Record<
@@ -20,6 +27,7 @@ const LANGUAGE_LABEL: Record<
   bash: 'bash',
   python: 'Python',
   go: 'Go',
+  kotlin: 'Kotlin',
 };
 
 function SyntaxHighlighter({

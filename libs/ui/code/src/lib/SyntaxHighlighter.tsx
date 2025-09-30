@@ -5,12 +5,14 @@ import python from 'highlight.js/lib/languages/python';
 import go from 'highlight.js/lib/languages/go';
 import bash from 'highlight.js/lib/languages/bash';
 import json from 'highlight.js/lib/languages/json';
+import kotlin from 'highlight.js/lib/languages/kotlin';
 import 'highlight.js/styles/mono-blue.css';
 
 hljs.registerLanguage('typescript', typescript);
 hljs.registerLanguage('bash', bash);
 hljs.registerLanguage('java', java);
 hljs.registerLanguage('json', json);
+hljs.registerLanguage('kotlin', kotlin);
 hljs.registerLanguage('go', go);
 hljs.registerLanguage('python', python);
 
