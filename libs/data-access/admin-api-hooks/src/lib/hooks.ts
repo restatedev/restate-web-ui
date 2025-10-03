@@ -184,15 +184,50 @@ export function useRegisterDeployment(
   options?: Omit<
     HookMutationOptions<'/deployments', 'post'>,
     'mutationFn' | 'mutationKey' | 'onSettled'
-  >,
+  > & { retryWithHttp1?: boolean },
 ) {
   const baseUrl = useAdminBaseUrl();
-  const { onSuccess, ...rest } = options ?? {};
+  const { onSuccess, retryWithHttp1, ...rest } = options ?? {};
   const queryCLient = useQueryClient();
+  const mutationOptions = adminApi('mutate', '/deployments', 'post', {
+    baseUrl,
+  });
+
+  const mutationFn: typeof mutationOptions.mutationFn = useCallback(
+    async (args) => {
+      return mutationOptions.mutationFn(args).catch(async (originalError) => {
+        if (
+          retryWithHttp1 &&
+          args.body &&
+          args.body.dry_run &&
+          'uri' in args.body
+        ) {
+          try {
+            await mutationOptions.mutationFn({
+              ...args,
+              body: {
+                ...args.body,
+                use_http_11: true,
+              },
+            });
+            throw new RestateError(
+              'Service discovery response failed, and the server may have responded in HTTP1.1.',
+              'META0014',
+            );
+          } catch (_) {
+            throw originalError;
+          }
+        }
+        throw originalError;
+      });
+    },
+    [mutationOptions.mutationFn],
+  );
 
   return useMutation({
-    ...adminApi('mutate', '/deployments', 'post', { baseUrl }),
+    ...mutationOptions,
     ...rest,
+    mutationFn,
     onSuccess(data, variables, context) {
       if (!variables.body?.dry_run) {
         data?.services.forEach((service) => {

@@ -188,7 +188,7 @@ function withoutTrailingSlash(url?: string) {
 
 export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
   const id = useId();
-  const { tunnel, baseUrl } = useRestateContext();
+  const { tunnel } = useRestateContext();
   const formRef = useRef<HTMLFormElement>(null);
   const [searchParams] = useSearchParams();
   const { refetch, data: listDeployments } = useListDeployments();
@@ -254,6 +254,7 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
   );
 
   const { mutate, isPending, error, reset } = useRegisterDeployment({
+    retryWithHttp1: state.stage !== 'confirm' && !state.useHttp11,
     onSuccess(data) {
       updateServices({
         services: data?.services,
