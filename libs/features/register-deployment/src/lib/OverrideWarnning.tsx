@@ -3,7 +3,7 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { useRegisterDeploymentContext } from './Context';
 
 export function OverrideWarning() {
-  const { isLambda, isDuplicate, shouldForce, updateShouldForce, isAdvanced } =
+  const { isLambda, isDuplicate, shouldForce, updateShouldForce } =
     useRegisterDeploymentContext();
 
   if (!isDuplicate) {
@@ -17,7 +17,6 @@ export function OverrideWarning() {
       value="true"
       checked={shouldForce}
       onChange={updateShouldForce}
-      required={isDuplicate && isAdvanced}
       direction="right"
       autoFocus
     >
