@@ -12,7 +12,6 @@ import {
 } from '@restate/data-access/admin-api-hooks';
 import { Icon, IconName } from '@restate/ui/icons';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
-import { useQueryClient } from '@tanstack/react-query';
 import { ErrorBanner } from '@restate/ui/error';
 import { Deployment } from '@restate/features/deployment';
 import {
@@ -28,6 +27,7 @@ import { RetryPolicySection } from './RetryPolicy';
 import { RestateMinimumVersion } from '@restate/util/feature-flag';
 import { useRestateContext } from '@restate/features/restate-context';
 import { AdvancedSection } from './Advanced';
+import { useState } from 'react';
 
 export function ServiceDetails() {
   return (
@@ -88,6 +88,7 @@ function ServiceContent({ service }: { service: string }) {
     listDeploymentsData?.services.get(String(service)) ?? {};
 
   const { OnboardingGuide } = useRestateContext();
+  const [maxDeployments, setMaxDeployments] = useState(10);
 
   return (
     <>
@@ -165,15 +166,31 @@ function ServiceContent({ service }: { service: string }) {
               <div className="h-6 w-full animate-pulse rounded-md bg-white" />
             ) : (
               <div className="flex flex-col gap-2">
-                {sortedRevisions.map((revision) =>
-                  deployments?.[revision]?.map((id) => (
-                    <Deployment
-                      deploymentId={id}
-                      revision={revision}
-                      key={id}
-                      highlightSelection={false}
-                    />
-                  )),
+                {sortedRevisions
+                  .slice(0, maxDeployments)
+                  .map((revision) =>
+                    deployments?.[revision]?.map((id) => (
+                      <Deployment
+                        deploymentId={id}
+                        revision={revision}
+                        key={id}
+                        highlightSelection={false}
+                      />
+                    )),
+                  )}
+                {sortedRevisions.length > maxDeployments && (
+                  <Button
+                    variant="icon"
+                    className="cursor-pointer rounded-lg border-none bg-transparent px-8 py-1 text-left text-0.5xs text-gray-500 no-underline shadow-none hover:bg-black/3 pressed:bg-black/5"
+                    onClick={() => {
+                      setMaxDeployments(
+                        (maxDeployments) => maxDeployments + 10,
+                      );
+                    }}
+                  >
+                    +{sortedRevisions.length - maxDeployments} deployment
+                    {sortedRevisions.length - maxDeployments > 1 ? 's' : ''}…
+                  </Button>
                 )}
               </div>
             )}
