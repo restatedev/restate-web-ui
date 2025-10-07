@@ -45,7 +45,7 @@ export function KeysIdsSection({
         {restateVersion && !restateVersion.startsWith('0.0.0') && (
           <div className="flex h-9 items-center px-1.5 py-1 not-last:border-b">
             <span className="flex-auto shrink-0 pl-1 text-0.5xs font-medium text-gray-500">
-              Create by Restate
+              Created by Restate
             </span>
             <Badge
               size="sm"

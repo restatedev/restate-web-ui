@@ -39,7 +39,12 @@ type UpdateEndpointAction = {
   type: 'UpdateEndpointAction';
   payload: Pick<
     DeploymentRegistrationContextInterface,
-    'endpoint' | 'isLambda' | 'isDuplicate' | 'isTunnel' | 'tunnelName'
+    | 'endpoint'
+    | 'isLambda'
+    | 'isDuplicate'
+    | 'isTunnel'
+    | 'tunnelName'
+    | 'routingHeader'
   >;
 };
 type UpdateRoleArnAction = {
@@ -86,6 +91,10 @@ interface DeploymentRegistrationContextInterface {
     value: string;
     index: number;
   }>;
+  routingHeader?: {
+    key: string;
+    value: string;
+  };
   isPending?: boolean;
   isDuplicate?: boolean;
   shouldForce?: boolean;
@@ -97,6 +106,7 @@ interface DeploymentRegistrationContextInterface {
   goToAdvanced?: VoidFunction;
   goToConfirm?: VoidFunction;
   updateEndpoint?: (value: UpdateEndpointAction['payload']) => void;
+  updateRoutingHeader?: (key: string, value: string) => void;
   register?: (isDryRun: boolean) => void;
   updateAssumeRoleArn?: (value: string) => void;
   updateUseHttp11Arn?: (value: boolean) => void;
@@ -116,6 +126,7 @@ type State = Pick<
   | 'useHttp11'
   | 'shouldForce'
   | 'isDuplicate'
+  | 'routingHeader'
 >;
 
 function reducer(state: State, action: Action): State {
@@ -184,6 +195,16 @@ const DeploymentRegistrationContext =
 
 function withoutTrailingSlash(url?: string) {
   return url?.endsWith('/') ? url.slice(0, -1) : url;
+}
+
+function isRoutingHeaderMatch(
+  deployment: adminApi.Deployment,
+  routingHeader?: { key: string; value: string },
+) {
+  const headers = deployment.additional_headers ?? {};
+  return Boolean(
+    !routingHeader?.key || headers[routingHeader.key] === routingHeader.value,
+  );
 }
 
 export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
@@ -304,7 +325,8 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
       ).some(
         (deployment) =>
           withoutTrailingSlash(getEndpoint(deployment)) ===
-          withoutTrailingSlash(resolvedEndpoint),
+            withoutTrailingSlash(resolvedEndpoint) &&
+          isRoutingHeaderMatch(deployment, value.routingHeader),
       );
 
       dispatch({
@@ -315,6 +337,7 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
           endpoint: value.endpoint,
           isDuplicate,
           tunnelName: value.tunnelName,
+          routingHeader: value.routingHeader,
         },
       });
     },
@@ -326,6 +349,23 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
       toHttp,
     ],
   );
+
+  const updateRoutingHeader = useCallback(
+    (key: string, value: string) => {
+      updateEndpoint({
+        routingHeader: {
+          key,
+          value,
+        },
+        endpoint: state.endpoint,
+        isLambda: state.isLambda,
+        isTunnel: state.isTunnel,
+        tunnelName: state.tunnelName,
+      });
+    },
+    [state.endpoint, state.isLambda, state.isTunnel, state.tunnelName],
+  );
+
   const updateAssumeRoleArn = useCallback(
     (assumeRoleArn: string) => {
       reset();
@@ -354,6 +394,7 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
       shouldForce,
       isTunnel,
       tunnelName,
+      routingHeader,
     } = state;
 
     if (action === FIX_HTTP_ACTION) {
@@ -390,6 +431,7 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
         force: Boolean(shouldForce),
         dry_run: action === 'dryRun' || action === FIX_HTTP_ACTION,
         additional_headers,
+        routing_header: routingHeader,
       },
     });
   };
@@ -409,6 +451,7 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
         updateShouldForce,
         error,
         isPending,
+        updateRoutingHeader,
       }}
     >
       <Form
@@ -450,6 +493,8 @@ export function useRegisterDeploymentContext() {
     sdk_version,
     isTunnel,
     tunnelName,
+    routingHeader,
+    updateRoutingHeader,
   } = useContext(DeploymentRegistrationContext);
   const isEndpoint = stage === 'endpoint';
   const isAdvanced = stage === 'advanced';
@@ -462,7 +507,8 @@ export function useRegisterDeploymentContext() {
       additionalHeaders.items &&
       additionalHeaders.items.some(({ key, value }) => key && value),
   );
-  const canSkipAdvanced = isOnboarding || (!hasAdditionalHeaders && !useHttp11);
+  const canSkipAdvanced =
+    isOnboarding || (!hasAdditionalHeaders && !useHttp11 && !routingHeader);
 
   const isHttp1Error =
     error instanceof RestateError && error.restateCode === 'META0014';
@@ -478,6 +524,7 @@ export function useRegisterDeploymentContext() {
     goToConfirm,
     goToEndpoint,
     updateEndpoint,
+    updateRoutingHeader,
     isPending,
     formId,
     additionalHeaders,
@@ -498,5 +545,6 @@ export function useRegisterDeploymentContext() {
     isOnboarding,
     targetType: getTargetType(endpoint, tunnelName),
     isHttp1Error,
+    routingHeader,
   };
 }
