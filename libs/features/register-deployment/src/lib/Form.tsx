@@ -26,7 +26,6 @@ import { FocusScope, useFocusManager } from 'react-aria';
 import { addProtocol } from './utils';
 import { Helper } from './Helper';
 import { OverrideWarning } from './OverrideWarnning';
-import { RoutingHeader } from './RoutingHeader';
 
 function CustomRadio({
   value,
@@ -404,7 +403,6 @@ function AdvancedForm() {
   return (
     <>
       {isLambda ? null : <UseHTTP11 />}
-      {isLambda ? null : <RoutingHeader />}
       <AdditionalHeaders />
       <OverrideWarning />
     </>
