@@ -1,8 +1,4 @@
-import {
-  FormFieldCheckbox,
-  FormFieldInput,
-  FormFieldLabel,
-} from '@restate/ui/form-field';
+import { FormFieldInput, FormFieldLabel } from '@restate/ui/form-field';
 import { Icon, IconName } from '@restate/ui/icons';
 import {
   ComponentProps,
@@ -29,6 +25,8 @@ import { tv } from '@restate/util/styles';
 import { FocusScope, useFocusManager } from 'react-aria';
 import { addProtocol } from './utils';
 import { Helper } from './Helper';
+import { OverrideWarning } from './OverrideWarnning';
+import { RoutingHeader } from './RoutingHeader';
 
 function CustomRadio({
   value,
@@ -174,9 +172,7 @@ function EndpointForm() {
     updateEndpoint,
     endpoint,
     isPending,
-    isDuplicate,
-    shouldForce,
-    updateShouldForce,
+
     isOnboarding,
   } = useRegisterDeploymentContext();
   const { tunnel } = useRestateContext();
@@ -396,40 +392,7 @@ function EndpointForm() {
       </div>
       {isLambda && <AssumeARNRole className="" />}
 
-      {isDuplicate && (
-        <FormFieldCheckbox
-          name="force"
-          className="relative mb-2 rounded-xl bg-orange-100 p-3 [&_.error]:absolute [&_.error]:bottom-[-1.5em] [&_input]:bg-white"
-          value="true"
-          checked={shouldForce}
-          onChange={updateShouldForce}
-          required={isDuplicate}
-          direction="right"
-          autoFocus
-        >
-          <div
-            slot="title"
-            className="flex items-center gap-2 text-sm font-semibold text-orange-600"
-          >
-            <Icon
-              className="h-5 w-5 fill-orange-600 text-orange-100"
-              name={IconName.TriangleAlert}
-            />
-            Override existing deployments
-          </div>
-
-          <span
-            slot="description"
-            className="mt-2 block pl-7 text-0.5xs leading-5 text-orange-600"
-          >
-            An existing deployment with the same {isLambda ? 'ARN' : 'URL'}{' '}
-            already exists. Would you like to override it? Please note that this
-            may cause{' '}
-            <strong className="font-semibold">unrecoverable errors</strong> in
-            active invocations.
-          </span>
-        </FormFieldCheckbox>
-      )}
+      <OverrideWarning />
       <Helper isLambda={isLambda} isTunnel={isTunnel} />
     </>
   );
@@ -441,7 +404,9 @@ function AdvancedForm() {
   return (
     <>
       {isLambda ? null : <UseHTTP11 />}
+      {isLambda ? null : <RoutingHeader />}
       <AdditionalHeaders />
+      <OverrideWarning />
     </>
   );
 }
