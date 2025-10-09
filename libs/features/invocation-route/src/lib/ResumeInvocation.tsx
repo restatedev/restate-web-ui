@@ -146,7 +146,6 @@ export function ResumeInvocation() {
                 invocation?.pinned_deployment_id ? 'Keep' : 'Latest'
               }
               name="deployment"
-              disabled={!invocation?.pinned_deployment_id}
               required
             >
               {invocation &&
@@ -154,6 +153,10 @@ export function ResumeInvocation() {
                   const isCurrent =
                     deployment?.id === invocation?.pinned_deployment_id;
                   const isLatest = service?.sortedRevisions.at(0) === revision;
+
+                  if (!invocation.pinned_deployment_id && !isLatest) {
+                    return null;
+                  }
 
                   const isTunnel = Boolean(
                     tunnel?.isEnabled &&
