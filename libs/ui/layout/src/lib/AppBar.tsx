@@ -8,7 +8,7 @@ interface AppBarProps {
 export function AppBar(props: PropsWithChildren<AppBarProps>) {
   return (
     <>
-      <div className='fixed top-0 right-0 left-0 z-30 hidden h-6 bg-linear-to-t from-gray-100/60 to-gray-100 [&:has(+header_[data-variant="hidden"])]:hidden [&:has(+header>*>*)]:block' />
+      <div className='fixed top-0 right-0 left-0 z-30 hidden h-6 bg-gray-100 mask-[linear-gradient(to_top,rgba(0,0,0,0.6)_0%,black_100%)] [&:has(+header_[data-variant="hidden"])]:hidden [&:has(+header>*>*)]:block' />
       <header
         className={`[&:has([data-variant="secondary"])]:backdrop-blur-0 invisible sticky top-3 z-100 flex flex-none items-stretch justify-between gap-4 rounded-xl border bg-gray-50/80 shadow-lg shadow-zinc-800/5 backdrop-blur-xl backdrop-saturate-200 duration-300 sm:top-6 [&:has(>*>*)]:visible [&:has(>*>*)]:animate-in [&:has(>*>*)]:slide-in-from-top [&:has([data-variant="hidden"])]:invisible [&:has([data-variant="secondary"])]:border-none [&:has([data-variant="secondary"])]:bg-transparent [&:has([data-variant="secondary"])]:shadow-none`}
       >
