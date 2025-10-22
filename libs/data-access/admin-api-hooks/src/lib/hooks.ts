@@ -195,32 +195,37 @@ export function useRegisterDeployment(
   });
 
   const mutationFn: typeof mutationOptions.mutationFn = useCallback(
-    async (args) => {
-      return mutationOptions.mutationFn(args).catch(async (originalError) => {
-        if (
-          retryWithHttp1 &&
-          args.body &&
-          args.body.dry_run &&
-          'uri' in args.body
-        ) {
-          try {
-            await mutationOptions.mutationFn({
-              ...args,
-              body: {
-                ...args.body,
-                use_http_11: true,
-              },
-            });
-            throw new RestateError(
-              'Service discovery response failed, and the server may have responded in HTTP1.1.',
-              'META0014',
-            );
-          } catch (_) {
-            throw originalError;
+    async (args, context) => {
+      return mutationOptions
+        .mutationFn(args, context)
+        .catch(async (originalError) => {
+          if (
+            retryWithHttp1 &&
+            args.body &&
+            args.body.dry_run &&
+            'uri' in args.body
+          ) {
+            try {
+              await mutationOptions.mutationFn(
+                {
+                  ...args,
+                  body: {
+                    ...args.body,
+                    use_http_11: true,
+                  },
+                },
+                { client: queryCLient, meta: mutationOptions.meta },
+              );
+              throw new RestateError(
+                'Service discovery response failed, and the server may have responded in HTTP1.1.',
+                'META0014',
+              );
+            } catch (_) {
+              throw originalError;
+            }
           }
-        }
-        throw originalError;
-      });
+          throw originalError;
+        });
     },
     [mutationOptions.mutationFn],
   );
@@ -229,7 +234,7 @@ export function useRegisterDeployment(
     ...mutationOptions,
     ...rest,
     mutationFn,
-    onSuccess(data, variables, context) {
+    onSuccess(data, variables, context, meta) {
       if (!variables.body?.dry_run) {
         data?.services.forEach((service) => {
           const serviceName = service.name;
@@ -242,7 +247,7 @@ export function useRegisterDeployment(
           });
         });
       }
-      return onSuccess?.(data, variables, context);
+      return onSuccess?.(data, variables, context, meta);
     },
   });
 }
@@ -1155,11 +1160,12 @@ export function useKillInvocation(
     options ?? {};
   const old = useOldDeleteInvocation(invocation_id, {
     ...oldOptions,
-    onSuccess(data, variables, context) {
+    onSuccess(data, variables, context, meta) {
       onSuccess?.(
         undefined,
         { parameters: { path: variables.parameters!.path } },
         context,
+        meta,
       );
     },
   });
@@ -1169,8 +1175,8 @@ export function useKillInvocation(
       resolvedPath: `/invocations/${invocation_id}/kill`,
     }),
     ...options,
-    onSuccess(data, variables, context) {
-      onSuccess?.(data, variables, context);
+    onSuccess(data, variables, context, meta) {
+      onSuccess?.(data, variables, context, meta);
 
       queryCLient.invalidateQueries({
         queryKey: adminApi(
@@ -1230,11 +1236,12 @@ export function useCancelInvocation(
 
   const old = useOldDeleteInvocation(invocation_id, {
     ...oldOptions,
-    onSuccess(data, variables, context) {
+    onSuccess(data, variables, context, meta) {
       onSuccess?.(
         undefined,
         { parameters: { path: variables.parameters!.path } },
         context,
+        meta,
       );
     },
   });
@@ -1244,8 +1251,8 @@ export function useCancelInvocation(
       resolvedPath: `/invocations/${invocation_id}/cancel`,
     }),
     ...options,
-    onSuccess(data, variables, context) {
-      onSuccess?.(data, variables, context);
+    onSuccess(data, variables, context, meta) {
+      onSuccess?.(data, variables, context, meta);
 
       queryCLient.invalidateQueries({
         queryKey: adminApi(
@@ -1303,11 +1310,12 @@ export function usePurgeInvocation(
     options ?? {};
   const old = useOldDeleteInvocation(invocation_id, {
     ...oldOptions,
-    onSuccess(data, variables, context) {
+    onSuccess(data, variables, context, meta) {
       onSuccess?.(
         undefined,
         { parameters: { path: variables.parameters!.path } },
         context,
+        meta,
       );
     },
   });
@@ -1390,9 +1398,9 @@ export function useResumeInvocation(
       resolvedPath: `/invocations/${invocationId}/resume`,
     }),
     ...options,
-    async onSuccess(data, variables, context) {
+    async onSuccess(data, variables, context, meta) {
       await refetch();
-      options?.onSuccess?.(data, variables, context);
+      options?.onSuccess?.(data, variables, context, meta);
     },
   });
 }
@@ -1455,6 +1463,7 @@ export function useEditState(
       resolvedPath: `/services/${service}/state`,
     },
   );
+  const queryClient = useQueryClient();
 
   const mutate = async (variables: {
     state: Record<string, string | undefined>;
@@ -1484,41 +1493,42 @@ export function useEditState(
       ),
     );
 
-    return mutationFn({
-      parameters: { path: { service } },
-      body: {
-        object_key: objectKey,
-        ...(variables.partial && {
-          version,
-        }),
-        new_state: {
-          ...(variables.partial &&
-            query.data && {
-              ...convertStateToObject(
-                query.data.state.map(({ name, value }) => ({
-                  name,
-                  value: Array.from(base64ToUint8Array(value)),
-                })),
-              ),
-            }),
-          ...encodedVariables,
+    return mutationFn(
+      {
+        parameters: { path: { service } },
+        body: {
+          object_key: objectKey,
+          ...(variables.partial && {
+            version,
+          }),
+          new_state: {
+            ...(variables.partial &&
+              query.data && {
+                ...convertStateToObject(
+                  query.data.state.map(({ name, value }) => ({
+                    name,
+                    value: Array.from(base64ToUint8Array(value)),
+                  })),
+                ),
+              }),
+            ...encodedVariables,
+          },
         },
       },
-    }).then(async (res) => {
+      { client: queryClient, meta },
+    ).then(async (res) => {
       const { data: newData } = await query.refetch();
 
       return newData?.state;
     });
   };
 
-  const queryClient = useQueryClient();
-
   const mutation = useMutation({
     mutationFn: mutate,
     mutationKey,
     meta,
-    onSuccess(data, variables, context) {
-      options?.onSuccess?.(data, variables, context);
+    onSuccess(data, variables, context, meta) {
+      options?.onSuccess?.(data, variables, context, meta);
       queryClient.setQueriesData(
         {
           predicate: (query) => {
