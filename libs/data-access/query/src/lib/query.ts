@@ -99,30 +99,6 @@ async function extractErrorPayload(res: Response): Promise<string | undefined> {
   return (await res.text()) as string;
 }
 
-export async function query(req: Request) {
-  return queryHandler(req).catch(async (error) => {
-    if (error instanceof HTTPError) {
-      const body = await extractErrorPayload(error.response);
-      return new Response(
-        JSON.stringify(new RestateError(body || 'Oops something went wrong!')),
-        {
-          status: error.response.status,
-          headers: { 'Content-Type': 'application/json' },
-        },
-      );
-    } else {
-      console.log('/query call failed!', error);
-      return new Response(
-        JSON.stringify(new RestateError('Oops something went wrong!')),
-        {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        },
-      );
-    }
-  });
-}
-
 const routes = createRoutes({
   invocations: {
     list: { method: 'POST', pattern: '/invocations' },
@@ -236,4 +212,28 @@ router.mount('/query', queryRouter);
 async function queryHandler(req: Request) {
   const response = await router.dispatch(req);
   return response ?? new Response('Not implemented', { status: 501 });
+}
+
+export async function query(req: Request) {
+  return queryHandler(req).catch(async (error) => {
+    if (error instanceof HTTPError) {
+      const body = await extractErrorPayload(error.response);
+      return new Response(
+        JSON.stringify(new RestateError(body || 'Oops something went wrong!')),
+        {
+          status: error.response.status,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
+    } else {
+      console.log('/query call failed!', error);
+      return new Response(
+        JSON.stringify(new RestateError('Oops something went wrong!')),
+        {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
+    }
+  });
 }
