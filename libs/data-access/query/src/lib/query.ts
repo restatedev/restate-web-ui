@@ -149,7 +149,7 @@ queryRouter.map(routes, {
   },
   virtualObjects: {
     async queue(ctx) {
-      const { getInbox, baseUrl } = ctx.storage.get(handlersKey);
+      const { getInbox } = ctx.storage.get(handlersKey);
       return getInbox(
         ctx.params.name,
         ctx.params.key,
