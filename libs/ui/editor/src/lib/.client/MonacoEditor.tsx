@@ -54,7 +54,6 @@ export function MonacoEditor({
         stickyScroll: { enabled: false },
         scrollBeyondLastLine: false,
         scrollBeyondLastColumn: 0,
-        wrappingStrategy: 'advanced',
 
         renderLineHighlight: 'none',
         ...(readonly && {
@@ -76,16 +75,25 @@ export function MonacoEditor({
           editorRef.current?.layout();
         }
       };
-      editorRef.current?.onDidChangeModelLanguageConfiguration(updateStyles);
-      editorRef.current?.onDidLayoutChange(updateStyles);
-      editorRef.current?.onDidContentSizeChange(updateStyles);
-      editorRef.current.onDidChangeModelContent(() => {
-        const value = editorRef.current?.getValue();
 
-        updateStyles();
-        onInput?.(value ?? '');
-      });
+      const disposables = [
+        editorRef.current.onDidChangeModelLanguageConfiguration(updateStyles),
+        editorRef.current.onDidLayoutChange(updateStyles),
+        editorRef.current.onDidContentSizeChange(updateStyles),
+        editorRef.current.onDidChangeModelContent(() => {
+          const value = editorRef.current?.getValue();
+          updateStyles();
+          onInput?.(value ?? '');
+        }),
+      ];
+
       updateStyles();
+
+      return () => {
+        disposables.forEach((d) => d.dispose());
+        editorRef.current?.dispose();
+        editorRef.current = null;
+      };
     }
   }, [value, el, editorRef, readonly, onInput]);
 

@@ -42,6 +42,9 @@ importers:
       '@react-stately/toast':
         specifier: 3.0.0-beta.7
         version: 3.0.0-beta.7(react@19.0.0)
+      '@remix-run/fetch-router':
+        specifier: ^0.6.0
+        version: 0.6.0
       '@stoplight/json-schema-viewer':
         specifier: 4.16.4
         version: 4.16.4(@babel/core@7.24.7)(@babel/template@7.27.2)(@stoplight/markdown-viewer@5.7.1(@stoplight/mosaic-code-viewer@1.53.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(@stoplight/mosaic@1.53.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(@stoplight/mosaic-code-viewer@1.53.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(@stoplight/mosaic@1.53.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -3481,6 +3484,21 @@ packages:
     resolution: {integrity: sha512-pnYld+8SSF2vXwdLOqBGUyOrv/SjzwLjIUcs/4c1JJgR0q4E9eBtBfuZMD6zUD51fvSehSsbnlQMzotSmPTXPg==}
     peerDependencies:
       react: '>=16.8.0'
+
+  '@remix-run/fetch-router@0.6.0':
+    resolution: {integrity: sha512-N5AMK2XxTFO3d8AMRWphFoRos4NjvfZpQeZW859Ade+FgP1yYRZhEYep2T3FVPBUJWPqrG7c9lIxVLcVcZUBSQ==}
+
+  '@remix-run/form-data-parser@0.11.0':
+    resolution: {integrity: sha512-vD1xko5NntvKKzCOM6hAmCfUOPguIWJJ3WqcBFMqqUYlk3Z4j9t4CpvL0taq9gaB8kMtYN78lD4r8Nb8xXI4zw==}
+
+  '@remix-run/headers@0.12.0':
+    resolution: {integrity: sha512-eqVSL5UOIyqVx0NTqgtNKMKVokE9jPchkZHl/N13KKPQYw/leS8VCoX5zRhkB1UvcLyfj113LX0OvEcuNbc5Hg==}
+
+  '@remix-run/multipart-parser@0.11.0':
+    resolution: {integrity: sha512-AE/H+ok0fWOZb84sJ8vREOJiSwYoEoGL0rpHZSAiPmCkBKbnsmHCbiUtg5+wELem4Q0HAEY6vjVK83u9cIlAhw==}
+
+  '@remix-run/route-pattern@0.14.0':
+    resolution: {integrity: sha512-Wlq1LAsGZBJ5uEnUmxJDBQvpLKhay1mVvxmNl0oeKBOin6yWDB5YkJkSMAlYQi7mM/vVIDlqr183MiHi4SO7AA==}
 
   '@rolldown/pluginutils@1.0.0-beta.27':
     resolution: {integrity: sha512-+d0F4MKMCbeVUJwG96uQ4SgAznZNSq93I3V+9NHA4OpvqG8mRCpGdKmK8l/dl02h2CCDHwW2FqilnTyDcAnqjA==}
@@ -14406,6 +14424,23 @@ snapshots:
   '@rehooks/component-size@1.0.3(react@19.0.0)':
     dependencies:
       react: 19.0.0
+
+  '@remix-run/fetch-router@0.6.0':
+    dependencies:
+      '@remix-run/form-data-parser': 0.11.0
+      '@remix-run/route-pattern': 0.14.0
+
+  '@remix-run/form-data-parser@0.11.0':
+    dependencies:
+      '@remix-run/multipart-parser': 0.11.0
+
+  '@remix-run/headers@0.12.0': {}
+
+  '@remix-run/multipart-parser@0.11.0':
+    dependencies:
+      '@remix-run/headers': 0.12.0
+
+  '@remix-run/route-pattern@0.14.0': {}
 
   '@rolldown/pluginutils@1.0.0-beta.27': {}
 
