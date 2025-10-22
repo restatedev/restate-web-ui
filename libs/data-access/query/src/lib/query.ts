@@ -1,6 +1,5 @@
 import ky, { HTTPError } from 'ky';
 import { convertInvocation } from './convertInvocation';
-import { match } from 'path-to-regexp';
 import { convertJournal } from './convertJournal';
 import type {
   FilterItem,
@@ -20,6 +19,7 @@ import {
 import { hexToBase64 } from '@restate/util/binary';
 import { getVersion } from './getVersion';
 import semverGt from 'semver/functions/gte';
+import { createRouter, createRoutes } from '@remix-run/fetch-router';
 
 function queryFetcher(
   query: string,
@@ -627,142 +627,126 @@ export async function query(req: Request) {
   });
 }
 
+const routes = createRoutes({
+  invocations: {
+    list: { method: 'POST', pattern: '/invocations' },
+    get: { method: 'GET', pattern: '/invocations/:invocationId' },
+    journalEntry: {
+      method: 'GET',
+      pattern: '/invocations/:invocationId/journal/:entryIndex',
+    },
+    journal: {
+      method: 'GET',
+      pattern: '/invocations/:invocationId/journal',
+    },
+  },
+  invocationsV2: {
+    get: { method: 'GET', pattern: '/v2/invocations/:invocationId' },
+  },
+  virtualObjects: {
+    queue: {
+      method: 'GET',
+      pattern: '/virtualObjects/:name/keys/:key/queue',
+    },
+  },
+  services: {
+    state: {
+      get: { method: 'GET', pattern: '/services/:name/keys/:key/state' },
+      keys: { method: 'GET', pattern: '/services/:name/state/keys' },
+      query: { method: 'POST', pattern: '/services/:name/state/query' },
+      list: { method: 'POST', pattern: '/services/:name/state' },
+    },
+  },
+});
+
+const queryRouter = createRouter();
+
+queryRouter.map(routes, {
+  invocations: {
+    async list(ctx) {
+      const baseUrl = `${ctx.url.protocol}//${ctx.url.host}`;
+      const { filters = [] }: { filters: FilterItem[] } =
+        await ctx.request.json();
+      return listInvocations(baseUrl, ctx.headers, filters);
+    },
+    async get(ctx) {
+      const baseUrl = `${ctx.url.protocol}//${ctx.url.host}`;
+      return getInvocation(ctx.params.invocationId, baseUrl, ctx.headers);
+    },
+    async journalEntry(ctx) {
+      const baseUrl = `${ctx.url.protocol}//${ctx.url.host}`;
+      return getJournalEntryV2(
+        ctx.params.invocationId,
+        Number(ctx.params.entryIndex),
+        baseUrl,
+        ctx.headers,
+      );
+    },
+    async journal(ctx) {
+      const baseUrl = `${ctx.url.protocol}//${ctx.url.host}`;
+      return getInvocationJournal(
+        ctx.params.invocationId,
+        baseUrl,
+        ctx.headers,
+      );
+    },
+  },
+  invocationsV2: {
+    async get(ctx) {
+      const baseUrl = `${ctx.url.protocol}//${ctx.url.host}`;
+      return getInvocationJournalV2(
+        ctx.params.invocationId,
+        baseUrl,
+        ctx.headers,
+      );
+    },
+  },
+  virtualObjects: {
+    async queue(ctx) {
+      const baseUrl = `${ctx.url.protocol}//${ctx.url.host}`;
+      return getInbox(
+        ctx.params.name,
+        ctx.params.key,
+        ctx.url.searchParams.has('invocationId')
+          ? String(ctx.url.searchParams.get('invocationId'))
+          : undefined,
+        baseUrl,
+        ctx.headers,
+      );
+    },
+  },
+  services: {
+    state: {
+      async get(ctx) {
+        const baseUrl = `${ctx.url.protocol}//${ctx.url.host}`;
+        return getState(ctx.params.name, ctx.params.key, baseUrl, ctx.headers);
+      },
+      async keys(ctx) {
+        const baseUrl = `${ctx.url.protocol}//${ctx.url.host}`;
+        return getStateInterface(ctx.params.name, baseUrl, ctx.headers);
+      },
+      async query(ctx) {
+        const baseUrl = `${ctx.url.protocol}//${ctx.url.host}`;
+        const { filters = [] }: { filters: FilterItem[] } =
+          await ctx.request.json();
+        return queryState(ctx.params.name, baseUrl, ctx.headers, filters);
+      },
+      async list(ctx) {
+        const baseUrl = `${ctx.url.protocol}//${ctx.url.host}`;
+        const { keys = [] }: { keys: string[] } = await ctx.request.json();
+        return listState(ctx.params.name, baseUrl, ctx.headers, keys);
+      },
+    },
+  },
+});
+
+const router = createRouter({
+  defaultHandler: () => new Response('Not implemented', { status: 501 }),
+});
+
+router.mount('/query', queryRouter);
+
 async function queryHandler(req: Request) {
-  const { url, method, headers } = req;
-  const urlObj = new URL(url);
-
-  if (url.endsWith('/query/invocations') && method.toUpperCase() === 'POST') {
-    const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
-    const { filters = [] }: { filters: FilterItem[] } = await req.json();
-    return listInvocations(baseUrl, headers, filters);
-  }
-
-  const getInvocationJournalParams = match<{ invocationId: string }>(
-    '/query/invocations/:invocationId/journal',
-  )(urlObj.pathname);
-  if (getInvocationJournalParams && method.toUpperCase() === 'GET') {
-    const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
-    return getInvocationJournal(
-      getInvocationJournalParams.params.invocationId,
-      baseUrl,
-      req.headers,
-    );
-  }
-
-  const getInvocationParams = match<{ invocationId: string }>(
-    '/query/invocations/:invocationId',
-  )(urlObj.pathname);
-  if (getInvocationParams && method.toUpperCase() === 'GET') {
-    const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
-    return getInvocation(
-      getInvocationParams.params.invocationId,
-      baseUrl,
-      headers,
-    );
-  }
-
-  const getInboxParams =
-    match<{ key: string; name: string }>(
-      '/query/virtualObjects/:name/keys/:key/queue',
-    )(urlObj.pathname) ||
-    match<{ key: string; name: string }>(
-      '/query/virtualObjects/:name/keys//queue',
-    )(urlObj.pathname);
-
-  if (getInboxParams && method.toUpperCase() === 'GET') {
-    const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
-    return getInbox(
-      getInboxParams.params.name,
-      getInboxParams.params.key ?? '',
-      urlObj.searchParams.has('invocationId')
-        ? String(urlObj.searchParams.get('invocationId'))
-        : undefined,
-      baseUrl,
-      headers,
-    );
-  }
-
-  const getStateParams =
-    match<{ key: string; name: string }>(
-      '/query/services/:name/keys/:key/state',
-    )(urlObj.pathname) ||
-    match<{ key: string; name: string }>('/query/services/:name/keys//state')(
-      urlObj.pathname,
-    );
-
-  if (getStateParams && method.toUpperCase() === 'GET') {
-    const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
-    return getState(
-      getStateParams.params.name,
-      getStateParams.params.key ?? '',
-      baseUrl,
-      headers,
-    );
-  }
-
-  const getStateInterfaceParams = match<{ name: string }>(
-    '/query/services/:name/state/keys',
-  )(urlObj.pathname);
-
-  if (getStateInterfaceParams && method.toUpperCase() === 'GET') {
-    const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
-    return getStateInterface(
-      getStateInterfaceParams.params.name,
-      baseUrl,
-      headers,
-    );
-  }
-
-  const getQueryStateParams = match<{ name: string }>(
-    '/query/services/:name/state/query',
-  )(urlObj.pathname);
-
-  if (getQueryStateParams && method.toUpperCase() === 'POST') {
-    const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
-    const { filters = [] }: { filters: FilterItem[] } = await req.json();
-    return queryState(
-      getQueryStateParams.params.name,
-      baseUrl,
-      headers,
-      filters,
-    );
-  }
-
-  const getListStateParams = match<{ name: string }>(
-    '/query/services/:name/state',
-  )(urlObj.pathname);
-
-  if (getListStateParams && method.toUpperCase() === 'POST') {
-    const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
-    const { keys = [] }: { keys: string[] } = await req.json();
-    return listState(getListStateParams.params.name, baseUrl, headers, keys);
-  }
-
-  const getInvocationJournalParamsV2 = match<{ invocationId: string }>(
-    '/query/v2/invocations/:invocationId',
-  )(urlObj.pathname);
-  if (getInvocationJournalParamsV2 && method.toUpperCase() === 'GET') {
-    const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
-    return getInvocationJournalV2(
-      getInvocationJournalParamsV2.params.invocationId,
-      baseUrl,
-      req.headers,
-    );
-  }
-
-  const getJournalEntryParamsV2 = match<{
-    invocationId: string;
-    entryIndex: string;
-  }>('/query/invocations/:invocationId/journal/:entryIndex')(urlObj.pathname);
-  if (getJournalEntryParamsV2 && method.toUpperCase() === 'GET') {
-    const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
-    return getJournalEntryV2(
-      getJournalEntryParamsV2.params.invocationId,
-      Number(getJournalEntryParamsV2.params.entryIndex),
-      baseUrl,
-      req.headers,
-    );
-  }
-
-  return new Response('Not implemented', { status: 501 });
+  const response = await router.dispatch(req);
+  return response ?? new Response('Not implemented', { status: 501 });
 }
