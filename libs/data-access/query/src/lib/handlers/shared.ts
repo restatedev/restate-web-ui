@@ -1,6 +1,10 @@
 import ky from 'ky';
 
-export function queryFetcher(
+export type QueryContext = {
+  query: (sql: string) => Promise<{ rows: any[] }>;
+};
+
+function queryFetcher(
   query: string,
   { baseUrl, headers = new Headers() }: { baseUrl: string; headers: Headers },
 ) {
@@ -17,22 +21,11 @@ export function queryFetcher(
     .json<{ rows: any[] }>();
 }
 
-export const INVOCATIONS_LIMIT = 250;
-export const COUNT_LIMIT = 50000;
-
-export function countEstimate(
-  receivedLessThanLimit: boolean,
-  rows: number,
-  minimumCountEstimate: number,
-): { total_count: number; total_count_lower_bound: boolean } {
-  if (receivedLessThanLimit) {
-    return { total_count: rows, total_count_lower_bound: false };
-  } else if (rows > minimumCountEstimate) {
-    return { total_count: rows, total_count_lower_bound: true };
-  } else {
-    return {
-      total_count: minimumCountEstimate,
-      total_count_lower_bound: true,
-    };
-  }
+export function createQueryContext(
+  baseUrl: string,
+  headers: Headers,
+): QueryContext {
+  return {
+    query: (sql: string) => queryFetcher(sql, { baseUrl, headers }),
+  };
 }

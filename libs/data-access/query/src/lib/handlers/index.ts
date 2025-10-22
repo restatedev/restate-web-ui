@@ -8,4 +8,4 @@ export { getState } from './getState';
 export { getStateInterface } from './getStateInterface';
 export { queryState } from './queryState';
 export { listState } from './listState';
-export { queryFetcher, INVOCATIONS_LIMIT, COUNT_LIMIT } from './shared';
+export { type QueryContext, createQueryContext } from './shared';

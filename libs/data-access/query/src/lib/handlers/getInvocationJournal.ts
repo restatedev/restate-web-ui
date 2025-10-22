@@ -1,17 +1,12 @@
 import { convertJournal } from '../convertJournal';
-import { queryFetcher } from './shared';
+import type { QueryContext } from './shared';
 
 export async function getInvocationJournal(
+  this: QueryContext,
   invocationId: string,
-  baseUrl: string,
-  headers: Headers,
 ) {
-  const entries = await queryFetcher(
+  const entries = await this.query(
     `SELECT * FROM sys_journal WHERE id = '${invocationId}'`,
-    {
-      baseUrl,
-      headers,
-    },
   ).then(({ rows }) =>
     rows.map((entry, _, allEntries) => convertJournal(entry, allEntries)),
   );

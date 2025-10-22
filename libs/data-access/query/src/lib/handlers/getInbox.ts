@@ -1,13 +1,13 @@
 import ky from 'ky';
 import type { Handler } from '@restate/data-access/admin-api/spec';
-import { queryFetcher } from './shared';
+import type { QueryContext } from './shared';
 
 export async function getInbox(
+  this: QueryContext,
   service: string,
   key: string,
   invocationId: string | undefined,
   baseUrl: string,
-  headers: Headers,
 ) {
   const [head, size, position] = await Promise.all([
     ky
@@ -20,41 +20,28 @@ export async function getInbox(
       )
       .then((handlers) =>
         handlers.length > 0
-          ? queryFetcher(
+          ? this.query(
               `SELECT id FROM sys_invocation WHERE target_service_key = '${key}' AND target_service_name = '${service}' AND status NOT IN ('completed', 'pending', 'scheduled') AND target_handler_name IN (${handlers.join(
                 ', ',
               )})`,
-              {
-                baseUrl,
-                headers,
-              },
             )
           : { rows: [] },
       )
       .then(({ rows }) => rows.at(0)?.id),
-    queryFetcher(
+    this.query(
       `SELECT COUNT(*) AS size FROM sys_inbox WHERE service_key = '${key}' AND service_name = '${service}'`,
-      {
-        baseUrl,
-        headers,
-      },
     ).then(({ rows }) => rows.at(0)?.size),
     invocationId
-      ? queryFetcher(
+      ? this.query(
           `SELECT sequence_number FROM sys_inbox WHERE id = '${invocationId}'`,
-          { baseUrl, headers },
         )
           .then(({ rows }) =>
             rows.length === 0
               ? { rows: [{ position: -1 }] }
-              : queryFetcher(
+              : this.query(
                   `SELECT COUNT(*) AS position FROM sys_inbox WHERE service_key = '${key}' AND service_name = '${service}' AND sequence_number < ${
                     rows.at(0).sequence_number
                   }`,
-                  {
-                    baseUrl,
-                    headers,
-                  },
                 ),
           )
           .then(({ rows }) => rows.at(0)?.position)

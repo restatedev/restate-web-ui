@@ -1,17 +1,9 @@
 import { convertInvocation } from '../convertInvocation';
-import { queryFetcher } from './shared';
+import type { QueryContext } from './shared';
 
-export async function getInvocation(
-  invocationId: string,
-  baseUrl: string,
-  headers: Headers,
-) {
-  const invocations = await queryFetcher(
+export async function getInvocation(this: QueryContext, invocationId: string) {
+  const invocations = await this.query(
     `SELECT * FROM sys_invocation WHERE id = '${invocationId}'`,
-    {
-      baseUrl,
-      headers,
-    },
   ).then(({ rows }) => rows.map(convertInvocation));
   if (invocations.length > 0) {
     return new Response(JSON.stringify(invocations.at(0)), {

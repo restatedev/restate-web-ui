@@ -1,11 +1,10 @@
 import type { FilterItem } from '@restate/data-access/admin-api/spec';
 import { convertFilters } from '../convertFilters';
-import { queryFetcher } from './shared';
+import type { QueryContext } from './shared';
 
 export async function queryState(
+  this: QueryContext,
   service: string,
-  baseUrl: string,
-  headers: Headers,
   filters: FilterItem[],
 ) {
   if (filters.length > 1) {
@@ -43,10 +42,7 @@ export async function queryState(
 
   const resultsPromise: Promise<{
     keys: string[];
-  }> = queryFetcher(query, {
-    baseUrl,
-    headers,
-  }).then(async ({ rows }) => ({
+  }> = this.query(query).then(async ({ rows }) => ({
     keys: rows.map(({ service_key }) => service_key),
   }));
 

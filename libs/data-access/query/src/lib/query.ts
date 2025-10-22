@@ -1,8 +1,15 @@
 import { HTTPError } from 'ky';
 import type { FilterItem } from '@restate/data-access/admin-api/spec';
 import { RestateError } from '@restate/util/errors';
-import { createRouter, createRoutes } from '@remix-run/fetch-router';
 import {
+  createRouter,
+  createRoutes,
+  createStorageKey,
+  Middleware,
+} from '@remix-run/fetch-router';
+import {
+  type QueryContext,
+  createQueryContext,
   listInvocations,
   getInvocation,
   getInvocationJournal,
@@ -14,6 +21,71 @@ import {
   queryState,
   listState,
 } from './handlers';
+import { getVersion } from './getVersion';
+
+type BoundHandlers = {
+  listInvocations: (filters: FilterItem[]) => Promise<Response>;
+  getInvocation: (invocationId: string) => Promise<Response>;
+  getInvocationJournal: (invocationId: string) => Promise<Response>;
+  getJournalEntryV2: (
+    invocationId: string,
+    entryIndex: number,
+  ) => Promise<Response>;
+  getInvocationJournalV2: (invocationId: string) => Promise<Response>;
+  getInbox: (
+    service: string,
+    key: string,
+    invocationId: string | undefined,
+    baseUrl: string,
+  ) => Promise<Response>;
+  getState: (service: string, key: string) => Promise<Response>;
+  getStateInterface: (service: string) => Promise<Response>;
+  queryState: (service: string, filters: FilterItem[]) => Promise<Response>;
+  listState: (service: string, keys: string[]) => Promise<Response>;
+  baseUrl: string;
+  restateVersion: string;
+};
+
+function bindHandlers(
+  context: QueryContext,
+  baseUrl: string,
+  headers: Headers,
+): BoundHandlers {
+  const restateVersion = getVersion(headers);
+  return {
+    listInvocations: listInvocations.bind(context),
+    getInvocation: getInvocation.bind(context),
+    getInvocationJournal: getInvocationJournal.bind(context),
+    getJournalEntryV2: getJournalEntryV2.bind(context),
+    getInvocationJournalV2: function (invocationId: string) {
+      return getInvocationJournalV2.call(context, invocationId, restateVersion);
+    },
+    getInbox: function (
+      service: string,
+      key: string,
+      invocationId: string | undefined,
+      baseUrlParam: string,
+    ) {
+      return getInbox.call(context, service, key, invocationId, baseUrlParam);
+    },
+    getState: getState.bind(context),
+    getStateInterface: getStateInterface.bind(context),
+    queryState: queryState.bind(context),
+    listState: listState.bind(context),
+    baseUrl,
+    restateVersion,
+  };
+}
+
+const handlersKey = createStorageKey<BoundHandlers>();
+
+const handlersMiddleware: Middleware = (ctx, next) => {
+  const baseUrl = `${ctx.url.protocol}//${ctx.url.host}`;
+  const queryContext = createQueryContext(baseUrl, ctx.headers);
+  const handlers = bindHandlers(queryContext, baseUrl, ctx.headers);
+  ctx.storage.set(handlersKey, handlers);
+  return next();
+};
 
 async function extractErrorPayload(res: Response): Promise<string | undefined> {
   const ct = res.headers.get('content-type') || '';
@@ -85,49 +157,41 @@ const routes = createRoutes({
 
 const queryRouter = createRouter();
 
+queryRouter.use(handlersMiddleware);
+
 queryRouter.map(routes, {
   invocations: {
     async list(ctx) {
-      const baseUrl = `${ctx.url.protocol}//${ctx.url.host}`;
+      const { listInvocations } = ctx.storage.get(handlersKey);
       const { filters = [] }: { filters: FilterItem[] } =
         await ctx.request.json();
-      return listInvocations(baseUrl, ctx.headers, filters);
+      return listInvocations(filters);
     },
     async get(ctx) {
-      const baseUrl = `${ctx.url.protocol}//${ctx.url.host}`;
-      return getInvocation(ctx.params.invocationId, baseUrl, ctx.headers);
+      const { getInvocation } = ctx.storage.get(handlersKey);
+      return getInvocation(ctx.params.invocationId);
     },
     async journalEntry(ctx) {
-      const baseUrl = `${ctx.url.protocol}//${ctx.url.host}`;
+      const { getJournalEntryV2 } = ctx.storage.get(handlersKey);
       return getJournalEntryV2(
         ctx.params.invocationId,
         Number(ctx.params.entryIndex),
-        baseUrl,
-        ctx.headers,
       );
     },
     async journal(ctx) {
-      const baseUrl = `${ctx.url.protocol}//${ctx.url.host}`;
-      return getInvocationJournal(
-        ctx.params.invocationId,
-        baseUrl,
-        ctx.headers,
-      );
+      const { getInvocationJournal } = ctx.storage.get(handlersKey);
+      return getInvocationJournal(ctx.params.invocationId);
     },
   },
   invocationsV2: {
     async get(ctx) {
-      const baseUrl = `${ctx.url.protocol}//${ctx.url.host}`;
-      return getInvocationJournalV2(
-        ctx.params.invocationId,
-        baseUrl,
-        ctx.headers,
-      );
+      const { getInvocationJournalV2 } = ctx.storage.get(handlersKey);
+      return getInvocationJournalV2(ctx.params.invocationId);
     },
   },
   virtualObjects: {
     async queue(ctx) {
-      const baseUrl = `${ctx.url.protocol}//${ctx.url.host}`;
+      const { getInbox, baseUrl } = ctx.storage.get(handlersKey);
       return getInbox(
         ctx.params.name,
         ctx.params.key,
@@ -135,30 +199,29 @@ queryRouter.map(routes, {
           ? String(ctx.url.searchParams.get('invocationId'))
           : undefined,
         baseUrl,
-        ctx.headers,
       );
     },
   },
   services: {
     state: {
       async get(ctx) {
-        const baseUrl = `${ctx.url.protocol}//${ctx.url.host}`;
-        return getState(ctx.params.name, ctx.params.key, baseUrl, ctx.headers);
+        const { getState } = ctx.storage.get(handlersKey);
+        return getState(ctx.params.name, ctx.params.key);
       },
       async keys(ctx) {
-        const baseUrl = `${ctx.url.protocol}//${ctx.url.host}`;
-        return getStateInterface(ctx.params.name, baseUrl, ctx.headers);
+        const { getStateInterface } = ctx.storage.get(handlersKey);
+        return getStateInterface(ctx.params.name);
       },
       async query(ctx) {
-        const baseUrl = `${ctx.url.protocol}//${ctx.url.host}`;
+        const { queryState } = ctx.storage.get(handlersKey);
         const { filters = [] }: { filters: FilterItem[] } =
           await ctx.request.json();
-        return queryState(ctx.params.name, baseUrl, ctx.headers, filters);
+        return queryState(ctx.params.name, filters);
       },
       async list(ctx) {
-        const baseUrl = `${ctx.url.protocol}//${ctx.url.host}`;
+        const { listState } = ctx.storage.get(handlersKey);
         const { keys = [] }: { keys: string[] } = await ctx.request.json();
-        return listState(ctx.params.name, baseUrl, ctx.headers, keys);
+        return listState(ctx.params.name, keys);
       },
     },
   },

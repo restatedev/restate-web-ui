@@ -1,16 +1,14 @@
 import { hexToBase64 } from '@restate/util/binary';
 import { stateVersion } from '../stateVersion';
-import { queryFetcher } from './shared';
+import type { QueryContext } from './shared';
 
 export async function getState(
+  this: QueryContext,
   service: string,
   key: string,
-  baseUrl: string,
-  headers: Headers,
 ) {
-  const state: { name: string; value: string }[] = await queryFetcher(
+  const state: { name: string; value: string }[] = await this.query(
     `SELECT key, value_utf8, value FROM state WHERE service_name = '${service}' AND service_key = '${key}'`,
-    { baseUrl, headers },
   ).then(({ rows }) =>
     rows.map((row) => ({
       name: row.key,

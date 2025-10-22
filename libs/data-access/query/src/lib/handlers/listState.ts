@@ -1,10 +1,9 @@
 import { hexToBase64 } from '@restate/util/binary';
-import { queryFetcher } from './shared';
+import type { QueryContext } from './shared';
 
 export async function listState(
+  this: QueryContext,
   service: string,
-  baseUrl: string,
-  headers: Headers,
   keys: string[],
 ) {
   if (keys.length === 0) {
@@ -22,10 +21,7 @@ export async function listState(
       key: string;
       state: { name: string; value: string }[];
     }[]
-  > = queryFetcher(query, {
-    baseUrl,
-    headers,
-  }).then(async ({ rows }) => {
+  > = this.query(query).then(async ({ rows }) => {
     const results: Record<
       string,
       { key: string; state: Record<string, string> }

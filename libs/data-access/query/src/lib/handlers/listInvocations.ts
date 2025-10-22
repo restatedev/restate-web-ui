@@ -1,37 +1,44 @@
 import type { FilterItem } from '@restate/data-access/admin-api/spec';
 import { convertInvocation } from '../convertInvocation';
 import { convertInvocationsFilters } from '../convertFilters';
-import {
-  queryFetcher,
-  INVOCATIONS_LIMIT,
-  COUNT_LIMIT,
-  countEstimate,
-} from './shared';
+import { type QueryContext } from './shared';
+
+const INVOCATIONS_LIMIT = 250;
+const COUNT_LIMIT = 50000;
+
+function countEstimate(
+  receivedLessThanLimit: boolean,
+  rows: number,
+  minimumCountEstimate: number,
+): { total_count: number; total_count_lower_bound: boolean } {
+  if (receivedLessThanLimit) {
+    return { total_count: rows, total_count_lower_bound: false };
+  } else if (rows > minimumCountEstimate) {
+    return { total_count: rows, total_count_lower_bound: true };
+  } else {
+    return {
+      total_count: minimumCountEstimate,
+      total_count_lower_bound: true,
+    };
+  }
+}
 
 export async function listInvocations(
-  baseUrl: string,
-  headers: Headers,
+  this: QueryContext,
   filters: FilterItem[],
 ) {
-  const minimumCountEstimatePromise = queryFetcher(
+  const minimumCountEstimatePromise = this.query(
     `SELECT COUNT(1) as total_count FROM (SELECT * FROM sys_invocation LIMIT ${COUNT_LIMIT}) ${convertInvocationsFilters(filters)}`,
-    {
-      baseUrl,
-      headers,
-    },
   ).then(({ rows }) => rows?.at(0)?.total_count);
-  const invocationsPromise = queryFetcher(
+
+  const invocationsPromise = this.query(
     `SELECT id from sys_invocation ${convertInvocationsFilters(filters)} ORDER BY modified_at DESC LIMIT ${INVOCATIONS_LIMIT}`,
-    {
-      baseUrl,
-      headers,
-    },
   )
     .then(async ({ rows: idRows }) => {
       const receivedLessThanLimit = idRows.length < INVOCATIONS_LIMIT;
 
       if (idRows.length > 0) {
-        const { rows: invRows } = await queryFetcher(
+        const { rows: invRows } = await this.query(
           `SELECT * from sys_invocation ${convertInvocationsFilters([
             {
               field: 'id',
@@ -41,10 +48,6 @@ export async function listInvocations(
             },
             ...filters,
           ])} ORDER BY modified_at DESC`,
-          {
-            baseUrl,
-            headers,
-          },
         );
 
         return { rows: invRows, receivedLessThanLimit };

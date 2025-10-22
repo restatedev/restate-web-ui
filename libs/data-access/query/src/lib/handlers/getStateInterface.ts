@@ -1,13 +1,8 @@
-import { queryFetcher } from './shared';
+import type { QueryContext } from './shared';
 
-export async function getStateInterface(
-  service: string,
-  baseUrl: string,
-  headers: Headers,
-) {
-  const keys: { name: string }[] = await queryFetcher(
+export async function getStateInterface(this: QueryContext, service: string) {
+  const keys: { name: string }[] = await this.query(
     `SELECT DISTINCT key FROM state WHERE service_name = '${service}' GROUP BY key`,
-    { baseUrl, headers },
   ).then(({ rows }) => rows.map((row) => ({ name: row.key })));
 
   return new Response(JSON.stringify({ keys }), {
