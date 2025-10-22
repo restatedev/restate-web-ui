@@ -7,11 +7,10 @@ export async function getInbox(
   service: string,
   key: string,
   invocationId: string | undefined,
-  baseUrl: string,
 ) {
   const [head, size, position] = await Promise.all([
     ky
-      .get(`${baseUrl}/services/${service}/handlers`)
+      .get(`${this.baseUrl}/services/${service}/handlers`)
       .json<{ handlers: Handler[] }>()
       .then(({ handlers }) =>
         handlers

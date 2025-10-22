@@ -2,6 +2,8 @@ import ky from 'ky';
 
 export type QueryContext = {
   query: (sql: string) => Promise<{ rows: any[] }>;
+  baseUrl: string;
+  restateVersion: string;
 };
 
 function queryFetcher(
@@ -24,8 +26,11 @@ function queryFetcher(
 export function createQueryContext(
   baseUrl: string,
   headers: Headers,
+  restateVersion: string,
 ): QueryContext {
   return {
     query: (sql: string) => queryFetcher(sql, { baseUrl, headers }),
+    baseUrl,
+    restateVersion,
   };
 }

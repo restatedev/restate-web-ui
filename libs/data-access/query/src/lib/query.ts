@@ -36,44 +36,25 @@ type BoundHandlers = {
     service: string,
     key: string,
     invocationId: string | undefined,
-    baseUrl: string,
   ) => Promise<Response>;
   getState: (service: string, key: string) => Promise<Response>;
   getStateInterface: (service: string) => Promise<Response>;
   queryState: (service: string, filters: FilterItem[]) => Promise<Response>;
   listState: (service: string, keys: string[]) => Promise<Response>;
-  baseUrl: string;
-  restateVersion: string;
 };
 
-function bindHandlers(
-  context: QueryContext,
-  baseUrl: string,
-  headers: Headers,
-): BoundHandlers {
-  const restateVersion = getVersion(headers);
+function bindHandlers(context: QueryContext): BoundHandlers {
   return {
     listInvocations: listInvocations.bind(context),
     getInvocation: getInvocation.bind(context),
     getInvocationJournal: getInvocationJournal.bind(context),
     getJournalEntryV2: getJournalEntryV2.bind(context),
-    getInvocationJournalV2: function (invocationId: string) {
-      return getInvocationJournalV2.call(context, invocationId, restateVersion);
-    },
-    getInbox: function (
-      service: string,
-      key: string,
-      invocationId: string | undefined,
-      baseUrlParam: string,
-    ) {
-      return getInbox.call(context, service, key, invocationId, baseUrlParam);
-    },
+    getInvocationJournalV2: getInvocationJournalV2.bind(context),
+    getInbox: getInbox.bind(context),
     getState: getState.bind(context),
     getStateInterface: getStateInterface.bind(context),
     queryState: queryState.bind(context),
     listState: listState.bind(context),
-    baseUrl,
-    restateVersion,
   };
 }
 
@@ -81,8 +62,9 @@ const handlersKey = createStorageKey<BoundHandlers>();
 
 const handlersMiddleware: Middleware = (ctx, next) => {
   const baseUrl = `${ctx.url.protocol}//${ctx.url.host}`;
-  const queryContext = createQueryContext(baseUrl, ctx.headers);
-  const handlers = bindHandlers(queryContext, baseUrl, ctx.headers);
+  const restateVersion = getVersion(ctx.headers);
+  const queryContext = createQueryContext(baseUrl, ctx.headers, restateVersion);
+  const handlers = bindHandlers(queryContext);
   ctx.storage.set(handlersKey, handlers);
   return next();
 };
@@ -174,7 +156,6 @@ queryRouter.map(routes, {
         ctx.url.searchParams.has('invocationId')
           ? String(ctx.url.searchParams.get('invocationId'))
           : undefined,
-        baseUrl,
       );
     },
   },
