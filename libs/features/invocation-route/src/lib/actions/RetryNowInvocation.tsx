@@ -1,10 +1,11 @@
 import { withConfirmation } from '@restate/ui/dialog';
-import { RETRY_NOW_INVOCATION_QUERY_PARAM } from '../constants';
 import { FormEvent } from 'react';
 import { useResumeInvocation } from '@restate/data-access/admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui/notification';
 import { IconName } from '@restate/ui/icons';
 import { useSearchParams } from 'react-router';
+
+const RETRY_NOW_INVOCATION_QUERY_PARAM = 'retry-now-invocation';
 
 function RetryNowInvocationContent() {
   const [searchParams] = useSearchParams();

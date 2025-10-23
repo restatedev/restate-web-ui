@@ -1,5 +1,4 @@
 import { withConfirmation } from '@restate/ui/dialog';
-import { RESUME_INVOCATION_QUERY_PARAM } from '../constants';
 import { FormEvent } from 'react';
 import {
   useGetInvocation,
@@ -19,6 +18,8 @@ import { Revision } from '@restate/features/deployment';
 import { Badge } from '@restate/ui/badge';
 import { useRestateContext } from '@restate/features/restate-context';
 import { useSearchParams } from 'react-router';
+
+const RESUME_INVOCATION_QUERY_PARAM = 'resume-invocation';
 
 function ResumeInvocationContent() {
   const [searchParams] = useSearchParams();

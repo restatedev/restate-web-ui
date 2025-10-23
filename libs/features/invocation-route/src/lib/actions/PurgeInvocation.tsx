@@ -1,11 +1,12 @@
 import { withConfirmation } from '@restate/ui/dialog';
-import { PURGE_INVOCATION_QUERY_PARAM } from '../constants';
 import { FormEvent } from 'react';
 import { usePurgeInvocation } from '@restate/data-access/admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui/notification';
 import { Link } from '@restate/ui/link';
 import { useSearchParams } from 'react-router';
 import { IconName } from '@restate/ui/icons';
+
+const PURGE_INVOCATION_QUERY_PARAM = 'purge-invocation';
 
 function PurgeInvocationContent() {
   const [searchParams] = useSearchParams();

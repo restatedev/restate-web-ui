@@ -1,11 +1,12 @@
 import { withConfirmation } from '@restate/ui/dialog';
-import { KILL_INVOCATION_QUERY_PARAM } from '../constants';
 import { FormEvent } from 'react';
 import { useKillInvocation } from '@restate/data-access/admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui/notification';
 import { Link } from '@restate/ui/link';
 import { IconName } from '@restate/ui/icons';
 import { useSearchParams } from 'react-router';
+
+const KILL_INVOCATION_QUERY_PARAM = 'kill-invocation';
 
 function KillInvocationContent() {
   const [searchParams] = useSearchParams();

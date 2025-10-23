@@ -1,11 +1,12 @@
 import { withConfirmation } from '@restate/ui/dialog';
-import { CANCEL_INVOCATION_QUERY_PARAM } from '../constants';
 import { FormEvent } from 'react';
 import { useCancelInvocation } from '@restate/data-access/admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui/notification';
 import { Link } from '@restate/ui/link';
 import { IconName } from '@restate/ui/icons';
 import { useSearchParams } from 'react-router';
+
+const CANCEL_INVOCATION_QUERY_PARAM = 'cancel-invocation';
 
 function CancelInvocationContent() {
   const [searchParams] = useSearchParams();

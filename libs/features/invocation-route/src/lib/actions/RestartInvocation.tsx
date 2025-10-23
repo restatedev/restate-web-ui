@@ -1,11 +1,12 @@
 import { withConfirmation } from '@restate/ui/dialog';
-import { RESTART_AS_NEW_INVOCATION_QUERY_PARAM } from '../constants';
 import { FormEvent } from 'react';
 import { useRestartInvocationAsNew } from '@restate/data-access/admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui/notification';
 import { IconName } from '@restate/ui/icons';
 import { useRestateContext } from '@restate/features/restate-context';
 import { useSearchParams } from 'react-router';
+
+const RESTART_AS_NEW_INVOCATION_QUERY_PARAM = 'restart-new-invocation';
 
 function RestartInvocationContent() {
   const [searchParams] = useSearchParams();
