@@ -97,9 +97,11 @@ export function withConfirmation<THook extends UseMutationHook>(
     );
   }
 
-  function getTriggerHref(value?: string) {
-    return `?${config.queryParam}=${value || 'true'}`;
+  function getTriggerProps(value?: string) {
+    return {
+      href: `?${config.queryParam}=${value || 'true'}`,
+    };
   }
 
-  return { Dialog, getTriggerHref };
+  return { Dialog, getTriggerProps };
 }
