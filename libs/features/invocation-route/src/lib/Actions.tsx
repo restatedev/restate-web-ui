@@ -1,19 +1,17 @@
 import { Invocation } from '@restate/data-access/admin-api';
 import { DropdownItem } from '@restate/ui/dropdown';
-import {
-  CANCEL_INVOCATION_QUERY_PARAM,
-  KILL_INVOCATION_QUERY_PARAM,
-  PURGE_INVOCATION_QUERY_PARAM,
-  RESTART_AS_NEW_INVOCATION_QUERY_PARAM,
-  RESUME_INVOCATION_QUERY_PARAM,
-  RETRY_NOW_INVOCATION_QUERY_PARAM,
-} from './constants';
 import { Link } from '@restate/ui/link';
 import { tv } from '@restate/util/styles';
 import { SplitButton } from '@restate/ui/split-button';
 import { useRestateContext } from '@restate/features/restate-context';
 import { RestateMinimumVersion } from '@restate/util/feature-flag';
 import { Icon, IconName } from '@restate/ui/icons';
+import { KillInvocation } from './KillInvocation';
+import { CancelInvocation } from './CancelInvocation';
+import { PurgeInvocation } from './PurgeInvocation';
+import { RestartInvocation } from './RestartInvocation';
+import { RetryNowInvocation } from './RetryNowInvocation';
+import { ResumeInvocation } from './ResumeInvocation';
 
 const mainButtonStyles = tv({
   base: 'flex translate-x-px items-center gap-1 rounded-l-md rounded-r-none px-2 py-0.5 [font-size:inherit] [line-height:inherit]',
@@ -62,7 +60,7 @@ export function Actions({
           {isPaused && (
             <RestateMinimumVersion minVersion="1.4.5">
               <DropdownItem
-                href={`?${RESUME_INVOCATION_QUERY_PARAM}=${invocation.id}`}
+                {...ResumeInvocation.getTriggerProps(invocation.id)}
               >
                 <Icon
                   name={IconName.Resume}
@@ -75,7 +73,7 @@ export function Actions({
           {isBackingOff && (
             <RestateMinimumVersion minVersion="1.4.5">
               <DropdownItem
-                href={`?${RETRY_NOW_INVOCATION_QUERY_PARAM}=${invocation.id}`}
+                {...RetryNowInvocation.getTriggerProps(invocation.id)}
               >
                 <Icon
                   name={IconName.RetryNow}
@@ -88,7 +86,7 @@ export function Actions({
           {!isCompleted && (
             <DropdownItem
               destructive
-              href={`?${CANCEL_INVOCATION_QUERY_PARAM}=${invocation.id}`}
+              {...CancelInvocation.getTriggerProps(invocation.id)}
             >
               <Icon name={IconName.Cancel} className="h-3.5 w-3.5 opacity-80" />
               Cancel…
@@ -97,16 +95,14 @@ export function Actions({
           {!isCompleted && (
             <DropdownItem
               destructive
-              href={`?${KILL_INVOCATION_QUERY_PARAM}=${invocation.id}`}
+              {...KillInvocation.getTriggerProps(invocation.id)}
             >
               <Icon name={IconName.Kill} className="h-3.5 w-3.5 opacity-80" />
               Kill…
             </DropdownItem>
           )}
           {isRestateAsNewSupported && (
-            <DropdownItem
-              href={`?${RESTART_AS_NEW_INVOCATION_QUERY_PARAM}=${invocation.id}`}
-            >
+            <DropdownItem {...RestartInvocation.getTriggerProps(invocation.id)}>
               <Icon
                 name={IconName.Restart}
                 className="h-3.5 w-3.5 opacity-80"
@@ -117,7 +113,7 @@ export function Actions({
           {isCompleted && (
             <DropdownItem
               destructive
-              href={`?${PURGE_INVOCATION_QUERY_PARAM}=${invocation.id}`}
+              {...PurgeInvocation.getTriggerProps(invocation.id)}
             >
               <Icon name={IconName.Trash} className="h-3.5 w-3.5 opacity-80" />
               Purge…
@@ -128,15 +124,13 @@ export function Actions({
     >
       <Link
         variant="secondary-button"
-        href={
-          isPaused
-            ? `?${RESUME_INVOCATION_QUERY_PARAM}=${invocation.id}`
-            : isRestateAsNewSupported
-              ? `?${RESTART_AS_NEW_INVOCATION_QUERY_PARAM}=${invocation.id}`
-              : isCompleted
-                ? `?${PURGE_INVOCATION_QUERY_PARAM}=${invocation.id}`
-                : `?${CANCEL_INVOCATION_QUERY_PARAM}=${invocation.id}`
-        }
+        {...(isPaused
+          ? ResumeInvocation.getTriggerProps(invocation.id)
+          : isRestateAsNewSupported
+            ? RestartInvocation.getTriggerProps(invocation.id)
+            : isCompleted
+              ? PurgeInvocation.getTriggerProps(invocation.id)
+              : CancelInvocation.getTriggerProps(invocation.id))}
         className={mainButtonStyles({
           mini,
           destructive: !isRestateAsNewSupported && !isPaused,
