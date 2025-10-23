@@ -1,5 +1,5 @@
 import { withConfirmation } from '@restate/ui/dialog';
-import { RESUME_INVOCATION_QUERY_PARAM } from './constants';
+import { RESUME_INVOCATION_QUERY_PARAM } from '../constants';
 import { FormEvent } from 'react';
 import {
   useGetInvocation,

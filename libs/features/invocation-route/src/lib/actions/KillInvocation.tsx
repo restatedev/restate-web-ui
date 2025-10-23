@@ -1,28 +1,28 @@
 import { withConfirmation } from '@restate/ui/dialog';
-import { CANCEL_INVOCATION_QUERY_PARAM } from './constants';
+import { KILL_INVOCATION_QUERY_PARAM } from '../constants';
 import { FormEvent } from 'react';
-import { useCancelInvocation } from '@restate/data-access/admin-api-hooks';
+import { useKillInvocation } from '@restate/data-access/admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui/notification';
 import { Link } from '@restate/ui/link';
 import { IconName } from '@restate/ui/icons';
 import { useSearchParams } from 'react-router';
 
-function CancelInvocationContent() {
+function KillInvocationContent() {
   const [searchParams] = useSearchParams();
-  const invocationId = searchParams.get(CANCEL_INVOCATION_QUERY_PARAM);
+  const invocationId = searchParams.get(KILL_INVOCATION_QUERY_PARAM);
 
   return (
     <input type="hidden" name="invocation-id" value={invocationId || ''} />
   );
 }
 
-export const CancelInvocation = withConfirmation({
-  queryParam: CANCEL_INVOCATION_QUERY_PARAM,
+export const KillInvocation = withConfirmation({
+  queryParam: KILL_INVOCATION_QUERY_PARAM,
 
-  useMutation: useCancelInvocation,
+  useMutation: useKillInvocation,
 
   buildUseMutationInput: (searchParams) =>
-    searchParams.get(CANCEL_INVOCATION_QUERY_PARAM),
+    searchParams.get(KILL_INVOCATION_QUERY_PARAM),
 
   onSubmit: (mutate, event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -36,21 +36,21 @@ export const CancelInvocation = withConfirmation({
     });
   },
 
-  title: 'Cancel Invocation',
-  icon: IconName.Cancel,
-  iconClassName: 'fill-red-50 text-red-400 ',
-  description: <p>Are you sure you want to cancel this invocation?</p>,
-  alertType: 'info',
+  title: 'Kill Invocation',
+  icon: IconName.Kill,
+  iconClassName: 'fill-red-50 text-red-400',
+  description: <p>Are you sure you want to kill this invocation?</p>,
+  alertType: 'warning',
   alertContent: (
     <>
-      Cancellation frees held resources, cooperates with your handler code to
-      roll back changes, and allows proper cleanup. It is non-blocking, so the
-      call may return before cleanup finishes. In rare cases, cancellation may
-      not take effect, retry the operation if needed.{' '}
+      Killing immediately stops all calls in the invocation tree{' '}
+      <strong>without executing compensation logic</strong>. This may leave your
+      service in an inconsistent state. Only use as a last resort after trying
+      other fixes.{' '}
       <Link
-        href="https://docs.restate.dev/services/invocation/managing-invocations#cancel"
+        href="https://docs.restate.dev/services/invocation/managing-invocations#kill"
         variant="secondary"
-        className="text-blue-600"
+        className="text-orange-600"
         target="_blank"
         rel="noopener noreferrer"
       >
@@ -58,17 +58,17 @@ export const CancelInvocation = withConfirmation({
       </Link>
     </>
   ),
-  submitText: 'Cancel',
+  submitText: 'Kill',
   submitVariant: 'destructive',
   formMethod: 'DELETE',
 
-  Content: CancelInvocationContent,
+  Content: KillInvocationContent,
 
   onSuccess: (_data, variables) => {
     showSuccessNotification(
       <>
         <code>{variables.parameters?.path.invocation_id}</code> has been
-        successfully registered for cancellation.
+        successfully killed.
       </>,
     );
   },

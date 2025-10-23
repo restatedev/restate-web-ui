@@ -9,7 +9,7 @@ import { KeysIdsSection } from './KeysIdsSection';
 import { Link } from '@restate/ui/link';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
-import { Actions } from './Actions';
+import { Actions } from './actions';
 import { JournalV2 } from './JournalV2';
 import { useRestateContext } from '@restate/features/restate-context';
 import { InvocationPageProvider } from './InvocationPageContext';

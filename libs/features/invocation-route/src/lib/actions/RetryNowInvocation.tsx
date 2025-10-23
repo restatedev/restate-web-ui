@@ -1,5 +1,5 @@
 import { withConfirmation } from '@restate/ui/dialog';
-import { RETRY_NOW_INVOCATION_QUERY_PARAM } from './constants';
+import { RETRY_NOW_INVOCATION_QUERY_PARAM } from '../constants';
 import { FormEvent } from 'react';
 import { useResumeInvocation } from '@restate/data-access/admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui/notification';
