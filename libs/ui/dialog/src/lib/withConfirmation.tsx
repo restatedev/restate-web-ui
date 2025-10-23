@@ -1,10 +1,17 @@
-import { FormEvent } from 'react';
-import { useSearchParams } from 'react-router';
+import { ComponentType, FormEvent, ReactNode } from 'react';
+import { useNavigate, useSearchParams } from 'react-router';
 import type { UseMutationResult } from '@tanstack/react-query';
 import {
   ConfirmationDialog,
   ConfirmationDialogProps,
 } from './ConfirmationDialog';
+
+export interface BaseHelpers {
+  navigate: ReturnType<typeof useNavigate>;
+  searchParams: URLSearchParams;
+}
+
+export type WithHelpers<T = object> = BaseHelpers & T;
 
 type UseMutationHook = (
   ...args: any[]
@@ -26,7 +33,10 @@ type ExtractVariables<T> =
 type ExtractContext<T> =
   T extends UseMutationResult<any, any, any, infer TContext> ? TContext : never;
 
-export interface WithConfirmationConfig<THook extends UseMutationHook> {
+export interface WithConfirmationConfig<
+  THook extends UseMutationHook,
+  THelpers = object,
+> {
   queryParam: string;
   useMutation: THook;
   buildUseMutationInput: (searchParams: URLSearchParams) => string | null;
@@ -34,16 +44,23 @@ export interface WithConfirmationConfig<THook extends UseMutationHook> {
     mutate: (variables: ExtractVariables<ExtractMutationResult<THook>>) => void,
     event: FormEvent<HTMLFormElement>,
   ) => void;
-  renderDialog: (
-    searchParams: URLSearchParams,
-  ) => Omit<
-    ConfirmationDialogProps,
-    'queryParam' | 'onSubmit' | 'isPending' | 'error' | 'onReset'
-  >;
+  title: string;
+  description: ReactNode;
+  submitText?: string;
+  icon?: ConfirmationDialogProps['icon'];
+  iconClassName?: string;
+  alertType?: ConfirmationDialogProps['alertType'];
+  alertContent?: ReactNode;
+  submitVariant?: ConfirmationDialogProps['submitVariant'];
+  formMethod?: ConfirmationDialogProps['formMethod'];
+  formAction?: string;
+  Content?: ComponentType;
+  useHelpers?: () => THelpers;
   onSuccess?: (
     data: ExtractData<ExtractMutationResult<THook>>,
     variables: ExtractVariables<ExtractMutationResult<THook>>,
     context: ExtractContext<ExtractMutationResult<THook>>,
+    helpers: WithHelpers<THelpers>,
   ) => void;
   onError?: (
     error: ExtractError<ExtractMutationResult<THook>>,
@@ -52,11 +69,14 @@ export interface WithConfirmationConfig<THook extends UseMutationHook> {
   ) => void;
 }
 
-export function withConfirmation<THook extends UseMutationHook>(
-  config: WithConfirmationConfig<THook>,
-) {
+export function withConfirmation<
+  THook extends UseMutationHook,
+  THelpers = object,
+>(config: WithConfirmationConfig<THook, THelpers>) {
   function Dialog() {
     const [searchParams, setSearchParams] = useSearchParams();
+    const navigate = useNavigate();
+    const customHelpers = config.useHelpers?.();
     const mutationKey = config.buildUseMutationInput(searchParams);
 
     const mutation = config.useMutation(mutationKey || '', {
@@ -72,28 +92,43 @@ export function withConfirmation<THook extends UseMutationHook>(
           },
           { preventScrollReset: true },
         );
-        config.onSuccess?.(data, variables, context);
+        config.onSuccess?.(data, variables, context, {
+          navigate,
+          searchParams,
+          ...(customHelpers as THelpers),
+        });
       },
       onError: config.onError,
     });
 
     const { mutate, isPending, error, reset } = mutation;
 
-    const dialogConfig = config.renderDialog(searchParams);
-
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
       config.onSubmit(mutate, event);
     };
 
+    const ContentComponent = config.Content;
+
     return (
       <ConfirmationDialog
         queryParam={config.queryParam}
-        {...dialogConfig}
+        title={config.title}
+        description={config.description}
+        submitText={config.submitText ?? 'Submit'}
+        icon={config.icon}
+        iconClassName={config.iconClassName}
+        alertType={config.alertType}
+        alertContent={config.alertContent}
+        submitVariant={config.submitVariant}
+        formMethod={config.formMethod}
+        formAction={config.formAction}
         onSubmit={handleSubmit}
         isPending={isPending}
         error={error as Error | null}
         onClose={reset}
-      />
+      >
+        {ContentComponent && <ContentComponent />}
+      </ConfirmationDialog>
     );
   }
 

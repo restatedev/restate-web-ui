@@ -7,6 +7,7 @@ import { DialogFooter } from './DialogFooter';
 import { DialogClose } from './DialogClose';
 import { DialogContent } from './DialogContent';
 import { QueryDialog } from './Dialog';
+import { tv } from '@restate/util/styles';
 
 interface AlertBannerProps {
   type: 'warning' | 'info';
@@ -56,11 +57,14 @@ export interface ConfirmationDialogProps {
   onClose?: VoidFunction;
 }
 
+const iconStyles = tv({
+  base: '-ml-2 h-10 w-10 fill-blue-50 p-1.5 text-blue-400 drop-shadow-md',
+});
 export function ConfirmationDialog({
   queryParam,
   title,
   icon,
-  iconClassName = '-ml-2 h-10 w-10 fill-blue-50 p-1.5 text-blue-400 drop-shadow-md',
+  iconClassName,
   description,
   alertType,
   alertContent,
@@ -81,7 +85,12 @@ export function ConfirmationDialog({
       <DialogContent className="max-w-lg">
         <div className="flex flex-col gap-2">
           <h3 className="flex items-center gap-1 text-lg leading-6 font-medium text-gray-900">
-            {icon && <Icon name={icon} className={iconClassName} />}
+            {icon && (
+              <Icon
+                name={icon}
+                className={iconStyles({ className: iconClassName })}
+              />
+            )}
             {title}
           </h3>
           <div className="flex flex-col gap-2 text-sm text-gray-500">

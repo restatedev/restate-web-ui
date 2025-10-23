@@ -8,12 +8,12 @@ import { RetryNowInvocation } from './RetryNowInvocation';
 export function InvocationActions() {
   return (
     <>
-      <KillInvocation />
-      <PurgeInvocation />
-      <CancelInvocation />
-      <RestartInvocation />
-      <ResumeInvocation />
-      <RetryNowInvocation />
+      <KillInvocation.Dialog />
+      <PurgeInvocation.Dialog />
+      <CancelInvocation.Dialog />
+      <RetryNowInvocation.Dialog />
+      <RestartInvocation.Dialog />
+      <ResumeInvocation.Dialog />
     </>
   );
 }
