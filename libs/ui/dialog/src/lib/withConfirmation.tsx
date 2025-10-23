@@ -92,7 +92,7 @@ export function withConfirmation<THook extends UseMutationHook>(
         onSubmit={handleSubmit}
         isPending={isPending}
         error={error as Error | null}
-        onClode={reset}
+        onClose={reset}
       />
     );
   }

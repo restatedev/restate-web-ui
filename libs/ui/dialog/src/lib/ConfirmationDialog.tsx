@@ -53,7 +53,7 @@ export interface ConfirmationDialogProps {
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   isPending?: boolean;
   error?: Error | null;
-  onClode?: VoidFunction;
+  onClose?: VoidFunction;
 }
 
 export function ConfirmationDialog({
@@ -71,13 +71,13 @@ export function ConfirmationDialog({
   onSubmit,
   isPending = false,
   error,
-  onClode,
+  onClose,
   children,
 }: PropsWithChildren<ConfirmationDialogProps>) {
   const formId = useId();
 
   return (
-    <QueryDialog query={queryParam} onClose={onClode}>
+    <QueryDialog query={queryParam} onClose={onClose}>
       <DialogContent className="max-w-lg">
         <div className="flex flex-col gap-2">
           <h3 className="flex items-center gap-1 text-lg leading-6 font-medium text-gray-900">
