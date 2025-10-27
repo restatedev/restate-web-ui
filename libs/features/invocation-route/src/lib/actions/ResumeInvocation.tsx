@@ -74,6 +74,7 @@ function ResumeInvocationContent() {
             : 'No deployments available'
         }
         defaultValue={invocation?.pinned_deployment_id ? 'Keep' : 'Latest'}
+        key={invocation?.pinned_deployment_id ? 'Keep' : 'Latest'}
         name="deployment"
         required
       >
