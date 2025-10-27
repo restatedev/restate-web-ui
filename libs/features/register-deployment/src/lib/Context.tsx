@@ -390,6 +390,7 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
         force: Boolean(shouldForce),
         dry_run: action === 'dryRun' || action === FIX_HTTP_ACTION,
         additional_headers,
+        breaking: false,
       },
     });
   };
