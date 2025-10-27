@@ -1,4 +1,4 @@
-import { ToastQueue } from '@react-stately/toast';
+import { UNSTABLE_ToastQueue as ToastQueue } from 'react-aria-components';
 import type { ReactNode } from 'react';
 
 export interface NotificationContent {
@@ -6,26 +6,34 @@ export interface NotificationContent {
   type: 'error' | 'pending' | 'warning' | 'info' | 'success' | 'tooltip';
 }
 
-export const notificationQueue = new ToastQueue<NotificationContent>({
-  maxVisibleToasts: 99999999,
-  hasExitAnimation: true,
+class CustomQueue<T> extends ToastQueue<T> {
+  override close(key: string) {
+    const element = document.querySelector(`[data-toast-key="${key}"]`);
+    if (element) {
+      element.classList.add('closing');
+    }
+    setTimeout(() => {
+      super.close(key);
+    }, 200);
+  }
+}
+
+export const notificationQueue = new CustomQueue<NotificationContent>({
+  maxVisibleToasts: 100,
 });
 
-const PRIORITIES: Record<NotificationContent['type'], number> = {
-  error: 500,
-  tooltip: 500,
-  info: 100,
-  pending: 400,
-  success: 200,
-  warning: 300,
+const TIMEOUTS: Partial<Record<NotificationContent['type'], number>> = {
+  info: 5000,
+  success: 5000,
 };
 
 function showNotificationWithType(type: NotificationContent['type']) {
   return function (message: ReactNode) {
+    const timeout = TIMEOUTS[type];
     const id = notificationQueue.add(
       { content: message, type },
       {
-        priority: PRIORITIES[type] + notificationQueue.visibleToasts.length,
+        timeout,
       },
     );
 

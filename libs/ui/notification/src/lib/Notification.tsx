@@ -1,38 +1,28 @@
-import type { ToastState } from '@react-stately/toast';
-import type { AriaToastProps } from '@react-aria/toast';
-import { useToast as useAriaToast } from '@react-aria/toast';
-import { useEffect, useRef } from 'react';
+import {
+  UNSTABLE_Toast as Toast,
+  UNSTABLE_ToastContent as ToastContent,
+  Text,
+} from 'react-aria-components';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from '@restate/util/styles';
-import { PressResponder } from '@react-aria/interactions';
-import { NotificationContent, notificationQueue } from './queue';
+import { NotificationContent } from './queue';
 import { Spinner } from '@restate/ui/loading';
+import type { QueuedToast } from 'react-aria-components';
 
-interface ToastProps extends AriaToastProps<NotificationContent> {
-  state: ToastState<NotificationContent>;
+interface NotificationProps {
+  toast: QueuedToast<NotificationContent>;
   className?: string;
 }
 
 const styles = tv({
-  base: 'peer absolute top-0 right-0 left-0 z-80 flex min-h-10 flex-auto shrink-0 transform items-center gap-2 rounded-xl border py-1 pr-1 pl-3 text-sm shadow-lg shadow-zinc-800/5 backdrop-blur-xl backdrop-saturate-200 transition duration-300 [&:first-child+*]:z-70 [&:first-child+*]:-translate-y-1 [&:first-child+*]:scale-95 [&:first-child+*+*]:z-60 [&:first-child+*+*]:-translate-y-1.5 [&:first-child+*+*]:scale-90 [&:first-child+*+*~*]:z-60 [&:first-child+*+*~*]:scale-50',
+  base: 'peer absolute top-0 right-0 left-0 z-80 mx-10 flex min-h-10 flex-auto shrink-0 transform items-center gap-2 rounded-xl border py-1 pr-1 pl-3 text-sm shadow-lg shadow-zinc-800/5 backdrop-blur-xl backdrop-saturate-200 transition duration-300 animate-in fade-in slide-in-from-top-16 zoom-in-95 [&.closing]:duration-250 [&.closing]:animate-out [&.closing]:fade-out [&.closing]:slide-out-to-top-16',
   slots: {
     content: 'flex-auto',
     close: 'ml-auto text-inherit',
     icon: 'h-4 w-4 shrink-0',
   },
   variants: {
-    animation: {
-      queued: {
-        base: 'animate-in fade-in slide-in-from-top-16 zoom-in-95',
-      },
-      entering: {
-        base: 'animate-in fade-in slide-in-from-top-16 zoom-in-95',
-      },
-      exiting: {
-        base: 'z-0 animate-out fade-out slide-out-to-top-16 [&:first-child+*]:translate-y-0 [&:first-child+*]:scale-100',
-      },
-    },
     type: {
       error: {
         base: 'border-red-300/30 bg-red-200/90 text-red-800',
@@ -98,107 +88,23 @@ function NotificationIcon({
   }
 }
 
-const TIMEOUTS: Partial<Record<NotificationContent['type'], number>> = {
-  info: 5000,
-  success: 5000,
-};
-
-export function Notification({ state, className, ...props }: ToastProps) {
-  const ref = useRef<HTMLDivElement>(null);
-  const { toastProps, contentProps, titleProps, closeButtonProps } =
-    useAriaToast(props, state, ref);
+export function Notification({ toast, className }: NotificationProps) {
   const { base, content, close, icon } = styles({
     className,
-    type: props.toast.content.type,
-    animation: props.toast.animation ?? 'entering',
+    type: toast.content.type,
   });
-  const notificationIndex = state.visibleToasts.findIndex(
-    ({ key }) => key === props.toast.key,
-  );
-  const isVisible = notificationIndex === 0;
-  const timeOut = TIMEOUTS[props.toast.content.type];
-
-  useEffect(() => {
-    let isCancelled = false;
-    let timeOutRef: ReturnType<typeof setTimeout> | null = null;
-
-    if (isVisible && timeOut) {
-      timeOutRef = setTimeout(() => {
-        if (!isCancelled) {
-          notificationQueue.close(props.toast.key);
-        }
-      }, timeOut);
-    }
-
-    return () => {
-      isCancelled = true;
-      timeOutRef && clearTimeout(timeOutRef);
-    };
-  }, [isVisible, props.toast.key, timeOut]);
-
-  useEffect(() => {
-    let isCancelled = false;
-    let timeOutRef: ReturnType<typeof setTimeout> | null = null;
-    const element = ref.current;
-    if (!(element instanceof HTMLElement)) return;
-
-    const observer = new MutationObserver((mutationsList) => {
-      for (const mutation of mutationsList) {
-        if (
-          mutation.type === 'attributes' &&
-          mutation.attributeName === 'data-animation'
-        ) {
-          const value = element.getAttribute('data-animation');
-          if (value === 'exiting') {
-            // eslint-disable-next-line no-loop-func
-            timeOutRef = setTimeout(() => {
-              if (!isCancelled) {
-                notificationQueue.remove(props.toast.key);
-              }
-            }, 290);
-          }
-        }
-      }
-    });
-
-    observer.observe(element, {
-      attributes: true,
-      attributeFilter: ['data-animation'],
-    });
-
-    return () => {
-      isCancelled = true;
-      timeOutRef && clearTimeout(timeOutRef);
-      observer.disconnect();
-    };
-  }, [props.toast.key]);
 
   return (
-    <div
-      {...toastProps}
-      ref={ref}
-      className={base()}
-      data-animation={props.toast.animation}
-    >
-      <div {...contentProps} className={content()}>
-        <div {...titleProps} className="flex items-center gap-2">
-          <NotificationIcon
-            type={props.toast.content.type}
-            className={icon()}
-          />
-          {props.toast.content.content}
+    <Toast toast={toast} className={base()} data-toast-key={toast.key}>
+      <ToastContent className={content()}>
+        <div className="flex items-center gap-2">
+          <NotificationIcon type={toast.content.type} className={icon()} />
+          <Text slot="title">{toast.content.content}</Text>
         </div>
-      </div>
-      <PressResponder onPress={closeButtonProps.onPress}>
-        <Button
-          {...closeButtonProps}
-          onClick={closeButtonProps.onPress}
-          variant="icon"
-          className={close()}
-        >
-          <Icon name={IconName.X} />
-        </Button>
-      </PressResponder>
-    </div>
+      </ToastContent>
+      <Button slot="close" variant="icon" className={close()}>
+        <Icon name={IconName.X} />
+      </Button>
+    </Toast>
   );
 }
