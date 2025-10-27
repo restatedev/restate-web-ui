@@ -78,6 +78,7 @@
       ],
       "@restate/features/support": ["libs/features/support/src/index.ts"],
       "@restate/features/version": ["libs/features/version/src/index.ts"],
+      "@restate/ui/action-text": ["libs/ui/action-text/src/index.ts"],
       "@restate/ui/api": ["libs/ui/api/src/index.ts"],
       "@restate/ui/badge": ["libs/ui/badge/src/index.ts"],
       "@restate/ui/button": ["libs/ui/button/src/index.ts"],
