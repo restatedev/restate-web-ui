@@ -38,8 +38,8 @@ export interface paths {
     get: operations['list_deployments'];
     put?: never;
     /**
-     *  pubCreate deployment
-     * @description Create deployment. Restate will invoke the endpoint to gather additional information required for registration, such as the services exposed by the deployment. If the deployment is already registered, this method will fail unless `force` is set to `true`.
+     * Create deployment
+     * @description Create and register a new deployment. Restate will invoke the endpoint to gather additional information required for registration, such as the services exposed by the deployment. If the deployment is already registered, this method will return 200 and no changes will be made. If the deployment updates some already existing services, schema breaking changes checks will run. If you want to bypass them, use `breaking: true`. To overwrite an already existing deployment, use `force: true`
      */
     post: operations['create_deployment'];
     delete?: never;
@@ -60,11 +60,7 @@ export interface paths {
      * @description Get deployment metadata
      */
     get: operations['get_deployment'];
-    /**
-     * Update deployment
-     * @description Update deployment. Invokes the endpoint and replaces the existing deployment metadata with the discovered information. This is a dangerous operation that should be used only when there are failing invocations on the deployment that cannot be resolved any other way. Sense checks are applied to test that the new deployment is sufficiently similar to the old one.
-     */
-    put: operations['update_deployment'];
+    put?: never;
     post?: never;
     /**
      * Delete deployment
@@ -73,7 +69,11 @@ export interface paths {
     delete: operations['delete_deployment'];
     options?: never;
     head?: never;
-    patch?: never;
+    /**
+     * Update deployment
+     * @description Update an already existing deployment. This lets you update the address and options when invoking the deployment, such as the additional headers for HTTP or the assume role for Lambda. The registered services and handlers won't be overwritten, unless `overwrite: true`.
+     */
+    patch: operations['update_deployment'];
     trace?: never;
   };
   '/health': {
@@ -155,6 +155,26 @@ export interface paths {
      * @description Kill the given invocation. This does not guarantee consistency for virtual object instance state, in-flight invocations to other services, etc.
      */
     patch: operations['kill_invocation'];
+    trace?: never;
+  };
+  '/invocations/{invocation_id}/pause': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /**
+     * Pause an invocation
+     * @description Pause the given invocation. This applies only to running invocations, and will cause them to eventually pause.
+     */
+    patch: operations['pause_invocation'];
     trace?: never;
   };
   '/invocations/{invocation_id}/purge': {
@@ -723,6 +743,13 @@ export interface components {
           additional_headers?: {
             [key: string]: string;
           };
+          /**
+           * Metadata
+           * @description Deployment metadata.
+           */
+          metadata?: {
+            [key: string]: string;
+          };
           created_at: string;
           /**
            * Minimum Service Protocol version
@@ -746,6 +773,11 @@ export interface components {
            * @description List of services exposed by this deployment.
            */
           services: components['schemas']['ServiceNameRevPair'][];
+          /**
+           * Info
+           * @description List of configuration/deprecation information related to this deployment.
+           */
+          info?: components['schemas']['Info'][];
         }
       | {
           /** Deployment ID */
@@ -774,6 +806,13 @@ export interface components {
           additional_headers?: {
             [key: string]: string;
           };
+          /**
+           * Metadata
+           * @description Deployment metadata.
+           */
+          metadata?: {
+            [key: string]: string;
+          };
           created_at: string;
           /**
            * Minimum Service Protocol version
@@ -797,6 +836,11 @@ export interface components {
            * @description List of services exposed by this deployment.
            */
           services: components['schemas']['ServiceNameRevPair'][];
+          /**
+           * Info
+           * @description List of configuration/deprecation information related to this deployment.
+           */
+          info?: components['schemas']['Info'][];
         };
     String: string;
     /** @enum {string} */
@@ -805,6 +849,10 @@ export interface components {
       name: string;
       /** Format: uint32 */
       revision: number;
+    };
+    Info: {
+      code?: string | null;
+      message: string;
     };
     /** Format: arn */
     LambdaARN: string;
@@ -821,13 +869,8 @@ export interface components {
            */
           uri: string;
           /**
-           * Routing header
-           * @description Header used for routing to a specific deployment. If the load balancer between restate-server and your deployments uses a specific header to route, you should set this as the routing header, as it will be used to distinguish this deployment with other deployments with the same URL.
-           */
-          routing_header?: components['schemas']['Header'] | null;
-          /**
            * Additional headers
-           * @description Additional headers added to the discover/invoke requests to the deployment.
+           * @description Additional headers added to every discover/invoke request to the deployment.
            *
            *     You typically want to include here API keys and other tokens required to send requests to deployments.
            */
@@ -835,16 +878,31 @@ export interface components {
             [key: string]: string;
           } | null;
           /**
+           * Metadata
+           * @description Deployment metadata.
+           */
+          metadata?: {
+            [key: string]: string;
+          };
+          /**
            * Use http1.1
            * @description If `true`, discovery will be attempted using a client that defaults to HTTP1.1 instead of a prior-knowledge HTTP2 client. HTTP2 may still be used for TLS servers that advertise HTTP2 support via ALPN. HTTP1.1 deployments will only work in request-response mode.
            * @default false
            */
           use_http_11: boolean;
           /**
-           * Force
-           * @description If `true`, it will override, if existing, any deployment using the same `uri`. Beware that this can lead in-flight invocations to an unrecoverable error state.
+           * Breaking
+           * @description If `true`, it allows registering new service revisions with schemas incompatible with previous service revisions, such as changing service type, removing a handler, etc.
            *
-           *     By default, this is `true` but it might change in future to `false`.
+           *     See the [versioning documentation](https://docs.restate.dev/operate/versioning) for more information.
+           * @default false
+           */
+          breaking: boolean;
+          /**
+           * Force
+           * @description If `true`, it overrides, if existing, any deployment using the same `uri`. Beware that this can lead inflight invocations to an unrecoverable error state.
+           *
+           *     When set to `true`, it implies `breaking = true`.
            *
            *     See the [versioning documentation](https://docs.restate.dev/operate/versioning) for more information.
            * @default true
@@ -852,7 +910,7 @@ export interface components {
           force: boolean;
           /**
            * Dry-run mode
-           * @description If `true`, discovery will run but the deployment will not be registered. This is useful to see the impact of a new deployment before registering it.
+           * @description If `true`, discovery will run but the deployment will not be registered. This is useful to see the impact of a new deployment before registering it. `force` and `breaking` will be respected.
            * @default false
            */
           dry_run: boolean;
@@ -870,16 +928,31 @@ export interface components {
           assume_role_arn?: string | null;
           /**
            * Additional headers
-           * @description Additional headers added to the discover/invoke requests to the deployment.
+           * @description Additional headers added to every discover/invoke request to the deployment.
            */
           additional_headers?: {
             [key: string]: string;
           } | null;
           /**
-           * Force
-           * @description If `true`, it will override, if existing, any deployment using the same `uri`. Beware that this can lead in-flight invocations to an unrecoverable error state.
+           * Metadata
+           * @description Deployment metadata.
+           */
+          metadata?: {
+            [key: string]: string;
+          };
+          /**
+           * Breaking
+           * @description If `true`, it allows registering new service revisions with schemas incompatible with previous service revisions, such as changing service type, removing a handler, etc.
            *
-           *     By default, this is `true` but it might change in future to `false`.
+           *     See the [versioning documentation](https://docs.restate.dev/operate/versioning) for more information.
+           * @default false
+           */
+          breaking: boolean;
+          /**
+           * Force
+           * @description If `true`, it overrides, if existing, any deployment using the same `uri`. Beware that this can lead inflight invocations to an unrecoverable error state.
+           *
+           *     This implies `breaking = true`.
            *
            *     See the [versioning documentation](https://docs.restate.dev/operate/versioning) for more information.
            * @default true
@@ -887,15 +960,11 @@ export interface components {
           force: boolean;
           /**
            * Dry-run mode
-           * @description If `true`, discovery will run but the deployment will not be registered. This is useful to see the impact of a new deployment before registering it.
+           * @description If `true`, discovery will run but the deployment will not be registered. This is useful to see the impact of a new deployment before registering it. `force` and `breaking` will be respected.
            * @default false
            */
           dry_run: boolean;
         };
-    Header: {
-      key: string;
-      value: string;
-    };
     RegisterDeploymentResponse: {
       id: components['schemas']['String'];
       services: components['schemas']['ServiceMetadata'][];
@@ -918,6 +987,11 @@ export interface components {
        * @description SDK library and version declared during registration.
        */
       sdk_version?: string | null;
+      /**
+       * Info
+       * @description List of configuration/deprecation information related to this deployment.
+       */
+      info?: components['schemas']['Info'][];
     };
     ServiceMetadata: {
       /**
@@ -1034,6 +1108,11 @@ export interface components {
        *     }
        */
       retry_policy: components['schemas']['ServiceRetryPolicyMetadata'];
+      /**
+       * Info
+       * @description List of configuration/deprecation information related to this service.
+       */
+      info?: components['schemas']['Info'][];
     };
     /** @enum {string} */
     ServiceType: 'Service' | 'VirtualObject' | 'Workflow';
@@ -1139,6 +1218,11 @@ export interface components {
        * @default {}
        */
       retry_policy: components['schemas']['HandlerRetryPolicyMetadata'];
+      /**
+       * Info
+       * @description List of configuration/deprecation information related to this handler.
+       */
+      info?: components['schemas']['Info'][];
     };
     /** @enum {string} */
     HandlerMetadataType: 'Exclusive' | 'Shared' | 'Workflow';
@@ -1242,6 +1326,13 @@ export interface components {
           additional_headers?: {
             [key: string]: string;
           };
+          /**
+           * Metadata
+           * @description Deployment metadata.
+           */
+          metadata?: {
+            [key: string]: string;
+          };
           created_at: string;
           /**
            * Minimum Service Protocol version
@@ -1265,6 +1356,11 @@ export interface components {
            * @description List of services exposed by this deployment.
            */
           services: components['schemas']['ServiceMetadata'][];
+          /**
+           * Info
+           * @description List of configuration/deprecation information related to this deployment.
+           */
+          info?: components['schemas']['Info'][];
         }
       | {
           /** Deployment ID */
@@ -1293,6 +1389,13 @@ export interface components {
           additional_headers?: {
             [key: string]: string;
           };
+          /**
+           * Metadata
+           * @description Deployment metadata.
+           */
+          metadata?: {
+            [key: string]: string;
+          };
           created_at: string;
           /**
            * Minimum Service Protocol version
@@ -1316,6 +1419,11 @@ export interface components {
            * @description List of services exposed by this deployment.
            */
           services: components['schemas']['ServiceMetadata'][];
+          /**
+           * Info
+           * @description List of configuration/deprecation information related to this deployment.
+           */
+          info?: components['schemas']['Info'][];
         };
     UpdateDeploymentRequest:
       | {
@@ -1323,10 +1431,10 @@ export interface components {
            * Uri
            * @description Uri to use to discover/invoke the http deployment.
            */
-          uri: string;
+          uri?: string | null;
           /**
            * Additional headers
-           * @description Additional headers added to the discover/invoke requests to the deployment.
+           * @description Additional headers added to the discover/invoke requests to the deployment. When provided, this will overwrite all the headers previously configured for this deployment.
            */
           additional_headers?: {
             [key: string]: string;
@@ -1334,9 +1442,14 @@ export interface components {
           /**
            * Use http1.1
            * @description If `true`, discovery will be attempted using a client that defaults to HTTP1.1 instead of a prior-knowledge HTTP2 client. HTTP2 may still be used for TLS servers that advertise HTTP2 support via ALPN. HTTP1.1 deployments will only work in request-response mode.
+           */
+          use_http_11?: boolean | null;
+          /**
+           * Overwrite
+           * @description If `true`, the update will overwrite the schema information, including the exposed service and handlers and service configuration, allowing **breaking changes** too. Use with caution.
            * @default false
            */
-          use_http_11: boolean;
+          overwrite: boolean;
           /**
            * Dry-run mode
            * @description If `true`, discovery will run but the deployment will not be registered. This is useful to see the impact of a new deployment before registering it.
@@ -1349,19 +1462,25 @@ export interface components {
            * ARN
            * @description ARN to use to discover/invoke the lambda deployment.
            */
-          arn: string;
+          arn?: string | null;
           /**
            * Assume role ARN
-           * @description Optional ARN of a role to assume when invoking the addressed Lambda, to support role chaining
+           * @description Optional ARN of a role to assume when invoking the addressed Lambda, to support role chaining.
            */
           assume_role_arn?: string | null;
           /**
            * Additional headers
-           * @description Additional headers added to the discover/invoke requests to the deployment.
+           * @description Additional headers added to the discover/invoke requests to the deployment. When provided, this will overwrite all the headers previously configured for this deployment.
            */
           additional_headers?: {
             [key: string]: string;
           } | null;
+          /**
+           * Overwrite
+           * @description If `true`, the update will overwrite the schema information, including the exposed service and handlers and service configuration, allowing **breaking changes** too. Use with caution.
+           * @default false
+           */
+          overwrite: boolean;
           /**
            * Dry-run mode
            * @description If `true`, discovery will run but the deployment will not be registered. This is useful to see the impact of a new deployment before registering it.
@@ -1512,11 +1631,18 @@ export interface components {
       max_admin_api_version: number;
       /**
        * Ingress endpoint
-       * Format: uri
        * @description Ingress endpoint that the Web UI should use to interact with.
        */
-      ingress_endpoint: string;
+      ingress_endpoint?:
+        | components['schemas']['AdvertisedAddress-http-ingress-server']
+        | null;
     };
+    /**
+     * advertised address
+     * @description An externally accessible URI address for http-ingress-server. This can be set to unix:restate-data/ingress.sock to advertise the automatically created unix-socket instead of using tcp if needed
+     * @example http//127.0.0.1:8080/
+     */
+    'AdvertisedAddress-http-ingress-server': string;
     VirtualObjectState: string[];
     ListInvocationsRequestBody: {
       filters?: components['schemas']['FilterItem'][];
@@ -2496,6 +2622,15 @@ export interface operations {
       };
     };
     responses: {
+      /** @description Already exists. No change if force = false, overwritten if force = true */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['RegisterDeploymentResponse'];
+        };
+      };
       /** @description Created */
       201: {
         headers: {
@@ -2625,80 +2760,6 @@ export interface operations {
       };
     };
   };
-  update_deployment: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Deployment identifier */
-        deployment: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['UpdateDeploymentRequest'];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['DetailedDeploymentResponse'];
-        };
-      };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-    };
-  };
   delete_deployment: {
     parameters: {
       query?: {
@@ -2767,6 +2828,80 @@ export interface operations {
           [name: string]: unknown;
         };
         content?: never;
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  update_deployment: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Deployment identifier */
+        deployment: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdateDeploymentRequest'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['DetailedDeploymentResponse'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
       };
       503: {
         headers: {
@@ -2974,6 +3109,68 @@ export interface operations {
         };
       };
       /** @description The invocation was already completed, so it cannot be cancelled nor killed. You can instead purge the invocation, in order for restate to forget it. */
+      '409 Conflict': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  pause_invocation: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Invocation identifier. */
+        invocation_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Already paused */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Accepted */
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      '404 Not Found': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      /** @description Error when routing the request within restate. */
+      '503 Service Unavailable': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      '400 Bad Request': {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      /** @description The invocation is not running. An invocation can be paused only when running. */
       '409 Conflict': {
         headers: {
           [name: string]: unknown;

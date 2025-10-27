@@ -3,7 +3,7 @@
   "info": {
     "title": "Admin API",
     "description": "This API exposes the admin operations of a Restate cluster, such as registering new service deployments, interacting with running invocations, register Kafka subscriptions, retrieve service metadata. For an overview, check out the [Operate documentation](https://docs.restate.dev/operate/). If you're looking for how to call your services, check out the [Ingress HTTP API](https://docs.restate.dev/invoke/http) instead.",
-    "version": "1.5.1"
+    "version": "1.6.0-dev"
   },
   "paths": {
     "/cluster-health": {
@@ -107,8 +107,8 @@
       },
       "post": {
         "tags": ["deployment"],
-        "summary": " pubCreate deployment",
-        "description": "Create deployment. Restate will invoke the endpoint to gather additional information required for registration, such as the services exposed by the deployment. If the deployment is already registered, this method will fail unless `force` is set to `true`.",
+        "summary": "Create deployment",
+        "description": "Create and register a new deployment. Restate will invoke the endpoint to gather additional information required for registration, such as the services exposed by the deployment. If the deployment is already registered, this method will return 200 and no changes will be made. If the deployment updates some already existing services, schema breaking changes checks will run. If you want to bypass them, use `breaking: true`. To overwrite an already existing deployment, use `force: true`",
         "externalDocs": {
           "url": "https://docs.restate.dev/operate/registration"
         },
@@ -124,6 +124,16 @@
           "required": true
         },
         "responses": {
+          "200": {
+            "description": "Already exists. No change if force = false, overwritten if force = true",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegisterDeploymentResponse"
+                }
+              }
+            }
+          },
           "201": {
             "description": "Created",
             "content": {
@@ -285,14 +295,11 @@
           }
         }
       },
-      "put": {
+      "delete": {
         "tags": ["deployment"],
-        "summary": "Update deployment",
-        "description": "Update deployment. Invokes the endpoint and replaces the existing deployment metadata with the discovered information. This is a dangerous operation that should be used only when there are failing invocations on the deployment that cannot be resolved any other way. Sense checks are applied to test that the new deployment is sufficiently similar to the old one.",
-        "externalDocs": {
-          "url": "https://docs.restate.dev/operate/versioning"
-        },
-        "operationId": "update_deployment",
+        "summary": "Delete deployment",
+        "description": "Delete deployment. Currently it's supported to remove a deployment only using the force flag",
+        "operationId": "delete_deployment",
         "parameters": [
           {
             "name": "deployment",
@@ -300,28 +307,19 @@
             "description": "Deployment identifier",
             "required": true,
             "schema": { "type": "string" }
+          },
+          {
+            "name": "force",
+            "in": "query",
+            "description": "If true, the deployment will be forcefully deleted. This might break in-flight invocations, use with caution.",
+            "style": "simple",
+            "schema": { "type": "boolean" }
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateDeploymentRequest"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DetailedDeploymentResponse"
-                }
-              }
-            }
+          "202": { "description": "Accepted" },
+          "501": {
+            "description": "Not implemented. Only using the force flag is supported at the moment."
           },
           "400": {
             "description": "",
@@ -385,11 +383,14 @@
           }
         }
       },
-      "delete": {
+      "patch": {
         "tags": ["deployment"],
-        "summary": "Delete deployment",
-        "description": "Delete deployment. Currently it's supported to remove a deployment only using the force flag",
-        "operationId": "delete_deployment",
+        "summary": "Update deployment",
+        "description": "Update an already existing deployment. This lets you update the address and options when invoking the deployment, such as the additional headers for HTTP or the assume role for Lambda. The registered services and handlers won't be overwritten, unless `overwrite: true`.",
+        "externalDocs": {
+          "url": "https://docs.restate.dev/operate/versioning"
+        },
+        "operationId": "update_deployment",
         "parameters": [
           {
             "name": "deployment",
@@ -397,19 +398,28 @@
             "description": "Deployment identifier",
             "required": true,
             "schema": { "type": "string" }
-          },
-          {
-            "name": "force",
-            "in": "query",
-            "description": "If true, the deployment will be forcefully deleted. This might break in-flight invocations, use with caution.",
-            "style": "simple",
-            "schema": { "type": "boolean" }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDeploymentRequest"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
-          "202": { "description": "Accepted" },
-          "501": {
-            "description": "Not implemented. Only using the force flag is supported at the moment."
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetailedDeploymentResponse"
+                }
+              }
+            }
           },
           "400": {
             "description": "",
@@ -684,6 +694,67 @@
           },
           "409 Conflict": {
             "description": "The invocation was already completed, so it cannot be cancelled nor killed. You can instead purge the invocation, in order for restate to forget it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/invocations/{invocation_id}/pause": {
+      "patch": {
+        "tags": ["invocation"],
+        "summary": "Pause an invocation",
+        "description": "Pause the given invocation. This applies only to running invocations, and will cause them to eventually pause.",
+        "operationId": "pause_invocation",
+        "parameters": [
+          {
+            "name": "invocation_id",
+            "in": "path",
+            "description": "Invocation identifier.",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Already paused" },
+          "202": { "description": "Accepted" },
+          "404 Not Found": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503 Service Unavailable": {
+            "description": "Error when routing the request within restate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "400 Bad Request": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409 Conflict": {
+            "description": "The invocation is not running. An invocation can be paused only when running.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2049,6 +2120,12 @@
                 "type": "object",
                 "additionalProperties": { "type": "string" }
               },
+              "metadata": {
+                "title": "Metadata",
+                "description": "Deployment metadata.",
+                "type": "object",
+                "additionalProperties": { "type": "string" }
+              },
               "created_at": { "type": "string" },
               "min_protocol_version": {
                 "title": "Minimum Service Protocol version",
@@ -2073,6 +2150,12 @@
                 "description": "List of services exposed by this deployment.",
                 "type": "array",
                 "items": { "$ref": "#/components/schemas/ServiceNameRevPair" }
+              },
+              "info": {
+                "title": "Info",
+                "description": "List of configuration/deprecation information related to this deployment.",
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/Info" }
               }
             }
           },
@@ -2118,6 +2201,12 @@
                 "type": "object",
                 "additionalProperties": { "type": "string" }
               },
+              "metadata": {
+                "title": "Metadata",
+                "description": "Deployment metadata.",
+                "type": "object",
+                "additionalProperties": { "type": "string" }
+              },
               "created_at": { "type": "string" },
               "min_protocol_version": {
                 "title": "Minimum Service Protocol version",
@@ -2142,6 +2231,12 @@
                 "description": "List of services exposed by this deployment.",
                 "type": "array",
                 "items": { "$ref": "#/components/schemas/ServiceNameRevPair" }
+              },
+              "info": {
+                "title": "Info",
+                "description": "List of configuration/deprecation information related to this deployment.",
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/Info" }
               }
             }
           }
@@ -2158,6 +2253,14 @@
         "properties": {
           "name": { "type": "string" },
           "revision": { "type": "integer", "format": "uint32", "minimum": 0.0 }
+        }
+      },
+      "Info": {
+        "type": "object",
+        "required": ["message"],
+        "properties": {
+          "code": { "type": "string", "nullable": true },
+          "message": { "type": "string" }
         }
       },
       "LambdaARN": { "type": "string", "format": "arn" },
@@ -2179,18 +2282,18 @@
                 "description": "Uri to use to discover/invoke the http deployment.",
                 "type": "string"
               },
-              "routing_header": {
-                "title": "Routing header",
-                "description": "Header used for routing to a specific deployment. If the load balancer between restate-server and your deployments uses a specific header to route, you should set this as the routing header, as it will be used to distinguish this deployment with other deployments with the same URL.",
-                "allOf": [{ "$ref": "#/components/schemas/Header" }],
-                "nullable": true
-              },
               "additional_headers": {
                 "title": "Additional headers",
-                "description": "Additional headers added to the discover/invoke requests to the deployment.\n\nYou typically want to include here API keys and other tokens required to send requests to deployments.",
+                "description": "Additional headers added to every discover/invoke request to the deployment.\n\nYou typically want to include here API keys and other tokens required to send requests to deployments.",
                 "type": "object",
                 "additionalProperties": { "type": "string" },
                 "nullable": true
+              },
+              "metadata": {
+                "title": "Metadata",
+                "description": "Deployment metadata.",
+                "type": "object",
+                "additionalProperties": { "type": "string" }
               },
               "use_http_11": {
                 "title": "Use http1.1",
@@ -2198,15 +2301,22 @@
                 "default": false,
                 "type": "boolean"
               },
+              "breaking": {
+                "title": "Breaking",
+                "description": "If `true`, it allows registering new service revisions with schemas incompatible with previous service revisions, such as changing service type, removing a handler, etc.\n\nSee the [versioning documentation](https://docs.restate.dev/operate/versioning) for more information.",
+                "default": false,
+                "type": "boolean"
+              },
               "force": {
                 "title": "Force",
-                "description": "If `true`, it will override, if existing, any deployment using the same `uri`. Beware that this can lead in-flight invocations to an unrecoverable error state.\n\nBy default, this is `true` but it might change in future to `false`.\n\nSee the [versioning documentation](https://docs.restate.dev/operate/versioning) for more information.",
+                "description": "If `true`, it overrides, if existing, any deployment using the same `uri`. Beware that this can lead inflight invocations to an unrecoverable error state.\n\nWhen set to `true`, it implies `breaking = true`.\n\nSee the [versioning documentation](https://docs.restate.dev/operate/versioning) for more information.",
                 "default": true,
-                "type": "boolean"
+                "type": "boolean",
+                "nullable": true
               },
               "dry_run": {
                 "title": "Dry-run mode",
-                "description": "If `true`, discovery will run but the deployment will not be registered. This is useful to see the impact of a new deployment before registering it.",
+                "description": "If `true`, discovery will run but the deployment will not be registered. This is useful to see the impact of a new deployment before registering it. `force` and `breaking` will be respected.",
                 "default": false,
                 "type": "boolean"
               }
@@ -2231,34 +2341,39 @@
               },
               "additional_headers": {
                 "title": "Additional headers",
-                "description": "Additional headers added to the discover/invoke requests to the deployment.",
+                "description": "Additional headers added to every discover/invoke request to the deployment.",
                 "type": "object",
                 "additionalProperties": { "type": "string" },
                 "nullable": true
               },
+              "metadata": {
+                "title": "Metadata",
+                "description": "Deployment metadata.",
+                "type": "object",
+                "additionalProperties": { "type": "string" }
+              },
+              "breaking": {
+                "title": "Breaking",
+                "description": "If `true`, it allows registering new service revisions with schemas incompatible with previous service revisions, such as changing service type, removing a handler, etc.\n\nSee the [versioning documentation](https://docs.restate.dev/operate/versioning) for more information.",
+                "default": false,
+                "type": "boolean"
+              },
               "force": {
                 "title": "Force",
-                "description": "If `true`, it will override, if existing, any deployment using the same `uri`. Beware that this can lead in-flight invocations to an unrecoverable error state.\n\nBy default, this is `true` but it might change in future to `false`.\n\nSee the [versioning documentation](https://docs.restate.dev/operate/versioning) for more information.",
+                "description": "If `true`, it overrides, if existing, any deployment using the same `uri`. Beware that this can lead inflight invocations to an unrecoverable error state.\n\nThis implies `breaking = true`.\n\nSee the [versioning documentation](https://docs.restate.dev/operate/versioning) for more information.",
                 "default": true,
-                "type": "boolean"
+                "type": "boolean",
+                "nullable": true
               },
               "dry_run": {
                 "title": "Dry-run mode",
-                "description": "If `true`, discovery will run but the deployment will not be registered. This is useful to see the impact of a new deployment before registering it.",
+                "description": "If `true`, discovery will run but the deployment will not be registered. This is useful to see the impact of a new deployment before registering it. `force` and `breaking` will be respected.",
                 "default": false,
                 "type": "boolean"
               }
             }
           }
         ]
-      },
-      "Header": {
-        "type": "object",
-        "required": ["key", "value"],
-        "properties": {
-          "key": { "type": "string" },
-          "value": { "type": "string" }
-        }
       },
       "RegisterDeploymentResponse": {
         "type": "object",
@@ -2288,6 +2403,12 @@
             "description": "SDK library and version declared during registration.",
             "type": "string",
             "nullable": true
+          },
+          "info": {
+            "title": "Info",
+            "description": "List of configuration/deprecation information related to this deployment.",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Info" }
           }
         }
       },
@@ -2390,6 +2511,12 @@
             "allOf": [
               { "$ref": "#/components/schemas/ServiceRetryPolicyMetadata" }
             ]
+          },
+          "info": {
+            "title": "Info",
+            "description": "List of configuration/deprecation information related to this service.",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Info" }
           }
         }
       },
@@ -2487,6 +2614,12 @@
             "allOf": [
               { "$ref": "#/components/schemas/HandlerRetryPolicyMetadata" }
             ]
+          },
+          "info": {
+            "title": "Info",
+            "description": "List of configuration/deprecation information related to this handler.",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Info" }
           }
         }
       },
@@ -2630,6 +2763,12 @@
                 "type": "object",
                 "additionalProperties": { "type": "string" }
               },
+              "metadata": {
+                "title": "Metadata",
+                "description": "Deployment metadata.",
+                "type": "object",
+                "additionalProperties": { "type": "string" }
+              },
               "created_at": { "type": "string" },
               "min_protocol_version": {
                 "title": "Minimum Service Protocol version",
@@ -2654,6 +2793,12 @@
                 "description": "List of services exposed by this deployment.",
                 "type": "array",
                 "items": { "$ref": "#/components/schemas/ServiceMetadata" }
+              },
+              "info": {
+                "title": "Info",
+                "description": "List of configuration/deprecation information related to this deployment.",
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/Info" }
               }
             }
           },
@@ -2699,6 +2844,12 @@
                 "type": "object",
                 "additionalProperties": { "type": "string" }
               },
+              "metadata": {
+                "title": "Metadata",
+                "description": "Deployment metadata.",
+                "type": "object",
+                "additionalProperties": { "type": "string" }
+              },
               "created_at": { "type": "string" },
               "min_protocol_version": {
                 "title": "Minimum Service Protocol version",
@@ -2723,6 +2874,12 @@
                 "description": "List of services exposed by this deployment.",
                 "type": "array",
                 "items": { "$ref": "#/components/schemas/ServiceMetadata" }
+              },
+              "info": {
+                "title": "Info",
+                "description": "List of configuration/deprecation information related to this deployment.",
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/Info" }
               }
             }
           }
@@ -2731,17 +2888,19 @@
       "UpdateDeploymentRequest": {
         "anyOf": [
           {
+            "title": "UpdateHttpDeploymentRequest",
+            "description": "Update HTTP deployment request",
             "type": "object",
-            "required": ["uri"],
             "properties": {
               "uri": {
                 "title": "Uri",
                 "description": "Uri to use to discover/invoke the http deployment.",
-                "type": "string"
+                "type": "string",
+                "nullable": true
               },
               "additional_headers": {
                 "title": "Additional headers",
-                "description": "Additional headers added to the discover/invoke requests to the deployment.",
+                "description": "Additional headers added to the discover/invoke requests to the deployment. When provided, this will overwrite all the headers previously configured for this deployment.",
                 "type": "object",
                 "additionalProperties": { "type": "string" },
                 "nullable": true
@@ -2749,6 +2908,12 @@
               "use_http_11": {
                 "title": "Use http1.1",
                 "description": "If `true`, discovery will be attempted using a client that defaults to HTTP1.1 instead of a prior-knowledge HTTP2 client. HTTP2 may still be used for TLS servers that advertise HTTP2 support via ALPN. HTTP1.1 deployments will only work in request-response mode.",
+                "type": "boolean",
+                "nullable": true
+              },
+              "overwrite": {
+                "title": "Overwrite",
+                "description": "If `true`, the update will overwrite the schema information, including the exposed service and handlers and service configuration, allowing **breaking changes** too. Use with caution.",
                 "default": false,
                 "type": "boolean"
               },
@@ -2761,26 +2926,34 @@
             }
           },
           {
+            "title": "UpdateLambdaDeploymentRequest",
+            "description": "Update Lambda deployment request",
             "type": "object",
-            "required": ["arn"],
             "properties": {
               "arn": {
                 "title": "ARN",
                 "description": "ARN to use to discover/invoke the lambda deployment.",
-                "type": "string"
+                "type": "string",
+                "nullable": true
               },
               "assume_role_arn": {
                 "title": "Assume role ARN",
-                "description": "Optional ARN of a role to assume when invoking the addressed Lambda, to support role chaining",
+                "description": "Optional ARN of a role to assume when invoking the addressed Lambda, to support role chaining.",
                 "type": "string",
                 "nullable": true
               },
               "additional_headers": {
                 "title": "Additional headers",
-                "description": "Additional headers added to the discover/invoke requests to the deployment.",
+                "description": "Additional headers added to the discover/invoke requests to the deployment. When provided, this will overwrite all the headers previously configured for this deployment.",
                 "type": "object",
                 "additionalProperties": { "type": "string" },
                 "nullable": true
+              },
+              "overwrite": {
+                "title": "Overwrite",
+                "description": "If `true`, the update will overwrite the schema information, including the exposed service and handlers and service configuration, allowing **breaking changes** too. Use with caution.",
+                "default": false,
+                "type": "boolean"
               },
               "dry_run": {
                 "title": "Dry-run mode",
@@ -2945,7 +3118,6 @@
       "VersionInformation": {
         "type": "object",
         "required": [
-          "ingress_endpoint",
           "max_admin_api_version",
           "min_admin_api_version",
           "version"
@@ -2973,10 +3145,20 @@
           "ingress_endpoint": {
             "title": "Ingress endpoint",
             "description": "Ingress endpoint that the Web UI should use to interact with.",
-            "type": "string",
-            "format": "uri"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdvertisedAddress-http-ingress-server"
+              }
+            ],
+            "nullable": true
           }
         }
+      },
+      "AdvertisedAddress-http-ingress-server": {
+        "title": "advertised address",
+        "description": "An externally accessible URI address for http-ingress-server. This can be set to unix:restate-data/ingress.sock to advertise the automatically created unix-socket instead of using tcp if needed",
+        "type": "string",
+        "example": "http//127.0.0.1:8080/"
       }
     }
   },
