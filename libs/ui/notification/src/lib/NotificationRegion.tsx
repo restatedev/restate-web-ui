@@ -1,23 +1,14 @@
-import { AriaToastRegionProps, useToastRegion } from '@react-aria/toast';
-import { useToastQueue } from '@react-stately/toast';
-import { useRef } from 'react';
+import { UNSTABLE_ToastRegion as ToastRegion } from 'react-aria-components';
 import { notificationQueue } from './queue';
 import { Notification } from './Notification';
 
-export function NotificationRegion(props: AriaToastRegionProps) {
-  const state = useToastQueue(notificationQueue);
-  const ref = useRef<HTMLDivElement>(null);
-  const { regionProps } = useToastRegion(props, state, ref);
-
+export function NotificationRegion() {
   return (
-    <div
-      {...regionProps}
-      ref={ref}
-      className="sticky top-20 mx-4 flex h-10 min-h-10 flex-none flex-col flex-nowrap items-stretch justify-between sm:top-24 [&:has(*)]:z-110"
+    <ToastRegion
+      queue={notificationQueue}
+      className="sticky bottom-[calc(100vh-8.5rem)] max-w-6xl 3xl:max-w-[min(100rem,calc(100vw-800px-4rem))] mx-auto flex h-10 min-h-10 flex-none flex-col flex-nowrap items-stretch justify-between sm:top-24 [&:has(*)]:z-110"
     >
-      {state.visibleToasts.map((toast) => (
-        <Notification key={toast.key} toast={toast} state={state} />
-      ))}
-    </div>
+      {({ toast }) => <Notification toast={toast} />}
+    </ToastRegion>
   );
 }
