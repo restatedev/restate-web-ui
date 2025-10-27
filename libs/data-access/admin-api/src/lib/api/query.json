@@ -2946,7 +2946,10 @@
           },
           "invoked_by": {
             "type": "string",
-            "enum": ["ingress", "service"]
+            "enum": ["ingress", "service", "restart_as_new"]
+          },
+          "restarted_from": {
+            "type": "string"
           },
           "status": {
             "type": "string",
@@ -3122,7 +3125,10 @@
           },
           "invoked_by": {
             "type": "string",
-            "enum": ["ingress", "service"]
+            "enum": ["ingress", "service", "restart_as_new"]
+          },
+          "restarted_from": {
+            "type": "string"
           },
           "status": {
             "type": "string",

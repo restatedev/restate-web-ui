@@ -2391,7 +2391,8 @@ export interface components {
       id: string;
       created_using_restate_version?: string;
       /** @enum {string} */
-      invoked_by: 'ingress' | 'service';
+      invoked_by: 'ingress' | 'service' | 'restart_as_new';
+      restarted_from?: string;
       /** @enum {string} */
       status:
         | 'succeeded'
@@ -2467,7 +2468,8 @@ export interface components {
       next_retry_at?: string;
       id: string;
       /** @enum {string} */
-      invoked_by: 'ingress' | 'service';
+      invoked_by: 'ingress' | 'service' | 'restart_as_new';
+      restarted_from?: string;
       /** @enum {string} */
       status:
         | 'pending'
