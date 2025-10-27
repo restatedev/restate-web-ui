@@ -24,7 +24,7 @@ import {
 } from '@restate/util/snapshot-time';
 import { useEffect, useState } from 'react';
 import { formatDurations } from '@restate/util/intl';
-import { Actions } from './Actions';
+import { Actions } from './actions';
 import { JournalSection } from './JournalSection';
 import { useQueryClient } from '@tanstack/react-query';
 import { Link } from '@restate/ui/link';
