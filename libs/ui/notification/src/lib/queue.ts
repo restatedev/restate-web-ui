@@ -11,10 +11,10 @@ class CustomQueue<T> extends ToastQueue<T> {
     const element = document.querySelector(`[data-toast-key="${key}"]`);
     if (element) {
       element.classList.add('closing');
-      setTimeout(() => {
-        super.close(key);
-      }, 200);
     }
+    setTimeout(() => {
+      super.close(key);
+    }, 200);
   }
 }
 
