@@ -39,7 +39,7 @@ export const CancelInvocation = withConfirmation({
 
   title: 'Cancel Invocation',
   icon: IconName.Cancel,
-  iconClassName: 'fill-red-50 text-red-400 ',
+  iconClassName: 'text-red-400 ',
   description: <p>Are you sure you want to cancel this invocation?</p>,
   alertType: 'info',
   alertContent: (

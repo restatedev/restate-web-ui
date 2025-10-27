@@ -214,13 +214,20 @@ export function JournalV2({
                     <div className="absolute top-full left-1/2 h-8 w-px -translate-x-1/2 border border-dashed border-zinc-300" />
                   </div>
                   <div className="shrink-0 pl-6 text-xs font-semibold text-gray-400 uppercase">
-                    Invoked by
+                    {journalAndInvocationData.invoked_by === 'restart_as_new'
+                      ? 'Restarted from'
+                      : 'Invoked by'}
                   </div>
                   {journalAndInvocationData?.invoked_by === 'ingress' ? (
                     <div className="text-xs font-medium">Ingress</div>
                   ) : journalAndInvocationData?.invoked_by_id ? (
                     <InvocationId
                       id={journalAndInvocationData?.invoked_by_id}
+                      className="max-w-[20ch] min-w-0 text-0.5xs font-semibold"
+                    />
+                  ) : journalAndInvocationData?.restarted_from ? (
+                    <InvocationId
+                      id={journalAndInvocationData?.restarted_from}
                       className="max-w-[20ch] min-w-0 text-0.5xs font-semibold"
                     />
                   ) : null}

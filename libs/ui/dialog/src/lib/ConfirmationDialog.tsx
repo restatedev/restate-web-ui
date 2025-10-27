@@ -58,7 +58,7 @@ export interface ConfirmationDialogProps {
 }
 
 const iconStyles = tv({
-  base: '-ml-2 h-10 w-10 fill-blue-50 p-1.5 text-blue-400 drop-shadow-md',
+  base: '-ml-2 h-10 w-10 p-1.5 text-blue-400 drop-shadow-md',
 });
 export function ConfirmationDialog({
   queryParam,

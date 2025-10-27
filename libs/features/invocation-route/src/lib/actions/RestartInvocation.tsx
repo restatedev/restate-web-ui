@@ -44,7 +44,6 @@ export const RestartInvocation = withConfirmation({
 
   title: 'Restart as new Invocation',
   icon: IconName.Restart,
-  iconClassName: '-ml-2 h-10 w-10 p-1.5 text-blue-400 drop-shadow-md',
   description: (
     <p>Are you sure you want to restart this invocation as a new one?</p>
   ),
