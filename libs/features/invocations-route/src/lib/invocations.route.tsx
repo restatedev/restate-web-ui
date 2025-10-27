@@ -203,6 +203,7 @@ function Component() {
         options: [
           { value: 'service', label: 'Service' },
           { value: 'ingress', label: 'Ingress' },
+          { value: 'restart_as_new', label: 'Restart as New' },
         ],
       },
       {
@@ -266,6 +267,12 @@ function Component() {
           { value: 'AFTER', label: 'after' },
         ],
         type: 'DATE',
+      },
+      {
+        id: 'restarted_from',
+        label: 'Restarted from',
+        operations: [{ value: 'EQUALS', label: 'is' }],
+        type: 'STRING',
       },
     ] satisfies QueryClauseSchema<QueryClauseType>[];
   }, [listDeploymentPromise, listServicesPromise]);

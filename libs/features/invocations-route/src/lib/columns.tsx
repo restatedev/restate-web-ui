@@ -23,6 +23,7 @@ const COLUMNS_KEYS = [
   'completion_retention',
   'journal_retention',
   'actions',
+  'restarted_from',
 ] as const;
 export type ColumnKey = (typeof COLUMNS_KEYS)[number];
 
@@ -47,6 +48,7 @@ export const COLUMN_NAMES: Record<ColumnKey, string> = {
   actions: 'Actions',
   completion_retention: 'Completion retention',
   journal_retention: 'Journal retention',
+  restarted_from: 'Restarted from',
 };
 
 const SORT_ORDER: Record<ColumnKey, number> = Object.entries(

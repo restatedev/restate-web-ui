@@ -134,6 +134,18 @@ function Type({ invocation }: CellProps) {
 function InvokedBy({ invocation }: CellProps) {
   if (invocation.invoked_by === 'ingress') {
     return <Badge className="border-none">Ingress</Badge>;
+  } else if (invocation.invoked_by === 'restart_as_new') {
+    return (
+      <div className="flex w-full items-center gap-0.5">
+        <Badge className="border-none">Restarted by</Badge>
+        {invocation.restarted_from && (
+          <InvocationId
+            id={invocation.restarted_from}
+            className="w-[20ch] max-w-full min-w-0 pr-1 pl-1.5 text-zinc-500"
+          />
+        )}
+      </div>
+    );
   } else if (invocation.invoked_by_target) {
     return (
       <div className="flex w-full flex-col items-start gap-0.5">
@@ -175,6 +187,13 @@ function withCell(Component: ComponentType<CellProps>, id: ColumnKey) {
       </Cell>
     );
   };
+}
+
+function RestartedFromCell({ invocation }: CellProps) {
+  if (!invocation.restarted_from) {
+    return null;
+  }
+  return <InvocationId id={invocation.restarted_from} />;
 }
 
 function JournalCell({ invocation }: CellProps) {
@@ -315,6 +334,7 @@ const CELLS: Record<ColumnKey, ComponentType<CellProps>> = {
     }),
     'journal_retention',
   ),
+  restarted_from: withCell(RestartedFromCell, 'restarted_from'),
 };
 
 export function InvocationCell({
