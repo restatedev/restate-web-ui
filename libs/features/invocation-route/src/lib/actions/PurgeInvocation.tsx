@@ -39,7 +39,7 @@ export const PurgeInvocation = withConfirmation({
 
   title: 'Purge Invocation',
   description: <p>Are you sure you want to purge this invocation?</p>,
-  iconClassName: 'fill-red-50 text-red-400',
+  iconClassName: 'text-red-400',
   icon: IconName.Trash,
   alertType: 'info',
   alertContent: (

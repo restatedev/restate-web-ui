@@ -14,7 +14,7 @@ import { RetryNowInvocation } from './RetryNowInvocation';
 import { ResumeInvocation } from './ResumeInvocation';
 
 const mainButtonStyles = tv({
-  base: 'flex translate-x-px items-center gap-1 rounded-l-md rounded-r-none px-2 py-0.5 [font-size:inherit] [line-height:inherit]',
+  base: 'flex translate-x-px items-center gap-1 rounded-l-md rounded-r-none px-2 py-0.5 [font-size:inherit] [line-height:inherit] whitespace-nowrap',
   variants: {
     mini: {
       true: 'invisible absolute right-full z-2 drop-shadow-[-20px_2px_4px_rgba(255,255,255,0.8)] group-hover:visible',
@@ -64,7 +64,7 @@ export function Actions({
               >
                 <Icon
                   name={IconName.Resume}
-                  className="h-3.5 w-3.5 opacity-80"
+                  className="h-3.5 w-3.5 shrink-0 opacity-80"
                 />
                 Resume…
               </DropdownItem>
@@ -77,7 +77,7 @@ export function Actions({
               >
                 <Icon
                   name={IconName.RetryNow}
-                  className="h-3.5 w-3.5 opacity-80"
+                  className="h-3.5 w-3.5 shrink-0 opacity-80"
                 />
                 Retry now…
               </DropdownItem>
@@ -88,7 +88,10 @@ export function Actions({
               destructive
               {...CancelInvocation.getTriggerProps(invocation.id)}
             >
-              <Icon name={IconName.Cancel} className="h-3.5 w-3.5 opacity-80" />
+              <Icon
+                name={IconName.Cancel}
+                className="h-3.5 w-3.5 shrink-0 opacity-80"
+              />
               Cancel…
             </DropdownItem>
           )}
@@ -97,7 +100,10 @@ export function Actions({
               destructive
               {...KillInvocation.getTriggerProps(invocation.id)}
             >
-              <Icon name={IconName.Kill} className="h-3.5 w-3.5 opacity-80" />
+              <Icon
+                name={IconName.Kill}
+                className="h-3.5 w-3.5 shrink-0 opacity-80"
+              />
               Kill…
             </DropdownItem>
           )}
@@ -105,7 +111,7 @@ export function Actions({
             <DropdownItem {...RestartInvocation.getTriggerProps(invocation.id)}>
               <Icon
                 name={IconName.Restart}
-                className="h-3.5 w-3.5 opacity-80"
+                className="h-3.5 w-3.5 shrink-0 opacity-80"
               />
               Restart as new…
             </DropdownItem>
@@ -115,7 +121,10 @@ export function Actions({
               destructive
               {...PurgeInvocation.getTriggerProps(invocation.id)}
             >
-              <Icon name={IconName.Trash} className="h-3.5 w-3.5 opacity-80" />
+              <Icon
+                name={IconName.Trash}
+                className="h-3.5 w-3.5 shrink-0 opacity-80"
+              />
               Purge…
             </DropdownItem>
           )}
@@ -146,7 +155,7 @@ export function Actions({
                   ? IconName.Trash
                   : IconName.Cancel
           }
-          className="h-[0.9em] w-[0.9em] opacity-80"
+          className="h-[0.9em] w-[0.9em] shrink-0 opacity-80"
         />
 
         {isPaused

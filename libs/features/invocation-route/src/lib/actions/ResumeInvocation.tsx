@@ -193,8 +193,6 @@ export const ResumeInvocation = withConfirmation({
 
   title: 'Resume Invocation',
   icon: IconName.Resume,
-  iconClassName:
-    '-ml-2 h-10 w-10 fill-blue-50 p-1.5 text-blue-400 drop-shadow-md',
   description: (
     <p className="mt-2 text-sm text-gray-500">
       Select the deployment you'd like to run this invocation on, then resume

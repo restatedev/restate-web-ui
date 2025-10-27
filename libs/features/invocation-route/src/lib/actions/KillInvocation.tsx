@@ -39,7 +39,7 @@ export const KillInvocation = withConfirmation({
 
   title: 'Kill Invocation',
   icon: IconName.Kill,
-  iconClassName: 'fill-red-50 text-red-400',
+  iconClassName: 'text-red-400',
   description: <p>Are you sure you want to kill this invocation?</p>,
   alertType: 'warning',
   alertContent: (
