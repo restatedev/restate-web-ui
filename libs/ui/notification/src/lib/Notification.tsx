@@ -16,7 +16,7 @@ interface NotificationProps {
 }
 
 const styles = tv({
-  base: 'peer mx-10 absolute top-0 right-0 left-0 z-80 flex min-h-10 flex-auto shrink-0 transform items-center gap-2 rounded-xl border py-1 pr-1 pl-3 text-sm shadow-lg shadow-zinc-800/5 backdrop-blur-xl backdrop-saturate-200 transition duration-300 [&:first-child+*]:z-70 [&:first-child+*]:-translate-y-1 [&:first-child+*]:scale-95 [&:first-child+*+*]:z-60 [&:first-child+*+*]:-translate-y-1.5 [&:first-child+*+*]:scale-90 [&:first-child+*+*~*]:z-60 [&:first-child+*+*~*]:scale-50',
+  base: 'peer absolute top-0 right-0 left-0 z-80 mx-10 flex min-h-10 flex-auto shrink-0 transform items-center gap-2 rounded-xl border py-1 pr-1 pl-3 text-sm shadow-lg shadow-zinc-800/5 backdrop-blur-xl backdrop-saturate-200 transition duration-300 animate-in fade-in slide-in-from-top-16 zoom-in-95 [&.closing]:duration-250 [&.closing]:animate-out [&.closing]:fade-out [&.closing]:slide-out-to-top-16',
   slots: {
     content: 'flex-auto',
     close: 'ml-auto text-inherit',
@@ -95,7 +95,7 @@ export function Notification({ toast, className }: NotificationProps) {
   });
 
   return (
-    <Toast toast={toast} className={base()}>
+    <Toast toast={toast} className={base()} data-toast-key={toast.key}>
       <ToastContent className={content()}>
         <div className="flex items-center gap-2">
           <NotificationIcon type={toast.content.type} className={icon()} />
