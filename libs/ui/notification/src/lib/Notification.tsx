@@ -105,7 +105,10 @@ export function Notification({ toast, className }: NotificationProps) {
     type: toast.content.type,
   });
   const isCountdown = toast.content.type === 'countdown';
-  const { countdown, isPending } = useCountdownNotification(isCountdown);
+  const { countdown, isPending } = useCountdownNotification(
+    isCountdown,
+    toast.content.promise?.resolve,
+  );
 
   return (
     <Toast toast={toast} className={base()} data-toast-key={toast.key}>
@@ -115,7 +118,7 @@ export function Notification({ toast, className }: NotificationProps) {
           <NotificationIcon type={toast.content.type} className={icon()} />
           <Text slot="title">
             {toast.content.content}
-            {isCountdown && (countdown ? `(${countdown}s)` : <Ellipsis />)}
+            {isCountdown && (countdown ? `(in ${countdown}s)` : <Ellipsis />)}
           </Text>
         </div>
       </ToastContent>
@@ -140,7 +143,10 @@ export function Notification({ toast, className }: NotificationProps) {
   );
 }
 
-function useCountdownNotification(enabled = false) {
+function useCountdownNotification(
+  enabled = false,
+  onFinish?: (value: unknown) => void,
+) {
   const [countdown, setCountdown] = useState(3);
   const [isPending, setIsPending] = useState(false);
 
@@ -152,12 +158,13 @@ function useCountdownNotification(enabled = false) {
         setCountdown(Math.max(countdown - 1, 0));
         if (countdown === 1) {
           setIsPending(true);
+          onFinish?.(true);
         }
       }, 1000);
     }
 
     return () => clearTimeout(timer);
-  }, [enabled, countdown]);
+  }, [enabled, countdown, onFinish]);
 
   return enabled ? { countdown, isPending } : {};
 }

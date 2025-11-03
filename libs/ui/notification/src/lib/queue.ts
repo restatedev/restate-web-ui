@@ -11,6 +11,10 @@ export interface NotificationContent {
     | 'success'
     | 'tooltip'
     | 'countdown';
+  promise?: {
+    resolve?: (value: unknown) => void;
+    reject?: (reason?: unknown) => void;
+  };
 }
 
 class CustomQueue<T> extends ToastQueue<T> {
@@ -37,10 +41,19 @@ const TIMEOUTS: Partial<Record<NotificationContent['type'], number>> = {
 function showNotificationWithType(type: NotificationContent['type']) {
   return function (message: ReactNode) {
     const timeout = TIMEOUTS[type];
+    const { resolve, reject, promise } =
+      type === 'countdown'
+        ? Promise.withResolvers()
+        : { promise: Promise.resolve() };
     const id = notificationQueue.add(
-      { content: message, type },
+      { content: message, type, promise: { resolve, reject } },
       {
         timeout,
+        onClose: () => {
+          if (type === 'countdown') {
+            reject?.();
+          }
+        },
       },
     );
 
@@ -49,6 +62,7 @@ function showNotificationWithType(type: NotificationContent['type']) {
       hide: () => {
         notificationQueue.close(id);
       },
+      promise,
     };
   };
 }
