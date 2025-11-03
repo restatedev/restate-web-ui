@@ -10,6 +10,82 @@
 - **Typecheck**: `pnpm nx typecheck web-ui`
 - **E2E**: `pnpm nx e2e web-ui-e2e`
 
+## Library Generation
+
+### UI Libraries
+
+**React UI Library**
+
+```bash
+pnpm nx g @nx/react:lib <NAME> --directory=libs/ui/<NAME> --bundler=none --importPath=@restate/ui/<NAME>
+```
+
+**JS UI Library**
+
+```bash
+pnpm nx g @nx/js:library <NAME> --directory=libs/ui/<NAME> --bundler=none --importPath=@restate/ui/<NAME>
+```
+
+### Data Access Libraries
+
+**React Data Access Library**
+
+```bash
+pnpm nx g @nx/react:lib <NAME> --directory=libs/data-access/<NAME> --bundler=none --importPath=@restate/data-access/<NAME>
+```
+
+**JS Data Access Library**
+
+```bash
+pnpm nx g @nx/js:library <NAME> --directory=libs/data-access/<NAME> --bundler=none --importPath=@restate/data-access/<NAME>
+```
+
+### Feature Libraries
+
+**React Feature Library**
+
+```bash
+pnpm nx g @nx/react:lib <NAME> --directory=libs/features/<NAME> --bundler=none --importPath=@restate/features/<NAME>
+```
+
+**JS Feature Library**
+
+```bash
+pnpm nx g @nx/js:library <NAME> --directory=libs/features/<NAME> --bundler=none --importPath=@restate/features/<NAME>
+```
+
+### Util Libraries
+
+**React Util Library**
+
+```bash
+pnpm nx g @nx/react:lib <NAME> --directory=libs/util/<NAME> --bundler=none --importPath=@restate/util/<NAME>
+```
+
+**JS Util Library**
+
+```bash
+pnpm nx g @nx/js:library <NAME> --directory=libs/util/<NAME> --bundler=none --importPath=@restate/util/<NAME>
+```
+
+### Data Access Libraries (JS)
+
+```bash
+pnpm nx g @nx/js:library <NAME> --directory=libs/data-access/<NAME> --bundler=none --importPath=@restate/data-access/<NAME>
+```
+
+### Feature Libraries (React)
+
+```bash
+pnpm nx g @nx/react:lib <NAME> --directory=libs/features/<NAME> --bundler=none --importPath=@restate/features/<NAME>
+```
+
+### Util Libraries (JS)
+
+```bash
+pnpm nx g @nx/js:library <NAME> --directory=libs/util/<NAME> --bundler=none --importPath=@restate/util/<NAME>
+```
+
 ## Code Style
 
 - **Package manager**: pnpm (monorepo managed by Nx)
