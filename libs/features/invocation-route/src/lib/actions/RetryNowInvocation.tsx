@@ -20,13 +20,23 @@ export const RetryNowInvocation = withConfirmation({
   queryParam: RETRY_NOW_INVOCATION_QUERY_PARAM,
 
   useMutation: useResumeInvocation,
+  buildUseMutationInput: (input) => {
+    if (input instanceof URLSearchParams) {
+      return input.get(RETRY_NOW_INVOCATION_QUERY_PARAM);
+    } else {
+      return input.get('invocation-id') as string;
+    }
+  },
 
-  buildUseMutationInput: (searchParams) =>
-    searchParams.get(RETRY_NOW_INVOCATION_QUERY_PARAM),
+  onSubmit: (mutate, event: FormEvent<HTMLFormElement> | FormData) => {
+    let formData: FormData;
 
-  onSubmit: (mutate, event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
+    if (event instanceof FormData) {
+      formData = event;
+    } else {
+      event.preventDefault();
+      formData = new FormData(event.currentTarget);
+    }
     const invocationId = formData.get('invocation-id');
 
     mutate({

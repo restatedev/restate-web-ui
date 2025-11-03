@@ -22,12 +22,23 @@ export const CancelInvocation = withConfirmation({
 
   useMutation: useCancelInvocation,
 
-  buildUseMutationInput: (searchParams) =>
-    searchParams.get(CANCEL_INVOCATION_QUERY_PARAM),
+  buildUseMutationInput: (input) => {
+    if (input instanceof URLSearchParams) {
+      return input.get(CANCEL_INVOCATION_QUERY_PARAM);
+    } else {
+      return input.get('invocation-id') as string;
+    }
+  },
 
   onSubmit: (mutate, event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
+    let formData: FormData;
+
+    if (event instanceof FormData) {
+      formData = event;
+    } else {
+      event.preventDefault();
+      formData = new FormData(event.currentTarget);
+    }
     const invocationId = formData.get('invocation-id');
 
     mutate({

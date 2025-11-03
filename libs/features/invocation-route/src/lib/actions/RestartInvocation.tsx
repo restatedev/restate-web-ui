@@ -22,17 +22,28 @@ export const RestartInvocation = withConfirmation({
 
   useMutation: useRestartInvocationAsNew,
 
-  buildUseMutationInput: (searchParams) =>
-    searchParams.get(RESTART_AS_NEW_INVOCATION_QUERY_PARAM),
+  buildUseMutationInput: (input) => {
+    if (input instanceof URLSearchParams) {
+      return input.get(RESTART_AS_NEW_INVOCATION_QUERY_PARAM);
+    } else {
+      return input.get('invocation-id') as string;
+    }
+  },
 
   useHelpers: () => {
     const { baseUrl } = useRestateContext();
     return { baseUrl };
   },
 
-  onSubmit: (mutate, event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
+  onSubmit: (mutate, event: FormEvent<HTMLFormElement> | FormData) => {
+    let formData: FormData;
+
+    if (event instanceof FormData) {
+      formData = event;
+    } else {
+      event.preventDefault();
+      formData = new FormData(event.currentTarget);
+    }
     const invocationId = formData.get('invocation-id');
 
     mutate({

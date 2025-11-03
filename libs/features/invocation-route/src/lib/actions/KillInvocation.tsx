@@ -22,12 +22,23 @@ export const KillInvocation = withConfirmation({
 
   useMutation: useKillInvocation,
 
-  buildUseMutationInput: (searchParams) =>
-    searchParams.get(KILL_INVOCATION_QUERY_PARAM),
+  buildUseMutationInput: (input) => {
+    if (input instanceof URLSearchParams) {
+      return input.get(KILL_INVOCATION_QUERY_PARAM);
+    } else {
+      return input.get('invocation-id') as string;
+    }
+  },
 
-  onSubmit: (mutate, event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
+  onSubmit: (mutate, event: FormEvent<HTMLFormElement> | FormData) => {
+    let formData: FormData;
+
+    if (event instanceof FormData) {
+      formData = event;
+    } else {
+      event.preventDefault();
+      formData = new FormData(event.currentTarget);
+    }
     const invocationId = formData.get('invocation-id');
 
     mutate({

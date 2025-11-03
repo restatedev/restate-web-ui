@@ -1,10 +1,24 @@
-import { ComponentType, FormEvent, ReactNode } from 'react';
+import {
+  Children,
+  ComponentType,
+  createElement,
+  FormEvent,
+  PropsWithChildren,
+  ReactElement,
+  ReactNode,
+  useRef,
+} from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import type { UseMutationResult } from '@tanstack/react-query';
 import {
   ConfirmationDialog,
   ConfirmationDialogProps,
 } from './ConfirmationDialog';
+import {
+  showCountdownNotification,
+  showErrorNotification,
+  showSuccessNotification,
+} from '@restate/ui/notification';
 
 export interface BaseHelpers {
   navigate: ReturnType<typeof useNavigate>;
@@ -39,10 +53,10 @@ export interface WithConfirmationConfig<
 > {
   queryParam: string;
   useMutation: THook;
-  buildUseMutationInput: (searchParams: URLSearchParams) => string | null;
+  buildUseMutationInput: (input: URLSearchParams | FormData) => string | null;
   onSubmit: (
     mutate: (variables: ExtractVariables<ExtractMutationResult<THook>>) => void,
-    event: FormEvent<HTMLFormElement>,
+    event: FormEvent<HTMLFormElement> | FormData,
   ) => void;
   title: string;
   description: ReactNode;
@@ -132,11 +146,48 @@ export function withConfirmation<
     );
   }
 
-  function getTriggerProps(value?: string) {
-    return {
-      href: `?${config.queryParam}=${value || 'true'}`,
-    };
+  function Trigger<
+    E extends ReactElement<{ href: string; onClick: VoidFunction }>,
+  >(props: { children: E; formData: FormData }) {
+    const element = Children.only(props.children);
+    const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
+    const customHelpers = config.useHelpers?.();
+
+    const mutationKey = config.buildUseMutationInput(props.formData);
+
+    const hideRef = useRef<VoidFunction>(null);
+    const mutation = config.useMutation(mutationKey || '', {
+      onSuccess: (
+        data: ExtractData<ExtractMutationResult<THook>>,
+        variables: ExtractVariables<ExtractMutationResult<THook>>,
+        context: ExtractContext<ExtractMutationResult<THook>>,
+      ) => {
+        hideRef.current?.();
+        config.onSuccess?.(data, variables, context, {
+          navigate,
+          searchParams,
+          ...(customHelpers as THelpers),
+        });
+      },
+      onError: () => {
+        showErrorNotification('failed');
+        hideRef.current?.();
+      },
+    });
+
+    return createElement(element.type, {
+      ...element.props,
+      // onClick: () => {
+      //   const { promise, hide } =
+      //     showCountdownNotification('jsdnf skjdfnsdkf ');
+      //   hideRef.current = hide;
+
+      //   promise.then(() => config.onSubmit(mutation.mutate, props.formData));
+      // },
+      href: `?${config.queryParam}=${props.value || 'true'}`,
+    });
   }
 
-  return { Dialog, getTriggerProps };
+  return { Dialog, Trigger };
 }
