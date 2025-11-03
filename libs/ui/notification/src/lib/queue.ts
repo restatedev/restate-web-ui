@@ -3,7 +3,14 @@ import type { ReactNode } from 'react';
 
 export interface NotificationContent {
   content: ReactNode;
-  type: 'error' | 'pending' | 'warning' | 'info' | 'success' | 'tooltip';
+  type:
+    | 'error'
+    | 'pending'
+    | 'warning'
+    | 'info'
+    | 'success'
+    | 'tooltip'
+    | 'countdown';
 }
 
 class CustomQueue<T> extends ToastQueue<T> {
@@ -52,3 +59,4 @@ export const showSuccessNotification = showNotificationWithType('success');
 export const showPendingNotification = showNotificationWithType('pending');
 export const showWarningNotification = showNotificationWithType('warning');
 export const showTooltipNotification = showNotificationWithType('tooltip');
+export const showCountdownNotification = showNotificationWithType('countdown');
