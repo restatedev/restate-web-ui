@@ -12,6 +12,7 @@ import { PurgeInvocation } from './PurgeInvocation';
 import { RestartInvocation } from './RestartInvocation';
 import { RetryNowInvocation } from './RetryNowInvocation';
 import { ResumeInvocation } from './ResumeInvocation';
+import { ActionText } from '@restate/ui/action-text';
 
 const mainButtonStyles = tv({
   base: 'flex translate-x-px items-center gap-1 rounded-l-md rounded-r-none px-2 py-0.5 [font-size:inherit] [line-height:inherit] whitespace-nowrap',
@@ -66,7 +67,7 @@ export function Actions({
                   name={IconName.Resume}
                   className="h-3.5 w-3.5 shrink-0 opacity-80"
                 />
-                Resume…
+                <ActionText>Resume</ActionText>
               </DropdownItem>
             </RestateMinimumVersion>
           )}
@@ -79,7 +80,7 @@ export function Actions({
                   name={IconName.RetryNow}
                   className="h-3.5 w-3.5 shrink-0 opacity-80"
                 />
-                Retry now…
+                <ActionText>Retry now</ActionText>
               </DropdownItem>
             </RestateMinimumVersion>
           )}
@@ -92,7 +93,7 @@ export function Actions({
                 name={IconName.Cancel}
                 className="h-3.5 w-3.5 shrink-0 opacity-80"
               />
-              Cancel…
+              <ActionText>Cancel</ActionText>
             </DropdownItem>
           )}
           {!isCompleted && (
@@ -104,7 +105,7 @@ export function Actions({
                 name={IconName.Kill}
                 className="h-3.5 w-3.5 shrink-0 opacity-80"
               />
-              Kill…
+              <ActionText>Kill</ActionText>
             </DropdownItem>
           )}
           {isRestateAsNewSupported && (
@@ -113,7 +114,7 @@ export function Actions({
                 name={IconName.Restart}
                 className="h-3.5 w-3.5 shrink-0 opacity-80"
               />
-              Restart as new…
+              <ActionText>Restart as new</ActionText>
             </DropdownItem>
           )}
           {isCompleted && (
@@ -125,7 +126,7 @@ export function Actions({
                 name={IconName.Trash}
                 className="h-3.5 w-3.5 shrink-0 opacity-80"
               />
-              Purge…
+              <ActionText>Purge</ActionText>
             </DropdownItem>
           )}
         </>
@@ -158,13 +159,15 @@ export function Actions({
           className="h-[0.9em] w-[0.9em] shrink-0 opacity-80"
         />
 
-        {isPaused
-          ? 'Resume…'
-          : isRestateAsNewSupported
-            ? 'Restart as new…'
-            : isCompleted
-              ? 'Purge…'
-              : 'Cancel…'}
+        <ActionText>
+          {isPaused
+            ? 'Resume'
+            : isRestateAsNewSupported
+              ? 'Restart as new'
+              : isCompleted
+                ? 'Purge'
+                : 'Cancel'}
+        </ActionText>
       </Link>
     </SplitButton>
   );
