@@ -14,6 +14,96 @@ import { RetryNowInvocation } from './RetryNowInvocation';
 import { ResumeInvocation } from './ResumeInvocation';
 import { ActionText } from '@restate/ui/action-text';
 
+interface ActionConfig {
+  key: string;
+  condition: (
+    invocation: Invocation,
+    isVersionGte?: (version: string) => boolean,
+  ) => boolean;
+  component: { getTriggerProps: (invocationId: string) => { href: string } };
+  icon: IconName;
+  label: string;
+  destructive: boolean;
+  isPrimary?: (
+    invocation: Invocation,
+    isVersionGte?: (version: string) => boolean,
+  ) => boolean;
+  minVersion?: string;
+}
+
+const isRestateAsNewSupported = (invocation: Invocation) => {
+  const isCompleted = Boolean(invocation.completion_result);
+  const isNotWorkflow = invocation.target_service_ty !== 'workflow';
+  return Boolean(invocation.journal_size && isNotWorkflow && isCompleted);
+};
+
+const ACTION_CONFIGS: ActionConfig[] = [
+  {
+    key: 'resume',
+    condition: (invocation) => invocation.status === 'paused',
+    component: ResumeInvocation,
+    icon: IconName.Resume,
+    label: 'Resume',
+    destructive: false,
+    isPrimary: (invocation) => invocation.status === 'paused',
+  },
+  {
+    key: 'retryNow',
+    condition: (invocation) => invocation.status === 'backing-off',
+    component: RetryNowInvocation,
+    icon: IconName.RetryNow,
+    label: 'Retry now',
+    destructive: false,
+  },
+  {
+    key: 'cancel',
+    condition: (invocation) => !invocation.completion_result,
+    component: CancelInvocation,
+    icon: IconName.Cancel,
+    label: 'Cancel',
+    destructive: true,
+    isPrimary: (invocation) => {
+      const isCompleted = Boolean(invocation.completion_result);
+      const isPaused = invocation.status === 'paused';
+      return !isPaused && !isRestateAsNewSupported(invocation) && !isCompleted;
+    },
+  },
+  {
+    key: 'kill',
+    condition: (invocation) => !invocation.completion_result,
+    component: KillInvocation,
+    icon: IconName.Kill,
+    label: 'Kill',
+    destructive: true,
+  },
+  {
+    key: 'restart',
+    condition: (invocation) => {
+      return isRestateAsNewSupported(invocation);
+    },
+    component: RestartInvocation,
+    icon: IconName.Restart,
+    label: 'Restart as new',
+    destructive: false,
+    isPrimary: (invocation) => {
+      return isRestateAsNewSupported(invocation);
+    },
+  },
+  {
+    key: 'purge',
+    condition: (invocation) => Boolean(invocation.completion_result),
+    component: PurgeInvocation,
+    icon: IconName.Trash,
+    label: 'Purge',
+    destructive: true,
+    isPrimary: (invocation) => {
+      const isCompleted = Boolean(invocation.completion_result);
+      const isPaused = invocation.status === 'paused';
+      return isCompleted && !isRestateAsNewSupported(invocation) && !isPaused;
+    },
+  },
+];
+
 const mainButtonStyles = tv({
   base: 'flex translate-x-px items-center gap-1 rounded-l-md rounded-r-none px-2 py-0.5 [font-size:inherit] [line-height:inherit] whitespace-nowrap',
   variants: {
@@ -28,6 +118,24 @@ const mainButtonStyles = tv({
   },
 });
 
+function getAvailableActions(
+  invocation: Invocation,
+  isVersionGte?: (version: string) => boolean,
+): ActionConfig[] {
+  return ACTION_CONFIGS.filter((config) =>
+    config.condition(invocation, isVersionGte),
+  );
+}
+
+function getPrimaryAction(
+  invocation: Invocation,
+  isVersionGte?: (version: string) => boolean,
+): ActionConfig | undefined {
+  return ACTION_CONFIGS.find((config) =>
+    config.isPrimary?.(invocation, isVersionGte),
+  );
+}
+
 export function Actions({
   invocation,
   mini = true,
@@ -41,134 +149,52 @@ export function Actions({
   if (!invocation) {
     return null;
   }
-  const isCompleted = Boolean(invocation.completion_result);
-  const isPaused = Boolean(invocation.status === 'paused');
-  const isBackingOff = Boolean(invocation.status === 'backing-off');
-  const isNotWorkflow = invocation.target_service_ty !== 'workflow';
-  const isRestateAsNewSupported = Boolean(
-    isVersionGte?.('1.5.0') &&
-      invocation.journal_size &&
-      isNotWorkflow &&
-      isCompleted,
-  );
+
+  const availableActions = getAvailableActions(invocation, isVersionGte);
+  const primaryAction = getPrimaryAction(invocation, isVersionGte);
+
+  const renderDropdownItem = (config: ActionConfig) => {
+    const item = (
+      <DropdownItem
+        key={config.key}
+        destructive={config.destructive}
+        {...config.component.getTriggerProps(invocation.id)}
+      >
+        <Icon name={config.icon} className="h-3.5 w-3.5 shrink-0 opacity-80" />
+        <ActionText>{config.label}</ActionText>
+      </DropdownItem>
+    );
+    return config.minVersion ? (
+      <RestateMinimumVersion
+        minVersion={config.minVersion}
+      ></RestateMinimumVersion>
+    ) : (
+      item
+    );
+  };
 
   return (
     <SplitButton
       mini={mini}
       className={className}
-      menus={
-        <>
-          {isPaused && (
-            <RestateMinimumVersion minVersion="1.4.5">
-              <DropdownItem
-                {...ResumeInvocation.getTriggerProps(invocation.id)}
-              >
-                <Icon
-                  name={IconName.Resume}
-                  className="h-3.5 w-3.5 shrink-0 opacity-80"
-                />
-                <ActionText>Resume</ActionText>
-              </DropdownItem>
-            </RestateMinimumVersion>
-          )}
-          {isBackingOff && (
-            <RestateMinimumVersion minVersion="1.4.5">
-              <DropdownItem
-                {...RetryNowInvocation.getTriggerProps(invocation.id)}
-              >
-                <Icon
-                  name={IconName.RetryNow}
-                  className="h-3.5 w-3.5 shrink-0 opacity-80"
-                />
-                <ActionText>Retry now</ActionText>
-              </DropdownItem>
-            </RestateMinimumVersion>
-          )}
-          {!isCompleted && (
-            <DropdownItem
-              destructive
-              {...CancelInvocation.getTriggerProps(invocation.id)}
-            >
-              <Icon
-                name={IconName.Cancel}
-                className="h-3.5 w-3.5 shrink-0 opacity-80"
-              />
-              <ActionText>Cancel</ActionText>
-            </DropdownItem>
-          )}
-          {!isCompleted && (
-            <DropdownItem
-              destructive
-              {...KillInvocation.getTriggerProps(invocation.id)}
-            >
-              <Icon
-                name={IconName.Kill}
-                className="h-3.5 w-3.5 shrink-0 opacity-80"
-              />
-              <ActionText>Kill</ActionText>
-            </DropdownItem>
-          )}
-          {isRestateAsNewSupported && (
-            <DropdownItem {...RestartInvocation.getTriggerProps(invocation.id)}>
-              <Icon
-                name={IconName.Restart}
-                className="h-3.5 w-3.5 shrink-0 opacity-80"
-              />
-              <ActionText>Restart as new</ActionText>
-            </DropdownItem>
-          )}
-          {isCompleted && (
-            <DropdownItem
-              destructive
-              {...PurgeInvocation.getTriggerProps(invocation.id)}
-            >
-              <Icon
-                name={IconName.Trash}
-                className="h-3.5 w-3.5 shrink-0 opacity-80"
-              />
-              <ActionText>Purge</ActionText>
-            </DropdownItem>
-          )}
-        </>
-      }
+      menus={availableActions.map(renderDropdownItem)}
     >
-      <Link
-        variant="secondary-button"
-        {...(isPaused
-          ? ResumeInvocation.getTriggerProps(invocation.id)
-          : isRestateAsNewSupported
-            ? RestartInvocation.getTriggerProps(invocation.id)
-            : isCompleted
-              ? PurgeInvocation.getTriggerProps(invocation.id)
-              : CancelInvocation.getTriggerProps(invocation.id))}
-        className={mainButtonStyles({
-          mini,
-          destructive: !isRestateAsNewSupported && !isPaused,
-        })}
-      >
-        <Icon
-          name={
-            isPaused
-              ? IconName.Resume
-              : isRestateAsNewSupported
-                ? IconName.Restart
-                : isCompleted
-                  ? IconName.Trash
-                  : IconName.Cancel
-          }
-          className="h-[0.9em] w-[0.9em] shrink-0 opacity-80"
-        />
-
-        <ActionText>
-          {isPaused
-            ? 'Resume'
-            : isRestateAsNewSupported
-              ? 'Restart as new'
-              : isCompleted
-                ? 'Purge'
-                : 'Cancel'}
-        </ActionText>
-      </Link>
+      {primaryAction && (
+        <Link
+          variant="secondary-button"
+          {...primaryAction.component.getTriggerProps(invocation.id)}
+          className={mainButtonStyles({
+            mini,
+            destructive: primaryAction.destructive,
+          })}
+        >
+          <Icon
+            name={primaryAction.icon}
+            className="h-[0.9em] w-[0.9em] shrink-0 opacity-80"
+          />
+          <ActionText>{primaryAction.label}</ActionText>
+        </Link>
+      )}
     </SplitButton>
   );
 }
