@@ -1,4 +1,4 @@
-import { createRoutesStub } from 'react-router';
+import { createRoutesStub, LoaderFunction } from 'react-router';
 import { render, screen, waitFor } from '@testing-library/react';
 import Index, { clientLoader } from '../../app/routes/_index';
 
@@ -7,7 +7,7 @@ test('renders loader data', async () => {
     {
       path: '/',
       Component: Index,
-      loader: clientLoader,
+      loader: clientLoader as LoaderFunction,
     },
     {
       path: '/overview',
