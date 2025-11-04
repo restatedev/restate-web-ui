@@ -1,4 +1,4 @@
-import { ClientLoaderFunction, redirect } from 'react-router';
+import { type ClientLoaderFunction, redirect } from 'react-router';
 
 export const clientLoader: ClientLoaderFunction = ({ request }) => {
   const url = new URL(request.url);
