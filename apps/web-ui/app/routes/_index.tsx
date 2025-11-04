@@ -1,4 +1,7 @@
-import { redirect } from 'react-router';
+import { ClientLoaderFunction, redirect } from 'react-router';
 
-export const clientLoader = () => redirect('/overview');
+export const clientLoader: ClientLoaderFunction = ({ request }) => {
+  const url = new URL(request.url);
+  return redirect(`/overview${url.search}`);
+};
 export default () => null;
