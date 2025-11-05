@@ -33,7 +33,7 @@ export const RestartInvocation = withConfirmation({
     const id = String(formData.get('invocation-id'));
     return (
       <>
-        Restarting{' '}
+        Restarting a new invocation from{' '}
         <code className="font-semibold">
           {id.substring(0, 8)}…{id.slice(-5)}
         </code>
