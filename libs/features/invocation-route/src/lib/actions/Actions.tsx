@@ -153,12 +153,12 @@ export function Actions({
 
   const availableActions = getAvailableActions(invocation, isVersionGte);
   const primaryAction = getPrimaryAction(invocation, isVersionGte);
-  const formData = new FormData();
-  formData.set('invocation-id', invocation.id);
 
   const renderDropdownItem = (config: ActionConfig) => {
     const item = (
-      <config.component.Trigger formData={formData}>
+      <config.component.Trigger
+        formData={config.component.getFormData(invocation.id)}
+      >
         <DropdownItem key={config.key} destructive={config.destructive}>
           <Icon
             name={config.icon}
@@ -184,7 +184,9 @@ export function Actions({
       menus={availableActions.map(renderDropdownItem)}
     >
       {primaryAction && (
-        <primaryAction.component.Trigger formData={formData}>
+        <primaryAction.component.Trigger
+          formData={primaryAction.component.getFormData(invocation.id)}
+        >
           <Link
             variant="secondary-button"
             className={mainButtonStyles({

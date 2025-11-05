@@ -168,10 +168,23 @@ export const ResumeInvocation = withConfirmation({
 
   useMutation: useResumeInvocation,
 
-  buildUseMutationInput: (input) => {
+  getFormData: function (...args: string[]) {
+    const [invocationId] = args;
+    const formData = new FormData();
+    formData.append('invocation-id', String(invocationId));
+    return formData;
+  },
+  getQueryParamValue: (input) => {
     if (input instanceof URLSearchParams) {
       return input.get(RESUME_INVOCATION_QUERY_PARAM);
     }
+    return null;
+  },
+  getUseMutationInput: (input) => {
+    if (input instanceof URLSearchParams) {
+      return input.get(RESUME_INVOCATION_QUERY_PARAM);
+    }
+    return null;
   },
 
   onSubmit: (mutate, event: FormEvent<HTMLFormElement> | FormData) => {

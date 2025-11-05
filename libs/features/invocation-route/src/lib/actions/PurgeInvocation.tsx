@@ -22,7 +22,21 @@ export const PurgeInvocation = withConfirmation({
 
   useMutation: usePurgeInvocation,
 
-  buildUseMutationInput: (input) => {
+  getFormData: function (...args: string[]) {
+    const [invocationId] = args;
+    const formData = new FormData();
+    formData.append('invocation-id', String(invocationId));
+    return formData;
+  },
+
+  getQueryParamValue: function (input) {
+    if (input instanceof URLSearchParams) {
+      return input.get(PURGE_INVOCATION_QUERY_PARAM);
+    } else {
+      return input.get('invocation-id') as string;
+    }
+  },
+  getUseMutationInput: function (input) {
     if (input instanceof URLSearchParams) {
       return input.get(PURGE_INVOCATION_QUERY_PARAM);
     } else {

@@ -50,10 +50,13 @@ type ExtractContext<T> =
 export interface WithConfirmationConfig<
   THook extends UseMutationHook,
   THelpers = object,
+  T extends any[] = any[],
 > {
   queryParam: string;
   useMutation: THook;
-  buildUseMutationInput: (input: URLSearchParams | FormData) => string | null;
+  getUseMutationInput: (input: URLSearchParams | FormData) => string | null;
+  getQueryParamValue: (input: URLSearchParams | FormData) => string | null;
+  getFormData: (...input: T) => FormData;
   onSubmit: (
     mutate: (variables: ExtractVariables<ExtractMutationResult<THook>>) => void,
     event: FormEvent<HTMLFormElement> | FormData,
@@ -91,7 +94,7 @@ export function withConfirmation<
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
     const customHelpers = config.useHelpers?.();
-    const mutationKey = config.buildUseMutationInput(searchParams);
+    const mutationKey = config.getUseMutationInput(searchParams);
 
     const mutation = config.useMutation(mutationKey || '', {
       onSuccess: (
@@ -154,7 +157,7 @@ export function withConfirmation<
     const navigate = useNavigate();
     const customHelpers = config.useHelpers?.();
 
-    const mutationKey = config.buildUseMutationInput(props.formData);
+    const mutationKey = config.getUseMutationInput(props.formData);
 
     const hideRef = useRef<VoidFunction>(null);
     const mutation = config.useMutation(mutationKey || '', {
@@ -185,9 +188,9 @@ export function withConfirmation<
 
       //   promise.then(() => config.onSubmit(mutation.mutate, props.formData));
       // },
-      href: `?${config.queryParam}=${config.buildUseMutationInput(props.formData) || 'true'}`,
+      href: `?${config.queryParam}=${config.getQueryParamValue(props.formData) || 'true'}`,
     });
   }
 
-  return { Dialog, Trigger };
+  return { Dialog, Trigger, getFormData: config.getFormData };
 }

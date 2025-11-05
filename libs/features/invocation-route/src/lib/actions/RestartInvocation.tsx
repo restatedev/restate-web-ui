@@ -21,8 +21,22 @@ export const RestartInvocation = withConfirmation({
   queryParam: RESTART_AS_NEW_INVOCATION_QUERY_PARAM,
 
   useMutation: useRestartInvocationAsNew,
+  getFormData: function (...args: string[]) {
+    const [invocationId] = args;
+    const formData = new FormData();
+    formData.append('invocation-id', String(invocationId));
+    return formData;
+  },
 
-  buildUseMutationInput: (input) => {
+  getQueryParamValue: function (input) {
+    if (input instanceof URLSearchParams) {
+      return input.get(RESTART_AS_NEW_INVOCATION_QUERY_PARAM);
+    } else {
+      return input.get('invocation-id') as string;
+    }
+  },
+
+  getUseMutationInput: function (input) {
     if (input instanceof URLSearchParams) {
       return input.get(RESTART_AS_NEW_INVOCATION_QUERY_PARAM);
     } else {
