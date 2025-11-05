@@ -185,7 +185,7 @@ export function withConfirmation<
 
       //   promise.then(() => config.onSubmit(mutation.mutate, props.formData));
       // },
-      href: `?${config.queryParam}=${props.value || 'true'}`,
+      href: `?${config.queryParam}=${config.buildUseMutationInput(props.formData) || 'true'}`,
     });
   }
 

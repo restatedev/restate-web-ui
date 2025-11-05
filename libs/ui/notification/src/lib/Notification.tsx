@@ -10,10 +10,12 @@ import { NotificationContent } from './queue';
 import { Ellipsis, Spinner } from '@restate/ui/loading';
 import type { QueuedToast } from 'react-aria-components';
 import { useEffect, useState } from 'react';
+import { UNSTABLE_ToastQueue as ToastQueue } from 'react-aria-components';
 
 interface NotificationProps {
   toast: QueuedToast<NotificationContent>;
   className?: string;
+  queue: ToastQueue<NotificationContent>;
 }
 
 const styles = tv({
@@ -23,7 +25,7 @@ const styles = tv({
     close: 'ml-auto text-inherit',
     icon: 'h-4 w-4 shrink-0',
     animation:
-      'pointer-events-none absolute top-0 bottom-0 left-0 z-[-1] w-0 transform rounded-xl transition',
+      'pointer-events-none absolute bottom-0 left-0 z-[-1] h-1 w-0 transform rounded-xl transition',
   },
   variants: {
     type: {
@@ -64,12 +66,11 @@ const styles = tv({
         close: '',
       },
       countdown: {
-        base: 'border-sky-300/30 bg-sky-200/90 text-sky-800',
-        // base: 'border border-zinc-900/80 bg-zinc-800/90 text-gray-300 shadow-[inset_0_0.5px_0_0_var(--color-gray-500)]! shadow-gray-500 drop-shadow-xl',
+        base: 'overflow-hidden border-sky-300/30 bg-sky-200/90 text-sky-800',
         content: '',
         icon: '',
         close: '',
-        animation: 'animate-countdown bg-sky-300/50 duration-3000',
+        animation: 'animate-countdown bg-sky-600/50 duration-3000',
       },
     },
   },
@@ -99,7 +100,7 @@ function NotificationIcon({
   }
 }
 
-export function Notification({ toast, className }: NotificationProps) {
+export function Notification({ toast, className, queue }: NotificationProps) {
   const { base, content, close, icon, animation } = styles({
     className,
     type: toast.content.type,
@@ -118,7 +119,14 @@ export function Notification({ toast, className }: NotificationProps) {
           <NotificationIcon type={toast.content.type} className={icon()} />
           <Text slot="title">
             {toast.content.content}
-            {isCountdown && (countdown ? `(in ${countdown}s)` : <Ellipsis />)}
+            {isCountdown &&
+              (countdown ? (
+                <>
+                  (in <span className="font-semibold">{countdown}s</span>)
+                </>
+              ) : (
+                <Ellipsis />
+              ))}
           </Text>
         </div>
       </ToastContent>
@@ -134,6 +142,11 @@ export function Notification({ toast, className }: NotificationProps) {
           autoFocus
           disabled={isPending}
           className={'px-2 py-1'}
+          onKeyDown={(event) => {
+            if (event.key === 'Escape') {
+              queue.close(toast.key);
+            }
+          }}
         >
           Undo
         </Button>
