@@ -24,7 +24,7 @@ import type {
   HookQueryOptions,
   HookMutationOptions,
 } from '@restate/data-access/admin-api';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { RestateError } from '@restate/util/errors';
 import { useAPIStatus } from '@restate/data-access/admin-api';
 import { useRestateContext } from '@restate/features/restate-context';
@@ -547,112 +547,6 @@ export function useGetInvocationJournalEntry(
   };
 }
 
-export function useGetInvocationJournalWithInvocation(
-  invocationId: string,
-  options?: HookQueryOptions<
-    '/query/invocations/{invocationId}/journal',
-    'get'
-  >,
-) {
-  const baseUrl = useAdminBaseUrl();
-  const journalQuery = adminApi(
-    'query',
-    '/query/invocations/{invocationId}/journal',
-    'get',
-    {
-      baseUrl,
-      parameters: { path: { invocationId } },
-    },
-  );
-  const invocationQuery = adminApi(
-    'query',
-    '/query/invocations/{invocationId}',
-    'get',
-    {
-      baseUrl,
-      parameters: { path: { invocationId } },
-    },
-  );
-  const results = useQueries({
-    queries: [
-      {
-        ...journalQuery,
-        ...options,
-      },
-      {
-        ...invocationQuery,
-        refetchOnMount: options?.refetchOnMount !== false,
-        enabled: options?.enabled !== false,
-        staleTime: 0,
-      },
-    ],
-    combine: ([journalResults, invocationResults]) => {
-      return {
-        ...(journalResults.data &&
-          invocationResults.data && {
-            data: {
-              journal: journalResults.data,
-              invocation: invocationResults.data,
-            },
-          }),
-        isPending: journalResults.isPending || invocationResults.isPending,
-        isSuccess: journalResults.isSuccess && invocationResults.isSuccess,
-        dataUpdatedAt: Math.max(
-          journalResults.dataUpdatedAt,
-          invocationResults.dataUpdatedAt,
-        ),
-        error: journalResults.error || invocationResults.error,
-      };
-    },
-  });
-
-  const queryClient = useQueryClient();
-
-  useEffect(() => {
-    queryClient.setQueriesData(
-      {
-        predicate: (query) => {
-          return (
-            Array.isArray(query.queryKey) &&
-            query.queryKey.at(0) === '/query/invocations'
-          );
-        },
-      },
-      (oldData: ReturnType<typeof useListInvocations>['data']) => {
-        const newInvocation = results.data?.invocation;
-        if (!oldData || !newInvocation) {
-          return oldData;
-        } else {
-          return {
-            ...oldData,
-            rows: oldData.rows.map((oldInvocation) => {
-              if (oldInvocation.id === newInvocation.id) {
-                return newInvocation;
-              } else {
-                return oldInvocation;
-              }
-            }),
-          };
-        }
-      },
-    );
-  }, [queryClient, results]);
-
-  return {
-    ...results,
-    refetch: () => {
-      return Promise.all([
-        queryClient.refetchQueries({
-          queryKey: journalQuery.queryKey,
-        }),
-        queryClient.refetchQueries({
-          queryKey: invocationQuery.queryKey,
-        }),
-      ]);
-    },
-  };
-}
-
 export function useGetInvocationJournalWithInvocationV2(
   invocationId: string,
   options?: HookQueryOptions<'/query/v2/invocations/{invocationId}', 'get'>,
@@ -767,39 +661,6 @@ export function useGetInvocationsJournalWithInvocationsV2(
   });
 
   const queryClient = useQueryClient();
-
-  useEffect(() => {
-    queryClient.setQueriesData(
-      {
-        predicate: (query) => {
-          return (
-            Array.isArray(query.queryKey) &&
-            query.queryKey.at(0) === '/query/invocations'
-          );
-        },
-      },
-      (oldData: ReturnType<typeof useListInvocations>['data']) => {
-        if (!oldData) {
-          return oldData;
-        } else {
-          return {
-            ...oldData,
-            rows: oldData.rows.map((oldInvocation) => {
-              const invResult = results.data?.[oldInvocation.id];
-              if (invResult) {
-                const { journal, ...newInvocation } = invResult;
-                if (newInvocation) {
-                  return newInvocation;
-                }
-              }
-
-              return oldInvocation;
-            }),
-          };
-        }
-      },
-    );
-  }, [queryClient, results]);
 
   const invalidate = useCallback(() => {
     return Promise.all([
