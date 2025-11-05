@@ -1,4 +1,4 @@
-type UserPreferenceId =
+export type UserPreferenceId =
   | 'skip-cancel-action-dialog'
   | 'skip-resume-action-dialog'
   | 'skip-restart-action-dialog'

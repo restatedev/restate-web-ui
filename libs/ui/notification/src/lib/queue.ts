@@ -3,7 +3,18 @@ import type { ReactNode } from 'react';
 
 export interface NotificationContent {
   content: ReactNode;
-  type: 'error' | 'pending' | 'warning' | 'info' | 'success' | 'tooltip';
+  type:
+    | 'error'
+    | 'pending'
+    | 'warning'
+    | 'info'
+    | 'success'
+    | 'tooltip'
+    | 'countdown';
+  promise?: {
+    resolve?: (value: unknown) => void;
+    reject?: (reason?: unknown) => void;
+  };
 }
 
 class CustomQueue<T> extends ToastQueue<T> {
@@ -30,10 +41,19 @@ const TIMEOUTS: Partial<Record<NotificationContent['type'], number>> = {
 function showNotificationWithType(type: NotificationContent['type']) {
   return function (message: ReactNode) {
     const timeout = TIMEOUTS[type];
+    const { resolve, reject, promise } =
+      type === 'countdown'
+        ? Promise.withResolvers()
+        : { promise: Promise.resolve() };
     const id = notificationQueue.add(
-      { content: message, type },
+      { content: message, type, promise: { resolve, reject } },
       {
         timeout,
+        onClose: () => {
+          if (type === 'countdown') {
+            reject?.();
+          }
+        },
       },
     );
 
@@ -42,6 +62,7 @@ function showNotificationWithType(type: NotificationContent['type']) {
       hide: () => {
         notificationQueue.close(id);
       },
+      promise,
     };
   };
 }
@@ -52,3 +73,4 @@ export const showSuccessNotification = showNotificationWithType('success');
 export const showPendingNotification = showNotificationWithType('pending');
 export const showWarningNotification = showNotificationWithType('warning');
 export const showTooltipNotification = showNotificationWithType('tooltip');
+export const showCountdownNotification = showNotificationWithType('countdown');

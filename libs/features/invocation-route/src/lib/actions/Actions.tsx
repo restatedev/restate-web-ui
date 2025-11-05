@@ -13,6 +13,7 @@ import { RestartInvocation } from './RestartInvocation';
 import { RetryNowInvocation } from './RetryNowInvocation';
 import { ResumeInvocation } from './ResumeInvocation';
 import { ActionText } from '@restate/ui/action-text';
+import { withConfirmation } from '@restate/ui/dialog';
 
 interface ActionConfig {
   key: string;
@@ -20,7 +21,7 @@ interface ActionConfig {
     invocation: Invocation,
     isVersionGte?: (version: string) => boolean,
   ) => boolean;
-  component: { getTriggerProps: (invocationId: string) => { href: string } };
+  component: ReturnType<typeof withConfirmation>;
   icon: IconName;
   label: string;
   destructive: boolean;
@@ -155,14 +156,19 @@ export function Actions({
 
   const renderDropdownItem = (config: ActionConfig) => {
     const item = (
-      <DropdownItem
-        key={config.key}
-        destructive={config.destructive}
-        {...config.component.getTriggerProps(invocation.id)}
+      <config.component.Trigger
+        formData={config.component.getFormData(invocation.id)}
       >
-        <Icon name={config.icon} className="h-3.5 w-3.5 shrink-0 opacity-80" />
-        <ActionText>{config.label}</ActionText>
-      </DropdownItem>
+        <DropdownItem key={config.key} destructive={config.destructive}>
+          <Icon
+            name={config.icon}
+            className="h-3.5 w-3.5 shrink-0 opacity-80"
+          />
+          <ActionText hasFollowup={config.component.hasFollowup()}>
+            {config.label}
+          </ActionText>
+        </DropdownItem>
+      </config.component.Trigger>
     );
     return config.minVersion ? (
       <RestateMinimumVersion
@@ -180,20 +186,25 @@ export function Actions({
       menus={availableActions.map(renderDropdownItem)}
     >
       {primaryAction && (
-        <Link
-          variant="secondary-button"
-          {...primaryAction.component.getTriggerProps(invocation.id)}
-          className={mainButtonStyles({
-            mini,
-            destructive: primaryAction.destructive,
-          })}
+        <primaryAction.component.Trigger
+          formData={primaryAction.component.getFormData(invocation.id)}
         >
-          <Icon
-            name={primaryAction.icon}
-            className="h-[0.9em] w-[0.9em] shrink-0 opacity-80"
-          />
-          <ActionText>{primaryAction.label}</ActionText>
-        </Link>
+          <Link
+            variant="secondary-button"
+            className={mainButtonStyles({
+              mini,
+              destructive: primaryAction.destructive,
+            })}
+          >
+            <Icon
+              name={primaryAction.icon}
+              className="h-[0.9em] w-[0.9em] shrink-0 opacity-80"
+            />
+            <ActionText hasFollowup={primaryAction.component.hasFollowup()}>
+              {primaryAction.label}
+            </ActionText>
+          </Link>
+        </primaryAction.component.Trigger>
       )}
     </SplitButton>
   );

@@ -19,15 +19,62 @@ function KillInvocationContent() {
 
 export const KillInvocation = withConfirmation({
   queryParam: KILL_INVOCATION_QUERY_PARAM,
+  shouldShowSkipConfirmation: true,
+  userPreferenceId: 'skip-kill-action-dialog',
 
   useMutation: useKillInvocation,
+  ToastCountDownMessage: ({ formData }) => {
+    const id = String(formData.get('invocation-id'));
+    return (
+      <>
+        Killing{' '}
+        <code className="font-semibold">
+          {id.substring(0, 8)}…{id.slice(-5)}
+        </code>
+      </>
+    );
+  },
+  ToastErrorMessage: ({ formData }) => {
+    const id = String(formData.get('invocation-id'));
+    return (
+      <>
+        Failed to kill{' '}
+        <code className="font-semibold">
+          {id.substring(0, 8)}…{id.slice(-5)}
+        </code>
+      </>
+    );
+  },
+  getFormData: function (...args: string[]) {
+    const [invocationId] = args;
+    const formData = new FormData();
+    formData.append('invocation-id', String(invocationId));
+    return formData;
+  },
+  getQueryParamValue: function (input) {
+    if (input instanceof URLSearchParams) {
+      return input.get(KILL_INVOCATION_QUERY_PARAM);
+    } else {
+      return input.get('invocation-id') as string;
+    }
+  },
+  getUseMutationInput: function (input) {
+    if (input instanceof URLSearchParams) {
+      return input.get(KILL_INVOCATION_QUERY_PARAM);
+    } else {
+      return input.get('invocation-id') as string;
+    }
+  },
 
-  buildUseMutationInput: (searchParams) =>
-    searchParams.get(KILL_INVOCATION_QUERY_PARAM),
+  onSubmit: (mutate, event: FormEvent<HTMLFormElement> | FormData) => {
+    let formData: FormData;
 
-  onSubmit: (mutate, event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
+    if (event instanceof FormData) {
+      formData = event;
+    } else {
+      event.preventDefault();
+      formData = new FormData(event.currentTarget);
+    }
     const invocationId = formData.get('invocation-id');
 
     mutate({
@@ -66,10 +113,13 @@ export const KillInvocation = withConfirmation({
   Content: KillInvocationContent,
 
   onSuccess: (_data, variables) => {
+    const id = String(variables.parameters?.path.invocation_id);
     showSuccessNotification(
       <>
-        <code>{variables.parameters?.path.invocation_id}</code> has been
-        successfully killed.
+        <code className="font-semibold">
+          {id.substring(0, 8)}…{id.slice(-5)}
+        </code>{' '}
+        has been successfully killed.
       </>,
     );
   },

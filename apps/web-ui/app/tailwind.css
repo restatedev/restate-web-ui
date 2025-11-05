@@ -54,6 +54,16 @@
   --font-mono: JetBrainsMonoVariable, monospace;
   --pulse-color: color-mix(in srgb, var(--color-blue-500) 25%, transparent);
 
+  @keyframes countdown {
+    0% {
+      width: 0px;
+    }
+    100% {
+      width: 100%;
+    }
+  }
+  --animate-countdown: countdown 5s linear;
+
   @keyframes moveAndGrow {
     0% {
       right: 0px;

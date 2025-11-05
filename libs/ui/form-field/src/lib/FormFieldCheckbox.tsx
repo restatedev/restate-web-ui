@@ -110,8 +110,8 @@ const checkboxStyles = tv({
   base: 'group flex items-center gap-2 text-sm transition',
   variants: {
     isDisabled: {
-      false: 'text-gray-800 dark:text-zinc-200',
-      true: 'text-gray-300 dark:text-zinc-600 forced-colors:text-[GrayText]',
+      false: 'text-gray-800',
+      true: 'text-gray-300',
     },
     direction: {
       left: 'col-start-1',
@@ -125,7 +125,7 @@ const checkboxStyles = tv({
 
 const boxStyles = tv({
   extend: focusRing,
-  base: 'flex h-5 w-5 shrink-0 items-center justify-center rounded-md border shadow-[inset_0_0.5px_0.5px_0px_rgba(0,0,0,0.08)] transition',
+  base: 'checkbox flex h-5 w-5 shrink-0 items-center justify-center rounded-md border shadow-[inset_0_0.5px_0.5px_0px_rgba(0,0,0,0.08)] transition',
   variants: {
     isSelected: {
       false:

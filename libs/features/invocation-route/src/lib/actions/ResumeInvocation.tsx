@@ -165,13 +165,57 @@ function ResumeInvocationContent() {
 
 export const ResumeInvocation = withConfirmation({
   queryParam: RESUME_INVOCATION_QUERY_PARAM,
+  shouldShowSkipConfirmation: false,
+  userPreferenceId: 'skip-resume-action-dialog',
 
   useMutation: useResumeInvocation,
+  ToastCountDownMessage: ({ formData }) => {
+    const id = String(formData.get('invocation-id'));
+    return (
+      <>
+        Resuming{' '}
+        <code className="font-semibold">
+          {id.substring(0, 8)}…{id.slice(-5)}
+        </code>
+      </>
+    );
+  },
+  ToastErrorMessage: ({ formData }) => {
+    const id = String(formData.get('invocation-id'));
+    return (
+      <>
+        Failed to resume{' '}
+        <code className="font-semibold">
+          {id.substring(0, 8)}…{id.slice(-5)}
+        </code>
+      </>
+    );
+  },
+  getFormData: function (...args: string[]) {
+    const [invocationId] = args;
+    const formData = new FormData();
+    formData.set('invocation-id', String(invocationId));
+    return formData;
+  },
+  getQueryParamValue: (input) => {
+    if (input instanceof URLSearchParams) {
+      return input.get(RESUME_INVOCATION_QUERY_PARAM);
+    } else {
+      return input.get('invocation-id') as string;
+    }
+  },
+  getUseMutationInput: (input) => {
+    if (input instanceof URLSearchParams) {
+      return input.get(RESUME_INVOCATION_QUERY_PARAM);
+    } else {
+      return input.get('invocation-id') as string;
+    }
+  },
 
-  buildUseMutationInput: (searchParams) =>
-    searchParams.get(RESUME_INVOCATION_QUERY_PARAM),
-
-  onSubmit: (mutate, event: FormEvent<HTMLFormElement>) => {
+  onSubmit: (mutate, event: FormEvent<HTMLFormElement> | FormData) => {
+    if (event instanceof FormData) {
+      return;
+    }
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const invocationId = formData.get('invocation-id');
@@ -205,10 +249,13 @@ export const ResumeInvocation = withConfirmation({
   Content: ResumeInvocationContent,
 
   onSuccess: (_data, _variables, _context, { searchParams }) => {
-    const invocationId = searchParams.get(RESUME_INVOCATION_QUERY_PARAM);
+    const id = String(_variables.parameters?.path.invocation_id);
     showSuccessNotification(
       <>
-        <code>{invocationId}</code> has been successfully resumed.
+        <code className="font-semibold">
+          {id.substring(0, 8)}…{id.slice(-5)}
+        </code>{' '}
+        has been successfully resumed.
       </>,
     );
   },

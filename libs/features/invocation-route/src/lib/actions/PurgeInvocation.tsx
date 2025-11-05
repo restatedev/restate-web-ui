@@ -19,15 +19,63 @@ function PurgeInvocationContent() {
 
 export const PurgeInvocation = withConfirmation({
   queryParam: PURGE_INVOCATION_QUERY_PARAM,
+  shouldShowSkipConfirmation: true,
+  userPreferenceId: 'skip-purge-action-dialog',
 
   useMutation: usePurgeInvocation,
+  ToastCountDownMessage: ({ formData }) => {
+    const id = String(formData.get('invocation-id'));
+    return (
+      <>
+        Purging{' '}
+        <code className="font-semibold">
+          {id.substring(0, 8)}…{id.slice(-5)}
+        </code>
+      </>
+    );
+  },
+  ToastErrorMessage: ({ formData }) => {
+    const id = String(formData.get('invocation-id'));
+    return (
+      <>
+        Failed to purge{' '}
+        <code className="font-semibold">
+          {id.substring(0, 8)}…{id.slice(-5)}
+        </code>
+      </>
+    );
+  },
+  getFormData: function (...args: string[]) {
+    const [invocationId] = args;
+    const formData = new FormData();
+    formData.append('invocation-id', String(invocationId));
+    return formData;
+  },
 
-  buildUseMutationInput: (searchParams) =>
-    searchParams.get(PURGE_INVOCATION_QUERY_PARAM),
+  getQueryParamValue: function (input) {
+    if (input instanceof URLSearchParams) {
+      return input.get(PURGE_INVOCATION_QUERY_PARAM);
+    } else {
+      return input.get('invocation-id') as string;
+    }
+  },
+  getUseMutationInput: function (input) {
+    if (input instanceof URLSearchParams) {
+      return input.get(PURGE_INVOCATION_QUERY_PARAM);
+    } else {
+      return input.get('invocation-id') as string;
+    }
+  },
 
-  onSubmit: (mutate, event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
+  onSubmit: (mutate, event: FormEvent<HTMLFormElement> | FormData) => {
+    let formData: FormData;
+
+    if (event instanceof FormData) {
+      formData = event;
+    } else {
+      event.preventDefault();
+      formData = new FormData(event.currentTarget);
+    }
     const invocationId = formData.get('invocation-id');
 
     mutate({
@@ -65,10 +113,13 @@ export const PurgeInvocation = withConfirmation({
   Content: PurgeInvocationContent,
 
   onSuccess: (_data, variables) => {
+    const id = String(variables.parameters?.path.invocation_id);
     showSuccessNotification(
       <>
-        <code>{variables.parameters?.path.invocation_id}</code> has been
-        successfully deleted.
+        <code className="font-semibold">
+          {id.substring(0, 8)}…{id.slice(-5)}
+        </code>{' '}
+        has been successfully purged.
       </>,
     );
   },

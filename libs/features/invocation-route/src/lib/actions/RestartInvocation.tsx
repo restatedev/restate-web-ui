@@ -19,20 +19,68 @@ function RestartInvocationContent() {
 
 export const RestartInvocation = withConfirmation({
   queryParam: RESTART_AS_NEW_INVOCATION_QUERY_PARAM,
+  shouldShowSkipConfirmation: true,
+  userPreferenceId: 'skip-restart-action-dialog',
 
   useMutation: useRestartInvocationAsNew,
+  getFormData: function (...args: string[]) {
+    const [invocationId] = args;
+    const formData = new FormData();
+    formData.append('invocation-id', String(invocationId));
+    return formData;
+  },
+  ToastCountDownMessage: ({ formData }) => {
+    const id = String(formData.get('invocation-id'));
+    return (
+      <>
+        Restarting a new invocation from{' '}
+        <code className="font-semibold">
+          {id.substring(0, 8)}…{id.slice(-5)}
+        </code>
+      </>
+    );
+  },
+  ToastErrorMessage: ({ formData }) => {
+    const id = String(formData.get('invocation-id'));
+    return (
+      <>
+        Failed to restart{' '}
+        <code className="font-semibold">
+          {id.substring(0, 8)}…{id.slice(-5)}
+        </code>
+      </>
+    );
+  },
+  getQueryParamValue: function (input) {
+    if (input instanceof URLSearchParams) {
+      return input.get(RESTART_AS_NEW_INVOCATION_QUERY_PARAM);
+    } else {
+      return input.get('invocation-id') as string;
+    }
+  },
 
-  buildUseMutationInput: (searchParams) =>
-    searchParams.get(RESTART_AS_NEW_INVOCATION_QUERY_PARAM),
+  getUseMutationInput: function (input) {
+    if (input instanceof URLSearchParams) {
+      return input.get(RESTART_AS_NEW_INVOCATION_QUERY_PARAM);
+    } else {
+      return input.get('invocation-id') as string;
+    }
+  },
 
   useHelpers: () => {
     const { baseUrl } = useRestateContext();
     return { baseUrl };
   },
 
-  onSubmit: (mutate, event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
+  onSubmit: (mutate, event: FormEvent<HTMLFormElement> | FormData) => {
+    let formData: FormData;
+
+    if (event instanceof FormData) {
+      formData = event;
+    } else {
+      event.preventDefault();
+      formData = new FormData(event.currentTarget);
+    }
     const invocationId = formData.get('invocation-id');
 
     mutate({

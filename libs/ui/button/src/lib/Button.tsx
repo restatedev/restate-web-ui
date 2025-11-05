@@ -1,4 +1,4 @@
-import { forwardRef, type PropsWithChildren } from 'react';
+import { ComponentProps, forwardRef, type PropsWithChildren } from 'react';
 import { tv } from '@restate/util/styles';
 import {
   PressEvent,
@@ -12,6 +12,7 @@ export interface ButtonProps {
   onClick?: (
     event: Omit<PressEvent, 'target'> & { target: HTMLButtonElement },
   ) => void;
+  onKeyDown?: ComponentProps<typeof RACButton>['onKeyDown'];
   type?: 'button' | 'submit' | 'reset';
   name?: string;
   value?: string;

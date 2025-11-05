@@ -1,10 +1,28 @@
-import { ComponentType, FormEvent, ReactNode } from 'react';
+import {
+  Children,
+  ComponentType,
+  createElement,
+  FormEvent,
+  ReactElement,
+  ReactNode,
+  useRef,
+} from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import type { UseMutationResult } from '@tanstack/react-query';
 import {
   ConfirmationDialog,
   ConfirmationDialogProps,
 } from './ConfirmationDialog';
+import {
+  showCountdownNotification,
+  showErrorNotification,
+} from '@restate/ui/notification';
+import {
+  getUserPreference,
+  setUserPreference,
+  UserPreferenceId,
+} from '@restate/features/user-preference';
+import { FormFieldCheckbox, FormFieldLabel } from '@restate/ui/form-field';
 
 export interface BaseHelpers {
   navigate: ReturnType<typeof useNavigate>;
@@ -36,13 +54,20 @@ type ExtractContext<T> =
 export interface WithConfirmationConfig<
   THook extends UseMutationHook,
   THelpers = object,
+  T extends any[] = any[],
 > {
+  shouldShowSkipConfirmation?: boolean;
+  userPreferenceId: UserPreferenceId;
   queryParam: string;
+  ToastCountDownMessage: ComponentType<{ formData: FormData }>;
+  ToastErrorMessage: ComponentType<{ formData: FormData }>;
   useMutation: THook;
-  buildUseMutationInput: (searchParams: URLSearchParams) => string | null;
+  getUseMutationInput: (input: URLSearchParams | FormData) => string | null;
+  getQueryParamValue: (input: URLSearchParams | FormData) => string | null;
+  getFormData: (...input: T) => FormData;
   onSubmit: (
     mutate: (variables: ExtractVariables<ExtractMutationResult<THook>>) => void,
-    event: FormEvent<HTMLFormElement>,
+    event: FormEvent<HTMLFormElement> | FormData,
   ) => void;
   title: string;
   description: ReactNode;
@@ -77,7 +102,7 @@ export function withConfirmation<
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
     const customHelpers = config.useHelpers?.();
-    const mutationKey = config.buildUseMutationInput(searchParams);
+    const mutationKey = config.getUseMutationInput(searchParams);
 
     const mutation = config.useMutation(mutationKey || '', {
       onSuccess: (
@@ -128,15 +153,84 @@ export function withConfirmation<
         onClose={reset}
       >
         {ContentComponent && <ContentComponent />}
+        {config.shouldShowSkipConfirmation ? (
+          <FormFieldLabel className="mt-2 mb-0 flex w-full translate-y-1 flex-row gap-0.5 rounded-xl border bg-zinc-50 py-1.5 pr-1.5 pl-2 text-sm text-gray-600 [&:not(:has(:checked)):not(:has([data-pressed]))_.checkbox]:bg-white">
+            <FormFieldCheckbox
+              name={config.userPreferenceId}
+              value="true"
+              onChange={(value) => {
+                setUserPreference(config.userPreferenceId, value);
+              }}
+              className=""
+            />
+            <div className="flex-auto font-normal">
+              Skip this confirmation in the future
+            </div>
+          </FormFieldLabel>
+        ) : undefined}
       </ConfirmationDialog>
     );
   }
 
-  function getTriggerProps(value?: string) {
-    return {
-      href: `?${config.queryParam}=${value || 'true'}`,
-    };
+  function Trigger<
+    E extends ReactElement<{ href: string; onClick: VoidFunction }>,
+  >(props: { children: E; formData: FormData }) {
+    const element = Children.only(props.children);
+    const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
+    const customHelpers = config.useHelpers?.();
+
+    const mutationKey = config.getUseMutationInput(props.formData);
+
+    const hideRef = useRef<VoidFunction>(null);
+    const mutation = config.useMutation(mutationKey || '', {
+      onSuccess: (
+        data: ExtractData<ExtractMutationResult<THook>>,
+        variables: ExtractVariables<ExtractMutationResult<THook>>,
+        context: ExtractContext<ExtractMutationResult<THook>>,
+      ) => {
+        hideRef.current?.();
+        config.onSuccess?.(data, variables, context, {
+          navigate,
+          searchParams,
+          ...(customHelpers as THelpers),
+        });
+      },
+      onError: () => {
+        showErrorNotification(
+          <config.ToastErrorMessage formData={props.formData} />,
+        );
+        hideRef.current?.();
+      },
+    });
+
+    const shouldTriggerDialog = !getUserPreference(config.userPreferenceId);
+
+    return createElement(element.type, {
+      ...element.props,
+      ...(shouldTriggerDialog
+        ? {
+            href: `?${config.queryParam}=${config.getQueryParamValue(props.formData) || 'true'}`,
+          }
+        : {
+            onClick: () => {
+              const { promise, hide } = showCountdownNotification(
+                <config.ToastCountDownMessage formData={props.formData} />,
+              );
+              hideRef.current = hide;
+
+              promise.then(() =>
+                config.onSubmit(mutation.mutate, props.formData),
+              );
+            },
+          }),
+    });
   }
 
-  return { Dialog, getTriggerProps };
+  return {
+    Dialog,
+    Trigger,
+    getFormData: config.getFormData,
+    hasFollowup: () => !getUserPreference(config.userPreferenceId),
+  };
 }
