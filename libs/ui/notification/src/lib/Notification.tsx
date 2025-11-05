@@ -19,7 +19,7 @@ interface NotificationProps {
 }
 
 const styles = tv({
-  base: 'peer absolute top-0 right-0 left-0 z-80 mx-10 flex min-h-10 flex-auto shrink-0 transform items-center gap-2 rounded-xl border py-1 pr-1 pl-3 text-sm shadow-lg shadow-zinc-800/5 backdrop-blur-xl backdrop-saturate-200 transition duration-300 animate-in fade-in slide-in-from-top-16 zoom-in-95 [&.closing]:duration-250 [&.closing]:animate-out [&.closing]:fade-out [&.closing]:slide-out-to-top-16',
+  base: 'peer absolute top-0 right-0 left-0 z-80 mx-10 flex min-h-10 flex-auto shrink-0 transform items-center gap-2 rounded-xl border py-1 pr-1 pl-3 text-sm shadow-lg shadow-zinc-800/5 backdrop-blur-xl backdrop-saturate-200 transition duration-300 animate-in outline-none fade-in slide-in-from-top-16 zoom-in-95 [&.closing]:duration-250 [&.closing]:animate-out [&.closing]:fade-out [&.closing]:slide-out-to-top-16',
   slots: {
     content: 'flex-auto',
     close: 'ml-auto text-inherit',

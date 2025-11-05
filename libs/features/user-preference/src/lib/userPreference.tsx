@@ -4,6 +4,7 @@ export type UserPreferenceId =
   | 'skip-restart-action-dialog'
   | 'skip-kill-action-dialog'
   | 'skip-purge-action-dialog'
+  | 'skip-pause-action-dialog'
   | 'skip-retry-action-dialog';
 
 export function getUserPreference(id: UserPreferenceId) {

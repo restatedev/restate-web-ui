@@ -12,6 +12,7 @@ import { PurgeInvocation } from './PurgeInvocation';
 import { RestartInvocation } from './RestartInvocation';
 import { RetryNowInvocation } from './RetryNowInvocation';
 import { ResumeInvocation } from './ResumeInvocation';
+import { PauseInvocation } from './PauseInvocation';
 import { ActionText } from '@restate/ui/action-text';
 import { withConfirmation } from '@restate/ui/dialog';
 
@@ -68,6 +69,19 @@ const ACTION_CONFIGS: ActionConfig[] = [
       const isPaused = invocation.status === 'paused';
       return !isPaused && !isRestateAsNewSupported(invocation) && !isCompleted;
     },
+  },
+  {
+    key: 'pause',
+    condition: (invocation) =>
+      !invocation.completion_result &&
+      !['paused', 'ready', 'pending', 'suspended', 'scheduled'].includes(
+        invocation.status,
+      ),
+    component: PauseInvocation,
+    icon: IconName.Pause,
+    label: 'Pause',
+    destructive: true,
+    minVersion: '1.6.0',
   },
   {
     key: 'kill',
@@ -171,9 +185,9 @@ export function Actions({
       </config.component.Trigger>
     );
     return config.minVersion ? (
-      <RestateMinimumVersion
-        minVersion={config.minVersion}
-      ></RestateMinimumVersion>
+      <RestateMinimumVersion minVersion={config.minVersion}>
+        {item}
+      </RestateMinimumVersion>
     ) : (
       item
     );
