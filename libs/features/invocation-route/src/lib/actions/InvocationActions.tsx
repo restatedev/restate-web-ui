@@ -4,6 +4,7 @@ import { PurgeInvocation } from './PurgeInvocation';
 import { RestartInvocation } from './RestartInvocation';
 import { ResumeInvocation } from './ResumeInvocation';
 import { RetryNowInvocation } from './RetryNowInvocation';
+import { PauseInvocation } from './PauseInvocation';
 
 export function InvocationActions() {
   return (
@@ -14,6 +15,7 @@ export function InvocationActions() {
       <RetryNowInvocation.Dialog />
       <RestartInvocation.Dialog />
       <ResumeInvocation.Dialog />
+      <PauseInvocation.Dialog />
     </>
   );
 }
