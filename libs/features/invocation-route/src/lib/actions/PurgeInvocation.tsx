@@ -19,6 +19,8 @@ function PurgeInvocationContent() {
 
 export const PurgeInvocation = withConfirmation({
   queryParam: PURGE_INVOCATION_QUERY_PARAM,
+  shouldShowSkipConfirmation: true,
+  userPreferenceId: 'skip-purge-action-dialog',
 
   useMutation: usePurgeInvocation,
 

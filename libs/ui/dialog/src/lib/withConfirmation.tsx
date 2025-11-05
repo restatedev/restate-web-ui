@@ -19,6 +19,7 @@ import {
   showErrorNotification,
   showSuccessNotification,
 } from '@restate/ui/notification';
+import { UserPreferenceId } from '@restate/features/user-preference';
 
 export interface BaseHelpers {
   navigate: ReturnType<typeof useNavigate>;
@@ -52,6 +53,8 @@ export interface WithConfirmationConfig<
   THelpers = object,
   T extends any[] = any[],
 > {
+  shouldShowSkipConfirmation?: boolean;
+  userPreferenceId: UserPreferenceId;
   queryParam: string;
   useMutation: THook;
   getUseMutationInput: (input: URLSearchParams | FormData) => string | null;

@@ -19,6 +19,8 @@ function KillInvocationContent() {
 
 export const KillInvocation = withConfirmation({
   queryParam: KILL_INVOCATION_QUERY_PARAM,
+  shouldShowSkipConfirmation: true,
+  userPreferenceId: 'skip-kill-action-dialog',
 
   useMutation: useKillInvocation,
 

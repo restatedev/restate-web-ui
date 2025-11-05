@@ -18,6 +18,8 @@ function RetryNowInvocationContent() {
 
 export const RetryNowInvocation = withConfirmation({
   queryParam: RETRY_NOW_INVOCATION_QUERY_PARAM,
+  shouldShowSkipConfirmation: true,
+  userPreferenceId: 'skip-retry-action-dialog',
 
   useMutation: useResumeInvocation,
   getFormData: function (...args: string[]) {

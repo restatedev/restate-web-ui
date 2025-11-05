@@ -19,7 +19,8 @@ function CancelInvocationContent() {
 
 export const CancelInvocation = withConfirmation({
   queryParam: CANCEL_INVOCATION_QUERY_PARAM,
-
+  shouldShowSkipConfirmation: true,
+  userPreferenceId: 'skip-cancel-action-dialog',
   useMutation: useCancelInvocation,
 
   getFormData: function (...args: string[]) {

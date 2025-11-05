@@ -165,6 +165,8 @@ function ResumeInvocationContent() {
 
 export const ResumeInvocation = withConfirmation({
   queryParam: RESUME_INVOCATION_QUERY_PARAM,
+  shouldShowSkipConfirmation: false,
+  userPreferenceId: 'skip-resume-action-dialog',
 
   useMutation: useResumeInvocation,
 
