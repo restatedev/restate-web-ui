@@ -27,7 +27,18 @@ export const RetryNowInvocation = withConfirmation({
     return (
       <>
         Retrying{' '}
-        <code>
+        <code className="font-semibold">
+          {id.substring(0, 8)}…{id.slice(-5)}
+        </code>
+      </>
+    );
+  },
+  ToastErrorMessage: ({ formData }) => {
+    const id = String(formData.get('invocation-id'));
+    return (
+      <>
+        Failed to retry{' '}
+        <code className="font-semibold">
           {id.substring(0, 8)}…{id.slice(-5)}
         </code>
       </>
@@ -86,9 +97,13 @@ export const RetryNowInvocation = withConfirmation({
   Content: RetryNowInvocationContent,
 
   onSuccess: (_data, variables) => {
+    const id = String(variables.parameters?.path.invocation_id);
     showSuccessNotification(
       <>
-        <code>{variables.parameters?.path.invocation_id}</code> is retrying now.
+        <code className="font-semibold">
+          {id.substring(0, 8)}…{id.slice(-5)}
+        </code>{' '}
+        is retrying.
       </>,
     );
   },

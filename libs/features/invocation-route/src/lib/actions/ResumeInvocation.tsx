@@ -174,7 +174,18 @@ export const ResumeInvocation = withConfirmation({
     return (
       <>
         Resuming{' '}
-        <code>
+        <code className="font-semibold">
+          {id.substring(0, 8)}…{id.slice(-5)}
+        </code>
+      </>
+    );
+  },
+  ToastErrorMessage: ({ formData }) => {
+    const id = String(formData.get('invocation-id'));
+    return (
+      <>
+        Failed to resume{' '}
+        <code className="font-semibold">
           {id.substring(0, 8)}…{id.slice(-5)}
         </code>
       </>
@@ -238,10 +249,13 @@ export const ResumeInvocation = withConfirmation({
   Content: ResumeInvocationContent,
 
   onSuccess: (_data, _variables, _context, { searchParams }) => {
-    const invocationId = searchParams.get(RESUME_INVOCATION_QUERY_PARAM);
+    const id = String(_variables.parameters?.path.invocation_id);
     showSuccessNotification(
       <>
-        <code>{invocationId}</code> has been successfully resumed.
+        <code className="font-semibold">
+          {id.substring(0, 8)}…{id.slice(-5)}
+        </code>{' '}
+        has been successfully resumed.
       </>,
     );
   },

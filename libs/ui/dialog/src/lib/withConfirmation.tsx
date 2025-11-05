@@ -60,6 +60,7 @@ export interface WithConfirmationConfig<
   userPreferenceId: UserPreferenceId;
   queryParam: string;
   ToastCountDownMessage: ComponentType<{ formData: FormData }>;
+  ToastErrorMessage: ComponentType<{ formData: FormData }>;
   useMutation: THook;
   getUseMutationInput: (input: URLSearchParams | FormData) => string | null;
   getQueryParamValue: (input: URLSearchParams | FormData) => string | null;
@@ -196,7 +197,9 @@ export function withConfirmation<
         });
       },
       onError: () => {
-        showErrorNotification('failed');
+        showErrorNotification(
+          <config.ToastErrorMessage formData={props.formData} />,
+        );
         hideRef.current?.();
       },
     });

@@ -66,7 +66,18 @@ export const CancelInvocation = withConfirmation({
     return (
       <>
         Cancelling{' '}
-        <code>
+        <code className="font-semibold">
+          {id.substring(0, 8)}…{id.slice(-5)}
+        </code>
+      </>
+    );
+  },
+  ToastErrorMessage: ({ formData }) => {
+    const id = String(formData.get('invocation-id'));
+    return (
+      <>
+        Failed to cancel{' '}
+        <code className="font-semibold">
           {id.substring(0, 8)}…{id.slice(-5)}
         </code>
       </>
@@ -102,10 +113,14 @@ export const CancelInvocation = withConfirmation({
   Content: CancelInvocationContent,
 
   onSuccess: (_data, variables) => {
+    const id = String(variables.parameters?.path.invocation_id);
+
     showSuccessNotification(
       <>
-        <code>{variables.parameters?.path.invocation_id}</code> has been
-        successfully registered for cancellation.
+        <code className="font-semibold">
+          {id.substring(0, 8)}…{id.slice(-5)}
+        </code>{' '}
+        has been successfully registered for cancellation.
       </>,
     );
   },
