@@ -81,6 +81,7 @@ const ACTION_CONFIGS: ActionConfig[] = [
     icon: IconName.Pause,
     label: 'Pause',
     destructive: true,
+    minVersion: '1.6.0',
   },
   {
     key: 'kill',
@@ -184,9 +185,9 @@ export function Actions({
       </config.component.Trigger>
     );
     return config.minVersion ? (
-      <RestateMinimumVersion
-        minVersion={config.minVersion}
-      ></RestateMinimumVersion>
+      <RestateMinimumVersion minVersion={config.minVersion}>
+        {item}
+      </RestateMinimumVersion>
     ) : (
       item
     );
