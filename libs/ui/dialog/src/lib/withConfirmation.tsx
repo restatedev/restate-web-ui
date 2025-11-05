@@ -150,25 +150,23 @@ export function withConfirmation<
         isPending={isPending}
         error={error as Error | null}
         onClose={reset}
-        footer={
-          config.shouldShowSkipConfirmation ? (
-            <FormFieldLabel className="mb-0.5 flex w-full flex-row gap-0.5 rounded-xl border border-zinc-900/80 bg-zinc-800/90 py-1.5 pr-1.5 pl-2 text-sm text-gray-200 shadow-[inset_0_0.5px_0_0_var(--color-gray-500)] drop-shadow-xl backdrop-blur-xl">
-              <FormFieldCheckbox
-                name={config.userPreferenceId}
-                value="true"
-                onChange={(value) => {
-                  setUserPreference(config.userPreferenceId, value);
-                }}
-                className="grow-0 [&:not(:has(:checked))]:opacity-90"
-              ></FormFieldCheckbox>
-              <div className="flex-auto">
-                Skip this confirmation in the future
-              </div>
-            </FormFieldLabel>
-          ) : undefined
-        }
       >
         {ContentComponent && <ContentComponent />}
+        {config.shouldShowSkipConfirmation ? (
+          <FormFieldLabel className="mt-2 mb-0 flex w-full translate-y-1 flex-row gap-0.5 rounded-xl border bg-zinc-50 py-1.5 pr-1.5 pl-2 text-sm text-gray-600 [&:not(:has(:checked)):not(:has([data-pressed]))_.checkbox]:bg-white">
+            <FormFieldCheckbox
+              name={config.userPreferenceId}
+              value="true"
+              onChange={(value) => {
+                setUserPreference(config.userPreferenceId, value);
+              }}
+              className=""
+            />
+            <div className="flex-auto font-normal">
+              Skip this confirmation in the future
+            </div>
+          </FormFieldLabel>
+        ) : undefined}
       </ConfirmationDialog>
     );
   }
