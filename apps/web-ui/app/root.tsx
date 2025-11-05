@@ -16,7 +16,7 @@ import { Button } from '@restate/ui/button';
 import { useCallback } from 'react';
 import { QueryProvider } from '@restate/util/react-query';
 import { Nav, NavItem } from '@restate/ui/nav';
-import { Icon, IconName, Restate } from '@restate/ui/icons';
+import { IconName, Restate } from '@restate/ui/icons';
 import { RestateContextProvider } from '@restate/features/restate-context';
 import { Version } from '@restate/features/version';
 import {
@@ -36,7 +36,7 @@ import {
 } from '@restate/features/state-object-route';
 import { EditState } from '@restate/features/edit-state';
 import { FeatureFlags } from '@restate/util/feature-flag';
-import { QueryClient } from '@tanstack/react-query';
+import { QueryCache, QueryClient } from '@tanstack/react-query';
 import {
   DEPLOYMENT_QUERY_PARAM,
   DeleteDeployment,
@@ -50,6 +50,7 @@ import { DeploymentDetails } from '@restate/features/deployment-details';
 import { EditService, ServiceDetails } from '@restate/features/service-details';
 import { GettingStarted } from '@restate/features/getting-started';
 import { RegisterDeploymentDialog } from '@restate/features/register-deployment';
+import { queryCacheOnSuccess } from '@restate/data-access/admin-api-hooks';
 
 export const links: LinksFunction = () => [
   // TODO: move to the its own lib
@@ -111,6 +112,9 @@ const queryClient = new QueryClient({
       experimental_prefetchInRender: true,
     },
   },
+  queryCache: new QueryCache({
+    onSuccess: (data, query) => queryCacheOnSuccess(queryClient, data, query),
+  }),
 });
 
 export function Layout({ children }: { children: React.ReactNode }) {
