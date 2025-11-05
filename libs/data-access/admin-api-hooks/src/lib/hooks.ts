@@ -1235,6 +1235,21 @@ export function usePurgeInvocation(
   });
 }
 
+export function usePauseInvocation(
+  invocation_id: string,
+  options?: HookMutationOptions<'/invocations/{invocation_id}/pause', 'patch'>,
+) {
+  const baseUrl = useAdminBaseUrl();
+
+  return useMutation({
+    ...adminApi('mutate', '/invocations/{invocation_id}/pause', 'patch', {
+      baseUrl,
+      resolvedPath: `/invocations/${invocation_id}/pause`,
+    }),
+    ...options,
+  });
+}
+
 export function useRestartInvocationAsNew(
   invocation_id: string,
   options?: HookMutationOptions<
