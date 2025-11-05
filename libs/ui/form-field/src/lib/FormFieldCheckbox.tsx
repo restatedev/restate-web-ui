@@ -110,8 +110,8 @@ const checkboxStyles = tv({
   base: 'group flex items-center gap-2 text-sm transition',
   variants: {
     isDisabled: {
-      false: 'text-gray-800 dark:text-zinc-200',
-      true: 'text-gray-300 dark:text-zinc-600 forced-colors:text-[GrayText]',
+      false: 'text-gray-800',
+      true: 'text-gray-300',
     },
     direction: {
       left: 'col-start-1',

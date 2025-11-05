@@ -44,7 +44,7 @@ export const CancelInvocation = withConfirmation({
     }
   },
 
-  onSubmit: (mutate, event: FormEvent<HTMLFormElement>) => {
+  onSubmit: (mutate, event: FormEvent<HTMLFormElement> | FormData) => {
     let formData: FormData;
 
     if (event instanceof FormData) {

@@ -3,7 +3,6 @@ import {
   ComponentType,
   createElement,
   FormEvent,
-  PropsWithChildren,
   ReactElement,
   ReactNode,
   useRef,
@@ -17,9 +16,14 @@ import {
 import {
   showCountdownNotification,
   showErrorNotification,
-  showSuccessNotification,
 } from '@restate/ui/notification';
-import { UserPreferenceId } from '@restate/features/user-preference';
+import {
+  getUserPreference,
+  setUserPreference,
+  UserPreferenceId,
+} from '@restate/features/user-preference';
+import { FormFieldCheckbox, FormFieldLabel } from '@restate/ui/form-field';
+import { Icon, IconName } from '@restate/ui/icons';
 
 export interface BaseHelpers {
   navigate: ReturnType<typeof useNavigate>;
@@ -146,6 +150,23 @@ export function withConfirmation<
         isPending={isPending}
         error={error as Error | null}
         onClose={reset}
+        footer={
+          config.shouldShowSkipConfirmation ? (
+            <FormFieldLabel className="mb-0.5 flex w-full flex-row gap-0.5 rounded-xl border border-zinc-900/80 bg-zinc-800/90 py-1.5 pr-1.5 pl-2 text-sm text-gray-200 shadow-[inset_0_0.5px_0_0_var(--color-gray-500)] drop-shadow-xl backdrop-blur-xl">
+              <FormFieldCheckbox
+                name={config.userPreferenceId}
+                value="true"
+                onChange={(value) => {
+                  setUserPreference(config.userPreferenceId, value);
+                }}
+                className="grow-0 [&:not(:has(:checked))]:opacity-90"
+              ></FormFieldCheckbox>
+              <div className="flex-auto">
+                Skip this confirmation in the future
+              </div>
+            </FormFieldLabel>
+          ) : undefined
+        }
       >
         {ContentComponent && <ContentComponent />}
       </ConfirmationDialog>
@@ -182,18 +203,32 @@ export function withConfirmation<
       },
     });
 
+    const shouldTriggerDialog = !getUserPreference(config.userPreferenceId);
+
     return createElement(element.type, {
       ...element.props,
-      // onClick: () => {
-      //   const { promise, hide } =
-      //     showCountdownNotification('jsdnf skjdfnsdkf ');
-      //   hideRef.current = hide;
+      ...(shouldTriggerDialog
+        ? {
+            href: `?${config.queryParam}=${config.getQueryParamValue(props.formData) || 'true'}`,
+          }
+        : {
+            onClick: () => {
+              const { promise, hide } =
+                showCountdownNotification('jsdnf skjdfnsdkf ');
+              hideRef.current = hide;
 
-      //   promise.then(() => config.onSubmit(mutation.mutate, props.formData));
-      // },
-      href: `?${config.queryParam}=${config.getQueryParamValue(props.formData) || 'true'}`,
+              promise.then(() =>
+                config.onSubmit(mutation.mutate, props.formData),
+              );
+            },
+          }),
     });
   }
 
-  return { Dialog, Trigger, getFormData: config.getFormData };
+  return {
+    Dialog,
+    Trigger,
+    getFormData: config.getFormData,
+    hasFollowup: () => !getUserPreference(config.userPreferenceId),
+  };
 }

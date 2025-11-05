@@ -45,6 +45,7 @@ export interface ConfirmationDialogProps {
   icon?: IconName;
   iconClassName?: string;
   description: ReactNode;
+  footer?: ReactNode;
   alertType?: 'warning' | 'info';
   alertContent?: ReactNode;
   submitText: string;
@@ -77,6 +78,7 @@ export function ConfirmationDialog({
   error,
   onClose,
   children,
+  footer,
 }: PropsWithChildren<ConfirmationDialogProps>) {
   const formId = useId();
 
@@ -108,6 +110,7 @@ export function ConfirmationDialog({
             {children}
             <DialogFooter>
               <div className="flex flex-col gap-2">
+                {footer}
                 {error && <ErrorBanner error={error} />}
                 <div className="flex gap-2">
                   <DialogClose>

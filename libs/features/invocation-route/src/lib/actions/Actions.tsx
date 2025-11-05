@@ -164,7 +164,9 @@ export function Actions({
             name={config.icon}
             className="h-3.5 w-3.5 shrink-0 opacity-80"
           />
-          <ActionText>{config.label}</ActionText>
+          <ActionText hasFollowup={config.component.hasFollowup()}>
+            {config.label}
+          </ActionText>
         </DropdownItem>
       </config.component.Trigger>
     );
@@ -198,7 +200,9 @@ export function Actions({
               name={primaryAction.icon}
               className="h-[0.9em] w-[0.9em] shrink-0 opacity-80"
             />
-            <ActionText>{primaryAction.label}</ActionText>
+            <ActionText hasFollowup={primaryAction.component.hasFollowup()}>
+              {primaryAction.label}
+            </ActionText>
           </Link>
         </primaryAction.component.Trigger>
       )}
