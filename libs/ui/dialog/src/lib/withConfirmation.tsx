@@ -23,7 +23,6 @@ import {
   UserPreferenceId,
 } from '@restate/features/user-preference';
 import { FormFieldCheckbox, FormFieldLabel } from '@restate/ui/form-field';
-import { Icon, IconName } from '@restate/ui/icons';
 
 export interface BaseHelpers {
   navigate: ReturnType<typeof useNavigate>;
