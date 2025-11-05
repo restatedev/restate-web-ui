@@ -59,6 +59,7 @@ export interface WithConfirmationConfig<
   shouldShowSkipConfirmation?: boolean;
   userPreferenceId: UserPreferenceId;
   queryParam: string;
+  ToastCountDownMessage: ComponentType<{ formData: FormData }>;
   useMutation: THook;
   getUseMutationInput: (input: URLSearchParams | FormData) => string | null;
   getQueryParamValue: (input: URLSearchParams | FormData) => string | null;
@@ -212,8 +213,9 @@ export function withConfirmation<
           }
         : {
             onClick: () => {
-              const { promise, hide } =
-                showCountdownNotification('jsdnf skjdfnsdkf ');
+              const { promise, hide } = showCountdownNotification(
+                <config.ToastCountDownMessage formData={props.formData} />,
+              );
               hideRef.current = hide;
 
               promise.then(() =>

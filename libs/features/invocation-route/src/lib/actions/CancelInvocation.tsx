@@ -61,6 +61,17 @@ export const CancelInvocation = withConfirmation({
       },
     });
   },
+  ToastCountDownMessage: ({ formData }) => {
+    const id = String(formData.get('invocation-id'));
+    return (
+      <>
+        Cancelling{' '}
+        <code>
+          {id.substring(0, 8)}…{id.slice(-5)}
+        </code>
+      </>
+    );
+  },
 
   title: 'Cancel Invocation',
   icon: IconName.Cancel,

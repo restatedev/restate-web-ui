@@ -121,9 +121,9 @@ export function Notification({ toast, className, queue }: NotificationProps) {
             {toast.content.content}
             {isCountdown &&
               (countdown ? (
-                <>
+                <span className="pl-1">
                   (in <span className="font-semibold">{countdown}s</span>)
-                </>
+                </span>
               ) : (
                 <Ellipsis />
               ))}

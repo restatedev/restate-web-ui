@@ -23,7 +23,17 @@ export const KillInvocation = withConfirmation({
   userPreferenceId: 'skip-kill-action-dialog',
 
   useMutation: useKillInvocation,
-
+  ToastCountDownMessage: ({ formData }) => {
+    const id = String(formData.get('invocation-id'));
+    return (
+      <>
+        Killing{' '}
+        <code>
+          {id.substring(0, 8)}…{id.slice(-5)}
+        </code>
+      </>
+    );
+  },
   getFormData: function (...args: string[]) {
     const [invocationId] = args;
     const formData = new FormData();

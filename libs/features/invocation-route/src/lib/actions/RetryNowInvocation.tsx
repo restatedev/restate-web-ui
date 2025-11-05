@@ -22,6 +22,17 @@ export const RetryNowInvocation = withConfirmation({
   userPreferenceId: 'skip-retry-action-dialog',
 
   useMutation: useResumeInvocation,
+  ToastCountDownMessage: ({ formData }) => {
+    const id = String(formData.get('invocation-id'));
+    return (
+      <>
+        Retrying{' '}
+        <code>
+          {id.substring(0, 8)}…{id.slice(-5)}
+        </code>
+      </>
+    );
+  },
   getFormData: function (...args: string[]) {
     const [invocationId] = args;
     const formData = new FormData();

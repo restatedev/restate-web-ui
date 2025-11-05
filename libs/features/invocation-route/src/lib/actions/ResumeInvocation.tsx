@@ -169,7 +169,17 @@ export const ResumeInvocation = withConfirmation({
   userPreferenceId: 'skip-resume-action-dialog',
 
   useMutation: useResumeInvocation,
-
+  ToastCountDownMessage: ({ formData }) => {
+    const id = String(formData.get('invocation-id'));
+    return (
+      <>
+        Resuming{' '}
+        <code>
+          {id.substring(0, 8)}…{id.slice(-5)}
+        </code>
+      </>
+    );
+  },
   getFormData: function (...args: string[]) {
     const [invocationId] = args;
     const formData = new FormData();

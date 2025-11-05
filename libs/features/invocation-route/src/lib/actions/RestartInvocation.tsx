@@ -29,7 +29,17 @@ export const RestartInvocation = withConfirmation({
     formData.append('invocation-id', String(invocationId));
     return formData;
   },
-
+  ToastCountDownMessage: ({ formData }) => {
+    const id = String(formData.get('invocation-id'));
+    return (
+      <>
+        Restarting{' '}
+        <code>
+          {id.substring(0, 8)}…{id.slice(-5)}
+        </code>
+      </>
+    );
+  },
   getQueryParamValue: function (input) {
     if (input instanceof URLSearchParams) {
       return input.get(RESTART_AS_NEW_INVOCATION_QUERY_PARAM);
