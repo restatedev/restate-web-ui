@@ -11,6 +11,7 @@ import { ReactNode } from 'react';
 
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Icon, IconName } from '@restate/ui/icons';
+import { Portal } from '@restate/ui/portal';
 
 const styles = tv({
   base: 'relative flex max-w-full flex-row flex-wrap items-center pr-2',
@@ -164,6 +165,7 @@ export function InputOutput({
                 <div className="flex items-center text-0.5xs">
                   <span>{popoverTitle}</span>
                   <div className="ml-auto">{waterMark}</div>
+                  <Portal className="ml-2" id="expression-value" />
                 </div>
               }
             >

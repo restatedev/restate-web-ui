@@ -77,6 +77,7 @@ import { useEditStateContext } from '@restate/features/edit-state';
 import { toStateParam } from './toStateParam';
 import { SplitButton } from '@restate/ui/split-button';
 import { useRestateContext } from '@restate/features/restate-context';
+import { Portal } from '@restate/ui/portal';
 
 function getQuery(
   searchParams: URLSearchParams,
@@ -399,7 +400,7 @@ function Component() {
                 <Row
                   id={row.key + '_'}
                   columns={selectedColumnsArray}
-                  className="aaa bg-transparent [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"
+                  className="bg-transparent [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"
                 >
                   {({ id }) => {
                     if (id === 'service_key') {
@@ -489,12 +490,17 @@ function Component() {
                                     </span>
                                   </Button>
                                 </PopoverHoverTrigger>
+
                                 <PopoverContent>
                                   <DropdownSection
                                     className="mb-1 max-w-[min(90vw,600px)] overflow-auto px-4"
                                     title={
                                       <div className="flex items-center text-0.5xs">
                                         {id}
+                                        <Portal
+                                          id="state-value"
+                                          className="mr-1 ml-auto"
+                                        />
                                         <EditStateTrigger
                                           onClick={() =>
                                             setEditState({
@@ -506,7 +512,7 @@ function Component() {
                                             })
                                           }
                                           variant="secondary"
-                                          className="ml-auto flex shrink-0 items-center gap-1 rounded-sm px-1.5 py-0 text-xs font-normal"
+                                          className="flex shrink-0 items-center gap-1 rounded-sm px-1.5 py-0 text-xs font-normal"
                                         >
                                           Edit
                                           <Icon
@@ -520,6 +526,8 @@ function Component() {
                                     <Value
                                       value={row.state?.[id]}
                                       className="py-3 font-mono text-xs"
+                                      showCopyButton
+                                      portalId="state-value"
                                     />
                                   </DropdownSection>
                                 </PopoverContent>
