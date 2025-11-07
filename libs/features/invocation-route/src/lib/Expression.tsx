@@ -11,6 +11,7 @@ import { ReactNode } from 'react';
 
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Icon, IconName } from '@restate/ui/icons';
+import { Portal } from '@restate/ui/portal';
 
 const styles = tv({
   base: 'relative flex max-w-full flex-row flex-wrap items-center pr-2',
@@ -137,7 +138,7 @@ export function InputOutput({
           {isValueHidden ? (
             <PopoverTrigger>
               <Button
-                className="flex h-6 min-w-6 items-center justify-center gap-0 rounded-lg p-0 font-sans text-2xs font-medium text-gray-500"
+                className="mx-0.5 my-0.5 flex h-6 min-w-6 items-center justify-center gap-0 rounded-lg p-0 font-sans text-2xs font-medium text-gray-500 outline-offset-0"
                 variant="secondary"
               >
                 <Icon name={IconName.Eye} className="mx-1.5 h-3 w-3 shrink-0" />
@@ -148,14 +149,14 @@ export function InputOutput({
               </Button>
             </PopoverTrigger>
           ) : (
-            <PopoverHoverTrigger>
+            <PopoverTrigger>
               <Button
-                className="max-w-fit grow basis-20 truncate rounded-xs px-0.5 py-0 font-mono [font-size:inherit] text-inherit underline decoration-dashed decoration-from-font underline-offset-4"
+                className="rounded-ms my-0.5 max-w-fit grow basis-20 truncate rounded-xl border bg-white/60 px-2 py-0.5 font-mono [font-size:inherit] text-inherit shadow-xs outline-offset-0"
                 variant="icon"
               >
                 <span className="truncate pr-0.5">{name}</span>
               </Button>
-            </PopoverHoverTrigger>
+            </PopoverTrigger>
           )}
           <PopoverContent>
             <DropdownSection
@@ -164,6 +165,7 @@ export function InputOutput({
                 <div className="flex items-center text-0.5xs">
                   <span>{popoverTitle}</span>
                   <div className="ml-auto">{waterMark}</div>
+                  <Portal className="-mr-2 ml-2" id="expression-value" />
                 </div>
               }
             >

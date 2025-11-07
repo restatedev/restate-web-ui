@@ -4,6 +4,8 @@ import { Editor } from '@restate/ui/editor';
 import { Ellipsis, Spinner } from '@restate/ui/loading';
 import { useDecode } from '@restate/data-access/admin-api-hooks';
 import { tv } from '@restate/util/styles';
+import { Copy } from '@restate/ui/copy';
+import { InPortal } from '@restate/ui/portal';
 
 const styles = tv({
   base: 'max-w-full',
@@ -13,10 +15,14 @@ export function Value({
   value,
   className,
   isBase64,
+  showCopyButton,
+  portalId,
 }: {
   value?: string;
   className?: string;
   isBase64?: boolean;
+  showCopyButton?: boolean;
+  portalId?: string;
 }) {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const { data: decodedValue, isFetching } = useDecode(value, isBase64);
@@ -39,6 +45,14 @@ export function Value({
           readonly
           className={styles({ className })}
         />
+      )}
+      {showCopyButton && (
+        <InPortal id={String(portalId)}>
+          <Copy
+            copyText={decodedValue}
+            className="ml-3 h-5.5 w-5.5 rounded-lg border bg-white p-1 text-gray-800 shadow-xs"
+          />
+        </InPortal>
       )}
     </div>
   );

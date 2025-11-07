@@ -45,6 +45,8 @@ export function CompleteAwakeable({
                       value={entry.value}
                       className="py-3 font-mono text-xs"
                       isBase64
+                      showCopyButton
+                      portalId="expression-value"
                     />
                   }
                   {...(EncodingWaterMark && {

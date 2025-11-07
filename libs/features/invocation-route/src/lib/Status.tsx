@@ -69,7 +69,7 @@ const styles = tv({
       cancelled: '',
       killed: '',
       'backing-off': '',
-      paused: '',
+      paused: 'border-dashed',
     },
     isRetrying: {
       true: 'border border-dashed border-orange-300/80 py-0.5 pr-0.5',

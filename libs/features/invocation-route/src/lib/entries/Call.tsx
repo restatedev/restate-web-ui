@@ -69,6 +69,8 @@ export function Call({
                           value={entry.parameters}
                           className="py-3 font-mono text-xs"
                           isBase64
+                          showCopyButton
+                          portalId="expression-value"
                         />
                       }
                       {...(EncodingWaterMark && {

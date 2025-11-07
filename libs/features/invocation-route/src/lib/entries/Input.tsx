@@ -54,6 +54,8 @@ export function Input({
                         value={entry.parameters}
                         className="py-3 font-mono text-xs"
                         isBase64
+                        showCopyButton
+                        portalId="expression-value"
                       />
                     }
                     {...(EncodingWaterMark && {
@@ -68,9 +70,15 @@ export function Input({
                 {entry.headers && entry.headers.length > 0 && (
                   <InputOutput
                     name="headers"
-                    popoverTitle=""
+                    popoverTitle="Headers"
                     className="mx-0 border-none bg-transparent px-0 [&&&]:mb-1"
-                    popoverContent={<Headers headers={entry.headers} />}
+                    popoverContent={
+                      <Headers
+                        headers={entry.headers}
+                        showCopyButton
+                        portalId="expression-value"
+                      />
+                    }
                   />
                 )}
               </>
