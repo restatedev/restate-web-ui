@@ -17,7 +17,10 @@ import { LifeCycleProgress, Units } from './LifeCycleProgress';
 import { ErrorBoundary } from './ErrorBoundry';
 import { tv } from '@restate/util/styles';
 import { Retention } from './Retention';
-import { useGetInvocationsJournalWithInvocationsV2 } from '@restate/data-access/admin-api-hooks';
+import {
+  useGetInvocationsJournalWithInvocationsV2,
+  useListSubscriptions,
+} from '@restate/data-access/admin-api-hooks';
 
 const LazyPanel = lazy(() =>
   import('react-resizable-panels').then((m) => ({ default: m.Panel })),
@@ -84,6 +87,8 @@ export function JournalV2({
       }
     },
   });
+
+  const { data: subscriptions } = useListSubscriptions();
 
   const addInvocationId = useCallback(
     (id: string) => {
@@ -230,6 +235,16 @@ export function JournalV2({
                       id={journalAndInvocationData?.restarted_from}
                       className="max-w-[20ch] min-w-0 text-0.5xs font-semibold"
                     />
+                  ) : journalAndInvocationData?.invoked_by ===
+                    'subscription' ? (
+                    <div className="text-xs font-medium">
+                      {subscriptions?.subscriptions?.find(
+                        (sub) =>
+                          sub.id ===
+                          journalAndInvocationData?.invoked_by_subscription_id,
+                      )?.source ||
+                        journalAndInvocationData?.invoked_by_subscription_id}
+                    </div>
                   ) : null}
                 </div>
                 <div className="pb-4 pl-6">
