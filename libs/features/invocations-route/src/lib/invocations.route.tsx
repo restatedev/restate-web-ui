@@ -204,6 +204,7 @@ function Component() {
           { value: 'service', label: 'Service' },
           { value: 'ingress', label: 'Ingress' },
           { value: 'restart_as_new', label: 'Restart as New' },
+          { value: 'subscription', label: 'Subscription' },
         ],
       },
       {

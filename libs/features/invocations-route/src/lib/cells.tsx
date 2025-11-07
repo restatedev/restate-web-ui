@@ -31,6 +31,7 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { Link } from '@restate/ui/link';
 import { useRestateContext } from '@restate/features/restate-context';
 import { useLocation } from 'react-router';
+import { useListSubscriptions } from '@restate/data-access/admin-api-hooks';
 
 function withDate({
   tooltipTitle,
@@ -132,6 +133,7 @@ function Type({ invocation }: CellProps) {
 }
 
 function InvokedBy({ invocation }: CellProps) {
+  const { data } = useListSubscriptions();
   if (invocation.invoked_by === 'ingress') {
     return <Badge className="border-none">Ingress</Badge>;
   } else if (invocation.invoked_by === 'restart_as_new') {
@@ -144,6 +146,34 @@ function InvokedBy({ invocation }: CellProps) {
             className="w-[20ch] max-w-full min-w-0 pr-1 pl-1.5 text-zinc-500"
           />
         )}
+      </div>
+    );
+  } else if (invocation.invoked_by === 'subscription') {
+    return (
+      <div className="flex w-full flex-col items-center gap-0.5">
+        <div className="flex w-full items-center gap-0.5">
+          <Badge className="border-none">Subscription</Badge>
+          <span className="text-normal inline-block flex-auto truncate font-mono text-2xs text-gray-500">
+            {invocation.invoked_by_subscription_id && (
+              <TruncateWithTooltip>
+                {invocation.invoked_by_subscription_id}
+              </TruncateWithTooltip>
+            )}
+          </span>
+        </div>
+        <Badge
+          size="xs"
+          className="mr-1 ml-1 max-w-full truncate bg-white font-mono"
+        >
+          <TruncateWithTooltip copyText={invocation.invoked_by_subscription_id}>
+            {
+              data?.subscriptions.find(
+                (subscription) =>
+                  subscription.id === invocation.invoked_by_subscription_id,
+              )?.source
+            }
+          </TruncateWithTooltip>
+        </Badge>
       </div>
     );
   } else if (invocation.invoked_by_target) {
