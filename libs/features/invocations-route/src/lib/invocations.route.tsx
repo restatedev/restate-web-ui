@@ -49,6 +49,7 @@ import {
   useListDeployments,
   useListInvocations,
   useListServices,
+  useListSubscriptions,
 } from '@restate/data-access/admin-api-hooks';
 import { useRestateContext } from '@restate/features/restate-context';
 
@@ -72,6 +73,8 @@ const PAGE_SIZE = 30;
 function Component() {
   const { promise: listDeploymentPromise, data: listDeploymentsData } =
     useListDeployments();
+  const { promise: listSubscriptionsPromise, data: listSubscriptions } =
+    useListSubscriptions();
   const { promise: listServicesPromise } = useListServices(
     listDeploymentsData?.sortedServiceNames,
   );
@@ -196,6 +199,25 @@ function Component() {
           ),
       },
       {
+        id: 'invoked_by_subscription_id',
+        label: 'Invoked by subscription',
+        operations: [
+          { value: 'IN', label: 'is' },
+          { value: 'NOT_IN', label: 'is not' },
+        ],
+        type: 'STRING_LIST',
+        loadOptions: async () =>
+          listSubscriptionsPromise.then((results) =>
+            Array.from(results?.subscriptions.values() ?? []).map(
+              (subscription) => ({
+                label: subscription.source,
+                value: subscription.id,
+                description: subscription.id,
+              }),
+            ),
+          ),
+      },
+      {
         id: 'invoked_by',
         label: 'Invoked by',
         operations: [{ value: 'EQUALS', label: 'is' }],
@@ -204,6 +226,7 @@ function Component() {
           { value: 'service', label: 'Service' },
           { value: 'ingress', label: 'Ingress' },
           { value: 'restart_as_new', label: 'Restart as New' },
+          { value: 'subscription', label: 'Subscription' },
         ],
       },
       {

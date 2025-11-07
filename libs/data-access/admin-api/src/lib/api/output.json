@@ -6655,7 +6655,7 @@
           },
           "invoked_by": {
             "type": "string",
-            "enum": ["ingress", "service", "restart_as_new"]
+            "enum": ["ingress", "service", "restart_as_new", "subscription"]
           },
           "restarted_from": {
             "type": "string"
@@ -6700,6 +6700,9 @@
             "type": "string"
           },
           "invoked_by_service_name": {
+            "type": "string"
+          },
+          "invoked_by_subscription_id": {
             "type": "string"
           },
           "invoked_by_id": {
@@ -6834,7 +6837,7 @@
           },
           "invoked_by": {
             "type": "string",
-            "enum": ["ingress", "service", "restart_as_new"]
+            "enum": ["ingress", "service", "restart_as_new", "subscription"]
           },
           "restarted_from": {
             "type": "string"
@@ -6876,6 +6879,9 @@
             "type": "string"
           },
           "invoked_by_service_name": {
+            "type": "string"
+          },
+          "invoked_by_subscription_id": {
             "type": "string"
           },
           "invoked_by_id": {

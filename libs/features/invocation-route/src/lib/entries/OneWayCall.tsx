@@ -57,6 +57,7 @@ export function OneWayCall({
                   <InputOutput
                     name="parameters"
                     popoverTitle="Parameters"
+                    isValueHidden
                     popoverContent={
                       <Value
                         value={entry.parameters}
@@ -79,6 +80,7 @@ export function OneWayCall({
                   <InputOutput
                     name="headers"
                     popoverTitle=""
+                    isValueHidden
                     className="mx-0 border-none bg-transparent px-0 [&&&]:mb-1"
                     popoverContent={<Headers headers={entry.headers} />}
                   />

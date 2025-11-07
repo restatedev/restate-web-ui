@@ -386,6 +386,23 @@ export function useDeploymentDetails(
   return { ...results, queryKey: queryOptions.queryKey };
 }
 
+export function useListSubscriptions(
+  options?: HookQueryOptions<'/subscriptions', 'get'>,
+) {
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi('query', '/subscriptions', 'get', {
+    baseUrl,
+  });
+
+  const results = useQuery({
+    staleTime: 0,
+    ...queryOptions,
+    ...options,
+  });
+
+  return { ...results, queryKey: queryOptions.queryKey };
+}
+
 export function useModifyService(
   service: string,
   options?: HookMutationOptions<'/services/{service}', 'patch'>,

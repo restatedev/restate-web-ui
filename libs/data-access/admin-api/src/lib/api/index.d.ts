@@ -2391,7 +2391,7 @@ export interface components {
       id: string;
       created_using_restate_version?: string;
       /** @enum {string} */
-      invoked_by: 'ingress' | 'service' | 'restart_as_new';
+      invoked_by: 'ingress' | 'service' | 'restart_as_new' | 'subscription';
       restarted_from?: string;
       /** @enum {string} */
       status:
@@ -2416,6 +2416,7 @@ export interface components {
       completion_result?: 'success' | 'failure';
       completion_failure?: string;
       invoked_by_service_name?: string;
+      invoked_by_subscription_id?: string;
       invoked_by_id?: string;
       invoked_by_target?: string;
       pinned_deployment_id?: string;
@@ -2468,7 +2469,7 @@ export interface components {
       next_retry_at?: string;
       id: string;
       /** @enum {string} */
-      invoked_by: 'ingress' | 'service' | 'restart_as_new';
+      invoked_by: 'ingress' | 'service' | 'restart_as_new' | 'subscription';
       restarted_from?: string;
       /** @enum {string} */
       status:
@@ -2490,6 +2491,7 @@ export interface components {
       completion_result?: 'success' | 'failure';
       completion_failure?: string;
       invoked_by_service_name?: string;
+      invoked_by_subscription_id?: string;
       invoked_by_id?: string;
       invoked_by_target?: string;
       pinned_deployment_id?: string;
