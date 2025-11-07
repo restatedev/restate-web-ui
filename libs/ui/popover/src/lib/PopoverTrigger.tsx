@@ -69,52 +69,104 @@ function getPolygon(
   const triggerRect = triggerEl.getBoundingClientRect();
   const popoverRect = popoverEl.getBoundingClientRect();
   const placement = popoverEl.dataset.placement?.split('-').at(0);
-  const buffer = 5;
-  switch (placement) {
-    case 'bottom':
-      return [
-        [triggerRect.left - buffer, triggerRect.top - buffer],
-        [triggerRect.right + buffer, triggerRect.top - buffer],
-        [triggerRect.right + buffer, triggerRect.bottom + buffer],
-        [popoverRect.right + buffer, popoverRect.top - buffer],
-        [popoverRect.right + buffer, popoverRect.bottom + buffer],
-        [popoverRect.left - buffer, popoverRect.bottom + buffer],
-        [popoverRect.left - buffer, popoverRect.top - buffer],
-        [triggerRect.left - buffer, triggerRect.bottom + buffer],
-      ];
-    case 'top':
-      return [
-        [popoverRect.right + buffer, popoverRect.top - buffer],
-        [popoverRect.right + buffer, popoverRect.bottom + buffer],
-        [triggerRect.right + buffer, triggerRect.top - buffer],
-        [triggerRect.right + buffer, triggerRect.bottom + buffer],
-        [triggerRect.left - buffer, triggerRect.bottom + buffer],
-        [triggerRect.left - buffer, triggerRect.top - buffer],
-        [popoverRect.left - buffer, popoverRect.bottom + buffer],
-      ];
-    case 'left':
-      return [
-        [popoverRect.left - buffer, popoverRect.top - buffer],
-        [popoverRect.right + buffer, popoverRect.top - buffer],
-        [triggerRect.left - buffer, triggerRect.top - buffer],
-        [triggerRect.right + buffer, triggerRect.top - buffer],
-        [triggerRect.right + buffer, triggerRect.bottom + buffer],
-        [triggerRect.left - buffer, triggerRect.bottom + buffer],
-        [popoverRect.right + buffer, popoverRect.bottom + buffer],
-        [popoverRect.left - buffer, popoverRect.bottom + buffer],
-      ];
-    case 'right':
-      return [
-        [triggerRect.left - buffer, triggerRect.top - buffer],
-        [triggerRect.right + buffer, triggerRect.top - buffer],
-        [popoverRect.left - buffer, popoverRect.top - buffer],
-        [popoverRect.right + buffer, popoverRect.top - buffer],
-        [popoverRect.right + buffer, popoverRect.bottom + buffer],
-        [popoverRect.left - buffer, popoverRect.bottom + buffer],
-        [triggerRect.right + buffer, triggerRect.bottom + buffer],
-        [triggerRect.left - buffer, triggerRect.bottom + buffer],
-      ];
+  const buffer = 10; // Increased from 5 to 10 for more forgiveness
 
+  switch (placement) {
+    case 'bottom': {
+      // Create a trapezoid that covers the full width of both elements
+      const rightEdge = Math.max(triggerRect.right, popoverRect.right) + buffer;
+      const leftEdge = Math.min(triggerRect.left, popoverRect.left) - buffer;
+
+      return [
+        // Trigger top edge (full width)
+        [triggerRect.left - buffer, triggerRect.top - buffer],
+        [triggerRect.right + buffer, triggerRect.top - buffer],
+
+        // Expand to cover right side down to popover
+        [rightEdge, triggerRect.bottom + buffer],
+        [rightEdge, popoverRect.top - buffer],
+
+        // Popover right and bottom edges
+        [popoverRect.right + buffer, popoverRect.top - buffer],
+        [popoverRect.right + buffer, popoverRect.bottom + buffer],
+        [popoverRect.left - buffer, popoverRect.bottom + buffer],
+        [popoverRect.left - buffer, popoverRect.top - buffer],
+
+        // Expand to cover left side back to trigger
+        [leftEdge, popoverRect.top - buffer],
+        [leftEdge, triggerRect.bottom + buffer],
+      ];
+    }
+
+    case 'top': {
+      const rightEdgeTop =
+        Math.max(triggerRect.right, popoverRect.right) + buffer;
+      const leftEdgeTop = Math.min(triggerRect.left, popoverRect.left) - buffer;
+
+      return [
+        // Popover top and sides
+        [popoverRect.left - buffer, popoverRect.top - buffer],
+        [popoverRect.right + buffer, popoverRect.top - buffer],
+        [popoverRect.right + buffer, popoverRect.bottom + buffer],
+        [popoverRect.left - buffer, popoverRect.bottom + buffer],
+
+        // Expand to cover the gap
+        [leftEdgeTop, popoverRect.bottom + buffer],
+        [leftEdgeTop, triggerRect.top - buffer],
+        [triggerRect.left - buffer, triggerRect.top - buffer],
+        [triggerRect.right + buffer, triggerRect.top - buffer],
+        [rightEdgeTop, triggerRect.top - buffer],
+        [rightEdgeTop, popoverRect.bottom + buffer],
+      ];
+    }
+
+    case 'left': {
+      const topEdge = Math.min(triggerRect.top, popoverRect.top) - buffer;
+      const bottomEdge =
+        Math.max(triggerRect.bottom, popoverRect.bottom) + buffer;
+
+      return [
+        // Popover left side
+        [popoverRect.left - buffer, popoverRect.top - buffer],
+        [popoverRect.right + buffer, popoverRect.top - buffer],
+        [popoverRect.right + buffer, popoverRect.bottom + buffer],
+        [popoverRect.left - buffer, popoverRect.bottom + buffer],
+
+        // Expand to cover gap
+        [popoverRect.right + buffer, bottomEdge],
+        [triggerRect.left - buffer, bottomEdge],
+        [triggerRect.left - buffer, triggerRect.bottom + buffer],
+        [triggerRect.right + buffer, triggerRect.bottom + buffer],
+        [triggerRect.right + buffer, triggerRect.top - buffer],
+        [triggerRect.left - buffer, triggerRect.top - buffer],
+        [triggerRect.left - buffer, topEdge],
+        [popoverRect.right + buffer, topEdge],
+      ];
+    }
+
+    case 'right': {
+      const topEdgeRight = Math.min(triggerRect.top, popoverRect.top) - buffer;
+      const bottomEdgeRight =
+        Math.max(triggerRect.bottom, popoverRect.bottom) + buffer;
+
+      return [
+        // Trigger
+        [triggerRect.left - buffer, triggerRect.top - buffer],
+        [triggerRect.right + buffer, triggerRect.top - buffer],
+        [triggerRect.right + buffer, triggerRect.bottom + buffer],
+        [triggerRect.left - buffer, triggerRect.bottom + buffer],
+
+        // Expand to cover gap
+        [triggerRect.right + buffer, bottomEdgeRight],
+        [popoverRect.left - buffer, bottomEdgeRight],
+        [popoverRect.left - buffer, popoverRect.bottom + buffer],
+        [popoverRect.right + buffer, popoverRect.bottom + buffer],
+        [popoverRect.right + buffer, popoverRect.top - buffer],
+        [popoverRect.left - buffer, popoverRect.top - buffer],
+        [popoverRect.left - buffer, topEdgeRight],
+        [triggerRect.right + buffer, topEdgeRight],
+      ];
+    }
     default:
       return [];
   }
@@ -136,12 +188,15 @@ export function PopoverHoverTrigger({
     }
   }, []);
 
-  const scheduleClose = useCallback(() => {
-    clearCloseTimeout();
-    timeoutRef.current = setTimeout(() => {
-      setIsOpen?.(false);
-    }, 10);
-  }, [clearCloseTimeout, setIsOpen]);
+  const scheduleClose = useCallback(
+    (timeout = 50) => {
+      clearCloseTimeout();
+      timeoutRef.current = setTimeout(() => {
+        setIsOpen?.(false);
+      }, timeout);
+    },
+    [clearCloseTimeout, setIsOpen],
+  );
 
   const isPointInSafeArea = useCallback(
     (x: number, y: number) => {
@@ -156,7 +211,35 @@ export function PopoverHoverTrigger({
         return false;
       }
 
-      return isPointInPolygon(x, y, getPolygon(triggerEl, popoverEl));
+      // Check if mouse is inside the polygon
+      if (!isPointInPolygon(x, y, getPolygon(triggerEl, popoverEl))) {
+        return false;
+      }
+
+      // Additional check: ensure we're not hovering over another trigger element
+      // Find all elements with aria-haspopup (popover triggers)
+      const allTriggers = Array.from(
+        document.querySelectorAll('[aria-expanded]'),
+      );
+      for (const trigger of allTriggers) {
+        // Skip our own trigger
+        if (trigger === triggerEl) continue;
+
+        // Check if mouse is within this trigger's bounding box
+        if (trigger instanceof HTMLElement) {
+          const rect = trigger.getBoundingClientRect();
+          if (
+            x >= rect.left &&
+            x <= rect.right &&
+            y >= rect.top &&
+            y <= rect.bottom
+          ) {
+            return false; // Mouse is over a different trigger, not safe
+          }
+        }
+      }
+
+      return true;
     },
     [triggerEl],
   );
@@ -185,7 +268,7 @@ export function PopoverHoverTrigger({
     triggerEl?.addEventListener('mouseenter', handleTriggerMouseEnter);
 
     return () => {
-      triggerEl?.addEventListener('mouseleave', handleTriggerMouseEnter);
+      triggerEl?.removeEventListener('mouseenter', handleTriggerMouseEnter);
     };
   }, [handleTriggerMouseEnter, triggerEl]);
 
