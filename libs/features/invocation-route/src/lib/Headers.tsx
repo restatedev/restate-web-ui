@@ -13,11 +13,11 @@ export function Headers({
 }) {
   return (
     <>
-      <div className="mt-2 grid grid-cols-[1fr_2fr] text-xs font-medium text-gray-400">
+      <div className="mt-px grid grid-cols-[1fr_2fr] rounded-t-[calc(0.75rem-0.125rem)] border bg-zinc-50 pt-1 pb-4 text-xs font-medium text-gray-400">
         <div className="pl-4">Name</div>
         <div className="pr-4 pl-2">Value</div>
       </div>
-      <div className="flex flex-col rounded-[calc(0.75rem-0.125rem)] border shadow-xs">
+      <div className="-mb-4 flex -translate-y-4 flex-col rounded-[calc(0.75rem-0.125rem)] border shadow-xs">
         {headers.map(({ key: name, value }) => (
           <Header name={name} value={value} key={name} />
         ))}
@@ -26,7 +26,7 @@ export function Headers({
         <InPortal id={String(portalId)}>
           <Copy
             copyText={JSON.stringify(headers ?? [])}
-            className="ml-3 h-[1.125rem] w-[1.125rem] rounded-sm border bg-white p-0.5 text-gray-800 shadow-xs"
+            className="ml-3 h-5.5 w-5.5 rounded-lg border bg-white p-1 text-gray-800 shadow-xs"
           />
         </InPortal>
       )}

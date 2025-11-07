@@ -143,6 +143,8 @@ export function EntryExpression({
                 value={paramValue}
                 className="py-3 font-mono text-xs"
                 isBase64={param.isBase64}
+                showCopyButton
+                portalId="expression-value"
               />
             }
             key={param.paramName}
@@ -174,6 +176,8 @@ export function EntryExpression({
                 value={(entry as any)[outputParam]}
                 className="py-3 font-mono text-xs"
                 isBase64={isOutputBase64}
+                showCopyButton
+                portalId="expression-value"
               />
             }
             {...(EncodingWaterMark &&
@@ -195,6 +199,8 @@ export function EntryExpression({
                   value={JSON.stringify((entry as any)[outputParam])}
                   className="py-3 font-mono text-xs"
                   isBase64={isOutputBase64}
+                  showCopyButton
+                  portalId="expression-value"
                   {...(EncodingWaterMark &&
                     isOutputBase64 && {
                       waterMark: (

@@ -512,7 +512,7 @@ function Component() {
                                             })
                                           }
                                           variant="secondary"
-                                          className="flex shrink-0 items-center gap-1 rounded-sm px-1.5 py-0 text-xs font-normal"
+                                          className="flex shrink-0 items-center gap-1 rounded-lg px-1.5 py-0.5 text-xs font-normal"
                                         >
                                           Edit
                                           <Icon

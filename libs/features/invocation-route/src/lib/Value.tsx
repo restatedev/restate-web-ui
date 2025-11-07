@@ -50,7 +50,7 @@ export function Value({
         <InPortal id={String(portalId)}>
           <Copy
             copyText={decodedValue}
-            className="ml-3 h-[1.125rem] w-[1.125rem] rounded-sm border bg-white p-0.5 text-gray-800 shadow-xs"
+            className="ml-3 h-5.5 w-5.5 rounded-lg border bg-white p-1 text-gray-800 shadow-xs"
           />
         </InPortal>
       )}

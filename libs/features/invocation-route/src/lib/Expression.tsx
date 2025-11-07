@@ -165,7 +165,7 @@ export function InputOutput({
                 <div className="flex items-center text-0.5xs">
                   <span>{popoverTitle}</span>
                   <div className="ml-auto">{waterMark}</div>
-                  <Portal className="ml-2" id="expression-value" />
+                  <Portal className="-mr-2 ml-2" id="expression-value" />
                 </div>
               }
             >

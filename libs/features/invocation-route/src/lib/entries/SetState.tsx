@@ -31,7 +31,12 @@ export function SetState({
             name={JSON.stringify(entry.key)}
             popoverTitle="Key"
             popoverContent={
-              <Value value={entry.key} className="py-3 font-mono text-xs" />
+              <Value
+                value={entry.key}
+                className="py-3 font-mono text-xs"
+                showCopyButton
+                portalId="expression-value"
+              />
             }
           />
           <div>,</div>
@@ -44,6 +49,8 @@ export function SetState({
                 value={entry.value}
                 className="mx-0.5 py-3 font-mono text-xs"
                 isBase64
+                showCopyButton
+                portalId="expression-value"
               />
             }
             {...(EncodingWaterMark && {

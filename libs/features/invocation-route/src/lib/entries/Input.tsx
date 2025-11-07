@@ -71,7 +71,7 @@ export function Input({
                   <InputOutput
                     name="headers"
                     popoverTitle="Headers"
-                    className="mx-0 border-none bg-transparent px-0 [&&&]:mb-1"
+                    className="mx-0 border-none bg-transparent px-0 [&&&]:mb-0"
                     popoverContent={
                       <Headers
                         headers={entry.headers}
