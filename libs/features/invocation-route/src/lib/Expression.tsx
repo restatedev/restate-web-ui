@@ -138,7 +138,7 @@ export function InputOutput({
           {isValueHidden ? (
             <PopoverTrigger>
               <Button
-                className="mx-0.5 my-0.5 flex h-6 min-w-6 items-center justify-center gap-0 rounded-lg p-0 font-sans text-2xs font-medium text-gray-500 outline-offset-0"
+                className="mx-0.5 my-0.5 flex h-6 min-w-6 items-center justify-center gap-0 rounded-lg rounded-xl p-0 font-sans text-2xs font-medium text-gray-500 outline-offset-0"
                 variant="secondary"
               >
                 <Icon name={IconName.Eye} className="mx-1.5 h-3 w-3 shrink-0" />
@@ -149,14 +149,14 @@ export function InputOutput({
               </Button>
             </PopoverTrigger>
           ) : (
-            <PopoverTrigger>
+            <PopoverHoverTrigger>
               <Button
-                className="rounded-ms my-0.5 max-w-fit grow basis-20 truncate rounded-xl border bg-white/60 px-2 py-0.5 font-mono [font-size:inherit] text-inherit shadow-xs outline-offset-0"
+                className="my-px max-w-fit grow basis-20 truncate rounded-xl px-0.5 py-0 font-mono [font-size:inherit] text-inherit underline decoration-dashed decoration-from-font underline-offset-4 outline-offset-0"
                 variant="icon"
               >
                 <span className="truncate pr-0.5">{name}</span>
               </Button>
-            </PopoverTrigger>
+            </PopoverHoverTrigger>
           )}
           <PopoverContent>
             <DropdownSection
