@@ -5,7 +5,8 @@ export type UserPreferenceId =
   | 'skip-kill-action-dialog'
   | 'skip-purge-action-dialog'
   | 'skip-pause-action-dialog'
-  | 'skip-retry-action-dialog';
+  | 'skip-retry-action-dialog'
+  | 'invocation-wide-mode';
 
 export function getUserPreference(id: UserPreferenceId) {
   if (typeof localStorage === 'undefined') return false;

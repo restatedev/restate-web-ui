@@ -17,6 +17,8 @@ import { WorkflowKeySection } from './WorkflowKeySection';
 import { tv } from '@restate/util/styles';
 import { Copy } from '@restate/ui/copy';
 import { LIVE_JOURNAL } from './constants';
+import { getUserPreference, setUserPreference } from '@restate/features/user-preference';
+import { useState } from 'react';
 
 const metadataContainerStyles = tv({
   base: 'mt-6 hidden grid-cols-1 gap-2 gap-y-4 rounded-xl md:grid-cols-2 [&:has(*)]:grid',
@@ -42,6 +44,14 @@ const lastFailureContainer = tv({
 function Component() {
   const { id } = useParams<{ id: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [isWideMode, setIsWideModeState] = useState(() =>
+    getUserPreference('invocation-wide-mode'),
+  );
+
+  const setIsWideMode = (value: boolean) => {
+    setIsWideModeState(value);
+    setUserPreference('invocation-wide-mode', value);
+  };
 
   const {
     data: journalAndInvocationData,
@@ -80,7 +90,19 @@ function Component() {
 
   return (
     <InvocationPageProvider isInInvocationPage>
-      <div className="flex flex-col">
+      <div
+        className="flex flex-col"
+        style={
+          isWideMode
+            ? {
+                width: '95vw',
+                position: 'relative',
+                left: '50%',
+                transform: 'translateX(-50%)',
+              }
+            : undefined
+        }
+      >
         <div className="@container flex flex-col gap-1">
           <Link
             className="flex items-center gap-1 text-sm text-gray-500"
@@ -198,6 +220,8 @@ function Component() {
                   return old;
                 });
               }}
+              isWideMode={isWideMode}
+              setIsWideMode={setIsWideMode}
             />
           </div>
         </div>
