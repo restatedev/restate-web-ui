@@ -309,6 +309,96 @@
         }
       }
     },
+    "/query/invocations/cancel": {
+      "post": {
+        "tags": ["batch-cancel-invocations"],
+        "summary": "Batch cancel invocations",
+        "description": "Batch cancel invocations",
+        "operationId": "batch_cancel_invocations",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchInvocationsRequestBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Batch cancellation result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchInvocationsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/query/invocations/{invocationId}": {
       "get": {
         "tags": ["query-invocations"],
@@ -1296,6 +1386,71 @@
             "items": {
               "$ref": "#/components/schemas/FilterItem"
             }
+          }
+        }
+      },
+      "BatchInvocationsRequestBody": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": ["invocationIds"],
+            "properties": {
+              "invocationIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": ["filters"],
+            "properties": {
+              "filters": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/FilterItem"
+                }
+              },
+              "pageSize": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "pageNumber": {
+                "type": "integer",
+                "minimum": 1
+              }
+            }
+          }
+        ]
+      },
+      "BatchInvocationsResponse": {
+        "type": "object",
+        "required": ["successful", "failed"],
+        "properties": {
+          "total": {
+            "type": "integer",
+            "description": "Total number of invocations processed"
+          },
+          "successful": {
+            "type": "integer",
+            "description": "Number of successfully processed invocations"
+          },
+          "failed": {
+            "type": "integer",
+            "description": "Number of failed processed invocations"
+          },
+          "failedInvocationIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of invocation IDs that failed to process"
+          },
+          "hasMore": {
+            "type": "boolean",
+            "description": "Whether there are more pages available"
           }
         }
       },
