@@ -2,6 +2,10 @@ import ky from 'ky';
 
 export type QueryContext = {
   query: (sql: string) => Promise<{ rows: any[] }>;
+  adminApi: <T>(
+    path: string,
+    options?: { method?: string; json?: unknown },
+  ) => Promise<T>;
   baseUrl: string;
   restateVersion: string;
 };
@@ -15,12 +19,42 @@ function queryFetcher(
   queryHeaders.set('content-type', 'application/json');
 
   return ky
-    .post(`${baseUrl}/query`, {
+    .post('/query', {
+      prefixUrl: baseUrl,
       json: { query },
       headers: queryHeaders,
       timeout: 60_000,
     })
     .json<{ rows: any[] }>();
+}
+
+function adminApiFetcher<T>(
+  path: string,
+  {
+    baseUrl,
+    headers = new Headers(),
+    method = 'GET',
+    json,
+  }: {
+    baseUrl: string;
+    headers: Headers;
+    method?: string;
+    json?: unknown;
+  },
+): Promise<T> {
+  const apiHeaders = new Headers(headers);
+  apiHeaders.set('accept', 'application/json');
+  if (json) {
+    apiHeaders.set('content-type', 'application/json');
+  }
+
+  return ky(path, {
+    prefixUrl: baseUrl,
+    method,
+    headers: apiHeaders,
+    json,
+    timeout: 60_000,
+  }).json<T>();
 }
 
 export function createQueryContext(
@@ -30,6 +64,16 @@ export function createQueryContext(
 ): QueryContext {
   return {
     query: (sql: string) => queryFetcher(sql, { baseUrl, headers }),
+    adminApi: <T>(
+      path: string,
+      options?: { method?: string; json?: unknown },
+    ) =>
+      adminApiFetcher<T>(path, {
+        baseUrl,
+        headers,
+        method: options?.method,
+        json: options?.json,
+      }),
     baseUrl,
     restateVersion,
   };
