@@ -5125,9 +5125,9 @@
                 "type": "integer",
                 "minimum": 1
               },
-              "pageNumber": {
-                "type": "integer",
-                "minimum": 1
+              "createdAfter": {
+                "type": "string",
+                "format": "date-time"
               }
             }
           }

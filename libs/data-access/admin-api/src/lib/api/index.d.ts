@@ -1754,7 +1754,8 @@ export interface components {
       | {
           filters: components['schemas']['FilterItem'][];
           pageSize?: number;
-          pageNumber?: number;
+          /** Format: date-time */
+          createdAfter?: string;
         };
     BatchInvocationsResponse: {
       /** @description Total number of invocations processed */
