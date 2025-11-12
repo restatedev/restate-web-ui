@@ -81,6 +81,10 @@ export type FilterStringListItem =
   components['schemas']['FilterStringListItem'];
 export type FilterStringItem = components['schemas']['FilterStringItem'];
 export type StateResponse = components['schemas']['StateResponse'];
+export type BatchInvocationsRequestBody =
+  components['schemas']['BatchInvocationsRequestBody'];
+export type BatchInvocationsResponse =
+  components['schemas']['BatchInvocationsResponse'];
 
 export type HTTPDeployment = Exclude<Deployment, { arn: string }>;
 export type LambdaDeployment = Exclude<Deployment, { uri: string }>;
