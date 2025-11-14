@@ -6,4 +6,4 @@ export {
   useBatchKillInvocations,
   useBatchPauseInvocations,
   useBatchResumeInvocations,
-} from './lib/batch-hooks';
+} from './lib/batchHooks';
