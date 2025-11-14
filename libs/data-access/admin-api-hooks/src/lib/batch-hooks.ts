@@ -115,3 +115,151 @@ export function useBatchCancelInvocations(
     },
   });
 }
+
+export function useBatchPurgeInvocations(
+  options?: Omit<
+    HookMutationOptions<'/query/invocations/purge', 'post'>,
+    'mutationFn'
+  > & {
+    onProgress?: (response: BatchInvocationsResponse) => void;
+  },
+) {
+  const baseUrl = useAdminBaseUrl();
+  const queryClient = useQueryClient();
+  const { onProgress, ...restOptions } = options ?? {};
+
+  const mutationOptions = adminApi(
+    'mutate',
+    '/query/invocations/purge',
+    'post',
+    {
+      baseUrl,
+    },
+  );
+
+  const mutationFn = toBatchMutationFn(mutationOptions.mutationFn, onProgress);
+
+  return useMutation({
+    ...mutationOptions,
+    ...restOptions,
+    mutationFn,
+    onSuccess(data, variables, context, meta) {
+      queryClient.invalidateQueries({
+        queryKey: ['/query/invocations'],
+      });
+
+      restOptions?.onSuccess?.(data, variables, context, meta);
+    },
+  });
+}
+
+export function useBatchKillInvocations(
+  options?: Omit<
+    HookMutationOptions<'/query/invocations/kill', 'post'>,
+    'mutationFn'
+  > & {
+    onProgress?: (response: BatchInvocationsResponse) => void;
+  },
+) {
+  const baseUrl = useAdminBaseUrl();
+  const queryClient = useQueryClient();
+  const { onProgress, ...restOptions } = options ?? {};
+
+  const mutationOptions = adminApi(
+    'mutate',
+    '/query/invocations/kill',
+    'post',
+    {
+      baseUrl,
+    },
+  );
+
+  const mutationFn = toBatchMutationFn(mutationOptions.mutationFn, onProgress);
+
+  return useMutation({
+    ...mutationOptions,
+    ...restOptions,
+    mutationFn,
+    onSuccess(data, variables, context, meta) {
+      queryClient.invalidateQueries({
+        queryKey: ['/query/invocations'],
+      });
+
+      restOptions?.onSuccess?.(data, variables, context, meta);
+    },
+  });
+}
+
+export function useBatchPauseInvocations(
+  options?: Omit<
+    HookMutationOptions<'/query/invocations/pause', 'post'>,
+    'mutationFn'
+  > & {
+    onProgress?: (response: BatchInvocationsResponse) => void;
+  },
+) {
+  const baseUrl = useAdminBaseUrl();
+  const queryClient = useQueryClient();
+  const { onProgress, ...restOptions } = options ?? {};
+
+  const mutationOptions = adminApi(
+    'mutate',
+    '/query/invocations/pause',
+    'post',
+    {
+      baseUrl,
+    },
+  );
+
+  const mutationFn = toBatchMutationFn(mutationOptions.mutationFn, onProgress);
+
+  return useMutation({
+    ...mutationOptions,
+    ...restOptions,
+    mutationFn,
+    onSuccess(data, variables, context, meta) {
+      queryClient.invalidateQueries({
+        queryKey: ['/query/invocations'],
+      });
+
+      restOptions?.onSuccess?.(data, variables, context, meta);
+    },
+  });
+}
+
+export function useBatchResumeInvocations(
+  options?: Omit<
+    HookMutationOptions<'/query/invocations/resume', 'post'>,
+    'mutationFn'
+  > & {
+    onProgress?: (response: BatchInvocationsResponse) => void;
+  },
+) {
+  const baseUrl = useAdminBaseUrl();
+  const queryClient = useQueryClient();
+  const { onProgress, ...restOptions } = options ?? {};
+
+  const mutationOptions = adminApi(
+    'mutate',
+    '/query/invocations/resume',
+    'post',
+    {
+      baseUrl,
+    },
+  );
+
+  const mutationFn = toBatchMutationFn(mutationOptions.mutationFn, onProgress);
+
+  return useMutation({
+    ...mutationOptions,
+    ...restOptions,
+    mutationFn,
+    onSuccess(data, variables, context, meta) {
+      queryClient.invalidateQueries({
+        queryKey: ['/query/invocations'],
+      });
+
+      restOptions?.onSuccess?.(data, variables, context, meta);
+    },
+  });
+}
