@@ -1750,6 +1750,7 @@ export interface components {
     BatchInvocationsRequestBody:
       | {
           invocationIds: string[];
+          pageSize?: number;
         }
       | {
           filters: components['schemas']['FilterItem'][];
@@ -1765,6 +1766,7 @@ export interface components {
            * @enum {string}
            */
           deployment?: 'keep' | 'latest';
+          pageSize?: number;
         }
       | {
           filters: components['schemas']['FilterItem'][];

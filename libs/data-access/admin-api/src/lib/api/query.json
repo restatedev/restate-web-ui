@@ -1760,6 +1760,10 @@
                 "items": {
                   "type": "string"
                 }
+              },
+              "pageSize": {
+                "type": "integer",
+                "minimum": 1
               }
             }
           },
@@ -1801,6 +1805,10 @@
                 "type": "string",
                 "enum": ["keep", "latest"],
                 "description": "Deployment selection strategy: 'keep' uses the current deployment, 'latest' uses the latest deployment"
+              },
+              "pageSize": {
+                "type": "integer",
+                "minimum": 1
               }
             }
           },

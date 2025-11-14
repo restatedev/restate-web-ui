@@ -12,6 +12,7 @@ import { useAdminBaseUrl } from '@restate/data-access/admin-api';
 import type { HookMutationOptions } from '@restate/data-access/admin-api';
 
 function toBatchMutationFn<Body extends BatchInvocationsRequestBody>(
+  batchSize: number,
   _mutationFn: NonNullable<
     MutationOptions<
       BatchInvocationsResponse | undefined,
@@ -25,7 +26,9 @@ function toBatchMutationFn<Body extends BatchInvocationsRequestBody>(
     const mutationFn = _mutationFn as (args: {
       body?: Body;
     }) => ReturnType<typeof _mutationFn>;
-    const response = await mutationFn(args);
+    const response = await mutationFn({
+      body: { ...args.body, pageSize: batchSize } as Body,
+    });
 
     if (!response) {
       throw new Error('No response from server');
@@ -50,6 +53,7 @@ function toBatchMutationFn<Body extends BatchInvocationsRequestBody>(
           body: {
             ...(args.body as Body),
             createdAfter: currentLastCreatedAt,
+            pageSize: batchSize,
           },
         });
 
@@ -80,6 +84,7 @@ function toBatchMutationFn<Body extends BatchInvocationsRequestBody>(
 }
 
 export function useBatchCancelInvocations(
+  batchSize: number,
   options?: Omit<
     HookMutationOptions<'/query/invocations/cancel', 'post'>,
     'mutationFn'
@@ -100,7 +105,11 @@ export function useBatchCancelInvocations(
     },
   );
 
-  const mutationFn = toBatchMutationFn(mutationOptions.mutationFn, onProgress);
+  const mutationFn = toBatchMutationFn(
+    batchSize,
+    mutationOptions.mutationFn,
+    onProgress,
+  );
 
   return useMutation({
     ...mutationOptions,
@@ -117,6 +126,7 @@ export function useBatchCancelInvocations(
 }
 
 export function useBatchPurgeInvocations(
+  batchSize: number,
   options?: Omit<
     HookMutationOptions<'/query/invocations/purge', 'post'>,
     'mutationFn'
@@ -137,7 +147,11 @@ export function useBatchPurgeInvocations(
     },
   );
 
-  const mutationFn = toBatchMutationFn(mutationOptions.mutationFn, onProgress);
+  const mutationFn = toBatchMutationFn(
+    batchSize,
+    mutationOptions.mutationFn,
+    onProgress,
+  );
 
   return useMutation({
     ...mutationOptions,
@@ -154,6 +168,7 @@ export function useBatchPurgeInvocations(
 }
 
 export function useBatchKillInvocations(
+  batchSize: number,
   options?: Omit<
     HookMutationOptions<'/query/invocations/kill', 'post'>,
     'mutationFn'
@@ -174,7 +189,11 @@ export function useBatchKillInvocations(
     },
   );
 
-  const mutationFn = toBatchMutationFn(mutationOptions.mutationFn, onProgress);
+  const mutationFn = toBatchMutationFn(
+    batchSize,
+    mutationOptions.mutationFn,
+    onProgress,
+  );
 
   return useMutation({
     ...mutationOptions,
@@ -191,6 +210,7 @@ export function useBatchKillInvocations(
 }
 
 export function useBatchPauseInvocations(
+  batchSize: number,
   options?: Omit<
     HookMutationOptions<'/query/invocations/pause', 'post'>,
     'mutationFn'
@@ -211,7 +231,11 @@ export function useBatchPauseInvocations(
     },
   );
 
-  const mutationFn = toBatchMutationFn(mutationOptions.mutationFn, onProgress);
+  const mutationFn = toBatchMutationFn(
+    batchSize,
+    mutationOptions.mutationFn,
+    onProgress,
+  );
 
   return useMutation({
     ...mutationOptions,
@@ -228,6 +252,7 @@ export function useBatchPauseInvocations(
 }
 
 export function useBatchResumeInvocations(
+  batchSize: number,
   options?: Omit<
     HookMutationOptions<'/query/invocations/resume', 'post'>,
     'mutationFn'
@@ -248,7 +273,11 @@ export function useBatchResumeInvocations(
     },
   );
 
-  const mutationFn = toBatchMutationFn(mutationOptions.mutationFn, onProgress);
+  const mutationFn = toBatchMutationFn(
+    batchSize,
+    mutationOptions.mutationFn,
+    onProgress,
+  );
 
   return useMutation({
     ...mutationOptions,
