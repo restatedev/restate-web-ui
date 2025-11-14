@@ -54,18 +54,20 @@ interface OperationConfig {
   submitVariant: 'primary' | 'destructive';
   description: (count?: number) => string;
   warning: string;
+  submitText: string;
   progressTitle: string;
 }
 
 const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
   cancel: {
     title: 'Cancel Invocations',
+    submitText: 'Cancel',
     icon: IconName.Cancel,
     iconClassName: 'text-red-400',
     submitVariant: 'destructive',
     description: (count) =>
       count !== undefined
-        ? `Are you sure you want to cancel ${formatNumber(count)}+ invocations?`
+        ? `Are you sure you want to cancel ${formatNumber(count, true)}+ invocations?`
         : 'Are you sure you want to cancel these invocations?',
     warning:
       'Cancellation frees held resources, cooperates with your handler code to roll back changes, and allows proper cleanup. It is non-blocking, so the call may return before cleanup finishes. In rare cases, cancellation may not take effect, retry the operation if needed.',
@@ -73,12 +75,13 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
   },
   pause: {
     title: 'Pause Invocations',
+    submitText: 'Pause',
     icon: IconName.Pause,
     iconClassName: 'text-red-400',
     submitVariant: 'destructive',
     description: (count) =>
       count !== undefined
-        ? `Are you sure you want to pause ${formatNumber(count)}+ invocations? The pause may not take effect right away.`
+        ? `Are you sure you want to pause ${formatNumber(count, true)}+ invocations? The pause may not take effect right away.`
         : 'Are you sure you want to pause these invocations? The pause may not take effect right away.',
     warning:
       'Paused invocations will stop executing until manually resumed or unpaused.',
@@ -86,12 +89,13 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
   },
   resume: {
     title: 'Resume Invocations',
+    submitText: 'Resume',
     icon: IconName.Resume,
     iconClassName: 'text-green-400',
     submitVariant: 'primary',
     description: (count) =>
       count !== undefined
-        ? `Select the deployment you'd like to run ${formatNumber(count)}+ invocations on, then resume execution.`
+        ? `Select the deployment you'd like to run ${formatNumber(count, true)}+ invocations on, then resume execution.`
         : `Select the deployment you'd like to run these invocations on, then resume execution.`,
     warning:
       'Resumed invocations will continue execution from where they were paused.',
@@ -99,12 +103,13 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
   },
   kill: {
     title: 'Kill Invocations',
+    submitText: 'Kill',
     icon: IconName.Kill,
     iconClassName: 'text-red-400',
     submitVariant: 'destructive',
     description: (count) =>
       count !== undefined
-        ? `Are you sure you want to kill ${formatNumber(count)}+ invocations?`
+        ? `Are you sure you want to kill ${formatNumber(count, true)}+ invocations?`
         : 'Are you sure you want to kill these invocations?',
     warning:
       'Killing immediately stops all calls in the invocation tree without executing compensation logic. This may leave your service in an inconsistent state. Only use as a last resort after trying other fixes.',
@@ -114,10 +119,11 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     title: 'Purge Invocations',
     icon: IconName.Trash,
     iconClassName: 'text-red-400',
+    submitText: 'Purge',
     submitVariant: 'destructive',
     description: (count) =>
       count !== undefined
-        ? `Are you sure you want to purge ${formatNumber(count)}+ invocations?`
+        ? `Are you sure you want to purge ${formatNumber(count, true)}+ invocations?`
         : 'Are you sure you want to purge these invocations?',
     warning:
       'After an invocation completes, it will be retained by Restate for some time, in order to introspect it and, in case of idempotent requests, to perform deduplication.',
@@ -432,7 +438,7 @@ function BatchConfirmation({
       }
       alertType="warning"
       alertContent={config.warning}
-      submitText={config.title}
+      submitText={config.submitText}
       submitVariant={config.submitVariant}
       isPending={countInvocations.isPending || count === undefined}
       error={countInvocations.error ?? mutation.error}
@@ -490,22 +496,21 @@ function BatchConfirmation({
         )
       }
     >
-      {state.type === 'resume' &&
-        !mutation.isPending &&
-        !mutation.isSuccess && (
-          <div className="mt-4">
-            <FormFieldSelect
-              label="Deployment"
-              placeholder="Select deployment"
-              name="deployment"
-              defaultValue={'keep'}
-              required
-            >
-              <Option value="keep">Current deployment</Option>
-              <Option value="latest">Latest deployment</Option>
-            </FormFieldSelect>
-          </div>
-        )}
+      {state.type === 'resume' && (
+        <div className="mt-4">
+          <FormFieldSelect
+            label="Deployment"
+            placeholder="Select deployment"
+            name="deployment"
+            defaultValue={'keep'}
+            required
+            disabled={mutation.isPending}
+          >
+            <Option value="keep">Current deployment</Option>
+            <Option value="latest">Latest deployment</Option>
+          </FormFieldSelect>
+        </div>
+      )}
     </ConfirmationDialog>
   );
 }
