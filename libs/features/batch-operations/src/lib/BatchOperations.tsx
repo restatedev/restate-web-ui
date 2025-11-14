@@ -1,4 +1,10 @@
-import { createContext, PropsWithChildren, useCallback, useState } from 'react';
+import {
+  createContext,
+  PropsWithChildren,
+  useCallback,
+  useState,
+  use,
+} from 'react';
 import {
   useBatchCancelInvocations,
   useBatchPauseInvocations,
@@ -15,6 +21,9 @@ import type {
 } from '@restate/data-access/admin-api/spec';
 import { ConfirmationDialog } from '@restate/ui/dialog';
 import { Icon, IconName } from '@restate/ui/icons';
+import { showSuccessNotification } from '@restate/ui/notification';
+import { formatNumber } from '@restate/util/intl';
+import { ErrorBanner } from '@restate/ui/error';
 
 type OperationType = 'cancel' | 'pause' | 'resume' | 'kill' | 'purge';
 
@@ -42,7 +51,7 @@ interface OperationConfig {
   icon: IconName;
   iconClassName: string;
   submitVariant: 'primary' | 'destructive';
-  description: (count?: number, isLowerBound?: boolean) => string;
+  description: (count?: number) => string;
   warning: string;
   progressTitle: string;
 }
@@ -53,9 +62,9 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     icon: IconName.Cancel,
     iconClassName: 'text-orange-400',
     submitVariant: 'destructive',
-    description: (count, isLowerBound) =>
+    description: (count) =>
       count !== undefined
-        ? `Are you sure you want to cancel ${isLowerBound ? 'at least ' : ''}${count} invocation${count !== 1 ? 's' : ''}?`
+        ? `Are you sure you want to cancel ${formatNumber(count)}+ invocations?`
         : 'Are you sure you want to cancel these invocations?',
     warning:
       'This will terminate the execution of matching invocations. They will not be retried.',
@@ -66,9 +75,9 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     icon: IconName.Pause,
     iconClassName: 'text-blue-400',
     submitVariant: 'primary',
-    description: (count, isLowerBound) =>
+    description: (count) =>
       count !== undefined
-        ? `Are you sure you want to pause ${isLowerBound ? 'at least ' : ''}${count} invocation${count !== 1 ? 's' : ''}?`
+        ? `Are you sure you want to pause ${formatNumber(count)}+ invocations?`
         : 'Are you sure you want to pause these invocations?',
     warning:
       'Paused invocations will stop executing until manually resumed or unpaused.',
@@ -79,9 +88,9 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     icon: IconName.Resume,
     iconClassName: 'text-green-400',
     submitVariant: 'primary',
-    description: (count, isLowerBound) =>
+    description: (count) =>
       count !== undefined
-        ? `Are you sure you want to resume ${isLowerBound ? 'at least ' : ''}${count} invocation${count !== 1 ? 's' : ''}?`
+        ? `Are you sure you want to resume ${formatNumber(count)}+ invocations?`
         : 'Are you sure you want to resume these invocations?',
     warning:
       'Resumed invocations will continue execution from where they were paused.',
@@ -92,9 +101,9 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     icon: IconName.Kill,
     iconClassName: 'text-red-400',
     submitVariant: 'destructive',
-    description: (count, isLowerBound) =>
+    description: (count) =>
       count !== undefined
-        ? `Are you sure you want to kill ${isLowerBound ? 'at least ' : ''}${count} invocation${count !== 1 ? 's' : ''}?`
+        ? `Are you sure you want to kill ${formatNumber(count)}+ invocations?`
         : 'Are you sure you want to kill these invocations?',
     warning:
       'This will forcefully terminate matching invocations. This action cannot be undone.',
@@ -105,9 +114,9 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     icon: IconName.Trash,
     iconClassName: 'text-red-400',
     submitVariant: 'destructive',
-    description: (count, isLowerBound) =>
+    description: (count) =>
       count !== undefined
-        ? `Are you sure you want to purge ${isLowerBound ? 'at least ' : ''}${count} invocation${count !== 1 ? 's' : ''}?`
+        ? `Are you sure you want to purge ${formatNumber(count)}+ invocations?`
         : 'Are you sure you want to purge these invocations?',
     warning:
       'This will permanently delete matching invocations and their state. This action cannot be undone.',
@@ -298,25 +307,56 @@ function useBatchMutation(
   type: OperationType,
   batchSize: number,
   onProgress: (response: BatchInvocationsResponse) => void,
+  onOpenChange: (isOpen: boolean) => void,
 ) {
   const cancelMutation = useBatchCancelInvocations(batchSize, {
     onProgress,
+    onSuccess(data, variables, onMutateResult, context) {
+      if (data?.failed === 0) {
+        showSuccessNotification('');
+        onOpenChange(false);
+      }
+    },
   });
 
   const pauseMutation = useBatchPauseInvocations(batchSize, {
     onProgress,
+    onSuccess(data, variables, onMutateResult, context) {
+      if (data?.failed === 0) {
+        showSuccessNotification('');
+        onOpenChange(false);
+      }
+    },
   });
 
   const resumeMutation = useBatchResumeInvocations(batchSize, {
     onProgress,
+    onSuccess(data, variables, onMutateResult, context) {
+      if (data?.failed === 0) {
+        showSuccessNotification('');
+        onOpenChange(false);
+      }
+    },
   });
 
   const killMutation = useBatchKillInvocations(batchSize, {
     onProgress,
+    onSuccess(data, variables, onMutateResult, context) {
+      if (data?.failed === 0) {
+        showSuccessNotification('');
+        onOpenChange(false);
+      }
+    },
   });
 
   const purgeMutation = useBatchPurgeInvocations(batchSize, {
     onProgress,
+    onSuccess(data, variables, onMutateResult, context) {
+      if (data?.failed === 0) {
+        showSuccessNotification('');
+        onOpenChange(false);
+      }
+    },
   });
 
   switch (type) {
@@ -347,7 +387,12 @@ function BatchConfirmation({
   batchSize: number;
   onProgress: (response: BatchInvocationsResponse) => void;
 }) {
-  const mutation = useBatchMutation(state.type, batchSize, onProgress);
+  const mutation = useBatchMutation(
+    state.type,
+    batchSize,
+    onProgress,
+    onOpenChange,
+  );
 
   const countInvocations = useCountInvocations(
     state.params && 'filters' in state.params ? state.params.filters : [],
@@ -356,19 +401,75 @@ function BatchConfirmation({
     },
   );
 
+  const config = OPERATION_CONFIG[state.type];
+  const count =
+    'invocationIds' in state.params
+      ? state.params.invocationIds.length
+      : countInvocations.data?.count;
+
   return (
     <ConfirmationDialog
       open={state.isDialogOpen}
       onOpenChange={onOpenChange}
-      title=""
-      submitText=""
-      description=""
+      title={config.title}
+      icon={config.icon}
+      iconClassName={config.iconClassName}
+      description={
+        countInvocations.isPending
+          ? 'Calculating affected invocations...'
+          : config.description(count)
+      }
+      alertType="warning"
+      alertContent={config.warning}
+      submitText={config.title}
+      submitVariant={config.submitVariant}
+      isPending={countInvocations.isPending || count === undefined}
+      error={countInvocations.error ?? mutation.error}
       onSubmit={(e) => {
-        e.preventDefault();
-        return mutation.mutate({
+        mutation.mutate({
           body: state.params,
         });
       }}
+      footer={
+        <div className="flex flex-col gap-3">
+          {mutation.isPending && (
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <Icon name={IconName.Retry} className="h-4 w-4 animate-spin" />
+              Processing invocations...
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-4 rounded-lg bg-gray-50 p-4">
+            <div className="flex flex-col">
+              <span className="text-sm text-gray-500">Successful</span>
+              <span className="text-2xl font-semibold text-green-600">
+                {state.successful}
+              </span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm text-gray-500">Failed</span>
+              <span className="text-2xl font-semibold text-red-600">
+                {state.failed}
+              </span>
+            </div>
+          </div>
+
+          {mutation.isSuccess && state.failed > 0 && (
+            <div className="flex items-center gap-2 text-sm text-amber-600">
+              <Icon name={IconName.TriangleAlert} className="h-4 w-4" />
+              Operation completed with {state.failed} failure
+              {state.failed !== 1 ? 's' : ''}
+            </div>
+          )}
+          <ErrorBanner error={mutation.error || countInvocations.error} />
+        </div>
+      }
     />
   );
+}
+
+export function useBatchOperations() {
+  const context = use(BatchOperationsContext);
+
+  return context;
 }
