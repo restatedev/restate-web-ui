@@ -1,4 +1,4 @@
-import { createContext, PropsWithChildren } from 'react';
+import { createContext, PropsWithChildren, use } from 'react';
 import {
   useBatchCancelInvocations,
   useBatchPauseInvocations,
@@ -38,4 +38,8 @@ export function BatchOperationsProvider({
       {children}
     </BatchOperationsContext.Provider>
   );
+}
+
+export function useBatchOperations() {
+  return use(BatchOperationsContext);
 }

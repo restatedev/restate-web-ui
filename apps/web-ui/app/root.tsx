@@ -52,6 +52,7 @@ import { GettingStarted } from '@restate/features/getting-started';
 import { RegisterDeploymentDialog } from '@restate/features/register-deployment';
 import { queryCacheOnSuccess } from '@restate/data-access/admin-api-hooks';
 import { PortalProvider } from '@restate/ui/portal';
+import { BatchOperationsProvider } from '@restate/features/batch-operations';
 
 export const links: LinksFunction = () => [
   // TODO: move to the its own lib
@@ -204,93 +205,95 @@ export default function App() {
             adminBaseUrl={getCookieValue('adminBaseUrl')}
             GettingStarted={RestateGettingStarted}
           >
-            <EditState>
-              <LayoutOutlet zone={LayoutZone.Content}>
-                <Outlet />
-              </LayoutOutlet>
-              <LayoutOutlet zone={LayoutZone.AppBar}>
-                <div className="flex min-w-0 flex-1 items-stretch gap-1">
-                  <div className="border1 bg1-white shadow2-xs flex h-full items-center gap-2 rounded-xl p-3 pr-0">
-                    <Restate />
-                  </div>
-                  <Button
-                    variant="secondary"
-                    className="my-1 flex min-w-0 items-center gap-2 border-none bg-transparent px-2 shadow-none"
-                  >
-                    <div className="flex w-full items-center gap-2 truncate">
-                      <HealthIndicator mini className="-mt-0.5" />
-                      <HealthCheckNotification />
-                      <span className="block min-w-0 flex-auto truncate">
-                        Restate server
-                      </span>
-                      <Version />
+            <BatchOperationsProvider>
+              <EditState>
+                <LayoutOutlet zone={LayoutZone.Content}>
+                  <Outlet />
+                </LayoutOutlet>
+                <LayoutOutlet zone={LayoutZone.AppBar}>
+                  <div className="flex min-w-0 flex-1 items-stretch gap-1">
+                    <div className="border1 bg1-white shadow2-xs flex h-full items-center gap-2 rounded-xl p-3 pr-0">
+                      <Restate />
                     </div>
-                  </Button>
-                  <LayoutOutlet zone={LayoutZone.Nav}>
-                    <Nav ariaCurrentValue="page">
-                      <NavItem
-                        preserveSearchParams={[
-                          SERVICE_PLAYGROUND_QUERY_PARAM,
-                          SERVICE_QUERY_PARAM,
-                          DEPLOYMENT_QUERY_PARAM,
-                          INVOCATION_QUERY_NAME,
-                          STATE_QUERY_NAME,
-                        ]}
-                        href={'/overview'}
-                      >
-                        Overview
-                      </NavItem>
-                      <NavItem
-                        preserveSearchParams={[
-                          SERVICE_PLAYGROUND_QUERY_PARAM,
-                          SERVICE_QUERY_PARAM,
-                          DEPLOYMENT_QUERY_PARAM,
-                          INVOCATION_QUERY_NAME,
-                          STATE_QUERY_NAME,
-                        ]}
-                        href={'/invocations'}
-                      >
-                        Invocations
-                      </NavItem>
-                      <NavItem
-                        preserveSearchParams={[
-                          SERVICE_PLAYGROUND_QUERY_PARAM,
-                          SERVICE_QUERY_PARAM,
-                          DEPLOYMENT_QUERY_PARAM,
-                          INVOCATION_QUERY_NAME,
-                          STATE_QUERY_NAME,
-                        ]}
-                        href={'/state'}
-                      >
-                        State
-                      </NavItem>
-                      <NavItem
-                        preserveSearchParams={[
-                          SERVICE_PLAYGROUND_QUERY_PARAM,
-                          SERVICE_QUERY_PARAM,
-                          DEPLOYMENT_QUERY_PARAM,
-                          INVOCATION_QUERY_NAME,
-                          STATE_QUERY_NAME,
-                        ]}
-                        href={'/introspection'}
-                      >
-                        Introspection
-                      </NavItem>
-                    </Nav>
-                  </LayoutOutlet>
-                </div>
-              </LayoutOutlet>
-              <DeploymentDetails />
-              <ServiceDetails />
-              <DeleteDeployment />
-              <ServicePlayground />
-              <InvocationPanel />
-              <StatePanel />
-              <EditService />
-              <InvocationActions />
-              <RegisterDeploymentDialog />
-              <Support />
-            </EditState>
+                    <Button
+                      variant="secondary"
+                      className="my-1 flex min-w-0 items-center gap-2 border-none bg-transparent px-2 shadow-none"
+                    >
+                      <div className="flex w-full items-center gap-2 truncate">
+                        <HealthIndicator mini className="-mt-0.5" />
+                        <HealthCheckNotification />
+                        <span className="block min-w-0 flex-auto truncate">
+                          Restate server
+                        </span>
+                        <Version />
+                      </div>
+                    </Button>
+                    <LayoutOutlet zone={LayoutZone.Nav}>
+                      <Nav ariaCurrentValue="page">
+                        <NavItem
+                          preserveSearchParams={[
+                            SERVICE_PLAYGROUND_QUERY_PARAM,
+                            SERVICE_QUERY_PARAM,
+                            DEPLOYMENT_QUERY_PARAM,
+                            INVOCATION_QUERY_NAME,
+                            STATE_QUERY_NAME,
+                          ]}
+                          href={'/overview'}
+                        >
+                          Overview
+                        </NavItem>
+                        <NavItem
+                          preserveSearchParams={[
+                            SERVICE_PLAYGROUND_QUERY_PARAM,
+                            SERVICE_QUERY_PARAM,
+                            DEPLOYMENT_QUERY_PARAM,
+                            INVOCATION_QUERY_NAME,
+                            STATE_QUERY_NAME,
+                          ]}
+                          href={'/invocations'}
+                        >
+                          Invocations
+                        </NavItem>
+                        <NavItem
+                          preserveSearchParams={[
+                            SERVICE_PLAYGROUND_QUERY_PARAM,
+                            SERVICE_QUERY_PARAM,
+                            DEPLOYMENT_QUERY_PARAM,
+                            INVOCATION_QUERY_NAME,
+                            STATE_QUERY_NAME,
+                          ]}
+                          href={'/state'}
+                        >
+                          State
+                        </NavItem>
+                        <NavItem
+                          preserveSearchParams={[
+                            SERVICE_PLAYGROUND_QUERY_PARAM,
+                            SERVICE_QUERY_PARAM,
+                            DEPLOYMENT_QUERY_PARAM,
+                            INVOCATION_QUERY_NAME,
+                            STATE_QUERY_NAME,
+                          ]}
+                          href={'/introspection'}
+                        >
+                          Introspection
+                        </NavItem>
+                      </Nav>
+                    </LayoutOutlet>
+                  </div>
+                </LayoutOutlet>
+                <DeploymentDetails />
+                <ServiceDetails />
+                <DeleteDeployment />
+                <ServicePlayground />
+                <InvocationPanel />
+                <StatePanel />
+                <EditService />
+                <InvocationActions />
+                <RegisterDeploymentDialog />
+                <Support />
+              </EditState>
+            </BatchOperationsProvider>
           </RestateContextProvider>
         </PortalProvider>
       </QueryProvider>
