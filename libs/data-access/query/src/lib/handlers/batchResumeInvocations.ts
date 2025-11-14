@@ -10,17 +10,6 @@ export async function batchResumeInvocations(
   const deployment = request.deployment;
 
   if ('invocationIds' in request) {
-    if (request.dryRun) {
-      return Response.json({
-        successful: 0,
-        failed: 0,
-        failedInvocationIds: [],
-        total: request.invocationIds.length,
-        isTotalLowerBound: false,
-        hasMore: false,
-      });
-    }
-
     const result = await batchProcessInvocations(
       request.invocationIds,
       (invocationId) => {
@@ -41,29 +30,29 @@ export async function batchResumeInvocations(
     });
   }
 
-  const { invocationIds, total, isTotalLowerBound, hasMore, lastCreatedAt } =
-    await getInvocationIds.call(this, {
+  const { invocationIds, hasMore, lastCreatedAt } = await getInvocationIds.call(
+    this,
+    {
       filters: request.filters,
-      pageSize: request.dryRun ? 0 : request.pageSize,
+      pageSize: request.pageSize,
       createdAfter: request.createdAfter,
-      countTotal: request.dryRun,
-    });
+    },
+  );
 
-  const result = request.dryRun
-    ? { successful: 0, failed: 0, failedInvocationIds: [] }
-    : await batchProcessInvocations(invocationIds, (invocationId) => {
-        const url = deployment
-          ? `/invocations/${invocationId}/resume?deployment=${encodeURIComponent(deployment)}`
-          : `/invocations/${invocationId}/resume`;
-        return this.adminApi(url, {
-          method: 'PATCH',
-        });
+  const result = await batchProcessInvocations(
+    invocationIds,
+    (invocationId) => {
+      const url = deployment
+        ? `/invocations/${invocationId}/resume?deployment=${encodeURIComponent(deployment)}`
+        : `/invocations/${invocationId}/resume`;
+      return this.adminApi(url, {
+        method: 'PATCH',
       });
+    },
+  );
 
   return Response.json({
     ...result,
-    total,
-    isTotalLowerBound,
     hasMore,
     lastCreatedAt,
   });
