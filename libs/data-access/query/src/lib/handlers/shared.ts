@@ -19,8 +19,7 @@ function queryFetcher(
   queryHeaders.set('content-type', 'application/json');
 
   return ky
-    .post('/query', {
-      prefixUrl: baseUrl,
+    .post(`${baseUrl}/query`, {
       json: { query },
       headers: queryHeaders,
       timeout: 60_000,
@@ -48,8 +47,7 @@ function adminApiFetcher<T>(
     apiHeaders.set('content-type', 'application/json');
   }
 
-  return ky(path, {
-    prefixUrl: baseUrl,
+  return ky(`${baseUrl}${path}`, {
     method,
     headers: apiHeaders,
     json,
