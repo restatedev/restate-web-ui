@@ -403,6 +403,23 @@ export function useListSubscriptions(
   return { ...results, queryKey: queryOptions.queryKey };
 }
 
+export function useCountInvocations(
+  options?: HookQueryOptions<'/query/invocations/count', 'post'>,
+) {
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi('query', '/query/invocations/count', 'post', {
+    baseUrl,
+  });
+
+  const results = useQuery({
+    staleTime: 0,
+    ...queryOptions,
+    ...options,
+  });
+
+  return { ...results, queryKey: queryOptions.queryKey };
+}
+
 export function useModifyService(
   service: string,
   options?: HookMutationOptions<'/services/{service}', 'patch'>,
