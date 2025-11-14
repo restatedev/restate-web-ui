@@ -8,6 +8,17 @@ export async function batchCancelInvocations(
   request: BatchInvocationsRequestBody,
 ) {
   if ('invocationIds' in request) {
+    if (request.dryRun) {
+      return Response.json({
+        successful: 0,
+        failed: 0,
+        failedInvocationIds: [],
+        total: request.invocationIds.length,
+        isTotalLowerBound: false,
+        hasMore: false,
+      });
+    }
+
     const result = await batchProcessInvocations(
       request.invocationIds,
       (invocationId) =>
@@ -27,15 +38,18 @@ export async function batchCancelInvocations(
   const { invocationIds, total, isTotalLowerBound, hasMore, lastCreatedAt } =
     await getInvocationIds.call(this, {
       filters: request.filters,
-      pageSize: request.pageSize,
+      pageSize: request.dryRun ? 0 : request.pageSize,
       createdAfter: request.createdAfter,
+      countTotal: request.dryRun,
     });
 
-  const result = await batchProcessInvocations(invocationIds, (invocationId) =>
-    this.adminApi(`/invocations/${invocationId}/cancel`, {
-      method: 'PATCH',
-    }),
-  );
+  const result = request.dryRun
+    ? { successful: 0, failed: 0, failedInvocationIds: [] }
+    : await batchProcessInvocations(invocationIds, (invocationId) =>
+        this.adminApi(`/invocations/${invocationId}/cancel`, {
+          method: 'PATCH',
+        }),
+      );
 
   return Response.json({
     ...result,
