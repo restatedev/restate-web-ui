@@ -48,15 +48,14 @@ export async function getInvocationIds(
 
   const allFilters = [...filters, ...createdAfterFilter];
 
-  const minimumCountEstimatePromise =
-    total !== undefined
-      ? Promise.resolve(total)
-      : this.query(
-          `SELECT COUNT(1) as total_count FROM (SELECT * FROM sys_invocation LIMIT ${COUNT_LIMIT}) ${convertInvocationsFilters(filters)}`,
-        ).then(({ rows }) => rows?.at(0)?.total_count ?? 0);
+  const minimumCountEstimatePromise = createdAfter
+    ? Promise.resolve(undefined)
+    : this.query(
+        `SELECT COUNT(1) as total_count FROM (SELECT * FROM sys_invocation LIMIT ${COUNT_LIMIT}) ${convertInvocationsFilters(filters)}`,
+      ).then(({ rows }) => rows?.at(0)?.total_count ?? 0);
 
   const invocationDataPromise = this.query(
-    `SELECT id, created_at from sys_invocation ${convertInvocationsFilters(allFilters)} ORDER BY created_at DESC LIMIT ${pageSize}`,
+    `SELECT id, created_at from sys_invocation ${convertInvocationsFilters(allFilters)} ORDER BY created_at ASC LIMIT ${pageSize}`,
   ).then(({ rows }) => rows as Pick<RawInvocation, 'id' | 'created_at'>[]);
 
   const [minimumCountEstimate, invocationData] = await Promise.all([
@@ -77,8 +76,10 @@ export async function getInvocationIds(
 
   return {
     invocationIds,
-    total: totalCount,
-    isTotalLowerBound: isLowerBound,
+    ...(!createdAfter && {
+      total: totalCount,
+      isTotalLowerBound: isLowerBound,
+    }),
     hasMore: invocationIds.length >= pageSize,
     lastCreatedAt,
   };
