@@ -5139,7 +5139,7 @@
         "properties": {
           "total": {
             "type": "integer",
-            "description": "Total number of invocations processed"
+            "description": "Total number of invocations matching the filter"
           },
           "successful": {
             "type": "integer",
@@ -5158,7 +5158,11 @@
           },
           "hasMore": {
             "type": "boolean",
-            "description": "Whether there are more pages available"
+            "description": "Whether there are more pages available (only for filter-based requests)"
+          },
+          "isTotalLowerBound": {
+            "type": "boolean",
+            "description": "Whether the total count is a lower bound estimate"
           }
         }
       },

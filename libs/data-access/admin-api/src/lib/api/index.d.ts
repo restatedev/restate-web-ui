@@ -1758,7 +1758,7 @@ export interface components {
           createdAfter?: string;
         };
     BatchInvocationsResponse: {
-      /** @description Total number of invocations processed */
+      /** @description Total number of invocations matching the filter */
       total?: number;
       /** @description Number of successfully processed invocations */
       successful: number;
@@ -1766,8 +1766,10 @@ export interface components {
       failed: number;
       /** @description List of invocation IDs that failed to process */
       failedInvocationIds?: string[];
-      /** @description Whether there are more pages available */
+      /** @description Whether there are more pages available (only for filter-based requests) */
       hasMore?: boolean;
+      /** @description Whether the total count is a lower bound estimate */
+      isTotalLowerBound?: boolean;
     };
     ListVirtualObjectStateRequestBody: {
       filters?: components['schemas']['FilterItem'][];
