@@ -24,6 +24,7 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { showSuccessNotification } from '@restate/ui/notification';
 import { formatNumber } from '@restate/util/intl';
 import { ErrorBanner } from '@restate/ui/error';
+import { FormFieldSelect, Option } from '@restate/ui/form-field';
 
 type OperationType = 'cancel' | 'pause' | 'resume' | 'kill' | 'purge';
 
@@ -58,46 +59,46 @@ interface OperationConfig {
 
 const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
   cancel: {
-    title: 'Cancel invocations',
+    title: 'Cancel Invocations',
     icon: IconName.Cancel,
-    iconClassName: 'text-orange-400',
+    iconClassName: 'text-red-400',
     submitVariant: 'destructive',
     description: (count) =>
       count !== undefined
         ? `Are you sure you want to cancel ${formatNumber(count)}+ invocations?`
         : 'Are you sure you want to cancel these invocations?',
     warning:
-      'This will terminate the execution of matching invocations. They will not be retried.',
+      'Cancellation frees held resources, cooperates with your handler code to roll back changes, and allows proper cleanup. It is non-blocking, so the call may return before cleanup finishes. In rare cases, cancellation may not take effect, retry the operation if needed.',
     progressTitle: 'Cancelling invocations',
   },
   pause: {
-    title: 'Pause invocations',
+    title: 'Pause Invocations',
     icon: IconName.Pause,
-    iconClassName: 'text-blue-400',
-    submitVariant: 'primary',
+    iconClassName: 'text-red-400',
+    submitVariant: 'destructive',
     description: (count) =>
       count !== undefined
-        ? `Are you sure you want to pause ${formatNumber(count)}+ invocations?`
-        : 'Are you sure you want to pause these invocations?',
+        ? `Are you sure you want to pause ${formatNumber(count)}+ invocations? The pause may not take effect right away.`
+        : 'Are you sure you want to pause these invocations? The pause may not take effect right away.',
     warning:
       'Paused invocations will stop executing until manually resumed or unpaused.',
     progressTitle: 'Pausing invocations',
   },
   resume: {
-    title: 'Resume invocations',
+    title: 'Resume Invocations',
     icon: IconName.Resume,
     iconClassName: 'text-green-400',
     submitVariant: 'primary',
     description: (count) =>
       count !== undefined
-        ? `Are you sure you want to resume ${formatNumber(count)}+ invocations?`
-        : 'Are you sure you want to resume these invocations?',
+        ? `Select the deployment you'd like to run ${formatNumber(count)}+ invocations on, then resume execution.`
+        : `Select the deployment you'd like to run these invocations on, then resume execution.`,
     warning:
       'Resumed invocations will continue execution from where they were paused.',
     progressTitle: 'Resuming invocations',
   },
   kill: {
-    title: 'Kill invocations',
+    title: 'Kill Invocations',
     icon: IconName.Kill,
     iconClassName: 'text-red-400',
     submitVariant: 'destructive',
@@ -106,11 +107,11 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
         ? `Are you sure you want to kill ${formatNumber(count)}+ invocations?`
         : 'Are you sure you want to kill these invocations?',
     warning:
-      'This will forcefully terminate matching invocations. This action cannot be undone.',
+      'Killing immediately stops all calls in the invocation tree without executing compensation logic. This may leave your service in an inconsistent state. Only use as a last resort after trying other fixes.',
     progressTitle: 'Killing invocations',
   },
   purge: {
-    title: 'Purge invocations',
+    title: 'Purge Invocations',
     icon: IconName.Trash,
     iconClassName: 'text-red-400',
     submitVariant: 'destructive',
@@ -119,7 +120,7 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
         ? `Are you sure you want to purge ${formatNumber(count)}+ invocations?`
         : 'Are you sure you want to purge these invocations?',
     warning:
-      'This will permanently delete matching invocations and their state. This action cannot be undone.',
+      'After an invocation completes, it will be retained by Restate for some time, in order to introspect it and, in case of idempotent requests, to perform deduplication.',
     progressTitle: 'Purging invocations',
   },
 };
@@ -313,7 +314,9 @@ function useBatchMutation(
     onProgress,
     onSuccess(data, variables, onMutateResult, context) {
       if (data?.failed === 0) {
-        showSuccessNotification('');
+        showSuccessNotification(
+          `Successfully cancelled ${formatNumber(data.successful)} invocation${data.successful !== 1 ? 's' : ''}`,
+        );
         onOpenChange(false);
       }
     },
@@ -323,7 +326,9 @@ function useBatchMutation(
     onProgress,
     onSuccess(data, variables, onMutateResult, context) {
       if (data?.failed === 0) {
-        showSuccessNotification('');
+        showSuccessNotification(
+          `Successfully paused ${formatNumber(data.successful)} invocation${data.successful !== 1 ? 's' : ''}`,
+        );
         onOpenChange(false);
       }
     },
@@ -333,7 +338,9 @@ function useBatchMutation(
     onProgress,
     onSuccess(data, variables, onMutateResult, context) {
       if (data?.failed === 0) {
-        showSuccessNotification('');
+        showSuccessNotification(
+          `Successfully resumed ${formatNumber(data.successful)} invocation${data.successful !== 1 ? 's' : ''}`,
+        );
         onOpenChange(false);
       }
     },
@@ -343,7 +350,9 @@ function useBatchMutation(
     onProgress,
     onSuccess(data, variables, onMutateResult, context) {
       if (data?.failed === 0) {
-        showSuccessNotification('');
+        showSuccessNotification(
+          `Successfully killed ${formatNumber(data.successful)} invocation${data.successful !== 1 ? 's' : ''}`,
+        );
         onOpenChange(false);
       }
     },
@@ -353,7 +362,9 @@ function useBatchMutation(
     onProgress,
     onSuccess(data, variables, onMutateResult, context) {
       if (data?.failed === 0) {
-        showSuccessNotification('');
+        showSuccessNotification(
+          `Successfully purged ${formatNumber(data.successful)} invocation${data.successful !== 1 ? 's' : ''}`,
+        );
         onOpenChange(false);
       }
     },
@@ -426,50 +437,87 @@ function BatchConfirmation({
       isPending={countInvocations.isPending || count === undefined}
       error={countInvocations.error ?? mutation.error}
       onSubmit={(e) => {
+        e.preventDefault();
+        const formData = new FormData(e.currentTarget);
+        const selectedDeployment = formData.get('deployment') as
+          | 'keep'
+          | 'latest'
+          | undefined;
+
+        const params =
+          state.type === 'resume'
+            ? { ...state.params, deployment: selectedDeployment }
+            : state.params;
+
         mutation.mutate({
-          body: state.params,
+          body: params,
         });
       }}
       footer={
-        <div className="flex flex-col gap-3">
-          {mutation.isPending && (
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <Icon name={IconName.Retry} className="h-4 w-4 animate-spin" />
-              Processing invocations...
-            </div>
-          )}
+        (mutation.isPending || mutation.isSuccess || mutation.isError) && (
+          <div className="flex flex-col gap-3">
+            {mutation.isPending && (
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <Icon name={IconName.Retry} className="h-4 w-4 animate-spin" />
+                Processing invocations...
+              </div>
+            )}
 
-          <div className="grid grid-cols-2 gap-4 rounded-lg bg-gray-50 p-4">
-            <div className="flex flex-col">
-              <span className="text-sm text-gray-500">Successful</span>
-              <span className="text-2xl font-semibold text-green-600">
-                {state.successful}
-              </span>
+            <div className="grid grid-cols-2 gap-4 rounded-lg bg-gray-50 p-4">
+              <div className="flex flex-col">
+                <span className="text-sm text-gray-500">Successful</span>
+                <span className="text-2xl font-semibold text-green-600">
+                  {state.successful}
+                </span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm text-gray-500">Failed</span>
+                <span className="text-2xl font-semibold text-red-600">
+                  {state.failed}
+                </span>
+              </div>
             </div>
-            <div className="flex flex-col">
-              <span className="text-sm text-gray-500">Failed</span>
-              <span className="text-2xl font-semibold text-red-600">
-                {state.failed}
-              </span>
-            </div>
+
+            {mutation.isSuccess && state.failed > 0 && (
+              <div className="flex items-center gap-2 text-sm text-amber-600">
+                <Icon name={IconName.TriangleAlert} className="h-4 w-4" />
+                Operation completed with {state.failed} failure
+                {state.failed !== 1 ? 's' : ''}
+              </div>
+            )}
+            <ErrorBanner error={mutation.error || countInvocations.error} />
           </div>
-
-          {mutation.isSuccess && state.failed > 0 && (
-            <div className="flex items-center gap-2 text-sm text-amber-600">
-              <Icon name={IconName.TriangleAlert} className="h-4 w-4" />
-              Operation completed with {state.failed} failure
-              {state.failed !== 1 ? 's' : ''}
-            </div>
-          )}
-          <ErrorBanner error={mutation.error || countInvocations.error} />
-        </div>
+        )
       }
-    />
+    >
+      {state.type === 'resume' &&
+        !mutation.isPending &&
+        !mutation.isSuccess && (
+          <div className="mt-4">
+            <FormFieldSelect
+              label="Deployment"
+              placeholder="Select deployment"
+              name="deployment"
+              defaultValue={'keep'}
+              required
+            >
+              <Option value="keep">Current deployment</Option>
+              <Option value="latest">Latest deployment</Option>
+            </FormFieldSelect>
+          </div>
+        )}
+    </ConfirmationDialog>
   );
 }
 
 export function useBatchOperations() {
   const context = use(BatchOperationsContext);
+
+  if (!context) {
+    throw new Error(
+      'useBatchOperations must be used within a BatchOperationsProvider',
+    );
+  }
 
   return context;
 }
