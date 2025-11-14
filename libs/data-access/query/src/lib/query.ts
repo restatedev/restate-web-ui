@@ -28,11 +28,13 @@ import {
   batchKillInvocations,
   batchPauseInvocations,
   batchResumeInvocations,
+  countInvocations,
 } from './handlers';
 import { getVersion } from './getVersion';
 
 type BoundHandlers = {
   listInvocations: (filters: FilterItem[]) => Promise<Response>;
+  countInvocations: (filters: FilterItem[]) => Promise<Response>;
   getInvocation: (invocationId: string) => Promise<Response>;
   getInvocationJournal: (invocationId: string) => Promise<Response>;
   getJournalEntryV2: (
@@ -68,6 +70,7 @@ type BoundHandlers = {
 
 function bindHandlers(context: QueryContext): BoundHandlers {
   return {
+    countInvocations: countInvocations.bind(context),
     listInvocations: listInvocations.bind(context),
     getInvocation: getInvocation.bind(context),
     getInvocationJournal: getInvocationJournal.bind(context),
@@ -112,6 +115,7 @@ async function extractErrorPayload(res: Response): Promise<string | undefined> {
 const routes = createRoutes({
   invocations: {
     list: { method: 'POST', pattern: '/invocations' },
+    count: { method: 'POST', pattern: '/invocations/count' },
     get: { method: 'GET', pattern: '/invocations/:invocationId' },
     journalEntry: {
       method: 'GET',
@@ -157,6 +161,12 @@ queryRouter.map(routes, {
       const { filters = [] }: { filters: FilterItem[] } =
         await ctx.request.json();
       return listInvocations(filters);
+    },
+    async count(ctx) {
+      const { countInvocations } = ctx.storage.get(handlersKey);
+      const { filters = [] }: { filters: FilterItem[] } =
+        await ctx.request.json();
+      return countInvocations(filters);
     },
     async get(ctx) {
       const { getInvocation } = ctx.storage.get(handlersKey);
