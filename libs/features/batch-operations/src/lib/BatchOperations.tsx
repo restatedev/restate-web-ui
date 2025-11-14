@@ -15,7 +15,7 @@ const BatchOperationsContext = createContext<{
   batchResume?: ReturnType<typeof useBatchResumeInvocations>;
 }>({});
 
-export function BatchOperationsProvide({
+export function BatchOperationsProvider({
   children,
   batchSize = 40,
 }: PropsWithChildren<{ batchSize?: number }>) {
