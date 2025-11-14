@@ -8,11 +8,11 @@ import {
 } from '@restate/data-access/admin-api-hooks';
 
 const BatchOperationsContext = createContext<{
-  batchCancel?: ReturnType<typeof useBatchCancelInvocations>;
-  batchPause?: ReturnType<typeof useBatchPauseInvocations>;
-  batchPurge?: ReturnType<typeof useBatchPurgeInvocations>;
-  batchKill?: ReturnType<typeof useBatchKillInvocations>;
-  batchResume?: ReturnType<typeof useBatchResumeInvocations>;
+  batchCancel?: ReturnType<typeof useBatchCancelInvocations>['mutate'];
+  batchPause?: ReturnType<typeof useBatchPauseInvocations>['mutate'];
+  batchPurge?: ReturnType<typeof useBatchPurgeInvocations>['mutate'];
+  batchKill?: ReturnType<typeof useBatchKillInvocations>['mutate'];
+  batchResume?: ReturnType<typeof useBatchResumeInvocations>['mutate'];
 }>({});
 
 export function BatchOperationsProvider({
@@ -28,11 +28,11 @@ export function BatchOperationsProvider({
   return (
     <BatchOperationsContext.Provider
       value={{
-        batchCancel,
-        batchKill,
-        batchPause,
-        batchPurge,
-        batchResume,
+        batchCancel: batchCancel.mutate,
+        batchKill: batchKill.mutate,
+        batchPause: batchPause.mutate,
+        batchPurge: batchPurge.mutate,
+        batchResume: batchResume.mutate,
       }}
     >
       {children}
