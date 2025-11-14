@@ -1771,14 +1771,12 @@ export interface components {
       | {
           invocationIds: string[];
           pageSize?: number;
-          dryRun?: boolean;
         }
       | {
           filters: components['schemas']['FilterItem'][];
           pageSize?: number;
           /** Format: date-time */
           createdAfter?: string;
-          dryRun?: boolean;
         };
     BatchResumeInvocationsRequestBody:
       | {
@@ -1789,7 +1787,6 @@ export interface components {
            */
           deployment?: 'keep' | 'latest';
           pageSize?: number;
-          dryRun?: boolean;
         }
       | {
           filters: components['schemas']['FilterItem'][];
@@ -1801,11 +1798,8 @@ export interface components {
            * @enum {string}
            */
           deployment?: 'keep' | 'latest';
-          dryRun?: boolean;
         };
     BatchInvocationsResponse: {
-      /** @description Total number of invocations matching the filter */
-      total?: number;
       /** @description Number of successfully processed invocations */
       successful: number;
       /** @description Number of failed processed invocations */
@@ -1814,8 +1808,6 @@ export interface components {
       failedInvocationIds?: string[];
       /** @description Whether there are more pages available (only for filter-based requests) */
       hasMore?: boolean;
-      /** @description Whether the total count is a lower bound estimate */
-      isTotalLowerBound?: boolean;
       /**
        * Format: date-time
        * @description The created_at timestamp of the last invocation in the current page, used for pagination

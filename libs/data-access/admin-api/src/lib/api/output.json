@@ -5208,9 +5208,6 @@
               "pageSize": {
                 "type": "integer",
                 "minimum": 1
-              },
-              "dryRun": {
-                "type": "boolean"
               }
             }
           },
@@ -5231,9 +5228,6 @@
               "createdAfter": {
                 "type": "string",
                 "format": "date-time"
-              },
-              "dryRun": {
-                "type": "boolean"
               }
             }
           }
@@ -5259,9 +5253,6 @@
               "pageSize": {
                 "type": "integer",
                 "minimum": 1
-              },
-              "dryRun": {
-                "type": "boolean"
               }
             }
           },
@@ -5287,9 +5278,6 @@
                 "type": "string",
                 "enum": ["keep", "latest"],
                 "description": "Deployment selection strategy: 'keep' uses the current deployment, 'latest' uses the latest deployment"
-              },
-              "dryRun": {
-                "type": "boolean"
               }
             }
           }
@@ -5299,10 +5287,6 @@
         "type": "object",
         "required": ["successful", "failed"],
         "properties": {
-          "total": {
-            "type": "integer",
-            "description": "Total number of invocations matching the filter"
-          },
           "successful": {
             "type": "integer",
             "description": "Number of successfully processed invocations"
@@ -5321,10 +5305,6 @@
           "hasMore": {
             "type": "boolean",
             "description": "Whether there are more pages available (only for filter-based requests)"
-          },
-          "isTotalLowerBound": {
-            "type": "boolean",
-            "description": "Whether the total count is a lower bound estimate"
           },
           "lastCreatedAt": {
             "type": "string",
