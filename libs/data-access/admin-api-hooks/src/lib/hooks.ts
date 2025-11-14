@@ -404,11 +404,15 @@ export function useListSubscriptions(
 }
 
 export function useCountInvocations(
+  filters: FilterItem[],
   options?: HookQueryOptions<'/query/invocations/count', 'post'>,
 ) {
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi('query', '/query/invocations/count', 'post', {
     baseUrl,
+    body: {
+      filters,
+    },
   });
 
   const results = useQuery({
