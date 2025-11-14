@@ -5112,6 +5112,9 @@
               "pageSize": {
                 "type": "integer",
                 "minimum": 1
+              },
+              "dryRun": {
+                "type": "boolean"
               }
             }
           },
@@ -5132,6 +5135,9 @@
               "createdAfter": {
                 "type": "string",
                 "format": "date-time"
+              },
+              "dryRun": {
+                "type": "boolean"
               }
             }
           }
@@ -5157,6 +5163,9 @@
               "pageSize": {
                 "type": "integer",
                 "minimum": 1
+              },
+              "dryRun": {
+                "type": "boolean"
               }
             }
           },
@@ -5182,6 +5191,9 @@
                 "type": "string",
                 "enum": ["keep", "latest"],
                 "description": "Deployment selection strategy: 'keep' uses the current deployment, 'latest' uses the latest deployment"
+              },
+              "dryRun": {
+                "type": "boolean"
               }
             }
           }

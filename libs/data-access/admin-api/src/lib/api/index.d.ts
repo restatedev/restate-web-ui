@@ -1751,12 +1751,14 @@ export interface components {
       | {
           invocationIds: string[];
           pageSize?: number;
+          dryRun?: boolean;
         }
       | {
           filters: components['schemas']['FilterItem'][];
           pageSize?: number;
           /** Format: date-time */
           createdAfter?: string;
+          dryRun?: boolean;
         };
     BatchResumeInvocationsRequestBody:
       | {
@@ -1767,6 +1769,7 @@ export interface components {
            */
           deployment?: 'keep' | 'latest';
           pageSize?: number;
+          dryRun?: boolean;
         }
       | {
           filters: components['schemas']['FilterItem'][];
@@ -1778,6 +1781,7 @@ export interface components {
            * @enum {string}
            */
           deployment?: 'keep' | 'latest';
+          dryRun?: boolean;
         };
     BatchInvocationsResponse: {
       /** @description Total number of invocations matching the filter */
