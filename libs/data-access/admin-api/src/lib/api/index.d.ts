@@ -1770,6 +1770,11 @@ export interface components {
       hasMore?: boolean;
       /** @description Whether the total count is a lower bound estimate */
       isTotalLowerBound?: boolean;
+      /**
+       * Format: date-time
+       * @description The created_at timestamp of the last invocation in the current page, used for pagination
+       */
+      lastCreatedAt?: string;
     };
     ListVirtualObjectStateRequestBody: {
       filters?: components['schemas']['FilterItem'][];

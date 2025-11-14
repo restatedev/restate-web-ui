@@ -8,7 +8,12 @@ type ProcessorResult = {
 export async function batchProcessInvocations(
   invocationIds: string[],
   processor: (invocationId: string) => Promise<void>,
-): Promise<BatchInvocationsResponse> {
+): Promise<
+  Pick<
+    BatchInvocationsResponse,
+    'failed' | 'successful' | 'failedInvocationIds'
+  >
+> {
   const results = await Promise.allSettled(
     invocationIds.map(async (invocationId) => {
       try {

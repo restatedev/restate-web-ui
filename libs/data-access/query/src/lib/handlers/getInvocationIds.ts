@@ -1,4 +1,7 @@
-import type { FilterItem } from '@restate/data-access/admin-api/spec';
+import type {
+  FilterItem,
+  RawInvocation,
+} from '@restate/data-access/admin-api/spec';
 import { convertInvocationsFilters } from '../convertFilters';
 import { type QueryContext } from './shared';
 
@@ -52,14 +55,17 @@ export async function getInvocationIds(
           `SELECT COUNT(1) as total_count FROM (SELECT * FROM sys_invocation LIMIT ${COUNT_LIMIT}) ${convertInvocationsFilters(filters)}`,
         ).then(({ rows }) => rows?.at(0)?.total_count ?? 0);
 
-  const invocationIdsPromise = this.query(
-    `SELECT id from sys_invocation ${convertInvocationsFilters(allFilters)} ORDER BY created_at DESC LIMIT ${pageSize}`,
-  ).then(({ rows }) => rows.map(({ id }) => id as string));
+  const invocationDataPromise = this.query(
+    `SELECT id, created_at from sys_invocation ${convertInvocationsFilters(allFilters)} ORDER BY created_at DESC LIMIT ${pageSize}`,
+  ).then(({ rows }) => rows as Pick<RawInvocation, 'id' | 'created_at'>[]);
 
-  const [minimumCountEstimate, invocationIds] = await Promise.all([
+  const [minimumCountEstimate, invocationData] = await Promise.all([
     minimumCountEstimatePromise,
-    invocationIdsPromise,
+    invocationDataPromise,
   ]);
+
+  const invocationIds = invocationData.map(({ id }) => id);
+  const lastCreatedAt = invocationData.at(-1)?.created_at;
 
   const receivedLessThanLimit =
     !createdAfter && invocationIds.length < pageSize;
@@ -74,5 +80,6 @@ export async function getInvocationIds(
     total: totalCount,
     isTotalLowerBound: isLowerBound,
     hasMore: invocationIds.length >= pageSize,
+    lastCreatedAt,
   };
 }

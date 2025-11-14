@@ -1815,6 +1815,11 @@
           "isTotalLowerBound": {
             "type": "boolean",
             "description": "Whether the total count is a lower bound estimate"
+          },
+          "lastCreatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The created_at timestamp of the last invocation in the current page, used for pagination"
           }
         }
       },
