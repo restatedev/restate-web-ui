@@ -83,6 +83,8 @@ export type FilterStringItem = components['schemas']['FilterStringItem'];
 export type StateResponse = components['schemas']['StateResponse'];
 export type BatchInvocationsRequestBody =
   components['schemas']['BatchInvocationsRequestBody'];
+export type BatchResumeInvocationsRequestBody =
+  components['schemas']['BatchResumeInvocationsRequestBody'];
 export type BatchInvocationsResponse =
   components['schemas']['BatchInvocationsResponse'];
 

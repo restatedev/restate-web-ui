@@ -2711,7 +2711,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/BatchInvocationsRequestBody"
+                "$ref": "#/components/schemas/BatchResumeInvocationsRequestBody"
               }
             }
           },
@@ -5128,6 +5128,52 @@
               "createdAfter": {
                 "type": "string",
                 "format": "date-time"
+              }
+            }
+          }
+        ]
+      },
+      "BatchResumeInvocationsRequestBody": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": ["invocationIds"],
+            "properties": {
+              "invocationIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "deployment": {
+                "type": "string",
+                "enum": ["keep", "latest"],
+                "description": "Deployment selection strategy: 'keep' uses the current deployment, 'latest' uses the latest deployment"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": ["filters"],
+            "properties": {
+              "filters": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/FilterItem"
+                }
+              },
+              "pageSize": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "createdAfter": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "deployment": {
+                "type": "string",
+                "enum": ["keep", "latest"],
+                "description": "Deployment selection strategy: 'keep' uses the current deployment, 'latest' uses the latest deployment"
               }
             }
           }

@@ -1757,6 +1757,26 @@ export interface components {
           /** Format: date-time */
           createdAfter?: string;
         };
+    BatchResumeInvocationsRequestBody:
+      | {
+          invocationIds: string[];
+          /**
+           * @description Deployment selection strategy: 'keep' uses the current deployment, 'latest' uses the latest deployment
+           * @enum {string}
+           */
+          deployment?: 'keep' | 'latest';
+        }
+      | {
+          filters: components['schemas']['FilterItem'][];
+          pageSize?: number;
+          /** Format: date-time */
+          createdAfter?: string;
+          /**
+           * @description Deployment selection strategy: 'keep' uses the current deployment, 'latest' uses the latest deployment
+           * @enum {string}
+           */
+          deployment?: 'keep' | 'latest';
+        };
     BatchInvocationsResponse: {
       /** @description Total number of invocations matching the filter */
       total?: number;
@@ -4808,7 +4828,7 @@ export interface operations {
     };
     requestBody: {
       content: {
-        'application/json': components['schemas']['BatchInvocationsRequestBody'];
+        'application/json': components['schemas']['BatchResumeInvocationsRequestBody'];
       };
     };
     responses: {

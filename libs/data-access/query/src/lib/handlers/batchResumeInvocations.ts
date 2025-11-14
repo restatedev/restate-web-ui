@@ -1,19 +1,25 @@
-import type { BatchInvocationsRequestBody } from '@restate/data-access/admin-api/spec';
+import type { BatchResumeInvocationsRequestBody } from '@restate/data-access/admin-api/spec';
 import { type QueryContext } from './shared';
 import { batchProcessInvocations } from './batchProcessor';
 import { getInvocationIds } from './getInvocationIds';
 
 export async function batchResumeInvocations(
   this: QueryContext,
-  request: BatchInvocationsRequestBody,
+  request: BatchResumeInvocationsRequestBody,
 ) {
+  const deployment = request.deployment;
+
   if ('invocationIds' in request) {
     const result = await batchProcessInvocations(
       request.invocationIds,
-      (invocationId) =>
-        this.adminApi(`/invocations/${invocationId}/resume`, {
+      (invocationId) => {
+        const url = deployment
+          ? `/invocations/${invocationId}/resume?deployment=${encodeURIComponent(deployment)}`
+          : `/invocations/${invocationId}/resume`;
+        return this.adminApi(url, {
           method: 'PATCH',
-        }),
+        });
+      },
     );
 
     return Response.json({
@@ -31,10 +37,16 @@ export async function batchResumeInvocations(
       createdAfter: request.createdAfter,
     });
 
-  const result = await batchProcessInvocations(invocationIds, (invocationId) =>
-    this.adminApi(`/invocations/${invocationId}/resume`, {
-      method: 'PATCH',
-    }),
+  const result = await batchProcessInvocations(
+    invocationIds,
+    (invocationId) => {
+      const url = deployment
+        ? `/invocations/${invocationId}/resume?deployment=${encodeURIComponent(deployment)}`
+        : `/invocations/${invocationId}/resume`;
+      return this.adminApi(url, {
+        method: 'PATCH',
+      });
+    },
   );
 
   return Response.json({
