@@ -4,6 +4,7 @@ import {
   useCallback,
   useState,
   use,
+  ReactNode,
 } from 'react';
 import {
   useBatchCancelInvocations,
@@ -52,8 +53,9 @@ interface OperationConfig {
   icon: IconName;
   iconClassName: string;
   submitVariant: 'primary' | 'destructive';
-  description: (count: number, isLowerBound: boolean) => string;
-  warning: string;
+  description: (count: number, isLowerBound: boolean) => ReactNode;
+  alertType?: 'warning' | 'info';
+  alertContent?: string;
   submitText: string;
   progressTitle: string;
   emptyMessage: string;
@@ -66,9 +68,18 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     icon: IconName.Cancel,
     iconClassName: 'text-red-400',
     submitVariant: 'destructive',
-    description: (count, isLowerBound) =>
-      `Are you sure you want to cancel ${formatNumber(count, true)}${isLowerBound ? '+' : ''} invocations?`,
-    warning:
+    description: (count, isLowerBound) => (
+      <>
+        Are you sure you want to cancel{' '}
+        <span className="contents font-semibold">
+          {formatNumber(count, true)}
+        </span>
+        {isLowerBound ? '+' : ''}{' '}
+        {formatPlurals(count, { one: 'invocation', other: 'invocations' })}?
+      </>
+    ),
+    alertType: 'info',
+    alertContent:
       'Cancellation frees held resources, cooperates with your handler code to roll back changes, and allows proper cleanup. It is non-blocking, so the call may return before cleanup finishes. In rare cases, cancellation may not take effect, retry the operation if needed.',
     progressTitle: 'Cancelling invocations',
     emptyMessage:
@@ -80,9 +91,20 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     icon: IconName.Pause,
     iconClassName: 'text-red-400',
     submitVariant: 'destructive',
-    description: (count, isLowerBound) =>
-      `Are you sure you want to pause ${formatNumber(count, true)}${isLowerBound ? '+' : ''} invocations? The pause may not take effect right away.`,
-    warning: 'Paused invocations will stop executing until manually resumed.',
+    description: (count, isLowerBound) => (
+      <>
+        Are you sure you want to pause{' '}
+        <span className="contents font-semibold">
+          {formatNumber(count, true)}
+        </span>
+        {isLowerBound ? '+' : ''}{' '}
+        {formatPlurals(count, { one: 'invocation', other: 'invocations' })}? The
+        pause may not take effect right away.
+      </>
+    ),
+    alertType: 'info',
+    alertContent:
+      'Paused invocations will stop executing until manually resumed or unpaused.',
     progressTitle: 'Pausing invocations',
     emptyMessage:
       'No invocations match your criteria. Only running invocations can be paused.',
@@ -91,11 +113,21 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     title: 'Resume Invocations',
     submitText: 'Resume',
     icon: IconName.Resume,
-    iconClassName: 'text-green-400',
     submitVariant: 'primary',
-    description: (count, isLowerBound) =>
-      `Select the deployment you'd like to run ${formatNumber(count, true)}${isLowerBound ? '+' : ''} invocations on, then resume execution.`,
-    warning:
+    iconClassName: '',
+    description: (count, isLowerBound) => (
+      <>
+        Select the deployment you'd like to run{' '}
+        <span className="contents font-semibold">
+          {formatNumber(count, true)}
+        </span>
+        {isLowerBound ? '+' : ''}{' '}
+        {formatPlurals(count, { one: 'invocation', other: 'invocations' })} on,
+        then resume execution.
+      </>
+    ),
+    alertType: 'info',
+    alertContent:
       'Resumed invocations will continue execution from where they were paused.',
     progressTitle: 'Resuming invocations',
     emptyMessage:
@@ -107,9 +139,18 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     icon: IconName.Kill,
     iconClassName: 'text-red-400',
     submitVariant: 'destructive',
-    description: (count, isLowerBound) =>
-      `Are you sure you want to kill ${formatNumber(count, true)}${isLowerBound ? '+' : ''} invocations?`,
-    warning:
+    description: (count, isLowerBound) => (
+      <>
+        Are you sure you want to kill{' '}
+        <span className="contents font-semibold">
+          {formatNumber(count, true)}
+        </span>
+        {isLowerBound ? '+' : ''} $
+        {formatPlurals(count, { one: 'invocation', other: 'invocations' })}?
+      </>
+    ),
+    alertType: 'warning',
+    alertContent:
       'Killing immediately stops all calls in the invocation tree without executing compensation logic. This may leave your service in an inconsistent state. Only use as a last resort after trying other fixes.',
     progressTitle: 'Killing invocations',
     emptyMessage:
@@ -121,9 +162,18 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     iconClassName: 'text-red-400',
     submitText: 'Purge',
     submitVariant: 'destructive',
-    description: (count, isLowerBound) =>
-      `Are you sure you want to purge ${formatNumber(count, true)}${isLowerBound ? '+' : ''} invocations?`,
-    warning:
+    description: (count, isLowerBound) => (
+      <>
+        Are you sure you want to purge{' '}
+        <span className="contents font-semibold">
+          {formatNumber(count, true)}
+        </span>
+        {isLowerBound ? '+' : ''}{' '}
+        {formatPlurals(count, { one: 'invocation', other: 'invocations' })}?
+      </>
+    ),
+    alertType: 'info',
+    alertContent:
       'After an invocation completes, it will be retained by Restate for some time, in order to introspect it and, in case of idempotent requests, to perform deduplication.',
     progressTitle: 'Purging invocations',
     emptyMessage:
@@ -207,9 +257,9 @@ export function BatchOperationsProvider({
                     ...params.filters,
                     {
                       field: 'status',
-                      type: 'STRING',
-                      operation: 'NOT_EQUALS',
-                      value: 'completed',
+                      type: 'STRING_LIST',
+                      operation: 'NOT_IN',
+                      value: ['completed'],
                     },
                   ],
                 },
@@ -275,9 +325,9 @@ export function BatchOperationsProvider({
                     ...params.filters,
                     {
                       field: 'status',
-                      type: 'STRING',
-                      operation: 'NOT_EQUALS',
-                      value: 'completed',
+                      type: 'STRING_LIST',
+                      operation: 'NOT_IN',
+                      value: ['completed'],
                     },
                   ],
                 },
@@ -551,8 +601,8 @@ function BatchConfirmation({
           config={config}
         />
       }
-      alertType={count && count > 0 ? 'warning' : undefined}
-      alertContent={count && count > 0 ? config.warning : undefined}
+      alertType={count && count > 0 ? config.alertType : undefined}
+      alertContent={count && count > 0 ? config.alertContent : undefined}
       submitText={config.submitText}
       submitVariant={config.submitVariant}
       isPending={countInvocations.isPending || count === undefined}
