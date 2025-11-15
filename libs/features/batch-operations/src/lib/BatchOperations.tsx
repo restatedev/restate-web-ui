@@ -170,9 +170,6 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
         on, then resume execution.
       </p>
     ),
-    alertType: 'info',
-    alertContent:
-      'Resumed invocations will continue execution from where they were paused.',
     progressTitle: 'Resuming invocations',
     emptyMessage:
       'No invocations match your criteria. Only paused invocations can be resumed.',
