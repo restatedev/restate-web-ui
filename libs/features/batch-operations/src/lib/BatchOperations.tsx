@@ -52,7 +52,7 @@ interface OperationConfig {
   icon: IconName;
   iconClassName: string;
   submitVariant: 'primary' | 'destructive';
-  description: (count?: number) => string;
+  description: (count?: number, isLowerBound?: boolean) => string;
   warning: string;
   submitText: string;
   progressTitle: string;
@@ -65,9 +65,9 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     icon: IconName.Cancel,
     iconClassName: 'text-red-400',
     submitVariant: 'destructive',
-    description: (count) =>
+    description: (count, isLowerBound) =>
       count !== undefined
-        ? `Are you sure you want to cancel ${formatNumber(count, true)}+ invocations?`
+        ? `Are you sure you want to cancel ${formatNumber(count, true)}${isLowerBound ? '+' : ''} invocations?`
         : 'Are you sure you want to cancel these invocations?',
     warning:
       'Cancellation frees held resources, cooperates with your handler code to roll back changes, and allows proper cleanup. It is non-blocking, so the call may return before cleanup finishes. In rare cases, cancellation may not take effect, retry the operation if needed.',
@@ -79,9 +79,9 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     icon: IconName.Pause,
     iconClassName: 'text-red-400',
     submitVariant: 'destructive',
-    description: (count) =>
+    description: (count, isLowerBound) =>
       count !== undefined
-        ? `Are you sure you want to pause ${formatNumber(count, true)}+ invocations? The pause may not take effect right away.`
+        ? `Are you sure you want to pause ${formatNumber(count, true)}${isLowerBound ? '+' : ''} invocations? The pause may not take effect right away.`
         : 'Are you sure you want to pause these invocations? The pause may not take effect right away.',
     warning:
       'Paused invocations will stop executing until manually resumed or unpaused.',
@@ -93,9 +93,9 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     icon: IconName.Resume,
     iconClassName: 'text-green-400',
     submitVariant: 'primary',
-    description: (count) =>
+    description: (count, isLowerBound) =>
       count !== undefined
-        ? `Select the deployment you'd like to run ${formatNumber(count, true)}+ invocations on, then resume execution.`
+        ? `Select the deployment you'd like to run ${formatNumber(count, true)}${isLowerBound ? '+' : ''} invocations on, then resume execution.`
         : `Select the deployment you'd like to run these invocations on, then resume execution.`,
     warning:
       'Resumed invocations will continue execution from where they were paused.',
@@ -107,9 +107,9 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     icon: IconName.Kill,
     iconClassName: 'text-red-400',
     submitVariant: 'destructive',
-    description: (count) =>
+    description: (count, isLowerBound) =>
       count !== undefined
-        ? `Are you sure you want to kill ${formatNumber(count, true)}+ invocations?`
+        ? `Are you sure you want to kill ${formatNumber(count, true)}${isLowerBound ? '+' : ''} invocations?`
         : 'Are you sure you want to kill these invocations?',
     warning:
       'Killing immediately stops all calls in the invocation tree without executing compensation logic. This may leave your service in an inconsistent state. Only use as a last resort after trying other fixes.',
@@ -121,9 +121,9 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     iconClassName: 'text-red-400',
     submitText: 'Purge',
     submitVariant: 'destructive',
-    description: (count) =>
+    description: (count, isLowerBound) =>
       count !== undefined
-        ? `Are you sure you want to purge ${formatNumber(count, true)}+ invocations?`
+        ? `Are you sure you want to purge ${formatNumber(count, true)}${isLowerBound ? '+' : ''} invocations?`
         : 'Are you sure you want to purge these invocations?',
     warning:
       'After an invocation completes, it will be retained by Restate for some time, in order to introspect it and, in case of idempotent requests, to perform deduplication.',
@@ -490,10 +490,13 @@ function BatchConfirmation({
   );
 
   const config = OPERATION_CONFIG[state.type];
-  const count =
+  const { count, isLowerBound } =
     'invocationIds' in state.params
-      ? state.params.invocationIds.length
-      : countInvocations.data?.count;
+      ? { count: state.params.invocationIds.length, isLowerBound: false }
+      : {
+          count: countInvocations.data?.count,
+          isLowerBound: countInvocations.data?.isLowerBound,
+        };
 
   return (
     <ConfirmationDialog
@@ -505,7 +508,7 @@ function BatchConfirmation({
       description={
         countInvocations.isPending
           ? 'Calculating affected invocations...'
-          : config.description(count)
+          : config.description(count, isLowerBound)
       }
       alertType="warning"
       alertContent={config.warning}
@@ -513,6 +516,7 @@ function BatchConfirmation({
       submitVariant={config.submitVariant}
       isPending={countInvocations.isPending || count === undefined}
       error={countInvocations.error ?? mutation.error}
+      isSubmitDisabled={count === 0}
       onSubmit={(e) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);

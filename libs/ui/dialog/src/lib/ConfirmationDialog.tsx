@@ -54,6 +54,7 @@ export interface ConfirmationDialogProps {
   formAction?: string;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   isPending?: boolean;
+  isSubmitDisabled?: boolean;
   error?: Error | null;
   onClose?: VoidFunction;
 }
@@ -106,6 +107,7 @@ function ConfirmationDialogContent({
   error,
   children,
   footer,
+  isSubmitDisabled,
 }: PropsWithChildren<Omit<ConfirmationDialogProps, 'queryParam' | 'onClose'>>) {
   const formId = useId();
 
@@ -153,6 +155,7 @@ function ConfirmationDialogContent({
                   variant={submitVariant}
                   form={formId}
                   className="flex-auto"
+                  disabled={isSubmitDisabled}
                 >
                   {submitText}
                 </SubmitButton>
