@@ -36,6 +36,7 @@ import {
   useDurationSinceLastSnapshot,
 } from '@restate/util/snapshot-time';
 import { BatchProgressBar } from './BatchProgressBar';
+import { Button } from '@restate/ui/button';
 
 type OperationType = 'cancel' | 'pause' | 'resume' | 'kill' | 'purge';
 
@@ -712,11 +713,21 @@ function BatchConfirmation({
 
           mutation.mutate({
             body: params as BatchInvocationsRequestBody,
+            id: state.id,
           });
         }}
         footer={
           (mutation.isPending || mutation.isSuccess || mutation.isError) && (
             <div className="flex flex-col gap-3">
+              <Button
+                onClick={() =>
+                  mutation.isPaused(state.id)
+                    ? mutation.resume(state.id)
+                    : mutation.pause(state.id)
+                }
+              >
+                {mutation.isPaused(state.id) ? 'Resume' : 'Pause'}
+              </Button>
               <div className="-translate-y-4 px-2">
                 <BatchProgressBar
                   successful={state.successful}

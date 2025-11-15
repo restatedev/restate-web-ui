@@ -10,6 +10,15 @@ import {
 import { adminApi } from '@restate/data-access/admin-api';
 import { useAdminBaseUrl } from '@restate/data-access/admin-api';
 import type { HookMutationOptions } from '@restate/data-access/admin-api';
+import { useState, useEffect, useMemo, useRef } from 'react';
+
+// Type declaration for globalThis batch operation promises
+declare global {
+  // eslint-disable-next-line no-var
+  var batchOperationPromises:
+    | Record<string, PromiseWithResolvers<boolean> | null>
+    | undefined;
+}
 
 function toBatchMutationFn<Body extends BatchInvocationsRequestBody>(
   batchSize: number,
@@ -22,11 +31,13 @@ function toBatchMutationFn<Body extends BatchInvocationsRequestBody>(
   >,
   onProgress?: (response: BatchInvocationsResponse) => void,
 ) {
-  return async (args: Parameters<typeof _mutationFn>[0]) => {
-    const mutationFn = _mutationFn as (args: {
+  const mutationFn = async (
+    args: Parameters<typeof _mutationFn>[0] & { id: string },
+  ) => {
+    const baseMutationFn = _mutationFn as (args: {
       body?: Body;
     }) => ReturnType<typeof _mutationFn>;
-    const response = await mutationFn({
+    const response = await baseMutationFn({
       body: { ...args.body, pageSize: batchSize } as Body,
     });
 
@@ -35,6 +46,7 @@ function toBatchMutationFn<Body extends BatchInvocationsRequestBody>(
     }
 
     onProgress?.(response);
+    const operationId = args.id;
 
     if (
       'filters' in (args.body ?? {}) &&
@@ -48,7 +60,14 @@ function toBatchMutationFn<Body extends BatchInvocationsRequestBody>(
       const allFailedIds = [...(response.failedInvocationIds ?? [])];
 
       while (currentHasMore && currentLastCreatedAt) {
-        const nextResponse = await mutationFn({
+        // Wait for resume if paused (only if operationId provided)
+        if (operationId) {
+          await Promise.resolve(
+            globalThis.batchOperationPromises?.[operationId]?.promise,
+          );
+        }
+
+        const nextResponse = await baseMutationFn({
           ...args,
           body: {
             ...(args.body as Body),
@@ -81,6 +100,62 @@ function toBatchMutationFn<Body extends BatchInvocationsRequestBody>(
 
     return response;
   };
+
+  return {
+    mutationFn,
+  };
+}
+
+function useIsPaused() {
+  const [isPaused, setIsPaused] = useState<Record<string, boolean>>({});
+  const isPausedRef = useRef(isPaused);
+
+  useEffect(() => {
+    isPausedRef.current = isPaused;
+  });
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      Object.keys(isPausedRef.current).forEach((id) => {
+        if (globalThis.batchOperationPromises?.[id]) {
+          globalThis.batchOperationPromises[id]?.resolve?.(true);
+        }
+      });
+      globalThis.batchOperationPromises = {
+        ...globalThis.batchOperationPromises,
+        ...Object.keys(isPausedRef.current).reduce(
+          (p, c) => ({ ...p, [c]: null }),
+          {},
+        ),
+      };
+    };
+  }, []);
+
+  return {
+    isPaused: (id: string) => isPaused[id] === true,
+    pause(id: string) {
+      globalThis.batchOperationPromises = {
+        ...globalThis.batchOperationPromises,
+        [id]: Promise.withResolvers(),
+      };
+      setIsPaused((old) => ({
+        ...old,
+        [id]: true,
+      }));
+    },
+    resume(id: string) {
+      globalThis.batchOperationPromises?.[id]?.resolve?.(true);
+      globalThis.batchOperationPromises = {
+        ...globalThis.batchOperationPromises,
+        [id]: null,
+      };
+      setIsPaused((old) => ({
+        ...old,
+        [id]: false,
+      }));
+    },
+  };
 }
 
 export function useBatchCancelInvocations(
@@ -105,13 +180,14 @@ export function useBatchCancelInvocations(
     },
   );
 
-  const mutationFn = toBatchMutationFn(
+  const { pause, resume, isPaused } = useIsPaused();
+  const { mutationFn } = toBatchMutationFn(
     batchSize,
     mutationOptions.mutationFn,
     onProgress,
   );
 
-  return useMutation({
+  const result = useMutation({
     ...mutationOptions,
     ...restOptions,
     mutationFn,
@@ -123,6 +199,12 @@ export function useBatchCancelInvocations(
       restOptions?.onSuccess?.(data, variables, context, meta);
     },
   });
+  return {
+    ...result,
+    pause,
+    resume,
+    isPaused,
+  };
 }
 
 export function useBatchPurgeInvocations(
@@ -137,6 +219,7 @@ export function useBatchPurgeInvocations(
   const baseUrl = useAdminBaseUrl();
   const queryClient = useQueryClient();
   const { onProgress, ...restOptions } = options ?? {};
+  const operationId = useMemo(() => crypto.randomUUID(), []);
 
   const mutationOptions = adminApi(
     'mutate',
@@ -147,13 +230,14 @@ export function useBatchPurgeInvocations(
     },
   );
 
-  const mutationFn = toBatchMutationFn(
+  const { pause, resume, isPaused } = useIsPaused();
+  const { mutationFn } = toBatchMutationFn(
     batchSize,
     mutationOptions.mutationFn,
     onProgress,
   );
 
-  return useMutation({
+  const result = useMutation({
     ...mutationOptions,
     ...restOptions,
     mutationFn,
@@ -165,6 +249,12 @@ export function useBatchPurgeInvocations(
       restOptions?.onSuccess?.(data, variables, context, meta);
     },
   });
+  return {
+    ...result,
+    pause,
+    resume,
+    isPaused,
+  };
 }
 
 export function useBatchKillInvocations(
@@ -179,6 +269,7 @@ export function useBatchKillInvocations(
   const baseUrl = useAdminBaseUrl();
   const queryClient = useQueryClient();
   const { onProgress, ...restOptions } = options ?? {};
+  const operationId = useMemo(() => crypto.randomUUID(), []);
 
   const mutationOptions = adminApi(
     'mutate',
@@ -189,13 +280,14 @@ export function useBatchKillInvocations(
     },
   );
 
-  const mutationFn = toBatchMutationFn(
+  const { pause, resume, isPaused } = useIsPaused();
+  const { mutationFn } = toBatchMutationFn(
     batchSize,
     mutationOptions.mutationFn,
     onProgress,
   );
 
-  return useMutation({
+  const result = useMutation({
     ...mutationOptions,
     ...restOptions,
     mutationFn,
@@ -207,6 +299,12 @@ export function useBatchKillInvocations(
       restOptions?.onSuccess?.(data, variables, context, meta);
     },
   });
+  return {
+    ...result,
+    pause,
+    resume,
+    isPaused,
+  };
 }
 
 export function useBatchPauseInvocations(
@@ -221,6 +319,7 @@ export function useBatchPauseInvocations(
   const baseUrl = useAdminBaseUrl();
   const queryClient = useQueryClient();
   const { onProgress, ...restOptions } = options ?? {};
+  const operationId = useMemo(() => crypto.randomUUID(), []);
 
   const mutationOptions = adminApi(
     'mutate',
@@ -231,13 +330,14 @@ export function useBatchPauseInvocations(
     },
   );
 
-  const mutationFn = toBatchMutationFn(
+  const { pause, resume, isPaused } = useIsPaused();
+  const { mutationFn } = toBatchMutationFn(
     batchSize,
     mutationOptions.mutationFn,
     onProgress,
   );
 
-  return useMutation({
+  const result = useMutation({
     ...mutationOptions,
     ...restOptions,
     mutationFn,
@@ -249,6 +349,13 @@ export function useBatchPauseInvocations(
       restOptions?.onSuccess?.(data, variables, context, meta);
     },
   });
+
+  return {
+    ...result,
+    pause,
+    resume,
+    isPaused,
+  };
 }
 
 export function useBatchResumeInvocations(
@@ -263,6 +370,7 @@ export function useBatchResumeInvocations(
   const baseUrl = useAdminBaseUrl();
   const queryClient = useQueryClient();
   const { onProgress, ...restOptions } = options ?? {};
+  const operationId = useMemo(() => crypto.randomUUID(), []);
 
   const mutationOptions = adminApi(
     'mutate',
@@ -273,13 +381,14 @@ export function useBatchResumeInvocations(
     },
   );
 
-  const mutationFn = toBatchMutationFn(
+  const { pause, resume, isPaused } = useIsPaused();
+  const { mutationFn } = toBatchMutationFn(
     batchSize,
     mutationOptions.mutationFn,
     onProgress,
   );
 
-  return useMutation({
+  const result = useMutation({
     ...mutationOptions,
     ...restOptions,
     mutationFn,
@@ -291,4 +400,11 @@ export function useBatchResumeInvocations(
       restOptions?.onSuccess?.(data, variables, context, meta);
     },
   });
+
+  return {
+    ...result,
+    pause,
+    resume,
+    isPaused,
+  };
 }
