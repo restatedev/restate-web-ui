@@ -1,3 +1,12 @@
+import { Button } from '@restate/ui/button';
+import {
+  DropdownItem,
+  DropdownMenu,
+  DropdownSection,
+} from '@restate/ui/dropdown';
+import { ErrorBanner } from '@restate/ui/error';
+import { Icon, IconName } from '@restate/ui/icons';
+import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
 import { formatPercentage } from '@restate/util/intl';
 import { tv } from '@restate/util/styles';
 
@@ -52,14 +61,60 @@ export function BatchProgressBar({
   const successRatio = total && total > 0 ? successful / total : 0;
   const failedRatio = total && total > 0 ? failed / total : 0;
   const processedRatio = total && total > 0 ? processed / total : 0;
-
   return (
     <div className="flex flex-col gap-3.5">
       <div className="flex translate-y-4 flex-col">
-        <span className="text-lg font-normal text-gray-600">
+        <span className="inline-flex items-baseline gap-1 text-lg font-normal text-gray-600">
           {successful + failed || <br />}{' '}
           {!!failed && (
-            <span className="text-sm text-gray-500">({failed} failed)</span>
+            <Popover>
+              <PopoverTrigger>
+                <span className="inline-flex -translate-y-0.5 items-baseline text-sm text-gray-500">
+                  (
+                  <Button
+                    variant="icon"
+                    className="py-0 underline decoration-dashed decoration-from-font underline-offset-4 outline-offset-0"
+                  >
+                    <span className="text-sm text-gray-500">
+                      {failed} failed
+                    </span>
+                  </Button>
+                  )
+                </span>
+                <PopoverContent>
+                  <DropdownSection title="Failed invocations">
+                    <DropdownMenu>
+                      {failedInvocations?.map(({ invocationId, error }) => (
+                        <DropdownItem
+                          key={invocationId}
+                          href={`/invocations/${invocationId}`}
+                        >
+                          <div className="flex flex-col gap-0 text-0.5xs">
+                            <div className="flex flex-row items-center gap-1 font-mono">
+                              <Icon
+                                name={IconName.Invocation}
+                                className="h-4 w-4 rounded-sm border-none bg-transparent [&>svg]:p-px"
+                              />
+                              <span className="text-gray-500 group-focus:text-gray-200">
+                                {invocationId}
+                              </span>
+                              <Icon
+                                name={IconName.ChevronRight}
+                                className="ml-auto h-3.5 w-3.5"
+                              />
+                            </div>
+                            <ErrorBanner
+                              error={new Error(error)}
+                              className="-mt-1 bg-transparent pl-0 group-focus:**:text-red-50 [&_svg]:mt-1 [&_svg]:h-3.5 [&_svg]:w-3.5"
+                            />
+                          </div>
+                        </DropdownItem>
+                      ))}
+                    </DropdownMenu>
+                  </DropdownSection>
+                </PopoverContent>
+              </PopoverTrigger>
+            </Popover>
           )}
         </span>
       </div>
