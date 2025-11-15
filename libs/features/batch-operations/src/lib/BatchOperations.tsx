@@ -35,6 +35,7 @@ import {
   SnapshotTimeProvider,
   useDurationSinceLastSnapshot,
 } from '@restate/util/snapshot-time';
+import { BatchProgressBar } from './BatchProgressBar';
 
 type OperationType = 'cancel' | 'pause' | 'resume' | 'kill' | 'purge';
 
@@ -702,41 +703,14 @@ function BatchConfirmation({
         footer={
           (mutation.isPending || mutation.isSuccess || mutation.isError) && (
             <div className="flex flex-col gap-3">
-              {mutation.isPending && (
-                <div className="flex items-center gap-2 text-sm text-gray-500">
-                  <Icon
-                    name={IconName.Retry}
-                    className="h-4 w-4 animate-spin"
-                  />
-                  Processing invocations...
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-4 rounded-lg bg-gray-50 p-4">
-                <div className="flex flex-col">
-                  <span className="text-sm text-gray-500">Successful</span>
-                  <span className="text-2xl font-semibold text-green-600">
-                    {state.successful}
-                  </span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-sm text-gray-500">Failed</span>
-                  <span className="text-2xl font-semibold text-red-600">
-                    {state.failed}
-                  </span>
-                </div>
+              <div className="-translate-y-5 px-6">
+                <BatchProgressBar
+                  successful={state.successful}
+                  failed={state.failed}
+                  total={Math.max(count || 0, state.successful + state.failed)}
+                  isPending={true}
+                />
               </div>
-
-              {mutation.isSuccess && state.failed > 0 && (
-                <div className="flex items-center gap-2 text-sm text-amber-600">
-                  <Icon name={IconName.TriangleAlert} className="h-4 w-4" />
-                  Operation completed with {state.failed}{' '}
-                  {formatPlurals(state.failed, {
-                    one: 'failure',
-                    other: 'failures',
-                  })}
-                </div>
-              )}
               <ErrorBanner error={mutation.error || countInvocations.error} />
             </div>
           )
