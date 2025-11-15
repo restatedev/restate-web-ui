@@ -1953,9 +1953,20 @@
           "failedInvocationIds": {
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "object",
+              "required": ["invocationId", "error"],
+              "properties": {
+                "invocationId": {
+                  "type": "string",
+                  "description": "The invocation ID that failed"
+                },
+                "error": {
+                  "type": "string",
+                  "description": "The error message for this invocation"
+                }
+              }
             },
-            "description": "List of invocation IDs that failed to process"
+            "description": "List of invocation IDs that failed to process with their error messages"
           },
           "hasMore": {
             "type": "boolean",

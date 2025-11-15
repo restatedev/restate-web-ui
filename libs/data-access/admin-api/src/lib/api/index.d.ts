@@ -1804,8 +1804,13 @@ export interface components {
       successful: number;
       /** @description Number of failed processed invocations */
       failed: number;
-      /** @description List of invocation IDs that failed to process */
-      failedInvocationIds?: string[];
+      /** @description List of invocation IDs that failed to process with their error messages */
+      failedInvocationIds?: {
+        /** @description The invocation ID that failed */
+        invocationId: string;
+        /** @description The error message for this invocation */
+        error: string;
+      }[];
       /** @description Whether there are more pages available (only for filter-based requests) */
       hasMore?: boolean;
       /**
