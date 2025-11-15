@@ -22,7 +22,7 @@ import type {
 import { ConfirmationDialog } from '@restate/ui/dialog';
 import { Icon, IconName } from '@restate/ui/icons';
 import { showSuccessNotification } from '@restate/ui/notification';
-import { formatNumber } from '@restate/util/intl';
+import { formatNumber, formatPlurals } from '@restate/util/intl';
 import { ErrorBanner } from '@restate/ui/error';
 import { FormFieldSelect, Option } from '@restate/ui/form-field';
 
@@ -42,8 +42,8 @@ type BatchState = {
   | {
       type: 'resume';
       params:
-        | { invocationIds: string[]; deployment?: 'latest' | 'keep' }
-        | { filters: FilterItem[]; deployment?: 'latest' | 'keep' };
+        | { invocationIds: string[]; deployment?: 'Latest' | 'Keep' }
+        | { filters: FilterItem[]; deployment?: 'Latest' | 'Keep' };
     }
 );
 
@@ -52,10 +52,11 @@ interface OperationConfig {
   icon: IconName;
   iconClassName: string;
   submitVariant: 'primary' | 'destructive';
-  description: (count?: number, isLowerBound?: boolean) => string;
+  description: (count: number, isLowerBound: boolean) => string;
   warning: string;
   submitText: string;
   progressTitle: string;
+  emptyMessage: string;
 }
 
 const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
@@ -66,12 +67,12 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     iconClassName: 'text-red-400',
     submitVariant: 'destructive',
     description: (count, isLowerBound) =>
-      count !== undefined
-        ? `Are you sure you want to cancel ${formatNumber(count, true)}${isLowerBound ? '+' : ''} invocations?`
-        : 'Are you sure you want to cancel these invocations?',
+      `Are you sure you want to cancel ${formatNumber(count, true)}${isLowerBound ? '+' : ''} invocations?`,
     warning:
       'Cancellation frees held resources, cooperates with your handler code to roll back changes, and allows proper cleanup. It is non-blocking, so the call may return before cleanup finishes. In rare cases, cancellation may not take effect, retry the operation if needed.',
     progressTitle: 'Cancelling invocations',
+    emptyMessage:
+      'No invocations match your criteria. Only non-completed invocations can be cancelled.',
   },
   pause: {
     title: 'Pause Invocations',
@@ -80,12 +81,11 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     iconClassName: 'text-red-400',
     submitVariant: 'destructive',
     description: (count, isLowerBound) =>
-      count !== undefined
-        ? `Are you sure you want to pause ${formatNumber(count, true)}${isLowerBound ? '+' : ''} invocations? The pause may not take effect right away.`
-        : 'Are you sure you want to pause these invocations? The pause may not take effect right away.',
-    warning:
-      'Paused invocations will stop executing until manually resumed or unpaused.',
+      `Are you sure you want to pause ${formatNumber(count, true)}${isLowerBound ? '+' : ''} invocations? The pause may not take effect right away.`,
+    warning: 'Paused invocations will stop executing until manually resumed.',
     progressTitle: 'Pausing invocations',
+    emptyMessage:
+      'No invocations match your criteria. Only running invocations can be paused.',
   },
   resume: {
     title: 'Resume Invocations',
@@ -94,12 +94,12 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     iconClassName: 'text-green-400',
     submitVariant: 'primary',
     description: (count, isLowerBound) =>
-      count !== undefined
-        ? `Select the deployment you'd like to run ${formatNumber(count, true)}${isLowerBound ? '+' : ''} invocations on, then resume execution.`
-        : `Select the deployment you'd like to run these invocations on, then resume execution.`,
+      `Select the deployment you'd like to run ${formatNumber(count, true)}${isLowerBound ? '+' : ''} invocations on, then resume execution.`,
     warning:
       'Resumed invocations will continue execution from where they were paused.',
     progressTitle: 'Resuming invocations',
+    emptyMessage:
+      'No invocations match your criteria. Only paused invocations can be resumed.',
   },
   kill: {
     title: 'Kill Invocations',
@@ -108,12 +108,12 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     iconClassName: 'text-red-400',
     submitVariant: 'destructive',
     description: (count, isLowerBound) =>
-      count !== undefined
-        ? `Are you sure you want to kill ${formatNumber(count, true)}${isLowerBound ? '+' : ''} invocations?`
-        : 'Are you sure you want to kill these invocations?',
+      `Are you sure you want to kill ${formatNumber(count, true)}${isLowerBound ? '+' : ''} invocations?`,
     warning:
       'Killing immediately stops all calls in the invocation tree without executing compensation logic. This may leave your service in an inconsistent state. Only use as a last resort after trying other fixes.',
     progressTitle: 'Killing invocations',
+    emptyMessage:
+      'No invocations match your criteria. Only non-completed invocations can be killed.',
   },
   purge: {
     title: 'Purge Invocations',
@@ -122,12 +122,12 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     submitText: 'Purge',
     submitVariant: 'destructive',
     description: (count, isLowerBound) =>
-      count !== undefined
-        ? `Are you sure you want to purge ${formatNumber(count, true)}${isLowerBound ? '+' : ''} invocations?`
-        : 'Are you sure you want to purge these invocations?',
+      `Are you sure you want to purge ${formatNumber(count, true)}${isLowerBound ? '+' : ''} invocations?`,
     warning:
       'After an invocation completes, it will be retained by Restate for some time, in order to introspect it and, in case of idempotent requests, to perform deduplication.',
     progressTitle: 'Purging invocations',
+    emptyMessage:
+      'No invocations match your criteria. Only completed invocations can be purged.',
   },
 };
 
@@ -464,6 +464,44 @@ function useBatchMutation(
   }
 }
 
+function BatchOperationContent({
+  count,
+  isLowerBound,
+  isCountLoading,
+  config,
+}: {
+  count: number | undefined;
+  isLowerBound: boolean | undefined;
+  isCountLoading: boolean;
+  config: OperationConfig;
+}) {
+  if (isCountLoading || count === undefined) {
+    return (
+      <div className="space-y-2">
+        <div className="h-4 w-3/4 animate-pulse rounded bg-gray-300" />
+        <div className="h-4 w-1/2 animate-pulse rounded bg-gray-300" />
+      </div>
+    );
+  }
+
+  if (count === 0) {
+    return (
+      <div className="mt-2 flex gap-2 rounded-xl bg-blue-50 p-3 text-0.5xs text-blue-600">
+        <Icon
+          className="h-5 w-5 shrink-0 fill-blue-600 text-blue-100"
+          name={IconName.Info}
+        />
+        <div className="flex flex-col gap-1">
+          <span className="block font-semibold">No invocations found</span>
+          <span className="block">{config.emptyMessage}</span>
+        </div>
+      </div>
+    );
+  }
+
+  return <>{config.description(count, isLowerBound ?? false)}</>;
+}
+
 function BatchConfirmation({
   state,
   onOpenChange,
@@ -506,12 +544,15 @@ function BatchConfirmation({
       icon={config.icon}
       iconClassName={config.iconClassName}
       description={
-        countInvocations.isPending
-          ? 'Calculating affected invocations...'
-          : config.description(count, isLowerBound)
+        <BatchOperationContent
+          count={count}
+          isLowerBound={isLowerBound}
+          isCountLoading={countInvocations.isPending}
+          config={config}
+        />
       }
-      alertType="warning"
-      alertContent={config.warning}
+      alertType={count && count > 0 ? 'warning' : undefined}
+      alertContent={count && count > 0 ? config.warning : undefined}
       submitText={config.submitText}
       submitVariant={config.submitVariant}
       isPending={countInvocations.isPending || count === undefined}
@@ -521,8 +562,8 @@ function BatchConfirmation({
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
         const selectedDeployment = formData.get('deployment') as
-          | 'keep'
-          | 'latest'
+          | 'Keep'
+          | 'Latest'
           | undefined;
 
         const params =
@@ -531,7 +572,7 @@ function BatchConfirmation({
             : state.params;
 
         mutation.mutate({
-          body: params,
+          body: params as BatchInvocationsRequestBody,
         });
       }}
       footer={
@@ -562,8 +603,11 @@ function BatchConfirmation({
             {mutation.isSuccess && state.failed > 0 && (
               <div className="flex items-center gap-2 text-sm text-amber-600">
                 <Icon name={IconName.TriangleAlert} className="h-4 w-4" />
-                Operation completed with {state.failed} failure
-                {state.failed !== 1 ? 's' : ''}
+                Operation completed with {state.failed}{' '}
+                {formatPlurals(state.failed, {
+                  one: 'failure',
+                  other: 'failures',
+                })}
               </div>
             )}
             <ErrorBanner error={mutation.error || countInvocations.error} />
@@ -571,18 +615,18 @@ function BatchConfirmation({
         )
       }
     >
-      {state.type === 'resume' && (
+      {state.type === 'resume' && count && count > 0 && (
         <div className="mt-4">
           <FormFieldSelect
             label="Deployment"
             placeholder="Select deployment"
             name="deployment"
-            defaultValue={'keep'}
+            defaultValue="Keep"
             required
             disabled={mutation.isPending}
           >
-            <Option value="keep">Current deployment</Option>
-            <Option value="latest">Latest deployment</Option>
+            <Option value="Keep">Current deployment</Option>
+            <Option value="Latest">Latest deployment</Option>
           </FormFieldSelect>
         </div>
       )}
