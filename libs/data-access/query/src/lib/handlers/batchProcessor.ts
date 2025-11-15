@@ -3,6 +3,7 @@ import type { BatchInvocationsResponse } from '@restate/data-access/admin-api/sp
 type ProcessorResult = {
   invocationId: string;
   success: boolean;
+  error?: string;
 };
 
 export async function batchProcessInvocations(
@@ -19,8 +20,8 @@ export async function batchProcessInvocations(
       try {
         await processor(invocationId);
         return { invocationId, success: true };
-      } catch {
-        return { invocationId, success: false };
+      } catch (error) {
+        return { invocationId, success: false, error: String(error) };
       }
     }),
   );
@@ -36,7 +37,7 @@ export async function batchProcessInvocations(
   const failed = processedResults.filter((r) => !r.success).length;
   const failedInvocationIds = processedResults
     .filter((r) => !r.success && r.invocationId)
-    .map((r) => r.invocationId);
+    .map((r) => ({ invocationId: r.invocationId, error: r.error || '' }));
 
   return {
     successful,

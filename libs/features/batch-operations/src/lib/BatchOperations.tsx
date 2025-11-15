@@ -45,7 +45,7 @@ type BatchState = {
   isDialogOpen: boolean;
   successful: number;
   failed: number;
-  failedInvocationIds: string[];
+  failedInvocationIds: { invocationId: string; error: string }[];
 } & (
   | {
       type: Exclude<OperationType, 'resume'>;
@@ -734,6 +734,7 @@ function BatchConfirmation({
                   failed={state.failed}
                   total={Math.max(count || 0, state.successful + state.failed)}
                   isPending={true}
+                  failedInvocations={state.failedInvocationIds}
                 />
               </div>
               <ErrorBanner error={mutation.error || countInvocations.error} />

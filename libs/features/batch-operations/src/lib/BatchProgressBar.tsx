@@ -40,11 +40,13 @@ export function BatchProgressBar({
   failed,
   total,
   isPending,
+  failedInvocations,
 }: {
   successful: number;
   failed: number;
   total: number | undefined;
   isPending: boolean;
+  failedInvocations?: { invocationId: string; error: string }[];
 }) {
   const processed = successful + failed;
   const successRatio = total && total > 0 ? successful / total : 0;
