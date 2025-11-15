@@ -12,14 +12,6 @@ import { useAdminBaseUrl } from '@restate/data-access/admin-api';
 import type { HookMutationOptions } from '@restate/data-access/admin-api';
 import { useState, useEffect, useRef } from 'react';
 
-// Type declaration for globalThis batch operation promises
-declare global {
-  // eslint-disable-next-line no-var
-  var batchOperationPromises:
-    | Record<string, PromiseWithResolvers<boolean> | null>
-    | undefined;
-}
-
 function toBatchMutationFn<Body extends BatchInvocationsRequestBody>(
   batchSize: number,
   _mutationFn: NonNullable<
