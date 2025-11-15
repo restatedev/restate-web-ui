@@ -336,6 +336,9 @@
                   "properties": {
                     "count": {
                       "type": "integer"
+                    },
+                    "isLowerBound": {
+                      "type": "boolean"
                     }
                   }
                 }

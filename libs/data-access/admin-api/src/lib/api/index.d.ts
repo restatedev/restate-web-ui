@@ -4569,6 +4569,7 @@ export interface operations {
         content: {
           'application/json': {
             count: number;
+            isLowerBound?: boolean;
           };
         };
       };
