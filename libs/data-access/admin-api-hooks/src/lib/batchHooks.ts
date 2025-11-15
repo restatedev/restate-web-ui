@@ -10,7 +10,7 @@ import {
 import { adminApi } from '@restate/data-access/admin-api';
 import { useAdminBaseUrl } from '@restate/data-access/admin-api';
 import type { HookMutationOptions } from '@restate/data-access/admin-api';
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 // Type declaration for globalThis batch operation promises
 declare global {
@@ -169,7 +169,14 @@ export function useBatchCancelInvocations(
 ) {
   const baseUrl = useAdminBaseUrl();
   const queryClient = useQueryClient();
-  const { onProgress, ...restOptions } = options ?? {};
+  const {
+    onProgress,
+    onError,
+    onMutate,
+    onSuccess,
+    onSettled,
+    ...restOptions
+  } = options ?? {};
 
   const mutationOptions = adminApi(
     'mutate',
@@ -196,7 +203,16 @@ export function useBatchCancelInvocations(
         queryKey: ['/query/invocations'],
       });
 
-      restOptions?.onSuccess?.(data, variables, context, meta);
+      onSuccess?.(data, variables, context, meta);
+    },
+    onError(error, variables, onMutateResult, context) {
+      onError?.(error, variables, onMutateResult, context);
+    },
+    onSettled(data, error, variables, onMutateResult, context) {
+      onSettled?.(data, error, variables, onMutateResult, context);
+    },
+    onMutate(variables, context) {
+      onMutate?.(variables, context);
     },
   });
   return {
@@ -218,8 +234,14 @@ export function useBatchPurgeInvocations(
 ) {
   const baseUrl = useAdminBaseUrl();
   const queryClient = useQueryClient();
-  const { onProgress, ...restOptions } = options ?? {};
-  const operationId = useMemo(() => crypto.randomUUID(), []);
+  const {
+    onProgress,
+    onError,
+    onMutate,
+    onSettled,
+    onSuccess,
+    ...restOptions
+  } = options ?? {};
 
   const mutationOptions = adminApi(
     'mutate',
@@ -246,7 +268,16 @@ export function useBatchPurgeInvocations(
         queryKey: ['/query/invocations'],
       });
 
-      restOptions?.onSuccess?.(data, variables, context, meta);
+      onSuccess?.(data, variables, context, meta);
+    },
+    onError(error, variables, onMutateResult, context) {
+      onError?.(error, variables, onMutateResult, context);
+    },
+    onSettled(data, error, variables, onMutateResult, context) {
+      onSettled?.(data, error, variables, onMutateResult, context);
+    },
+    onMutate(variables, context) {
+      onMutate?.(variables, context);
     },
   });
   return {
@@ -268,8 +299,14 @@ export function useBatchKillInvocations(
 ) {
   const baseUrl = useAdminBaseUrl();
   const queryClient = useQueryClient();
-  const { onProgress, ...restOptions } = options ?? {};
-  const operationId = useMemo(() => crypto.randomUUID(), []);
+  const {
+    onProgress,
+    onError,
+    onMutate,
+    onSettled,
+    onSuccess,
+    ...restOptions
+  } = options ?? {};
 
   const mutationOptions = adminApi(
     'mutate',
@@ -296,7 +333,16 @@ export function useBatchKillInvocations(
         queryKey: ['/query/invocations'],
       });
 
-      restOptions?.onSuccess?.(data, variables, context, meta);
+      onSuccess?.(data, variables, context, meta);
+    },
+    onError(error, variables, onMutateResult, context) {
+      onError?.(error, variables, onMutateResult, context);
+    },
+    onSettled(data, error, variables, onMutateResult, context) {
+      onSettled?.(data, error, variables, onMutateResult, context);
+    },
+    onMutate(variables, context) {
+      onMutate?.(variables, context);
     },
   });
   return {
@@ -318,8 +364,14 @@ export function useBatchPauseInvocations(
 ) {
   const baseUrl = useAdminBaseUrl();
   const queryClient = useQueryClient();
-  const { onProgress, ...restOptions } = options ?? {};
-  const operationId = useMemo(() => crypto.randomUUID(), []);
+  const {
+    onProgress,
+    onError,
+    onMutate,
+    onSettled,
+    onSuccess,
+    ...restOptions
+  } = options ?? {};
 
   const mutationOptions = adminApi(
     'mutate',
@@ -346,7 +398,16 @@ export function useBatchPauseInvocations(
         queryKey: ['/query/invocations'],
       });
 
-      restOptions?.onSuccess?.(data, variables, context, meta);
+      onSuccess?.(data, variables, context, meta);
+    },
+    onError(error, variables, onMutateResult, context) {
+      onError?.(error, variables, onMutateResult, context);
+    },
+    onSettled(data, error, variables, onMutateResult, context) {
+      onSettled?.(data, error, variables, onMutateResult, context);
+    },
+    onMutate(variables, context) {
+      onMutate?.(variables, context);
     },
   });
 
@@ -369,8 +430,14 @@ export function useBatchResumeInvocations(
 ) {
   const baseUrl = useAdminBaseUrl();
   const queryClient = useQueryClient();
-  const { onProgress, ...restOptions } = options ?? {};
-  const operationId = useMemo(() => crypto.randomUUID(), []);
+  const {
+    onProgress,
+    onError,
+    onMutate,
+    onSettled,
+    onSuccess,
+    ...restOptions
+  } = options ?? {};
 
   const mutationOptions = adminApi(
     'mutate',
@@ -397,7 +464,16 @@ export function useBatchResumeInvocations(
         queryKey: ['/query/invocations'],
       });
 
-      restOptions?.onSuccess?.(data, variables, context, meta);
+      onSuccess?.(data, variables, context, meta);
+    },
+    onError(error, variables, onMutateResult, context) {
+      onError?.(error, variables, onMutateResult, context);
+    },
+    onSettled(data, error, variables, onMutateResult, context) {
+      onSettled?.(data, error, variables, onMutateResult, context);
+    },
+    onMutate(variables, context) {
+      onMutate?.(variables, context);
     },
   });
 

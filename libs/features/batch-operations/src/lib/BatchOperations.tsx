@@ -38,6 +38,8 @@ import {
 import { BatchProgressBar } from './BatchProgressBar';
 import { Button } from '@restate/ui/button';
 
+const MAX_FAILED_INVOCATIONS = 100;
+
 type OperationType = 'cancel' | 'pause' | 'resume' | 'kill' | 'purge';
 
 type BatchState = {
@@ -280,16 +282,29 @@ export function BatchOperationsProvider({
       setBatchOpes((old) => {
         return old.map((batch) => {
           if (batch.id === id) {
+            let updatedFailedInvocationIds = batch.failedInvocationIds;
+
             if (
               response.failedInvocationIds &&
               response.failedInvocationIds?.length > 0
             ) {
-              batch.failedInvocationIds.push(...response.failedInvocationIds);
+              updatedFailedInvocationIds = [
+                ...batch.failedInvocationIds,
+                ...response.failedInvocationIds,
+              ];
+
+              if (updatedFailedInvocationIds.length > MAX_FAILED_INVOCATIONS) {
+                updatedFailedInvocationIds = updatedFailedInvocationIds.slice(
+                  -MAX_FAILED_INVOCATIONS,
+                );
+              }
             }
+
             return {
               ...batch,
               successful: batch.successful + response.successful,
               failed: batch.failed + response.failed,
+              failedInvocationIds: updatedFailedInvocationIds,
             };
           } else {
             return batch;
