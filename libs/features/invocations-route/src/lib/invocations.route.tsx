@@ -298,7 +298,7 @@ function Component() {
         type: 'STRING',
       },
     ] satisfies QueryClauseSchema<QueryClauseType>[];
-  }, [listDeploymentPromise, listServicesPromise]);
+  }, [listDeploymentPromise, listServicesPromise, listSubscriptionsPromise]);
 
   const { selectedColumns, setSelectedColumns, sortedColumnsList } =
     useColumns();
