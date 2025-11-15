@@ -199,7 +199,20 @@ export function BatchOperationsProvider({
         {
           id,
           type: 'cancel',
-          params,
+          params:
+            'invocationIds' in params
+              ? { invocationIds: params.invocationIds }
+              : {
+                  filters: [
+                    ...params.filters,
+                    {
+                      field: 'status',
+                      type: 'STRING',
+                      operation: 'NOT_EQUALS',
+                      value: 'completed',
+                    },
+                  ],
+                },
           failed: 0,
           failedInvocationIds: [],
           successful: 0,
@@ -217,7 +230,26 @@ export function BatchOperationsProvider({
         {
           id,
           type: 'pause',
-          params,
+          params:
+            'invocationIds' in params
+              ? { invocationIds: params.invocationIds }
+              : {
+                  filters: [
+                    ...params.filters,
+                    {
+                      field: 'status',
+                      type: 'STRING_LIST',
+                      operation: 'NOT_IN',
+                      value: [
+                        'paused',
+                        'ready',
+                        'pending',
+                        'suspended',
+                        'scheduled',
+                      ],
+                    },
+                  ],
+                },
           failed: 0,
           failedInvocationIds: [],
           successful: 0,
@@ -235,7 +267,20 @@ export function BatchOperationsProvider({
         {
           id,
           type: 'kill',
-          params,
+          params:
+            'invocationIds' in params
+              ? { invocationIds: params.invocationIds }
+              : {
+                  filters: [
+                    ...params.filters,
+                    {
+                      field: 'status',
+                      type: 'STRING',
+                      operation: 'NOT_EQUALS',
+                      value: 'completed',
+                    },
+                  ],
+                },
           failed: 0,
           failedInvocationIds: [],
           successful: 0,
@@ -253,7 +298,20 @@ export function BatchOperationsProvider({
         {
           id,
           type: 'purge',
-          params,
+          params:
+            'invocationIds' in params
+              ? { invocationIds: params.invocationIds }
+              : {
+                  filters: [
+                    ...params.filters,
+                    {
+                      field: 'status',
+                      type: 'STRING',
+                      operation: 'EQUALS',
+                      value: 'completed',
+                    },
+                  ],
+                },
           failed: 0,
           failedInvocationIds: [],
           successful: 0,
@@ -275,7 +333,20 @@ export function BatchOperationsProvider({
         {
           id,
           type: 'resume',
-          params,
+          params:
+            'invocationIds' in params
+              ? { invocationIds: params.invocationIds }
+              : {
+                  filters: [
+                    ...params.filters,
+                    {
+                      field: 'status',
+                      type: 'STRING',
+                      operation: 'EQUALS',
+                      value: 'paused',
+                    },
+                  ],
+                },
           failed: 0,
           failedInvocationIds: [],
           successful: 0,
