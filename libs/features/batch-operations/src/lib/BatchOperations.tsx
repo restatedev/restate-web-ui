@@ -35,10 +35,8 @@ import {
   SnapshotTimeProvider,
   useDurationSinceLastSnapshot,
 } from '@restate/util/snapshot-time';
-import { BatchProgressBar } from './BatchProgressBar';
+import { BatchProgressBar, MAX_FAILED_INVOCATIONS } from './BatchProgressBar';
 import { Button } from '@restate/ui/button';
-
-const MAX_FAILED_INVOCATIONS = 100;
 
 type OperationType = 'cancel' | 'pause' | 'resume' | 'kill' | 'purge';
 
@@ -734,23 +732,34 @@ function BatchConfirmation({
         footer={
           (mutation.isPending || mutation.isSuccess || mutation.isError) && (
             <div className="flex flex-col gap-3">
-              <Button
-                onClick={() =>
-                  mutation.isPaused(state.id)
-                    ? mutation.resume(state.id)
-                    : mutation.pause(state.id)
-                }
-              >
-                {mutation.isPaused(state.id) ? 'Resume' : 'Pause'}
-              </Button>
               <div className="-translate-y-4 px-2">
                 <BatchProgressBar
                   successful={state.successful}
                   failed={state.failed}
                   total={Math.max(count || 0, state.successful + state.failed)}
-                  isPending={true}
+                  isPending={mutation.isPending && !mutation.isPaused(state.id)}
                   failedInvocations={state.failedInvocationIds}
-                />
+                  isCompleted={mutation.isSuccess}
+                >
+                  <Button
+                    className="rounded-md p-1"
+                    variant="secondary"
+                    onClick={() =>
+                      mutation.isPaused(state.id)
+                        ? mutation.resume(state.id)
+                        : mutation.pause(state.id)
+                    }
+                  >
+                    <Icon
+                      name={
+                        mutation.isPaused(state.id)
+                          ? IconName.Resume
+                          : IconName.Pause
+                      }
+                      className="h-4 w-4"
+                    />
+                  </Button>
+                </BatchProgressBar>
               </div>
               <ErrorBanner error={mutation.error || countInvocations.error} />
             </div>

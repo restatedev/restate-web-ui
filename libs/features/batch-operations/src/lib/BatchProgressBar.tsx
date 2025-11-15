@@ -6,9 +6,12 @@ import {
 } from '@restate/ui/dropdown';
 import { ErrorBanner } from '@restate/ui/error';
 import { Icon, IconName } from '@restate/ui/icons';
+import { Spinner } from '@restate/ui/loading';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
 import { formatPercentage } from '@restate/util/intl';
 import { tv } from '@restate/util/styles';
+import { PropsWithChildren } from 'react';
+export const MAX_FAILED_INVOCATIONS = 100;
 
 const progressBarStyles = tv({
   base: 'peer h-3 transform rounded-l-md rounded-r-xs border shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2)] drop-shadow-xs transition peer-[*]:rounded-l-xs last:rounded-r-md',
@@ -50,13 +53,16 @@ export function BatchProgressBar({
   total,
   isPending,
   failedInvocations,
-}: {
+  children,
+  isCompleted,
+}: PropsWithChildren<{
   successful: number;
   failed: number;
   total: number | undefined;
   isPending: boolean;
+  isCompleted: boolean;
   failedInvocations?: { invocationId: string; error: string }[];
-}) {
+}>) {
   const processed = successful + failed;
   const successRatio = total && total > 0 ? successful / total : 0;
   const failedRatio = total && total > 0 ? failed / total : 0;
@@ -64,25 +70,34 @@ export function BatchProgressBar({
   return (
     <div className="flex flex-col gap-3.5">
       <div className="flex translate-y-4 flex-col">
-        <span className="inline-flex items-baseline gap-1 text-lg font-normal text-gray-600">
-          {successful + failed || <br />}{' '}
+        <span className="inline-flex transform items-baseline gap-1 text-lg font-normal text-gray-600 transition-all">
+          {successful ? (
+            <span className="transform text-blue-600 transition-all">
+              {successful}{' '}
+              <span className="text-0.5xs text-gray-500">succeeded</span>{' '}
+            </span>
+          ) : (
+            <br />
+          )}{' '}
           {!!failed && (
             <Popover>
               <PopoverTrigger>
-                <span className="inline-flex -translate-y-0.5 items-baseline text-sm text-gray-500">
-                  (
+                <span className="inline-flex -translate-y-0.5 transform items-baseline text-0.5xs text-gray-500 transition-all">
+                  <div className="mx-1 h-4 w-px translate-y-1 bg-gray-400" />
                   <Button
                     variant="icon"
                     className="py-0 underline decoration-dashed decoration-from-font underline-offset-4 outline-offset-0"
                   >
-                    <span className="text-sm text-gray-500">
-                      {failed} failed
+                    <span className="text-0.5xs text-gray-500">
+                      <span className="text-sm text-orange-600">{failed}</span>{' '}
+                      failed
                     </span>
                   </Button>
-                  )
                 </span>
                 <PopoverContent>
-                  <DropdownSection title="Failed invocations">
+                  <DropdownSection
+                    title={`Failed invocations ${(failedInvocations?.length || 0) === MAX_FAILED_INVOCATIONS ? `(last ${MAX_FAILED_INVOCATIONS})` : ''}`}
+                  >
                     <DropdownMenu>
                       {failedInvocations?.map(({ invocationId, error }) => (
                         <DropdownItem
@@ -116,6 +131,9 @@ export function BatchProgressBar({
               </PopoverTrigger>
             </Popover>
           )}
+          <div className="ml-auto" />
+          {isPending && <Spinner className="mr-0.5 h-4 w-4" />}
+          <div>{children}</div>
         </span>
       </div>
 
@@ -133,7 +151,6 @@ export function BatchProgressBar({
                 width: `${successRatio * 100}%`,
               }}
             />
-
             {/* Failed portion */}
             {failed > 0 && (
               <div
@@ -146,9 +163,8 @@ export function BatchProgressBar({
                 }}
               />
             )}
-
             {/* Progress marker */}
-            {processed > 0 && isPending && (
+            {processed > 0 && !isCompleted && (
               <div className="relative">
                 <div className="h-5 w-1.5 -translate-y-1 rounded-sm border border-white bg-blue-400" />
                 <div className="absolute top-4 flex translate-x-[calc(-50%+0.375rem)]">
@@ -162,9 +178,8 @@ export function BatchProgressBar({
                 </div>
               </div>
             )}
-
             {/* Remainder */}
-            {isPending && (
+            {!isCompleted && (
               <div
                 className={remainderStyles({
                   isZero: successful + failed === 0,
