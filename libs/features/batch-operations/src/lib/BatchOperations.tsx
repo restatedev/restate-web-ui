@@ -151,7 +151,7 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     iconClassName: '',
     description: (count, isLowerBound, duration) => (
       <p>
-        Select the deployment you'd like to run{' '}
+        You're about to resume{' '}
         <InlineTooltip
           description={
             isLowerBound
@@ -166,8 +166,8 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
             {isLowerBound ? '+' : ''}{' '}
             {formatPlurals(count, { one: 'invocation', other: 'invocations' })}
           </span>
-        </InlineTooltip>{' '}
-        on, then resume execution.
+        </InlineTooltip>
+        . Should each keep its current deployment or switch to the latest?
       </p>
     ),
     progressTitle: 'Resuming invocations',
