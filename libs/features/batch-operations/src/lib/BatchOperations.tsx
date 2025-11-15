@@ -71,6 +71,8 @@ interface OperationConfig {
   alertType?: 'warning' | 'info';
   alertContent?: string;
   submitText: string;
+  formMethod: 'POST';
+  formAction: string;
   progressTitle: string;
   emptyMessage: string;
 }
@@ -82,6 +84,8 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     icon: IconName.Cancel,
     iconClassName: 'text-red-400',
     submitVariant: 'destructive',
+    formMethod: 'POST',
+    formAction: '/query/invocations/cancel',
     description: (count, isLowerBound, duration) => (
       <p>
         Are you sure you want to cancel{' '}
@@ -116,6 +120,8 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     icon: IconName.Pause,
     iconClassName: 'text-red-400',
     submitVariant: 'destructive',
+    formMethod: 'POST',
+    formAction: '/query/invocations/pause',
     description: (count, isLowerBound, duration) => (
       <p>
         Are you sure you want to pause{' '}
@@ -150,6 +156,8 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     icon: IconName.Resume,
     submitVariant: 'primary',
     iconClassName: '',
+    formMethod: 'POST',
+    formAction: '/query/invocations/resume',
     description: (count, isLowerBound, duration) => (
       <p>
         You're about to resume{' '}
@@ -181,6 +189,8 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     icon: IconName.Kill,
     iconClassName: 'text-red-400',
     submitVariant: 'destructive',
+    formMethod: 'POST',
+    formAction: '/query/invocations/kill',
     description: (count, isLowerBound, duration) => (
       <p>
         Are you sure you want to kill{' '}
@@ -215,6 +225,8 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     iconClassName: 'text-red-400',
     submitText: 'Purge',
     submitVariant: 'destructive',
+    formMethod: 'POST',
+    formAction: '/query/invocations/purge',
     description: (count, isLowerBound, duration) => (
       <p>
         Are you sure you want to purge{' '}
@@ -680,7 +692,9 @@ function BatchConfirmation({
         alertContent={count && count > 0 ? config.alertContent : undefined}
         submitText={config.submitText}
         submitVariant={config.submitVariant}
-        isPending={countInvocations.isPending || count === undefined}
+        formMethod={config.formMethod}
+        formAction={config.formAction}
+        isPending={countInvocations.isPending || mutation.isPending}
         error={countInvocations.error ?? mutation.error}
         isSubmitDisabled={count === 0}
         onSubmit={(e) => {
@@ -703,7 +717,7 @@ function BatchConfirmation({
         footer={
           (mutation.isPending || mutation.isSuccess || mutation.isError) && (
             <div className="flex flex-col gap-3">
-              <div className="-translate-y-5 px-6">
+              <div className="-translate-y-4 px-2">
                 <BatchProgressBar
                   successful={state.successful}
                   failed={state.failed}

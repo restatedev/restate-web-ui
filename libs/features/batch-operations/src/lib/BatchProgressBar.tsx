@@ -27,6 +27,12 @@ const remainderStyles = tv({
 
 const markerStyles = tv({
   base: '-translate-y-0.5 text-0.5xs text-gray-500',
+  variants: {
+    moreThanHalf: {
+      true: 'translate-x-[-1.5ch]',
+      false: 'translate-x-[1ch]',
+    },
+  },
 });
 
 export function BatchProgressBar({
@@ -89,7 +95,11 @@ export function BatchProgressBar({
               <div className="relative">
                 <div className="h-5 w-1.5 -translate-y-1 rounded-sm border border-white bg-blue-400" />
                 <div className="absolute top-4 flex translate-x-[calc(-50%+0.375rem)]">
-                  <div className={markerStyles({})}>
+                  <div
+                    className={markerStyles({
+                      moreThanHalf: successful + failed > 0.5 * total,
+                    })}
+                  >
                     {formatPercentage(processedRatio)}
                   </div>
                 </div>
