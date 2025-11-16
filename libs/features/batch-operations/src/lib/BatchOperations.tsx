@@ -5,6 +5,8 @@ import {
   useState,
   use,
   ReactNode,
+  useEffect,
+  useSyncExternalStore,
 } from 'react';
 import {
   useBatchCancelInvocations,
@@ -22,7 +24,10 @@ import type {
 } from '@restate/data-access/admin-api/spec';
 import { ConfirmationDialog } from '@restate/ui/dialog';
 import { Icon, IconName } from '@restate/ui/icons';
-import { showSuccessNotification } from '@restate/ui/notification';
+import {
+  showProgressNotification,
+  showSuccessNotification,
+} from '@restate/ui/notification';
 import {
   formatDurations,
   formatNumber,
@@ -37,15 +42,19 @@ import {
 } from '@restate/util/snapshot-time';
 import { BatchProgressBar, MAX_FAILED_INVOCATIONS } from './BatchProgressBar';
 import { Button } from '@restate/ui/button';
+import { Ellipsis, Spinner } from '@restate/ui/loading';
 
 type OperationType = 'cancel' | 'pause' | 'resume' | 'kill' | 'purge';
 
 type BatchState = {
   id: string;
   isDialogOpen: boolean;
-  successful: number;
-  failed: number;
-  failedInvocationIds: { invocationId: string; error: string }[];
+  progressStore: ProgressStore<{
+    successful: number;
+    failed: number;
+    failedInvocationIds: { invocationId: string; error: string }[];
+    isFinished: boolean;
+  }>;
 } & (
   | {
       type: Exclude<OperationType, 'resume'>;
@@ -269,6 +278,80 @@ interface BatchOperationsContextValue {
 const BatchOperationsContext =
   createContext<BatchOperationsContextValue | null>(null);
 
+class ProgressStore<T> {
+  private listeners = new Set<() => void>();
+
+  constructor(private value: T | null) {}
+
+  subscribe = (listener: () => void) => {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  };
+
+  getSnapshot = () => {
+    return this.value;
+  };
+
+  update(newValue: T) {
+    this.value = newValue;
+    this.listeners.forEach((listener) => listener());
+  }
+}
+
+function Counter({
+  batch,
+  onClose,
+  onExpand,
+  inProgressContent,
+  finishedContent,
+}: PropsWithChildren<{
+  batch: BatchState;
+  onClose: VoidFunction;
+  onExpand: VoidFunction;
+  inProgressContent: (args: {
+    successful?: number;
+    failed?: number;
+  }) => ReactNode;
+  finishedContent: (args: { successful: number; failed: number }) => ReactNode;
+}>) {
+  const progress = useProgress(batch.progressStore);
+
+  return (
+    <>
+      {!progress?.isFinished && <Spinner className="h-4 w-4 shrink-0" />}
+      {progress?.isFinished
+        ? finishedContent({
+            successful: progress.successful,
+            failed: progress.failed,
+          })
+        : inProgressContent({
+            successful: progress?.successful,
+            failed: progress?.failed,
+          })}
+      <div className="ml-auto">
+        <Button
+          variant="icon"
+          onClick={() => {
+            onClose();
+            if (!progress?.isFinished || progress.failed > 0) {
+              onExpand();
+            }
+          }}
+          className="h-6 w-6 shrink-0"
+        >
+          <Icon
+            name={
+              progress?.isFinished && progress.failed === 0
+                ? IconName.X
+                : IconName.Maximize
+            }
+          />
+        </Button>
+      </div>
+    </>
+  );
+}
+
 export function BatchOperationsProvider({
   children,
   batchSize = 40,
@@ -277,63 +360,126 @@ export function BatchOperationsProvider({
 
   const onProgress = useCallback(
     (id: string, response: BatchInvocationsResponse) => {
+      const batch = batchOpes.find((batch) => batch.id === id);
+      if (batch) {
+        let updatedFailedInvocationIds =
+          batch.progressStore.getSnapshot()?.failedInvocationIds ?? [];
+
+        if (
+          response.failedInvocationIds &&
+          response.failedInvocationIds?.length > 0
+        ) {
+          updatedFailedInvocationIds = [
+            ...updatedFailedInvocationIds,
+            ...response.failedInvocationIds,
+          ];
+
+          if (updatedFailedInvocationIds.length > MAX_FAILED_INVOCATIONS) {
+            updatedFailedInvocationIds = updatedFailedInvocationIds.slice(
+              -MAX_FAILED_INVOCATIONS,
+            );
+          }
+        }
+
+        batch.progressStore.update({
+          successful:
+            (batch.progressStore.getSnapshot()?.successful || 0) +
+            response.successful,
+          failed:
+            (batch.progressStore.getSnapshot()?.failed || 0) + response.failed,
+          failedInvocationIds: updatedFailedInvocationIds,
+          isFinished: response.hasMore !== true,
+        });
+      }
+    },
+    [batchOpes],
+  );
+
+  const onOpenChange = useCallback(
+    (id: string, isOpen: boolean, isCompleted: boolean) => {
       setBatchOpes((old) => {
+        if (!isOpen && isCompleted) {
+          return old.filter((batch) => batch.id !== id);
+        }
         return old.map((batch) => {
           if (batch.id === id) {
-            let updatedFailedInvocationIds = batch.failedInvocationIds;
-
-            if (
-              response.failedInvocationIds &&
-              response.failedInvocationIds?.length > 0
-            ) {
-              updatedFailedInvocationIds = [
-                ...batch.failedInvocationIds,
-                ...response.failedInvocationIds,
-              ];
-
-              if (updatedFailedInvocationIds.length > MAX_FAILED_INVOCATIONS) {
-                updatedFailedInvocationIds = updatedFailedInvocationIds.slice(
-                  -MAX_FAILED_INVOCATIONS,
-                );
-              }
-            }
-
             return {
               ...batch,
-              successful: batch.successful + response.successful,
-              failed: batch.failed + response.failed,
-              failedInvocationIds: updatedFailedInvocationIds,
+              isDialogOpen: isOpen,
             };
           } else {
             return batch;
           }
         });
       });
-    },
-    [],
-  );
-
-  const onOpenChange = useCallback((id: string, isOpen: boolean) => {
-    setBatchOpes((old) => {
-      if (!isOpen) {
-        return old.filter((batch) => batch.id !== id);
-      }
-      return old.map((batch) => {
-        if (batch.id === id) {
-          return {
-            ...batch,
-            isDialogOpen: isOpen,
-          };
-        } else {
-          return batch;
+      if (!isCompleted && !isOpen) {
+        const batch = batchOpes.find((b) => b.id === id);
+        if (batch) {
+          const { hide } = showProgressNotification(
+            <div className="flex items-center gap-2">
+              <Counter
+                batch={batch}
+                onClose={() => hide()}
+                onExpand={() => {
+                  setBatchOpes((old) => {
+                    return old.map((batch) => {
+                      if (batch.id === id) {
+                        return {
+                          ...batch,
+                          isDialogOpen: true,
+                        };
+                      } else {
+                        return batch;
+                      }
+                    });
+                  });
+                }}
+                inProgressContent={({ successful, failed }) => (
+                  <>
+                    <Ellipsis>Pausing invocations</Ellipsis> {successful} |{' '}
+                    {failed}
+                  </>
+                )}
+                finishedContent={({ successful, failed }) => (
+                  <>
+                    Paused {successful}{' '}
+                    {formatPlurals(successful, {
+                      one: 'invocation',
+                      other: 'invocations',
+                    })}{' '}
+                    successfully{' '}
+                    {failed > 0 ? (
+                      <>
+                        , while {failed}{' '}
+                        {formatPlurals(failed, {
+                          one: 'invocation has',
+                          other: 'invocations have',
+                        })}{' '}
+                        failed.
+                      </>
+                    ) : (
+                      '.'
+                    )}
+                  </>
+                )}
+              />
+            </div>,
+          );
         }
-      });
-    });
-  }, []);
+      }
+    },
+    [batchOpes],
+  );
 
   const batchCancel = useCallback(
     (params: { invocationIds: string[] } | { filters: FilterItem[] }) => {
       const id = crypto.randomUUID();
+      const progressStore = new ProgressStore({
+        failed: 0,
+        failedInvocationIds: [],
+        successful: 0,
+        isFinished: false,
+      });
       setBatchOpes((old) => [
         ...old,
         {
@@ -353,9 +499,7 @@ export function BatchOperationsProvider({
                     },
                   ],
                 },
-          failed: 0,
-          failedInvocationIds: [],
-          successful: 0,
+          progressStore,
           isDialogOpen: true,
         },
       ]);
@@ -365,6 +509,12 @@ export function BatchOperationsProvider({
   const batchPause = useCallback(
     (params: { invocationIds: string[] } | { filters: FilterItem[] }) => {
       const id = crypto.randomUUID();
+      const progressStore = new ProgressStore({
+        failed: 0,
+        failedInvocationIds: [],
+        successful: 0,
+        isFinished: false,
+      });
       setBatchOpes((old) => [
         ...old,
         {
@@ -390,9 +540,7 @@ export function BatchOperationsProvider({
                     },
                   ],
                 },
-          failed: 0,
-          failedInvocationIds: [],
-          successful: 0,
+          progressStore,
           isDialogOpen: true,
         },
       ]);
@@ -402,6 +550,12 @@ export function BatchOperationsProvider({
   const batchKill = useCallback(
     (params: { invocationIds: string[] } | { filters: FilterItem[] }) => {
       const id = crypto.randomUUID();
+      const progressStore = new ProgressStore({
+        failed: 0,
+        failedInvocationIds: [],
+        successful: 0,
+        isFinished: false,
+      });
       setBatchOpes((old) => [
         ...old,
         {
@@ -421,9 +575,7 @@ export function BatchOperationsProvider({
                     },
                   ],
                 },
-          failed: 0,
-          failedInvocationIds: [],
-          successful: 0,
+          progressStore,
           isDialogOpen: true,
         },
       ]);
@@ -433,6 +585,12 @@ export function BatchOperationsProvider({
   const batchPurge = useCallback(
     (params: { invocationIds: string[] } | { filters: FilterItem[] }) => {
       const id = crypto.randomUUID();
+      const progressStore = new ProgressStore({
+        failed: 0,
+        failedInvocationIds: [],
+        successful: 0,
+        isFinished: false,
+      });
       setBatchOpes((old) => [
         ...old,
         {
@@ -452,9 +610,7 @@ export function BatchOperationsProvider({
                     },
                   ],
                 },
-          failed: 0,
-          failedInvocationIds: [],
-          successful: 0,
+          progressStore,
           isDialogOpen: true,
         },
       ]);
@@ -468,6 +624,12 @@ export function BatchOperationsProvider({
         | { filters: FilterItem[]; deployment?: 'keep' | 'latest' },
     ) => {
       const id = crypto.randomUUID();
+      const progressStore = new ProgressStore({
+        failed: 0,
+        failedInvocationIds: [],
+        successful: 0,
+        isFinished: false,
+      });
       setBatchOpes((old) => [
         ...old,
         {
@@ -487,9 +649,7 @@ export function BatchOperationsProvider({
                     },
                   ],
                 },
-          failed: 0,
-          failedInvocationIds: [],
-          successful: 0,
+          progressStore,
           isDialogOpen: true,
         },
       ]);
@@ -521,11 +681,25 @@ export function BatchOperationsProvider({
   );
 }
 
+function useProgress(
+  progressStore: ProgressStore<{
+    successful: number;
+    failed: number;
+    failedInvocationIds: { invocationId: string; error: string }[];
+    isFinished: boolean;
+  }>,
+) {
+  return useSyncExternalStore(
+    progressStore.subscribe,
+    progressStore.getSnapshot,
+  );
+}
+
 function useBatchMutation(
   type: OperationType,
   batchSize: number,
   onProgress: (response: BatchInvocationsResponse) => void,
-  onOpenChange: (isOpen: boolean) => void,
+  onOpenChange: (isOpen: boolean, isCompleted: boolean) => void,
 ) {
   const cancelMutation = useBatchCancelInvocations(batchSize, {
     onProgress,
@@ -534,7 +708,7 @@ function useBatchMutation(
         showSuccessNotification(
           `Successfully cancelled ${formatNumber(data.successful)} invocation${data.successful !== 1 ? 's' : ''}`,
         );
-        onOpenChange(false);
+        onOpenChange(false, true);
       }
     },
   });
@@ -546,7 +720,7 @@ function useBatchMutation(
         showSuccessNotification(
           `Successfully paused ${formatNumber(data.successful)} invocation${data.successful !== 1 ? 's' : ''}`,
         );
-        onOpenChange(false);
+        onOpenChange(false, true);
       }
     },
   });
@@ -558,7 +732,7 @@ function useBatchMutation(
         showSuccessNotification(
           `Successfully resumed ${formatNumber(data.successful)} invocation${data.successful !== 1 ? 's' : ''}`,
         );
-        onOpenChange(false);
+        onOpenChange(false, true);
       }
     },
   });
@@ -570,7 +744,7 @@ function useBatchMutation(
         showSuccessNotification(
           `Successfully killed ${formatNumber(data.successful)} invocation${data.successful !== 1 ? 's' : ''}`,
         );
-        onOpenChange(false);
+        onOpenChange(false, true);
       }
     },
   });
@@ -582,7 +756,7 @@ function useBatchMutation(
         showSuccessNotification(
           `Successfully purged ${formatNumber(data.successful)} invocation${data.successful !== 1 ? 's' : ''}`,
         );
-        onOpenChange(false);
+        onOpenChange(false, true);
       }
     },
   });
@@ -659,16 +833,23 @@ function BatchConfirmation({
   onProgress,
 }: {
   state: BatchState;
-  onOpenChange: (isOpen: boolean) => void;
+  onOpenChange: (isOpen: boolean, isCompleted: boolean) => void;
   batchSize: number;
   onProgress: (response: BatchInvocationsResponse) => void;
 }) {
-  const mutation = useBatchMutation(
+  const { reset, ...mutation } = useBatchMutation(
     state.type,
     batchSize,
     onProgress,
     onOpenChange,
   );
+  const progress = useProgress(state.progressStore);
+
+  useEffect(() => {
+    return () => {
+      reset();
+    };
+  }, [reset]);
 
   const countInvocations = useCountInvocations(
     state.params && 'filters' in state.params ? state.params.filters : [],
@@ -690,7 +871,7 @@ function BatchConfirmation({
     <SnapshotTimeProvider lastSnapshot={countInvocations.dataUpdatedAt}>
       <ConfirmationDialog
         open={state.isDialogOpen}
-        onOpenChange={onOpenChange}
+        onOpenChange={(isOpen) => onOpenChange(isOpen, !mutation.isPending)}
         title={config.title}
         icon={config.icon}
         iconClassName={config.iconClassName}
@@ -702,15 +883,16 @@ function BatchConfirmation({
             config={config}
           />
         }
+        closeText={mutation.isPending ? 'Minimize' : 'Close'}
         alertType={count && count > 0 ? config.alertType : undefined}
         alertContent={count && count > 0 ? config.alertContent : undefined}
         submitText={config.submitText}
         submitVariant={config.submitVariant}
         formMethod={config.formMethod}
         formAction={config.formAction}
-        isPending={countInvocations.isPending || mutation.isPending}
+        // isPending={countInvocations.isPending || mutation.isPending}
         error={countInvocations.error ?? mutation.error}
-        isSubmitDisabled={count === 0}
+        isSubmitDisabled={count === 0 || progress?.isFinished}
         onSubmit={(e) => {
           e.preventDefault();
           const formData = new FormData(e.currentTarget);
@@ -734,31 +916,36 @@ function BatchConfirmation({
             <div className="flex flex-col gap-3">
               <div className="-translate-y-4 px-2">
                 <BatchProgressBar
-                  successful={state.successful}
-                  failed={state.failed}
-                  total={Math.max(count || 0, state.successful + state.failed)}
+                  successful={progress?.successful || 0}
+                  failed={progress?.failed || 0}
+                  total={Math.max(
+                    count || 0,
+                    (progress?.successful || 0) + (progress?.failed || 0),
+                  )}
                   isPending={mutation.isPending && !mutation.isPaused(state.id)}
-                  failedInvocations={state.failedInvocationIds}
+                  failedInvocations={progress?.failedInvocationIds}
                   isCompleted={mutation.isSuccess}
                 >
-                  <Button
-                    className="rounded-md p-1"
-                    variant="secondary"
-                    onClick={() =>
-                      mutation.isPaused(state.id)
-                        ? mutation.resume(state.id)
-                        : mutation.pause(state.id)
-                    }
-                  >
-                    <Icon
-                      name={
+                  {mutation.isPending && (
+                    <Button
+                      className="rounded-md p-1"
+                      variant="secondary"
+                      onClick={() =>
                         mutation.isPaused(state.id)
-                          ? IconName.Resume
-                          : IconName.Pause
+                          ? mutation.resume(state.id)
+                          : mutation.pause(state.id)
                       }
-                      className="h-4 w-4"
-                    />
-                  </Button>
+                    >
+                      <Icon
+                        name={
+                          mutation.isPaused(state.id)
+                            ? IconName.Resume
+                            : IconName.Pause
+                        }
+                        className="h-4 w-4"
+                      />
+                    </Button>
+                  )}
                 </BatchProgressBar>
               </div>
               <ErrorBanner error={mutation.error || countInvocations.error} />
