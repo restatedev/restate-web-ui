@@ -304,7 +304,7 @@ class ProgressStore<T> {
   }
 }
 
-function Counter({
+function NotificationProgressTracker({
   batch,
   onClose,
   onExpand,
@@ -321,6 +321,10 @@ function Counter({
   finishedContent: (args: { successful: number; failed: number }) => ReactNode;
 }>) {
   const progress = useProgress(batch.progressStore);
+
+  if (progress?.isFinished && progress.failed === 0) {
+    onClose();
+  }
 
   return (
     <>
@@ -424,7 +428,7 @@ export function BatchOperationsProvider({
           const config = OPERATION_CONFIG[batch.type];
           const { hide } = showProgressNotification(
             <div className="flex items-center gap-2">
-              <Counter
+              <NotificationProgressTracker
                 batch={batch}
                 onClose={() => hide()}
                 onExpand={() => {
@@ -897,7 +901,6 @@ function BatchConfirmation({
         submitVariant={config.submitVariant}
         formMethod={config.formMethod}
         formAction={config.formAction}
-        // isPending={countInvocations.isPending || mutation.isPending}
         error={countInvocations.error ?? mutation.error}
         isSubmitDisabled={count === 0 || progress?.isFinished}
         onSubmit={(e) => {
