@@ -84,6 +84,7 @@ interface OperationConfig {
   formMethod: 'POST';
   formAction: string;
   progressTitle: string;
+  completedText: string;
   emptyMessage: string;
 }
 
@@ -121,6 +122,7 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     alertContent:
       'Cancellation frees held resources, cooperates with your handler code to roll back changes, and allows proper cleanup. It is non-blocking, so the call may return before cleanup finishes. In rare cases, cancellation may not take effect, retry the operation if needed.',
     progressTitle: 'Cancelling invocations',
+    completedText: 'Cancelled',
     emptyMessage:
       'No invocations match your criteria. Only non-completed invocations can be cancelled.',
   },
@@ -157,6 +159,7 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     alertContent:
       'Paused invocations will stop executing until manually resumed or unpaused.',
     progressTitle: 'Pausing invocations',
+    completedText: 'Paused',
     emptyMessage:
       'No invocations match your criteria. Only running invocations can be paused.',
   },
@@ -190,6 +193,7 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
       </p>
     ),
     progressTitle: 'Resuming invocations',
+    completedText: 'Resumed',
     emptyMessage:
       'No invocations match your criteria. Only paused invocations can be resumed.',
   },
@@ -226,6 +230,7 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     alertContent:
       'Killing immediately stops all calls in the invocation tree without executing compensation logic. This may leave your service in an inconsistent state. Only use as a last resort after trying other fixes.',
     progressTitle: 'Killing invocations',
+    completedText: 'Killed',
     emptyMessage:
       'No invocations match your criteria. Only non-completed invocations can be killed.',
   },
@@ -262,6 +267,7 @@ const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     alertContent:
       'After an invocation completes, it will be retained by Restate for some time, in order to introspect it and, in case of idempotent requests, to perform deduplication.',
     progressTitle: 'Purging invocations',
+    completedText: 'Purged',
     emptyMessage:
       'No invocations match your criteria. Only completed invocations can be purged.',
   },
@@ -415,6 +421,7 @@ export function BatchOperationsProvider({
       if (!isCompleted && !isOpen) {
         const batch = batchOpes.find((b) => b.id === id);
         if (batch) {
+          const config = OPERATION_CONFIG[batch.type];
           const { hide } = showProgressNotification(
             <div className="flex items-center gap-2">
               <Counter
@@ -436,13 +443,13 @@ export function BatchOperationsProvider({
                 }}
                 inProgressContent={({ successful, failed }) => (
                   <>
-                    <Ellipsis>Pausing invocations</Ellipsis> {successful} |{' '}
+                    <Ellipsis>{config.progressTitle}</Ellipsis> {successful} |{' '}
                     {failed}
                   </>
                 )}
                 finishedContent={({ successful, failed }) => (
                   <>
-                    Paused {successful}{' '}
+                    {config.completedText} {successful}{' '}
                     {formatPlurals(successful, {
                       one: 'invocation',
                       other: 'invocations',
