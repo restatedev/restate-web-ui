@@ -43,6 +43,7 @@ import {
 import { BatchProgressBar, MAX_FAILED_INVOCATIONS } from './BatchProgressBar';
 import { Button } from '@restate/ui/button';
 import { Ellipsis, Spinner } from '@restate/ui/loading';
+import { useBeforeUnload } from 'react-router';
 
 type OperationType = 'cancel' | 'pause' | 'resume' | 'kill' | 'purge';
 
@@ -375,6 +376,20 @@ export function BatchOperationsProvider({
   batchSize = 40,
 }: PropsWithChildren<{ batchSize?: number }>) {
   const [batchOpes, setBatchOpes] = useState([] as BatchState[]);
+  const hasPendingOps = batchOpes.some(
+    (batch) => !batch.progressStore.getSnapshot()?.isFinished,
+  );
+
+  useBeforeUnload(
+    useCallback(
+      (event) => {
+        if (hasPendingOps) {
+          event.preventDefault();
+        }
+      },
+      [hasPendingOps],
+    ),
+  );
 
   const onProgress = useCallback(
     (id: string, response: BatchInvocationsResponse) => {
