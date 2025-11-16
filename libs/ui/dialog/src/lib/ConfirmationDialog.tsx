@@ -49,6 +49,7 @@ export interface ConfirmationDialogProps {
   alertType?: 'warning' | 'info';
   alertContent?: ReactNode;
   submitText: string;
+  closeText?: string;
   submitVariant?: 'primary' | 'destructive';
   formMethod?: 'POST' | 'PATCH' | 'DELETE' | 'PUT';
   formAction?: string;
@@ -108,6 +109,7 @@ function ConfirmationDialogContent({
   children,
   footer,
   isSubmitDisabled,
+  closeText = 'Close',
 }: PropsWithChildren<Omit<ConfirmationDialogProps, 'queryParam' | 'onClose'>>) {
   const formId = useId();
 
@@ -148,7 +150,7 @@ function ConfirmationDialogContent({
                     disabled={isPending}
                     autoFocus
                   >
-                    Close
+                    {closeText}
                   </Button>
                 </DialogClose>
                 <SubmitButton

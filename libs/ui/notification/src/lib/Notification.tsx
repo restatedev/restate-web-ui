@@ -41,6 +41,12 @@ const styles = tv({
         icon: '',
         close: '',
       },
+      progress: {
+        base: 'border-sky-300/30 bg-sky-200/90 text-sky-800',
+        content: '',
+        icon: '',
+        close: '',
+      },
       pending: {
         base: 'border-orange-300/30 bg-orange-200/90 text-orange-800',
         content: '',
@@ -106,6 +112,7 @@ export function Notification({ toast, className, queue }: NotificationProps) {
     type: toast.content.type,
   });
   const isCountdown = toast.content.type === 'countdown';
+  const isProgress = toast.content.type === 'progress';
   const { countdown, isPending } = useCountdownNotification(
     isCountdown,
     toast.content.promise?.resolve,
@@ -117,7 +124,7 @@ export function Notification({ toast, className, queue }: NotificationProps) {
       <ToastContent className={content()}>
         <div className="flex items-center gap-2">
           <NotificationIcon type={toast.content.type} className={icon()} />
-          <Text slot="title">
+          <Text slot="title" className="flex-auto">
             {toast.content.content}
             {isCountdown &&
               (countdown ? (
@@ -130,7 +137,7 @@ export function Notification({ toast, className, queue }: NotificationProps) {
           </Text>
         </div>
       </ToastContent>
-      {!isCountdown && (
+      {!isCountdown && !isProgress && (
         <Button slot="close" variant="icon" className={close()}>
           <Icon name={IconName.X} />
         </Button>
