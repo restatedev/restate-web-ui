@@ -31,9 +31,9 @@ import {
 import {
   formatDurations,
   formatNumber,
+  formatPercentage,
   formatPlurals,
 } from '@restate/util/intl';
-import { ErrorBanner } from '@restate/ui/error';
 import { FormFieldSelect, Option } from '@restate/ui/form-field';
 import { InlineTooltip } from '@restate/ui/tooltip';
 import {
@@ -54,6 +54,7 @@ type BatchState = {
     failed: number;
     failedInvocationIds: { invocationId: string; error: string }[];
     isFinished: boolean;
+    total: number;
   }>;
 } & (
   | {
@@ -298,8 +299,8 @@ class ProgressStore<T> {
     return this.value;
   };
 
-  update(newValue: T) {
-    this.value = newValue;
+  update(newValue: Partial<T>) {
+    this.value = { ...this.value, ...newValue } as T;
     this.listeners.forEach((listener) => listener());
   }
 }
@@ -317,8 +318,13 @@ function NotificationProgressTracker({
   inProgressContent: (args: {
     successful?: number;
     failed?: number;
+    total?: number;
   }) => ReactNode;
-  finishedContent: (args: { successful: number; failed: number }) => ReactNode;
+  finishedContent: (args: {
+    successful: number;
+    failed: number;
+    total?: number;
+  }) => ReactNode;
 }>) {
   const progress = useProgress(batch.progressStore);
 
@@ -333,10 +339,12 @@ function NotificationProgressTracker({
         ? finishedContent({
             successful: progress.successful,
             failed: progress.failed,
+            total: progress.total,
           })
         : inProgressContent({
             successful: progress?.successful,
             failed: progress?.failed,
+            total: progress?.total,
           })}
       <div className="ml-auto">
         <Button
@@ -445,33 +453,58 @@ export function BatchOperationsProvider({
                     });
                   });
                 }}
-                inProgressContent={({ successful, failed }) => (
-                  <>
-                    <Ellipsis>{config.progressTitle}</Ellipsis> {successful} |{' '}
-                    {failed}
-                  </>
+                inProgressContent={({
+                  successful = 0,
+                  failed = 0,
+                  total = 1,
+                }) => (
+                  <span className="">
+                    <Ellipsis>{config.progressTitle}</Ellipsis>
+                    <span className="ml-2 inline-block font-medium">
+                      {formatPercentage(
+                        (successful + failed) /
+                          Math.max(successful + failed, total),
+                      )}
+                    </span>{' '}
+                    (
+                    <span className="">
+                      {successful}{' '}
+                      <span className="text-xs font-normal opacity-80">
+                        succeeded
+                      </span>
+                    </span>
+                    <span className="mx-1 inline-block h-4 w-px translate-y-1 bg-sky-800/40" />
+                    <span className="">
+                      {failed}{' '}
+                      <span className="text-xs font-normal opacity-80">
+                        failed
+                      </span>
+                    </span>
+                    )
+                  </span>
                 )}
                 finishedContent={({ successful, failed }) => (
-                  <>
-                    {config.completedText} {successful}{' '}
+                  <span>
+                    {config.completedText}{' '}
+                    <span className="font-medium">{successful}</span>{' '}
                     {formatPlurals(successful, {
                       one: 'invocation',
                       other: 'invocations',
                     })}{' '}
-                    successfully{' '}
+                    successfully
                     {failed > 0 ? (
                       <>
-                        , while {failed}{' '}
+                        , while <span className="font-medium">{failed}</span>{' '}
                         {formatPlurals(failed, {
-                          one: 'invocation has',
-                          other: 'invocations have',
+                          one: 'has',
+                          other: 'have',
                         })}{' '}
                         failed.
                       </>
                     ) : (
                       '.'
                     )}
-                  </>
+                  </span>
                 )}
               />
             </div>,
@@ -490,6 +523,7 @@ export function BatchOperationsProvider({
         failedInvocationIds: [],
         successful: 0,
         isFinished: false,
+        total: 0,
       });
       setBatchOpes((old) => [
         ...old,
@@ -525,6 +559,7 @@ export function BatchOperationsProvider({
         failedInvocationIds: [],
         successful: 0,
         isFinished: false,
+        total: 0,
       });
       setBatchOpes((old) => [
         ...old,
@@ -566,6 +601,7 @@ export function BatchOperationsProvider({
         failedInvocationIds: [],
         successful: 0,
         isFinished: false,
+        total: 0,
       });
       setBatchOpes((old) => [
         ...old,
@@ -601,6 +637,7 @@ export function BatchOperationsProvider({
         failedInvocationIds: [],
         successful: 0,
         isFinished: false,
+        total: 0,
       });
       setBatchOpes((old) => [
         ...old,
@@ -640,6 +677,7 @@ export function BatchOperationsProvider({
         failedInvocationIds: [],
         successful: 0,
         isFinished: false,
+        total: 0,
       });
       setBatchOpes((old) => [
         ...old,
@@ -696,6 +734,7 @@ function useProgress(
   progressStore: ProgressStore<{
     successful: number;
     failed: number;
+    total: number;
     failedInvocationIds: { invocationId: string; error: string }[];
     isFinished: boolean;
   }>,
@@ -869,6 +908,12 @@ function BatchConfirmation({
     },
   );
 
+  useEffect(() => {
+    if (countInvocations.data?.count) {
+      state.progressStore.update({ total: countInvocations.data?.count });
+    }
+  }, [countInvocations.data?.count, state.progressStore]);
+
   const config = OPERATION_CONFIG[state.type];
   const { count, isLowerBound } =
     'invocationIds' in state.params
@@ -958,7 +1003,6 @@ function BatchConfirmation({
                   )}
                 </BatchProgressBar>
               </div>
-              <ErrorBanner error={mutation.error || countInvocations.error} />
             </div>
           )
         }
