@@ -1,1 +1,1 @@
-export * from './lib/BatchOperations';
+export * from './lib';
