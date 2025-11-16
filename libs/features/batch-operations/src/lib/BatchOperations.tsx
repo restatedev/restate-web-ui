@@ -484,7 +484,7 @@ export function BatchOperationsProvider({
                     <span className="ml-2 inline-block font-medium">
                       {formatPercentage(
                         (successful + failed) /
-                          Math.max(successful + failed, total),
+                          Math.max(successful + failed, total, 1),
                       )}
                     </span>{' '}
                     (
