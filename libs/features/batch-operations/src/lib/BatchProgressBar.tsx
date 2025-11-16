@@ -67,6 +67,9 @@ export function BatchProgressBar({
   const successRatio = total && total > 0 ? successful / total : 0;
   const failedRatio = total && total > 0 ? failed / total : 0;
   const processedRatio = total && total > 0 ? processed / total : 0;
+  if (successful === 0 && failed === 0) {
+    return null;
+  }
   return (
     <div className="flex flex-col gap-3.5">
       <div className="flex translate-y-4 flex-col">

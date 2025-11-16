@@ -55,6 +55,7 @@ type BatchState = {
     failed: number;
     failedInvocationIds: { invocationId: string; error: string }[];
     isFinished: boolean;
+    isError: boolean;
     total: number;
   }>;
 } & (
@@ -332,6 +333,10 @@ function NotificationProgressTracker({
   if (progress?.isFinished && progress.failed === 0) {
     onClose();
   }
+  if (progress?.isError) {
+    onClose();
+    onExpand();
+  }
 
   return (
     <>
@@ -422,6 +427,7 @@ export function BatchOperationsProvider({
             (batch.progressStore.getSnapshot()?.failed || 0) + response.failed,
           failedInvocationIds: updatedFailedInvocationIds,
           isFinished: response.hasMore !== true,
+          isError: false,
         });
       }
     },
@@ -539,6 +545,7 @@ export function BatchOperationsProvider({
         successful: 0,
         isFinished: false,
         total: 0,
+        isError: false,
       });
       setBatchOpes((old) => [
         ...old,
@@ -575,6 +582,7 @@ export function BatchOperationsProvider({
         successful: 0,
         isFinished: false,
         total: 0,
+        isError: false,
       });
       setBatchOpes((old) => [
         ...old,
@@ -617,6 +625,7 @@ export function BatchOperationsProvider({
         successful: 0,
         isFinished: false,
         total: 0,
+        isError: false,
       });
       setBatchOpes((old) => [
         ...old,
@@ -653,6 +662,7 @@ export function BatchOperationsProvider({
         successful: 0,
         isFinished: false,
         total: 0,
+        isError: false,
       });
       setBatchOpes((old) => [
         ...old,
@@ -693,6 +703,7 @@ export function BatchOperationsProvider({
         successful: 0,
         isFinished: false,
         total: 0,
+        isError: false,
       });
       setBatchOpes((old) => [
         ...old,
@@ -752,6 +763,7 @@ function useProgress(
     total: number;
     failedInvocationIds: { invocationId: string; error: string }[];
     isFinished: boolean;
+    isError: boolean;
   }>,
 ) {
   return useSyncExternalStore(
@@ -765,6 +777,7 @@ function useBatchMutation(
   batchSize: number,
   onProgress: (response: BatchInvocationsResponse) => void,
   onOpenChange: (isOpen: boolean, isCompleted: boolean) => void,
+  onError: VoidFunction,
 ) {
   const cancelMutation = useBatchCancelInvocations(batchSize, {
     onProgress,
@@ -775,6 +788,9 @@ function useBatchMutation(
         );
         onOpenChange(false, true);
       }
+    },
+    onError(error, variables, onMutateResult, context) {
+      onError?.();
     },
   });
 
@@ -788,6 +804,9 @@ function useBatchMutation(
         onOpenChange(false, true);
       }
     },
+    onError(error, variables, onMutateResult, context) {
+      onError?.();
+    },
   });
 
   const resumeMutation = useBatchResumeInvocations(batchSize, {
@@ -799,6 +818,9 @@ function useBatchMutation(
         );
         onOpenChange(false, true);
       }
+    },
+    onError(error, variables, onMutateResult, context) {
+      onError?.();
     },
   });
 
@@ -812,6 +834,9 @@ function useBatchMutation(
         onOpenChange(false, true);
       }
     },
+    onError(error, variables, onMutateResult, context) {
+      onError?.();
+    },
   });
 
   const purgeMutation = useBatchPurgeInvocations(batchSize, {
@@ -823,6 +848,9 @@ function useBatchMutation(
         );
         onOpenChange(false, true);
       }
+    },
+    onError(error, variables, onMutateResult, context) {
+      onError?.();
     },
   });
 
@@ -907,6 +935,7 @@ function BatchConfirmation({
     batchSize,
     onProgress,
     onOpenChange,
+    () => state.progressStore.update({ isError: true }),
   );
   const progress = useProgress(state.progressStore);
 
