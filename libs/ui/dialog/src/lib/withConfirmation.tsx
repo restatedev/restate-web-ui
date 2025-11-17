@@ -10,7 +10,7 @@ import {
 import { useNavigate, useSearchParams } from 'react-router';
 import type { UseMutationResult } from '@tanstack/react-query';
 import {
-  ConfirmationDialog,
+  ConfirmationQueryDialog,
   ConfirmationDialogProps,
 } from './ConfirmationDialog';
 import {
@@ -135,7 +135,7 @@ export function withConfirmation<
     const ContentComponent = config.Content;
 
     return (
-      <ConfirmationDialog
+      <ConfirmationQueryDialog
         queryParam={config.queryParam}
         title={config.title}
         description={config.description}
@@ -168,7 +168,7 @@ export function withConfirmation<
             </div>
           </FormFieldLabel>
         ) : undefined}
-      </ConfirmationDialog>
+      </ConfirmationQueryDialog>
     );
   }
 

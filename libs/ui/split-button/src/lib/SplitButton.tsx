@@ -8,20 +8,26 @@ import {
 import { Icon, IconName } from '@restate/ui/icons';
 import { Button } from '@restate/ui/button';
 import { tv } from '@restate/util/styles';
-import { PropsWithChildren, ReactNode } from 'react';
+import { ComponentProps, PropsWithChildren, ReactNode } from 'react';
 
 const menuTriggerStyles = tv({
-  base: 'trigger rounded-l-md rounded-r-md px-1 py-1 [font-size:inherit] [line-height:inherit] text-gray-600 group-focus-within:z-2',
+  base: 'trigger rounded-l-md rounded-r-md px-1 py-1 [font-size:inherit] [line-height:inherit] group-focus-within:z-2',
   variants: {
     mini: {
       false: 'rounded-l-none',
       true: '',
     },
+    variant: {
+      primary: 'text-white/90',
+      secondary: 'text-gray-600',
+      icon: 'text-gray-600',
+      destructive: 'text-white/90',
+    },
   },
 });
 
 const styles = tv({
-  base: 'group group relative flex items-stretch overflow-visible text-xs',
+  base: 'group relative flex items-stretch overflow-visible text-xs',
   slots: {
     primary: '',
   },
@@ -42,11 +48,15 @@ export function SplitButton({
   children,
   menus,
   onSelect,
+  variant = 'secondary',
+  splitClassName,
 }: PropsWithChildren<{
   mini?: boolean;
   className?: string;
   menus: ReactNode;
   onSelect?: (key: string) => void;
+  variant?: ComponentProps<typeof Button>['variant'];
+  splitClassName?: string;
 }>) {
   const { base, primary } = styles({ mini });
   return (
@@ -54,7 +64,10 @@ export function SplitButton({
       <div className={primary()}>{children}</div>
       <Dropdown>
         <DropdownTrigger>
-          <Button variant="secondary" className={menuTriggerStyles({ mini })}>
+          <Button
+            variant={variant}
+            className={menuTriggerStyles({ mini, className: splitClassName })}
+          >
             <Icon name={IconName.ChevronsUpDown} className="h-[1em] w-[1em]" />
           </Button>
         </DropdownTrigger>

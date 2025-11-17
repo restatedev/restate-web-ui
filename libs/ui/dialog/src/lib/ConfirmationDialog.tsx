@@ -6,7 +6,7 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { DialogFooter } from './DialogFooter';
 import { DialogClose } from './DialogClose';
 import { DialogContent } from './DialogContent';
-import { QueryDialog } from './Dialog';
+import { Dialog, QueryDialog } from './Dialog';
 import { tv } from '@restate/util/styles';
 
 interface AlertBannerProps {
@@ -49,11 +49,13 @@ export interface ConfirmationDialogProps {
   alertType?: 'warning' | 'info';
   alertContent?: ReactNode;
   submitText: string;
+  closeText?: string;
   submitVariant?: 'primary' | 'destructive';
   formMethod?: 'POST' | 'PATCH' | 'DELETE' | 'PUT';
   formAction?: string;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   isPending?: boolean;
+  isSubmitDisabled?: boolean;
   error?: Error | null;
   onClose?: VoidFunction;
 }
@@ -61,8 +63,36 @@ export interface ConfirmationDialogProps {
 const iconStyles = tv({
   base: '-ml-2 h-10 w-10 p-1.5 text-blue-400 drop-shadow-md',
 });
-export function ConfirmationDialog({
+export function ConfirmationQueryDialog({
   queryParam,
+  onClose,
+  ...contentProps
+}: PropsWithChildren<ConfirmationDialogProps>) {
+  return (
+    <QueryDialog query={queryParam} onClose={onClose}>
+      <ConfirmationDialogContent {...contentProps} />
+    </QueryDialog>
+  );
+}
+
+export function ConfirmationDialog({
+  open,
+  onOpenChange,
+  ...contentProps
+}: PropsWithChildren<
+  Omit<ConfirmationDialogProps, 'queryParam' | 'onClose'> & {
+    open?: boolean;
+    onOpenChange?: (isOpen: boolean) => void;
+  }
+>) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <ConfirmationDialogContent {...contentProps} />
+    </Dialog>
+  );
+}
+
+function ConfirmationDialogContent({
   title,
   icon,
   iconClassName,
@@ -76,66 +106,66 @@ export function ConfirmationDialog({
   onSubmit,
   isPending = false,
   error,
-  onClose,
   children,
   footer,
-}: PropsWithChildren<ConfirmationDialogProps>) {
+  isSubmitDisabled,
+  closeText = 'Close',
+}: PropsWithChildren<Omit<ConfirmationDialogProps, 'queryParam' | 'onClose'>>) {
   const formId = useId();
 
   return (
-    <QueryDialog query={queryParam} onClose={onClose}>
-      <DialogContent className="max-w-lg">
-        <div className="flex flex-col gap-2">
-          <h3 className="flex items-center gap-1 text-lg leading-6 font-medium text-gray-900">
-            {icon && (
-              <Icon
-                name={icon}
-                className={iconStyles({ className: iconClassName })}
-              />
-            )}
-            {title}
-          </h3>
-          <div className="flex flex-col gap-2 text-sm text-gray-500">
-            {description}
-            {alertType && alertContent && (
-              <AlertBanner type={alertType}>{alertContent}</AlertBanner>
-            )}
-          </div>
-          <Form
-            id={formId}
-            method={formMethod}
-            action={formAction}
-            onSubmit={onSubmit}
-          >
-            {children}
-            <DialogFooter>
-              <div className="flex flex-col gap-2">
-                {footer}
-                {error && <ErrorBanner error={error} />}
-                <div className="flex gap-2">
-                  <DialogClose>
-                    <Button
-                      variant="secondary"
-                      className="flex-auto"
-                      disabled={isPending}
-                      autoFocus
-                    >
-                      Close
-                    </Button>
-                  </DialogClose>
-                  <SubmitButton
-                    variant={submitVariant}
-                    form={formId}
-                    className="flex-auto"
-                  >
-                    {submitText}
-                  </SubmitButton>
-                </div>
-              </div>
-            </DialogFooter>
-          </Form>
+    <DialogContent className="max-w-lg">
+      <div className="flex flex-col gap-2">
+        <h3 className="flex items-center gap-1 text-lg leading-6 font-medium text-gray-900">
+          {icon && (
+            <Icon
+              name={icon}
+              className={iconStyles({ className: iconClassName })}
+            />
+          )}
+          {title}
+        </h3>
+        <div className="flex flex-col gap-2 text-sm text-gray-500">
+          {description}
+          {alertType && alertContent && (
+            <AlertBanner type={alertType}>{alertContent}</AlertBanner>
+          )}
         </div>
-      </DialogContent>
-    </QueryDialog>
+        <Form
+          id={formId}
+          method={formMethod}
+          action={formAction}
+          onSubmit={onSubmit}
+        >
+          {children}
+          <DialogFooter>
+            <div className="flex flex-col gap-2">
+              {footer}
+              {error && <ErrorBanner error={error} />}
+              <div className="flex gap-2">
+                <DialogClose>
+                  <Button
+                    variant="secondary"
+                    className="flex-auto"
+                    disabled={isPending}
+                    autoFocus
+                  >
+                    {closeText}
+                  </Button>
+                </DialogClose>
+                <SubmitButton
+                  variant={submitVariant}
+                  form={formId}
+                  className="flex-auto"
+                  disabled={isSubmitDisabled}
+                >
+                  {submitText}
+                </SubmitButton>
+              </div>
+            </div>
+          </DialogFooter>
+        </Form>
+      </div>
+    </DialogContent>
   );
 }

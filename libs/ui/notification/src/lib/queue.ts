@@ -10,7 +10,8 @@ export interface NotificationContent {
     | 'info'
     | 'success'
     | 'tooltip'
-    | 'countdown';
+    | 'countdown'
+    | 'progress';
   promise?: {
     resolve?: (value: unknown) => void;
     reject?: (reason?: unknown) => void;
@@ -74,3 +75,4 @@ export const showPendingNotification = showNotificationWithType('pending');
 export const showWarningNotification = showNotificationWithType('warning');
 export const showTooltipNotification = showNotificationWithType('tooltip');
 export const showCountdownNotification = showNotificationWithType('countdown');
+export const showProgressNotification = showNotificationWithType('progress');

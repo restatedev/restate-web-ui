@@ -1,5 +1,8 @@
 import { HTTPError } from 'ky';
-import type { FilterItem } from '@restate/data-access/admin-api/spec';
+import type {
+  FilterItem,
+  BatchInvocationsRequestBody,
+} from '@restate/data-access/admin-api/spec';
 import { RestateError } from '@restate/util/errors';
 import {
   createRouter,
@@ -20,11 +23,18 @@ import {
   getStateInterface,
   queryState,
   listState,
+  batchCancelInvocations,
+  batchPurgeInvocations,
+  batchKillInvocations,
+  batchPauseInvocations,
+  batchResumeInvocations,
+  countInvocations,
 } from './handlers';
 import { getVersion } from './getVersion';
 
 type BoundHandlers = {
   listInvocations: (filters: FilterItem[]) => Promise<Response>;
+  countInvocations: (filters: FilterItem[]) => Promise<Response>;
   getInvocation: (invocationId: string) => Promise<Response>;
   getInvocationJournal: (invocationId: string) => Promise<Response>;
   getJournalEntryV2: (
@@ -41,10 +51,26 @@ type BoundHandlers = {
   getStateInterface: (service: string) => Promise<Response>;
   queryState: (service: string, filters: FilterItem[]) => Promise<Response>;
   listState: (service: string, keys: string[]) => Promise<Response>;
+  batchCancelInvocations: (
+    request: BatchInvocationsRequestBody,
+  ) => Promise<Response>;
+  batchPurgeInvocations: (
+    request: BatchInvocationsRequestBody,
+  ) => Promise<Response>;
+  batchKillInvocations: (
+    request: BatchInvocationsRequestBody,
+  ) => Promise<Response>;
+  batchPauseInvocations: (
+    request: BatchInvocationsRequestBody,
+  ) => Promise<Response>;
+  batchResumeInvocations: (
+    request: BatchInvocationsRequestBody,
+  ) => Promise<Response>;
 };
 
 function bindHandlers(context: QueryContext): BoundHandlers {
   return {
+    countInvocations: countInvocations.bind(context),
     listInvocations: listInvocations.bind(context),
     getInvocation: getInvocation.bind(context),
     getInvocationJournal: getInvocationJournal.bind(context),
@@ -55,6 +81,11 @@ function bindHandlers(context: QueryContext): BoundHandlers {
     getStateInterface: getStateInterface.bind(context),
     queryState: queryState.bind(context),
     listState: listState.bind(context),
+    batchCancelInvocations: batchCancelInvocations.bind(context),
+    batchPurgeInvocations: batchPurgeInvocations.bind(context),
+    batchKillInvocations: batchKillInvocations.bind(context),
+    batchPauseInvocations: batchPauseInvocations.bind(context),
+    batchResumeInvocations: batchResumeInvocations.bind(context),
   };
 }
 
@@ -84,6 +115,7 @@ async function extractErrorPayload(res: Response): Promise<string | undefined> {
 const routes = createRoutes({
   invocations: {
     list: { method: 'POST', pattern: '/invocations' },
+    count: { method: 'POST', pattern: '/invocations/count' },
     get: { method: 'GET', pattern: '/invocations/:invocationId' },
     journalEntry: {
       method: 'GET',
@@ -93,6 +125,11 @@ const routes = createRoutes({
       method: 'GET',
       pattern: '/invocations/:invocationId/journal',
     },
+    cancel: { method: 'POST', pattern: '/invocations/cancel' },
+    purge: { method: 'POST', pattern: '/invocations/purge' },
+    kill: { method: 'POST', pattern: '/invocations/kill' },
+    pause: { method: 'POST', pattern: '/invocations/pause' },
+    resume: { method: 'POST', pattern: '/invocations/resume' },
   },
   invocationsV2: {
     get: { method: 'GET', pattern: '/v2/invocations/:invocationId' },
@@ -125,6 +162,12 @@ queryRouter.map(routes, {
         await ctx.request.json();
       return listInvocations(filters);
     },
+    async count(ctx) {
+      const { countInvocations } = ctx.storage.get(handlersKey);
+      const { filters = [] }: { filters: FilterItem[] } =
+        await ctx.request.json();
+      return countInvocations(filters);
+    },
     async get(ctx) {
       const { getInvocation } = ctx.storage.get(handlersKey);
       return getInvocation(ctx.params.invocationId);
@@ -139,6 +182,31 @@ queryRouter.map(routes, {
     async journal(ctx) {
       const { getInvocationJournal } = ctx.storage.get(handlersKey);
       return getInvocationJournal(ctx.params.invocationId);
+    },
+    async cancel(ctx) {
+      const { batchCancelInvocations } = ctx.storage.get(handlersKey);
+      const request: BatchInvocationsRequestBody = await ctx.request.json();
+      return batchCancelInvocations(request);
+    },
+    async purge(ctx) {
+      const { batchPurgeInvocations } = ctx.storage.get(handlersKey);
+      const request: BatchInvocationsRequestBody = await ctx.request.json();
+      return batchPurgeInvocations(request);
+    },
+    async kill(ctx) {
+      const { batchKillInvocations } = ctx.storage.get(handlersKey);
+      const request: BatchInvocationsRequestBody = await ctx.request.json();
+      return batchKillInvocations(request);
+    },
+    async pause(ctx) {
+      const { batchPauseInvocations } = ctx.storage.get(handlersKey);
+      const request: BatchInvocationsRequestBody = await ctx.request.json();
+      return batchPauseInvocations(request);
+    },
+    async resume(ctx) {
+      const { batchResumeInvocations } = ctx.storage.get(handlersKey);
+      const request: BatchInvocationsRequestBody = await ctx.request.json();
+      return batchResumeInvocations(request);
     },
   },
   invocationsV2: {

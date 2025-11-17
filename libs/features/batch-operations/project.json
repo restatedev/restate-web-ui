@@ -1,0 +1,9 @@
+{
+  "name": "batch-operations",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/features/batch-operations/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project batch-operations --web",
+  "targets": {}
+}
