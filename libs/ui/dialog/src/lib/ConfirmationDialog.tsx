@@ -142,11 +142,11 @@ function ConfirmationDialogContent({
             <div className="flex flex-col gap-2">
               {footer}
               {error && <ErrorBanner error={error} />}
-              <div className="flex gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 <DialogClose>
                   <Button
                     variant="secondary"
-                    className="flex-auto"
+                    className=""
                     disabled={isPending}
                     autoFocus
                   >
@@ -156,7 +156,7 @@ function ConfirmationDialogContent({
                 <SubmitButton
                   variant={submitVariant}
                   form={formId}
-                  className="flex-auto"
+                  className=""
                   disabled={isSubmitDisabled}
                 >
                   {submitText}

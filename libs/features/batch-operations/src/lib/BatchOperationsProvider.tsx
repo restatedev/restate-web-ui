@@ -151,13 +151,17 @@ export function BatchOperationsProvider({
                         succeeded
                       </span>
                     </span>
-                    <span className="mx-1 inline-block h-4 w-px translate-y-1 bg-sky-800/40" />
-                    <span className="">
-                      {failed}{' '}
-                      <span className="text-xs font-normal opacity-80">
-                        failed
-                      </span>
-                    </span>
+                    {failed > 0 && (
+                      <>
+                        <span className="mx-1 inline-block h-4 w-px translate-y-1 bg-sky-800/40" />
+                        <span className="">
+                          {failed}{' '}
+                          <span className="text-xs font-normal opacity-80">
+                            failed
+                          </span>
+                        </span>
+                      </>
+                    )}
                     )
                   </span>
                 )}
