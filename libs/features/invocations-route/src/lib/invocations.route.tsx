@@ -634,12 +634,48 @@ function Component() {
             mini={false}
             menus={
               <>
-                <DropdownItem value="query">Query</DropdownItem>
-                <DropdownItem value="cancel">Cancel…</DropdownItem>
-                <DropdownItem value="kill">Kill…</DropdownItem>
-                <DropdownItem value="resume">Resume…</DropdownItem>
-                <DropdownItem value="pause">Pause…</DropdownItem>
-                <DropdownItem value="purge">Purge…</DropdownItem>
+                <DropdownItem value="query">
+                  <Icon
+                    name={IconName.ScanSearch}
+                    className="h-3.5 w-3.5 shrink-0 opacity-80"
+                  />
+                  Query
+                </DropdownItem>
+                <DropdownItem value="cancel">
+                  <Icon
+                    name={IconName.Cancel}
+                    className="h-3.5 w-3.5 shrink-0 opacity-80"
+                  />
+                  Cancel…
+                </DropdownItem>
+                <DropdownItem value="kill">
+                  <Icon
+                    name={IconName.Kill}
+                    className="h-3.5 w-3.5 shrink-0 opacity-80"
+                  />
+                  Kill…
+                </DropdownItem>
+                <DropdownItem value="resume">
+                  <Icon
+                    name={IconName.Play}
+                    className="h-3.5 w-3.5 shrink-0 opacity-80"
+                  />
+                  Resume…
+                </DropdownItem>
+                <DropdownItem value="pause">
+                  <Icon
+                    name={IconName.Pause}
+                    className="h-3.5 w-3.5 shrink-0 opacity-80"
+                  />
+                  Pause…
+                </DropdownItem>
+                <DropdownItem value="purge">
+                  <Icon
+                    name={IconName.Trash}
+                    className="h-3.5 w-3.5 shrink-0 opacity-80"
+                  />
+                  Purge…
+                </DropdownItem>
               </>
             }
             onSelect={(key) => {
