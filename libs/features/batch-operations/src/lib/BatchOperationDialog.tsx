@@ -133,7 +133,7 @@ export function BatchOperationDialog({
             config={config}
           />
         }
-        closeText={mutation.isPending ? 'Minimize' : 'Close'}
+        closeText={mutation.isPending ? 'Continue in background' : 'Close'}
         alertType={count && count > 0 ? config.alertType : undefined}
         alertContent={count && count > 0 ? config.alertContent : undefined}
         submitText={config.submitText}
@@ -201,7 +201,7 @@ export function BatchOperationDialog({
           )
         }
       >
-        {state.type === 'resume' && count && count > 0 && (
+        {state.type === 'resume' && count !== undefined && count > 0 && (
           <div className="mt-4">
             <FormFieldSelect
               label="Deployment"

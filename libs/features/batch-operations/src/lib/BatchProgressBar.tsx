@@ -8,7 +8,7 @@ import { ErrorBanner } from '@restate/ui/error';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Spinner } from '@restate/ui/loading';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
-import { formatPercentage } from '@restate/util/intl';
+import { formatPercentageWithoutFraction } from '@restate/util/intl';
 import { tv } from '@restate/util/styles';
 import { PropsWithChildren } from 'react';
 export const MAX_FAILED_INVOCATIONS = 100;
@@ -38,10 +38,10 @@ const remainderStyles = tv({
 });
 
 const markerStyles = tv({
-  base: '-translate-y-0.5 text-0.5xs text-gray-500',
+  base: 'flex -translate-y-0.5 items-center gap-1 text-0.5xs text-gray-500',
   variants: {
     moreThanHalf: {
-      true: 'translate-x-[-1.5ch]',
+      true: 'translate-x-[-1.5ch] flex-row-reverse',
       false: 'translate-x-[1ch]',
     },
   },
@@ -135,7 +135,6 @@ export function BatchProgressBar({
             </Popover>
           )}
           <div className="ml-auto" />
-          {isPending && <Spinner className="mr-0.5 h-4 w-4" />}
           <div>{children}</div>
         </span>
       </div>
@@ -176,7 +175,10 @@ export function BatchProgressBar({
                       moreThanHalf: successful + failed > 0.5 * total,
                     })}
                   >
-                    {formatPercentage(processedRatio)}
+                    <div className="text-left">
+                      {formatPercentageWithoutFraction(processedRatio)}
+                    </div>
+                    {isPending && <Spinner className="ml-auto h-3 w-3" />}
                   </div>
                 </div>
               </div>

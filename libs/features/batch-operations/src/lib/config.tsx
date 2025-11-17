@@ -93,7 +93,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     ),
     alertType: 'info',
     alertContent:
-      'Paused invocations will stop executing until manually resumed or unpaused.',
+      'Paused invocations will stop executing until manually resumed.',
     progressTitle: 'Pausing invocations',
     completedText: 'Paused',
     emptyMessage:

@@ -12,7 +12,10 @@ import type {
   FilterItem,
 } from '@restate/data-access/admin-api/spec';
 import { showProgressNotification } from '@restate/ui/notification';
-import { formatPercentage, formatPlurals } from '@restate/util/intl';
+import {
+  formatPercentageWithoutFraction,
+  formatPlurals,
+} from '@restate/util/intl';
 import { useBeforeUnload } from 'react-router';
 import { Ellipsis } from '@restate/ui/loading';
 import { BatchState } from './types';
@@ -139,7 +142,7 @@ export function BatchOperationsProvider({
                   <span className="">
                     <Ellipsis>{config.progressTitle}</Ellipsis>
                     <span className="ml-2 inline-block font-medium">
-                      {formatPercentage(
+                      {formatPercentageWithoutFraction(
                         (successful + failed) /
                           Math.max(successful + failed, total, 1),
                       )}
@@ -151,13 +154,17 @@ export function BatchOperationsProvider({
                         succeeded
                       </span>
                     </span>
-                    <span className="mx-1 inline-block h-4 w-px translate-y-1 bg-sky-800/40" />
-                    <span className="">
-                      {failed}{' '}
-                      <span className="text-xs font-normal opacity-80">
-                        failed
-                      </span>
-                    </span>
+                    {failed > 0 && (
+                      <>
+                        <span className="mx-1 inline-block h-4 w-px translate-y-1 bg-sky-800/40" />
+                        <span className="">
+                          {failed}{' '}
+                          <span className="text-xs font-normal opacity-80">
+                            failed
+                          </span>
+                        </span>
+                      </>
+                    )}
                     )
                   </span>
                 )}
