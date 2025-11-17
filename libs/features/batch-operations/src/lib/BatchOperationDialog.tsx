@@ -97,6 +97,8 @@ export function BatchOperationDialog({
     state.params && 'filters' in state.params ? state.params.filters : [],
     {
       enabled: state.params && 'filters' in state.params,
+      staleTime: 0,
+      refetchOnMount: true,
     },
   );
 

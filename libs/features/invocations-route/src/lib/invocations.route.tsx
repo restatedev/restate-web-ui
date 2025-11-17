@@ -52,6 +52,8 @@ import {
   useListSubscriptions,
 } from '@restate/data-access/admin-api-hooks';
 import { useRestateContext } from '@restate/features/restate-context';
+import { useBatchOperations } from '@restate/features/batch-operations';
+import { SplitButton } from '@restate/ui/split-button';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: 80,
@@ -419,6 +421,42 @@ function Component() {
   const hash = 'hash' + currentPageItems.map(({ id }) => id).join('');
 
   const { OnboardingGuide } = useRestateContext();
+  const updateFilters = () => {
+    const newSearchParams = new URLSearchParams(searchParams);
+    Array.from(newSearchParams.keys())
+      .filter((key) => key.startsWith('filter_'))
+      .forEach((key) => newSearchParams.delete(key));
+    query.items
+      .filter((clause) => clause.isValid)
+      .forEach((item) => {
+        newSearchParams.set(`filter_${item.fieldValue}`, String(item));
+      });
+    const sortedNewSearchParams = new URLSearchParams(newSearchParams);
+    sortedNewSearchParams.sort();
+    const sortedOldSearchParams = new URLSearchParams(searchParams);
+    sortedOldSearchParams.sort();
+
+    if (sortedOldSearchParams.toString() !== sortedNewSearchParams.toString()) {
+      setPageIndex(0);
+    }
+    setSearchParams(newSearchParams, { preventScrollReset: true });
+    const filters = query.items
+      .filter((clause) => clause.isValid)
+      .map(
+        (clause) =>
+          ({
+            field: clause.fieldValue,
+            operation: clause.value.operation!,
+            type: clause.type,
+            value: clause.value.value,
+          }) as FilterItem,
+      );
+    setQueryFilters(filters);
+
+    return filters;
+  };
+  const { batchPurge, batchResume, batchCancel, batchKill, batchPause } =
+    useBatchOperations();
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdate}>
       <div className="relative flex flex-auto flex-col gap-2">
@@ -575,40 +613,7 @@ function Component() {
           className="relative flex"
           onSubmit={async (event) => {
             event.preventDefault();
-            const newSearchParams = new URLSearchParams(searchParams);
-            Array.from(newSearchParams.keys())
-              .filter((key) => key.startsWith('filter_'))
-              .forEach((key) => newSearchParams.delete(key));
-            query.items
-              .filter((clause) => clause.isValid)
-              .forEach((item) => {
-                newSearchParams.set(`filter_${item.fieldValue}`, String(item));
-              });
-            const sortedNewSearchParams = new URLSearchParams(newSearchParams);
-            sortedNewSearchParams.sort();
-            const sortedOldSearchParams = new URLSearchParams(searchParams);
-            sortedOldSearchParams.sort();
-
-            if (
-              sortedOldSearchParams.toString() !==
-              sortedNewSearchParams.toString()
-            ) {
-              setPageIndex(0);
-            }
-            setSearchParams(newSearchParams, { preventScrollReset: true });
-            setQueryFilters(
-              query.items
-                .filter((clause) => clause.isValid)
-                .map(
-                  (clause) =>
-                    ({
-                      field: clause.fieldValue,
-                      operation: clause.value.operation!,
-                      type: clause.type,
-                      value: clause.value.value,
-                    }) as FilterItem,
-                ),
-            );
+            updateFilters();
             await queryCLient.invalidateQueries({ queryKey });
           }}
         >
@@ -622,12 +627,50 @@ function Component() {
               {ClauseChip}
             </AddQueryTrigger>
           </QueryBuilder>
-          <SubmitButton
-            isPending={isFetching}
-            className="absolute top-1 right-1 bottom-1 rounded-lg py-0 disabled:bg-gray-400 disabled:text-gray-200"
+          <SplitButton
+            className="absolute top-1 right-1 bottom-1 [&:has(button:disabled)_button]:pointer-events-none [&:has(button:disabled)_button]:bg-gray-400 [&:has(button:disabled)_button]:bg-none [&:has(button:disabled)_button]:text-gray-200 [&:has(button:disabled)_button]:shadow-none"
+            variant="primary"
+            splitClassName="rounded-r-lg [&_svg]:w-4 [&_svg]:h-4"
+            mini={false}
+            menus={
+              <>
+                <DropdownItem value="query">Query</DropdownItem>
+                <DropdownItem value="cancel">Cancel…</DropdownItem>
+                <DropdownItem value="kill">Kill…</DropdownItem>
+                <DropdownItem value="resume">Resume…</DropdownItem>
+                <DropdownItem value="pause">Pause…</DropdownItem>
+                <DropdownItem value="purge">Purge…</DropdownItem>
+              </>
+            }
+            onSelect={(key) => {
+              switch (key) {
+                case 'query': {
+                  updateFilters();
+                  return queryCLient.invalidateQueries({ queryKey });
+                }
+                case 'cancel':
+                  return batchCancel({ filters: updateFilters() });
+                case 'kill':
+                  return batchKill({ filters: updateFilters() });
+                case 'pause':
+                  return batchPause({ filters: updateFilters() });
+                case 'resume':
+                  return batchResume({ filters: updateFilters() });
+                case 'purge':
+                  return batchPurge({ filters: updateFilters() });
+
+                default:
+                  break;
+              }
+            }}
           >
-            Query
-          </SubmitButton>
+            <SubmitButton
+              isPending={isFetching}
+              className="rounded-l-lg rounded-r-none py-0 [&_svg]:h-4 [&_svg]:w-4"
+            >
+              Query
+            </SubmitButton>
+          </SplitButton>
         </Form>
       </LayoutOutlet>
     </SnapshotTimeProvider>
