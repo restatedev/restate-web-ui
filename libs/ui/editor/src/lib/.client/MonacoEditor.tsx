@@ -28,7 +28,7 @@ export function MonacoEditor({
         inherit: true,
       });
       editorRef.current = monaco.editor.create(el, {
-        value: formatValue(value),
+        value,
         language: 'json',
         folding: true,
         theme: 'restate',
@@ -54,7 +54,7 @@ export function MonacoEditor({
         stickyScroll: { enabled: false },
         scrollBeyondLastLine: false,
         scrollBeyondLastColumn: 0,
-
+        tabSize: 2,
         renderLineHighlight: 'none',
         ...(readonly && {
           readOnly: true,
@@ -62,20 +62,33 @@ export function MonacoEditor({
         }),
       });
       const updateStyles = () => {
-        const contentWidth = editorRef.current?.getContentWidth();
-        const contentHeight = editorRef.current?.getContentHeight();
-        if (contentWidth) {
-          const width = `${Math.max(contentWidth, 300)}ch`;
-          el.style.width = width;
-        }
-        if (contentHeight) {
-          el.style.height = `${Math.min(contentHeight, 400)}px`;
-        }
-        if (contentWidth || contentHeight) {
-          editorRef.current?.layout();
-        }
-      };
+        // Temporarily make it writable
+        editorRef.current?.updateOptions({
+          readOnly: false,
+          domReadOnly: false,
+        });
 
+        Promise.resolve(
+          editorRef.current?.getAction('editor.action.formatDocument')?.run(),
+        ).then(() => {
+          const contentWidth = editorRef.current?.getContentWidth();
+          const contentHeight = editorRef.current?.getContentHeight();
+          if (contentWidth) {
+            const width = `${Math.max(contentWidth, 300)}ch`;
+            el.style.width = width;
+          }
+          if (contentHeight) {
+            el.style.height = `${Math.min(contentHeight, 400)}px`;
+          }
+          if (contentWidth || contentHeight) {
+            editorRef.current?.layout();
+          }
+          editorRef.current?.updateOptions({
+            readOnly: readonly,
+            domReadOnly: readonly,
+          });
+        });
+      };
       const disposables = [
         editorRef.current.onDidChangeModelLanguageConfiguration(updateStyles),
         editorRef.current.onDidLayoutChange(updateStyles),
@@ -106,15 +119,4 @@ export function MonacoEditor({
       className="h-full min-h-4 max-w-full min-w-24 [&_.monaco-editor]:outline-hidden!"
     />
   );
-}
-
-function formatValue(value?: string) {
-  if (!value) {
-    return value;
-  }
-  try {
-    return JSON.stringify(JSON.parse(value), null, 2);
-    // eslint-disable-next-line no-empty
-  } catch (_) {}
-  return value;
 }
