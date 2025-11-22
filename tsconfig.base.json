@@ -35,6 +35,9 @@
         "libs/data-access/middleware-service-worker/src/index.ts"
       ],
       "@restate/data-access/query": ["libs/data-access/query/src/index.ts"],
+      "@restate/features/batch-operations": [
+        "libs/features/batch-operations/src/index.ts"
+      ],
       "@restate/features/deployment": ["libs/features/deployment/src/index.ts"],
       "@restate/features/deployment-details": [
         "libs/features/deployment-details/src/index.ts"

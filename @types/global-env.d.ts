@@ -11,4 +11,7 @@ declare module globalThis {
         input: string | URL | globalThis.Request,
         init?: RequestInit,
       ) => Promise<Response>);
+  var batchOperationPromises:
+    | undefined
+    | Record<string, PromiseWithResolvers<boolean> | null>;
 }

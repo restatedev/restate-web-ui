@@ -13,11 +13,9 @@ function countEstimate(
 ): { total_count: number; total_count_lower_bound: boolean } {
   if (receivedLessThanLimit) {
     return { total_count: rows, total_count_lower_bound: false };
-  } else if (rows > minimumCountEstimate) {
-    return { total_count: rows, total_count_lower_bound: true };
   } else {
     return {
-      total_count: minimumCountEstimate,
+      total_count: Math.max(rows, minimumCountEstimate),
       total_count_lower_bound: true,
     };
   }

@@ -506,6 +506,126 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/query/invocations/count': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Count invocations
+     * @description Count invocations
+     */
+    post: operations['count_invocations'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/invocations/cancel': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Batch cancel invocations
+     * @description Batch cancel invocations
+     */
+    post: operations['batch_cancel_invocations'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/invocations/purge': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Batch purge invocations
+     * @description Batch purge invocations
+     */
+    post: operations['batch_purge_invocations'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/invocations/kill': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Batch kill invocations
+     * @description Batch kill invocations
+     */
+    post: operations['batch_kill_invocations'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/invocations/pause': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Batch pause invocations
+     * @description Batch pause invocations
+     */
+    post: operations['batch_pause_invocations'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/invocations/resume': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Batch resume invocations
+     * @description Batch resume invocations
+     */
+    post: operations['batch_resume_invocations'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/query/invocations/{invocationId}': {
     parameters: {
       query?: never;
@@ -1646,6 +1766,58 @@ export interface components {
     VirtualObjectState: string[];
     ListInvocationsRequestBody: {
       filters?: components['schemas']['FilterItem'][];
+    };
+    BatchInvocationsRequestBody:
+      | {
+          invocationIds: string[];
+          pageSize?: number;
+        }
+      | {
+          filters: components['schemas']['FilterItem'][];
+          pageSize?: number;
+          /** Format: date-time */
+          createdAfter?: string;
+        };
+    BatchResumeInvocationsRequestBody:
+      | {
+          invocationIds: string[];
+          /**
+           * @description Deployment selection strategy: 'keep' uses the current deployment, 'latest' uses the latest deployment
+           * @enum {string}
+           */
+          deployment?: 'keep' | 'latest';
+          pageSize?: number;
+        }
+      | {
+          filters: components['schemas']['FilterItem'][];
+          pageSize?: number;
+          /** Format: date-time */
+          createdAfter?: string;
+          /**
+           * @description Deployment selection strategy: 'keep' uses the current deployment, 'latest' uses the latest deployment
+           * @enum {string}
+           */
+          deployment?: 'keep' | 'latest';
+        };
+    BatchInvocationsResponse: {
+      /** @description Number of successfully processed invocations */
+      successful: number;
+      /** @description Number of failed processed invocations */
+      failed: number;
+      /** @description List of invocation IDs that failed to process with their error messages */
+      failedInvocationIds?: {
+        /** @description The invocation ID that failed */
+        invocationId: string;
+        /** @description The error message for this invocation */
+        error: string;
+      }[];
+      /** @description Whether there are more pages available (only for filter-based requests) */
+      hasMore?: boolean;
+      /**
+       * Format: date-time
+       * @description The created_at timestamp of the last invocation in the current page, used for pagination
+       */
+      lastCreatedAt?: string;
     };
     ListVirtualObjectStateRequestBody: {
       filters?: components['schemas']['FilterItem'][];
@@ -4330,6 +4502,440 @@ export interface operations {
             total_count_lower_bound?: boolean;
             limit?: number;
           };
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  count_invocations: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ListInvocationsRequestBody'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            count: number;
+            isLowerBound?: boolean;
+          };
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  batch_cancel_invocations: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['BatchInvocationsRequestBody'];
+      };
+    };
+    responses: {
+      /** @description Batch cancellation result */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['BatchInvocationsResponse'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  batch_purge_invocations: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['BatchInvocationsRequestBody'];
+      };
+    };
+    responses: {
+      /** @description Batch purge result */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['BatchInvocationsResponse'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  batch_kill_invocations: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['BatchInvocationsRequestBody'];
+      };
+    };
+    responses: {
+      /** @description Batch kill result */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['BatchInvocationsResponse'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  batch_pause_invocations: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['BatchInvocationsRequestBody'];
+      };
+    };
+    responses: {
+      /** @description Batch pause result */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['BatchInvocationsResponse'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  batch_resume_invocations: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['BatchResumeInvocationsRequestBody'];
+      };
+    };
+    responses: {
+      /** @description Batch resume result */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['BatchInvocationsResponse'];
         };
       };
       400: {

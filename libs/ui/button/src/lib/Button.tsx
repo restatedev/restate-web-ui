@@ -37,7 +37,7 @@ const styles = tv({
       icon: 'flex items-center justify-center border-0 p-1 text-gray-600 shadow-none hover:bg-black/5 disabled:bg-transparent pressed:bg-black/10',
     },
     isDisabled: {
-      true: 'border-black/5 bg-gray-100 bg-none text-gray-400 dark:border-white/5 dark:bg-zinc-800 dark:text-zinc-600 forced-colors:text-[GrayText]',
+      true: 'border-black/5 bg-gray-100 bg-none text-gray-400',
     },
   },
   defaultVariants: {

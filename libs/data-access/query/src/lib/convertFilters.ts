@@ -324,7 +324,7 @@ function deploymentNegativeFilter(value?: string) {
 }
 
 export function convertInvocationsFilters(filters: FilterItem[]) {
-  const statusFilter = filters.find((filter) => filter.field === 'status');
+  const statusFilters = filters.filter((filter) => filter.field === 'status');
   const deploymentFilter = filters.find(
     (filter) => filter.field === 'deployment',
   );
@@ -362,75 +362,77 @@ export function convertInvocationsFilters(filters: FilterItem[]) {
       }
     }
   }
-  if (statusFilter) {
-    if (statusFilter.type === 'STRING') {
-      const { groups, operator } = getStatusFilterString(statusFilter.value);
-      mappedFilters.push(
-        groups
-          .map(
-            ({ filters, operator }) =>
-              `(${filters
-                .map(convertFilterToSqlClause)
-                .filter(Boolean)
-                .join(` ${operator} `)})`,
-          )
-          .filter(Boolean)
-          .join(` ${operator} `),
-      );
-    } else if (
-      statusFilter.type === 'STRING_LIST' &&
-      statusFilter.operation === 'IN'
-    ) {
-      mappedFilters.push(
-        `(${statusFilter.value
-          .map((value) => {
-            const { groups, operator } = getStatusFilterString(value);
-            return groups
-              .map(
-                ({ filters, operator }) =>
-                  `(${filters
-                    .map(convertFilterToSqlClause)
-                    .filter(Boolean)
-                    .join(` ${operator} `)})`,
-              )
-              .filter(Boolean)
-              .map((clause) => `(${clause})`)
-              .join(` ${operator} `);
-          })
-          .map((clause) => `(${clause})`)
-          .join(' OR ')})`,
-      );
-    } else if (
-      statusFilter.type === 'STRING_LIST' &&
-      statusFilter.operation === 'NOT_IN'
-    ) {
-      mappedFilters.push(
-        `(${statusFilter.value
-          .map((value) => {
-            const { groups, operator } = getStatusFilterString(value);
-
-            return groups
-              .map(({ filters, operator }) =>
-                filters
-                  .map(
-                    (filter) =>
-                      ({
-                        ...filter,
-                        operation: negateOperation(filter.operation),
-                      }) as FilterItem,
-                  )
+  if (statusFilters.length > 0) {
+    statusFilters.forEach((statusFilter) => {
+      if (statusFilter.type === 'STRING') {
+        const { groups, operator } = getStatusFilterString(statusFilter.value);
+        mappedFilters.push(
+          groups
+            .map(
+              ({ filters, operator }) =>
+                `(${filters
                   .map(convertFilterToSqlClause)
                   .filter(Boolean)
-                  .join(` ${negateOperator(operator)} `),
-              )
-              .filter(Boolean)
-              .map((clause) => `(${clause})`)
-              .join(` ${negateOperator(operator)} `);
-          })
-          .map((clause) => `(${clause})`)
-          .join(' AND ')})`,
-      );
-    }
+                  .join(` ${operator} `)})`,
+            )
+            .filter(Boolean)
+            .join(` ${operator} `),
+        );
+      } else if (
+        statusFilter.type === 'STRING_LIST' &&
+        statusFilter.operation === 'IN'
+      ) {
+        mappedFilters.push(
+          `(${statusFilter.value
+            .map((value) => {
+              const { groups, operator } = getStatusFilterString(value);
+              return groups
+                .map(
+                  ({ filters, operator }) =>
+                    `(${filters
+                      .map(convertFilterToSqlClause)
+                      .filter(Boolean)
+                      .join(` ${operator} `)})`,
+                )
+                .filter(Boolean)
+                .map((clause) => `(${clause})`)
+                .join(` ${operator} `);
+            })
+            .map((clause) => `(${clause})`)
+            .join(' OR ')})`,
+        );
+      } else if (
+        statusFilter.type === 'STRING_LIST' &&
+        statusFilter.operation === 'NOT_IN'
+      ) {
+        mappedFilters.push(
+          `(${statusFilter.value
+            .map((value) => {
+              const { groups, operator } = getStatusFilterString(value);
+
+              return groups
+                .map(({ filters, operator }) =>
+                  filters
+                    .map(
+                      (filter) =>
+                        ({
+                          ...filter,
+                          operation: negateOperation(filter.operation),
+                        }) as FilterItem,
+                    )
+                    .map(convertFilterToSqlClause)
+                    .filter(Boolean)
+                    .join(` ${negateOperator(operator)} `),
+                )
+                .filter(Boolean)
+                .map((clause) => `(${clause})`)
+                .join(` ${negateOperator(operator)} `);
+            })
+            .map((clause) => `(${clause})`)
+            .join(' AND ')})`,
+        );
+      }
+    });
   }
 
   if (mappedFilters.length === 0) {

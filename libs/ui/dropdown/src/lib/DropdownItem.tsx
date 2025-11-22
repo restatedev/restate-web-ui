@@ -36,12 +36,20 @@ const destructiveStyles = tv({
 
 function StyledDropdownItem({
   destructive,
+  className,
   ...props
-}: AriaMenuItemProps & { destructive?: boolean }) {
+}: Omit<AriaMenuItemProps, 'className'> & {
+  destructive?: boolean;
+  className?: string;
+}) {
   return (
     <AriaMenuItem
       {...props}
-      className={destructive ? destructiveStyles : styles}
+      className={({ isFocused, isDisabled }) =>
+        destructive
+          ? destructiveStyles({ className, isDisabled, isFocused })
+          : styles({ className, isDisabled, isFocused })
+      }
     >
       {composeRenderProps(
         props.children,
