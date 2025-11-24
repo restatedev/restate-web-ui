@@ -167,8 +167,12 @@ function HandlerInputOutput({
   withPlayground?: boolean;
 }) {
   const hasSchema = Boolean(schema);
+  const hasMultipleType = Array.isArray(schema?.type);
   const isObjectSchema =
-    hasSchema && (schema.type === 'object' || schema.anyOf);
+    hasSchema &&
+    (schema.type === 'object' ||
+      schema.anyOf ||
+      (hasMultipleType && schema.type.includes('object')));
   const { base, value } = inputOutputStyles({
     className,
     hasSchema,
@@ -176,7 +180,7 @@ function HandlerInputOutput({
 
   if (!isObjectSchema && hasSchema) {
     return (
-      <span className="max-w-fit grow basis-20 truncate rounded-xs px-0.5 py-0 font-mono text-2xs text-inherit text-zinc-500">
+      <span className="max-w-fit grow basis-20 truncate rounded-xs px-0.5 py-0 font-mono text-2xs text-inherit">
         {schema.type ?? getContentTypeLabel(contentType)}
       </span>
     );
@@ -184,7 +188,7 @@ function HandlerInputOutput({
 
   if (!hasSchema && contentType === 'none') {
     return labelProp === 'Request' ? null : (
-      <span className="max-w-fit grow basis-20 truncate rounded-xs px-0.5 py-0 font-mono text-2xs text-inherit text-zinc-500">
+      <span className="max-w-fit grow basis-20 truncate rounded-xs px-0.5 py-0 font-mono text-2xs text-inherit">
         void
       </span>
     );

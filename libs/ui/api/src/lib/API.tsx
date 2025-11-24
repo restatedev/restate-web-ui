@@ -4,6 +4,7 @@ import { useId, Component, Suspense, lazy } from 'react';
 import type { ErrorInfo, PropsWithChildren } from 'react';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Spinner } from '@restate/ui/loading';
+import { tv } from '@restate/util/styles';
 
 if (typeof window !== 'undefined') {
   import('prism-react-renderer');
@@ -41,6 +42,9 @@ export const API = ({
   );
 };
 
+const schemaStyles = tv({
+  base: 'spotlight [&_svg.fa-fw]:ml-1 [&_svg.fa-fw]:text-2xs!',
+});
 export const JsonSchemaViewer = ({
   schema,
   className,
@@ -59,7 +63,7 @@ export const JsonSchemaViewer = ({
         }
       >
         <JsonSchemaViewerInner
-          className={'spotlight ' + className}
+          className={schemaStyles({ className })}
           schema={schema as any}
           disableCrumbs
           renderRootTreeLines
