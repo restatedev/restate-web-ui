@@ -774,17 +774,6 @@ export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
   const hasFilters = Array.from(url.searchParams.keys()).some((key) =>
     key.startsWith('filter_'),
   );
-
-  if (!hasFilters) {
-    url.searchParams.append(
-      'filter_invoked_by',
-      JSON.stringify({
-        operation: 'EQUALS',
-        value: 'ingress',
-      }),
-    );
-    return redirect(url.search + window.location.hash);
-  }
 };
 
 export function shouldRevalidate(arg: ShouldRevalidateFunctionArgs) {
