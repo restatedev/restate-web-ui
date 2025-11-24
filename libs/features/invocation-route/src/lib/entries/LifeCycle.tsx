@@ -26,7 +26,7 @@ export function LifeCycle({
           <Badge
             variant="warning"
             size="sm"
-            className="gap-0 px-0 py-0 font-sans font-normal"
+            className="gap-0 px-0 py-0.5 font-sans font-normal"
           >
             <div className="font-mono text-2xs">
               <Failure

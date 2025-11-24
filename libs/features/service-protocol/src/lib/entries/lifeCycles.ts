@@ -72,31 +72,38 @@ export function lifeCycles(
       isPending: true,
     });
   }
-  if (invocation.status === 'paused') {
-    const pausedErrorRawEntry = eventRawEntries.find(
-      (entry) => entry.entry_type === 'Event: Paused',
-    );
-    const pausedErrorEntry = pausedErrorRawEntry
-      ? (event(pausedErrorRawEntry, [], invocation) as Extract<
-          JournalEntryV2,
-          { type?: 'Event: Paused'; category?: 'event' }
-        >)
-      : undefined;
-    events.push({
-      type: 'Paused',
-      start: pausedErrorEntry?.start ?? invocation.modified_at,
-      category: 'event',
-      end: undefined,
-      isPending: true,
-      message: pausedErrorEntry?.message,
-      code: pausedErrorEntry?.code,
-      relatedCommandName: pausedErrorEntry?.relatedCommandName,
-      relatedCommandType: pausedErrorEntry?.relatedCommandType,
-      relatedRestateErrorCode: pausedErrorEntry?.relatedRestateErrorCode,
-      relatedCommandIndex: pausedErrorEntry?.relatedCommandIndex,
-      index: indexCount,
-    });
+  const hadPauseEntry = eventRawEntries.some(
+    (entry) => entry.entry_type === 'Event: Paused',
+  );
+  if (invocation.status === 'paused' || hadPauseEntry) {
+    eventRawEntries
+      .filter((entry) => entry.entry_type === 'Event: Paused')
+      .forEach((pausedErrorRawEntry, index, arr) => {
+        const isLast = index === arr.length - 1;
+        const isPending = isLast && invocation.status === 'paused';
+        const pausedErrorEntry = pausedErrorRawEntry
+          ? (event(pausedErrorRawEntry, [], invocation) as Extract<
+              JournalEntryV2,
+              { type?: 'Event: Paused'; category?: 'event' }
+            >)
+          : undefined;
+        events.push({
+          type: 'Paused',
+          start: pausedErrorEntry?.start,
+          category: 'event',
+          end: undefined,
+          isPending,
+          message: pausedErrorEntry?.message,
+          code: pausedErrorEntry?.code,
+          relatedCommandName: pausedErrorEntry?.relatedCommandName,
+          relatedCommandType: pausedErrorEntry?.relatedCommandType,
+          relatedRestateErrorCode: pausedErrorEntry?.relatedRestateErrorCode,
+          relatedCommandIndex: pausedErrorEntry?.relatedCommandIndex,
+          index: indexCount + index,
+        });
+      });
   }
+
   if (invocation.running_at) {
     events.push({
       type: 'Running',
