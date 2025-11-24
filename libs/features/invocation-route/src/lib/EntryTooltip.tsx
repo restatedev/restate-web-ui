@@ -198,7 +198,7 @@ const ENTRY_NOTIFICATIONS_TITLES: {
 export const ENTRY_EVENTS_TITLES: {
   [K in EventEntryType]: string;
 } = {
-  TransientError: 'Retryable error at',
+  'Event: TransientError': 'Retryable error at',
   Created: 'Created at',
   Running: 'Running',
   Retrying: 'Next retry at',
@@ -207,4 +207,20 @@ export const ENTRY_EVENTS_TITLES: {
   Paused: 'Paused',
   Pending: 'Pending',
   Completion: '',
+  'Event: Paused': '',
+};
+
+export const ENTRY_EVENTS_ENTRY_LABELS: {
+  [K in EventEntryType]: string;
+} = {
+  'Event: TransientError': 'Retryable error at',
+  Created: 'Created at',
+  Running: 'Running',
+  Retrying: 'Next retry at',
+  Scheduled: 'Scheduled to run at',
+  Suspended: 'Suspended',
+  Paused: 'Paused after',
+  Pending: 'Pending',
+  Completion: '',
+  'Event: Paused': '',
 };

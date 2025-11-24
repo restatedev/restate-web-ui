@@ -91,7 +91,6 @@ export const ENTRY_EVENTS_COMPONENTS: {
       >
     | undefined;
 } = {
-  TransientError: NoCommandTransientError,
   Created: LifeCycle,
   Running: LifeCycle,
   Suspended: LifeCycle,
@@ -100,6 +99,8 @@ export const ENTRY_EVENTS_COMPONENTS: {
   Retrying: LifeCycle,
   Scheduled: LifeCycle,
   Paused: LifeCycle,
+  'Event: TransientError': NoCommandTransientError,
+  'Event: Paused': undefined,
 };
 
 function digitCount(n: number) {
@@ -169,7 +170,11 @@ export function Entry({
           )}
         </div>
 
-        <div className="max-w-fit min-w-0 flex-auto" data-entry ref={setPortal}>
+        <div
+          className="flex max-w-fit min-w-0 flex-auto gap-1"
+          data-entry
+          ref={setPortal}
+        >
           {EntrySpecificComponent && (
             <RelatedEntries invocation={invocation} entry={entry}>
               <EntrySpecificComponent entry={entry} invocation={invocation} />

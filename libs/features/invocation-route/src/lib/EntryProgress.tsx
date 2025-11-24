@@ -217,7 +217,7 @@ const progressStyles = tv({
 });
 
 function getPointVariant(entry?: JournalEntryV2) {
-  if (entry?.type === 'TransientError') {
+  if (entry?.type === 'Event: TransientError') {
     return 'warning';
   }
   if (entry?.type === 'Retrying') {

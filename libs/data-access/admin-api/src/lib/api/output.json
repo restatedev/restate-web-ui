@@ -5680,6 +5680,9 @@
                 "$ref": "#/components/schemas/TransientErrorJournalEntryV2"
               },
               {
+                "$ref": "#/components/schemas/PausedErrorJournalEntryV2"
+              },
+              {
                 "$ref": "#/components/schemas/CreatedLifecycleJournalEntryV2"
               },
               {
@@ -5813,6 +5816,8 @@
               "Command: GetInvocationOutput",
               "Command: Custom",
               "Command: SendSignal",
+              "Event: TransientError",
+              "Event: Paused",
               "Event",
               "Notification: Signal",
               "Notification: Sleep",
@@ -5958,9 +5963,9 @@
           },
           "type": {
             "type": "string",
-            "enum": ["TransientError"]
+            "enum": ["Event: TransientError"]
           },
-          "stackTrace": {
+          "relatedCommandName": {
             "type": "string"
           },
           "message": {
@@ -5969,16 +5974,41 @@
           "code": {
             "type": "integer"
           },
-          "errorCount": {
-            "type": "integer"
-          },
-          "relatedCommandName": {
+          "relatedRestateErrorCode": {
             "type": "string"
           },
           "relatedCommandType": {
             "type": "string"
           },
+          "relatedCommandIndex": {
+            "type": "integer"
+          }
+        }
+      },
+      "PausedErrorJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": ["event"]
+          },
+          "type": {
+            "type": "string",
+            "enum": ["Event: Paused"]
+          },
+          "relatedCommandName": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "code": {
+            "type": "integer"
+          },
           "relatedRestateErrorCode": {
+            "type": "string"
+          },
+          "relatedCommandType": {
             "type": "string"
           },
           "relatedCommandIndex": {
@@ -6061,9 +6091,6 @@
           "type": {
             "type": "string",
             "enum": ["Paused"]
-          },
-          "stackTrace": {
-            "type": "string"
           },
           "message": {
             "type": "string"

@@ -22,7 +22,7 @@ export async function getInvocationJournalV2(
       `SELECT id, index, appended_at, entry_type, name, entry_json, raw, version, completed, sleep_wakeup_at, invoked_id, invoked_target, promise_name FROM sys_journal WHERE id = '${invocationId}'`,
     ),
     this.query(
-      `SELECT after_journal_entry_index, appended_at, event_type, event_json from sys_journal_events WHERE id = '${invocationId}' AND event_type = 'Paused' ORDER BY appended_at DESC LIMIT 1`,
+      `SELECT after_journal_entry_index, appended_at, event_type, event_json from sys_journal_events WHERE id = '${invocationId}'`,
     ),
   ]);
   const invocation = invocationQuery.rows
@@ -46,43 +46,62 @@ export async function getInvocationJournalV2(
   const version = journalQuery.rows.at(0)?.version;
 
   let commandCount = 0;
+  const eventsEntries = eventsQuery.rows.map(
+    (entry, i) =>
+      ({
+        ...entry,
+        entry_type: `Event: ${entry.event_type}`,
+        index: journalQuery.rows.length + i,
+      }) as JournalRawEntry,
+  );
   const entriesWithCommandIndex = [
     ...(journalQuery.rows as JournalRawEntry[]),
-    ...eventsQuery.rows.map(
-      (entry) =>
-        ({
-          ...entry,
-          entry_type: entry.event_type,
-          index: journalQuery.rows.length + 1,
-        }) as JournalRawEntry,
+    ...lifeCycles(
+      eventsEntries,
+      journalQuery.rows.length + eventsEntries.length,
+      invocation,
     ),
-  ].reduce((results, rawEntry) => {
-    if (rawEntry.entry_type?.startsWith('Command:')) {
-      results.push({ ...rawEntry, command_index: commandCount });
-      commandCount++;
-    } else {
-      results.push(rawEntry);
-    }
+    ...eventsEntries,
+  ].reduce(
+    (results, rawEntry) => {
+      if ('entry_type' in rawEntry) {
+        if (rawEntry.entry_type?.startsWith('Command:')) {
+          results.push({ ...rawEntry, command_index: commandCount });
+          commandCount++;
+        } else {
+          results.push(rawEntry);
+        }
+      } else {
+        results.push(rawEntry);
+      }
 
-    return results;
-  }, [] as JournalRawEntryWithCommandIndex[]);
+      return results;
+    },
+    [] as (JournalRawEntryWithCommandIndex | JournalEntryV2)[],
+  );
 
   const entries = entriesWithCommandIndex
     .reduceRight((results, entry) => {
-      const convertedEntry = convertJournalV2(entry, results, invocation);
-      if (convertedEntry) {
-        return [...results, convertedEntry];
+      if ('entry_type' in entry) {
+        const convertedEntry = convertJournalV2(entry, results, invocation);
+        if (convertedEntry) {
+          return [...results, convertedEntry];
+        } else {
+          return results;
+        }
       } else {
-        return results;
+        return [...results, entry];
       }
     }, [] as JournalEntryV2[])
     .reverse();
 
-  const entriesWithLifeCycleEvents = [
-    ...lifeCycles(entries, invocation),
-    ...entries,
-  ].sort((a, b) => {
-    if (typeof a.index === 'number' && typeof b.index === 'number') {
+  const entriesWithLifeCycleEvents = entries.sort((a, b) => {
+    if (
+      typeof a.index === 'number' &&
+      typeof b.index === 'number' &&
+      a.type === 'command' &&
+      b.type === 'command'
+    ) {
       return a.index - b.index;
     } else if (typeof a.start === 'string' && typeof b.start === 'string') {
       return new Date(a.start).getTime() - new Date(b.start).getTime();
@@ -102,10 +121,11 @@ export async function getInvocationJournalV2(
       category: invocation.last_failure_related_entry_name
         ? 'command'
         : 'event',
-      type: invocation.last_failure_related_entry_type ?? 'TransientError',
+      type:
+        invocation.last_failure_related_entry_type ?? 'Event: TransientError',
       index: invocation.last_failure_related_entry_index,
       ...(invocation.last_failure_related_entry_type && {
-        commandIndex: journalQuery.rows.length,
+        commandIndex: entriesWithCommandIndex.length,
       }),
       error: new RestateError(
         invocation.last_failure,

@@ -13,9 +13,15 @@ function isTransientError(
   entry: JournalEntryV2,
 ): entry is Extract<
   JournalEntryV2,
-  { type?: 'TransientError'; category?: 'event' }
+  { type?: 'Event: TransientError'; category?: 'event' }
 > {
-  return entry.type === 'TransientError' && entry.category === 'event';
+  return entry.type === 'Event: TransientError' && entry.category === 'event';
+}
+
+function isPausedError(
+  entry: JournalEntryV2,
+): entry is Extract<JournalEntryV2, { type?: 'Paused'; category?: 'event' }> {
+  return entry.type === 'Paused' && entry.category === 'event';
 }
 
 export function TransientError({
@@ -30,7 +36,7 @@ export function TransientError({
   index: number;
   invocation?: Invocation;
 }>) {
-  if (isTransientError(entry)) {
+  if (isTransientError(entry) || isPausedError(entry)) {
     return (
       <div className="item-center mr-2 flex gap-2">
         <Badge
@@ -67,7 +73,7 @@ export function TransientError({
                   entry?.error?.code ||
                   '',
               )}
-              message={[entry.message, entry?.error?.message, entry.stackTrace]
+              message={[entry.message, entry?.error?.message]
                 .filter(Boolean)
                 .join('\n\n')}
               isRetrying
@@ -91,7 +97,10 @@ export function NoCommandTransientError({
   entry,
   invocation,
 }: EntryProps<
-  Extract<JournalEntryV2, { type?: 'TransientError'; category?: 'event' }>
+  Extract<
+    JournalEntryV2,
+    { type?: 'Event: TransientError'; category?: 'event' }
+  >
 >) {
   if (
     isTransientError(entry) &&
@@ -118,7 +127,7 @@ export function NoCommandTransientError({
                   entry?.error?.code ||
                   '',
               )}
-              message={[entry.message, entry?.error?.message, entry.stackTrace]
+              message={[entry.message, entry?.error?.message]
                 .filter(Boolean)
                 .join('\n\n')}
               isRetrying

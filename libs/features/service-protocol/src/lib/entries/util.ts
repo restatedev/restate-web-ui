@@ -118,13 +118,8 @@ export function getEntryResultV2(
   const transientFailures = nextEntries.filter(
     (entry) =>
       entry.category === 'event' &&
-      entry.type === 'TransientError' &&
-      (
-        entry as Extract<
-          JournalEntryV2,
-          { type?: 'TransientError'; category?: 'event' }
-        >
-      ).relatedCommandIndex === commandIndex,
+      'relatedCommandIndex' in entry &&
+      entry.relatedCommandIndex === commandIndex,
   );
 
   const hasTransientFailures = transientFailures.length > 0;

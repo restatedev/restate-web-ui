@@ -45,7 +45,7 @@ const EVENTS_COMPONENTS: {
       >
     | undefined;
 } = {
-  TransientError: TransientError,
+  'Event: TransientError': TransientError,
   Created: undefined,
   Running: undefined,
   Suspended: undefined,
@@ -53,7 +53,8 @@ const EVENTS_COMPONENTS: {
   Completion: undefined,
   Retrying: undefined,
   Scheduled: undefined,
-  Paused: undefined,
+  Paused: TransientError,
+  'Event: Paused': undefined,
 };
 
 export function RelatedEntries({
@@ -81,7 +82,6 @@ export function RelatedEntries({
           const relatedEntry = invocation?.journal?.entries?.find(
             (entry) => entry.index === relatedIndex,
           );
-
           if (
             !relatedEntry ||
             entry.commandIndex === undefined ||

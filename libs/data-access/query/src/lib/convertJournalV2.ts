@@ -77,7 +77,9 @@ const JOURNAL_ENTRY_CONVERT_MAP: Partial<
   CompleteAwakeable: completeAwakeable,
   Run: run,
   AttachInvocation: attachInvocation,
-  Paused: event,
+
+  'Event: Paused': event,
+  'Event: TransientError': event,
 
   'Command: Input': input,
   'Command: Output': output,

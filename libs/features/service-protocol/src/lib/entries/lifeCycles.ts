@@ -1,7 +1,9 @@
 import {
   Invocation,
   JournalEntryV2,
+  JournalRawEntry,
 } from '@restate/data-access/admin-api/spec';
+import { event } from './event';
 
 type LifeCycleEvent =
   | Extract<JournalEntryV2, { type?: 'Completion'; category?: 'event' }>
@@ -15,7 +17,8 @@ type LifeCycleEvent =
   | Extract<JournalEntryV2, { type?: 'Retrying'; category?: 'event' }>;
 
 export function lifeCycles(
-  entries: JournalEntryV2[],
+  eventRawEntries: JournalRawEntry[],
+  indexCount: number,
   invocation?: Invocation,
 ): LifeCycleEvent[] {
   if (!invocation) {
@@ -69,6 +72,31 @@ export function lifeCycles(
       isPending: true,
     });
   }
+  if (invocation.status === 'paused') {
+    const pausedErrorRawEntry = eventRawEntries.find(
+      (entry) => entry.entry_type === 'Event: Paused',
+    );
+    const pausedErrorEntry = pausedErrorRawEntry
+      ? (event(pausedErrorRawEntry, [], invocation) as Extract<
+          JournalEntryV2,
+          { type?: 'Event: Paused'; category?: 'event' }
+        >)
+      : undefined;
+    events.push({
+      type: 'Paused',
+      start: pausedErrorEntry?.start ?? invocation.modified_at,
+      category: 'event',
+      end: undefined,
+      isPending: true,
+      message: pausedErrorEntry?.message,
+      code: pausedErrorEntry?.code,
+      relatedCommandName: pausedErrorEntry?.relatedCommandName,
+      relatedCommandType: pausedErrorEntry?.relatedCommandType,
+      relatedRestateErrorCode: pausedErrorEntry?.relatedRestateErrorCode,
+      relatedCommandIndex: pausedErrorEntry?.relatedCommandIndex,
+      index: indexCount,
+    });
+  }
   if (invocation.running_at) {
     events.push({
       type: 'Running',
@@ -87,7 +115,7 @@ export function lifeCycles(
       isPending: invocation.status === 'running',
     });
   }
-  if (invocation.next_retry_at) {
+  if (invocation.next_retry_at && invocation.status === 'backing-off') {
     events.push({
       type: 'Retrying',
       category: 'event',
