@@ -1,4 +1,7 @@
-import type { JournalEntryV2 } from '@restate/data-access/admin-api';
+import type {
+  Invocation,
+  JournalEntryV2,
+} from '@restate/data-access/admin-api';
 import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api-hooks';
 import { formatDurations } from '@restate/util/intl';
 import { getDuration } from '@restate/util/snapshot-time';
@@ -102,6 +105,9 @@ const lineStyles = tv({
       warning: {
         line: 'from-orange-300 to-orange-300',
       },
+      backingOff: {
+        line: 'bg-[linear-gradient(to_right,--theme(--color-orange-300)_calc(100%-200px),--theme(--color-orange-300/0)_100%)]',
+      },
       info: {
         line: 'from-blue-300 to-blue-300',
       },
@@ -172,7 +178,8 @@ function Line({
     | 'warning'
     | 'default'
     | 'idleNeutral'
-    | 'idleWarning';
+    | 'idleWarning'
+    | 'backingOff';
 }>) {
   const { line } = lineStyles({ variant, isAmbiguous });
   return (
@@ -248,9 +255,9 @@ function getPointVariant(entry?: JournalEntryV2) {
   }
 }
 
-function getLineVariant(entry?: JournalEntryV2) {
+function getLineVariant(entry?: JournalEntryV2, invocation?: Invocation) {
   if (entry?.isRetrying) {
-    return 'warning';
+    return invocation?.status === 'backing-off' ? 'backingOff' : 'warning';
   }
 
   if (entry?.resultType === 'failure') {
@@ -414,7 +421,7 @@ function InnerEntryProgress({
     !(
       entry.type === 'Run' &&
       entry.category === 'command' &&
-      invocation?.status !== 'running'
+      !['running'].includes(String(invocation?.status))
     );
   return (
     <>
@@ -428,7 +435,7 @@ function InnerEntryProgress({
             <Point variant={getPointVariant(entry)} />
           ) : (
             <Line
-              variant={getLineVariant(entry)}
+              variant={getLineVariant(entry, invocation)}
               isAmbiguous={entryCompletionIsAmbiguous}
             >
               {isPending && (
