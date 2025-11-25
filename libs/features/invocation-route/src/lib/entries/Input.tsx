@@ -33,7 +33,7 @@ export function Input({
       })}
     >
       {entry ? (
-        <div className="flex items-center">
+        <div className="flex translate-y-px items-center">
           <Icon
             name={IconName.Function}
             className="-mr-0.5 h-4 w-4 shrink-0 text-zinc-400"
