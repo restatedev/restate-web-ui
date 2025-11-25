@@ -220,6 +220,9 @@ function getPointVariant(entry?: JournalEntryV2) {
   if (entry?.type === 'Event: TransientError') {
     return 'warning';
   }
+  if (entry?.type === 'Paused') {
+    return 'warning';
+  }
   if (entry?.type === 'Retrying') {
     return 'warning';
   }
