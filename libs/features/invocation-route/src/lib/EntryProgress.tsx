@@ -369,6 +369,9 @@ function InnerEntryProgress({
     );
   }
 
+  if (entry.type === 'Event: Paused') {
+    return null;
+  }
   // TODO: move to middleware
   const isPending =
     entry?.isPending &&
