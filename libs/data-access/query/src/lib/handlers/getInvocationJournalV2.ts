@@ -99,8 +99,8 @@ export async function getInvocationJournalV2(
     if (
       typeof a.index === 'number' &&
       typeof b.index === 'number' &&
-      a.type === 'command' &&
-      b.type === 'command'
+      ((a.category === 'command' && b.category === 'command') ||
+        (a.category === 'event' && b.category === 'event'))
     ) {
       return a.index - b.index;
     } else if (typeof a.start === 'string' && typeof b.start === 'string') {
