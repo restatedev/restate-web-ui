@@ -182,10 +182,10 @@ export function Entry({
           )}
         </div>
         <div className="relative min-w-20 flex-auto">
-          <div className="h2-px bg2-gray-400/50 absolute right-0 left-0 translate-y-[0.5px] border-b border-dashed border-gray-300/50" />
+          <div className="absolute right-0 left-0 translate-y-[0.5px] border-b border-dashed border-gray-300/50" />
         </div>
       </div>
-      {invocation.journal?.version !== 1 || entry.category === 'event' ? (
+      {invocation.journal?.version !== 1 ? (
         <TimelinePortal invocationId={invocation?.id} entry={entry}>
           {EntrySpecificComponent && (
             <EntryProgress entry={entry} invocation={invocation} />

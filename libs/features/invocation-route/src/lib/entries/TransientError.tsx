@@ -82,9 +82,7 @@ export function TransientError({
           </div>
         </Badge>
         <TimelinePortal invocationId={invocation?.id ?? ''} entry={entry}>
-          <div className="relative h-9 w-full border-b border-transparent">
-            <EntryProgress entry={entry} invocation={invocation} />
-          </div>
+          <EntryProgress entry={entry} invocation={invocation} />
         </TimelinePortal>
       </div>
     );
@@ -136,9 +134,7 @@ export function NoCommandTransientError({
           </div>
         </Badge>
         <TimelinePortal invocationId={invocation?.id ?? ''} entry={entry}>
-          <div className="relative h-9 w-full border-b border-transparent">
-            <EntryProgress entry={entry} invocation={invocation} />
-          </div>
+          <EntryProgress entry={entry} invocation={invocation} />
         </TimelinePortal>
       </div>
     );
