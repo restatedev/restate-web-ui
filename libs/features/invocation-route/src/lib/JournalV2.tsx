@@ -21,6 +21,14 @@ import {
   useGetInvocationsJournalWithInvocationsV2,
   useListSubscriptions,
 } from '@restate/data-access/admin-api-hooks';
+import {
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownPopover,
+  DropdownSection,
+  DropdownTrigger,
+} from '@restate/ui/dropdown';
 
 const LazyPanel = lazy(() =>
   import('react-resizable-panels').then((m) => ({ default: m.Panel })),
@@ -40,6 +48,16 @@ const liveStyles = tv({
   base: 'flex items-center gap-1 rounded-sm px-2 text-xs font-semibold text-gray-500 uppercase',
   variants: {
     isLive: {
+      true: '',
+      false: '',
+    },
+  },
+});
+
+const compactStyles = tv({
+  base: 'py-0.5 pl-1.5 text-xs',
+  variants: {
+    isCompact: {
       true: '',
       false: '',
     },
@@ -260,6 +278,47 @@ export function JournalV2({
                 </div>
               </div>
               <div className="z-10 ml-auto flex h-full flex-row items-center justify-end gap-1 rounded-lg bg-linear-to-l from-gray-100 via-gray-100 to-gray-100/0 pl-10">
+                <Dropdown>
+                  <DropdownTrigger>
+                    <Button
+                      variant="icon"
+                      onClick={() => setIsCompact((v) => !v)}
+                      className={compactStyles({ isCompact })}
+                    >
+                      View
+                      <Icon
+                        name={IconName.ChevronsUpDown}
+                        className="ml-1 h-3.5 w-3.5"
+                      />
+                    </Button>
+                  </DropdownTrigger>
+                  <DropdownPopover>
+                    <DropdownSection title="View mode">
+                      <DropdownMenu
+                        selectable
+                        selectedItems={isCompact ? ['compact'] : ['expanded']}
+                        onSelect={(key) => setIsCompact(key === 'compact')}
+                      >
+                        <DropdownItem value="compact">
+                          <div>
+                            <div>Compact</div>
+                            <div className="text-0.5xs opacity-70">
+                              Actions only
+                            </div>
+                          </div>
+                        </DropdownItem>
+                        <DropdownItem value="expanded">
+                          <div>
+                            <div>Detailed</div>
+                            <div className="text-0.5xs opacity-70">
+                              Include transient errors and completions
+                            </div>
+                          </div>
+                        </DropdownItem>
+                      </DropdownMenu>
+                    </DropdownSection>
+                  </DropdownPopover>
+                </Dropdown>
                 {!areAllInvocationsCompleted && setIsLive && (
                   <Button
                     variant="icon"

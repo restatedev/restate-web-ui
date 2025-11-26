@@ -73,6 +73,8 @@ import {
   ArrowUpRight,
   Wand,
   Sparkles,
+  ListChevronsDownUp,
+  ListChevronsUpDown,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from '@restate/util/styles';
@@ -190,6 +192,8 @@ export const enum IconName {
   ArrowUpRight = 'ArrowUpRight',
   Wand = 'Wand',
   Sparkles = 'Sparkles',
+  ListChevronsDownUp = 'ListChevronsDownUp',
+  ListChevronsUpDown = 'ListChevronsUpDown',
 }
 export interface IconsProps {
   name: IconName;
@@ -291,6 +295,8 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.ArrowUpRight]: ArrowUpRight,
   [IconName.Wand]: Wand,
   [IconName.Sparkles]: Sparkles,
+  [IconName.ListChevronsDownUp]: ListChevronsDownUp,
+  [IconName.ListChevronsUpDown]: ListChevronsUpDown,
 };
 
 const styles = tv({
