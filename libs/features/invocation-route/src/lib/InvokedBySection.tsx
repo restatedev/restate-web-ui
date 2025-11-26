@@ -3,6 +3,7 @@ import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { tv } from '@restate/util/styles';
 import { Target } from './Target';
 import { InvocationId } from './InvocationId';
+import { useListSubscriptions } from '@restate/data-access/admin-api-hooks';
 
 const styles = tv({ base: '' });
 export function InvokedBySection({
@@ -14,13 +15,19 @@ export function InvokedBySection({
   isPending?: boolean;
   className?: string;
 }) {
+  const { data: subscriptions } = useListSubscriptions();
+
   if (!invocation) {
     return null;
   }
 
   return (
     <Section className={styles({ className })}>
-      <SectionTitle>Invoked by</SectionTitle>
+      <SectionTitle>
+        {invocation.invoked_by === 'restart_as_new'
+          ? 'Restarted from'
+          : 'Invoked by'}
+      </SectionTitle>
       {invocation.invoked_by === 'ingress' && (
         <SectionContent className="p-0" raised={true}>
           <div className="py-1 pl-2.5 text-0.5xs font-medium text-gray-500">
@@ -37,6 +44,22 @@ export function InvokedBySection({
               target={invocation.invoked_by_target}
               className="mt-1.5 ml-7 max-w-[calc(100%-1.75rem)] text-0.5xs font-normal"
             />
+          </div>
+        </SectionContent>
+      )}
+      {invocation.invoked_by === 'restart_as_new' && (
+        <SectionContent className="px-2 py-2" raised={false}>
+          <div className="relative">
+            <InvocationId id={invocation.restarted_from!} className="text-xs" />
+          </div>
+        </SectionContent>
+      )}
+      {invocation.invoked_by === 'subscription' && (
+        <SectionContent className="p-0" raised={true}>
+          <div className="py-1 pl-2.5 font-mono text-0.5xs font-medium text-gray-500">
+            {subscriptions?.subscriptions?.find(
+              (sub) => sub.id === invocation?.invoked_by_subscription_id,
+            )?.source || invocation?.invoked_by_subscription_id}
           </div>
         </SectionContent>
       )}
