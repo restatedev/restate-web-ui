@@ -34,6 +34,7 @@ import { Cancel } from './entries/Cancel';
 import { LifeCycle } from './entries/LifeCycle';
 import { Link } from '@restate/ui/link';
 import { NoCommandTransientError } from './entries/TransientError';
+import { useJournalContext } from './JournalContext';
 
 export const ENTRY_COMMANDS_COMPONENTS: {
   [K in CommandEntryType]:
@@ -123,6 +124,8 @@ export function Entry({
     invocation?.journal_commands_size ?? invocation?.journal_size ?? 1;
   const numOfDigits = digitCount(length);
 
+  const { isCompact } = useJournalContext();
+
   const EntrySpecificComponent = (
     entry?.type
       ? entry.category === 'command'
@@ -143,6 +146,24 @@ export function Entry({
   );
 
   if (!invocation || !entry) {
+    return null;
+  }
+
+  if (
+    isCompact &&
+    (entry?.type === 'Event: TransientError' ||
+      (entry?.category === 'notification' &&
+        [
+          'Sleep',
+          'Call',
+          'CallInvocationId',
+          'AttachInvocation',
+          'GetPromise',
+          'PeekPromise',
+          'CompletePromise',
+          'Run',
+        ].includes(String(entry?.type))))
+  ) {
     return null;
   }
 

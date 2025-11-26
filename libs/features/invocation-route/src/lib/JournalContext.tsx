@@ -12,12 +12,14 @@ const JournalContext = createContext<{
   error?: Record<string, Error | null | undefined>;
   containerRef?: RefObject<HTMLDivElement | null>;
   isLive: boolean;
+  isCompact: boolean;
 }>({
   invocationIds: [],
   start: 0,
   end: 0,
   dataUpdatedAt: 0,
   isLive: false,
+  isCompact: true,
 });
 
 export function JournalContextProvider({
@@ -33,6 +35,7 @@ export function JournalContextProvider({
   error,
   containerRef,
   isLive,
+  isCompact,
 }: PropsWithChildren<{
   invocationIds: string[];
   addInvocationId?: (id: string) => void;
@@ -45,6 +48,7 @@ export function JournalContextProvider({
   error?: Record<string, Error | null | undefined>;
   containerRef?: RefObject<HTMLDivElement | null>;
   isLive: boolean;
+  isCompact: boolean;
 }>) {
   return (
     <JournalContext.Provider
@@ -60,6 +64,7 @@ export function JournalContextProvider({
         isPending,
         error,
         isLive,
+        isCompact,
       }}
     >
       {children}
