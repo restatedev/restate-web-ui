@@ -64,6 +64,7 @@ export function JournalV2({
   setIsLive?: (value: boolean) => void;
 }) {
   const [invocationIds, setInvocationIds] = useState([String(invocationId)]);
+  const [isCompact, setIsCompact] = useState(true);
 
   const {
     data,
@@ -202,6 +203,7 @@ export function JournalV2({
         isPending={isPending}
         error={apiError}
         isLive={isLive}
+        isCompact={isCompact}
       >
         <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
           <Suspense
