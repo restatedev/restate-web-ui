@@ -89,8 +89,8 @@ export function Failure({
   title?: string;
 }) {
   const error = useMemo(
-    () => new RestateError(message, restate_code),
-    [message, restate_code],
+    () => new RestateError(message, restate_code, isRetrying),
+    [message, restate_code, isRetrying],
   );
   const hasStack = error?.message.includes('\n');
   const isLargeError = error?.message.length > 200;

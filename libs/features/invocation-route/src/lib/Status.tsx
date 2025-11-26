@@ -20,7 +20,11 @@ export function getRestateError(invocation?: Invocation) {
   }
   const message = invocation.last_failure ?? invocation.completion_failure;
   return message
-    ? new RestateError(message, invocation.last_failure_error_code)
+    ? new RestateError(
+        message,
+        invocation.last_failure_error_code,
+        !invocation.completion_failure,
+      )
     : undefined;
 }
 

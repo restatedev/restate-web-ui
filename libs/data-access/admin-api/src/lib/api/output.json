@@ -5877,8 +5877,8 @@
           "error": {
             "type": "object",
             "properties": {
-              "count": {
-                "type": "integer"
+              "isTransient": {
+                "type": "boolean"
               },
               "code": {
                 "type": "integer"

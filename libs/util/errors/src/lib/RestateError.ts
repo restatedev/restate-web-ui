@@ -5,6 +5,7 @@ export class RestateError extends Error {
   constructor(
     message: string,
     public restate_code?: string,
+    public isTransient?: boolean,
   ) {
     super(message);
   }
@@ -12,6 +13,7 @@ export class RestateError extends Error {
     return {
       message: this.message,
       restateCode: this.restate_code,
+      isTransient: Boolean(this.isTransient),
     };
   }
 }

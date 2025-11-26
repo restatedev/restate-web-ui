@@ -35,6 +35,7 @@ export function event(
         error: new RestateError(
           metadata?.error_message,
           metadata?.restate_doc_error_code || metadata?.error_code,
+          true,
         ),
         resultType: undefined,
         message: metadata?.error_message,
@@ -61,7 +62,12 @@ export function event(
         relatedIndexes: undefined,
         isRetrying: false,
         isLoaded: true,
-        error: undefined,
+        error: new RestateError(
+          metadata?.last_failure.error_message,
+          metadata?.last_failure?.restate_doc_error_code ||
+            metadata?.last_failure?.error_code,
+          true,
+        ),
         resultType: undefined,
         message: metadata?.last_failure?.error_message,
         code: metadata?.last_failure?.error_code,

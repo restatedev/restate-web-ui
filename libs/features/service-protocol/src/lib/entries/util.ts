@@ -46,7 +46,11 @@ export function parseResults2(result?: any) {
   if (result?.Failure && typeof result?.Failure === 'object') {
     return {
       resultType: 'failure',
-      error: new RestateError(result?.Failure?.message, result?.Failure?.code),
+      error: new RestateError(
+        result?.Failure?.message,
+        result?.Failure?.code,
+        false,
+      ),
     } as const;
   }
 
@@ -140,6 +144,7 @@ export function getEntryResultV2(
     ? new RestateError(
         invocation?.last_failure || '',
         invocation?.last_failure_error_code,
+        true,
       )
     : undefined;
   const lastTransientError = isRetrying
@@ -147,6 +152,7 @@ export function getEntryResultV2(
         transientFailures?.at(-1)?.message || '',
         transientFailures?.at(-1)?.relatedRestateErrorCode ||
           transientFailures?.at(-1)?.code?.toString(),
+        true,
       )
     : undefined;
 

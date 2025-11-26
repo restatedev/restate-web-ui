@@ -2052,7 +2052,7 @@ export interface components {
       isRetrying?: boolean;
       isLoaded?: boolean;
       error?: {
-        count?: number;
+        isTransient?: boolean;
         code?: number;
         message?: string;
         stack?: string;
