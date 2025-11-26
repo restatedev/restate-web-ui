@@ -19,24 +19,24 @@ import { Copy } from '@restate/ui/copy';
 import { LIVE_JOURNAL } from './constants';
 
 const metadataContainerStyles = tv({
-  base: 'mt-6 hidden grid-cols-1 gap-2 gap-y-4 rounded-xl md:grid-cols-2 [&:has(*)]:grid',
+  base: 'mt-6 hidden grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2 gap-y-4 rounded-xl [&:has(*)]:grid',
   variants: {
     isVirtualObject: {
-      true: 'lg:grid-cols-2 2xl:grid-cols-4',
+      true: '',
       false: '',
     },
     isWorkflow: {
-      true: 'lg:grid-cols-3',
+      true: '',
       false: '',
     },
     isPending: {
-      true: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
-      false: 'mb-24',
+      true: '',
+      false: '',
     },
   },
 });
 const lastFailureContainer = tv({
-  base: 'col-span-full min-w-0 rounded-xl border bg-gray-200/50 p-0',
+  base: 'min-w-0 rounded-xl border bg-gray-200/50 p-0',
 });
 
 function Component() {
@@ -129,40 +129,42 @@ function Component() {
           </div>
         </div>
 
-        <div
-          className={metadataContainerStyles({
-            isVirtualObject,
-            isPending,
-            isWorkflow,
-          })}
-        >
-          {isPending && (
-            <>
-              <div className="min-h-24 w-full animate-pulse rounded-xl bg-slate-200" />
-              <div className="min-h-24 w-full animate-pulse rounded-xl bg-slate-200" />
-              <div className="hidden min-h-24 w-full animate-pulse rounded-xl bg-slate-200 lg:block" />
-              <div className="hidden min-h-24 w-full animate-pulse rounded-xl bg-slate-200 lg:block" />
-            </>
-          )}
-          <KeysIdsSection
-            invocation={journalAndInvocationData}
-            className="h-fit rounded-xl border bg-gray-200/50 p-0 [&>*:last-child]:rounded-xl [&>*:last-child]:border-white/50 [&>*:last-child]:bg-linear-to-b [&>*:last-child]:from-gray-50 [&>*:last-child]:to-gray-50/80 [&>*:last-child]:shadow-zinc-800/3"
-          />
-          <DeploymentSection
-            invocation={journalAndInvocationData}
-            className="h-fit rounded-xl border bg-gray-200/50 p-0 [&>*:last-child]:rounded-xl [&>*:last-child]:border-white/50 [&>*:last-child]:bg-linear-to-b [&>*:last-child]:from-gray-50 [&>*:last-child]:to-gray-50/80 [&>*:last-child]:shadow-zinc-800/3"
-            raised
-          />
-          <VirtualObjectSection
-            invocation={journalAndInvocationData}
-            raised
-            className="contents *:h-fit *:rounded-xl *:border *:bg-gray-200/50 [&>*:last-child>h3]:mt-0 [&>*>*:last-child]:rounded-xl [&>*>*:last-child]:border-white/50 [&>*>*:last-child]:bg-linear-to-b [&>*>*:last-child]:from-gray-50 [&>*>*:last-child]:to-gray-50/80 [&>*>*:last-child]:shadow-zinc-800/3"
-          />
-          <WorkflowKeySection
-            invocation={journalAndInvocationData}
-            raised
-            className="h-fit rounded-xl border bg-gray-200/50 p-0 [&>*:last-child]:rounded-xl [&>*:last-child]:border-white/50 [&>*:last-child]:bg-linear-to-b [&>*:last-child]:from-gray-50 [&>*:last-child]:to-gray-50/80 [&>*:last-child]:shadow-zinc-800/3"
-          />
+        <div className="flex flex-col gap-4">
+          <div
+            className={metadataContainerStyles({
+              isVirtualObject,
+              isPending,
+              isWorkflow,
+            })}
+          >
+            {isPending && (
+              <>
+                <div className="min-h-24 w-full animate-pulse rounded-xl bg-slate-200" />
+                <div className="min-h-24 w-full animate-pulse rounded-xl bg-slate-200" />
+                <div className="hidden min-h-24 w-full animate-pulse rounded-xl bg-slate-200 lg:block" />
+                <div className="hidden min-h-24 w-full animate-pulse rounded-xl bg-slate-200 lg:block" />
+              </>
+            )}
+            <KeysIdsSection
+              invocation={journalAndInvocationData}
+              className="h-fit rounded-xl border bg-gray-200/50 p-0 [&>*:last-child]:rounded-xl [&>*:last-child]:border-white/50 [&>*:last-child]:bg-linear-to-b [&>*:last-child]:from-gray-50 [&>*:last-child]:to-gray-50/80 [&>*:last-child]:shadow-zinc-800/3"
+            />
+            <DeploymentSection
+              invocation={journalAndInvocationData}
+              className="h-fit rounded-xl border bg-gray-200/50 p-0 [&>*:last-child]:rounded-xl [&>*:last-child]:border-white/50 [&>*:last-child]:bg-linear-to-b [&>*:last-child]:from-gray-50 [&>*:last-child]:to-gray-50/80 [&>*:last-child]:shadow-zinc-800/3"
+              raised
+            />
+            <VirtualObjectSection
+              invocation={journalAndInvocationData}
+              raised
+              className="contents *:h-fit *:rounded-xl *:border *:bg-gray-200/50 [&>*:last-child>h3]:mt-0 [&>*>*:last-child]:rounded-xl [&>*>*:last-child]:border-white/50 [&>*>*:last-child]:bg-linear-to-b [&>*>*:last-child]:from-gray-50 [&>*>*:last-child]:to-gray-50/80 [&>*>*:last-child]:shadow-zinc-800/3"
+            />
+            <WorkflowKeySection
+              invocation={journalAndInvocationData}
+              raised
+              className="h-fit rounded-xl border bg-gray-200/50 p-0 [&>*:last-child]:rounded-xl [&>*:last-child]:border-white/50 [&>*:last-child]:bg-linear-to-b [&>*:last-child]:from-gray-50 [&>*:last-child]:to-gray-50/80 [&>*:last-child]:shadow-zinc-800/3"
+            />
+          </div>
           {shouldShowFailure && (
             <Section className={lastFailureContainer()}>
               <SectionTitle>
@@ -180,7 +182,7 @@ function Component() {
           )}
         </div>
 
-        <div className="mt-4 flex flex-col">
+        <div className="mt-24 flex flex-col">
           {OnboardingGuide && (
             <OnboardingGuide
               stage="view-invocation"

@@ -46,7 +46,11 @@ export function parseResults2(result?: any) {
   if (result?.Failure && typeof result?.Failure === 'object') {
     return {
       resultType: 'failure',
-      error: new RestateError(result?.Failure?.message, result?.Failure?.code),
+      error: new RestateError(
+        result?.Failure?.message,
+        result?.Failure?.code,
+        false,
+      ),
     } as const;
   }
 
@@ -108,24 +112,19 @@ export function getEntryResultV2(
   const hasLastFailure =
     typeof commandIndex === 'number' &&
     invocation?.last_failure_related_command_index === commandIndex;
-  const lastFailure = hasLastFailure
-    ? new RestateError(
-        invocation?.last_failure || '',
-        invocation?.last_failure_error_code,
-      )
-    : undefined;
-
-  const transientFailures = nextEntries.filter(
+  const releventEntries = nextEntries.filter(
     (entry) =>
       entry.category === 'event' &&
-      entry.type === 'TransientError' &&
-      (
-        entry as Extract<
-          JournalEntryV2,
-          { type?: 'TransientError'; category?: 'event' }
-        >
-      ).relatedCommandIndex === commandIndex,
+      'relatedCommandIndex' in entry &&
+      entry.relatedCommandIndex === commandIndex,
   );
+
+  const transientFailures = releventEntries.filter(
+    (entry) => entry.type === 'Event: TransientError',
+  ) as Extract<
+    JournalEntryV2,
+    { type?: 'Event: TransientError'; category?: 'event' }
+  >[];
 
   const hasTransientFailures = transientFailures.length > 0;
   const isThereAnyCommandRunningAfter = nextEntries.some((nextEntry) => {
@@ -137,17 +136,33 @@ export function getEntryResultV2(
     );
   });
 
+  const { resultType, value, error } = parseResults2(result);
   const isRetrying =
     !isThereAnyCommandRunningAfter && (hasTransientFailures || hasLastFailure);
 
-  const { resultType, value, error } = parseResults2(result);
+  const lastFailure = hasLastFailure
+    ? new RestateError(
+        invocation?.last_failure || '',
+        invocation?.last_failure_error_code,
+        true,
+      )
+    : undefined;
+  const lastTransientError = isRetrying
+    ? new RestateError(
+        transientFailures?.at(-1)?.message || '',
+        transientFailures?.at(-1)?.relatedRestateErrorCode ||
+          transientFailures?.at(-1)?.code?.toString(),
+        true,
+      )
+    : undefined;
+
   return {
     isRetrying,
-    error: error || lastFailure,
+    error: error || lastFailure || lastTransientError,
     value,
     resultType,
     relatedIndexes: [
-      ...transientFailures.map((entry) => entry.index),
+      ...releventEntries.map((entry) => entry.index),
       ...relatedIndexes,
     ].filter(
       (num: number | undefined): num is number => typeof num === 'number',

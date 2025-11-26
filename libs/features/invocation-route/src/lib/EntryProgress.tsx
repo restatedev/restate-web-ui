@@ -1,4 +1,7 @@
-import type { JournalEntryV2 } from '@restate/data-access/admin-api';
+import type {
+  Invocation,
+  JournalEntryV2,
+} from '@restate/data-access/admin-api';
 import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api-hooks';
 import { formatDurations } from '@restate/util/intl';
 import { getDuration } from '@restate/util/snapshot-time';
@@ -102,6 +105,9 @@ const lineStyles = tv({
       warning: {
         line: 'from-orange-300 to-orange-300',
       },
+      backingOff: {
+        line: 'bg-[linear-gradient(to_right,--theme(--color-orange-300)_calc(100%-200px),--theme(--color-orange-300/0)_100%)]',
+      },
       info: {
         line: 'from-blue-300 to-blue-300',
       },
@@ -172,7 +178,8 @@ function Line({
     | 'warning'
     | 'default'
     | 'idleNeutral'
-    | 'idleWarning';
+    | 'idleWarning'
+    | 'backingOff';
 }>) {
   const { line } = lineStyles({ variant, isAmbiguous });
   return (
@@ -217,7 +224,10 @@ const progressStyles = tv({
 });
 
 function getPointVariant(entry?: JournalEntryV2) {
-  if (entry?.type === 'TransientError') {
+  if (entry?.type === 'Event: TransientError') {
+    return 'warning';
+  }
+  if (entry?.type === 'Paused') {
     return 'warning';
   }
   if (entry?.type === 'Retrying') {
@@ -245,9 +255,9 @@ function getPointVariant(entry?: JournalEntryV2) {
   }
 }
 
-function getLineVariant(entry?: JournalEntryV2) {
+function getLineVariant(entry?: JournalEntryV2, invocation?: Invocation) {
   if (entry?.isRetrying) {
-    return 'warning';
+    return invocation?.status === 'backing-off' ? 'backingOff' : 'warning';
   }
 
   if (entry?.resultType === 'failure') {
@@ -273,6 +283,9 @@ function getLineVariant(entry?: JournalEntryV2) {
   return 'info';
 }
 
+const entryProgressStyles = tv({
+  base: '[&~&]:hidden',
+});
 export function EntryProgress(
   props: PropsWithChildren<{
     entry?: JournalEntryV2;
@@ -286,10 +299,24 @@ export function EntryProgress(
 ) {
   return (
     <ErrorBoundary entry={props.entry}>
-      <InnerEntryProgress {...props} />
+      <InnerEntryProgress
+        {...props}
+        className={entryProgressStyles({ className: props.className })}
+      />
     </ErrorBoundary>
   );
 }
+
+const markerStyles = tv({
+  base: 'absolute right-2 left-2',
+  variants: {
+    isPending: {
+      true: 'top-[0.225rem] h-3.5',
+      false: 'top-[0.4rem] h-2',
+    },
+  },
+  defaultVariants: { isPending: false },
+});
 
 function InnerEntryProgress({
   className,
@@ -307,7 +334,7 @@ function InnerEntryProgress({
     typeof useGetInvocationJournalWithInvocationV2
   >['data'];
 }>) {
-  const { dataUpdatedAt, isLive } = useJournalContext();
+  const { dataUpdatedAt, isLive, start, end } = useJournalContext();
 
   if (!entry?.start) {
     return null;
@@ -366,6 +393,27 @@ function InnerEntryProgress({
     );
   }
 
+  if (entry.type === 'Event: Paused') {
+    return null;
+  }
+
+  const relevantEntries =
+    entry.relatedIndexes && entry.relatedIndexes.length > 0
+      ? invocation?.journal?.entries?.filter(
+          (relatedEntry) =>
+            typeof relatedEntry.index === 'number' &&
+            entry.relatedIndexes?.includes(relatedEntry.index) &&
+            !relatedEntry.isPending,
+        )
+      : [];
+  const transientErrorTimes =
+    relevantEntries
+      ?.filter((entry) => entry.type === 'Event: TransientError')
+      .map((entry) => (entry.start ? new Date(entry.start).getTime() : 0))
+      .filter(Boolean) || [];
+  const startTransientError = Math.min(...transientErrorTimes);
+  const endTransientError = Math.max(...transientErrorTimes);
+
   // TODO: move to middleware
   const isPending =
     entry?.isPending &&
@@ -373,52 +421,87 @@ function InnerEntryProgress({
     !(
       entry.type === 'Run' &&
       entry.category === 'command' &&
-      invocation?.status !== 'running'
+      !['running'].includes(String(invocation?.status))
     );
   return (
-    <EntryProgressContainer
-      entry={entry}
-      className={base({ className })}
-      invocation={invocation}
-    >
-      <div className={segmentContainer({})}>
-        {isPoint ? (
-          <Point variant={getPointVariant(entry)} />
-        ) : (
-          <Line
-            variant={getLineVariant(entry)}
-            isAmbiguous={entryCompletionIsAmbiguous}
-          >
-            {isPending && (
-              <div className="absolute inset-0 overflow-hidden rounded-md">
-                <Pending isLive={isLive} />
-              </div>
-            )}
-          </Line>
-        )}
-      </div>
-      {showDuration && !isPoint && (
-        <div className="ml-auto translate-y-1 font-sans text-xs leading-3 whitespace-nowrap text-gray-500">
-          {isPending ? (
-            <Ellipsis>{pendingDuration}</Ellipsis>
-          ) : entryCompletionIsAmbiguous ? (
-            <Icon
-              name={mode === 'paused' ? IconName.Pause : IconName.ClockAlert}
-              className="h-3 w-3"
-            />
+    <>
+      <EntryProgressContainer
+        entry={entry}
+        className={base({ className })}
+        invocation={invocation}
+      >
+        <div className={segmentContainer({})}>
+          {isPoint ? (
+            <Point variant={getPointVariant(entry)} />
           ) : (
-            duration
+            <Line
+              variant={getLineVariant(entry, invocation)}
+              isAmbiguous={entryCompletionIsAmbiguous}
+            >
+              {isPending && (
+                <div className="absolute inset-0 overflow-hidden rounded-md">
+                  <Pending isLive={isLive} />
+                </div>
+              )}
+            </Line>
           )}
         </div>
+        {showDuration && !isPoint && (
+          <div className="ml-auto translate-y-1 font-sans text-xs leading-3 whitespace-nowrap text-gray-500">
+            {isPending ? (
+              <Ellipsis>{pendingDuration}</Ellipsis>
+            ) : entryCompletionIsAmbiguous ? (
+              <Icon
+                name={mode === 'paused' ? IconName.Pause : IconName.ClockAlert}
+                className="h-3 w-3"
+              />
+            ) : (
+              duration
+            )}
+          </div>
+        )}
+        <EntryTooltip
+          entry={entry}
+          invocation={invocation}
+          className="absolute h-full w-full"
+        >
+          <div className="h-full w-full" />
+        </EntryTooltip>
+      </EntryProgressContainer>
+      {Number(relevantEntries?.length) > 0 && (
+        <EntryProgressContainer
+          className="@container/segment h-0"
+          entry={entry}
+          invocation={invocation}
+        >
+          <div className="@max-[1rem]/segment:[&~*]:hidden" />
+          <div className={markerStyles({ isPending: entry.isPending })}>
+            {relevantEntries?.map((relevantEntry) => {
+              return (
+                <InnerEntryProgress
+                  key={relevantEntry.index}
+                  entry={relevantEntry}
+                  invocation={invocation}
+                  className="absolute inset-0 @max-[1rem]/segment:hidden"
+                />
+              );
+            })}
+            {startTransientError &&
+              endTransientError &&
+              startTransientError !== endTransientError &&
+              transientErrorTimes.length > 0 && (
+                <div
+                  className="absolute top-px bottom-px max-w-full rounded-full bg-[linear-gradient(to_right,--theme(--color-orange-300/0)_0px,--theme(--color-orange-300/1)_20px,--theme(--color-orange-300/1)_calc(100%-20px),--theme(--color-orange-300/0)_100%)] transition-all duration-1000"
+                  style={{
+                    left: `max(calc(${((startTransientError - start) / (end - start)) * 100}% - 20px), 0px)`,
+                    right: `max(calc(${((end - endTransientError) / (end - start)) * 100}% - 20px), 0px)`,
+                  }}
+                />
+              )}
+          </div>
+        </EntryProgressContainer>
       )}
-      <EntryTooltip
-        entry={entry}
-        invocation={invocation}
-        className="absolute h-full w-full"
-      >
-        <div className="h-full w-full" />
-      </EntryTooltip>
-    </EntryProgressContainer>
+    </>
   );
 }
 

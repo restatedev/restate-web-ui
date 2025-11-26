@@ -34,6 +34,7 @@ import { Cancel } from './entries/Cancel';
 import { LifeCycle } from './entries/LifeCycle';
 import { Link } from '@restate/ui/link';
 import { NoCommandTransientError } from './entries/TransientError';
+import { useJournalContext } from './JournalContext';
 
 export const ENTRY_COMMANDS_COMPONENTS: {
   [K in CommandEntryType]:
@@ -91,7 +92,6 @@ export const ENTRY_EVENTS_COMPONENTS: {
       >
     | undefined;
 } = {
-  TransientError: NoCommandTransientError,
   Created: LifeCycle,
   Running: LifeCycle,
   Suspended: LifeCycle,
@@ -100,6 +100,8 @@ export const ENTRY_EVENTS_COMPONENTS: {
   Retrying: LifeCycle,
   Scheduled: LifeCycle,
   Paused: LifeCycle,
+  'Event: TransientError': NoCommandTransientError,
+  'Event: Paused': undefined,
 };
 
 function digitCount(n: number) {
@@ -122,6 +124,8 @@ export function Entry({
     invocation?.journal_commands_size ?? invocation?.journal_size ?? 1;
   const numOfDigits = digitCount(length);
 
+  const { isCompact } = useJournalContext();
+
   const EntrySpecificComponent = (
     entry?.type
       ? entry.category === 'command'
@@ -142,6 +146,24 @@ export function Entry({
   );
 
   if (!invocation || !entry) {
+    return null;
+  }
+
+  if (
+    isCompact &&
+    (entry?.type === 'Event: TransientError' ||
+      (entry?.category === 'notification' &&
+        [
+          'Sleep',
+          'Call',
+          'CallInvocationId',
+          'AttachInvocation',
+          'GetPromise',
+          'PeekPromise',
+          'CompletePromise',
+          'Run',
+        ].includes(String(entry?.type))))
+  ) {
     return null;
   }
 
@@ -169,7 +191,11 @@ export function Entry({
           )}
         </div>
 
-        <div className="max-w-fit min-w-0 flex-auto" data-entry ref={setPortal}>
+        <div
+          className="flex max-w-fit min-w-0 flex-auto gap-1"
+          data-entry
+          ref={setPortal}
+        >
           {EntrySpecificComponent && (
             <RelatedEntries invocation={invocation} entry={entry}>
               <EntrySpecificComponent entry={entry} invocation={invocation} />
@@ -177,10 +203,10 @@ export function Entry({
           )}
         </div>
         <div className="relative min-w-20 flex-auto">
-          <div className="h2-px bg2-gray-400/50 absolute right-0 left-0 translate-y-[0.5px] border-b border-dashed border-gray-300/50" />
+          <div className="absolute right-0 left-0 translate-y-[0.5px] border-b border-dashed border-gray-300/50" />
         </div>
       </div>
-      {invocation.journal?.version !== 1 || entry.category === 'event' ? (
+      {invocation.journal?.version !== 1 ? (
         <TimelinePortal invocationId={invocation?.id} entry={entry}>
           {EntrySpecificComponent && (
             <EntryProgress entry={entry} invocation={invocation} />

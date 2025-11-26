@@ -283,7 +283,7 @@ export function EntryExpression({
                 <Failure
                   message={entry.error.message!}
                   restate_code={entry.error.restateCode}
-                  isRetrying={entry.isRetrying}
+                  isRetrying={entry.isRetrying || entry.error.isTransient}
                   className="w-full"
                 />
               </div>

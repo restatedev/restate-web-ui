@@ -1943,6 +1943,7 @@ export interface components {
         | components['schemas']['NotificationPeakPromiseJournalEntryV2']
         | components['schemas']['NotificationCompletePromiseJournalEntryV2']
         | components['schemas']['TransientErrorJournalEntryV2']
+        | components['schemas']['PausedErrorJournalEntryV2']
         | components['schemas']['CreatedLifecycleJournalEntryV2']
         | components['schemas']['RunningLifecycleJournalEntryV2']
         | components['schemas']['RetryingLifecycleJournalEntryV2']
@@ -2021,6 +2022,8 @@ export interface components {
         | 'Command: GetInvocationOutput'
         | 'Command: Custom'
         | 'Command: SendSignal'
+        | 'Event: TransientError'
+        | 'Event: Paused'
         | 'Event'
         | 'Notification: Signal'
         | 'Notification: Sleep'
@@ -2049,7 +2052,7 @@ export interface components {
       isRetrying?: boolean;
       isLoaded?: boolean;
       error?: {
-        count?: number;
+        isTransient?: boolean;
         code?: number;
         message?: string;
         stack?: string;
@@ -2079,14 +2082,24 @@ export interface components {
       /** @enum {string} */
       category?: 'event';
       /** @enum {string} */
-      type?: 'TransientError';
-      stackTrace?: string;
+      type?: 'Event: TransientError';
+      relatedCommandName?: string;
       message?: string;
       code?: number;
-      errorCount?: number;
-      relatedCommandName?: string;
-      relatedCommandType?: string;
       relatedRestateErrorCode?: string;
+      relatedCommandType?: string;
+      relatedCommandIndex?: number;
+    };
+    PausedErrorJournalEntryV2: {
+      /** @enum {string} */
+      category?: 'event';
+      /** @enum {string} */
+      type?: 'Event: Paused';
+      relatedCommandName?: string;
+      message?: string;
+      code?: number;
+      relatedRestateErrorCode?: string;
+      relatedCommandType?: string;
       relatedCommandIndex?: number;
     };
     CreatedLifecycleJournalEntryV2: {
@@ -2124,7 +2137,6 @@ export interface components {
       category?: 'event';
       /** @enum {string} */
       type?: 'Paused';
-      stackTrace?: string;
       message?: string;
       code?: number;
       relatedCommandName?: string;

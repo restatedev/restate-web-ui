@@ -47,7 +47,7 @@ export function RestateServerError({
       <div className="flex items-start gap-2">
         <div className="shrink-0">
           <Icon
-            className="h-5 w-5 fill-red-500 text-red-500"
+            className="mt-[0.0625rem] h-4 w-4 fill-red-500 text-red-500"
             name={IconName.CircleX}
           />
         </div>

@@ -10,7 +10,7 @@ const failureStyle = tv({
   base: '',
   slots: {
     trigger:
-      'flex h-6 min-w-6 items-center gap-0 rounded-lg border bg-white/70 px-0 py-0 [font-size:inherit]',
+      'flex h-5 min-w-6 items-center gap-0 rounded-full border bg-white/70 px-0 py-0 pl-0.5 text-2xs shadow-none',
     errorIcon: 'mx-[0.3rem] h-3 w-3 shrink-0',
     errorBanner:
       'mr-1 max-h-full max-w-[min(50rem,90vw)] flex-auto resize overflow-auto rounded-lg [&_details]:max-h-full [&:has(details[open])]:h-[min(50vh,16rem)]',
@@ -89,8 +89,8 @@ export function Failure({
   title?: string;
 }) {
   const error = useMemo(
-    () => new RestateError(message, restate_code),
-    [message, restate_code],
+    () => new RestateError(message, restate_code, isRetrying),
+    [message, restate_code, isRetrying],
   );
   const hasStack = error?.message.includes('\n');
   const isLargeError = error?.message.length > 200;

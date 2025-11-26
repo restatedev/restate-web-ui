@@ -1042,4 +1042,31 @@ export const TABLES = [
       },
     ],
   },
+  {
+    name: 'sys_journal_events',
+    description: 'Table of journal events that occurred during the invocation.',
+    columns: [
+      {
+        name: 'id',
+        description: 'The invocation ID of the journal event.',
+      },
+      {
+        name: 'after_journal_entry_index',
+        description:
+          'The journal index after which this event happened. This can be used to establish a total order between events and journal entries.',
+      },
+      {
+        name: 'appended_at',
+        description: 'When the entry was appended to the journal.',
+      },
+      {
+        name: 'event_type',
+        description: 'The event type.',
+      },
+      {
+        name: 'event_json',
+        description: 'The event serialized as a JSON string.',
+      },
+    ],
+  },
 ];

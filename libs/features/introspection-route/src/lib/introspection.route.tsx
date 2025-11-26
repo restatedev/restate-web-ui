@@ -337,7 +337,9 @@ function Download({
     }
 
     return () => {
-      href && URL.revokeObjectURL(href);
+      if (href) {
+        URL.revokeObjectURL(href);
+      }
     };
   }, [data, query]);
 

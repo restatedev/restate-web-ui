@@ -138,7 +138,7 @@ export function InputOutput({
           {isValueHidden ? (
             <PopoverTrigger>
               <Button
-                className="mx-0.5 my-0.5 flex h-6 min-w-6 items-center justify-center gap-0 rounded-lg rounded-xl p-0 font-sans text-2xs font-medium text-gray-500 outline-offset-0"
+                className="mx-0.5 my-0.5 flex h-5 min-w-6 items-center justify-center gap-0 rounded-xl p-0 font-sans text-2xs font-medium text-gray-500 shadow-none outline-offset-0"
                 variant="secondary"
               >
                 <Icon name={IconName.Eye} className="mx-1.5 h-3 w-3 shrink-0" />
