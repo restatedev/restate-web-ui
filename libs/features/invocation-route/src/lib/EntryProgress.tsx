@@ -491,10 +491,10 @@ function InnerEntryProgress({
               startTransientError !== endTransientError &&
               transientErrorTimes.length > 0 && (
                 <div
-                  className="absolute top-px bottom-px rounded-full bg-orange-300 transition-all duration-1000"
+                  className="absolute top-px bottom-px max-w-full rounded-full bg-[linear-gradient(to_right,--theme(--color-orange-300/0)_0px,--theme(--color-orange-300/1)_20px,--theme(--color-orange-300/1)_calc(100%-20px),--theme(--color-orange-300/0)_100%)] transition-all duration-1000"
                   style={{
-                    left: `${((startTransientError - start) / (end - start)) * 100}%`,
-                    width: `${((endTransientError - startTransientError) / (end - start)) * 100}%`,
+                    left: `max(calc(${((startTransientError - start) / (end - start)) * 100}% - 20px), 0px)`,
+                    right: `max(calc(${((end - endTransientError) / (end - start)) * 100}% - 20px), 0px)`,
                   }}
                 />
               )}
