@@ -21,6 +21,8 @@ import { tv } from '@restate/util/styles';
 import { Icon, IconName } from '@restate/ui/icons';
 import { isEntryCompletionAmbiguous } from './entries/isEntryCompletionAmbiguous';
 import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api-hooks';
+import { ErrorBanner } from '@restate/ui/error';
+import { RestateError } from '@restate/util/errors';
 
 const entryTooltipStyles = tv({
   base: 'flex h-full',
@@ -81,7 +83,6 @@ function EntryContent({
   return (
     <div className="flex flex-col gap-3">
       <div className="text-base font-semibold">{title}</div>
-
       <div className="flex gap-5 font-medium">
         <div className="text-right font-normal">
           <div className="flex items-center gap-2">
@@ -152,6 +153,17 @@ function EntryContent({
           </div>
         </div>
       </div>
+      {entry.type === 'Event: TransientError' && entry.error && (
+        <ErrorBanner
+          error={
+            new RestateError(
+              String(entry.error.message),
+              entry.error.restateCode,
+            )
+          }
+          className="mb-1 w-full rounded-md bg-white/5 [&_*]:text-orange-300! [&_code]:border-transparent [&_code]:bg-zinc-800/30 [&_svg]:h-3.5 [&_svg]:w-3.5"
+        />
+      )}
     </div>
   );
 }

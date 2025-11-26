@@ -3,6 +3,7 @@ import {
   JournalEntryV2,
 } from '@restate/data-access/admin-api/spec';
 import { JournalRawEntryWithCommandIndex, parseEntryJson } from './util';
+import { RestateError } from '@restate/util/errors';
 
 export function event(
   entry: JournalRawEntryWithCommandIndex,
@@ -31,7 +32,10 @@ export function event(
         relatedIndexes: undefined,
         isRetrying: false,
         isLoaded: true,
-        error: undefined,
+        error: new RestateError(
+          metadata?.error_message,
+          metadata?.restate_doc_error_code || metadata?.error_code,
+        ),
         resultType: undefined,
         message: metadata?.error_message,
         code: metadata?.error_code,
