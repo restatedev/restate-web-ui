@@ -106,7 +106,7 @@ export const CancelInvocation = withConfirmation({
       </Link>
     </>
   ),
-  submitText: 'Cancel',
+  submitText: 'Confirm',
   submitVariant: 'destructive',
   formMethod: 'DELETE',
 

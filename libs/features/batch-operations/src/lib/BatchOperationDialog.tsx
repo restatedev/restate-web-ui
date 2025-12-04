@@ -19,25 +19,20 @@ import { BatchState } from './types';
 import { useBatchMutation } from './useBatchMutation';
 import { useProgress } from './useProgress';
 import { OPERATION_CONFIG, OperationConfig } from './config';
+import { QueryClause } from '@restate/ui/query-builder';
 
 function BatchOperationContent({
   count,
   isLowerBound,
   isCountLoading,
   config,
-  params,
+  state,
 }: {
   count: number | undefined;
   isLowerBound: boolean | undefined;
   isCountLoading: boolean;
   config: OperationConfig;
-  params:
-    | {
-        invocationIds: string[];
-      }
-    | {
-        filters: FilterItem[];
-      };
+  state: BatchState;
 }) {
   const [now, setNow] = useState(() => Date.now());
 
@@ -75,8 +70,57 @@ function BatchOperationContent({
         count,
         isLowerBound ?? false,
         `${duration} ago`,
-        params,
+        state.params,
       )}
+      <Filters state={state} />
+    </div>
+  );
+}
+
+function Filters({ state }: { state: BatchState }) {
+  const paramsWithFilters =
+    'filters' in state.params ? state.params : undefined;
+
+  if (!paramsWithFilters || paramsWithFilters.filters.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="mt-4 flex w-full gap-1 overflow-auto rounded-lg border bg-gray-200/50 p-0.5 font-mono shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
+      {paramsWithFilters.filters
+        .filter((filter) => !filter.isActionImplicitFilter)
+        .map((filter, index) => {
+          const clauseSchema = paramsWithFilters.schema?.find(
+            ({ id }) => id === filter.field,
+          );
+          const queryClause = clauseSchema
+            ? new QueryClause(clauseSchema, {
+                operation: filter.operation as any,
+                value: 'value' in filter ? filter.value : undefined,
+                fieldValue: filter.field,
+              })
+            : undefined;
+
+          return (
+            <div
+              key={index}
+              className="flex items-baseline gap-[0.75ch] rounded-md border bg-white px-2 py-1 text-xs shadow-xs"
+            >
+              <span className="shrink-0 whitespace-nowrap">
+                {queryClause?.label || filter.field}
+              </span>
+              {queryClause?.operationLabel?.split(' ').map((segment) => (
+                <span className="font-mono" key={segment}>
+                  {segment}
+                </span>
+              )) || filter.operation}
+              <span className="truncate font-semibold">
+                {queryClause?.valueLabel ||
+                  ('value' in filter ? filter.value : '')}
+              </span>
+            </div>
+          );
+        })}
     </div>
   );
 }
@@ -152,7 +196,7 @@ export function BatchOperationDialog({
             isLowerBound={isLowerBound}
             isCountLoading={countInvocations.isPending}
             config={config}
-            params={state.params}
+            state={state}
           />
         }
         closeText={mutation.isPending ? 'Continue in background' : 'Close'}
@@ -226,7 +270,15 @@ export function BatchOperationDialog({
         {state.type === 'resume' && count !== undefined && count > 0 && (
           <div className="mt-4">
             <FormFieldSelect
-              label="Deployment"
+              label={
+                <>
+                  Deployment
+                  <span slot="description">
+                    Should each keep its current deployment or switch to the
+                    latest?
+                  </span>
+                </>
+              }
               placeholder="Select deployment"
               name="deployment"
               defaultValue="Keep"

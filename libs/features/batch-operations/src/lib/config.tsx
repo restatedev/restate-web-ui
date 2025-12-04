@@ -35,7 +35,7 @@ export interface OperationConfig {
 export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
   cancel: {
     title: 'Cancel Invocations',
-    submitText: 'Cancel',
+    submitText: 'Confirm',
     icon: IconName.Cancel,
     iconClassName: 'text-red-400',
     submitVariant: 'destructive',
@@ -60,7 +60,9 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
             {formatPlurals(count, { one: 'invocation', other: 'invocations' })}
           </span>
         </InlineTooltip>
-        ?
+        {'filters' in params && params.filters.length > 0
+          ? 'matching the follwoing criteria?'
+          : '?'}
       </p>
     ),
     alertType: 'info',
@@ -98,7 +100,10 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
             {formatPlurals(count, { one: 'invocation', other: 'invocations' })}
           </span>
         </InlineTooltip>
-        ? The pause may not take effect right away.
+        {'filters' in params && params.filters.length > 0
+          ? 'matching the follwoing criteria?'
+          : '?'}{' '}
+        The pause may not take effect right away.
       </p>
     ),
     alertType: 'info',
@@ -136,7 +141,9 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
             {formatPlurals(count, { one: 'invocation', other: 'invocations' })}
           </span>
         </InlineTooltip>
-        . Should each keep its current deployment or switch to the latest?
+        {'filters' in params && params.filters.length > 0
+          ? 'matching the follwoing criteria.'
+          : '.'}
       </p>
     ),
     progressTitle: 'Resuming invocations',
@@ -171,7 +178,9 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
             {formatPlurals(count, { one: 'invocation', other: 'invocations' })}
           </span>
         </InlineTooltip>
-        ?
+        {'filters' in params && params.filters.length > 0
+          ? 'matching the follwoing criteria?'
+          : '?'}
       </p>
     ),
     alertType: 'warning',
@@ -209,7 +218,9 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
             {formatPlurals(count, { one: 'invocation', other: 'invocations' })}
           </span>
         </InlineTooltip>
-        ?
+        {'filters' in params && params.filters.length > 0
+          ? 'matching the follwoing criteria?'
+          : '?'}
       </p>
     ),
     alertType: 'info',

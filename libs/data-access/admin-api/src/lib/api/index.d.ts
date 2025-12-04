@@ -1773,7 +1773,9 @@ export interface components {
           pageSize?: number;
         }
       | {
-          filters: components['schemas']['FilterItem'][];
+          filters: (components['schemas']['FilterItem'] & {
+            isActionImplicitFilter?: boolean;
+          })[];
           pageSize?: number;
           /** Format: date-time */
           createdAfter?: string;
@@ -1789,7 +1791,9 @@ export interface components {
           pageSize?: number;
         }
       | {
-          filters: components['schemas']['FilterItem'][];
+          filters: (components['schemas']['FilterItem'] & {
+            isActionImplicitFilter?: boolean;
+          })[];
           pageSize?: number;
           /** Format: date-time */
           createdAfter?: string;

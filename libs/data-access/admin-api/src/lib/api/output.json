@@ -5221,7 +5221,19 @@
               "filters": {
                 "type": "array",
                 "items": {
-                  "$ref": "#/components/schemas/FilterItem"
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/FilterItem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "isActionImplicitFilter": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  ]
                 }
               },
               "pageSize": {
@@ -5266,7 +5278,19 @@
               "filters": {
                 "type": "array",
                 "items": {
-                  "$ref": "#/components/schemas/FilterItem"
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/FilterItem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "isActionImplicitFilter": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  ]
                 }
               },
               "pageSize": {

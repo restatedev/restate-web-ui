@@ -30,6 +30,7 @@ interface TableProps
     | 'sortDescriptor'
     | 'onSortChange'
     | 'onSelectionChange'
+    | 'selectedKeys'
   > {
   className?: string;
 }

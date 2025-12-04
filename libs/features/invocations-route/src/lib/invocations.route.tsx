@@ -339,9 +339,9 @@ function Component() {
 
   const dataUpdate = error ? errorUpdatedAt : dataUpdatedAt;
 
-  const [selectedInvocationIds, setSelectedInvocationIds] = useState<string[]>(
-    [],
-  );
+  const [selectedInvocationIds, setSelectedInvocationIds] = useState<
+    Set<string>
+  >(new Set());
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>();
   const collator = useCollator();
   const [pageIndex, _setPageIndex] = useState(0);
@@ -459,6 +459,11 @@ function Component() {
   };
   const { batchPurge, batchResume, batchCancel, batchKill, batchPause } =
     useBatchOperations();
+
+  useEffect(() => {
+    setSelectedInvocationIds(new Set());
+  }, [isFetching, pageIndex]);
+
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdate}>
       <div className="relative flex flex-auto flex-col gap-2">
@@ -499,18 +504,16 @@ function Component() {
             <DropdownTrigger>
               <Button
                 variant={
-                  selectedInvocationIds.length > 0 ? 'primary' : 'secondary'
+                  selectedInvocationIds.size > 0 ? 'primary' : 'secondary'
                 }
                 className="flex items-center gap-1.5 self-end rounded-lg p-0.5 px-2 text-0.5xs"
               >
                 Actions
                 <Badge
                   size="xs"
-                  variant={
-                    selectedInvocationIds.length > 0 ? 'default' : 'info'
-                  }
+                  variant={selectedInvocationIds.size > 0 ? 'default' : 'info'}
                 >
-                  {selectedInvocationIds.length ||
+                  {selectedInvocationIds.size ||
                     (data?.total_count
                       ? `${formatNumber(data?.total_count, data?.total_count_lower_bound)}${data?.total_count_lower_bound ? '+' : ''}`
                       : '')}
@@ -528,20 +531,29 @@ function Component() {
                   selectedItems={selectedColumns}
                   onSelect={(key) => {
                     const args =
-                      selectedInvocationIds.length > 0
-                        ? { invocationIds: selectedInvocationIds }
+                      selectedInvocationIds.size > 0
+                        ? {
+                            invocationIds: Array.from(
+                              selectedInvocationIds.values(),
+                            ),
+                          }
                         : { filters: queryFilters };
                     switch (key) {
-                      case 'cancel':
-                        return batchCancel(args);
-                      case 'kill':
-                        return batchKill(args);
-                      case 'pause':
-                        return batchPause(args);
-                      case 'resume':
-                        return batchResume(args);
-                      case 'purge':
-                        return batchPurge(args);
+                      case 'cancel': {
+                        return batchCancel(args, schema);
+                      }
+                      case 'kill': {
+                        return batchKill(args, schema);
+                      }
+                      case 'pause': {
+                        return batchPause(args, schema);
+                      }
+                      case 'resume': {
+                        return batchResume(args, schema);
+                      }
+                      case 'purge': {
+                        return batchPurge(args, schema);
+                      }
 
                       default:
                         break;
@@ -594,11 +606,14 @@ function Component() {
           onSortChange={setSortDescriptor}
           key={hash}
           selectionMode="multiple"
+          selectedKeys={selectedInvocationIds}
           onSelectionChange={(keys) => {
             if (keys === 'all') {
-              setSelectedInvocationIds(currentPageItems.map((inv) => inv.id));
+              setSelectedInvocationIds(
+                new Set(currentPageItems.map((inv) => inv.id)),
+              );
             } else {
-              setSelectedInvocationIds(Array.from(keys.values()) as string[]);
+              setSelectedInvocationIds(keys as Set<string>);
             }
           }}
         >
