@@ -471,7 +471,7 @@ function Component() {
               >
                 <Icon
                   name={IconName.TableProperties}
-                  className="aspect-square h-3.5 w-3.5 opacity-80"
+                  className="aspect-square h-3.5 w-3.5 opacity-70"
                 />
                 Columns
               </Button>
