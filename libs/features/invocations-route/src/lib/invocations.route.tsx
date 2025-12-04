@@ -580,19 +580,20 @@ function Component() {
                     }
                   }}
                 >
-                  <DropdownItem value="cancel">
+                  <DropdownItem value="cancel" destructive>
                     <Icon
                       name={IconName.Cancel}
                       className="h-3.5 w-3.5 shrink-0 opacity-80"
                     />
                     Cancel…
                   </DropdownItem>
-                  <DropdownItem value="kill">
+
+                  <DropdownItem value="pause" destructive>
                     <Icon
-                      name={IconName.Kill}
+                      name={IconName.Pause}
                       className="h-3.5 w-3.5 shrink-0 opacity-80"
                     />
-                    Kill…
+                    Pause…
                   </DropdownItem>
                   <DropdownItem value="resume">
                     <Icon
@@ -601,13 +602,6 @@ function Component() {
                     />
                     Resume…
                   </DropdownItem>
-                  <DropdownItem value="pause">
-                    <Icon
-                      name={IconName.Pause}
-                      className="h-3.5 w-3.5 shrink-0 opacity-80"
-                    />
-                    Pause…
-                  </DropdownItem>
                   <DropdownItem value="restart-as-new">
                     <Icon
                       name={IconName.Restart}
@@ -615,7 +609,14 @@ function Component() {
                     />
                     Restart as new…
                   </DropdownItem>
-                  <DropdownItem value="purge">
+                  <DropdownItem value="kill" destructive>
+                    <Icon
+                      name={IconName.Kill}
+                      className="h-3.5 w-3.5 shrink-0 opacity-80"
+                    />
+                    Kill…
+                  </DropdownItem>
+                  <DropdownItem value="purge" destructive>
                     <Icon
                       name={IconName.Trash}
                       className="h-3.5 w-3.5 shrink-0 opacity-80"
