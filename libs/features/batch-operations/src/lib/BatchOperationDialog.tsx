@@ -81,7 +81,11 @@ function Filters({ state }: { state: BatchState }) {
   const paramsWithFilters =
     'filters' in state.params ? state.params : undefined;
 
-  if (!paramsWithFilters || paramsWithFilters.filters.length === 0) {
+  if (
+    !paramsWithFilters ||
+    paramsWithFilters.filters.filter((filter) => !filter.isActionImplicitFilter)
+      .length === 0
+  ) {
     return null;
   }
 

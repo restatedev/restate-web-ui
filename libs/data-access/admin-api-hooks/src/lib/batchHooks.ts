@@ -316,7 +316,7 @@ export function useBatchRestateAsNewInvocations(
   const mutationOptions = adminApi(
     'mutate',
     '/query/invocations/restart-as-new',
-    'patch',
+    'post',
     {
       baseUrl,
     },

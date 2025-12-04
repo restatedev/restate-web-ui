@@ -2,7 +2,13 @@ import type { FilterItem } from '@restate/data-access/admin-api/spec';
 import { ProgressStore } from './ProgressStore';
 import { QueryClauseSchema, QueryClauseType } from '@restate/ui/query-builder';
 
-export type OperationType = 'cancel' | 'pause' | 'resume' | 'kill' | 'purge';
+export type OperationType =
+  | 'cancel'
+  | 'pause'
+  | 'resume'
+  | 'kill'
+  | 'purge'
+  | 'restart-as-new';
 
 export interface ProgressState {
   successful: number;

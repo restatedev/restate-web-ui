@@ -47,6 +47,10 @@ interface BatchOperationsContextValue {
     params: BatchInvocationsRequestBody,
     schema?: QueryClauseSchema<QueryClauseType>[],
   ) => void;
+  batchRestartAsNew: (
+    params: BatchInvocationsRequestBody,
+    schema?: QueryClauseSchema<QueryClauseType>[],
+  ) => void;
 }
 
 const BatchOperationsContext =
@@ -258,6 +262,48 @@ export function BatchOperationsProvider({
     },
     [],
   );
+  const batchRestartAsNew = useCallback(
+    (
+      params: { invocationIds: string[] } | { filters: FilterItem[] },
+      schema?: QueryClauseSchema<QueryClauseType>[],
+    ) => {
+      const id = crypto.randomUUID();
+      const progressStore = new ProgressStore({
+        failed: 0,
+        failedInvocationIds: [],
+        successful: 0,
+        isFinished: false,
+        total: 0,
+        isError: false,
+      });
+      setBatchOpes((old) => [
+        ...old,
+        {
+          id,
+          type: 'restart-as-new',
+          params:
+            'invocationIds' in params
+              ? { invocationIds: params.invocationIds }
+              : {
+                  filters: [
+                    ...params.filters,
+                    {
+                      field: 'status',
+                      type: 'STRING',
+                      operation: 'EQUALS',
+                      value: 'completed',
+                      isActionImplicitFilter: true,
+                    },
+                  ],
+                  schema,
+                },
+          progressStore,
+          isDialogOpen: true,
+        },
+      ]);
+    },
+    [],
+  );
   const batchPause = useCallback(
     (
       params: { invocationIds: string[] } | { filters: FilterItem[] },
@@ -444,6 +490,7 @@ export function BatchOperationsProvider({
         batchPause,
         batchPurge,
         batchResume,
+        batchRestartAsNew,
       }}
     >
       {children}

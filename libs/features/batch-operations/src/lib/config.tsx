@@ -114,6 +114,46 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     emptyMessage:
       'No invocations match your criteria. Only running invocations can be paused.',
   },
+  'restart-as-new': {
+    title: 'Restart as New Invocations',
+    submitText: 'Restart',
+    icon: IconName.Restart,
+    submitVariant: 'primary',
+    iconClassName: '',
+    formMethod: 'POST',
+    formAction: '/query/invocations/restart-as-new',
+    description: (count, isLowerBound, duration, params) => (
+      <p>
+        Are you sure you want to restart{' '}
+        <InlineTooltip
+          description={
+            isLowerBound
+              ? `This is a lower bound estimate calculated ${duration}. The actual count may be higher and may have changed.`
+              : `This count was calculated ${duration} and may have changed.`
+          }
+          variant="inline-help"
+          className="[&_button]:invisible"
+          visible={'filters' in params}
+        >
+          <span className="font-medium text-gray-700">
+            {formatNumber(count, true)}
+            {isLowerBound ? '+' : ''}{' '}
+            {formatPlurals(count, { one: 'invocation', other: 'invocations' })}
+          </span>
+        </InlineTooltip>
+        {'filters' in params && params.filters.length > 0
+          ? 'matching the follwoing criteria as new?'
+          : 'as new?'}
+      </p>
+    ),
+    alertType: 'info',
+    alertContent:
+      'Creates a new invocation with the same input (if any) as the original leaving the original unchanged. The new invocation will have a different ID',
+    progressTitle: 'Restarting invocations',
+    completedText: 'Restarted',
+    emptyMessage:
+      'No invocations match your criteria. Only completed invocations can be restarted.',
+  },
   resume: {
     title: 'Resume Invocations',
     submitText: 'Resume',

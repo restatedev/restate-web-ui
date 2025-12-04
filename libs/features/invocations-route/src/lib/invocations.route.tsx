@@ -464,8 +464,14 @@ function Component() {
 
     return filters;
   };
-  const { batchPurge, batchResume, batchCancel, batchKill, batchPause } =
-    useBatchOperations();
+  const {
+    batchPurge,
+    batchResume,
+    batchCancel,
+    batchKill,
+    batchPause,
+    batchRestartAsNew,
+  } = useBatchOperations();
 
   useEffect(() => {
     setSelectedInvocationIds(new Set());
@@ -565,6 +571,9 @@ function Component() {
                       case 'purge': {
                         return batchPurge(args, schema);
                       }
+                      case 'restart-as-new': {
+                        return batchRestartAsNew(args, schema);
+                      }
 
                       default:
                         break;
@@ -598,6 +607,13 @@ function Component() {
                       className="h-3.5 w-3.5 shrink-0 opacity-80"
                     />
                     Pause…
+                  </DropdownItem>
+                  <DropdownItem value="restart-as-new">
+                    <Icon
+                      name={IconName.Restart}
+                      className="h-3.5 w-3.5 shrink-0 opacity-80"
+                    />
+                    Restart as new…
                   </DropdownItem>
                   <DropdownItem value="purge">
                     <Icon
