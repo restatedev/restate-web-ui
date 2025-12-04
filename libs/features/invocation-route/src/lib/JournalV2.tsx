@@ -72,6 +72,8 @@ export function JournalV2({
   withTimeline = true,
   isLive = false,
   setIsLive,
+  isWideMode = false,
+  setIsWideMode,
 }: {
   invocationId: string;
   className?: string;
@@ -80,6 +82,8 @@ export function JournalV2({
   withTimeline?: boolean;
   isLive?: boolean;
   setIsLive?: (value: boolean) => void;
+  isWideMode?: boolean;
+  setIsWideMode?: (value: boolean) => void;
 }) {
   const [invocationIds, setInvocationIds] = useState([String(invocationId)]);
   const [isCompact, setIsCompact] = useState(true);
@@ -351,6 +355,19 @@ export function JournalV2({
                     <Icon name={IconName.ScanSearch} className="h-4 w-4" />
                   </Link>
                 </HoverTooltip>
+                {setIsWideMode && (
+                  <HoverTooltip content={isWideMode ? 'Normal mode' : 'Wide mode'}>
+                    <Button
+                      variant="icon"
+                      onClick={() => setIsWideMode(!isWideMode)}
+                    >
+                      <Icon
+                        name={isWideMode ? IconName.Minimize : IconName.Maximize}
+                        className="h-4 w-4"
+                      />
+                    </Button>
+                  </HoverTooltip>
+                )}
               </div>
             </div>
             <div className="relative font-mono text-0.5xs">
