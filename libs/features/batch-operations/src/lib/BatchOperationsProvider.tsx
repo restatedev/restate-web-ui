@@ -24,13 +24,33 @@ import { NotificationProgressTracker } from './NotificationProgressTracker';
 import { BatchOperationDialog } from './BatchOperationDialog';
 import { OPERATION_CONFIG } from './config';
 import { MAX_FAILED_INVOCATIONS } from './BatchProgressBar';
+import { QueryClauseSchema, QueryClauseType } from '@restate/ui/query-builder';
 
 interface BatchOperationsContextValue {
-  batchCancel: (params: BatchInvocationsRequestBody) => void;
-  batchPause: (params: BatchInvocationsRequestBody) => void;
-  batchResume: (params: BatchResumeInvocationsRequestBody) => void;
-  batchKill: (params: BatchInvocationsRequestBody) => void;
-  batchPurge: (params: BatchInvocationsRequestBody) => void;
+  batchCancel: (
+    params: BatchInvocationsRequestBody,
+    schema?: QueryClauseSchema<QueryClauseType>[],
+  ) => void;
+  batchPause: (
+    params: BatchInvocationsRequestBody,
+    schema?: QueryClauseSchema<QueryClauseType>[],
+  ) => void;
+  batchResume: (
+    params: BatchResumeInvocationsRequestBody,
+    schema?: QueryClauseSchema<QueryClauseType>[],
+  ) => void;
+  batchKill: (
+    params: BatchInvocationsRequestBody,
+    schema?: QueryClauseSchema<QueryClauseType>[],
+  ) => void;
+  batchPurge: (
+    params: BatchInvocationsRequestBody,
+    schema?: QueryClauseSchema<QueryClauseType>[],
+  ) => void;
+  batchRestartAsNew: (
+    params: BatchInvocationsRequestBody,
+    schema?: QueryClauseSchema<QueryClauseType>[],
+  ) => void;
 }
 
 const BatchOperationsContext =
@@ -201,7 +221,10 @@ export function BatchOperationsProvider({
   );
 
   const batchCancel = useCallback(
-    (params: { invocationIds: string[] } | { filters: FilterItem[] }) => {
+    (
+      params: { invocationIds: string[] } | { filters: FilterItem[] },
+      schema?: QueryClauseSchema<QueryClauseType>[],
+    ) => {
       const id = crypto.randomUUID();
       const progressStore = new ProgressStore({
         failed: 0,
@@ -227,8 +250,52 @@ export function BatchOperationsProvider({
                       type: 'STRING_LIST',
                       operation: 'NOT_IN',
                       value: ['completed'],
+                      isActionImplicitFilter: true,
                     },
                   ],
+                  schema,
+                },
+          progressStore,
+          isDialogOpen: true,
+        },
+      ]);
+    },
+    [],
+  );
+  const batchRestartAsNew = useCallback(
+    (
+      params: { invocationIds: string[] } | { filters: FilterItem[] },
+      schema?: QueryClauseSchema<QueryClauseType>[],
+    ) => {
+      const id = crypto.randomUUID();
+      const progressStore = new ProgressStore({
+        failed: 0,
+        failedInvocationIds: [],
+        successful: 0,
+        isFinished: false,
+        total: 0,
+        isError: false,
+      });
+      setBatchOpes((old) => [
+        ...old,
+        {
+          id,
+          type: 'restart-as-new',
+          params:
+            'invocationIds' in params
+              ? { invocationIds: params.invocationIds }
+              : {
+                  filters: [
+                    ...params.filters,
+                    {
+                      field: 'status',
+                      type: 'STRING',
+                      operation: 'EQUALS',
+                      value: 'completed',
+                      isActionImplicitFilter: true,
+                    },
+                  ],
+                  schema,
                 },
           progressStore,
           isDialogOpen: true,
@@ -238,7 +305,10 @@ export function BatchOperationsProvider({
     [],
   );
   const batchPause = useCallback(
-    (params: { invocationIds: string[] } | { filters: FilterItem[] }) => {
+    (
+      params: { invocationIds: string[] } | { filters: FilterItem[] },
+      schema?: QueryClauseSchema<QueryClauseType>[],
+    ) => {
       const id = crypto.randomUUID();
       const progressStore = new ProgressStore({
         failed: 0,
@@ -257,18 +327,21 @@ export function BatchOperationsProvider({
             'invocationIds' in params
               ? { invocationIds: params.invocationIds }
               : {
+                  schema,
                   filters: [
                     ...params.filters,
                     {
                       field: 'status',
                       type: 'STRING_LIST',
                       operation: 'NOT_IN',
+                      isActionImplicitFilter: true,
                       value: [
                         'paused',
                         'ready',
                         'pending',
                         'suspended',
                         'scheduled',
+                        'completed',
                       ],
                     },
                   ],
@@ -281,7 +354,10 @@ export function BatchOperationsProvider({
     [],
   );
   const batchKill = useCallback(
-    (params: { invocationIds: string[] } | { filters: FilterItem[] }) => {
+    (
+      params: { invocationIds: string[] } | { filters: FilterItem[] },
+      schema?: QueryClauseSchema<QueryClauseType>[],
+    ) => {
       const id = crypto.randomUUID();
       const progressStore = new ProgressStore({
         failed: 0,
@@ -300,6 +376,7 @@ export function BatchOperationsProvider({
             'invocationIds' in params
               ? { invocationIds: params.invocationIds }
               : {
+                  schema,
                   filters: [
                     ...params.filters,
                     {
@@ -307,6 +384,7 @@ export function BatchOperationsProvider({
                       type: 'STRING_LIST',
                       operation: 'NOT_IN',
                       value: ['completed'],
+                      isActionImplicitFilter: true,
                     },
                   ],
                 },
@@ -318,7 +396,10 @@ export function BatchOperationsProvider({
     [],
   );
   const batchPurge = useCallback(
-    (params: { invocationIds: string[] } | { filters: FilterItem[] }) => {
+    (
+      params: { invocationIds: string[] } | { filters: FilterItem[] },
+      schema?: QueryClauseSchema<QueryClauseType>[],
+    ) => {
       const id = crypto.randomUUID();
       const progressStore = new ProgressStore({
         failed: 0,
@@ -337,6 +418,7 @@ export function BatchOperationsProvider({
             'invocationIds' in params
               ? { invocationIds: params.invocationIds }
               : {
+                  schema,
                   filters: [
                     ...params.filters,
                     {
@@ -344,6 +426,7 @@ export function BatchOperationsProvider({
                       type: 'STRING',
                       operation: 'EQUALS',
                       value: 'completed',
+                      isActionImplicitFilter: true,
                     },
                   ],
                 },
@@ -359,6 +442,7 @@ export function BatchOperationsProvider({
       params:
         | { invocationIds: string[]; deployment?: 'keep' | 'latest' }
         | { filters: FilterItem[]; deployment?: 'keep' | 'latest' },
+      schema?: QueryClauseSchema<QueryClauseType>[],
     ) => {
       const id = crypto.randomUUID();
       const progressStore = new ProgressStore({
@@ -378,6 +462,7 @@ export function BatchOperationsProvider({
             'invocationIds' in params
               ? { invocationIds: params.invocationIds }
               : {
+                  schema,
                   filters: [
                     ...params.filters,
                     {
@@ -385,6 +470,7 @@ export function BatchOperationsProvider({
                       type: 'STRING',
                       operation: 'EQUALS',
                       value: 'paused',
+                      isActionImplicitFilter: true,
                     },
                   ],
                 },
@@ -404,6 +490,7 @@ export function BatchOperationsProvider({
         batchPause,
         batchPurge,
         batchResume,
+        batchRestartAsNew,
       }}
     >
       {children}

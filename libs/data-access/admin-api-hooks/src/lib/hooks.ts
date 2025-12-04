@@ -960,7 +960,7 @@ export function usePauseInvocation(
     String(invocationId),
     {
       refetchOnMount: false,
-      enabled: Boolean(invocationId),
+      enabled: false,
     },
   );
 
@@ -1007,7 +1007,7 @@ export function useResumeInvocation(
   const baseUrl = useAdminBaseUrl();
   const { refetch } = useGetInvocationJournalWithInvocationV2(invocationId, {
     refetchOnMount: false,
-    enabled: Boolean(invocationId),
+    enabled: false,
   });
 
   return useMutation({

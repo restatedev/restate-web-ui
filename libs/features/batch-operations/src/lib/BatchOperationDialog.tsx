@@ -3,6 +3,7 @@ import { useCountInvocations } from '@restate/data-access/admin-api-hooks';
 import type {
   BatchInvocationsRequestBody,
   BatchInvocationsResponse,
+  FilterItem,
 } from '@restate/data-access/admin-api/spec';
 import { ConfirmationDialog } from '@restate/ui/dialog';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -18,17 +19,20 @@ import { BatchState } from './types';
 import { useBatchMutation } from './useBatchMutation';
 import { useProgress } from './useProgress';
 import { OPERATION_CONFIG, OperationConfig } from './config';
+import { QueryClause } from '@restate/ui/query-builder';
 
 function BatchOperationContent({
   count,
   isLowerBound,
   isCountLoading,
   config,
+  state,
 }: {
   count: number | undefined;
   isLowerBound: boolean | undefined;
   isCountLoading: boolean;
   config: OperationConfig;
+  state: BatchState;
 }) {
   const [now, setNow] = useState(() => Date.now());
 
@@ -62,7 +66,65 @@ function BatchOperationContent({
 
   return (
     <div onMouseEnter={() => setNow(Date.now())}>
-      {config.description(count, isLowerBound ?? false, `${duration} ago`)}
+      {config.description(
+        count,
+        isLowerBound ?? false,
+        `${duration} ago`,
+        state.params,
+      )}
+      <Filters state={state} />
+    </div>
+  );
+}
+
+function Filters({ state }: { state: BatchState }) {
+  const paramsWithFilters =
+    'filters' in state.params ? state.params : undefined;
+
+  if (
+    !paramsWithFilters ||
+    paramsWithFilters.filters.filter((filter) => !filter.isActionImplicitFilter)
+      .length === 0
+  ) {
+    return null;
+  }
+
+  return (
+    <div className="mt-4 flex w-full gap-1 overflow-auto rounded-lg border bg-gray-200/50 p-0.5 font-mono shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
+      {paramsWithFilters.filters
+        .filter((filter) => !filter.isActionImplicitFilter)
+        .map((filter, index) => {
+          const clauseSchema = paramsWithFilters.schema?.find(
+            ({ id }) => id === filter.field,
+          );
+          const queryClause = clauseSchema
+            ? new QueryClause(clauseSchema, {
+                operation: filter.operation as any,
+                value: 'value' in filter ? filter.value : undefined,
+                fieldValue: filter.field,
+              })
+            : undefined;
+
+          return (
+            <div
+              key={index}
+              className="flex items-baseline gap-[0.75ch] rounded-md border bg-white px-2 py-1 text-xs shadow-xs"
+            >
+              <span className="shrink-0 whitespace-nowrap">
+                {queryClause?.label || filter.field}
+              </span>
+              {queryClause?.operationLabel?.split(' ').map((segment) => (
+                <span className="font-mono" key={segment}>
+                  {segment}
+                </span>
+              )) || filter.operation}
+              <span className="truncate font-semibold">
+                {queryClause?.valueLabel ||
+                  ('value' in filter ? filter.value : '')}
+              </span>
+            </div>
+          );
+        })}
     </div>
   );
 }
@@ -74,7 +136,7 @@ export function BatchOperationDialog({
   onProgress,
 }: {
   state: BatchState;
-  onOpenChange: (isOpen: boolean, isCompleted: boolean) => void;
+  onOpenChange: (isOpen: boolean, canClose: boolean) => void;
   batchSize: number;
   onProgress: (response: BatchInvocationsResponse) => void;
 }) {
@@ -99,6 +161,13 @@ export function BatchOperationDialog({
       enabled: state.params && 'filters' in state.params,
       staleTime: 0,
       refetchOnMount: true,
+      ...(state.params &&
+        'invocationIds' in state.params && {
+          initialData: {
+            count: state.params.invocationIds.length,
+            isLowerBound: false,
+          },
+        }),
     },
   );
 
@@ -121,7 +190,13 @@ export function BatchOperationDialog({
     <SnapshotTimeProvider lastSnapshot={countInvocations.dataUpdatedAt}>
       <ConfirmationDialog
         open={state.isDialogOpen}
-        onOpenChange={(isOpen) => onOpenChange(isOpen, !mutation.isPending)}
+        onOpenChange={(isOpen) => {
+          const canClose = !mutation.isPending || mutation.isPaused(state.id);
+          if (canClose && !isOpen) {
+            mutation.cancel(state.id);
+          }
+          onOpenChange(isOpen, canClose);
+        }}
         title={config.title}
         icon={config.icon}
         iconClassName={config.iconClassName}
@@ -131,9 +206,14 @@ export function BatchOperationDialog({
             isLowerBound={isLowerBound}
             isCountLoading={countInvocations.isPending}
             config={config}
+            state={state}
           />
         }
-        closeText={mutation.isPending ? 'Continue in background' : 'Close'}
+        closeText={
+          mutation.isPending && !mutation.isPaused(state.id)
+            ? 'Continue in background'
+            : 'Close'
+        }
         alertType={count && count > 0 ? config.alertType : undefined}
         alertContent={count && count > 0 ? config.alertContent : undefined}
         submitText={config.submitText}
@@ -169,7 +249,8 @@ export function BatchOperationDialog({
                   failed={progress?.failed || 0}
                   total={Math.max(
                     count || 0,
-                    (progress?.successful || 0) + (progress?.failed || 0),
+                    ((progress?.successful || 0) + (progress?.failed || 0)) *
+                      (mutation.isPending ? 1.01 : 1),
                   )}
                   isPending={mutation.isPending && !mutation.isPaused(state.id)}
                   failedInvocations={progress?.failedInvocationIds}
@@ -177,7 +258,7 @@ export function BatchOperationDialog({
                 >
                   {mutation.isPending && (
                     <Button
-                      className="rounded-md p-1"
+                      className="flex items-center gap-1 rounded-md p-1 py-0.5 text-xs"
                       variant="secondary"
                       onClick={() =>
                         mutation.isPaused(state.id)
@@ -188,11 +269,12 @@ export function BatchOperationDialog({
                       <Icon
                         name={
                           mutation.isPaused(state.id)
-                            ? IconName.Resume
-                            : IconName.Pause
+                            ? IconName.CirclePlay
+                            : IconName.CircleStop
                         }
-                        className="h-4 w-4"
+                        className="h-3.5 w-3.5 opacity-70"
                       />
+                      {mutation.isPaused(state.id) ? 'Continue' : 'Stop'}
                     </Button>
                   )}
                 </BatchProgressBar>
@@ -204,7 +286,15 @@ export function BatchOperationDialog({
         {state.type === 'resume' && count !== undefined && count > 0 && (
           <div className="mt-4">
             <FormFieldSelect
-              label="Deployment"
+              label={
+                <>
+                  Deployment
+                  <span slot="description">
+                    Should each keep its current deployment or switch to the
+                    latest?
+                  </span>
+                </>
+              }
               placeholder="Select deployment"
               name="deployment"
               defaultValue="Keep"

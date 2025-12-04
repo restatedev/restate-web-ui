@@ -4,6 +4,7 @@ import {
   useBatchPurgeInvocations,
   useBatchKillInvocations,
   useBatchResumeInvocations,
+  useBatchRestateAsNewInvocations,
 } from '@restate/data-access/admin-api-hooks';
 import type { BatchInvocationsResponse } from '@restate/data-access/admin-api/spec';
 import { showSuccessNotification } from '@restate/ui/notification';
@@ -14,7 +15,7 @@ export function useBatchMutation(
   type: OperationType,
   batchSize: number,
   onProgress: (response: BatchInvocationsResponse) => void,
-  onOpenChange: (isOpen: boolean, isCompleted: boolean) => void,
+  onOpenChange: (isOpen: boolean, canClose: boolean) => void,
   onError: VoidFunction,
 ) {
   const cancelMutation = useBatchCancelInvocations(batchSize, {
@@ -76,6 +77,20 @@ export function useBatchMutation(
       onError?.();
     },
   });
+  const restartAsNewMutation = useBatchRestateAsNewInvocations(batchSize, {
+    onProgress,
+    onSuccess(data, variables, onMutateResult, context) {
+      if (data?.failed === 0) {
+        showSuccessNotification(
+          `Successfully restarted ${formatNumber(data.successful)} invocation${data.successful !== 1 ? 's' : ''}`,
+        );
+        onOpenChange(false, true);
+      }
+    },
+    onError(error, variables, onMutateResult, context) {
+      onError?.();
+    },
+  });
 
   const purgeMutation = useBatchPurgeInvocations(batchSize, {
     onProgress,
@@ -103,6 +118,8 @@ export function useBatchMutation(
       return pauseMutation;
     case 'purge':
       return purgeMutation;
+    case 'restart-as-new':
+      return restartAsNewMutation;
 
     default:
       throw Error('not supported');

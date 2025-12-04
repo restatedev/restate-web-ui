@@ -1,7 +1,14 @@
 import type { FilterItem } from '@restate/data-access/admin-api/spec';
 import { ProgressStore } from './ProgressStore';
+import { QueryClauseSchema, QueryClauseType } from '@restate/ui/query-builder';
 
-export type OperationType = 'cancel' | 'pause' | 'resume' | 'kill' | 'purge';
+export type OperationType =
+  | 'cancel'
+  | 'pause'
+  | 'resume'
+  | 'kill'
+  | 'purge'
+  | 'restart-as-new';
 
 export interface ProgressState {
   successful: number;
@@ -19,12 +26,21 @@ export type BatchState = {
 } & (
   | {
       type: Exclude<OperationType, 'resume'>;
-      params: { invocationIds: string[] } | { filters: FilterItem[] };
+      params:
+        | { invocationIds: string[] }
+        | {
+            filters: (FilterItem & { isActionImplicitFilter?: boolean })[];
+            schema?: QueryClauseSchema<QueryClauseType>[];
+          };
     }
   | {
       type: 'resume';
       params:
         | { invocationIds: string[]; deployment?: 'Latest' | 'Keep' }
-        | { filters: FilterItem[]; deployment?: 'Latest' | 'Keep' };
+        | {
+            filters: (FilterItem & { isActionImplicitFilter?: boolean })[];
+            deployment?: 'Latest' | 'Keep';
+            schema?: QueryClauseSchema<QueryClauseType>[];
+          };
     }
 );

@@ -3,6 +3,7 @@ import { IconName } from '@restate/ui/icons';
 import { InlineTooltip } from '@restate/ui/tooltip';
 import { formatNumber, formatPlurals } from '@restate/util/intl';
 import { OperationType } from './types';
+import { FilterItem } from '@restate/data-access/admin-api/spec';
 
 export interface OperationConfig {
   title: string;
@@ -13,6 +14,13 @@ export interface OperationConfig {
     count: number,
     isLowerBound: boolean,
     duration: string,
+    params:
+      | {
+          invocationIds: string[];
+        }
+      | {
+          filters: FilterItem[];
+        },
   ) => ReactNode;
   alertType?: 'warning' | 'info';
   alertContent?: string;
@@ -27,13 +35,13 @@ export interface OperationConfig {
 export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
   cancel: {
     title: 'Cancel Invocations',
-    submitText: 'Cancel',
+    submitText: 'Confirm',
     icon: IconName.Cancel,
     iconClassName: 'text-red-400',
     submitVariant: 'destructive',
     formMethod: 'POST',
     formAction: '/query/invocations/cancel',
-    description: (count, isLowerBound, duration) => (
+    description: (count, isLowerBound, duration, params) => (
       <p>
         Are you sure you want to cancel{' '}
         <InlineTooltip
@@ -44,6 +52,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
           }
           variant="inline-help"
           className="[&_button]:invisible"
+          visible={'filters' in params}
         >
           <span className="font-medium text-gray-700">
             {formatNumber(count, true)}
@@ -51,7 +60,9 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
             {formatPlurals(count, { one: 'invocation', other: 'invocations' })}
           </span>
         </InlineTooltip>
-        ?
+        {'filters' in params && params.filters.length > 0
+          ? 'matching the follwoing criteria?'
+          : '?'}
       </p>
     ),
     alertType: 'info',
@@ -70,7 +81,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     submitVariant: 'destructive',
     formMethod: 'POST',
     formAction: '/query/invocations/pause',
-    description: (count, isLowerBound, duration) => (
+    description: (count, isLowerBound, duration, params) => (
       <p>
         Are you sure you want to pause{' '}
         <InlineTooltip
@@ -81,6 +92,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
           }
           variant="inline-help"
           className="[&_button]:invisible"
+          visible={'filters' in params}
         >
           <span className="font-medium text-gray-700">
             {formatNumber(count, true)}
@@ -88,7 +100,10 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
             {formatPlurals(count, { one: 'invocation', other: 'invocations' })}
           </span>
         </InlineTooltip>
-        ? The pause may not take effect right away.
+        {'filters' in params && params.filters.length > 0
+          ? 'matching the follwoing criteria?'
+          : '?'}{' '}
+        The pause may not take effect right away.
       </p>
     ),
     alertType: 'info',
@@ -99,6 +114,46 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     emptyMessage:
       'No invocations match your criteria. Only running invocations can be paused.',
   },
+  'restart-as-new': {
+    title: 'Restart as New Invocations',
+    submitText: 'Restart',
+    icon: IconName.Restart,
+    submitVariant: 'primary',
+    iconClassName: '',
+    formMethod: 'POST',
+    formAction: '/query/invocations/restart-as-new',
+    description: (count, isLowerBound, duration, params) => (
+      <p>
+        Are you sure you want to restart{' '}
+        <InlineTooltip
+          description={
+            isLowerBound
+              ? `This is a lower bound estimate calculated ${duration}. The actual count may be higher and may have changed.`
+              : `This count was calculated ${duration} and may have changed.`
+          }
+          variant="inline-help"
+          className="[&_button]:invisible"
+          visible={'filters' in params}
+        >
+          <span className="font-medium text-gray-700">
+            {formatNumber(count, true)}
+            {isLowerBound ? '+' : ''}{' '}
+            {formatPlurals(count, { one: 'invocation', other: 'invocations' })}
+          </span>
+        </InlineTooltip>
+        {'filters' in params && params.filters.length > 0
+          ? 'as new matching the follwoing criteria?'
+          : 'as new?'}
+      </p>
+    ),
+    alertType: 'info',
+    alertContent:
+      'Creates a new invocation with the same input (if any) as the original leaving the original unchanged. The new invocation will have a different ID',
+    progressTitle: 'Restarting invocations',
+    completedText: 'Restarted',
+    emptyMessage:
+      'No invocations match your criteria. Only completed invocations can be restarted.',
+  },
   resume: {
     title: 'Resume Invocations',
     submitText: 'Resume',
@@ -107,7 +162,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     iconClassName: '',
     formMethod: 'POST',
     formAction: '/query/invocations/resume',
-    description: (count, isLowerBound, duration) => (
+    description: (count, isLowerBound, duration, params) => (
       <p>
         You're about to resume{' '}
         <InlineTooltip
@@ -118,6 +173,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
           }
           variant="inline-help"
           className="[&_button]:invisible"
+          visible={'filters' in params}
         >
           <span className="font-medium text-gray-700">
             {formatNumber(count, true)}
@@ -125,7 +181,9 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
             {formatPlurals(count, { one: 'invocation', other: 'invocations' })}
           </span>
         </InlineTooltip>
-        . Should each keep its current deployment or switch to the latest?
+        {'filters' in params && params.filters.length > 0
+          ? 'matching the follwoing criteria.'
+          : '.'}
       </p>
     ),
     progressTitle: 'Resuming invocations',
@@ -141,7 +199,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     submitVariant: 'destructive',
     formMethod: 'POST',
     formAction: '/query/invocations/kill',
-    description: (count, isLowerBound, duration) => (
+    description: (count, isLowerBound, duration, params) => (
       <p>
         Are you sure you want to kill{' '}
         <InlineTooltip
@@ -152,6 +210,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
           }
           variant="inline-help"
           className="[&_button]:invisible"
+          visible={'filters' in params}
         >
           <span className="font-medium text-gray-700">
             {formatNumber(count, true)}
@@ -159,7 +218,9 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
             {formatPlurals(count, { one: 'invocation', other: 'invocations' })}
           </span>
         </InlineTooltip>
-        ?
+        {'filters' in params && params.filters.length > 0
+          ? 'matching the follwoing criteria?'
+          : '?'}
       </p>
     ),
     alertType: 'warning',
@@ -178,7 +239,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     submitVariant: 'destructive',
     formMethod: 'POST',
     formAction: '/query/invocations/purge',
-    description: (count, isLowerBound, duration) => (
+    description: (count, isLowerBound, duration, params) => (
       <p>
         Are you sure you want to purge{' '}
         <InlineTooltip
@@ -189,6 +250,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
           }
           variant="inline-help"
           className="[&_button]:invisible"
+          visible={'filters' in params}
         >
           <span className="font-medium text-gray-700">
             {formatNumber(count, true)}
@@ -196,7 +258,9 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
             {formatPlurals(count, { one: 'invocation', other: 'invocations' })}
           </span>
         </InlineTooltip>
-        ?
+        {'filters' in params && params.filters.length > 0
+          ? 'matching the follwoing criteria?'
+          : '?'}
       </p>
     ),
     alertType: 'info',

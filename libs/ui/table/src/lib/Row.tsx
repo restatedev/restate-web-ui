@@ -55,7 +55,7 @@ export function Row<T extends { id?: string }>({
         </Cell>
       )}
       {selectionBehavior === 'toggle' && (
-        <Cell className="px-2">
+        <Cell className="items-start pt-2.5 align-baseline">
           <Checkbox slot="selection" />
         </Cell>
       )}
