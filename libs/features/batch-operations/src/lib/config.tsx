@@ -3,6 +3,7 @@ import { IconName } from '@restate/ui/icons';
 import { InlineTooltip } from '@restate/ui/tooltip';
 import { formatNumber, formatPlurals } from '@restate/util/intl';
 import { OperationType } from './types';
+import { FilterItem } from '@restate/data-access/admin-api/spec';
 
 export interface OperationConfig {
   title: string;
@@ -13,6 +14,13 @@ export interface OperationConfig {
     count: number,
     isLowerBound: boolean,
     duration: string,
+    params:
+      | {
+          invocationIds: string[];
+        }
+      | {
+          filters: FilterItem[];
+        },
   ) => ReactNode;
   alertType?: 'warning' | 'info';
   alertContent?: string;
@@ -33,7 +41,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     submitVariant: 'destructive',
     formMethod: 'POST',
     formAction: '/query/invocations/cancel',
-    description: (count, isLowerBound, duration) => (
+    description: (count, isLowerBound, duration, params) => (
       <p>
         Are you sure you want to cancel{' '}
         <InlineTooltip
@@ -44,6 +52,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
           }
           variant="inline-help"
           className="[&_button]:invisible"
+          visible={'filters' in params}
         >
           <span className="font-medium text-gray-700">
             {formatNumber(count, true)}
@@ -70,7 +79,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     submitVariant: 'destructive',
     formMethod: 'POST',
     formAction: '/query/invocations/pause',
-    description: (count, isLowerBound, duration) => (
+    description: (count, isLowerBound, duration, params) => (
       <p>
         Are you sure you want to pause{' '}
         <InlineTooltip
@@ -81,6 +90,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
           }
           variant="inline-help"
           className="[&_button]:invisible"
+          visible={'filters' in params}
         >
           <span className="font-medium text-gray-700">
             {formatNumber(count, true)}
@@ -107,7 +117,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     iconClassName: '',
     formMethod: 'POST',
     formAction: '/query/invocations/resume',
-    description: (count, isLowerBound, duration) => (
+    description: (count, isLowerBound, duration, params) => (
       <p>
         You're about to resume{' '}
         <InlineTooltip
@@ -118,6 +128,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
           }
           variant="inline-help"
           className="[&_button]:invisible"
+          visible={'filters' in params}
         >
           <span className="font-medium text-gray-700">
             {formatNumber(count, true)}
@@ -141,7 +152,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     submitVariant: 'destructive',
     formMethod: 'POST',
     formAction: '/query/invocations/kill',
-    description: (count, isLowerBound, duration) => (
+    description: (count, isLowerBound, duration, params) => (
       <p>
         Are you sure you want to kill{' '}
         <InlineTooltip
@@ -152,6 +163,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
           }
           variant="inline-help"
           className="[&_button]:invisible"
+          visible={'filters' in params}
         >
           <span className="font-medium text-gray-700">
             {formatNumber(count, true)}
@@ -178,7 +190,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     submitVariant: 'destructive',
     formMethod: 'POST',
     formAction: '/query/invocations/purge',
-    description: (count, isLowerBound, duration) => (
+    description: (count, isLowerBound, duration, params) => (
       <p>
         Are you sure you want to purge{' '}
         <InlineTooltip
@@ -189,6 +201,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
           }
           variant="inline-help"
           className="[&_button]:invisible"
+          visible={'filters' in params}
         >
           <span className="font-medium text-gray-700">
             {formatNumber(count, true)}

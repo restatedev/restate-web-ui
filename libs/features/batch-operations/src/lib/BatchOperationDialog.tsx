@@ -3,6 +3,7 @@ import { useCountInvocations } from '@restate/data-access/admin-api-hooks';
 import type {
   BatchInvocationsRequestBody,
   BatchInvocationsResponse,
+  FilterItem,
 } from '@restate/data-access/admin-api/spec';
 import { ConfirmationDialog } from '@restate/ui/dialog';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -24,11 +25,19 @@ function BatchOperationContent({
   isLowerBound,
   isCountLoading,
   config,
+  params,
 }: {
   count: number | undefined;
   isLowerBound: boolean | undefined;
   isCountLoading: boolean;
   config: OperationConfig;
+  params:
+    | {
+        invocationIds: string[];
+      }
+    | {
+        filters: FilterItem[];
+      };
 }) {
   const [now, setNow] = useState(() => Date.now());
 
@@ -62,7 +71,12 @@ function BatchOperationContent({
 
   return (
     <div onMouseEnter={() => setNow(Date.now())}>
-      {config.description(count, isLowerBound ?? false, `${duration} ago`)}
+      {config.description(
+        count,
+        isLowerBound ?? false,
+        `${duration} ago`,
+        params,
+      )}
     </div>
   );
 }
@@ -99,6 +113,13 @@ export function BatchOperationDialog({
       enabled: state.params && 'filters' in state.params,
       staleTime: 0,
       refetchOnMount: true,
+      ...(state.params &&
+        'invocationIds' in state.params && {
+          initialData: {
+            count: state.params.invocationIds.length,
+            isLowerBound: false,
+          },
+        }),
     },
   );
 
@@ -131,6 +152,7 @@ export function BatchOperationDialog({
             isLowerBound={isLowerBound}
             isCountLoading={countInvocations.isPending}
             config={config}
+            params={state.params}
           />
         }
         closeText={mutation.isPending ? 'Continue in background' : 'Close'}

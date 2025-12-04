@@ -13,6 +13,7 @@ interface InlineTooltipProps {
   learnMoreHref?: string;
   className?: string;
   variant?: 'inline-help' | 'indicator-button';
+  visible?: boolean;
 }
 
 export function InlineTooltip({
@@ -22,10 +23,15 @@ export function InlineTooltip({
   learnMoreHref,
   className,
   variant = 'inline-help',
+  visible = true,
 }: PropsWithChildren<InlineTooltipProps>) {
   const triggerRef = useRef<HTMLDivElement>(null);
   const Trigger =
     variant === 'inline-help' ? HelpTooltipTrigger : InfoTooltipTrigger;
+
+  if (!visible) {
+    return children;
+  }
 
   return (
     <AriaTooltip delay={250}>
