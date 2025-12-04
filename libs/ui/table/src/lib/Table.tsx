@@ -31,6 +31,7 @@ interface TableProps
     | 'onSortChange'
     | 'onSelectionChange'
     | 'selectedKeys'
+    | 'onRowAction'
   > {
   className?: string;
 }
