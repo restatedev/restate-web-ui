@@ -504,11 +504,17 @@ function Component() {
                 className="flex items-center gap-1.5 self-end rounded-lg p-0.5 px-2 text-0.5xs"
               >
                 Actions
-                {selectedInvocationIds.length > 0 && (
-                  <Badge size="xs" variant="default">
-                    {selectedInvocationIds.length}
-                  </Badge>
-                )}
+                <Badge
+                  size="xs"
+                  variant={
+                    selectedInvocationIds.length > 0 ? 'default' : 'info'
+                  }
+                >
+                  {selectedInvocationIds.length ||
+                    (data?.total_count
+                      ? `${formatNumber(data?.total_count, data?.total_count_lower_bound)}${data?.total_count_lower_bound ? '+' : ''}`
+                      : '')}
+                </Badge>
                 <Icon
                   name={IconName.ChevronsUpDown}
                   className="aspect-square h-3.5 w-3.5 opacity-80"
