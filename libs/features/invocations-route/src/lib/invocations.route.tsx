@@ -39,7 +39,6 @@ import { ClauseChip, FiltersTrigger } from './Filters';
 import {
   ClientLoaderFunctionArgs,
   Form,
-  redirect,
   ShouldRevalidateFunctionArgs,
   useSearchParams,
 } from 'react-router';
@@ -53,7 +52,7 @@ import {
 } from '@restate/data-access/admin-api-hooks';
 import { useRestateContext } from '@restate/features/restate-context';
 import { useBatchOperations } from '@restate/features/batch-operations';
-import { SplitButton } from '@restate/ui/split-button';
+import { Badge } from '@restate/ui/badge';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: 80,
@@ -340,6 +339,9 @@ function Component() {
 
   const dataUpdate = error ? errorUpdatedAt : dataUpdatedAt;
 
+  const [selectedInvocationIds, setSelectedInvocationIds] = useState<string[]>(
+    [],
+  );
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>();
   const collator = useCollator();
   const [pageIndex, _setPageIndex] = useState(0);
@@ -460,13 +462,141 @@ function Component() {
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdate}>
       <div className="relative flex flex-auto flex-col gap-2">
+        <div className="ml-auto flex items-center gap-1.5 pr-1.5">
+          <Dropdown>
+            <DropdownTrigger>
+              <Button
+                variant="secondary"
+                className="flex items-center gap-1.5 self-end rounded-lg p-0.5 px-2 text-0.5xs"
+              >
+                <Icon
+                  name={IconName.TableProperties}
+                  className="aspect-square h-3.5 w-3.5 opacity-80"
+                />
+                Columns
+              </Button>
+            </DropdownTrigger>
+            <DropdownPopover>
+              <DropdownSection title="Columns">
+                <DropdownMenu
+                  multiple
+                  selectable
+                  selectedItems={selectedColumns}
+                  onSelect={setSelectedColumns}
+                >
+                  {Object.entries(COLUMN_NAMES)
+                    .filter(([key]) => key !== 'actions')
+                    .map(([key, name]) => (
+                      <DropdownItem key={key} value={key}>
+                        {name}
+                      </DropdownItem>
+                    ))}
+                </DropdownMenu>
+              </DropdownSection>
+            </DropdownPopover>
+          </Dropdown>
+          <Dropdown>
+            <DropdownTrigger>
+              <Button
+                variant={
+                  selectedInvocationIds.length > 0 ? 'primary' : 'secondary'
+                }
+                className="flex items-center gap-1.5 self-end rounded-lg p-0.5 px-2 text-0.5xs"
+              >
+                Actions
+                {selectedInvocationIds.length > 0 && (
+                  <Badge size="xs" variant="default">
+                    {selectedInvocationIds.length}
+                  </Badge>
+                )}
+                <Icon
+                  name={IconName.ChevronsUpDown}
+                  className="aspect-square h-3.5 w-3.5 opacity-80"
+                />
+              </Button>
+            </DropdownTrigger>
+            <DropdownPopover>
+              <DropdownSection title="Batch actions">
+                <DropdownMenu
+                  selectable
+                  selectedItems={selectedColumns}
+                  onSelect={(key) => {
+                    const args =
+                      selectedInvocationIds.length > 0
+                        ? { invocationIds: selectedInvocationIds }
+                        : { filters: queryFilters };
+                    switch (key) {
+                      case 'cancel':
+                        return batchCancel(args);
+                      case 'kill':
+                        return batchKill(args);
+                      case 'pause':
+                        return batchPause(args);
+                      case 'resume':
+                        return batchResume(args);
+                      case 'purge':
+                        return batchPurge(args);
+
+                      default:
+                        break;
+                    }
+                  }}
+                >
+                  <DropdownItem value="cancel">
+                    <Icon
+                      name={IconName.Cancel}
+                      className="h-3.5 w-3.5 shrink-0 opacity-80"
+                    />
+                    Cancel…
+                  </DropdownItem>
+                  <DropdownItem value="kill">
+                    <Icon
+                      name={IconName.Kill}
+                      className="h-3.5 w-3.5 shrink-0 opacity-80"
+                    />
+                    Kill…
+                  </DropdownItem>
+                  <DropdownItem value="resume">
+                    <Icon
+                      name={IconName.Play}
+                      className="h-3.5 w-3.5 shrink-0 opacity-80"
+                    />
+                    Resume…
+                  </DropdownItem>
+                  <DropdownItem value="pause">
+                    <Icon
+                      name={IconName.Pause}
+                      className="h-3.5 w-3.5 shrink-0 opacity-80"
+                    />
+                    Pause…
+                  </DropdownItem>
+                  <DropdownItem value="purge">
+                    <Icon
+                      name={IconName.Trash}
+                      className="h-3.5 w-3.5 shrink-0 opacity-80"
+                    />
+                    Purge…
+                  </DropdownItem>
+                </DropdownMenu>
+              </DropdownSection>
+            </DropdownPopover>
+          </Dropdown>
+        </div>
         <Table
           aria-label="Invocations"
           sortDescriptor={sortDescriptor}
           onSortChange={setSortDescriptor}
           key={hash}
+          selectionMode="multiple"
+          onSelectionChange={(keys) => {
+            if (keys === 'all') {
+              setSelectedInvocationIds(currentPageItems.map((inv) => inv.id));
+            } else {
+              setSelectedInvocationIds(Array.from(keys.values()) as string[]);
+            }
+          }}
         >
-          <TableHeader>
+          <TableHeader className="[&_th:nth-last-child(2)_[data-resizable-direction]]:invisible">
             {sortedColumnsList.map((col) =>
               col.id !== 'actions' ? (
                 <Column
@@ -481,38 +611,12 @@ function Component() {
                   {col.name}
                 </Column>
               ) : (
-                <Column id="actions" width={40} key={col.id}>
-                  <Dropdown>
-                    <DropdownTrigger>
-                      <Button
-                        variant="icon"
-                        className="self-end rounded-lg p-0.5"
-                      >
-                        <Icon
-                          name={IconName.TableProperties}
-                          className="aspect-square h-4 w-4 text-gray-500"
-                        />
-                      </Button>
-                    </DropdownTrigger>
-                    <DropdownPopover>
-                      <DropdownSection title="Columns">
-                        <DropdownMenu
-                          multiple
-                          selectable
-                          selectedItems={selectedColumns}
-                          onSelect={setSelectedColumns}
-                        >
-                          {Object.entries(COLUMN_NAMES)
-                            .filter(([key]) => key !== 'actions')
-                            .map(([key, name]) => (
-                              <DropdownItem key={key} value={key}>
-                                {name}
-                              </DropdownItem>
-                            ))}
-                        </DropdownMenu>
-                      </DropdownSection>
-                    </DropdownPopover>
-                  </Dropdown>
+                <Column
+                  id="actions"
+                  width={40}
+                  key={col.id}
+                  className="opacity-0"
+                >
                   <span className="sr-only">Actions</span>
                 </Column>
               ),
@@ -598,7 +702,6 @@ function Component() {
             </div>
           )}
         </Footnote>
-
         {OnboardingGuide && (
           <OnboardingGuide
             stage="view-invocations"
@@ -627,86 +730,13 @@ function Component() {
               {ClauseChip}
             </AddQueryTrigger>
           </QueryBuilder>
-          <SplitButton
-            className="absolute top-1 right-1 bottom-1 [&:has(button:disabled)_button]:pointer-events-none [&:has(button:disabled)_button]:bg-gray-400 [&:has(button:disabled)_button]:bg-none [&:has(button:disabled)_button]:text-gray-200 [&:has(button:disabled)_button]:shadow-none"
-            variant="primary"
-            splitClassName="rounded-r-lg [&_svg]:w-4 [&_svg]:h-4"
-            mini={false}
-            menus={
-              <>
-                <DropdownItem value="query">
-                  <Icon
-                    name={IconName.ScanSearch}
-                    className="h-3.5 w-3.5 shrink-0 opacity-80"
-                  />
-                  Query
-                </DropdownItem>
-                <DropdownItem value="cancel">
-                  <Icon
-                    name={IconName.Cancel}
-                    className="h-3.5 w-3.5 shrink-0 opacity-80"
-                  />
-                  Cancel…
-                </DropdownItem>
-                <DropdownItem value="kill">
-                  <Icon
-                    name={IconName.Kill}
-                    className="h-3.5 w-3.5 shrink-0 opacity-80"
-                  />
-                  Kill…
-                </DropdownItem>
-                <DropdownItem value="resume">
-                  <Icon
-                    name={IconName.Play}
-                    className="h-3.5 w-3.5 shrink-0 opacity-80"
-                  />
-                  Resume…
-                </DropdownItem>
-                <DropdownItem value="pause">
-                  <Icon
-                    name={IconName.Pause}
-                    className="h-3.5 w-3.5 shrink-0 opacity-80"
-                  />
-                  Pause…
-                </DropdownItem>
-                <DropdownItem value="purge">
-                  <Icon
-                    name={IconName.Trash}
-                    className="h-3.5 w-3.5 shrink-0 opacity-80"
-                  />
-                  Purge…
-                </DropdownItem>
-              </>
-            }
-            onSelect={(key) => {
-              switch (key) {
-                case 'query': {
-                  updateFilters();
-                  return queryCLient.invalidateQueries({ queryKey });
-                }
-                case 'cancel':
-                  return batchCancel({ filters: updateFilters() });
-                case 'kill':
-                  return batchKill({ filters: updateFilters() });
-                case 'pause':
-                  return batchPause({ filters: updateFilters() });
-                case 'resume':
-                  return batchResume({ filters: updateFilters() });
-                case 'purge':
-                  return batchPurge({ filters: updateFilters() });
 
-                default:
-                  break;
-              }
-            }}
+          <SubmitButton
+            isPending={isFetching}
+            className="absolute top-1 right-1 bottom-1 rounded-lg py-0 disabled:bg-gray-400 disabled:text-gray-200"
           >
-            <SubmitButton
-              isPending={isFetching}
-              className="rounded-l-lg rounded-r-none py-0 [&_svg]:h-4 [&_svg]:w-4"
-            >
-              Query
-            </SubmitButton>
-          </SplitButton>
+            Query
+          </SubmitButton>
         </Form>
       </LayoutOutlet>
     </SnapshotTimeProvider>

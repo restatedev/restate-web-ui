@@ -25,7 +25,11 @@ import { TruncateWithTooltip } from '@restate/ui/tooltip';
 interface TableProps
   extends Pick<
     AriaTableProps,
-    'selectionMode' | 'aria-label' | 'sortDescriptor' | 'onSortChange'
+    | 'selectionMode'
+    | 'aria-label'
+    | 'sortDescriptor'
+    | 'onSortChange'
+    | 'onSelectionChange'
   > {
   className?: string;
 }
