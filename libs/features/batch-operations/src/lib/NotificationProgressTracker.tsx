@@ -59,7 +59,7 @@ export function NotificationProgressTracker({
               onExpand();
             }
           }}
-          className="h-6 w-6 shrink-0"
+          className="h-6 w-6 shrink-0 before:absolute before:inset-0 before:rounded-lg before:content-['']"
         >
           <Icon
             name={

@@ -1,6 +1,13 @@
 import { FilterItem, getEndpoint } from '@restate/data-access/admin-api';
 import { Button, SubmitButton } from '@restate/ui/button';
-import { Column, Row, Table, TableBody, TableHeader } from '@restate/ui/table';
+import {
+  Column,
+  Row,
+  Table,
+  TableBody,
+  TableHeader,
+  Cell,
+} from '@restate/ui/table';
 import { useCollator } from 'react-aria';
 import { SortDescriptor } from 'react-stately';
 import {
@@ -509,15 +516,19 @@ function Component() {
                 className="flex items-center gap-1.5 self-end rounded-lg p-0.5 px-2 text-0.5xs"
               >
                 Actions
-                <Badge
-                  size="xs"
-                  variant={selectedInvocationIds.size > 0 ? 'default' : 'info'}
-                >
-                  {selectedInvocationIds.size ||
-                    (data?.total_count
-                      ? `${formatNumber(data?.total_count, data?.total_count_lower_bound)}${data?.total_count_lower_bound ? '+' : ''}`
-                      : '')}
-                </Badge>
+                {(selectedInvocationIds.size || data?.total_count) && (
+                  <Badge
+                    size="xs"
+                    variant={
+                      selectedInvocationIds.size > 0 ? 'default' : 'info'
+                    }
+                  >
+                    {selectedInvocationIds.size ||
+                      (data?.total_count
+                        ? `${formatNumber(data?.total_count, data?.total_count_lower_bound)}${data?.total_count_lower_bound ? '+' : ''}`
+                        : '')}
+                  </Badge>
+                )}
                 <Icon
                   name={IconName.ChevronsUpDown}
                   className="aspect-square h-3.5 w-3.5 opacity-80"

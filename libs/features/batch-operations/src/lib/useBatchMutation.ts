@@ -14,7 +14,7 @@ export function useBatchMutation(
   type: OperationType,
   batchSize: number,
   onProgress: (response: BatchInvocationsResponse) => void,
-  onOpenChange: (isOpen: boolean, isCompleted: boolean) => void,
+  onOpenChange: (isOpen: boolean, canClose: boolean) => void,
   onError: VoidFunction,
 ) {
   const cancelMutation = useBatchCancelInvocations(batchSize, {

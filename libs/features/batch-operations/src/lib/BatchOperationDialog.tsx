@@ -132,7 +132,7 @@ export function BatchOperationDialog({
   onProgress,
 }: {
   state: BatchState;
-  onOpenChange: (isOpen: boolean, isCompleted: boolean) => void;
+  onOpenChange: (isOpen: boolean, canClose: boolean) => void;
   batchSize: number;
   onProgress: (response: BatchInvocationsResponse) => void;
 }) {
@@ -186,7 +186,13 @@ export function BatchOperationDialog({
     <SnapshotTimeProvider lastSnapshot={countInvocations.dataUpdatedAt}>
       <ConfirmationDialog
         open={state.isDialogOpen}
-        onOpenChange={(isOpen) => onOpenChange(isOpen, !mutation.isPending)}
+        onOpenChange={(isOpen) => {
+          const canClose = !mutation.isPending || mutation.isPaused(state.id);
+          if (canClose && !isOpen) {
+            mutation.cancel(state.id);
+          }
+          onOpenChange(isOpen, canClose);
+        }}
         title={config.title}
         icon={config.icon}
         iconClassName={config.iconClassName}
@@ -199,7 +205,11 @@ export function BatchOperationDialog({
             state={state}
           />
         }
-        closeText={mutation.isPending ? 'Continue in background' : 'Close'}
+        closeText={
+          mutation.isPending && !mutation.isPaused(state.id)
+            ? 'Continue in background'
+            : 'Close'
+        }
         alertType={count && count > 0 ? config.alertType : undefined}
         alertContent={count && count > 0 ? config.alertContent : undefined}
         submitText={config.submitText}
@@ -235,7 +245,8 @@ export function BatchOperationDialog({
                   failed={progress?.failed || 0}
                   total={Math.max(
                     count || 0,
-                    (progress?.successful || 0) + (progress?.failed || 0),
+                    ((progress?.successful || 0) + (progress?.failed || 0)) *
+                      (mutation.isPending ? 1.01 : 1),
                   )}
                   isPending={mutation.isPending && !mutation.isPaused(state.id)}
                   failedInvocations={progress?.failedInvocationIds}
@@ -243,7 +254,7 @@ export function BatchOperationDialog({
                 >
                   {mutation.isPending && (
                     <Button
-                      className="rounded-md p-1"
+                      className="flex items-center gap-1 rounded-md p-1 py-0.5 text-xs"
                       variant="secondary"
                       onClick={() =>
                         mutation.isPaused(state.id)
@@ -254,11 +265,12 @@ export function BatchOperationDialog({
                       <Icon
                         name={
                           mutation.isPaused(state.id)
-                            ? IconName.Resume
-                            : IconName.Pause
+                            ? IconName.CirclePlay
+                            : IconName.CircleStop
                         }
-                        className="h-4 w-4"
+                        className="h-3.5 w-3.5 opacity-70"
                       />
+                      {mutation.isPaused(state.id) ? 'Continue' : 'Stop'}
                     </Button>
                   )}
                 </BatchProgressBar>

@@ -75,6 +75,7 @@ import {
   Sparkles,
   ListChevronsDownUp,
   ListChevronsUpDown,
+  CircleStop,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from '@restate/util/styles';
@@ -194,6 +195,9 @@ export const enum IconName {
   Sparkles = 'Sparkles',
   ListChevronsDownUp = 'ListChevronsDownUp',
   ListChevronsUpDown = 'ListChevronsUpDown',
+  CirclePlay = 'CirclePlay',
+  CirclePause = 'CirclePause',
+  CircleStop = 'CircleStop',
 }
 export interface IconsProps {
   name: IconName;
@@ -297,6 +301,9 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Sparkles]: Sparkles,
   [IconName.ListChevronsDownUp]: ListChevronsDownUp,
   [IconName.ListChevronsUpDown]: ListChevronsUpDown,
+  [IconName.CirclePause]: CirclePause,
+  [IconName.CirclePlay]: CirclePlay,
+  [IconName.CircleStop]: CircleStop,
 };
 
 const styles = tv({

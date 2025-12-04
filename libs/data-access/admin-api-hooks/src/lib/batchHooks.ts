@@ -125,6 +125,17 @@ function useIsPaused() {
   }, []);
 
   return {
+    cancel: (id: string) => {
+      globalThis.batchOperationPromises?.[id]?.reject?.(true);
+      globalThis.batchOperationPromises = {
+        ...globalThis.batchOperationPromises,
+        [id]: null,
+      };
+      setIsPaused((old) => {
+        delete old[id];
+        return old;
+      });
+    },
     isPaused: (id: string) => isPaused[id] === true,
     pause(id: string) {
       globalThis.batchOperationPromises = {
@@ -179,7 +190,7 @@ export function useBatchCancelInvocations(
     },
   );
 
-  const { pause, resume, isPaused } = useIsPaused();
+  const { pause, resume, isPaused, cancel } = useIsPaused();
   const { mutationFn } = toBatchMutationFn(
     batchSize,
     mutationOptions.mutationFn,
@@ -212,6 +223,7 @@ export function useBatchCancelInvocations(
     pause,
     resume,
     isPaused,
+    cancel,
   };
 }
 
@@ -244,7 +256,7 @@ export function useBatchPurgeInvocations(
     },
   );
 
-  const { pause, resume, isPaused } = useIsPaused();
+  const { pause, resume, isPaused, cancel } = useIsPaused();
   const { mutationFn } = toBatchMutationFn(
     batchSize,
     mutationOptions.mutationFn,
@@ -277,6 +289,7 @@ export function useBatchPurgeInvocations(
     pause,
     resume,
     isPaused,
+    cancel,
   };
 }
 
@@ -309,7 +322,7 @@ export function useBatchKillInvocations(
     },
   );
 
-  const { pause, resume, isPaused } = useIsPaused();
+  const { pause, resume, isPaused, cancel } = useIsPaused();
   const { mutationFn } = toBatchMutationFn(
     batchSize,
     mutationOptions.mutationFn,
@@ -342,6 +355,7 @@ export function useBatchKillInvocations(
     pause,
     resume,
     isPaused,
+    cancel,
   };
 }
 
@@ -374,7 +388,7 @@ export function useBatchPauseInvocations(
     },
   );
 
-  const { pause, resume, isPaused } = useIsPaused();
+  const { pause, resume, isPaused, cancel } = useIsPaused();
   const { mutationFn } = toBatchMutationFn(
     batchSize,
     mutationOptions.mutationFn,
@@ -408,6 +422,7 @@ export function useBatchPauseInvocations(
     pause,
     resume,
     isPaused,
+    cancel,
   };
 }
 
@@ -440,7 +455,7 @@ export function useBatchResumeInvocations(
     },
   );
 
-  const { pause, resume, isPaused } = useIsPaused();
+  const { pause, resume, isPaused, cancel } = useIsPaused();
   const { mutationFn } = toBatchMutationFn(
     batchSize,
     mutationOptions.mutationFn,
@@ -474,5 +489,6 @@ export function useBatchResumeInvocations(
     pause,
     resume,
     isPaused,
+    cancel,
   };
 }
