@@ -47,6 +47,7 @@ import {
   ClientLoaderFunctionArgs,
   Form,
   ShouldRevalidateFunctionArgs,
+  useNavigate,
   useSearchParams,
 } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
@@ -477,6 +478,9 @@ function Component() {
     setSelectedInvocationIds(new Set());
   }, [isFetching, pageIndex]);
 
+  const navigate = useNavigate();
+  const { baseUrl } = useRestateContext();
+
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdate}>
       <div className="relative flex flex-auto flex-col gap-2">
@@ -643,6 +647,12 @@ function Component() {
             } else {
               setSelectedInvocationIds(keys as Set<string>);
             }
+          }}
+          onRowAction={(key) => {
+            navigate({
+              pathname: `${baseUrl}/invocations/${key}`,
+              search: searchParams.toString(),
+            });
           }}
         >
           <TableHeader className="[&_th:nth-last-child(2)_[data-resizable-direction]]:invisible">

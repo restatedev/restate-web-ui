@@ -74,14 +74,10 @@ export function BatchProgressBar({
     <div className="flex flex-col gap-3.5">
       <div className="flex translate-y-4 flex-col">
         <span className="inline-flex transform items-baseline gap-1 text-lg font-normal text-gray-600 transition-all">
-          {successful ? (
-            <span className="transform text-blue-600 transition-all">
-              {successful}{' '}
-              <span className="text-0.5xs text-gray-500">succeeded</span>{' '}
-            </span>
-          ) : (
-            <br />
-          )}{' '}
+          <span className="transform text-blue-600 transition-all">
+            {successful}{' '}
+            <span className="text-0.5xs text-gray-500">succeeded</span>{' '}
+          </span>{' '}
           {!!failed && (
             <Popover>
               <PopoverTrigger>
@@ -97,7 +93,7 @@ export function BatchProgressBar({
                     </span>
                   </Button>
                 </span>
-                <PopoverContent>
+                <PopoverContent className="max-w-lg">
                   <DropdownSection
                     title={`Failed invocations ${(failedInvocations?.length || 0) === MAX_FAILED_INVOCATIONS ? `(last ${MAX_FAILED_INVOCATIONS})` : ''}`}
                   >
@@ -144,15 +140,17 @@ export function BatchProgressBar({
         <div className="flex flex-col gap-3.5">
           <div className="relative mt-1 flex h-3 w-full gap-0.5">
             {/* Success portion */}
-            <div
-              className={progressBarStyles({
-                variant: 'success',
-                isZero: successful === 0,
-              })}
-              style={{
-                width: `${successRatio * 100}%`,
-              }}
-            />
+            {successful > 0 && (
+              <div
+                className={progressBarStyles({
+                  variant: 'success',
+                  isZero: successful === 0,
+                })}
+                style={{
+                  width: `${successRatio * 100}%`,
+                }}
+              />
+            )}
             {/* Failed portion */}
             {failed > 0 && (
               <div
