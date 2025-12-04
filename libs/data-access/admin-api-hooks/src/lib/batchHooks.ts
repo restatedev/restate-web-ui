@@ -293,6 +293,72 @@ export function useBatchPurgeInvocations(
   };
 }
 
+export function useBatchRestateAsNewInvocations(
+  batchSize: number,
+  options?: Omit<
+    HookMutationOptions<'/query/invocations/restart-as-new', 'post'>,
+    'mutationFn'
+  > & {
+    onProgress?: (response: BatchInvocationsResponse) => void;
+  },
+) {
+  const baseUrl = useAdminBaseUrl();
+  const queryClient = useQueryClient();
+  const {
+    onProgress,
+    onError,
+    onMutate,
+    onSettled,
+    onSuccess,
+    ...restOptions
+  } = options ?? {};
+
+  const mutationOptions = adminApi(
+    'mutate',
+    '/query/invocations/restart-as-new',
+    'patch',
+    {
+      baseUrl,
+    },
+  );
+
+  const { pause, resume, isPaused, cancel } = useIsPaused();
+  const { mutationFn } = toBatchMutationFn(
+    batchSize,
+    mutationOptions.mutationFn,
+    onProgress,
+  );
+
+  const result = useMutation({
+    ...mutationOptions,
+    ...restOptions,
+    mutationFn,
+    onSuccess(data, variables, context, meta) {
+      queryClient.invalidateQueries({
+        queryKey: ['/query/invocations'],
+      });
+
+      onSuccess?.(data, variables, context, meta);
+    },
+    onError(error, variables, onMutateResult, context) {
+      onError?.(error, variables, onMutateResult, context);
+    },
+    onSettled(data, error, variables, onMutateResult, context) {
+      onSettled?.(data, error, variables, onMutateResult, context);
+    },
+    onMutate(variables, context) {
+      onMutate?.(variables, context);
+    },
+  });
+  return {
+    ...result,
+    pause,
+    resume,
+    isPaused,
+    cancel,
+  };
+}
+
 export function useBatchKillInvocations(
   batchSize: number,
   options?: Omit<

@@ -28,6 +28,7 @@ import {
   batchKillInvocations,
   batchPauseInvocations,
   batchResumeInvocations,
+  batchRestartAsNewInvocations,
   countInvocations,
 } from './handlers';
 import { getVersion } from './getVersion';
@@ -66,6 +67,9 @@ type BoundHandlers = {
   batchResumeInvocations: (
     request: BatchInvocationsRequestBody,
   ) => Promise<Response>;
+  batchRestartAsNewInvocations: (
+    request: BatchInvocationsRequestBody,
+  ) => Promise<Response>;
 };
 
 function bindHandlers(context: QueryContext): BoundHandlers {
@@ -86,6 +90,7 @@ function bindHandlers(context: QueryContext): BoundHandlers {
     batchKillInvocations: batchKillInvocations.bind(context),
     batchPauseInvocations: batchPauseInvocations.bind(context),
     batchResumeInvocations: batchResumeInvocations.bind(context),
+    batchRestartAsNewInvocations: batchRestartAsNewInvocations.bind(context),
   };
 }
 
@@ -130,6 +135,10 @@ const routes = createRoutes({
     kill: { method: 'POST', pattern: '/invocations/kill' },
     pause: { method: 'POST', pattern: '/invocations/pause' },
     resume: { method: 'POST', pattern: '/invocations/resume' },
+    restartAsNew: {
+      method: 'POST',
+      pattern: '/invocations/restart-as-new',
+    },
   },
   invocationsV2: {
     get: { method: 'GET', pattern: '/v2/invocations/:invocationId' },
@@ -207,6 +216,11 @@ queryRouter.map(routes, {
       const { batchResumeInvocations } = ctx.storage.get(handlersKey);
       const request: BatchInvocationsRequestBody = await ctx.request.json();
       return batchResumeInvocations(request);
+    },
+    async restartAsNew(ctx) {
+      const { batchRestartAsNewInvocations } = ctx.storage.get(handlersKey);
+      const request: BatchInvocationsRequestBody = await ctx.request.json();
+      return batchRestartAsNewInvocations(request);
     },
   },
   invocationsV2: {

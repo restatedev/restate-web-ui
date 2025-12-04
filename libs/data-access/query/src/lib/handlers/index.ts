@@ -13,5 +13,6 @@ export { batchPurgeInvocations } from './batchPurgeInvocations';
 export { batchKillInvocations } from './batchKillInvocations';
 export { batchPauseInvocations } from './batchPauseInvocations';
 export { batchResumeInvocations } from './batchResumeInvocations';
+export { batchRestartAsNewInvocations } from './batchRestartAsNewInvocations';
 export { countInvocations } from './countInvocations';
 export { type QueryContext, createQueryContext } from './shared';
