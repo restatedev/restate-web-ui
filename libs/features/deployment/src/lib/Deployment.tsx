@@ -54,6 +54,33 @@ export function Deployment({
   const linkRef = useRef<HTMLAnchorElement>(null);
 
   if (!deployment) {
+    if (deploymentId) {
+      return (
+        <div className={styles({ className, isSelected })}>
+          <div className="deployment min-w-0 flex-auto basis-full">
+            <TruncateWithTooltip
+              copyText={deploymentId}
+              triggerRef={linkRef}
+              className="[&_.badge]:bg-gray-700"
+            >
+              {deploymentId}
+            </TruncateWithTooltip>
+          </div>
+          <Link
+            ref={linkRef}
+            aria-label={deploymentId}
+            variant="secondary"
+            href={`?${DEPLOYMENT_QUERY_PARAM}=${deploymentId}`}
+            className="m-1 ml-0 rounded-full outline-offset-0 before:absolute before:inset-0 before:rounded-lg before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5"
+          >
+            <Icon
+              name={IconName.ChevronRight}
+              className="h-4 w-4 text-gray-500"
+            />
+          </Link>
+        </div>
+      );
+    }
     return null;
   }
 
