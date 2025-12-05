@@ -204,8 +204,9 @@ export function withConfirmation<
       },
     });
 
-    const shouldTriggerDialog = !getUserPreference(config.userPreferenceId);
-
+    const shouldTriggerDialog =
+      !config.shouldShowSkipConfirmation ||
+      !getUserPreference(config.userPreferenceId);
     return createElement(element.type, {
       ...element.props,
       ...(shouldTriggerDialog
