@@ -83,7 +83,8 @@
               }
             }
           }
-        }
+        },
+        "deprecated": true
       }
     },
     "/deployments": {
