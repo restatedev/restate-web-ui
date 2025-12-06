@@ -189,11 +189,18 @@ export function Entry({
         }}
         data-depth={Boolean(depth)}
         className={styles({
-          hasError: Boolean(
-            invocation.last_failure_related_command_index &&
-              invocation?.last_failure_related_command_index ===
-                entry.commandIndex,
-          ),
+          hasError:
+            Boolean(
+              invocation.last_failure_related_command_index &&
+                invocation?.last_failure_related_command_index ===
+                  entry.commandIndex,
+            ) ||
+            Boolean(
+              invocation.status === 'paused' &&
+                entry.type === 'Paused' &&
+                entry.category === 'event' &&
+                entry.isPending,
+            ),
         })}
       >
         <div
