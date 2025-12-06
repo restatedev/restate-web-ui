@@ -179,7 +179,7 @@ export function JournalV2({
 
   const entriesElements = (
     <>
-      <div className="z-10 box-border flex h-12 items-center rounded-bl-2xl border-b border-transparent bg-gray-100 shadow-xs ring-1 ring-black/5 last:border-none">
+      <div className="z-10 box-border flex h-12 items-center rounded-tl-2xl rounded-bl-2xl border-b border-transparent bg-gray-100 shadow-xs ring-1 ring-black/5 last:border-none">
         <Input
           entry={
             combinedEntries?.find(
@@ -374,9 +374,10 @@ export function JournalV2({
                 >
                   <LazyPanel
                     defaultSize={(1 - timelineWidth) * 100}
-                    className="z-10"
+                    className="z-10 min-w-0"
+                    style={{ overflow: 'visible' }}
                   >
-                    <div className="relative overflow-hidden rounded-2xl rounded-r-none border-0 border-r-0 border-white/50 bg-linear-to-b from-gray-50 to-white shadow-xs">
+                    <div className="relative rounded-2xl rounded-r-none border-0 border-r-0 border-white/50 bg-linear-to-b from-gray-50 to-white shadow-xs">
                       {entriesElements}
                     </div>
                   </LazyPanel>
