@@ -284,7 +284,7 @@ function getLineVariant(entry?: JournalEntryV2, invocation?: Invocation) {
 }
 
 const entryProgressStyles = tv({
-  base: '[content-visibility:auto] [&~&]:hidden',
+  base: '[&~&]:hidden',
 });
 export function EntryProgress(
   props: PropsWithChildren<{
