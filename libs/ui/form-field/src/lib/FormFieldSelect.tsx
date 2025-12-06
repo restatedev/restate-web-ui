@@ -29,6 +29,7 @@ interface SelectProps
   errorMessage?: ComponentProps<typeof FormFieldError>['children'];
   label?: ReactNode;
   defaultValue?: string;
+  dropdownFooter?: ReactNode;
 }
 export function FormFieldSelect({
   className,
@@ -41,6 +42,7 @@ export function FormFieldSelect({
   label,
   autoFocus,
   defaultValue,
+  dropdownFooter,
   ...props
 }: PropsWithChildren<SelectProps>) {
   return (
@@ -72,6 +74,7 @@ export function FormFieldSelect({
         <ListBox className="m-0 rounded-xl border-none" selectable multiple>
           {children}
         </ListBox>
+        <div className="px-3 text-xs opacity-70">{dropdownFooter}</div>
       </PopoverOverlay>
       <FormFieldError children={errorMessage} />
     </Select>
