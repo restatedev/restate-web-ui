@@ -48,8 +48,8 @@ const NAME_COMMANDS_COMPONENTS: {
   CompletePromise: 'promise',
 };
 
-const RESTART_AS_NEW_INVOCATION_QUERY_PARAM = 'restart-new-invocation';
-const RESTART_AS_NEW_INVOCATION_FROM_QUERY_PARAM =
+export const RESTART_AS_NEW_INVOCATION_QUERY_PARAM = 'restart-new-invocation';
+export const RESTART_AS_NEW_INVOCATION_FROM_QUERY_PARAM =
   'restart-new-invocation-from';
 
 function EntryParams({

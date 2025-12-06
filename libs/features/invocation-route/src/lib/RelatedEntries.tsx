@@ -10,6 +10,12 @@ import { TransientError } from './entries/TransientError';
 import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api-hooks';
 import { isRestateAsNewSupported } from './actions/Actions';
 import { useJournalContext } from './JournalContext';
+import { Link } from '@restate/ui/link';
+import {
+  RESTART_AS_NEW_INVOCATION_FROM_QUERY_PARAM,
+  RESTART_AS_NEW_INVOCATION_QUERY_PARAM,
+} from './actions/RestartInvocation';
+import { Icon, IconName } from '@restate/ui/icons';
 
 const NOTIFICATIONS_COMPONENTS: {
   [K in NotificationEntryType]:
@@ -157,7 +163,13 @@ export function RestartAction({
 
     return (
       <ActionPortal invocationId={String(invocation?.id)} entry={entry}>
-        <div className="h-full w-9 bg-red-100" />
+        <Link
+          href={`?${RESTART_AS_NEW_INVOCATION_QUERY_PARAM}=${invocation.id}&${RESTART_AS_NEW_INVOCATION_FROM_QUERY_PARAM}=${entry.index}`}
+          variant="secondary-button"
+          className="m-1 flex items-center justify-center rounded-md p-0.5 text-blue-500"
+        >
+          <Icon name={IconName.Restart} className="h-4 w-4" />
+        </Link>
       </ActionPortal>
     );
   }
