@@ -60,7 +60,7 @@ const liveStyles = tv({
 });
 
 const compactStyles = tv({
-  base: 'py-0.5 pl-1.5 text-xs',
+  base: 'py-0.5 pl-1.5 text-xs font-medium',
   variants: {
     isCompact: {
       true: '',
@@ -297,7 +297,7 @@ export function JournalV2({
                       onClick={() => setIsCompact((v) => !v)}
                       className={compactStyles({ isCompact })}
                     >
-                      View
+                      {isCompact ? 'Compact' : 'Detailed'}
                       <Icon
                         name={IconName.ChevronsUpDown}
                         className="ml-1 h-3.5 w-3.5"
