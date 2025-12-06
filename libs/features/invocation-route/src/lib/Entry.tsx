@@ -111,7 +111,7 @@ function digitCount(n: number) {
 }
 
 const styles = tv({
-  base: "peer group flex h-9 min-w-0 items-center border-b-transparent [content-visibility:auto] last:border-none [&:not(:has([data-entry]>*))]:hidden [&[data-depth='true']_[data-border]]:border-l",
+  base: "peer group relative flex h-9 min-w-0 items-center border-b-transparent last:border-none [&:not(:has([data-entry]>*))]:hidden [&[data-depth='true']_[data-border]]:border-l",
   variants: {
     hasError: {
       true: 'bg-orange-50',
@@ -221,7 +221,7 @@ export function Entry({
         </div>
 
         <div
-          className="flex max-w-fit min-w-0 flex-auto gap-1 [&>*]:min-w-0"
+          className="flex max-w-fit min-w-0 flex-auto gap-1 [content-visibility:auto] [&>*]:min-w-0"
           data-entry
           ref={setPortal}
         >
