@@ -1,12 +1,7 @@
 import { Button } from '@restate/ui/button';
 import { DropdownSection } from '@restate/ui/dropdown';
 import { tv } from '@restate/util/styles';
-import {
-  Popover,
-  PopoverContent,
-  PopoverHoverTrigger,
-  PopoverTrigger,
-} from '@restate/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
 import { ReactNode } from 'react';
 
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
@@ -149,14 +144,14 @@ export function InputOutput({
               </Button>
             </PopoverTrigger>
           ) : (
-            <PopoverHoverTrigger>
+            <PopoverTrigger>
               <Button
-                className="my-px max-w-fit grow basis-20 truncate rounded-xl px-0.5 py-0 font-mono [font-size:inherit] text-inherit underline decoration-dashed decoration-from-font underline-offset-4 outline-offset-0"
+                className="my-px max-w-fit grow basis-20 truncate rounded-xl px-0.5 py-0 font-mono [font-size:inherit] leading-5 text-inherit underline decoration-dashed decoration-from-font underline-offset-4 outline-offset-0"
                 variant="icon"
               >
                 <span className="truncate pr-0.5">{name}</span>
               </Button>
-            </PopoverHoverTrigger>
+            </PopoverTrigger>
           )}
           <PopoverContent>
             <DropdownSection
