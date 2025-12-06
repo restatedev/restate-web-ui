@@ -63,10 +63,10 @@ export function FormFieldSelect({
           variant="secondary"
           className="flex w-full items-center gap-2 rounded-[0.625rem] px-2 py-1.5 text-sm group-invalid:border-red-600 group-invalid:bg-red-100/70"
         >
-          <SelectValue className="flex-auto text-left placeholder-shown:text-gray-500" />
+          <SelectValue className="min-w-0 flex-auto text-left placeholder-shown:text-gray-500" />
           <Icon
             name={IconName.ChevronsUpDown}
-            className="h-[1.25em] w-[1.25em] text-gray-500"
+            className="h-[1.25em] w-[1.25em] shrink-0 text-gray-500"
           />
         </Button>
       </div>
