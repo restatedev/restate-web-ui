@@ -16,6 +16,7 @@ import {
   RESTART_AS_NEW_INVOCATION_QUERY_PARAM,
 } from './actions/RestartInvocation';
 import { Icon, IconName } from '@restate/ui/icons';
+import { HoverTooltip } from '@restate/ui/tooltip';
 
 const NOTIFICATIONS_COMPONENTS: {
   [K in NotificationEntryType]:
@@ -163,13 +164,18 @@ export function RestartAction({
 
     return (
       <ActionPortal invocationId={String(invocation?.id)} entry={entry}>
-        <Link
-          href={`?${RESTART_AS_NEW_INVOCATION_QUERY_PARAM}=${invocation.id}&${RESTART_AS_NEW_INVOCATION_FROM_QUERY_PARAM}=${entry.index}`}
-          variant="secondary-button"
-          className="m-1 flex items-center justify-center rounded-md p-0.5 text-blue-500"
+        <HoverTooltip
+          content={`Restart as new from ${entry.commandIndex}`}
+          size="sm"
         >
-          <Icon name={IconName.Restart} className="h-4 w-4" />
-        </Link>
+          <Link
+            href={`?${RESTART_AS_NEW_INVOCATION_QUERY_PARAM}=${invocation.id}&${RESTART_AS_NEW_INVOCATION_FROM_QUERY_PARAM}=${entry.index}`}
+            variant="secondary-button"
+            className="m-1 flex items-center justify-center rounded-md px-0.5 py-1 text-blue-500"
+          >
+            <Icon name={IconName.Restart} className="h-4 w-4" />
+          </Link>
+        </HoverTooltip>
       </ActionPortal>
     );
   }
