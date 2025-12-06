@@ -12,7 +12,12 @@ import { JournalContextProvider } from './JournalContext';
 import { Indicator, Spinner } from '@restate/ui/loading';
 import { Entry } from './Entry';
 import { Input } from './entries/Input';
-import { getTimelineId, PortalProvider, usePortals } from './Portals';
+import {
+  getActionId,
+  getTimelineId,
+  PortalProvider,
+  usePortals,
+} from './Portals';
 import { LifeCycleProgress, Units } from './LifeCycleProgress';
 import { ErrorBoundary } from './ErrorBoundry';
 import { tv } from '@restate/util/styles';
@@ -209,6 +214,12 @@ export function JournalV2({
     </>
   );
 
+  const firstPendingCommandIndex = journalAndInvocationData.completed_at
+    ? journalAndInvocationData.journal?.entries?.find(
+        (entry) => entry.category === 'command' && entry.isPending,
+      )?.index
+    : undefined;
+
   return (
     <PortalProvider>
       <JournalContextProvider
@@ -222,6 +233,7 @@ export function JournalV2({
         error={apiError}
         isLive={isLive}
         isCompact={isCompact}
+        firstPendingCommandIndex={firstPendingCommandIndex}
       >
         <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
           <Suspense

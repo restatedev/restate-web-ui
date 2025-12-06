@@ -2,12 +2,14 @@ import type {
   Invocation,
   JournalEntryV2,
 } from '@restate/data-access/admin-api';
-import { EntryPortal } from './Portals';
+import { ActionPortal, EntryPortal, getActionId } from './Portals';
 import { EventEntryType, NotificationEntryType } from './entries/types';
 import { ComponentType, PropsWithChildren } from 'react';
 import { CompletionNotification } from './entries/CompletionNotification';
 import { TransientError } from './entries/TransientError';
 import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api-hooks';
+import { isRestateAsNewSupported } from './actions/Actions';
+import { useJournalContext } from './JournalContext';
 
 const NOTIFICATIONS_COMPONENTS: {
   [K in NotificationEntryType]:
@@ -123,4 +125,41 @@ export function RelatedEntries({
         })}
     </>
   );
+}
+
+export function RestartAction({
+  invocation,
+  entry,
+  depth = 0,
+}: {
+  invocation?: ReturnType<
+    typeof useGetInvocationJournalWithInvocationV2
+  >['data'];
+  entry?: JournalEntryV2;
+  depth?: number;
+}) {
+  const { firstPendingCommandIndex } = useJournalContext();
+  if (
+    depth === 0 &&
+    invocation &&
+    isRestateAsNewSupported(invocation) &&
+    entry?.category === 'command' &&
+    entry?.type !== 'Output' &&
+    entry
+  ) {
+    if (
+      typeof firstPendingCommandIndex === 'number' &&
+      typeof entry.index === 'number' &&
+      entry.index >= firstPendingCommandIndex
+    ) {
+      return null;
+    }
+
+    return (
+      <ActionPortal invocationId={String(invocation?.id)} entry={entry}>
+        <div className="h-full w-9 bg-red-100" />
+      </ActionPortal>
+    );
+  }
+  return null;
 }

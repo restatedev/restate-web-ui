@@ -28,8 +28,8 @@ import {
   NotificationEntryType,
 } from './entries/types';
 import { EntryProgress } from './EntryProgress';
-import { getEntryId, TimelinePortal, usePortals } from './Portals';
-import { RelatedEntries } from './RelatedEntries';
+import { getActionId, getEntryId, TimelinePortal, usePortals } from './Portals';
+import { RelatedEntries, RestartAction } from './RelatedEntries';
 import { Cancel } from './entries/Cancel';
 import { LifeCycle } from './entries/LifeCycle';
 import { Link } from '@restate/ui/link';
@@ -203,6 +203,8 @@ export function Entry({
             ),
         })}
       >
+        <ActionContainer invocationId={invocation.id} entry={entry} />
+
         <div
           style={{ width: `${numOfDigits + 2}ch` }}
           className="relative flex h-full shrink-0 items-center justify-center font-mono text-0.5xs text-gray-400/70 group-first:rounded-tl-2xl group-last:rounded-bl-2xl"
@@ -225,6 +227,12 @@ export function Entry({
         >
           {EntrySpecificComponent && (
             <RelatedEntries invocation={invocation} entry={entry}>
+              <RestartAction
+                invocation={invocation}
+                entry={entry}
+                depth={depth}
+              />
+
               <EntrySpecificComponent entry={entry} invocation={invocation} />
             </RelatedEntries>
           )}
@@ -258,5 +266,24 @@ export function Entry({
         )
       )}
     </>
+  );
+}
+
+function ActionContainer({
+  invocationId,
+  entry,
+}: {
+  invocationId: string;
+  entry?: JournalEntryV2;
+}) {
+  const { setPortal } = usePortals(
+    getActionId(invocationId, entry?.index, entry?.type, entry?.category),
+  );
+
+  return (
+    <div
+      className="invisible absolute top-0 left-0 h-9 w-9 -translate-x-9 border-b border-transparent group-hover:visible [&:not(:has(*))]:hidden [&>*]:absolute [&>*]:inset-0"
+      ref={setPortal}
+    ></div>
   );
 }
