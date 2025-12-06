@@ -99,10 +99,12 @@ export type ListBoxItemProps =
   | ListBoxCustomItemProps
   | ListBoxNavItemProps;
 
-export function ListBoxItem({ disabled, ...props }: ListBoxItemProps) {
+export function ListBoxItem(props: ListBoxItemProps) {
   if (isNavItem(props)) {
     const { href, ...rest } = props;
-    return <StyledListBoxItem {...rest} isDisabled={disabled} href={href} />;
+    return (
+      <StyledListBoxItem {...rest} isDisabled={props.disabled} href={href} />
+    );
   }
   if (isCustomItem(props)) {
     const { value, ...rest } = props;
@@ -111,9 +113,9 @@ export function ListBoxItem({ disabled, ...props }: ListBoxItemProps) {
         id={value}
         textValue={value}
         {...rest}
-        isDisabled={disabled}
+        isDisabled={props.disabled}
       />
     );
   }
-  return <StyledListBoxItem {...props} isDisabled={disabled} />;
+  return <StyledListBoxItem {...props} isDisabled={props.disabled} />;
 }
