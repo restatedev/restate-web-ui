@@ -35,6 +35,7 @@ import { LifeCycle } from './entries/LifeCycle';
 import { Link } from '@restate/ui/link';
 import { NoCommandTransientError } from './entries/TransientError';
 import { useJournalContext } from './JournalContext';
+import { tv } from '@restate/util/styles';
 
 export const ENTRY_COMMANDS_COMPONENTS: {
   [K in CommandEntryType]:
@@ -109,6 +110,19 @@ function digitCount(n: number) {
   return Math.floor(Math.log10(Math.abs(n))) + 1;
 }
 
+const styles = tv({
+  base: "peer group flex h-9 min-w-0 items-center border-b-transparent [content-visibility:auto] last:border-none [&:not(:has([data-entry]>*))]:hidden [&[data-depth='true']_[data-border]]:border-l",
+  variants: {
+    hasError: {
+      true: 'bg-orange-50',
+      false: '',
+    },
+  },
+  defaultVariants: {
+    hasError: false,
+  },
+});
+
 export function Entry({
   invocation,
   entry,
@@ -174,7 +188,13 @@ export function Entry({
           paddingLeft: `${depth * 3}em`,
         }}
         data-depth={Boolean(depth)}
-        className="peer group flex h-9 min-w-0 items-center border-b-transparent [content-visibility:auto] last:border-none [&:not(:has([data-entry]>*))]:hidden [&[data-depth='true']_[data-border]]:border-l"
+        className={styles({
+          hasError: Boolean(
+            invocation.last_failure_related_command_index &&
+              invocation?.last_failure_related_command_index ===
+                entry.commandIndex,
+          ),
+        })}
       >
         <div
           style={{ width: `${numOfDigits + 2}ch` }}
@@ -192,7 +212,7 @@ export function Entry({
         </div>
 
         <div
-          className="flex max-w-fit min-w-0 flex-auto gap-1"
+          className="flex max-w-fit min-w-0 flex-auto gap-1 [&>*]:min-w-0"
           data-entry
           ref={setPortal}
         >
