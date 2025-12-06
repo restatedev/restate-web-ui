@@ -100,7 +100,9 @@ export async function getInvocationJournalV2(
       typeof a.index === 'number' &&
       typeof b.index === 'number' &&
       ((a.category === 'command' && b.category === 'command') ||
-        (a.category === 'event' && b.category === 'event'))
+        (a.category === 'event' && b.category === 'event') ||
+        ['Created', 'Pending', 'Scheduled'].includes(a.type as string) ||
+        ['Created', 'Pending', 'Scheduled'].includes(a.type as string))
     ) {
       return a.index - b.index;
     } else if (typeof a.start === 'string' && typeof b.start === 'string') {

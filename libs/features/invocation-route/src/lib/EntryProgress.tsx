@@ -344,6 +344,13 @@ function InnerEntryProgress({
     ? new Date(entry.end ?? entry.start).getTime()
     : undefined;
 
+  const isCopiedFromRestart = Boolean(
+    invocation?.invoked_by === 'restart_as_new' &&
+      entry.start &&
+      start &&
+      new Date(entry.start).getTime() < start,
+  );
+
   const isPoint = Boolean(!entryEnd && !entry?.isPending);
   const { base, segmentContainer } = progressStyles({
     isPending: entry?.isPending,
@@ -367,6 +374,33 @@ function InnerEntryProgress({
   const { isPast, ...parts } = getDuration(executionTime);
   const duration = formatDurations(parts);
   const pendingDuration = formatDurations(getDuration(pendingTime));
+
+  if (isCopiedFromRestart) {
+    return (
+      <EntryProgressContainer
+        entry={entry}
+        className={base({ className })}
+        style={{ zIndex: 2 }}
+        invocation={invocation}
+        isCopiedFromRestart
+      >
+        <div className="flex w-full items-center">
+          <div className="flex-auto border-b-2 border-dotted border-gray-500/30" />
+          <div className="">
+            <Point variant="default" />
+          </div>
+        </div>
+        <EntryTooltip
+          entry={entry}
+          invocation={invocation}
+          className="absolute h-full w-full"
+          isCopiedFromRestart
+        >
+          <div className="h-full w-full" />
+        </EntryTooltip>
+      </EntryProgressContainer>
+    );
+  }
 
   if (entry?.type === 'Scheduled') {
     return (
@@ -511,6 +545,7 @@ export function EntryProgressContainer({
   style,
   entry,
   invocation,
+  isCopiedFromRestart,
 }: PropsWithChildren<{
   entry?: JournalEntryV2;
   className?: string;
@@ -518,21 +553,28 @@ export function EntryProgressContainer({
   invocation?: ReturnType<
     typeof useGetInvocationJournalWithInvocationV2
   >['data'];
+  isCopiedFromRestart?: boolean;
 }>) {
   const { start, end, dataUpdatedAt } = useJournalContext();
 
   if (!entry?.start) {
     return null;
   }
+
   const { unambiguousEnd } = isEntryCompletionAmbiguous(entry, invocation);
-  const entryStart = entry?.start ? new Date(entry.start).getTime() : undefined;
+  const entryStart = isCopiedFromRestart
+    ? start
+    : entry?.start
+      ? new Date(entry.start).getTime()
+      : undefined;
   const entryEnd = unambiguousEnd
     ? new Date(unambiguousEnd).getTime()
     : entry?.end
       ? new Date(entry.end ?? entry.start).getTime()
       : undefined;
 
-  const isPoint = Boolean(!entryEnd && !entry?.isPending);
+  const isPoint =
+    isCopiedFromRestart || Boolean(!entryEnd && !entry?.isPending);
 
   const relativeStart = entryStart
     ? (entryStart - start) / (end - start)
