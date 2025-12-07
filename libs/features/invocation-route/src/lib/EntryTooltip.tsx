@@ -32,11 +32,13 @@ export function EntryTooltip({
   children,
   entry,
   invocation,
+  isCopiedFromRestart,
 }: {
   entry?: JournalEntryV2;
   invocation?: Invocation;
   className?: string;
   children: ReactElement<DOMAttributes<HTMLElement>, string>;
+  isCopiedFromRestart?: boolean;
 }) {
   if (!entry) {
     return children;
@@ -44,7 +46,13 @@ export function EntryTooltip({
 
   return (
     <HoverTooltip
-      content={<EntryContent entry={entry} invocation={invocation} />}
+      content={
+        <EntryContent
+          entry={entry}
+          invocation={invocation}
+          isCopiedFromRestart={isCopiedFromRestart}
+        />
+      }
       className={entryTooltipStyles({ className })}
       size="lg"
     >
@@ -56,11 +64,13 @@ export function EntryTooltip({
 function EntryContent({
   entry,
   invocation,
+  isCopiedFromRestart,
 }: {
   entry: JournalEntryV2;
   invocation?: ReturnType<
     typeof useGetInvocationJournalWithInvocationV2
   >['data'];
+  isCopiedFromRestart?: boolean;
 }) {
   const isPoint = !entry.end && !entry.isPending;
   const { isAmbiguous: entryCompletionIsAmbiguous, mode } =
@@ -82,7 +92,21 @@ function EntryContent({
   const title = categoryTitles[String(entry.type)];
   return (
     <div className="flex flex-col gap-3">
-      <div className="text-base font-semibold">{title}</div>
+      <div className="text-base font-semibold">
+        {title}{' '}
+        {isCopiedFromRestart ? (
+          <span className="inline-flex font-normal opacity-80">
+            (Retained from{' '}
+            <span className="flex">
+              {invocation?.restarted_from?.substring(0, 8)}…
+              {invocation?.restarted_from?.slice(-5)}
+            </span>
+            )
+          </span>
+        ) : (
+          ''
+        )}
+      </div>
       <div className="flex gap-5 font-medium">
         <div className="text-right font-normal">
           <div className="flex items-center gap-2">

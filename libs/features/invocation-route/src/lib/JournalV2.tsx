@@ -12,7 +12,12 @@ import { JournalContextProvider } from './JournalContext';
 import { Indicator, Spinner } from '@restate/ui/loading';
 import { Entry } from './Entry';
 import { Input } from './entries/Input';
-import { getTimelineId, PortalProvider, usePortals } from './Portals';
+import {
+  getActionId,
+  getTimelineId,
+  PortalProvider,
+  usePortals,
+} from './Portals';
 import { LifeCycleProgress, Units } from './LifeCycleProgress';
 import { ErrorBoundary } from './ErrorBoundry';
 import { tv } from '@restate/util/styles';
@@ -55,7 +60,7 @@ const liveStyles = tv({
 });
 
 const compactStyles = tv({
-  base: 'py-0.5 pl-1.5 text-xs',
+  base: 'py-0.5 pl-1.5 text-xs font-medium',
   variants: {
     isCompact: {
       true: '',
@@ -174,7 +179,7 @@ export function JournalV2({
 
   const entriesElements = (
     <>
-      <div className="z-10 box-border flex h-12 items-center rounded-bl-2xl border-b border-transparent bg-gray-100 shadow-xs ring-1 ring-black/5 last:border-none">
+      <div className="z-10 box-border flex h-12 items-center rounded-tl-2xl rounded-bl-2xl border-b border-transparent bg-gray-100 shadow-xs ring-1 ring-black/5 last:border-none">
         <Input
           entry={
             combinedEntries?.find(
@@ -209,6 +214,12 @@ export function JournalV2({
     </>
   );
 
+  const firstPendingCommandIndex = journalAndInvocationData.completed_at
+    ? journalAndInvocationData.journal?.entries?.find(
+        (entry) => entry.category === 'command' && entry.isPending,
+      )?.index
+    : undefined;
+
   return (
     <PortalProvider>
       <JournalContextProvider
@@ -222,6 +233,7 @@ export function JournalV2({
         error={apiError}
         isLive={isLive}
         isCompact={isCompact}
+        firstPendingCommandIndex={firstPendingCommandIndex}
       >
         <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
           <Suspense
@@ -285,7 +297,7 @@ export function JournalV2({
                       onClick={() => setIsCompact((v) => !v)}
                       className={compactStyles({ isCompact })}
                     >
-                      View
+                      {isCompact ? 'Compact' : 'Detailed'}
                       <Icon
                         name={IconName.ChevronsUpDown}
                         className="ml-1 h-3.5 w-3.5"
@@ -362,9 +374,10 @@ export function JournalV2({
                 >
                   <LazyPanel
                     defaultSize={(1 - timelineWidth) * 100}
-                    className="z-10"
+                    className="z-10 min-w-0"
+                    style={{ overflow: 'visible' }}
                   >
-                    <div className="relative overflow-hidden rounded-2xl rounded-r-none border-0 border-r-0 border-white/50 bg-linear-to-b from-gray-50 to-white shadow-xs">
+                    <div className="relative rounded-2xl rounded-r-none border-0 border-r-0 border-white/50 bg-linear-to-b from-gray-50 to-white shadow-xs">
                       {entriesElements}
                     </div>
                   </LazyPanel>

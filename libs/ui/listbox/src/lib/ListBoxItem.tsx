@@ -17,7 +17,7 @@ export const listBoxItemStyles = tv({
       true: 'peer-hover:bg-transparent peer-hover:text-gray-700 peer-focus:bg-transparent peer-focus:text-gray-700 hover:text-white focus:bg-blue-600',
     },
     isDisabled: {
-      true: 'text-slate-300',
+      true: 'text-slate-400',
     },
     isFocused: {
       true: 'bg-blue-600 text-white',
@@ -65,6 +65,7 @@ interface BaseListBoxItemProps {
   value?: never;
   href?: never;
   className?: string;
+  disabled?: boolean;
 }
 
 interface ListBoxCustomItemProps
@@ -101,11 +102,20 @@ export type ListBoxItemProps =
 export function ListBoxItem(props: ListBoxItemProps) {
   if (isNavItem(props)) {
     const { href, ...rest } = props;
-    return <StyledListBoxItem {...rest} href={href} />;
+    return (
+      <StyledListBoxItem {...rest} isDisabled={props.disabled} href={href} />
+    );
   }
   if (isCustomItem(props)) {
     const { value, ...rest } = props;
-    return <StyledListBoxItem id={value} textValue={value} {...rest} />;
+    return (
+      <StyledListBoxItem
+        id={value}
+        textValue={value}
+        {...rest}
+        isDisabled={props.disabled}
+      />
+    );
   }
-  return <StyledListBoxItem {...props} />;
+  return <StyledListBoxItem {...props} isDisabled={props.disabled} />;
 }

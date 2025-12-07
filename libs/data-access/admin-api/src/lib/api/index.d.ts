@@ -13,6 +13,7 @@ export interface paths {
     };
     /**
      * Cluster health
+     * @deprecated
      * @description Get the cluster health.
      */
     get: operations['cluster_health'];

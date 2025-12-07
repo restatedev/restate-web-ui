@@ -112,7 +112,8 @@ export function Failure({
             name={isRetrying ? IconName.TriangleAlert : IconName.CircleX}
             className={errorIcon()}
           />
-          <span className="mr-1 block min-w-0 truncate">{restate_code}</span>
+          <span className="block min-w-0 truncate">{restate_code}</span>
+          <span className="block w-1 min-w-0" />
           <Icon
             name={IconName.ChevronsUpDown}
             className="mr-1 h-3 w-3 shrink-0 text-gray-500"

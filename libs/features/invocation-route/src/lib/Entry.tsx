@@ -28,13 +28,14 @@ import {
   NotificationEntryType,
 } from './entries/types';
 import { EntryProgress } from './EntryProgress';
-import { getEntryId, TimelinePortal, usePortals } from './Portals';
-import { RelatedEntries } from './RelatedEntries';
+import { getActionId, getEntryId, TimelinePortal, usePortals } from './Portals';
+import { RelatedEntries, RestartAction } from './RelatedEntries';
 import { Cancel } from './entries/Cancel';
 import { LifeCycle } from './entries/LifeCycle';
 import { Link } from '@restate/ui/link';
 import { NoCommandTransientError } from './entries/TransientError';
 import { useJournalContext } from './JournalContext';
+import { tv } from '@restate/util/styles';
 
 export const ENTRY_COMMANDS_COMPONENTS: {
   [K in CommandEntryType]:
@@ -109,6 +110,19 @@ function digitCount(n: number) {
   return Math.floor(Math.log10(Math.abs(n))) + 1;
 }
 
+const styles = tv({
+  base: "peer group relative flex h-9 min-w-0 items-center border-b-transparent last:rounded-bl-2xl last:border-none [&:not(:has([data-entry]>*))]:hidden [&[data-depth='true']_[data-border]]:border-l",
+  variants: {
+    hasError: {
+      true: 'bg-orange-50',
+      false: '',
+    },
+  },
+  defaultVariants: {
+    hasError: false,
+  },
+});
+
 export function Entry({
   invocation,
   entry,
@@ -174,8 +188,23 @@ export function Entry({
           paddingLeft: `${depth * 3}em`,
         }}
         data-depth={Boolean(depth)}
-        className="peer group flex h-9 min-w-0 items-center border-b-transparent [content-visibility:auto] last:border-none [&:not(:has([data-entry]>*))]:hidden [&[data-depth='true']_[data-border]]:border-l"
+        className={styles({
+          hasError:
+            Boolean(
+              invocation.last_failure_related_command_index &&
+                invocation?.last_failure_related_command_index ===
+                  entry.commandIndex,
+            ) ||
+            Boolean(
+              invocation.status === 'paused' &&
+                entry.type === 'Paused' &&
+                entry.category === 'event' &&
+                entry.isPending,
+            ),
+        })}
       >
+        <ActionContainer invocationId={invocation.id} entry={entry} />
+
         <div
           style={{ width: `${numOfDigits + 2}ch` }}
           className="relative flex h-full shrink-0 items-center justify-center font-mono text-0.5xs text-gray-400/70 group-first:rounded-tl-2xl group-last:rounded-bl-2xl"
@@ -192,12 +221,18 @@ export function Entry({
         </div>
 
         <div
-          className="flex max-w-fit min-w-0 flex-auto gap-1"
+          className="flex max-w-fit min-w-0 flex-auto gap-1 [&>*]:min-w-0"
           data-entry
           ref={setPortal}
         >
           {EntrySpecificComponent && (
             <RelatedEntries invocation={invocation} entry={entry}>
+              <RestartAction
+                invocation={invocation}
+                entry={entry}
+                depth={depth}
+              />
+
               <EntrySpecificComponent entry={entry} invocation={invocation} />
             </RelatedEntries>
           )}
@@ -231,5 +266,24 @@ export function Entry({
         )
       )}
     </>
+  );
+}
+
+function ActionContainer({
+  invocationId,
+  entry,
+}: {
+  invocationId: string;
+  entry?: JournalEntryV2;
+}) {
+  const { setPortal } = usePortals(
+    getActionId(invocationId, entry?.index, entry?.type, entry?.category),
+  );
+
+  return (
+    <div
+      className="invisible absolute top-0 left-0 h-9 w-9 -translate-x-9 border-b border-transparent group-hover:visible [&:not(:has(*))]:hidden [&>*]:absolute [&>*]:inset-0"
+      ref={setPortal}
+    ></div>
   );
 }

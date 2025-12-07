@@ -33,7 +33,7 @@ interface ActionConfig {
   minVersion?: string;
 }
 
-const isRestateAsNewSupported = (invocation: Invocation) => {
+export const isRestateAsNewSupported = (invocation: Invocation) => {
   const isCompleted = Boolean(invocation.completion_result);
   const isNotWorkflow = invocation.target_service_ty !== 'workflow';
   return Boolean(invocation.journal_size && isNotWorkflow && isCompleted);

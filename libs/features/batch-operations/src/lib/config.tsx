@@ -19,7 +19,7 @@ export interface OperationConfig {
           invocationIds: string[];
         }
       | {
-          filters: FilterItem[];
+          filters: (FilterItem & { isActionImplicitFilter?: boolean })[];
         },
   ) => ReactNode;
   alertType?: 'warning' | 'info';
@@ -60,7 +60,9 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
             {formatPlurals(count, { one: 'invocation', other: 'invocations' })}
           </span>
         </InlineTooltip>
-        {'filters' in params && params.filters.length > 0
+        {'filters' in params &&
+        params.filters?.filter((filter) => !filter.isActionImplicitFilter)
+          .length > 0
           ? 'matching the follwoing criteria?'
           : '?'}
       </p>
@@ -100,7 +102,9 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
             {formatPlurals(count, { one: 'invocation', other: 'invocations' })}
           </span>
         </InlineTooltip>
-        {'filters' in params && params.filters.length > 0
+        {'filters' in params &&
+        params.filters?.filter((filter) => !filter.isActionImplicitFilter)
+          .length > 0
           ? 'matching the follwoing criteria?'
           : '?'}{' '}
         The pause may not take effect right away.
@@ -141,7 +145,9 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
             {formatPlurals(count, { one: 'invocation', other: 'invocations' })}
           </span>
         </InlineTooltip>
-        {'filters' in params && params.filters.length > 0
+        {'filters' in params &&
+        params.filters?.filter((filter) => !filter.isActionImplicitFilter)
+          .length > 0
           ? 'as new matching the follwoing criteria?'
           : 'as new?'}
       </p>
@@ -181,7 +187,9 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
             {formatPlurals(count, { one: 'invocation', other: 'invocations' })}
           </span>
         </InlineTooltip>
-        {'filters' in params && params.filters.length > 0
+        {'filters' in params &&
+        params.filters?.filter((filter) => !filter.isActionImplicitFilter)
+          .length > 0
           ? 'matching the follwoing criteria.'
           : '.'}
       </p>
@@ -218,7 +226,9 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
             {formatPlurals(count, { one: 'invocation', other: 'invocations' })}
           </span>
         </InlineTooltip>
-        {'filters' in params && params.filters.length > 0
+        {'filters' in params &&
+        params.filters?.filter((filter) => !filter.isActionImplicitFilter)
+          .length > 0
           ? 'matching the follwoing criteria?'
           : '?'}
       </p>
@@ -258,7 +268,9 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
             {formatPlurals(count, { one: 'invocation', other: 'invocations' })}
           </span>
         </InlineTooltip>
-        {'filters' in params && params.filters.length > 0
+        {'filters' in params &&
+        params.filters?.filter((filter) => !filter.isActionImplicitFilter)
+          .length > 0
           ? 'matching the follwoing criteria?'
           : '?'}
       </p>

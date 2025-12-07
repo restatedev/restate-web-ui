@@ -99,7 +99,7 @@ export function lifeCycles(
           relatedCommandType: pausedErrorEntry?.relatedCommandType,
           relatedRestateErrorCode: pausedErrorEntry?.relatedRestateErrorCode,
           relatedCommandIndex: pausedErrorEntry?.relatedCommandIndex,
-          index: Number(pausedErrorEntry?.index) + index + 1,
+          index: Number(pausedErrorEntry?.index) + index + 1 + indexCount,
         });
       });
   }

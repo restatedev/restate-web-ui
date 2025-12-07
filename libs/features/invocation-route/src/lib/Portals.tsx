@@ -17,6 +17,15 @@ export function getTimelineId(
   return `${invocationId}-journal-timeline-${category}-${type}-${index}`;
 }
 
+export function getActionId(
+  invocationId: string,
+  index?: number,
+  type?: string,
+  category?: string,
+) {
+  return `${invocationId}-journal-entry-action-${category}-${type}-${index}`;
+}
+
 export function getEntryId(
   invocationId: string,
   index?: number,
@@ -36,6 +45,26 @@ export function TimelinePortal({
 }>) {
   const { getPortal } = usePortals(
     getTimelineId(invocationId, entry?.index, entry?.type, entry?.category),
+  );
+  const element = getPortal?.();
+
+  if (!element) {
+    return null;
+  }
+
+  return createPortal(children, element);
+}
+
+export function ActionPortal({
+  children,
+  invocationId,
+  entry,
+}: PropsWithChildren<{
+  invocationId: string;
+  entry?: JournalEntryV2;
+}>) {
+  const { getPortal } = usePortals(
+    getActionId(invocationId, entry?.index, entry?.type, entry?.category),
   );
   const element = getPortal?.();
 

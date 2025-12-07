@@ -138,7 +138,7 @@ function NoDeploymentPlaceholder({ error }: { error?: Error | null }) {
 }
 
 const deploymentsStyles = tv({
-  base: '',
+  base: 'w-full max-w-6xl self-center',
   variants: {
     isEmpty: {
       true: 'hidden',
