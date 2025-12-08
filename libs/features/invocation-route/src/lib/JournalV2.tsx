@@ -12,12 +12,7 @@ import { JournalContextProvider } from './JournalContext';
 import { Indicator, Spinner } from '@restate/ui/loading';
 import { Entry } from './Entry';
 import { Input } from './entries/Input';
-import {
-  getActionId,
-  getTimelineId,
-  PortalProvider,
-  usePortals,
-} from './Portals';
+import { getTimelineId, PortalProvider, usePortals } from './Portals';
 import { LifeCycleProgress, Units } from './LifeCycleProgress';
 import { ErrorBoundary } from './ErrorBoundry';
 import { tv } from '@restate/util/styles';
@@ -160,7 +155,7 @@ export function JournalV2({
       new Date(dataUpdatedAt).toISOString(),
   ).getTime();
   const areAllInvocationsCompleted = invocationIds.every(
-    (id) => data[id]?.completed_at,
+    (id) => !data[id] || data[id]?.completed_at,
   );
   const end = Math.max(
     ...(combinedEntries?.map(({ entry }) =>
