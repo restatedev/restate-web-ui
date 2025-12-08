@@ -5846,6 +5846,9 @@
                 "$ref": "#/components/schemas/CompletionLifecycleJournalEntryV2"
               },
               {
+                "$ref": "#/components/schemas/KilledLifecycleJournalEntryV2"
+              },
+              {
                 "type": "object",
                 "properties": {
                   "type": {
@@ -6274,6 +6277,19 @@
           "type": {
             "type": "string",
             "enum": ["Completion"]
+          }
+        }
+      },
+      "KilledLifecycleJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": ["event"]
+          },
+          "type": {
+            "type": "string",
+            "enum": ["Killed"]
           }
         }
       },

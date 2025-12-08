@@ -1992,6 +1992,7 @@ export interface components {
         | components['schemas']['PausedLifecycleJournalEntryV2']
         | components['schemas']['PendingLifecycleJournalEntryV2']
         | components['schemas']['CompletionLifecycleJournalEntryV2']
+        | components['schemas']['KilledLifecycleJournalEntryV2']
         | {
             type?: string;
           }
@@ -2195,6 +2196,12 @@ export interface components {
       category?: 'event';
       /** @enum {string} */
       type?: 'Completion';
+    };
+    KilledLifecycleJournalEntryV2: {
+      /** @enum {string} */
+      category?: 'event';
+      /** @enum {string} */
+      type?: 'Killed';
     };
     InputJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       /** @enum {string} */

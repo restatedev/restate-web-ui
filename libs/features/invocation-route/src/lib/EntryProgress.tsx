@@ -236,6 +236,9 @@ function getPointVariant(entry?: JournalEntryV2) {
   if (entry?.type === 'Cancel' && entry.category === 'notification') {
     return 'default';
   }
+  if (entry?.type === 'Killed') {
+    return 'default';
+  }
 
   if (
     (entry?.category === 'notification' &&

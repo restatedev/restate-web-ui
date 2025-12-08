@@ -1,6 +1,6 @@
 import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api-hooks';
 import { ErrorBanner } from '@restate/ui/error';
-import { data, useParams, useSearchParams } from 'react-router';
+import { useParams, useSearchParams } from 'react-router';
 import { getRestateError, Status } from './Status';
 import { HoverTooltip } from '@restate/ui/tooltip';
 import { DeploymentSection } from './DeploymentSection';
@@ -56,7 +56,9 @@ function Component() {
   const { baseUrl } = useRestateContext();
 
   const lastError = getRestateError(journalAndInvocationData);
-  const shouldShowFailure = Boolean(lastError);
+  const shouldShowFailure =
+    Boolean(lastError) &&
+    !['killed', 'cancelled'].includes(String(journalAndInvocationData?.status));
   const shouldLastErrorBeExpanded = Boolean(
     shouldShowFailure &&
       (journalAndInvocationData?.completed_at ||

@@ -9,6 +9,7 @@ type LifeCycleEvent =
   | Extract<JournalEntryV2, { type?: 'Completion'; category?: 'event' }>
   | Extract<JournalEntryV2, { type?: 'Pending'; category?: 'event' }>
   | Extract<JournalEntryV2, { type?: 'Completion'; category?: 'event' }>
+  | Extract<JournalEntryV2, { type?: 'Killed'; category?: 'event' }>
   | Extract<JournalEntryV2, { type?: 'Suspended'; category?: 'event' }>
   | Extract<JournalEntryV2, { type?: 'Running'; category?: 'event' }>
   | Extract<JournalEntryV2, { type?: 'Created'; category?: 'event' }>
@@ -61,6 +62,15 @@ export function lifeCycles(
       category: 'event',
       end: undefined,
       isPending: false, // TODO check if it's being delivered to PP
+    });
+  }
+  if (invocation.status === 'killed') {
+    events.push({
+      type: 'Killed',
+      start: invocation.completed_at,
+      category: 'event',
+      end: undefined,
+      isPending: false,
     });
   }
   if (invocation.status === 'suspended') {
