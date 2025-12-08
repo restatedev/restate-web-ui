@@ -2,6 +2,7 @@ import { HTTPError } from 'ky';
 import type {
   FilterItem,
   BatchInvocationsRequestBody,
+  components,
 } from '@restate/data-access/admin-api/spec';
 import { RestateError } from '@restate/util/errors';
 import {
@@ -34,7 +35,10 @@ import {
 import { getVersion } from './getVersion';
 
 type BoundHandlers = {
-  listInvocations: (filters: FilterItem[]) => Promise<Response>;
+  listInvocations: (
+    filters: FilterItem[],
+    sort?: components['schemas']['ListInvocationsRequestBody']['sort'],
+  ) => Promise<Response>;
   countInvocations: (filters: FilterItem[]) => Promise<Response>;
   getInvocation: (invocationId: string) => Promise<Response>;
   getInvocationJournal: (invocationId: string) => Promise<Response>;
@@ -167,9 +171,12 @@ queryRouter.map(routes, {
   invocations: {
     async list(ctx) {
       const { listInvocations } = ctx.storage.get(handlersKey);
-      const { filters = [] }: { filters: FilterItem[] } =
+      const {
+        filters = [],
+        sort,
+      }: components['schemas']['ListInvocationsRequestBody'] =
         await ctx.request.json();
-      return listInvocations(filters);
+      return listInvocations(filters, sort);
     },
     async count(ctx) {
       const { countInvocations } = ctx.storage.get(handlersKey);

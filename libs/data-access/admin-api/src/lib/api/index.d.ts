@@ -1787,6 +1787,21 @@ export interface components {
     VirtualObjectState: string[];
     ListInvocationsRequestBody: {
       filters?: components['schemas']['FilterItem'][];
+      sort?: {
+        /** @enum {string} */
+        field:
+          | 'created_at'
+          | 'modified_at'
+          | 'scheduled_at'
+          | 'running_at'
+          | 'next_retry_at'
+          | 'target_service_key'
+          | 'target_service_name'
+          | 'target_handler_name'
+          | 'retry_count';
+        /** @enum {string} */
+        order: 'ASC' | 'DESC';
+      };
     };
     BatchInvocationsRequestBody:
       | {

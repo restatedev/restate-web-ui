@@ -475,6 +475,7 @@ export function useServiceOpenApi(
 
 export function useListInvocations(
   filters?: FilterItem[],
+  sort?: components['schemas']['ListInvocationsRequestBody']['sort'],
   options?: HookQueryOptions<'/query/invocations', 'post'>,
 ) {
   const enabled = useAPIStatus();
@@ -484,6 +485,7 @@ export function useListInvocations(
     baseUrl,
     body: {
       filters,
+      sort,
     },
   });
 

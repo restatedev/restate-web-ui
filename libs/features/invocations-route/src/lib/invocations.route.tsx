@@ -332,7 +332,7 @@ function Component() {
     isFetching,
     isPending,
     queryKey,
-  } = useListInvocations(queryFilters, {
+  } = useListInvocations(queryFilters, undefined, {
     refetchOnMount: true,
     refetchOnReconnect: false,
     staleTime: 0,
