@@ -50,13 +50,14 @@ export function Sort({
     <Dropdown>
       <DropdownTrigger>
         <QueryButton
-          field={COLUMN_NAMES[sortParams.field]}
+          field=""
+          value={COLUMN_NAMES[sortParams.field]}
           operation={
             <Icon
               name={
                 sortParams.order === 'ASC' ? IconName.MoveUp : IconName.MoveDown
               }
-              className="-mr-4 h-4 w-4"
+              className="-ml-2 h-4 w-4"
             />
           }
         />
