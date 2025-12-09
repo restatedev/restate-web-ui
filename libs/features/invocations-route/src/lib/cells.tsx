@@ -46,6 +46,7 @@ function withDate({
     | 'running_at'
     | 'completion_expiration'
     | 'journal_expiration'
+    | 'next_retry_at'
   >;
 }) {
   return (props: { invocation: Invocation }) => {
@@ -311,6 +312,10 @@ const CELLS: Record<ColumnKey, ComponentType<CellProps>> = {
   created_at: withCell(
     withDate({ field: 'created_at', tooltipTitle: 'Created at' }),
     'created_at',
+  ),
+  next_retry_at: withCell(
+    withDate({ field: 'next_retry_at', tooltipTitle: 'Next retry at' }),
+    'next_retry_at',
   ),
   modified_at: withCell(
     withDate({ field: 'modified_at', tooltipTitle: 'Modified at' }),
