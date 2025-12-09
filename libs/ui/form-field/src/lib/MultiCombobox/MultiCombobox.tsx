@@ -251,13 +251,13 @@ export function FormFieldMultiCombobox<
       <LabeledGroup id={labelId} className={multiSelectStyles({ className })}>
         <Label className="sr-only">{label}</Label>
 
-        <div
+        <TagFocusManager
           className="hidden max-w-full flex-wrap gap-1.5 px-1 py-1 has-[>*]:flex"
           id={tagGroupId}
         >
           {prefix}
           {selectedList.items.map((item) => (
-            <TagFocusManager
+            <RemoveTagWithKeyboard
               key={item.id}
               onRemove={onRemove.bind(null, item.id)}
             >
@@ -266,9 +266,9 @@ export function FormFieldMultiCombobox<
                 onRemove: onRemove.bind(null, item.id),
                 onUpdate,
               })}
-            </TagFocusManager>
+            </RemoveTagWithKeyboard>
           ))}
-        </div>
+        </TagFocusManager>
 
         <ComboBox
           {...props}
@@ -353,19 +353,36 @@ export function FormFieldMultiCombobox<
 
 function TagFocusManager({
   children,
-  onRemove,
-}: PropsWithChildren<{ onRemove?: VoidFunction }>) {
+  id,
+  className,
+}: PropsWithChildren<{ className?: string; id?: string }>) {
   const focusManager = useFocusManager();
   const onKeyDown = (e: KeyboardEvent) => {
     switch (e.key) {
-      case 'Backspace':
-        onRemove?.();
-        break;
       case 'ArrowRight':
         focusManager?.focusNext({ wrap: true });
         break;
       case 'ArrowLeft':
         focusManager?.focusPrevious({ wrap: true });
+        break;
+    }
+  };
+
+  return (
+    <div onKeyDown={onKeyDown} id={id} className={className}>
+      {children}
+    </div>
+  );
+}
+
+function RemoveTagWithKeyboard({
+  children,
+  onRemove,
+}: PropsWithChildren<{ onRemove?: VoidFunction }>) {
+  const onKeyDown = (e: KeyboardEvent) => {
+    switch (e.key) {
+      case 'Backspace':
+        onRemove?.();
         break;
     }
   };
