@@ -1,8 +1,5 @@
-import { FilterItem, getEndpoint } from '@restate/data-access/admin-api';
 import { Button, SubmitButton } from '@restate/ui/button';
 import { Column, Row, Table, TableBody, TableHeader } from '@restate/ui/table';
-import { useCollator } from 'react-aria';
-import { SortDescriptor } from 'react-stately';
 import {
   Dropdown,
   DropdownItem,
@@ -18,42 +15,30 @@ import {
   SnapshotTimeProvider,
   useDurationSinceLastSnapshot,
 } from '@restate/util/snapshot-time';
-import {
-  PropsWithChildren,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import { PropsWithChildren, useEffect, useMemo, useState } from 'react';
 import { formatDurations, formatNumber } from '@restate/util/intl';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
-import {
-  AddQueryTrigger,
-  QueryBuilder,
-  QueryClause,
-  QueryClauseSchema,
-  QueryClauseType,
-  useQueryBuilder,
-} from '@restate/ui/query-builder';
+import { AddQueryTrigger, QueryBuilder } from '@restate/ui/query-builder';
 import { ClauseChip, FiltersTrigger } from './Filters';
 import {
   ClientLoaderFunctionArgs,
   Form,
+  redirect,
   ShouldRevalidateFunctionArgs,
   useNavigate,
   useSearchParams,
 } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { useTransition } from 'react';
-import {
-  useListDeployments,
-  useListInvocations,
-  useListServices,
-  useListSubscriptions,
-} from '@restate/data-access/admin-api-hooks';
+import { useListInvocations } from '@restate/data-access/admin-api-hooks';
 import { useRestateContext } from '@restate/features/restate-context';
 import { useBatchOperations } from '@restate/features/batch-operations';
 import { Badge } from '@restate/ui/badge';
+import { Sort } from './QueryButton';
+import {
+  isSortValid,
+  setDefaultSort,
+  useInvocationsQueryFilters,
+} from './useInvocationsQueryFilters';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: 80,
@@ -73,257 +58,21 @@ const MAX_COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
 
 const PAGE_SIZE = 30;
 function Component() {
-  const { promise: listDeploymentPromise, data: listDeploymentsData } =
-    useListDeployments();
-  const { promise: listSubscriptionsPromise, data: listSubscriptions } =
-    useListSubscriptions();
-  const { promise: listServicesPromise } = useListServices(
-    listDeploymentsData?.sortedServiceNames,
-  );
-  const [searchParams, setSearchParams] = useSearchParams();
-  const schema = useMemo(() => {
-    const serviceNamesPromise = listDeploymentPromise.then((results) =>
-      [...(results?.sortedServiceNames ?? [])].sort(),
-    );
-    return [
-      {
-        id: 'id',
-        label: 'Invocation Id',
-        operations: [{ value: 'EQUALS', label: 'is' }],
-        type: 'STRING',
-      },
-      {
-        id: 'status',
-        label: 'Status',
-        operations: [
-          { value: 'IN', label: 'is' },
-          { value: 'NOT_IN', label: 'is not' },
-        ],
-        type: 'STRING_LIST',
-        options: [
-          { value: 'scheduled', label: 'Scheduled' },
-          { value: 'pending', label: 'Pending' },
-          { value: 'running', label: 'Running' },
-          { value: 'backing-off', label: 'Backing-off' },
-          { value: 'suspended', label: 'Suspended' },
-          { value: 'paused', label: 'Paused' },
-          { value: 'killed', label: 'Killed' },
-          { value: 'cancelled', label: 'Cancelled' },
-          { value: 'succeeded', label: 'Succeeded' },
-          { value: 'failed', label: 'Failed' },
-          { value: 'ready', label: 'Ready' },
-        ],
-      },
-      {
-        id: 'target_service_name',
-        label: 'Service',
-        operations: [
-          { value: 'IN', label: 'is' },
-          { value: 'NOT_IN', label: 'is not' },
-        ],
-        type: 'STRING_LIST',
-        loadOptions: async () =>
-          serviceNamesPromise.then((results) => {
-            return (
-              results.map((name) => ({
-                label: name,
-                value: name,
-              })) ?? []
-            );
-          }),
-      },
-      {
-        id: 'target_service_key',
-        label: 'Service key',
-        operations: [{ value: 'EQUALS', label: 'is' }],
-        type: 'STRING',
-      },
-      {
-        id: 'target_handler_name',
-        label: 'Handler',
-        operations: [
-          { value: 'IN', label: 'is' },
-          { value: 'NOT_IN', label: 'is not' },
-        ],
-        type: 'STRING_LIST',
-        loadOptions: async () => {
-          return listServicesPromise.then(
-            (services) =>
-              Array.from(
-                new Set(
-                  services
-                    .filter(Boolean)
-                    .map((service) =>
-                      (service!.handlers ?? []).map((handler) => handler.name),
-                    )
-                    .flat(),
-                ).values(),
-              )
-                .sort()
-                .map((name) => ({
-                  label: name,
-                  value: name,
-                })) ?? [],
-          );
-        },
-      },
-      {
-        id: 'target_service_ty',
-        label: 'Service type',
-        operations: [
-          { value: 'IN', label: 'is' },
-          { value: 'NOT_IN', label: 'is not' },
-        ],
-        type: 'STRING_LIST',
-        options: [
-          { value: 'service', label: 'Service' },
-          { value: 'virtual_object', label: 'Virtual Object' },
-          { value: 'workflow', label: 'Workflow' },
-        ],
-      },
-      {
-        id: 'deployment',
-        label: 'Deployment',
-        operations: [
-          { value: 'IN', label: 'is' },
-          { value: 'NOT_IN', label: 'is not' },
-        ],
-        type: 'STRING_LIST',
-        loadOptions: async () =>
-          listDeploymentPromise.then((results) =>
-            Array.from(results?.deployments.values() ?? []).map(
-              (deployment) => ({
-                label: String(getEndpoint(deployment)),
-                value: deployment.id,
-                description: deployment.id,
-              }),
-            ),
-          ),
-      },
-      {
-        id: 'invoked_by_subscription_id',
-        label: 'Invoked by subscription',
-        operations: [
-          { value: 'IN', label: 'is' },
-          { value: 'NOT_IN', label: 'is not' },
-        ],
-        type: 'STRING_LIST',
-        loadOptions: async () =>
-          listSubscriptionsPromise.then((results) =>
-            Array.from(results?.subscriptions.values() ?? []).map(
-              (subscription) => ({
-                label: subscription.source,
-                value: subscription.id,
-                description: subscription.id,
-              }),
-            ),
-          ),
-      },
-      {
-        id: 'invoked_by',
-        label: 'Invoked by',
-        operations: [{ value: 'EQUALS', label: 'is' }],
-        type: 'STRING',
-        options: [
-          { value: 'service', label: 'Service' },
-          { value: 'ingress', label: 'Ingress' },
-          { value: 'restart_as_new', label: 'Restart as New' },
-          { value: 'subscription', label: 'Subscription' },
-        ],
-      },
-      {
-        id: 'invoked_by_service_name',
-        label: 'Invoked by service',
-        operations: [
-          { value: 'IN', label: 'is' },
-          { value: 'NOT_IN', label: 'is not' },
-        ],
-        type: 'STRING_LIST',
-        loadOptions: async () =>
-          serviceNamesPromise.then((results) =>
-            results.map((name) => ({
-              label: name,
-              value: name,
-            })),
-          ),
-      },
-      {
-        id: 'invoked_by_id',
-        label: 'Invoked by id',
-        operations: [{ value: 'EQUALS', label: 'is' }],
-        type: 'STRING',
-      },
-      {
-        id: 'idempotency_key',
-        label: 'Idempotency key',
-        operations: [{ value: 'EQUALS', label: 'is' }],
-        type: 'STRING',
-      },
-
-      {
-        id: 'retry_count',
-        label: 'Attempt count',
-        operations: [{ value: 'GREATER_THAN', label: '>' }],
-        type: 'NUMBER',
-      },
-      {
-        id: 'created_at',
-        label: 'Created',
-        operations: [
-          { value: 'BEFORE', label: 'before' },
-          { value: 'AFTER', label: 'after' },
-        ],
-        type: 'DATE',
-      },
-      {
-        id: 'scheduled_at',
-        label: 'Scheduled',
-        operations: [
-          { value: 'BEFORE', label: 'before' },
-          { value: 'AFTER', label: 'after' },
-        ],
-        type: 'DATE',
-      },
-      {
-        id: 'modified_at',
-        label: 'Modified',
-        operations: [
-          { value: 'BEFORE', label: 'before' },
-          { value: 'AFTER', label: 'after' },
-        ],
-        type: 'DATE',
-      },
-      {
-        id: 'restarted_from',
-        label: 'Restarted from',
-        operations: [{ value: 'EQUALS', label: 'is' }],
-        type: 'STRING',
-      },
-    ] satisfies QueryClauseSchema<QueryClauseType>[];
-  }, [listDeploymentPromise, listServicesPromise, listSubscriptionsPromise]);
-
+  const [searchParams] = useSearchParams();
   const { selectedColumns, setSelectedColumns, sortedColumnsList } =
     useColumns();
   const queryCLient = useQueryClient();
-  const [queryFilters, setQueryFilters] = useState<FilterItem[]>(() =>
-    schema
-      .filter((schemaClause) => searchParams.get(`filter_${schemaClause.id}`))
-      .map((schemaClause) => {
-        return QueryClause.fromJSON(
-          schemaClause,
-          searchParams.get(`filter_${schemaClause.id}`)!,
-        );
-      })
-      .filter((clause) => clause.isValid)
-      .map((clause) => {
-        return {
-          field: clause.fieldValue,
-          operation: clause.value.operation!,
-          type: clause.type,
-          value: clause.value.value,
-        } as FilterItem;
-      }),
-  );
+  const {
+    schema,
+    listInvocationsParameters,
+    query,
+    commitQuery,
+    pageIndex,
+    setPageIndex,
+    sortParams,
+    setSortParams,
+  } = useInvocationsQueryFilters();
+
   const {
     dataUpdatedAt,
     errorUpdatedAt,
@@ -332,7 +81,7 @@ function Component() {
     isFetching,
     isPending,
     queryKey,
-  } = useListInvocations(queryFilters, undefined, {
+  } = useListInvocations(listInvocationsParameters, {
     refetchOnMount: true,
     refetchOnReconnect: false,
     staleTime: 0,
@@ -343,121 +92,25 @@ function Component() {
   const [selectedInvocationIds, setSelectedInvocationIds] = useState<
     Set<string>
   >(new Set());
-  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>();
-  const collator = useCollator();
-  const [pageIndex, _setPageIndex] = useState(0);
-  const [, startTransition] = useTransition();
-
-  const setPageIndex = useCallback(
-    (arg: Parameters<typeof _setPageIndex>[0]) => {
-      startTransition(() => {
-        window.scrollTo({ top: 0, behavior: 'auto' });
-        _setPageIndex(arg);
-      });
-    },
-    [],
-  );
-
-  const sortedItems = useMemo(() => {
-    return [...(data?.rows ?? [])].sort((a, b) => {
-      let cmp = 0;
-      if (sortDescriptor?.column === 'deployment') {
-        cmp = collator.compare(
-          (
-            a.last_attempt_deployment_id ?? a.pinned_deployment_id
-          )?.toString() ?? '',
-          (
-            b.last_attempt_deployment_id ?? b.pinned_deployment_id
-          )?.toString() ?? '',
-        );
-      } else {
-        cmp = collator.compare(
-          a[
-            sortDescriptor?.column as Exclude<
-              ColumnKey,
-              'deployment' | 'actions'
-            >
-          ]?.toString() ?? '',
-          b[
-            sortDescriptor?.column as Exclude<
-              ColumnKey,
-              'deployment' | 'actions'
-            >
-          ]?.toString() ?? '',
-        );
-      }
-
-      // Flip the direction if descending order is specified.
-      if (sortDescriptor?.direction === 'descending') {
-        cmp *= -1;
-      }
-
-      return cmp;
-    });
-  }, [collator, data?.rows, sortDescriptor?.column, sortDescriptor?.direction]);
 
   const currentPageItems = useMemo(() => {
-    return sortedItems.slice(
-      pageIndex * PAGE_SIZE,
-      (pageIndex + 1) * PAGE_SIZE,
+    return (
+      data?.rows?.slice(pageIndex * PAGE_SIZE, (pageIndex + 1) * PAGE_SIZE) ??
+      []
     );
-  }, [pageIndex, sortedItems]);
+  }, [pageIndex, data?.rows]);
 
+  // TODO
   useEffect(() => {
-    if (sortedItems.length <= PAGE_SIZE * pageIndex) {
+    if (Number(data?.rows?.length) <= PAGE_SIZE * pageIndex) {
       setPageIndex(0);
     }
-  }, [pageIndex, setPageIndex, sortedItems.length]);
-
-  const query = useQueryBuilder(
-    schema
-      .filter((schemaClause) => searchParams.get(`filter_${schemaClause.id}`))
-      .map((schemaClause) => {
-        return QueryClause.fromJSON(
-          schemaClause,
-          searchParams.get(`filter_${schemaClause.id}`)!,
-        );
-      }),
-  );
+  }, [pageIndex, setPageIndex, data?.rows?.length]);
 
   const totalSize = Math.ceil((data?.rows ?? []).length / PAGE_SIZE);
   const hash = 'hash' + currentPageItems.map(({ id }) => id).join('');
 
   const { OnboardingGuide } = useRestateContext();
-  const updateFilters = () => {
-    const newSearchParams = new URLSearchParams(searchParams);
-    Array.from(newSearchParams.keys())
-      .filter((key) => key.startsWith('filter_'))
-      .forEach((key) => newSearchParams.delete(key));
-    query.items
-      .filter((clause) => clause.isValid)
-      .forEach((item) => {
-        newSearchParams.set(`filter_${item.fieldValue}`, String(item));
-      });
-    const sortedNewSearchParams = new URLSearchParams(newSearchParams);
-    sortedNewSearchParams.sort();
-    const sortedOldSearchParams = new URLSearchParams(searchParams);
-    sortedOldSearchParams.sort();
-
-    if (sortedOldSearchParams.toString() !== sortedNewSearchParams.toString()) {
-      setPageIndex(0);
-    }
-    setSearchParams(newSearchParams, { preventScrollReset: true });
-    const filters = query.items
-      .filter((clause) => clause.isValid)
-      .map(
-        (clause) =>
-          ({
-            field: clause.fieldValue,
-            operation: clause.value.operation!,
-            type: clause.type,
-            value: clause.value.value,
-          }) as FilterItem,
-      );
-    setQueryFilters(filters);
-
-    return filters;
-  };
   const {
     batchPurge,
     batchResume,
@@ -551,7 +204,8 @@ function Component() {
                               selectedInvocationIds.values(),
                             ),
                           }
-                        : { filters: queryFilters };
+                        : // TODO
+                          { filters: listInvocationsParameters.filters || [] };
                     switch (key) {
                       case 'cancel': {
                         return batchCancel(args, schema);
@@ -627,8 +281,6 @@ function Component() {
         </div>
         <Table
           aria-label="Invocations"
-          sortDescriptor={sortDescriptor}
-          onSortChange={setSortDescriptor}
           key={hash}
           selectionMode="multiple"
           selectedKeys={selectedInvocationIds}
@@ -768,7 +420,7 @@ function Component() {
           className="relative flex"
           onSubmit={async (event) => {
             event.preventDefault();
-            updateFilters();
+            commitQuery();
             await queryCLient.invalidateQueries({ queryKey });
           }}
         >
@@ -776,6 +428,9 @@ function Component() {
             <AddQueryTrigger
               MenuTrigger={FiltersTrigger}
               placeholder="Filter invocations…"
+              prefix={
+                <Sort setSortParams={setSortParams} sortParams={sortParams} />
+              }
               title="Filters"
               className="w-full rounded-xl border-transparent pr-24 has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500 [&_input]:min-w-[25ch] [&_input]:placeholder-zinc-400 [&_input+*]:right-24 [&_input::-webkit-search-cancel-button]:invert"
             >
@@ -853,9 +508,19 @@ function Footnote({
 
 export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
   const url = new URL(request.url);
+  let searchParams = new URLSearchParams(url.searchParams);
   const hasFilters = Array.from(url.searchParams.keys()).some((key) =>
     key.startsWith('filter_'),
   );
+
+  if (isSortValid(searchParams)) {
+    return;
+  }
+  if (!isSortValid(searchParams)) {
+    searchParams = setDefaultSort(searchParams);
+  }
+
+  return redirect(`?${searchParams.toString()}`);
 };
 
 export function shouldRevalidate(arg: ShouldRevalidateFunctionArgs) {

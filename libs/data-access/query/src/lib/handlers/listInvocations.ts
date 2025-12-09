@@ -52,7 +52,7 @@ export async function listInvocations(
               value: idRows.map(({ id }) => id),
             },
             ...filters,
-          ])} ORDER BY modified_at DESC`,
+          ])} ORDER BY ${sort.field} ${sort.order}`,
         );
 
         return { rows: invRows, receivedLessThanLimit };
