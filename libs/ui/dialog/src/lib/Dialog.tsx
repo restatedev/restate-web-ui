@@ -1,6 +1,7 @@
 import { useSearchParams } from 'react-router';
 import { PropsWithChildren, useTransition } from 'react';
 import { DialogTrigger } from 'react-aria-components';
+import { Button } from '@restate/ui/button';
 
 interface DialogProps {
   open?: boolean;
@@ -70,6 +71,7 @@ export function QueryDialog({
         }
       }}
     >
+      <Button className="hidden" />
       {children}
     </DialogTrigger>
   );

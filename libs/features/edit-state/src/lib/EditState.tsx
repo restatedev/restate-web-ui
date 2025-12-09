@@ -168,10 +168,12 @@ function EditStateInner({
         onOpenChange(isOpen);
         if (!isOpen) {
           mutation.reset();
+        } else {
+          queryClient.invalidateQueries({ queryKey });
         }
-        isOpen && queryClient.invalidateQueries({ queryKey });
       }}
     >
+      <Button className="hidden" />
       <StateDialogContent
         service={service}
         stateKey={key}
