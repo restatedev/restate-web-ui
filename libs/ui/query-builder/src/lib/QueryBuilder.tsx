@@ -132,6 +132,7 @@ export function AddQueryTrigger({
       }
       setNewId?.(String(key));
     },
+    // TODO: update deps
     [setNewId],
   );
   const onRemove = useCallback(
