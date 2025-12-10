@@ -3,7 +3,7 @@ import { useMemo, useCallback } from 'react';
 import type { Key } from 'react-aria';
 import { useSearchParams } from 'react-router';
 
-const COLUMN_QUERY_PREFIX = 'column';
+export const COLUMN_QUERY_PREFIX = 'column';
 
 const COLUMNS_KEYS = [
   'id',

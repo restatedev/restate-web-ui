@@ -11,6 +11,7 @@ import {
 import { Icon, IconName } from '@restate/ui/icons';
 import {
   COLUMN_NAMES,
+  COLUMN_QUERY_PREFIX,
   ColumnKey,
   isColumnValid,
   setDefaultColumns,
@@ -41,8 +42,11 @@ import { useBatchOperations } from '@restate/features/batch-operations';
 import { Badge } from '@restate/ui/badge';
 import { Sort } from './QueryButton';
 import {
+  FILTER_QUERY_PREFIX,
+  getFilterParamKey,
   isSortValid,
   setDefaultSort,
+  SORT_QUERY_PREFIX,
   useInvocationsQueryFilters,
 } from './useInvocationsQueryFilters';
 import { Key } from 'react-aria';
@@ -133,6 +137,22 @@ function Component() {
 
   const navigate = useNavigate();
   const { baseUrl } = useRestateContext();
+
+  useEffect(() => {
+    return () => {
+      const savedSearchParams = new URLSearchParams(searchParams);
+      Array.from(savedSearchParams.keys()).forEach((key) => {
+        if (
+          !key.startsWith(FILTER_QUERY_PREFIX) &&
+          !key.startsWith(SORT_QUERY_PREFIX) &&
+          !key.startsWith(COLUMN_QUERY_PREFIX)
+        ) {
+          savedSearchParams.delete(key);
+        }
+      });
+      sessionStorage.setItem('query', savedSearchParams.toString());
+    };
+  }, [searchParams]);
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdate}>
@@ -527,22 +547,40 @@ function Footnote({
 
 export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
   const url = new URL(request.url);
-  let searchParams = new URLSearchParams(url.searchParams);
-  const hasFilters = Array.from(url.searchParams.keys()).some((key) =>
-    key.startsWith('filter_'),
+  let reqSearchParams = new URLSearchParams(url.searchParams);
+  reqSearchParams.sort();
+  const originalSearch = reqSearchParams.toString();
+  const previousSearchParams = new URLSearchParams(
+    sessionStorage.getItem('query') || '',
   );
+  sessionStorage.removeItem('query');
 
-  if (isSortValid(searchParams) && isColumnValid(searchParams)) {
+  Array.from(previousSearchParams.keys()).forEach((key) => {
+    reqSearchParams.delete(key);
+  });
+  previousSearchParams.forEach((value, name) => {
+    if (reqSearchParams.has(name)) {
+      reqSearchParams.append(name, value);
+    } else {
+      reqSearchParams.set(name, value);
+    }
+  });
+
+  if (
+    isSortValid(reqSearchParams) &&
+    isColumnValid(reqSearchParams) &&
+    reqSearchParams.toString() === originalSearch
+  ) {
     return;
   }
-  if (!isSortValid(searchParams)) {
-    searchParams = setDefaultSort(searchParams);
+  if (!isSortValid(reqSearchParams)) {
+    reqSearchParams = setDefaultSort(reqSearchParams);
   }
-  if (!isColumnValid(searchParams)) {
-    searchParams = setDefaultColumns(searchParams);
+  if (!isColumnValid(reqSearchParams)) {
+    reqSearchParams = setDefaultColumns(reqSearchParams);
   }
 
-  return redirect(`?${searchParams.toString()}`);
+  return redirect(`?${reqSearchParams.toString()}`);
 };
 
 export function shouldRevalidate(arg: ShouldRevalidateFunctionArgs) {

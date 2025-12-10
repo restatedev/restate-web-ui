@@ -14,9 +14,9 @@ import { useSearchParams } from 'react-router';
 import { useSchema } from './useSchema';
 import { ColumnKey } from './columns';
 
-const FILTER_QUERY_PREFIX = 'filter_';
-const SORT_QUERY_PREFIX = 'sort_';
-function getFilterParamKey(
+export const FILTER_QUERY_PREFIX = 'filter_';
+export const SORT_QUERY_PREFIX = 'sort_';
+export function getFilterParamKey(
   param: QueryClauseSchema<QueryClauseType> | QueryClause<QueryClauseType>,
 ) {
   if ('fieldValue' in param) {
