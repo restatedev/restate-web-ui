@@ -149,6 +149,35 @@ function EditQueryTrigger({
               </DropdownMenu>
             )}
           </DropdownSection>
+          {clause.type === 'STRING_LIST' && (
+            <Button
+              variant="icon"
+              className="mr-2 ml-auto text-xs"
+              onClick={() => {
+                if (clause.isAllSelected) {
+                  const newClause = new QueryClause(
+                    { ...clause.schema, options: clause.options },
+                    {
+                      ...clause.value,
+                      value: [],
+                    },
+                  );
+                  onUpdate?.(newClause);
+                } else {
+                  const newClause = new QueryClause(
+                    { ...clause.schema, options: clause.options },
+                    {
+                      ...clause.value,
+                      value: clause.options?.map(({ value }) => value) || [],
+                    },
+                  );
+                  onUpdate?.(newClause);
+                }
+              }}
+            >
+              {clause.isAllSelected ? 'Deselect all' : 'Select all'}
+            </Button>
+          )}
           <DropdownSection>
             <ValueSelector clause={clause} onUpdate={onUpdate} />
           </DropdownSection>
