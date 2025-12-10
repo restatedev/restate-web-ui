@@ -62,6 +62,7 @@ const EVENTS_COMPONENTS: {
   Completion: undefined,
   Retrying: undefined,
   Scheduled: undefined,
+  Killed: undefined,
   Paused: TransientError,
   'Event: Paused': undefined,
 };
