@@ -86,6 +86,7 @@ export interface MultiSelectProps<T extends object>
   prefix?: ReactNode;
   disabled?: boolean;
   multiple?: boolean;
+  canRemoveItem?: (key: Key) => boolean;
 }
 
 const multiSelectStyles = tv({
@@ -100,6 +101,7 @@ export function FormFieldMultiCombobox<
     id: Key;
     textValue: string;
     allowCustomValue?: boolean;
+    disabled?: boolean;
   },
 >({
   label,
@@ -118,6 +120,7 @@ export function FormFieldMultiCombobox<
   prefix,
   disabled,
   multiple,
+  canRemoveItem,
   ...props
 }: MultiSelectProps<T>) {
   const { contains } = useFilter({ sensitivity: 'base' });
@@ -155,6 +158,10 @@ export function FormFieldMultiCombobox<
 
   const onRemove = useCallback(
     (key: Key) => {
+      if (canRemoveItem && !canRemoveItem?.(key)) {
+        return;
+      }
+
       selectedList.remove(key);
       setFieldState({
         inputValue: '',
@@ -167,7 +174,7 @@ export function FormFieldMultiCombobox<
         setMenuTrigger('focus');
       });
     },
-    [selectedList, onItemRemove, inputRefObject],
+    [selectedList, onItemRemove, inputRefObject, canRemoveItem],
   );
 
   const onUpdate = useCallback(
@@ -221,8 +228,7 @@ export function FormFieldMultiCombobox<
     }
 
     const lastKey = selectedList.items[selectedList.items.length - 1];
-
-    if (lastKey) {
+    if (lastKey && (!canRemoveItem || canRemoveItem(lastKey.id))) {
       selectedList.remove(lastKey.id);
       onItemRemove?.(lastKey.id);
     }
@@ -231,7 +237,7 @@ export function FormFieldMultiCombobox<
       inputValue: '',
       selectedKey: null,
     });
-  }, [selectedList, onItemRemove]);
+  }, [selectedList, onItemRemove, canRemoveItem]);
 
   const onKeyDownCapture = useCallback(
     (e: KeyboardEvent<HTMLInputElement>) => {
@@ -316,7 +322,11 @@ export function FormFieldMultiCombobox<
                           !item.allowCustomValue || arr.length === 1,
                       )
                       .map((item) => (
-                        <ListBoxItem value={String(item.id)} key={item.id}>
+                        <ListBoxItem
+                          value={String(item.id)}
+                          key={item.id}
+                          disabled={item.disabled}
+                        >
                           {item.allowCustomValue
                             ? fieldState.inputValue
                             : item.textValue}

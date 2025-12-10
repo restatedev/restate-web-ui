@@ -39,6 +39,7 @@ import {
   setDefaultSort,
   useInvocationsQueryFilters,
 } from './useInvocationsQueryFilters';
+import { Key } from 'react-aria';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: 80,
@@ -424,7 +425,12 @@ function Component() {
             await queryCLient.invalidateQueries({ queryKey });
           }}
         >
-          <QueryBuilder query={query} schema={schema} multiple>
+          <QueryBuilder
+            query={query}
+            schema={schema}
+            canRemoveItem={canRemoveItem}
+            multiple
+          >
             <AddQueryTrigger
               MenuTrigger={FiltersTrigger}
               placeholder="Filter invocations…"
@@ -448,6 +454,13 @@ function Component() {
       </LayoutOutlet>
     </SnapshotTimeProvider>
   );
+}
+
+function canRemoveItem(key: Key) {
+  if (key === 'status') {
+    return false;
+  }
+  return true;
 }
 
 function Footnote({

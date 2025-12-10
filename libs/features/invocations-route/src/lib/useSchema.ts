@@ -8,18 +8,16 @@ import { QueryClauseSchema, QueryClauseType } from '@restate/ui/query-builder';
 import { useMemo } from 'react';
 
 export function useSchema() {
-  const { promise: listDeploymentPromise, data: listDeploymentsData } =
-    useListDeployments();
-  const { promise: listSubscriptionsPromise, data: listSubscriptions } =
-    useListSubscriptions();
-  const { promise: listServicesPromise } = useListServices(
+  const { data: listDeploymentsData } = useListDeployments();
+  const { data: listSubscriptions } = useListSubscriptions();
+  const { data: listServices } = useListServices(
     listDeploymentsData?.sortedServiceNames,
   );
 
   const schema = useMemo(() => {
-    const serviceNamesPromise = listDeploymentPromise.then((results) =>
-      [...(results?.sortedServiceNames ?? [])].sort(),
-    );
+    const serviceNames = [
+      ...(listDeploymentsData?.sortedServiceNames ?? []),
+    ].sort();
     return [
       {
         id: 'id',
@@ -57,15 +55,11 @@ export function useSchema() {
           { value: 'NOT_IN', label: 'is not' },
         ],
         type: 'STRING_LIST',
-        loadOptions: async () =>
-          serviceNamesPromise.then((results) => {
-            return (
-              results.map((name) => ({
-                label: name,
-                value: name,
-              })) ?? []
-            );
-          }),
+        options:
+          serviceNames.map((name) => ({
+            label: name,
+            value: name,
+          })) ?? [],
       },
       {
         id: 'target_service_key',
@@ -81,26 +75,22 @@ export function useSchema() {
           { value: 'NOT_IN', label: 'is not' },
         ],
         type: 'STRING_LIST',
-        loadOptions: async () => {
-          return listServicesPromise.then(
-            (services) =>
-              Array.from(
-                new Set(
-                  services
-                    .filter(Boolean)
-                    .map((service) =>
-                      (service!.handlers ?? []).map((handler) => handler.name),
-                    )
-                    .flat(),
-                ).values(),
-              )
-                .sort()
-                .map((name) => ({
-                  label: name,
-                  value: name,
-                })) ?? [],
-          );
-        },
+        options:
+          Array.from(
+            new Set(
+              Array.from(listServices.values())
+                .filter(Boolean)
+                .map((service) =>
+                  (service!.handlers ?? []).map((handler) => handler.name),
+                )
+                .flat(),
+            ).values(),
+          )
+            .sort()
+            .map((name) => ({
+              label: name,
+              value: name,
+            })) ?? [],
       },
       {
         id: 'target_service_ty',
@@ -124,16 +114,13 @@ export function useSchema() {
           { value: 'NOT_IN', label: 'is not' },
         ],
         type: 'STRING_LIST',
-        loadOptions: async () =>
-          listDeploymentPromise.then((results) =>
-            Array.from(results?.deployments.values() ?? []).map(
-              (deployment) => ({
-                label: String(getEndpoint(deployment)),
-                value: deployment.id,
-                description: deployment.id,
-              }),
-            ),
-          ),
+        options: Array.from(
+          listDeploymentsData?.deployments.values() ?? [],
+        ).map((deployment) => ({
+          label: String(getEndpoint(deployment)),
+          value: deployment.id,
+          description: deployment.id,
+        })),
       },
       {
         id: 'invoked_by_subscription_id',
@@ -143,16 +130,13 @@ export function useSchema() {
           { value: 'NOT_IN', label: 'is not' },
         ],
         type: 'STRING_LIST',
-        loadOptions: async () =>
-          listSubscriptionsPromise.then((results) =>
-            Array.from(results?.subscriptions.values() ?? []).map(
-              (subscription) => ({
-                label: subscription.source,
-                value: subscription.id,
-                description: subscription.id,
-              }),
-            ),
-          ),
+        options: Array.from(listSubscriptions?.subscriptions ?? []).map(
+          (subscription) => ({
+            label: subscription.source,
+            value: subscription.id,
+            description: subscription.id,
+          }),
+        ),
       },
       {
         id: 'invoked_by',
@@ -174,13 +158,10 @@ export function useSchema() {
           { value: 'NOT_IN', label: 'is not' },
         ],
         type: 'STRING_LIST',
-        loadOptions: async () =>
-          serviceNamesPromise.then((results) =>
-            results.map((name) => ({
-              label: name,
-              value: name,
-            })),
-          ),
+        options: serviceNames.map((name) => ({
+          label: name,
+          value: name,
+        })),
       },
       {
         id: 'invoked_by_id',
@@ -235,7 +216,12 @@ export function useSchema() {
         type: 'STRING',
       },
     ] satisfies QueryClauseSchema<QueryClauseType>[];
-  }, [listDeploymentPromise, listServicesPromise, listSubscriptionsPromise]);
+  }, [
+    listDeploymentsData?.sortedServiceNames,
+    listDeploymentsData?.deployments,
+    listServices,
+    listSubscriptions?.subscriptions,
+  ]);
 
   return schema;
 }

@@ -103,6 +103,7 @@ export class QueryClause<T extends QueryClauseType> {
   }
 
   private _options?: QueryClauseOption[];
+  private _disabled = false;
   get options() {
     return this._options;
   }
@@ -116,17 +117,25 @@ export class QueryClause<T extends QueryClauseType> {
   }
 
   get isAllSelected() {
-    if (
-      this.type === 'STRING_LIST' &&
-      (!this.value.operation || this.value.operation === 'IN')
-    ) {
-      return this.options?.every(
-        ({ value }) =>
-          Array.isArray(this.value.value) && this.value.value.includes(value),
-      );
-    } else {
-      return false;
+    if (this.type === 'STRING_LIST') {
+      if (!this.value.operation || this.value.operation === 'IN') {
+        return this.options?.every(
+          ({ value }) =>
+            Array.isArray(this.value.value) && this.value.value.includes(value),
+        );
+      }
+      if (this.value.operation === 'NOT_IN') {
+        return (
+          !this.value.value ||
+          (Array.isArray(this.value.value) && this.value.value.length === 0)
+        );
+      }
     }
+    return false;
+  }
+
+  get disabled() {
+    return this._disabled;
   }
 
   get fieldValue() {
@@ -142,10 +151,16 @@ export class QueryClause<T extends QueryClauseType> {
     } = { operation: schema.operations[0]?.value, value: undefined },
   ) {
     this._options = schema.options;
+    this._disabled = Boolean(
+      schema.type === 'STRING_LIST' &&
+        schema.options &&
+        schema.options.length === 0,
+    );
     this.schema
       .loadOptions?.()
       ?.then((opts) => {
         this._options = opts;
+        this._disabled = schema.type === 'STRING_LIST' && opts.length === 0;
       })
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       .catch(() => {});

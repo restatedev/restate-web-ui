@@ -110,7 +110,7 @@ function EditQueryTrigger({
   return (
     <Dropdown isOpen={isOpen} onOpenChange={setIsOpen}>
       <DropdownTrigger>{children}</DropdownTrigger>
-      <DropdownPopover placement="top">
+      <DropdownPopover placement="top" className="min-w-xs!">
         <Form
           onSubmit={(e) => {
             e.preventDefault();
@@ -152,7 +152,24 @@ function EditQueryTrigger({
           <DropdownSection>
             <ValueSelector clause={clause} onUpdate={onUpdate} />
           </DropdownSection>
-          <DropdownMenu onSelect={onRemove} autoFocus={false}>
+          <DropdownMenu
+            onSelect={() => {
+              if (clause.id === 'status') {
+                const newClause = new QueryClause(
+                  { ...clause.schema, options: clause.options },
+                  {
+                    ...clause.value,
+                    operation: 'IN',
+                    value: clause.options?.map(({ value }) => value),
+                  },
+                );
+                onUpdate?.(newClause);
+              } else {
+                onRemove?.();
+              }
+            }}
+            autoFocus={false}
+          >
             <DropdownItem destructive>Remove</DropdownItem>
           </DropdownMenu>
         </Form>
