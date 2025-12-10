@@ -88,6 +88,17 @@ export function useInvocationsQueryFilters() {
       );
   }
 
+  if (!queryClauses.some(({ id }) => id === 'target_service_name')) {
+    const clauseSchema = schema.find(({ id }) => id === 'target_service_name');
+    clauseSchema &&
+      queryClauses.unshift(
+        new QueryClause(clauseSchema, {
+          value: clauseSchema.options?.map(({ value }) => value),
+          operation: 'IN',
+        }),
+      );
+  }
+
   const [listInvocationsParameters, _setListInvocationsParameters] = useState<
     components['schemas']['ListInvocationsRequestBody']
   >(() => {

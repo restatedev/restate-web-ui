@@ -183,7 +183,10 @@ function EditQueryTrigger({
           </DropdownSection>
           <DropdownMenu
             onSelect={() => {
-              if (clause.id === 'status') {
+              if (
+                clause.id === 'status' ||
+                clause.id === 'target_service_name'
+              ) {
                 const newClause = new QueryClause(
                   { ...clause.schema, options: clause.options },
                   {

@@ -457,7 +457,7 @@ function Component() {
 }
 
 function canRemoveItem(key: Key) {
-  if (key === 'status') {
+  if (key === 'status' || key === 'target_service_name') {
     return false;
   }
   return true;
