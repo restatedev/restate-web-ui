@@ -46,13 +46,22 @@ export function ClauseChip({
         variant="secondary"
         className="flex min-w-0 items-center gap-[0.7ch] rounded-lg bg-white/25 px-1.5 py-1 text-xs text-zinc-50 hover:bg-white/30 pressed:bg-white/30"
       >
-        <span className="shrink-0 whitespace-nowrap">{item.label}</span>
-        {item.operationLabel?.split(' ').map((segment) => (
-          <span className="font-mono" key={segment}>
-            {segment}
-          </span>
-        ))}
-        <span className="truncate font-semibold">{item.valueLabel}</span>
+        {item.isAllSelected ? (
+          <>
+            <span className="shrink-0 font-semibold">Any</span>
+            <span className="shrink-0 whitespace-nowrap">{item.label}</span>
+          </>
+        ) : (
+          <>
+            <span className="shrink-0 whitespace-nowrap">{item.label}</span>
+            {item.operationLabel?.split(' ').map((segment) => (
+              <span className="font-mono" key={segment}>
+                {segment}
+              </span>
+            ))}
+            <span className="truncate font-semibold">{item.valueLabel}</span>
+          </>
+        )}
         <Icon
           name={IconName.ChevronsUpDown}
           className="ml-2 h-3.5 w-3.5 shrink-0"

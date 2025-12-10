@@ -76,6 +76,18 @@ export function useInvocationsQueryFilters() {
         searchParams.get(getFilterParamKey(schemaClause))!,
       );
     });
+
+  if (!queryClauses.some(({ id }) => id === 'status')) {
+    const clauseSchema = schema.find(({ id }) => id === 'status');
+    clauseSchema &&
+      queryClauses.unshift(
+        new QueryClause(clauseSchema, {
+          value: clauseSchema.options?.map(({ value }) => value),
+          operation: 'IN',
+        }),
+      );
+  }
+
   const [listInvocationsParameters, _setListInvocationsParameters] = useState<
     components['schemas']['ListInvocationsRequestBody']
   >(() => {
@@ -115,7 +127,7 @@ export function useInvocationsQueryFilters() {
       .filter((key) => key.startsWith(FILTER_QUERY_PREFIX))
       .forEach((key) => newSearchParams.delete(key));
     query.items
-      .filter((clause) => clause.isValid)
+      .filter((clause) => clause.isValid && !clause.isAllSelected)
       .forEach((item) => {
         newSearchParams.set(getFilterParamKey(item), String(item));
       });

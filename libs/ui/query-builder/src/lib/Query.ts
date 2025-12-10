@@ -115,6 +115,20 @@ export class QueryClause<T extends QueryClauseType> {
     }
   }
 
+  get isAllSelected() {
+    if (
+      this.type === 'STRING_LIST' &&
+      (!this.value.operation || this.value.operation === 'IN')
+    ) {
+      return this.options?.every(
+        ({ value }) =>
+          Array.isArray(this.value.value) && this.value.value.includes(value),
+      );
+    } else {
+      return false;
+    }
+  }
+
   get fieldValue() {
     return this.value.fieldValue ?? this.id;
   }

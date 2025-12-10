@@ -45,7 +45,6 @@ export function Sort({
   sortParams: SortInvocations;
   setSortParams: Dispatch<SetStateAction<SortInvocations>>;
 }) {
-  console.log(sortParams);
   return (
     <Dropdown>
       <DropdownTrigger>
