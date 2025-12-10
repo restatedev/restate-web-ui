@@ -9,7 +9,13 @@ import {
   DropdownTrigger,
 } from '@restate/ui/dropdown';
 import { Icon, IconName } from '@restate/ui/icons';
-import { COLUMN_NAMES, ColumnKey, useColumns } from './columns';
+import {
+  COLUMN_NAMES,
+  ColumnKey,
+  isColumnValid,
+  setDefaultColumns,
+  useColumns,
+} from './columns';
 import { InvocationCell } from './cells';
 import {
   SnapshotTimeProvider,
@@ -526,11 +532,14 @@ export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
     key.startsWith('filter_'),
   );
 
-  if (isSortValid(searchParams)) {
+  if (isSortValid(searchParams) && isColumnValid(searchParams)) {
     return;
   }
   if (!isSortValid(searchParams)) {
     searchParams = setDefaultSort(searchParams);
+  }
+  if (!isColumnValid(searchParams)) {
+    searchParams = setDefaultColumns(searchParams);
   }
 
   return redirect(`?${searchParams.toString()}`);
