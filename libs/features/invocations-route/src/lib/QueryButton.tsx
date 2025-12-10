@@ -27,8 +27,8 @@ function QueryButton({
       variant="secondary"
       className="flex min-w-0 shrink-0 items-center gap-[0.7ch] rounded-lg bg-white/25 px-1.5 py-1 text-xs text-zinc-50 hover:bg-white/30 pressed:bg-white/30"
     >
-      <span className="shrink-0 whitespace-nowrap">{field}</span>
       <span className="font-mono">{operation}</span>
+      <span className="shrink-0 whitespace-nowrap">{field}</span>
       <span className="truncate font-semibold">{value}</span>
       <Icon
         name={IconName.ChevronsUpDown}
@@ -49,14 +49,16 @@ export function Sort({
     <Dropdown>
       <DropdownTrigger>
         <QueryButton
-          field=""
+          field="Sort by"
           value={COLUMN_NAMES[sortParams.field]}
           operation={
             <Icon
               name={
-                sortParams.order === 'ASC' ? IconName.MoveUp : IconName.MoveDown
+                sortParams.order === 'ASC'
+                  ? IconName.ArrowUp
+                  : IconName.ArrowDown
               }
-              className="-ml-2 h-4 w-4"
+              className="h-3.5 w-3.5"
             />
           }
         />
