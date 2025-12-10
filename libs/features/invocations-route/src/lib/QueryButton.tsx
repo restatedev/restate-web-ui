@@ -8,7 +8,7 @@ import {
   DropdownTrigger,
 } from '@restate/ui/dropdown';
 import { Icon, IconName } from '@restate/ui/icons';
-import { COLUMN_NAMES, ColumnKey } from './columns';
+import { COLUMN_NAMES } from './columns';
 import { SortInvocations } from '@restate/data-access/admin-api/spec';
 import { Dispatch, ReactNode, SetStateAction } from 'react';
 import { SORT_COLUMN_KEYS } from './useInvocationsQueryFilters';
