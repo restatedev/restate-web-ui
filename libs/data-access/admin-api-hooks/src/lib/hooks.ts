@@ -474,7 +474,7 @@ export function useServiceOpenApi(
 }
 
 export function useListInvocations(
-  filters?: FilterItem[],
+  body: components['schemas']['ListInvocationsRequestBody'],
   options?: HookQueryOptions<'/query/invocations', 'post'>,
 ) {
   const enabled = useAPIStatus();
@@ -482,9 +482,7 @@ export function useListInvocations(
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi('query', '/query/invocations', 'post', {
     baseUrl,
-    body: {
-      filters,
-    },
+    body: body,
   });
 
   const results = useQuery({

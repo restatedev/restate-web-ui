@@ -18,6 +18,7 @@ interface QueryBuilderProps {
   schema: QueryClauseSchema<QueryClauseType>[];
   query: ListData<QueryClause<QueryClauseType>>;
   multiple: boolean;
+  canRemoveItem?: (key: Key) => boolean;
 }
 
 const QueryBuilderContext = createContext<{
@@ -25,6 +26,7 @@ const QueryBuilderContext = createContext<{
   schema: QueryClauseSchema<QueryClauseType>[];
   newId?: string;
   setNewId?: (id?: string) => void;
+  canRemoveItem?: (key: Key) => boolean;
   multiple: boolean;
 }>({
   schema: [],
@@ -47,6 +49,7 @@ export function QueryBuilder({
   query,
   children,
   multiple,
+  canRemoveItem,
 }: PropsWithChildren<QueryBuilderProps>) {
   const [newId, setNewId] = useState<string>();
 
@@ -58,6 +61,7 @@ export function QueryBuilder({
         newId,
         setNewId,
         multiple,
+        canRemoveItem,
       }}
     >
       {children}
@@ -84,7 +88,8 @@ export function AddQueryTrigger({
   prefix?: ReactNode;
   MenuTrigger?: ComponentType<unknown>;
 }) {
-  const { query, schema, setNewId, multiple } = use(QueryBuilderContext);
+  const { query, schema, setNewId, multiple, canRemoveItem } =
+    use(QueryBuilderContext);
   const items = useMemo(() => {
     return schema.map((clauseSchema) => new QueryClause(clauseSchema));
   }, [schema]);
@@ -132,6 +137,7 @@ export function AddQueryTrigger({
       }
       setNewId?.(String(key));
     },
+    // TODO: update deps
     [setNewId],
   );
   const onRemove = useCallback(
@@ -159,6 +165,7 @@ export function AddQueryTrigger({
       onItemRemove={onRemove}
       onItemUpdated={onRemove}
       prefix={prefix}
+      canRemoveItem={canRemoveItem}
       multiple={multiple}
     />
   );

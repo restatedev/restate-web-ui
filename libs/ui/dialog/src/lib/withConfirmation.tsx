@@ -92,6 +92,7 @@ export interface WithConfirmationConfig<
     variables: ExtractVariables<ExtractMutationResult<THook>>,
     context: ExtractContext<ExtractMutationResult<THook>>,
   ) => void;
+  onCloseQueryParam?: (searchParams: URLSearchParams) => URLSearchParams;
 }
 
 export function withConfirmation<
@@ -151,6 +152,7 @@ export function withConfirmation<
         isPending={isPending}
         error={error as Error | null}
         onClose={reset}
+        onCloseQueryParam={config.onCloseQueryParam}
       >
         {ContentComponent && <ContentComponent />}
         {config.shouldShowSkipConfirmation ? (

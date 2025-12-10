@@ -1,4 +1,7 @@
-import type { FilterItem } from '@restate/data-access/admin-api/spec';
+import type {
+  FilterItem,
+  components,
+} from '@restate/data-access/admin-api/spec';
 import { convertInvocation } from '../convertInvocation';
 import { convertInvocationsFilters } from '../convertFilters';
 import { type QueryContext } from './shared';
@@ -24,13 +27,17 @@ function countEstimate(
 export async function listInvocations(
   this: QueryContext,
   filters: FilterItem[],
+  sort: components['schemas']['ListInvocationsRequestBody']['sort'] = {
+    field: 'modified_at',
+    order: 'DESC',
+  },
 ) {
   const minimumCountEstimatePromise = this.query(
     `SELECT COUNT(1) as total_count FROM (SELECT * FROM sys_invocation LIMIT ${COUNT_LIMIT}) ${convertInvocationsFilters(filters)}`,
   ).then(({ rows }) => rows?.at(0)?.total_count);
 
   const invocationsPromise = this.query(
-    `SELECT id from sys_invocation ${convertInvocationsFilters(filters)} ORDER BY modified_at DESC LIMIT ${INVOCATIONS_LIMIT}`,
+    `SELECT id from sys_invocation ${convertInvocationsFilters(filters)} ORDER BY ${sort.field} ${sort.order} LIMIT ${INVOCATIONS_LIMIT}`,
   )
     .then(async ({ rows: idRows }) => {
       const receivedLessThanLimit = idRows.length < INVOCATIONS_LIMIT;
@@ -45,7 +52,7 @@ export async function listInvocations(
               value: idRows.map(({ id }) => id),
             },
             ...filters,
-          ])} ORDER BY modified_at DESC`,
+          ])} ORDER BY ${sort.field} ${sort.order}`,
         );
 
         return { rows: invRows, receivedLessThanLimit };

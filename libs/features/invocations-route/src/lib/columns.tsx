@@ -1,6 +1,9 @@
 import { DropdownMenuSelection } from '@restate/ui/dropdown';
-import { useState, useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import type { Key } from 'react-aria';
+import { useSearchParams } from 'react-router';
+
+export const COLUMN_QUERY_PREFIX = 'column';
 
 const COLUMNS_KEYS = [
   'id',
@@ -24,6 +27,7 @@ const COLUMNS_KEYS = [
   'journal_retention',
   'actions',
   'restarted_from',
+  'next_retry_at',
 ] as const;
 export type ColumnKey = (typeof COLUMNS_KEYS)[number];
 
@@ -49,6 +53,7 @@ export const COLUMN_NAMES: Record<ColumnKey, string> = {
   completion_retention: 'Completion retention',
   journal_retention: 'Journal retention',
   restarted_from: 'Restarted from',
+  next_retry_at: 'Next retry',
 };
 
 const SORT_ORDER: Record<ColumnKey, number> = Object.entries(
@@ -62,10 +67,28 @@ function sortColumns(a: Key, b: Key) {
   return SORT_ORDER[a as ColumnKey] - SORT_ORDER[b as ColumnKey];
 }
 
-export function useColumns() {
-  const [selectedColumns, setSelectedColumns] = useState<DropdownMenuSelection>(
-    new Set(['id', 'created_at', 'target', 'status', 'journal_size']),
+export function setDefaultColumns(searchParams: URLSearchParams) {
+  searchParams.delete(COLUMN_QUERY_PREFIX);
+  ['id', 'created_at', 'target', 'status', 'journal_size'].forEach((col) => {
+    searchParams.append(COLUMN_QUERY_PREFIX, col);
+  });
+
+  return searchParams;
+}
+
+export function isColumnValid(searchParams: URLSearchParams) {
+  const columns = searchParams.getAll(COLUMN_QUERY_PREFIX) as ColumnKey[];
+  return (
+    columns.length > 0 && columns.every((col) => COLUMNS_KEYS.includes(col))
   );
+}
+
+export function useColumns() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedColumns = searchParams.getAll(
+    COLUMN_QUERY_PREFIX,
+  ) as ColumnKey[];
+
   const sortedColumnsList = useMemo(() => {
     return [...Array.from(selectedColumns).sort(sortColumns), 'actions'].map(
       (id, index) => ({
@@ -75,6 +98,21 @@ export function useColumns() {
       }),
     ) as { id: ColumnKey; name: string; isRowHeader: boolean }[];
   }, [selectedColumns]);
+
+  const setSelectedColumns = useCallback(
+    (keys: DropdownMenuSelection) => {
+      if (keys instanceof Set) {
+        setSearchParams((old) => {
+          old.delete(COLUMN_QUERY_PREFIX);
+          keys.forEach((col) => {
+            old.append(COLUMN_QUERY_PREFIX, String(col));
+          });
+          return old;
+        });
+      }
+    },
+    [setSearchParams],
+  );
 
   return { selectedColumns, setSelectedColumns, sortedColumnsList };
 }

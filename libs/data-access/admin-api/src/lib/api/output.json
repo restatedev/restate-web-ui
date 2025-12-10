@@ -5284,6 +5284,30 @@
             "items": {
               "$ref": "#/components/schemas/FilterItem"
             }
+          },
+          "sort": {
+            "type": "object",
+            "required": ["field", "order"],
+            "properties": {
+              "field": {
+                "type": "string",
+                "enum": [
+                  "created_at",
+                  "modified_at",
+                  "scheduled_at",
+                  "running_at",
+                  "next_retry_at",
+                  "target_service_key",
+                  "target_service_name",
+                  "target_handler_name",
+                  "retry_count"
+                ]
+              },
+              "order": {
+                "type": "string",
+                "enum": ["ASC", "DESC"]
+              }
+            }
           }
         }
       },
@@ -5822,6 +5846,9 @@
                 "$ref": "#/components/schemas/CompletionLifecycleJournalEntryV2"
               },
               {
+                "$ref": "#/components/schemas/KilledLifecycleJournalEntryV2"
+              },
+              {
                 "type": "object",
                 "properties": {
                   "type": {
@@ -6250,6 +6277,19 @@
           "type": {
             "type": "string",
             "enum": ["Completion"]
+          }
+        }
+      },
+      "KilledLifecycleJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": ["event"]
+          },
+          "type": {
+            "type": "string",
+            "enum": ["Killed"]
           }
         }
       },

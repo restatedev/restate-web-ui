@@ -1787,6 +1787,21 @@ export interface components {
     VirtualObjectState: string[];
     ListInvocationsRequestBody: {
       filters?: components['schemas']['FilterItem'][];
+      sort?: {
+        /** @enum {string} */
+        field:
+          | 'created_at'
+          | 'modified_at'
+          | 'scheduled_at'
+          | 'running_at'
+          | 'next_retry_at'
+          | 'target_service_key'
+          | 'target_service_name'
+          | 'target_handler_name'
+          | 'retry_count';
+        /** @enum {string} */
+        order: 'ASC' | 'DESC';
+      };
     };
     BatchInvocationsRequestBody:
       | {
@@ -1977,6 +1992,7 @@ export interface components {
         | components['schemas']['PausedLifecycleJournalEntryV2']
         | components['schemas']['PendingLifecycleJournalEntryV2']
         | components['schemas']['CompletionLifecycleJournalEntryV2']
+        | components['schemas']['KilledLifecycleJournalEntryV2']
         | {
             type?: string;
           }
@@ -2180,6 +2196,12 @@ export interface components {
       category?: 'event';
       /** @enum {string} */
       type?: 'Completion';
+    };
+    KilledLifecycleJournalEntryV2: {
+      /** @enum {string} */
+      category?: 'event';
+      /** @enum {string} */
+      type?: 'Killed';
     };
     InputJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       /** @enum {string} */

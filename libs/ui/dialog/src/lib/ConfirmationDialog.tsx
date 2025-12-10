@@ -58,6 +58,7 @@ export interface ConfirmationDialogProps {
   isSubmitDisabled?: boolean;
   error?: Error | null;
   onClose?: VoidFunction;
+  onCloseQueryParam?: (searchParams: URLSearchParams) => URLSearchParams;
 }
 
 const iconStyles = tv({
@@ -66,10 +67,15 @@ const iconStyles = tv({
 export function ConfirmationQueryDialog({
   queryParam,
   onClose,
+  onCloseQueryParam,
   ...contentProps
 }: PropsWithChildren<ConfirmationDialogProps>) {
   return (
-    <QueryDialog query={queryParam} onClose={onClose}>
+    <QueryDialog
+      query={queryParam}
+      onClose={onClose}
+      onCloseQueryParam={onCloseQueryParam}
+    >
       <ConfirmationDialogContent {...contentProps} />
     </QueryDialog>
   );

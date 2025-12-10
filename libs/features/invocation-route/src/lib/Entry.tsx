@@ -103,6 +103,7 @@ export const ENTRY_EVENTS_COMPONENTS: {
   Paused: LifeCycle,
   'Event: TransientError': NoCommandTransientError,
   'Event: Paused': undefined,
+  Killed: LifeCycle,
 };
 
 function digitCount(n: number) {

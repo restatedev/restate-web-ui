@@ -347,7 +347,11 @@ export const RestartInvocation = withConfirmation({
   queryParam: RESTART_AS_NEW_INVOCATION_QUERY_PARAM,
   shouldShowSkipConfirmation: false,
   userPreferenceId: 'skip-restart-action-dialog',
-
+  onCloseQueryParam: (searchParams) => {
+    searchParams.delete(RESTART_AS_NEW_INVOCATION_FROM_QUERY_PARAM);
+    searchParams.delete(RESTART_AS_NEW_INVOCATION_QUERY_PARAM);
+    return searchParams;
+  },
   useMutation: useRestartInvocationAsNew,
   getFormData: function (...args: string[]) {
     const [invocationId] = args;

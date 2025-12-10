@@ -236,6 +236,9 @@ function getPointVariant(entry?: JournalEntryV2) {
   if (entry?.type === 'Cancel' && entry.category === 'notification') {
     return 'default';
   }
+  if (entry?.type === 'Killed') {
+    return 'default';
+  }
 
   if (
     (entry?.category === 'notification' &&
@@ -518,7 +521,6 @@ function InnerEntryProgress({
             })}
             {startTransientError &&
               endTransientError &&
-              startTransientError !== endTransientError &&
               transientErrorTimes.length > 0 && (
                 <div
                   className="absolute top-px bottom-px max-w-full rounded-full bg-[linear-gradient(to_right,--theme(--color-orange-300/0)_0px,--theme(--color-orange-300/1)_20px,--theme(--color-orange-300/1)_calc(100%-20px),--theme(--color-orange-300/0)_100%)] transition-all duration-1000"

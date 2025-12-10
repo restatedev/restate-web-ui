@@ -123,7 +123,7 @@ const mainButtonStyles = tv({
   base: 'flex translate-x-px items-center gap-1 rounded-l-md rounded-r-none px-2 py-0.5 [font-size:inherit] [line-height:inherit] whitespace-nowrap',
   variants: {
     mini: {
-      true: 'invisible absolute right-full z-2 drop-shadow-[-20px_2px_4px_rgba(255,255,255,0.8)] group-hover:visible',
+      true: 'invisible absolute right-full z-2 drop-shadow-[-20px_2px_4px_--theme(--color-gray-100/0.5)] group-hover:visible',
       false: '',
     },
     destructive: {

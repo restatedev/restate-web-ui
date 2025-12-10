@@ -46,13 +46,22 @@ export function ClauseChip({
         variant="secondary"
         className="flex min-w-0 items-center gap-[0.7ch] rounded-lg bg-white/25 px-1.5 py-1 text-xs text-zinc-50 hover:bg-white/30 pressed:bg-white/30"
       >
-        <span className="shrink-0 whitespace-nowrap">{item.label}</span>
-        {item.operationLabel?.split(' ').map((segment) => (
-          <span className="font-mono" key={segment}>
-            {segment}
-          </span>
-        ))}
-        <span className="truncate font-semibold">{item.valueLabel}</span>
+        {item.isAllSelected ? (
+          <>
+            <span className="shrink-0 font-semibold">Any</span>
+            <span className="shrink-0 whitespace-nowrap">{item.label}</span>
+          </>
+        ) : (
+          <>
+            <span className="shrink-0 whitespace-nowrap">{item.label}</span>
+            {item.operationLabel?.split(' ').map((segment) => (
+              <span className="font-mono" key={segment}>
+                {segment}
+              </span>
+            ))}
+            <span className="truncate font-semibold">{item.valueLabel}</span>
+          </>
+        )}
         <Icon
           name={IconName.ChevronsUpDown}
           className="ml-2 h-3.5 w-3.5 shrink-0"
@@ -101,7 +110,7 @@ function EditQueryTrigger({
   return (
     <Dropdown isOpen={isOpen} onOpenChange={setIsOpen}>
       <DropdownTrigger>{children}</DropdownTrigger>
-      <DropdownPopover placement="top">
+      <DropdownPopover placement="top" className="min-w-xs!">
         <Form
           onSubmit={(e) => {
             e.preventDefault();
@@ -140,10 +149,59 @@ function EditQueryTrigger({
               </DropdownMenu>
             )}
           </DropdownSection>
+          {clause.type === 'STRING_LIST' && (
+            <Button
+              variant="icon"
+              className="mr-2 ml-auto text-xs"
+              onClick={() => {
+                if (clause.isAllSelected) {
+                  const newClause = new QueryClause(
+                    { ...clause.schema, options: clause.options },
+                    {
+                      ...clause.value,
+                      value: [],
+                    },
+                  );
+                  onUpdate?.(newClause);
+                } else {
+                  const newClause = new QueryClause(
+                    { ...clause.schema, options: clause.options },
+                    {
+                      ...clause.value,
+                      value: clause.options?.map(({ value }) => value) || [],
+                    },
+                  );
+                  onUpdate?.(newClause);
+                }
+              }}
+            >
+              {clause.isAllSelected ? 'Deselect all' : 'Select all'}
+            </Button>
+          )}
           <DropdownSection>
             <ValueSelector clause={clause} onUpdate={onUpdate} />
           </DropdownSection>
-          <DropdownMenu onSelect={onRemove} autoFocus={false}>
+          <DropdownMenu
+            onSelect={() => {
+              if (
+                clause.id === 'status' ||
+                clause.id === 'target_service_name'
+              ) {
+                const newClause = new QueryClause(
+                  { ...clause.schema, options: clause.options },
+                  {
+                    ...clause.value,
+                    operation: 'IN',
+                    value: clause.options?.map(({ value }) => value),
+                  },
+                );
+                onUpdate?.(newClause);
+              } else {
+                onRemove?.();
+              }
+            }}
+            autoFocus={false}
+          >
             <DropdownItem destructive>Remove</DropdownItem>
           </DropdownMenu>
         </Form>

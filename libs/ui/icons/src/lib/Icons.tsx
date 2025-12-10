@@ -76,6 +76,10 @@ import {
   ListChevronsDownUp,
   ListChevronsUpDown,
   CircleStop,
+  MoveDown,
+  MoveUp,
+  ArrowDown,
+  ArrowUp,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from '@restate/util/styles';
@@ -198,6 +202,10 @@ export const enum IconName {
   CirclePlay = 'CirclePlay',
   CirclePause = 'CirclePause',
   CircleStop = 'CircleStop',
+  MoveDown = 'MoveDown',
+  MoveUp = 'MoveUp',
+  ArrowDown = 'ArrowDown',
+  ArrowUp = 'ArrowUp',
 }
 export interface IconsProps {
   name: IconName;
@@ -304,6 +312,10 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.CirclePause]: CirclePause,
   [IconName.CirclePlay]: CirclePlay,
   [IconName.CircleStop]: CircleStop,
+  [IconName.MoveDown]: MoveDown,
+  [IconName.MoveUp]: MoveUp,
+  [IconName.ArrowDown]: ArrowDown,
+  [IconName.ArrowUp]: ArrowUp,
 };
 
 const styles = tv({

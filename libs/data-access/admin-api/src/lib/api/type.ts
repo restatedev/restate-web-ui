@@ -87,6 +87,10 @@ export type BatchResumeInvocationsRequestBody =
   components['schemas']['BatchResumeInvocationsRequestBody'];
 export type BatchInvocationsResponse =
   components['schemas']['BatchInvocationsResponse'];
+export type SortInvocations = Exclude<
+  components['schemas']['ListInvocationsRequestBody']['sort'],
+  undefined
+>;
 
 export type HTTPDeployment = Exclude<Deployment, { arn: string }>;
 export type LambdaDeployment = Exclude<Deployment, { uri: string }>;
