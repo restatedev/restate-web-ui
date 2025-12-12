@@ -38,6 +38,7 @@ export function event(
           true,
         ),
         resultType: undefined,
+        afterJournalEntryIndex: entry.after_journal_entry_index,
         message: metadata?.error_message,
         code: metadata?.error_code,
         relatedCommandName: metadata?.related_command_name,
