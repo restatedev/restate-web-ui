@@ -100,11 +100,13 @@ export function InvocationId({
   className,
   size = 'default',
   isLive = false,
+  truncateInMiddle = false,
 }: {
   id: Invocation['id'];
   className?: string;
   size?: 'sm' | 'default' | 'icon' | 'md';
   isLive?: boolean;
+  truncateInMiddle?: boolean;
 }) {
   const linkRef = useRef<HTMLAnchorElement>(null);
   const { base, icon, text, link, container, linkIcon } = styles({ size });
@@ -169,7 +171,15 @@ export function InvocationId({
 
         {!isIcon && (
           <TruncateWithTooltip copyText={id} triggerRef={linkRef}>
-            <span className={text()}>{id}</span>
+            <span className={text()}>
+              {truncateInMiddle ? (
+                <span>
+                  {id?.substring(0, 8)}…{id?.slice(-5)}
+                </span>
+              ) : (
+                id
+              )}
+            </span>
           </TruncateWithTooltip>
         )}
 
