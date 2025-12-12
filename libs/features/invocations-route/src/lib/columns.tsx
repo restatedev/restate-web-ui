@@ -8,13 +8,13 @@ export const COLUMN_QUERY_PREFIX = 'column';
 const COLUMNS_KEYS = [
   'id',
   'created_at',
+  'modified_at',
   'target',
   'status',
   'journal_size',
   'invoked_by',
   'deployment',
   'retry_count',
-  'modified_at',
   'scheduled_at',
   'running_at',
   'idempotency_key',
@@ -69,7 +69,7 @@ function sortColumns(a: Key, b: Key) {
 
 export function setDefaultColumns(searchParams: URLSearchParams) {
   searchParams.delete(COLUMN_QUERY_PREFIX);
-  ['id', 'created_at', 'target', 'status', 'journal_size'].forEach((col) => {
+  ['id', 'created_at', 'modified_at', 'target', 'status'].forEach((col) => {
     searchParams.append(COLUMN_QUERY_PREFIX, col);
   });
 

@@ -43,7 +43,6 @@ import { Badge } from '@restate/ui/badge';
 import { Sort } from './QueryButton';
 import {
   FILTER_QUERY_PREFIX,
-  getFilterParamKey,
   isSortValid,
   setDefaultSort,
   SORT_QUERY_PREFIX,
@@ -54,6 +53,7 @@ import { Key } from 'react-aria';
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: 80,
   created_at: 100,
+  modified_at: 110,
   deployment: 220,
   journal_size: 180,
   pinned_service_protocol_version: 80,
