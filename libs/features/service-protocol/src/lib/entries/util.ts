@@ -115,6 +115,7 @@ export function getEntryResultV2(
   const releventEntries = nextEntries.filter(
     (entry) =>
       entry.category === 'event' &&
+      commandIndex !== undefined &&
       'relatedCommandIndex' in entry &&
       entry.relatedCommandIndex === commandIndex,
   );
