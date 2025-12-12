@@ -67,6 +67,20 @@ const MAX_COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   invoked_by: 180,
 };
 
+function saveQueryForNextVisit() {
+  const savedSearchParams = new URLSearchParams(window.location.search);
+  Array.from(savedSearchParams.keys()).forEach((key) => {
+    if (
+      !key.startsWith(FILTER_QUERY_PREFIX) &&
+      !key.startsWith(SORT_QUERY_PREFIX) &&
+      !key.startsWith(COLUMN_QUERY_PREFIX)
+    ) {
+      savedSearchParams.delete(key);
+    }
+  });
+  sessionStorage.setItem('query', savedSearchParams.toString());
+}
+
 const PAGE_SIZE = 30;
 function Component() {
   const [searchParams] = useSearchParams();
@@ -139,19 +153,7 @@ function Component() {
   const { baseUrl } = useRestateContext();
 
   useEffect(() => {
-    return () => {
-      const savedSearchParams = new URLSearchParams(searchParams);
-      Array.from(savedSearchParams.keys()).forEach((key) => {
-        if (
-          !key.startsWith(FILTER_QUERY_PREFIX) &&
-          !key.startsWith(SORT_QUERY_PREFIX) &&
-          !key.startsWith(COLUMN_QUERY_PREFIX)
-        ) {
-          savedSearchParams.delete(key);
-        }
-      });
-      sessionStorage.setItem('query', savedSearchParams.toString());
-    };
+    saveQueryForNextVisit();
   }, [searchParams]);
 
   return (
@@ -448,6 +450,7 @@ function Component() {
           onSubmit={async (event) => {
             event.preventDefault();
             commitQuery();
+            saveQueryForNextVisit();
             await queryCLient.invalidateQueries({ queryKey });
           }}
         >
