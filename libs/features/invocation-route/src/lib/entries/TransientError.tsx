@@ -42,7 +42,7 @@ export function TransientError({
         <Badge
           variant="warning"
           size="sm"
-          className="gap-0 px-0 py-0 font-sans font-normal"
+          className="gap-0 truncate px-0 py-0 font-sans font-normal"
         >
           <Popover>
             <PopoverTrigger>
@@ -64,22 +64,20 @@ export function TransientError({
               </DropdownSection>
             </PopoverContent>
           </Popover>
-          <div className="font-mono text-2xs">
-            <Failure
-              restate_code={String(
-                entry.relatedRestateErrorCode ||
-                  entry.code ||
-                  entry?.error?.restateCode ||
-                  entry?.error?.code ||
-                  '',
-              )}
-              message={[entry.message, entry?.error?.message]
-                .filter(Boolean)
-                .join('\n\n')}
-              isRetrying
-              className="my-[-2px] ml-0 h-5 rounded-md border-none bg-transparent py-0 shadow-none hover:bg-orange-100 pressed:bg-orange-200/50"
-            />
-          </div>
+          <Failure
+            restate_code={String(
+              entry.relatedRestateErrorCode ||
+                entry.code ||
+                entry?.error?.restateCode ||
+                entry?.error?.code ||
+                '',
+            )}
+            message={Array.from(new Set([entry.message, entry?.error?.message]))
+              .filter(Boolean)
+              .join('\n\n')}
+            isRetrying
+            className="my-[-2px] ml-0 h-5 rounded-md border-none bg-transparent py-0 text-2xs shadow-none hover:bg-orange-100 pressed:bg-orange-200/50"
+          />
         </Badge>
         <TimelinePortal invocationId={invocation?.id ?? ''} entry={entry}>
           <EntryProgress entry={entry} invocation={invocation} />
@@ -114,24 +112,22 @@ export function NoCommandTransientError({
         <Badge
           variant="warning"
           size="sm"
-          className="gap-0 px-0 py-0.5 font-sans font-normal"
+          className="gap-0 truncate px-0 py-0.5 font-sans font-normal"
         >
-          <div className="font-mono text-2xs">
-            <Failure
-              restate_code={String(
-                entry.relatedRestateErrorCode ||
-                  entry.code ||
-                  entry?.error?.restateCode ||
-                  entry?.error?.code ||
-                  '',
-              )}
-              message={[entry.message, entry?.error?.message]
-                .filter(Boolean)
-                .join('\n\n')}
-              isRetrying
-              className="my-[-2px] ml-0 h-5 rounded-md border-none bg-transparent py-0 shadow-none hover:bg-orange-100 pressed:bg-orange-200/50"
-            />
-          </div>
+          <Failure
+            restate_code={String(
+              entry.relatedRestateErrorCode ||
+                entry.code ||
+                entry?.error?.restateCode ||
+                entry?.error?.code ||
+                '',
+            )}
+            message={[entry.message, entry?.error?.message]
+              .filter(Boolean)
+              .join('\n\n')}
+            isRetrying
+            className="my-[-2px] ml-0 h-5 rounded-md border-none bg-transparent py-0 text-2xs shadow-none hover:bg-orange-100 pressed:bg-orange-200/50"
+          />
         </Badge>
         <TimelinePortal invocationId={invocation?.id ?? ''} entry={entry}>
           <EntryProgress entry={entry} invocation={invocation} />

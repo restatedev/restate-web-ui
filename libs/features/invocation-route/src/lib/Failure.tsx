@@ -10,8 +10,8 @@ const failureStyle = tv({
   base: '',
   slots: {
     trigger:
-      'flex h-5 min-w-6 items-center gap-0 rounded-full border bg-white/70 px-0 py-0 pl-0.5 text-2xs shadow-none',
-    errorIcon: 'mx-[0.3rem] h-3 w-3 shrink-0',
+      'flex h-5 max-w-[50ch] min-w-6 items-center gap-0 rounded-full border bg-white/70 px-0 py-0 pl-0.5 text-2xs shadow-none',
+    errorIcon: 'mr-[0.3rem] ml-[0.15rem] h-3 w-3 shrink-0',
     errorBanner:
       'mr-1 max-h-full max-w-[min(50rem,90vw)] flex-auto resize overflow-auto rounded-lg [&_details]:max-h-full [&:has(details[open])]:h-[min(50vh,16rem)]',
   },
@@ -112,7 +112,7 @@ export function Failure({
             name={isRetrying ? IconName.TriangleAlert : IconName.CircleX}
             className={errorIcon()}
           />
-          <span className="block min-w-0 truncate">{restate_code}</span>
+          <span className="block min-w-0 truncate">{error.message}</span>
           <span className="block w-1 min-w-0" />
           <Icon
             name={IconName.ChevronsUpDown}
