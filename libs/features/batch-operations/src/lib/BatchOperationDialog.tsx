@@ -3,7 +3,6 @@ import { useCountInvocations } from '@restate/data-access/admin-api-hooks';
 import type {
   BatchInvocationsRequestBody,
   BatchInvocationsResponse,
-  FilterItem,
 } from '@restate/data-access/admin-api/spec';
 import { ConfirmationDialog } from '@restate/ui/dialog';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -20,6 +19,7 @@ import { useBatchMutation } from './useBatchMutation';
 import { useProgress } from './useProgress';
 import { OPERATION_CONFIG, OperationConfig } from './config';
 import { QueryClause } from '@restate/ui/query-builder';
+import { TruncateWithTooltip } from '@restate/ui/tooltip';
 
 function BatchOperationContent({
   count,
@@ -90,7 +90,7 @@ function Filters({ state }: { state: BatchState }) {
   }
 
   return (
-    <div className="mt-4 flex w-full gap-1 overflow-auto rounded-lg border bg-gray-200/50 p-0.5 font-mono shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
+    <div className="mt-4 flex w-full flex-wrap gap-1 overflow-auto rounded-lg border bg-gray-200/50 p-0.5 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
       {paramsWithFilters.filters
         .filter((filter) => !filter.isActionImplicitFilter)
         .map((filter, index) => {
@@ -108,20 +108,31 @@ function Filters({ state }: { state: BatchState }) {
           return (
             <div
               key={index}
-              className="flex items-baseline gap-[0.75ch] rounded-md border bg-white px-2 py-1 text-xs shadow-xs"
+              className="flex min-w-0 items-baseline gap-[0.75ch] rounded-md border bg-white px-2 py-1 text-xs shadow-xs"
             >
-              <span className="shrink-0 whitespace-nowrap">
-                {queryClause?.label || filter.field}
-              </span>
-              {queryClause?.operationLabel?.split(' ').map((segment) => (
-                <span className="font-mono" key={segment}>
-                  {segment}
-                </span>
-              )) || filter.operation}
-              <span className="truncate font-semibold">
-                {queryClause?.valueLabel ||
-                  ('value' in filter ? filter.value : '')}
-              </span>
+              {queryClause?.isAllSelected ? (
+                <>
+                  <span className="font-semibold">Any</span>
+                  <span> {queryClause?.label || filter.field}</span>
+                </>
+              ) : (
+                <>
+                  <span className="shrink-0 whitespace-nowrap">
+                    {queryClause?.label || filter.field}
+                  </span>
+                  {queryClause?.operationLabel?.split(' ').map((segment) => (
+                    <span className="font-mono" key={segment}>
+                      {segment}
+                    </span>
+                  )) || filter.operation}
+                  <TruncateWithTooltip>
+                    <span className="font-semibold">
+                      {queryClause?.valueLabel ||
+                        ('value' in filter ? filter.value : '')}
+                    </span>
+                  </TruncateWithTooltip>
+                </>
+              )}
             </div>
           );
         })}

@@ -78,7 +78,7 @@ function withStatusTimeline(
             type="completion"
             prefixForCompletion=", retention "
             prefixForInProgress=", retained "
-            className="-ml-1.5 min-w-0 truncate"
+            className="-ml-1.5 hidden min-w-0 truncate xl:inline-flex"
           />
         )}
       </div>

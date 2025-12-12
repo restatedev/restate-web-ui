@@ -9,13 +9,7 @@ import {
   QueryClauseType,
   useQueryBuilder,
 } from '@restate/ui/query-builder';
-import {
-  useCallback,
-  useDeferredValue,
-  useEffect,
-  useState,
-  useTransition,
-} from 'react';
+import { useCallback, useState, useTransition } from 'react';
 import { useSearchParams } from 'react-router';
 import { useSchema } from './useSchema';
 import { ColumnKey } from './columns';
@@ -73,6 +67,7 @@ export function useInvocationsQueryFilters() {
     } as SortInvocations;
   });
   const { schema, isLoading } = useSchema();
+
   const queryClauses = schema
     // TODO
     .filter((schemaClause) => searchParams.get(getFilterParamKey(schemaClause)))
