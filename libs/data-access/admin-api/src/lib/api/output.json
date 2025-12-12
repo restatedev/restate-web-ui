@@ -5906,6 +5906,9 @@
           "version": {
             "type": "integer"
           },
+          "after_journal_entry_index": {
+            "type": "integer"
+          },
           "event_type": {
             "type": "string"
           },
@@ -6114,6 +6117,9 @@
             "type": "string"
           },
           "code": {
+            "type": "integer"
+          },
+          "afterJournalEntryIndex": {
             "type": "integer"
           },
           "relatedRestateErrorCode": {

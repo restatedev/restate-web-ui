@@ -2014,6 +2014,7 @@ export interface components {
       /** Format: data-time */
       appended_at?: string;
       version?: number;
+      after_journal_entry_index?: number;
       event_type?: string;
       /** @enum {string} */
       entry_type:
@@ -2127,6 +2128,7 @@ export interface components {
       relatedCommandName?: string;
       message?: string;
       code?: number;
+      afterJournalEntryIndex?: number;
       relatedRestateErrorCode?: string;
       relatedCommandType?: string;
       relatedCommandIndex?: number;
