@@ -8,9 +8,11 @@ import { QueryClauseSchema, QueryClauseType } from '@restate/ui/query-builder';
 import { useMemo } from 'react';
 
 export function useSchema() {
-  const { data: listDeploymentsData } = useListDeployments();
-  const { data: listSubscriptions } = useListSubscriptions();
-  const { data: listServices } = useListServices(
+  const { data: listDeploymentsData, isPending: deploymentsIsLoading } =
+    useListDeployments();
+  const { data: listSubscriptions, isPending: subscriptionsIsLoading } =
+    useListSubscriptions();
+  const { data: listServices, isPending: servicesIsLoading } = useListServices(
     listDeploymentsData?.sortedServiceNames,
   );
 
@@ -223,5 +225,9 @@ export function useSchema() {
     listSubscriptions?.subscriptions,
   ]);
 
-  return schema;
+  return {
+    schema,
+    isLoading:
+      deploymentsIsLoading || servicesIsLoading || subscriptionsIsLoading,
+  };
 }
