@@ -357,7 +357,7 @@ async function getInbox(
 ) {
   const [head, size, position] = await Promise.all([
     ky
-      .get(`${baseUrl}/services/${service}/handlers`)
+      .get(`${baseUrl}/services/${service}/handlers`, { headers })
       .json<{ handlers: Handler[] }>()
       .then(({ handlers }) =>
         handlers
