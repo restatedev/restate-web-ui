@@ -1,4 +1,3 @@
-import ky from 'ky';
 import type { Handler } from '@restate/data-access/admin-api/spec';
 import type { QueryContext } from './shared';
 
