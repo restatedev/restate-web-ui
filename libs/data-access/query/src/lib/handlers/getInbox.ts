@@ -9,9 +9,7 @@ export async function getInbox(
   invocationId: string | undefined,
 ) {
   const [head, size, position] = await Promise.all([
-    ky
-      .get(`${this.baseUrl}/services/${service}/handlers`)
-      .json<{ handlers: Handler[] }>()
+    this.adminApi<{ handlers: Handler[] }>(`/services/${service}/handlers`)
       .then(({ handlers }) =>
         handlers
           .filter((handler) => handler.ty === 'Exclusive')
