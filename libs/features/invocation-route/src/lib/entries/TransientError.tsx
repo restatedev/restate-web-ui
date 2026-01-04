@@ -122,7 +122,7 @@ export function NoCommandTransientError({
                 entry?.error?.code ||
                 '',
             )}
-            message={[entry.message, entry?.error?.message]
+            message={Array.from(new Set([entry.message, entry?.error?.message]))
               .filter(Boolean)
               .join('\n\n')}
             isRetrying
