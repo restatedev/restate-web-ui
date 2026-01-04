@@ -35,14 +35,15 @@ export const COLUMN_NAMES: Record<ColumnKey, string> = {
   id: 'Id',
   created_at: 'Created at',
   modified_at: 'Modified at',
+  scheduled_at: 'Scheduled at',
+  running_at: 'Running since',
+  next_retry_at: 'Next retry',
   target: 'Target',
   status: 'Status',
   journal_size: 'Journal',
   invoked_by: 'Invoked by',
   deployment: 'Deployment',
   retry_count: 'Attempt count',
-  scheduled_at: 'Scheduled at',
-  running_at: 'Running since',
   idempotency_key: 'Idempotency key',
   target_service_ty: 'Service type',
   target_service_name: 'Service name',
@@ -53,7 +54,6 @@ export const COLUMN_NAMES: Record<ColumnKey, string> = {
   completion_retention: 'Completion retention',
   journal_retention: 'Journal retention',
   restarted_from: 'Restarted from',
-  next_retry_at: 'Next retry',
 };
 
 const SORT_ORDER: Record<ColumnKey, number> = Object.entries(
