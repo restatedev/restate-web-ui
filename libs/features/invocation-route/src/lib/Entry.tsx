@@ -124,6 +124,15 @@ const styles = tv({
   },
 });
 
+function isEntriesEqual(a?: JournalEntryV2, b?: JournalEntryV2) {
+  return (
+    a?.index === b?.index &&
+    a?.type === b?.type &&
+    a?.category === b?.category &&
+    a?.start === b?.start
+  );
+}
+
 export function Entry({
   invocation,
   entry,
@@ -189,6 +198,24 @@ export function Entry({
           paddingLeft: `${depth * 3}em`,
         }}
         data-depth={Boolean(depth)}
+        data-last-failure={
+          (depth === 0 &&
+            typeof invocation.last_failure_related_command_index === 'number' &&
+            invocation.last_failure_related_command_index ===
+              entry.commandIndex) ||
+          (depth === 0 &&
+            typeof invocation.last_failure_related_command_index ===
+              'undefined' &&
+            isEntriesEqual(
+              entry,
+              invocation.journal?.entries?.findLast(
+                (e) => e.type !== 'Retrying',
+              ),
+            )) ||
+          (depth === 0 &&
+            invocation.completion_failure &&
+            entry.type === 'Output')
+        }
         className={styles({
           hasError:
             Boolean(
@@ -202,6 +229,9 @@ export function Entry({
                 entry.category === 'event' &&
                 entry.isPending,
             ),
+        })}
+        {...(entry.category === 'command' && {
+          id: `command-${entry.commandIndex}`,
         })}
       >
         <ActionContainer invocationId={invocation.id} entry={entry} />
