@@ -7,7 +7,7 @@ import Markdown from 'react-markdown';
 import { tv } from '@restate/util/styles';
 
 const styles = tv({
-  base: 'flex min-h-0 flex-col gap-2 rounded-xl bg-red-100 p-3 text-sm',
+  base: 'flex min-h-0 flex-col gap-2 rounded-xl p-3 text-sm',
   variants: {
     isTransient: {
       true: 'bg-orange-50',
@@ -37,7 +37,7 @@ const outputStyles = tv({
 });
 
 const codeStyles = tv({
-  base: 'h-full flex-auto border bg-black/4 py-4 text-0.5xs shadow-[inset_0_0.5px_0.5px_0px_rgba(0,0,0,0.08)]',
+  base: 'h-full flex-auto border bg-gray-200/50 py-4 text-0.5xs mix-blend-multiply shadow-[inset_0_0.5px_0.5px_0px_rgba(0,0,0,0.08)]',
   variants: {
     wrap: { true: 'whitespace-pre', false: '' },
     isTransient: {

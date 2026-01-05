@@ -288,19 +288,30 @@ function Anchor({
     const bottomElement = () =>
       document.querySelector('[data-last-failure=true]');
     const topElement = () => document.querySelector('#last-failure-section');
+    const updateStyles = () => {
+      const bottomRect = bottomElement()?.getBoundingClientRect();
+      const topRect = topElement()?.getBoundingClientRect();
+      const gap =
+        Number(bottomRect?.top) -
+        Number(topRect?.top) +
+        Number(bottomRect?.height);
+      if (element) {
+        element.style.visibility = 'visible';
+        element.style.height = gap > 14 ? `${gap - 14}px` : '0px';
+      }
+    };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        updateStyles();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
         if (mutation.type === 'childList') {
-          const bottomRect = bottomElement()?.getBoundingClientRect();
-          const topRect = topElement()?.getBoundingClientRect();
-          const gap =
-            Number(bottomRect?.top) -
-            Number(topRect?.top) +
-            Number(bottomRect?.height);
-          if (element) {
-            element.style.visibility = 'visible';
-            element.style.height = gap > 14 ? `${gap - 14}px` : '0px';
-          }
+          updateStyles();
         }
       }
     });
@@ -310,7 +321,10 @@ function Anchor({
       subtree: true,
     });
 
-    return () => observer.disconnect();
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      observer.disconnect();
+    };
   }, []);
 
   return (
