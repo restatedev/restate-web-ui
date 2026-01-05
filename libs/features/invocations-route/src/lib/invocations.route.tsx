@@ -67,8 +67,7 @@ const MAX_COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   invoked_by: 180,
 };
 
-function saveQueryForNextVisit() {
-  const savedSearchParams = new URLSearchParams(window.location.search);
+function saveQueryForNextVisit(savedSearchParams: URLSearchParams) {
   Array.from(savedSearchParams.keys()).forEach((key) => {
     if (
       !key.startsWith(FILTER_QUERY_PREFIX) &&
@@ -153,7 +152,7 @@ function Component() {
   const { baseUrl } = useRestateContext();
 
   useEffect(() => {
-    saveQueryForNextVisit();
+    saveQueryForNextVisit(new URLSearchParams(window.location.search));
   }, [searchParams]);
 
   return (
@@ -450,7 +449,7 @@ function Component() {
           onSubmit={async (event) => {
             event.preventDefault();
             commitQuery();
-            saveQueryForNextVisit();
+            saveQueryForNextVisit(new URLSearchParams(window.location.search));
             await queryCLient.invalidateQueries({ queryKey });
           }}
         >
@@ -587,6 +586,16 @@ export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
 };
 
 export function shouldRevalidate(arg: ShouldRevalidateFunctionArgs) {
+  if (!arg.nextUrl.pathname.endsWith('/invocations')) {
+    return false;
+  }
+  if (
+    !isSortValid(arg.nextUrl.searchParams) ||
+    !isColumnValid(arg.nextUrl.searchParams)
+  ) {
+    return true;
+  }
+  saveQueryForNextVisit(new URLSearchParams(arg.nextUrl.searchParams));
   return false;
 }
 

@@ -9,14 +9,15 @@ const COLUMNS_KEYS = [
   'id',
   'created_at',
   'modified_at',
+  'scheduled_at',
+  'running_at',
+  'next_retry_at',
   'target',
   'status',
   'journal_size',
   'invoked_by',
   'deployment',
   'retry_count',
-  'scheduled_at',
-  'running_at',
   'idempotency_key',
   'target_service_ty',
   'target_service_name',
@@ -27,7 +28,6 @@ const COLUMNS_KEYS = [
   'journal_retention',
   'actions',
   'restarted_from',
-  'next_retry_at',
 ] as const;
 export type ColumnKey = (typeof COLUMNS_KEYS)[number];
 
