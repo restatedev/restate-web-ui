@@ -8,15 +8,16 @@ export const COLUMN_QUERY_PREFIX = 'column';
 const COLUMNS_KEYS = [
   'id',
   'created_at',
+  'modified_at',
+  'scheduled_at',
+  'running_at',
+  'next_retry_at',
   'target',
   'status',
   'journal_size',
   'invoked_by',
   'deployment',
   'retry_count',
-  'modified_at',
-  'scheduled_at',
-  'running_at',
   'idempotency_key',
   'target_service_ty',
   'target_service_name',
@@ -27,22 +28,22 @@ const COLUMNS_KEYS = [
   'journal_retention',
   'actions',
   'restarted_from',
-  'next_retry_at',
 ] as const;
 export type ColumnKey = (typeof COLUMNS_KEYS)[number];
 
 export const COLUMN_NAMES: Record<ColumnKey, string> = {
   id: 'Id',
   created_at: 'Created at',
+  modified_at: 'Modified at',
+  scheduled_at: 'Scheduled at',
+  running_at: 'Running since',
+  next_retry_at: 'Next retry',
   target: 'Target',
   status: 'Status',
   journal_size: 'Journal',
   invoked_by: 'Invoked by',
   deployment: 'Deployment',
   retry_count: 'Attempt count',
-  modified_at: 'Modified at',
-  scheduled_at: 'Scheduled at',
-  running_at: 'Running since',
   idempotency_key: 'Idempotency key',
   target_service_ty: 'Service type',
   target_service_name: 'Service name',
@@ -53,7 +54,6 @@ export const COLUMN_NAMES: Record<ColumnKey, string> = {
   completion_retention: 'Completion retention',
   journal_retention: 'Journal retention',
   restarted_from: 'Restarted from',
-  next_retry_at: 'Next retry',
 };
 
 const SORT_ORDER: Record<ColumnKey, number> = Object.entries(
@@ -69,7 +69,7 @@ function sortColumns(a: Key, b: Key) {
 
 export function setDefaultColumns(searchParams: URLSearchParams) {
   searchParams.delete(COLUMN_QUERY_PREFIX);
-  ['id', 'created_at', 'target', 'status', 'journal_size'].forEach((col) => {
+  ['id', 'created_at', 'modified_at', 'target', 'status'].forEach((col) => {
     searchParams.append(COLUMN_QUERY_PREFIX, col);
   });
 

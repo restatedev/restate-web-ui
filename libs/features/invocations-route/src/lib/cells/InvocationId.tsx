@@ -16,6 +16,7 @@ export function InvocationIdCell({ invocation }: CellProps) {
       id={invocation.id}
       className={styles({ isOnboarding })}
       isLive={isOnboarding}
+      truncateInMiddle
     />
   );
 }

@@ -279,14 +279,12 @@ export function EntryExpression({
           {output}
           {entry.error &&
             (!hideErrorForFailureResult || entry.resultType !== 'failure') && (
-              <div className="ml-1 min-w-6 text-2xs">
-                <Failure
-                  message={entry.error.message!}
-                  restate_code={entry.error.restateCode}
-                  isRetrying={entry.isRetrying || entry.error.isTransient}
-                  className="w-full"
-                />
-              </div>
+              <Failure
+                message={entry.error.message!}
+                restate_code={entry.error.restateCode}
+                isRetrying={entry.isRetrying || entry.error.isTransient}
+                className="ml-1 w-full min-w-6 grow-1 basis-20 text-2xs"
+              />
             )}
         </>
       }

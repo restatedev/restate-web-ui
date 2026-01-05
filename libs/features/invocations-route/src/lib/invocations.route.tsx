@@ -43,7 +43,6 @@ import { Badge } from '@restate/ui/badge';
 import { Sort } from './QueryButton';
 import {
   FILTER_QUERY_PREFIX,
-  getFilterParamKey,
   isSortValid,
   setDefaultSort,
   SORT_QUERY_PREFIX,
@@ -52,20 +51,34 @@ import {
 import { Key } from 'react-aria';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
-  id: 80,
+  id: 170,
   created_at: 100,
+  modified_at: 110,
   deployment: 220,
   journal_size: 180,
   pinned_service_protocol_version: 80,
 };
 const MIN_COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
-  status: 150,
-  target: 150,
+  status: 200,
+  target: 200,
   invoked_by: 100,
 };
 const MAX_COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   invoked_by: 180,
 };
+
+function saveQueryForNextVisit(savedSearchParams: URLSearchParams) {
+  Array.from(savedSearchParams.keys()).forEach((key) => {
+    if (
+      !key.startsWith(FILTER_QUERY_PREFIX) &&
+      !key.startsWith(SORT_QUERY_PREFIX) &&
+      !key.startsWith(COLUMN_QUERY_PREFIX)
+    ) {
+      savedSearchParams.delete(key);
+    }
+  });
+  sessionStorage.setItem('query', savedSearchParams.toString());
+}
 
 const PAGE_SIZE = 30;
 function Component() {
@@ -139,19 +152,7 @@ function Component() {
   const { baseUrl } = useRestateContext();
 
   useEffect(() => {
-    return () => {
-      const savedSearchParams = new URLSearchParams(searchParams);
-      Array.from(savedSearchParams.keys()).forEach((key) => {
-        if (
-          !key.startsWith(FILTER_QUERY_PREFIX) &&
-          !key.startsWith(SORT_QUERY_PREFIX) &&
-          !key.startsWith(COLUMN_QUERY_PREFIX)
-        ) {
-          savedSearchParams.delete(key);
-        }
-      });
-      sessionStorage.setItem('query', savedSearchParams.toString());
-    };
+    saveQueryForNextVisit(new URLSearchParams(window.location.search));
   }, [searchParams]);
 
   return (
@@ -448,6 +449,7 @@ function Component() {
           onSubmit={async (event) => {
             event.preventDefault();
             commitQuery();
+            saveQueryForNextVisit(new URLSearchParams(window.location.search));
             await queryCLient.invalidateQueries({ queryKey });
           }}
         >
@@ -584,6 +586,16 @@ export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
 };
 
 export function shouldRevalidate(arg: ShouldRevalidateFunctionArgs) {
+  if (!arg.nextUrl.pathname.endsWith('/invocations')) {
+    return false;
+  }
+  if (
+    !isSortValid(arg.nextUrl.searchParams) ||
+    !isColumnValid(arg.nextUrl.searchParams)
+  ) {
+    return true;
+  }
+  saveQueryForNextVisit(new URLSearchParams(arg.nextUrl.searchParams));
   return false;
 }
 

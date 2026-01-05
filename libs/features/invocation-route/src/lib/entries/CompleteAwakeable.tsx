@@ -55,13 +55,12 @@ export function CompleteAwakeable({
                 />
               )}
               {entry.error && (
-                <div className="text-2xs">
-                  <Failure
-                    message={entry.error.message!}
-                    restate_code={entry.error.restateCode}
-                    isRetrying={entry.isRetrying}
-                  />
-                </div>
+                <Failure
+                  message={entry.error.message!}
+                  restate_code={entry.error.restateCode}
+                  isRetrying={entry.isRetrying}
+                  className="text-2xs"
+                />
               )}
             </div>
           }

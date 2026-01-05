@@ -10,6 +10,7 @@ export interface ErrorProps {
   className?: string;
   wrap?: boolean;
   open?: boolean;
+  isTransient?: boolean;
 }
 
 const styles = tv({
@@ -22,6 +23,7 @@ function SingleError({
   className,
   wrap,
   open,
+  isTransient,
 }: PropsWithChildren<{
   error?:
     | Error
@@ -34,6 +36,7 @@ function SingleError({
   className?: string;
   wrap?: boolean;
   open?: boolean;
+  isTransient?: boolean;
 }>) {
   if (!error) {
     return null;
@@ -46,6 +49,7 @@ function SingleError({
         className={className}
         wrap={wrap}
         open={open}
+        isTransient={isTransient}
       />
     );
   }
@@ -75,6 +79,7 @@ export function ErrorBanner({
   className,
   wrap,
   open,
+  isTransient,
 }: PropsWithChildren<ErrorProps>) {
   const filteredErrors = errors.filter(Boolean);
   if (filteredErrors.length === 0 && !error) {
@@ -89,6 +94,7 @@ export function ErrorBanner({
         className={className}
         wrap={wrap}
         open={open}
+        isTransient={isTransient}
       />
     );
   }
@@ -101,6 +107,7 @@ export function ErrorBanner({
         className={className}
         wrap={wrap}
         open={open}
+        isTransient={isTransient}
       />
     );
   }

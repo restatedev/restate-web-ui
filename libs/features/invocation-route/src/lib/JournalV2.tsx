@@ -1,5 +1,5 @@
 import { JournalEntryV2 } from '@restate/data-access/admin-api';
-import { lazy, Suspense, useCallback, useState } from 'react';
+import { Dispatch, lazy, Suspense, useCallback, useState } from 'react';
 import { InvocationId } from './InvocationId';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
 import { Link } from '@restate/ui/link';
@@ -72,6 +72,8 @@ export function JournalV2({
   withTimeline = true,
   isLive = false,
   setIsLive,
+  isCompact = true,
+  setIsCompact,
 }: {
   invocationId: string;
   className?: string;
@@ -79,10 +81,11 @@ export function JournalV2({
   showApiError?: boolean;
   withTimeline?: boolean;
   isLive?: boolean;
+  isCompact?: boolean;
+  setIsCompact?: Dispatch<React.SetStateAction<boolean>>;
   setIsLive?: (value: boolean) => void;
 }) {
   const [invocationIds, setInvocationIds] = useState([String(invocationId)]);
-  const [isCompact, setIsCompact] = useState(true);
 
   const {
     data,
@@ -289,7 +292,7 @@ export function JournalV2({
                   <DropdownTrigger>
                     <Button
                       variant="icon"
-                      onClick={() => setIsCompact((v) => !v)}
+                      onClick={() => setIsCompact?.((v) => !v)}
                       className={compactStyles({ isCompact })}
                     >
                       {isCompact ? 'Compact' : 'Detailed'}
@@ -304,7 +307,7 @@ export function JournalV2({
                       <DropdownMenu
                         selectable
                         selectedItems={isCompact ? ['compact'] : ['expanded']}
-                        onSelect={(key) => setIsCompact(key === 'compact')}
+                        onSelect={(key) => setIsCompact?.(key === 'compact')}
                       >
                         <DropdownItem value="compact">
                           <div>

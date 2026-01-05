@@ -3,7 +3,6 @@ import type {
   JournalEntryV2,
   JournalRawEntry,
 } from '@restate/data-access/admin-api/spec';
-import { RestateError } from '@restate/util/errors';
 import { convertInvocation } from '../convertInvocation';
 import { convertJournalV2 } from '../convertJournalV2';
 import {
@@ -111,30 +110,6 @@ export async function getInvocationJournalV2(
       return 0;
     }
   });
-
-  if (
-    invocation.last_failure &&
-    ((invocation.last_failure_related_entry_index !== undefined &&
-      invocation.last_failure_related_entry_index >=
-        journalQuery.rows.length) ||
-      invocation.last_failure_related_command_index === undefined)
-  ) {
-    entriesWithLifeCycleEvents.push({
-      category: invocation.last_failure_related_entry_name
-        ? 'command'
-        : 'event',
-      type:
-        invocation.last_failure_related_entry_type ?? 'Event: TransientError',
-      index: invocation.last_failure_related_entry_index,
-      ...(invocation.last_failure_related_entry_type && {
-        commandIndex: entriesWithCommandIndex.length,
-      }),
-      error: new RestateError(
-        invocation.last_failure,
-        invocation.last_failure_error_code,
-      ),
-    });
-  }
 
   return new Response(
     JSON.stringify({

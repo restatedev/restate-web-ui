@@ -22,30 +22,28 @@ export function LifeCycle({
   if (isPaused) {
     return (
       <div className="-order-1 mr-2 flex items-center gap-2 font-sans text-zinc-500">
-        {ENTRY_EVENTS_ENTRY_LABELS['Paused']}
+        <span className="shrink-0">{ENTRY_EVENTS_ENTRY_LABELS['Paused']}</span>
         {entry.relatedCommandIndex === undefined ? (
           <Badge
             variant="warning"
             size="sm"
-            className="gap-0 px-0 py-0.5 font-sans font-normal"
+            className="gap-0 truncate px-0 py-0.5 font-sans text-2xs font-normal"
           >
-            <div className="font-mono text-2xs">
-              <Failure
-                title="Last failure"
-                restate_code={String(
-                  entry.relatedRestateErrorCode ||
-                    entry.code ||
-                    entry?.error?.restateCode ||
-                    entry?.error?.code ||
-                    '',
-                )}
-                message={[entry.message, entry?.error?.message]
-                  .filter(Boolean)
-                  .join('\n\n')}
-                isRetrying
-                className="my-[-2px] ml-0 h-5 rounded-md border-none bg-transparent py-0 shadow-none hover:bg-orange-100 pressed:bg-orange-200/50"
-              />
-            </div>
+            <Failure
+              title="Last failure"
+              restate_code={String(
+                entry.relatedRestateErrorCode ||
+                  entry.code ||
+                  entry?.error?.restateCode ||
+                  entry?.error?.code ||
+                  '',
+              )}
+              message={[entry.message, entry?.error?.message]
+                .filter(Boolean)
+                .join('\n\n')}
+              isRetrying
+              className="my-[-2px] ml-0 h-5 rounded-md border-none bg-transparent py-0 shadow-none hover:bg-orange-100 pressed:bg-orange-200/50"
+            />
           </Badge>
         ) : null}
       </div>

@@ -66,7 +66,8 @@ export function useInvocationsQueryFilters() {
       order,
     } as SortInvocations;
   });
-  const schema = useSchema();
+  const { schema, isLoading } = useSchema();
+
   const queryClauses = schema
     // TODO
     .filter((schemaClause) => searchParams.get(getFilterParamKey(schemaClause)))

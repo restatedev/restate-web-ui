@@ -84,6 +84,12 @@ export default defineConfig(({ mode }) => {
         protocol: 'ws',
         port: 3001,
       },
+      proxy: {
+        '^(?!/ui)': {
+          target: 'http://localhost:9070',
+          changeOrigin: true,
+        },
+      },
     },
     preview: {
       headers: SERVER_HEADERS,

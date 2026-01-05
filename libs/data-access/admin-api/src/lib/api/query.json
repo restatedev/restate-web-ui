@@ -2535,6 +2535,9 @@
           "version": {
             "type": "integer"
           },
+          "after_journal_entry_index": {
+            "type": "integer"
+          },
           "event_type": {
             "type": "string"
           },
@@ -2726,6 +2729,7 @@
           "relatedCommandName": { "type": "string" },
           "message": { "type": "string" },
           "code": { "type": "integer" },
+          "afterJournalEntryIndex": { "type": "integer" },
           "relatedRestateErrorCode": { "type": "string" },
           "relatedCommandType": { "type": "string" },
           "relatedCommandIndex": { "type": "integer" }

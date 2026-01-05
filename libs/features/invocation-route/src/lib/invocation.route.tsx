@@ -8,7 +8,7 @@ import { VirtualObjectSection } from './VirtualObjectSection';
 import { KeysIdsSection } from './KeysIdsSection';
 import { Link } from '@restate/ui/link';
 import { Icon, IconName } from '@restate/ui/icons';
-import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
+import { Section, SectionContent } from '@restate/ui/section';
 import { Actions } from './actions';
 import { JournalV2 } from './JournalV2';
 import { useRestateContext } from '@restate/features/restate-context';
@@ -17,6 +17,8 @@ import { WorkflowKeySection } from './WorkflowKeySection';
 import { tv } from '@restate/util/styles';
 import { Copy } from '@restate/ui/copy';
 import { LIVE_JOURNAL } from './constants';
+import { useEffect, useRef, useState } from 'react';
+import { Invocation, JournalEntryV2 } from '@restate/data-access/admin-api';
 
 const metadataContainerStyles = tv({
   base: 'mt-6 hidden grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2 gap-y-4 rounded-xl [&:has(*)]:grid',
@@ -36,7 +38,19 @@ const metadataContainerStyles = tv({
   },
 });
 const lastFailureContainer = tv({
-  base: 'min-w-0 rounded-xl border bg-gray-200/50 p-0',
+  base: 'min-w-0 origin-bottom-left rounded-xl p-0',
+});
+const lastFailureContent = tv({
+  base: 'flex-auto rounded-xl rounded-bl-none border bg-linear-to-b shadow-xl shadow-zinc-800/3 lg:mr-12',
+  variants: {
+    isFailed: {
+      true: 'border-red-400/50 from-red-50 to-red-50',
+      false: 'border-orange-400/50 from-orange-50 to-orange-50',
+    },
+  },
+});
+const lastFailureStyles = tv({
+  base: 'h-full bg-transparent p-0 [&_details]:max-h-48',
 });
 
 function Component() {
@@ -74,6 +88,7 @@ function Component() {
   const isWorkflow = journalAndInvocationData?.target_service_ty === 'workflow';
 
   const isLive = searchParams.get(LIVE_JOURNAL) === 'true' && !error;
+  const [isCompact, setIsCompact] = useState(true);
 
   const { OnboardingGuide } = useRestateContext();
 
@@ -168,19 +183,45 @@ function Component() {
             />
           </div>
           {shouldShowFailure && (
-            <Section className={lastFailureContainer()}>
-              <SectionTitle>
-                {isFailed ? 'Completion failure' : 'Last failure'}
-              </SectionTitle>
-              <SectionContent className="flex-auto rounded-xl border-white/50 bg-linear-to-b from-gray-50 to-gray-50/80 shadow-zinc-800/3">
-                <ErrorBanner
-                  error={lastError}
-                  wrap={hasStack}
-                  className="h-full bg-transparent p-0 [&_code]:bg-gray-200/50 [&_details]:max-h-48"
-                  open={shouldLastErrorBeExpanded}
-                />
-              </SectionContent>
-            </Section>
+            <>
+              <Anchor invocation={journalAndInvocationData} />
+
+              <Section
+                id="last-failure-section"
+                className={lastFailureContainer({})}
+              >
+                <SectionContent className={lastFailureContent({ isFailed })}>
+                  <ErrorBanner
+                    error={lastError}
+                    wrap={hasStack}
+                    className={lastFailureStyles()}
+                    open={shouldLastErrorBeExpanded}
+                    isTransient={!isFailed}
+                  />
+                </SectionContent>
+              </Section>
+              {Boolean(
+                journalAndInvocationData?.last_failure_related_command_index,
+              ) && (
+                <div className="-translate-y-2 px-2">
+                  <Link
+                    variant="icon"
+                    className="inline-flex rounded-md px-2 text-xs"
+                    href={`#command-${journalAndInvocationData?.last_failure_related_command_index}`}
+                  >
+                    Go to the related line (#
+                    {
+                      journalAndInvocationData?.last_failure_related_command_index
+                    }
+                    )
+                    <Icon
+                      name={IconName.ChevronDown}
+                      className="ml-1 h-4 w-4"
+                    />
+                  </Link>
+                </div>
+              )}
+            </>
           )}
         </div>
 
@@ -202,6 +243,8 @@ function Component() {
                   return old;
                 });
               }}
+              isCompact={isCompact}
+              setIsCompact={setIsCompact}
             />
           </div>
         </div>
@@ -210,3 +253,85 @@ function Component() {
   );
 }
 export const invocation = { Component };
+
+const anchorStyles = tv({
+  base: '',
+  slots: {
+    line: 'invisible absolute top-0 right-0 left-0 z-10 min-h-9 translate-x-full rounded-t-xl border-l',
+    anchor:
+      'absolute bottom-0 left-0 z-10 h-2 w-2 -translate-x-1/2 rounded-full border-2 border-white/60',
+  },
+  variants: {
+    isFailed: {
+      true: { line: 'border-red-400/50', anchor: 'bg-red-400' },
+      false: { line: 'border-orange-400/50', anchor: 'bg-orange-400' },
+    },
+  },
+});
+
+function Anchor({
+  invocation,
+}: {
+  invocation?: Invocation & { journal?: { entries?: JournalEntryV2[] } };
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  const hasLastFailure = Boolean(
+    invocation?.last_failure || invocation?.completion_failure,
+  );
+  const { line, anchor } = anchorStyles({
+    isFailed: Boolean(invocation?.completion_failure),
+  });
+
+  useEffect(() => {
+    const element = ref.current;
+    const bottomElement = () =>
+      document.querySelector('[data-last-failure=true]');
+    const topElement = () => document.querySelector('#last-failure-section');
+    const updateStyles = () => {
+      const bottomRect = bottomElement()?.getBoundingClientRect();
+      const topRect = topElement()?.getBoundingClientRect();
+      const gap =
+        Number(bottomRect?.top) -
+        Number(topRect?.top) +
+        Number(bottomRect?.height);
+      if (element) {
+        element.style.visibility = 'visible';
+        element.style.height = gap > 14 ? `${gap - 14}px` : '0px';
+      }
+    };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        updateStyles();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.type === 'childList') {
+          updateStyles();
+        }
+      }
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      observer.disconnect();
+    };
+  }, []);
+
+  return (
+    <div className="relative z-[11] w-6 -translate-x-full translate-y-4">
+      <div ref={ref} className={line()}>
+        {hasLastFailure && <div className={anchor()} />}
+      </div>
+    </div>
+  );
+}

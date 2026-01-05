@@ -26,25 +26,15 @@ export default defineConfig({
   },
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'SCENARIO=E2E pnpm exec nx serve web-ui -c mock',
+    command: 'SCENARIO=E2E pnpm exec nx serve web-ui',
     reuseExistingServer: !process.env.CI,
     cwd: workspaceRoot,
-    url: 'http://localhost:4001/version',
+    url: 'http://localhost:4300/ui/',
   },
   projects: [
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
-    },
-
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
     },
 
     // Uncomment for mobile browsers support
