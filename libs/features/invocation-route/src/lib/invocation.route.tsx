@@ -215,10 +215,11 @@ function Component() {
                     className="inline-flex rounded-md px-2 text-xs"
                     href={`#command-${journalAndInvocationData?.last_failure_related_command_index}`}
                   >
-                    Got to line #
+                    Go to the related line (#
                     {
                       journalAndInvocationData?.last_failure_related_command_index
                     }
+                    )
                     <Icon
                       name={IconName.ChevronDown}
                       className="ml-1 h-4 w-4"
@@ -259,6 +260,21 @@ function Component() {
 }
 export const invocation = { Component };
 
+const anchorStyles = tv({
+  base: '',
+  slots: {
+    line: 'invisible absolute top-0 right-0 left-0 z-10 min-h-9 translate-x-full rounded-t-xl border-l',
+    anchor:
+      'absolute bottom-0 left-0 z-10 h-2 w-2 -translate-x-1/2 rounded-full border-2 border-white/60',
+  },
+  variants: {
+    isFailed: {
+      true: { line: 'border-red-400/50', anchor: 'bg-red-400' },
+      false: { line: 'border-orange-400/50', anchor: 'bg-orange-400' },
+    },
+  },
+});
+
 function Anchor({
   invocation,
 }: {
@@ -269,6 +285,9 @@ function Anchor({
   const hasLastFailure = Boolean(
     invocation?.last_failure || invocation?.completion_failure,
   );
+  const { line, anchor } = anchorStyles({
+    isFailed: Boolean(invocation?.completion_failure),
+  });
 
   useEffect(() => {
     const element = ref.current;
@@ -301,14 +320,9 @@ function Anchor({
   }, []);
 
   return (
-    <div className="b relative z-[11] w-6 -translate-x-full translate-y-4">
-      <div
-        ref={ref}
-        className="invisible absolute top-0 right-0 left-0 z-10 min-h-9 translate-x-full rounded-t-xl border-l border-orange-400/50"
-      >
-        {hasLastFailure && (
-          <div className="absolute bottom-0 left-0 z-10 h-2 w-2 -translate-x-1/2 rounded-full border-2 border-white/60 bg-orange-400"></div>
-        )}
+    <div className="relative z-[11] w-6 -translate-x-full translate-y-4">
+      <div ref={ref} className={line()}>
+        {hasLastFailure && <div className={anchor()} />}
       </div>
     </div>
   );
