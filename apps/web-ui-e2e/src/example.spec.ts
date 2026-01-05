@@ -1,6 +1,12 @@
 import { test, expect } from '@playwright/test';
 
 test('has title', async ({ page }) => {
+  await page.route('*/**/health', async (route) => {
+    await route.fulfill({ status: 200 });
+  });
+  await page.route('*/**/version', async (route) => {
+    await route.fulfill({ status: 200 });
+  });
   await page.route('*/**/deployments', async (route) => {
     await route.fulfill({ json: { deployments: [] } });
   });
