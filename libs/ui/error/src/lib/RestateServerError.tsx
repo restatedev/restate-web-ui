@@ -8,11 +8,42 @@ import { tv } from '@restate/util/styles';
 
 const styles = tv({
   base: 'flex min-h-0 flex-col gap-2 rounded-xl bg-red-100 p-3 text-sm',
+  variants: {
+    isTransient: {
+      true: 'bg-orange-50',
+      false: 'bg-red-50',
+    },
+  },
 });
+
+const iconStyles = tv({
+  base: 'mt-[0.0625rem] h-4 w-4',
+  variants: {
+    isTransient: {
+      true: 'fill-orange-500 text-orange-500',
+      false: 'fill-red-500 text-red-500',
+    },
+  },
+});
+
+const outputStyles = tv({
+  base: 'max-h-28 flex-auto overflow-auto [word-break:break-word]',
+  variants: {
+    isTransient: {
+      true: 'text-orange-700',
+      false: 'text-red-700',
+    },
+  },
+});
+
 const codeStyles = tv({
-  base: 'h-full flex-auto border bg-red-200 py-4 text-0.5xs text-red-700 shadow-[inset_0_0.5px_0.5px_0px_rgba(0,0,0,0.08)]',
+  base: 'h-full flex-auto border bg-black/4 py-4 text-0.5xs shadow-[inset_0_0.5px_0.5px_0px_rgba(0,0,0,0.08)]',
   variants: {
     wrap: { true: 'whitespace-pre', false: '' },
+    isTransient: {
+      true: 'text-orange-700',
+      false: 'text-red-700',
+    },
   },
   defaultVariants: {
     wrap: false,
@@ -31,11 +62,13 @@ export function RestateServerError({
   className,
   wrap,
   open = true,
+  isTransient,
 }: PropsWithChildren<{
   error: RestateError;
   className?: string;
   wrap?: boolean;
   open?: boolean;
+  isTransient?: boolean;
 }>) {
   const { restate_code: code, message } = error;
   const { summary, help } = code
@@ -43,15 +76,15 @@ export function RestateServerError({
     : DEFAULT_ERROR;
 
   return (
-    <div className={styles({ className })}>
+    <div className={styles({ className, isTransient })}>
       <div className="flex items-start gap-2">
         <div className="shrink-0">
           <Icon
-            className="mt-[0.0625rem] h-4 w-4 fill-red-500 text-red-500"
+            className={iconStyles({ isTransient })}
             name={IconName.CircleX}
           />
         </div>
-        <output className="max-h-28 flex-auto overflow-auto [word-break:break-word] text-red-700">
+        <output className={outputStyles({ isTransient })}>
           {help ? (
             <InlineTooltip
               variant="indicator-button"
@@ -74,7 +107,7 @@ export function RestateServerError({
         </output>
       </div>
       <div className="flex min-h-0 w-full flex-auto flex-col gap-2">
-        <Code className={codeStyles({ wrap })}>
+        <Code className={codeStyles({ wrap, isTransient })}>
           <Snippet language="bash" className="h-full px-0">
             <details
               className="group h-full max-h-28 w-full overflow-auto text-[90%]"

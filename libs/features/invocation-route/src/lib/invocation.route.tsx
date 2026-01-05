@@ -50,14 +50,7 @@ const lastFailureContent = tv({
   },
 });
 const lastFailureStyles = tv({
-  base: 'h-full bg-transparent p-0 [&_code]:bg-gray-200/50 [&_details]:max-h-48',
-  variants: {
-    isFailed: {
-      true: '',
-      false:
-        '[&_code]:text-orange-700 [&_output]:text-orange-600 [&_svg]:text-orange-400',
-    },
-  },
+  base: 'h-full bg-transparent p-0 [&_details]:max-h-48',
 });
 
 function Component() {
@@ -201,8 +194,9 @@ function Component() {
                   <ErrorBanner
                     error={lastError}
                     wrap={hasStack}
-                    className={lastFailureStyles({ isFailed })}
+                    className={lastFailureStyles()}
                     open={shouldLastErrorBeExpanded}
+                    isTransient={!isFailed}
                   />
                 </SectionContent>
               </Section>

@@ -13,7 +13,7 @@ const failureStyle = tv({
       'flex h-5 max-w-[50ch] min-w-6 items-center gap-0 rounded-full border bg-white/70 px-0 py-0 pl-0.5 text-2xs shadow-none',
     errorIcon: 'mr-[0.3rem] ml-[0.15rem] h-3 w-3 shrink-0',
     errorBanner:
-      'mr-1 max-h-full max-w-[min(50rem,90vw)] flex-auto resize overflow-auto rounded-lg [&_details]:max-h-full [&:has(details[open])]:h-[min(50vh,16rem)]',
+      'max-h-full max-w-[min(80rem,90vw)] flex-auto resize overflow-auto rounded-xl [&_details]:max-h-full [&:has(details[open])]:h-[min(50vh,16rem)]',
   },
   variants: {
     isRetrying: {
@@ -29,6 +29,18 @@ const failureStyle = tv({
       },
     },
     hasStack: {
+      true: {
+        trigger: '',
+        errorIcon: '',
+        errorBanner: '',
+      },
+      false: {
+        trigger: '',
+        errorIcon: '',
+        errorBanner: '',
+      },
+    },
+    isTransient: {
       true: {
         trigger: '',
         errorIcon: '',
@@ -126,6 +138,7 @@ export function Failure({
             error={error}
             wrap={hasStack}
             className={errorBanner()}
+            isTransient={isRetrying}
           />
         </DropdownSection>
       </PopoverContent>
