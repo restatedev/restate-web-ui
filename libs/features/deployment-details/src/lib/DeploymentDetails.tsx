@@ -15,6 +15,7 @@ import {
   getProtocolType,
 } from '@restate/data-access/admin-api';
 import {
+  DateTooltip,
   HoverTooltip,
   InlineTooltip,
   TruncateWithTooltip,
@@ -34,6 +35,7 @@ import {
   SDK,
 } from '@restate/features/deployment';
 import { useRestateContext } from '@restate/features/restate-context';
+import { formatDateTime } from '@restate/util/intl';
 
 export function DeploymentDetails() {
   return (
@@ -170,6 +172,45 @@ function DeploymentContent({ deployment }: { deployment: string }) {
           )}
         </div>
       </h2>
+      {data && (
+        <Section className="mt-4">
+          <SectionTitle>Deployment Metadata</SectionTitle>
+          <SectionContent className="p-0">
+            <div className="flex h-9 items-center px-1.5 py-1 not-last:border-b">
+              <span className="flex-auto pl-1 text-0.5xs font-medium whitespace-nowrap text-gray-500">
+                Id
+              </span>
+              <Badge
+                size="sm"
+                className="ml-10 min-w-0 py-0 pr-0 align-middle font-mono"
+              >
+                <div className="truncate">{data.id}</div>
+                <Copy
+                  copyText={data?.id}
+                  className="ml-1 shrink-0 p-1 [&_svg]:h-2.5 [&_svg]:w-2.5"
+                />
+              </Badge>
+            </div>
+
+            <div className="flex h-9 items-center px-1.5 py-1 not-last:border-b">
+              <span className="flex-auto shrink-0 pl-1 text-0.5xs font-medium text-gray-500">
+                Create at
+              </span>
+              <Badge
+                size="sm"
+                className="ml-1 min-w-0 py-0 pr-0 align-middle font-mono"
+              >
+                <DateTooltip
+                  date={new Date(data.created_at)}
+                  title="Created at"
+                >
+                  {formatDateTime(new Date(data.created_at), 'system')}
+                </DateTooltip>
+              </Badge>
+            </div>
+          </SectionContent>
+        </Section>
+      )}
       <Section className="mt-5">
         <SectionTitle>Services</SectionTitle>
         <SectionContent className="px-2 pt-2" raised={false}>
@@ -296,20 +337,6 @@ function DeploymentContent({ deployment }: { deployment: string }) {
           </>
         )}
       </Section>
-      {data && (
-        <Section className="mt-4">
-          <SectionTitle>Id</SectionTitle>
-          <SectionContent className="flex items-center py-1 pr-0.5 font-mono text-0.5xs text-zinc-600">
-            <div>{data?.id}</div>
-            {data?.id && (
-              <Copy
-                copyText={data?.id}
-                className="shrink-0 p-1 text-2xs [&_svg]:h-3 [&_svg]:w-3"
-              />
-            )}
-          </SectionContent>
-        </Section>
-      )}
     </>
   );
 }

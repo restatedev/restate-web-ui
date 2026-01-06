@@ -206,12 +206,7 @@ export function Entry({
           (depth === 0 &&
             typeof invocation.last_failure_related_command_index ===
               'undefined' &&
-            isEntriesEqual(
-              entry,
-              invocation.journal?.entries?.findLast(
-                (e) => e.type !== 'Retrying',
-              ),
-            )) ||
+            isEntriesEqual(entry, invocation.journal?.entries?.at(-1))) ||
           (depth === 0 &&
             invocation.completion_failure &&
             entry.type === 'Output')
