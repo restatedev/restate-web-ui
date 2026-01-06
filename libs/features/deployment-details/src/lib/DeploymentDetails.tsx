@@ -96,6 +96,7 @@ function DeploymentContent({ deployment }: { deployment: string }) {
 
   const services = data?.services ?? [];
   const additionalHeaders = Object.entries(data?.additional_headers ?? {});
+  const metadata = Object.entries(data?.metadata ?? {});
 
   const isTunnel = Boolean(
     tunnel?.isEnabled &&
@@ -253,6 +254,34 @@ function DeploymentContent({ deployment }: { deployment: string }) {
           </SectionContent>
           <span className="px-3 py-2 text-xs leading-4 text-gray-500">
             Headers added to the register/invoke requests to the deployment.
+          </span>
+        </Section>
+      )}
+      {metadata.length > 0 && (
+        <Section className="mt-4">
+          <SectionTitle>Metadata</SectionTitle>
+          <SectionContent className="p-0" raised={false}>
+            <>
+              <div className="mt-2 grid grid-cols-[1fr_2fr] text-xs font-medium text-gray-400">
+                <div className="pl-2">Key</div>
+                <div className="pl-2">Value</div>
+              </div>
+              {isPending ? (
+                <div className="flex flex-col rounded-[calc(0.75rem-0.125rem)] border-transparent">
+                  <div className="h-6 w-full animate-pulse rounded-t-[calc(0.75rem-0.125rem)] border-b bg-white" />
+                  <div className="h-6 w-full animate-pulse rounded-b-[calc(0.75rem-0.125rem)] bg-white delay-200" />
+                </div>
+              ) : (
+                <div className="flex flex-col rounded-[calc(0.75rem-0.125rem)] border shadow-xs">
+                  {metadata.map(([name, value]) => (
+                    <Header name={name} value={value} key={name} />
+                  ))}
+                </div>
+              )}
+            </>
+          </SectionContent>
+          <span className="px-3 py-2 text-xs leading-4 text-gray-500">
+            Metadata attached at the time of registration.
           </span>
         </Section>
       )}

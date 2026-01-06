@@ -94,6 +94,11 @@ interface DeploymentRegistrationContextInterface {
     value: string;
     index: number;
   }>;
+  metadata?: ListData<{
+    key: string;
+    value: string;
+    index: number;
+  }>;
   isPending?: boolean;
   isDuplicate?: boolean;
   shouldForce?: boolean;
@@ -231,6 +236,14 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
     initialItems: [{ key: '', value: '', index: 0 }],
     getKey: (item) => item.index,
   });
+  const metadataList = useListData<{
+    key: string;
+    value: string;
+    index: number;
+  }>({
+    initialItems: [{ key: '', value: '', index: 0 }],
+    getKey: (item) => item.index,
+  });
   const { close } = useDialog();
   const goToAdvanced = useCallback(() => {
     dispatch({ type: 'NavigateToAdvancedAction' });
@@ -277,7 +290,6 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
     (
       shouldAllowBreakingChange: DeploymentRegistrationContextInterface['shouldAllowBreakingChange'],
     ) => {
-      console.log(shouldAllowBreakingChange);
       dispatch({
         type: 'UpdateShouldAllowBreaking',
         payload: { shouldAllowBreakingChange },
@@ -405,7 +417,16 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
         }
         return result;
       }, {});
-    console.log(shouldAllowBreakingChange);
+    const metadata: Record<string, string> = metadataList.items.reduce(
+      (result, { key, value }) => {
+        if (typeof key === 'string' && typeof value === 'string' && key) {
+          return { ...result, [key]: value };
+        }
+        return result;
+      },
+      {},
+    );
+
     mutate({
       body: {
         ...(isLambda
@@ -425,6 +446,7 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
         dry_run: action === 'dryRun' || action === FIX_HTTP_ACTION,
         additional_headers,
         breaking: Boolean(shouldAllowBreakingChange),
+        metadata,
       },
     });
   };
@@ -445,6 +467,7 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
         updateShouldAllowBreakingChange,
         error,
         isPending,
+        metadata: metadataList,
       }}
     >
       <Form
@@ -488,6 +511,7 @@ export function useRegisterDeploymentContext() {
     sdk_version,
     isTunnel,
     tunnelName,
+    metadata,
   } = useContext(DeploymentRegistrationContext);
   const isEndpoint = stage === 'endpoint';
   const isAdvanced = stage === 'advanced';
@@ -500,7 +524,13 @@ export function useRegisterDeploymentContext() {
       additionalHeaders.items &&
       additionalHeaders.items.some(({ key, value }) => key && value),
   );
-  const canSkipAdvanced = isOnboarding || (!hasAdditionalHeaders && !useHttp11);
+  const hasMetadata = Boolean(
+    metadata &&
+      metadata.items &&
+      metadata.items.some(({ key, value }) => key && value),
+  );
+  const canSkipAdvanced =
+    isOnboarding || (!hasAdditionalHeaders && !useHttp11 && !hasMetadata);
 
   const isHttp1Error =
     error instanceof RestateError && error.restateCode === 'META0014';
@@ -521,6 +551,7 @@ export function useRegisterDeploymentContext() {
     isPending,
     formId,
     additionalHeaders,
+    metadata,
     services,
     max_protocol_version,
     min_protocol_version,

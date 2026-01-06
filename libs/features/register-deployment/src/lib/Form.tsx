@@ -27,6 +27,7 @@ import { addProtocol } from './utils';
 import { Helper } from './Helper';
 import { OverrideWarning } from './OverrideWarnning';
 import { OverrideBreaking } from './OverrideBreaking';
+import { Metadata } from './Metadata';
 
 function CustomRadio({
   value,
@@ -403,11 +404,12 @@ function AdvancedForm() {
   const { isLambda } = useRegisterDeploymentContext();
 
   return (
-    <>
+    <div className="flex flex-col gap-6">
       {isLambda ? null : <UseHTTP11 />}
       <AdditionalHeaders />
+      <Metadata />
       <OverrideWarning />
       <OverrideBreaking />
-    </>
+    </div>
   );
 }
