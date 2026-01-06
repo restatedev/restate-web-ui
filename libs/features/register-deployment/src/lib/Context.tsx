@@ -61,6 +61,13 @@ type UpdateShouldForce = {
   type: 'UpdateShouldForce';
   payload: Pick<DeploymentRegistrationContextInterface, 'shouldForce'>;
 };
+type UpdateShouldAllowBreaking = {
+  type: 'UpdateShouldAllowBreaking';
+  payload: Pick<
+    DeploymentRegistrationContextInterface,
+    'shouldAllowBreakingChange'
+  >;
+};
 
 type Action =
   | NavigateToAdvancedAction
@@ -70,7 +77,8 @@ type Action =
   | UpdateRoleArnAction
   | UpdateUseHttp11Action
   | UpdateServicesActions
-  | UpdateShouldForce;
+  | UpdateShouldForce
+  | UpdateShouldAllowBreaking;
 
 interface DeploymentRegistrationContextInterface {
   endpoint?: string;
@@ -89,6 +97,7 @@ interface DeploymentRegistrationContextInterface {
   isPending?: boolean;
   isDuplicate?: boolean;
   shouldForce?: boolean;
+  shouldAllowBreakingChange?: boolean;
   services?: adminApi.components['schemas']['ServiceMetadata'][];
   min_protocol_version?: adminApi.components['schemas']['DeploymentResponse']['min_protocol_version'];
   max_protocol_version?: adminApi.components['schemas']['DeploymentResponse']['max_protocol_version'];
@@ -101,6 +110,7 @@ interface DeploymentRegistrationContextInterface {
   updateAssumeRoleArn?: (value: string) => void;
   updateUseHttp11Arn?: (value: boolean) => void;
   updateShouldForce?: (value: boolean) => void;
+  updateShouldAllowBreakingChange?: (value: boolean) => void;
   error: RestateError | Error | null | undefined;
 }
 
@@ -116,6 +126,7 @@ type State = Pick<
   | 'useHttp11'
   | 'shouldForce'
   | 'isDuplicate'
+  | 'shouldAllowBreakingChange'
 >;
 
 function reducer(state: State, action: Action): State {
@@ -127,7 +138,12 @@ function reducer(state: State, action: Action): State {
     case 'NavigateToEndpointAction':
       return { ...state, stage: 'endpoint' };
     case 'UpdateEndpointAction':
-      return { ...state, ...action.payload };
+      return {
+        ...state,
+        ...action.payload,
+        shouldForce: false,
+        shouldAllowBreakingChange: false,
+      };
     case 'UpdateRoleArnAction':
       return { ...state, assumeRoleArn: action.payload.assumeRoleArn };
     case 'UpdateUseHttp11Action':
@@ -136,6 +152,11 @@ function reducer(state: State, action: Action): State {
       return { ...state, ...action.payload };
     case 'UpdateShouldForce':
       return { ...state, shouldForce: action.payload.shouldForce };
+    case 'UpdateShouldAllowBreaking':
+      return {
+        ...state,
+        shouldAllowBreakingChange: action.payload.shouldAllowBreakingChange,
+      };
 
     default:
       return state;
@@ -252,6 +273,18 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
     },
     [],
   );
+  const updateShouldAllowBreakingChange = useCallback(
+    (
+      shouldAllowBreakingChange: DeploymentRegistrationContextInterface['shouldAllowBreakingChange'],
+    ) => {
+      console.log(shouldAllowBreakingChange);
+      dispatch({
+        type: 'UpdateShouldAllowBreaking',
+        payload: { shouldAllowBreakingChange },
+      });
+    },
+    [],
+  );
 
   const { mutate, isPending, error, reset } = useRegisterDeployment({
     retryWithHttp1: state.stage !== 'confirm' && !state.useHttp11,
@@ -354,6 +387,7 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
       shouldForce,
       isTunnel,
       tunnelName,
+      shouldAllowBreakingChange,
     } = state;
 
     if (action === FIX_HTTP_ACTION) {
@@ -371,7 +405,7 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
         }
         return result;
       }, {});
-
+    console.log(shouldAllowBreakingChange);
     mutate({
       body: {
         ...(isLambda
@@ -390,7 +424,7 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
         force: Boolean(shouldForce),
         dry_run: action === 'dryRun' || action === FIX_HTTP_ACTION,
         additional_headers,
-        breaking: false,
+        breaking: Boolean(shouldAllowBreakingChange),
       },
     });
   };
@@ -408,6 +442,7 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
         updateAssumeRoleArn,
         updateUseHttp11Arn,
         updateShouldForce,
+        updateShouldAllowBreakingChange,
         error,
         isPending,
       }}
@@ -440,6 +475,8 @@ export function useRegisterDeploymentContext() {
     updateAssumeRoleArn,
     updateUseHttp11Arn,
     updateShouldForce,
+    updateShouldAllowBreakingChange,
+    shouldAllowBreakingChange,
     shouldForce,
     useHttp11,
     assumeRoleArn,
@@ -467,6 +504,8 @@ export function useRegisterDeploymentContext() {
 
   const isHttp1Error =
     error instanceof RestateError && error.restateCode === 'META0014';
+  const isBreakingChangeError =
+    error instanceof RestateError && error.restateCode === 'META0006';
 
   return {
     isAdvanced,
@@ -499,5 +538,8 @@ export function useRegisterDeploymentContext() {
     isOnboarding,
     targetType: getTargetType(endpoint, tunnelName),
     isHttp1Error,
+    isBreakingChangeError,
+    updateShouldAllowBreakingChange,
+    shouldAllowBreakingChange,
   };
 }

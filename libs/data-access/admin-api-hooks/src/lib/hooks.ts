@@ -219,40 +219,39 @@ export function useRegisterDeployment(
     baseUrl,
   });
 
+  const { mutationFn: _mutationFn, meta } = mutationOptions;
   const mutationFn: typeof mutationOptions.mutationFn = useCallback(
     async (args, context) => {
-      return mutationOptions
-        .mutationFn(args, context)
-        .catch(async (originalError) => {
-          if (
-            retryWithHttp1 &&
-            args.body &&
-            args.body.dry_run &&
-            'uri' in args.body
-          ) {
-            try {
-              await mutationOptions.mutationFn(
-                {
-                  ...args,
-                  body: {
-                    ...args.body,
-                    use_http_11: true,
-                  },
+      return _mutationFn(args, context).catch(async (originalError) => {
+        if (
+          retryWithHttp1 &&
+          args.body &&
+          args.body.dry_run &&
+          'uri' in args.body
+        ) {
+          try {
+            await _mutationFn(
+              {
+                ...args,
+                body: {
+                  ...args.body,
+                  use_http_11: true,
                 },
-                { client: queryCLient, meta: mutationOptions.meta },
-              );
-              throw new RestateError(
-                'Service discovery response failed, and the server may have responded in HTTP1.1.',
-                'META0014',
-              );
-            } catch (_) {
-              throw originalError;
-            }
+              },
+              { client: queryCLient, meta },
+            );
+            throw new RestateError(
+              'Service discovery response failed, and the server may have responded in HTTP1.1.',
+              'META0014',
+            );
+          } catch (_) {
+            throw originalError;
           }
-          throw originalError;
-        });
+        }
+        throw originalError;
+      });
     },
-    [mutationOptions.mutationFn],
+    [_mutationFn, meta, queryCLient, retryWithHttp1],
   );
 
   return useMutation({

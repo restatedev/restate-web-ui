@@ -26,6 +26,7 @@ import { FocusScope, useFocusManager } from 'react-aria';
 import { addProtocol } from './utils';
 import { Helper } from './Helper';
 import { OverrideWarning } from './OverrideWarnning';
+import { OverrideBreaking } from './OverrideBreaking';
 
 function CustomRadio({
   value,
@@ -392,6 +393,7 @@ function EndpointForm() {
       {isLambda && <AssumeARNRole className="" />}
 
       <OverrideWarning />
+      <OverrideBreaking />
       <Helper isLambda={isLambda} isTunnel={isTunnel} />
     </>
   );
@@ -405,6 +407,7 @@ function AdvancedForm() {
       {isLambda ? null : <UseHTTP11 />}
       <AdditionalHeaders />
       <OverrideWarning />
+      <OverrideBreaking />
     </>
   );
 }

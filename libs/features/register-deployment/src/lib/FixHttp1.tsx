@@ -22,15 +22,12 @@ export function FixHttp1({
   const { help, summary } = ERROR_CODES[code] ?? {};
   return (
     <div className={styles({ className })}>
-      <div className="flex-auto">
-        <Icon
-          name={IconName.Sparkles}
-          className="mr-2 inline h-4 w-4 -translate-y-0.5"
-        />
+      <div className="flex flex-auto items-center text-0.5xs">
+        <Icon name={IconName.Sparkles} className="mr-2 inline h-4 w-4" />
         Server responded with HTTP/1.1, common in local dev with FaaS platforms.
         <InlineTooltip
           variant="indicator-button"
-          className="ml-0.5 translate-y-0.5 [&_button]:mt-1 [&_button]:mr-1 [&_button]:self-start"
+          className="ml-0.5 [&_button]:mr-1 [&_button]:self-start"
           title={code}
           {...(code && {
             learnMoreHref: `https://docs.restate.dev/references/errors#${code?.toLowerCase()}`,
