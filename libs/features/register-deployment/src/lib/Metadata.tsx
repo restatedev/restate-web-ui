@@ -3,6 +3,8 @@ import {
   FormFieldGroup,
   FormFieldLabel,
   FormFieldInput,
+  FormFieldCombobox,
+  ComboBoxItem,
 } from '@restate/ui/form-field';
 import { IconName, Icon } from '@restate/ui/icons';
 import { useRegisterDeploymentContext } from './Context';
@@ -41,18 +43,29 @@ export function Metadata() {
 
         return (
           <div key={item.index} className="flex w-full items-center gap-1.5">
-            <FormFieldInput
+            <FormFieldCombobox
               name="key"
               className="basis-1/3"
               value={item.key}
               placeholder="key"
-              onChange={(key) =>
+              onChange={(key) => {
                 list.update(item.index, {
                   ...item,
                   key,
-                })
-              }
-            />
+                });
+              }}
+              allowsCustomValue
+            >
+              <ComboBoxItem value="github.repository">
+                github.repository
+              </ComboBoxItem>
+              <ComboBoxItem value="github.commit.sha">
+                github.commit.sha
+              </ComboBoxItem>
+              <ComboBoxItem value="github.actions.run.id">
+                github.actions.run.id
+              </ComboBoxItem>
+            </FormFieldCombobox>
             :
             <FormFieldInput
               name="value"
