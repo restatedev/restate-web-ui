@@ -53,7 +53,7 @@ export function InvocationDeployment({
         <div className="flex h-9 w-full items-center px-1.5 py-1 not-last:border-b">
           <DeploymentGithubMetadata
             metadata={deployment.metadata}
-            className="w-full"
+            className="w-full pl-0.5"
           />
         </div>
       </div>

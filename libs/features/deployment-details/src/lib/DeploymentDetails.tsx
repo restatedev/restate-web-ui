@@ -446,7 +446,7 @@ export function DeploymentGithubMetadata({
   return (
     <div className={githubStyles({ className })}>
       <span className="flex flex-auto items-center pl-1">
-        <Icon name={IconName.Github} className="mr-2 h-4 w-4" />
+        <Icon name={IconName.Github} className="mr-2.5 h-4 w-4" />
         Github
       </span>
       <div className="flex gap-2">
