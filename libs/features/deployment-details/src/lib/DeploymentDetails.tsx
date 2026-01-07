@@ -38,6 +38,7 @@ import { useRestateContext } from '@restate/features/restate-context';
 import { formatDateTime } from '@restate/util/intl';
 import { ReactNode } from 'react';
 import { Link } from '@restate/ui/link';
+import { tv } from '@restate/util/styles';
 
 export function DeploymentDetails() {
   return (
@@ -267,7 +268,7 @@ function DeploymentContent({ deployment }: { deployment: string }) {
         <Section className="mt-4">
           <SectionTitle>Metadata</SectionTitle>
           <SectionContent className="p-0">
-            <Github metadata={data?.metadata} />
+            <DeploymentGithubMetadata metadata={data?.metadata} />
           </SectionContent>
           {metadataExcludingGithub.length > 0 && (
             <SectionContent className="p-0" raised={false}>
@@ -409,7 +410,16 @@ const ACTION_RUN_ID_KEYS = [
   'github.run.id',
 ];
 
-function Github({ metadata }: { metadata?: Record<string, string> }) {
+const githubStyles = tv({
+  base: 'flex items-center px-1.5 py-1 text-0.5xs font-medium text-gray-500',
+});
+export function DeploymentGithubMetadata({
+  metadata,
+  className,
+}: {
+  metadata?: Record<string, string>;
+  className?: string;
+}) {
   const commitSha = COMMIT_KEYS.reduce<string | undefined>((acc, key) => {
     return acc || metadata?.[key];
   }, undefined);
@@ -434,8 +444,9 @@ function Github({ metadata }: { metadata?: Record<string, string> }) {
     : undefined;
 
   return (
-    <div className="flex items-center px-1.5 py-1">
-      <span className="flex-auto pl-1 text-0.5xs font-medium text-gray-500">
+    <div className={githubStyles({ className })}>
+      <span className="flex flex-auto items-center pl-1">
+        <Icon name={IconName.Github} className="mr-2 h-4 w-4" />
         Github
       </span>
       <div className="flex gap-2">
