@@ -55,6 +55,7 @@ export function FormFieldCombobox<T extends object>({
   children,
   pattern,
   defaultValue,
+  onChange,
   ...props
 }: PropsWithChildren<ComboBoxProps<T>>) {
   return (
@@ -64,6 +65,7 @@ export function FormFieldCombobox<T extends object>({
       menuTrigger="focus"
       defaultInputValue={defaultValue}
       defaultSelectedKey={defaultValue}
+      onInputChange={onChange}
       {...props}
       className={containerStyles({ className })}
     >

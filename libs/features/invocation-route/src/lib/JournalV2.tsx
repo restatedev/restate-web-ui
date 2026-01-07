@@ -136,7 +136,7 @@ export function JournalV2({
   const invocationApiError = apiError?.[invocationId];
 
   if (invocationApiError && showApiError) {
-    return <ErrorBanner error={invocationApiError} />;
+    return <ErrorBanner error={invocationApiError} className="rounded-2xl" />;
   }
 
   const dataUpdatedAt = allQueriesDataUpdatedAt[invocationId]!;

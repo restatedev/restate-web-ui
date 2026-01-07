@@ -41,11 +41,14 @@ function RegisterDeploymentFooter() {
     isOnboarding,
     isHttp1Error,
     endpoint,
+    isBreakingChangeError,
   } = useRegisterDeploymentContext();
   return (
     <DialogFooter>
       <div className="flex flex-col gap-2">
-        {error && !isHttp1Error && <ErrorBanner error={error} />}
+        {error && !isHttp1Error && !isBreakingChangeError && (
+          <ErrorBanner error={error} />
+        )}
         {isHttp1Error && <FixHttp1 formId={formId} endpoint={endpoint} />}
         <div className="flex gap-2">
           <DialogClose>

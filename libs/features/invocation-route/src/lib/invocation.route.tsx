@@ -182,7 +182,7 @@ function Component() {
               className="h-fit rounded-xl border bg-gray-200/50 p-0 [&>*:last-child]:rounded-xl [&>*:last-child]:border-white/50 [&>*:last-child]:bg-linear-to-b [&>*:last-child]:from-gray-50 [&>*:last-child]:to-gray-50/80 [&>*:last-child]:shadow-zinc-800/3"
             />
           </div>
-          {shouldShowFailure && (
+          {shouldShowFailure && !error && (
             <>
               <Anchor invocation={journalAndInvocationData} />
 

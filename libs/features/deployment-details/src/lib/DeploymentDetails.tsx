@@ -15,6 +15,7 @@ import {
   getProtocolType,
 } from '@restate/data-access/admin-api';
 import {
+  DateTooltip,
   HoverTooltip,
   InlineTooltip,
   TruncateWithTooltip,
@@ -34,6 +35,10 @@ import {
   SDK,
 } from '@restate/features/deployment';
 import { useRestateContext } from '@restate/features/restate-context';
+import { formatDateTime } from '@restate/util/intl';
+import { ReactNode } from 'react';
+import { Link } from '@restate/ui/link';
+import { tv } from '@restate/util/styles';
 
 export function DeploymentDetails() {
   return (
@@ -94,6 +99,11 @@ function DeploymentContent({ deployment }: { deployment: string }) {
 
   const services = data?.services ?? [];
   const additionalHeaders = Object.entries(data?.additional_headers ?? {});
+  const metadata = Object.entries(data?.metadata ?? {});
+  const metadataExcludingGithub = metadata.filter(
+    ([name]) =>
+      ![...COMMIT_KEYS, ...ACTION_RUN_ID_KEYS, ...REPO_KEYS].includes(name),
+  );
 
   const isTunnel = Boolean(
     tunnel?.isEnabled &&
@@ -170,6 +180,45 @@ function DeploymentContent({ deployment }: { deployment: string }) {
           )}
         </div>
       </h2>
+      {data && (
+        <Section className="mt-4">
+          <SectionTitle>Deployment details</SectionTitle>
+          <SectionContent className="p-0">
+            <div className="flex h-9 items-center px-1.5 py-1 not-last:border-b">
+              <span className="flex-auto pl-1 text-0.5xs font-medium whitespace-nowrap text-gray-500">
+                Id
+              </span>
+              <Badge
+                size="sm"
+                className="ml-10 min-w-0 py-0 pr-0 align-middle font-mono"
+              >
+                <div className="truncate">{data.id}</div>
+                <Copy
+                  copyText={data?.id}
+                  className="ml-1 shrink-0 p-1 [&_svg]:h-2.5 [&_svg]:w-2.5"
+                />
+              </Badge>
+            </div>
+
+            <div className="flex h-9 items-center px-1.5 py-1 not-last:border-b">
+              <span className="flex-auto shrink-0 pl-1 text-0.5xs font-medium text-gray-500">
+                Create at
+              </span>
+              <Badge
+                size="sm"
+                className="ml-1 min-w-0 py-0 pr-0 align-middle font-mono"
+              >
+                <DateTooltip
+                  date={new Date(data.created_at)}
+                  title="Created at"
+                >
+                  {formatDateTime(new Date(data.created_at), 'system')}
+                </DateTooltip>
+              </Badge>
+            </div>
+          </SectionContent>
+        </Section>
+      )}
       <Section className="mt-5">
         <SectionTitle>Services</SectionTitle>
         <SectionContent className="px-2 pt-2" raised={false}>
@@ -212,6 +261,31 @@ function DeploymentContent({ deployment }: { deployment: string }) {
           </SectionContent>
           <span className="px-3 py-2 text-xs leading-4 text-gray-500">
             Headers added to the register/invoke requests to the deployment.
+          </span>
+        </Section>
+      )}
+      {metadata.length > 0 && (
+        <Section className="mt-4">
+          <SectionTitle>Metadata</SectionTitle>
+          <SectionContent className="p-0">
+            <DeploymentGithubMetadata metadata={data?.metadata} />
+          </SectionContent>
+          {metadataExcludingGithub.length > 0 && (
+            <SectionContent className="p-0" raised={false}>
+              <div className="mt-2 grid grid-cols-[1fr_2fr] text-xs font-medium text-gray-400">
+                <div className="pl-2">Key</div>
+                <div className="pl-2">Value</div>
+              </div>
+
+              <div className="flex flex-col rounded-[calc(0.75rem-0.125rem)] border shadow-xs">
+                {metadataExcludingGithub.map(([name, value]) => (
+                  <Header name={name} value={value} key={name} />
+                ))}
+              </div>
+            </SectionContent>
+          )}
+          <span className="px-3 py-2 text-xs leading-4 text-gray-500">
+            Metadata attached at the time of registration.
           </span>
         </Section>
       )}
@@ -296,32 +370,112 @@ function DeploymentContent({ deployment }: { deployment: string }) {
           </>
         )}
       </Section>
-      {data && (
-        <Section className="mt-4">
-          <SectionTitle>Id</SectionTitle>
-          <SectionContent className="flex items-center py-1 pr-0.5 font-mono text-0.5xs text-zinc-600">
-            <div>{data?.id}</div>
-            {data?.id && (
-              <Copy
-                copyText={data?.id}
-                className="shrink-0 p-1 text-2xs [&_svg]:h-3 [&_svg]:w-3"
-              />
-            )}
-          </SectionContent>
-        </Section>
-      )}
     </>
+  );
+}
+
+function ListItem({ name, value }: { name: ReactNode; value: ReactNode }) {
+  return (
+    <div className="grid grid-cols-[1fr_2fr] items-center gap-1 truncate bg-white px-2 py-0 text-0.5xs text-zinc-600 not-last:border-b first:rounded-t-[calc(0.75rem-0.125rem)] last:rounded-b-[calc(0.75rem-0.125rem)]">
+      <div className="relative flex min-w-0 items-start border-r py-1 pr-1">
+        {name}
+      </div>
+      <div className="flex min-w-0 py-1 pl-1">{value}</div>
+    </div>
   );
 }
 
 function Header({ name, value }: { name: string; value: string }) {
   return (
-    <div className="grid grid-cols-[1fr_2fr] items-center gap-1 truncate bg-white px-2 py-0 text-0.5xs text-zinc-600 not-last:border-b first:rounded-t-[calc(0.75rem-0.125rem)] last:rounded-b-[calc(0.75rem-0.125rem)]">
-      <div className="relative flex min-w-0 items-start border-r py-1 pr-1">
-        <TruncateWithTooltip copyText={name}>{name}</TruncateWithTooltip>
-      </div>
-      <div className="flex min-w-0 py-1 pl-1">
+    <ListItem
+      name={<TruncateWithTooltip copyText={name}>{name}</TruncateWithTooltip>}
+      value={
         <TruncateWithTooltip copyText={value}>{value}</TruncateWithTooltip>
+      }
+    />
+  );
+}
+
+const COMMIT_KEYS = [
+  'github.commit.sha',
+  'github_commit_sha',
+  'github.sha',
+  'github_sha',
+];
+const REPO_KEYS = ['github.repository', 'github_repository'];
+const ACTION_RUN_ID_KEYS = [
+  'github.actions.run.id',
+  'github_actions_run_id',
+  'github_run_id',
+  'github.run.id',
+];
+
+const githubStyles = tv({
+  base: 'flex items-center px-1.5 py-1 text-0.5xs font-medium text-gray-500',
+});
+export function DeploymentGithubMetadata({
+  metadata,
+  className,
+}: {
+  metadata?: Record<string, string>;
+  className?: string;
+}) {
+  const commitSha = COMMIT_KEYS.reduce<string | undefined>((acc, key) => {
+    return acc || metadata?.[key];
+  }, undefined);
+  const repository = REPO_KEYS.reduce<string | undefined>((acc, key) => {
+    return acc || metadata?.[key];
+  }, undefined);
+  const actionsRunId = ACTION_RUN_ID_KEYS.reduce<string | undefined>(
+    (acc, key) => {
+      return acc || metadata?.[key];
+    },
+    undefined,
+  );
+
+  if (!repository) {
+    return null;
+  }
+
+  const baseUrl = `https://github.com/${repository}`;
+  const commitUrl = commitSha ? `${baseUrl}/commit/${commitSha}` : undefined;
+  const actionUrl = actionsRunId
+    ? `${baseUrl}/actions/runs/${actionsRunId}`
+    : undefined;
+
+  return (
+    <div className={githubStyles({ className })}>
+      <span className="flex flex-auto items-center pl-1">
+        <Icon name={IconName.Github} className="mr-2.5 h-4 w-4" />
+        Github
+      </span>
+      <div className="flex gap-2">
+        {commitUrl && (
+          <HoverTooltip content="View commit">
+            <Link
+              href={commitUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              variant="icon"
+              className="bg-blue-50 text-blue-600"
+            >
+              <Icon name={IconName.GitGraph} className="h-4 w-4" />
+            </Link>
+          </HoverTooltip>
+        )}
+        {actionUrl && (
+          <HoverTooltip content="View GitHub Action run">
+            <Link
+              href={actionUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              variant="icon"
+              className="bg-blue-50 text-blue-600"
+            >
+              <Icon name={IconName.CirclePlay} className="h-4 w-4" />
+            </Link>
+          </HoverTooltip>
+        )}
       </div>
     </div>
   );

@@ -3,6 +3,8 @@ import {
   FormFieldGroup,
   FormFieldLabel,
   FormFieldInput,
+  FormFieldCombobox,
+  ComboBoxItem,
 } from '@restate/ui/form-field';
 import { IconName, Icon } from '@restate/ui/icons';
 import { useRegisterDeploymentContext } from './Context';
@@ -18,17 +20,18 @@ const deleteStyles = tv({
   },
 });
 
-export function AdditionalHeaders() {
-  const { additionalHeaders: list } = useRegisterDeploymentContext();
+export function Metadata() {
+  const { metadata: list } = useRegisterDeploymentContext();
 
   return (
     <FormFieldGroup className="flex h-auto flex-col items-start gap-1">
       <FormFieldLabel>
         <span slot="title" className="text-sm font-medium text-gray-700">
-          Additional headers
+          Metadata
         </span>
         <span slot="description" className="block text-0.5xs leading-5">
-          Headers added to the register/invoke requests to the deployment.
+          Attach metadata to this deployment, like git commit, repo, or CI run
+          ID.
         </span>
       </FormFieldLabel>
       {list?.items.map((item) => {
@@ -40,24 +43,35 @@ export function AdditionalHeaders() {
 
         return (
           <div key={item.index} className="flex w-full items-center gap-1.5">
-            <FormFieldInput
+            <FormFieldCombobox
               name="key"
               className="basis-1/3"
               value={item.key}
-              placeholder="Header name"
-              onChange={(key) =>
+              placeholder="key"
+              onChange={(key) => {
                 list.update(item.index, {
                   ...item,
                   key,
-                })
-              }
-            />
+                });
+              }}
+              allowsCustomValue
+            >
+              <ComboBoxItem value="github.repository">
+                github.repository
+              </ComboBoxItem>
+              <ComboBoxItem value="github.commit.sha">
+                github.commit.sha
+              </ComboBoxItem>
+              <ComboBoxItem value="github.actions.run.id">
+                github.actions.run.id
+              </ComboBoxItem>
+            </FormFieldCombobox>
             :
             <FormFieldInput
               name="value"
               className="flex-auto"
               value={item.value}
-              placeholder="Header value"
+              placeholder="value"
               onChange={(value) =>
                 list.update(item.index, {
                   ...item,
@@ -98,7 +112,7 @@ export function AdditionalHeaders() {
         className="flex items-center gap-2 rounded-lg py-1 pr-3 pl-2 text-0.5xs"
       >
         <Icon name={IconName.Plus} className="h-4.5 w-4.5" />
-        Add header
+        Add metadata
       </Button>
     </FormFieldGroup>
   );
