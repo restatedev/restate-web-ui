@@ -58,7 +58,7 @@ const BatchOperationsContext =
 
 export function BatchOperationsProvider({
   children,
-  batchSize = 40,
+  batchSize = 1000,
 }: PropsWithChildren<{ batchSize?: number }>) {
   const [batchOpes, setBatchOpes] = useState([] as BatchState[]);
   const hasPendingOps = batchOpes.some(
