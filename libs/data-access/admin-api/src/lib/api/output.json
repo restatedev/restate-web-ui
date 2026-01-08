@@ -3950,6 +3950,356 @@
           }
         }
       }
+    },
+    "/internal/invocations_batch_operations/kill": {
+      "post": {
+        "tags": ["batch-invocation-operations"],
+        "summary": "Batch kill invocations",
+        "description": "Kill multiple invocations in batch. All operations execute in parallel and results are collected.",
+        "operationId": "batch_kill_invocations_internal",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchInvocationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Batch kill result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchOperationResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/invocations_batch_operations/cancel": {
+      "post": {
+        "tags": ["batch-invocation-operations"],
+        "summary": "Batch cancel invocations",
+        "description": "Cancel multiple invocations in batch. All operations execute in parallel and results are collected.",
+        "operationId": "batch_cancel_invocations_internal",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchInvocationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Batch cancel result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchOperationResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/invocations_batch_operations/purge": {
+      "post": {
+        "tags": ["batch-invocation-operations"],
+        "summary": "Batch purge invocations",
+        "description": "Purge multiple completed invocations in batch. All operations execute in parallel and results are collected.",
+        "operationId": "batch_purge_invocations_internal",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchInvocationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Batch purge result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchOperationResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/invocations_batch_operations/purge-journal": {
+      "post": {
+        "tags": ["batch-invocation-operations"],
+        "summary": "Batch purge invocation journals",
+        "description": "Purge journals for multiple completed invocations in batch. All operations execute in parallel and results are collected.",
+        "operationId": "batch_purge_journal_internal",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchInvocationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Batch purge journal result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchOperationResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/invocations_batch_operations/restart-as-new": {
+      "post": {
+        "tags": ["batch-invocation-operations"],
+        "summary": "Batch restart invocations as new",
+        "description": "Restart multiple invocations as new in batch. All operations execute in parallel and results are collected.",
+        "operationId": "batch_restart_as_new_invocations_internal",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchRestartAsNewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Batch restart as new result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchRestartAsNewResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/invocations_batch_operations/resume": {
+      "post": {
+        "tags": ["batch-invocation-operations"],
+        "summary": "Batch resume invocations",
+        "description": "Resume multiple paused or suspended invocations in batch. All operations execute in parallel and results are collected.",
+        "operationId": "batch_resume_invocations_internal",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchResumeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Batch resume result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchOperationResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/invocations_batch_operations/pause": {
+      "post": {
+        "tags": ["batch-invocation-operations"],
+        "summary": "Batch pause invocations",
+        "description": "Pause multiple running invocations in batch. All operations execute in parallel and results are collected.",
+        "operationId": "batch_pause_invocations_internal",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchInvocationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Batch pause result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchOperationResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -5463,6 +5813,140 @@
             "type": "string",
             "format": "date-time",
             "description": "The created_at timestamp of the last invocation in the current page, used for pagination"
+          }
+        }
+      },
+      "BatchInvocationRequest": {
+        "type": "object",
+        "required": ["invocation_ids"],
+        "properties": {
+          "invocation_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of invocation IDs to operate on (max 1000)"
+          }
+        }
+      },
+      "BatchResumeRequest": {
+        "type": "object",
+        "required": ["invocation_ids"],
+        "properties": {
+          "invocation_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of invocation IDs to resume (max 1000)"
+          },
+          "deployment": {
+            "$ref": "#/components/schemas/PatchDeploymentId",
+            "description": "Deployment ID to use when resuming (applies to all invocations)"
+          }
+        }
+      },
+      "BatchRestartAsNewRequest": {
+        "type": "object",
+        "required": ["invocation_ids"],
+        "properties": {
+          "invocation_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of invocation IDs to restart (max 1000)"
+          },
+          "deployment": {
+            "$ref": "#/components/schemas/PatchDeploymentId",
+            "description": "Deployment ID to use (applies to all invocations)"
+          }
+        }
+      },
+      "PatchDeploymentId": {
+        "oneOf": [
+          {
+            "type": "string",
+            "enum": ["Keep", "keep"],
+            "description": "Keep the currently pinned deployment"
+          },
+          {
+            "type": "string",
+            "enum": ["Latest", "latest"],
+            "description": "Use the latest deployment"
+          },
+          {
+            "type": "string",
+            "description": "A specific deployment ID"
+          }
+        ],
+        "description": "Specifies which deployment to use when resuming or restarting an invocation"
+      },
+      "BatchOperationResult": {
+        "type": "object",
+        "required": ["succeeded", "failed"],
+        "properties": {
+          "succeeded": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Invocation IDs that were successfully processed"
+          },
+          "failed": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FailedInvocationOperation"
+            },
+            "description": "Invocations that failed with error details"
+          }
+        }
+      },
+      "FailedInvocationOperation": {
+        "type": "object",
+        "required": ["invocation_id", "error"],
+        "properties": {
+          "invocation_id": {
+            "type": "string",
+            "description": "The invocation ID that failed"
+          },
+          "error": {
+            "type": "string",
+            "description": "Error message describing the failure"
+          }
+        }
+      },
+      "BatchRestartAsNewResult": {
+        "type": "object",
+        "required": ["succeeded", "failed"],
+        "properties": {
+          "succeeded": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RestartedInvocation"
+            },
+            "description": "Successfully restarted invocations with their new IDs"
+          },
+          "failed": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FailedInvocationOperation"
+            },
+            "description": "Invocations that failed with error details"
+          }
+        }
+      },
+      "RestartedInvocation": {
+        "type": "object",
+        "required": ["old_invocation_id", "new_invocation_id"],
+        "properties": {
+          "old_invocation_id": {
+            "type": "string",
+            "description": "The original invocation ID"
+          },
+          "new_invocation_id": {
+            "type": "string",
+            "description": "The new invocation ID"
           }
         }
       },

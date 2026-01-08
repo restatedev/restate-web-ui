@@ -827,6 +827,146 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/internal/invocations_batch_operations/kill': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Batch kill invocations
+     * @description Kill multiple invocations in batch. All operations execute in parallel and results are collected.
+     */
+    post: operations['batch_kill_invocations_internal'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/internal/invocations_batch_operations/cancel': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Batch cancel invocations
+     * @description Cancel multiple invocations in batch. All operations execute in parallel and results are collected.
+     */
+    post: operations['batch_cancel_invocations_internal'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/internal/invocations_batch_operations/purge': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Batch purge invocations
+     * @description Purge multiple completed invocations in batch. All operations execute in parallel and results are collected.
+     */
+    post: operations['batch_purge_invocations_internal'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/internal/invocations_batch_operations/purge-journal': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Batch purge invocation journals
+     * @description Purge journals for multiple completed invocations in batch. All operations execute in parallel and results are collected.
+     */
+    post: operations['batch_purge_journal_internal'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/internal/invocations_batch_operations/restart-as-new': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Batch restart invocations as new
+     * @description Restart multiple invocations as new in batch. All operations execute in parallel and results are collected.
+     */
+    post: operations['batch_restart_as_new_invocations_internal'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/internal/invocations_batch_operations/resume': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Batch resume invocations
+     * @description Resume multiple paused or suspended invocations in batch. All operations execute in parallel and results are collected.
+     */
+    post: operations['batch_resume_invocations_internal'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/internal/invocations_batch_operations/pause': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Batch pause invocations
+     * @description Pause multiple running invocations in batch. All operations execute in parallel and results are collected.
+     */
+    post: operations['batch_pause_invocations_internal'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1858,6 +1998,48 @@ export interface components {
        * @description The created_at timestamp of the last invocation in the current page, used for pagination
        */
       lastCreatedAt?: string;
+    };
+    BatchInvocationRequest: {
+      /** @description List of invocation IDs to operate on (max 1000) */
+      invocation_ids: string[];
+    };
+    BatchResumeRequest: {
+      /** @description List of invocation IDs to resume (max 1000) */
+      invocation_ids: string[];
+      /** @description Deployment ID to use when resuming (applies to all invocations) */
+      deployment?: components['schemas']['PatchDeploymentId'];
+    };
+    BatchRestartAsNewRequest: {
+      /** @description List of invocation IDs to restart (max 1000) */
+      invocation_ids: string[];
+      /** @description Deployment ID to use (applies to all invocations) */
+      deployment?: components['schemas']['PatchDeploymentId'];
+    };
+    /** @description Specifies which deployment to use when resuming or restarting an invocation */
+    PatchDeploymentId: ('Keep' | 'keep') | ('Latest' | 'latest') | string;
+    BatchOperationResult: {
+      /** @description Invocation IDs that were successfully processed */
+      succeeded: string[];
+      /** @description Invocations that failed with error details */
+      failed: components['schemas']['FailedInvocationOperation'][];
+    };
+    FailedInvocationOperation: {
+      /** @description The invocation ID that failed */
+      invocation_id: string;
+      /** @description Error message describing the failure */
+      error: string;
+    };
+    BatchRestartAsNewResult: {
+      /** @description Successfully restarted invocations with their new IDs */
+      succeeded: components['schemas']['RestartedInvocation'][];
+      /** @description Invocations that failed with error details */
+      failed: components['schemas']['FailedInvocationOperation'][];
+    };
+    RestartedInvocation: {
+      /** @description The original invocation ID */
+      old_invocation_id: string;
+      /** @description The new invocation ID */
+      new_invocation_id: string;
     };
     ListVirtualObjectStateRequestBody: {
       filters?: components['schemas']['FilterItem'][];
@@ -5782,6 +5964,286 @@ export interface operations {
         };
       };
       503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  batch_kill_invocations_internal: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['BatchInvocationRequest'];
+      };
+    };
+    responses: {
+      /** @description Batch kill result */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['BatchOperationResult'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  batch_cancel_invocations_internal: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['BatchInvocationRequest'];
+      };
+    };
+    responses: {
+      /** @description Batch cancel result */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['BatchOperationResult'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  batch_purge_invocations_internal: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['BatchInvocationRequest'];
+      };
+    };
+    responses: {
+      /** @description Batch purge result */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['BatchOperationResult'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  batch_purge_journal_internal: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['BatchInvocationRequest'];
+      };
+    };
+    responses: {
+      /** @description Batch purge journal result */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['BatchOperationResult'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  batch_restart_as_new_invocations_internal: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['BatchRestartAsNewRequest'];
+      };
+    };
+    responses: {
+      /** @description Batch restart as new result */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['BatchRestartAsNewResult'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  batch_resume_invocations_internal: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['BatchResumeRequest'];
+      };
+    };
+    responses: {
+      /** @description Batch resume result */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['BatchOperationResult'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  batch_pause_invocations_internal: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['BatchInvocationRequest'];
+      };
+    };
+    responses: {
+      /** @description Batch pause result */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['BatchOperationResult'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
         headers: {
           [name: string]: unknown;
         };
