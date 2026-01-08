@@ -410,6 +410,26 @@ const ACTION_RUN_ID_KEYS = [
   'github.run.id',
 ];
 
+export function hasGithubMetadata(metadata?: Record<string, string>) {
+  const commitSha = COMMIT_KEYS.reduce<string | undefined>((acc, key) => {
+    return acc || metadata?.[key];
+  }, undefined);
+  const repository = REPO_KEYS.reduce<string | undefined>((acc, key) => {
+    return acc || metadata?.[key];
+  }, undefined);
+  const actionsRunId = ACTION_RUN_ID_KEYS.reduce<string | undefined>(
+    (acc, key) => {
+      return acc || metadata?.[key];
+    },
+    undefined,
+  );
+
+  if (repository && (commitSha || actionsRunId)) {
+    return true;
+  }
+  return false;
+}
+
 const githubStyles = tv({
   base: 'flex items-center px-1.5 py-1 text-0.5xs font-medium text-gray-500',
 });
