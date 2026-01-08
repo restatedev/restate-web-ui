@@ -37,6 +37,12 @@ export function InvocationDeployment({
             highlightSelection={false}
           />
         </div>
+        <div className="flex h-9 w-full items-center px-1.5 py-1 not-last:border-b [&:not(:has(*))]:hidden">
+          <DeploymentGithubMetadata
+            metadata={deployment.metadata}
+            className="w-full pl-0.5"
+          />
+        </div>
         {showSdk &&
           (invocation.last_attempt_server || deployment.sdk_version) && (
             <div className="flex h-9 w-full items-center px-1.5 py-1 not-last:border-b">
@@ -50,12 +56,6 @@ export function InvocationDeployment({
               />
             </div>
           )}
-        <div className="flex h-9 w-full items-center px-1.5 py-1 not-last:border-b">
-          <DeploymentGithubMetadata
-            metadata={deployment.metadata}
-            className="w-full pl-0.5"
-          />
-        </div>
       </div>
     ) : (
       <div className="gap-1.5 truncate px-1.5 font-mono text-xs text-zinc-600">
