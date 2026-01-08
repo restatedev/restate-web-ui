@@ -131,19 +131,19 @@ function ServiceContent({ service }: { service: string }) {
                     <Popover>
                       <PopoverTrigger>
                         <Button
-                          className="flex items-center gap-1 rounded-md border-orange-200 bg-orange-50 px-1 py-0.5 text-xs font-normal text-orange-600"
+                          className="flex min-w-0 items-center gap-1 rounded-md border-orange-200 bg-orange-50 px-1 py-0.5 text-xs font-normal text-orange-600"
                           variant="secondary"
                         >
                           <Icon
                             name={IconName.TriangleAlert}
-                            className="h-3.5 w-3.5 text-orange-500"
+                            className="h-3.5 w-3.5 shrink-0 text-orange-500"
                           />
                           {formatPlurals(data.info.length, {
                             one: 'warning',
                             other: 'warnings',
                           })}
 
-                          <div className="ml-1 rounded-full bg-orange-500 px-1.5 text-2xs font-normal text-white">
+                          <div className="ml-1 truncate rounded-full bg-orange-500 px-1.5 text-2xs font-normal text-white">
                             {data.info.length}
                           </div>
                         </Button>
