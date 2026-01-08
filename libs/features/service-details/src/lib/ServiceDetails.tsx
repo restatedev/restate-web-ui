@@ -28,6 +28,10 @@ import { RestateMinimumVersion } from '@restate/util/feature-flag';
 import { useRestateContext } from '@restate/features/restate-context';
 import { AdvancedSection } from './Advanced';
 import { useState } from 'react';
+import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
+import { DropdownSection } from '@restate/ui/dropdown';
+import { Badge } from '@restate/ui/badge';
+import { formatPlurals } from '@restate/util/intl';
 
 export function ServiceDetails() {
   return (
@@ -123,6 +127,53 @@ function ServiceContent({ service }: { service: string }) {
                       })}
                     />
                   )}
+                  {data.info && data.info.length > 0 && (
+                    <Popover>
+                      <PopoverTrigger>
+                        <Button
+                          className="flex items-center gap-1 rounded-md border-orange-200 bg-orange-50 px-1 py-0.5 text-xs font-normal text-orange-600"
+                          variant="secondary"
+                        >
+                          <Icon
+                            name={IconName.TriangleAlert}
+                            className="h-3.5 w-3.5 text-orange-500"
+                          />
+                          {formatPlurals(data.info.length, {
+                            one: 'warning',
+                            other: 'warnings',
+                          })}
+
+                          <div className="ml-1 rounded-full bg-orange-500 px-1.5 text-2xs font-normal text-white">
+                            {data.info.length}
+                          </div>
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="max-w-md">
+                        <DropdownSection
+                          title={formatPlurals(data.info.length, {
+                            one: 'warning',
+                            other: 'warnings',
+                          })}
+                        >
+                          {data?.info?.map((info) => (
+                            <p
+                              className="-m-px flex gap-2 border border-orange-200 bg-orange-50 p-3 text-0.5xs text-orange-600 first:rounded-t-xl last:rounded-b-xl"
+                              key={info.code}
+                            >
+                              <Icon
+                                className="h-5 w-5 shrink-0 fill-orange-600 text-orange-100"
+                                name={IconName.TriangleAlert}
+                              />
+                              <span className="inline-block">
+                                <span className="font-semibold">Warning: </span>
+                                {info.message}
+                              </span>
+                            </p>
+                          ))}
+                        </DropdownSection>
+                      </PopoverContent>
+                    </Popover>
+                  )}
                 </div>
               )}
             </>
@@ -132,6 +183,7 @@ function ServiceContent({ service }: { service: string }) {
       {OnboardingGuide && (
         <OnboardingGuide stage="open-playground" service={service} />
       )}
+
       <div className="flex flex-col gap-2">
         <Section className="mt-4">
           <SectionTitle>Handlers</SectionTitle>
