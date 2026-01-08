@@ -73,13 +73,7 @@ function Component() {
   const shouldShowFailure =
     Boolean(lastError) &&
     !['killed', 'cancelled'].includes(String(journalAndInvocationData?.status));
-  const shouldLastErrorBeExpanded = Boolean(
-    shouldShowFailure &&
-      (journalAndInvocationData?.completed_at ||
-        journalAndInvocationData?.journal?.entries?.some(
-          (entry) => entry.isRetrying || entry.type === 'Retrying',
-        )),
-  );
+
   const hasStack = lastError?.message.includes('\n');
   const isFailed = !!journalAndInvocationData?.completion_failure;
 
@@ -195,7 +189,6 @@ function Component() {
                     error={lastError}
                     wrap={hasStack}
                     className={lastFailureStyles()}
-                    open={shouldLastErrorBeExpanded}
                     isTransient={!isFailed}
                   />
                 </SectionContent>

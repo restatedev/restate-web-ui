@@ -206,7 +206,14 @@ export function Entry({
           (depth === 0 &&
             typeof invocation.last_failure_related_command_index ===
               'undefined' &&
-            isEntriesEqual(entry, invocation.journal?.entries?.at(-1))) ||
+            isEntriesEqual(
+              entry,
+              invocation.journal?.entries?.findLast(
+                (entry) =>
+                  !isCompact ||
+                  !['Event: TransientError'].includes(String(entry?.type)),
+              ),
+            )) ||
           (depth === 0 &&
             invocation.completion_failure &&
             entry.type === 'Output')
@@ -267,30 +274,11 @@ export function Entry({
           <div className="absolute right-0 left-0 translate-y-[0.5px] border-b border-dashed border-gray-300/50" />
         </div>
       </div>
-      {invocation.journal?.version !== 1 ? (
-        <TimelinePortal invocationId={invocation?.id} entry={entry}>
-          {EntrySpecificComponent && (
-            <EntryProgress entry={entry} invocation={invocation} />
-          )}
-        </TimelinePortal>
-      ) : (
-        entry.commandIndex === 1 && (
-          <TimelinePortal invocationId={invocation?.id} entry={entry}>
-            <div className="absolute w-full px-6 text-center font-sans text-0.5xs text-zinc-500">
-              Update to the latest SDK to see more details in your journal.
-              Check the{' '}
-              <Link
-                href="https://docs.restate.dev/services/versioning#deploying-new-service-versions"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                docs
-              </Link>{' '}
-              for more info.
-            </div>
-          </TimelinePortal>
-        )
-      )}
+      <TimelinePortal invocationId={invocation?.id} entry={entry}>
+        {EntrySpecificComponent && (
+          <EntryProgress entry={entry} invocation={invocation} />
+        )}
+      </TimelinePortal>
     </>
   );
 }
