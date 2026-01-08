@@ -108,18 +108,42 @@ export function Deployment({
       className={styles({ className, isSelected })}
       data-deprecated={isDeprecated}
     >
-      <div className="h-6 w-6 shrink-0 rounded-md border bg-white shadow-xs">
-        <Icon
-          name={
-            isTunnel
-              ? IconName.Tunnel
-              : isHttpDeployment(deployment)
-                ? IconName.Http
-                : IconName.Lambda
-          }
-          className="h-full w-full p-1 text-zinc-400"
-        />
-      </div>
+      {isDeprecated ? (
+        <Popover>
+          <PopoverTrigger>
+            <Button
+              className="z-[2] rounded-md border-orange-200 bg-orange-50 p-1"
+              variant="secondary"
+            >
+              <Icon
+                name={IconName.TriangleAlert}
+                className="h-3.5 w-3.5 text-orange-500"
+              />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="max-w-md">
+            <div className="p-4 text-0.5xs text-orange-600">
+              <span className="font-semibold">Unsupported SDK Version:</span>{' '}
+              This deployment uses an obsolete SDK version (Service Protocol{' '}
+              {deployment.max_protocol_version}) that is no longer supported.
+              Please upgrade…
+            </div>
+          </PopoverContent>
+        </Popover>
+      ) : (
+        <div className="h-6 w-6 shrink-0 rounded-md border bg-white shadow-xs">
+          <Icon
+            name={
+              isTunnel
+                ? IconName.Tunnel
+                : isHttpDeployment(deployment)
+                  ? IconName.Http
+                  : IconName.Lambda
+            }
+            className="h-full w-full p-1 text-zinc-400"
+          />
+        </div>
+      )}
 
       <div className="flex min-w-[6ch] flex-auto flex-row items-center gap-1 text-zinc-600">
         {
@@ -171,29 +195,6 @@ export function Deployment({
             className="h-4 w-4 text-gray-500"
           />
         </Link>
-        {isDeprecated && (
-          <Popover>
-            <PopoverTrigger>
-              <Button
-                className="z-[2] rounded-md border-orange-200 bg-orange-50 p-1"
-                variant="secondary"
-              >
-                <Icon
-                  name={IconName.TriangleAlert}
-                  className="h-3.5 w-3.5 text-orange-500"
-                />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="max-w-md">
-              <div className="p-4 text-0.5xs text-orange-600">
-                <span className="font-semibold">Unsupported SDK Version:</span>{' '}
-                This deployment uses an obsolete SDK version (Service Protocol{' '}
-                {deployment.max_protocol_version}) that is no longer supported.
-                Please upgrade…
-              </div>
-            </PopoverContent>
-          </Popover>
-        )}
       </div>
 
       {revision && <Revision revision={revision} className="z-2 ml-auto" />}
