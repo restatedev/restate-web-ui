@@ -51,7 +51,11 @@ export function RetentionSection({
       <div className="flex flex-col">
         {isWorkflow && (
           <SubSection
-            value={data?.workflow_completion_retention}
+            value={
+              data?.workflow_completion_retention === '0s'
+                ? 'Disabled'
+                : data?.workflow_completion_retention
+            }
             label={
               <WorkflowRetentionExplainer variant="indicator-button">
                 Workflow
@@ -61,7 +65,11 @@ export function RetentionSection({
           />
         )}
         <SubSection
-          value={data?.idempotency_retention}
+          value={
+            data?.idempotency_retention === '0s'
+              ? 'Disabled'
+              : data?.idempotency_retention
+          }
           label={
             <IdempotencyRetentionExplainer
               variant="indicator-button"
@@ -74,7 +82,11 @@ export function RetentionSection({
         />
         <RestateMinimumVersion minVersion="1.4.5">
           <SubSection
-            value={data?.journal_retention}
+            value={
+              data?.journal_retention === '0s'
+                ? 'Disabled'
+                : data?.journal_retention
+            }
             label={
               <JournalRetentionExplainer variant="indicator-button">
                 Journal
