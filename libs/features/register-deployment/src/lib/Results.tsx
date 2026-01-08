@@ -5,25 +5,28 @@ import { Disclosure, DisclosurePanel } from 'react-aria-components';
 import { Button } from '@restate/ui/button';
 import { ServiceType, Handler } from '@restate/features/service';
 import { Link } from '@restate/ui/link';
+import { MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION } from '@restate/features/deployment';
 
 export function DeploymentProtocolCheck() {
   const { max_protocol_version } = useRegisterDeploymentContext();
 
-  if (max_protocol_version && max_protocol_version <= 4) {
+  if (
+    max_protocol_version &&
+    max_protocol_version < MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION
+  ) {
     return (
-      <p className="mt-2 flex gap-2 rounded-xl bg-orange-50 p-3 text-0.5xs text-orange-600">
+      <p className="mt-2 flex gap-2 rounded-xl border border-orange-200 bg-orange-50 p-3 text-0.5xs text-orange-600">
         <Icon
           className="h-5 w-5 shrink-0 fill-orange-600 text-orange-100"
           name={IconName.TriangleAlert}
         />
         <span className="inline-block">
-          The registered endpoint is using{' '}
-          <span className="font-semibold">
-            service protocol {max_protocol_version}
-          </span>{' '}
-          that will be <span className="font-semibold">removed</span> in the
-          future releases. Please update the SDK to the latest release and
-          re-register the deployment. For more information, refer to the{' '}
+          <span className="font-semibold">Outdated SDK Version:</span> This
+          deployment uses an older SDK version (Service Protocol{' '}
+          {max_protocol_version}) which will be unsupported in upcoming
+          releases. To avoid service interruption, please upgrade your Restate
+          SDK to the latest version and re-register this deployment. For more
+          information, refer to the{' '}
           <Link
             href="https://docs.restate.dev/services/versioning#deploying-new-service-versions"
             target="_blank"

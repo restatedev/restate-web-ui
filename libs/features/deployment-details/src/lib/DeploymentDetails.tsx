@@ -33,6 +33,7 @@ import {
   DEPLOYMENT_QUERY_PARAM,
   DELETE_DEPLOYMENT_QUERY_PARAM,
   SDK,
+  MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION,
 } from '@restate/features/deployment';
 import { useRestateContext } from '@restate/features/restate-context';
 import { formatDateTime } from '@restate/util/intl';
@@ -116,6 +117,9 @@ function DeploymentContent({ deployment }: { deployment: string }) {
 
   const displayedEndpoint = isTunnel ? tunnelEndpoint?.remoteUrl : endpoint;
 
+  const isDeprecated = Boolean(
+    data && data.max_protocol_version < MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION,
+  );
   return (
     <>
       <h2 className="mb-3 flex items-center gap-2 text-lg leading-6 font-medium text-gray-900">
@@ -180,6 +184,20 @@ function DeploymentContent({ deployment }: { deployment: string }) {
           )}
         </div>
       </h2>
+      {isDeprecated && (
+        <p className="mt-2 flex gap-2 rounded-xl border border-orange-200 bg-orange-50 p-3 text-0.5xs text-orange-600">
+          <Icon
+            className="h-5 w-5 shrink-0 fill-orange-600 text-orange-100"
+            name={IconName.TriangleAlert}
+          />
+          <span className="inline-block">
+            <span className="font-semibold">Unsupported SDK Version:</span> This
+            deployment uses an obsolete SDK version (Service Protocol{' '}
+            {data?.max_protocol_version}) that is no longer supported. Please
+            upgrade…
+          </span>
+        </p>
+      )}
       {data && (
         <Section className="mt-4">
           <SectionTitle>Deployment details</SectionTitle>
