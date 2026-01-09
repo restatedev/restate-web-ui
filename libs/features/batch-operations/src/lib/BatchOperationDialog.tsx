@@ -95,61 +95,72 @@ function Filters({
   const paramsWithFilters =
     'filters' in state.params ? state.params : undefined;
 
-  if (
-    !paramsWithFilters ||
-    paramsWithFilters.filters.filter((filter) => !filter.isActionImplicitFilter)
-      .length === 0
-  ) {
-    return null;
-  }
-
+  const hasServiceFilter = paramsWithFilters?.filters.some(
+    (filter) => filter.field === 'target_service_name',
+  );
+  const hasStatusFilter = paramsWithFilters?.filters.some(
+    (filter) => filter.field === 'status' && !filter.isActionImplicitFilter,
+  );
+  const paramsWithFiltersWithServiceAndStatus = [
+    ...(hasServiceFilter
+      ? []
+      : [
+          {
+            field: 'target_service_name',
+            type: 'STRING_LIST',
+            operation: 'IN',
+            value: [],
+          },
+        ]),
+    ...(hasStatusFilter
+      ? []
+      : [{ field: 'status', type: 'STRING_LIST', operation: 'IN', value: [] }]),
+    ...(paramsWithFilters?.filters ?? []).filter(
+      (filter) => !filter.isActionImplicitFilter,
+    ),
+  ];
   return (
     <div className={filterStyles({ className })}>
-      {paramsWithFilters.filters
-        .filter((filter) => !filter.isActionImplicitFilter)
-        .map((filter, index) => {
-          const clauseSchema = paramsWithFilters.schema?.find(
-            ({ id }) => id === filter.field,
-          );
-          const queryClause = clauseSchema
-            ? new QueryClause(clauseSchema, {
-                operation: filter.operation as any,
-                value: 'value' in filter ? filter.value : undefined,
-                fieldValue: filter.field,
-              })
-            : undefined;
+      {paramsWithFiltersWithServiceAndStatus.map((filter, index) => {
+        const clauseSchema = paramsWithFilters?.schema?.find(
+          ({ id }) => id === filter.field,
+        );
+        const queryClause = clauseSchema
+          ? new QueryClause(clauseSchema, {
+              operation: filter.operation as any,
+              value: 'value' in filter ? filter.value : undefined,
+              fieldValue: filter.field,
+            })
+          : undefined;
 
-          return (
-            <div
-              key={index}
-              className="flex min-w-0 items-baseline gap-[0.75ch] rounded-md border bg-white px-2 py-1 text-xs shadow-xs"
-            >
-              {queryClause?.isAllSelected ? (
-                <>
-                  <span className="font-semibold">Any</span>
-                  <span> {queryClause?.label || filter.field}</span>
-                </>
-              ) : (
-                <>
-                  <span className="shrink-0 whitespace-nowrap">
-                    {queryClause?.label || filter.field}
-                  </span>
-                  {queryClause?.operationLabel?.split(' ').map((segment) => (
-                    <span className="font-mono" key={segment}>
-                      {segment}
-                    </span>
-                  )) || filter.operation}
-                  <TruncateWithTooltip>
-                    <span className="font-semibold">
-                      {queryClause?.valueLabel ||
-                        ('value' in filter ? filter.value : '')}
-                    </span>
-                  </TruncateWithTooltip>
-                </>
-              )}
-            </div>
-          );
-        })}
+        return (
+          <div
+            key={index}
+            className="flex min-w-0 items-baseline gap-[0.75ch] rounded-md border bg-white px-2 py-1 text-xs shadow-xs"
+          >
+            <span className="shrink-0 whitespace-nowrap">
+              {queryClause?.label || filter.field}
+            </span>
+            {queryClause?.operationLabel?.split(' ').map((segment) => (
+              <span className="font-mono" key={segment}>
+                {segment}
+              </span>
+            )) || filter.operation}
+            <TruncateWithTooltip>
+              <span className="font-semibold">
+                {queryClause &&
+                queryClause.type === 'STRING_LIST' &&
+                (!queryClause.value.operation ||
+                  queryClause.value.operation === 'IN') &&
+                (queryClause.isAllSelected || queryClause.isNothingSelected)
+                  ? 'Any'
+                  : queryClause?.valueLabel ||
+                    ('value' in filter ? filter.value : '')}
+              </span>
+            </TruncateWithTooltip>
+          </div>
+        );
+      })}
     </div>
   );
 }

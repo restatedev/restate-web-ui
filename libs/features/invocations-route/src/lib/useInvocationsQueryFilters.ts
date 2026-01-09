@@ -83,8 +83,8 @@ export function useInvocationsQueryFilters() {
     clauseSchema &&
       queryClauses.unshift(
         new QueryClause(clauseSchema, {
-          value: clauseSchema.options?.map(({ value }) => value),
           operation: 'IN',
+          value: [],
         }),
       );
   }
@@ -94,8 +94,8 @@ export function useInvocationsQueryFilters() {
     clauseSchema &&
       queryClauses.unshift(
         new QueryClause(clauseSchema, {
-          value: clauseSchema.options?.map(({ value }) => value),
           operation: 'IN',
+          value: [],
         }),
       );
   }
@@ -139,7 +139,7 @@ export function useInvocationsQueryFilters() {
       .filter((key) => key.startsWith(FILTER_QUERY_PREFIX))
       .forEach((key) => newSearchParams.delete(key));
     query.items
-      .filter((clause) => clause.isValid && !clause.isAllSelected)
+      .filter((clause) => clause.isValid)
       .forEach((item) => {
         newSearchParams.set(getFilterParamKey(item), String(item));
       });

@@ -72,7 +72,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
       'Cancellation frees held resources, cooperates with your handler code to roll back changes, and allows proper cleanup. It is non-blocking, so the call may return before cleanup finishes. In rare cases, cancellation may not take effect, retry the operation if needed.',
     progressTitle: 'Cancelling invocations',
     completedText: 'Cancelled',
-    emptyMessage: 'Only non-completed invocations can be cancelled.',
+    emptyMessage: 'Only in-flight invocations can be cancelled.',
   },
   pause: {
     title: 'Pause Invocations',
@@ -234,7 +234,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
       'Killing immediately stops all calls in the invocation tree without executing compensation logic. This may leave your service in an inconsistent state. Only use as a last resort after trying other fixes.',
     progressTitle: 'Killing invocations',
     completedText: 'Killed',
-    emptyMessage: 'Only non-completed invocations can be killed.',
+    emptyMessage: 'Only in-flight invocations can be killed.',
   },
   purge: {
     title: 'Purge Invocations',
