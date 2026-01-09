@@ -91,7 +91,7 @@ jobs:
         with:
           token: ${{ secrets.TOKEN_FOR_RESTATE_REPO }}
           branch: update-ui-${{needs.release.outputs.tag}}
-          title: "[Restate UI] Update to ${{ needs.release.outputs.tag }}"
+          title: '[Restate UI] Update to ${{ needs.release.outputs.tag }}'
           sign-commits: true
           commit-message: |
             [UI] Updating UI assets to ${{ needs.release.outputs.tag }}
