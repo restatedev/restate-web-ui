@@ -14,6 +14,12 @@ export async function batchPauseInvocations(
         this.adminApi(`/invocations/${invocationId}/pause`, {
           method: 'PATCH',
         }),
+      (invocationIds) =>
+        this.adminApi('/internal/invocations_batch_operations/pause', {
+          method: 'POST',
+          json: { invocation_ids: invocationIds },
+        }),
+      this.restateVersion,
     );
 
     return Response.json({
@@ -33,10 +39,18 @@ export async function batchPauseInvocations(
     },
   );
 
-  const result = await batchProcessInvocations(invocationIds, (invocationId) =>
-    this.adminApi(`/invocations/${invocationId}/pause`, {
-      method: 'PATCH',
-    }),
+  const result = await batchProcessInvocations(
+    invocationIds,
+    (invocationId) =>
+      this.adminApi(`/invocations/${invocationId}/pause`, {
+        method: 'PATCH',
+      }),
+    (invocationIds) =>
+      this.adminApi('/internal/invocations_batch_operations/pause', {
+        method: 'POST',
+        json: { invocation_ids: invocationIds },
+      }),
+    this.restateVersion,
   );
 
   return Response.json({

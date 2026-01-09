@@ -39,11 +39,11 @@ const styles = tv({
   variants: {
     isWarning: {
       true: {
-        banner: 'bg-orange-50 text-orange-600',
+        banner: 'border border-orange-200 bg-orange-50 text-orange-600',
         bannerIcon: 'fill-orange-600 text-orange-100',
       },
       false: {
-        banner: 'bg-blue-50 text-blue-600',
+        banner: 'border border-blue-200 bg-blue-50 text-blue-600',
         bannerIcon: 'fill-blue-600 text-blue-100',
       },
     },

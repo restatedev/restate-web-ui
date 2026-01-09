@@ -177,15 +177,6 @@ const healthHandler = http.get<
   }
 });
 
-const openApiHandler = http.get<
-  never,
-  never,
-  adminApi.operations['openapi_spec']['responses']['200']['content']['application/json'],
-  GetPath<'/openapi'>
->('/openapi', async () => {
-  return HttpResponse.json(adminApi.spec as any);
-});
-
 const versionHandler = http.get<
   never,
   never,
@@ -305,7 +296,6 @@ const serviceDetailsHandler = http.get<
 export const adminApiMockHandlers = [
   listDeploymentsHandler,
   healthHandler,
-  openApiHandler,
   registerDeploymentHandler,
   versionHandler,
   deploymentDetailsHandler,

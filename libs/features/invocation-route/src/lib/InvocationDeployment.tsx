@@ -1,7 +1,10 @@
 import type { Invocation } from '@restate/data-access/admin-api';
 import { useListDeployments } from '@restate/data-access/admin-api-hooks';
 import { Deployment, SDK } from '@restate/features/deployment';
-import { DeploymentGithubMetadata } from '@restate/features/deployment-details';
+import {
+  DeploymentGithubMetadata,
+  hasGithubMetadata,
+} from '@restate/features/deployment-details';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { tv } from '@restate/util/styles';
 
@@ -50,12 +53,14 @@ export function InvocationDeployment({
               />
             </div>
           )}
-        <div className="flex h-9 w-full items-center px-1.5 py-1 not-last:border-b">
-          <DeploymentGithubMetadata
-            metadata={deployment.metadata}
-            className="w-full pl-0.5"
-          />
-        </div>
+        {hasGithubMetadata(deployment.metadata) && (
+          <div className="flex h-9 w-full items-center px-1.5 py-1 not-last:border-b">
+            <DeploymentGithubMetadata
+              metadata={deployment.metadata}
+              className="w-full pl-0.5"
+            />
+          </div>
+        )}
       </div>
     ) : (
       <div className="gap-1.5 truncate px-1.5 font-mono text-xs text-zinc-600">

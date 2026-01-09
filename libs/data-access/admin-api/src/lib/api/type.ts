@@ -87,6 +87,8 @@ export type BatchResumeInvocationsRequestBody =
   components['schemas']['BatchResumeInvocationsRequestBody'];
 export type BatchInvocationsResponse =
   components['schemas']['BatchInvocationsResponse'];
+export type BatchOperationResult =
+  components['schemas']['BatchOperationResult'];
 export type SortInvocations = Exclude<
   components['schemas']['ListInvocationsRequestBody']['sort'],
   undefined

@@ -17,11 +17,11 @@ interface AlertBannerProps {
 function AlertBanner({ type, children }: AlertBannerProps) {
   const styles = {
     warning: {
-      container: 'bg-orange-100 text-orange-600',
+      container: 'bg-orange-50 border border-orange-200 text-orange-600',
       icon: 'fill-orange-600 text-orange-100',
     },
     info: {
-      container: 'bg-blue-50 text-blue-600',
+      container: 'bg-blue-50 text-blue-600 border border-blue-200',
       icon: 'fill-blue-600 text-blue-100',
     },
   };

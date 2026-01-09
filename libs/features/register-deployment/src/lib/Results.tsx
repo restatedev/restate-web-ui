@@ -5,34 +5,54 @@ import { Disclosure, DisclosurePanel } from 'react-aria-components';
 import { Button } from '@restate/ui/button';
 import { ServiceType, Handler } from '@restate/features/service';
 import { Link } from '@restate/ui/link';
+import { MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION } from '@restate/features/deployment';
+import { PropsWithChildren } from 'react';
+import { tv } from '@restate/util/styles';
+
+const warningStyles = tv({
+  base: 'mt-2 flex gap-2 rounded-xl border border-orange-200 bg-orange-50 p-3 text-0.5xs text-orange-600',
+});
+export function Warning({
+  title,
+  className,
+  children,
+}: PropsWithChildren<{ title: string; className?: string }>) {
+  return (
+    <p className={warningStyles({ className })}>
+      <Icon
+        className="h-5 w-5 shrink-0 fill-orange-600 text-orange-100"
+        name={IconName.TriangleAlert}
+      />
+      <span className="inline-block">
+        <span className="font-semibold">{title}: </span>
+        {children}
+      </span>
+    </p>
+  );
+}
 
 export function DeploymentProtocolCheck() {
   const { max_protocol_version } = useRegisterDeploymentContext();
 
-  if (max_protocol_version && max_protocol_version <= 4) {
+  if (
+    max_protocol_version &&
+    max_protocol_version < MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION
+  ) {
     return (
-      <p className="mt-2 flex gap-2 rounded-xl bg-orange-50 p-3 text-0.5xs text-orange-600">
-        <Icon
-          className="h-5 w-5 shrink-0 fill-orange-600 text-orange-100"
-          name={IconName.TriangleAlert}
-        />
-        <span className="inline-block">
-          The registered endpoint is using{' '}
-          <span className="font-semibold">
-            service protocol {max_protocol_version}
-          </span>{' '}
-          that will be <span className="font-semibold">removed</span> in the
-          future releases. Please update the SDK to the latest release and
-          re-register the deployment. For more information, refer to the{' '}
-          <Link
-            href="https://docs.restate.dev/services/versioning#deploying-new-service-versions"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            documentation.
-          </Link>
-        </span>
-      </p>
+      <Warning title="Outdated SDK Version">
+        This deployment uses an older SDK version (Service Protocol{' '}
+        {max_protocol_version}) which will be unsupported in upcoming releases.
+        To avoid service interruption, please upgrade your Restate SDK to the
+        latest version and re-register this deployment. For more information,
+        refer to the{' '}
+        <Link
+          href="https://docs.restate.dev/services/versioning#deploying-new-service-versions"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          documentation.
+        </Link>
+      </Warning>
     );
   }
 
@@ -108,6 +128,11 @@ function Service({
           </div>
         </div>
         <DisclosurePanel>
+          {service.info?.map((info) => (
+            <Warning key={info.code} title={'Warning'} className="mx-2">
+              {info.message}
+            </Warning>
+          ))}
           {(service.handlers ?? []).length > 0 && (
             <div className="mx-1.5 mt-2 mb-1.5 flex flex-col">
               <div className="mt-2 mb-1 ml-2 flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase">

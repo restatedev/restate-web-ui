@@ -58,7 +58,7 @@ const BatchOperationsContext =
 
 export function BatchOperationsProvider({
   children,
-  batchSize = 40,
+  batchSize = 1000,
 }: PropsWithChildren<{ batchSize?: number }>) {
   const [batchOpes, setBatchOpes] = useState([] as BatchState[]);
   const hasPendingOps = batchOpes.some(
@@ -164,7 +164,8 @@ export function BatchOperationsProvider({
                     <span className="ml-2 inline-block font-medium">
                       {formatPercentageWithoutFraction(
                         (successful + failed) /
-                          Math.max(successful + failed, total, 1),
+                          (Math.max(successful + failed, total, 1) *
+                            (!isCompleted ? 1.01 : 1)),
                       )}
                     </span>{' '}
                     (

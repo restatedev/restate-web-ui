@@ -14,6 +14,12 @@ export async function batchPurgeInvocations(
         this.adminApi(`/invocations/${invocationId}/purge`, {
           method: 'PATCH',
         }),
+      (invocationIds) =>
+        this.adminApi('/internal/invocations_batch_operations/purge', {
+          method: 'POST',
+          json: { invocation_ids: invocationIds },
+        }),
+      this.restateVersion,
     );
 
     return Response.json({
@@ -33,10 +39,18 @@ export async function batchPurgeInvocations(
     },
   );
 
-  const result = await batchProcessInvocations(invocationIds, (invocationId) =>
-    this.adminApi(`/invocations/${invocationId}/purge`, {
-      method: 'PATCH',
-    }),
+  const result = await batchProcessInvocations(
+    invocationIds,
+    (invocationId) =>
+      this.adminApi(`/invocations/${invocationId}/purge`, {
+        method: 'PATCH',
+      }),
+    (invocationIds) =>
+      this.adminApi('/internal/invocations_batch_operations/purge', {
+        method: 'POST',
+        json: { invocation_ids: invocationIds },
+      }),
+    this.restateVersion,
   );
 
   return Response.json({

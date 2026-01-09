@@ -72,8 +72,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
       'Cancellation frees held resources, cooperates with your handler code to roll back changes, and allows proper cleanup. It is non-blocking, so the call may return before cleanup finishes. In rare cases, cancellation may not take effect, retry the operation if needed.',
     progressTitle: 'Cancelling invocations',
     completedText: 'Cancelled',
-    emptyMessage:
-      'No invocations match your criteria. Only non-completed invocations can be cancelled.',
+    emptyMessage: 'Only non-completed invocations can be cancelled.',
   },
   pause: {
     title: 'Pause Invocations',
@@ -115,8 +114,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
       'Paused invocations will stop executing until manually resumed.',
     progressTitle: 'Pausing invocations',
     completedText: 'Paused',
-    emptyMessage:
-      'No invocations match your criteria. Only running invocations can be paused.',
+    emptyMessage: 'Only running invocations can be paused.',
   },
   'restart-as-new': {
     title: 'Restart as New Invocations',
@@ -157,8 +155,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
       'Creates a new invocation with the same input (if any) as the original leaving the original unchanged. The new invocation will have a different ID',
     progressTitle: 'Restarting invocations',
     completedText: 'Restarted',
-    emptyMessage:
-      'No invocations match your criteria. Only completed invocations can be restarted.',
+    emptyMessage: 'Only completed invocations can be restarted.',
   },
   resume: {
     title: 'Resume Invocations',
@@ -196,8 +193,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     ),
     progressTitle: 'Resuming invocations',
     completedText: 'Resumed',
-    emptyMessage:
-      'No invocations match your criteria. Only paused invocations can be resumed.',
+    emptyMessage: 'Only paused invocations can be resumed.',
   },
   kill: {
     title: 'Kill Invocations',
@@ -238,8 +234,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
       'Killing immediately stops all calls in the invocation tree without executing compensation logic. This may leave your service in an inconsistent state. Only use as a last resort after trying other fixes.',
     progressTitle: 'Killing invocations',
     completedText: 'Killed',
-    emptyMessage:
-      'No invocations match your criteria. Only non-completed invocations can be killed.',
+    emptyMessage: 'Only non-completed invocations can be killed.',
   },
   purge: {
     title: 'Purge Invocations',
@@ -280,7 +275,6 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
       'After an invocation completes, it will be retained by Restate for some time, in order to introspect it and, in case of idempotent requests, to perform deduplication.',
     progressTitle: 'Purging invocations',
     completedText: 'Purged',
-    emptyMessage:
-      'No invocations match your criteria. Only completed invocations can be purged.',
+    emptyMessage: 'Only completed invocations can be purged.',
   },
 };

@@ -16,6 +16,8 @@ import { useListDeployments } from '@restate/data-access/admin-api-hooks';
 import { useRestateContext } from '@restate/features/restate-context';
 import { Badge } from '@restate/ui/badge';
 import { Copy } from '@restate/ui/copy';
+import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
+import { Button } from '@restate/ui/button';
 
 const styles = tv({
   base: 'relative -m-1 flex flex-row items-center gap-2 border p-1 text-0.5xs transition-all ease-in-out',
@@ -26,6 +28,8 @@ const styles = tv({
     },
   },
 });
+
+export const MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION = 5;
 
 export function Deployment({
   className,
@@ -52,6 +56,11 @@ export function Deployment({
   const isSelected =
     activeDeploymentInSidebar === deploymentId && highlightSelection;
   const linkRef = useRef<HTMLAnchorElement>(null);
+
+  const isDeprecated = Boolean(
+    deployment &&
+      deployment.max_protocol_version < MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION,
+  );
 
   if (!deployment) {
     if (deploymentId) {
@@ -95,19 +104,46 @@ export function Deployment({
   const deploymentEndpoint = isTunnel ? tunnelEndpoint?.remoteUrl : endpoint;
 
   return (
-    <div className={styles({ className, isSelected })}>
-      <div className="h-6 w-6 shrink-0 rounded-md border bg-white shadow-xs">
-        <Icon
-          name={
-            isTunnel
-              ? IconName.Tunnel
-              : isHttpDeployment(deployment)
-                ? IconName.Http
-                : IconName.Lambda
-          }
-          className="h-full w-full p-1 text-zinc-400"
-        />
-      </div>
+    <div
+      className={styles({ className, isSelected })}
+      data-deprecated={isDeprecated}
+    >
+      {isDeprecated ? (
+        <Popover>
+          <PopoverTrigger>
+            <Button
+              className="z-[2] rounded-md border-orange-200 bg-orange-50 p-1"
+              variant="secondary"
+            >
+              <Icon
+                name={IconName.TriangleAlert}
+                className="h-3.5 w-3.5 text-orange-500"
+              />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="max-w-md">
+            <div className="p-4 text-0.5xs text-orange-600">
+              <span className="font-semibold">Unsupported SDK Version:</span>{' '}
+              This deployment uses an obsolete SDK version (Service Protocol{' '}
+              {deployment.max_protocol_version}) that is no longer supported.
+              Please upgrade…
+            </div>
+          </PopoverContent>
+        </Popover>
+      ) : (
+        <div className="h-6 w-6 shrink-0 rounded-md border bg-white shadow-xs">
+          <Icon
+            name={
+              isTunnel
+                ? IconName.Tunnel
+                : isHttpDeployment(deployment)
+                  ? IconName.Http
+                  : IconName.Lambda
+            }
+            className="h-full w-full p-1 text-zinc-400"
+          />
+        </div>
+      )}
 
       <div className="flex min-w-[6ch] flex-auto flex-row items-center gap-1 text-zinc-600">
         {
@@ -160,6 +196,7 @@ export function Deployment({
           />
         </Link>
       </div>
+
       {revision && <Revision revision={revision} className="z-2 ml-auto" />}
     </div>
   );

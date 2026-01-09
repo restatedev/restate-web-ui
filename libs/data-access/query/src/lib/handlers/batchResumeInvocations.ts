@@ -20,6 +20,12 @@ export async function batchResumeInvocations(
           method: 'PATCH',
         });
       },
+      (invocationIds) =>
+        this.adminApi('/internal/invocations_batch_operations/resume', {
+          method: 'POST',
+          json: { invocation_ids: invocationIds, deployment },
+        }),
+      this.restateVersion,
     );
 
     return Response.json({
@@ -49,6 +55,12 @@ export async function batchResumeInvocations(
         method: 'PATCH',
       });
     },
+    (invocationIds) =>
+      this.adminApi('/internal/invocations_batch_operations/resume', {
+        method: 'POST',
+        json: { invocation_ids: invocationIds, deployment },
+      }),
+    this.restateVersion,
   );
 
   return Response.json({

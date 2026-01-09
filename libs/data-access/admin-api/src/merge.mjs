@@ -22,6 +22,10 @@ const output = {
       ...spec.components.schemas,
       ...query.components.schemas,
     },
+    responses: {
+      ...spec.components?.responses,
+      ...query.components?.responses,
+    },
   },
 };
 writeFileSync(

@@ -12,9 +12,8 @@ export interface paths {
       cookie?: never;
     };
     /**
-     * Cluster health
+     * Cluster state endpoint
      * @deprecated
-     * @description Get the cluster health.
      */
     get: operations['cluster_health'];
     put?: never;
@@ -34,13 +33,14 @@ export interface paths {
     };
     /**
      * List deployments
-     * @description List all registered deployments.
+     * @description Returns a list of all registered deployments, including their endpoints and associated services.
      */
     get: operations['list_deployments'];
     put?: never;
     /**
-     * Create deployment
-     * @description Create and register a new deployment. Restate will invoke the endpoint to gather additional information required for registration, such as the services exposed by the deployment. If the deployment is already registered, this method will return 200 and no changes will be made. If the deployment updates some already existing services, schema breaking changes checks will run. If you want to bypass them, use `breaking: true`. To overwrite an already existing deployment, use `force: true`
+     * Register deployment
+     * @description Registers a new deployment (HTTP or Lambda). Restate will invoke the endpoint to discover available services and handlers,
+     *     and make them available for invocation. For more information, see the [deployment documentation](https://docs.restate.dev/services/versioning#registering-a-deployment).
      */
     post: operations['create_deployment'];
     delete?: never;
@@ -58,21 +58,23 @@ export interface paths {
     };
     /**
      * Get deployment
-     * @description Get deployment metadata
+     * @description Returns detailed information about a registered deployment, including deployment metadata and the services it exposes.
      */
     get: operations['get_deployment'];
     put?: never;
     post?: never;
     /**
      * Delete deployment
-     * @description Delete deployment. Currently it's supported to remove a deployment only using the force flag
+     * @description Delete a deployment. Currently, only forced deletions are supported.
+     *     **Use with caution**: forcing a deployment deletion can break in-flight invocations.
      */
     delete: operations['delete_deployment'];
     options?: never;
     head?: never;
     /**
      * Update deployment
-     * @description Update an already existing deployment. This lets you update the address and options when invoking the deployment, such as the additional headers for HTTP or the assume role for Lambda. The registered services and handlers won't be overwritten, unless `overwrite: true`.
+     * @description Updates an existing deployment configuration, such as the endpoint address or invocation headers.
+     *     By default, service schemas are not re-discovered. Set `overwrite: true` to trigger re-discovery.
      */
     patch: operations['update_deployment'];
     trace?: never;
@@ -84,35 +86,11 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /**
-     * Health check
-     * @description Check REST API Health.
-     */
+    /** Health check endpoint */
     get: operations['health'];
     put?: never;
     post?: never;
     delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/invocations/{invocation_id}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    /**
-     * Delete an invocation
-     * @deprecated
-     * @description Use kill_invocation/cancel_invocation/purge_invocation instead.
-     */
-    delete: operations['delete_invocation'];
     options?: never;
     head?: never;
     patch?: never;
@@ -133,7 +111,8 @@ export interface paths {
     head?: never;
     /**
      * Cancel an invocation
-     * @description Cancel the given invocation. Canceling an invocation allows it to free any resources it is holding and roll back any changes it has made so far, running compensation code. For more details, checkout https://docs.restate.dev/guides/sagas
+     * @description Gracefully cancels an invocation. The invocation is terminated, but its progress is persisted, allowing consistency guarantees to be maintained.
+     *     For more information, see the [cancellation documentation](https://docs.restate.dev/services/invocation/managing-invocations#cancel).
      */
     patch: operations['cancel_invocation'];
     trace?: never;
@@ -153,7 +132,9 @@ export interface paths {
     head?: never;
     /**
      * Kill an invocation
-     * @description Kill the given invocation. This does not guarantee consistency for virtual object instance state, in-flight invocations to other services, etc.
+     * @description Forcefully terminates an invocation. **Warning**: This operation does not guarantee consistency for virtual object instance state,
+     *     in-flight invocations to other services, or other side effects. Use with caution.
+     *     For more information, see the [cancellation documentation](https://docs.restate.dev/services/invocation/managing-invocations#kill).
      */
     patch: operations['kill_invocation'];
     trace?: never;
@@ -171,10 +152,7 @@ export interface paths {
     delete?: never;
     options?: never;
     head?: never;
-    /**
-     * Pause an invocation
-     * @description Pause the given invocation. This applies only to running invocations, and will cause them to eventually pause.
-     */
+    /** Pause an invocation */
     patch: operations['pause_invocation'];
     trace?: never;
   };
@@ -192,8 +170,10 @@ export interface paths {
     options?: never;
     head?: never;
     /**
-     * Purge an invocation
-     * @description Purge the given invocation. This cleanups all the state for the given invocation. This command applies only to completed invocations.
+     * Purge a completed invocation
+     * @description Deletes all state associated with a completed invocation, including its journal and metadata.
+     *     This operation only applies to invocations that have already completed. For more information,
+     *     see the [purging documentation](https://docs.restate.dev/services/invocation/managing-invocations#purge).
      */
     patch: operations['purge_invocation'];
     trace?: never;
@@ -212,8 +192,9 @@ export interface paths {
     options?: never;
     head?: never;
     /**
-     * Purge an invocation journal
-     * @description Purge the given invocation journal. This cleanups only the journal for the given invocation, retaining the metadata. This command applies only to completed invocations.
+     * Purge invocation journal
+     * @description Deletes only the journal entries for a completed invocation, while retaining its metadata.
+     *     This operation only applies to invocations that have already completed.
      */
     patch: operations['purge_journal'];
     trace?: never;
@@ -232,8 +213,9 @@ export interface paths {
     options?: never;
     head?: never;
     /**
-     * Restart as new invocation
-     * @description Restart the given invocation as new. This will restart the invocation as a new invocation with a different invocation id. By using the 'from' query parameter, some of the partial progress can be copied over to the new invocation.
+     * Restart invocation as new
+     * @description Creates a new invocation from a completed invocation, optionally copying partial progress from the original invocation's journal.
+     *     The new invocation will have a different invocation ID. Use the `from` parameter to specify how much of the original journal to preserve.
      */
     patch: operations['restart_as_new_invocation'];
     trace?: never;
@@ -253,22 +235,26 @@ export interface paths {
     head?: never;
     /**
      * Resume an invocation
-     * @description Resume the given invocation. In case the invocation is backing-off, this will immediately trigger the retry timer. If the invocation is suspended or paused, this will resume it.
+     * @description Resumes a paused or suspended invocation. If the invocation is backing off due to a retry, this will immediately trigger the retry.
+     *     Optionally, you can change the deployment ID that will be used when the invocation resumes. For more information see [resume documentation](https://docs.restate.dev/services/invocation/managing-invocations#resume)
      */
     patch: operations['resume_invocation'];
     trace?: never;
   };
-  '/openapi': {
+  '/query': {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    /** OpenAPI specification */
-    get: operations['openapi_spec'];
+    get?: never;
     put?: never;
-    post?: never;
+    /**
+     * Query journal
+     * @description Query journal
+     */
+    post: operations['query'];
     delete?: never;
     options?: never;
     head?: never;
@@ -284,7 +270,7 @@ export interface paths {
     };
     /**
      * List services
-     * @description List all registered services.
+     * @description Returns a list of all registered services, including their metadata and configuration.
      */
     get: operations['list_services'];
     put?: never;
@@ -304,7 +290,7 @@ export interface paths {
     };
     /**
      * Get service
-     * @description Get a registered service.
+     * @description Returns detailed metadata about a specific service, including its type, handlers, and configuration settings.
      */
     get: operations['get_service'];
     put?: never;
@@ -313,8 +299,9 @@ export interface paths {
     options?: never;
     head?: never;
     /**
-     * Modify a service
-     * @description Modify a registered service configuration. NOTE: Service re-discovery will update the settings based on the service endpoint configuration.
+     * Modify service configuration
+     * @description Updates the configuration of a registered service, such as public visibility, retention policies, and timeout settings.
+     *     Note: Service re-discovery will update these settings based on the service endpoint configuration.
      */
     patch: operations['modify_service'];
     trace?: never;
@@ -328,7 +315,7 @@ export interface paths {
     };
     /**
      * List service handlers
-     * @description List all the handlers of the given service.
+     * @description Returns a list of all handlers (methods) available in the specified service.
      */
     get: operations['list_service_handlers'];
     put?: never;
@@ -348,7 +335,7 @@ export interface paths {
     };
     /**
      * Get service handler
-     * @description Get the handler of a service
+     * @description Returns detailed metadata about a specific handler within a service, including its input/output types and handler type.
      */
     get: operations['get_service_handler'];
     put?: never;
@@ -389,8 +376,8 @@ export interface paths {
     get?: never;
     put?: never;
     /**
-     * Modify a service state
-     * @description Modify service state
+     * Modify service state
+     * @description Modifies the K/V state of a Virtual Object. For a detailed description of this API and how to use it, see the [state documentation](https://docs.restate.dev/operate/invocation#modifying-service-state).
      */
     post: operations['modify_service_state'];
     delete?: never;
@@ -408,13 +395,14 @@ export interface paths {
     };
     /**
      * List subscriptions
-     * @description List all subscriptions.
+     * @description Returns a list of all registered subscriptions, optionally filtered by source or sink.
      */
     get: operations['list_subscriptions'];
     put?: never;
     /**
      * Create subscription
-     * @description Create subscription.
+     * @description Creates a new subscription that connects an event source (e.g., a Kafka topic) to a Restate service handler.
+     *     For more information, see the [subscription documentation](https://docs.restate.dev/operate/invocation#managing-kafka-subscriptions).
      */
     post: operations['create_subscription'];
     delete?: never;
@@ -432,14 +420,14 @@ export interface paths {
     };
     /**
      * Get subscription
-     * @description Get subscription
+     * @description Returns the details of a specific subscription, including its source, sink, and configuration options.
      */
     get: operations['get_subscription'];
     put?: never;
     post?: never;
     /**
      * Delete subscription
-     * @description Delete subscription.
+     * @description Deletes a subscription. This will stop events from the source from being forwarded to the sink.
      */
     delete: operations['delete_subscription'];
     options?: never;
@@ -455,32 +443,12 @@ export interface paths {
       cookie?: never;
     };
     /**
-     * Admin version information
-     * @description Obtain admin version information.
+     * Get version information
+     * @description Returns the server version, supported Admin API versions, and the advertised ingress endpoint.
      */
     get: operations['version'];
     put?: never;
     post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/query': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * Query journal
-     * @description Query journal
-     */
-    post: operations['query'];
     delete?: never;
     options?: never;
     head?: never;
@@ -827,169 +795,554 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/internal/invocations_batch_operations/kill': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Batch kill invocations
+     * @description Kill multiple invocations in batch. All operations execute in parallel and results are collected.
+     */
+    post: operations['batch_kill_invocations_internal'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/internal/invocations_batch_operations/cancel': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Batch cancel invocations
+     * @description Cancel multiple invocations in batch. All operations execute in parallel and results are collected.
+     */
+    post: operations['batch_cancel_invocations_internal'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/internal/invocations_batch_operations/purge': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Batch purge invocations
+     * @description Purge multiple completed invocations in batch. All operations execute in parallel and results are collected.
+     */
+    post: operations['batch_purge_invocations_internal'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/internal/invocations_batch_operations/purge-journal': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Batch purge invocation journals
+     * @description Purge journals for multiple completed invocations in batch. All operations execute in parallel and results are collected.
+     */
+    post: operations['batch_purge_journal_internal'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/internal/invocations_batch_operations/restart-as-new': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Batch restart invocations as new
+     * @description Restart multiple invocations as new in batch. All operations execute in parallel and results are collected.
+     */
+    post: operations['batch_restart_as_new_invocations_internal'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/internal/invocations_batch_operations/resume': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Batch resume invocations
+     * @description Resume multiple paused or suspended invocations in batch. All operations execute in parallel and results are collected.
+     */
+    post: operations['batch_resume_invocations_internal'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/internal/invocations_batch_operations/pause': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Batch pause invocations
+     * @description Pause multiple running invocations in batch. All operations execute in parallel and results are collected.
+     */
+    post: operations['batch_pause_invocations_internal'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
+    /**
+     * advertised address
+     * @description An externally accessible URI address for http-ingress-server. This can be set to unix:restate-data/ingress.sock to advertise the automatically created unix-socket instead of using tcp if needed
+     */
+    'AdvertisedAddress-http-ingress-server_HttpIngressPort': string;
+    /** @description Cluster health information */
     ClusterHealthResponse: {
       /** @description Cluster name */
       cluster_name: string;
-      /** @description Embedded metadata cluster health if it was enabled */
       metadata_cluster_health?:
-        | components['schemas']['EmbeddedMetadataClusterHealth']
-        | null;
+        | null
+        | components['schemas']['EmbeddedMetadataClusterHealth'];
     };
-    EmbeddedMetadataClusterHealth: {
-      /** @description Current members of the embedded metadata cluster */
-      members: number[];
-    };
-    /**
-     * Error description response
-     * @description Error details of the response
-     */
-    ErrorDescriptionResponse: {
-      message: string;
+    CreateSubscriptionRequest: {
+      /** @description # Options
+       *
+       *     Additional options to apply to the subscription. */
+      options?: {
+        [key: string]: string;
+      } | null;
       /**
-       * Restate code
-       * @description Restate error code describing this error
+       * Format: uri
+       * @description # Sink
+       *
+       *     Sink uri. Accepted forms:
+       *
+       *     * `service://<service_name>/<service_name>`, e.g. `service://Counter/count`
        */
-      restate_code?: string | null;
+      sink: string;
+      /**
+       * Format: uri
+       * @description # Source
+       *
+       *     Source uri. Accepted forms:
+       *
+       *     * `kafka://<cluster_name>/<topic_name>`, e.g. `kafka://my-cluster/my-topic`
+       */
+      source: string;
     };
-    ListDeploymentsResponse: {
-      deployments: components['schemas']['DeploymentResponse'][];
-    };
+    DeploymentId: string;
     DeploymentResponse:
       | {
-          /** Deployment ID */
-          id: components['schemas']['String'];
+          /** @description # Additional headers
+           *
+           *     Additional headers used to invoke this service deployment. */
+          additional_headers?: components['schemas']['SerdeableHeaderHashMap'];
+          created_at: string;
+          /** @description # HTTP Version
+           *
+           *     HTTP Version used to invoke this service deployment. */
+          http_version: string;
+          /** @description # Deployment ID */
+          id: components['schemas']['DeploymentId'];
+          /** @description # Info
+           *
+           *     List of configuration/deprecation information related to this deployment. */
+          info?: components['schemas']['Info'][];
           /**
-           * Deployment URI
-           * @description URI used to invoke this service deployment.
+           * Format: int32
+           * @description # Maximum Service Protocol version
+           *
+           *     During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
+           */
+          max_protocol_version: number;
+          /** @description # Metadata
+           *
+           *     Deployment metadata. */
+          metadata?: {
+            [key: string]: string;
+          };
+          /**
+           * Format: int32
+           * @description # Minimum Service Protocol version
+           *
+           *     During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
+           */
+          min_protocol_version: number;
+          /** @description # Protocol Type
+           *
+           *     Protocol type used to invoke this service deployment. */
+          protocol_type: components['schemas']['ProtocolType'];
+          /** @description # SDK version
+           *
+           *     SDK library and version declared during registration. */
+          sdk_version?: string | null;
+          /** @description # Services
+           *
+           *     List of services exposed by this deployment. */
+          services: components['schemas']['ServiceNameRevPair'][];
+          /**
+           * Format: uri
+           * @description # Deployment URI
+           *
+           *     URI used to invoke this service deployment.
            */
           uri: string;
-          /**
-           * Protocol Type
-           * @description Protocol type used to invoke this service deployment.
-           */
-          protocol_type: components['schemas']['ProtocolType'];
-          /**
-           * HTTP Version
-           * @description HTTP Version used to invoke this service deployment.
-           */
-          http_version: string;
-          /**
-           * Additional headers
-           * @description Additional headers used to invoke this service deployment.
-           */
-          additional_headers?: {
-            [key: string]: string;
-          };
-          /**
-           * Metadata
-           * @description Deployment metadata.
-           */
-          metadata?: {
-            [key: string]: string;
-          };
-          created_at: string;
-          /**
-           * Minimum Service Protocol version
-           * Format: int32
-           * @description During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
-           */
-          min_protocol_version: number;
-          /**
-           * Maximum Service Protocol version
-           * Format: int32
-           * @description During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
-           */
-          max_protocol_version: number;
-          /**
-           * SDK version
-           * @description SDK library and version declared during registration.
-           */
-          sdk_version?: string | null;
-          /**
-           * Services
-           * @description List of services exposed by this deployment.
-           */
-          services: components['schemas']['ServiceNameRevPair'][];
-          /**
-           * Info
-           * @description List of configuration/deprecation information related to this deployment.
-           */
-          info?: components['schemas']['Info'][];
         }
       | {
-          /** Deployment ID */
-          id: components['schemas']['String'];
-          /**
-           * Lambda ARN
-           * @description Lambda ARN used to invoke this service deployment.
-           */
+          /** @description # Additional headers
+           *
+           *     Additional headers used to invoke this service deployment. */
+          additional_headers?: components['schemas']['SerdeableHeaderHashMap'];
+          /** @description # Lambda ARN
+           *
+           *     Lambda ARN used to invoke this service deployment. */
           arn: components['schemas']['LambdaARN'];
-          /**
-           * Assume role ARN
-           * @description Assume role ARN used to invoke this deployment. Check https://docs.restate.dev/category/aws-lambda for more details.
-           */
+          /** @description # Assume role ARN
+           *
+           *     Assume role ARN used to invoke this deployment. Check https://docs.restate.dev/category/aws-lambda for more details. */
           assume_role_arn?: string | null;
-          /**
-           * Compression
-           * @description Compression algorithm used for invoking Lambda.
-           */
           compression?:
-            | components['schemas']['EndpointLambdaCompression']
-            | null;
+            | null
+            | components['schemas']['EndpointLambdaCompression'];
+          created_at: string;
+          /** @description # Deployment ID */
+          id: components['schemas']['DeploymentId'];
+          /** @description # Info
+           *
+           *     List of configuration/deprecation information related to this deployment. */
+          info?: components['schemas']['Info'][];
           /**
-           * Additional headers
-           * @description Additional headers used to invoke this service deployment.
+           * Format: int32
+           * @description # Maximum Service Protocol version
+           *
+           *     During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
            */
-          additional_headers?: {
-            [key: string]: string;
-          };
-          /**
-           * Metadata
-           * @description Deployment metadata.
-           */
+          max_protocol_version: number;
+          /** @description # Metadata
+           *
+           *     Deployment metadata. */
           metadata?: {
             [key: string]: string;
           };
-          created_at: string;
           /**
-           * Minimum Service Protocol version
            * Format: int32
-           * @description During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
+           * @description # Minimum Service Protocol version
+           *
+           *     During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
            */
           min_protocol_version: number;
+          /** @description # SDK version
+           *
+           *     SDK library and version declared during registration. */
+          sdk_version?: string | null;
+          /** @description # Services
+           *
+           *     List of services exposed by this deployment. */
+          services: components['schemas']['ServiceNameRevPair'][];
+        };
+    /** @description Detailed information about Restate deployments */
+    DetailedDeploymentResponse:
+      | {
+          /** @description # Additional headers
+           *
+           *     Additional headers used to invoke this service deployment. */
+          additional_headers?: components['schemas']['SerdeableHeaderHashMap'];
+          created_at: string;
+          /** @description # HTTP Version
+           *
+           *     HTTP Version used to invoke this service deployment. */
+          http_version: string;
+          /** @description # Deployment ID */
+          id: components['schemas']['DeploymentId'];
+          /** @description # Info
+           *
+           *     List of configuration/deprecation information related to this deployment. */
+          info?: components['schemas']['Info'][];
           /**
-           * Maximum Service Protocol version
            * Format: int32
-           * @description During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
+           * @description # Maximum Service Protocol version
+           *
+           *     During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
            */
           max_protocol_version: number;
+          /** @description # Metadata
+           *
+           *     Deployment metadata. */
+          metadata?: {
+            [key: string]: string;
+          };
           /**
-           * SDK version
-           * @description SDK library and version declared during registration.
+           * Format: int32
+           * @description # Minimum Service Protocol version
+           *
+           *     During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
            */
+          min_protocol_version: number;
+          /** @description # Protocol Type
+           *
+           *     Protocol type used to invoke this service deployment. */
+          protocol_type: components['schemas']['ProtocolType'];
+          /** @description # SDK version
+           *
+           *     SDK library and version declared during registration. */
           sdk_version?: string | null;
+          /** @description # Services
+           *
+           *     List of services exposed by this deployment. */
+          services: components['schemas']['ServiceMetadata'][];
           /**
-           * Services
-           * @description List of services exposed by this deployment.
+           * Format: uri
+           * @description # Deployment URI
+           *
+           *     URI used to invoke this service deployment.
            */
-          services: components['schemas']['ServiceNameRevPair'][];
-          /**
-           * Info
-           * @description List of configuration/deprecation information related to this deployment.
-           */
+          uri: string;
+        }
+      | {
+          /** @description # Additional headers
+           *
+           *     Additional headers used to invoke this service deployment. */
+          additional_headers?: components['schemas']['SerdeableHeaderHashMap'];
+          /** @description # Lambda ARN
+           *
+           *     Lambda ARN used to invoke this service deployment. */
+          arn: components['schemas']['LambdaARN'];
+          /** @description # Assume role ARN
+           *
+           *     Assume role ARN used to invoke this deployment. Check https://docs.restate.dev/category/aws-lambda for more details. */
+          assume_role_arn?: string | null;
+          compression?:
+            | null
+            | components['schemas']['EndpointLambdaCompression'];
+          created_at: string;
+          /** @description # Deployment ID */
+          id: components['schemas']['DeploymentId'];
+          /** @description # Info
+           *
+           *     List of configuration/deprecation information related to this deployment. */
           info?: components['schemas']['Info'][];
+          /**
+           * Format: int32
+           * @description # Maximum Service Protocol version
+           *
+           *     During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
+           */
+          max_protocol_version: number;
+          /** @description # Metadata
+           *
+           *     Deployment metadata. */
+          metadata?: {
+            [key: string]: string;
+          };
+          /**
+           * Format: int32
+           * @description # Minimum Service Protocol version
+           *
+           *     During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
+           */
+          min_protocol_version: number;
+          /** @description # SDK version
+           *
+           *     SDK library and version declared during registration. */
+          sdk_version?: string | null;
+          /** @description # Services
+           *
+           *     List of services exposed by this deployment. */
+          services: components['schemas']['ServiceMetadata'][];
         };
-    String: string;
-    /** @enum {string} */
-    ProtocolType: 'RequestResponse' | 'BidiStream';
-    ServiceNameRevPair: {
+    EmbeddedMetadataClusterHealth: {
+      /** @description Current members of the embedded metadata cluster */
+      members: components['schemas']['PlainNodeId'][];
+    };
+    /**
+     * @description Lambda compression
+     * @enum {string}
+     */
+    EndpointLambdaCompression: 'Zstd';
+    /** @description # Error description response
+     *
+     *     Error details of the response */
+    ErrorDescriptionResponse: {
+      message: string;
+      /** @description # Restate code
+       *
+       *     Restate error code describing this error */
+      restate_code?: string | null;
+    };
+    /** @description Handler metadata */
+    HandlerMetadata: {
+      /** @description # Abort timeout
+       *
+       *     This timer guards against stalled service/handler invocations that are supposed to
+       *     terminate. The abort timeout is started after the 'inactivity timeout' has expired
+       *     and the service/handler invocation has been asked to gracefully terminate. Once the
+       *     timer expires, it will abort the service/handler invocation.
+       *
+       *     This timer potentially **interrupts** user code. If the user code needs longer to
+       *     gracefully terminate, then this value needs to be set accordingly.
+       *
+       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
+       *
+       *     If set, it overrides the value set in the service. */
+      abort_timeout?: string | null;
+      /** @description # Documentation
+       *
+       *     Documentation of the handler, as propagated by the SDKs. */
+      documentation?: string | null;
+      /** @description # Enable lazy state
+       *
+       *     If true, lazy state will be enabled for all invocations to this service.
+       *     This is relevant only for Workflows and Virtual Objects.
+       *
+       *     If set, it overrides the value set in the service. */
+      enable_lazy_state?: boolean | null;
+      /** @description # Idempotency retention
+       *
+       *     The retention duration of idempotent requests for this handler. If set, it overrides the value set in the service.
+       *
+       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`. */
+      idempotency_retention?: string | null;
+      /** @description # Inactivity timeout
+       *
+       *     This timer guards against stalled service/handler invocations. Once it expires,
+       *     Restate triggers a graceful termination by asking the service invocation to
+       *     suspend (which preserves intermediate progress).
+       *
+       *     The 'abort timeout' is used to abort the invocation, in case it doesn't react to
+       *     the request to suspend.
+       *
+       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
+       *
+       *     If set, it overrides the value set in the service. */
+      inactivity_timeout?: string | null;
+      /** @description # Info
+       *
+       *     List of configuration/deprecation information related to this handler. */
+      info?: components['schemas']['Info'][];
+      /** @description # Human readable input description
+       *
+       *     If empty, no schema was provided by the user at discovery time. */
+      input_description: string;
+      /** @description # Input JSON Schema
+       *
+       *     JSON Schema of the handler input */
+      input_json_schema?: unknown;
+      /** @description # Journal retention
+       *
+       *     The journal retention. When set, this applies to all requests to this handler.
+       *
+       *     In case the invocation has an idempotency key, the `idempotency_retention` caps the maximum `journal_retention` time.
+       *     In case this handler is a workflow handler, the `workflow_completion_retention` caps the maximum `journal_retention` time.
+       *
+       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
+       *
+       *     If set, it overrides the value set in the service. */
+      journal_retention?: string | null;
+      /** @description # Metadata
+       *
+       *     Additional handler metadata, as propagated by the SDKs. */
+      metadata?: {
+        [key: string]: string;
+      };
+      /** @description # Name
+       *
+       *     The handler name. */
       name: string;
-      /** Format: uint32 */
-      revision: number;
+      /** @description # Human readable output description
+       *
+       *     If empty, no schema was provided by the user at discovery time. */
+      output_description: string;
+      /** @description # Output JSON Schema
+       *
+       *     JSON Schema of the handler output */
+      output_json_schema?: unknown;
+      /** @description # Public
+       *
+       *     If true, this handler can be invoked through the ingress.
+       *     If false, this handler can be invoked only from another Restate service. */
+      public?: boolean;
+      /** @description # Retry policy
+       *
+       *     Retry policy overrides applied for this handler. */
+      retry_policy?: components['schemas']['HandlerRetryPolicyMetadata'];
+      ty?: null | components['schemas']['HandlerMetadataType'];
+    };
+    /** @enum {string} */
+    HandlerMetadataType: 'Exclusive' | 'Shared' | 'Workflow';
+    /** @description # Handler retry policy overrides */
+    HandlerRetryPolicyMetadata: {
+      /**
+       * Format: float
+       * @description # Factor
+       *
+       *     The factor to use to compute the next retry attempt.
+       */
+      exponentiation_factor?: number | null;
+      /** @description # Initial Interval
+       *
+       *     Initial interval for the first retry attempt.
+       *
+       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`. */
+      initial_interval?: string | null;
+      /** @description # Max attempts
+       *
+       *     Number of maximum attempts (including the initial) before giving up. Infinite retries if unset. No retries if set to 1. */
+      max_attempts?: number | null;
+      /** @description # Max interval
+       *
+       *     Maximum interval between retries.
+       *
+       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`. */
+      max_interval?: string | null;
+      on_max_attempts?: null | components['schemas']['OnMaxAttempts'];
     };
     Info: {
       code?: string | null;
@@ -997,51 +1350,127 @@ export interface components {
     };
     /** Format: arn */
     LambdaARN: string;
-    /**
-     * @description Lambda compression
-     * @enum {string}
-     */
-    EndpointLambdaCompression: 'Zstd';
+    /** @description List of all registered deployments */
+    ListDeploymentsResponse: {
+      deployments: components['schemas']['DeploymentResponse'][];
+    };
+    /** @description List of all the handlers of a service */
+    ListServiceHandlersResponse: {
+      handlers: components['schemas']['HandlerMetadata'][];
+    };
+    /** @description List of all registered services. */
+    ListServicesResponse: {
+      services: components['schemas']['ServiceMetadata'][];
+    };
+    /** @description List of all subscriptions. */
+    ListSubscriptionsResponse: {
+      subscriptions: components['schemas']['SubscriptionResponse'][];
+    };
+    ModifyServiceRequest: {
+      /** @description # Abort timeout
+       *
+       *     This timer guards against stalled service/handler invocations that are supposed to
+       *     terminate. The abort timeout is started after the 'inactivity timeout' has expired
+       *     and the service/handler invocation has been asked to gracefully terminate. Once the
+       *     timer expires, it will abort the service/handler invocation.
+       *
+       *     This timer potentially **interrupts** user code. If the user code needs longer to
+       *     gracefully terminate, then this value needs to be set accordingly.
+       *
+       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
+       *
+       *     This overrides the default abort timeout set in invoker options. */
+      abort_timeout?: string | null;
+      /** @description # Idempotency retention
+       *
+       *     Modify the retention of idempotent requests for this service.
+       *
+       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`. */
+      idempotency_retention?: string | null;
+      /** @description # Inactivity timeout
+       *
+       *     This timer guards against stalled service/handler invocations. Once it expires,
+       *     Restate triggers a graceful termination by asking the service invocation to
+       *     suspend (which preserves intermediate progress).
+       *
+       *     The 'abort timeout' is used to abort the invocation, in case it doesn't react to
+       *     the request to suspend.
+       *
+       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
+       *
+       *     This overrides the default inactivity timeout set in invoker options. */
+      inactivity_timeout?: string | null;
+      /** @description # Journal retention
+       *
+       *     Modify the journal retention for this service. When set, this applies to all requests to all handlers of this service.
+       *
+       *     In case the invocation has an idempotency key, the `idempotency_retention` caps the maximum `journal_retention` time.
+       *     In case the invocation targets a workflow handler, the `workflow_completion_retention` caps the maximum `journal_retention` time.
+       *
+       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`. */
+      journal_retention?: string | null;
+      /** @description # Public
+       *
+       *     If true, the service can be invoked through the ingress.
+       *     If false, the service can be invoked only from another Restate service. */
+      public?: boolean | null;
+      /** @description # Workflow completion retention
+       *
+       *     Modify the retention of the workflow completion. This can be modified only for workflow services!
+       *
+       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`. */
+      workflow_completion_retention?: string | null;
+    };
+    ModifyServiceStateRequest: {
+      /** @description # New State
+       *
+       *     The new state to replace the previous state with */
+      new_state: {
+        [key: string]: number[];
+      };
+      /** @description # Service key
+       *
+       *     To what virtual object key to apply this change */
+      object_key: string;
+      /** @description # Version
+       *
+       *     If set, the latest version of the state is compared with this value and the operation will fail
+       *     when the versions differ. */
+      version?: string | null;
+    };
+    /** @enum {string} */
+    OnMaxAttempts: 'Pause' | 'Kill';
+    /** Format: int32 */
+    PlainNodeId: number;
+    /** @enum {string} */
+    ProtocolType: 'RequestResponse' | 'BidiStream';
+    QueryRequest: {
+      /** @description SQL query to run against the storage */
+      query: string;
+    };
     RegisterDeploymentRequest:
       | {
-          /**
-           * Uri
-           * @description Uri to use to discover/invoke the http deployment.
-           */
-          uri: string;
-          /**
-           * Additional headers
-           * @description Additional headers added to every discover/invoke request to the deployment.
+          additional_headers?:
+            | null
+            | components['schemas']['SerdeableHeaderHashMap'];
+          /** @description # Breaking
            *
-           *     You typically want to include here API keys and other tokens required to send requests to deployments.
-           */
-          additional_headers?: {
-            [key: string]: string;
-          } | null;
-          /**
-           * Metadata
-           * @description Deployment metadata.
-           */
-          metadata?: {
-            [key: string]: string;
-          };
-          /**
-           * Use http1.1
-           * @description If `true`, discovery will be attempted using a client that defaults to HTTP1.1 instead of a prior-knowledge HTTP2 client. HTTP2 may still be used for TLS servers that advertise HTTP2 support via ALPN. HTTP1.1 deployments will only work in request-response mode.
-           * @default false
-           */
-          use_http_11: boolean;
-          /**
-           * Breaking
-           * @description If `true`, it allows registering new service revisions with schemas incompatible with previous service revisions, such as changing service type, removing a handler, etc.
+           *     If `true`, it allows registering new service revisions with
+           *     schemas incompatible with previous service revisions, such as changing service type, removing a handler, etc.
            *
-           *     See the [versioning documentation](https://docs.restate.dev/operate/versioning) for more information.
-           * @default false
-           */
-          breaking: boolean;
+           *     See the [versioning documentation](https://docs.restate.dev/operate/versioning) for more information. */
+          breaking?: boolean;
+          /** @description # Dry-run mode
+           *
+           *     If `true`, discovery will run but the deployment will not be registered.
+           *     This is useful to see the impact of a new deployment before registering it.
+           *     `force` and `breaking` will be respected. */
+          dry_run?: boolean;
           /**
-           * Force
-           * @description If `true`, it overrides, if existing, any deployment using the same `uri`. Beware that this can lead inflight invocations to an unrecoverable error state.
+           * @description # Force
+           *
+           *     If `true`, it overrides, if existing, any deployment using the same `uri`.
+           *     Beware that this can lead inflight invocations to an unrecoverable error state.
            *
            *     When set to `true`, it implies `breaking = true`.
            *
@@ -1049,49 +1478,58 @@ export interface components {
            * @default true
            */
           force: boolean;
-          /**
-           * Dry-run mode
-           * @description If `true`, discovery will run but the deployment will not be registered. This is useful to see the impact of a new deployment before registering it. `force` and `breaking` will be respected.
-           * @default false
-           */
-          dry_run: boolean;
-        }
-      | {
-          /**
-           * ARN
-           * @description ARN to use to discover/invoke the lambda deployment.
-           */
-          arn: string;
-          /**
-           * Assume role ARN
-           * @description Optional ARN of a role to assume when invoking the addressed Lambda, to support role chaining
-           */
-          assume_role_arn?: string | null;
-          /**
-           * Additional headers
-           * @description Additional headers added to every discover/invoke request to the deployment.
-           */
-          additional_headers?: {
-            [key: string]: string;
-          } | null;
-          /**
-           * Metadata
-           * @description Deployment metadata.
-           */
+          /** @description # Metadata
+           *
+           *     Deployment metadata. */
           metadata?: {
             [key: string]: string;
           };
           /**
-           * Breaking
-           * @description If `true`, it allows registering new service revisions with schemas incompatible with previous service revisions, such as changing service type, removing a handler, etc.
+           * Format: uri
+           * @description # Uri
            *
-           *     See the [versioning documentation](https://docs.restate.dev/operate/versioning) for more information.
-           * @default false
+           *     Uri to use to discover/invoke the http deployment.
            */
-          breaking: boolean;
+          uri: string;
+          /** @description # Use http1.1
+           *
+           *     If `true`, discovery will be attempted using a client that defaults to HTTP1.1
+           *     instead of a prior-knowledge HTTP2 client. HTTP2 may still be used for TLS servers
+           *     that advertise HTTP2 support via ALPN. HTTP1.1 deployments will only work in
+           *     request-response mode.
+           *      */
+          use_http_11?: boolean;
+        }
+      | {
+          additional_headers?:
+            | null
+            | components['schemas']['SerdeableHeaderHashMap'];
+          /** @description # ARN
+           *
+           *     ARN to use to discover/invoke the lambda deployment. */
+          arn: string;
+          /** @description # Assume role ARN
+           *
+           *     Optional ARN of a role to assume when invoking the addressed Lambda, to support role chaining */
+          assume_role_arn?: string | null;
+          /** @description # Breaking
+           *
+           *     If `true`, it allows registering new service revisions with
+           *     schemas incompatible with previous service revisions, such as changing service type, removing a handler, etc.
+           *
+           *     See the [versioning documentation](https://docs.restate.dev/operate/versioning) for more information. */
+          breaking?: boolean;
+          /** @description # Dry-run mode
+           *
+           *     If `true`, discovery will run but the deployment will not be registered.
+           *     This is useful to see the impact of a new deployment before registering it.
+           *     `force` and `breaking` will be respected. */
+          dry_run?: boolean;
           /**
-           * Force
-           * @description If `true`, it overrides, if existing, any deployment using the same `uri`. Beware that this can lead inflight invocations to an unrecoverable error state.
+           * @description # Force
+           *
+           *     If `true`, it overrides, if existing, any deployment using the same `uri`.
+           *     Beware that this can lead inflight invocations to an unrecoverable error state.
            *
            *     This implies `breaking = true`.
            *
@@ -1099,691 +1537,276 @@ export interface components {
            * @default true
            */
           force: boolean;
-          /**
-           * Dry-run mode
-           * @description If `true`, discovery will run but the deployment will not be registered. This is useful to see the impact of a new deployment before registering it. `force` and `breaking` will be respected.
-           * @default false
-           */
-          dry_run: boolean;
+          /** @description # Metadata
+           *
+           *     Deployment metadata. */
+          metadata?: {
+            [key: string]: string;
+          };
         };
     RegisterDeploymentResponse: {
-      id: components['schemas']['String'];
-      services: components['schemas']['ServiceMetadata'][];
+      id: components['schemas']['DeploymentId'];
+      /** @description # Info
+       *
+       *     List of configuration/deprecation information related to this deployment. */
+      info?: components['schemas']['Info'][];
       /**
-       * Minimum Service Protocol version
        * Format: int32
-       * @description During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
-       * @default 0
+       * @description # Maximum Service Protocol version
+       *
+       *     During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
        */
-      min_protocol_version: number;
+      max_protocol_version?: number;
       /**
-       * Maximum Service Protocol version
        * Format: int32
-       * @description During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
-       * @default 0
+       * @description # Minimum Service Protocol version
+       *
+       *     During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
        */
-      max_protocol_version: number;
-      /**
-       * SDK version
-       * @description SDK library and version declared during registration.
-       */
+      min_protocol_version?: number;
+      /** @description # SDK version
+       *
+       *     SDK library and version declared during registration. */
       sdk_version?: string | null;
-      /**
-       * Info
-       * @description List of configuration/deprecation information related to this deployment.
-       */
-      info?: components['schemas']['Info'][];
+      services: components['schemas']['ServiceMetadata'][];
     };
-    ServiceMetadata: {
-      /**
-       * Name
-       * @description Fully qualified name of the service
-       */
-      name: string;
-      /**
-       * Type
-       * @description Service type
-       */
-      ty: components['schemas']['ServiceType'];
-      /**
-       * Handlers
-       * @description Handlers for this service.
-       */
-      handlers: components['schemas']['HandlerMetadata'][];
-      /**
-       * Documentation
-       * @description Documentation of the service, as propagated by the SDKs.
-       */
-      documentation?: string | null;
-      /**
-       * Metadata
-       * @description Additional service metadata, as propagated by the SDKs.
-       */
-      metadata?: {
-        [key: string]: string;
-      };
-      /**
-       * Deployment Id
-       * @description Deployment exposing the latest revision of the service.
-       */
-      deployment_id: components['schemas']['String'];
-      /**
-       * Revision
-       * Format: uint32
-       * @description Latest revision of the service.
-       */
-      revision: number;
-      /**
-       * Public
-       * @description If true, the service can be invoked through the ingress. If false, the service can be invoked only from another Restate service.
-       * @default true
-       */
-      public: boolean;
-      /**
-       * Idempotency retention
-       * @description The retention duration of idempotent requests for this service.
-       *
-       *     If not configured, this returns the default idempotency retention.
-       *
-       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
-       * @default 1d
-       */
-      idempotency_retention: string;
-      /**
-       * Workflow completion retention
-       * @description The retention duration of workflows. Only available on workflow services.
-       *
-       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
-       */
-      workflow_completion_retention?: string | null;
-      /**
-       * Journal retention
-       * @description The journal retention. When set, this applies to all requests to all handlers of this service.
-       *
-       *     In case the invocation has an idempotency key, the `idempotency_retention` caps the maximum `journal_retention` time. In case the invocation targets a workflow handler, the `workflow_completion_retention` caps the maximum `journal_retention` time.
-       *
-       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
-       */
-      journal_retention?: string | null;
-      /**
-       * Inactivity timeout
-       * @description This timer guards against stalled service/handler invocations. Once it expires, Restate triggers a graceful termination by asking the service invocation to suspend (which preserves intermediate progress).
-       *
-       *     The 'abort timeout' is used to abort the invocation, in case it doesn't react to the request to suspend.
-       *
-       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
-       *
-       *     If unset, this returns the default inactivity timeout configured in invoker options.
-       * @default 1m
-       */
-      inactivity_timeout: string;
-      /**
-       * Abort timeout
-       * @description This timer guards against stalled service/handler invocations that are supposed to terminate. The abort timeout is started after the 'inactivity timeout' has expired and the service/handler invocation has been asked to gracefully terminate. Once the timer expires, it will abort the service/handler invocation.
-       *
-       *     This timer potentially **interrupts** user code. If the user code needs longer to gracefully terminate, then this value needs to be set accordingly.
-       *
-       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
-       *
-       *     If unset, this returns the default abort timeout configured in invoker options.
-       * @default 1m
-       */
-      abort_timeout: string;
-      /**
-       * Enable lazy state
-       * @description If true, lazy state will be enabled for all invocations to this service. This is relevant only for Workflows and Virtual Objects.
-       * @default false
-       */
-      enable_lazy_state: boolean;
-      /**
-       * Retry policy
-       * @description Retry policy applied to invocations of this service.
-       *
-       *     If unset, it returns the default values configured in the Restate configuration.
-       * @default {
-       *       "exponentiation_factor": 2,
-       *       "initial_interval": "100ms",
-       *       "max_attempts": null,
-       *       "max_interval": null,
-       *       "on_max_attempts": "Pause"
-       *     }
-       */
-      retry_policy: components['schemas']['ServiceRetryPolicyMetadata'];
-      /**
-       * Info
-       * @description List of configuration/deprecation information related to this service.
-       */
-      info?: components['schemas']['Info'][];
-    };
-    /** @enum {string} */
-    ServiceType: 'Service' | 'VirtualObject' | 'Workflow';
-    HandlerMetadata: {
-      /**
-       * Name
-       * @description The handler name.
-       */
-      name: string;
-      /**
-       * Type
-       * @description The handler type.
-       */
-      ty?: components['schemas']['HandlerMetadataType'] | null;
-      /**
-       * Documentation
-       * @description Documentation of the handler, as propagated by the SDKs.
-       */
-      documentation?: string | null;
-      /**
-       * Metadata
-       * @description Additional handler metadata, as propagated by the SDKs.
-       */
-      metadata?: {
-        [key: string]: string;
-      };
-      /**
-       * Idempotency retention
-       * @description The retention duration of idempotent requests for this handler. If set, it overrides the value set in the service.
-       *
-       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
-       */
-      idempotency_retention?: string | null;
-      /**
-       * Journal retention
-       * @description The journal retention. When set, this applies to all requests to this handler.
-       *
-       *     In case the invocation has an idempotency key, the `idempotency_retention` caps the maximum `journal_retention` time. In case this handler is a workflow handler, the `workflow_completion_retention` caps the maximum `journal_retention` time.
-       *
-       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
-       *
-       *     If set, it overrides the value set in the service.
-       */
-      journal_retention?: string | null;
-      /**
-       * Inactivity timeout
-       * @description This timer guards against stalled service/handler invocations. Once it expires, Restate triggers a graceful termination by asking the service invocation to suspend (which preserves intermediate progress).
-       *
-       *     The 'abort timeout' is used to abort the invocation, in case it doesn't react to the request to suspend.
-       *
-       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
-       *
-       *     If set, it overrides the value set in the service.
-       */
-      inactivity_timeout?: string | null;
-      /**
-       * Abort timeout
-       * @description This timer guards against stalled service/handler invocations that are supposed to terminate. The abort timeout is started after the 'inactivity timeout' has expired and the service/handler invocation has been asked to gracefully terminate. Once the timer expires, it will abort the service/handler invocation.
-       *
-       *     This timer potentially **interrupts** user code. If the user code needs longer to gracefully terminate, then this value needs to be set accordingly.
-       *
-       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
-       *
-       *     If set, it overrides the value set in the service.
-       */
-      abort_timeout?: string | null;
-      /**
-       * Enable lazy state
-       * @description If true, lazy state will be enabled for all invocations to this service. This is relevant only for Workflows and Virtual Objects.
-       *
-       *     If set, it overrides the value set in the service.
-       */
-      enable_lazy_state?: boolean | null;
-      /**
-       * Public
-       * @description If true, this handler can be invoked through the ingress. If false, this handler can be invoked only from another Restate service.
-       * @default true
-       */
-      public: boolean;
-      /**
-       * Human readable input description
-       * @description If empty, no schema was provided by the user at discovery time.
-       */
-      input_description: string;
-      /**
-       * Human readable output description
-       * @description If empty, no schema was provided by the user at discovery time.
-       */
-      output_description: string;
-      /**
-       * Input JSON Schema
-       * @description JSON Schema of the handler input
-       */
-      input_json_schema?: unknown;
-      /**
-       * Output JSON Schema
-       * @description JSON Schema of the handler output
-       */
-      output_json_schema?: unknown;
-      /**
-       * Retry policy
-       * @description Retry policy overrides applied for this handler.
-       * @default {}
-       */
-      retry_policy: components['schemas']['HandlerRetryPolicyMetadata'];
-      /**
-       * Info
-       * @description List of configuration/deprecation information related to this handler.
-       */
-      info?: components['schemas']['Info'][];
-    };
-    /** @enum {string} */
-    HandlerMetadataType: 'Exclusive' | 'Shared' | 'Workflow';
-    /** Handler retry policy overrides */
-    HandlerRetryPolicyMetadata: {
-      /**
-       * Initial Interval
-       * @description Initial interval for the first retry attempt.
-       *
-       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
-       */
-      initial_interval?: string | null;
-      /**
-       * Factor
-       * Format: float
-       * @description The factor to use to compute the next retry attempt.
-       */
-      exponentiation_factor?: number | null;
-      /**
-       * Max attempts
-       * Format: uint
-       * @description Number of maximum attempts (including the initial) before giving up. Infinite retries if unset. No retries if set to 1.
-       */
-      max_attempts?: number | null;
-      /**
-       * Max interval
-       * @description Maximum interval between retries.
-       *
-       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
-       */
-      max_interval?: string | null;
-      /**
-       * On max attempts
-       * @description Behavior when max attempts are reached.
-       */
-      on_max_attempts?: components['schemas']['OnMaxAttempts'] | null;
-    };
-    OnMaxAttempts: 'Pause' | 'Kill';
-    /** Service retry policy */
-    ServiceRetryPolicyMetadata: {
-      /**
-       * Initial Interval
-       * @description Initial interval for the first retry attempt.
-       *
-       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
-       * @default 100ms
-       */
-      initial_interval: string;
-      /**
-       * Factor
-       * Format: float
-       * @description The factor to use to compute the next retry attempt. Default: `2.0`.
-       * @default 2
-       */
-      exponentiation_factor: number;
-      /**
-       * Max attempts
-       * Format: uint
-       * @description Number of maximum attempts (including the initial) before giving up. Infinite retries if unset. No retries if set to 1.
-       * @default null
-       */
-      max_attempts: number | null;
-      /**
-       * Max interval
-       * @description Maximum interval between retries.
-       *
-       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
-       * @default null
-       */
-      max_interval: string | null;
-      /**
-       * On max attempts
-       * @description Behavior when max attempts are reached.
-       * @default Pause
-       */
-      on_max_attempts: components['schemas']['OnMaxAttempts'];
-    };
-    DetailedDeploymentResponse:
-      | {
-          /** Deployment ID */
-          id: components['schemas']['String'];
-          /**
-           * Deployment URI
-           * @description URI used to invoke this service deployment.
-           */
-          uri: string;
-          /**
-           * Protocol Type
-           * @description Protocol type used to invoke this service deployment.
-           */
-          protocol_type: components['schemas']['ProtocolType'];
-          /**
-           * HTTP Version
-           * @description HTTP Version used to invoke this service deployment.
-           */
-          http_version: string;
-          /**
-           * Additional headers
-           * @description Additional headers used to invoke this service deployment.
-           */
-          additional_headers?: {
-            [key: string]: string;
-          };
-          /**
-           * Metadata
-           * @description Deployment metadata.
-           */
-          metadata?: {
-            [key: string]: string;
-          };
-          created_at: string;
-          /**
-           * Minimum Service Protocol version
-           * Format: int32
-           * @description During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
-           */
-          min_protocol_version: number;
-          /**
-           * Maximum Service Protocol version
-           * Format: int32
-           * @description During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
-           */
-          max_protocol_version: number;
-          /**
-           * SDK version
-           * @description SDK library and version declared during registration.
-           */
-          sdk_version?: string | null;
-          /**
-           * Services
-           * @description List of services exposed by this deployment.
-           */
-          services: components['schemas']['ServiceMetadata'][];
-          /**
-           * Info
-           * @description List of configuration/deprecation information related to this deployment.
-           */
-          info?: components['schemas']['Info'][];
-        }
-      | {
-          /** Deployment ID */
-          id: components['schemas']['String'];
-          /**
-           * Lambda ARN
-           * @description Lambda ARN used to invoke this service deployment.
-           */
-          arn: components['schemas']['LambdaARN'];
-          /**
-           * Assume role ARN
-           * @description Assume role ARN used to invoke this deployment. Check https://docs.restate.dev/category/aws-lambda for more details.
-           */
-          assume_role_arn?: string | null;
-          /**
-           * Compression
-           * @description Compression algorithm used for invoking Lambda.
-           */
-          compression?:
-            | components['schemas']['EndpointLambdaCompression']
-            | null;
-          /**
-           * Additional headers
-           * @description Additional headers used to invoke this service deployment.
-           */
-          additional_headers?: {
-            [key: string]: string;
-          };
-          /**
-           * Metadata
-           * @description Deployment metadata.
-           */
-          metadata?: {
-            [key: string]: string;
-          };
-          created_at: string;
-          /**
-           * Minimum Service Protocol version
-           * Format: int32
-           * @description During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
-           */
-          min_protocol_version: number;
-          /**
-           * Maximum Service Protocol version
-           * Format: int32
-           * @description During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
-           */
-          max_protocol_version: number;
-          /**
-           * SDK version
-           * @description SDK library and version declared during registration.
-           */
-          sdk_version?: string | null;
-          /**
-           * Services
-           * @description List of services exposed by this deployment.
-           */
-          services: components['schemas']['ServiceMetadata'][];
-          /**
-           * Info
-           * @description List of configuration/deprecation information related to this deployment.
-           */
-          info?: components['schemas']['Info'][];
-        };
-    UpdateDeploymentRequest:
-      | {
-          /**
-           * Uri
-           * @description Uri to use to discover/invoke the http deployment.
-           */
-          uri?: string | null;
-          /**
-           * Additional headers
-           * @description Additional headers added to the discover/invoke requests to the deployment. When provided, this will overwrite all the headers previously configured for this deployment.
-           */
-          additional_headers?: {
-            [key: string]: string;
-          } | null;
-          /**
-           * Use http1.1
-           * @description If `true`, discovery will be attempted using a client that defaults to HTTP1.1 instead of a prior-knowledge HTTP2 client. HTTP2 may still be used for TLS servers that advertise HTTP2 support via ALPN. HTTP1.1 deployments will only work in request-response mode.
-           */
-          use_http_11?: boolean | null;
-          /**
-           * Overwrite
-           * @description If `true`, the update will overwrite the schema information, including the exposed service and handlers and service configuration, allowing **breaking changes** too. Use with caution.
-           * @default false
-           */
-          overwrite: boolean;
-          /**
-           * Dry-run mode
-           * @description If `true`, discovery will run but the deployment will not be registered. This is useful to see the impact of a new deployment before registering it.
-           * @default false
-           */
-          dry_run: boolean;
-        }
-      | {
-          /**
-           * ARN
-           * @description ARN to use to discover/invoke the lambda deployment.
-           */
-          arn?: string | null;
-          /**
-           * Assume role ARN
-           * @description Optional ARN of a role to assume when invoking the addressed Lambda, to support role chaining.
-           */
-          assume_role_arn?: string | null;
-          /**
-           * Additional headers
-           * @description Additional headers added to the discover/invoke requests to the deployment. When provided, this will overwrite all the headers previously configured for this deployment.
-           */
-          additional_headers?: {
-            [key: string]: string;
-          } | null;
-          /**
-           * Overwrite
-           * @description If `true`, the update will overwrite the schema information, including the exposed service and handlers and service configuration, allowing **breaking changes** too. Use with caution.
-           * @default false
-           */
-          overwrite: boolean;
-          /**
-           * Dry-run mode
-           * @description If `true`, discovery will run but the deployment will not be registered. This is useful to see the impact of a new deployment before registering it.
-           * @default false
-           */
-          dry_run: boolean;
-        };
-    /** @enum {string} */
-    DeletionMode: 'Cancel' | 'Kill' | 'Purge';
+    /** @description The invocation was restarted as new. */
     RestartAsNewInvocationResponse: {
       /** @description The invocation id of the new invocation. */
       new_invocation_id: components['schemas']['String'];
     };
-    ListServicesResponse: {
-      services: components['schemas']['ServiceMetadata'][];
+    /** @description Proxy type to implement HashMap<HeaderName, HeaderValue> ser/de
+     *     Use it directly or with `#[serde(with = "serde_with::As::<serde_with::FromInto<restate_serde_util::SerdeableHeaderMap>>")]`. */
+    SerdeableHeaderHashMap: {
+      [key: string]: string;
     };
-    ModifyServiceRequest: {
-      /**
-       * Public
-       * @description If true, the service can be invoked through the ingress. If false, the service can be invoked only from another Restate service.
-       * @default null
-       */
-      public: boolean | null;
-      /**
-       * Idempotency retention
-       * @description Modify the retention of idempotent requests for this service.
+    /** @description Metadata of a registered service. */
+    ServiceMetadata: {
+      /** @description # Abort timeout
        *
-       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
-       * @default null
-       */
-      idempotency_retention: string | null;
-      /**
-       * Workflow completion retention
-       * @description Modify the retention of the workflow completion. This can be modified only for workflow services!
+       *     This timer guards against stalled service/handler invocations that are supposed to
+       *     terminate. The abort timeout is started after the 'inactivity timeout' has expired
+       *     and the service/handler invocation has been asked to gracefully terminate. Once the
+       *     timer expires, it will abort the service/handler invocation.
        *
-       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
-       * @default null
-       */
-      workflow_completion_retention: string | null;
-      /**
-       * Journal retention
-       * @description Modify the journal retention for this service. When set, this applies to all requests to all handlers of this service.
-       *
-       *     In case the invocation has an idempotency key, the `idempotency_retention` caps the maximum `journal_retention` time. In case the invocation targets a workflow handler, the `workflow_completion_retention` caps the maximum `journal_retention` time.
-       *
-       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
-       * @default null
-       */
-      journal_retention: string | null;
-      /**
-       * Inactivity timeout
-       * @description This timer guards against stalled service/handler invocations. Once it expires, Restate triggers a graceful termination by asking the service invocation to suspend (which preserves intermediate progress).
-       *
-       *     The 'abort timeout' is used to abort the invocation, in case it doesn't react to the request to suspend.
+       *     This timer potentially **interrupts** user code. If the user code needs longer to
+       *     gracefully terminate, then this value needs to be set accordingly.
        *
        *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
        *
-       *     This overrides the default inactivity timeout set in invoker options.
-       * @default null
-       */
-      inactivity_timeout: string | null;
-      /**
-       * Abort timeout
-       * @description This timer guards against stalled service/handler invocations that are supposed to terminate. The abort timeout is started after the 'inactivity timeout' has expired and the service/handler invocation has been asked to gracefully terminate. Once the timer expires, it will abort the service/handler invocation.
+       *     If unset, this returns the default abort timeout configured in invoker options. */
+      abort_timeout?: string;
+      /** @description # Deployment Id
        *
-       *     This timer potentially **interrupts** user code. If the user code needs longer to gracefully terminate, then this value needs to be set accordingly.
+       *     Deployment exposing the latest revision of the service. */
+      deployment_id: components['schemas']['DeploymentId'];
+      /** @description # Documentation
        *
-       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
+       *     Documentation of the service, as propagated by the SDKs. */
+      documentation?: string | null;
+      /** @description # Enable lazy state
        *
-       *     This overrides the default abort timeout set in invoker options.
-       * @default null
-       */
-      abort_timeout: string | null;
-    };
-    ListServiceHandlersResponse: {
+       *     If true, lazy state will be enabled for all invocations to this service.
+       *     This is relevant only for Workflows and Virtual Objects. */
+      enable_lazy_state?: boolean;
+      /** @description # Handlers
+       *
+       *     Handlers for this service. */
       handlers: components['schemas']['HandlerMetadata'][];
-    };
-    ModifyServiceStateRequest: {
-      /**
-       * Version
-       * @description If set, the latest version of the state is compared with this value and the operation will fail when the versions differ.
-       */
-      version?: string | null;
-      /**
-       * Service key
-       * @description To what virtual object key to apply this change
-       */
-      object_key: string;
-      /**
-       * New State
-       * @description The new state to replace the previous state with
-       */
-      new_state: {
-        [key: string]: number[];
+      /** @description # Idempotency retention
+       *
+       *     The retention duration of idempotent requests for this service.
+       *
+       *     If not configured, this returns the default idempotency retention.
+       *
+       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`. */
+      idempotency_retention?: string;
+      /** @description # Inactivity timeout
+       *
+       *     This timer guards against stalled service/handler invocations. Once it expires,
+       *     Restate triggers a graceful termination by asking the service invocation to
+       *     suspend (which preserves intermediate progress).
+       *
+       *     The 'abort timeout' is used to abort the invocation, in case it doesn't react to
+       *     the request to suspend.
+       *
+       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
+       *
+       *     If unset, this returns the default inactivity timeout configured in invoker options. */
+      inactivity_timeout?: string;
+      /** @description # Info
+       *
+       *     List of configuration/deprecation information related to this service. */
+      info?: components['schemas']['Info'][];
+      /** @description # Journal retention
+       *
+       *     The journal retention. When set, this applies to all requests to all handlers of this service.
+       *
+       *     In case the invocation has an idempotency key, the `idempotency_retention` caps the maximum `journal_retention` time.
+       *     In case the invocation targets a workflow handler, the `workflow_completion_retention` caps the maximum `journal_retention` time.
+       *
+       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`. */
+      journal_retention?: string | null;
+      /** @description # Metadata
+       *
+       *     Additional service metadata, as propagated by the SDKs. */
+      metadata?: {
+        [key: string]: string;
       };
+      /** @description # Name
+       *
+       *     Fully qualified name of the service */
+      name: string;
+      /** @description # Public
+       *
+       *     If true, the service can be invoked through the ingress.
+       *     If false, the service can be invoked only from another Restate service. */
+      public?: boolean;
+      /** @description # Retry policy
+       *
+       *     Retry policy applied to invocations of this service.
+       *
+       *     If unset, it returns the default values configured in the Restate configuration. */
+      retry_policy?: components['schemas']['ServiceRetryPolicyMetadata'];
+      /** @description # Revision
+       *
+       *     Latest revision of the service. */
+      revision: components['schemas']['u32'];
+      /** @description # Type
+       *
+       *     Service type */
+      ty: components['schemas']['ServiceType'];
+      /** @description # Workflow completion retention
+       *
+       *     The retention duration of workflows. Only available on workflow services.
+       *
+       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`. */
+      workflow_completion_retention?: string | null;
     };
-    ListSubscriptionsResponse: {
-      subscriptions: components['schemas']['SubscriptionResponse'][];
+    ServiceNameRevPair: {
+      name: string;
+      revision: components['schemas']['u32'];
     };
+    /** @description # Service retry policy */
+    ServiceRetryPolicyMetadata: {
+      /**
+       * Format: float
+       * @description # Factor
+       *
+       *     The factor to use to compute the next retry attempt. Default: `2.0`.
+       */
+      exponentiation_factor?: number;
+      /** @description # Initial Interval
+       *
+       *     Initial interval for the first retry attempt.
+       *
+       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`. */
+      initial_interval?: string;
+      /** @description # Max attempts
+       *
+       *     Number of maximum attempts (including the initial) before giving up. Infinite retries if unset. No retries if set to 1. */
+      max_attempts?: number | null;
+      /** @description # Max interval
+       *
+       *     Maximum interval between retries.
+       *
+       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`. */
+      max_interval?: string | null;
+      /** @description # On max attempts
+       *
+       *     Behavior when max attempts are reached. */
+      on_max_attempts?: components['schemas']['OnMaxAttempts'];
+    };
+    /** @enum {string} */
+    ServiceType: 'Service' | 'VirtualObject' | 'Workflow';
+    String: string;
+    SubscriptionId: string;
+    /** @description Subscription details. */
     SubscriptionResponse: {
-      id: components['schemas']['String'];
-      source: string;
-      sink: string;
+      id: components['schemas']['SubscriptionId'];
       options: {
         [key: string]: string;
       };
-    };
-    CreateSubscriptionRequest: {
-      /**
-       * Source
-       * @description Source uri. Accepted forms:
-       *
-       *     * `kafka://<cluster_name>/<topic_name>`, e.g. `kafka://my-cluster/my-topic`
-       */
-      source: string;
-      /**
-       * Sink
-       * @description Sink uri. Accepted forms:
-       *
-       *     * `service://<service_name>/<service_name>`, e.g. `service://Counter/count`
-       */
       sink: string;
-      /**
-       * Options
-       * @description Additional options to apply to the subscription.
-       */
-      options?: {
-        [key: string]: string;
-      } | null;
+      source: string;
     };
+    UpdateDeploymentRequest:
+      | {
+          additional_headers?:
+            | null
+            | components['schemas']['SerdeableHeaderHashMap'];
+          /** @description # Dry-run mode
+           *
+           *     If `true`, discovery will run but the deployment will not be registered.
+           *     This is useful to see the impact of a new deployment before registering it. */
+          dry_run?: boolean;
+          /** @description # Overwrite
+           *
+           *     If `true`, the update will overwrite the schema information, including the exposed service and handlers and service configuration, allowing **breaking changes** too. Use with caution. */
+          overwrite?: boolean;
+          /**
+           * Format: uri
+           * @description # Uri
+           *
+           *     Uri to use to discover/invoke the http deployment.
+           */
+          uri?: string | null;
+          /** @description # Use http1.1
+           *
+           *     If `true`, discovery will be attempted using a client that defaults to HTTP1.1
+           *     instead of a prior-knowledge HTTP2 client. HTTP2 may still be used for TLS servers
+           *     that advertise HTTP2 support via ALPN. HTTP1.1 deployments will only work in
+           *     request-response mode. */
+          use_http_11?: boolean | null;
+        }
+      | {
+          additional_headers?:
+            | null
+            | components['schemas']['SerdeableHeaderHashMap'];
+          /** @description # ARN
+           *
+           *     ARN to use to discover/invoke the lambda deployment. */
+          arn?: string | null;
+          /** @description # Assume role ARN
+           *
+           *     Optional ARN of a role to assume when invoking the addressed Lambda, to support role chaining. */
+          assume_role_arn?: string | null;
+          /** @description # Dry-run mode
+           *
+           *     If `true`, discovery will run but the deployment will not be registered.
+           *     This is useful to see the impact of a new deployment before registering it. */
+          dry_run?: boolean;
+          /** @description # Overwrite
+           *
+           *     If `true`, the update will overwrite the schema information, including the exposed service and handlers and service configuration, allowing **breaking changes** too. Use with caution. */
+          overwrite?: boolean;
+        };
+    /** @description Admin API version information */
     VersionInformation: {
+      ingress_endpoint?:
+        | null
+        | components['schemas']['AdvertisedAddress-http-ingress-server_HttpIngressPort'];
       /**
-       * Admin server version
-       * @description Version of the admin server
-       */
-      version: string;
-      /**
-       * Min admin API version
-       * Format: uint16
-       * @description Minimum supported admin API version by the admin server
-       */
-      min_admin_api_version: number;
-      /**
-       * Max admin API version
-       * Format: uint16
-       * @description Maximum supported admin API version by the admin server
+       * Format: int32
+       * @description # Max admin API version
+       *
+       *     Maximum supported admin API version by the admin server
        */
       max_admin_api_version: number;
       /**
-       * Ingress endpoint
-       * @description Ingress endpoint that the Web UI should use to interact with.
+       * Format: int32
+       * @description # Min admin API version
+       *
+       *     Minimum supported admin API version by the admin server
        */
-      ingress_endpoint?:
-        | components['schemas']['AdvertisedAddress-http-ingress-server']
-        | null;
+      min_admin_api_version: number;
+      /** @description # Admin server version
+       *
+       *     Version of the admin server */
+      version: string;
     };
-    /**
-     * advertised address
-     * @description An externally accessible URI address for http-ingress-server. This can be set to unix:restate-data/ingress.sock to advertise the automatically created unix-socket instead of using tcp if needed
-     * @example http//127.0.0.1:8080/
-     */
-    'AdvertisedAddress-http-ingress-server': string;
+    /** Format: int32 */
+    u32: number;
     VirtualObjectState: string[];
     ListInvocationsRequestBody: {
       filters?: components['schemas']['FilterItem'][];
@@ -1858,6 +1881,48 @@ export interface components {
        * @description The created_at timestamp of the last invocation in the current page, used for pagination
        */
       lastCreatedAt?: string;
+    };
+    BatchInvocationRequest: {
+      /** @description List of invocation IDs to operate on (max 1000) */
+      invocation_ids: string[];
+    };
+    BatchResumeRequest: {
+      /** @description List of invocation IDs to resume (max 1000) */
+      invocation_ids: string[];
+      /** @description Deployment ID to use when resuming (applies to all invocations) */
+      deployment?: components['schemas']['PatchDeploymentId'];
+    };
+    BatchRestartAsNewRequest: {
+      /** @description List of invocation IDs to restart (max 1000) */
+      invocation_ids: string[];
+      /** @description Deployment ID to use (applies to all invocations) */
+      deployment?: components['schemas']['PatchDeploymentId'];
+    };
+    /** @description Specifies which deployment to use when resuming or restarting an invocation */
+    PatchDeploymentId: ('Keep' | 'keep') | ('Latest' | 'latest') | string;
+    BatchOperationResult: {
+      /** @description Invocation IDs that were successfully processed */
+      succeeded: string[];
+      /** @description Invocations that failed with error details */
+      failed: components['schemas']['FailedInvocationOperation'][];
+    };
+    FailedInvocationOperation: {
+      /** @description The invocation ID that failed */
+      invocation_id: string;
+      /** @description Error message describing the failure */
+      error: string;
+    };
+    BatchRestartAsNewResult: {
+      /** @description Successfully restarted invocations with their new IDs */
+      succeeded: components['schemas']['RestartedInvocation'][];
+      /** @description Invocations that failed with error details */
+      failed: components['schemas']['FailedInvocationOperation'][];
+    };
+    RestartedInvocation: {
+      /** @description The original invocation ID */
+      old_invocation_id: string;
+      /** @description The new invocation ID */
+      new_invocation_id: string;
     };
     ListVirtualObjectStateRequestBody: {
       filters?: components['schemas']['FilterItem'][];
@@ -2752,7 +2817,53 @@ export interface components {
       last_failure_error_code?: string;
     };
   };
-  responses: never;
+  responses: {
+    /** @description Bad request */
+    BadRequest: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['ErrorDescriptionResponse'];
+      };
+    };
+    /** @description Conflict */
+    Conflict: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['ErrorDescriptionResponse'];
+      };
+    };
+    /** @description Internal server error */
+    InternalServerError: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['ErrorDescriptionResponse'];
+      };
+    };
+    /** @description Method not allowed */
+    MethodNotAllowed: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['ErrorDescriptionResponse'];
+      };
+    };
+    /** @description Not found */
+    NotFound: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['ErrorDescriptionResponse'];
+      };
+    };
+  };
   parameters: never;
   requestBodies: never;
   headers: never;
@@ -2769,6 +2880,7 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
+      /** @description Cluster health information */
       200: {
         headers: {
           [name: string]: unknown;
@@ -2777,38 +2889,7 @@ export interface operations {
           'application/json': components['schemas']['ClusterHealthResponse'];
         };
       };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
+      /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
@@ -2817,6 +2898,7 @@ export interface operations {
           'application/json': components['schemas']['ErrorDescriptionResponse'];
         };
       };
+      /** @description The cluster does not seem to be provisioned yet. */
       503: {
         headers: {
           [name: string]: unknown;
@@ -2836,6 +2918,7 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
+      /** @description List of all registered deployments with their metadata */
       200: {
         headers: {
           [name: string]: unknown;
@@ -2859,72 +2942,33 @@ export interface operations {
       };
     };
     responses: {
-      /** @description Already exists. No change if force = false, overwritten if force = true */
+      /** @description Deployment already exists. No change if force = false, services overwritten if force = true */
       200: {
         headers: {
+          /** @description URI of the deployment */
+          Location?: string;
           [name: string]: unknown;
         };
         content: {
           'application/json': components['schemas']['RegisterDeploymentResponse'];
         };
       };
-      /** @description Created */
+      /** @description Deployment created successfully and services discovered */
       201: {
         headers: {
+          /** @description URI of the created deployment */
+          Location?: string;
           [name: string]: unknown;
         };
         content: {
           'application/json': components['schemas']['RegisterDeploymentResponse'];
         };
       };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
+      400: components['responses']['BadRequest'];
+      404: components['responses']['NotFound'];
+      405: components['responses']['MethodNotAllowed'];
+      409: components['responses']['Conflict'];
+      500: components['responses']['InternalServerError'];
     };
   };
   get_deployment: {
@@ -2939,6 +2983,7 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
+      /** @description Deployment details including services and configuration */
       200: {
         headers: {
           [name: string]: unknown;
@@ -2947,61 +2992,18 @@ export interface operations {
           'application/json': components['schemas']['DetailedDeploymentResponse'];
         };
       };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
+      400: components['responses']['BadRequest'];
+      404: components['responses']['NotFound'];
+      405: components['responses']['MethodNotAllowed'];
+      409: components['responses']['Conflict'];
+      500: components['responses']['InternalServerError'];
     };
   };
   delete_deployment: {
     parameters: {
       query?: {
         /** @description If true, the deployment will be forcefully deleted. This might break in-flight invocations, use with caution. */
-        force?: boolean;
+        force?: boolean | null;
       };
       header?: never;
       path: {
@@ -3012,61 +3014,20 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      /** @description Accepted */
+      /** @description Deployment deletion accepted and will be processed asynchronously */
       202: {
         headers: {
           [name: string]: unknown;
         };
         content?: never;
       };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      /** @description Not implemented. Only using the force flag is supported at the moment. */
+      400: components['responses']['BadRequest'];
+      404: components['responses']['NotFound'];
+      405: components['responses']['MethodNotAllowed'];
+      409: components['responses']['Conflict'];
+      500: components['responses']['InternalServerError'];
+      /** @description Not implemented. Graceful deployment deletion (force=false) is not yet supported. */
       501: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      503: {
         headers: {
           [name: string]: unknown;
         };
@@ -3092,6 +3053,7 @@ export interface operations {
       };
     };
     responses: {
+      /** @description Deployment updated successfully. Address and invocation options are updated. Service schemas are only updated if overwrite was set to true. */
       200: {
         headers: {
           [name: string]: unknown;
@@ -3100,54 +3062,11 @@ export interface operations {
           'application/json': components['schemas']['DetailedDeploymentResponse'];
         };
       };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
+      400: components['responses']['BadRequest'];
+      404: components['responses']['NotFound'];
+      405: components['responses']['MethodNotAllowed'];
+      409: components['responses']['Conflict'];
+      500: components['responses']['InternalServerError'];
     };
   };
   health: {
@@ -3159,84 +3078,12 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      /** @description OK */
+      /** @description The Admin API is ready to accept requests. */
       200: {
         headers: {
           [name: string]: unknown;
         };
         content?: never;
-      };
-    };
-  };
-  delete_invocation: {
-    parameters: {
-      query?: {
-        /** @description If cancel, it will gracefully terminate the invocation. If kill, it will terminate the invocation with a hard stop. If purge, it will only cleanup the response for completed invocations, and leave unaffected an in-flight invocation. */
-        mode?: components['schemas']['DeletionMode'];
-      };
-      header?: never;
-      path: {
-        /** @description Invocation identifier. */
-        invocation_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Accepted */
-      202: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
       };
     };
   };
@@ -3252,52 +3099,76 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      /** @description The invocation has been cancelled. */
+      /** @description Invocation cancelled successfully */
       200: {
         headers: {
           [name: string]: unknown;
         };
         content?: never;
       };
-      /** @description The cancellation signal was appended to the journal and will be processed by the SDK. */
+      /** @description Cancellation request accepted and will be processed asynchronously */
       202: {
         headers: {
           [name: string]: unknown;
         };
         content?: never;
       };
-      '404 Not Found': {
+      400: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
+          'application/json': {
+            message: string;
+            /** @description # Restate code
+             *
+             *     Restate error code describing this error */
+            restate_code?: string | null;
+          };
         };
       };
-      /** @description Error when routing the request within restate. */
-      '503 Service Unavailable': {
+      404: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      '400 Bad Request': {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
+          'application/json': {
+            message: string;
+            /** @description # Restate code
+             *
+             *     Restate error code describing this error */
+            restate_code?: string | null;
+          };
         };
       };
       /** @description The invocation was already completed, so it cannot be cancelled nor killed. You can instead purge the invocation, in order for restate to forget it. */
-      '409 Conflict': {
+      409: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
+          'application/json': {
+            message: string;
+            /** @description # Restate code
+             *
+             *     Restate error code describing this error */
+            restate_code?: string | null;
+          };
+        };
+      };
+      /** @description Error when routing the request within restate. */
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            message: string;
+            /** @description # Restate code
+             *
+             *     Restate error code describing this error */
+            restate_code?: string | null;
+          };
         };
       };
     };
@@ -3314,44 +3185,69 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
+      /** @description Invocation killed successfully */
       200: {
         headers: {
           [name: string]: unknown;
         };
         content?: never;
       };
-      '404 Not Found': {
+      400: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
+          'application/json': {
+            message: string;
+            /** @description # Restate code
+             *
+             *     Restate error code describing this error */
+            restate_code?: string | null;
+          };
         };
       };
-      /** @description Error when routing the request within restate. */
-      '503 Service Unavailable': {
+      404: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      '400 Bad Request': {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
+          'application/json': {
+            message: string;
+            /** @description # Restate code
+             *
+             *     Restate error code describing this error */
+            restate_code?: string | null;
+          };
         };
       };
       /** @description The invocation was already completed, so it cannot be cancelled nor killed. You can instead purge the invocation, in order for restate to forget it. */
-      '409 Conflict': {
+      409: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
+          'application/json': {
+            message: string;
+            /** @description # Restate code
+             *
+             *     Restate error code describing this error */
+            restate_code?: string | null;
+          };
+        };
+      };
+      /** @description Error when routing the request within restate. */
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            message: string;
+            /** @description # Restate code
+             *
+             *     Restate error code describing this error */
+            restate_code?: string | null;
+          };
         };
       };
     };
@@ -3368,52 +3264,76 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      /** @description Already paused */
+      /** @description Invocation is already paused */
       200: {
         headers: {
           [name: string]: unknown;
         };
         content?: never;
       };
-      /** @description Accepted */
+      /** @description Pausing invocation */
       202: {
         headers: {
           [name: string]: unknown;
         };
         content?: never;
       };
-      '404 Not Found': {
+      400: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
+          'application/json': {
+            message: string;
+            /** @description # Restate code
+             *
+             *     Restate error code describing this error */
+            restate_code?: string | null;
+          };
         };
       };
-      /** @description Error when routing the request within restate. */
-      '503 Service Unavailable': {
+      404: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      '400 Bad Request': {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
+          'application/json': {
+            message: string;
+            /** @description # Restate code
+             *
+             *     Restate error code describing this error */
+            restate_code?: string | null;
+          };
         };
       };
       /** @description The invocation is not running. An invocation can be paused only when running. */
-      '409 Conflict': {
+      409: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
+          'application/json': {
+            message: string;
+            /** @description # Restate code
+             *
+             *     Restate error code describing this error */
+            restate_code?: string | null;
+          };
+        };
+      };
+      /** @description Error when routing the request within restate. */
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            message: string;
+            /** @description # Restate code
+             *
+             *     Restate error code describing this error */
+            restate_code?: string | null;
+          };
         };
       };
     };
@@ -3430,44 +3350,69 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
+      /** @description Invocation purged successfully */
       200: {
         headers: {
           [name: string]: unknown;
         };
         content?: never;
       };
-      '404 Not Found': {
+      400: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
+          'application/json': {
+            message: string;
+            /** @description # Restate code
+             *
+             *     Restate error code describing this error */
+            restate_code?: string | null;
+          };
         };
       };
-      /** @description Error when routing the request within restate. */
-      '503 Service Unavailable': {
+      404: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      '400 Bad Request': {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
+          'application/json': {
+            message: string;
+            /** @description # Restate code
+             *
+             *     Restate error code describing this error */
+            restate_code?: string | null;
+          };
         };
       };
       /** @description The invocation is not yet completed. An invocation can be purged only when completed. */
-      '409 Conflict': {
+      409: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
+          'application/json': {
+            message: string;
+            /** @description # Restate code
+             *
+             *     Restate error code describing this error */
+            restate_code?: string | null;
+          };
+        };
+      };
+      /** @description Error when routing the request within restate. */
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            message: string;
+            /** @description # Restate code
+             *
+             *     Restate error code describing this error */
+            restate_code?: string | null;
+          };
         };
       };
     };
@@ -3484,44 +3429,69 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
+      /** @description Invocation journal purged successfully, metadata retained */
       200: {
         headers: {
           [name: string]: unknown;
         };
         content?: never;
       };
-      '404 Not Found': {
+      400: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
+          'application/json': {
+            message: string;
+            /** @description # Restate code
+             *
+             *     Restate error code describing this error */
+            restate_code?: string | null;
+          };
         };
       };
-      /** @description Error when routing the request within restate. */
-      '503 Service Unavailable': {
+      404: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      '400 Bad Request': {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
+          'application/json': {
+            message: string;
+            /** @description # Restate code
+             *
+             *     Restate error code describing this error */
+            restate_code?: string | null;
+          };
         };
       };
       /** @description The invocation is not yet completed. An invocation can be purged only when completed. */
-      '409 Conflict': {
+      409: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
+          'application/json': {
+            message: string;
+            /** @description # Restate code
+             *
+             *     Restate error code describing this error */
+            restate_code?: string | null;
+          };
+        };
+      };
+      /** @description Error when routing the request within restate. */
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            message: string;
+            /** @description # Restate code
+             *
+             *     Restate error code describing this error */
+            restate_code?: string | null;
+          };
         };
       };
     };
@@ -3529,10 +3499,24 @@ export interface operations {
   restart_as_new_invocation: {
     parameters: {
       query?: {
-        /** @description From which entry index the invocation should restart from. By default the invocation restarts from the beginning (equivalent to 'from = 0'), retaining only the input of the original invocation. When greater than 0, the new invocation will copy the old journal prefix up to 'from' included, plus eventual completions for commands in the given prefix. If the journal prefix contains commands that have not been completed, this operation will fail. */
-        from?: number;
-        /** @description When restarting from journal prefix, provide a deployment id to use to replace the currently pinned deployment id. If 'latest', use the latest deployment id. If 'keep', keeps the pinned deployment id. When not provided, the invocation will resume on latest. Note: this parameter can be used only in combination with 'from'. */
-        deployment?: string;
+        /** @description From which entry index the invocation should restart from.
+         *     By default the invocation restarts from the beginning (equivalent to 'from = 0'), retaining only the input of the original invocation.
+         *     When greater than 0, the new invocation will copy the old journal prefix up to 'from' included, plus eventual completions for commands in the given prefix.
+         *     If the journal prefix contains commands that have not been completed, this operation will fail. */
+        from?: null | components['schemas']['u32'];
+        /** @description When restarting from journal prefix, provide a deployment id to use to replace the currently pinned deployment id.
+         *     If 'latest', use the latest deployment id. If 'keep', keeps the pinned deployment id.
+         *     When not provided, the invocation will resume on latest.
+         *     Note: this parameter can be used only in combination with 'from'. */
+        deployment?:
+          | null
+          | (
+              | 'Keep'
+              | 'Latest'
+              | {
+                  Id: string;
+                }
+            );
       };
       header?: never;
       path: {
@@ -3543,6 +3527,7 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
+      /** @description Invocation restarted successfully with a new invocation ID */
       200: {
         headers: {
           [name: string]: unknown;
@@ -3551,71 +3536,108 @@ export interface operations {
           'application/json': components['schemas']['RestartAsNewInvocationResponse'];
         };
       };
-      '404 Not Found': {
+      /** @description The selected deployment id to restart as new the invocation doesn't support the currently pinned service protocol version. */
+      400: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
+          'application/json': {
+            message: string;
+            /** @description # Restate code
+             *
+             *     Restate error code describing this error */
+            restate_code?: string | null;
+          };
         };
       };
-      /** @description Error when routing the request within restate. */
-      '503 Service Unavailable': {
+      404: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
+          'application/json': {
+            message: string;
+            /** @description # Restate code
+             *
+             *     Restate error code describing this error */
+            restate_code?: string | null;
+          };
         };
       };
-      /** @description
-       *     The given journal index is out of range.
-       *     The given journal prefix contains some Commands without respective Completions.
-       *     The given deployment was not found.
-       *     The selected deployment id to restart as new the invocation doesn't support the currently pinned service protocol version. */
-      '400 Bad Request': {
+      /** @description The invocation is still running or the deployment id is not pinned yet, deployment id cannot be changed. The deployment id can be changed only if the invocation is paused or suspended, and a deployment id is already pinned. */
+      409: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      /** @description The invocation is still running. An invocation can be restarted only when completed.
-       *     The invocation is still running or the deployment id is not pinned yet, deployment id cannot be changed. The deployment id can be changed only if the invocation is paused or suspended, and a deployment id is already pinned. */
-      '409 Conflict': {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      /** @description Restarting the invocation is not supported. Restarting workflows is not supported, and restarting invocations created using the old service protocol. */
-      '422 Unprocessable Entity': {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
+          'application/json': {
+            message: string;
+            /** @description # Restate code
+             *
+             *     Restate error code describing this error */
+            restate_code?: string | null;
+          };
         };
       };
       /** @description The invocation cannot be restarted because the input is not available. In order to restart an invocation, the journal must be available in order to read the input again. Journal can be retained after completion by enabling journal retention. */
-      '410 Gone': {
+      410: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
+          'application/json': {
+            message: string;
+            /** @description # Restate code
+             *
+             *     Restate error code describing this error */
+            restate_code?: string | null;
+          };
+        };
+      };
+      /** @description Restarting the invocation is not supported. Restarting workflows is not supported, and restarting invocations created using the old service protocol. */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            message: string;
+            /** @description # Restate code
+             *
+             *     Restate error code describing this error */
+            restate_code?: string | null;
+          };
         };
       };
       /** @description The invocation cannot be restarted because it's not running yet, meaning it might have been scheduled or inboxed. */
-      '425 Too Early': {
+      425: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
+          'application/json': {
+            message: string;
+            /** @description # Restate code
+             *
+             *     Restate error code describing this error */
+            restate_code?: string | null;
+          };
+        };
+      };
+      /** @description Error when routing the request within restate. */
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            message: string;
+            /** @description # Restate code
+             *
+             *     Restate error code describing this error */
+            restate_code?: string | null;
+          };
         };
       };
     };
@@ -3623,8 +3645,19 @@ export interface operations {
   resume_invocation: {
     parameters: {
       query?: {
-        /** @description When resuming from paused/suspended, provide a deployment id to use to replace the currently pinned deployment id. If 'latest', use the latest deployment id. If 'keep', keeps the pinned deployment id. When not provided, the invocation will resume on the pinned deployment id. When provided and the invocation is either running, or no deployment is pinned, this operation will fail. */
-        deployment?: string;
+        /** @description When resuming from paused/suspended, provide a deployment id to use to replace the currently pinned deployment id.
+         *     If 'latest', use the latest deployment id. If 'keep', keeps the pinned deployment id.
+         *     When not provided, the invocation will resume on the pinned deployment id.
+         *     When provided and the invocation is either running, or no deployment is pinned, this operation will fail. */
+        deployment?:
+          | null
+          | (
+              | 'Keep'
+              | 'Latest'
+              | {
+                  Id: string;
+                }
+            );
       };
       header?: never;
       path: {
@@ -3635,69 +3668,103 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
+      /** @description Invocation resumed successfully */
       200: {
         headers: {
           [name: string]: unknown;
         };
         content?: never;
       };
-      '404 Not Found': {
+      /** @description The selected deployment id to resume the invocation doesn't support the currently pinned service protocol version. */
+      400: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
+          'application/json': {
+            message: string;
+            /** @description # Restate code
+             *
+             *     Restate error code describing this error */
+            restate_code?: string | null;
+          };
         };
       };
-      /** @description Error when routing the request within restate. */
-      '503 Service Unavailable': {
+      404: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
+          'application/json': {
+            message: string;
+            /** @description # Restate code
+             *
+             *     Restate error code describing this error */
+            restate_code?: string | null;
+          };
         };
       };
-      /** @description
-       *     The given deployment was not found.
-       *     The selected deployment id to resume the invocation doesn't support the currently pinned service protocol version. */
-      '400 Bad Request': {
+      /** @description The invocation is still running or the deployment id is not pinned yet, deployment id cannot be changed. The deployment id can be changed only if the invocation is paused or suspended, and a deployment id is already pinned. */
+      409: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
+          'application/json': {
+            message: string;
+            /** @description # Restate code
+             *
+             *     Restate error code describing this error */
+            restate_code?: string | null;
+          };
         };
       };
       /** @description The invocation is either inboxed or scheduled. An invocation can be resumed only when running, paused or suspended. */
-      '425 Too Early': {
+      425: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
+          'application/json': {
+            message: string;
+            /** @description # Restate code
+             *
+             *     Restate error code describing this error */
+            restate_code?: string | null;
+          };
         };
       };
-      /** @description The invocation is completed. An invocation can be resumed only when running, paused or suspended.
-       *     The invocation is still running or the deployment id is not pinned yet, deployment id cannot be changed. The deployment id can be changed only if the invocation is paused or suspended, and a deployment id is already pinned. */
-      '409 Conflict': {
+      /** @description Error when routing the request within restate. */
+      503: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
+          'application/json': {
+            message: string;
+            /** @description # Restate code
+             *
+             *     Restate error code describing this error */
+            restate_code?: string | null;
+          };
         };
       };
     };
   };
-  openapi_spec: {
+  query: {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        'application/json': {
+          query: string;
+        };
+      };
+    };
     responses: {
       200: {
         headers: {
@@ -3705,27 +3772,10 @@ export interface operations {
         };
         content: {
           'application/json': {
-            [key: string]: string;
+            rows?: {
+              [key: string]: string;
+            }[];
           };
-        };
-      };
-    };
-  };
-  list_services: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ListServicesResponse'];
         };
       };
       400: {
@@ -3776,6 +3826,31 @@ export interface operations {
           'application/json': components['schemas']['ErrorDescriptionResponse'];
         };
       };
+    };
+  };
+  list_services: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description List of all registered services with their metadata */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ListServicesResponse'];
+        };
+      };
+      400: components['responses']['BadRequest'];
+      404: components['responses']['NotFound'];
+      405: components['responses']['MethodNotAllowed'];
+      409: components['responses']['Conflict'];
+      500: components['responses']['InternalServerError'];
     };
   };
   get_service: {
@@ -3790,6 +3865,7 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
+      /** @description Service metadata including type, revision, handlers, and configuration */
       200: {
         headers: {
           [name: string]: unknown;
@@ -3798,54 +3874,11 @@ export interface operations {
           'application/json': components['schemas']['ServiceMetadata'];
         };
       };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
+      400: components['responses']['BadRequest'];
+      404: components['responses']['NotFound'];
+      405: components['responses']['MethodNotAllowed'];
+      409: components['responses']['Conflict'];
+      500: components['responses']['InternalServerError'];
     };
   };
   modify_service: {
@@ -3864,6 +3897,7 @@ export interface operations {
       };
     };
     responses: {
+      /** @description Service configuration updated successfully */
       200: {
         headers: {
           [name: string]: unknown;
@@ -3872,54 +3906,11 @@ export interface operations {
           'application/json': components['schemas']['ServiceMetadata'];
         };
       };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
+      400: components['responses']['BadRequest'];
+      404: components['responses']['NotFound'];
+      405: components['responses']['MethodNotAllowed'];
+      409: components['responses']['Conflict'];
+      500: components['responses']['InternalServerError'];
     };
   };
   list_service_handlers: {
@@ -3934,6 +3925,7 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
+      /** @description List of handlers available in the service */
       200: {
         headers: {
           [name: string]: unknown;
@@ -3942,54 +3934,11 @@ export interface operations {
           'application/json': components['schemas']['ListServiceHandlersResponse'];
         };
       };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
+      400: components['responses']['BadRequest'];
+      404: components['responses']['NotFound'];
+      405: components['responses']['MethodNotAllowed'];
+      409: components['responses']['Conflict'];
+      500: components['responses']['InternalServerError'];
     };
   };
   get_service_handler: {
@@ -4006,6 +3955,7 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
+      /** @description Handler metadata including input/output types and configuration */
       200: {
         headers: {
           [name: string]: unknown;
@@ -4014,54 +3964,11 @@ export interface operations {
           'application/json': components['schemas']['HandlerMetadata'];
         };
       };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
+      400: components['responses']['BadRequest'];
+      404: components['responses']['NotFound'];
+      405: components['responses']['MethodNotAllowed'];
+      409: components['responses']['Conflict'];
+      500: components['responses']['InternalServerError'];
     };
   };
   get_service_openapi: {
@@ -4151,70 +4058,27 @@ export interface operations {
       };
     };
     responses: {
-      /** @description Accepted */
+      /** @description State modification request accepted and will be applied asynchronously */
       202: {
         headers: {
           [name: string]: unknown;
         };
         content?: never;
       };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
+      400: components['responses']['BadRequest'];
+      404: components['responses']['NotFound'];
+      405: components['responses']['MethodNotAllowed'];
+      409: components['responses']['Conflict'];
+      500: components['responses']['InternalServerError'];
     };
   };
   list_subscriptions: {
     parameters: {
       query?: {
         /** @description Filter by the exact specified sink. */
-        sink?: string;
+        sink?: string | null;
         /** @description Filter by the exact specified source. */
-        source?: string;
+        source?: string | null;
       };
       header?: never;
       path?: never;
@@ -4222,6 +4086,7 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
+      /** @description List of subscriptions matching the filter criteria */
       200: {
         headers: {
           [name: string]: unknown;
@@ -4245,63 +4110,22 @@ export interface operations {
       };
     };
     responses: {
-      /** @description Created */
+      /** @description Subscription created successfully */
       201: {
         headers: {
+          /** @description URI of the created subscription */
+          Location?: string;
           [name: string]: unknown;
         };
         content: {
           'application/json': components['schemas']['SubscriptionResponse'];
         };
       };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
+      400: components['responses']['BadRequest'];
+      404: components['responses']['NotFound'];
+      405: components['responses']['MethodNotAllowed'];
+      409: components['responses']['Conflict'];
+      500: components['responses']['InternalServerError'];
     };
   };
   get_subscription: {
@@ -4316,6 +4140,7 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
+      /** @description Subscription details including source, sink, and options */
       200: {
         headers: {
           [name: string]: unknown;
@@ -4324,54 +4149,11 @@ export interface operations {
           'application/json': components['schemas']['SubscriptionResponse'];
         };
       };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
+      400: components['responses']['BadRequest'];
+      404: components['responses']['NotFound'];
+      405: components['responses']['MethodNotAllowed'];
+      409: components['responses']['Conflict'];
+      500: components['responses']['InternalServerError'];
     };
   };
   delete_subscription: {
@@ -4386,61 +4168,18 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      /** @description Accepted */
+      /** @description Subscription deletion accepted and will be processed asynchronously */
       202: {
         headers: {
           [name: string]: unknown;
         };
         content?: never;
       };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
+      400: components['responses']['BadRequest'];
+      404: components['responses']['NotFound'];
+      405: components['responses']['MethodNotAllowed'];
+      409: components['responses']['Conflict'];
+      500: components['responses']['InternalServerError'];
     };
   };
   version: {
@@ -4452,89 +4191,13 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
+      /** @description Server version information including supported API versions and ingress endpoint. */
       200: {
         headers: {
           [name: string]: unknown;
         };
         content: {
           'application/json': components['schemas']['VersionInformation'];
-        };
-      };
-    };
-  };
-  query: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': {
-          query: string;
-        };
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': {
-            rows?: {
-              [key: string]: string;
-            }[];
-          };
-        };
-      };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
         };
       };
     };
@@ -5782,6 +5445,286 @@ export interface operations {
         };
       };
       503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  batch_kill_invocations_internal: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['BatchInvocationRequest'];
+      };
+    };
+    responses: {
+      /** @description Batch kill result */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['BatchOperationResult'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  batch_cancel_invocations_internal: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['BatchInvocationRequest'];
+      };
+    };
+    responses: {
+      /** @description Batch cancel result */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['BatchOperationResult'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  batch_purge_invocations_internal: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['BatchInvocationRequest'];
+      };
+    };
+    responses: {
+      /** @description Batch purge result */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['BatchOperationResult'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  batch_purge_journal_internal: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['BatchInvocationRequest'];
+      };
+    };
+    responses: {
+      /** @description Batch purge journal result */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['BatchOperationResult'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  batch_restart_as_new_invocations_internal: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['BatchRestartAsNewRequest'];
+      };
+    };
+    responses: {
+      /** @description Batch restart as new result */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['BatchRestartAsNewResult'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  batch_resume_invocations_internal: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['BatchResumeRequest'];
+      };
+    };
+    responses: {
+      /** @description Batch resume result */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['BatchOperationResult'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  batch_pause_invocations_internal: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['BatchInvocationRequest'];
+      };
+    };
+    responses: {
+      /** @description Batch pause result */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['BatchOperationResult'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
         headers: {
           [name: string]: unknown;
         };

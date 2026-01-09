@@ -153,15 +153,6 @@ export function useSqlQuery(
   };
 }
 
-export function useOpenApi(options?: HookQueryOptions<'/openapi', 'get'>) {
-  const baseUrl = useAdminBaseUrl();
-
-  return useQuery({
-    ...adminApi('query', '/openapi', 'get', { baseUrl }),
-    ...options,
-  });
-}
-
 export function isVersionQuery(
   data: unknown,
   query: Query<unknown, unknown, unknown>,
@@ -843,21 +834,6 @@ export function useListVirtualObjectState(
     ...results,
     queryKey: queryOptions.queryKey,
   };
-}
-
-export function useOldDeleteInvocation(
-  invocation_id: string,
-  options?: HookMutationOptions<'/invocations/{invocation_id}', 'delete'>,
-) {
-  const baseUrl = useAdminBaseUrl();
-
-  return useMutation({
-    ...adminApi('mutate', '/invocations/{invocation_id}', 'delete', {
-      baseUrl,
-      resolvedPath: `/invocations/${invocation_id}`,
-    }),
-    ...options,
-  });
 }
 
 export function useKillInvocation(

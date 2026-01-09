@@ -5,7 +5,7 @@ import type {
 import { convertInvocationsFilters } from '../convertFilters';
 import { type QueryContext } from './shared';
 
-const DEFAULT_PAGE_SIZE = 50;
+const DEFAULT_PAGE_SIZE = 1000;
 
 type GetInvocationIdsOptions = {
   filters: FilterItem[];

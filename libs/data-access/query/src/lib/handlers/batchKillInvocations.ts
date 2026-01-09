@@ -14,6 +14,12 @@ export async function batchKillInvocations(
         this.adminApi(`/invocations/${invocationId}/kill`, {
           method: 'PATCH',
         }),
+      (invocationIds) =>
+        this.adminApi('/internal/invocations_batch_operations/kill', {
+          method: 'POST',
+          json: { invocation_ids: invocationIds },
+        }),
+      this.restateVersion,
     );
 
     return Response.json({
@@ -33,10 +39,18 @@ export async function batchKillInvocations(
     },
   );
 
-  const result = await batchProcessInvocations(invocationIds, (invocationId) =>
-    this.adminApi(`/invocations/${invocationId}/kill`, {
-      method: 'PATCH',
-    }),
+  const result = await batchProcessInvocations(
+    invocationIds,
+    (invocationId) =>
+      this.adminApi(`/invocations/${invocationId}/kill`, {
+        method: 'PATCH',
+      }),
+    (invocationIds) =>
+      this.adminApi('/internal/invocations_batch_operations/kill', {
+        method: 'POST',
+        json: { invocation_ids: invocationIds },
+      }),
+    this.restateVersion,
   );
 
   return Response.json({
