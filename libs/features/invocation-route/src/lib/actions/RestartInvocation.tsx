@@ -22,6 +22,7 @@ import { Badge } from '@restate/ui/badge';
 import { Revision } from '@restate/features/deployment';
 
 import { CommandEntryType } from '../entries/types';
+import { Spinner } from '@restate/ui/loading';
 
 const NAME_COMMANDS_COMPONENTS: {
   [K in CommandEntryType]: string;
@@ -177,7 +178,12 @@ function RestartInvocationContent() {
             </span>
           </>
         }
-        placeholder={'Select which journal entry to restart from'}
+        placeholder={
+          journalQuery.isPending
+            ? 'Loading…'
+            : 'Select which journal entry to restart from'
+        }
+        disabled={journalQuery.isPending}
         defaultValue={startFrom}
         name="from"
         required
