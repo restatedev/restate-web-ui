@@ -14,12 +14,7 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { ErrorBanner } from '@restate/ui/error';
 import { Deployment } from '@restate/features/deployment';
-import {
-  ServiceType,
-  ServicePlaygroundTrigger,
-  Handler,
-  SERVICE_QUERY_PARAM,
-} from '@restate/features/service';
+import { Handler, SERVICE_QUERY_PARAM } from '@restate/features/service';
 import { RetentionSection } from './RetentionSection';
 import { TimeoutSection } from './TimeoutSection';
 import { IngressAccessSection } from './IngressAccessSection';
@@ -27,10 +22,8 @@ import { RetryPolicySection } from './RetryPolicy';
 import { useRestateContext } from '@restate/features/restate-context';
 import { AdvancedSection } from './Advanced';
 import { useState } from 'react';
-import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
-import { DropdownSection } from '@restate/ui/dropdown';
-import { formatPlurals } from '@restate/util/intl';
 import { Metadata } from '@restate/features/options';
+import { ServiceHeader } from './ServiceHeader';
 
 export function ServiceDetails() {
   return (
@@ -113,68 +106,16 @@ function ServiceContent({ service }: { service: string }) {
               <TruncateWithTooltip>
                 {data?.name ?? 'Service'}
               </TruncateWithTooltip>
-              {data && (
-                <div className="flex w-full items-center gap-2">
-                  <ServiceType type={data?.ty} className="" />
-                  {data?.name && (
-                    <ServicePlaygroundTrigger
-                      service={data?.name}
-                      className=""
-                      variant="button"
-                      {...(data?.handlers?.length === 1 && {
-                        handler: data.handlers.at(0)?.name,
-                      })}
-                    />
-                  )}
-                  {data.info && data.info.length > 0 && (
-                    <Popover>
-                      <PopoverTrigger>
-                        <Button
-                          className="flex min-w-0 items-center gap-1 rounded-md border-orange-200 bg-orange-50 px-1 py-0.5 text-xs font-normal text-orange-600"
-                          variant="secondary"
-                        >
-                          <Icon
-                            name={IconName.TriangleAlert}
-                            className="h-3.5 w-3.5 shrink-0 text-orange-500"
-                          />
-                          {formatPlurals(data.info.length, {
-                            one: 'warning',
-                            other: 'warnings',
-                          })}
-
-                          <div className="ml-1 truncate rounded-full bg-orange-500 px-1.5 text-2xs font-normal text-white">
-                            {data.info.length}
-                          </div>
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="max-w-md">
-                        <DropdownSection
-                          title={formatPlurals(data.info.length, {
-                            one: 'warning',
-                            other: 'warnings',
-                          })}
-                        >
-                          {data?.info?.map((info) => (
-                            <p
-                              className="-m-px flex gap-2 border border-orange-200 bg-orange-50 p-3 text-0.5xs text-orange-600 first:rounded-t-xl last:rounded-b-xl"
-                              key={info.code}
-                            >
-                              <Icon
-                                className="h-5 w-5 shrink-0 fill-orange-600 text-orange-100"
-                                name={IconName.TriangleAlert}
-                              />
-                              <span className="inline-block">
-                                <span className="font-semibold">Warning: </span>
-                                {info.message}
-                              </span>
-                            </p>
-                          ))}
-                        </DropdownSection>
-                      </PopoverContent>
-                    </Popover>
-                  )}
-                </div>
-              )}
+              <ServiceHeader
+                type={data?.ty}
+                info={data?.info}
+                service={service}
+                handler={
+                  data?.handlers?.length === 1
+                    ? data.handlers.at(0)?.name
+                    : undefined
+                }
+              />
             </>
           )}
         </div>
