@@ -1,4 +1,3 @@
-import { useServiceDetails } from '@restate/data-access/admin-api-hooks';
 import { Button } from '@restate/ui/button';
 import { SectionTitle, Section } from '@restate/ui/section';
 import { RestateMinimumVersion } from '@restate/util/feature-flag';
@@ -17,44 +16,56 @@ import {
 } from '@restate/features/explainers';
 
 export function RetentionSection({
-  serviceDetails: data,
   className,
   isPending,
+  service,
+  isReadonly,
+  retention,
+  type,
 }: {
   className?: string;
   isPending?: boolean;
-  serviceDetails?: ReturnType<typeof useServiceDetails>['data'];
+  isReadonly?: boolean;
+  service: string;
+  retention?: {
+    workflowCompletionRetention?: string | null;
+    idempotencyRetention?: string | null;
+    journalRetention?: string | null;
+  };
+  type?: 'Service' | 'VirtualObject' | 'Workflow';
 }) {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const isWorkflow = data?.ty === 'Workflow';
+  const [, setSearchParams] = useSearchParams();
+  const isWorkflow = type === 'Workflow';
 
   return (
     <Section>
       <SectionTitle className="flex items-center">
         Retentions
-        <Button
-          variant="secondary"
-          onClick={() =>
-            setSearchParams(
-              (old) => {
-                old.set(SERVICE_RETENTION_EDIT, String(data?.name));
-                return old;
-              },
-              { preventScrollReset: true },
-            )
-          }
-          className="ml-auto flex items-center gap-1 rounded-md bg-gray-50/50 px-1.5 py-0.5 font-sans text-xs font-normal shadow-none"
-        >
-          Edit…
-        </Button>
+        {isReadonly && (
+          <Button
+            variant="secondary"
+            onClick={() =>
+              setSearchParams(
+                (old) => {
+                  old.set(SERVICE_RETENTION_EDIT, service);
+                  return old;
+                },
+                { preventScrollReset: true },
+              )
+            }
+            className="ml-auto flex items-center gap-1 rounded-md bg-gray-50/50 px-1.5 py-0.5 font-sans text-xs font-normal shadow-none"
+          >
+            Edit…
+          </Button>
+        )}
       </SectionTitle>
       <div className="flex flex-col">
         {isWorkflow && (
           <SubSection
             value={
-              data?.workflow_completion_retention === '0s'
+              retention?.workflowCompletionRetention === '0s'
                 ? 'Disabled'
-                : data?.workflow_completion_retention
+                : retention?.workflowCompletionRetention
             }
             label={
               <WorkflowRetentionExplainer variant="indicator-button">
@@ -66,9 +77,9 @@ export function RetentionSection({
         )}
         <SubSection
           value={
-            data?.idempotency_retention === '0s'
+            retention?.idempotencyRetention === '0s'
               ? 'Disabled'
-              : data?.idempotency_retention
+              : retention?.idempotencyRetention
           }
           label={
             <IdempotencyRetentionExplainer
@@ -83,9 +94,9 @@ export function RetentionSection({
         <RestateMinimumVersion minVersion="1.4.5">
           <SubSection
             value={
-              data?.journal_retention === '0s'
+              retention?.journalRetention === '0s'
                 ? 'Disabled'
-                : data?.journal_retention
+                : retention?.journalRetention
             }
             label={
               <JournalRetentionExplainer variant="indicator-button">
@@ -95,16 +106,16 @@ export function RetentionSection({
             footer={
               <>
                 {isWorkflow &&
-                  humanTimeToMs(data?.workflow_completion_retention) <
-                    humanTimeToMs(data?.journal_retention) && (
+                  humanTimeToMs(retention?.workflowCompletionRetention) <
+                    humanTimeToMs(retention?.journalRetention) && (
                     <WarningWorkflowCapExplanation
-                      cap={data?.workflow_completion_retention}
+                      cap={retention?.workflowCompletionRetention}
                     />
                   )}
-                {humanTimeToMs(data?.idempotency_retention) <
-                  humanTimeToMs(data?.journal_retention) && (
+                {humanTimeToMs(retention?.idempotencyRetention) <
+                  humanTimeToMs(retention?.journalRetention) && (
                   <WarningIdempotencyCapExplanation
-                    cap={data?.idempotency_retention}
+                    cap={retention?.idempotencyRetention}
                   />
                 )}
               </>

@@ -24,7 +24,6 @@ import { RetentionSection } from './RetentionSection';
 import { TimeoutSection } from './TimeoutSection';
 import { IngressAccessSection } from './IngressAccessSection';
 import { RetryPolicySection } from './RetryPolicy';
-import { RestateMinimumVersion } from '@restate/util/feature-flag';
 import { useRestateContext } from '@restate/features/restate-context';
 import { AdvancedSection } from './Advanced';
 import { useState } from 'react';
@@ -250,13 +249,45 @@ function ServiceContent({ service }: { service: string }) {
           </SectionContent>
         </Section>
         <Metadata metadata={data?.metadata} />
-        <IngressAccessSection serviceDetails={data} isPending={isPending} />
-        <RetentionSection serviceDetails={data} isPending={isPending} />
-        <TimeoutSection serviceDetails={data} isPending={isPending} />
-        <RestateMinimumVersion minVersion="1.4.5">
-          <RetryPolicySection serviceDetails={data} isPending={isPending} />
-        </RestateMinimumVersion>
-        <AdvancedSection serviceDetails={data} isPending={isPending} />
+        <IngressAccessSection
+          isPublic={data?.public}
+          isPending={isPending}
+          service={service}
+        />
+        <RetentionSection
+          retention={{
+            idempotencyRetention: data?.idempotency_retention,
+            workflowCompletionRetention: data?.workflow_completion_retention,
+            journalRetention: data?.journal_retention,
+          }}
+          isPending={isPending}
+          service={service}
+        />
+        <TimeoutSection
+          isPending={isPending}
+          service={service}
+          timeout={{
+            inactivity: data?.inactivity_timeout,
+            abort: data?.abort_timeout,
+          }}
+          revision={data?.revision}
+        />
+        <RetryPolicySection
+          retryPolicy={{
+            exponentiationFactor: data?.retry_policy?.exponentiation_factor,
+            initialInterval: data?.retry_policy?.initial_interval,
+            maxAttempts: data?.retry_policy?.max_attempts,
+            maxInterval: data?.retry_policy?.max_interval,
+            onMaxAttempts: data?.retry_policy?.on_max_attempts,
+          }}
+          isPending={isPending}
+          service={service}
+        />
+        <AdvancedSection
+          isLazyStateEnabled={data?.enable_lazy_state}
+          isPending={isPending}
+          service={service}
+        />
       </div>
     </>
   );

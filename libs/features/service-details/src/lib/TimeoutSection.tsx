@@ -1,7 +1,4 @@
-import {
-  useListDeployments,
-  useServiceDetails,
-} from '@restate/data-access/admin-api-hooks';
+import { useListDeployments } from '@restate/data-access/admin-api-hooks';
 import { Button } from '@restate/ui/button';
 import { SectionTitle, Section } from '@restate/ui/section';
 import { useSearchParams } from 'react-router';
@@ -10,25 +7,31 @@ import { SubSection } from './SubSection';
 import { tv } from '@restate/util/styles';
 import { PropsWithChildren } from 'react';
 import { Icon, IconName } from '@restate/ui/icons';
-import { HoverTooltip, InlineTooltip } from '@restate/ui/tooltip';
+import { InlineTooltip } from '@restate/ui/tooltip';
 import { Link } from '@restate/ui/link';
 import { getProtocolType } from '@restate/data-access/admin-api';
 import { Warning } from './Explainers';
 
 export function TimeoutSection({
-  serviceDetails: data,
   className,
   isPending,
+  service,
+  isReadonly,
+  revision,
+  timeout,
 }: {
   className?: string;
   isPending?: boolean;
-  serviceDetails?: ReturnType<typeof useServiceDetails>['data'];
+  isReadonly?: boolean;
+  service: string;
+  revision?: number;
+  timeout?: { inactivity?: string; abort?: string };
 }) {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [, setSearchParams] = useSearchParams();
   const { data: listDeploymentsData } = useListDeployments();
   const deploymentId =
-    listDeploymentsData?.services.get(String(data?.name))?.deployments?.[
-      Number(data?.revision)
+    listDeploymentsData?.services.get(service)?.deployments?.[
+      Number(revision)
     ] ?? [];
   const isRequestResponse = deploymentId.some(
     (id) =>
@@ -40,25 +43,27 @@ export function TimeoutSection({
     <Section className="group">
       <SectionTitle className="flex items-center">
         Timeouts
-        <Button
-          variant="secondary"
-          onClick={() =>
-            setSearchParams(
-              (old) => {
-                old.set(SERVICE_TIMEOUT_EDIT, String(data?.name));
-                return old;
-              },
-              { preventScrollReset: true },
-            )
-          }
-          className="ml-auto flex items-center gap-1 rounded-md bg-gray-50/50 px-1.5 py-0.5 font-sans text-xs font-normal shadow-none"
-        >
-          Edit…
-        </Button>
+        {isReadonly && (
+          <Button
+            variant="secondary"
+            onClick={() =>
+              setSearchParams(
+                (old) => {
+                  old.set(SERVICE_TIMEOUT_EDIT, service);
+                  return old;
+                },
+                { preventScrollReset: true },
+              )
+            }
+            className="ml-auto flex items-center gap-1 rounded-md bg-gray-50/50 px-1.5 py-0.5 font-sans text-xs font-normal shadow-none"
+          >
+            Edit…
+          </Button>
+        )}
       </SectionTitle>
       <div className="flex flex-col gap-2">
         <SubSection
-          value={data?.inactivity_timeout ?? 'Default'}
+          value={timeout?.inactivity ?? 'Default'}
           label="Inactivity"
           isPending={isPending}
           footer={
@@ -104,7 +109,7 @@ export function TimeoutSection({
                     }
                   >
                     <span className="font-mono italic">
-                      sleep(…) {`> ${data?.inactivity_timeout ?? '1m'}`}
+                      sleep(…) {`> ${timeout?.inactivity ?? '1m'}`}
                     </span>
                   </InlineTooltip>
                 </Label>
@@ -151,7 +156,7 @@ export function TimeoutSection({
           }
         />
         <SubSection
-          value={data?.abort_timeout ?? 'Default'}
+          value={timeout?.abort ?? 'Default'}
           label="Abort"
           isPending={isPending}
           footer={
@@ -199,7 +204,7 @@ export function TimeoutSection({
                 >
                   <span className="font-mono italic">
                     run(…){' '}
-                    {`> ${data?.inactivity_timeout ?? '1m'} + ${data?.abort_timeout ?? '1m'}`}
+                    {`> ${timeout?.inactivity ?? '1m'} + ${timeout?.abort ?? '1m'}`}
                   </span>
                 </InlineTooltip>
               </Label>
