@@ -65,7 +65,7 @@ import {
 import {
   Popover,
   PopoverContent,
-  PopoverHoverTrigger,
+  PopoverTrigger,
   usePopover,
 } from '@restate/ui/popover';
 import { DecodedValue, Value } from '@restate/features/invocation-route';
@@ -470,12 +470,12 @@ function Component() {
                           <div className="item-center flex h-full min-h-5 w-full justify-start gap-1">
                             {row.state?.[id] && (
                               <Popover>
-                                <PopoverHoverTrigger>
+                                <PopoverTrigger>
                                   <Button
-                                    className="truncate rounded-xs px-0.5 py-0 font-mono [font-size:inherit] text-inherit decoration-dashed decoration-from-font underline-offset-4"
-                                    variant="icon"
+                                    className="truncate rounded-xl px-3 py-0.5 font-mono [font-size:inherit] text-inherit shadow-none"
+                                    variant="secondary"
                                   >
-                                    <span className="inline-flex items-center truncate pr-0.5">
+                                    <span className="flex min-w-0 items-center truncate pr-0.5">
                                       {EncodingWaterMark && (
                                         <EncodingWaterMark
                                           value={row.state?.[id]}
@@ -483,13 +483,15 @@ function Component() {
                                           className="mr-1"
                                         />
                                       )}
-                                      <DecodedValue
-                                        value={row.state?.[id]}
-                                        isBase64
-                                      />
+                                      <span className="block truncate">
+                                        <DecodedValue
+                                          value={row.state?.[id]}
+                                          isBase64
+                                        />
+                                      </span>
                                     </span>
                                   </Button>
-                                </PopoverHoverTrigger>
+                                </PopoverTrigger>
 
                                 <PopoverContent>
                                   <DropdownSection
