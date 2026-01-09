@@ -14,7 +14,11 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { ErrorBanner } from '@restate/ui/error';
 import { Deployment } from '@restate/features/deployment';
-import { Handler, SERVICE_QUERY_PARAM } from '@restate/features/service';
+import {
+  Handler,
+  HANDLER_QUERY_PARAM,
+  SERVICE_QUERY_PARAM,
+} from '@restate/features/service';
 import { RetentionSection } from './RetentionSection';
 import { TimeoutSection } from './TimeoutSection';
 import { IngressAccessSection } from './IngressAccessSection';
@@ -24,6 +28,16 @@ import { AdvancedSection } from './Advanced';
 import { useState } from 'react';
 import { Metadata } from '@restate/features/options';
 import { ServiceHeader } from './ServiceHeader';
+import {
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownPopover,
+  DropdownSection,
+  DropdownTrigger,
+} from '@restate/ui/dropdown';
+import { useSearchParams } from 'react-router';
+import { tv } from '@restate/util/styles';
 
 export function ServiceDetails() {
   return (
@@ -76,6 +90,24 @@ function ServiceDetailsContent() {
   );
 }
 
+const serviceNameStyles = tv({
+  base: 'min-w-0 flex-auto',
+  variants: {
+    hasHandler: {
+      true: 'text-gray-500',
+      false: 'text-gray-900',
+    },
+  },
+});
+const handlerNameStyles = tv({
+  base: 'block min-w-0 truncate font-mono',
+  variants: {
+    hasHandler: {
+      true: 'text-gray-900',
+      false: 'text-gray-500',
+    },
+  },
+});
 function ServiceContent({ service }: { service: string }) {
   const { data: listDeploymentsData } = useListDeployments();
   const { data, isPending } = useServiceDetails(service);
@@ -85,6 +117,8 @@ function ServiceContent({ service }: { service: string }) {
 
   const { OnboardingGuide } = useRestateContext();
   const [maxDeployments, setMaxDeployments] = useState(10);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedHandler = searchParams.get(HANDLER_QUERY_PARAM);
 
   return (
     <>
@@ -95,7 +129,7 @@ function ServiceContent({ service }: { service: string }) {
             className="h-full w-full fill-blue-50 p-1.5 text-blue-400 drop-shadow-md"
           />
         </div>{' '}
-        <div className="flex min-w-0 flex-auto flex-col items-start gap-1">
+        <div className="flex min-w-0 flex-auto flex-col items-start gap-2">
           {isPending ? (
             <>
               <div className="mt-1 h-5 w-[16ch] animate-pulse rounded-md bg-gray-200" />
@@ -103,9 +137,82 @@ function ServiceContent({ service }: { service: string }) {
             </>
           ) : (
             <>
-              <TruncateWithTooltip>
-                {data?.name ?? 'Service'}
-              </TruncateWithTooltip>
+              <div className="flex max-w-full items-center gap-1">
+                <Dropdown>
+                  <DropdownTrigger>
+                    <Button
+                      variant="icon"
+                      className="text-md -ml-1 flex min-w-0 flex-auto grow-0 items-center justify-center gap-0.5 rounded-lg py-0.5 pr-1 pl-2 italic"
+                    >
+                      <span
+                        className={serviceNameStyles({
+                          hasHandler: Boolean(selectedHandler),
+                        })}
+                      >
+                        <TruncateWithTooltip>{service}</TruncateWithTooltip>
+                      </span>
+                      {Boolean(selectedHandler) && (
+                        <>
+                          <span className="mx-0.5 shrink-0 text-gray-500">
+                            /
+                          </span>
+                          <span
+                            className={handlerNameStyles({
+                              hasHandler: Boolean(selectedHandler),
+                            })}
+                          >
+                            {`${selectedHandler}()`}
+                          </span>
+                        </>
+                      )}
+
+                      <Icon
+                        name={IconName.ChevronsUpDown}
+                        className="h-5 w-5 shrink-0 text-gray-500"
+                      />
+                    </Button>
+                  </DropdownTrigger>
+                  <DropdownPopover>
+                    <DropdownSection title="Service">
+                      <DropdownMenu
+                        selectedItems={selectedHandler ? [] : ['service']}
+                        selectable
+                        onSelect={(value) => {
+                          setSearchParams((old) => {
+                            old.delete(HANDLER_QUERY_PARAM);
+                            return old;
+                          });
+                        }}
+                      >
+                        <DropdownItem value="service">
+                          <span className="font-medium">{service}</span>
+                        </DropdownItem>
+                      </DropdownMenu>
+                    </DropdownSection>
+                    <DropdownSection title="Handlers">
+                      <DropdownMenu
+                        selectedItems={selectedHandler ? [selectedHandler] : []}
+                        selectable
+                        onSelect={(value) => {
+                          setSearchParams((old) => {
+                            old.set(HANDLER_QUERY_PARAM, value);
+                            return old;
+                          });
+                        }}
+                      >
+                        {handlers.map((handler) => (
+                          <DropdownItem key={handler.name} value={handler.name}>
+                            <span className="font-mono text-0.5xs font-medium italic">
+                              {handler.name}()
+                            </span>
+                          </DropdownItem>
+                        ))}
+                      </DropdownMenu>
+                    </DropdownSection>
+                  </DropdownPopover>
+                </Dropdown>
+              </div>
+
               <ServiceHeader
                 type={data?.ty}
                 info={data?.info}

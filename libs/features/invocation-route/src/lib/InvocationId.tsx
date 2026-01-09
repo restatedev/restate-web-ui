@@ -9,6 +9,7 @@ import { useActiveSidebarParam } from '@restate/ui/layout';
 import { useLocation } from 'react-router';
 import { useRestateContext } from '@restate/features/restate-context';
 import {
+  HANDLER_QUERY_PARAM,
   SERVICE_PLAYGROUND_QUERY_PARAM,
   SERVICE_QUERY_PARAM,
 } from '@restate/features/service';
@@ -80,6 +81,7 @@ export function getSearchParams(
         DEPLOYMENT_QUERY_PARAM,
         INVOCATION_QUERY_NAME,
         ONBOARDING_QUERY_PARAM,
+        HANDLER_QUERY_PARAM,
         'state', // TODO resolve circular dependency
         // STATE_QUERY_NAME,
       ].includes(key)
