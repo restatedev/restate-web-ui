@@ -20,6 +20,7 @@ import { useProgress } from './useProgress';
 import { OPERATION_CONFIG, OperationConfig } from './config';
 import { QueryClause } from '@restate/ui/query-builder';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
+import { tv } from '@restate/util/styles';
 
 function BatchOperationContent({
   count,
@@ -51,14 +52,18 @@ function BatchOperationContent({
 
   if (count === 0) {
     return (
-      <div className="mt-2 flex gap-2 rounded-xl bg-blue-50 p-3 text-0.5xs text-blue-600">
-        <Icon
-          className="h-5 w-5 shrink-0 fill-blue-600 text-blue-100"
-          name={IconName.Info}
-        />
-        <div className="flex flex-col gap-1">
-          <span className="block font-semibold">No invocations found</span>
-          <span className="block">{config.emptyMessage}</span>
+      <div className="flex flex-col gap-2">
+        <p>No invocations match your criteria.</p>
+        <Filters state={state} className="mt-0" />
+        <div className="mt-2 flex gap-2 rounded-xl border border-blue-200 bg-blue-50 p-3 text-0.5xs text-blue-600">
+          <Icon
+            className="h-5 w-5 shrink-0 fill-blue-600 text-blue-100"
+            name={IconName.Info}
+          />
+          <div className="flex flex-col gap-1">
+            {/* <span className="block font-semibold">No invocations found</span> */}
+            <span className="block">{config.emptyMessage}</span>
+          </div>
         </div>
       </div>
     );
@@ -77,7 +82,16 @@ function BatchOperationContent({
   );
 }
 
-function Filters({ state }: { state: BatchState }) {
+const filterStyles = tv({
+  base: 'mt-4 flex w-full flex-wrap gap-1 overflow-auto rounded-lg border bg-gray-200/50 p-0.5 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]',
+});
+function Filters({
+  state,
+  className,
+}: {
+  state: BatchState;
+  className?: string;
+}) {
   const paramsWithFilters =
     'filters' in state.params ? state.params : undefined;
 
@@ -90,7 +104,7 @@ function Filters({ state }: { state: BatchState }) {
   }
 
   return (
-    <div className="mt-4 flex w-full flex-wrap gap-1 overflow-auto rounded-lg border bg-gray-200/50 p-0.5 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
+    <div className={filterStyles({ className })}>
       {paramsWithFilters.filters
         .filter((filter) => !filter.isActionImplicitFilter)
         .map((filter, index) => {

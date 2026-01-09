@@ -164,7 +164,8 @@ export function BatchOperationsProvider({
                     <span className="ml-2 inline-block font-medium">
                       {formatPercentageWithoutFraction(
                         (successful + failed) /
-                          Math.max(successful + failed, total, 1),
+                          (Math.max(successful + failed, total, 1) *
+                            (!isCompleted ? 1.01 : 1)),
                       )}
                     </span>{' '}
                     (
