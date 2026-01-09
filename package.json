@@ -11,8 +11,8 @@
     "@internationalized/date": "^3.10.0",
     "@react-aria/interactions": "^3.25.6",
     "@react-aria/utils": "^3.31.0",
-    "@react-router/node": "7.9.4",
-    "@react-router/serve": "7.9.4",
+    "@react-router/node": "7.12.0",
+    "@react-router/serve": "7.12.0",
     "@remix-run/fetch-router": "^0.6.0",
     "@stoplight/json-schema-viewer": "4.16.4",
     "@tailwindcss/vite": "^4.1.11",
@@ -39,7 +39,7 @@
     "react-markdown": "^10.1.0",
     "react-resizable-panels": "^3.0.4",
     "react-responsive-masonry": "2.2.0",
-    "react-router": "7.9.4",
+    "react-router": "7.12.0",
     "react-stately": "3.42.0",
     "semver": "^7.7.2",
     "tailwind-merge": "^3.3.1",
@@ -70,7 +70,7 @@
     "@nx/web": "21.3.11",
     "@nx/workspace": "21.3.11",
     "@playwright/test": "^1.54.2",
-    "@react-router/dev": "7.9.4",
+    "@react-router/dev": "7.12.0",
     "@redocly/cli": "1.34.1",
     "@swc-node/register": "1.9.2",
     "@swc/cli": "0.6.0",
@@ -146,5 +146,5 @@
       }
     }
   },
-  "packageManager": "pnpm@10.17.0+sha512.fce8a3dd29a4ed2ec566fb53efbb04d8c44a0f05bc6f24a73046910fb9c3ce7afa35a0980500668fa3573345bd644644fa98338fa168235c80f4aa17aa17fbef"
+  "packageManager": "pnpm@10.27.0+sha512.72d699da16b1179c14ba9e64dc71c9a40988cbdc65c264cb0e489db7de917f20dcf4d64d8723625f2969ba52d4b7e2a1170682d9ac2a5dcaeaab732b7e16f04a"
 }
