@@ -19,7 +19,7 @@ import {
 import { Deployment } from '@restate/features/deployment';
 
 const styles = tv({
-  base: 'w-full transform rounded-2xl border-orange-200 bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] transition has-[[data-deprecated=true]]:border has-[[data-deprecated=true]]:bg-orange-200/30',
+  base: 'w-full transform rounded-2xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] transition has-[[data-deprecated=true]]:border-orange-200 has-[[data-deprecated=true]]:bg-orange-200/30',
   variants: {
     isMatching: {
       true: '',
