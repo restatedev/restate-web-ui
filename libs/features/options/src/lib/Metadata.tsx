@@ -36,9 +36,11 @@ export function Metadata({
     return (
       <Section className={className}>
         <SectionTitle>Metadata</SectionTitle>
-        <SectionContent className="p-0">
-          <GithubMetadata metadata={metadataList} />
-        </SectionContent>
+        {hasGithubMetadata(metadataList) && (
+          <SectionContent className="p-0">
+            <GithubMetadata metadata={metadataList} />
+          </SectionContent>
+        )}
         {metadataExcludingGithub.length > 0 && (
           <SectionContent className="p-0" raised={false}>
             <div className="mt-2 grid grid-cols-[1fr_2fr] text-xs font-medium text-gray-400">
@@ -57,9 +59,6 @@ export function Metadata({
             </div>
           </SectionContent>
         )}
-        <span className="px-3 py-2 text-xs leading-4 text-gray-500">
-          Metadata attached at the time of registration.
-        </span>
       </Section>
     );
   }

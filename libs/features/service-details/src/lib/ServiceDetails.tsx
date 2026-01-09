@@ -31,6 +31,7 @@ import { useState } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
 import { DropdownSection } from '@restate/ui/dropdown';
 import { formatPlurals } from '@restate/util/intl';
+import { Metadata } from '@restate/features/options';
 
 export function ServiceDetails() {
   return (
@@ -248,6 +249,7 @@ function ServiceContent({ service }: { service: string }) {
             )}
           </SectionContent>
         </Section>
+        <Metadata metadata={data?.metadata} />
         <IngressAccessSection serviceDetails={data} isPending={isPending} />
         <RetentionSection serviceDetails={data} isPending={isPending} />
         <TimeoutSection serviceDetails={data} isPending={isPending} />
