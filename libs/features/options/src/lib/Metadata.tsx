@@ -1,43 +1,6 @@
-import { Button } from '@restate/ui/button';
-import {
-  ComplementaryWithSearchParam,
-  ComplementaryClose,
-  ComplementaryFooter,
-  useParamValue,
-} from '@restate/ui/layout';
-import { useSearchParams } from 'react-router';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { Icon, IconName } from '@restate/ui/icons';
-import {
-  getEndpoint,
-  isHttpDeployment,
-  isLambdaDeployment,
-  getProtocolType,
-} from '@restate/data-access/admin-api';
-import {
-  DateTooltip,
-  HoverTooltip,
-  InlineTooltip,
-  TruncateWithTooltip,
-} from '@restate/ui/tooltip';
-import {
-  ProtocolTypeExplainer,
-  ServiceCompatibility,
-} from '@restate/features/explainers';
-import { ErrorBanner } from '@restate/ui/error';
-import { Copy } from '@restate/ui/copy';
-import { Badge } from '@restate/ui/badge';
-import { useDeploymentDetails } from '@restate/data-access/admin-api-hooks';
-import { MiniService } from '@restate/features/service';
-import {
-  DEPLOYMENT_QUERY_PARAM,
-  DELETE_DEPLOYMENT_QUERY_PARAM,
-  SDK,
-  MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION,
-} from '@restate/features/deployment';
-import { useRestateContext } from '@restate/features/restate-context';
-import { formatDateTime } from '@restate/util/intl';
-import { ReactNode } from 'react';
+import { HoverTooltip } from '@restate/ui/tooltip';
 import { Link } from '@restate/ui/link';
 import { tv } from '@restate/util/styles';
 import { OptionListItemWithTooltip } from './utils';
@@ -191,6 +154,72 @@ export function GithubMetadata({
           </HoverTooltip>
         )}
       </div>
+    </div>
+  );
+}
+
+const miniGithubMetadataStyles = tv({
+  base: 'flex gap-2',
+});
+
+export function MiniGithubMetadata({
+  metadata,
+  className,
+}: {
+  metadata?: Record<string, string>;
+  className?: string;
+}) {
+  const commitSha = COMMIT_KEYS.reduce<string | undefined>((acc, key) => {
+    return acc || metadata?.[key];
+  }, undefined);
+  const repository = REPO_KEYS.reduce<string | undefined>((acc, key) => {
+    return acc || metadata?.[key];
+  }, undefined);
+  const actionsRunId = ACTION_RUN_ID_KEYS.reduce<string | undefined>(
+    (acc, key) => {
+      return acc || metadata?.[key];
+    },
+    undefined,
+  );
+
+  if (!repository) {
+    return null;
+  }
+
+  const baseUrl = `https://github.com/${repository}`;
+  const commitUrl = commitSha ? `${baseUrl}/commit/${commitSha}` : undefined;
+  const actionUrl = actionsRunId
+    ? `${baseUrl}/actions/runs/${actionsRunId}`
+    : undefined;
+
+  return (
+    <div className={miniGithubMetadataStyles({ className })}>
+      {commitUrl && (
+        <HoverTooltip content="View commit">
+          <Link
+            href={commitUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="icon"
+            className="text-blue-600"
+          >
+            <Icon name={IconName.GitGraph} className="h-3.5 w-3.5" />
+          </Link>
+        </HoverTooltip>
+      )}
+      {actionUrl && (
+        <HoverTooltip content="View GitHub Action run">
+          <Link
+            href={actionUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="icon"
+            className="text-blue-600"
+          >
+            <Icon name={IconName.CirclePlay} className="h-3.5 w-3.5" />
+          </Link>
+        </HoverTooltip>
+      )}
     </div>
   );
 }

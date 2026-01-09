@@ -226,6 +226,7 @@ function ServiceContent({ service }: { service: string }) {
                         revision={revision}
                         key={id}
                         highlightSelection={false}
+                        showGithubMetadata
                       />
                     )),
                   )}
