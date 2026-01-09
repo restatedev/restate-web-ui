@@ -228,6 +228,9 @@ function EditStateInner({
             />
           </>
         )}
+        {query.isPending && (
+          <div className="min-h-20 w-full animate-pulse rounded-lg border border-gray-200 bg-slate-200 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]" />
+        )}
         {query.data && !isDeleting && (
           <>
             <p className="mt-2 text-sm text-gray-500">

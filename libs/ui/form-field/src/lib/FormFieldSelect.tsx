@@ -53,7 +53,7 @@ export function FormFieldSelect({
       isDisabled={disabled}
       className={containerStyles({ className })}
       placeholder={placeholder}
-      defaultSelectedKey={defaultValue}
+      defaultValue={defaultValue}
     >
       {!label && <Label className="sr-only">{placeholder}</Label>}
       {label && <FormFieldLabel>{label}</FormFieldLabel>}

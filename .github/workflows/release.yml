@@ -7,7 +7,7 @@ jobs:
     steps:
       - uses: pnpm/action-setup@v4
         with:
-          version: 10.17.0
+          version: 10.27.0
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -36,7 +36,7 @@ jobs:
       - run: echo "has-updated -- ${{ needs.check-version.outputs.has-updated }}"
       - uses: pnpm/action-setup@v4
         with:
-          version: 10.17.0
+          version: 10.27.0
       - name: Checkout
         uses: actions/checkout@v4
         with:

@@ -58,6 +58,7 @@ export function Value({
   );
 }
 
+const MAX_VALUE_LENGTH = 1000;
 export function DecodedValue({
   value,
   className,
@@ -68,12 +69,13 @@ export function DecodedValue({
   isBase64?: boolean;
 }) {
   const { data: decodedValue, isFetching } = useDecode(value, isBase64);
-
   if (typeof decodedValue === 'undefined') {
     return null;
   } else if (isFetching) {
     return <Ellipsis />;
   } else {
-    return decodedValue;
+    return decodedValue.length > MAX_VALUE_LENGTH
+      ? decodedValue.substring(0, MAX_VALUE_LENGTH)
+      : decodedValue;
   }
 }
