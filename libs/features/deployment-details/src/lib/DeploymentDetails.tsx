@@ -37,9 +37,7 @@ import {
 } from '@restate/features/deployment';
 import { useRestateContext } from '@restate/features/restate-context';
 import { formatDateTime } from '@restate/util/intl';
-import { ReactNode } from 'react';
-import { Link } from '@restate/ui/link';
-import { tv } from '@restate/util/styles';
+import { Metadata, OptionListItemWithTooltip } from '@restate/features/options';
 
 export function DeploymentDetails() {
   return (
@@ -100,11 +98,6 @@ function DeploymentContent({ deployment }: { deployment: string }) {
 
   const services = data?.services ?? [];
   const additionalHeaders = Object.entries(data?.additional_headers ?? {});
-  const metadata = Object.entries(data?.metadata ?? {});
-  const metadataExcludingGithub = metadata.filter(
-    ([name]) =>
-      ![...COMMIT_KEYS, ...ACTION_RUN_ID_KEYS, ...REPO_KEYS].includes(name),
-  );
 
   const isTunnel = Boolean(
     tunnel?.isEnabled &&
@@ -271,7 +264,11 @@ function DeploymentContent({ deployment }: { deployment: string }) {
               ) : (
                 <div className="flex flex-col rounded-[calc(0.75rem-0.125rem)] border shadow-xs">
                   {additionalHeaders.map(([name, value]) => (
-                    <Header name={name} value={value} key={name} />
+                    <OptionListItemWithTooltip
+                      name={name}
+                      value={value}
+                      key={name}
+                    />
                   ))}
                 </div>
               )}
@@ -282,31 +279,7 @@ function DeploymentContent({ deployment }: { deployment: string }) {
           </span>
         </Section>
       )}
-      {metadata.length > 0 && (
-        <Section className="mt-4">
-          <SectionTitle>Metadata</SectionTitle>
-          <SectionContent className="p-0">
-            <DeploymentGithubMetadata metadata={data?.metadata} />
-          </SectionContent>
-          {metadataExcludingGithub.length > 0 && (
-            <SectionContent className="p-0" raised={false}>
-              <div className="mt-2 grid grid-cols-[1fr_2fr] text-xs font-medium text-gray-400">
-                <div className="pl-2">Key</div>
-                <div className="pl-2">Value</div>
-              </div>
-
-              <div className="flex flex-col rounded-[calc(0.75rem-0.125rem)] border shadow-xs">
-                {metadataExcludingGithub.map(([name, value]) => (
-                  <Header name={name} value={value} key={name} />
-                ))}
-              </div>
-            </SectionContent>
-          )}
-          <span className="px-3 py-2 text-xs leading-4 text-gray-500">
-            Metadata attached at the time of registration.
-          </span>
-        </Section>
-      )}
+      <Metadata metadata={data?.metadata} className="mt-4" />
       <Section className="mt-4">
         <SectionTitle>
           <ProtocolTypeExplainer variant="indicator-button">
@@ -389,132 +362,5 @@ function DeploymentContent({ deployment }: { deployment: string }) {
         )}
       </Section>
     </>
-  );
-}
-
-function ListItem({ name, value }: { name: ReactNode; value: ReactNode }) {
-  return (
-    <div className="grid grid-cols-[1fr_2fr] items-center gap-1 truncate bg-white px-2 py-0 text-0.5xs text-zinc-600 not-last:border-b first:rounded-t-[calc(0.75rem-0.125rem)] last:rounded-b-[calc(0.75rem-0.125rem)]">
-      <div className="relative flex min-w-0 items-start border-r py-1 pr-1">
-        {name}
-      </div>
-      <div className="flex min-w-0 py-1 pl-1">{value}</div>
-    </div>
-  );
-}
-
-function Header({ name, value }: { name: string; value: string }) {
-  return (
-    <ListItem
-      name={<TruncateWithTooltip copyText={name}>{name}</TruncateWithTooltip>}
-      value={
-        <TruncateWithTooltip copyText={value}>{value}</TruncateWithTooltip>
-      }
-    />
-  );
-}
-
-const COMMIT_KEYS = [
-  'github.commit.sha',
-  'github_commit_sha',
-  'github.sha',
-  'github_sha',
-];
-const REPO_KEYS = ['github.repository', 'github_repository'];
-const ACTION_RUN_ID_KEYS = [
-  'github.actions.run.id',
-  'github_actions_run_id',
-  'github_run_id',
-  'github.run.id',
-];
-
-export function hasGithubMetadata(metadata?: Record<string, string>) {
-  const commitSha = COMMIT_KEYS.reduce<string | undefined>((acc, key) => {
-    return acc || metadata?.[key];
-  }, undefined);
-  const repository = REPO_KEYS.reduce<string | undefined>((acc, key) => {
-    return acc || metadata?.[key];
-  }, undefined);
-  const actionsRunId = ACTION_RUN_ID_KEYS.reduce<string | undefined>(
-    (acc, key) => {
-      return acc || metadata?.[key];
-    },
-    undefined,
-  );
-
-  if (repository && (commitSha || actionsRunId)) {
-    return true;
-  }
-  return false;
-}
-
-const githubStyles = tv({
-  base: 'flex items-center px-1.5 py-1 text-0.5xs font-medium text-gray-500',
-});
-export function DeploymentGithubMetadata({
-  metadata,
-  className,
-}: {
-  metadata?: Record<string, string>;
-  className?: string;
-}) {
-  const commitSha = COMMIT_KEYS.reduce<string | undefined>((acc, key) => {
-    return acc || metadata?.[key];
-  }, undefined);
-  const repository = REPO_KEYS.reduce<string | undefined>((acc, key) => {
-    return acc || metadata?.[key];
-  }, undefined);
-  const actionsRunId = ACTION_RUN_ID_KEYS.reduce<string | undefined>(
-    (acc, key) => {
-      return acc || metadata?.[key];
-    },
-    undefined,
-  );
-
-  if (!repository) {
-    return null;
-  }
-
-  const baseUrl = `https://github.com/${repository}`;
-  const commitUrl = commitSha ? `${baseUrl}/commit/${commitSha}` : undefined;
-  const actionUrl = actionsRunId
-    ? `${baseUrl}/actions/runs/${actionsRunId}`
-    : undefined;
-
-  return (
-    <div className={githubStyles({ className })}>
-      <span className="flex flex-auto items-center pl-1">
-        <Icon name={IconName.Github} className="mr-2.5 h-4 w-4" />
-        Github
-      </span>
-      <div className="flex gap-2">
-        {commitUrl && (
-          <HoverTooltip content="View commit">
-            <Link
-              href={commitUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              variant="icon"
-              className="bg-blue-50 text-blue-600"
-            >
-              <Icon name={IconName.GitGraph} className="h-4 w-4" />
-            </Link>
-          </HoverTooltip>
-        )}
-        {actionUrl && (
-          <HoverTooltip content="View GitHub Action run">
-            <Link
-              href={actionUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              variant="icon"
-              className="bg-blue-50 text-blue-600"
-            >
-              <Icon name={IconName.CirclePlay} className="h-4 w-4" />
-            </Link>
-          </HoverTooltip>
-        )}
-      </div>
-    </div>
   );
 }

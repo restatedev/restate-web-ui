@@ -30,7 +30,6 @@ import { AdvancedSection } from './Advanced';
 import { useState } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
 import { DropdownSection } from '@restate/ui/dropdown';
-import { Badge } from '@restate/ui/badge';
 import { formatPlurals } from '@restate/util/intl';
 
 export function ServiceDetails() {
