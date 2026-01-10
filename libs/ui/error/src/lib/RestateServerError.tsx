@@ -1,4 +1,4 @@
-import { Code, Snippet } from '@restate/ui/code';
+import { Code, Snippet, SnippetCopy } from '@restate/ui/code';
 import { Icon, IconName } from '@restate/ui/icons';
 import { InlineTooltip } from '@restate/ui/tooltip';
 import { ERROR_CODES, RestateError } from '@restate/util/errors';
@@ -121,6 +121,7 @@ export function RestateServerError({
               </summary>
               <span className="ml-4 inline-block">{message}</span>
             </details>
+            <SnippetCopy copyText={message} />
           </Snippet>
         </Code>
         {children && <div className="shrink-0">{children}</div>}
