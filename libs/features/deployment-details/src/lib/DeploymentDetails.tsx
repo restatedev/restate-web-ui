@@ -38,6 +38,10 @@ import {
 import { useRestateContext } from '@restate/features/restate-context';
 import { formatDateTime } from '@restate/util/intl';
 import { Metadata, OptionListItemWithTooltip } from '@restate/features/options';
+import { SplitButton } from '@restate/ui/split-button';
+import { DropdownItem } from '@restate/ui/dropdown';
+import { Link } from '@restate/ui/link';
+import { UPDATE_DEPLOYMENT_QUERY } from '@restate/features/register-deployment';
 
 export function DeploymentDetails() {
   return (
@@ -69,21 +73,35 @@ function DeploymentDetailsContents() {
                 Close
               </Button>
             </ComplementaryClose>
-            <Button
-              className="w-1/2 flex-auto grow-0"
-              variant="destructive"
-              onClick={() =>
-                setSearchParams(
-                  (old) => {
-                    old.set(DELETE_DEPLOYMENT_QUERY_PARAM, deployment);
-                    return old;
-                  },
-                  { preventScrollReset: true },
-                )
+            <SplitButton
+              className="text-md w-1/2 flex-auto grow-0"
+              variant="primary"
+              splitClassName="rounded-r-xl "
+              mini={false}
+              menus={
+                <>
+                  <DropdownItem
+                    href={`?${UPDATE_DEPLOYMENT_QUERY}=${deployment}`}
+                  >
+                    Update deployment
+                  </DropdownItem>
+                  <DropdownItem
+                    href={`?${DELETE_DEPLOYMENT_QUERY_PARAM}=${deployment}`}
+                    destructive
+                  >
+                    Delete deployment
+                  </DropdownItem>
+                </>
               }
             >
-              Delete
-            </Button>
+              <Link
+                href={`?${UPDATE_DEPLOYMENT_QUERY}=${deployment}`}
+                variant="button"
+                className="flex-auto rounded-r-none"
+              >
+                <div className="pl-3">Update</div>
+              </Link>
+            </SplitButton>
           </div>
         </div>
       </ComplementaryFooter>

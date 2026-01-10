@@ -50,7 +50,10 @@ import {
 import { DeploymentDetails } from '@restate/features/deployment-details';
 import { EditService, ServiceDetails } from '@restate/features/service-details';
 import { GettingStarted } from '@restate/features/getting-started';
-import { RegisterDeploymentDialog } from '@restate/features/register-deployment';
+import {
+  RegisterDeploymentDialog,
+  UpdateDeploymentDialog,
+} from '@restate/features/register-deployment';
 import { queryCacheOnSuccess } from '@restate/data-access/admin-api-hooks';
 import { PortalProvider } from '@restate/ui/portal';
 import { BatchOperationsProvider } from '@restate/features/batch-operations';
@@ -296,6 +299,7 @@ export default function App() {
                 <EditService />
                 <InvocationActions />
                 <RegisterDeploymentDialog />
+                <UpdateDeploymentDialog />
                 <Support />
               </EditState>
             </BatchOperationsProvider>

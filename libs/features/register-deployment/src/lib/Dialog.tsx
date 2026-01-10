@@ -9,7 +9,7 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { ComponentProps, PropsWithChildren } from 'react';
 import { ErrorBanner } from '@restate/ui/error';
 import { RegistrationForm } from './Form';
-import { REGISTER_DEPLOYMENT_QUERY } from './constant';
+import { REGISTER_DEPLOYMENT_QUERY, UPDATE_DEPLOYMENT_QUERY } from './constant';
 import { Link } from '@restate/ui/link';
 import {
   DeploymentRegistrationState,
@@ -156,6 +156,16 @@ export function RegisterDeploymentDialog() {
           <RegistrationForm />
           <RegisterDeploymentFooter />
         </DeploymentRegistrationState>
+      </DialogContent>
+    </QueryDialog>
+  );
+}
+
+export function UpdateDeploymentDialog() {
+  return (
+    <QueryDialog query={UPDATE_DEPLOYMENT_QUERY}>
+      <DialogContent className="max-w-3xl">
+        <DeploymentRegistrationState>AAA</DeploymentRegistrationState>
       </DialogContent>
     </QueryDialog>
   );
