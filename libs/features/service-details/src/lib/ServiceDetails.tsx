@@ -282,7 +282,9 @@ function ServiceContent({ service }: { service: string }) {
           </SectionContent>
         </Section>
         <Section>
-          <SectionTitle>Deployments</SectionTitle>
+          <SectionTitle>
+            {hasHandler ? 'Latest Deployment' : 'Deployments'}
+          </SectionTitle>
           <SectionContent className="px-2 pt-2" raised={false}>
             {isPending ? (
               <div className="h-6 w-full animate-pulse rounded-md bg-white" />
@@ -290,6 +292,9 @@ function ServiceContent({ service }: { service: string }) {
               <div className="flex flex-col gap-2">
                 {sortedRevisions
                   .slice(0, maxDeployments)
+                  .filter(
+                    (revision) => !hasHandler || data2?.revision === revision,
+                  )
                   .map((revision) =>
                     deployments?.[revision]?.map((id) => (
                       <Deployment
