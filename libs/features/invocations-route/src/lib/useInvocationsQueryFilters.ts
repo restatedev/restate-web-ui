@@ -78,7 +78,7 @@ export function useInvocationsQueryFilters() {
       );
     });
 
-  if (!queryClauses.some(({ id }) => id === 'status')) {
+  if (!queryClauses.some(({ id }) => id === 'status') && !isLoading) {
     const clauseSchema = schema.find(({ id }) => id === 'status');
     clauseSchema &&
       queryClauses.unshift(
@@ -89,7 +89,10 @@ export function useInvocationsQueryFilters() {
       );
   }
 
-  if (!queryClauses.some(({ id }) => id === 'target_service_name')) {
+  if (
+    !queryClauses.some(({ id }) => id === 'target_service_name') &&
+    !isLoading
+  ) {
     const clauseSchema = schema.find(({ id }) => id === 'target_service_name');
     clauseSchema &&
       queryClauses.unshift(
@@ -119,7 +122,7 @@ export function useInvocationsQueryFilters() {
     };
   });
 
-  const query = useQueryBuilder(queryClauses);
+  const query = useQueryBuilder(queryClauses, isLoading);
   const [pageIndex, _setPageIndex] = useState(0);
   const [, startTransition] = useTransition();
 
@@ -187,5 +190,6 @@ export function useInvocationsQueryFilters() {
     setPageIndex,
     sortParams,
     setSortParams,
+    isSchemaLoading: isLoading,
   };
 }
