@@ -105,7 +105,7 @@ export function Handler({
               <TruncateWithTooltip copyText={handler.name}>
                 {withPlayground ? (
                   <Link
-                    className="relative z-[2] text-inherit no-underline"
+                    className="relative z-[2] mx-1 text-inherit no-underline"
                     variant="secondary"
                     href={`?${SERVICE_PLAYGROUND_QUERY_PARAM}=${service}#/operations/${handler.name}`}
                   >
