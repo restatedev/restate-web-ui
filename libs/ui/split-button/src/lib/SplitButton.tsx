@@ -11,7 +11,7 @@ import { tv } from '@restate/util/styles';
 import { ComponentProps, PropsWithChildren, ReactNode } from 'react';
 
 const menuTriggerStyles = tv({
-  base: 'trigger rounded-l-md rounded-r-md px-1 py-1 [font-size:inherit] [line-height:inherit] group-focus-within:z-2',
+  base: 'trigger flex items-center justify-center rounded-l-md rounded-r-md px-1 py-1 [font-size:inherit] [line-height:inherit] group-focus-within:z-2',
   variants: {
     mini: {
       false: 'rounded-l-none',
