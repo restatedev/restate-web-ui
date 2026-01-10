@@ -8,7 +8,7 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from '@restate/util/styles';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Link } from '@restate/ui/link';
-import { SERVICE_QUERY_PARAM } from './constants';
+import { HANDLER_QUERY_PARAM, SERVICE_QUERY_PARAM } from './constants';
 import { PropsWithChildren, useRef } from 'react';
 import { useActiveSidebarParam } from '@restate/ui/layout';
 import { Handler } from './Handler';
@@ -19,7 +19,7 @@ import {
 import { Deployment } from '@restate/features/deployment';
 
 const styles = tv({
-  base: 'w-full transform rounded-2xl border-orange-200 bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] transition has-[[data-deprecated=true]]:border has-[[data-deprecated=true]]:bg-orange-200/30',
+  base: 'w-full transform rounded-2xl border bg-gray-200/50 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] transition has-[[data-deprecated=true]]:border-orange-200 has-[[data-deprecated=true]]:bg-orange-200/30',
   variants: {
     isMatching: {
       true: '',
@@ -174,7 +174,7 @@ export function ServiceCard({
               ref={linkRef}
               aria-label={serviceName}
               variant="secondary"
-              href={`?${SERVICE_QUERY_PARAM}=${serviceName}`}
+              href={`?${SERVICE_QUERY_PARAM}=${serviceName}&${HANDLER_QUERY_PARAM}`}
               className={serviceLinkStyles({ isMatching })}
             >
               <Icon
@@ -199,11 +199,13 @@ export function ServiceCard({
                       service={serviceName}
                       withPlayground
                       serviceType={serviceDetails.ty}
+                      showLink
+                      showType={false}
                     />
                   ))}
                 {filteredHandlers.length > MAX_NUMBER_OF_HANDLERS && (
                   <Link
-                    href={`?${SERVICE_QUERY_PARAM}=${serviceName}`}
+                    href={`?${SERVICE_QUERY_PARAM}=${serviceName}&${HANDLER_QUERY_PARAM}`}
                     variant="secondary"
                     aria-label={serviceName}
                     className="cursor-pointer rounded-lg border-none bg-transparent px-8 py-1 text-left text-0.5xs text-gray-500 no-underline shadow-none hover:bg-black/3 pressed:bg-black/5"
@@ -234,7 +236,7 @@ export function ServiceCard({
 
             {filteredDeployments.length > MAX_NUMBER_OF_DEPLOYMENTS && (
               <Link
-                href={`?${SERVICE_QUERY_PARAM}=${serviceName}`}
+                href={`?${SERVICE_QUERY_PARAM}=${serviceName}&${HANDLER_QUERY_PARAM}`}
                 variant="secondary"
                 aria-label={serviceName}
                 className="cursor-pointer rounded-lg border-none bg-transparent px-8 py-1 text-left text-0.5xs text-gray-500 no-underline shadow-none hover:bg-black/3 pressed:bg-black/5"

@@ -4,7 +4,7 @@ import { tv } from '@restate/util/styles';
 import { PropsWithChildren } from 'react';
 
 const warningStyles = tv({
-  base: 'mt-2 flex gap-2 rounded-xl border border-blue-200 bg-blue-100 p-3 text-xs text-blue-600/90',
+  base: 'mt-2 flex gap-2 rounded-xl border border-blue-200 bg-blue-50 p-3 text-xs text-blue-600/90',
 });
 export function Warning({
   children,

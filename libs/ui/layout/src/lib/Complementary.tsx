@@ -86,8 +86,10 @@ export function ComplementaryClose({
 export function ComplementaryWithSearchParam({
   children,
   paramName,
+  onCloseQueryParam,
 }: PropsWithChildren<{
   paramName: string;
+  onCloseQueryParam?: (prev: URLSearchParams) => URLSearchParams;
 }>) {
   const [searchParams] = useSearchParams();
   const paramValues = searchParams.getAll(paramName);
@@ -100,6 +102,7 @@ export function ComplementaryWithSearchParam({
           key={paramValue}
           paramName={paramName}
           paramValue={paramValue}
+          onCloseQueryParam={onCloseQueryParam}
         />
       ))}
     </>
@@ -113,14 +116,17 @@ const ComplementaryWithSearchContext = createContext<{
 }>({
   paramValue: '',
 });
+const noOp = (prev: URLSearchParams) => prev;
 
 function ComplementaryWithSearchParamValue({
   children,
   paramName,
   paramValue,
+  onCloseQueryParam = noOp,
 }: PropsWithChildren<{
   paramName: string;
   paramValue: string;
+  onCloseQueryParam?: (prev: URLSearchParams) => URLSearchParams;
 }>) {
   const [searchParams, setSearchParams] = useSearchParams();
   const renderedChildren = useMemo(() => {
@@ -134,16 +140,18 @@ function ComplementaryWithSearchParamValue({
   const onClose = useCallback(() => {
     setSearchParams(
       (prev) => {
-        return new URLSearchParams(
-          prev
-            .toString()
-            .replace(`${paramName}=${paramValue}`, '')
-            .replace(`${paramName}=${encodeURIComponent(paramValue)}`, ''),
+        return onCloseQueryParam(
+          new URLSearchParams(
+            prev
+              .toString()
+              .replace(`${paramName}=${paramValue}`, '')
+              .replace(`${paramName}=${encodeURIComponent(paramValue)}`, ''),
+          ),
         );
       },
       { preventScrollReset: true },
     );
-  }, [paramName, paramValue, setSearchParams]);
+  }, [paramName, paramValue, setSearchParams, onCloseQueryParam]);
   const isOnTop =
     searchParams.toString().startsWith(`${paramName}=${paramValue}`) ||
     searchParams

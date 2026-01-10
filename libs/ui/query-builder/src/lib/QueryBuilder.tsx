@@ -19,6 +19,7 @@ interface QueryBuilderProps {
   query: ListData<QueryClause<QueryClauseType>>;
   multiple: boolean;
   canRemoveItem?: (key: Key) => boolean;
+  isLoadingSchema?: boolean;
 }
 
 const QueryBuilderContext = createContext<{
@@ -36,10 +37,34 @@ const QueryBuilderContext = createContext<{
 // TODO: update state if schema changes
 export function useQueryBuilder(
   initialClauses: QueryClause<QueryClauseType>[] = [],
+  isLoading?: boolean,
 ) {
   const selectedClauses = useListData<QueryClause<QueryClauseType>>({
     initialItems: initialClauses,
   });
+
+  const ref = useRef({
+    initialClauses,
+    selectedClauses,
+  });
+
+  useEffect(() => {
+    ref.current = {
+      initialClauses,
+      selectedClauses,
+    };
+  });
+
+  useEffect(() => {
+    if (!isLoading) {
+      ref.current.selectedClauses.remove(
+        ...ref.current.selectedClauses.items.map((item) => item.id),
+      );
+      ref.current.initialClauses.forEach((item, index) => {
+        ref.current.selectedClauses.insert(index, item);
+      });
+    }
+  }, [isLoading]);
 
   return selectedClauses;
 }

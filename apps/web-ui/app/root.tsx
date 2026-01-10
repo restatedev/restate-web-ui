@@ -42,6 +42,7 @@ import {
   DeleteDeployment,
 } from '@restate/features/deployment';
 import {
+  HANDLER_QUERY_PARAM,
   SERVICE_PLAYGROUND_QUERY_PARAM,
   SERVICE_QUERY_PARAM,
   ServicePlayground,
@@ -237,6 +238,7 @@ export default function App() {
                             DEPLOYMENT_QUERY_PARAM,
                             INVOCATION_QUERY_NAME,
                             STATE_QUERY_NAME,
+                            HANDLER_QUERY_PARAM,
                           ]}
                           href={'/overview'}
                         >
@@ -249,6 +251,7 @@ export default function App() {
                             DEPLOYMENT_QUERY_PARAM,
                             INVOCATION_QUERY_NAME,
                             STATE_QUERY_NAME,
+                            HANDLER_QUERY_PARAM,
                           ]}
                           href={'/invocations'}
                         >
@@ -261,6 +264,7 @@ export default function App() {
                             DEPLOYMENT_QUERY_PARAM,
                             INVOCATION_QUERY_NAME,
                             STATE_QUERY_NAME,
+                            HANDLER_QUERY_PARAM,
                           ]}
                           href={'/state'}
                         >
@@ -273,6 +277,7 @@ export default function App() {
                             DEPLOYMENT_QUERY_PARAM,
                             INVOCATION_QUERY_NAME,
                             STATE_QUERY_NAME,
+                            HANDLER_QUERY_PARAM,
                           ]}
                           href={'/introspection'}
                         >

@@ -1,4 +1,3 @@
-import { useServiceDetails } from '@restate/data-access/admin-api-hooks';
 import { SectionTitle, Section } from '@restate/ui/section';
 import { SubSection } from './SubSection';
 import {
@@ -10,20 +9,28 @@ import {
 } from '@restate/features/explainers';
 
 export function RetryPolicySection({
-  serviceDetails: data,
   className,
   isPending,
+  retryPolicy,
+  service,
 }: {
   className?: string;
   isPending?: boolean;
-  serviceDetails?: ReturnType<typeof useServiceDetails>['data'];
+  service: string;
+  retryPolicy?: {
+    maxAttempts?: number | null;
+    onMaxAttempts?: 'Pause' | 'Kill' | null;
+    initialInterval?: string | null;
+    maxInterval?: string | null;
+    exponentiationFactor?: number | null;
+  };
 }) {
   return (
     <Section>
       <SectionTitle className="flex items-center">Retry policy</SectionTitle>
       <div className="flex flex-col">
         <SubSection
-          value={data?.retry_policy?.max_attempts ?? 'No limit'}
+          value={retryPolicy?.maxAttempts ?? 'No limit'}
           label={
             <RetryMaxAttemptsExplainer variant="indicator-button">
               Max attempts
@@ -32,7 +39,7 @@ export function RetryPolicySection({
           isPending={isPending}
         />
         <SubSection
-          value={data?.retry_policy?.on_max_attempts}
+          value={retryPolicy?.onMaxAttempts}
           label={
             <OnMaxAttemptsExplainer variant="indicator-button">
               On max attempts
@@ -41,7 +48,7 @@ export function RetryPolicySection({
           isPending={isPending}
         />
         <SubSection
-          value={data?.retry_policy?.initial_interval}
+          value={retryPolicy?.initialInterval}
           label={
             <InitialIntervalExplainer variant="indicator-button">
               Initial interval
@@ -50,7 +57,7 @@ export function RetryPolicySection({
           isPending={isPending}
         />
         <SubSection
-          value={data?.retry_policy?.max_interval ?? 'No limit'}
+          value={retryPolicy?.maxInterval ?? 'No limit'}
           label={
             <MaxIntervalExplainer variant="indicator-button">
               Max interval
@@ -59,7 +66,7 @@ export function RetryPolicySection({
           isPending={isPending}
         />
         <SubSection
-          value={data?.retry_policy?.exponentiation_factor}
+          value={retryPolicy?.exponentiationFactor}
           label={
             <ExponentialFactorExplainer variant="indicator-button">
               Exponential factor

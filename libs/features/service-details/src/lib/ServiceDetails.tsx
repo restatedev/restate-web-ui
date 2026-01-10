@@ -15,27 +15,41 @@ import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { ErrorBanner } from '@restate/ui/error';
 import { Deployment } from '@restate/features/deployment';
 import {
-  ServiceType,
-  ServicePlaygroundTrigger,
   Handler,
+  HANDLER_QUERY_PARAM,
   SERVICE_QUERY_PARAM,
 } from '@restate/features/service';
 import { RetentionSection } from './RetentionSection';
 import { TimeoutSection } from './TimeoutSection';
 import { IngressAccessSection } from './IngressAccessSection';
 import { RetryPolicySection } from './RetryPolicy';
-import { RestateMinimumVersion } from '@restate/util/feature-flag';
 import { useRestateContext } from '@restate/features/restate-context';
 import { AdvancedSection } from './Advanced';
 import { useState } from 'react';
-import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
-import { DropdownSection } from '@restate/ui/dropdown';
-import { Badge } from '@restate/ui/badge';
-import { formatPlurals } from '@restate/util/intl';
+import { Metadata } from '@restate/features/options';
+import { ServiceHeader } from './ServiceHeader';
+import {
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownPopover,
+  DropdownSection,
+  DropdownTrigger,
+} from '@restate/ui/dropdown';
+import { useSearchParams } from 'react-router';
+import { tv } from '@restate/util/styles';
+import { Link } from '@restate/ui/link';
 
+function onCloseQueryParam(searchParams: URLSearchParams) {
+  searchParams.delete(HANDLER_QUERY_PARAM);
+  return searchParams;
+}
 export function ServiceDetails() {
   return (
-    <ComplementaryWithSearchParam paramName={SERVICE_QUERY_PARAM}>
+    <ComplementaryWithSearchParam
+      paramName={SERVICE_QUERY_PARAM}
+      onCloseQueryParam={onCloseQueryParam}
+    >
       <ServiceDetailsContent />
     </ComplementaryWithSearchParam>
   );
@@ -84,6 +98,24 @@ function ServiceDetailsContent() {
   );
 }
 
+const serviceNameStyles = tv({
+  base: 'min-w-0 flex-auto rounded-lg px-1 py-0 text-lg leading-8',
+  variants: {
+    hasHandler: {
+      true: 'text-gray-500',
+      false: 'text-gray-900',
+    },
+  },
+});
+const handlerNameStyles = tv({
+  base: 'block min-w-0 truncate',
+  variants: {
+    hasHandler: {
+      true: 'text-gray-900',
+      false: 'text-gray-500',
+    },
+  },
+});
 function ServiceContent({ service }: { service: string }) {
   const { data: listDeploymentsData } = useListDeployments();
   const { data, isPending } = useServiceDetails(service);
@@ -93,15 +125,38 @@ function ServiceContent({ service }: { service: string }) {
 
   const { OnboardingGuide } = useRestateContext();
   const [maxDeployments, setMaxDeployments] = useState(10);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedHandler = searchParams.get(HANDLER_QUERY_PARAM);
+  const hasHandler =
+    Boolean(selectedHandler) &&
+    handlers.some(({ name }) => name === selectedHandler);
+  const handlerData = handlers.find(
+    (handler) => handler.name === selectedHandler,
+  );
+  const resolvedData = {
+    ...data,
+    ...handlerData,
+    retry_policy: {
+      ...data?.retry_policy,
+      ...handlerData?.retry_policy,
+    },
+  };
 
   return (
     <>
       <h2 className="mb-3 flex items-center gap-2 text-lg leading-6 font-medium text-gray-900">
         <div className="h-10 w-10 shrink-0 text-blue-400">
-          <Icon
-            name={IconName.Box}
-            className="h-full w-full fill-blue-50 p-1.5 text-blue-400 drop-shadow-md"
-          />
+          {hasHandler ? (
+            <Icon
+              name={IconName.Function}
+              className="h-full w-full fill-blue-50 p-0.5 text-blue-400 drop-shadow-md"
+            />
+          ) : (
+            <Icon
+              name={IconName.Box}
+              className="h-full w-full fill-blue-50 p-1.5 text-blue-400 drop-shadow-md"
+            />
+          )}
         </div>{' '}
         <div className="flex min-w-0 flex-auto flex-col items-start gap-1">
           {isPending ? (
@@ -111,71 +166,85 @@ function ServiceContent({ service }: { service: string }) {
             </>
           ) : (
             <>
-              <TruncateWithTooltip>
-                {data?.name ?? 'Service'}
-              </TruncateWithTooltip>
-              {data && (
-                <div className="flex w-full items-center gap-2">
-                  <ServiceType type={data?.ty} className="" />
-                  {data?.name && (
-                    <ServicePlaygroundTrigger
-                      service={data?.name}
-                      className=""
-                      variant="button"
-                      {...(data?.handlers?.length === 1 && {
-                        handler: data.handlers.at(0)?.name,
-                      })}
-                    />
-                  )}
-                  {data.info && data.info.length > 0 && (
-                    <Popover>
-                      <PopoverTrigger>
+              <div className="flex max-w-full items-center gap-1">
+                <Link
+                  className={serviceNameStyles({
+                    hasHandler,
+                  })}
+                  variant="icon"
+                  href={`?${HANDLER_QUERY_PARAM}`}
+                >
+                  <TruncateWithTooltip>{service}</TruncateWithTooltip>
+                </Link>
+                {hasHandler && (
+                  <>
+                    <span className="mr-0.5 ml-1 shrink-0 text-gray-500">
+                      /
+                    </span>
+                    <Dropdown>
+                      <DropdownTrigger>
                         <Button
-                          className="flex min-w-0 items-center gap-1 rounded-md border-orange-200 bg-orange-50 px-1 py-0.5 text-xs font-normal text-orange-600"
-                          variant="secondary"
+                          variant="icon"
+                          className="-ml-1 flex min-w-0 flex-auto grow-0 items-center justify-center gap-0.5 rounded-lg py-0.5 pr-1 pl-2 text-lg font-medium italic"
                         >
-                          <Icon
-                            name={IconName.TriangleAlert}
-                            className="h-3.5 w-3.5 shrink-0 text-orange-500"
-                          />
-                          {formatPlurals(data.info.length, {
-                            one: 'warning',
-                            other: 'warnings',
-                          })}
-
-                          <div className="ml-1 truncate rounded-full bg-orange-500 px-1.5 text-2xs font-normal text-white">
-                            {data.info.length}
-                          </div>
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="max-w-md">
-                        <DropdownSection
-                          title={formatPlurals(data.info.length, {
-                            one: 'warning',
-                            other: 'warnings',
-                          })}
-                        >
-                          {data?.info?.map((info) => (
-                            <p
-                              className="-m-px flex gap-2 border border-orange-200 bg-orange-50 p-3 text-0.5xs text-orange-600 first:rounded-t-xl last:rounded-b-xl"
-                              key={info.code}
+                          {hasHandler && (
+                            <span
+                              className={handlerNameStyles({
+                                hasHandler,
+                              })}
                             >
-                              <Icon
-                                className="h-5 w-5 shrink-0 fill-orange-600 text-orange-100"
-                                name={IconName.TriangleAlert}
-                              />
-                              <span className="inline-block">
-                                <span className="font-semibold">Warning: </span>
-                                {info.message}
-                              </span>
-                            </p>
-                          ))}
+                              <TruncateWithTooltip>{`${selectedHandler}()`}</TruncateWithTooltip>
+                            </span>
+                          )}
+
+                          <Icon
+                            name={IconName.ChevronsUpDown}
+                            className="h-5 w-5 shrink-0 text-gray-500"
+                          />
+                        </Button>
+                      </DropdownTrigger>
+                      <DropdownPopover>
+                        <DropdownSection title="Handlers">
+                          <DropdownMenu
+                            selectedItems={
+                              selectedHandler ? [selectedHandler] : []
+                            }
+                            selectable
+                            onSelect={(value) => {
+                              setSearchParams((old) => {
+                                old.set(HANDLER_QUERY_PARAM, value);
+                                return old;
+                              });
+                            }}
+                          >
+                            {handlers.map((handler) => (
+                              <DropdownItem
+                                key={handler.name}
+                                value={handler.name}
+                              >
+                                <span className="italic">{handler.name}()</span>
+                              </DropdownItem>
+                            ))}
+                          </DropdownMenu>
                         </DropdownSection>
-                      </PopoverContent>
-                    </Popover>
-                  )}
-                </div>
-              )}
+                      </DropdownPopover>
+                    </Dropdown>
+                  </>
+                )}
+              </div>
+
+              <ServiceHeader
+                type={data?.ty}
+                info={resolvedData?.info}
+                service={service}
+                handler={
+                  hasHandler
+                    ? selectedHandler
+                    : handlers?.length === 1
+                      ? handlers.at(0)?.name
+                      : undefined
+                }
+              />
             </>
           )}
         </div>
@@ -186,22 +255,26 @@ function ServiceContent({ service }: { service: string }) {
 
       <div className="flex flex-col gap-2">
         <Section className="mt-4">
-          <SectionTitle>Handlers</SectionTitle>
+          <SectionTitle>{hasHandler ? 'Definition' : 'Handlers'}</SectionTitle>
           <SectionContent className="px-2 pt-2" raised={false}>
             {isPending ? (
               <div className="h-6 w-full animate-pulse rounded-md bg-white" />
             ) : (
               <div className="flex flex-col gap-2">
-                {handlers.map((handler) => (
-                  <Handler
-                    handler={handler}
-                    key={handler.name}
-                    className="pl-0"
-                    service={service}
-                    withPlayground
-                    serviceType={data?.ty}
-                  />
-                ))}
+                {handlers
+                  .filter(({ name }) => !hasHandler || name === selectedHandler)
+                  .map((handler) => (
+                    <Handler
+                      handler={handler}
+                      key={handler.name}
+                      className="pl-0"
+                      service={service}
+                      withPlayground
+                      serviceType={data?.ty}
+                      showLink={!hasHandler}
+                      showType={hasHandler}
+                    />
+                  ))}
                 {handlers.length === 0 && (
                   <div className="text-xs leading-4 text-gray-400">
                     No handler
@@ -212,7 +285,9 @@ function ServiceContent({ service }: { service: string }) {
           </SectionContent>
         </Section>
         <Section>
-          <SectionTitle>Deployments</SectionTitle>
+          <SectionTitle>
+            {hasHandler ? 'Latest Deployment' : 'Deployments'}
+          </SectionTitle>
           <SectionContent className="px-2 pt-2" raised={false}>
             {isPending ? (
               <div className="h-6 w-full animate-pulse rounded-md bg-white" />
@@ -220,6 +295,9 @@ function ServiceContent({ service }: { service: string }) {
               <div className="flex flex-col gap-2">
                 {sortedRevisions
                   .slice(0, maxDeployments)
+                  .filter(
+                    (revision) => !hasHandler || data?.revision === revision,
+                  )
                   .map((revision) =>
                     deployments?.[revision]?.map((id) => (
                       <Deployment
@@ -227,6 +305,7 @@ function ServiceContent({ service }: { service: string }) {
                         revision={revision}
                         key={id}
                         highlightSelection={false}
+                        showGithubMetadata
                       />
                     )),
                   )}
@@ -248,13 +327,50 @@ function ServiceContent({ service }: { service: string }) {
             )}
           </SectionContent>
         </Section>
-        <IngressAccessSection serviceDetails={data} isPending={isPending} />
-        <RetentionSection serviceDetails={data} isPending={isPending} />
-        <TimeoutSection serviceDetails={data} isPending={isPending} />
-        <RestateMinimumVersion minVersion="1.4.5">
-          <RetryPolicySection serviceDetails={data} isPending={isPending} />
-        </RestateMinimumVersion>
-        <AdvancedSection serviceDetails={data} isPending={isPending} />
+        <Metadata metadata={resolvedData?.metadata} />
+        <IngressAccessSection
+          isPublic={resolvedData?.public}
+          isPending={isPending}
+          service={service}
+        />
+        <RetentionSection
+          retention={{
+            idempotencyRetention: resolvedData?.idempotency_retention,
+            workflowCompletionRetention:
+              resolvedData && 'workflow_completion_retention' in resolvedData
+                ? resolvedData?.workflow_completion_retention
+                : undefined,
+            journalRetention: resolvedData?.journal_retention,
+          }}
+          isPending={isPending}
+          service={service}
+        />
+        <TimeoutSection
+          isPending={isPending}
+          service={service}
+          timeout={{
+            inactivity: resolvedData?.inactivity_timeout,
+            abort: resolvedData?.abort_timeout,
+          }}
+          revision={data?.revision}
+        />
+        <RetryPolicySection
+          retryPolicy={{
+            exponentiationFactor:
+              resolvedData?.retry_policy?.exponentiation_factor,
+            initialInterval: resolvedData?.retry_policy?.initial_interval,
+            maxAttempts: resolvedData?.retry_policy?.max_attempts,
+            maxInterval: resolvedData?.retry_policy?.max_interval,
+            onMaxAttempts: resolvedData?.retry_policy?.on_max_attempts,
+          }}
+          isPending={isPending}
+          service={service}
+        />
+        <AdvancedSection
+          isLazyStateEnabled={resolvedData?.enable_lazy_state}
+          isPending={isPending}
+          service={service}
+        />
       </div>
     </>
   );

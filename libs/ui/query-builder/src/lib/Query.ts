@@ -118,18 +118,26 @@ export class QueryClause<T extends QueryClauseType> {
 
   get isAllSelected() {
     if (this.type === 'STRING_LIST') {
-      if (!this.value.operation || this.value.operation === 'IN') {
-        return this.options?.every(
-          ({ value }) =>
-            Array.isArray(this.value.value) && this.value.value.includes(value),
-        );
-      }
-      if (this.value.operation === 'NOT_IN') {
-        return (
-          !this.value.value ||
-          (Array.isArray(this.value.value) && this.value.value.length === 0)
-        );
-      }
+      return Boolean(
+        this.options &&
+          this.options.length > 1 &&
+          this.options?.every(
+            ({ value }) =>
+              Array.isArray(this.value.value) &&
+              this.value.value.includes(value),
+          ),
+      );
+    }
+    return false;
+  }
+
+  get isNothingSelected() {
+    if (this.type === 'STRING_LIST') {
+      return Boolean(
+        this.options &&
+          Array.isArray(this.value.value) &&
+          this.value.value.length === 0,
+      );
     }
     return false;
   }

@@ -75,12 +75,17 @@ export function useHrefWithQueryParams({
       const newSearchParams = new URLSearchParams(hrefParams);
       let existingSearchParams = new URLSearchParams(searchParams);
       Array.from(newSearchParams.entries()).forEach(([key, value]) => {
-        existingSearchParams = new URLSearchParams(
-          existingSearchParams
-            .toString()
-            .replace(`${key}=${value}`, '')
-            .replace(`${key}=${encodeURIComponent(value)}`, ''),
-        );
+        if (value !== '') {
+          existingSearchParams = new URLSearchParams(
+            existingSearchParams
+              .toString()
+              .replace(`${key}=${value}`, '')
+              .replace(`${key}=${encodeURIComponent(value)}`, ''),
+          );
+        } else {
+          existingSearchParams.delete(key);
+          newSearchParams.delete(key);
+        }
       });
       const combinedSearchParams = new URLSearchParams([
         ...(mode === 'prepend' ? newSearchParams : []),

@@ -32,7 +32,6 @@ export function ClauseChip({
   onUpdate?: (item: QueryClause<QueryClauseType>) => void;
 }) {
   const isNew = useNewQueryId() === item.id;
-
   return (
     <EditQueryTrigger
       clause={item}
@@ -46,22 +45,21 @@ export function ClauseChip({
         variant="secondary"
         className="flex min-w-0 items-center gap-[0.7ch] rounded-lg bg-white/25 px-1.5 py-1 text-xs text-zinc-50 hover:bg-white/30 pressed:bg-white/30"
       >
-        {item.isAllSelected ? (
-          <>
-            <span className="shrink-0 font-semibold">Any</span>
-            <span className="shrink-0 whitespace-nowrap">{item.label}</span>
-          </>
-        ) : (
-          <>
-            <span className="shrink-0 whitespace-nowrap">{item.label}</span>
-            {item.operationLabel?.split(' ').map((segment) => (
-              <span className="font-mono" key={segment}>
-                {segment}
-              </span>
-            ))}
-            <span className="truncate font-semibold">{item.valueLabel}</span>
-          </>
-        )}
+        <>
+          <span className="shrink-0 whitespace-nowrap">{item.label}</span>
+          {item.operationLabel?.split(' ').map((segment) => (
+            <span className="font-mono" key={segment}>
+              {segment}
+            </span>
+          ))}
+          <span className="max-w-56 truncate font-semibold">
+            {item.type === 'STRING_LIST' &&
+            (!item.value.operation || item.value.operation === 'IN') &&
+            (item.isAllSelected || item.isNothingSelected)
+              ? 'Any'
+              : item.valueLabel || '?'}
+          </span>
+        </>
         <Icon
           name={IconName.ChevronsUpDown}
           className="ml-2 h-3.5 w-3.5 shrink-0"
@@ -149,35 +147,36 @@ function EditQueryTrigger({
               </DropdownMenu>
             )}
           </DropdownSection>
-          {clause.type === 'STRING_LIST' && (
-            <Button
-              variant="icon"
-              className="mr-2 ml-auto text-xs"
-              onClick={() => {
-                if (clause.isAllSelected) {
-                  const newClause = new QueryClause(
-                    { ...clause.schema, options: clause.options },
-                    {
-                      ...clause.value,
-                      value: [],
-                    },
-                  );
-                  onUpdate?.(newClause);
-                } else {
-                  const newClause = new QueryClause(
-                    { ...clause.schema, options: clause.options },
-                    {
-                      ...clause.value,
-                      value: clause.options?.map(({ value }) => value) || [],
-                    },
-                  );
-                  onUpdate?.(newClause);
-                }
-              }}
-            >
-              {clause.isAllSelected ? 'Deselect all' : 'Select all'}
-            </Button>
-          )}
+          {clause.type === 'STRING_LIST' &&
+            Number(clause.options?.length) > 1 && (
+              <Button
+                variant="icon"
+                className="mr-2 ml-auto text-xs"
+                onClick={() => {
+                  if (clause.isAllSelected) {
+                    const newClause = new QueryClause(
+                      { ...clause.schema, options: clause.options },
+                      {
+                        ...clause.value,
+                        value: [],
+                      },
+                    );
+                    onUpdate?.(newClause);
+                  } else {
+                    const newClause = new QueryClause(
+                      { ...clause.schema, options: clause.options },
+                      {
+                        ...clause.value,
+                        value: clause.options?.map(({ value }) => value) || [],
+                      },
+                    );
+                    onUpdate?.(newClause);
+                  }
+                }}
+              >
+                {clause.isAllSelected ? 'Deselect all' : 'Select all'}
+              </Button>
+            )}
           <DropdownSection>
             <ValueSelector clause={clause} onUpdate={onUpdate} />
           </DropdownSection>
@@ -192,7 +191,7 @@ function EditQueryTrigger({
                   {
                     ...clause.value,
                     operation: 'IN',
-                    value: clause.options?.map(({ value }) => value),
+                    value: [],
                   },
                 );
                 onUpdate?.(newClause);

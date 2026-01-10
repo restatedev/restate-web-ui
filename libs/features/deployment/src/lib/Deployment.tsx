@@ -18,6 +18,7 @@ import { Badge } from '@restate/ui/badge';
 import { Copy } from '@restate/ui/copy';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
 import { Button } from '@restate/ui/button';
+import { GithubMetadata, MiniGithubMetadata } from '@restate/features/options';
 
 const styles = tv({
   base: 'relative -m-1 flex flex-row items-center gap-2 border p-1 text-0.5xs transition-all ease-in-out',
@@ -37,12 +38,14 @@ export function Deployment({
   deploymentId,
   highlightSelection = true,
   showEndpoint = true,
+  showGithubMetadata = false,
 }: {
   revision?: ServiceRevision;
   className?: string;
   deploymentId?: DeploymentId;
   highlightSelection?: boolean;
   showEndpoint?: boolean;
+  showGithubMetadata?: boolean;
 }) {
   const { tunnel } = useRestateContext();
   const { data: { deployments } = {} } = useListDeployments({
@@ -197,6 +200,9 @@ export function Deployment({
         </Link>
       </div>
 
+      {showGithubMetadata && (
+        <MiniGithubMetadata metadata={deployment.metadata} className="z-[2]" />
+      )}
       {revision && <Revision revision={revision} className="z-2 ml-auto" />}
     </div>
   );
