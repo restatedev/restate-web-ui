@@ -145,10 +145,17 @@ function ServiceContent({ service }: { service: string }) {
     <>
       <h2 className="mb-3 flex items-center gap-2 text-lg leading-6 font-medium text-gray-900">
         <div className="h-10 w-10 shrink-0 text-blue-400">
-          <Icon
-            name={IconName.Box}
-            className="h-full w-full fill-blue-50 p-1.5 text-blue-400 drop-shadow-md"
-          />
+          {hasHandler ? (
+            <Icon
+              name={IconName.Function}
+              className="h-full w-full fill-blue-50 p-0.5 text-blue-400 drop-shadow-md"
+            />
+          ) : (
+            <Icon
+              name={IconName.Box}
+              className="h-full w-full fill-blue-50 p-1.5 text-blue-400 drop-shadow-md"
+            />
+          )}
         </div>{' '}
         <div className="flex min-w-0 flex-auto flex-col items-start gap-2">
           {isPending ? (
