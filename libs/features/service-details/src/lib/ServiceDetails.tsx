@@ -137,8 +137,21 @@ function ServiceContent({ service }: { service: string }) {
     ...data,
     ...handlerData,
     retry_policy: {
-      ...data?.retry_policy,
-      ...handlerData?.retry_policy,
+      exponentiation_factor:
+        data?.retry_policy?.exponentiation_factor ??
+        handlerData?.retry_policy?.exponentiation_factor,
+      initial_interval:
+        data?.retry_policy?.initial_interval ??
+        handlerData?.retry_policy?.initial_interval,
+      max_attempts:
+        data?.retry_policy?.max_attempts ??
+        handlerData?.retry_policy?.max_attempts,
+      max_interval:
+        data?.retry_policy?.max_interval ??
+        handlerData?.retry_policy?.max_interval,
+      on_max_attempts:
+        data?.retry_policy?.on_max_attempts ??
+        handlerData?.retry_policy?.on_max_attempts,
     },
   };
 
