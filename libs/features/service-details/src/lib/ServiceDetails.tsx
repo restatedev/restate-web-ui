@@ -117,8 +117,8 @@ const handlerNameStyles = tv({
 });
 function ServiceContent({ service }: { service: string }) {
   const { data: listDeploymentsData } = useListDeployments();
-  const { data: data2, isPending } = useServiceDetails(service);
-  const handlers = data2?.handlers ?? [];
+  const { data, isPending } = useServiceDetails(service);
+  const handlers = data?.handlers ?? [];
   const { deployments, sortedRevisions = [] } =
     listDeploymentsData?.services.get(String(service)) ?? {};
 
@@ -126,15 +126,17 @@ function ServiceContent({ service }: { service: string }) {
   const [maxDeployments, setMaxDeployments] = useState(10);
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedHandler = searchParams.get(HANDLER_QUERY_PARAM);
-  const hasHandler = Boolean(selectedHandler);
+  const hasHandler =
+    Boolean(selectedHandler) &&
+    handlers.some(({ name }) => name === selectedHandler);
   const handlerData = handlers.find(
     (handler) => handler.name === selectedHandler,
   );
   const resolvedData = {
-    ...data2,
+    ...data,
     ...handlerData,
     retry_policy: {
-      ...data2?.retry_policy,
+      ...data?.retry_policy,
       ...handlerData?.retry_policy,
     },
   };
@@ -180,7 +182,7 @@ function ServiceContent({ service }: { service: string }) {
                               hasHandler,
                             })}
                           >
-                            {`${selectedHandler}()`}
+                            <TruncateWithTooltip>{`${selectedHandler}()`}</TruncateWithTooltip>
                           </span>
                         </>
                       )}
@@ -233,7 +235,7 @@ function ServiceContent({ service }: { service: string }) {
               </div>
 
               <ServiceHeader
-                type={data2?.ty}
+                type={data?.ty}
                 info={resolvedData?.info}
                 service={service}
                 handler={
@@ -269,8 +271,9 @@ function ServiceContent({ service }: { service: string }) {
                       className="pl-0"
                       service={service}
                       withPlayground
-                      serviceType={data2?.ty}
+                      serviceType={data?.ty}
                       showLink={!hasHandler}
+                      showType={hasHandler}
                     />
                   ))}
                 {handlers.length === 0 && (
@@ -294,7 +297,7 @@ function ServiceContent({ service }: { service: string }) {
                 {sortedRevisions
                   .slice(0, maxDeployments)
                   .filter(
-                    (revision) => !hasHandler || data2?.revision === revision,
+                    (revision) => !hasHandler || data?.revision === revision,
                   )
                   .map((revision) =>
                     deployments?.[revision]?.map((id) => (
@@ -350,7 +353,7 @@ function ServiceContent({ service }: { service: string }) {
             inactivity: resolvedData?.inactivity_timeout,
             abort: resolvedData?.abort_timeout,
           }}
-          revision={data2?.revision}
+          revision={data?.revision}
         />
         <RetryPolicySection
           retryPolicy={{

@@ -10,6 +10,7 @@ import {
   Popover,
   PopoverContent,
   PopoverHoverTrigger,
+  PopoverTrigger,
   usePopover,
 } from '@restate/ui/popover';
 import { ServicePlaygroundTrigger } from './ServicePlayground';
@@ -23,7 +24,7 @@ import {
   SERVICE_PLAYGROUND_QUERY_PARAM,
   SERVICE_QUERY_PARAM,
 } from './constants';
-import { useSearchParams } from 'react-router';
+import { Button } from '@restate/ui/button';
 
 const styles = tv({
   base: 'relative flex flex-row flex-wrap items-center pr-2',
@@ -64,6 +65,7 @@ export function Handler({
   withPlayground,
   serviceType,
   showLink,
+  showType = true,
 }: {
   handler: HandlerType;
   className?: string;
@@ -71,33 +73,34 @@ export function Handler({
   withPlayground?: boolean;
   serviceType?: ServiceType;
   showLink?: boolean;
+  showType?: boolean;
 }) {
-  const [searchParams] = useSearchParams();
-  const cloneSearchParams = new URLSearchParams(searchParams);
-  cloneSearchParams.append(SERVICE_QUERY_PARAM, service);
-  cloneSearchParams.set(HANDLER_QUERY_PARAM, handler.name);
-
   return (
     <div className={styles({ className })}>
       <div className="flex min-w-0 flex-auto flex-row items-end gap-2">
-        <div className="h-6 w-6 shrink-0 -translate-y-0.5 rounded-md border bg-white shadow-xs">
-          <Icon
-            name={IconName.Function}
-            className="h-full w-full text-zinc-400"
-          />
+        <div className="flex h-[1.75rem] items-center">
+          <div className="h-6 w-6 shrink-0 rounded-md border bg-white shadow-xs">
+            <Icon
+              name={IconName.Function}
+              className="h-full w-full text-zinc-400"
+            />
+          </div>
         </div>
         <div className="flex min-w-0 flex-auto flex-row flex-wrap items-center justify-start gap-x-1.5">
-          {handler.ty && serviceType && serviceType !== 'Service' && (
-            <Badge
-              size="sm"
-              className="border-none bg-transparent px-0 py-0 text-xs font-medium text-zinc-500/80"
-            >
-              <HandlerTypeExplainer type={handler.ty} variant="inline-help">
-                {handler.ty}
-              </HandlerTypeExplainer>
-            </Badge>
-          )}
-          <div className="min-w-0 flex-auto text-0.5xs font-medium text-zinc-600 italic">
+          {handler.ty &&
+            serviceType &&
+            serviceType !== 'Service' &&
+            showType && (
+              <Badge
+                size="sm"
+                className="w-full translate-y-1 border-none bg-transparent px-0 py-0 text-xs font-medium text-zinc-500/80"
+              >
+                <HandlerTypeExplainer type={handler.ty} variant="inline-help">
+                  {handler.ty}
+                </HandlerTypeExplainer>
+              </Badge>
+            )}
+          <div className="min-w-0 flex-auto text-0.5xs leading-[1.75rem] font-medium text-zinc-600 italic">
             <span className="flex items-center">
               <TruncateWithTooltip copyText={handler.name}>
                 {withPlayground ? (
@@ -138,8 +141,7 @@ export function Handler({
               {showLink && (
                 <Link
                   variant="icon"
-                  href={`?${cloneSearchParams.toString()}`}
-                  preserveQueryParams={false}
+                  href={`?${SERVICE_QUERY_PARAM}=${service}&${HANDLER_QUERY_PARAM}=${handler.name}`}
                   className="my-0.5 ml-auto shrink-0 rounded-full before:absolute before:-top-0.5 before:right-1 before:-bottom-0.5 before:-left-1 before:z-[0] before:rounded-lg before:content-[''] hover:before:bg-black/3"
                 >
                   <Icon name={IconName.ChevronRight} className="h-4 w-4" />
@@ -219,13 +221,10 @@ function HandlerInputOutput({
     <div className={base({ className })}>
       <span className={value()}>
         <Popover>
-          <PopoverHoverTrigger>
-            <Link
-              className="max-w-fit grow basis-20 truncate rounded-xs px-0.5 py-0 font-mono [font-size:inherit] text-inherit [font-style:inherit] underline decoration-dashed decoration-from-font underline-offset-4 [&:not([href])]:cursor-default"
+          <PopoverTrigger>
+            <Button
+              className="z-[2] max-w-fit grow basis-20 truncate rounded-xs px-0.5 py-0.5 font-mono [font-size:inherit] text-inherit [font-style:inherit] underline decoration-dashed decoration-from-font underline-offset-4 [&:not([href])]:cursor-default"
               variant="icon"
-              {...(withPlayground && {
-                href: `?${SERVICE_PLAYGROUND_QUERY_PARAM}=${service}#/operations/${handler}`,
-              })}
             >
               <span className="truncate pr-0.5">
                 {schema?.title ?? schema?.type ?? (
@@ -234,8 +233,8 @@ function HandlerInputOutput({
                   </span>
                 )}
               </span>
-            </Link>
-          </PopoverHoverTrigger>
+            </Button>
+          </PopoverTrigger>
           <PopoverContent className="[&_header]:font-mono [&_header]:text-0.5xs">
             <DropdownSection
               className="mb-1 max-w-[min(90vw,600px)] min-w-80 overflow-auto px-4"
