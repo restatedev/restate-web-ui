@@ -39,9 +39,16 @@ import {
 import { useSearchParams } from 'react-router';
 import { tv } from '@restate/util/styles';
 
+function onCloseQueryParam(searchParams: URLSearchParams) {
+  searchParams.delete(HANDLER_QUERY_PARAM);
+  return searchParams;
+}
 export function ServiceDetails() {
   return (
-    <ComplementaryWithSearchParam paramName={SERVICE_QUERY_PARAM}>
+    <ComplementaryWithSearchParam
+      paramName={SERVICE_QUERY_PARAM}
+      onCloseQueryParam={onCloseQueryParam}
+    >
       <ServiceDetailsContent />
     </ComplementaryWithSearchParam>
   );
@@ -110,8 +117,8 @@ const handlerNameStyles = tv({
 });
 function ServiceContent({ service }: { service: string }) {
   const { data: listDeploymentsData } = useListDeployments();
-  const { data, isPending } = useServiceDetails(service);
-  const handlers = data?.handlers ?? [];
+  const { data: data2, isPending } = useServiceDetails(service);
+  const handlers = data2?.handlers ?? [];
   const { deployments, sortedRevisions = [] } =
     listDeploymentsData?.services.get(String(service)) ?? {};
 
@@ -119,6 +126,18 @@ function ServiceContent({ service }: { service: string }) {
   const [maxDeployments, setMaxDeployments] = useState(10);
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedHandler = searchParams.get(HANDLER_QUERY_PARAM);
+  const hasHandler = Boolean(selectedHandler);
+  const handlerData = handlers.find(
+    (handler) => handler.name === selectedHandler,
+  );
+  const resolvedData = {
+    ...data2,
+    ...handlerData,
+    retry_policy: {
+      ...data2?.retry_policy,
+      ...handlerData?.retry_policy,
+    },
+  };
 
   return (
     <>
@@ -146,19 +165,19 @@ function ServiceContent({ service }: { service: string }) {
                     >
                       <span
                         className={serviceNameStyles({
-                          hasHandler: Boolean(selectedHandler),
+                          hasHandler,
                         })}
                       >
                         <TruncateWithTooltip>{service}</TruncateWithTooltip>
                       </span>
-                      {Boolean(selectedHandler) && (
+                      {hasHandler && (
                         <>
                           <span className="mx-0.5 shrink-0 text-gray-500">
                             /
                           </span>
                           <span
                             className={handlerNameStyles({
-                              hasHandler: Boolean(selectedHandler),
+                              hasHandler,
                             })}
                           >
                             {`${selectedHandler}()`}
@@ -214,13 +233,15 @@ function ServiceContent({ service }: { service: string }) {
               </div>
 
               <ServiceHeader
-                type={data?.ty}
-                info={data?.info}
+                type={data2?.ty}
+                info={resolvedData?.info}
                 service={service}
                 handler={
-                  data?.handlers?.length === 1
-                    ? data.handlers.at(0)?.name
-                    : undefined
+                  hasHandler
+                    ? selectedHandler
+                    : handlers?.length === 1
+                      ? handlers.at(0)?.name
+                      : undefined
                 }
               />
             </>
@@ -233,22 +254,24 @@ function ServiceContent({ service }: { service: string }) {
 
       <div className="flex flex-col gap-2">
         <Section className="mt-4">
-          <SectionTitle>Handlers</SectionTitle>
+          <SectionTitle>{hasHandler ? 'Definition' : 'Handlers'}</SectionTitle>
           <SectionContent className="px-2 pt-2" raised={false}>
             {isPending ? (
               <div className="h-6 w-full animate-pulse rounded-md bg-white" />
             ) : (
               <div className="flex flex-col gap-2">
-                {handlers.map((handler) => (
-                  <Handler
-                    handler={handler}
-                    key={handler.name}
-                    className="pl-0"
-                    service={service}
-                    withPlayground
-                    serviceType={data?.ty}
-                  />
-                ))}
+                {handlers
+                  .filter(({ name }) => !hasHandler || name === selectedHandler)
+                  .map((handler) => (
+                    <Handler
+                      handler={handler}
+                      key={handler.name}
+                      className="pl-0"
+                      service={service}
+                      withPlayground
+                      serviceType={data2?.ty}
+                    />
+                  ))}
                 {handlers.length === 0 && (
                   <div className="text-xs leading-4 text-gray-400">
                     No handler
@@ -296,17 +319,20 @@ function ServiceContent({ service }: { service: string }) {
             )}
           </SectionContent>
         </Section>
-        <Metadata metadata={data?.metadata} />
+        <Metadata metadata={resolvedData?.metadata} />
         <IngressAccessSection
-          isPublic={data?.public}
+          isPublic={resolvedData?.public}
           isPending={isPending}
           service={service}
         />
         <RetentionSection
           retention={{
-            idempotencyRetention: data?.idempotency_retention,
-            workflowCompletionRetention: data?.workflow_completion_retention,
-            journalRetention: data?.journal_retention,
+            idempotencyRetention: resolvedData?.idempotency_retention,
+            workflowCompletionRetention:
+              resolvedData && 'workflow_completion_retention' in resolvedData
+                ? resolvedData?.workflow_completion_retention
+                : undefined,
+            journalRetention: resolvedData?.journal_retention,
           }}
           isPending={isPending}
           service={service}
@@ -315,24 +341,25 @@ function ServiceContent({ service }: { service: string }) {
           isPending={isPending}
           service={service}
           timeout={{
-            inactivity: data?.inactivity_timeout,
-            abort: data?.abort_timeout,
+            inactivity: resolvedData?.inactivity_timeout,
+            abort: resolvedData?.abort_timeout,
           }}
-          revision={data?.revision}
+          revision={data2?.revision}
         />
         <RetryPolicySection
           retryPolicy={{
-            exponentiationFactor: data?.retry_policy?.exponentiation_factor,
-            initialInterval: data?.retry_policy?.initial_interval,
-            maxAttempts: data?.retry_policy?.max_attempts,
-            maxInterval: data?.retry_policy?.max_interval,
-            onMaxAttempts: data?.retry_policy?.on_max_attempts,
+            exponentiationFactor:
+              resolvedData?.retry_policy?.exponentiation_factor,
+            initialInterval: resolvedData?.retry_policy?.initial_interval,
+            maxAttempts: resolvedData?.retry_policy?.max_attempts,
+            maxInterval: resolvedData?.retry_policy?.max_interval,
+            onMaxAttempts: resolvedData?.retry_policy?.on_max_attempts,
           }}
           isPending={isPending}
           service={service}
         />
         <AdvancedSection
-          isLazyStateEnabled={data?.enable_lazy_state}
+          isLazyStateEnabled={resolvedData?.enable_lazy_state}
           isPending={isPending}
           service={service}
         />

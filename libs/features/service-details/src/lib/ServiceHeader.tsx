@@ -11,7 +11,7 @@ export function ServiceHeader({
   info,
 }: {
   service: string;
-  handler?: string;
+  handler?: string | null;
   type?: 'Service' | 'VirtualObject' | 'Workflow';
   info?: {
     code?: string | null;

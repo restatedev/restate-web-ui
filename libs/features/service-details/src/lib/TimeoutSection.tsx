@@ -25,7 +25,7 @@ export function TimeoutSection({
   isReadonly?: boolean;
   service: string;
   revision?: number;
-  timeout?: { inactivity?: string; abort?: string };
+  timeout?: { inactivity?: string | null; abort?: string | null };
 }) {
   const [, setSearchParams] = useSearchParams();
   const { data: listDeploymentsData } = useListDeployments();

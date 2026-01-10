@@ -10,7 +10,7 @@ export function AdvancedSection({
   className?: string;
   isPending?: boolean;
   service: string;
-  isLazyStateEnabled?: boolean;
+  isLazyStateEnabled?: boolean | null;
 }) {
   return (
     <Section>

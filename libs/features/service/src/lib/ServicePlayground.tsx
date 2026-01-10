@@ -51,7 +51,7 @@ export function ServicePlaygroundTrigger({
   variant = 'button',
 }: {
   service: string;
-  handler?: string;
+  handler?: string | null;
   className?: string;
   onClick?: VoidFunction;
   variant?: ComponentProps<typeof Link>['variant'];

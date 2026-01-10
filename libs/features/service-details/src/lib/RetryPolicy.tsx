@@ -19,10 +19,10 @@ export function RetryPolicySection({
   service: string;
   retryPolicy?: {
     maxAttempts?: number | null;
-    onMaxAttempts?: 'Pause' | 'Kill' | undefined;
-    initialInterval?: string;
+    onMaxAttempts?: 'Pause' | 'Kill' | null;
+    initialInterval?: string | null;
     maxInterval?: string | null;
-    exponentiationFactor?: number;
+    exponentiationFactor?: number | null;
   };
 }) {
   return (
