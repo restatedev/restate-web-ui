@@ -199,6 +199,7 @@ export function ServiceCard({
                       service={serviceName}
                       withPlayground
                       serviceType={serviceDetails.ty}
+                      showLink
                     />
                   ))}
                 {filteredHandlers.length > MAX_NUMBER_OF_HANDLERS && (

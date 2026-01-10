@@ -18,7 +18,12 @@ import { JsonSchemaViewer } from '@restate/ui/api';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Badge } from '@restate/ui/badge';
 import { Link } from '@restate/ui/link';
-import { SERVICE_PLAYGROUND_QUERY_PARAM } from './constants';
+import {
+  HANDLER_QUERY_PARAM,
+  SERVICE_PLAYGROUND_QUERY_PARAM,
+  SERVICE_QUERY_PARAM,
+} from './constants';
+import { useSearchParams } from 'react-router';
 
 const styles = tv({
   base: 'relative flex flex-row flex-wrap items-center pr-2',
@@ -58,17 +63,24 @@ export function Handler({
   service,
   withPlayground,
   serviceType,
+  showLink,
 }: {
   handler: HandlerType;
   className?: string;
   service: string;
   withPlayground?: boolean;
   serviceType?: ServiceType;
+  showLink?: boolean;
 }) {
+  const [searchParams] = useSearchParams();
+  const cloneSearchParams = new URLSearchParams(searchParams);
+  cloneSearchParams.append(SERVICE_QUERY_PARAM, service);
+  cloneSearchParams.set(HANDLER_QUERY_PARAM, handler.name);
+
   return (
     <div className={styles({ className })}>
       <div className="flex min-w-0 flex-auto flex-row items-end gap-2">
-        <div className="-mb-0.5 h-6 w-6 shrink-0 rounded-md border bg-white shadow-xs">
+        <div className="h-6 w-6 shrink-0 -translate-y-0.5 rounded-md border bg-white shadow-xs">
           <Icon
             name={IconName.Function}
             className="h-full w-full text-zinc-400"
@@ -90,7 +102,7 @@ export function Handler({
               <TruncateWithTooltip copyText={handler.name}>
                 {withPlayground ? (
                   <Link
-                    className="text-inherit no-underline"
+                    className="relative z-[2] text-inherit no-underline"
                     variant="secondary"
                     href={`?${SERVICE_PLAYGROUND_QUERY_PARAM}=${service}#/operations/${handler.name}`}
                   >
@@ -100,7 +112,6 @@ export function Handler({
                   handler.name
                 )}
               </TruncateWithTooltip>
-
               <span className="ml-[0.2ch] shrink-0 text-zinc-400">{'('}</span>
               <HandlerInputOutput
                 schema={handler.input_json_schema}
@@ -109,6 +120,7 @@ export function Handler({
                 service={service}
                 withPlayground={withPlayground}
                 handler={handler.name}
+                className="[&_a]:z-[2]"
               />
               <span className="shrink-0 text-zinc-400">
                 {')'}
@@ -121,7 +133,18 @@ export function Handler({
                 service={service}
                 withPlayground={withPlayground}
                 handler={handler.name}
+                className="[&_a]:z-[2]"
               />
+              {showLink && (
+                <Link
+                  variant="icon"
+                  href={`?${cloneSearchParams.toString()}`}
+                  preserveQueryParams={false}
+                  className="my-0.5 ml-auto shrink-0 rounded-full before:absolute before:-top-0.5 before:right-1 before:-bottom-0.5 before:-left-1 before:z-[0] before:rounded-lg before:content-[''] hover:before:bg-black/3"
+                >
+                  <Icon name={IconName.ChevronRight} className="h-4 w-4" />
+                </Link>
+              )}
             </span>
           </div>
         </div>
@@ -174,7 +197,6 @@ function HandlerInputOutput({
       schema.anyOf ||
       (hasMultipleType && schema.type.includes('object')));
   const { base, value } = inputOutputStyles({
-    className,
     hasSchema,
   });
 
@@ -194,7 +216,7 @@ function HandlerInputOutput({
     );
   }
   return (
-    <div className={base()}>
+    <div className={base({ className })}>
       <span className={value()}>
         <Popover>
           <PopoverHoverTrigger>

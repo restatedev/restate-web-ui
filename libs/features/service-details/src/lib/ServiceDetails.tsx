@@ -270,6 +270,7 @@ function ServiceContent({ service }: { service: string }) {
                       service={service}
                       withPlayground
                       serviceType={data2?.ty}
+                      showLink={!hasHandler}
                     />
                   ))}
                 {handlers.length === 0 && (
