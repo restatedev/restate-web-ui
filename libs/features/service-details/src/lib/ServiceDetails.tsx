@@ -38,6 +38,7 @@ import {
 } from '@restate/ui/dropdown';
 import { useSearchParams } from 'react-router';
 import { tv } from '@restate/util/styles';
+import { Link } from '@restate/ui/link';
 
 function onCloseQueryParam(searchParams: URLSearchParams) {
   searchParams.delete(HANDLER_QUERY_PARAM);
@@ -98,7 +99,7 @@ function ServiceDetailsContent() {
 }
 
 const serviceNameStyles = tv({
-  base: 'min-w-0 flex-auto',
+  base: 'min-w-0 flex-auto rounded-lg px-1 py-0 text-lg leading-8',
   variants: {
     hasHandler: {
       true: 'text-gray-500',
@@ -107,7 +108,7 @@ const serviceNameStyles = tv({
   },
 });
 const handlerNameStyles = tv({
-  base: 'block min-w-0 truncate font-mono',
+  base: 'block min-w-0 truncate',
   variants: {
     hasHandler: {
       true: 'text-gray-900',
@@ -157,7 +158,7 @@ function ServiceContent({ service }: { service: string }) {
             />
           )}
         </div>{' '}
-        <div className="flex min-w-0 flex-auto flex-col items-start gap-2">
+        <div className="flex min-w-0 flex-auto flex-col items-start gap-1">
           {isPending ? (
             <>
               <div className="mt-1 h-5 w-[16ch] animate-pulse rounded-md bg-gray-200" />
@@ -166,79 +167,70 @@ function ServiceContent({ service }: { service: string }) {
           ) : (
             <>
               <div className="flex max-w-full items-center gap-1">
-                <Dropdown>
-                  <DropdownTrigger>
-                    <Button
-                      variant="icon"
-                      className="text-md -ml-1 flex min-w-0 flex-auto grow-0 items-center justify-center gap-0.5 rounded-lg py-0.5 pr-1 pl-2 italic"
-                    >
-                      <span
-                        className={serviceNameStyles({
-                          hasHandler,
-                        })}
-                      >
-                        <TruncateWithTooltip>{service}</TruncateWithTooltip>
-                      </span>
-                      {hasHandler && (
-                        <>
-                          <span className="mx-0.5 shrink-0 text-gray-500">
-                            /
-                          </span>
-                          <span
-                            className={handlerNameStyles({
-                              hasHandler,
-                            })}
-                          >
-                            <TruncateWithTooltip>{`${selectedHandler}()`}</TruncateWithTooltip>
-                          </span>
-                        </>
-                      )}
-
-                      <Icon
-                        name={IconName.ChevronsUpDown}
-                        className="h-5 w-5 shrink-0 text-gray-500"
-                      />
-                    </Button>
-                  </DropdownTrigger>
-                  <DropdownPopover>
-                    <DropdownSection title="Service">
-                      <DropdownMenu
-                        selectedItems={selectedHandler ? [] : ['service']}
-                        selectable
-                        onSelect={(value) => {
-                          setSearchParams((old) => {
-                            old.delete(HANDLER_QUERY_PARAM);
-                            return old;
-                          });
-                        }}
-                      >
-                        <DropdownItem value="service">
-                          <span className="font-medium">{service}</span>
-                        </DropdownItem>
-                      </DropdownMenu>
-                    </DropdownSection>
-                    <DropdownSection title="Handlers">
-                      <DropdownMenu
-                        selectedItems={selectedHandler ? [selectedHandler] : []}
-                        selectable
-                        onSelect={(value) => {
-                          setSearchParams((old) => {
-                            old.set(HANDLER_QUERY_PARAM, value);
-                            return old;
-                          });
-                        }}
-                      >
-                        {handlers.map((handler) => (
-                          <DropdownItem key={handler.name} value={handler.name}>
-                            <span className="font-mono text-0.5xs font-medium italic">
-                              {handler.name}()
+                <Link
+                  className={serviceNameStyles({
+                    hasHandler,
+                  })}
+                  variant="icon"
+                  href={`?${HANDLER_QUERY_PARAM}`}
+                >
+                  <TruncateWithTooltip>{service}</TruncateWithTooltip>
+                </Link>
+                {hasHandler && (
+                  <>
+                    <span className="mr-0.5 ml-1 shrink-0 text-gray-500">
+                      /
+                    </span>
+                    <Dropdown>
+                      <DropdownTrigger>
+                        <Button
+                          variant="icon"
+                          className="-ml-1 flex min-w-0 flex-auto grow-0 items-center justify-center gap-0.5 rounded-lg py-0.5 pr-1 pl-2 text-lg font-medium italic"
+                        >
+                          {hasHandler && (
+                            <span
+                              className={handlerNameStyles({
+                                hasHandler,
+                              })}
+                            >
+                              <TruncateWithTooltip>{`${selectedHandler}()`}</TruncateWithTooltip>
                             </span>
-                          </DropdownItem>
-                        ))}
-                      </DropdownMenu>
-                    </DropdownSection>
-                  </DropdownPopover>
-                </Dropdown>
+                          )}
+
+                          <Icon
+                            name={IconName.ChevronsUpDown}
+                            className="h-5 w-5 shrink-0 text-gray-500"
+                          />
+                        </Button>
+                      </DropdownTrigger>
+                      <DropdownPopover>
+                        <DropdownSection title="Handlers">
+                          <DropdownMenu
+                            selectedItems={
+                              selectedHandler ? [selectedHandler] : []
+                            }
+                            selectable
+                            onSelect={(value) => {
+                              setSearchParams((old) => {
+                                old.set(HANDLER_QUERY_PARAM, value);
+                                return old;
+                              });
+                            }}
+                          >
+                            {handlers.map((handler) => (
+                              <DropdownItem
+                                key={handler.name}
+                                value={handler.name}
+                              >
+                                <span className="italic">{handler.name}()</span>
+                              </DropdownItem>
+                            ))}
+                          </DropdownMenu>
+                        </DropdownSection>
+                      </DropdownPopover>
+                    </Dropdown>
+                  </>
+                )}
               </div>
 
               <ServiceHeader
