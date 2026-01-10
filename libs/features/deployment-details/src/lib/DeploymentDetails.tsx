@@ -5,7 +5,6 @@ import {
   ComplementaryFooter,
   useParamValue,
 } from '@restate/ui/layout';
-import { useSearchParams } from 'react-router';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { Icon, IconName } from '@restate/ui/icons';
 import {
@@ -52,7 +51,6 @@ export function DeploymentDetails() {
 }
 
 function DeploymentDetailsContents() {
-  const [, setSearchParams] = useSearchParams();
   const deployment = useParamValue();
   const { error } = useDeploymentDetails(String(deployment), {
     ...(!deployment && { enabled: false }),
@@ -76,20 +74,20 @@ function DeploymentDetailsContents() {
             <SplitButton
               className="text-md w-1/2 flex-auto grow-0"
               variant="primary"
-              splitClassName="rounded-r-xl "
+              splitClassName="rounded-r-xl w-10"
               mini={false}
               menus={
                 <>
                   <DropdownItem
                     href={`?${UPDATE_DEPLOYMENT_QUERY}=${deployment}`}
                   >
-                    Update deployment
+                    Update
                   </DropdownItem>
                   <DropdownItem
                     href={`?${DELETE_DEPLOYMENT_QUERY_PARAM}=${deployment}`}
                     destructive
                   >
-                    Delete deployment
+                    Delete
                   </DropdownItem>
                 </>
               }
