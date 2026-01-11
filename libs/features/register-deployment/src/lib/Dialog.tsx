@@ -47,12 +47,10 @@ function RegisterDeploymentFooter({
     error,
     formId,
     canSkipAdvanced,
-    isLambda,
     isOnboarding,
     isHttp1Error,
     endpoint,
     isBreakingChangeError,
-    isUpdate,
   } = useRegisterDeploymentContext();
   return (
     <DialogFooter>
