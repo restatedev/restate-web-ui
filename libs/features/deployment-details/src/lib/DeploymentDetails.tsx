@@ -74,7 +74,7 @@ function DeploymentDetailsContents() {
             <SplitButton
               className="text-md w-1/2 flex-auto grow-0"
               variant="primary"
-              splitClassName="rounded-r-xl w-10"
+              splitClassName="rounded-r-xl w-8"
               mini={false}
               menus={
                 <>
