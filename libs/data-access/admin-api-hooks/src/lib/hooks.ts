@@ -268,7 +268,7 @@ export function useRegisterDeployment(
 }
 
 export function useUpdateDeployment(
-  deploymentId: string,
+  deployment: string,
   options?: Omit<
     HookMutationOptions<'/deployments/{deployment}', 'patch'>,
     'mutationFn' | 'mutationKey' | 'onSettled'
@@ -283,14 +283,24 @@ export function useUpdateDeployment(
     'patch',
     {
       baseUrl,
-      resolvedPath: `/deployments/${deploymentId}`,
+      resolvedPath: `/deployments/${deployment}`,
     },
   );
 
   const { mutationFn: _mutationFn, meta } = mutationOptions;
   const mutationFn: typeof mutationOptions.mutationFn = useCallback(
     async (args, context) => {
-      return _mutationFn(args, context).catch(async (originalError) => {
+      return _mutationFn(
+        {
+          ...args,
+          parameters: {
+            path: {
+              deployment,
+            },
+          },
+        },
+        context,
+      ).catch(async (originalError) => {
         if (
           retryWithHttp1 &&
           args.body &&
@@ -301,6 +311,11 @@ export function useUpdateDeployment(
             await _mutationFn(
               {
                 ...args,
+                parameters: {
+                  path: {
+                    deployment,
+                  },
+                },
                 body: {
                   ...args.body,
                   use_http_11: true,
@@ -319,7 +334,7 @@ export function useUpdateDeployment(
         throw originalError;
       });
     },
-    [_mutationFn, meta, queryCLient, retryWithHttp1],
+    [_mutationFn, meta, queryCLient, retryWithHttp1, deployment],
   );
 
   return useMutation({
@@ -337,6 +352,17 @@ export function useUpdateDeployment(
           queryCLient.invalidateQueries({
             queryKey,
           });
+        });
+        queryCLient.invalidateQueries({
+          queryKey: adminApi('query', '/deployments', 'get', { baseUrl })
+            .queryKey,
+        });
+        queryCLient.invalidateQueries({
+          queryKey: adminApi('query', '/deployments/{deployment}', 'get', {
+            baseUrl,
+            resolvedPath: `/deployments/${deployment}`,
+            parameters: { path: { deployment } },
+          }).queryKey,
         });
       }
       return onSuccess?.(data, variables, context, meta);
@@ -441,6 +467,7 @@ export function useDeploymentDetails(
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi('query', '/deployments/{deployment}', 'get', {
     baseUrl,
+    resolvedPath: `/deployments/${deployment}`,
     parameters: { path: { deployment } },
   });
 
