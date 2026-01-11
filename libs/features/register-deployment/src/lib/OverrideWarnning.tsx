@@ -34,10 +34,10 @@ export function OverrideWarning() {
           <strong className="font-semibold">unrecoverable errors</strong> in
           active invocations.
         </span>
-        <div className="relative -mx-3 mt-3 -mb-3 rounded-b-xl border-t border-orange-200 bg-white/60 py-2">
+        <div className="relative -mx-3 mt-3 -mb-3 rounded-b-xl border-t border-orange-200 bg-white/60 py-3">
           <FormFieldCheckbox
             name="force"
-            className="pl-10 [&_label]:before:absolute [&_label]:before:inset-0 [&_label]:before:content-['']"
+            className="pl-3 text-orange-600 [--checkbox-bg:var(--color-white)] [&_label]:before:absolute [&_label]:before:inset-0 [&_label]:before:content-['']"
             value="true"
             checked={shouldForce}
             onChange={updateShouldForce}

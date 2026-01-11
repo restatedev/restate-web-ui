@@ -129,7 +129,7 @@ const boxStyles = tv({
   variants: {
     isSelected: {
       false:
-        'border-gray-200 bg-(--color) [--color:var(--color-gray-100)] group-pressed:[--color:theme(colors.gray.200)]',
+        'border-gray-200 bg-(--color) [--color:var(--checkbox-bg,var(--color-gray-100))] group-pressed:[--color:theme(colors.gray.200)]',
       true: 'border-(--color) bg-(--color) [--color:var(--color-blue-600)] group-pressed:[--color:theme(colors.blue.800)]',
     },
     isInvalid: {
