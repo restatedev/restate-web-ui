@@ -93,7 +93,7 @@ export function Handler({
             showType && (
               <Badge
                 size="sm"
-                className="w-full translate-y-1 border-none bg-transparent px-0 py-0 text-xs font-medium text-zinc-500/80"
+                className="border-none bg-transparent px-0 py-0 text-xs font-medium text-zinc-500/80"
               >
                 <HandlerTypeExplainer type={handler.ty} variant="inline-help">
                   {handler.ty}
@@ -115,7 +115,7 @@ export function Handler({
                   handler.name
                 )}
               </TruncateWithTooltip>
-              <span className="-ml-0.5 shrink-0 text-zinc-400">{'('}</span>
+              <span className="shrink-0 text-zinc-400">{'('}</span>
               <HandlerInputOutput
                 schema={handler.input_json_schema}
                 contentType={handler.input_description}
