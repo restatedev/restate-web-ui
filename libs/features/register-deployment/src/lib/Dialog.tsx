@@ -8,7 +8,7 @@ import {
 import { Icon, IconName } from '@restate/ui/icons';
 import { ComponentProps, PropsWithChildren } from 'react';
 import { ErrorBanner } from '@restate/ui/error';
-import { RegistrationForm } from './Form';
+import { RegistrationForm, UpdateForm } from './Form';
 import { REGISTER_DEPLOYMENT_QUERY, UPDATE_DEPLOYMENT_QUERY } from './constant';
 import { Link } from '@restate/ui/link';
 import {
@@ -19,6 +19,12 @@ import { tv } from '@restate/util/styles';
 import { useRestateContext } from '@restate/features/restate-context';
 import { ONBOARDING_QUERY_PARAM } from '@restate/util/feature-flag';
 import { FixHttp1 } from './FixHttp1';
+import { useSearchParams } from 'react-router';
+import { useListDeployments } from '@restate/data-access/admin-api-hooks';
+import {
+  getEndpoint,
+  isLambdaDeployment,
+} from '@restate/data-access/admin-api';
 
 const submitButtonStyles = tv({
   base: 'flex gap-1 pr-3.5',
@@ -27,7 +33,11 @@ const submitButtonStyles = tv({
   },
 });
 
-function RegisterDeploymentFooter() {
+function RegisterDeploymentFooter({
+  showAdvanced = true,
+}: {
+  showAdvanced?: boolean;
+}) {
   const {
     isAdvanced,
     isEndpoint,
@@ -42,6 +52,7 @@ function RegisterDeploymentFooter() {
     isHttp1Error,
     endpoint,
     isBreakingChangeError,
+    isUpdate,
   } = useRegisterDeploymentContext();
   return (
     <DialogFooter>
@@ -82,7 +93,7 @@ function RegisterDeploymentFooter() {
                 Confirm
               </SubmitButton>
             )}
-            {isEndpoint && canSkipAdvanced && !isOnboarding && (
+            {isEndpoint && canSkipAdvanced && !isOnboarding && showAdvanced && (
               <SubmitButton
                 variant="secondary"
                 disabled={isPending}
@@ -146,13 +157,19 @@ function removeOnboarding(prev: URLSearchParams) {
 }
 
 export function RegisterDeploymentDialog() {
+  const [searchParams] = useSearchParams();
   return (
     <QueryDialog
       query={REGISTER_DEPLOYMENT_QUERY}
       onCloseQueryParam={removeOnboarding}
     >
       <DialogContent className="max-w-3xl">
-        <DeploymentRegistrationState>
+        <DeploymentRegistrationState
+          mode="register"
+          initialEndpoint={
+            searchParams?.get(REGISTER_DEPLOYMENT_QUERY) || undefined
+          }
+        >
           <RegistrationForm />
           <RegisterDeploymentFooter />
         </DeploymentRegistrationState>
@@ -162,10 +179,30 @@ export function RegisterDeploymentDialog() {
 }
 
 export function UpdateDeploymentDialog() {
+  const [searchParams] = useSearchParams();
+  const deploymentId = searchParams?.get(UPDATE_DEPLOYMENT_QUERY);
+
+  const { data } = useListDeployments();
+  const deployment = deploymentId
+    ? data?.deployments.get(deploymentId)
+    : undefined;
+  const endpoint = getEndpoint(deployment);
   return (
     <QueryDialog query={UPDATE_DEPLOYMENT_QUERY}>
       <DialogContent className="max-w-3xl">
-        <DeploymentRegistrationState>AAA</DeploymentRegistrationState>
+        <DeploymentRegistrationState
+          initialEndpoint={endpoint}
+          mode="update"
+          additionalHeaders={deployment?.additional_headers}
+          initialAssumeRoleArn={
+            deployment && isLambdaDeployment(deployment)
+              ? deployment.assume_role_arn || undefined
+              : undefined
+          }
+        >
+          <UpdateForm />
+          <RegisterDeploymentFooter showAdvanced={false} />
+        </DeploymentRegistrationState>
       </DialogContent>
     </QueryDialog>
   );

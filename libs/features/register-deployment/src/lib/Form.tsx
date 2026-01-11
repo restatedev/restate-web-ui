@@ -1,4 +1,8 @@
-import { FormFieldInput, FormFieldLabel } from '@restate/ui/form-field';
+import {
+  FormFieldCheckbox,
+  FormFieldInput,
+  FormFieldLabel,
+} from '@restate/ui/form-field';
 import { Icon, IconName } from '@restate/ui/icons';
 import {
   ComponentProps,
@@ -138,6 +142,76 @@ export function RegistrationForm() {
   );
 }
 
+export function UpdateForm() {
+  const { isEndpoint, isConfirm, shouldForce, isLambda, updateShouldForce } =
+    useRegisterDeploymentContext();
+
+  return (
+    <>
+      {isEndpoint && (
+        <Container
+          title={
+            <>
+              Update{' '}
+              <ServiceDeploymentExplainer className="decoration-gray-400">
+                service deployment
+              </ServiceDeploymentExplainer>
+            </>
+          }
+          description={
+            "Modify the configuration for this deployment. Your registered services and handlers won't change unless you overwrite them below."
+          }
+        >
+          <EndpointForm />
+          <AdditionalHeaders />
+          <div className="mt-2">
+            <div className="relative mb-2 rounded-xl border border-orange-200 bg-orange-50 [&_.error]:absolute [&_.error]:bottom-[-1.5em]">
+              <div className="rounded-t-xl bg-white/60 p-3">
+                <FormFieldCheckbox
+                  name="force"
+                  className="[--checkbox-bg:var(--color-white)] [&_label]:before:absolute [&_label]:before:inset-0 [&_label]:before:content-['']"
+                  value="true"
+                  checked={shouldForce}
+                  onChange={updateShouldForce}
+                  autoFocus
+                >
+                  <div className="flex items-center gap-1 text-0.5xs font-medium text-orange-600">
+                    Overwrite existing services
+                  </div>
+                </FormFieldCheckbox>
+              </div>
+              <div className="border-t border-orange-200" />
+              <p className="flex gap-2 p-3 text-0.5xs font-medium text-orange-600">
+                <Icon
+                  className="mb-1 inline-block h-5 w-5 shrink-0 fill-orange-600 text-orange-100"
+                  name={IconName.TriangleAlert}
+                />
+
+                <span className="text-0.5xs font-normal text-orange-500">
+                  <span className="font-semibold">Caution: </span>This will
+                  replace your current service and handler definitions with
+                  whatever is currently exposed at this deployment. This may
+                  cause{' '}
+                  <strong className="font-medium">breaking changes</strong>.
+                </span>
+              </p>
+            </div>
+          </div>
+        </Container>
+      )}
+      {isConfirm && (
+        <Container
+          title="Services"
+          description="Please confirm the list of services in this deployment."
+        >
+          <DeploymentProtocolCheck />
+          <RegisterDeploymentResults />
+        </Container>
+      )}
+    </>
+  );
+}
+
 const inputStyles = tv({
   base: 'flex-auto basis-full transition-all [&_.error]:absolute [&_.error]:pt-2 [&_input]:border-transparent! [&_input]:bg-transparent! [&_input]:shadow-none! [&_input]:ring-transparent! [&_input]:outline-none!',
 });
@@ -173,8 +247,9 @@ function EndpointForm() {
     updateEndpoint,
     endpoint,
     isPending,
-
+    isRegister,
     isOnboarding,
+    isUpdate,
   } = useRegisterDeploymentContext();
   const { tunnel } = useRestateContext();
 
@@ -250,7 +325,7 @@ function EndpointForm() {
             )}
             <FormFieldInput
               autoFocus={!isOnboarding}
-              required={!isCliTunnel}
+              required={!isCliTunnel && !isUpdate}
               autoComplete="url"
               value={endpoint}
               disabled={isPending}
@@ -393,9 +468,13 @@ function EndpointForm() {
       </div>
       {isLambda && <AssumeARNRole className="" />}
 
-      <OverrideWarning />
-      <OverrideBreaking />
-      <Helper isLambda={isLambda} isTunnel={isTunnel} />
+      {isRegister && (
+        <>
+          <OverrideWarning />
+          <OverrideBreaking />
+          <Helper isLambda={isLambda} isTunnel={isTunnel} />
+        </>
+      )}
     </>
   );
 }
