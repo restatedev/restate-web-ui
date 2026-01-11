@@ -28,7 +28,7 @@ export function AdditionalHeaders() {
           Additional headers
         </span>
         <span slot="description" className="block text-0.5xs leading-5">
-          Headers added to the register/invoke requests to the deployment.
+          Headers sent with every request to this deployment.
         </span>
       </FormFieldLabel>
       {list?.items.map((item) => {

@@ -195,7 +195,7 @@ export function ServiceCard({
                     <Handler
                       handler={handler}
                       key={handler.name}
-                      className="pl-0"
+                      className="pr-0 pl-0"
                       service={serviceName}
                       withPlayground
                       serviceType={serviceDetails.ty}

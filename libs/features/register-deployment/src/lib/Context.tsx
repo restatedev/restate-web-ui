@@ -18,11 +18,12 @@ import { RestateError } from '@restate/util/errors';
 import {
   useListDeployments,
   useRegisterDeployment,
+  useUpdateDeployment,
 } from '@restate/data-access/admin-api-hooks';
 import { useRestateContext } from '@restate/features/restate-context';
-import { REGISTER_DEPLOYMENT_QUERY } from './constant';
 import { useOnboarding } from '@restate/util/feature-flag';
 import { addProtocol, FIX_HTTP_ACTION, getTargetType } from './utils';
+import { UPDATE_DEPLOYMENT_QUERY } from './constant';
 
 type NavigateToAdvancedAction = {
   type: 'NavigateToAdvancedAction';
@@ -117,6 +118,7 @@ interface DeploymentRegistrationContextInterface {
   updateShouldForce?: (value: boolean) => void;
   updateShouldAllowBreakingChange?: (value: boolean) => void;
   error: RestateError | Error | null | undefined;
+  mode: 'update' | 'register';
 }
 
 type State = Pick<
@@ -132,6 +134,7 @@ type State = Pick<
   | 'shouldForce'
   | 'isDuplicate'
   | 'shouldAllowBreakingChange'
+  | 'mode'
 >;
 
 function reducer(state: State, action: Action): State {
@@ -146,8 +149,10 @@ function reducer(state: State, action: Action): State {
       return {
         ...state,
         ...action.payload,
-        shouldForce: false,
-        shouldAllowBreakingChange: false,
+        ...(state.mode === 'register' && {
+          shouldForce: false,
+          shouldAllowBreakingChange: false,
+        }),
       };
     case 'UpdateRoleArnAction':
       return { ...state, assumeRoleArn: action.payload.assumeRoleArn };
@@ -168,11 +173,13 @@ function reducer(state: State, action: Action): State {
   }
 }
 
-const initialState: (args?: {
-  searchParams?: URLSearchParams;
+const initialState: (args: {
+  endpoint?: string;
   deployments?: adminApi.Deployment[];
+  mode: 'update' | 'register';
+  assumeRoleArn?: string;
 }) => DeploymentRegistrationContextInterface = (args) => {
-  const endpoint = args?.searchParams?.get(REGISTER_DEPLOYMENT_QUERY);
+  const endpoint = args?.endpoint;
   const isTunnel = endpoint?.startsWith('tunnel://');
   const isLambda = endpoint?.startsWith('arn:');
   const isEndpointValid =
@@ -191,6 +198,7 @@ const initialState: (args?: {
     error: null,
     endpoint: '',
     tunnelName: '',
+    mode: args?.mode,
     ...(isEndpointValid && {
       endpoint: resolvedEndpoint,
       isLambda,
@@ -203,27 +211,42 @@ const initialState: (args?: {
       isTunnel,
       tunnelName: isTunnel ? String(endpoint)?.replace('tunnel://', '') : '',
     }),
+    assumeRoleArn: args?.assumeRoleArn,
   };
 };
 const DeploymentRegistrationContext =
-  createContext<DeploymentRegistrationContextInterface>(initialState());
+  createContext<DeploymentRegistrationContextInterface>(
+    initialState({ mode: 'register' }),
+  );
 
 function withoutTrailingSlash(url?: string) {
   return url?.endsWith('/') ? url.slice(0, -1) : url;
 }
 
-export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
+export function DeploymentRegistrationState({
+  children,
+  initialEndpoint,
+  mode,
+  additionalHeaders: initialAdditionalHeaders,
+  initialAssumeRoleArn,
+}: PropsWithChildren<{
+  initialEndpoint?: string;
+  initialAssumeRoleArn?: string;
+  mode: 'update' | 'register';
+  additionalHeaders?: Record<string, string>;
+}>) {
   const id = useId();
   const { tunnel } = useRestateContext();
   const formRef = useRef<HTMLFormElement>(null);
-  const [searchParams] = useSearchParams();
   const { refetch, data: listDeployments } = useListDeployments();
-
+  const [searchParams] = useSearchParams();
   const [state, dispatch] = useReducer(
     reducer,
     {
-      searchParams,
       deployments: Array.from(listDeployments?.deployments.values() ?? []),
+      endpoint: initialEndpoint,
+      mode,
+      assumeRoleArn: initialAssumeRoleArn,
     },
     initialState,
   );
@@ -233,9 +256,19 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
     value: string;
     index: number;
   }>({
-    initialItems: [{ key: '', value: '', index: 0 }],
+    initialItems: [
+      ...Object.entries(initialAdditionalHeaders ?? {}).map(
+        ([key, value], index) => ({ key, value, index }),
+      ),
+      {
+        key: '',
+        value: '',
+        index: Object.keys(initialAdditionalHeaders ?? {}).length,
+      },
+    ],
     getKey: (item) => item.index,
   });
+
   const metadataList = useListData<{
     key: string;
     value: string;
@@ -298,7 +331,7 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
     [],
   );
 
-  const { mutate, isPending, error, reset } = useRegisterDeployment({
+  const register = useRegisterDeployment({
     retryWithHttp1: state.stage !== 'confirm' && !state.useHttp11,
     onSuccess(data) {
       updateServices({
@@ -321,6 +354,37 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
       }
     },
   });
+  const update = useUpdateDeployment(
+    searchParams.get(UPDATE_DEPLOYMENT_QUERY) || '',
+    {
+      retryWithHttp1: state.stage !== 'confirm' && !state.useHttp11,
+      onSuccess(data) {
+        updateServices({
+          services: data?.services,
+          max_protocol_version: data?.max_protocol_version,
+          min_protocol_version: data?.min_protocol_version,
+          sdk_version: data?.sdk_version,
+        });
+
+        if (state.stage === 'confirm') {
+          refetch();
+          close?.();
+          showSuccessNotification(
+            <>
+              <code>{data?.id}</code> has been successfully updated.
+            </>,
+          );
+        } else {
+          goToConfirm();
+        }
+      },
+    },
+  );
+
+  const isUpdate = mode === 'update';
+  const isPending = isUpdate ? update.isPending : register.isPending;
+  const error = isUpdate ? update.error : register.error;
+  const reset = isUpdate ? update.reset : register.reset;
 
   const toHttp = tunnel?.toHttp;
   const updateEndpoint = useCallback(
@@ -339,8 +403,8 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
         resolvedEndpoint = addProtocol(value.endpoint);
       }
       if (
-        state.isLambda !== value.isLambda ||
-        state.isTunnel !== value.isTunnel
+        mode === 'register' &&
+        (state.isLambda !== value.isLambda || state.isTunnel !== value.isTunnel)
       ) {
         formRef.current?.reset();
       }
@@ -417,6 +481,7 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
         }
         return result;
       }, {});
+
     const metadata: Record<string, string> = metadataList.items.reduce(
       (result, { key, value }) => {
         if (typeof key === 'string' && typeof value === 'string' && key) {
@@ -426,29 +491,51 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
       },
       {},
     );
-
-    mutate({
-      body: {
-        ...(isLambda
-          ? { arn: endpoint, assume_role_arn: assumeRoleArn }
-          : isTunnel
-            ? {
-                uri: tunnel
-                  ? String(tunnel.toHttp(tunnelName, endpoint))
-                  : endpoint,
-                use_http_11: false,
-              }
-            : {
-                uri: addProtocol(endpoint),
-                use_http_11: Boolean(useHttp11) || action === FIX_HTTP_ACTION,
-              }),
-        force: Boolean(shouldForce),
-        dry_run: action === 'dryRun' || action === FIX_HTTP_ACTION,
-        additional_headers,
-        breaking: Boolean(shouldAllowBreakingChange),
-        metadata,
-      },
-    });
+    if (mode === 'update') {
+      update.mutate({
+        body: {
+          ...(isLambda
+            ? { arn: endpoint, assume_role_arn: assumeRoleArn }
+            : isTunnel
+              ? {
+                  uri: tunnel
+                    ? String(tunnel.toHttp(tunnelName, endpoint))
+                    : endpoint,
+                  use_http_11: false,
+                }
+              : {
+                  uri: addProtocol(endpoint),
+                  use_http_11: Boolean(useHttp11) || action === FIX_HTTP_ACTION,
+                }),
+          overwrite: Boolean(shouldForce),
+          dry_run: action === 'dryRun' || action === FIX_HTTP_ACTION,
+          additional_headers,
+        },
+      });
+    } else {
+      register.mutate({
+        body: {
+          ...(isLambda
+            ? { arn: endpoint, assume_role_arn: assumeRoleArn }
+            : isTunnel
+              ? {
+                  uri: tunnel
+                    ? String(tunnel.toHttp(tunnelName, endpoint))
+                    : endpoint,
+                  use_http_11: false,
+                }
+              : {
+                  uri: addProtocol(endpoint),
+                  use_http_11: Boolean(useHttp11) || action === FIX_HTTP_ACTION,
+                }),
+          force: Boolean(shouldForce),
+          dry_run: action === 'dryRun' || action === FIX_HTTP_ACTION,
+          additional_headers,
+          breaking: Boolean(shouldAllowBreakingChange),
+          metadata,
+        },
+      });
+    }
   };
 
   return (
@@ -472,12 +559,16 @@ export function DeploymentRegistrationState(props: PropsWithChildren<unknown>) {
     >
       <Form
         id={id}
-        method="post"
-        action="/deployments"
+        method={isUpdate ? 'patch' : 'post'}
+        action={
+          isUpdate
+            ? `/deployments/${searchParams.get(UPDATE_DEPLOYMENT_QUERY)}`
+            : '/deployments'
+        }
         ref={formRef}
         onSubmit={submitHandler}
       >
-        {props.children}
+        {children}
       </Form>
     </DeploymentRegistrationContext.Provider>
   );
@@ -512,6 +603,7 @@ export function useRegisterDeploymentContext() {
     isTunnel,
     tunnelName,
     metadata,
+    mode,
   } = useContext(DeploymentRegistrationContext);
   const isEndpoint = stage === 'endpoint';
   const isAdvanced = stage === 'advanced';
@@ -530,7 +622,9 @@ export function useRegisterDeploymentContext() {
       metadata.items.some(({ key, value }) => key && value),
   );
   const canSkipAdvanced =
-    isOnboarding || (!hasAdditionalHeaders && !useHttp11 && !hasMetadata);
+    isOnboarding ||
+    mode === 'update' ||
+    (!hasAdditionalHeaders && !useHttp11 && !hasMetadata);
 
   const isHttp1Error =
     error instanceof RestateError && error.restateCode === 'META0014';
@@ -572,5 +666,7 @@ export function useRegisterDeploymentContext() {
     isBreakingChangeError,
     updateShouldAllowBreakingChange,
     shouldAllowBreakingChange,
+    isUpdate: mode === 'update',
+    isRegister: mode === 'register',
   };
 }

@@ -93,7 +93,7 @@ export function Handler({
             showType && (
               <Badge
                 size="sm"
-                className="w-full translate-y-1 border-none bg-transparent px-0 py-0 text-xs font-medium text-zinc-500/80"
+                className="border-none bg-transparent px-0 py-0 text-xs font-medium text-zinc-500/80"
               >
                 <HandlerTypeExplainer type={handler.ty} variant="inline-help">
                   {handler.ty}
@@ -105,7 +105,7 @@ export function Handler({
               <TruncateWithTooltip copyText={handler.name}>
                 {withPlayground ? (
                   <Link
-                    className="relative z-[2] text-inherit no-underline"
+                    className="relative z-[2] mx-1 text-inherit no-underline"
                     variant="secondary"
                     href={`?${SERVICE_PLAYGROUND_QUERY_PARAM}=${service}#/operations/${handler.name}`}
                   >
@@ -115,7 +115,7 @@ export function Handler({
                   handler.name
                 )}
               </TruncateWithTooltip>
-              <span className="ml-[0.2ch] shrink-0 text-zinc-400">{'('}</span>
+              <span className="shrink-0 text-zinc-400">{'('}</span>
               <HandlerInputOutput
                 schema={handler.input_json_schema}
                 contentType={handler.input_description}
@@ -142,7 +142,7 @@ export function Handler({
                 <Link
                   variant="icon"
                   href={`?${SERVICE_QUERY_PARAM}=${service}&${HANDLER_QUERY_PARAM}=${handler.name}`}
-                  className="my-0.5 ml-auto shrink-0 rounded-full before:absolute before:-top-0.5 before:right-1 before:-bottom-0.5 before:-left-1 before:z-[0] before:rounded-lg before:content-[''] hover:before:bg-black/3"
+                  className="my-0.5 ml-auto shrink-0 rounded-full before:absolute before:-top-0.5 before:-right-1 before:-bottom-0.5 before:-left-1 before:z-[0] before:rounded-lg before:content-[''] hover:before:bg-black/3"
                 >
                   <Icon name={IconName.ChevronRight} className="h-4 w-4" />
                 </Link>

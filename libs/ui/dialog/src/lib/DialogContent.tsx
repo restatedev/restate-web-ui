@@ -90,24 +90,25 @@ const contentStyles = tv({
 interface DialogContentProps {
   className?: string;
   variant?: 'modal' | 'sheet';
+  isDismissable?: boolean;
 }
 
 export function DialogContent({
   children,
   className,
   variant = 'modal',
+  isDismissable = true,
 }: PropsWithChildren<DialogContentProps>) {
   return (
     <AriaModalOverlay
       className={overlayStyles({ variant })}
-      isDismissable
+      isDismissable={isDismissable}
       shouldCloseOnInteractOutside={(el) => {
         const tooltip = el.closest('[role=tooltip]');
         return !tooltip;
       }}
     >
       <AriaModal
-        isDismissable
         className={composeRenderProps(className, (className, renderProps) =>
           modalStyles({ ...renderProps, className, variant }),
         )}

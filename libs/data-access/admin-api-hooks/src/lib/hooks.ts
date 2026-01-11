@@ -267,6 +267,109 @@ export function useRegisterDeployment(
   });
 }
 
+export function useUpdateDeployment(
+  deployment: string,
+  options?: Omit<
+    HookMutationOptions<'/deployments/{deployment}', 'patch'>,
+    'mutationFn' | 'mutationKey' | 'onSettled'
+  > & { retryWithHttp1?: boolean },
+) {
+  const baseUrl = useAdminBaseUrl();
+  const { onSuccess, retryWithHttp1, ...rest } = options ?? {};
+  const queryCLient = useQueryClient();
+  const mutationOptions = adminApi(
+    'mutate',
+    '/deployments/{deployment}',
+    'patch',
+    {
+      baseUrl,
+      resolvedPath: `/deployments/${deployment}`,
+    },
+  );
+
+  const { mutationFn: _mutationFn, meta } = mutationOptions;
+  const mutationFn: typeof mutationOptions.mutationFn = useCallback(
+    async (args, context) => {
+      return _mutationFn(
+        {
+          ...args,
+          parameters: {
+            path: {
+              deployment,
+            },
+          },
+        },
+        context,
+      ).catch(async (originalError) => {
+        if (
+          retryWithHttp1 &&
+          args.body &&
+          args.body.dry_run &&
+          'uri' in args.body
+        ) {
+          try {
+            await _mutationFn(
+              {
+                ...args,
+                parameters: {
+                  path: {
+                    deployment,
+                  },
+                },
+                body: {
+                  ...args.body,
+                  use_http_11: true,
+                },
+              },
+              { client: queryCLient, meta },
+            );
+            throw new RestateError(
+              'Service discovery response failed, and the server may have responded in HTTP1.1.',
+              'META0014',
+            );
+          } catch (_) {
+            throw originalError;
+          }
+        }
+        throw originalError;
+      });
+    },
+    [_mutationFn, meta, queryCLient, retryWithHttp1, deployment],
+  );
+
+  return useMutation({
+    ...mutationOptions,
+    ...rest,
+    mutationFn,
+    onSuccess(data, variables, context, meta) {
+      if (!variables.body?.dry_run) {
+        data?.services.forEach((service) => {
+          const serviceName = service.name;
+          const { queryKey } = getServiceAdminApi({
+            baseUrl,
+            parameters: { path: { service: serviceName } },
+          });
+          queryCLient.invalidateQueries({
+            queryKey,
+          });
+        });
+        queryCLient.invalidateQueries({
+          queryKey: adminApi('query', '/deployments', 'get', { baseUrl })
+            .queryKey,
+        });
+        queryCLient.invalidateQueries({
+          queryKey: adminApi('query', '/deployments/{deployment}', 'get', {
+            baseUrl,
+            resolvedPath: `/deployments/${deployment}`,
+            parameters: { path: { deployment } },
+          }).queryKey,
+        });
+      }
+      return onSuccess?.(data, variables, context, meta);
+    },
+  });
+}
+
 function getServiceAdminApi(init: {
   baseUrl: string;
   parameters?: OperationParameters<'/services/{service}', 'get'>;
@@ -364,6 +467,7 @@ export function useDeploymentDetails(
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi('query', '/deployments/{deployment}', 'get', {
     baseUrl,
+    resolvedPath: `/deployments/${deployment}`,
     parameters: { path: { deployment } },
   });
 

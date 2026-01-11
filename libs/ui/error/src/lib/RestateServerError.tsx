@@ -110,11 +110,11 @@ export function RestateServerError({
         <Code className={codeStyles({ wrap, isTransient })}>
           <Snippet language="bash" className="h-full px-0">
             <details
-              className="group h-full max-h-28 w-full overflow-auto text-[90%]"
+              className="group h-full max-h-28 w-full overflow-auto text-[90%] open:pb-6"
               open={open}
             >
               <summary className="group-open:h-4">
-                <span className="inline-block w-[calc(100%-5ch)] truncate align-middle group-open:invisible group-open:text-[0px]">
+                <span className="inline-block w-[calc(100%-5ch)] truncate align-middle leading-8 group-open:invisible group-open:text-[0px]">
                   {message}
                 </span>
                 <br className="group-open:hidden" />
