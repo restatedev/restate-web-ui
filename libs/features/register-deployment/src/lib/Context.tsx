@@ -149,8 +149,10 @@ function reducer(state: State, action: Action): State {
       return {
         ...state,
         ...action.payload,
-        shouldForce: false,
-        shouldAllowBreakingChange: false,
+        ...(state.mode === 'register' && {
+          shouldForce: false,
+          shouldAllowBreakingChange: false,
+        }),
       };
     case 'UpdateRoleArnAction':
       return { ...state, assumeRoleArn: action.payload.assumeRoleArn };
@@ -401,8 +403,8 @@ export function DeploymentRegistrationState({
         resolvedEndpoint = addProtocol(value.endpoint);
       }
       if (
-        state.isLambda !== value.isLambda ||
-        state.isTunnel !== value.isTunnel
+        mode === 'register' &&
+        (state.isLambda !== value.isLambda || state.isTunnel !== value.isTunnel)
       ) {
         formRef.current?.reset();
       }
