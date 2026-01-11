@@ -105,7 +105,7 @@ function RegisterDeploymentFooter({
                 <Icon name={IconName.ChevronRight} className="w-[1.25em]" />
               </SubmitButton>
             )}
-            {isAdvanced && (
+            {(isAdvanced || isConfirm) && (
               <Button
                 variant="secondary"
                 disabled={isPending}
