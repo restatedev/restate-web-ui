@@ -39,6 +39,7 @@ import {
   useState,
   useTransition,
 } from 'react';
+import { useSubmitShortcut, SubmitShortcutKey } from '@restate/ui/keyboard';
 import { formatDurations } from '@restate/util/intl';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import {
@@ -115,6 +116,7 @@ const actionButtonStyles = tv({
 
 function Component() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const submitRef = useSubmitShortcut();
 
   const { virtualObject } = useParams<{ virtualObject: string }>();
   invariant(virtualObject, 'Missing virtualObject param');
@@ -676,10 +678,12 @@ function Component() {
             </AddQueryTrigger>
           </QueryBuilder>
           <SubmitButton
+            ref={submitRef}
             isPending={isFetching}
-            className="absolute top-1 right-1 bottom-1 rounded-lg py-0 disabled:bg-gray-400 disabled:text-gray-200"
+            className="absolute top-1 right-1 bottom-1 flex items-center gap-2 rounded-lg py-0 pr-1 pl-4 disabled:bg-gray-400 disabled:text-gray-200"
           >
             Query
+            <SubmitShortcutKey />
           </SubmitButton>
         </Form>
       </LayoutOutlet>
