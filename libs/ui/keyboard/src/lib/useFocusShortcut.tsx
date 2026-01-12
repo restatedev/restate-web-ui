@@ -36,8 +36,9 @@ export function useFocusShortcut<T extends HTMLElement = HTMLInputElement>(
       }
     };
 
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
+    document.addEventListener('keydown', handler, { capture: true });
+    return () =>
+      document.removeEventListener('keydown', handler, { capture: true });
   }, [onFocus]);
 
   return ref;
