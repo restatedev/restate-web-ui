@@ -1,5 +1,6 @@
 import {
   type PropsWithChildren,
+  RefObject,
   useCallback,
   useDeferredValue,
   useState,
@@ -9,6 +10,7 @@ import { Button } from './Button';
 import { tv } from '@restate/util/styles';
 import { useIsMutating } from '@tanstack/react-query';
 import { Spinner } from '@restate/ui/loading';
+import { mergeRefs, useObjectRef } from '@react-aria/utils';
 
 export interface SubmitButtonProps {
   onClick?: VoidFunction;
@@ -21,6 +23,7 @@ export interface SubmitButtonProps {
   autoFocus?: boolean;
   hideSpinner?: boolean;
   isPending?: boolean;
+  ref?: RefObject<HTMLButtonElement | null>;
 }
 
 const styles = tv({
@@ -63,6 +66,7 @@ export function SubmitButton({
   children,
   hideSpinner = false,
   isPending,
+  ref,
   ...props
 }: PropsWithChildren<SubmitButtonProps>) {
   const [action, setAction] = useState<string>();
@@ -71,12 +75,13 @@ export function SubmitButton({
   const setFormAction = useCallback((el: HTMLButtonElement | null) => {
     setAction(el?.form?.action);
   }, []);
+  const buttonRefObject = useObjectRef(mergeRefs(setFormAction, ref));
 
   return (
     <Button
       {...props}
       type="submit"
-      ref={setFormAction}
+      ref={buttonRefObject}
       disabled={deferredIsSubmitting || disabled}
     >
       {deferredIsSubmitting && !hideSpinner ? (

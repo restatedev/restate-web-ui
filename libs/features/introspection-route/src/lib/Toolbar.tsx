@@ -2,6 +2,7 @@ import { SubmitButton } from '@restate/ui/button';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import { Form } from 'react-router';
 import { lazy, Suspense, useCallback, useEffect, useRef } from 'react';
+import { useSubmitShortcut } from '@restate/ui/keyboard';
 import type { editor } from 'monaco-editor';
 import { Icon, IconName } from '@restate/ui/icons';
 
@@ -23,6 +24,7 @@ export function Toolbar({
   const formRef = useRef<HTMLFormElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const placeholderRef = useRef<HTMLDivElement>(null);
+  const submitRef = useSubmitShortcut();
 
   const lastSubmittedQuery = useRef(initialQuery);
   const setQuery = useCallback(
@@ -85,6 +87,7 @@ export function Toolbar({
           </div>
         </div>
         <SubmitButton
+          ref={submitRef}
           isPending={isPending}
           className="absolute top-1 right-1 bottom-1 flex items-center gap-2 rounded-lg py-0 pr-1 pl-4 disabled:bg-gray-400 disabled:text-gray-200"
         >

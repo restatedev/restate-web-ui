@@ -99,6 +99,7 @@
       "@restate/ui/focus": ["libs/ui/focus/src/index.ts"],
       "@restate/ui/form-field": ["libs/ui/form-field/src/index.ts"],
       "@restate/ui/icons": ["libs/ui/icons/src/index.ts"],
+      "@restate/ui/keyboard": ["libs/ui/keyboard/src/index.ts"],
       "@restate/ui/layout": ["libs/ui/layout/src/index.ts"],
       "@restate/ui/link": ["libs/ui/link/src/index.ts"],
       "@restate/ui/listbox": ["libs/ui/listbox/src/index.ts"],
