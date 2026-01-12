@@ -1,7 +1,7 @@
 import { SubmitButton } from '@restate/ui/button';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import { Form } from 'react-router';
-import { lazy, Suspense, useRef } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef } from 'react';
 import type { editor } from 'monaco-editor';
 
 const SQLEditor = lazy(() =>
@@ -9,7 +9,7 @@ const SQLEditor = lazy(() =>
 );
 
 export function Toolbar({
-  setQuery,
+  setQuery: _setQuery,
   isPending,
   initialQuery,
 }: {
@@ -22,6 +22,22 @@ export function Toolbar({
   const formRef = useRef<HTMLFormElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const placeholderRef = useRef<HTMLDivElement>(null);
+
+  const lastSubmittedQuery = useRef(initialQuery);
+  const setQuery = useCallback(
+    (value: string) => {
+      lastSubmittedQuery.current = value;
+      _setQuery(value);
+    },
+    [_setQuery],
+  );
+
+  useEffect(() => {
+    if (initialQuery !== lastSubmittedQuery.current) {
+      editorRef.current?.setValue(initialQuery ?? '');
+      lastSubmittedQuery.current = initialQuery ?? '';
+    }
+  }, [initialQuery]);
 
   return (
     <LayoutOutlet zone={LayoutZone.Toolbar}>
