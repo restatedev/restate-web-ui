@@ -2,9 +2,12 @@ import { SubmitButton } from '@restate/ui/button';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import { Form } from 'react-router';
 import { lazy, Suspense, useCallback, useEffect, useRef } from 'react';
-import { useSubmitShortcut } from '@restate/ui/keyboard';
+import {
+  useSubmitShortcut,
+  SubmitShortcutKey,
+  FocusShortcutKey,
+} from '@restate/ui/keyboard';
 import type { editor } from 'monaco-editor';
-import { Icon, IconName } from '@restate/ui/icons';
 
 const SQLEditor = lazy(() =>
   import('./.client/SQLEditor').then((m) => ({ default: m.SQLEditor })),
@@ -61,9 +64,7 @@ export function Toolbar({
               className="absolute top-0 bottom-0 left-2 flex items-center gap-2"
               ref={placeholderRef}
             >
-              <kbd className="rounded-sm bg-zinc-600 px-1.5 text-sm text-zinc-400">
-                /
-              </kbd>
+              <FocusShortcutKey />
 
               <div className="inline-block text-sm text-zinc-400">
                 Type your query here…
@@ -93,18 +94,10 @@ export function Toolbar({
         >
           Query
           <div className="mt-0.5 flex items-center gap-0.5">
-            <kbd className="flex h-5 scale-90 items-center gap-1 rounded-sm bg-black/20 px-1 font-mono text-[80%] font-medium text-white/85">
-              <div className="text-xs tracking-wider">{getMetaKeySymbol()}</div>
-              <Icon name={IconName.Return} className="h-3.5 w-3.5" />
-            </kbd>
+            <SubmitShortcutKey />
           </div>
         </SubmitButton>
       </Form>
     </LayoutOutlet>
   );
-}
-
-function getMetaKeySymbol() {
-  const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);
-  return isMac ? 'Cmd' : 'Ctrl';
 }
