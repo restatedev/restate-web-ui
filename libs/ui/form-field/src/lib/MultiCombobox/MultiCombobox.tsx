@@ -259,7 +259,12 @@ export function FormFieldMultiCombobox<
         const focusedOption = listBoxRef.current?.querySelector(
           '[role=option][data-focused=true]',
         );
-        if (id !== undefined && !focusedOption) {
+        const optionsCount =
+          listBoxRef.current?.querySelectorAll('[role=option]').length;
+
+        // TODO: revisit items with allowCustomValues
+        // They always appear as an option and break validation
+        if (id !== undefined && !focusedOption && Number(optionsCount) > 0) {
           onSelectionChange(id as Key);
           e.preventDefault();
         }

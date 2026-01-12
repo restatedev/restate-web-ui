@@ -32,7 +32,6 @@ function StyledListBoxItem({
   const textValue =
     props.textValue ||
     (typeof props.children === 'string' ? props.children : undefined);
-
   return (
     <AriaListBoxItem
       {...props}
