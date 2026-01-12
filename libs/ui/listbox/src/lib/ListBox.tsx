@@ -1,4 +1,4 @@
-import { PropsWithChildren } from 'react';
+import { PropsWithChildren, RefObject } from 'react';
 import {
   ListBox as AriaListBox,
   ListBoxProps as AriaListBoxProps,
@@ -14,6 +14,7 @@ export function StyledListBox<T extends object>({
   ...props
 }: Omit<AriaListBoxProps<T>, 'layout' | 'orientation' | 'className'> & {
   className?: string;
+  ref?: RefObject<HTMLDivElement | null>;
 }) {
   return <AriaListBox {...props} className={styles({ className })} />;
 }
@@ -25,6 +26,7 @@ interface ListBoxProps {
   selectedItems?: never;
   multiple?: never;
   className?: string;
+  ref?: RefObject<HTMLDivElement | null>;
 }
 
 interface SelectableListBoxProps
