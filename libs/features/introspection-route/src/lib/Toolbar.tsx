@@ -90,12 +90,10 @@ export function Toolbar({
         <SubmitButton
           ref={submitRef}
           isPending={isPending}
-          className="absolute top-1 right-1 bottom-1 flex items-center gap-2 rounded-lg py-0 pr-1 pl-4 disabled:bg-gray-400 disabled:text-gray-200"
+          className="absolute top-1 right-1 bottom-1 flex items-center gap-2 rounded-lg py-0 pr-0.5 pl-4 disabled:bg-gray-400 disabled:text-gray-200"
         >
           Query
-          <div className="mt-0.5 flex items-center gap-0.5">
-            <SubmitShortcutKey />
-          </div>
+          <SubmitShortcutKey />
         </SubmitButton>
       </Form>
     </LayoutOutlet>

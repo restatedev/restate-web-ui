@@ -2,7 +2,7 @@ import { tv } from '@restate/util/styles';
 import { Icon, IconName } from '@restate/ui/icons';
 
 const styles = tv({
-  base: 'flex h-5 scale-90 items-center gap-1 rounded-sm bg-black/20 px-1 font-mono text-[80%] font-medium text-white/85',
+  base: 'mt-0.5 flex h-5 scale-90 items-center gap-1 rounded-sm bg-black/20 px-1 font-mono text-[80%] font-medium text-white/85',
 });
 
 function getMetaKeySymbol() {

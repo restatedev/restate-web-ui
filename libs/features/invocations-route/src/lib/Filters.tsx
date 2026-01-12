@@ -13,6 +13,7 @@ import {
   FormFieldDateTimeInput,
 } from '@restate/ui/form-field';
 import { Icon, IconName } from '@restate/ui/icons';
+import { FocusShortcutKey } from '@restate/ui/keyboard';
 import {
   QueryClause,
   QueryClauseOperationId,
@@ -360,9 +361,5 @@ function ValueSelector({
 }
 
 export function FiltersTrigger() {
-  return (
-    <kbd className="mr-1 ml-1 rounded-sm bg-zinc-600 px-1.5 text-sm text-zinc-400">
-      /
-    </kbd>
-  );
+  return <FocusShortcutKey className="mr-1 ml-1" />;
 }

@@ -23,6 +23,7 @@ import {
   useDurationSinceLastSnapshot,
 } from '@restate/util/snapshot-time';
 import { PropsWithChildren, useEffect, useMemo, useState } from 'react';
+import { useSubmitShortcut, SubmitShortcutKey } from '@restate/ui/keyboard';
 import { formatDurations, formatNumber } from '@restate/util/intl';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import { AddQueryTrigger, QueryBuilder } from '@restate/ui/query-builder';
@@ -86,6 +87,7 @@ function Component() {
   const { selectedColumns, setSelectedColumns, sortedColumnsList } =
     useColumns();
   const queryCLient = useQueryClient();
+  const submitRef = useSubmitShortcut();
   const {
     schema,
     listInvocationsParameters,
@@ -473,10 +475,12 @@ function Component() {
           </QueryBuilder>
 
           <SubmitButton
+            ref={submitRef}
             isPending={isFetching}
-            className="absolute top-1 right-1 bottom-1 rounded-lg py-0 disabled:bg-gray-400 disabled:text-gray-200"
+            className="absolute top-1 right-1 bottom-1 flex items-center gap-2 rounded-lg py-0 pr-0.5 pl-4 disabled:bg-gray-400 disabled:text-gray-200"
           >
             Query
+            <SubmitShortcutKey />
           </SubmitButton>
         </Form>
       </LayoutOutlet>
