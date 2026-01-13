@@ -1,0 +1,233 @@
+import { ColumnKey } from './columns';
+import { Dispatch, SetStateAction, useCallback, useRef, useState } from 'react';
+import {
+  QueryClause,
+  QueryClauseSchema,
+  QueryClauseType,
+} from '@restate/ui/query-builder';
+import {
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownPopover,
+  DropdownSection,
+  DropdownTrigger,
+} from '@restate/ui/dropdown';
+import { Button, SubmitButton } from '@restate/ui/button';
+import { SortInvocations } from '@restate/data-access/admin-api';
+import { ListData } from 'react-stately';
+import { tv } from '@restate/util/styles';
+import { Icon, IconName } from '@restate/ui/icons';
+
+interface FilterShortcut {
+  columns: ColumnKey[];
+  sort: SortInvocations;
+  filters: QueryClause<QueryClauseType>[];
+  label: string;
+  id: string;
+}
+
+const makeShortcuts: (
+  schema: QueryClauseSchema<QueryClauseType>[],
+) => FilterShortcut[] = (schema) => [
+  {
+    id: 'all',
+    label: 'All',
+    columns: ['id', 'created_at', 'modified_at', 'target', 'status'],
+    sort: {
+      field: 'modified_at',
+      order: 'DESC',
+    },
+    filters: [
+      new QueryClause(
+        schema.find((clause) => clause.id === 'target_service_name')!,
+        {
+          operation: 'IN',
+          value: [],
+        },
+      ),
+      new QueryClause(schema.find((clause) => clause.id === 'status')!, {
+        operation: 'IN',
+        value: [],
+      }),
+    ],
+  },
+  {
+    id: 'inflight',
+    label: 'In-flight invocations',
+    columns: ['id', 'created_at', 'modified_at', 'target', 'status'],
+    sort: {
+      field: 'modified_at',
+      order: 'DESC',
+    },
+    filters: [
+      new QueryClause(
+        schema.find((clause) => clause.id === 'target_service_name')!,
+        {
+          operation: 'IN',
+          value: [],
+        },
+      ),
+      new QueryClause(schema.find((clause) => clause.id === 'status')!, {
+        operation: 'NOT_IN',
+        value: ['succeeded', 'failed', 'cancelled', 'killed'],
+      }),
+    ],
+  },
+  {
+    id: 'stuck',
+    label: 'Stuck invocations',
+    columns: ['id', 'created_at', 'modified_at', 'target', 'status'],
+    sort: {
+      field: 'modified_at',
+      order: 'ASC',
+    },
+    filters: [
+      new QueryClause(
+        schema.find((clause) => clause.id === 'target_service_name')!,
+        {
+          operation: 'IN',
+          value: [],
+        },
+      ),
+      new QueryClause(schema.find((clause) => clause.id === 'status')!, {
+        operation: 'IN',
+        value: [],
+      }),
+      new QueryClause(schema.find((clause) => clause.id === 'modified_at')!, {
+        operation: 'BEFORE',
+        value: new Date(Date.now() - 60 * 60 * 1000),
+      }),
+    ],
+  },
+  {
+    id: 'workflow',
+    label: 'Workflow runs',
+    columns: ['id', 'created_at', 'modified_at', 'target', 'status'],
+    sort: {
+      field: 'modified_at',
+      order: 'DESC',
+    },
+    filters: [
+      new QueryClause(
+        schema.find((clause) => clause.id === 'target_service_name')!,
+        {
+          operation: 'IN',
+          value: [],
+        },
+      ),
+      new QueryClause(schema.find((clause) => clause.id === 'status')!, {
+        operation: 'IN',
+        value: [],
+      }),
+      new QueryClause(
+        schema.find((clause) => clause.id === 'target_service_ty')!,
+        {
+          operation: 'IN',
+          value: ['workflow'],
+        },
+      ),
+      new QueryClause(
+        schema.find((clause) => clause.id === 'target_handler_name')!,
+        {
+          operation: 'IN',
+          value: ['run'],
+        },
+      ),
+    ],
+  },
+];
+
+const itemStyles = tv({
+  base: 'max-h-5 shrink-0 rounded-full border border-white/20 bg-transparent px-3 py-0.5 text-xs text-white/80 hover:bg-white/15 pressed:bg-white/20',
+});
+export function FilterShortcuts({
+  query,
+  setPageIndex,
+  setSortParams,
+  schema,
+}: {
+  query: ListData<QueryClause<QueryClauseType>>;
+  setSortParams: Dispatch<SetStateAction<SortInvocations>>;
+  setPageIndex: Dispatch<SetStateAction<number>>;
+  schema: QueryClauseSchema<QueryClauseType>[];
+}) {
+  const [shortcuts] = useState(() => makeShortcuts(schema));
+  const [first, second, third, ...rest] = shortcuts;
+  const submitButton = useRef<HTMLButtonElement | null>(null);
+
+  const setFilter = useCallback(
+    (item: FilterShortcut) => {
+      setPageIndex(0);
+      setSortParams(item.sort);
+      query.items.forEach((item) => {
+        query.remove(item.id);
+      });
+      query.insert(0, ...item.filters);
+      setTimeout(() => {
+        submitButton.current?.click();
+      }, 0);
+    },
+    [query, setPageIndex, setSortParams],
+  );
+
+  return (
+    <>
+      {first && (
+        <Button
+          variant="icon"
+          onClick={() => setFilter(first)}
+          className={itemStyles()}
+        >
+          {first?.label}
+        </Button>
+      )}
+      {second && (
+        <Button
+          variant="icon"
+          onClick={() => setFilter(second)}
+          className={itemStyles()}
+        >
+          {second?.label}
+        </Button>
+      )}
+      {third && (
+        <Button
+          variant="icon"
+          onClick={() => setFilter(third)}
+          className={itemStyles()}
+        >
+          {third?.label}
+        </Button>
+      )}
+      <Dropdown>
+        <DropdownTrigger>
+          <Button variant="icon" className={itemStyles()}>
+            More
+            <Icon
+              name={IconName.ChevronsUpDown}
+              className="-mr-2 ml-2 h-3 w-3"
+            />
+          </Button>
+        </DropdownTrigger>
+        <DropdownPopover>
+          <DropdownSection title="Quick filters">
+            <DropdownMenu
+              onSelect={(value) => {
+                const filter = shortcuts.find(({ id }) => id === value);
+                if (filter) {
+                  setFilter(filter);
+                }
+              }}
+            >
+              {rest.map((item) => (
+                <DropdownItem value={item.id}>{item.label}</DropdownItem>
+              ))}
+            </DropdownMenu>
+          </DropdownSection>
+        </DropdownPopover>
+      </Dropdown>
+      <SubmitButton className="hidden" ref={submitButton} />
+    </>
+  );
+}

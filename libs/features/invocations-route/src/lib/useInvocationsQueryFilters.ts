@@ -45,11 +45,18 @@ export function isSortValid(searchParams: URLSearchParams) {
   );
 }
 
-export function setDefaultSort(searchParams: URLSearchParams) {
-  searchParams.set(SORT_QUERY_PREFIX + 'field', 'modified_at');
-  searchParams.set(SORT_QUERY_PREFIX + 'order', 'DESC');
+export function setSort(
+  searchParams: URLSearchParams,
+  sort: { field: ColumnKey; order: 'ASC' | 'DESC' },
+) {
+  searchParams.set(SORT_QUERY_PREFIX + 'field', sort.field);
+  searchParams.set(SORT_QUERY_PREFIX + 'order', sort.order);
 
   return searchParams;
+}
+
+export function setDefaultSort(searchParams: URLSearchParams) {
+  return setSort(searchParams, { field: 'modified_at', order: 'DESC' });
 }
 
 export function useInvocationsQueryFilters() {

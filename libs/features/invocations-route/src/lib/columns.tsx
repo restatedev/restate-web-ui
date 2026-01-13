@@ -67,13 +67,27 @@ function sortColumns(a: Key, b: Key) {
   return SORT_ORDER[a as ColumnKey] - SORT_ORDER[b as ColumnKey];
 }
 
-export function setDefaultColumns(searchParams: URLSearchParams) {
+export function setColumns(
+  searchParams: URLSearchParams,
+  columns: ColumnKey[],
+) {
   searchParams.delete(COLUMN_QUERY_PREFIX);
-  ['id', 'created_at', 'modified_at', 'target', 'status'].forEach((col) => {
+  columns.forEach((col) => {
     searchParams.append(COLUMN_QUERY_PREFIX, col);
   });
 
   return searchParams;
+}
+
+export function setDefaultColumns(searchParams: URLSearchParams) {
+  searchParams.delete(COLUMN_QUERY_PREFIX);
+  return setColumns(searchParams, [
+    'id',
+    'created_at',
+    'modified_at',
+    'target',
+    'status',
+  ]);
 }
 
 export function isColumnValid(searchParams: URLSearchParams) {
