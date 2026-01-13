@@ -149,7 +149,7 @@ const makeShortcuts: (
       }),
       toClause(schema, 'status', {
         operation: 'IN',
-        value: ['pending', 'running', 'backing-off', 'suspended', 'paused'],
+        value: ['running', 'backing-off', 'suspended', 'paused'],
       }),
 
       toClause(schema, 'target_service_ty', {
