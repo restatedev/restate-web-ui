@@ -972,6 +972,18 @@ export function useKillInvocation(
           },
         ).queryKey,
       });
+      queryCLient.invalidateQueries({
+        predicate(query) {
+          const queryKey = query.queryKey;
+          if (
+            Array.isArray(queryKey) &&
+            queryKey.at(0) === '/query/invocations'
+          ) {
+            return true;
+          }
+          return false;
+        },
+      });
     },
   });
 }
@@ -1008,6 +1020,18 @@ export function useCancelInvocation(
           },
         ).queryKey,
       });
+      queryCLient.invalidateQueries({
+        predicate(query) {
+          const queryKey = query.queryKey;
+          if (
+            Array.isArray(queryKey) &&
+            queryKey.at(0) === '/query/invocations'
+          ) {
+            return true;
+          }
+          return false;
+        },
+      });
     },
   });
 }
@@ -1017,6 +1041,7 @@ export function usePurgeInvocation(
   options?: HookMutationOptions<'/invocations/{invocation_id}/purge', 'patch'>,
 ) {
   const baseUrl = useAdminBaseUrl();
+  const queryCLient = useQueryClient();
 
   return useMutation({
     ...adminApi('mutate', '/invocations/{invocation_id}/purge', 'patch', {
@@ -1024,6 +1049,21 @@ export function usePurgeInvocation(
       resolvedPath: `/invocations/${invocation_id}/purge`,
     }),
     ...options,
+    onSuccess(data, variables, context, meta) {
+      options?.onSuccess?.(data, variables, context, meta);
+      queryCLient.invalidateQueries({
+        predicate(query) {
+          const queryKey = query.queryKey;
+          if (
+            Array.isArray(queryKey) &&
+            queryKey.at(0) === '/query/invocations'
+          ) {
+            return true;
+          }
+          return false;
+        },
+      });
+    },
   });
 }
 
@@ -1033,13 +1073,6 @@ export function usePauseInvocation(
 ) {
   const baseUrl = useAdminBaseUrl();
   const queryCLient = useQueryClient();
-  const { refetch } = useGetInvocationJournalWithInvocationV2(
-    String(invocationId),
-    {
-      refetchOnMount: false,
-      enabled: false,
-    },
-  );
 
   return useMutation({
     ...adminApi('mutate', '/invocations/{invocation_id}/pause', 'patch', {
@@ -1048,7 +1081,34 @@ export function usePauseInvocation(
     }),
     ...options,
     async onSuccess(data, variables, context, meta) {
-      await refetch();
+      queryCLient.invalidateQueries({
+        queryKey: adminApi(
+          'query',
+          '/query/v2/invocations/{invocationId}',
+          'get',
+          {
+            baseUrl,
+            parameters: {
+              path: {
+                invocationId: String(variables.parameters?.path.invocation_id),
+              },
+              query: { journal: true },
+            },
+          },
+        ).queryKey,
+      });
+      queryCLient.invalidateQueries({
+        predicate(query) {
+          const queryKey = query.queryKey;
+          if (
+            Array.isArray(queryKey) &&
+            queryKey.at(0) === '/query/invocations'
+          ) {
+            return true;
+          }
+          return false;
+        },
+      });
       options?.onSuccess?.(data, variables, context, meta);
     },
   });
@@ -1082,10 +1142,7 @@ export function useResumeInvocation(
   options?: HookMutationOptions<'/invocations/{invocation_id}/resume', 'patch'>,
 ) {
   const baseUrl = useAdminBaseUrl();
-  const { refetch } = useGetInvocationJournalWithInvocationV2(invocationId, {
-    refetchOnMount: false,
-    enabled: false,
-  });
+  const queryCLient = useQueryClient();
 
   return useMutation({
     ...adminApi('mutate', '/invocations/{invocation_id}/resume', 'patch', {
@@ -1093,9 +1150,37 @@ export function useResumeInvocation(
       resolvedPath: `/invocations/${invocationId}/resume`,
     }),
     ...options,
-    async onSuccess(data, variables, context, meta) {
-      await refetch();
+    onSuccess(data, variables, context, meta) {
       options?.onSuccess?.(data, variables, context, meta);
+
+      queryCLient.invalidateQueries({
+        queryKey: adminApi(
+          'query',
+          '/query/v2/invocations/{invocationId}',
+          'get',
+          {
+            baseUrl,
+            parameters: {
+              path: {
+                invocationId: String(variables.parameters?.path.invocation_id),
+              },
+              query: { journal: true },
+            },
+          },
+        ).queryKey,
+      });
+      queryCLient.invalidateQueries({
+        predicate(query) {
+          const queryKey = query.queryKey;
+          if (
+            Array.isArray(queryKey) &&
+            queryKey.at(0) === '/query/invocations'
+          ) {
+            return true;
+          }
+          return false;
+        },
+      });
     },
   });
 }
