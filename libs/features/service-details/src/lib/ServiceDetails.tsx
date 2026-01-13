@@ -133,25 +133,39 @@ function ServiceContent({ service }: { service: string }) {
   const handlerData = handlers.find(
     (handler) => handler.name === selectedHandler,
   );
+
   const resolvedData = {
     ...data,
     ...handlerData,
+    abort_timeout: handlerData?.abort_timeout ?? data?.abort_timeout,
+    inactivity_timeout:
+      handlerData?.inactivity_timeout ?? data?.inactivity_timeout,
+    journal_retention:
+      handlerData?.journal_retention ?? data?.journal_retention,
+    idempotency_retention:
+      handlerData?.idempotency_retention ?? data?.idempotency_retention,
+    enable_lazy_state:
+      handlerData?.enable_lazy_state ?? data?.enable_lazy_state,
+    public: handlerData?.public ?? data?.public,
+    workflow_completion_retention: handlerData
+      ? undefined
+      : data?.workflow_completion_retention,
     retry_policy: {
       exponentiation_factor:
-        data?.retry_policy?.exponentiation_factor ??
-        handlerData?.retry_policy?.exponentiation_factor,
+        handlerData?.retry_policy?.exponentiation_factor ??
+        data?.retry_policy?.exponentiation_factor,
       initial_interval:
-        data?.retry_policy?.initial_interval ??
-        handlerData?.retry_policy?.initial_interval,
+        handlerData?.retry_policy?.initial_interval ??
+        data?.retry_policy?.initial_interval,
       max_attempts:
-        data?.retry_policy?.max_attempts ??
-        handlerData?.retry_policy?.max_attempts,
+        handlerData?.retry_policy?.max_attempts ??
+        data?.retry_policy?.max_attempts,
       max_interval:
-        data?.retry_policy?.max_interval ??
-        handlerData?.retry_policy?.max_interval,
+        handlerData?.retry_policy?.max_interval ??
+        data?.retry_policy?.max_interval,
       on_max_attempts:
-        data?.retry_policy?.on_max_attempts ??
-        handlerData?.retry_policy?.on_max_attempts,
+        handlerData?.retry_policy?.on_max_attempts ??
+        data?.retry_policy?.on_max_attempts,
     },
   };
 
@@ -345,6 +359,7 @@ function ServiceContent({ service }: { service: string }) {
           isPublic={resolvedData?.public}
           isPending={isPending}
           service={service}
+          isReadonly={hasHandler}
         />
         <RetentionSection
           retention={{
@@ -357,6 +372,7 @@ function ServiceContent({ service }: { service: string }) {
           }}
           isPending={isPending}
           service={service}
+          isReadonly={hasHandler}
         />
         <TimeoutSection
           isPending={isPending}
@@ -366,6 +382,7 @@ function ServiceContent({ service }: { service: string }) {
             abort: resolvedData?.abort_timeout,
           }}
           revision={data?.revision}
+          isReadonly={hasHandler}
         />
         <RetryPolicySection
           retryPolicy={{

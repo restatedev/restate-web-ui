@@ -129,6 +129,7 @@ export function FormFieldMultiCombobox<
   const [menuTrigger, setMenuTrigger] =
     useState<ComponentProps<typeof ComboBox>['menuTrigger']>('focus');
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const listBoxRef = useRef<HTMLDivElement | null>(null);
   const inputRefObject = useObjectRef(mergeRefs(inputRef, ref));
 
   const filter = useCallback(
@@ -189,29 +190,38 @@ export function FormFieldMultiCombobox<
     [onItemUpdated, selectedList],
   );
 
-  const onSelectionChange = (id: Key | null) => {
-    if (!id) {
-      return;
-    }
+  const onSelectionChange = useCallback(
+    (id: Key | null) => {
+      if (!id) {
+        return;
+      }
 
-    const item = availableList.getItem(id);
+      const item = availableList.getItem(id);
 
-    if (!item) {
-      return;
-    }
+      if (!item) {
+        return;
+      }
 
-    if (!selectedKeys.includes(id)) {
-      selectedList.append(item);
-      const inputValue = fieldState.inputValue;
-      setFieldState({
-        inputValue: '',
-        selectedKey: id,
-      });
-      onItemAdd?.(id, inputValue);
-    }
+      if (!selectedKeys.includes(id)) {
+        selectedList.append(item);
+        const inputValue = fieldState.inputValue;
+        setFieldState({
+          inputValue: '',
+          selectedKey: id,
+        });
+        onItemAdd?.(id, inputValue);
+      }
 
-    availableList.setFilterText('');
-  };
+      availableList.setFilterText('');
+    },
+    [
+      availableList,
+      fieldState.inputValue,
+      onItemAdd,
+      selectedKeys,
+      selectedList,
+    ],
+  );
 
   const onInputChange = (value: string) => {
     setFieldState((prevState) => ({
@@ -244,8 +254,23 @@ export function FormFieldMultiCombobox<
       if (e.key === 'Backspace' && fieldState.inputValue === '') {
         deleteLast();
       }
+      if (e.key === 'Enter' && !(e.metaKey || e.ctrlKey)) {
+        const id = availableList.items.at(0)?.id;
+        const focusedOption = listBoxRef.current?.querySelector(
+          '[role=option][data-focused=true]',
+        );
+        const optionsCount =
+          listBoxRef.current?.querySelectorAll('[role=option]').length;
+
+        // TODO: revisit items with allowCustomValues
+        // They always appear as an option and break validation
+        if (id !== undefined && !focusedOption && Number(optionsCount) > 0) {
+          onSelectionChange(id as Key);
+          e.preventDefault();
+        }
+      }
     },
-    [deleteLast, fieldState.inputValue],
+    [availableList.items, deleteLast, fieldState.inputValue, onSelectionChange],
   );
 
   const tagGroupId = useId();
@@ -314,6 +339,7 @@ export function FormFieldMultiCombobox<
                   multiple
                   selectable
                   className="max-h-[inherit] overflow-auto border-none p-1 outline-0"
+                  ref={listBoxRef}
                 >
                   <ListBoxSection title={label}>
                     {availableList.items

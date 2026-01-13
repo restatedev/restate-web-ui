@@ -13,6 +13,7 @@ import {
 import { QueryClause, QueryClauseSchema, QueryClauseType } from './Query';
 import { FormFieldMultiCombobox } from '@restate/ui/form-field';
 import { Key, ListData, useListData } from 'react-stately';
+import { useFocusShortcut } from '@restate/ui/keyboard';
 
 interface QueryBuilderProps {
   schema: QueryClauseSchema<QueryClauseType>[];
@@ -119,34 +120,7 @@ export function AddQueryTrigger({
     return schema.map((clauseSchema) => new QueryClause(clauseSchema));
   }, [schema]);
 
-  const inputRef = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    const input = inputRef.current;
-    const keyHandler = (event: KeyboardEvent) => {
-      if (
-        event.key !== '/' ||
-        event.ctrlKey ||
-        event.metaKey ||
-        event.shiftKey ||
-        event.repeat
-      ) {
-        return;
-      }
-      if (
-        event.target instanceof HTMLElement &&
-        (/^(?:input|textarea|select|button)$/i.test(event.target?.tagName) ||
-          event.target.closest('[role=listbox]') ||
-          event.target.closest('[role=dialog]'))
-      )
-        return;
-      event.preventDefault();
-      input?.focus();
-    };
-    document.addEventListener('keydown', keyHandler);
-    return () => {
-      document.removeEventListener('keydown', keyHandler);
-    };
-  }, []);
+  const inputRef = useFocusShortcut<HTMLInputElement>();
 
   const onAdd = useCallback(
     (key: Key, value?: string) => {

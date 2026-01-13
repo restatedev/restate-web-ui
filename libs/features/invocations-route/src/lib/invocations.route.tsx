@@ -23,6 +23,7 @@ import {
   useDurationSinceLastSnapshot,
 } from '@restate/util/snapshot-time';
 import { PropsWithChildren, useEffect, useMemo, useState } from 'react';
+import { useSubmitShortcut, SubmitShortcutKey } from '@restate/ui/keyboard';
 import { formatDurations, formatNumber } from '@restate/util/intl';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import { AddQueryTrigger, QueryBuilder } from '@restate/ui/query-builder';
@@ -49,6 +50,7 @@ import {
   useInvocationsQueryFilters,
 } from './useInvocationsQueryFilters';
 import { Key } from 'react-aria';
+import { FilterShortcuts } from './FilterShortcuts';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: 170,
@@ -86,6 +88,7 @@ function Component() {
   const { selectedColumns, setSelectedColumns, sortedColumnsList } =
     useColumns();
   const queryCLient = useQueryClient();
+  const submitRef = useSubmitShortcut();
   const {
     schema,
     listInvocationsParameters,
@@ -207,10 +210,11 @@ function Component() {
                       selectedInvocationIds.size > 0 ? 'default' : 'info'
                     }
                   >
-                    {selectedInvocationIds.size ||
-                      (data?.total_count
+                    {selectedInvocationIds.size
+                      ? `${selectedInvocationIds.size}`
+                      : data?.total_count
                         ? `${formatNumber(data?.total_count, data?.total_count_lower_bound)}${data?.total_count_lower_bound ? '+' : ''}`
-                        : '')}
+                        : ''}
                   </Badge>
                 )}
                 <Icon
@@ -220,7 +224,34 @@ function Component() {
               </Button>
             </DropdownTrigger>
             <DropdownPopover>
-              <DropdownSection title="Batch actions">
+              <DropdownSection
+                title={
+                  <div>
+                    {selectedInvocationIds.size ? (
+                      <span>
+                        Actions{' '}
+                        <span className="font-normal opacity-90">
+                          on {selectedInvocationIds.size} selected items
+                        </span>
+                      </span>
+                    ) : data?.total_count ? (
+                      <span>
+                        Actions{' '}
+                        <span className="font-normal opacity-90">
+                          on all{' '}
+                          {formatNumber(
+                            data?.total_count,
+                            data?.total_count_lower_bound,
+                          )}
+                          {data?.total_count_lower_bound ? '+' : ''} results
+                        </span>
+                      </span>
+                    ) : (
+                      'Actions'
+                    )}
+                  </div>
+                }
+              >
                 <DropdownMenu
                   selectable
                   selectedItems={selectedColumns}
@@ -445,7 +476,7 @@ function Component() {
         <Form
           action="/query/invocations"
           method="POST"
-          className="relative flex"
+          className="relative flex w-[60rem] flex-col"
           onSubmit={async (event) => {
             event.preventDefault();
             commitQuery();
@@ -466,17 +497,32 @@ function Component() {
                 <Sort setSortParams={setSortParams} sortParams={sortParams} />
               }
               title="Filters"
-              className="w-full rounded-xl border-transparent pr-24 has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500 [&_input]:min-w-[25ch] [&_input]:placeholder-zinc-400 [&_input+*]:right-24 [&_input::-webkit-search-cancel-button]:invert"
+              className="w-full rounded-xl border-transparent pb-8 has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500 [&_input]:min-w-[25ch] [&_input]:placeholder-zinc-400 [&_input+*]:right-24 [&_input::-webkit-search-cancel-button]:invert"
             >
               {ClauseChip}
             </AddQueryTrigger>
           </QueryBuilder>
-
+          <div className="absolute right-0 bottom-0 left-0 flex h-8 w-full overflow-hidden rounded-b-xl mask-[linear-gradient(to_right,transparent_0,black_6px,black_calc(100%-192px),transparent_calc(100%-100px))]">
+            <div className="flex items-center gap-2 overflow-auto pb-0.5 pl-1.5 [scrollbar-width:thin]">
+              <div className="ml-1 flex h-full shrink-0 items-center text-xs text-white/70">
+                Quick Filters:
+              </div>
+              <FilterShortcuts
+                schema={schema}
+                setPageIndex={setPageIndex}
+                setSortParams={setSortParams}
+                query={query}
+                setSelectedColumns={setSelectedColumns}
+              />
+            </div>
+          </div>
           <SubmitButton
+            ref={submitRef}
             isPending={isFetching}
-            className="absolute top-1 right-1 bottom-1 rounded-lg py-0 disabled:bg-gray-400 disabled:text-gray-200"
+            className="absolute right-1 bottom-1 flex h-7 items-center gap-2 rounded-lg py-0 pr-0.5 pl-4 disabled:bg-gray-400 disabled:text-gray-200"
           >
             Query
+            <SubmitShortcutKey />
           </SubmitButton>
         </Form>
       </LayoutOutlet>

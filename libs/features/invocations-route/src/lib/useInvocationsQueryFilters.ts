@@ -45,11 +45,18 @@ export function isSortValid(searchParams: URLSearchParams) {
   );
 }
 
-export function setDefaultSort(searchParams: URLSearchParams) {
-  searchParams.set(SORT_QUERY_PREFIX + 'field', 'modified_at');
-  searchParams.set(SORT_QUERY_PREFIX + 'order', 'DESC');
+export function setSort(
+  searchParams: URLSearchParams,
+  sort: { field: ColumnKey; order: 'ASC' | 'DESC' },
+) {
+  searchParams.set(SORT_QUERY_PREFIX + 'field', sort.field);
+  searchParams.set(SORT_QUERY_PREFIX + 'order', sort.order);
 
   return searchParams;
+}
+
+export function setDefaultSort(searchParams: URLSearchParams) {
+  return setSort(searchParams, { field: 'modified_at', order: 'DESC' });
 }
 
 export function useInvocationsQueryFilters() {
@@ -137,7 +144,8 @@ export function useInvocationsQueryFilters() {
   );
 
   const commitQuery = () => {
-    const newSearchParams = new URLSearchParams(searchParams);
+    // TODO: fix race condition and remove window.location.search
+    const newSearchParams = new URLSearchParams(window.location.search);
     Array.from(newSearchParams.keys())
       .filter((key) => key.startsWith(FILTER_QUERY_PREFIX))
       .forEach((key) => newSearchParams.delete(key));

@@ -6,14 +6,8 @@ import {
   ServiceExplainer,
 } from '@restate/features/explainers';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
-import {
-  useDeferredValue,
-  useEffect,
-  useId,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from 'react';
+import { useDeferredValue, useId, useLayoutEffect, useState } from 'react';
+import { useFocusShortcut, FocusShortcutKey } from '@restate/ui/keyboard';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import { FormFieldInput } from '@restate/ui/form-field';
 import { ErrorBanner } from '@restate/ui/error';
@@ -28,40 +22,13 @@ function MultipleDeploymentsPlaceholder({
   filterText: string;
   onFilter: (filterText: string) => void;
 }) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    const input = inputRef.current;
-    const keyHandler = (event: KeyboardEvent) => {
-      if (
-        event.key !== '/' ||
-        event.ctrlKey ||
-        event.metaKey ||
-        event.shiftKey ||
-        event.repeat
-      ) {
-        return;
-      }
-      if (
-        event.target instanceof HTMLElement &&
-        /^(?:input|textarea|select|button)$/i.test(event.target?.tagName)
-      )
-        return;
-      event.preventDefault();
-      input?.focus();
-    };
-    document.addEventListener('keydown', keyHandler);
-    return () => {
-      document.removeEventListener('keydown', keyHandler);
-    };
-  }, []);
+  const inputRef = useFocusShortcut<HTMLInputElement>();
 
   return (
     <LayoutOutlet zone={LayoutZone.Toolbar}>
       <div className="flex items-center rounded-xl border border-transparent p-0.5 ring-1 ring-transparent has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500">
         <div className="flex w-full items-center gap-0 p-px">
-          <kbd className="ml-2 rounded-sm bg-zinc-600 px-1.5 text-sm text-zinc-400">
-            /
-          </kbd>
+          <FocusShortcutKey className="ml-2" />
           <FormFieldInput
             ref={inputRef}
             type="search"

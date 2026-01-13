@@ -102,6 +102,20 @@ export function EditTimeoutDialog() {
               {service}
             </span>
           </h3>
+          <p className="text-sm text-gray-500">
+            Configure timeouts that control how Restate communicates with your
+            service deployment.
+            <Link
+              rel="noopener noreferrer"
+              target="_blank"
+              variant="secondary"
+              className="ml-1 inline-flex items-center gap-1"
+              href="https://docs.restate.dev/services/configuration#timeouts"
+            >
+              Learn more
+              <Icon name={IconName.ExternalLink} className="h-[1em] w-[1em]" />
+            </Link>
+          </p>
           <RestateMinimumVersion minVersion="1.4.5">
             <div className="flex flex-col gap-2 text-sm text-gray-500">
               <p className="mt-2 flex gap-2 rounded-xl bg-orange-50 p-3 text-sm text-0.5xs text-orange-600">

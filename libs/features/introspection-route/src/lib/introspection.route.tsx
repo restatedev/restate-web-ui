@@ -246,7 +246,6 @@ function Component() {
         setQuery={setQuery}
         isPending={isFetching}
         initialQuery={searchParams.get(QUERY_PARAM) ?? ''}
-        key={searchParams.get(QUERY_PARAM)}
       />
     </div>
   );

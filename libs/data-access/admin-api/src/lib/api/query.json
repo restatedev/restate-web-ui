@@ -2681,7 +2681,14 @@
           },
           "operation": {
             "type": "string",
-            "enum": ["EQUALS", "NOT_EQUALS", "CONTAINS", "NOT_CONTAINS"]
+            "enum": [
+              "EQUALS",
+              "NOT_EQUALS",
+              "CONTAINS",
+              "NOT_CONTAINS",
+              "IS NULL",
+              "IS NOT NULL"
+            ]
           },
           "value": {
             "type": "string"

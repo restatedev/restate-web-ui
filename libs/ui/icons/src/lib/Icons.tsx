@@ -81,6 +81,7 @@ import {
   ArrowDown,
   ArrowUp,
   GitGraph,
+  Command,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from '@restate/util/styles';
@@ -208,6 +209,7 @@ export const enum IconName {
   ArrowDown = 'ArrowDown',
   ArrowUp = 'ArrowUp',
   GitGraph = 'GitGraph',
+  Command = 'Command',
 }
 export interface IconsProps {
   name: IconName;
@@ -319,6 +321,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.ArrowDown]: ArrowDown,
   [IconName.ArrowUp]: ArrowUp,
   [IconName.GitGraph]: GitGraph,
+  [IconName.Command]: Command,
 };
 
 const styles = tv({

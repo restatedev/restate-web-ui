@@ -41,7 +41,7 @@ export function RetentionSection({
     <Section>
       <SectionTitle className="flex items-center">
         Retentions
-        {isReadonly && (
+        {!isReadonly && (
           <Button
             variant="secondary"
             onClick={() =>

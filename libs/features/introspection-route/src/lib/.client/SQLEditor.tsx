@@ -1,4 +1,5 @@
-import { RefObject, useEffect } from 'react';
+import { RefObject, useCallback, useEffect } from 'react';
+import { useFocusShortcut } from '@restate/ui/keyboard';
 import { languages } from 'monaco-editor/esm/vs/editor/editor.api';
 import * as monaco from 'monaco-editor';
 import {
@@ -323,51 +324,19 @@ export function SQLEditor({
     setQuery,
   ]);
 
-  useEffect(() => {
-    const keyHandler = (event: KeyboardEvent) => {
-      if (
-        !(event.key === 'Enter' && event.metaKey) &&
-        !(
-          event.key === '/' &&
-          !event.ctrlKey &&
-          !event.metaKey &&
-          !event.shiftKey &&
-          !event.repeat
-        )
-      ) {
-        return;
-      }
-      if (
-        event.target instanceof HTMLElement &&
-        (/^(?:input|textarea|select|button)$/i.test(event.target?.tagName) ||
-          event.target.closest('[role=listbox]') ||
-          event.target.closest('[role=dialog]') ||
-          event.target.closest('[class~="monaco-editor"]'))
-      ) {
-        return;
-      }
+  const focusEditor = useCallback(() => {
+    editorRef.current?.focus();
+    const model = editorRef.current?.getModel();
+    const lineCount = model?.getLineCount() ?? 0;
+    const lastLineLength = model?.getLineContent(lineCount).length ?? 0;
 
-      event.preventDefault();
-      if (event.key === 'Enter' && event.metaKey) {
-        setQuery(editorRef.current?.getValue() ?? '');
-      } else {
-        editorRef.current?.focus();
-        const model = editorRef.current?.getModel();
-        const lineCount = model?.getLineCount() ?? 0;
-        const lastLineLength = model?.getLineContent(lineCount).length ?? 0;
+    editorRef.current?.setPosition({
+      lineNumber: lineCount,
+      column: lastLineLength + 1,
+    });
+  }, [editorRef]);
 
-        // Set the position to the end of the last line
-        editorRef.current?.setPosition({
-          lineNumber: lineCount,
-          column: lastLineLength + 1,
-        });
-      }
-    };
-    document.addEventListener('keydown', keyHandler);
-    return () => {
-      document.removeEventListener('keydown', keyHandler);
-    };
-  }, [editorRef, setQuery]);
+  useFocusShortcut({ onFocus: focusEditor });
 
   return <div ref={hostRef} className={className} />;
 }

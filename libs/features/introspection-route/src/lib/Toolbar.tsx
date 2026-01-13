@@ -1,7 +1,12 @@
 import { SubmitButton } from '@restate/ui/button';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import { Form } from 'react-router';
-import { lazy, Suspense, useRef } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef } from 'react';
+import {
+  useSubmitShortcut,
+  SubmitShortcutKey,
+  FocusShortcutKey,
+} from '@restate/ui/keyboard';
 import type { editor } from 'monaco-editor';
 
 const SQLEditor = lazy(() =>
@@ -9,7 +14,7 @@ const SQLEditor = lazy(() =>
 );
 
 export function Toolbar({
-  setQuery,
+  setQuery: _setQuery,
   isPending,
   initialQuery,
 }: {
@@ -22,6 +27,23 @@ export function Toolbar({
   const formRef = useRef<HTMLFormElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const placeholderRef = useRef<HTMLDivElement>(null);
+  const submitRef = useSubmitShortcut();
+
+  const lastSubmittedQuery = useRef(initialQuery);
+  const setQuery = useCallback(
+    (value: string) => {
+      lastSubmittedQuery.current = value;
+      _setQuery(value);
+    },
+    [_setQuery],
+  );
+
+  useEffect(() => {
+    if (initialQuery !== lastSubmittedQuery.current) {
+      editorRef.current?.setValue(initialQuery ?? '');
+      lastSubmittedQuery.current = initialQuery ?? '';
+    }
+  }, [initialQuery]);
 
   return (
     <LayoutOutlet zone={LayoutZone.Toolbar}>
@@ -42,9 +64,7 @@ export function Toolbar({
               className="absolute top-0 bottom-0 left-2 flex items-center gap-2"
               ref={placeholderRef}
             >
-              <kbd className="rounded-sm bg-zinc-600 px-1.5 text-sm text-zinc-400">
-                /
-              </kbd>
+              <FocusShortcutKey />
 
               <div className="inline-block text-sm text-zinc-400">
                 Type your query here…
@@ -68,25 +88,14 @@ export function Toolbar({
           </div>
         </div>
         <SubmitButton
+          ref={submitRef}
           isPending={isPending}
-          className="absolute top-1 right-1 bottom-1 flex items-center gap-2 rounded-lg py-0 pr-1 pl-4 disabled:bg-gray-400 disabled:text-gray-200"
+          className="absolute top-1 right-1 bottom-1 flex items-center gap-2 rounded-lg py-0 pr-0.5 pl-4 disabled:bg-gray-400 disabled:text-gray-200"
         >
           Query
-          <div className="mt-0.5 flex items-center gap-0.5 text-2xs">
-            <kbd className="rounded-sm bg-black/20 px-1 font-mono text-[80%] font-medium text-white/90">
-              {getMetaKeySymbol()}
-            </kbd>
-            <div className="flex aspect-square h-5 items-center justify-center rounded-sm bg-black/20 px-1 font-mono text-[120%] font-medium text-white/90">
-              ⏎
-            </div>
-          </div>
+          <SubmitShortcutKey />
         </SubmitButton>
       </Form>
     </LayoutOutlet>
   );
-}
-
-function getMetaKeySymbol() {
-  const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);
-  return isMac ? 'Cmd' : 'Ctrl';
 }

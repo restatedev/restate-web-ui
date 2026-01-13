@@ -1957,7 +1957,13 @@ export interface components {
       /** @enum {string} */
       type: 'STRING';
       /** @enum {string} */
-      operation: 'EQUALS' | 'NOT_EQUALS' | 'CONTAINS' | 'NOT_CONTAINS';
+      operation:
+        | 'EQUALS'
+        | 'NOT_EQUALS'
+        | 'CONTAINS'
+        | 'NOT_CONTAINS'
+        | 'IS NULL'
+        | 'IS NOT NULL';
       value?: string;
     };
     FilterNullItem: {
