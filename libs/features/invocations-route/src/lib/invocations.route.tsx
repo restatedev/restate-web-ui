@@ -210,10 +210,11 @@ function Component() {
                       selectedInvocationIds.size > 0 ? 'default' : 'info'
                     }
                   >
-                    {selectedInvocationIds.size ||
-                      (data?.total_count
+                    {selectedInvocationIds.size
+                      ? `${selectedInvocationIds.size}`
+                      : data?.total_count
                         ? `${formatNumber(data?.total_count, data?.total_count_lower_bound)}${data?.total_count_lower_bound ? '+' : ''}`
-                        : '')}
+                        : ''}
                   </Badge>
                 )}
                 <Icon
@@ -223,7 +224,34 @@ function Component() {
               </Button>
             </DropdownTrigger>
             <DropdownPopover>
-              <DropdownSection title="Batch actions">
+              <DropdownSection
+                title={
+                  <div>
+                    {selectedInvocationIds.size ? (
+                      <span>
+                        Actions{' '}
+                        <span className="font-normal opacity-90">
+                          on {selectedInvocationIds.size} selected items
+                        </span>
+                      </span>
+                    ) : data?.total_count ? (
+                      <span>
+                        Actions{' '}
+                        <span className="font-normal opacity-90">
+                          on all{' '}
+                          {formatNumber(
+                            data?.total_count,
+                            data?.total_count_lower_bound,
+                          )}
+                          {data?.total_count_lower_bound ? '+' : ''} results
+                        </span>
+                      </span>
+                    ) : (
+                      'Actions'
+                    )}
+                  </div>
+                }
+              >
                 <DropdownMenu
                   selectable
                   selectedItems={selectedColumns}
