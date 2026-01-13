@@ -484,6 +484,7 @@ function Component() {
                 setPageIndex={setPageIndex}
                 setSortParams={setSortParams}
                 query={query}
+                setSelectedColumns={setSelectedColumns}
               />
             </div>
           </div>

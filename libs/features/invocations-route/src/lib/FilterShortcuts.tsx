@@ -1,5 +1,5 @@
 import { ColumnKey } from './columns';
-import { Dispatch, SetStateAction, useCallback, useRef, useState } from 'react';
+import { Dispatch, SetStateAction, useRef, useState } from 'react';
 import {
   QueryClause,
   QueryClauseOperationId,
@@ -11,6 +11,7 @@ import {
   Dropdown,
   DropdownItem,
   DropdownMenu,
+  DropdownMenuSelection,
   DropdownPopover,
   DropdownSection,
   DropdownTrigger,
@@ -34,7 +35,7 @@ function toClause(
   id: string,
   value: {
     operation: QueryClauseOperationId;
-    value: QueryClauseValue<QueryClauseType>;
+    value?: QueryClauseValue<QueryClauseType>;
     fieldValue?: string;
   },
 ) {
@@ -119,7 +120,7 @@ const makeShortcuts: (
         operation: 'IN',
         value: [],
       }),
-      toClause(schema, 'target_service_name', {
+      toClause(schema, 'status', {
         operation: 'IN',
         value: [],
       }),
@@ -133,6 +134,131 @@ const makeShortcuts: (
       }),
     ],
   },
+  {
+    id: 'vo',
+    label: 'Active Virtual Objects',
+    columns: ['id', 'created_at', 'modified_at', 'target', 'status'],
+    sort: {
+      field: 'modified_at',
+      order: 'DESC',
+    },
+    filters: [
+      toClause(schema, 'target_service_name', {
+        operation: 'IN',
+        value: [],
+      }),
+      toClause(schema, 'status', {
+        operation: 'IN',
+        value: ['pending', 'running', 'backing-off', 'suspended', 'paused'],
+      }),
+
+      toClause(schema, 'target_service_ty', {
+        operation: 'IN',
+        value: ['virtual_object'],
+      }),
+    ],
+  },
+  {
+    id: 'idempotent',
+    label: 'Idempotent invocations',
+    columns: [
+      'id',
+      'created_at',
+      'modified_at',
+      'target',
+      'status',
+      'idempotency_key',
+    ],
+    sort: {
+      field: 'modified_at',
+      order: 'DESC',
+    },
+    filters: [
+      toClause(schema, 'target_service_name', {
+        operation: 'IN',
+        value: [],
+      }),
+      toClause(schema, 'status', {
+        operation: 'IN',
+        value: [],
+      }),
+      toClause(schema, 'idempotency_key', {
+        operation: 'IS NOT NULL',
+      }),
+    ],
+  },
+  {
+    id: 'retried',
+    label: 'Most retried invocations',
+    columns: ['id', 'created_at', 'modified_at', 'target', 'status'],
+    sort: {
+      field: 'retry_count',
+      order: 'DESC',
+    },
+    filters: [
+      toClause(schema, 'target_service_name', {
+        operation: 'IN',
+        value: [],
+      }),
+      toClause(schema, 'status', {
+        operation: 'IN',
+        value: [],
+      }),
+      toClause(schema, 'retry_count', {
+        operation: 'GREATER_THAN',
+        value: 1,
+      }),
+    ],
+  },
+  {
+    id: 'restarted',
+    label: 'Restarted invocations',
+    columns: [
+      'id',
+      'created_at',
+      'modified_at',
+      'target',
+      'status',
+      'restarted_from',
+    ],
+    sort: {
+      field: 'modified_at',
+      order: 'DESC',
+    },
+    filters: [
+      toClause(schema, 'target_service_name', {
+        operation: 'IN',
+        value: [],
+      }),
+      toClause(schema, 'status', {
+        operation: 'IN',
+        value: [],
+      }),
+      toClause(schema, 'invoked_by', {
+        operation: 'EQUALS',
+        value: 'restart_as_new',
+      }),
+    ],
+  },
+  {
+    id: 'scheduled',
+    label: 'Scheduled invocations',
+    columns: ['id', 'created_at', 'modified_at', 'target', 'status'],
+    sort: {
+      field: 'modified_at',
+      order: 'DESC',
+    },
+    filters: [
+      toClause(schema, 'target_service_name', {
+        operation: 'IN',
+        value: [],
+      }),
+      toClause(schema, 'status', {
+        operation: 'IN',
+        value: ['scheduled'],
+      }),
+    ],
+  },
 ];
 
 const itemStyles = tv({
@@ -143,30 +269,30 @@ export function FilterShortcuts({
   setPageIndex,
   setSortParams,
   schema,
+  setSelectedColumns,
 }: {
   query: ListData<QueryClause<QueryClauseType>>;
   setSortParams: Dispatch<SetStateAction<SortInvocations>>;
   setPageIndex: Dispatch<SetStateAction<number>>;
   schema: QueryClauseSchema<QueryClauseType>[];
+  setSelectedColumns: (keys: DropdownMenuSelection) => void;
 }) {
   const [shortcuts] = useState(() => makeShortcuts(schema));
   const [first, second, third, ...rest] = shortcuts;
   const submitButton = useRef<HTMLButtonElement | null>(null);
 
-  const setFilter = useCallback(
-    (item: FilterShortcut) => {
-      setPageIndex(0);
-      setSortParams(item.sort);
-      query.items.forEach((item) => {
-        query.remove(item.id);
-      });
-      query.insert(0, ...item.filters);
-      setTimeout(() => {
-        submitButton.current?.click();
-      }, 0);
-    },
-    [query, setPageIndex, setSortParams],
-  );
+  const setFilter = (item: FilterShortcut) => {
+    setPageIndex(0);
+    setSelectedColumns(new Set(item.columns));
+    setSortParams(item.sort);
+    query.items.forEach((item) => {
+      query.remove(item.id);
+    });
+    query.insert(0, ...item.filters);
+    setTimeout(() => {
+      submitButton.current?.click();
+    }, 0);
+  };
 
   return (
     <>

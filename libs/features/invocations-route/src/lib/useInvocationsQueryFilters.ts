@@ -144,7 +144,8 @@ export function useInvocationsQueryFilters() {
   );
 
   const commitQuery = () => {
-    const newSearchParams = new URLSearchParams(searchParams);
+    // TODO: fix race condition and remove window.location.search
+    const newSearchParams = new URLSearchParams(window.location.search);
     Array.from(newSearchParams.keys())
       .filter((key) => key.startsWith(FILTER_QUERY_PREFIX))
       .forEach((key) => newSearchParams.delete(key));
