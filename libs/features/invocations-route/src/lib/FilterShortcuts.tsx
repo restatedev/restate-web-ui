@@ -2,8 +2,10 @@ import { ColumnKey } from './columns';
 import { Dispatch, SetStateAction, useCallback, useRef, useState } from 'react';
 import {
   QueryClause,
+  QueryClauseOperationId,
   QueryClauseSchema,
   QueryClauseType,
+  QueryClauseValue,
 } from '@restate/ui/query-builder';
 import {
   Dropdown,
@@ -27,6 +29,19 @@ interface FilterShortcut {
   id: string;
 }
 
+function toClause(
+  schema: QueryClauseSchema<QueryClauseType>[],
+  id: string,
+  value: {
+    operation: QueryClauseOperationId;
+    value: QueryClauseValue<QueryClauseType>;
+    fieldValue?: string;
+  },
+) {
+  return new QueryClause(schema.find((clause) => clause.id === id)!, value);
+}
+
+// TODO: remove empty service, status filters
 const makeShortcuts: (
   schema: QueryClauseSchema<QueryClauseType>[],
 ) => FilterShortcut[] = (schema) => [
@@ -39,14 +54,11 @@ const makeShortcuts: (
       order: 'DESC',
     },
     filters: [
-      new QueryClause(
-        schema.find((clause) => clause.id === 'target_service_name')!,
-        {
-          operation: 'IN',
-          value: [],
-        },
-      ),
-      new QueryClause(schema.find((clause) => clause.id === 'status')!, {
+      toClause(schema, 'target_service_name', {
+        operation: 'IN',
+        value: [],
+      }),
+      toClause(schema, 'status', {
         operation: 'IN',
         value: [],
       }),
@@ -61,14 +73,11 @@ const makeShortcuts: (
       order: 'DESC',
     },
     filters: [
-      new QueryClause(
-        schema.find((clause) => clause.id === 'target_service_name')!,
-        {
-          operation: 'IN',
-          value: [],
-        },
-      ),
-      new QueryClause(schema.find((clause) => clause.id === 'status')!, {
+      toClause(schema, 'target_service_name', {
+        operation: 'IN',
+        value: [],
+      }),
+      toClause(schema, 'status', {
         operation: 'NOT_IN',
         value: ['succeeded', 'failed', 'cancelled', 'killed'],
       }),
@@ -83,18 +92,15 @@ const makeShortcuts: (
       order: 'ASC',
     },
     filters: [
-      new QueryClause(
-        schema.find((clause) => clause.id === 'target_service_name')!,
-        {
-          operation: 'IN',
-          value: [],
-        },
-      ),
-      new QueryClause(schema.find((clause) => clause.id === 'status')!, {
+      toClause(schema, 'target_service_name', {
         operation: 'IN',
         value: [],
       }),
-      new QueryClause(schema.find((clause) => clause.id === 'modified_at')!, {
+      toClause(schema, 'status', {
+        operation: 'NOT_IN',
+        value: ['succeeded', 'failed', 'cancelled', 'killed', 'scheduled'],
+      }),
+      toClause(schema, 'modified_at', {
         operation: 'BEFORE',
         value: new Date(Date.now() - 60 * 60 * 1000),
       }),
@@ -109,31 +115,22 @@ const makeShortcuts: (
       order: 'DESC',
     },
     filters: [
-      new QueryClause(
-        schema.find((clause) => clause.id === 'target_service_name')!,
-        {
-          operation: 'IN',
-          value: [],
-        },
-      ),
-      new QueryClause(schema.find((clause) => clause.id === 'status')!, {
+      toClause(schema, 'target_service_name', {
         operation: 'IN',
         value: [],
       }),
-      new QueryClause(
-        schema.find((clause) => clause.id === 'target_service_ty')!,
-        {
-          operation: 'IN',
-          value: ['workflow'],
-        },
-      ),
-      new QueryClause(
-        schema.find((clause) => clause.id === 'target_handler_name')!,
-        {
-          operation: 'IN',
-          value: ['run'],
-        },
-      ),
+      toClause(schema, 'target_service_name', {
+        operation: 'IN',
+        value: [],
+      }),
+      toClause(schema, 'target_service_ty', {
+        operation: 'IN',
+        value: ['workflow'],
+      }),
+      toClause(schema, 'target_handler_name', {
+        operation: 'IN',
+        value: ['run'],
+      }),
     ],
   },
 ];
