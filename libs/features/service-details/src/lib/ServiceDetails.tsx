@@ -359,6 +359,7 @@ function ServiceContent({ service }: { service: string }) {
           isPublic={resolvedData?.public}
           isPending={isPending}
           service={service}
+          isReadonly={hasHandler}
         />
         <RetentionSection
           retention={{
@@ -371,6 +372,7 @@ function ServiceContent({ service }: { service: string }) {
           }}
           isPending={isPending}
           service={service}
+          isReadonly={hasHandler}
         />
         <TimeoutSection
           isPending={isPending}
@@ -380,6 +382,7 @@ function ServiceContent({ service }: { service: string }) {
             abort: resolvedData?.abort_timeout,
           }}
           revision={data?.revision}
+          isReadonly={hasHandler}
         />
         <RetryPolicySection
           retryPolicy={{

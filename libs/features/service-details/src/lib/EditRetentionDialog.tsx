@@ -18,7 +18,6 @@ import {
   ComboBoxSection,
   ComboBoxItem,
 } from '@restate/ui/form-field';
-import { InlineTooltip } from '@restate/ui/tooltip';
 import { RestateMinimumVersion } from '@restate/util/feature-flag';
 import { HUMANTIME_PATTERN_INPUT } from '@restate/util/humantime';
 import { Link } from '@restate/ui/link';
@@ -112,6 +111,20 @@ export function EditRetentionDialog() {
               {service}
             </span>
           </h3>
+          <p className="text-sm text-gray-500">
+            Adjust how long metadata and journals from completed invocations are
+            kept.
+            <Link
+              rel="noopener noreferrer"
+              target="_blank"
+              variant="secondary"
+              className="ml-1 inline-flex items-center gap-1"
+              href="https://docs.restate.dev/services/configuration#retention-of-completed-invocations"
+            >
+              Learn more
+              <Icon name={IconName.ExternalLink} className="h-[1em] w-[1em]" />
+            </Link>
+          </p>
           <RestateMinimumVersion minVersion="1.4.5">
             <div className="flex flex-col gap-2 text-sm text-gray-500">
               <p className="mt-2 flex gap-2 rounded-xl bg-orange-50 p-3 text-sm text-0.5xs text-orange-600">

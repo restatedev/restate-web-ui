@@ -24,7 +24,7 @@ export function IngressAccessSection({
     <Section>
       <SectionTitle className="flex items-center">
         Access
-        {isReadonly && (
+        {!isReadonly && (
           <Button
             variant="secondary"
             onClick={() =>

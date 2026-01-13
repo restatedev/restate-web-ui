@@ -43,7 +43,7 @@ export function TimeoutSection({
     <Section className="group">
       <SectionTitle className="flex items-center">
         Timeouts
-        {isReadonly && (
+        {!isReadonly && (
           <Button
             variant="secondary"
             onClick={() =>
