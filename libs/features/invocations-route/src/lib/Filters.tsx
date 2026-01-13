@@ -58,7 +58,12 @@ export function ClauseChip({
             (!item.value.operation || item.value.operation === 'IN') &&
             (item.isAllSelected || item.isNothingSelected)
               ? 'Any'
-              : item.valueLabel || '?'}
+              : item.valueLabel ||
+                (['IS NULL', 'IS NOT NULL'].includes(
+                  item.value.operation as string,
+                )
+                  ? ''
+                  : '?')}
           </span>
         </>
         <Icon
@@ -125,11 +130,14 @@ function EditQueryTrigger({
                 autoFocus={false}
                 onSelect={(operations) => {
                   if (operations instanceof Set && operations.size > 0) {
+                    const operation = Array.from(operations).at(
+                      -1,
+                    ) as QueryClauseOperationId;
                     const newClause = new QueryClause(clause.schema, {
-                      ...clause.value,
-                      operation: Array.from(operations).at(
-                        -1,
-                      ) as QueryClauseOperationId,
+                      ...(!['IS NULL', 'IS NOT NULL'].includes(operation) &&
+                        clause.value),
+                      operation,
+                      fieldValue: clause.value.fieldValue,
                     });
                     Promise.resolve(newClause.schema.loadOptions?.()).then(
                       () => {
@@ -278,6 +286,9 @@ function ValueSelector({
           ))}
         </DropdownMenu>
       );
+    }
+    if (['IS NULL', 'IS NOT NULL'].includes(clause.value.operation as string)) {
+      return null;
     }
     return (
       <FormFieldInput

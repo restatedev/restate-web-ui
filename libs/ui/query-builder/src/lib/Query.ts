@@ -14,7 +14,9 @@ export type QueryClauseOperationId =
   | 'BEFORE'
   | 'AFTER'
   | 'LESS_THAN'
-  | 'GREATER_THAN';
+  | 'GREATER_THAN'
+  | 'IS NULL'
+  | 'IS NOT NULL';
 
 interface Option<T extends string> {
   value: T;
@@ -112,7 +114,10 @@ export class QueryClause<T extends QueryClauseType> {
     if (Array.isArray(this.value.value)) {
       return this.value.value.length > 0;
     } else {
-      return !!this.value.value;
+      return (
+        !!this.value.value ||
+        ['IS NULL', 'IS NOT NULL'].includes(this.value.operation as string)
+      );
     }
   }
 
@@ -175,12 +180,17 @@ export class QueryClause<T extends QueryClauseType> {
   }
 
   toString() {
-    if (!this.value.value) {
+    if (
+      !this.value.value &&
+      !['IS NULL', 'IS NOT NULL'].includes(this.value.operation as string)
+    ) {
       return undefined;
     }
     return JSON.stringify({
       operation: this.value.operation,
-      value: this.value.value,
+      ...(typeof this.value.value !== 'undefined' && {
+        value: this.value.value,
+      }),
     });
   }
 

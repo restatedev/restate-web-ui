@@ -38,6 +38,10 @@ function convertFilterStringToSqlClause(
       return `"${filter.field}" LIKE '%${filter.value}%'`;
     case 'NOT_CONTAINS':
       return `"${filter.field}" NOT LIKE '%${filter.value}%'`;
+    case 'IS NULL':
+      return `"${filter.field}" IS NULL`;
+    case 'IS NOT NULL':
+      return `"${filter.field}" IS NOT NULL`;
   }
 }
 
@@ -116,6 +120,10 @@ function negateOperation(op: FilterItem['operation']): FilterItem['operation'] {
       return 'IS_NOT';
     case 'IS_NOT':
       return 'IS';
+    case 'IS NULL':
+      return 'IS NOT NULL';
+    case 'IS NOT NULL':
+      return 'IS NULL';
   }
 }
 

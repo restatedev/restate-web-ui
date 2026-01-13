@@ -174,7 +174,10 @@ export function useSchema() {
       {
         id: 'idempotency_key',
         label: 'Idempotency key',
-        operations: [{ value: 'EQUALS', label: 'is' }],
+        operations: [
+          { value: 'EQUALS', label: 'is' },
+          { value: 'IS NOT NULL', label: 'is not Null' },
+        ],
         type: 'STRING',
       },
 
