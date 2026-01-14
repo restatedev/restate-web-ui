@@ -141,7 +141,7 @@ const lastErrorStyles = tv({
       'flex h-5 items-center gap-1 truncate rounded-md border-gray-200/80 bg-white/70 px-1.5 py-0.5 text-2xs shadow-none',
     errorIcon: 'h-3 w-3 shrink-0',
     errorBanner:
-      'max-h-full max-w-[min(80rem,90vw)] flex-auto resize overflow-auto rounded-xl [&_details]:max-h-72',
+      'max-h-full max-w-[min(80rem,90vw)] flex-auto resize overflow-auto rounded-xl [&_.error]:max-h-72',
   },
   variants: {
     isRetrying: {

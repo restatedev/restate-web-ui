@@ -61,13 +61,11 @@ export function RestateServerError({
   children,
   className,
   wrap,
-  open = true,
   isTransient,
 }: PropsWithChildren<{
   error: RestateError;
   className?: string;
   wrap?: boolean;
-  open?: boolean;
   isTransient?: boolean;
 }>) {
   const { restate_code: code, message } = error;
@@ -109,18 +107,9 @@ export function RestateServerError({
       <div className="flex min-h-0 w-full flex-auto flex-col gap-2">
         <Code className={codeStyles({ wrap, isTransient })}>
           <Snippet language="bash" className="relative gap-0 px-0!">
-            <details
-              className="group flex-auto overflow-auto p-2 pl-4 text-[90%] [scrollbar-gutter:stable_both-edges] open:pb-6"
-              open={open}
-            >
-              <summary className="group-open:h-4">
-                <span className="inline-block truncate align-middle leading-8 group-open:invisible group-open:text-[0px]">
-                  {message}
-                </span>
-                <br className="group-open:hidden" />
-              </summary>
-              <span className="ml-4 inline-block">{message}</span>
-            </details>
+            <div className="group error flex-auto overflow-auto px-2 py-4 text-[90%] [scrollbar-gutter:stable_both-edges] open:pb-6">
+              <span className="inline-block">{message}</span>
+            </div>
           </Snippet>
         </Code>
         {children && <div className="shrink-0">{children}</div>}
