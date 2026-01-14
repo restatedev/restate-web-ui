@@ -78,7 +78,7 @@ export interface WithConfirmationConfig<
   alertContent?: ReactNode;
   submitVariant?: ConfirmationDialogProps['submitVariant'];
   formMethod?: ConfirmationDialogProps['formMethod'];
-  formAction?: string;
+  formAction?: (input: string | null) => string;
   Content?: ComponentType;
   useHelpers?: () => THelpers;
   onSuccess?: (
@@ -147,7 +147,9 @@ export function withConfirmation<
         alertContent={config.alertContent}
         submitVariant={config.submitVariant}
         formMethod={config.formMethod}
-        formAction={config.formAction}
+        formAction={config.formAction?.(
+          config.getUseMutationInput(searchParams),
+        )}
         onSubmit={handleSubmit}
         isPending={isPending}
         error={error as Error | null}

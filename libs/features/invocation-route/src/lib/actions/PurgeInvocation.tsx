@@ -108,7 +108,8 @@ export const PurgeInvocation = withConfirmation({
   ),
   submitText: 'Purge',
   submitVariant: 'destructive',
-  formMethod: 'DELETE',
+  formMethod: 'PATCH',
+  formAction: (invocation_id) => `/invocations/${invocation_id}/purge`,
 
   Content: PurgeInvocationContent,
 

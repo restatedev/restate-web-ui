@@ -95,6 +95,7 @@ export const PauseInvocation = withConfirmation({
   submitText: 'Pause',
   submitVariant: 'destructive',
   formMethod: 'PATCH',
+  formAction: (invocation_id) => `/invocations/${invocation_id}/pause`,
 
   Content: PauseInvocationContent,
 

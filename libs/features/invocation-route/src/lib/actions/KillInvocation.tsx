@@ -108,7 +108,8 @@ export const KillInvocation = withConfirmation({
   ),
   submitText: 'Kill',
   submitVariant: 'destructive',
-  formMethod: 'DELETE',
+  formMethod: 'PATCH',
+  formAction: (invocation_id) => `/invocations/${invocation_id}/kill`,
 
   Content: KillInvocationContent,
 

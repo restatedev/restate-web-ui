@@ -22,7 +22,6 @@ import { Badge } from '@restate/ui/badge';
 import { Revision } from '@restate/features/deployment';
 
 import { CommandEntryType } from '../entries/types';
-import { Spinner } from '@restate/ui/loading';
 
 const NAME_COMMANDS_COMPONENTS: {
   [K in CommandEntryType]: string;
@@ -455,6 +454,7 @@ export const RestartInvocation = withConfirmation({
   ),
   submitText: 'Restart',
   formMethod: 'PATCH',
+  formAction: (invocation_id) => `/invocations/${invocation_id}/restart-as-new`,
 
   Content: RestartInvocationContent,
 
