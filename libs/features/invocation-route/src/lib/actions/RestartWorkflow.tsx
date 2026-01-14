@@ -16,27 +16,35 @@ function RestartWorkflowContent() {
   const [searchParams] = useSearchParams();
   const invocationId = searchParams.get(RESTART_AS_NEW_WORKFLOW_QUERY_PARAM);
 
-  useGetInvocationJournalWithInvocationV2(String(invocationId), {
-    refetchOnMount: false,
-    staleTime: 0,
-    enabled: !!invocationId,
-  });
+  const journalQuery = useGetInvocationJournalWithInvocationV2(
+    String(invocationId),
+    {
+      refetchOnMount: false,
+      staleTime: 0,
+      enabled: !!invocationId,
+    },
+  );
 
   return (
     <>
       <FormFieldInput
-        className="mt-4 min-w-xs flex-auto basis-[calc(50%-var(--spacing)*2)] [&_button>*]:max-w-full"
+        className="mt-4 min-w-xs flex-auto basis-[calc(50%-var(--spacing)*2)] [&_button>*]:max-w-full [&_label]:max-w-full"
         label={
           <>
             New Workflow ID
             <span slot="description">
-              Journal is retained up to and including this action
+              Enter a new workflow ID, different from the original.
             </span>
           </>
         }
-        placeholder={'new workflow id…'}
+        placeholder={'New workflow ID…'}
         name="workflow-id"
         required
+        validate={(value) => {
+          if (value === journalQuery.data?.target_service_key) {
+            return 'Please provide an id different from the original.';
+          }
+        }}
       />
 
       <input type="hidden" name="invocation-id" value={invocationId || ''} />
@@ -120,14 +128,13 @@ export const RestartWorkflow = withConfirmation({
   title: 'Restart as new Workflow',
   icon: IconName.Restart,
   description: (
-    <p>Are you sure you want to restart this workflow as a new one?</p>
+    <p>Are you sure you want to restart this workflow as a new invocation?</p>
   ),
   alertType: 'info',
-  // TODO
   alertContent: (
     <>
-      Creates a new invocation with the journal retained up to the selected
-      action, leaving the original unchanged. The new invocation will have a{' '}
+      This creates a new invocation with the same input as the original, leaving
+      the original unchanged. The new invocation will have a{' '}
       <span className="font-semibold">different ID</span>, and after a
       successful restart you'll be{' '}
       <span className="font-semibold">redirected</span> to it.
@@ -147,7 +154,6 @@ export const RestartWorkflow = withConfirmation({
   ) => {
     const invocationId = _variables.invocationId;
     const newInvocationId = data?.invocationId;
-    console.log(data);
     if (newInvocationId) {
       searchParams.delete(RESTART_AS_NEW_WORKFLOW_QUERY_PARAM);
       navigate({
