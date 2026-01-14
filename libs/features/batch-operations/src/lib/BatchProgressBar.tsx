@@ -8,7 +8,10 @@ import { ErrorBanner } from '@restate/ui/error';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Spinner } from '@restate/ui/loading';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
-import { formatPercentageWithoutFraction } from '@restate/util/intl';
+import {
+  formatNumber,
+  formatPercentageWithoutFraction,
+} from '@restate/util/intl';
 import { tv } from '@restate/util/styles';
 import { PropsWithChildren } from 'react';
 export const MAX_FAILED_INVOCATIONS = 100;
@@ -75,7 +78,7 @@ export function BatchProgressBar({
       <div className="flex translate-y-4 flex-col">
         <span className="inline-flex transform items-baseline gap-1 text-lg font-normal text-gray-600 transition-all">
           <span className="transform text-blue-600 transition-all">
-            {successful}{' '}
+            {formatNumber(successful)}{' '}
             <span className="text-0.5xs text-gray-500">succeeded</span>{' '}
           </span>{' '}
           {!!failed && (
@@ -88,7 +91,9 @@ export function BatchProgressBar({
                     className="py-0 underline decoration-dashed decoration-from-font underline-offset-4 outline-offset-0"
                   >
                     <span className="text-0.5xs text-gray-500">
-                      <span className="text-sm text-orange-600">{failed}</span>{' '}
+                      <span className="text-sm text-orange-600">
+                        {formatNumber(failed)}
+                      </span>{' '}
                       failed
                     </span>
                   </Button>
@@ -138,7 +143,7 @@ export function BatchProgressBar({
       {/* Progress bar */}
       {total !== undefined && total > 0 && (
         <div className="flex flex-col gap-3.5">
-          <div className="relative mt-1 flex h-3 w-full gap-0.5">
+          <div className="relative mt-1 flex h-3 flex-auto gap-0.5">
             {/* Success portion */}
             {successful > 0 && (
               <div
@@ -167,7 +172,7 @@ export function BatchProgressBar({
             {processed > 0 && !isCompleted && (
               <div className="relative">
                 <div className="h-5 w-1.5 -translate-y-1 rounded-sm border border-white bg-blue-400" />
-                <div className="absolute top-4 flex translate-x-[calc(-50%+0.375rem)]">
+                <div className="absolute top-4 flex translate-x-[calc(-50%-0.375rem)]">
                   <div
                     className={markerStyles({
                       moreThanHalf: successful + failed > 0.5 * total,

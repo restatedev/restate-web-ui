@@ -27,7 +27,7 @@ const iconStyles = tv({
 });
 
 const outputStyles = tv({
-  base: 'max-h-28 flex-auto overflow-auto [word-break:break-word]',
+  base: 'max-h-28 flex-auto overflow-auto pr-8 [word-break:break-word]',
   variants: {
     isTransient: {
       true: 'text-orange-700',
@@ -86,7 +86,7 @@ export function RestateServerError({
           {help ? (
             <InlineTooltip
               variant="indicator-button"
-              className="[&_button]:mt-1 [&_button]:mr-1 [&_button]:self-start"
+              className="inline [&_button]:mx-1 [&_button]:translate-y-0.5 [&_button]:self-start [&_p]:inline"
               title={code}
               {...(code && {
                 learnMoreHref: `https://docs.restate.dev/references/errors#${code?.toLowerCase()}`,
