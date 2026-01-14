@@ -495,19 +495,22 @@ export function DeploymentRegistrationState({
       update.mutate({
         body: {
           ...(isLambda
-            ? { arn: endpoint, assume_role_arn: assumeRoleArn }
+            ? {
+                // arn: endpoint,
+                assume_role_arn: assumeRoleArn,
+              }
             : isTunnel
               ? {
-                  uri: tunnel
-                    ? String(tunnel.toHttp(tunnelName, endpoint))
-                    : endpoint,
+                  // uri: tunnel
+                  //   ? String(tunnel.toHttp(tunnelName, endpoint))
+                  //   : endpoint,
                   use_http_11: false,
                 }
               : {
-                  uri: addProtocol(endpoint),
+                  // uri: addProtocol(endpoint),
                   use_http_11: Boolean(useHttp11) || action === FIX_HTTP_ACTION,
                 }),
-          overwrite: Boolean(shouldForce),
+          // overwrite: Boolean(shouldForce),
           dry_run: action === 'dryRun' || action === FIX_HTTP_ACTION,
           additional_headers,
         },

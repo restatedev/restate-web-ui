@@ -143,8 +143,7 @@ export function RegistrationForm() {
 }
 
 export function UpdateForm() {
-  const { isEndpoint, isConfirm, shouldForce, isLambda, updateShouldForce } =
-    useRegisterDeploymentContext();
+  const { isEndpoint, isConfirm, isLambda } = useRegisterDeploymentContext();
 
   return (
     <>
@@ -159,12 +158,15 @@ export function UpdateForm() {
             </>
           }
           description={
-            "Modify the configuration for this deployment. Your registered services and handlers won't change unless you overwrite them below."
+            "Modify the configuration for this deployment. Your registered services and handlers won't change."
           }
         >
-          <EndpointForm />
+          {/* <EndpointForm /> */}
+          <div className="mt-2" />
           <AdditionalHeaders />
-          <div className="mt-2">
+          {isLambda && <AssumeARNRole className="" />}
+
+          {/* <div className="mt-2">
             <div className="relative mb-2 rounded-xl border border-orange-200 bg-orange-50 [&_.error]:absolute [&_.error]:bottom-[-1.5em]">
               <div className="rounded-t-xl bg-white/60 p-3">
                 <FormFieldCheckbox
@@ -196,7 +198,7 @@ export function UpdateForm() {
                 </span>
               </p>
             </div>
-          </div>
+          </div> */}
         </Container>
       )}
       {isConfirm && (
