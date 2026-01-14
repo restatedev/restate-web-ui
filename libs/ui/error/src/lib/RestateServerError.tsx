@@ -7,7 +7,7 @@ import Markdown from 'react-markdown';
 import { tv } from '@restate/util/styles';
 
 const styles = tv({
-  base: 'flex min-h-0 flex-col gap-2 rounded-xl p-3 text-sm',
+  base: 'relative flex min-h-0 flex-col gap-2 rounded-xl p-3 text-sm',
   variants: {
     isTransient: {
       true: 'bg-orange-50',
@@ -37,7 +37,7 @@ const outputStyles = tv({
 });
 
 const codeStyles = tv({
-  base: 'h-full flex-auto border bg-gray-200/50 py-4 text-0.5xs mix-blend-multiply shadow-[inset_0_0.5px_0.5px_0px_rgba(0,0,0,0.08)]',
+  base: 'h-full flex-auto overflow-hidden border bg-gray-200/50 p-0! text-0.5xs mix-blend-multiply shadow-[inset_0_0.5px_0.5px_0px_rgba(0,0,0,0.08)]',
   variants: {
     wrap: { true: 'whitespace-pre', false: '' },
     isTransient: {
@@ -108,24 +108,24 @@ export function RestateServerError({
       </div>
       <div className="flex min-h-0 w-full flex-auto flex-col gap-2">
         <Code className={codeStyles({ wrap, isTransient })}>
-          <Snippet language="bash" className="h-full px-0">
+          <Snippet language="bash" className="relative gap-0 px-0!">
             <details
-              className="group h-full max-h-28 w-full overflow-auto text-[90%] open:pb-6"
+              className="group flex-auto overflow-auto p-2 pl-4 text-[90%] [scrollbar-gutter:stable_both-edges] open:pb-6"
               open={open}
             >
               <summary className="group-open:h-4">
-                <span className="inline-block w-[calc(100%-5ch)] truncate align-middle leading-8 group-open:invisible group-open:text-[0px]">
+                <span className="inline-block truncate align-middle leading-8 group-open:invisible group-open:text-[0px]">
                   {message}
                 </span>
                 <br className="group-open:hidden" />
               </summary>
               <span className="ml-4 inline-block">{message}</span>
             </details>
-            <SnippetCopy copyText={message} />
           </Snippet>
         </Code>
         {children && <div className="shrink-0">{children}</div>}
       </div>
+      <SnippetCopy copyText={message} className="" />
     </div>
   );
 }
