@@ -1816,6 +1816,7 @@ export interface components {
           | 'created_at'
           | 'modified_at'
           | 'scheduled_at'
+          | 'scheduled_start_at'
           | 'running_at'
           | 'next_retry_at'
           | 'target_service_key'

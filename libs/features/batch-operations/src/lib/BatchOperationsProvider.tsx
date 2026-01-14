@@ -13,6 +13,7 @@ import type {
 } from '@restate/data-access/admin-api/spec';
 import { showProgressNotification } from '@restate/ui/notification';
 import {
+  formatNumber,
   formatPercentageWithoutFraction,
   formatPlurals,
 } from '@restate/util/intl';
@@ -170,7 +171,7 @@ export function BatchOperationsProvider({
                     </span>{' '}
                     (
                     <span className="">
-                      {successful}{' '}
+                      {formatNumber(successful)}{' '}
                       <span className="text-xs font-normal opacity-80">
                         succeeded
                       </span>
@@ -179,7 +180,7 @@ export function BatchOperationsProvider({
                       <>
                         <span className="mx-1 inline-block h-4 w-px translate-y-1 bg-sky-800/40" />
                         <span className="">
-                          {failed}{' '}
+                          {formatNumber(failed)}{' '}
                           <span className="text-xs font-normal opacity-80">
                             failed
                           </span>

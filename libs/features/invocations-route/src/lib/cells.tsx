@@ -43,6 +43,7 @@ function withDate({
     | 'created_at'
     | 'modified_at'
     | 'scheduled_at'
+    | 'scheduled_start_at'
     | 'running_at'
     | 'completion_expiration'
     | 'journal_expiration'
@@ -324,6 +325,13 @@ const CELLS: Record<ColumnKey, ComponentType<CellProps>> = {
   scheduled_at: withCell(
     withDate({ field: 'scheduled_at', tooltipTitle: 'Scheduled at' }),
     'scheduled_at',
+  ),
+  scheduled_start_at: withCell(
+    withDate({
+      field: 'scheduled_start_at',
+      tooltipTitle: 'Scheduled to start at',
+    }),
+    'scheduled_start_at',
   ),
   running_at: withCell(
     withDate({ field: 'running_at', tooltipTitle: 'Running since' }),

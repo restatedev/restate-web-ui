@@ -98,12 +98,12 @@ const makeShortcuts: (
         value: [],
       }),
       toClause(schema, 'status', {
-        operation: 'NOT_IN',
-        value: ['succeeded', 'failed', 'cancelled', 'killed', 'scheduled'],
+        operation: 'IN',
+        value: ['pending', 'backing-off', 'suspended', 'paused', 'ready'],
       }),
       toClause(schema, 'modified_at', {
         operation: 'BEFORE',
-        value: new Date(Date.now() - 60 * 60 * 1000),
+        value: new Date(Date.now() - 30 * 60 * 1000),
       }),
     ],
   },
@@ -190,7 +190,14 @@ const makeShortcuts: (
   {
     id: 'retried',
     label: 'Most retried invocations',
-    columns: ['id', 'created_at', 'modified_at', 'target', 'status'],
+    columns: [
+      'id',
+      'created_at',
+      'modified_at',
+      'target',
+      'status',
+      'retry_count',
+    ],
     sort: {
       field: 'retry_count',
       order: 'DESC',
@@ -243,10 +250,17 @@ const makeShortcuts: (
   {
     id: 'scheduled',
     label: 'Scheduled invocations',
-    columns: ['id', 'created_at', 'modified_at', 'target', 'status'],
+    columns: [
+      'id',
+      'created_at',
+      'modified_at',
+      'scheduled_start_at',
+      'target',
+      'status',
+    ],
     sort: {
-      field: 'modified_at',
-      order: 'DESC',
+      field: 'scheduled_start_at',
+      order: 'ASC',
     },
     filters: [
       toClause(schema, 'target_service_name', {

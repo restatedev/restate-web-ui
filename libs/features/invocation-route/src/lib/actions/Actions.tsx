@@ -15,6 +15,7 @@ import { ResumeInvocation } from './ResumeInvocation';
 import { PauseInvocation } from './PauseInvocation';
 import { ActionText } from '@restate/ui/action-text';
 import { withConfirmation } from '@restate/ui/dialog';
+import { RestartWorkflow } from './RestartWorkflow';
 
 interface ActionConfig {
   key: string;
@@ -37,6 +38,12 @@ export const isRestateAsNewSupported = (invocation: Invocation) => {
   const isCompleted = Boolean(invocation.completion_result);
   const isNotWorkflow = invocation.target_service_ty !== 'workflow';
   return Boolean(invocation.journal_size && isNotWorkflow && isCompleted);
+};
+
+export const isRestateAsNewWorkflowSupported = (invocation: Invocation) => {
+  const isCompleted = Boolean(invocation.completion_result);
+  const isWorkflow = invocation.target_service_ty === 'workflow';
+  return Boolean(invocation.journal_size && isWorkflow && isCompleted);
 };
 
 const ACTION_CONFIGS: ActionConfig[] = [
@@ -102,6 +109,19 @@ const ACTION_CONFIGS: ActionConfig[] = [
     destructive: false,
     isPrimary: (invocation) => {
       return isRestateAsNewSupported(invocation);
+    },
+  },
+  {
+    key: 'restart-workflow',
+    condition: (invocation) => {
+      return isRestateAsNewWorkflowSupported(invocation);
+    },
+    component: RestartWorkflow,
+    icon: IconName.Restart,
+    label: 'Restart as new',
+    destructive: false,
+    isPrimary: (invocation) => {
+      return isRestateAsNewWorkflowSupported(invocation);
     },
   },
   {

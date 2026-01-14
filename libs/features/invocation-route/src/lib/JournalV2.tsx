@@ -18,6 +18,7 @@ import { ErrorBoundary } from './ErrorBoundry';
 import { tv } from '@restate/util/styles';
 import { Retention } from './Retention';
 import {
+  RESTARTED_FROM_HEADER,
   useGetInvocationsJournalWithInvocationsV2,
   useListSubscriptions,
 } from '@restate/data-access/admin-api-hooks';
@@ -175,20 +176,27 @@ export function JournalV2({
       : -1,
   );
 
+  const inputEntry = combinedEntries?.find(
+    (combinedEntry) =>
+      combinedEntry.invocationId === invocationId &&
+      combinedEntry.entry?.type === 'Input',
+  )?.entry as Extract<JournalEntryV2, { type?: 'Input'; category?: 'command' }>;
+  const restartedFromHeader = inputEntry?.headers?.find(
+    ({ key }) => key === RESTARTED_FROM_HEADER,
+  );
+
+  const isRestartedFrom = Boolean(
+    journalAndInvocationData.invoked_by === 'restart_as_new' ||
+      restartedFromHeader,
+  );
+  const restartedFromValue =
+    journalAndInvocationData?.restarted_from || restartedFromHeader?.value;
+
   const entriesElements = (
     <>
       <div className="z-10 box-border flex h-12 items-center rounded-tl-2xl rounded-bl-2xl border-b border-transparent bg-gray-100 shadow-xs ring-1 ring-black/5 last:border-none">
         <Input
-          entry={
-            combinedEntries?.find(
-              (combinedEntry) =>
-                combinedEntry.invocationId === invocationId &&
-                combinedEntry.entry?.type === 'Input',
-            )?.entry as Extract<
-              JournalEntryV2,
-              { type?: 'Input'; category?: 'command' }
-            >
-          }
+          entry={inputEntry}
           invocation={data?.[invocationId]}
           className="w-full"
         />
@@ -249,20 +257,19 @@ export function JournalV2({
                     <div className="absolute top-full left-1/2 h-8 w-px -translate-x-1/2 border border-dashed border-zinc-300" />
                   </div>
                   <div className="shrink-0 pl-6 text-xs font-semibold text-gray-400 uppercase">
-                    {journalAndInvocationData.invoked_by === 'restart_as_new'
-                      ? 'Restarted from'
-                      : 'Invoked by'}
+                    {isRestartedFrom ? 'Restarted from' : 'Invoked by'}
                   </div>
-                  {journalAndInvocationData?.invoked_by === 'ingress' ? (
+                  {journalAndInvocationData?.invoked_by === 'ingress' &&
+                  !isRestartedFrom ? (
                     <div className="text-xs font-medium">Ingress</div>
                   ) : journalAndInvocationData?.invoked_by_id ? (
                     <InvocationId
                       id={journalAndInvocationData?.invoked_by_id}
                       className="max-w-[20ch] min-w-0 text-0.5xs font-semibold"
                     />
-                  ) : journalAndInvocationData?.restarted_from ? (
+                  ) : restartedFromValue ? (
                     <InvocationId
-                      id={journalAndInvocationData?.restarted_from}
+                      id={restartedFromValue}
                       className="max-w-[20ch] min-w-0 text-0.5xs font-semibold"
                     />
                   ) : journalAndInvocationData?.invoked_by ===

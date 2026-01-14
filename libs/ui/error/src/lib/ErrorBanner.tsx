@@ -9,7 +9,6 @@ export interface ErrorProps {
   error?: Error | string | RestateError | null;
   className?: string;
   wrap?: boolean;
-  open?: boolean;
   isTransient?: boolean;
 }
 
@@ -22,7 +21,6 @@ function SingleError({
   children,
   className,
   wrap,
-  open,
   isTransient,
 }: PropsWithChildren<{
   error?:
@@ -35,7 +33,6 @@ function SingleError({
       };
   className?: string;
   wrap?: boolean;
-  open?: boolean;
   isTransient?: boolean;
 }>) {
   if (!error) {
@@ -48,7 +45,6 @@ function SingleError({
         error={error}
         className={className}
         wrap={wrap}
-        open={open}
         isTransient={isTransient}
       />
     );
@@ -63,7 +59,7 @@ function SingleError({
             name={IconName.CircleX}
           />
         </div>
-        <output className="max-h-28 flex-auto overflow-auto [word-break:break-word] text-red-700">
+        <output className="max-h-28 flex-auto overflow-auto px-2 [word-break:break-word] text-red-700">
           {typeof error === 'string' ? error : error.message}
         </output>
         {children && <div className="shrink-0">{children}</div>}
@@ -78,7 +74,6 @@ export function ErrorBanner({
   children,
   className,
   wrap,
-  open,
   isTransient,
 }: PropsWithChildren<ErrorProps>) {
   const filteredErrors = errors.filter(Boolean);
@@ -93,7 +88,6 @@ export function ErrorBanner({
         children={children}
         className={className}
         wrap={wrap}
-        open={open}
         isTransient={isTransient}
       />
     );
@@ -106,7 +100,6 @@ export function ErrorBanner({
         children={children}
         className={className}
         wrap={wrap}
-        open={open}
         isTransient={isTransient}
       />
     );

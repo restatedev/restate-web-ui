@@ -108,7 +108,8 @@ export const CancelInvocation = withConfirmation({
   ),
   submitText: 'Confirm',
   submitVariant: 'destructive',
-  formMethod: 'DELETE',
+  formMethod: 'PATCH',
+  formAction: (invocation_id) => `/invocations/${invocation_id}/cancel`,
 
   Content: CancelInvocationContent,
 

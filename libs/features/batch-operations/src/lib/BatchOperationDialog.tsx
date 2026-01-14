@@ -61,7 +61,6 @@ function BatchOperationContent({
             name={IconName.Info}
           />
           <div className="flex flex-col gap-1">
-            {/* <span className="block font-semibold">No invocations found</span> */}
             <span className="block">{config.emptyMessage}</span>
           </div>
         </div>

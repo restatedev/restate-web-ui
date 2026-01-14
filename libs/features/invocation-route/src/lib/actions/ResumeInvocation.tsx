@@ -245,6 +245,7 @@ export const ResumeInvocation = withConfirmation({
   ),
   submitText: 'Resume',
   formMethod: 'PATCH',
+  formAction: (invocation_id) => `/invocations/${invocation_id}/resume`,
 
   Content: ResumeInvocationContent,
 

@@ -8,7 +8,7 @@ import { VirtualObjectSection } from './VirtualObjectSection';
 import { KeysIdsSection } from './KeysIdsSection';
 import { Link } from '@restate/ui/link';
 import { Icon, IconName } from '@restate/ui/icons';
-import { Section, SectionContent } from '@restate/ui/section';
+import { Section } from '@restate/ui/section';
 import { Actions } from './actions';
 import { JournalV2 } from './JournalV2';
 import { useRestateContext } from '@restate/features/restate-context';
@@ -41,16 +41,13 @@ const lastFailureContainer = tv({
   base: 'min-w-0 origin-bottom-left rounded-xl p-0',
 });
 const lastFailureContent = tv({
-  base: 'flex-auto rounded-xl rounded-bl-none border bg-linear-to-b shadow-xl shadow-zinc-800/3 lg:mr-12',
+  base: 'flex-auto rounded-xl rounded-bl-none border bg-linear-to-b shadow-xl shadow-zinc-800/3 lg:mr-12 [&_.error]:max-h-48',
   variants: {
     isFailed: {
       true: 'border-red-400/50 from-red-50 to-red-50',
       false: 'border-orange-400/50 from-orange-50 to-orange-50',
     },
   },
-});
-const lastFailureStyles = tv({
-  base: 'h-full bg-transparent p-0 [&_details]:max-h-48',
 });
 
 function Component() {
@@ -184,14 +181,12 @@ function Component() {
                 id="last-failure-section"
                 className={lastFailureContainer({})}
               >
-                <SectionContent className={lastFailureContent({ isFailed })}>
-                  <ErrorBanner
-                    error={lastError}
-                    wrap={hasStack}
-                    className={lastFailureStyles()}
-                    isTransient={!isFailed}
-                  />
-                </SectionContent>
+                <ErrorBanner
+                  error={lastError}
+                  wrap={hasStack}
+                  className={lastFailureContent({ isFailed })}
+                  isTransient={!isFailed}
+                />
               </Section>
               {Boolean(
                 journalAndInvocationData?.last_failure_related_command_index,
