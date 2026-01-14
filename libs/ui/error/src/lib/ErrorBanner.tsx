@@ -59,7 +59,7 @@ function SingleError({
             name={IconName.CircleX}
           />
         </div>
-        <output className="max-h-28 flex-auto overflow-auto [word-break:break-word] text-red-700">
+        <output className="max-h-28 flex-auto overflow-auto px-2 [word-break:break-word] text-red-700">
           {typeof error === 'string' ? error : error.message}
         </output>
         {children && <div className="shrink-0">{children}</div>}
