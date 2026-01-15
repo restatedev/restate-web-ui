@@ -183,6 +183,8 @@ function EntryContent({
             new RestateError(
               String(entry.error.message),
               entry.error.restateCode,
+              true,
+              entry.error?.stack,
             )
           }
           className="mb-1 w-full rounded-md bg-white/5 [&_*]:text-orange-300! [&_code]:border-transparent [&_code]:bg-zinc-800/30 [&_code]:mix-blend-normal [&_svg]:h-3.5 [&_svg]:w-3.5"
