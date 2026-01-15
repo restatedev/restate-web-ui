@@ -11,6 +11,9 @@ module.exports = [
       'vitest.config.*.timestamp*',
       '**/vite.config.*.timestamp*',
       '**/vitest.config.*.timestamp*',
+      '**/dist/**',
+      '**/node_modules/**',
+      '**/.wrangler/**',
     ],
   },
   {
