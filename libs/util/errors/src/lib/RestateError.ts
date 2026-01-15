@@ -9,9 +9,7 @@ export class RestateError extends Error {
     stacktrace?: string,
   ) {
     super(message);
-    if (stacktrace) {
-      this.stack = stacktrace;
-    }
+    this.stack = stacktrace || '';
   }
   toJSON() {
     return {
