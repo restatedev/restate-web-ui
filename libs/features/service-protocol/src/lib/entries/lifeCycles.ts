@@ -104,6 +104,7 @@ export function lifeCycles(
           end: undefined,
           isPending,
           message: pausedErrorEntry?.message,
+          stack: pausedErrorEntry?.stack,
           code: pausedErrorEntry?.code,
           relatedCommandName: pausedErrorEntry?.relatedCommandName,
           relatedCommandType: pausedErrorEntry?.relatedCommandType,

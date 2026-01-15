@@ -6106,6 +6106,9 @@
           "message": {
             "type": "string"
           },
+          "stack": {
+            "type": "string"
+          },
           "code": {
             "type": "integer"
           },
@@ -6138,6 +6141,9 @@
             "type": "string"
           },
           "message": {
+            "type": "string"
+          },
+          "stack": {
             "type": "string"
           },
           "code": {
@@ -6231,6 +6237,9 @@
             "enum": ["Paused"]
           },
           "message": {
+            "type": "string"
+          },
+          "stack": {
             "type": "string"
           },
           "code": {

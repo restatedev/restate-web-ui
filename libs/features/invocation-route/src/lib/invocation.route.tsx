@@ -71,7 +71,7 @@ function Component() {
     Boolean(lastError) &&
     !['killed', 'cancelled'].includes(String(journalAndInvocationData?.status));
 
-  const hasStack = lastError?.message.includes('\n');
+  const hasStack = lastError?.message.includes('\n') || !!lastError?.stack;
   const isFailed = !!journalAndInvocationData?.completion_failure;
 
   const isVirtualObject =

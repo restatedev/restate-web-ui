@@ -112,7 +112,7 @@ export function getEntryResultV2(
   const hasLastFailure =
     typeof commandIndex === 'number' &&
     invocation?.last_failure_related_command_index === commandIndex;
-  const releventEntries = nextEntries.filter(
+  const relevantEntries = nextEntries.filter(
     (entry) =>
       entry.category === 'event' &&
       commandIndex !== undefined &&
@@ -120,7 +120,7 @@ export function getEntryResultV2(
       entry.relatedCommandIndex === commandIndex,
   );
 
-  const transientFailures = releventEntries.filter(
+  const transientFailures = relevantEntries.filter(
     (entry) => entry.type === 'Event: TransientError',
   ) as Extract<
     JournalEntryV2,
@@ -163,7 +163,7 @@ export function getEntryResultV2(
     value,
     resultType,
     relatedIndexes: [
-      ...releventEntries.map((entry) => entry.index),
+      ...relevantEntries.map((entry) => entry.index),
       ...relatedIndexes,
     ].filter(
       (num: number | undefined): num is number => typeof num === 'number',

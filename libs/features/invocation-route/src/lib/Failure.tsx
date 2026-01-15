@@ -93,18 +93,20 @@ export function Failure({
   className,
   isRetrying,
   title = 'Failure',
+  stacktrace,
 }: {
   restate_code?: string;
   message: string;
+  stacktrace?: string;
   className?: string;
   isRetrying?: boolean;
   title?: string;
 }) {
   const error = useMemo(
-    () => new RestateError(message, restate_code, isRetrying),
-    [message, restate_code, isRetrying],
+    () => new RestateError(message, restate_code, isRetrying, stacktrace),
+    [message, restate_code, isRetrying, stacktrace],
   );
-  const hasStack = error?.message.includes('\n');
+  const hasStack = error?.message.includes('\n') || !!stacktrace;
   const isLargeError = error?.message.length > 200;
   const { trigger, errorIcon, errorBanner } = failureStyle({
     isRetrying,

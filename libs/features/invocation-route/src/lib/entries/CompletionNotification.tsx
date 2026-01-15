@@ -53,6 +53,7 @@ export function CompletionNotification({
               <Failure
                 restate_code={entry.error?.restateCode}
                 message={entry.error?.message ?? 'Failed'}
+                stacktrace={entry.error.stack}
                 className="my-[-2px] border-none bg-transparent py-0 text-2xs shadow-none hover:bg-red-100 pressed:bg-red-200/70 [&_button]:h-5"
               />
             )}

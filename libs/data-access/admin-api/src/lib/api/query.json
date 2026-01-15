@@ -3220,6 +3220,7 @@
           },
           "relatedCommandName": { "type": "string" },
           "message": { "type": "string" },
+          "stack": { "type": "string" },
           "code": { "type": "integer" },
           "afterJournalEntryIndex": { "type": "integer" },
           "relatedRestateErrorCode": { "type": "string" },
@@ -3240,6 +3241,7 @@
           },
           "relatedCommandName": { "type": "string" },
           "message": { "type": "string" },
+          "stack": { "type": "string" },
           "code": { "type": "integer" },
           "relatedRestateErrorCode": { "type": "string" },
           "relatedCommandType": { "type": "string" },
@@ -3323,6 +3325,7 @@
             "enum": ["Paused"]
           },
           "message": { "type": "string" },
+          "stack": { "type": "string" },
           "code": { "type": "integer" },
           "relatedCommandName": { "type": "string" },
           "relatedCommandType": { "type": "string" },
