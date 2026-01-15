@@ -1178,6 +1178,11 @@ export function useRestartWorkflowAsNew(
       const inputEntry = data?.journal?.entries?.find(
         (entry) => entry.type === 'Input',
       ) as Extract<JournalEntryV2, { type?: 'Input'; category?: 'command' }>;
+      if (!inputEntry) {
+        throw new RestateError(
+          'The invocation cannot be restarted because the input is not available. In order to restart an invocation, the journal must be available in order to read the input again. Journal can be retained after completion by enabling journal retention.',
+        );
+      }
       const body = inputEntry.parameters;
       const headers = inputEntry.headers;
 
@@ -1190,7 +1195,8 @@ export function useRestartWorkflowAsNew(
             ...headers
               ?.filter(
                 ({ key }) =>
-                  key !== 'x-forwarded-for' && key !== 'x-forwarded-host',
+                  !['x-forwarded-for', 'x-forwarded-host'].includes(key) &&
+                  !key.startsWith('x-restate-'),
               )
               .reduce(
                 (acc, { key, value }) => ({ ...acc, [key]: value }),
