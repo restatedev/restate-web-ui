@@ -82,6 +82,8 @@ import {
   ArrowUp,
   GitGraph,
   Command,
+  Binoculars,
+  ChartNoAxesCombined,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from '@restate/util/styles';
@@ -210,6 +212,8 @@ export const enum IconName {
   ArrowUp = 'ArrowUp',
   GitGraph = 'GitGraph',
   Command = 'Command',
+  Binoculars = 'Binoculars',
+  ChartNoAxesCombined = 'ChartNoAxesCombined',
 }
 export interface IconsProps {
   name: IconName;
@@ -322,6 +326,8 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.ArrowUp]: ArrowUp,
   [IconName.GitGraph]: GitGraph,
   [IconName.Command]: Command,
+  [IconName.Binoculars]: Binoculars,
+  [IconName.ChartNoAxesCombined]: ChartNoAxesCombined,
 };
 
 const styles = tv({
