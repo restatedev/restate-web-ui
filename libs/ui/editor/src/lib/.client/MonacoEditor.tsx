@@ -50,6 +50,11 @@ export function MonacoEditor({
         hover: {
           enabled: false,
         },
+        unicodeHighlight: {
+          ambiguousCharacters: false,
+          invisibleCharacters: false,
+          nonBasicASCII: false,
+        },
         wordWrap: 'on',
         stickyScroll: { enabled: false },
         scrollBeyondLastLine: false,

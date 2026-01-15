@@ -123,7 +123,7 @@ function ServiceContent({ service }: { service: string }) {
   const { deployments, sortedRevisions = [] } =
     listDeploymentsData?.services.get(String(service)) ?? {};
 
-  const { OnboardingGuide } = useRestateContext();
+  const { OnboardingGuide, baseUrl } = useRestateContext();
   const [maxDeployments, setMaxDeployments] = useState(10);
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedHandler = searchParams.get(HANDLER_QUERY_PARAM);
@@ -354,6 +354,24 @@ function ServiceContent({ service }: { service: string }) {
             )}
           </SectionContent>
         </Section>
+        {data?.ty && ['VirtualObject', 'Workflow'].includes(data?.ty) && (
+          <Section>
+            <SectionTitle>State</SectionTitle>
+            <SectionContent className="relative px-0 py-0" raised={false}>
+              <Link
+                href={`${baseUrl}/state/${service}${searchParams.size ? `?${searchParams.toString()}` : ''}`}
+                variant="secondary-button"
+                className="flex h-7 w-full items-center justify-start rounded-[calc(0.75rem-0.125rem)] py-0 pr-1 pl-2.5 text-0.5xs font-medium text-gray-500"
+              >
+                <span>Inspect state</span>
+                <Icon
+                  name={IconName.ChevronRight}
+                  className="ml-auto h-3.5 w-3.5"
+                />
+              </Link>
+            </SectionContent>
+          </Section>
+        )}
         <Metadata metadata={resolvedData?.metadata} />
         <IngressAccessSection
           isPublic={resolvedData?.public}

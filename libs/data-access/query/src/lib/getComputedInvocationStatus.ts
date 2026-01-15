@@ -14,6 +14,7 @@ export function getComputedInvocationStatus(invocation: RawInvocation): {
       [
         '[409] canceled',
         '[409] cancelled',
+        '[409] error 409',
         '[409 aborted] canceled',
         '[409 aborted] cancelled',
       ].includes(invocation.completion_failure?.toLowerCase()),

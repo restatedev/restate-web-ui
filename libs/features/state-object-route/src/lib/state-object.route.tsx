@@ -497,7 +497,7 @@ function Component() {
 
                                 <PopoverContent>
                                   <DropdownSection
-                                    className="mb-1 max-w-[min(90vw,600px)] overflow-auto px-4"
+                                    className="mb-1 max-w-[min(90vw,50rem)] overflow-auto px-4"
                                     title={
                                       <div className="flex items-center text-0.5xs">
                                         {id}
