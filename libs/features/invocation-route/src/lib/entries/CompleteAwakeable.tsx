@@ -60,6 +60,7 @@ export function CompleteAwakeable({
                   restate_code={entry.error.restateCode}
                   isRetrying={entry.isRetrying}
                   className="text-2xs"
+                  stacktrace={entry.error.stack}
                 />
               )}
             </div>

@@ -62,6 +62,7 @@ export function CompletePromise({
                   message={entry.error.message!}
                   restate_code={entry.error.restateCode}
                   isRetrying={entry.isRetrying}
+                  stacktrace={entry.error.stack}
                   className="text-2xs"
                 />
               )}

@@ -68,7 +68,7 @@ export function RestateServerError({
   wrap?: boolean;
   isTransient?: boolean;
 }>) {
-  const { restate_code: code, message } = error;
+  const { restate_code: code, message, stack } = error;
   const { summary, help } = code
     ? (ERROR_CODES[code] ?? DEFAULT_ERROR)
     : DEFAULT_ERROR;
@@ -107,8 +107,9 @@ export function RestateServerError({
       <div className="flex min-h-0 w-full flex-auto flex-col gap-2">
         <Code className={codeStyles({ wrap, isTransient })}>
           <Snippet language="bash" className="relative gap-0 px-0!">
-            <div className="group error max-h-28 flex-auto overflow-auto py-4 pr-2 pl-2 text-[90%] [scrollbar-gutter:stable_both-edges] open:pb-6">
+            <div className="group error flex max-h-28 flex-auto flex-col gap-1 overflow-auto py-4 pr-2 pl-5 text-[90%] [scrollbar-gutter:stable] open:pb-6">
               <span className="inline-block">{message}</span>
+              {stack && <div className="inline-block">{stack}</div>}
             </div>
           </Snippet>
         </Code>

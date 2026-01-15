@@ -72,6 +72,7 @@ export function TransientError({
                 entry?.error?.code ||
                 '',
             )}
+            stacktrace={entry.stack || entry?.error?.stack}
             message={Array.from(new Set([entry.message, entry?.error?.message]))
               .filter(Boolean)
               .join('\n\n')}
@@ -122,6 +123,7 @@ export function NoCommandTransientError({
                 entry?.error?.code ||
                 '',
             )}
+            stacktrace={entry?.stack || entry?.error?.stack}
             message={Array.from(new Set([entry.message, entry?.error?.message]))
               .filter(Boolean)
               .join('\n\n')}

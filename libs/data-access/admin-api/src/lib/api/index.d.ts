@@ -2199,6 +2199,7 @@ export interface components {
       type?: 'Event: TransientError';
       relatedCommandName?: string;
       message?: string;
+      stack?: string;
       code?: number;
       afterJournalEntryIndex?: number;
       relatedRestateErrorCode?: string;
@@ -2212,6 +2213,7 @@ export interface components {
       type?: 'Event: Paused';
       relatedCommandName?: string;
       message?: string;
+      stack?: string;
       code?: number;
       relatedRestateErrorCode?: string;
       relatedCommandType?: string;
@@ -2253,6 +2255,7 @@ export interface components {
       /** @enum {string} */
       type?: 'Paused';
       message?: string;
+      stack?: string;
       code?: number;
       relatedCommandName?: string;
       relatedCommandType?: string;

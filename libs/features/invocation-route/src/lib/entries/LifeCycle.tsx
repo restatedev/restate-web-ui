@@ -38,6 +38,7 @@ export function LifeCycle({
                   entry?.error?.code ||
                   '',
               )}
+              stacktrace={entry?.stack || entry?.error?.stack}
               message={[entry.message, entry?.error?.message]
                 .filter(Boolean)
                 .join('\n\n')}

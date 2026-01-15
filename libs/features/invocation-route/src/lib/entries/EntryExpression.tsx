@@ -282,6 +282,7 @@ export function EntryExpression({
               <Failure
                 message={entry.error.message!}
                 restate_code={entry.error.restateCode}
+                stacktrace={entry.error.stack}
                 isRetrying={entry.isRetrying || entry.error.isTransient}
                 className="ml-1 w-full min-w-6 grow-1 basis-20 text-2xs"
               />
