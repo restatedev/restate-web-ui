@@ -82,3 +82,18 @@ export function base64ToUint8Array(base64?: string) {
   }
   return array;
 }
+
+export function base64ToUtf8OrOriginal(base64?: string) {
+  if (!base64) {
+    return base64;
+  }
+  const binary = atob(base64);
+  const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+
+  const decoder = new TextDecoder('utf-8', { fatal: true });
+  try {
+    return decoder.decode(bytes);
+  } catch {
+    return base64;
+  }
+}

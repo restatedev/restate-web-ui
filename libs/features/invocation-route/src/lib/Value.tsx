@@ -8,7 +8,7 @@ import { Copy } from '@restate/ui/copy';
 import { InPortal } from '@restate/ui/portal';
 
 const styles = tv({
-  base: 'max-w-full',
+  base: 'max-w-full [&_.monaco-editor]:w-[100vw]',
 });
 
 export function Value({

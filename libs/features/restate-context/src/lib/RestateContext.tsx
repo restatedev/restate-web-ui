@@ -12,7 +12,7 @@ import {
   useContext,
 } from 'react';
 import semverGt from 'semver/functions/gte';
-import { base64ToUtf8, utf8ToBase64 } from '@restate/util/binary';
+import { base64ToUtf8OrOriginal, utf8ToBase64 } from '@restate/util/binary';
 import { useQueryClient } from '@tanstack/react-query';
 
 export type Status = 'HEALTHY' | 'DEGRADED' | 'PENDING' | (string & {});
@@ -64,7 +64,7 @@ const InternalRestateContext = createContext<RestateContext>({
   status: 'PENDING',
   ingressUrl: '',
   baseUrl: '',
-  decoder: base64ToUtf8,
+  decoder: base64ToUtf8OrOriginal,
   encoder: utf8ToBase64,
 });
 
@@ -175,7 +175,7 @@ export function RestateContextProvider({
   ingressUrl,
   isPending,
   baseUrl,
-  decoder = base64ToUtf8,
+  decoder = base64ToUtf8OrOriginal,
   encoder = utf8ToBase64,
   EncodingWaterMark,
   tunnel,
