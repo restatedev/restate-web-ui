@@ -9,6 +9,7 @@ import {
 import { IconName, Icon } from '@restate/ui/icons';
 import { useRegisterDeploymentContext } from './Context';
 import { tv } from '@restate/util/styles';
+import { useRestateContext } from '@restate/features/restate-context';
 
 const deleteStyles = tv({
   base: 'p1',
@@ -22,6 +23,11 @@ const deleteStyles = tv({
 
 export function Metadata() {
   const { metadata: list } = useRegisterDeploymentContext();
+  const { isVersionGte } = useRestateContext();
+  const isMetadataSupported = isVersionGte?.('1.6.0');
+  if (!isMetadataSupported) {
+    return null;
+  }
 
   return (
     <FormFieldGroup className="flex h-auto flex-col items-start gap-1">
