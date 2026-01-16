@@ -4,6 +4,7 @@ import {
   use,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type PropsWithChildren,
@@ -118,6 +119,27 @@ const ComplementaryWithSearchContext = createContext<{
 });
 const noOp = (prev: URLSearchParams) => prev;
 
+function getIsTop(
+  searchParams: URLSearchParams,
+  paramName: string,
+  paramValue: string,
+) {
+  const firstQuery = searchParams
+    .toString()
+    .split('&')
+    .filter((query) => {
+      return !document.querySelector(
+        `[data-${query.toLowerCase().split('=').at(0)}-dialog=true]`,
+      );
+    })
+    .at(0);
+
+  const isOnTop =
+    firstQuery?.startsWith(`${paramName}=${paramValue}`) ||
+    firstQuery?.startsWith(`${paramName}=${encodeURIComponent(paramValue)}`);
+  return isOnTop;
+}
+
 function ComplementaryWithSearchParamValue({
   children,
   paramName,
@@ -129,6 +151,9 @@ function ComplementaryWithSearchParamValue({
   onCloseQueryParam?: (prev: URLSearchParams) => URLSearchParams;
 }>) {
   const [searchParams, setSearchParams] = useSearchParams();
+  const [isOnTop, setIsTop] = useState(() =>
+    getIsTop(searchParams, paramName, paramValue),
+  );
   const renderedChildren = useMemo(() => {
     if (!paramValue) {
       return null;
@@ -152,11 +177,33 @@ function ComplementaryWithSearchParamValue({
       { preventScrollReset: true },
     );
   }, [paramName, paramValue, setSearchParams, onCloseQueryParam]);
-  const isOnTop =
-    searchParams.toString().startsWith(`${paramName}=${paramValue}`) ||
-    searchParams
-      .toString()
-      .startsWith(`${paramName}=${encodeURIComponent(paramValue)}`);
+
+  useEffect(() => {
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.type === 'attributes') {
+          console.log(
+            mutation,
+            getIsTop(searchParams, paramName, paramValue),
+            searchParams.toString(),
+            window.location.search,
+            (mutation.target as HTMLElement).dataset,
+          );
+          setIsTop(getIsTop(searchParams, paramName, paramValue));
+        }
+      }
+    });
+
+    observer.observe(document.body, {
+      subtree: true,
+      attributeFilter: ['data-query-dialog'],
+    });
+    setIsTop(getIsTop(searchParams, paramName, paramValue));
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [paramName, paramValue, searchParams]);
 
   return (
     <ComplementaryWithSearchContext.Provider

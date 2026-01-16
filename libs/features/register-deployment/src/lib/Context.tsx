@@ -611,6 +611,7 @@ export function useRegisterDeploymentContext() {
   const isEndpoint = stage === 'endpoint';
   const isAdvanced = stage === 'advanced';
   const isConfirm = stage === 'confirm';
+  const { isVersionGte } = useRestateContext();
 
   const isOnboarding = useOnboarding();
 
@@ -632,7 +633,9 @@ export function useRegisterDeploymentContext() {
   const isHttp1Error =
     error instanceof RestateError && error.restateCode === 'META0014';
   const isBreakingChangeError =
-    error instanceof RestateError && error.restateCode === 'META0006';
+    error instanceof RestateError &&
+    error.restateCode === 'META0006' &&
+    isVersionGte?.('1.6.0');
 
   return {
     isAdvanced,

@@ -47,7 +47,7 @@ export function Deployment({
   showEndpoint?: boolean;
   showGithubMetadata?: boolean;
 }) {
-  const { tunnel } = useRestateContext();
+  const { tunnel, isVersionGte } = useRestateContext();
   const { data: { deployments } = {} } = useListDeployments({
     refetchOnMount: false,
   });
@@ -62,7 +62,9 @@ export function Deployment({
 
   const isDeprecated = Boolean(
     deployment &&
-      deployment.max_protocol_version < MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION,
+      deployment.max_protocol_version <
+        MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION &&
+      isVersionGte?.('1.6.0'),
   );
 
   if (!deployment) {

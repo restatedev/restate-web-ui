@@ -289,7 +289,10 @@ export function FilterShortcuts({
   setSortParams: Dispatch<SetStateAction<SortInvocations>>;
   setPageIndex: Dispatch<SetStateAction<number>>;
   schema: QueryClauseSchema<QueryClauseType>[];
-  setSelectedColumns: (keys: DropdownMenuSelection) => void;
+  setSelectedColumns: (
+    keys: DropdownMenuSelection,
+    updateUrl?: boolean,
+  ) => void;
 }) {
   const [shortcuts] = useState(() => makeShortcuts(schema));
   const [first, second, third, ...rest] = shortcuts;
@@ -297,7 +300,7 @@ export function FilterShortcuts({
 
   const setFilter = (item: FilterShortcut) => {
     setPageIndex(0);
-    setSelectedColumns(new Set(item.columns));
+    setSelectedColumns(new Set(item.columns), false);
     setSortParams(item.sort);
     query.items.forEach((item) => {
       query.remove(item.id);
@@ -358,7 +361,9 @@ export function FilterShortcuts({
               }}
             >
               {rest.map((item) => (
-                <DropdownItem value={item.id}>{item.label}</DropdownItem>
+                <DropdownItem value={item.id} key={item.id}>
+                  {item.label}
+                </DropdownItem>
               ))}
             </DropdownMenu>
           </DropdownSection>

@@ -150,7 +150,8 @@ function RestartInvocationContent() {
       return isProtocolMatch;
     });
 
-  const { tunnel } = useRestateContext();
+  const { tunnel, isVersionGte } = useRestateContext();
+  const isRestartedFromSupported = isVersionGte?.('1.6.0');
   const journalQuery = useGetInvocationJournalWithInvocationV2(
     String(invocationId),
     {
@@ -167,185 +168,223 @@ function RestartInvocationContent() {
 
   return (
     <>
-      <FormFieldSelect
-        className="mt-4 min-w-xs flex-auto basis-[calc(50%-var(--spacing)*2)] [&_button>*]:max-w-full"
-        label={
-          <>
-            Restart from
-            <span slot="description">
-              Journal is retained up to and including this action
-            </span>
-          </>
-        }
-        placeholder={
-          journalQuery.isPending
-            ? 'Loading…'
-            : 'Select which journal entry to restart from'
-        }
-        disabled={journalQuery.isPending}
-        defaultValue={startFrom}
-        name="from"
-        required
-        dropdownFooter={
-          firstPendingCommand !== -1 ? (
-            <div className="mt-1 mr-2 mb-2 ml-4">
-              Remaining actions unavailable. Restart requires all prior actions
-              to be completed.
-            </div>
-          ) : undefined
-        }
-      >
-        {journalQuery.data?.journal?.entries
-          ?.filter(
-            (entry, index) =>
-              (firstPendingCommand === -1 || index < firstPendingCommand) &&
-              entry.category === 'command' &&
-              entry.type !== 'Output',
-          )
-          ?.map((entry, index) => {
-            if (entry.type === 'Input') {
-              return (
-                <ListBoxItem className="w-full max-w-xl" value={'0'}>
-                  <div>Beginning</div>
-                  <div className="text-xs opacity-70">
-                    (retains only the original input)
-                  </div>
-                </ListBoxItem>
-              );
+      {isRestartedFromSupported && (
+        <>
+          <FormFieldSelect
+            className="mt-4 min-w-xs flex-auto basis-[calc(50%-var(--spacing)*2)] [&_button>*]:max-w-full"
+            label={
+              <>
+                Restart from
+                <span slot="description">
+                  Journal is retained up to and including this action
+                </span>
+              </>
             }
-            return (
-              <ListBoxItem
-                className="w-full max-w-xl"
-                value={String(entry.index)}
-                key={index}
-              >
-                <div className="flex items-center gap-1.5 font-mono text-0.5xs">
-                  <div className="opacity-70">{entry.commandIndex}</div>
-                  <div className="font-medium italic">
-                    {NAME_COMMANDS_COMPONENTS[entry.type as CommandEntryType]}
-                    <span className="inline-flex items-baseline">
-                      <span className="opacity-70">(</span>
-                      <span className="max-w-[30ch] truncate px-0.5 font-sans text-xs opacity-70">
-                        <EntryParams
-                          entry={
-                            entry as Extract<
-                              JournalEntryV2,
-                              { category?: 'command' }
-                            >
-                          }
-                        />
-                      </span>
-                      <span className="opacity-70">)</span>
-                      <EntryChain
-                        entry={
-                          entry as Extract<
-                            JournalEntryV2,
-                            { category?: 'command' }
-                          >
-                        }
-                      />
-                    </span>
-                  </div>
+            placeholder={
+              journalQuery.isPending
+                ? 'Loading…'
+                : 'Select which journal entry to restart from'
+            }
+            disabled={journalQuery.isPending}
+            defaultValue={startFrom}
+            name="from"
+            required
+            dropdownFooter={
+              firstPendingCommand !== -1 ? (
+                <div className="mt-1 mr-2 mb-2 ml-4">
+                  Remaining actions unavailable. Restart requires all prior
+                  actions to be completed.
                 </div>
-              </ListBoxItem>
-            );
-          })}
-      </FormFieldSelect>
-      <FormFieldSelect
-        className="mt-4 min-w-xs flex-auto basis-[calc(50%-var(--spacing)*2)] [&_button>*]:max-w-full"
-        label=<>Deployment</>
-        placeholder={
-          deployments.length > 0
-            ? 'Select a deployment'
-            : 'No deployments available'
-        }
-        defaultValue={'Latest'}
-        name="deployment"
-        required
-      >
-        {invocation &&
-          deployments.map(({ revision, deployment }) => {
-            const isCurrent =
-              deployment?.id === invocation?.pinned_deployment_id;
-            const isLatest = service?.sortedRevisions.at(0) === revision;
-
-            if (!invocation.pinned_deployment_id && !isLatest) {
-              return null;
+              ) : undefined
             }
-
-            const isTunnel = Boolean(
-              tunnel?.isEnabled &&
-                deployment &&
-                isHttpDeployment(deployment) &&
-                tunnel.fromHttp(deployment.uri),
-            );
-            const endpoint = getEndpoint(deployment);
-            const tunnelEndpoint = isTunnel
-              ? tunnel?.fromHttp(endpoint)
-              : undefined;
-
-            const deploymentEndpoint = isTunnel
-              ? tunnelEndpoint?.remoteUrl
-              : endpoint;
-
-            return (
-              <ListBoxItem
-                className="w-full max-w-xl"
-                value={
-                  isLatest ? 'Latest' : isCurrent ? 'Keep' : deployment!.id
-                }
-                key={deployment?.id}
-              >
-                <div className="flex w-full min-w-0 flex-auto items-center gap-2 truncate">
-                  <div className="h-6 w-6 shrink-0 rounded-md border bg-white shadow-xs">
-                    <Icon
-                      name={
-                        isTunnel
-                          ? IconName.Tunnel
-                          : isHttpDeployment(deployment!)
-                            ? IconName.Http
-                            : IconName.Lambda
-                      }
-                      className="h-full w-full p-1 text-zinc-400"
-                    />
-                  </div>
-                  {isTunnel && (
-                    <Badge
-                      size="xs"
-                      className="max-w-fit min-w-0 grow basis-[12ch] rounded-sm py-0.5 font-mono text-2xs leading-3 font-medium"
-                    >
-                      <Icon name={IconName.AtSign} className="mr-0.5 h-3 w-3" />
-
-                      <div className="w-full truncate">
-                        {tunnelEndpoint?.name}
+          >
+            {journalQuery.data?.journal?.entries
+              ?.filter(
+                (entry, index) =>
+                  (firstPendingCommand === -1 || index < firstPendingCommand) &&
+                  entry.category === 'command' &&
+                  entry.type !== 'Output',
+              )
+              ?.map((entry, index) => {
+                if (entry.type === 'Input') {
+                  return (
+                    <ListBoxItem className="w-full max-w-xl" value={'0'}>
+                      <div>Beginning</div>
+                      <div className="text-xs opacity-70">
+                        (retains only the original input)
                       </div>
-                    </Badge>
-                  )}
-                  <div className="max-w-fit min-w-0 grow basis-full truncate">
-                    {deploymentEndpoint}
-                  </div>
-                  {isCurrent && (
-                    <Badge size="xs" variant="info">
-                      CURRENT
-                    </Badge>
-                  )}
-                  {isLatest && !isCurrent && (
-                    <Badge size="xs" variant="info">
-                      LATEST
-                    </Badge>
-                  )}
-                  <Revision
-                    revision={revision}
-                    className="z-2 ml-auto bg-white"
-                  />
-                </div>
-              </ListBoxItem>
-            );
-          })}
-      </FormFieldSelect>
+                    </ListBoxItem>
+                  );
+                }
+                return (
+                  <ListBoxItem
+                    className="w-full max-w-xl"
+                    value={String(entry.index)}
+                    key={index}
+                  >
+                    <div className="flex items-center gap-1.5 font-mono text-0.5xs">
+                      <div className="opacity-70">{entry.commandIndex}</div>
+                      <div className="font-medium italic">
+                        {
+                          NAME_COMMANDS_COMPONENTS[
+                            entry.type as CommandEntryType
+                          ]
+                        }
+                        <span className="inline-flex items-baseline">
+                          <span className="opacity-70">(</span>
+                          <span className="max-w-[30ch] truncate px-0.5 font-sans text-xs opacity-70">
+                            <EntryParams
+                              entry={
+                                entry as Extract<
+                                  JournalEntryV2,
+                                  { category?: 'command' }
+                                >
+                              }
+                            />
+                          </span>
+                          <span className="opacity-70">)</span>
+                          <EntryChain
+                            entry={
+                              entry as Extract<
+                                JournalEntryV2,
+                                { category?: 'command' }
+                              >
+                            }
+                          />
+                        </span>
+                      </div>
+                    </div>
+                  </ListBoxItem>
+                );
+              })}
+          </FormFieldSelect>
+          <FormFieldSelect
+            className="mt-4 min-w-xs flex-auto basis-[calc(50%-var(--spacing)*2)] [&_button>*]:max-w-full"
+            label=<>Deployment</>
+            placeholder={
+              deployments.length > 0
+                ? 'Select a deployment'
+                : 'No deployments available'
+            }
+            defaultValue={'Latest'}
+            name="deployment"
+            required
+          >
+            {invocation &&
+              deployments.map(({ revision, deployment }) => {
+                const isCurrent =
+                  deployment?.id === invocation?.pinned_deployment_id;
+                const isLatest = service?.sortedRevisions.at(0) === revision;
+
+                if (!invocation.pinned_deployment_id && !isLatest) {
+                  return null;
+                }
+
+                const isTunnel = Boolean(
+                  tunnel?.isEnabled &&
+                    deployment &&
+                    isHttpDeployment(deployment) &&
+                    tunnel.fromHttp(deployment.uri),
+                );
+                const endpoint = getEndpoint(deployment);
+                const tunnelEndpoint = isTunnel
+                  ? tunnel?.fromHttp(endpoint)
+                  : undefined;
+
+                const deploymentEndpoint = isTunnel
+                  ? tunnelEndpoint?.remoteUrl
+                  : endpoint;
+
+                return (
+                  <ListBoxItem
+                    className="w-full max-w-xl"
+                    value={
+                      isLatest ? 'Latest' : isCurrent ? 'Keep' : deployment!.id
+                    }
+                    key={deployment?.id}
+                  >
+                    <div className="flex w-full min-w-0 flex-auto items-center gap-2 truncate">
+                      <div className="h-6 w-6 shrink-0 rounded-md border bg-white shadow-xs">
+                        <Icon
+                          name={
+                            isTunnel
+                              ? IconName.Tunnel
+                              : isHttpDeployment(deployment!)
+                                ? IconName.Http
+                                : IconName.Lambda
+                          }
+                          className="h-full w-full p-1 text-zinc-400"
+                        />
+                      </div>
+                      {isTunnel && (
+                        <Badge
+                          size="xs"
+                          className="max-w-fit min-w-0 grow basis-[12ch] rounded-sm py-0.5 font-mono text-2xs leading-3 font-medium"
+                        >
+                          <Icon
+                            name={IconName.AtSign}
+                            className="mr-0.5 h-3 w-3"
+                          />
+
+                          <div className="w-full truncate">
+                            {tunnelEndpoint?.name}
+                          </div>
+                        </Badge>
+                      )}
+                      <div className="max-w-fit min-w-0 grow basis-full truncate">
+                        {deploymentEndpoint}
+                      </div>
+                      {isCurrent && (
+                        <Badge size="xs" variant="info">
+                          CURRENT
+                        </Badge>
+                      )}
+                      {isLatest && !isCurrent && (
+                        <Badge size="xs" variant="info">
+                          LATEST
+                        </Badge>
+                      )}
+                      <Revision
+                        revision={revision}
+                        className="z-2 ml-auto bg-white"
+                      />
+                    </div>
+                  </ListBoxItem>
+                );
+              })}
+          </FormFieldSelect>
+        </>
+      )}
       <input type="hidden" name="invocation-id" value={invocationId || ''} />
     </>
   );
+}
+
+function RestartAlert() {
+  const { isVersionGte } = useRestateContext();
+  const isRestartedFromSupported = isVersionGte?.('1.6.0');
+
+  if (isRestartedFromSupported) {
+    return (
+      <>
+        This creates a new invocation with the journal retained up to the
+        selected action, leaving the original unchanged. The new invocation will
+        have a <span className="font-semibold">different ID</span>, and after a
+        successful restart you'll be{' '}
+        <span className="font-semibold">redirected</span> to it.
+      </>
+    );
+  } else {
+    return (
+      <>
+        This creates a new invocation with the same input as the original,
+        leaving the original unchanged. The new invocation will have a{' '}
+        <span className="font-semibold">different ID</span>, and after a
+        successful restart you'll be{' '}
+        <span className="font-semibold">redirected</span> to it.
+      </>
+    );
+  }
 }
 
 export const RestartInvocation = withConfirmation({
@@ -443,15 +482,7 @@ export const RestartInvocation = withConfirmation({
     <p>Are you sure you want to restart this invocation as a new one?</p>
   ),
   alertType: 'info',
-  alertContent: (
-    <>
-      Creates a new invocation with the journal retained up to the selected
-      action, leaving the original unchanged. The new invocation will have a{' '}
-      <span className="font-semibold">different ID</span>, and after a
-      successful restart you'll be{' '}
-      <span className="font-semibold">redirected</span> to it.
-    </>
-  ),
+  alertContent: <RestartAlert />,
   submitText: 'Restart',
   formMethod: 'PATCH',
   formAction: (invocation_id) => `/invocations/${invocation_id}/restart-as-new`,

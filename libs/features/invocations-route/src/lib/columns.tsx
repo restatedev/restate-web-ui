@@ -1,5 +1,5 @@
 import { DropdownMenuSelection } from '@restate/ui/dropdown';
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useState } from 'react';
 import type { Key } from 'react-aria';
 import { useSearchParams } from 'react-router';
 
@@ -101,9 +101,9 @@ export function isColumnValid(searchParams: URLSearchParams) {
 
 export function useColumns() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const selectedColumns = searchParams.getAll(
-    COLUMN_QUERY_PREFIX,
-  ) as ColumnKey[];
+  const [selectedColumns, _setSelectedColumns] = useState<ColumnKey[]>(
+    () => searchParams.getAll(COLUMN_QUERY_PREFIX) as ColumnKey[],
+  );
 
   const sortedColumnsList = useMemo(() => {
     return [...Array.from(selectedColumns).sort(sortColumns), 'actions'].map(
@@ -116,15 +116,18 @@ export function useColumns() {
   }, [selectedColumns]);
 
   const setSelectedColumns = useCallback(
-    (keys: DropdownMenuSelection) => {
+    (keys: DropdownMenuSelection, updateUrl = true) => {
       if (keys instanceof Set) {
-        setSearchParams((old) => {
-          old.delete(COLUMN_QUERY_PREFIX);
-          keys.forEach((col) => {
-            old.append(COLUMN_QUERY_PREFIX, String(col));
+        _setSelectedColumns(Array.from(keys) as ColumnKey[]);
+        if (updateUrl) {
+          setSearchParams((old) => {
+            old.delete(COLUMN_QUERY_PREFIX);
+            keys.forEach((col) => {
+              old.append(COLUMN_QUERY_PREFIX, String(col));
+            });
+            return old;
           });
-          return old;
-        });
+        }
       }
     },
     [setSearchParams],

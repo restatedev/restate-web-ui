@@ -17,7 +17,7 @@ export function LoadingRows({
           .map((_, i) => (
             <Cell key={i} className="p-0">
               <div
-                className="flex min-h-10 p-2"
+                className="flex min-h-[42px] p-2"
                 style={{
                   paddingRight: `${hashCode((index + 1) * 11, (i + 1) * 13)}%`,
                 }}

@@ -373,12 +373,12 @@ function Component() {
             }}
           </TableHeader>
           <TableBody
-            numOfRows={pageIndex === 0 ? undefined : STATE_PAGE_SIZE}
+            numOfRows={currentPageItems.length || 5}
             items={flattenedData}
             dependencies={[selectedColumnsArray, pageIndex]}
             error={error || listObjects.error}
             isLoading={
-              isPending ||
+              isFetching ||
               isValidating ||
               (listObjects.isPending && currentPageItems.length !== 0)
             }
