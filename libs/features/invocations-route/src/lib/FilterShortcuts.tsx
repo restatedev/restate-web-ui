@@ -361,7 +361,9 @@ export function FilterShortcuts({
               }}
             >
               {rest.map((item) => (
-                <DropdownItem value={item.id}>{item.label}</DropdownItem>
+                <DropdownItem value={item.id} key={item.id}>
+                  {item.label}
+                </DropdownItem>
               ))}
             </DropdownMenu>
           </DropdownSection>
