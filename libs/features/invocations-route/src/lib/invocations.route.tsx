@@ -98,7 +98,7 @@ function Component() {
     setPageIndex,
     sortParams,
     setSortParams,
-  } = useInvocationsQueryFilters();
+  } = useInvocationsQueryFilters(selectedColumns);
 
   const {
     dataUpdatedAt,
@@ -389,8 +389,9 @@ function Component() {
             items={currentPageItems}
             dependencies={[selectedColumns, pageIndex]}
             error={error}
-            isLoading={isPending}
+            isLoading={isFetching}
             numOfColumns={sortedColumnsList.length}
+            numOfRows={currentPageItems.length || 5}
             emptyPlaceholder={
               <div className="flex flex-col items-center gap-4 py-14">
                 <div className="mr-1.5 h-12 w-12 shrink-0 rounded-xl bg-gray-200/50 p-1">
