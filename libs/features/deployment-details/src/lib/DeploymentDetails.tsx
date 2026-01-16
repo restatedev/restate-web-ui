@@ -55,6 +55,8 @@ function DeploymentDetailsContents() {
   const { error } = useDeploymentDetails(String(deployment), {
     ...(!deployment && { enabled: false }),
   });
+  const { isVersionGte } = useRestateContext();
+  const isDeploymentUpdateSupported = isVersionGte?.('1.6.0');
 
   if (!deployment) {
     return null;
@@ -71,35 +73,45 @@ function DeploymentDetailsContents() {
                 Close
               </Button>
             </ComplementaryClose>
-            <SplitButton
-              className="text-md w-1/2 flex-auto grow-0"
-              variant="primary"
-              splitClassName="rounded-r-xl w-8"
-              mini={false}
-              menus={
-                <>
-                  <DropdownItem
-                    href={`?${UPDATE_DEPLOYMENT_QUERY}=${deployment}`}
-                  >
-                    Update
-                  </DropdownItem>
-                  <DropdownItem
-                    href={`?${DELETE_DEPLOYMENT_QUERY_PARAM}=${deployment}`}
-                    destructive
-                  >
-                    Delete
-                  </DropdownItem>
-                </>
-              }
-            >
-              <Link
-                href={`?${UPDATE_DEPLOYMENT_QUERY}=${deployment}`}
-                variant="button"
-                className="flex-auto rounded-r-none"
+            {isDeploymentUpdateSupported ? (
+              <SplitButton
+                className="text-md w-1/2 flex-auto grow-0"
+                variant="primary"
+                splitClassName="rounded-r-xl w-8"
+                mini={false}
+                menus={
+                  <>
+                    <DropdownItem
+                      href={`?${UPDATE_DEPLOYMENT_QUERY}=${deployment}`}
+                    >
+                      Update
+                    </DropdownItem>
+                    <DropdownItem
+                      href={`?${DELETE_DEPLOYMENT_QUERY_PARAM}=${deployment}`}
+                      destructive
+                    >
+                      Delete
+                    </DropdownItem>
+                  </>
+                }
               >
-                <div className="pl-3">Update</div>
+                <Link
+                  href={`?${UPDATE_DEPLOYMENT_QUERY}=${deployment}`}
+                  variant="button"
+                  className="flex-auto rounded-r-none"
+                >
+                  <div className="pl-3">Update</div>
+                </Link>
+              </SplitButton>
+            ) : (
+              <Link
+                href={`?${DELETE_DEPLOYMENT_QUERY_PARAM}=${deployment}`}
+                variant="destructive-button"
+                className="flex-auto"
+              >
+                Delete
               </Link>
-            </SplitButton>
+            )}
           </div>
         </div>
       </ComplementaryFooter>
