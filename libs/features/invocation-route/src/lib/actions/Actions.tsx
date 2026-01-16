@@ -192,6 +192,7 @@ export function Actions({
     const item = (
       <config.component.Trigger
         formData={config.component.getFormData(invocation.id)}
+        key={config.key}
       >
         <DropdownItem key={config.key} destructive={config.destructive}>
           <Icon
