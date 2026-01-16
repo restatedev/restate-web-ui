@@ -71,7 +71,12 @@ export function QueryDialog({
         }
       }}
     >
-      <Button className="hidden" />
+      <Button
+        className="hidden"
+        {...{
+          [`data-${query.toLowerCase()}-dialog`]: String(isOpen && !isClosing),
+        }}
+      />
       {children}
     </DialogTrigger>
   );
