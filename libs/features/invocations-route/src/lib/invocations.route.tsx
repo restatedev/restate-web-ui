@@ -112,6 +112,7 @@ function Component() {
     refetchOnMount: true,
     refetchOnReconnect: false,
     staleTime: 0,
+    refetchOnWindowFocus: false,
   });
 
   const dataUpdate = error ? errorUpdatedAt : dataUpdatedAt;
