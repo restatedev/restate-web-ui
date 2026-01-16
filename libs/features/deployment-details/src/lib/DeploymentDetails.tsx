@@ -110,7 +110,7 @@ function DeploymentDetailsContents() {
 
 function DeploymentContent({ deployment }: { deployment: string }) {
   const { data, isPending } = useDeploymentDetails(deployment);
-  const { tunnel } = useRestateContext();
+  const { tunnel, isVersionGte } = useRestateContext();
 
   const services = data?.services ?? [];
   const additionalHeaders = Object.entries(data?.additional_headers ?? {});
@@ -127,7 +127,9 @@ function DeploymentContent({ deployment }: { deployment: string }) {
   const displayedEndpoint = isTunnel ? tunnelEndpoint?.remoteUrl : endpoint;
 
   const isDeprecated = Boolean(
-    data && data.max_protocol_version < MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION,
+    data &&
+      data.max_protocol_version < MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION &&
+      isVersionGte?.('1.6.0'),
   );
   return (
     <>
