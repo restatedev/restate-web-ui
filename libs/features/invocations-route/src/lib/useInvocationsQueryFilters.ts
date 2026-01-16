@@ -12,7 +12,7 @@ import {
 import { useCallback, useState, useTransition } from 'react';
 import { useSearchParams } from 'react-router';
 import { useSchema } from './useSchema';
-import { ColumnKey } from './columns';
+import { COLUMN_QUERY_PREFIX, ColumnKey } from './columns';
 
 export const FILTER_QUERY_PREFIX = 'filter_';
 export const SORT_QUERY_PREFIX = 'sort_';
@@ -60,7 +60,7 @@ export function setDefaultSort(searchParams: URLSearchParams) {
   return setSort(searchParams, { field: 'modified_at', order: 'DESC' });
 }
 
-export function useInvocationsQueryFilters() {
+export function useInvocationsQueryFilters(selectedColumns: ColumnKey[]) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [sortParams, setSortParams] = useState<SortInvocations>(() => {
     const field = searchParams.get(SORT_QUERY_PREFIX + 'field');
@@ -145,8 +145,7 @@ export function useInvocationsQueryFilters() {
   );
 
   const commitQuery = () => {
-    // TODO: fix race condition and remove window.location.search
-    const newSearchParams = new URLSearchParams(window.location.search);
+    const newSearchParams = new URLSearchParams(searchParams);
     Array.from(newSearchParams.keys())
       .filter((key) => key.startsWith(FILTER_QUERY_PREFIX))
       .forEach((key) => newSearchParams.delete(key));
@@ -155,6 +154,11 @@ export function useInvocationsQueryFilters() {
       .forEach((item) => {
         newSearchParams.set(getFilterParamKey(item), String(item));
       });
+
+    newSearchParams.delete(COLUMN_QUERY_PREFIX);
+    selectedColumns.forEach((col) => {
+      newSearchParams.append(COLUMN_QUERY_PREFIX, String(col));
+    });
 
     newSearchParams.set(
       SORT_QUERY_PREFIX + 'field',
