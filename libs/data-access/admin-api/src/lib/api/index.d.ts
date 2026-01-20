@@ -675,6 +675,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/query/invocations/{invocationId}/journal/{entryIndex}/payloads': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get journal entry payloads
+     * @description Get payload data for a specific journal entry. This endpoint returns the potentially large payload fields (parameters, value, failure, headers) that are excluded from the lite journal response. Use this for on-demand loading of payload data.
+     */
+    get: operations['get_journal_entry_payloads'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/query/v2/invocations/{invocationId}': {
     parameters: {
       query?: never;
@@ -2148,6 +2168,20 @@ export interface components {
         | 'Notification: PeekPromise'
         | 'Notification: CompletePromise'
         | 'Notification: Run';
+    };
+    /** @description Payload data for a journal entry. Contains the potentially large fields that are excluded from the lite journal response. */
+    JournalEntryPayloads: {
+      /** @description Input parameters for Input, Call, and OneWayCall entries */
+      parameters?: string;
+      /** @description Success result value for completed entries (Run, Call, GetState, Output, Awakeable, etc.) */
+      value?: string;
+      /** @description Failure details when the entry result is a failure */
+      failure?: components['schemas']['FailureEntry'];
+      /** @description HTTP headers for Input, Call, and OneWayCall entries */
+      headers?: {
+        key: string;
+        value: string;
+      }[];
     };
     JournalBaseEntry: {
       index: number;
@@ -4956,6 +4990,79 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['JournalEntryV2'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  get_journal_entry_payloads: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Invocation id */
+        invocationId: string;
+        /** @description Entry index */
+        entryIndex: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Payload data for the journal entry */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['JournalEntryPayloads'];
         };
       };
       400: {

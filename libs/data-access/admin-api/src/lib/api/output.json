@@ -2951,6 +2951,106 @@
         }
       }
     },
+    "/query/invocations/{invocationId}/journal/{entryIndex}/payloads": {
+      "get": {
+        "tags": ["get-journal-entry-payloads"],
+        "summary": "Get journal entry payloads",
+        "description": "Get payload data for a specific journal entry. This endpoint returns the potentially large payload fields (parameters, value, failure, headers) that are excluded from the lite journal response. Use this for on-demand loading of payload data.",
+        "operationId": "get_journal_entry_payloads",
+        "parameters": [
+          {
+            "name": "invocationId",
+            "in": "path",
+            "description": "Invocation id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entryIndex",
+            "in": "path",
+            "description": "Entry index",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payload data for the journal entry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JournalEntryPayloads"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/query/v2/invocations/{invocationId}": {
       "get": {
         "tags": ["get-invocation"],
@@ -5964,6 +6064,40 @@
               "Notification: CompletePromise",
               "Notification: Run"
             ]
+          }
+        }
+      },
+      "JournalEntryPayloads": {
+        "type": "object",
+        "description": "Payload data for a journal entry. Contains the potentially large fields that are excluded from the lite journal response.",
+        "properties": {
+          "parameters": {
+            "type": "string",
+            "description": "Input parameters for Input, Call, and OneWayCall entries"
+          },
+          "value": {
+            "type": "string",
+            "description": "Success result value for completed entries (Run, Call, GetState, Output, Awakeable, etc.)"
+          },
+          "failure": {
+            "$ref": "#/components/schemas/FailureEntry",
+            "description": "Failure details when the entry result is a failure"
+          },
+          "headers": {
+            "type": "array",
+            "description": "HTTP headers for Input, Call, and OneWayCall entries",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": ["key", "value"]
+            }
           }
         }
       },
