@@ -34,7 +34,7 @@ export function InlineTooltip({
   }
 
   return (
-    <AriaTooltip delay={250}>
+    <AriaTooltip delay={500}>
       <Trigger ref={triggerRef} className={className}>
         {children}
       </Trigger>
