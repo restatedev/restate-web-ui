@@ -77,6 +77,28 @@ export function IntrospectionCell({
       </Cell>
     );
   }
+  if (Array.isArray(value)) {
+    const _formattedValue = value
+      .map((item) => formattedValue(item))
+      .join(', \n');
+    return (
+      <Cell className="min-h-6">
+        {
+          <TruncateWithTooltip
+            size={
+              typeof _formattedValue === 'string' &&
+              (_formattedValue.length > 100 || _formattedValue.includes('\n'))
+                ? 'lg'
+                : 'sm'
+            }
+          >
+            {_formattedValue ?? <br />}
+          </TruncateWithTooltip>
+        }
+      </Cell>
+    );
+  }
+
   const _formattedValue = formattedValue(value);
   return (
     <Cell className="min-h-6">
