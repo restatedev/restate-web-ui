@@ -80,7 +80,7 @@ export function IntrospectionCell({
   if (Array.isArray(value)) {
     const _formattedValue = value
       .map((item) => formattedValue(item))
-      .join(', ');
+      .join(', \n');
     return (
       <Cell className="min-h-6">
         {
