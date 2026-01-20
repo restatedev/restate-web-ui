@@ -33,7 +33,7 @@ export function MonacoEditor({
         folding: true,
         theme: 'restate',
         formatOnPaste: true,
-        formatOnType: false,
+        formatOnType: true,
         minimap: { enabled: false },
         fontSize: 12,
         fontFamily: 'JetBrainsMonoVariable, mono',
@@ -101,10 +101,8 @@ export function MonacoEditor({
       const disposables = [
         editorRef.current.onDidChangeModelLanguageConfiguration(updateStyles),
         editorRef.current.onDidLayoutChange(updateStyles),
-        editorRef.current.onDidContentSizeChange(updateStyles),
         editorRef.current.onDidChangeModelContent(() => {
           const value = editorRef.current?.getValue();
-          updateStyles();
           onInput?.(value ?? '');
         }),
       ];
