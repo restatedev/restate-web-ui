@@ -92,7 +92,7 @@ export function Failure({
   restate_code,
   className,
   isRetrying,
-  title = 'Failure',
+  title = isRetrying ? 'Transient failure' : 'Failure',
   stacktrace,
 }: {
   restate_code?: string;

@@ -126,8 +126,8 @@ export function MonacoEditor({
   return (
     <div
       ref={setEl}
-      style={{ height: `clamp(2.125rem, ${value.length / 100}px, 50vh)` }}
-      className="h-full min-h-4 w-full max-w-full min-w-24 [&_.monaco-editor]:outline-hidden!"
+      style={{ height: `clamp(2.625rem, ${value.length / 100}px, 50vh)` }}
+      className="h-full min-h-4 w-full max-w-full min-w-24 transform transition-all [&_.monaco-editor]:outline-hidden!"
     />
   );
 }
