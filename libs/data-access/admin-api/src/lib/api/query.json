@@ -3227,6 +3227,13 @@
               },
               "required": ["key", "value"]
             }
+          },
+          "keys": {
+            "type": "array",
+            "description": "State keys for GetEagerStateKeys entries",
+            "items": {
+              "type": "string"
+            }
           }
         }
       },

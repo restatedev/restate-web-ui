@@ -19,6 +19,7 @@ import {
   getInvocationJournal,
   getJournalEntryV2,
   getInvocationJournalV2,
+  getJournalEntryPayloads,
   getInbox,
   getState,
   getStateInterface,
@@ -43,6 +44,10 @@ type BoundHandlers = {
   getInvocation: (invocationId: string) => Promise<Response>;
   getInvocationJournal: (invocationId: string) => Promise<Response>;
   getJournalEntryV2: (
+    invocationId: string,
+    entryIndex: number,
+  ) => Promise<Response>;
+  getJournalEntryPayloads: (
     invocationId: string,
     entryIndex: number,
   ) => Promise<Response>;
@@ -83,6 +88,7 @@ function bindHandlers(context: QueryContext): BoundHandlers {
     getInvocation: getInvocation.bind(context),
     getInvocationJournal: getInvocationJournal.bind(context),
     getJournalEntryV2: getJournalEntryV2.bind(context),
+    getJournalEntryPayloads: getJournalEntryPayloads.bind(context),
     getInvocationJournalV2: getInvocationJournalV2.bind(context),
     getInbox: getInbox.bind(context),
     getState: getState.bind(context),
@@ -129,6 +135,10 @@ const routes = createRoutes({
     journalEntry: {
       method: 'GET',
       pattern: '/invocations/:invocationId/journal/:entryIndex',
+    },
+    journalEntryPayloads: {
+      method: 'GET',
+      pattern: '/invocations/:invocationId/journal/:entryIndex/payloads',
     },
     journal: {
       method: 'GET',
@@ -191,6 +201,13 @@ queryRouter.map(routes, {
     async journalEntry(ctx) {
       const { getJournalEntryV2 } = ctx.storage.get(handlersKey);
       return getJournalEntryV2(
+        ctx.params.invocationId,
+        Number(ctx.params.entryIndex),
+      );
+    },
+    async journalEntryPayloads(ctx) {
+      const { getJournalEntryPayloads } = ctx.storage.get(handlersKey);
+      return getJournalEntryPayloads(
         ctx.params.invocationId,
         Number(ctx.params.entryIndex),
       );

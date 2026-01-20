@@ -2182,6 +2182,8 @@ export interface components {
         key: string;
         value: string;
       }[];
+      /** @description State keys for GetEagerStateKeys entries */
+      keys?: string[];
     };
     JournalBaseEntry: {
       index: number;
