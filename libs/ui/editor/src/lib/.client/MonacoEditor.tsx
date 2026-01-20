@@ -42,7 +42,7 @@ export function MonacoEditor({
           snippetsPreventQuickSuggestions: false,
         },
         lineNumbersMinChars: 0,
-        automaticLayout: true,
+        automaticLayout: false,
         scrollbar: {
           useShadows: false,
         },
@@ -121,7 +121,8 @@ export function MonacoEditor({
   return (
     <div
       ref={setEl}
-      className="h-full min-h-4 max-w-full min-w-24 [&_.monaco-editor]:outline-hidden!"
+      style={{ height: `clamp(1rem, ${value.length / 100}px, 50vh)` }}
+      className="h-full min-h-4 w-full max-w-full min-w-24 [&_.monaco-editor]:outline-hidden!"
     />
   );
 }

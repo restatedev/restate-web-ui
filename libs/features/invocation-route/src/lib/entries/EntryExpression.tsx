@@ -197,7 +197,7 @@ export function EntryExpression({
               popoverContent={
                 <Value
                   value={JSON.stringify((entry as any)[outputParam])}
-                  className="py-3 font-mono text-xs"
+                  className="w-full py-3 font-mono text-xs"
                   isBase64={isOutputBase64}
                   showCopyButton
                   portalId="expression-value"

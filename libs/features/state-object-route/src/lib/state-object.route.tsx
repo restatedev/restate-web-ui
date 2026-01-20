@@ -497,7 +497,7 @@ function Component() {
 
                                 <PopoverContent>
                                   <DropdownSection
-                                    className="mb-1 max-w-[min(90vw,50rem)] overflow-auto px-4"
+                                    className="mb-1 w-[90vw] max-w-[min(90vw,50rem)] overflow-auto px-4"
                                     title={
                                       <div className="flex items-center text-0.5xs">
                                         {id}
@@ -529,7 +529,7 @@ function Component() {
                                   >
                                     <Value
                                       value={row.state?.[id]}
-                                      className="py-3 font-mono text-xs"
+                                      className="w-full py-3 font-mono text-xs"
                                       showCopyButton
                                       portalId="state-value"
                                     />

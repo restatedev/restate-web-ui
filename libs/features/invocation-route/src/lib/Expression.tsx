@@ -90,7 +90,8 @@ const inputOutputStyles = tv({
   base: 'contents items-center gap-1 rounded-md py-0 pl-0.5 text-2xs text-zinc-700',
   slots: {
     value: 'mr-0.5 contents font-mono leading-5 font-semibold text-zinc-500',
-    content: 'mb-1 max-w-[min(90vw,600px)] min-w-80 overflow-auto px-4',
+    content:
+      'mb-1 w-[90vw] max-w-[min(90vw,600px)] min-w-80 overflow-auto px-4',
   },
 });
 
