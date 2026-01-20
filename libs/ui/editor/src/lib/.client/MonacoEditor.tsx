@@ -50,6 +50,9 @@ export function MonacoEditor({
         scrollbar: {
           useShadows: false,
         },
+        overviewRulerBorder: false,
+        overviewRulerLanes: 0,
+        hideCursorInOverviewRuler: true,
         contextmenu: false,
         hover: {
           enabled: false,
