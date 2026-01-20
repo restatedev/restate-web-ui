@@ -65,6 +65,7 @@ export function TransientError({
             </PopoverContent>
           </Popover>
           <Failure
+            title={isPausedError(entry) ? 'Paused after' : 'Transient failure'}
             restate_code={String(
               entry.relatedRestateErrorCode ||
                 entry.code ||
@@ -116,6 +117,7 @@ export function NoCommandTransientError({
           className="gap-0 truncate px-0 py-0.5 font-sans font-normal"
         >
           <Failure
+            title="Transient failure"
             restate_code={String(
               entry.relatedRestateErrorCode ||
                 entry.code ||

@@ -8,7 +8,7 @@ import { Copy } from '@restate/ui/copy';
 import { InPortal } from '@restate/ui/portal';
 
 const styles = tv({
-  base: 'max-w-full [&_.monaco-editor]:w-[100vw]',
+  base: 'max-w-full [&_.monaco-editor]:w-[100vw]! [&_.monaco-editor]:max-w-full!',
 });
 
 export function Value({
@@ -32,7 +32,7 @@ export function Value({
   }
 
   return (
-    <div className="flex items-center">
+    <div className="flex w-full items-center">
       {isFetching ? (
         <div className="flex items-center gap-1.5 font-mono text-sm text-zinc-500">
           <Spinner className="h-4 w-4" />

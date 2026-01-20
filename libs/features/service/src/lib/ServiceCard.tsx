@@ -39,7 +39,7 @@ const styles = tv({
 });
 
 const serviceLinkStyles = tv({
-  base: "rounded-full outline-offset-0 before:absolute before:inset-0 before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5",
+  base: "ml-auto rounded-full outline-offset-0 before:absolute before:inset-0 before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5",
   variants: {
     isMatching: {
       true: 'before:rounded-t-[0.9rem]',
@@ -166,7 +166,7 @@ export function ServiceCard({
               />
             </div>
           </div>
-          <div className="flex min-w-0 flex-row items-center gap-1 text-[0.9rem] font-medium text-zinc-600">
+          <div className="flex min-w-0 flex-auto flex-row items-center gap-1 pr-2 text-[0.9rem] font-medium text-zinc-600">
             <TruncateWithTooltip copyText={serviceName} triggerRef={linkRef}>
               {serviceName}
             </TruncateWithTooltip>
@@ -179,7 +179,7 @@ export function ServiceCard({
             >
               <Icon
                 name={IconName.ChevronRight}
-                className="h-4 w-4 text-gray-500"
+                className="h-4 w-4 text-gray-400"
               />
             </Link>
           </div>

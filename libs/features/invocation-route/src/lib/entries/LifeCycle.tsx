@@ -30,7 +30,7 @@ export function LifeCycle({
             className="gap-0 truncate px-0 py-0.5 font-sans text-2xs font-normal"
           >
             <Failure
-              title="Last failure"
+              title="Paused after"
               restate_code={String(
                 entry.relatedRestateErrorCode ||
                   entry.code ||

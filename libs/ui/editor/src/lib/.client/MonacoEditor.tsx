@@ -41,11 +41,18 @@ export function MonacoEditor({
           showInlineDetails: false,
           snippetsPreventQuickSuggestions: false,
         },
+        padding: {
+          top: 12,
+          bottom: 12,
+        },
         lineNumbersMinChars: 0,
         automaticLayout: true,
         scrollbar: {
           useShadows: false,
         },
+        overviewRulerBorder: false,
+        overviewRulerLanes: 0,
+        hideCursorInOverviewRuler: true,
         contextmenu: false,
         hover: {
           enabled: false,
@@ -97,10 +104,8 @@ export function MonacoEditor({
       const disposables = [
         editorRef.current.onDidChangeModelLanguageConfiguration(updateStyles),
         editorRef.current.onDidLayoutChange(updateStyles),
-        editorRef.current.onDidContentSizeChange(updateStyles),
         editorRef.current.onDidChangeModelContent(() => {
           const value = editorRef.current?.getValue();
-          updateStyles();
           onInput?.(value ?? '');
         }),
       ];
@@ -121,7 +126,8 @@ export function MonacoEditor({
   return (
     <div
       ref={setEl}
-      className="h-full min-h-4 max-w-full min-w-24 [&_.monaco-editor]:outline-hidden!"
+      style={{ height: `clamp(2.625rem, ${value.length / 100}px, 50vh)` }}
+      className="h-full min-h-4 w-full max-w-full min-w-24 transform transition-all [&_.monaco-editor]:outline-hidden!"
     />
   );
 }

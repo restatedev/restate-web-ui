@@ -33,7 +33,7 @@ export function SetState({
             popoverContent={
               <Value
                 value={entry.key}
-                className="py-3 font-mono text-xs"
+                className="font-mono text-xs"
                 showCopyButton
                 portalId="expression-value"
               />
@@ -47,7 +47,7 @@ export function SetState({
             popoverContent={
               <Value
                 value={entry.value}
-                className="mx-0.5 py-3 font-mono text-xs"
+                className="mx-0.5 font-mono text-xs"
                 isBase64
                 showCopyButton
                 portalId="expression-value"

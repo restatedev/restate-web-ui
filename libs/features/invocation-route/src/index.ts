@@ -4,7 +4,10 @@ export { Value, DecodedValue } from './lib/Value';
 export { Actions } from './lib/actions';
 export { InvocationActions } from './lib/actions';
 export { Status } from './lib/Status';
-export { InvocationDeployment } from './lib/InvocationDeployment';
+export {
+  InvocationDeployment,
+  InvocationDeploymentCell,
+} from './lib/InvocationDeployment';
 export * from './lib/constants';
 export * from './lib/InvocationPanel';
 export * from './lib/InvocationId';

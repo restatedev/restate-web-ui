@@ -113,7 +113,10 @@ export function DialogContent({
           modalStyles({ ...renderProps, className, variant }),
         )}
       >
-        <AriaDialog className={dialogStyles({ variant })}>
+        <AriaDialog
+          className={dialogStyles({ variant })}
+          data-ignore-shortcut="true"
+        >
           <DialogFooterContainer>
             <div className={contentStyles({ variant })}>{children}</div>
           </DialogFooterContainer>
