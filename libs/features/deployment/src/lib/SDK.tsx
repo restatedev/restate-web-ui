@@ -1,5 +1,6 @@
 import { Invocation } from '@restate/data-access/admin-api';
 import { Icon, IconName } from '@restate/ui/icons';
+import { HoverTooltip } from '@restate/ui/tooltip';
 import { tv } from '@restate/util/styles';
 
 const RESTATE_SDK_REGEXP =
@@ -77,10 +78,30 @@ export function SDK({
   return (
     <div className={sdkStyles({ className })}>
       <LanguageIcon lang={sdk} className="h-6 w-6 shrink-0 opacity-70" />
-      <div className="inline-flex items-center">
-        SDK/
-        {version && <div className="truncate">{version}</div>}
+      <div className="inline-flex items-center gap-2">
+        SDK/{sdk} {version && <div className="truncate">{version}</div>}
       </div>
+    </div>
+  );
+}
+export function MiniSDK({
+  sdkVersion,
+  className,
+}: {
+  sdkVersion: Invocation['last_attempt_server'] | null;
+  className?: string;
+}) {
+  const { sdk, version } = getSDKVersion(sdkVersion || '');
+
+  if (!sdk) {
+    return null;
+  }
+
+  return (
+    <div className={sdkStyles({ className })}>
+      <HoverTooltip content={`SDK ${sdk}/${version || 'unknown version'}`}>
+        <LanguageIcon lang={sdk} className="h-6 w-6 shrink-0 opacity-70" />
+      </HoverTooltip>
     </div>
   );
 }

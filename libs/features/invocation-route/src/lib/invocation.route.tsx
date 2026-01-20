@@ -99,7 +99,7 @@ function Component() {
             Invocations
           </Link>
           <div className="relative flex flex-col gap-x-2 gap-y-1.5 @2xl:flex-row @2xl:items-center">
-            <h1 className="flex max-w-[20ch] items-center gap-1 truncate pb-1 font-mono text-lg font-semibold text-gray-900 sm:text-lg">
+            <h1 className="flex items-center gap-1 truncate pb-1 font-mono text-lg font-semibold text-gray-900 sm:text-lg">
               <div className="mr-1.5 shrink-0 rounded-xl border bg-white shadow-xs">
                 <Icon
                   name={IconName.Invocation}

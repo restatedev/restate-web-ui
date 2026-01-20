@@ -26,24 +26,21 @@ export function MiniService({
         <Icon name={IconName.Box} className="h-full w-full p-1 text-zinc-400" />
       </div>
 
-      <div className="flex flex-row items-center gap-1 truncate text-0.5xs font-medium text-zinc-600">
+      <div className="flex flex-auto flex-row items-center gap-1 truncate text-0.5xs font-medium text-zinc-600">
         <TruncateWithTooltip copyText={service.name} triggerRef={linkRef}>
           {service.name}
         </TruncateWithTooltip>
-        <Link
-          ref={linkRef}
-          aria-label={service.name}
-          variant="secondary"
-          href={`?${SERVICE_QUERY_PARAM}=${service.name}`}
-          className="m-1 ml-0 rounded-full outline-offset-0 before:absolute before:inset-0 before:rounded-lg before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5"
-        >
-          <Icon
-            name={IconName.ChevronRight}
-            className="h-4 w-4 text-gray-500"
-          />
-        </Link>
+        <Revision revision={service.revision} className="z-2 ml-auto" />
       </div>
-      <Revision revision={service.revision} className="z-2 ml-auto" />
+      <Link
+        ref={linkRef}
+        aria-label={service.name}
+        variant="secondary"
+        href={`?${SERVICE_QUERY_PARAM}=${service.name}`}
+        className="m-1 ml-0 rounded-full outline-offset-0 before:absolute before:inset-0 before:rounded-lg before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5"
+      >
+        <Icon name={IconName.ChevronRight} className="h-4 w-4 text-gray-400" />
+      </Link>
     </div>
   );
 }

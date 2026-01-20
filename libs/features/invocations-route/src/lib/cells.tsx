@@ -17,7 +17,7 @@ import { tv } from '@restate/util/styles';
 import {
   Actions,
   getSearchParams,
-  InvocationDeployment,
+  InvocationDeploymentCell,
   InvocationId,
   JournalV2,
   Retention,
@@ -343,7 +343,7 @@ const CELLS: Record<ColumnKey, ComponentType<CellProps>> = {
   ),
   journal_size: withCell(JournalCell, 'journal_size'),
   retry_count: withCell(withField({ field: 'retry_count' }), 'retry_count'),
-  deployment: withCell(InvocationDeployment, 'deployment'),
+  deployment: withCell(InvocationDeploymentCell, 'deployment'),
   target_service_key: withCell(
     withField({ field: 'target_service_key' }),
     'target_service_key',

@@ -18,10 +18,11 @@ import { Badge } from '@restate/ui/badge';
 import { Copy } from '@restate/ui/copy';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
 import { Button } from '@restate/ui/button';
-import { GithubMetadata, MiniGithubMetadata } from '@restate/features/options';
+import { MiniGithubMetadata } from '@restate/features/options';
+import { MiniSDK } from './SDK';
 
 const styles = tv({
-  base: 'relative -m-1 flex flex-row items-center gap-2 border p-1 text-0.5xs transition-all ease-in-out',
+  base: 'relative -m-1 flex flex-row items-center gap-0.5 border p-1 text-0.5xs transition-all ease-in-out',
   variants: {
     isSelected: {
       true: 'z-10 -mx-1 rounded-lg border bg-white px-1 font-medium shadow-xs shadow-zinc-800/3',
@@ -39,6 +40,8 @@ export function Deployment({
   highlightSelection = true,
   showEndpoint = true,
   showGithubMetadata = false,
+  showSdk = false,
+  lastAttemptServer,
 }: {
   revision?: ServiceRevision;
   className?: string;
@@ -46,6 +49,8 @@ export function Deployment({
   highlightSelection?: boolean;
   showEndpoint?: boolean;
   showGithubMetadata?: boolean;
+  showSdk?: boolean;
+  lastAttemptServer?: string;
 }) {
   const { tunnel, isVersionGte } = useRestateContext();
   const { data: { deployments } = {} } = useListDeployments({
@@ -71,7 +76,7 @@ export function Deployment({
     if (deploymentId) {
       return (
         <div className={styles({ className, isSelected })}>
-          <div className="deployment min-w-0 flex-auto basis-full">
+          <div className="deployment min-w-0 flex-auto basis-full pl-1 text-gray-600">
             <TruncateWithTooltip
               copyText={deploymentId}
               triggerRef={linkRef}
@@ -89,7 +94,7 @@ export function Deployment({
           >
             <Icon
               name={IconName.ChevronRight}
-              className="h-4 w-4 text-gray-500"
+              className="h-4 w-4 text-gray-400"
             />
           </Link>
         </div>
@@ -136,7 +141,7 @@ export function Deployment({
           </PopoverContent>
         </Popover>
       ) : (
-        <div className="h-6 w-6 shrink-0 rounded-md border bg-white shadow-xs">
+        <div className="mr-1.5 h-6 w-6 shrink-0 rounded-md border bg-white shadow-xs">
           <Icon
             name={
               isTunnel
@@ -188,24 +193,27 @@ export function Deployment({
             </div>
           </div>
         }
-        <Link
-          ref={linkRef}
-          aria-label={deploymentEndpoint}
-          variant="secondary"
-          href={`?${DEPLOYMENT_QUERY_PARAM}=${deployment.id}`}
-          className="m-1 ml-0 rounded-full outline-offset-0 before:absolute before:inset-0 before:rounded-lg before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5"
-        >
-          <Icon
-            name={IconName.ChevronRight}
-            className="h-4 w-4 text-gray-500"
-          />
-        </Link>
       </div>
 
+      {showSdk && (
+        <MiniSDK
+          sdkVersion={deployment.sdk_version}
+          className="z-[2] text-gray-500"
+        />
+      )}
       {showGithubMetadata && (
         <MiniGithubMetadata metadata={deployment.metadata} className="z-[2]" />
       )}
       {revision && <Revision revision={revision} className="z-2 ml-auto" />}
+      <Link
+        ref={linkRef}
+        aria-label={deploymentEndpoint}
+        variant="secondary"
+        href={`?${DEPLOYMENT_QUERY_PARAM}=${deployment.id}`}
+        className="m-1 ml-0 rounded-full outline-offset-0 before:absolute before:inset-0 before:rounded-lg before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5"
+      >
+        <Icon name={IconName.ChevronRight} className="h-4 w-4 text-gray-400" />
+      </Link>
     </div>
   );
 }

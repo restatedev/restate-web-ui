@@ -333,6 +333,7 @@ function ServiceContent({ service }: { service: string }) {
                         key={id}
                         highlightSelection={false}
                         showGithubMetadata
+                        showSdk
                       />
                     )),
                   )}

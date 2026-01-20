@@ -33,7 +33,8 @@ export function DeploymentSection({
         <InvocationDeployment
           invocation={invocation!}
           className="items-stretch text-0.5xs"
-          showSdk={true}
+          showSdk
+          showGithub
         />
       </SectionContent>
     </Section>

@@ -144,7 +144,10 @@ export function Handler({
                   href={`?${SERVICE_QUERY_PARAM}=${service}&${HANDLER_QUERY_PARAM}=${handler.name}`}
                   className="my-0.5 ml-auto shrink-0 rounded-full before:absolute before:-top-0.5 before:-right-1 before:-bottom-0.5 before:-left-1 before:z-[0] before:rounded-lg before:content-[''] hover:before:bg-black/3"
                 >
-                  <Icon name={IconName.ChevronRight} className="h-4 w-4" />
+                  <Icon
+                    name={IconName.ChevronRight}
+                    className="h-4 w-4 text-gray-400"
+                  />
                 </Link>
               )}
             </span>
