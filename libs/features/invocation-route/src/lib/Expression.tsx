@@ -91,7 +91,7 @@ const inputOutputStyles = tv({
   slots: {
     value: 'mr-0.5 contents font-mono leading-5 font-semibold text-zinc-500',
     content:
-      'mb-1 w-[90vw] max-w-[min(90vw,600px)] min-w-80 overflow-auto px-4',
+      'mb-1 w-[90vw] max-w-[min(90vw,600px)] min-w-80 overflow-auto py-0 pr-0 pl-4',
   },
 });
 

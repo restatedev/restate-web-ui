@@ -36,7 +36,7 @@ export function Editor({
       <div className={className}>
         <Suspense
           fallback={
-            <div className="flex items-center gap-1.5 text-sm text-zinc-500">
+            <div className="flex items-center gap-1.5 py-2 pr-4 text-sm text-zinc-500">
               <Spinner className="h-4 w-4" />
               Loading…
             </div>

@@ -53,7 +53,7 @@ export function Input({
                     popoverContent={
                       <Value
                         value={entry.parameters}
-                        className="py-3 font-mono text-xs"
+                        className="font-mono text-xs"
                         isBase64
                         showCopyButton
                         portalId="expression-value"

@@ -33,7 +33,7 @@ export function MonacoEditor({
         folding: true,
         theme: 'restate',
         formatOnPaste: true,
-        formatOnType: true,
+        formatOnType: false,
         minimap: { enabled: false },
         fontSize: 12,
         fontFamily: 'JetBrainsMonoVariable, mono',
@@ -41,8 +41,12 @@ export function MonacoEditor({
           showInlineDetails: false,
           snippetsPreventQuickSuggestions: false,
         },
+        padding: {
+          top: 12,
+          bottom: 12,
+        },
         lineNumbersMinChars: 0,
-        automaticLayout: false,
+        automaticLayout: true,
         scrollbar: {
           useShadows: false,
         },
@@ -121,7 +125,7 @@ export function MonacoEditor({
   return (
     <div
       ref={setEl}
-      style={{ height: `clamp(1rem, ${value.length / 100}px, 50vh)` }}
+      style={{ height: `clamp(2.125rem, ${value.length / 100}px, 50vh)` }}
       className="h-full min-h-4 w-full max-w-full min-w-24 [&_.monaco-editor]:outline-hidden!"
     />
   );
