@@ -88,9 +88,12 @@ function getInitialData<F extends PayloadField>(
     case 'parameters':
       return {
         parameters: (entry as { parameters?: string }).parameters,
+        headers: (entry as { headers?: { key: string; value: string }[] })
+          .headers,
       } as Pick<JournalEntryPayloads, F>;
     case 'headers':
       return {
+        parameters: (entry as { parameters?: string }).parameters,
         headers: (entry as { headers?: { key: string; value: string }[] })
           .headers,
       } as Pick<JournalEntryPayloads, F>;

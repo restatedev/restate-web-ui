@@ -1,6 +1,7 @@
 import { JournalEntryV2 } from '@restate/data-access/admin-api';
 import { EntryProps } from './types';
 import { EntryExpression } from './EntryExpression';
+import { LazyJournalEntryPayload } from './LazyJournalEntryPayload';
 
 export function Output({
   entry,
@@ -16,8 +17,14 @@ export function Output({
     <EntryExpression
       entry={entry}
       invocation={invocation}
-      outputParam="value"
-      isOutputBase64
+      output={
+        <LazyJournalEntryPayload.Value
+          invocationId={invocation?.id}
+          entry={entry}
+          title="Result"
+          isBase64
+        />
+      }
     />
   );
 }

@@ -1,10 +1,7 @@
 import { JournalEntryV2 } from '@restate/data-access/admin-api';
 import { EntryProps } from './types';
-import { Expression, InputOutput } from '../Expression';
-import { Value } from '../Value';
-import { Failure } from '../Failure';
-import { Ellipsis } from '@restate/ui/loading';
 import { EntryExpression } from './EntryExpression';
+import { LazyJournalEntryPayload } from './LazyJournalEntryPayload';
 
 export function GetStateKeys({
   entry,
@@ -19,8 +16,13 @@ export function GetStateKeys({
     <EntryExpression
       entry={entry}
       invocation={invocation}
-      outputParam="keys"
-      outputParamPlaceholder="Keys"
+      output={
+        <LazyJournalEntryPayload.Keys
+          invocationId={invocation?.id}
+          entry={entry}
+          title="Keys"
+        />
+      }
     />
   );
 }

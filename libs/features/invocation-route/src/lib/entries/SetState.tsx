@@ -3,7 +3,7 @@ import { EntryProps } from './types';
 import { EntryExpression } from './EntryExpression';
 import { InputOutput } from '../Expression';
 import { Value } from '../Value';
-import { useRestateContext } from '@restate/features/restate-context';
+import { LazyJournalEntryPayload } from './LazyJournalEntryPayload';
 
 export function SetState({
   entry,
@@ -11,20 +11,10 @@ export function SetState({
 }: EntryProps<
   Extract<JournalEntryV2, { type?: 'SetState'; category?: 'command' }>
 >) {
-  const { EncodingWaterMark } = useRestateContext();
   return (
     <EntryExpression
       entry={entry}
       invocation={invocation}
-      inputParams={[
-        {
-          paramName: 'key',
-          title: 'Key',
-          placeholderLabel: 'key',
-          shouldStringified: true,
-        },
-        { paramName: 'value', title: 'Value', placeholderLabel: 'value' },
-      ]}
       input={
         <>
           <InputOutput
@@ -40,22 +30,11 @@ export function SetState({
             }
           />
           <div>,</div>
-          <InputOutput
-            name="value"
-            popoverTitle="Value"
-            isValueHidden
-            popoverContent={
-              <Value
-                value={entry.value}
-                className="mx-0.5 font-mono text-xs"
-                isBase64
-                showCopyButton
-                portalId="expression-value"
-              />
-            }
-            {...(EncodingWaterMark && {
-              waterMark: <EncodingWaterMark value={entry.value} />,
-            })}
+          <LazyJournalEntryPayload.Value
+            invocationId={invocation?.id}
+            entry={entry}
+            title="Value"
+            isBase64
           />
         </>
       }
