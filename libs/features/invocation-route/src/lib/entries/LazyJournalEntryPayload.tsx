@@ -23,6 +23,24 @@ const styles = tv({
     value: 'mr-0.5 contents font-mono leading-5 font-semibold text-zinc-500',
     content:
       'mb-1 w-[90vw] max-w-[min(90vw,600px)] min-w-80 overflow-auto py-0 pr-0 pl-4',
+    trigger:
+      'mx-0.5 my-0.5 flex h-5 min-w-6 items-center justify-center gap-0 rounded-xl p-0 font-sans text-2xs font-medium shadow-none outline-offset-0',
+    triggerLabel: 'block min-w-0 truncate',
+  },
+  variants: {
+    isVoid: {
+      true: {
+        trigger:
+          'pointer-events-none mx-0 w-fit border-transparent font-mono text-0.5xs leading-5 font-normal text-zinc-400',
+        triggerLabel: 'mx-1.5',
+      },
+      false: {
+        trigger: 'text-gray-500',
+      },
+    },
+  },
+  defaultVariants: {
+    isVoid: false,
   },
 });
 
@@ -131,7 +149,7 @@ function useLazyPayload<F extends PayloadField>(
     entry?.resultType === 'void' ||
     entry?.resultType === 'failure';
 
-  const { data, isPending, error } = useGetJournalEntryPayloads(
+  const { data, isPending, error, isSuccess } = useGetJournalEntryPayloads(
     invocationId ?? '',
     entryIndex ?? -1,
     {
@@ -146,11 +164,14 @@ function useLazyPayload<F extends PayloadField>(
     },
   );
 
+  const isLoaded = entry?.isLoaded || isSuccess;
+
   return {
     data: data?.[field] as JournalEntryPayloads[F] | undefined,
     failure: data?.failure,
     isPending,
     error,
+    isLoaded,
     onOpen: () => setShouldFetch(true),
   };
 }
@@ -161,26 +182,33 @@ function PayloadPopover({
   waterMark,
   children,
   onOpenChange,
+  isVoid = false,
 }: {
   title: string;
   triggerLabel: ReactNode;
   waterMark?: ReactNode;
   children: ReactNode;
   onOpenChange?: (isOpen: boolean) => void;
+  isVoid?: boolean;
 }) {
-  const { base, value, content } = styles();
+  const {
+    base,
+    value,
+    content,
+    trigger,
+    triggerLabel: triggerLabelStyle,
+  } = styles({ isVoid });
 
   return (
     <div className={base()}>
       <span className={value()}>
         <Popover onOpenChange={onOpenChange}>
           <PopoverTrigger>
-            <Button
-              className="mx-0.5 my-0.5 flex h-5 min-w-6 items-center justify-center gap-0 rounded-xl p-0 font-sans text-2xs font-medium text-gray-500 shadow-none outline-offset-0"
-              variant="secondary"
-            >
-              <Icon name={IconName.Eye} className="mx-1.5 h-3 w-3 shrink-0" />
-              <span className="block min-w-0 truncate">
+            <Button className={trigger()} variant="secondary">
+              {!isVoid && (
+                <Icon name={IconName.Eye} className="mx-1.5 h-3 w-3 shrink-0" />
+              )}
+              <span className={triggerLabelStyle()}>
                 {triggerLabel}
                 <span className="inline-block w-3" />
               </span>
@@ -244,20 +272,13 @@ function LazyValue({
   hideWhenEntryIsPending = false,
 }: LazyPayloadProps) {
   const { EncodingWaterMark } = useRestateContext();
-  const { data, failure, isPending, error, onOpen } = useLazyPayload(
+  const { data, failure, isPending, error, isLoaded, onOpen } = useLazyPayload(
     invocationId,
     entry,
     'value',
   );
 
   if (!entry || !invocationId || (hideWhenEntryIsPending && entry.isPending)) {
-    return null;
-  }
-
-  if (entry.isLoaded && !data && !failure) {
-    if (entry.resultType === 'void' || entry.resultType === 'success') {
-      return <div className="font-normal text-zinc-400">void</div>;
-    }
     return null;
   }
 
@@ -272,10 +293,17 @@ function LazyValue({
     );
   }
 
+  const isVoid =
+    isLoaded &&
+    !data &&
+    !failure &&
+    (entry.resultType === 'void' || entry.resultType === 'success');
+
   return (
     <PayloadPopover
       title={title}
-      triggerLabel={title}
+      triggerLabel={isVoid ? 'void' : title}
+      isVoid={isVoid}
       waterMark={
         EncodingWaterMark && isBase64 && data ? (
           <EncodingWaterMark value={data} />
@@ -284,7 +312,7 @@ function LazyValue({
       onOpenChange={(isOpen) => isOpen && onOpen()}
     >
       <PayloadContent isPending={isPending} error={error}>
-        {data && (
+        {data ? (
           <Value
             value={data}
             className="font-mono text-xs"
@@ -292,6 +320,12 @@ function LazyValue({
             showCopyButton
             portalId="expression-value"
           />
+        ) : (
+          isVoid && (
+            <div className="py-2 text-xs text-zinc-500">
+              No value returned (void)
+            </div>
+          )
         )}
       </PayloadContent>
     </PayloadPopover>
@@ -305,17 +339,13 @@ function LazyParameters({
   isBase64,
 }: LazyPayloadProps) {
   const { EncodingWaterMark } = useRestateContext();
-  const { data, isPending, error, onOpen } = useLazyPayload(
+  const { data, isPending, error, isLoaded, onOpen } = useLazyPayload(
     invocationId,
     entry,
     'parameters',
   );
 
   if (!entry || !invocationId) {
-    return null;
-  }
-
-  if (entry.isLoaded && !data) {
     return null;
   }
 
@@ -331,7 +361,7 @@ function LazyParameters({
       onOpenChange={(isOpen) => isOpen && onOpen()}
     >
       <PayloadContent isPending={isPending} error={error}>
-        {data && (
+        {data ? (
           <Value
             value={data}
             className="font-mono text-xs"
@@ -339,6 +369,10 @@ function LazyParameters({
             showCopyButton
             portalId="expression-value"
           />
+        ) : (
+          isLoaded && (
+            <div className="py-2 text-xs text-zinc-500">No parameters</div>
+          )
         )}
       </PayloadContent>
     </PayloadPopover>
@@ -350,17 +384,13 @@ function LazyHeaders({
   entry,
   title = 'Headers',
 }: Omit<LazyPayloadProps, 'isBase64'>) {
-  const { data, isPending, error, onOpen } = useLazyPayload(
+  const { data, isPending, error, isLoaded, onOpen } = useLazyPayload(
     invocationId,
     entry,
     'headers',
   );
 
   if (!entry || !invocationId) {
-    return null;
-  }
-
-  if (entry.isLoaded && (!data || data.length === 0)) {
     return null;
   }
 
@@ -371,8 +401,12 @@ function LazyHeaders({
       onOpenChange={(isOpen) => isOpen && onOpen()}
     >
       <PayloadContent isPending={isPending} error={error}>
-        {data && data.length > 0 && (
+        {data && data.length > 0 ? (
           <Headers headers={data} showCopyButton portalId="expression-value" />
+        ) : (
+          isLoaded && (
+            <div className="py-2 text-xs text-zinc-500">No headers</div>
+          )
         )}
       </PayloadContent>
     </PayloadPopover>
@@ -384,17 +418,13 @@ function LazyKeys({
   entry,
   title = 'Keys',
 }: Omit<LazyPayloadProps, 'isBase64'>) {
-  const { data, isPending, error, onOpen } = useLazyPayload(
+  const { data, isPending, error, isLoaded, onOpen } = useLazyPayload(
     invocationId,
     entry,
     'keys',
   );
 
   if (!entry || !invocationId) {
-    return null;
-  }
-
-  if (entry.isLoaded && (!data || data.length === 0)) {
     return null;
   }
 
@@ -405,13 +435,15 @@ function LazyKeys({
       onOpenChange={(isOpen) => isOpen && onOpen()}
     >
       <PayloadContent isPending={isPending} error={error}>
-        {data && data.length > 0 && (
+        {data && data.length > 0 ? (
           <Value
             value={JSON.stringify(data)}
             className="font-mono text-xs"
             showCopyButton
             portalId="expression-value"
           />
+        ) : (
+          isLoaded && <div className="py-2 text-xs text-zinc-500">No keys</div>
         )}
       </PayloadContent>
     </PayloadPopover>
