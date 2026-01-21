@@ -8,15 +8,6 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 
-export function getTimelineId(
-  invocationId: string,
-  index?: number,
-  type?: string,
-  category?: string,
-) {
-  return `${invocationId}-journal-timeline-${category}-${type}-${index}`;
-}
-
 export function getActionId(
   invocationId: string,
   index?: number,
@@ -24,35 +15,6 @@ export function getActionId(
   category?: string,
 ) {
   return `${invocationId}-journal-entry-action-${category}-${type}-${index}`;
-}
-
-export function getEntryId(
-  invocationId: string,
-  index?: number,
-  type?: string,
-  category?: string,
-) {
-  return `${invocationId}-journal-entry-${category}-${type}-${index}`;
-}
-
-export function TimelinePortal({
-  children,
-  invocationId,
-  entry,
-}: PropsWithChildren<{
-  invocationId: string;
-  entry?: JournalEntryV2;
-}>) {
-  const { getPortal } = usePortals(
-    getTimelineId(invocationId, entry?.index, entry?.type, entry?.category),
-  );
-  const element = getPortal?.();
-
-  if (!element) {
-    return null;
-  }
-
-  return createPortal(children, element);
 }
 
 export function ActionPortal({
@@ -65,30 +27,6 @@ export function ActionPortal({
 }>) {
   const { getPortal } = usePortals(
     getActionId(invocationId, entry?.index, entry?.type, entry?.category),
-  );
-  const element = getPortal?.();
-
-  if (!element) {
-    return null;
-  }
-
-  return createPortal(children, element);
-}
-
-export function EntryPortal({
-  children,
-  index,
-  invocationId,
-  type,
-  category,
-}: PropsWithChildren<{
-  invocationId: string;
-  index?: number;
-  type?: string;
-  category?: string;
-}>) {
-  const { getPortal } = usePortals(
-    getEntryId(invocationId, index, type, category),
   );
   const element = getPortal?.();
 

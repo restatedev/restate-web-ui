@@ -11,6 +11,8 @@ import {
   CompleteAwakeable,
   CompleteAwakeableNotification,
 } from './entries/CompleteAwakeable';
+import { CompletionNotification } from './entries/CompletionNotification';
+import { TransientError } from './entries/TransientError';
 import { CompletePromise } from './entries/CompletePromise';
 import { GetPromise } from './entries/GetPromise';
 import { GetState } from './entries/GetState';
@@ -27,12 +29,10 @@ import {
   EventEntryType,
   NotificationEntryType,
 } from './entries/types';
-import { EntryProgress } from './EntryProgress';
-import { getActionId, getEntryId, TimelinePortal, usePortals } from './Portals';
-import { RelatedEntries, RestartAction } from './RelatedEntries';
+import { getActionId, usePortals } from './Portals';
+import { RestartAction } from './RelatedEntries';
 import { Cancel } from './entries/Cancel';
 import { LifeCycle } from './entries/LifeCycle';
-import { Link } from '@restate/ui/link';
 import { NoCommandTransientError } from './entries/TransientError';
 import { useJournalContext } from './JournalContext';
 import { tv } from '@restate/util/styles';
@@ -137,12 +137,14 @@ export function Entry({
   invocation,
   entry,
   depth,
+  parentCommand,
 }: {
   invocation?: ReturnType<
     typeof useGetInvocationJournalWithInvocationV2
   >['data'];
   entry?: JournalEntryV2;
   depth: number;
+  parentCommand?: JournalEntryV2;
 }) {
   const length =
     invocation?.journal_commands_size ?? invocation?.journal_size ?? 1;
@@ -160,126 +162,100 @@ export function Entry({
       : undefined
   ) as ComponentType<EntryProps<JournalEntryV2>> | undefined;
 
-  const { setPortal } = usePortals(
-    getEntryId(
-      invocation?.id ?? '',
-      entry?.index,
-      entry?.type,
-      entry?.category,
-    ),
-  );
-
   if (!invocation || !entry) {
     return null;
   }
 
-  if (
-    isCompact &&
-    (entry?.type === 'Event: TransientError' ||
-      (entry?.category === 'notification' &&
-        [
-          'Sleep',
-          'Call',
-          'CallInvocationId',
-          'AttachInvocation',
-          'GetPromise',
-          'PeekPromise',
-          'CompletePromise',
-          'Run',
-        ].includes(String(entry?.type))))
-  ) {
-    return null;
-  }
-
   return (
-    <>
-      <div
-        style={{
-          paddingLeft: `${depth * 3}em`,
-        }}
-        data-depth={Boolean(depth)}
-        data-last-failure={
-          (depth === 0 &&
-            typeof invocation.last_failure_related_command_index === 'number' &&
-            invocation.last_failure_related_command_index ===
-              entry.commandIndex) ||
-          (depth === 0 &&
-            typeof invocation.last_failure_related_command_index ===
-              'undefined' &&
-            isEntriesEqual(
-              entry,
-              invocation.journal?.entries?.findLast(
-                (entry) =>
-                  !isCompact ||
-                  !['Event: TransientError'].includes(String(entry?.type)),
-              ),
-            )) ||
-          (depth === 0 &&
-            invocation.completion_failure &&
-            entry.type === 'Output')
-        }
-        className={styles({
-          hasError:
-            Boolean(
-              invocation.last_failure_related_command_index &&
-                invocation?.last_failure_related_command_index ===
-                  entry.commandIndex,
-            ) ||
-            Boolean(
-              invocation.status === 'paused' &&
-                entry.type === 'Paused' &&
-                entry.category === 'event' &&
-                entry.isPending,
+    <div
+      style={{
+        paddingLeft: `${depth * 3}em`,
+      }}
+      data-depth={Boolean(depth)}
+      data-last-failure={
+        (depth === 0 &&
+          typeof invocation.last_failure_related_command_index === 'number' &&
+          invocation.last_failure_related_command_index ===
+            entry.commandIndex) ||
+        (depth === 0 &&
+          typeof invocation.last_failure_related_command_index ===
+            'undefined' &&
+          isEntriesEqual(
+            entry,
+            invocation.journal?.entries?.findLast(
+              (entry) =>
+                !isCompact ||
+                !['Event: TransientError'].includes(String(entry?.type)),
             ),
-        })}
-        {...(entry.category === 'command' && {
-          id: `command-${entry.commandIndex}`,
-        })}
+          )) ||
+        (depth === 0 &&
+          invocation.completion_failure &&
+          entry.type === 'Output')
+      }
+      className={styles({
+        hasError:
+          Boolean(
+            invocation.last_failure_related_command_index &&
+              invocation?.last_failure_related_command_index ===
+                entry.commandIndex,
+          ) ||
+          Boolean(
+            invocation.status === 'paused' &&
+              entry.type === 'Paused' &&
+              entry.category === 'event' &&
+              entry.isPending,
+          ),
+      })}
+      {...(entry.category === 'command' && {
+        id: `command-${entry.commandIndex}`,
+      })}
+    >
+      <ActionContainer invocationId={invocation.id} entry={entry} />
+
+      <div
+        style={{ width: `${numOfDigits + 2}ch` }}
+        className="relative flex h-full shrink-0 items-center justify-center font-mono text-0.5xs text-gray-400/70 group-first:rounded-tl-2xl group-last:rounded-bl-2xl"
       >
-        <ActionContainer invocationId={invocation.id} entry={entry} />
-
         <div
-          style={{ width: `${numOfDigits + 2}ch` }}
-          className="relative flex h-full shrink-0 items-center justify-center font-mono text-0.5xs text-gray-400/70 group-first:rounded-tl-2xl group-last:rounded-bl-2xl"
-        >
-          <div
-            data-border
-            className="absolute top-0 bottom-0 left-0 border-dashed border-gray-400/40"
-          />
-          {entry?.category === 'command' ? (
-            (entry?.commandIndex ?? entry?.index ?? 0)
-          ) : (
-            <div className="mt-0.5 mr-1 hidden w-full border-b border-dashed border-gray-400/30" />
-          )}
-        </div>
-
-        <div
-          className="flex max-w-fit min-w-0 flex-auto gap-1 [&>*]:min-w-0"
-          data-entry
-          ref={setPortal}
-        >
-          {EntrySpecificComponent && (
-            <RelatedEntries invocation={invocation} entry={entry}>
-              <RestartAction
-                invocation={invocation}
-                entry={entry}
-                depth={depth}
-              />
-
-              <EntrySpecificComponent entry={entry} invocation={invocation} />
-            </RelatedEntries>
-          )}
-        </div>
-        <div className="relative min-w-20 flex-auto">
-          <div className="absolute right-0 left-0 translate-y-[0.5px] border-b border-dashed border-gray-300/50" />
-        </div>
-      </div>
-      <TimelinePortal invocationId={invocation?.id} entry={entry}>
-        {EntrySpecificComponent && (
-          <EntryProgress entry={entry} invocation={invocation} />
+          data-border
+          className="absolute top-0 bottom-0 left-0 border-dashed border-gray-400/40"
+        />
+        {entry?.category === 'command' ? (
+          (entry?.commandIndex ?? entry?.index ?? 0)
+        ) : (
+          <div className="mt-0.5 mr-1 hidden w-full border-b border-dashed border-gray-400/30" />
         )}
-      </TimelinePortal>
-    </>
+      </div>
+
+      <div
+        className="flex max-w-fit min-w-0 flex-auto gap-1 [&>*]:min-w-0"
+        data-entry
+      >
+        <RestartAction invocation={invocation} entry={entry} depth={depth} />
+        {entry.category === 'notification' && parentCommand ? (
+          <CompletionNotification
+            entry={entry}
+            parentCommand={parentCommand}
+            invocation={invocation}
+            commandComponents={ENTRY_COMMANDS_COMPONENTS}
+          />
+        ) : entry.category === 'event' &&
+          entry.type === 'Event: TransientError' &&
+          parentCommand ? (
+          <TransientError
+            entry={entry}
+            parentCommand={parentCommand}
+            invocation={invocation}
+            commandComponents={ENTRY_COMMANDS_COMPONENTS}
+          />
+        ) : EntrySpecificComponent ? (
+          <EntrySpecificComponent entry={entry} invocation={invocation} />
+        ) : null}
+      </div>
+      <div className="relative min-w-20 flex-auto">
+        <div className="absolute right-0 left-0 translate-y-[0.5px] border-b border-dashed border-gray-300/50" />
+      </div>
+    </div>
   );
 }
 

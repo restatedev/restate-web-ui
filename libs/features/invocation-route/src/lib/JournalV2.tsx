@@ -12,7 +12,8 @@ import { JournalContextProvider } from './JournalContext';
 import { Indicator, Spinner } from '@restate/ui/loading';
 import { Entry } from './Entry';
 import { Input } from './entries/Input';
-import { getTimelineId, PortalProvider, usePortals } from './Portals';
+import { EntryProgress } from './EntryProgress';
+import { PortalProvider } from './Portals';
 import { LifeCycleProgress, Units } from './LifeCycleProgress';
 import { ErrorBoundary } from './ErrorBoundry';
 import { tv } from '@restate/util/styles';
@@ -125,7 +126,25 @@ export function JournalV2({
   const { baseUrl } = useRestateContext();
 
   const combinedEntries = getCombinedJournal(invocationId, data)?.filter(
-    ({ entry }) => withTimeline || entry?.category === 'command',
+    ({ entry, parentCommand }) => {
+      if (entry?.category === 'event' && entry?.type === 'Completion') {
+        return false;
+      }
+      if (
+        entry?.category === 'notification' &&
+        entry?.type === 'CallInvocationId'
+      ) {
+        return false;
+      }
+      if (
+        isCompact &&
+        ((parentCommand && entry?.category === 'notification') ||
+          entry?.type === 'Event: TransientError')
+      ) {
+        return false;
+      }
+      return true;
+    },
   );
 
   const invocationApiError = apiError?.[invocationId];
@@ -195,22 +214,29 @@ export function JournalV2({
           className="w-full"
         />
       </div>
-      {combinedEntries?.map(({ invocationId, entry, depth }, index) => {
-        const invocation = data?.[invocationId];
-        if (entry?.type === 'Input') {
-          return null;
-        }
+      {combinedEntries?.map(
+        ({ invocationId, entry, depth, parentCommand }, index) => {
+          const invocation = data?.[invocationId];
+          if (entry?.type === 'Input') {
+            return null;
+          }
 
-        return (
-          <ErrorBoundary
-            entry={entry}
-            className="h-9"
-            key={invocationId + entry?.category + entry?.type + index}
-          >
-            <Entry invocation={invocation} entry={entry} depth={depth} />
-          </ErrorBoundary>
-        );
-      })}
+          return (
+            <ErrorBoundary
+              entry={entry}
+              className="h-9"
+              key={invocationId + entry?.category + entry?.type + index}
+            >
+              <Entry
+                invocation={invocation}
+                entry={entry}
+                depth={depth}
+                parentCommand={parentCommand}
+              />
+            </ErrorBoundary>
+          );
+        },
+      )}
     </>
   );
 
@@ -400,16 +426,12 @@ export function JournalV2({
                     </div>
                     {combinedEntries
                       ?.filter(({ entry }) => entry?.type !== 'Input')
-                      .map(({ entry, invocationId }) => (
+                      .map(({ entry, invocationId }, index) => (
                         <TimelineContainer
                           invocationId={invocationId}
                           entry={entry}
-                          key={getTimelineId(
-                            invocationId,
-                            entry?.index,
-                            entry?.type,
-                            entry?.category,
-                          )}
+                          invocation={data?.[invocationId]}
+                          key={`${invocationId}-${entry?.category}-${entry?.type}-${index}`}
                         />
                       ))}
                   </LazyPanel>
@@ -426,21 +448,19 @@ export function JournalV2({
 }
 
 function TimelineContainer({
-  invocationId,
   entry,
+  invocation,
 }: {
   invocationId: string;
   entry?: JournalEntryV2;
+  invocation?: ReturnType<
+    typeof useGetInvocationsJournalWithInvocationsV2
+  >['data'][string];
 }) {
-  const { setPortal } = usePortals(
-    getTimelineId(invocationId, entry?.index, entry?.type, entry?.category),
-  );
   return (
-    <div
-      className="relative h-9 w-full border-b border-transparent pr-2 pl-2 [content-visibility:auto] [&:not(:has(>*+*))]:hidden"
-      ref={setPortal}
-    >
+    <div className="relative h-9 w-full border-b border-transparent pr-2 pl-2 [&:not(:has(>*+*))]:hidden">
       <div className="absolute top-1/2 right-0 left-0 h-px border-spacing-10 -translate-y-px border-b border-dashed border-gray-300/70" />
+      <EntryProgress entry={entry} invocation={invocation} />
     </div>
   );
 }
@@ -460,18 +480,21 @@ function isExpandable(
   );
 }
 
+export type CombinedJournalEntry = {
+  invocationId: string;
+  entry?: JournalEntryV2;
+  depth: number;
+  parentCommand?: JournalEntryV2;
+};
+
 function getCombinedJournal(
   invocationId: string,
   data?: ReturnType<typeof useGetInvocationsJournalWithInvocationsV2>['data'],
   depth = 0,
-):
-  | {
-      invocationId: string;
-      entry?: JournalEntryV2;
-      depth: number;
-    }[]
-  | undefined {
-  if (data?.[invocationId]?.journal?.entries?.length === 0) {
+): CombinedJournalEntry[] | undefined {
+  const entries = data?.[invocationId]?.journal?.entries;
+
+  if (entries?.length === 0) {
     return [
       {
         invocationId,
@@ -480,8 +503,20 @@ function getCombinedJournal(
     ];
   }
 
-  const combinedEntries = data?.[invocationId]?.journal?.entries
+  const combinedEntries = entries
     ?.map((entry) => {
+      let parentCommand: JournalEntryV2 | undefined;
+      if (entry.category !== 'command' && typeof entry.index === 'number') {
+        parentCommand = entries.find(
+          (e) =>
+            e.category === 'command' &&
+            (e.relatedIndexes?.includes(entry.index as number) ||
+              ('relatedCommandIndex' in entry &&
+                typeof entry.relatedCommandIndex === 'number' &&
+                e.commandIndex === entry.relatedCommandIndex)),
+        );
+      }
+
       if (isExpandable(entry)) {
         const callInvocationId = String(entry.invocationId);
         return [
@@ -489,6 +524,7 @@ function getCombinedJournal(
             invocationId,
             entry,
             depth,
+            parentCommand,
           },
           ...(getCombinedJournal(callInvocationId, data, depth + 1)?.flat() ??
             []),
@@ -498,6 +534,7 @@ function getCombinedJournal(
           invocationId,
           entry,
           depth,
+          parentCommand,
         };
       }
     })
