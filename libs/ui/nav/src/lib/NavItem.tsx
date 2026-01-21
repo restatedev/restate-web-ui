@@ -134,6 +134,7 @@ export function NavSearchItem({
 interface NavButtonItemProps {
   isActive: boolean;
   onClick?: VoidFunction;
+  className?: string;
 }
 const buttonStyles = tv({
   base: 'group isolate flex cursor-default rounded-xl border-none bg-transparent px-3 py-1.5 text-center font-sans text-xs no-underline shadow-none transition hover:bg-black/3 pressed:bg-black/[0.06]',
@@ -151,12 +152,13 @@ export function NavButtonItem({
   children,
   isActive,
   onClick,
+  className,
 }: PropsWithChildren<NavButtonItemProps>) {
   return (
     <li>
       <Button
         variant="secondary"
-        className={buttonStyles({ isActive })}
+        className={buttonStyles({ isActive, className })}
         onClick={onClick}
         data-active={isActive}
         {...(isActive && { 'aria-pressed': true })}

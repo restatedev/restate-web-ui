@@ -56,19 +56,12 @@ export function Call({
               operationSymbol=""
               className="pr-0 [&>*>*>*]:flex-auto"
               input={
-                <>
-                  <LazyJournalEntryPayload.Parameters
-                    invocationId={invocation?.id}
-                    entry={entry}
-                    title="Parameters"
-                    isBase64
-                  />
-                  <LazyJournalEntryPayload.Headers
-                    invocationId={invocation?.id}
-                    entry={entry}
-                    title="Headers"
-                  />
-                </>
+                <LazyJournalEntryPayload.Input
+                  invocationId={invocation?.id}
+                  entry={entry}
+                  title="Input"
+                  isBase64
+                />
               }
             />
           }

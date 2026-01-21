@@ -16,6 +16,7 @@ import { Headers } from '../Headers';
 import { Failure } from '../Failure';
 import { useRestateContext } from '@restate/features/restate-context';
 import { ErrorBanner } from '@restate/ui/error';
+import { Nav, NavButtonItem } from '@restate/ui/nav';
 
 const styles = tv({
   base: 'contents items-center gap-1 rounded-md py-0 pl-0.5 text-2xs text-zinc-700',
@@ -168,12 +169,30 @@ function useLazyPayload<F extends PayloadField>(
 
   return {
     data: data?.[field] as JournalEntryPayloads[F] | undefined,
+    rawData: data,
     failure: data?.failure,
     isPending,
     error,
     isLoaded,
     onOpen: () => setShouldFetch(true),
   };
+}
+
+type PayloadTab = 'parameters' | 'headers';
+
+interface PayloadPopoverProps {
+  title: string;
+  triggerLabel: ReactNode;
+  waterMark?: ReactNode;
+  children: ReactNode;
+  onOpenChange?: (isOpen: boolean) => void;
+  isVoid?: boolean;
+  tabs?: {
+    items: PayloadTab[];
+    active: PayloadTab;
+    onChange: (tab: PayloadTab) => void;
+  };
+  contentClassName?: string;
 }
 
 function PayloadPopover({
@@ -183,14 +202,9 @@ function PayloadPopover({
   children,
   onOpenChange,
   isVoid = false,
-}: {
-  title: string;
-  triggerLabel: ReactNode;
-  waterMark?: ReactNode;
-  children: ReactNode;
-  onOpenChange?: (isOpen: boolean) => void;
-  isVoid?: boolean;
-}) {
+  tabs,
+  contentClassName,
+}: PayloadPopoverProps) {
   const {
     base,
     value,
@@ -216,10 +230,25 @@ function PayloadPopover({
           </PopoverTrigger>
           <PopoverContent>
             <DropdownSection
-              className={content()}
+              className={content({ className: contentClassName })}
               title={
                 <div className="flex items-center text-0.5xs">
-                  <span>{title}</span>
+                  {tabs ? (
+                    <Nav ariaCurrentValue="true" className="-mx-4 gap-0">
+                      {tabs.items.map((tab) => (
+                        <NavButtonItem
+                          key={tab}
+                          isActive={tabs.active === tab}
+                          onClick={() => tabs.onChange(tab)}
+                          className="[&:not([data-active=true])]:text-gray-500"
+                        >
+                          {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                        </NavButtonItem>
+                      ))}
+                    </Nav>
+                  ) : (
+                    <span>{title}</span>
+                  )}
                   <div className="ml-auto">{waterMark}</div>
                   <Portal className="-mr-2 ml-2" id="expression-value" />
                 </div>
@@ -332,18 +361,23 @@ function LazyValue({
   );
 }
 
-function LazyParameters({
+function LazyInput({
   invocationId,
   entry,
-  title = 'Parameters',
+  title = 'Input',
   isBase64,
 }: LazyPayloadProps) {
   const { EncodingWaterMark } = useRestateContext();
-  const { data, isPending, error, isLoaded, onOpen } = useLazyPayload(
+  const [activeTab, setActiveTab] = useState<PayloadTab>('parameters');
+
+  const { rawData, isPending, error, isLoaded, onOpen } = useLazyPayload(
     invocationId,
     entry,
     'parameters',
   );
+
+  const parametersData = rawData?.parameters;
+  const headersData = rawData?.headers;
 
   if (!entry || !invocationId) {
     return null;
@@ -354,58 +388,51 @@ function LazyParameters({
       title={title}
       triggerLabel={title}
       waterMark={
-        EncodingWaterMark && isBase64 && data ? (
-          <EncodingWaterMark value={data} />
+        EncodingWaterMark &&
+        isBase64 &&
+        parametersData &&
+        activeTab === 'parameters' ? (
+          <EncodingWaterMark value={parametersData} />
         ) : undefined
       }
       onOpenChange={(isOpen) => isOpen && onOpen()}
+      tabs={{
+        items: ['parameters', 'headers'],
+        active: activeTab,
+        onChange: setActiveTab,
+      }}
+      contentClassName={
+        activeTab === 'headers'
+          ? 'pl-0 bg-transparent border-none shadow-none'
+          : undefined
+      }
     >
       <PayloadContent isPending={isPending} error={error}>
-        {data ? (
-          <Value
-            value={data}
-            className="font-mono text-xs"
-            isBase64={isBase64}
+        {activeTab === 'parameters' ? (
+          parametersData ? (
+            <Value
+              value={parametersData}
+              className="font-mono text-xs"
+              isBase64={isBase64}
+              showCopyButton
+              portalId="expression-value"
+            />
+          ) : (
+            isLoaded && (
+              <div className="py-2 text-xs text-zinc-500">No parameters</div>
+            )
+          )
+        ) : headersData && headersData.length > 0 ? (
+          <Headers
+            headers={headersData}
             showCopyButton
             portalId="expression-value"
           />
         ) : (
           isLoaded && (
-            <div className="py-2 text-xs text-zinc-500">No parameters</div>
-          )
-        )}
-      </PayloadContent>
-    </PayloadPopover>
-  );
-}
-
-function LazyHeaders({
-  invocationId,
-  entry,
-  title = 'Headers',
-}: Omit<LazyPayloadProps, 'isBase64'>) {
-  const { data, isPending, error, isLoaded, onOpen } = useLazyPayload(
-    invocationId,
-    entry,
-    'headers',
-  );
-
-  if (!entry || !invocationId) {
-    return null;
-  }
-
-  return (
-    <PayloadPopover
-      title={title}
-      triggerLabel={title}
-      onOpenChange={(isOpen) => isOpen && onOpen()}
-    >
-      <PayloadContent isPending={isPending} error={error}>
-        {data && data.length > 0 ? (
-          <Headers headers={data} showCopyButton portalId="expression-value" />
-        ) : (
-          isLoaded && (
-            <div className="py-2 text-xs text-zinc-500">No headers</div>
+            <div className="rounded-xl border bg-white px-4 py-2 text-xs text-zinc-500 shadow-xs">
+              No headers
+            </div>
           )
         )}
       </PayloadContent>
@@ -509,8 +536,7 @@ function LazyFailure({
 
 export const LazyJournalEntryPayload = {
   Value: LazyValue,
-  Parameters: LazyParameters,
-  Headers: LazyHeaders,
+  Input: LazyInput,
   Keys: LazyKeys,
   Failure: LazyFailure,
 };
