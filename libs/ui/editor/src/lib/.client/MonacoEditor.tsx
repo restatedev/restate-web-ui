@@ -90,7 +90,7 @@ export function MonacoEditor({
             el.style.width = width;
           }
           if (contentHeight) {
-            el.style.height = `${Math.min(contentHeight, 400)}px`;
+            el.style.height = `clamp(2.625rem, ${contentHeight}px, 45vh)`;
           }
           if (contentWidth || contentHeight) {
             editorRef.current?.layout();
@@ -126,7 +126,7 @@ export function MonacoEditor({
   return (
     <div
       ref={setEl}
-      style={{ height: `clamp(2.625rem, ${value.length / 100}px, 50vh)` }}
+      style={{ height: `clamp(2.625rem, ${value.length / 100}px, 45vh)` }}
       className="h-full min-h-4 w-full max-w-full min-w-24 transform transition-all [&_.monaco-editor]:outline-hidden!"
     />
   );
