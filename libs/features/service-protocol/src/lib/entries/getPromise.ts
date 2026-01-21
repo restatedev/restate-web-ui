@@ -97,6 +97,7 @@ function getPromiseV2(
     type: 'GetPromise',
     category: 'command',
     completionId,
+    completionIndex: completionEntry?.index,
     end: completionEntry?.start,
     index: entry.index,
     relatedIndexes,

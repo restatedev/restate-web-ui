@@ -113,6 +113,7 @@ function callV2(
     type: 'Call',
     category: 'command',
     completionId: resultCompletionId,
+    completionIndex: completionEntry?.index,
     end: completionEntry?.start,
     index: entry.index,
     relatedIndexes,

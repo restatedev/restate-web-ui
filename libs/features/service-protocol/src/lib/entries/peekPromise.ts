@@ -103,6 +103,7 @@ function peekPromiseV2(
     type: 'PeekPromise',
     category: 'command',
     completionId,
+    completionIndex: completionEntry?.index,
     end: completionEntry?.start,
     index: entry.index,
     relatedIndexes,

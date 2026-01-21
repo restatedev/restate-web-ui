@@ -2215,6 +2215,7 @@ export interface components {
       index?: number;
       relatedIndexes?: number[];
       completionId?: number;
+      completionIndex?: number;
       commandIndex?: number;
       /** @enum {string} */
       category?: 'notification' | 'command' | 'event';

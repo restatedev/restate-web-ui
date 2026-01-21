@@ -6190,6 +6190,9 @@
           "completionId": {
             "type": "integer"
           },
+          "completionIndex": {
+            "type": "integer"
+          },
           "commandIndex": {
             "type": "integer"
           },
