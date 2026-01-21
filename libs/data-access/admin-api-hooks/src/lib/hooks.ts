@@ -720,7 +720,10 @@ export function useGetInvocationJournalWithInvocationV2(
     'get',
     {
       baseUrl,
-      parameters: { path: { invocationId }, query: { journal: true } },
+      parameters: {
+        path: { invocationId },
+        query: { journal: true, includePayloads: false },
+      },
     },
   );
   const results = useQuery({
@@ -741,7 +744,10 @@ export function useGetInvocationsJournalWithInvocationsV2(
       invocationIds.map((invocationId) =>
         adminApi('query', '/query/v2/invocations/{invocationId}', 'get', {
           baseUrl,
-          parameters: { path: { invocationId }, query: { journal: true } },
+          parameters: {
+            path: { invocationId },
+            query: { journal: true, includePayloads: false },
+          },
         }),
       ),
     [baseUrl, invocationIds],
@@ -1200,7 +1206,10 @@ export function useRestartWorkflowAsNew(
       const data = await queryClient.ensureQueryData(
         adminApi('query', '/query/v2/invocations/{invocationId}', 'get', {
           baseUrl,
-          parameters: { path: { invocationId }, query: { journal: true } },
+          parameters: {
+            path: { invocationId },
+            query: { journal: true, includePayloads: false },
+          },
         }),
       );
       const inputEntry = data?.journal?.entries?.find(

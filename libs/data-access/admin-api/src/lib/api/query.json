@@ -1362,6 +1362,15 @@
             "schema": {
               "type": "boolean"
             }
+          },
+          {
+            "name": "includePayloads",
+            "in": "query",
+            "description": "When true, includes full payload data (parameters, values, headers) in journal entries. When false or omitted, returns lite journal entries without payloads for better performance.",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
           }
         ],
         "responses": {

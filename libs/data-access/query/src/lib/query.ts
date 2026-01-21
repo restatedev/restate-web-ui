@@ -51,7 +51,10 @@ type BoundHandlers = {
     invocationId: string,
     entryIndex: number,
   ) => Promise<Response>;
-  getInvocationJournalV2: (invocationId: string) => Promise<Response>;
+  getInvocationJournalV2: (
+    invocationId: string,
+    includePayloads?: boolean,
+  ) => Promise<Response>;
   getInbox: (
     service: string,
     key: string,
@@ -250,7 +253,9 @@ queryRouter.map(routes, {
   invocationsV2: {
     async get(ctx) {
       const { getInvocationJournalV2 } = ctx.storage.get(handlersKey);
-      return getInvocationJournalV2(ctx.params.invocationId);
+      const includePayloads =
+        ctx.url.searchParams.get('includePayloads') === 'true';
+      return getInvocationJournalV2(ctx.params.invocationId, includePayloads);
     },
   },
   virtualObjects: {

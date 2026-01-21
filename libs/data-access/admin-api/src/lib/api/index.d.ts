@@ -5123,6 +5123,8 @@ export interface operations {
       query?: {
         /** @description Should include journal */
         journal?: boolean;
+        /** @description When true, includes full payload data (parameters, values, headers) in journal entries. When false or omitted, returns lite journal entries without payloads for better performance. */
+        includePayloads?: boolean;
       };
       header?: never;
       path: {
