@@ -24,7 +24,6 @@ export function CompleteAwakeable({
         },
       ]}
       operationSymbol=""
-      hideErrorForFailureResult
       chain={
         <Expression
           name={'.' + (entry.resultType === 'failure' ? 'reject' : 'resolve')}
@@ -32,23 +31,12 @@ export function CompleteAwakeable({
           className="pr-0 [&>*>*>*]:flex-auto"
           input={
             <div className="mx-0.5">
-              {entry.resultType !== 'failure' && (
-                <LazyJournalEntryPayload.Value
-                  invocationId={invocation?.id}
-                  entry={entry}
-                  title="Value"
-                  isBase64
-                />
-              )}
-              {entry.error && (
-                <Failure
-                  message={entry.error.message!}
-                  restate_code={entry.error.restateCode}
-                  isRetrying={entry.isRetrying}
-                  className="text-2xs"
-                  stacktrace={entry.error.stack}
-                />
-              )}
+              <LazyJournalEntryPayload.Value
+                invocationId={invocation?.id}
+                entry={entry}
+                title="Value"
+                isBase64
+              />
             </div>
           }
         />

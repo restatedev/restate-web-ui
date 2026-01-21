@@ -13,6 +13,7 @@ import { tv } from '@restate/util/styles';
 import { ReactNode, useState } from 'react';
 import { Value } from '../Value';
 import { Headers } from '../Headers';
+import { Failure } from '../Failure';
 import { useRestateContext } from '@restate/features/restate-context';
 import { ErrorBanner } from '@restate/ui/error';
 
@@ -27,7 +28,7 @@ const styles = tv({
 
 type PayloadField = keyof Pick<
   JournalEntryPayloads,
-  'parameters' | 'value' | 'headers' | 'keys'
+  'parameters' | 'value' | 'headers' | 'keys' | 'failure'
 >;
 
 function getPayloadEntryIndex(
@@ -45,14 +46,14 @@ function getPayloadEntryIndex(
 
   switch (type) {
     case 'Call':
-      return field === 'value' ? completionIndex : index;
+      return field === 'value' || field === 'failure' ? completionIndex : index;
 
     case 'Run':
     case 'GetPromise':
     case 'PeekPromise':
     case 'AttachInvocation':
     case 'Awakeable':
-      return field === 'value' ? completionIndex : index;
+      return field === 'value' || field === 'failure' ? completionIndex : index;
 
     case 'Input':
     case 'Output':
@@ -81,10 +82,20 @@ function getInitialData<F extends PayloadField>(
 
   switch (field) {
     case 'value':
-      return { value: (entry as { value?: string }).value } as Pick<
-        JournalEntryPayloads,
-        F
-      >;
+    case 'failure':
+      return {
+        value: (entry as { value?: string }).value,
+        failure: (
+          entry as { error?: { message?: string; restateCode?: string } }
+        ).error
+          ? {
+              message: (entry as { error?: { message?: string } }).error
+                ?.message,
+              restate_code: (entry as { error?: { restateCode?: string } })
+                .error?.restateCode,
+            }
+          : undefined,
+      } as Pick<JournalEntryPayloads, F>;
     case 'parameters':
       return {
         parameters: (entry as { parameters?: string }).parameters,
@@ -137,6 +148,7 @@ function useLazyPayload<F extends PayloadField>(
 
   return {
     data: data?.[field] as JournalEntryPayloads[F] | undefined,
+    failure: data?.failure,
     isPending,
     error,
     onOpen: () => setShouldFetch(true),
@@ -230,7 +242,7 @@ function LazyValue({
   isBase64,
 }: LazyPayloadProps) {
   const { EncodingWaterMark } = useRestateContext();
-  const { data, isPending, error, onOpen } = useLazyPayload(
+  const { data, failure, isPending, error, onOpen } = useLazyPayload(
     invocationId,
     entry,
     'value',
@@ -240,11 +252,22 @@ function LazyValue({
     return null;
   }
 
-  if (entry.isLoaded && !data) {
+  if (entry.isLoaded && !data && !failure) {
     if (entry.resultType === 'void' || entry.resultType === 'success') {
       return <div className="font-normal text-zinc-400">void</div>;
     }
     return null;
+  }
+
+  if (failure?.message) {
+    return (
+      <Failure
+        message={failure.message}
+        restate_code={failure.restate_code}
+        isRetrying={entry.isRetrying}
+        className="text-2xs"
+      />
+    );
   }
 
   return (

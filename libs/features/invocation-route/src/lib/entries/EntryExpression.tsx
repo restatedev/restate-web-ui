@@ -76,7 +76,6 @@ export function EntryExpression({
   operationSymbol,
   chain,
   className,
-  hideErrorForFailureResult,
 }: {
   invocation?: ReturnType<
     typeof useGetInvocationJournalWithInvocationV2
@@ -96,7 +95,6 @@ export function EntryExpression({
   operationSymbol?: string;
   chain?: ReactNode;
   className?: string;
-  hideErrorForFailureResult?: boolean;
 }) {
   const { EncodingWaterMark } = useRestateContext();
 
@@ -210,16 +208,15 @@ export function EntryExpression({
           )}
           {isPending && <Ellipsis />}
           {propOutput}
-          {entry.error &&
-            (!hideErrorForFailureResult || entry.resultType !== 'failure') && (
-              <Failure
-                message={entry.error.message!}
-                restate_code={entry.error.restateCode}
-                stacktrace={entry.error.stack}
-                isRetrying={entry.isRetrying || entry.error.isTransient}
-                className="ml-1 w-full min-w-6 grow-1 basis-20 text-2xs"
-              />
-            )}
+          {entry.error && entry.resultType !== 'failure' && (
+            <Failure
+              message={entry.error.message!}
+              restate_code={entry.error.restateCode}
+              stacktrace={entry.error.stack}
+              isRetrying={entry.isRetrying || entry.error.isTransient}
+              className="ml-1 w-full min-w-6 grow-1 basis-20 text-2xs"
+            />
+          )}
         </>
       }
       chain={chain}
