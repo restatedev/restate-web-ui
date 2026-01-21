@@ -698,15 +698,10 @@ export function useGetJournalEntryPayloads(
     },
   );
 
-  const results = useQuery({
+  return useQuery({
     ...queryOptions,
     ...options,
   });
-
-  return {
-    ...results,
-    queryKey: queryOptions.queryKey,
-  };
 }
 
 export function useGetInvocationJournalWithInvocationV2(

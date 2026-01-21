@@ -150,10 +150,8 @@ function useLazyPayload<F extends PayloadField>(
     entry?.resultType === 'void' ||
     entry?.resultType === 'failure';
 
-  const { data, isPending, error, isSuccess } = useGetJournalEntryPayloads(
-    invocationId ?? '',
-    entryIndex ?? -1,
-    {
+  const { data, isPending, error, isSuccess, refetch } =
+    useGetJournalEntryPayloads(invocationId ?? '', entryIndex ?? -1, {
       enabled:
         entryIndex !== undefined &&
         !!invocationId &&
@@ -162,8 +160,7 @@ function useLazyPayload<F extends PayloadField>(
       refetchOnMount: false,
       staleTime: Infinity,
       initialData: entry ? getInitialData(entry, field) : undefined,
-    },
-  );
+    });
 
   const isLoaded = entry?.isLoaded || isSuccess;
 
@@ -174,7 +171,12 @@ function useLazyPayload<F extends PayloadField>(
     isPending,
     error,
     isLoaded,
-    onOpen: () => setShouldFetch(true),
+    onOpen: () => {
+      setShouldFetch(true);
+      if (error) {
+        refetch();
+      }
+    },
   };
 }
 
@@ -275,11 +277,12 @@ function PayloadContent({
   return (
     <>
       {isPending && (
-        <div className="flex items-center justify-center py-4">
-          <Spinner />
+        <div className="flex items-center gap-1.5 py-2.5 pr-4 text-sm text-zinc-500">
+          <Spinner className="h-4 w-4" />
+          Loading…
         </div>
       )}
-      {error && <ErrorBanner error={error} />}
+      {error && <ErrorBanner error={error} className="-ml-4" />}
       {children}
     </>
   );
