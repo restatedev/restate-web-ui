@@ -418,9 +418,67 @@ function LazyKeys({
   );
 }
 
+interface LazyFailureProps {
+  invocationId?: string;
+  entry?: JournalEntryV2;
+  className?: string;
+  isRetrying?: boolean;
+  title?: string;
+}
+
+function LazyFailure({
+  invocationId,
+  entry,
+  className,
+  isRetrying,
+  title,
+}: LazyFailureProps) {
+  const { failure, isPending } = useLazyPayload(invocationId, entry, 'failure');
+
+  if (!entry || !invocationId) {
+    return null;
+  }
+
+  if (entry.resultType !== 'failure') {
+    return null;
+  }
+
+  if (isPending) {
+    return (
+      <div className={className}>
+        <Spinner className="h-3 w-3" />
+      </div>
+    );
+  }
+
+  const errorData = entry.isLoaded
+    ? entry.error
+    : failure
+      ? {
+          message: failure.message,
+          restateCode: failure.restate_code,
+        }
+      : undefined;
+
+  if (!errorData) {
+    return <span className={className}>Failed</span>;
+  }
+
+  return (
+    <Failure
+      restate_code={errorData.restateCode}
+      message={errorData.message ?? 'Failed'}
+      className={className}
+      isRetrying={isRetrying}
+      title={title}
+    />
+  );
+}
+
 export const LazyJournalEntryPayload = {
   Value: LazyValue,
   Parameters: LazyParameters,
   Headers: LazyHeaders,
   Keys: LazyKeys,
+  Failure: LazyFailure,
 };
