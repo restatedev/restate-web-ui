@@ -21,7 +21,7 @@ export function Output({
         <LazyJournalEntryPayload.Value
           invocationId={invocation?.id}
           entry={entry}
-          title="Result"
+          title="Output"
           isBase64
         />
       }
