@@ -45,6 +45,7 @@ function attachInvocationV2(
     type: 'AttachInvocation',
     category: 'command',
     completionId,
+    completionIndex: completionEntry?.index,
     end: completionEntry?.start,
     index: entry.index,
     relatedIndexes:

@@ -1,6 +1,7 @@
 import { JournalEntryV2 } from '@restate/data-access/admin-api';
 import { EntryProps } from './types';
 import { EntryExpression } from './EntryExpression';
+import { LazyJournalEntryPayload } from './LazyJournalEntryPayload';
 
 export function PeekPromise({
   entry,
@@ -24,9 +25,16 @@ export function PeekPromise({
           shouldStringified: true,
         },
       ]}
-      outputParam="value"
+      output={
+        <LazyJournalEntryPayload.Value
+          invocationId={invocation?.id}
+          entry={entry}
+          title="Result"
+          isBase64
+          hideWhenEntryIsPending
+        />
+      }
       chain=".peak"
-      isOutputBase64
     />
   );
 }

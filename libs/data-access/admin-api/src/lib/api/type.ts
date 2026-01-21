@@ -93,6 +93,9 @@ export type SortInvocations = Exclude<
   components['schemas']['ListInvocationsRequestBody']['sort'],
   undefined
 >;
+export type JournalEntryPayloads =
+  components['schemas']['JournalEntryPayloads'];
+export type FailureEntry = components['schemas']['FailureEntry'];
 
 export type HTTPDeployment = Exclude<Deployment, { arn: string }>;
 export type LambdaDeployment = Exclude<Deployment, { uri: string }>;

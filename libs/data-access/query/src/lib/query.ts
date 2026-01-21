@@ -19,6 +19,7 @@ import {
   getInvocationJournal,
   getJournalEntryV2,
   getInvocationJournalV2,
+  getJournalEntryPayloads,
   getInbox,
   getState,
   getStateInterface,
@@ -46,7 +47,14 @@ type BoundHandlers = {
     invocationId: string,
     entryIndex: number,
   ) => Promise<Response>;
-  getInvocationJournalV2: (invocationId: string) => Promise<Response>;
+  getJournalEntryPayloads: (
+    invocationId: string,
+    entryIndex: number,
+  ) => Promise<Response>;
+  getInvocationJournalV2: (
+    invocationId: string,
+    includePayloads?: boolean,
+  ) => Promise<Response>;
   getInbox: (
     service: string,
     key: string,
@@ -83,6 +91,7 @@ function bindHandlers(context: QueryContext): BoundHandlers {
     getInvocation: getInvocation.bind(context),
     getInvocationJournal: getInvocationJournal.bind(context),
     getJournalEntryV2: getJournalEntryV2.bind(context),
+    getJournalEntryPayloads: getJournalEntryPayloads.bind(context),
     getInvocationJournalV2: getInvocationJournalV2.bind(context),
     getInbox: getInbox.bind(context),
     getState: getState.bind(context),
@@ -129,6 +138,10 @@ const routes = createRoutes({
     journalEntry: {
       method: 'GET',
       pattern: '/invocations/:invocationId/journal/:entryIndex',
+    },
+    journalEntryPayloads: {
+      method: 'GET',
+      pattern: '/invocations/:invocationId/journal/:entryIndex/payloads',
     },
     journal: {
       method: 'GET',
@@ -195,6 +208,13 @@ queryRouter.map(routes, {
         Number(ctx.params.entryIndex),
       );
     },
+    async journalEntryPayloads(ctx) {
+      const { getJournalEntryPayloads } = ctx.storage.get(handlersKey);
+      return getJournalEntryPayloads(
+        ctx.params.invocationId,
+        Number(ctx.params.entryIndex),
+      );
+    },
     async journal(ctx) {
       const { getInvocationJournal } = ctx.storage.get(handlersKey);
       return getInvocationJournal(ctx.params.invocationId);
@@ -233,7 +253,9 @@ queryRouter.map(routes, {
   invocationsV2: {
     async get(ctx) {
       const { getInvocationJournalV2 } = ctx.storage.get(handlersKey);
-      return getInvocationJournalV2(ctx.params.invocationId);
+      const includePayloads =
+        ctx.url.searchParams.get('includePayloads') === 'true';
+      return getInvocationJournalV2(ctx.params.invocationId, includePayloads);
     },
   },
   virtualObjects: {

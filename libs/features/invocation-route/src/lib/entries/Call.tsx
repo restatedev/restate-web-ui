@@ -1,7 +1,6 @@
 import { JournalEntryV2 } from '@restate/data-access/admin-api';
 import { EntryProps } from './types';
-import { Expression, InputOutput } from '../Expression';
-import { Value } from '../Value';
+import { Expression } from '../Expression';
 import { Target } from '../Target';
 import { InvocationId } from '../InvocationId';
 import { Spinner } from '@restate/ui/loading';
@@ -11,8 +10,7 @@ import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import { CallInvokedLoadingError } from './CallInvokedLoadingError';
 import { EntryExpression } from './EntryExpression';
-import { Headers } from '../Headers';
-import { useRestateContext } from '@restate/features/restate-context';
+import { LazyJournalEntryPayload } from './LazyJournalEntryPayload';
 
 const styles = tv({
   base: 'relative flex flex-auto flex-row items-center gap-1.5',
@@ -36,7 +34,6 @@ export function Call({
 
   const invokedIsPending = isPending?.[String(entry.invocationId)];
   const invokedError = invocationsError?.[String(entry.invocationId)];
-  const { EncodingWaterMark } = useRestateContext();
 
   return (
     <>
@@ -59,47 +56,24 @@ export function Call({
               operationSymbol=""
               className="pr-0 [&>*>*>*]:flex-auto"
               input={
-                <>
-                  {entry.parameters && (
-                    <InputOutput
-                      name="parameters"
-                      popoverTitle="Parameters"
-                      isValueHidden
-                      popoverContent={
-                        <Value
-                          value={entry.parameters}
-                          className="font-mono text-xs"
-                          isBase64
-                          showCopyButton
-                          portalId="expression-value"
-                        />
-                      }
-                      {...(EncodingWaterMark && {
-                        waterMark: (
-                          <EncodingWaterMark value={entry.parameters} />
-                        ),
-                      })}
-                    />
-                  )}
-                  {entry.parameters &&
-                    entry.headers &&
-                    entry.headers.length > 0 &&
-                    ', '}
-                  {entry.headers && entry.headers.length > 0 && (
-                    <InputOutput
-                      name="headers"
-                      popoverTitle=""
-                      isValueHidden
-                      className="mx-0 border-none bg-transparent px-0 [&&&]:mb-1"
-                      popoverContent={<Headers headers={entry.headers} />}
-                    />
-                  )}
-                </>
+                <LazyJournalEntryPayload.Input
+                  invocationId={invocation?.id}
+                  entry={entry}
+                  title="Input"
+                  isBase64
+                />
               }
             />
           }
-          outputParam="value"
-          isOutputBase64
+          output={
+            <LazyJournalEntryPayload.Value
+              invocationId={invocation?.id}
+              entry={entry}
+              title="Result"
+              isBase64
+              hideWhenEntryIsPending
+            />
+          }
         />
         {entry.invocationId && (
           <>

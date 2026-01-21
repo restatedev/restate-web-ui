@@ -92,8 +92,13 @@ pnpm nx g @nx/js:library <NAME> --directory=libs/util/<NAME> --bundler=none --im
 - **TypeScript**: Strict mode enabled, use `noUncheckedIndexedAccess`
 - **Imports**: Use path aliases (`@restate/ui/*`, `@restate/features/*`, `@restate/data-access/*`, `@restate/util/*`) from tsconfig.base.json
 - **Formatting**: Prettier with single quotes, trailing commas, Tailwind plugin
-- **Styling**: Tailwind CSS, use `tv()` from `@restate/util/styles` for component variants
+- **Styling**: Tailwind CSS, use `tv()` from `@restate/util/styles` for component variants. Never use string interpolation for dynamic Tailwind classes (e.g., `${isVoid ? 'text-zinc-400' : 'text-gray-500'}`). Always use `tv()` with variants instead.
 - **Components**: React 19, React Aria Components for UI primitives, use `forwardRef` for refs
 - **Types**: Define props interfaces explicitly, use `PropsWithChildren` when needed
 - **Testing**: Vitest + Testing Library, test files use `.spec.tsx` suffix
 - **Comments**: NEVER add comments unless explicitly requested by the user
+- **Code reuse**: Avoid duplication. When creating similar hooks or components, look for opportunities to reuse existing logic (e.g., if two hooks fetch from the same endpoint, use one hook and access the full response data).
+
+## API Types
+
+- **Regenerate types**: After modifying OpenAPI schemas in `libs/data-access/admin-api/src/lib/api/*.json`, run `pnpm nx create admin-api` to regenerate TypeScript types.

@@ -4,9 +4,9 @@ import { DropdownSection } from '@restate/ui/dropdown';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
 import { PropsWithChildren } from 'react';
 import { Badge } from '@restate/ui/badge';
-import { Failure } from '../Failure';
 import { TimelinePortal } from '../Portals';
 import { EntryProgress } from '../EntryProgress';
+import { LazyJournalEntryPayload } from './LazyJournalEntryPayload';
 
 export function CompletionNotification({
   entry,
@@ -48,16 +48,11 @@ export function CompletionNotification({
           </PopoverContent>
         </Popover>
         {entry.resultType === 'failure' ? (
-          <>
-            {entry.error && (
-              <Failure
-                restate_code={entry.error?.restateCode}
-                message={entry.error?.message ?? 'Failed'}
-                stacktrace={entry.error.stack}
-                className="my-[-2px] border-none bg-transparent py-0 text-2xs shadow-none hover:bg-red-100 pressed:bg-red-200/70 [&_button]:h-5"
-              />
-            )}
-          </>
+          <LazyJournalEntryPayload.Failure
+            invocationId={invocation?.id}
+            entry={entry}
+            className="my-[-2px] border-none bg-transparent py-0 text-2xs shadow-none hover:bg-red-100 pressed:bg-red-200/70 [&_button]:h-5"
+          />
         ) : (
           <div className="mr-2">Completed</div>
         )}

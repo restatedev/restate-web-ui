@@ -16,7 +16,6 @@ import { InvocationPageProvider } from './InvocationPageContext';
 import { WorkflowKeySection } from './WorkflowKeySection';
 import { tv } from '@restate/util/styles';
 import { Copy } from '@restate/ui/copy';
-import { LIVE_JOURNAL } from './constants';
 import { useEffect, useRef, useState } from 'react';
 import { Invocation, JournalEntryV2 } from '@restate/data-access/admin-api';
 
@@ -52,7 +51,7 @@ const lastFailureContent = tv({
 
 function Component() {
   const { id } = useParams<{ id: string }>();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
 
   const {
     data: journalAndInvocationData,
@@ -78,13 +77,11 @@ function Component() {
     journalAndInvocationData?.target_service_ty === 'virtual_object';
   const isWorkflow = journalAndInvocationData?.target_service_ty === 'workflow';
 
-  const isLive = searchParams.get(LIVE_JOURNAL) === 'true' && !error;
   const [isCompact, setIsCompact] = useState(true);
 
   const { OnboardingGuide } = useRestateContext();
 
   const invocationsSearchParams = new URLSearchParams(searchParams);
-  invocationsSearchParams.delete(LIVE_JOURNAL);
 
   return (
     <InvocationPageProvider isInInvocationPage>
@@ -224,13 +221,6 @@ function Component() {
             <JournalV2
               invocationId={String(id)}
               key={String(id)}
-              isLive={isLive}
-              setIsLive={(value) => {
-                setSearchParams((old) => {
-                  old.set(LIVE_JOURNAL, String(value));
-                  return old;
-                });
-              }}
               isCompact={isCompact}
               setIsCompact={setIsCompact}
             />

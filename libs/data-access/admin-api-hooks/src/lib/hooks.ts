@@ -666,6 +666,7 @@ export function useGetInvocationJournalEntry(
     'get',
     {
       baseUrl,
+      resolvedPath: `/query/invocations/${invocationId}/journal/${entryIndex}`,
       parameters: { path: { invocationId, entryIndex } },
     },
   );
@@ -675,10 +676,32 @@ export function useGetInvocationJournalEntry(
     ...options,
   });
 
-  return {
-    ...results,
-    queryKey: queryOptions.queryKey,
-  };
+  return results;
+}
+
+export function useGetJournalEntryPayloads(
+  invocationId: string,
+  entryIndex: number,
+  options?: HookQueryOptions<
+    '/query/invocations/{invocationId}/journal/{entryIndex}/payloads',
+    'get'
+  >,
+) {
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi(
+    'query',
+    '/query/invocations/{invocationId}/journal/{entryIndex}/payloads',
+    'get',
+    {
+      baseUrl,
+      parameters: { path: { invocationId, entryIndex } },
+    },
+  );
+
+  return useQuery({
+    ...queryOptions,
+    ...options,
+  });
 }
 
 export function useGetInvocationJournalWithInvocationV2(
@@ -692,7 +715,10 @@ export function useGetInvocationJournalWithInvocationV2(
     'get',
     {
       baseUrl,
-      parameters: { path: { invocationId }, query: { journal: true } },
+      parameters: {
+        path: { invocationId },
+        query: { journal: true, includePayloads: false },
+      },
     },
   );
   const results = useQuery({
@@ -713,7 +739,10 @@ export function useGetInvocationsJournalWithInvocationsV2(
       invocationIds.map((invocationId) =>
         adminApi('query', '/query/v2/invocations/{invocationId}', 'get', {
           baseUrl,
-          parameters: { path: { invocationId }, query: { journal: true } },
+          parameters: {
+            path: { invocationId },
+            query: { journal: true, includePayloads: false },
+          },
         }),
       ),
     [baseUrl, invocationIds],
@@ -1172,7 +1201,10 @@ export function useRestartWorkflowAsNew(
       const data = await queryClient.ensureQueryData(
         adminApi('query', '/query/v2/invocations/{invocationId}', 'get', {
           baseUrl,
-          parameters: { path: { invocationId }, query: { journal: true } },
+          parameters: {
+            path: { invocationId },
+            query: { journal: true, includePayloads: false },
+          },
         }),
       );
       const inputEntry = data?.journal?.entries?.find(

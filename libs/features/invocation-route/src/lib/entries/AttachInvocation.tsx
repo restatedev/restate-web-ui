@@ -8,6 +8,7 @@ import { CallInvokedLoadingError } from './CallInvokedLoadingError';
 import { Button } from '@restate/ui/button';
 import { Spinner } from '@restate/ui/loading';
 import { Icon, IconName } from '@restate/ui/icons';
+import { LazyJournalEntryPayload } from './LazyJournalEntryPayload';
 
 const styles = tv({
   base: 'relative flex flex-auto flex-row items-center gap-1.5',
@@ -48,8 +49,15 @@ export function AttachInvocation({
               size="md"
             />
           }
-          outputParam="value"
-          isOutputBase64
+          output={
+            <LazyJournalEntryPayload.Value
+              invocationId={invocation?.id}
+              entry={entry}
+              title="Result"
+              isBase64
+              hideWhenEntryIsPending
+            />
+          }
         />
       </div>
       <div className="absolute top-0 right-1 bottom-0 flex items-center">
