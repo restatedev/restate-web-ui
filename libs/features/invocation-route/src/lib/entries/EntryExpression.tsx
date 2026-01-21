@@ -63,6 +63,7 @@ const CHAIN_COMMANDS_COMPONENTS: {
   PeekPromise: undefined,
   CompletePromise: { failure: 'reject', success: 'resolve', void: '' },
 };
+
 const styles = tv({ base: 'mr-2 overflow-hidden pr-0' });
 
 export function EntryExpression({
@@ -71,14 +72,11 @@ export function EntryExpression({
   input: propInput,
   output: propOutput,
   inputParams,
-  outputParam,
   name,
   operationSymbol,
   chain,
   className,
-  outputParamPlaceholder = 'Result',
   hideErrorForFailureResult,
-  isOutputBase64,
 }: {
   invocation?: ReturnType<
     typeof useGetInvocationJournalWithInvocationV2
@@ -94,9 +92,6 @@ export function EntryExpression({
     shouldStringified?: boolean;
     isBase64?: boolean;
   }[];
-  outputParam?: string;
-  outputParamPlaceholder?: string;
-  isOutputBase64?: boolean;
   name?: string;
   operationSymbol?: string;
   chain?: ReactNode;
@@ -162,70 +157,9 @@ export function EntryExpression({
         return [...p, ', ', c];
       }, [] as ReactNode[]);
 
-  const output =
-    propOutput ||
-    (outputParam && (
-      <>
-        {typeof (entry as any)[outputParam] === 'string' && (
-          <InputOutput
-            name={outputParam}
-            isValueHidden
-            popoverTitle={outputParamPlaceholder}
-            popoverContent={
-              <Value
-                value={(entry as any)[outputParam]}
-                className="font-mono text-xs"
-                isBase64={isOutputBase64}
-                showCopyButton
-                portalId="expression-value"
-              />
-            }
-            {...(EncodingWaterMark &&
-              isOutputBase64 && {
-                waterMark: (
-                  <EncodingWaterMark value={(entry as any)[outputParam]} />
-                ),
-              })}
-          />
-        )}
-        {(entry as any)[outputParam] &&
-          Array.isArray((entry as any)[outputParam]) && (
-            <InputOutput
-              name={outputParam}
-              isValueHidden
-              popoverTitle={outputParamPlaceholder}
-              popoverContent={
-                <Value
-                  value={JSON.stringify((entry as any)[outputParam])}
-                  className="w-full font-mono text-xs"
-                  isBase64={isOutputBase64}
-                  showCopyButton
-                  portalId="expression-value"
-                  {...(EncodingWaterMark &&
-                    isOutputBase64 && {
-                      waterMark: (
-                        <EncodingWaterMark
-                          value={JSON.stringify((entry as any)[outputParam])}
-                        />
-                      ),
-                    })}
-                />
-              }
-            />
-          )}
-        {((typeof (entry as any)[outputParam] === 'undefined' &&
-          entry.resultType === 'success') ||
-          entry.resultType === 'void') && (
-          <div className="font-normal text-zinc-400">void</div>
-        )}
-        <div className="comma hidden text-gray-400">,</div>
-      </>
-    ));
-
   const { isAmbiguous: entryCompletionIsAmbiguous, mode } =
     isEntryCompletionAmbiguous(entry, invocation);
 
-  // TODO: move to middleware
   const isPending =
     entry?.isPending &&
     !entryCompletionIsAmbiguous &&
@@ -275,8 +209,7 @@ export function EntryExpression({
             </HoverTooltip>
           )}
           {isPending && <Ellipsis />}
-          <div className="[&:has(+.comma+*)>.comma]:block" />
-          {output}
+          {propOutput}
           {entry.error &&
             (!hideErrorForFailureResult || entry.resultType !== 'failure') && (
               <Failure
