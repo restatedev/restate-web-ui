@@ -34,6 +34,7 @@ export function GetState({
           entry={entry}
           title="Value"
           isBase64
+          hideWhenEntryIsPending
         />
       }
     />

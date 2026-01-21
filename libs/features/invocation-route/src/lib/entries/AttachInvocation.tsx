@@ -55,6 +55,7 @@ export function AttachInvocation({
               entry={entry}
               title="Result"
               isBase64
+              hideWhenEntryIsPending
             />
           }
         />

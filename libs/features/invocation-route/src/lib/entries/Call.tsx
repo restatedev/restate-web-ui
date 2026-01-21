@@ -78,6 +78,7 @@ export function Call({
               entry={entry}
               title="Result"
               isBase64
+              hideWhenEntryIsPending
             />
           }
         />

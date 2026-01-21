@@ -27,6 +27,7 @@ export function Awakeable({
           entry={entry}
           title="Result"
           isBase64
+          hideWhenEntryIsPending
         />
       }
     />

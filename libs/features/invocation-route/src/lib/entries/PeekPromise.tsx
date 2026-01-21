@@ -31,6 +31,7 @@ export function PeekPromise({
           entry={entry}
           title="Result"
           isBase64
+          hideWhenEntryIsPending
         />
       }
       chain=".peak"

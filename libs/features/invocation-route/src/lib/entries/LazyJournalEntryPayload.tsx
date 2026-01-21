@@ -233,6 +233,7 @@ interface LazyPayloadProps {
   entry?: JournalEntryV2;
   title?: string;
   isBase64?: boolean;
+  hideWhenEntryIsPending?: boolean;
 }
 
 function LazyValue({
@@ -240,6 +241,7 @@ function LazyValue({
   entry,
   title = 'Result',
   isBase64,
+  hideWhenEntryIsPending = false,
 }: LazyPayloadProps) {
   const { EncodingWaterMark } = useRestateContext();
   const { data, failure, isPending, error, onOpen } = useLazyPayload(
@@ -248,7 +250,7 @@ function LazyValue({
     'value',
   );
 
-  if (!entry || !invocationId) {
+  if (!entry || !invocationId || (hideWhenEntryIsPending && entry.isPending)) {
     return null;
   }
 
