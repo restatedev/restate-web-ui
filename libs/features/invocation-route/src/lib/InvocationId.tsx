@@ -4,7 +4,7 @@ import { HoverTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Link } from '@restate/ui/link';
 import { Invocation } from '@restate/data-access/admin-api';
 import { tv } from '@restate/util/styles';
-import { INVOCATION_QUERY_NAME, LIVE_JOURNAL } from './constants';
+import { INVOCATION_QUERY_NAME } from './constants';
 import { useActiveSidebarParam } from '@restate/ui/layout';
 import { useLocation } from 'react-router';
 import { useRestateContext } from '@restate/features/restate-context';
@@ -90,9 +90,6 @@ export function getSearchParams(
     }
     if (key === INVOCATION_QUERY_NAME && excludingInvocationId) {
       searchParams.delete(key, excludingInvocationId);
-    }
-    if (isLive) {
-      searchParams.set(LIVE_JOURNAL, 'true');
     }
   });
   return '?' + searchParams.toString();

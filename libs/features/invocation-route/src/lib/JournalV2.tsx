@@ -71,8 +71,6 @@ export function JournalV2({
   timelineWidth = 0.5,
   showApiError = true,
   withTimeline = true,
-  isLive = false,
-  setIsLive,
   isCompact = true,
   setIsCompact,
 }: {
@@ -81,13 +79,11 @@ export function JournalV2({
   timelineWidth?: number;
   showApiError?: boolean;
   withTimeline?: boolean;
-  isLive?: boolean;
   isCompact?: boolean;
   setIsCompact?: Dispatch<React.SetStateAction<boolean>>;
-  setIsLive?: (value: boolean) => void;
 }) {
   const [invocationIds, setInvocationIds] = useState([String(invocationId)]);
-
+  const [isLive, setIsLive] = useState(true);
   const {
     data,
     isPending,
@@ -99,16 +95,14 @@ export function JournalV2({
     refetchOnMount: true,
     staleTime: 0,
     refetchInterval(query) {
-      if (
-        isLive &&
-        query.state.status === 'success' &&
-        !query.state.data?.completed_at
-      ) {
+      if (query.state.status === 'success' && !query.state.data?.completed_at) {
         return 1000;
       } else {
         return false;
       }
     },
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: false,
   });
 
   const { data: subscriptions } = useListSubscriptions();
@@ -237,7 +231,7 @@ export function JournalV2({
         dataUpdatedAt={dataUpdatedAt}
         isPending={isPending}
         error={apiError}
-        isLive={isLive}
+        isLive={!areAllInvocationsCompleted && isLive}
         isCompact={isCompact}
         firstPendingCommandIndex={firstPendingCommandIndex}
       >
@@ -336,11 +330,11 @@ export function JournalV2({
                     </DropdownSection>
                   </DropdownPopover>
                 </Dropdown>
-                {!areAllInvocationsCompleted && setIsLive && (
+                {!areAllInvocationsCompleted && (
                   <Button
                     variant="icon"
                     className={liveStyles({ isLive })}
-                    onClick={() => setIsLive?.(!isLive)}
+                    onClick={() => setIsLive((v) => !v)}
                   >
                     <div className="">Live</div>
                     {isLive && <Indicator status="INFO" className="mb-0.5" />}
