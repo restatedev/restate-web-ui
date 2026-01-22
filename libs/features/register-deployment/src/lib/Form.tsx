@@ -12,7 +12,11 @@ import {
 } from 'react';
 import { Radio } from 'react-aria-components';
 import { RadioGroup } from '@restate/ui/radio-group';
-import { DeploymentProtocolCheck, RegisterDeploymentResults } from './Results';
+import {
+  DeploymentProtocolCheck,
+  RegisterDeploymentResults,
+  Warning,
+} from './Results';
 import { AdditionalHeaders } from './AdditionalHeaders';
 import { UseHTTP11 } from './UseHTTP11';
 import { AssumeARNRole } from './AssumeARNRole';
@@ -32,6 +36,7 @@ import { Helper } from './Helper';
 import { OverrideWarning } from './OverrideWarnning';
 import { OverrideBreaking } from './OverrideBreaking';
 import { Metadata } from './Metadata';
+import { Link } from '@restate/ui/link';
 
 function CustomRadio({
   value,
@@ -157,10 +162,20 @@ export function UpdateForm() {
               </ServiceDeploymentExplainer>
             </>
           }
-          description={
-            "Modify the configuration for this deployment. Your registered services and handlers won't change."
-          }
+          description={'Modify the configuration for this deployment. '}
         >
+          <Warning title="Service definitions are not updated">
+            This only updates the configuration. To apply code changes or add
+            new handlers, you must re-register the deployment.{' '}
+            <Link
+              href="https://docs.restate.dev/services/versioning#deploying-new-service-versions"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-orange-700"
+            >
+              Learn more.
+            </Link>
+          </Warning>
           {/* <EndpointForm /> */}
           <div className="mt-2" />
           <AdditionalHeaders />

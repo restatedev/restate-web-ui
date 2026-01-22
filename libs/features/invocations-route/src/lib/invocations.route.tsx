@@ -22,7 +22,7 @@ import {
   SnapshotTimeProvider,
   useDurationSinceLastSnapshot,
 } from '@restate/util/snapshot-time';
-import { PropsWithChildren, useEffect, useMemo, useState } from 'react';
+import { PropsWithChildren, useEffect, useMemo, useRef, useState } from 'react';
 import { useSubmitShortcut, SubmitShortcutKey } from '@restate/ui/keyboard';
 import { formatDurations, formatNumber } from '@restate/util/intl';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
@@ -33,6 +33,7 @@ import {
   Form,
   redirect,
   ShouldRevalidateFunctionArgs,
+  useHref,
   useNavigate,
   useSearchParams,
 } from 'react-router';
@@ -40,6 +41,13 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useListInvocations } from '@restate/data-access/admin-api-hooks';
 import { useRestateContext } from '@restate/features/restate-context';
 import { useBatchOperations } from '@restate/features/batch-operations';
+import {
+  SERVICE_PLAYGROUND_QUERY_PARAM,
+  SERVICE_QUERY_PARAM,
+  HANDLER_QUERY_PARAM,
+} from '@restate/features/service';
+import { DEPLOYMENT_QUERY_PARAM } from '@restate/features/deployment';
+import { INVOCATION_QUERY_NAME } from '@restate/features/invocation-route';
 import { Badge } from '@restate/ui/badge';
 import { Sort } from './QueryButton';
 import {
@@ -153,6 +161,28 @@ function Component() {
 
   const navigate = useNavigate();
   const { baseUrl } = useRestateContext();
+  const basePath = useHref('/');
+  const isModifierPressed = useRef(false);
+
+  useEffect(() => {
+    const isMac = navigator.platform.toUpperCase().includes('MAC');
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isMac ? e.metaKey : e.ctrlKey) {
+        isModifierPressed.current = true;
+      }
+    };
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (isMac ? !e.metaKey : !e.ctrlKey) {
+        isModifierPressed.current = false;
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
 
   useEffect(() => {
     saveQueryForNextVisit(new URLSearchParams(window.location.search));
@@ -353,10 +383,28 @@ function Component() {
             }
           }}
           onRowAction={(key) => {
-            navigate({
-              pathname: `${baseUrl}/invocations/${key}`,
-              search: searchParams.toString(),
+            const preservedParams = new URLSearchParams();
+            const paramsToPreserve = [
+              SERVICE_PLAYGROUND_QUERY_PARAM,
+              SERVICE_QUERY_PARAM,
+              DEPLOYMENT_QUERY_PARAM,
+              INVOCATION_QUERY_NAME,
+              'state', //TODO use const
+              HANDLER_QUERY_PARAM,
+            ];
+            paramsToPreserve.forEach((param) => {
+              searchParams.getAll(param).forEach((value) => {
+                preservedParams.append(param, value);
+              });
             });
+            const pathname = `${baseUrl}/invocations/${key}`;
+            const search = preservedParams.toString();
+            if (isModifierPressed.current) {
+              const fullPath = `${basePath}${pathname}`.replace('//', '/');
+              window.open(`${fullPath}${search ? `?${search}` : ''}`, '_blank');
+            } else {
+              navigate({ pathname, search });
+            }
           }}
         >
           <TableHeader className="[&_th:nth-last-child(2)_[data-resizable-direction]]:invisible">

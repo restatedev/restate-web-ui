@@ -23,7 +23,7 @@ const failureStyle = tv({
         errorBanner: '',
       },
       false: {
-        trigger: 'text-red-500',
+        trigger: 'text-red-600',
         errorIcon: 'text-red-500/90',
         errorBanner: '',
       },
