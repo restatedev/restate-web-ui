@@ -1221,6 +1221,7 @@ export function useRestartWorkflowAsNew(
       return fetch(
         `${ingressUrl}/${data?.target_service_name}/${workflowId}/${data?.target_handler_name}/send`,
         {
+          credentials: 'include',
           method: 'POST',
           body: body ? base64ToUint8Array(body) : undefined,
           headers: {

@@ -358,7 +358,7 @@ export function JournalV2({
             </div>
             <div
               ref={listRef}
-              className="relative overflow-clip rounded-b-2xl bg-gray-100 font-mono text-0.5xs"
+              className="relative isolate rounded-b-2xl bg-gray-100 font-mono text-0.5xs [clip-path:inset(0_round_0_0_1rem_1rem)]"
             >
               <LazyPanelGroup
                 direction="horizontal"
@@ -367,16 +367,22 @@ export function JournalV2({
                 {/* Left panel */}
                 <LazyPanel
                   defaultSize={(1 - timelineWidth) * 100}
-                  className="z-10 min-w-0"
-                  style={{ overflow: 'visible' }}
+                  className="z-[2] grid min-w-0"
+                  style={{
+                    overflow: 'visible',
+                    minHeight: virtualizer.getTotalSize() + 48,
+                    gridTemplateColumns: '1fr',
+                    gridTemplateRows: '1fr',
+                  }}
                 >
+                  {/* Sticky background - prevents repaint lag */}
+                  <div className="sticky top-0 z-0 col-start-1 row-start-1 h-full max-h-[calc(100vh+2rem)] rounded-2xl rounded-r-none border-0 border-r-0 border-white/50 bg-linear-to-b from-gray-50 to-white shadow-xs" />
+                  {/* Content */}
                   <div
-                    className="relative rounded-2xl rounded-r-none border-0 border-r-0 border-white/50 bg-white shadow-xs"
-                    style={{
-                      minHeight: virtualizer.getTotalSize() + 48,
-                    }}
+                    className="col-start-1 row-start-1"
+                    style={{ minHeight: virtualizer.getTotalSize() + 48 }}
                   >
-                    <div className="z-10 box-border flex h-12 items-center rounded-tl-2xl rounded-bl-2xl border-b border-transparent bg-gray-100 shadow-xs ring-1 ring-black/5 last:border-none">
+                    <div className="relative z-[2] box-border flex h-12 items-center rounded-tl-2xl rounded-bl-2xl border-b border-transparent bg-gray-100 shadow-xs ring-1 ring-black/5 last:border-none">
                       <Input
                         entry={typedInputEntry}
                         invocation={data?.[invocationId]}
@@ -405,6 +411,8 @@ export function JournalV2({
                     gridTemplateRows: '1fr',
                   }}
                 >
+                  {/* Sticky background - prevents repaint lag */}
+                  <div className="sticky top-0 z-0 col-start-1 row-start-1 h-full max-h-[calc(100vh+2rem)] rounded-br-2xl bg-gray-100" />
                   {/* Units - sticky overlay */}
                   <Units
                     className="sticky top-0 z-0 col-start-1 row-start-1 h-full max-h-screen"
