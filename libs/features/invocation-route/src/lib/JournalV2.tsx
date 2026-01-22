@@ -383,10 +383,10 @@ export function JournalV2({
                   }}
                 >
                   {/* Sticky background - prevents repaint lag */}
-                  <div className="sticky top-0 z-0 col-start-1 row-start-1 h-full max-h-[calc(100vh+2rem)] rounded-2xl rounded-r-none border-0 border-r-0 border-white/50 bg-linear-to-b from-gray-50 to-white shadow-xs" />
+                  <div className="sticky top-0 z-[-1] col-start-1 row-start-1 h-full max-h-[calc(100vh+2rem)] rounded-2xl rounded-r-none border-0 border-r-0 border-white/50 bg-linear-to-b from-gray-50 to-white shadow-xs" />
                   {/* Content */}
                   <div
-                    className="col-start-1 row-start-1 min-w-0"
+                    className="z-[2] col-start-1 row-start-1 min-w-0"
                     style={{ minHeight: virtualizer.getTotalSize() + 48 }}
                   >
                     <div className="relative z-[2] box-border flex h-12 items-center rounded-tl-2xl rounded-bl-2xl border-b border-transparent bg-gray-100 shadow-xs ring-1 ring-black/5 last:border-none">
