@@ -26,6 +26,7 @@ export async function getInvocationJournalV2(
       `SELECT after_journal_entry_index, appended_at, event_type, event_json from sys_journal_events WHERE id = '${invocationId}'`,
     ),
   ]);
+
   const invocation = invocationQuery.rows
     .map(convertInvocation)
     .at(0) as Invocation;
@@ -55,7 +56,8 @@ export async function getInvocationJournalV2(
         index: journalQuery.rows.length + i,
       }) as JournalRawEntry,
   );
-  const entriesWithCommandIndex = [
+
+  const allRawEntries = [
     ...(journalQuery.rows as JournalRawEntry[]),
     ...lifeCycles(
       eventsEntries,
@@ -63,51 +65,60 @@ export async function getInvocationJournalV2(
       invocation,
     ),
     ...eventsEntries,
-  ].reduce(
-    (results, rawEntry) => {
-      if ('entry_type' in rawEntry) {
-        if (rawEntry.entry_type?.startsWith('Command:')) {
-          results.push({ ...rawEntry, command_index: commandCount });
-          commandCount++;
-        } else {
-          results.push(rawEntry);
-        }
-      } else {
-        results.push(rawEntry);
+  ];
+
+  const entriesWithCommandIndex: (
+    | JournalRawEntryWithCommandIndex
+    | JournalEntryV2
+  )[] = [];
+  for (const rawEntry of allRawEntries) {
+    if ('entry_type' in rawEntry) {
+      if (rawEntry.entry_type?.startsWith('Command:')) {
+        (rawEntry as JournalRawEntryWithCommandIndex).command_index =
+          commandCount;
+        commandCount++;
       }
+    }
+    entriesWithCommandIndex.push(rawEntry);
+  }
 
-      return results;
-    },
-    [] as (JournalRawEntryWithCommandIndex | JournalEntryV2)[],
-  );
-
-  const entries = entriesWithCommandIndex
-    .reduceRight((results, entry) => {
-      if ('entry_type' in entry) {
-        const convertedEntry = convertJournalV2(entry, results, invocation);
-        if (convertedEntry) {
-          return [...results, convertedEntry];
-        } else {
-          return results;
-        }
-      } else {
-        return [...results, entry];
+  const entries: JournalEntryV2[] = [];
+  for (let i = entriesWithCommandIndex.length - 1; i >= 0; i--) {
+    const entry = entriesWithCommandIndex[i];
+    if (entry && 'entry_type' in entry) {
+      const convertedEntry = convertJournalV2(entry, entries, invocation);
+      if (convertedEntry) {
+        entries.push(convertedEntry);
       }
-    }, [] as JournalEntryV2[])
-    .reverse();
+    } else if (entry) {
+      entries.push(entry);
+    }
+  }
+  entries.reverse();
 
-  const entriesWithLifeCycleEvents = entries.sort((a, b) => {
+  const timestampCache = new Map<JournalEntryV2, number>();
+  const getTimestamp = (entry: JournalEntryV2): number => {
+    let cached = timestampCache.get(entry);
+    if (cached === undefined) {
+      cached =
+        typeof entry.start === 'string' ? new Date(entry.start).getTime() : 0;
+      timestampCache.set(entry, cached);
+    }
+    return cached;
+  };
+
+  entries.sort((a, b) => {
     if (
       typeof a.index === 'number' &&
       typeof b.index === 'number' &&
       ((a.category === 'command' && b.category === 'command') ||
         (a.category === 'event' && b.category === 'event') ||
         ['Created', 'Pending', 'Scheduled'].includes(a.type as string) ||
-        ['Created', 'Pending', 'Scheduled'].includes(a.type as string))
+        ['Created', 'Pending', 'Scheduled'].includes(b.type as string))
     ) {
       return a.index - b.index;
     } else if (typeof a.start === 'string' && typeof b.start === 'string') {
-      return new Date(a.start).getTime() - new Date(b.start).getTime();
+      return getTimestamp(a) - getTimestamp(b);
     } else {
       return 0;
     }
@@ -116,7 +127,7 @@ export async function getInvocationJournalV2(
   return new Response(
     JSON.stringify({
       ...invocation,
-      journal: { entries: entriesWithLifeCycleEvents, version },
+      journal: { entries, version },
     }),
     {
       status: 200,

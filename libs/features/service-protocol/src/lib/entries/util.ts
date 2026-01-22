@@ -77,22 +77,127 @@ export function getLastFailureV1(
   return lastFailure;
 }
 
+const completionCache = new WeakMap<
+  JournalEntryV2[],
+  { map: Map<string, JournalEntryV2>; builtLength: number }
+>();
+
+function buildCompletionCacheKey(
+  type: string,
+  completionId: number | undefined,
+): string {
+  return `${type}:${completionId}`;
+}
+
 export function getCompletionEntry<T extends JournalEntryV2>(
   completionId: number,
   type: string,
   nextEntries: JournalEntryV2[],
 ) {
-  for (let index = nextEntries.length - 1; index >= 0; index--) {
-    const completionEntry = nextEntries[index];
-    if (
-      completionEntry?.category === 'notification' &&
-      completionEntry?.type === type &&
-      completionEntry?.completionId === completionId
-    ) {
-      return completionEntry as T;
+  let cacheData = completionCache.get(nextEntries);
+
+  if (!cacheData || cacheData.builtLength !== nextEntries.length) {
+    const map = cacheData?.map ?? new Map<string, JournalEntryV2>();
+    const startIndex = cacheData?.builtLength ?? 0;
+
+    for (let index = startIndex; index < nextEntries.length; index++) {
+      const entry = nextEntries[index];
+      if (
+        entry?.category === 'notification' &&
+        entry?.completionId !== undefined
+      ) {
+        const entryCacheKey = buildCompletionCacheKey(
+          entry.type as string,
+          entry.completionId,
+        );
+        if (!map.has(entryCacheKey)) {
+          map.set(entryCacheKey, entry);
+        }
+      }
+    }
+
+    cacheData = { map, builtLength: nextEntries.length };
+    completionCache.set(nextEntries, cacheData);
+  }
+
+  const cacheKey = buildCompletionCacheKey(type, completionId);
+  return cacheData.map.get(cacheKey) as T | undefined;
+}
+
+const eventsByCommandIndexCache = new WeakMap<
+  JournalEntryV2[],
+  {
+    map: Map<number, JournalEntryV2[]>;
+    seenEntries: Set<JournalEntryV2>;
+    builtLength: number;
+  }
+>();
+const latestCommandStartCache = new WeakMap<
+  JournalEntryV2[],
+  { value: string | undefined; length: number }
+>();
+
+function getEventsByCommandIndex(
+  nextEntries: JournalEntryV2[],
+): Map<number, JournalEntryV2[]> {
+  let cacheData = eventsByCommandIndexCache.get(nextEntries);
+
+  if (!cacheData || cacheData.builtLength !== nextEntries.length) {
+    const map = cacheData?.map ?? new Map<number, JournalEntryV2[]>();
+    const seenEntries = cacheData?.seenEntries ?? new Set<JournalEntryV2>();
+    const startIndex = cacheData?.builtLength ?? 0;
+
+    for (let i = startIndex; i < nextEntries.length; i++) {
+      const entry = nextEntries[i];
+      if (
+        entry &&
+        entry.category === 'event' &&
+        'relatedCommandIndex' in entry &&
+        typeof entry.relatedCommandIndex === 'number' &&
+        !seenEntries.has(entry)
+      ) {
+        seenEntries.add(entry);
+        const existing = map.get(entry.relatedCommandIndex);
+        if (existing) {
+          existing.push(entry);
+        } else {
+          map.set(entry.relatedCommandIndex, [entry]);
+        }
+      }
+    }
+
+    cacheData = { map, seenEntries, builtLength: nextEntries.length };
+    eventsByCommandIndexCache.set(nextEntries, cacheData);
+  }
+
+  return cacheData.map;
+}
+
+function getLatestCommandStart(
+  nextEntries: JournalEntryV2[],
+): string | undefined {
+  const cached = latestCommandStartCache.get(nextEntries);
+  if (cached && cached.length === nextEntries.length) {
+    return cached.value;
+  }
+
+  let latestStart: string | undefined = cached?.value;
+  const startIndex = cached?.length ?? 0;
+
+  for (let i = startIndex; i < nextEntries.length; i++) {
+    const entry = nextEntries[i];
+    if (entry && entry.category === 'command' && entry.start) {
+      if (!latestStart || entry.start > latestStart) {
+        latestStart = entry.start;
+      }
     }
   }
-  return undefined;
+
+  latestCommandStartCache.set(nextEntries, {
+    value: latestStart,
+    length: nextEntries.length,
+  });
+  return latestStart;
 }
 
 export function getEntryResultV2(
@@ -112,30 +217,35 @@ export function getEntryResultV2(
   const hasLastFailure =
     typeof commandIndex === 'number' &&
     invocation?.last_failure_related_command_index === commandIndex;
-  const relevantEntries = nextEntries.filter(
-    (entry) =>
-      entry.category === 'event' &&
-      commandIndex !== undefined &&
-      'relatedCommandIndex' in entry &&
-      entry.relatedCommandIndex === commandIndex,
-  );
 
-  const transientFailures = relevantEntries.filter(
-    (entry) => entry.type === 'Event: TransientError',
-  ) as Extract<
+  const eventsByCommandIndex = getEventsByCommandIndex(nextEntries);
+  const relevantEntries =
+    commandIndex !== undefined
+      ? (eventsByCommandIndex.get(commandIndex) ?? [])
+      : [];
+
+  const transientFailures: Extract<
     JournalEntryV2,
     { type?: 'Event: TransientError'; category?: 'event' }
-  >[];
+  >[] = [];
+  for (const relevantEntry of relevantEntries) {
+    if (relevantEntry.type === 'Event: TransientError') {
+      transientFailures.push(
+        relevantEntry as Extract<
+          JournalEntryV2,
+          { type?: 'Event: TransientError'; category?: 'event' }
+        >,
+      );
+    }
+  }
 
   const hasTransientFailures = transientFailures.length > 0;
-  const isThereAnyCommandRunningAfter = nextEntries.some((nextEntry) => {
-    return (
-      nextEntry.start &&
-      entry.appended_at &&
-      nextEntry.category === 'command' &&
-      entry.appended_at < nextEntry.start
-    );
-  });
+
+  const latestCommandStart = getLatestCommandStart(nextEntries);
+  const isThereAnyCommandRunningAfter =
+    latestCommandStart !== undefined &&
+    entry.appended_at !== undefined &&
+    entry.appended_at < latestCommandStart;
 
   const { resultType, value, error } = parseResults2(result);
   const isRetrying =
@@ -157,17 +267,24 @@ export function getEntryResultV2(
       )
     : undefined;
 
+  const allRelatedIndexes: number[] = [];
+  for (const relevantEntry of relevantEntries) {
+    if (typeof relevantEntry.index === 'number') {
+      allRelatedIndexes.push(relevantEntry.index);
+    }
+  }
+  for (const idx of relatedIndexes) {
+    if (typeof idx === 'number') {
+      allRelatedIndexes.push(idx);
+    }
+  }
+
   return {
     isRetrying,
     error: error || lastFailure || lastTransientError,
     value,
     resultType,
-    relatedIndexes: [
-      ...relevantEntries.map((entry) => entry.index),
-      ...relatedIndexes,
-    ].filter(
-      (num: number | undefined): num is number => typeof num === 'number',
-    ),
+    relatedIndexes: allRelatedIndexes,
   };
 }
 
