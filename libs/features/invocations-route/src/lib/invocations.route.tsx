@@ -22,7 +22,7 @@ import {
   SnapshotTimeProvider,
   useDurationSinceLastSnapshot,
 } from '@restate/util/snapshot-time';
-import { PropsWithChildren, useEffect, useMemo, useState } from 'react';
+import { PropsWithChildren, useEffect, useMemo, useRef, useState } from 'react';
 import { useSubmitShortcut, SubmitShortcutKey } from '@restate/ui/keyboard';
 import { formatDurations, formatNumber } from '@restate/util/intl';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
@@ -33,6 +33,7 @@ import {
   Form,
   redirect,
   ShouldRevalidateFunctionArgs,
+  useHref,
   useNavigate,
   useSearchParams,
 } from 'react-router';
@@ -161,6 +162,28 @@ function Component() {
 
   const navigate = useNavigate();
   const { baseUrl } = useRestateContext();
+  const basePath = useHref('/');
+  const isModifierPressed = useRef(false);
+
+  useEffect(() => {
+    const isMac = navigator.platform.toUpperCase().includes('MAC');
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isMac ? e.metaKey : e.ctrlKey) {
+        isModifierPressed.current = true;
+      }
+    };
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (isMac ? !e.metaKey : !e.ctrlKey) {
+        isModifierPressed.current = false;
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
 
   useEffect(() => {
     saveQueryForNextVisit(new URLSearchParams(window.location.search));
@@ -375,10 +398,14 @@ function Component() {
                 preservedParams.append(param, value);
               });
             });
-            navigate({
-              pathname: `${baseUrl}/invocations/${key}`,
-              search: preservedParams.toString(),
-            });
+            const pathname = `${baseUrl}/invocations/${key}`;
+            const search = preservedParams.toString();
+            if (isModifierPressed.current) {
+              const fullPath = `${basePath}${pathname}`.replace('//', '/');
+              window.open(`${fullPath}${search ? `?${search}` : ''}`, '_blank');
+            } else {
+              navigate({ pathname, search });
+            }
           }}
         >
           <TableHeader className="[&_th:nth-last-child(2)_[data-resizable-direction]]:invisible">
