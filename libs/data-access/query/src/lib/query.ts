@@ -130,7 +130,7 @@ async function extractErrorPayload(res: Response): Promise<string | undefined> {
   return (await res.text()) as string;
 }
 
-const routes = createRoutes({
+export const routes = createRoutes({
   invocations: {
     list: { method: 'POST', pattern: '/invocations' },
     count: { method: 'POST', pattern: '/invocations/count' },

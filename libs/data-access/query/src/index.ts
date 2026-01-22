@@ -1,1 +1,1 @@
-export { query } from './lib/query';
+export { query, routes } from './lib/query';
