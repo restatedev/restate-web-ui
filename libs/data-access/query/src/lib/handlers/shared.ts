@@ -1,6 +1,6 @@
 import ky from 'ky';
 
-export const SYS_INVOCATION_COLUMNS = [
+export const SYS_INVOCATION_LIST_COLUMNS = [
   'id',
   'target',
   'target_service_name',
@@ -9,18 +9,15 @@ export const SYS_INVOCATION_COLUMNS = [
   'target_service_ty',
   'idempotency_key',
   'invoked_by',
-  'invoked_by_service_name',
   'invoked_by_id',
   'invoked_by_subscription_id',
   'invoked_by_target',
   'restarted_from',
   'pinned_deployment_id',
   'pinned_service_protocol_version',
-  'trace_id',
   'journal_size',
   'journal_commands_size',
   'created_at',
-  'created_using_restate_version',
   'modified_at',
   'inboxed_at',
   'scheduled_at',
@@ -36,15 +33,22 @@ export const SYS_INVOCATION_COLUMNS = [
   'last_attempt_server',
   'last_failure',
   'last_failure_error_code',
+  'status',
+  'completion_result',
+  'completion_failure',
+] as const;
+
+export const SYS_INVOCATION_COLUMNS = [
+  ...SYS_INVOCATION_LIST_COLUMNS,
+  'invoked_by_service_name',
+  'trace_id',
+  'created_using_restate_version',
   'last_failure_related_entry_index',
   'last_failure_related_entry_name',
   'last_failure_related_entry_type',
   'last_failure_related_command_index',
   'last_failure_related_command_name',
   'last_failure_related_command_type',
-  'status',
-  'completion_result',
-  'completion_failure',
 ] as const;
 
 export type QueryContext = {
