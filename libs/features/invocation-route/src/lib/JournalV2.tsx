@@ -358,7 +358,7 @@ export function JournalV2({
             </div>
             <div
               ref={listRef}
-              className="relative overflow-hidden rounded-b-2xl bg-gray-100 font-mono text-0.5xs"
+              className="relative overflow-clip rounded-b-2xl bg-gray-100 font-mono text-0.5xs"
             >
               <LazyPanelGroup
                 direction="horizontal"
