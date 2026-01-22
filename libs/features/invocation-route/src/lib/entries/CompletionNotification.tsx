@@ -2,24 +2,37 @@ import { Invocation, JournalEntryV2 } from '@restate/data-access/admin-api';
 import { Button } from '@restate/ui/button';
 import { DropdownSection } from '@restate/ui/dropdown';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
-import { PropsWithChildren } from 'react';
+import { ComponentType } from 'react';
 import { Badge } from '@restate/ui/badge';
-import { TimelinePortal } from '../Portals';
-import { EntryProgress } from '../EntryProgress';
 import { LazyJournalEntryPayload } from './LazyJournalEntryPayload';
+import { CommandEntryType, EntryProps } from './types';
 
 export function CompletionNotification({
   entry,
-  children,
-  commandIndex,
-  index,
+  parentCommand,
   invocation,
-}: PropsWithChildren<{
+  commandComponents,
+}: {
   entry: JournalEntryV2;
-  commandIndex: number;
-  index: number;
+  parentCommand?: JournalEntryV2;
   invocation?: Invocation;
-}>) {
+  commandComponents: {
+    [K in CommandEntryType]:
+      | ComponentType<
+          EntryProps<
+            Extract<JournalEntryV2, { type?: K; category?: 'command' }>
+          >
+        >
+      | undefined;
+  };
+}) {
+  const commandIndex = parentCommand?.commandIndex;
+  const CommandComponent = parentCommand?.type
+    ? (commandComponents[parentCommand.type as CommandEntryType] as
+        | ComponentType<EntryProps<JournalEntryV2>>
+        | undefined)
+    : undefined;
+
   return (
     <div className="item-center mr-2 flex gap-2">
       <Badge
@@ -27,26 +40,33 @@ export function CompletionNotification({
         size="sm"
         className="gap-1 truncate rounded-md px-0 py-0 font-sans text-2xs font-normal"
       >
-        <Popover>
-          <PopoverTrigger>
-            <Button
-              className="my-[-0.5px] translate-x-[-0.5px] rounded-md px-1 py-0 font-mono text-xs text-gray-400"
-              variant="secondary"
-            >
-              <div className="flex h-5 items-center">#{commandIndex}</div>
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent>
-            <DropdownSection
-              className="relative px-3 py-2 pr-8 text-0.5xs"
-              title={
-                <span className="text-2xs text-gray-400 uppercase">{`Command #${commandIndex}`}</span>
-              }
-            >
-              {children}
-            </DropdownSection>
-          </PopoverContent>
-        </Popover>
+        {parentCommand && typeof commandIndex === 'number' && (
+          <Popover>
+            <PopoverTrigger>
+              <Button
+                className="my-[-0.5px] translate-x-[-0.5px] rounded-md px-1 py-0 font-mono text-xs text-gray-400"
+                variant="secondary"
+              >
+                <div className="flex h-5 items-center">#{commandIndex}</div>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent>
+              <DropdownSection
+                className="relative px-3 py-2 pr-8 text-0.5xs"
+                title={
+                  <span className="text-2xs text-gray-400 uppercase">{`Command #${commandIndex}`}</span>
+                }
+              >
+                {CommandComponent && (
+                  <CommandComponent
+                    entry={parentCommand}
+                    invocation={invocation}
+                  />
+                )}
+              </DropdownSection>
+            </PopoverContent>
+          </Popover>
+        )}
         {entry.resultType === 'failure' ? (
           <LazyJournalEntryPayload.Failure
             invocationId={invocation?.id}
@@ -57,11 +77,6 @@ export function CompletionNotification({
           <div className="mr-2">Completed</div>
         )}
       </Badge>
-      <TimelinePortal invocationId={invocation?.id ?? ''} entry={entry}>
-        <div className="relative h-9 w-full border-b border-transparent">
-          <EntryProgress entry={entry} invocation={invocation} />
-        </div>
-      </TimelinePortal>
     </div>
   );
 }

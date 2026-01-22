@@ -294,6 +294,7 @@ export function EntryProgress(
     invocation?: ReturnType<
       typeof useGetInvocationJournalWithInvocationV2
     >['data'];
+    precomputedRelatedEntries?: JournalEntryV2[];
   }>,
 ) {
   return (
@@ -324,6 +325,7 @@ function InnerEntryProgress({
   showDuration = true,
   entry,
   invocation,
+  precomputedRelatedEntries,
 }: PropsWithChildren<{
   entry?: JournalEntryV2;
   className?: string;
@@ -332,6 +334,7 @@ function InnerEntryProgress({
   invocation?: ReturnType<
     typeof useGetInvocationJournalWithInvocationV2
   >['data'];
+  precomputedRelatedEntries?: JournalEntryV2[];
 }>) {
   const { dataUpdatedAt, isLive, start, end } = useJournalContext();
 
@@ -430,15 +433,7 @@ function InnerEntryProgress({
     return null;
   }
 
-  const relevantEntries =
-    entry.relatedIndexes && entry.relatedIndexes.length > 0
-      ? invocation?.journal?.entries?.filter(
-          (relatedEntry) =>
-            typeof relatedEntry.index === 'number' &&
-            entry.relatedIndexes?.includes(relatedEntry.index) &&
-            !relatedEntry.isPending,
-        )
-      : [];
+  const relevantEntries = precomputedRelatedEntries ?? [];
   const transientErrorTimes =
     relevantEntries
       ?.filter((entry) => entry.type === 'Event: TransientError')
