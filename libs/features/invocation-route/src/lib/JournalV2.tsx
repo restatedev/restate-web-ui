@@ -1,13 +1,5 @@
 import { JournalEntryV2 } from '@restate/data-access/admin-api';
-import {
-  Dispatch,
-  lazy,
-  Suspense,
-  useCallback,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { Dispatch, lazy, Suspense, useCallback, useRef, useState } from 'react';
 import type { VirtualItem } from '@tanstack/react-virtual';
 import { InvocationId } from './InvocationId';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
@@ -41,6 +33,10 @@ import {
   DropdownTrigger,
 } from '@restate/ui/dropdown';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
+import {
+  CombinedJournalEntry,
+  useProcessedJournal,
+} from './useProcessedJournal';
 
 const LazyPanel = lazy(() =>
   import('react-resizable-panels').then((m) => ({ default: m.Panel })),
@@ -132,42 +128,14 @@ export function JournalV2({
   const journalAndInvocationData = data?.[invocationId];
 
   const { baseUrl } = useRestateContext();
-
-  const combinedEntries = useMemo(
-    () =>
-      getCombinedJournal(invocationId, data)?.filter(
-        ({ entry, parentCommand, invocationId: entryInvocationId }) => {
-          if (entry?.category === 'event' && entry?.type === 'Completion') {
-            return false;
-          }
-          if (
-            entry?.category === 'notification' &&
-            entry?.type === 'CallInvocationId'
-          ) {
-            return false;
-          }
-          if (
-            isCompact &&
-            ((parentCommand && entry?.category === 'notification') ||
-              entry?.type === 'Event: TransientError')
-          ) {
-            return false;
-          }
-          if (entry?.category === 'event' && entry?.type === 'Event: Paused') {
-            return false;
-          }
-          return true;
-        },
-      ),
-    [invocationId, data, isCompact],
-  );
-
   const listRef = useRef<HTMLDivElement>(null);
 
-  const entriesWithoutInput = useMemo(
-    () => combinedEntries?.filter(({ entry }) => entry?.type !== 'Input') ?? [],
-    [combinedEntries],
-  );
+  const {
+    entriesWithoutInput,
+    inputEntry,
+    relatedEntriesByInvocation,
+    lifecycleDataByInvocation,
+  } = useProcessedJournal(invocationId, data, isCompact);
 
   const virtualizer = useWindowVirtualizer({
     count: entriesWithoutInput.length,
@@ -210,13 +178,13 @@ export function JournalV2({
     (id) => !data[id] || data[id]?.completed_at,
   );
   const end = Math.max(
-    ...(combinedEntries?.map(({ entry }) =>
+    ...entriesWithoutInput.map(({ entry }) =>
       entry?.end
         ? new Date(entry.end).getTime()
         : entry?.start
           ? new Date(entry.start).getTime()
           : -1,
-    ) ?? []),
+    ),
     !areAllInvocationsCompleted
       ? Math.max(
           ...Array.from(Object.values(allQueriesDataUpdatedAt).map(Number)),
@@ -224,13 +192,11 @@ export function JournalV2({
       : -1,
   );
 
-  const inputEntry = combinedEntries?.find(
-    (combinedEntry) =>
-      combinedEntry.invocationId === invocationId &&
-      combinedEntry.entry?.type === 'Input',
-  )?.entry as Extract<JournalEntryV2, { type?: 'Input'; category?: 'command' }>;
-  const restartedFromHeader = inputEntry?.headers?.find(
-    ({ key }) => key === RESTARTED_FROM_HEADER,
+  const typedInputEntry = inputEntry as
+    | Extract<JournalEntryV2, { type?: 'Input'; category?: 'command' }>
+    | undefined;
+  const restartedFromHeader = typedInputEntry?.headers?.find(
+    ({ key }: { key: string }) => key === RESTARTED_FROM_HEADER,
   );
 
   const isRestartedFrom = Boolean(
@@ -412,7 +378,7 @@ export function JournalV2({
                   >
                     <div className="z-10 box-border flex h-12 items-center rounded-tl-2xl rounded-bl-2xl border-b border-transparent bg-gray-100 shadow-xs ring-1 ring-black/5 last:border-none">
                       <Input
-                        entry={inputEntry}
+                        entry={typedInputEntry}
                         invocation={data?.[invocationId]}
                         className="w-full"
                       />
@@ -442,7 +408,9 @@ export function JournalV2({
                   {/* Units - sticky overlay */}
                   <Units
                     className="sticky top-0 z-0 col-start-1 row-start-1 h-full max-h-screen"
-                    invocation={journalAndInvocationData}
+                    cancelEvent={
+                      lifecycleDataByInvocation.get(invocationId)?.cancelEvent
+                    }
                   />
                   {/* Timeline content */}
                   <div
@@ -453,6 +421,14 @@ export function JournalV2({
                       <LifeCycleProgress
                         className="h-12 px-2"
                         invocation={journalAndInvocationData}
+                        createdEvent={
+                          lifecycleDataByInvocation.get(invocationId)
+                            ?.createdEvent
+                        }
+                        lifeCycleEntries={
+                          lifecycleDataByInvocation.get(invocationId)
+                            ?.lifeCycleEntries ?? []
+                        }
                       />
                     </div>
                     <VirtualizedTimeline
@@ -460,6 +436,7 @@ export function JournalV2({
                       totalSize={virtualizer.getTotalSize()}
                       entriesWithoutInput={entriesWithoutInput}
                       data={data}
+                      relatedEntriesByInvocation={relatedEntriesByInvocation}
                     />
                   </div>
                 </LazyPanel>
@@ -475,97 +452,25 @@ export function JournalV2({
 function TimelineContainer({
   entry,
   invocation,
+  precomputedRelatedEntries,
 }: {
   invocationId: string;
   entry?: JournalEntryV2;
   invocation?: ReturnType<
     typeof useGetInvocationsJournalWithInvocationsV2
   >['data'][string];
+  precomputedRelatedEntries?: JournalEntryV2[];
 }) {
   return (
     <div className="relative h-9 w-full border-b border-transparent pr-2 pl-2 [&:not(:has(>*+*))]:hidden">
       <div className="absolute top-1/2 right-0 left-0 h-px border-spacing-10 -translate-y-px border-b border-dashed border-gray-300/70" />
-      <EntryProgress entry={entry} invocation={invocation} />
+      <EntryProgress
+        entry={entry}
+        invocation={invocation}
+        precomputedRelatedEntries={precomputedRelatedEntries}
+      />
     </div>
   );
-}
-
-function isExpandable(
-  entry: JournalEntryV2,
-): entry is
-  | Extract<JournalEntryV2, { type?: 'Call'; category?: 'command' }>
-  | Extract<
-      JournalEntryV2,
-      { type?: 'AttachInvocation'; category?: 'command' }
-    > {
-  return Boolean(
-    entry.type &&
-      ['Call', 'AttachInvocation'].includes(entry.type) &&
-      entry.category === 'command',
-  );
-}
-
-export type CombinedJournalEntry = {
-  invocationId: string;
-  entry?: JournalEntryV2;
-  depth: number;
-  parentCommand?: JournalEntryV2;
-};
-
-function getCombinedJournal(
-  invocationId: string,
-  data?: ReturnType<typeof useGetInvocationsJournalWithInvocationsV2>['data'],
-  depth = 0,
-): CombinedJournalEntry[] | undefined {
-  const entries = data?.[invocationId]?.journal?.entries;
-
-  if (entries?.length === 0) {
-    return [
-      {
-        invocationId,
-        depth,
-      },
-    ];
-  }
-
-  const combinedEntries = entries
-    ?.map((entry) => {
-      let parentCommand: JournalEntryV2 | undefined;
-      if (entry.category !== 'command' && typeof entry.index === 'number') {
-        parentCommand = entries.find(
-          (e) =>
-            e.category === 'command' &&
-            (e.relatedIndexes?.includes(entry.index as number) ||
-              ('relatedCommandIndex' in entry &&
-                typeof entry.relatedCommandIndex === 'number' &&
-                e.commandIndex === entry.relatedCommandIndex)),
-        );
-      }
-
-      if (isExpandable(entry)) {
-        const callInvocationId = String(entry.invocationId);
-        return [
-          {
-            invocationId,
-            entry,
-            depth,
-            parentCommand,
-          },
-          ...(getCombinedJournal(callInvocationId, data, depth + 1)?.flat() ??
-            []),
-        ].flat();
-      } else {
-        return {
-          invocationId,
-          entry,
-          depth,
-          parentCommand,
-        };
-      }
-    })
-    .flat();
-
-  return combinedEntries;
 }
 
 function VirtualizedEntries({
@@ -630,11 +535,13 @@ function VirtualizedTimeline({
   totalSize,
   entriesWithoutInput,
   data,
+  relatedEntriesByInvocation,
 }: {
   virtualItems: VirtualItem[];
   totalSize: number;
   entriesWithoutInput: CombinedJournalEntry[];
   data?: ReturnType<typeof useGetInvocationsJournalWithInvocationsV2>['data'];
+  relatedEntriesByInvocation: Map<string, Map<number, JournalEntryV2[]>>;
 }) {
   return (
     <div
@@ -647,6 +554,12 @@ function VirtualizedTimeline({
         const combinedEntry = entriesWithoutInput[virtualItem.index];
         if (!combinedEntry) return null;
         const { invocationId: entryInvocationId, entry } = combinedEntry;
+        const relatedEntries =
+          typeof entry?.index === 'number'
+            ? relatedEntriesByInvocation
+                .get(entryInvocationId)
+                ?.get(entry.index)
+            : undefined;
 
         return (
           <div
@@ -665,6 +578,7 @@ function VirtualizedTimeline({
               invocationId={entryInvocationId}
               entry={entry}
               invocation={data?.[entryInvocationId]}
+              precomputedRelatedEntries={relatedEntries}
             />
           </div>
         );

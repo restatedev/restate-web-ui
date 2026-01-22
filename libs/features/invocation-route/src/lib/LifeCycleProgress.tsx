@@ -1,3 +1,4 @@
+import { JournalEntryV2 } from '@restate/data-access/admin-api';
 import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api-hooks';
 import { tv } from '@restate/util/styles';
 import { EntryProgress, EntryProgressContainer } from './EntryProgress';
@@ -62,34 +63,20 @@ function unitInterval(duration: number) {
 const styles = tv({
   base: 'relative flex flex-col items-center rounded-2xl rounded-sm rounded-t-2xl rounded-l-none border-black/10 shadow-xs',
 });
+
 export function LifeCycleProgress({
   className,
   invocation,
+  createdEvent,
+  lifeCycleEntries,
 }: {
   className?: string;
   invocation?: ReturnType<
     typeof useGetInvocationJournalWithInvocationV2
   >['data'];
+  createdEvent?: JournalEntryV2;
+  lifeCycleEntries: JournalEntryV2[];
 }) {
-  const createdEvent = invocation?.journal?.entries?.find(
-    (entry) => entry.category === 'event' && entry.type === 'Created',
-  );
-
-  const lifeCycleEntries = invocation?.journal?.entries?.filter(
-    (entry) =>
-      (entry.category === 'event' &&
-        [
-          'Created',
-          'Running',
-          'Pending',
-          'Scheduled',
-          'Suspended',
-          'Paused',
-          'Retrying',
-        ].includes(String(entry.type))) ||
-      (entry.category === 'notification' && entry.type === 'Cancel'),
-  );
-
   return (
     <div className={styles({ className })}>
       <div className="relative mt-4 h-6 w-full">
@@ -127,22 +114,16 @@ const unitsStyles = tv({
 });
 export function Units({
   className,
-  invocation,
+  cancelEvent,
 }: {
   className?: string;
-  invocation?: ReturnType<
-    typeof useGetInvocationJournalWithInvocationV2
-  >['data'];
+  cancelEvent?: JournalEntryV2;
 }) {
   const { start, end, dataUpdatedAt } = useJournalContext();
   const executionTime = end - start;
 
   const unit = unitInterval(executionTime) || executionTime / 2 || 1;
   const numOfInterval = Math.floor(executionTime / unit);
-
-  const cancelEvent = invocation?.journal?.entries?.find(
-    (entry) => entry.category === 'notification' && entry.type === 'Cancel',
-  );
 
   return (
     <>
