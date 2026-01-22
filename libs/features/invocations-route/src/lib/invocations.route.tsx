@@ -410,7 +410,7 @@ function Component() {
               <Row
                 id={row.id}
                 columns={sortedColumnsList}
-                className={`bg-transparent [content-visibility:auto] [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50`}
+                className="bg-transparent [content-visibility:auto] [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"
               >
                 {({ id }) => {
                   return (
