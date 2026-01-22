@@ -40,6 +40,14 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useListInvocations } from '@restate/data-access/admin-api-hooks';
 import { useRestateContext } from '@restate/features/restate-context';
 import { useBatchOperations } from '@restate/features/batch-operations';
+import {
+  SERVICE_PLAYGROUND_QUERY_PARAM,
+  SERVICE_QUERY_PARAM,
+  HANDLER_QUERY_PARAM,
+} from '@restate/features/service';
+import { DEPLOYMENT_QUERY_PARAM } from '@restate/features/deployment';
+import { INVOCATION_QUERY_NAME } from '@restate/features/invocation-route';
+import { STATE_QUERY_NAME } from '@restate/features/state-object-route';
 import { Badge } from '@restate/ui/badge';
 import { Sort } from './QueryButton';
 import {
@@ -353,9 +361,23 @@ function Component() {
             }
           }}
           onRowAction={(key) => {
+            const preservedParams = new URLSearchParams();
+            const paramsToPreserve = [
+              SERVICE_PLAYGROUND_QUERY_PARAM,
+              SERVICE_QUERY_PARAM,
+              DEPLOYMENT_QUERY_PARAM,
+              INVOCATION_QUERY_NAME,
+              STATE_QUERY_NAME,
+              HANDLER_QUERY_PARAM,
+            ];
+            paramsToPreserve.forEach((param) => {
+              searchParams.getAll(param).forEach((value) => {
+                preservedParams.append(param, value);
+              });
+            });
             navigate({
               pathname: `${baseUrl}/invocations/${key}`,
-              search: searchParams.toString(),
+              search: preservedParams.toString(),
             });
           }}
         >
