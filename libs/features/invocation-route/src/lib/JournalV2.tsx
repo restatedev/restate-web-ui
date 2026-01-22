@@ -397,8 +397,8 @@ export function JournalV2({
                     />
                   </div>
                 </LazyPanel>
-                <LazyPanelResizeHandle className="group relative hidden w-px items-center justify-center md:flex">
-                  <div className="absolute top-3 bottom-3 left-0 w-px bg-transparent group-hover:w-[2px] group-hover:bg-blue-500" />
+                <LazyPanelResizeHandle className="group relative z-10 -mx-2 hidden w-4 cursor-col-resize items-center justify-center md:flex">
+                  <div className="absolute top-0 bottom-0 left-1/2 w-px -translate-x-1/2 cursor-col-resize bg-transparent group-hover:w-[2px] group-hover:bg-blue-500" />
                 </LazyPanelResizeHandle>
                 {/* Right panel - grid container for overlapping Units */}
                 <LazyPanel
