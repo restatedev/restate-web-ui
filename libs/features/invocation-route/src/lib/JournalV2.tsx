@@ -78,6 +78,8 @@ export function JournalV2({
   withTimeline = true,
   isCompact = true,
   setIsCompact,
+  isLive = false,
+  setIsLive,
 }: {
   invocationId: string;
   className?: string;
@@ -86,9 +88,10 @@ export function JournalV2({
   withTimeline?: boolean;
   isCompact?: boolean;
   setIsCompact?: Dispatch<React.SetStateAction<boolean>>;
+  isLive?: boolean;
+  setIsLive?: Dispatch<React.SetStateAction<boolean>>;
 }) {
   const [invocationIds, setInvocationIds] = useState([String(invocationId)]);
-  const [isLive, setIsLive] = useState(true);
   const {
     data,
     isPending,
@@ -100,7 +103,11 @@ export function JournalV2({
     refetchOnMount: true,
     staleTime: 0,
     refetchInterval(query) {
-      if (query.state.status === 'success' && !query.state.data?.completed_at) {
+      if (
+        query.state.status === 'success' &&
+        !query.state.data?.completed_at &&
+        isLive
+      ) {
         return 1000;
       } else {
         return false;
@@ -109,7 +116,6 @@ export function JournalV2({
     refetchIntervalInBackground: false,
     refetchOnWindowFocus: false,
   });
-
   const { data: subscriptions } = useListSubscriptions();
 
   const addInvocationId = useCallback(
@@ -322,7 +328,7 @@ export function JournalV2({
                     </DropdownSection>
                   </DropdownPopover>
                 </Dropdown>
-                {!areAllInvocationsCompleted && (
+                {!areAllInvocationsCompleted && setIsLive && (
                   <Button
                     variant="icon"
                     className={liveStyles({ isLive })}

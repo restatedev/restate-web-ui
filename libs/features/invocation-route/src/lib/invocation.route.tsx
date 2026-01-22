@@ -78,6 +78,7 @@ function Component() {
   const isWorkflow = journalAndInvocationData?.target_service_ty === 'workflow';
 
   const [isCompact, setIsCompact] = useState(true);
+  const [isLive, setIsLive] = useState(true);
 
   const { OnboardingGuide } = useRestateContext();
 
@@ -223,6 +224,8 @@ function Component() {
               key={String(id)}
               isCompact={isCompact}
               setIsCompact={setIsCompact}
+              isLive={isLive}
+              setIsLive={setIsLive}
             />
           </div>
         </div>
