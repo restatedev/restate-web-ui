@@ -264,6 +264,7 @@ export function getEntryResultV2(
         transientFailures?.at(-1)?.relatedRestateErrorCode ||
           transientFailures?.at(-1)?.code?.toString(),
         true,
+        transientFailures?.at(-1)?.stack,
       )
     : undefined;
 
