@@ -4,7 +4,7 @@ import type {
 } from '@restate/data-access/admin-api/spec';
 import { convertInvocation } from '../convertInvocation';
 import { convertInvocationsFilters } from '../convertFilters';
-import { type QueryContext } from './shared';
+import { type QueryContext, SYS_INVOCATION_COLUMNS } from './shared';
 
 const INVOCATIONS_LIMIT = 250;
 const COUNT_LIMIT = 50000;
@@ -44,15 +44,17 @@ export async function listInvocations(
 
       if (idRows.length > 0) {
         const { rows: invRows } = await this.query(
-          `SELECT * from sys_invocation ${convertInvocationsFilters([
-            {
-              field: 'id',
-              type: 'STRING_LIST',
-              operation: 'IN',
-              value: idRows.map(({ id }) => id),
-            },
-            ...filters,
-          ])} ORDER BY ${sort.field} ${sort.order}`,
+          `SELECT ${SYS_INVOCATION_COLUMNS.join(', ')} from sys_invocation ${convertInvocationsFilters(
+            [
+              {
+                field: 'id',
+                type: 'STRING_LIST',
+                operation: 'IN',
+                value: idRows.map(({ id }) => id),
+              },
+              ...filters,
+            ],
+          )} ORDER BY ${sort.field} ${sort.order}`,
         );
 
         return { rows: invRows, receivedLessThanLimit };

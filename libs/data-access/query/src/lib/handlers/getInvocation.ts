@@ -1,9 +1,9 @@
 import { convertInvocation } from '../convertInvocation';
-import type { QueryContext } from './shared';
+import { type QueryContext, SYS_INVOCATION_COLUMNS } from './shared';
 
 export async function getInvocation(this: QueryContext, invocationId: string) {
   const invocations = await this.query(
-    `SELECT * FROM sys_invocation WHERE id = '${invocationId}'`,
+    `SELECT ${SYS_INVOCATION_COLUMNS.join(', ')} FROM sys_invocation WHERE id = '${invocationId}'`,
   ).then(({ rows }) => rows.map(convertInvocation));
   if (invocations.length > 0) {
     return new Response(JSON.stringify(invocations.at(0)), {
