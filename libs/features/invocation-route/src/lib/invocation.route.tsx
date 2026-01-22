@@ -88,7 +88,7 @@ function Component() {
       <div className="flex flex-col">
         <div className="@container flex flex-col gap-1">
           <Link
-            className="flex items-center gap-1 text-sm text-gray-500"
+            className="flex items-center gap-1 self-start text-sm text-gray-500"
             variant="secondary"
             href={`${baseUrl}/invocations?${invocationsSearchParams.toString()}`}
           >

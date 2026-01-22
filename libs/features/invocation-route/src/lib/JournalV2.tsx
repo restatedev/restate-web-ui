@@ -392,7 +392,7 @@ export function JournalV2({
             </div>
             <div
               ref={listRef}
-              className="relative bg-gray-100 font-mono text-0.5xs"
+              className="relative overflow-hidden rounded-b-2xl bg-gray-100 font-mono text-0.5xs"
             >
               <LazyPanelGroup
                 direction="horizontal"
@@ -405,7 +405,7 @@ export function JournalV2({
                   style={{ overflow: 'visible' }}
                 >
                   <div
-                    className="relative overflow-hidden rounded-2xl rounded-r-none border-0 border-r-0 border-white/50 bg-white shadow-xs"
+                    className="relative rounded-2xl rounded-r-none border-0 border-r-0 border-white/50 bg-white shadow-xs"
                     style={{
                       minHeight: virtualizer.getTotalSize() + 48,
                     }}
