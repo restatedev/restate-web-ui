@@ -191,8 +191,12 @@ function shouldIncludeEntry(
   entry: JournalEntryV2 | undefined,
   parentCommand: JournalEntryV2 | undefined,
   isCompact: boolean,
+  depth: number,
 ): boolean {
-  if (!entry) return true;
+  if (!entry) {
+    // Placeholder entries for nested invocations (depth > 0) should be hidden
+    return depth === 0;
+  }
 
   if (entry.category === 'event' && entry.type === 'Completion') {
     return false;
@@ -251,6 +255,7 @@ export function useProcessedJournal(
           combinedEntry.entry,
           combinedEntry.parentCommand,
           isCompact,
+          combinedEntry.depth,
         )
       ) {
         continue;
