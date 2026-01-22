@@ -48,7 +48,6 @@ import {
 } from '@restate/features/service';
 import { DEPLOYMENT_QUERY_PARAM } from '@restate/features/deployment';
 import { INVOCATION_QUERY_NAME } from '@restate/features/invocation-route';
-import { STATE_QUERY_NAME } from '@restate/features/state-object-route';
 import { Badge } from '@restate/ui/badge';
 import { Sort } from './QueryButton';
 import {
@@ -390,7 +389,7 @@ function Component() {
               SERVICE_QUERY_PARAM,
               DEPLOYMENT_QUERY_PARAM,
               INVOCATION_QUERY_NAME,
-              STATE_QUERY_NAME,
+              'state', //TODO use const
               HANDLER_QUERY_PARAM,
             ];
             paramsToPreserve.forEach((param) => {
