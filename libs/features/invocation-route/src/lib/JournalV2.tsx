@@ -1,5 +1,14 @@
 import { JournalEntryV2 } from '@restate/data-access/admin-api';
-import { Dispatch, lazy, Suspense, useCallback, useState } from 'react';
+import {
+  Dispatch,
+  lazy,
+  Suspense,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import type { VirtualItem } from '@tanstack/react-virtual';
 import { InvocationId } from './InvocationId';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
 import { Link } from '@restate/ui/link';
@@ -31,14 +40,13 @@ import {
   DropdownSection,
   DropdownTrigger,
 } from '@restate/ui/dropdown';
+import { useWindowVirtualizer } from '@tanstack/react-virtual';
 
 const LazyPanel = lazy(() =>
   import('react-resizable-panels').then((m) => ({ default: m.Panel })),
 );
 const LazyPanelGroup = lazy(() =>
-  import('react-resizable-panels').then((m) => ({
-    default: m.PanelGroup,
-  })),
+  import('react-resizable-panels').then((m) => ({ default: m.PanelGroup })),
 );
 const LazyPanelResizeHandle = lazy(() =>
   import('react-resizable-panels').then((m) => ({
@@ -125,27 +133,54 @@ export function JournalV2({
 
   const { baseUrl } = useRestateContext();
 
-  const combinedEntries = getCombinedJournal(invocationId, data)?.filter(
-    ({ entry, parentCommand }) => {
-      if (entry?.category === 'event' && entry?.type === 'Completion') {
-        return false;
-      }
-      if (
-        entry?.category === 'notification' &&
-        entry?.type === 'CallInvocationId'
-      ) {
-        return false;
-      }
-      if (
-        isCompact &&
-        ((parentCommand && entry?.category === 'notification') ||
-          entry?.type === 'Event: TransientError')
-      ) {
-        return false;
-      }
-      return true;
-    },
+  const combinedEntries = useMemo(
+    () =>
+      getCombinedJournal(invocationId, data)?.filter(
+        ({ entry, parentCommand, invocationId: entryInvocationId }) => {
+          if (entry?.category === 'event' && entry?.type === 'Completion') {
+            return false;
+          }
+          if (
+            entry?.category === 'notification' &&
+            entry?.type === 'CallInvocationId'
+          ) {
+            return false;
+          }
+          if (
+            isCompact &&
+            ((parentCommand && entry?.category === 'notification') ||
+              entry?.type === 'Event: TransientError')
+          ) {
+            return false;
+          }
+          if (entry?.category === 'event' && entry?.type === 'Event: Paused') {
+            return false;
+          }
+          return true;
+        },
+      ),
+    [invocationId, data, isCompact],
   );
+
+  const listRef = useRef<HTMLDivElement>(null);
+
+  const entriesWithoutInput = useMemo(
+    () => combinedEntries?.filter(({ entry }) => entry?.type !== 'Input') ?? [],
+    [combinedEntries],
+  );
+
+  const virtualizer = useWindowVirtualizer({
+    count: entriesWithoutInput.length,
+    estimateSize: () => 36,
+    overscan: 100,
+    scrollMargin: listRef.current?.offsetTop ?? 0,
+    getItemKey: (index) => {
+      const entry = entriesWithoutInput[index];
+      return entry
+        ? `${entry.invocationId}-${entry.entry?.index}-${entry.entry?.type}`
+        : index;
+    },
+  });
 
   const invocationApiError = apiError?.[invocationId];
 
@@ -204,41 +239,6 @@ export function JournalV2({
   );
   const restartedFromValue =
     journalAndInvocationData?.restarted_from || restartedFromHeader?.value;
-
-  const entriesElements = (
-    <>
-      <div className="z-10 box-border flex h-12 items-center rounded-tl-2xl rounded-bl-2xl border-b border-transparent bg-gray-100 shadow-xs ring-1 ring-black/5 last:border-none">
-        <Input
-          entry={inputEntry}
-          invocation={data?.[invocationId]}
-          className="w-full"
-        />
-      </div>
-      {combinedEntries?.map(
-        ({ invocationId, entry, depth, parentCommand }, index) => {
-          const invocation = data?.[invocationId];
-          if (entry?.type === 'Input') {
-            return null;
-          }
-
-          return (
-            <ErrorBoundary
-              entry={entry}
-              className="h-9"
-              key={invocationId + entry?.category + entry?.type + index}
-            >
-              <Entry
-                invocation={invocation}
-                entry={entry}
-                depth={depth}
-                parentCommand={parentCommand}
-              />
-            </ErrorBoundary>
-          );
-        },
-      )}
-    </>
-  );
 
   const firstPendingCommandIndex = journalAndInvocationData.completed_at
     ? journalAndInvocationData.journal?.entries?.find(
@@ -390,55 +390,80 @@ export function JournalV2({
                 </HoverTooltip>
               </div>
             </div>
-            <div className="relative font-mono text-0.5xs">
-              {withTimeline ? (
-                <LazyPanelGroup
-                  direction="horizontal"
-                  className={'gap-0'}
+            <div
+              ref={listRef}
+              className="relative bg-gray-100 font-mono text-0.5xs"
+            >
+              <LazyPanelGroup
+                direction="horizontal"
+                style={{ overflow: 'visible' }}
+              >
+                {/* Left panel */}
+                <LazyPanel
+                  defaultSize={(1 - timelineWidth) * 100}
+                  className="z-10 min-w-0"
                   style={{ overflow: 'visible' }}
                 >
-                  <LazyPanel
-                    defaultSize={(1 - timelineWidth) * 100}
-                    className="z-10 min-w-0"
-                    style={{ overflow: 'visible' }}
+                  <div
+                    className="relative overflow-hidden rounded-2xl rounded-r-none border-0 border-r-0 border-white/50 bg-white shadow-xs"
+                    style={{
+                      minHeight: virtualizer.getTotalSize() + 48,
+                    }}
                   >
-                    <div className="relative rounded-2xl rounded-r-none border-0 border-r-0 border-white/50 bg-linear-to-b from-gray-50 to-white shadow-xs">
-                      {entriesElements}
+                    <div className="z-10 box-border flex h-12 items-center rounded-tl-2xl rounded-bl-2xl border-b border-transparent bg-gray-100 shadow-xs ring-1 ring-black/5 last:border-none">
+                      <Input
+                        entry={inputEntry}
+                        invocation={data?.[invocationId]}
+                        className="w-full"
+                      />
                     </div>
-                  </LazyPanel>
-                  <LazyPanelResizeHandle className="group relative hidden w-px items-center justify-center md:flex">
-                    <div className="absolute top-3 bottom-3 left-0 w-px bg-transparent group-hover:w-[2px] group-hover:bg-blue-500" />
-                  </LazyPanelResizeHandle>
-                  <LazyPanel
-                    defaultSize={timelineWidth * 100}
-                    className="relative hidden md:block"
-                    style={{ overflow: 'visible' }}
-                  >
-                    <Units
-                      className="absolute inset-0"
-                      invocation={journalAndInvocationData}
+                    <VirtualizedEntries
+                      virtualItems={virtualizer.getVirtualItems()}
+                      totalSize={virtualizer.getTotalSize()}
+                      entriesWithoutInput={entriesWithoutInput}
+                      data={data}
                     />
+                  </div>
+                </LazyPanel>
+                <LazyPanelResizeHandle className="group relative hidden w-px items-center justify-center md:flex">
+                  <div className="absolute top-3 bottom-3 left-0 w-px bg-transparent group-hover:w-[2px] group-hover:bg-blue-500" />
+                </LazyPanelResizeHandle>
+                {/* Right panel - grid container for overlapping Units */}
+                <LazyPanel
+                  defaultSize={timelineWidth * 100}
+                  className="relative hidden md:grid"
+                  style={{
+                    overflow: 'visible',
+                    minHeight: virtualizer.getTotalSize() + 48,
+                    gridTemplateColumns: '1fr',
+                    gridTemplateRows: '1fr',
+                  }}
+                >
+                  {/* Units - sticky overlay */}
+                  <Units
+                    className="sticky top-0 z-0 col-start-1 row-start-1 h-full max-h-screen"
+                    invocation={journalAndInvocationData}
+                  />
+                  {/* Timeline content */}
+                  <div
+                    className="col-start-1 row-start-1"
+                    style={{ minHeight: virtualizer.getTotalSize() + 48 }}
+                  >
                     <div className="border border-transparent">
                       <LifeCycleProgress
                         className="h-12 px-2"
                         invocation={journalAndInvocationData}
                       />
                     </div>
-                    {combinedEntries
-                      ?.filter(({ entry }) => entry?.type !== 'Input')
-                      .map(({ entry, invocationId }, index) => (
-                        <TimelineContainer
-                          invocationId={invocationId}
-                          entry={entry}
-                          invocation={data?.[invocationId]}
-                          key={`${invocationId}-${entry?.category}-${entry?.type}-${index}`}
-                        />
-                      ))}
-                  </LazyPanel>
-                </LazyPanelGroup>
-              ) : (
-                <div className={className}>{entriesElements}</div>
-              )}
+                    <VirtualizedTimeline
+                      virtualItems={virtualizer.getVirtualItems()}
+                      totalSize={virtualizer.getTotalSize()}
+                      entriesWithoutInput={entriesWithoutInput}
+                      data={data}
+                    />
+                  </div>
+                </LazyPanel>
+              </LazyPanelGroup>
             </div>
           </Suspense>
         </SnapshotTimeProvider>
@@ -541,4 +566,109 @@ function getCombinedJournal(
     .flat();
 
   return combinedEntries;
+}
+
+function VirtualizedEntries({
+  virtualItems,
+  totalSize,
+  entriesWithoutInput,
+  data,
+}: {
+  virtualItems: VirtualItem[];
+  totalSize: number;
+  entriesWithoutInput: CombinedJournalEntry[];
+  data?: ReturnType<typeof useGetInvocationsJournalWithInvocationsV2>['data'];
+}) {
+  return (
+    <div
+      style={{
+        height: totalSize,
+        position: 'relative',
+      }}
+    >
+      {virtualItems.map((virtualItem) => {
+        const combinedEntry = entriesWithoutInput[virtualItem.index];
+        if (!combinedEntry) return null;
+        const {
+          invocationId: entryInvocationId,
+          entry,
+          depth,
+          parentCommand,
+        } = combinedEntry;
+        const invocation = data?.[entryInvocationId];
+
+        return (
+          <div
+            key={virtualItem.key}
+            className="animate-row-fade-in"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: virtualItem.size,
+              transform: `translateY(${virtualItem.start}px)`,
+            }}
+          >
+            <ErrorBoundary entry={entry} className="h-9">
+              <Entry
+                invocation={invocation}
+                entry={entry}
+                depth={depth}
+                parentCommand={parentCommand}
+              />
+            </ErrorBoundary>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function VirtualizedTimeline({
+  virtualItems,
+  totalSize,
+  entriesWithoutInput,
+  data,
+}: {
+  virtualItems: VirtualItem[];
+  totalSize: number;
+  entriesWithoutInput: CombinedJournalEntry[];
+  data?: ReturnType<typeof useGetInvocationsJournalWithInvocationsV2>['data'];
+}) {
+  return (
+    <div
+      style={{
+        height: totalSize,
+        position: 'relative',
+      }}
+    >
+      {virtualItems.map((virtualItem) => {
+        const combinedEntry = entriesWithoutInput[virtualItem.index];
+        if (!combinedEntry) return null;
+        const { invocationId: entryInvocationId, entry } = combinedEntry;
+
+        return (
+          <div
+            key={virtualItem.key}
+            className="animate-row-fade-in"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: virtualItem.size,
+              transform: `translateY(${virtualItem.start}px)`,
+            }}
+          >
+            <TimelineContainer
+              invocationId={entryInvocationId}
+              entry={entry}
+              invocation={data?.[entryInvocationId]}
+            />
+          </div>
+        );
+      })}
+    </div>
+  );
 }

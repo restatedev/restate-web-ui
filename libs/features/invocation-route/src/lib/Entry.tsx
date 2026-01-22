@@ -112,7 +112,7 @@ function digitCount(n: number) {
 }
 
 const styles = tv({
-  base: "peer group relative flex h-9 min-w-0 items-center border-b-transparent last:rounded-bl-2xl last:border-none [&:not(:has([data-entry]>*))]:hidden [&[data-depth='true']_[data-border]]:border-l",
+  base: "peer group relative flex h-9 min-w-0 items-center border-b-transparent [&:not(:has([data-entry]>*))]:hidden [&[data-depth='true']_[data-border]]:border-l",
   variants: {
     hasError: {
       true: 'bg-orange-50',
@@ -151,7 +151,6 @@ export function Entry({
   const numOfDigits = digitCount(length);
 
   const { isCompact } = useJournalContext();
-
   const EntrySpecificComponent = (
     entry?.type
       ? entry.category === 'command'
@@ -214,7 +213,7 @@ export function Entry({
 
       <div
         style={{ width: `${numOfDigits + 2}ch` }}
-        className="relative flex h-full shrink-0 items-center justify-center font-mono text-0.5xs text-gray-400/70 group-first:rounded-tl-2xl group-last:rounded-bl-2xl"
+        className="relative flex h-full shrink-0 items-center justify-center font-mono text-0.5xs text-gray-400/70"
       >
         <div
           data-border
