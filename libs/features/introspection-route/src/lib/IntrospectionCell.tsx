@@ -3,7 +3,7 @@ import { InvocationId, Target } from '@restate/features/invocation-route';
 import { Deployment } from '@restate/features/deployment';
 import { Cell } from '@restate/ui/table';
 import { DateTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
-import { formatDurations } from '@restate/util/intl';
+import { formatDurations, formatNumber } from '@restate/util/intl';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 
 const iso8601UTCPattern =
@@ -121,7 +121,10 @@ export function IntrospectionCell({
 function formattedValue(value?: string) {
   if (value !== null && value !== undefined) {
     try {
-      return JSON.stringify(JSON.parse(value), null, 2);
+      return value.length < 10000
+        ? JSON.stringify(JSON.parse(value), null, 2)
+        : value.slice(0, 10000) +
+            ` … ${formatNumber(value.length - 10000, true)} more characters`;
     } catch (_) {
       return value;
     }

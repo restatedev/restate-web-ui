@@ -1,7 +1,14 @@
 import { useSqlQuery } from '@restate/data-access/admin-api-hooks';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
-import { Column, Row, Table, TableBody, TableHeader } from '@restate/ui/table';
+import {
+  Cell,
+  Column,
+  Row,
+  Table,
+  TableBody,
+  TableHeader,
+} from '@restate/ui/table';
 import { formatDurations } from '@restate/util/intl';
 import {
   SnapshotTimeProvider,
@@ -73,7 +80,10 @@ function Component() {
   const sortedItems = useMemo(() => {
     return [...(data?.rows ?? [])].map((row) => ({
       row,
-      hash: JSON.stringify(row),
+      hash: Object.entries(row)
+        .map(([key, value]) => `${key}:${value}`)
+        .join('|')
+        .slice(0, 10000),
     }));
   }, [data?.rows]);
 
@@ -120,7 +130,7 @@ function Component() {
     <div>
       <SnapshotTimeProvider lastSnapshot={dataUpdate}>
         <div className="relative flex flex-auto flex-col gap-2">
-          <Table aria-label="Introspection SQL" key={hash}>
+          <Table aria-label="Introspection SQL">
             <TableHeader>
               {selectedColumnsArray.map((col) => (
                 <Column
