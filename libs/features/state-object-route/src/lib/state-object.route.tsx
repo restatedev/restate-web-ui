@@ -380,7 +380,7 @@ function Component() {
             isLoading={
               isFetching ||
               isValidating ||
-              (listObjects.isPending && currentPageItems.length !== 0)
+              (listObjects.isFetching && currentPageItems.length !== 0)
             }
             numOfColumns={selectedColumnsArray.length}
             emptyPlaceholder={

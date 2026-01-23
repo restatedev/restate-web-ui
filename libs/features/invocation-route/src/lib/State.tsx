@@ -10,10 +10,12 @@ export function State({
   state = [],
   service,
   serviceKey,
+  isLoading,
 }: {
   state?: { name: string; value: string }[];
   service: string;
   serviceKey: string;
+  isLoading?: boolean;
 }) {
   return (
     <>
@@ -22,15 +24,22 @@ export function State({
         <div className="pl-2">Value</div>
       </div>
       <div className="flex flex-col rounded-[calc(0.75rem-0.125rem)] border shadow-xs">
-        {state.map(({ name, value }) => (
-          <StateKey
-            name={name}
-            value={value}
-            key={name}
-            service={service}
-            serviceKey={serviceKey}
-          />
-        ))}
+        {!isLoading &&
+          state.map(({ name, value }) => (
+            <StateKey
+              name={name}
+              value={value}
+              key={name}
+              service={service}
+              serviceKey={serviceKey}
+            />
+          ))}
+        {isLoading && (
+          <div className="group grid grid-cols-[1fr_2fr] items-center gap-1 truncate bg-white px-2 py-0 py-2 text-0.5xs text-zinc-600 not-last:border-b first:rounded-t-[calc(0.75rem-0.125rem)] last:rounded-b-[calc(0.75rem-0.125rem)]">
+            <div className="h-5 animate-pulse rounded-md bg-slate-200" />
+            <div className="h-5 animate-pulse rounded-md bg-slate-200" />
+          </div>
+        )}
       </div>
     </>
   );
