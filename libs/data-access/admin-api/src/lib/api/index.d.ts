@@ -5275,7 +5275,10 @@ export interface operations {
   };
   get_state_keys: {
     parameters: {
-      query?: never;
+      query?: {
+        /** @description service key */
+        serviceKey?: string[];
+      };
       header?: never;
       path: {
         /** @description service name */

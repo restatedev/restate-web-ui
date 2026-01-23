@@ -3306,6 +3306,17 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "serviceKey",
+            "in": "query",
+            "description": "service key",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
           }
         ],
         "responses": {

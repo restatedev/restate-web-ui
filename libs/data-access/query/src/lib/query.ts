@@ -61,7 +61,10 @@ type BoundHandlers = {
     invocationId: string | undefined,
   ) => Promise<Response>;
   getState: (service: string, key: string) => Promise<Response>;
-  getStateInterface: (service: string) => Promise<Response>;
+  getStateInterface: (
+    service: string,
+    serviceKey?: string[],
+  ) => Promise<Response>;
   queryState: (service: string, filters: FilterItem[]) => Promise<Response>;
   listState: (service: string, keys: string[]) => Promise<Response>;
   batchCancelInvocations: (
@@ -278,7 +281,10 @@ queryRouter.map(routes, {
       },
       async keys(ctx) {
         const { getStateInterface } = ctx.storage.get(handlersKey);
-        return getStateInterface(ctx.params.name);
+        return getStateInterface(
+          ctx.params.name,
+          ctx.url.searchParams.getAll('serviceKey'),
+        );
       },
       async query(ctx) {
         const { queryState } = ctx.storage.get(handlersKey);

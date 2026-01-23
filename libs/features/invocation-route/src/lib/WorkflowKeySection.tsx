@@ -8,7 +8,11 @@ import { Button } from '@restate/ui/button';
 import { DropdownSection } from '@restate/ui/dropdown';
 import { State } from './State';
 import { Icon, IconName } from '@restate/ui/icons';
-import { useGetVirtualObjectState } from '@restate/data-access/admin-api-hooks';
+import {
+  useGetVirtualObjectState,
+  useGetVirtualObjectStateInterface,
+} from '@restate/data-access/admin-api-hooks';
+import { useState } from 'react';
 
 const styles = tv({ base: '' });
 export function WorkflowKeySection({
@@ -22,21 +26,33 @@ export function WorkflowKeySection({
   className?: string;
   raised?: boolean;
 }) {
+  const [shouldFetchState, setShouldFetchState] = useState(false);
   const { data: stateData } = useGetVirtualObjectState(
     String(invocation?.target_service_name),
     String(invocation?.target_service_key),
     {
-      enabled: Boolean(
-        typeof invocation?.target_service_key === 'string' &&
-          invocation &&
-          invocation.target_service_ty === 'workflow',
-      ),
+      enabled: shouldFetchState,
       staleTime: 0,
     },
   );
 
+  const { data: stateInterface, isPending: stateIsPending } =
+    useGetVirtualObjectStateInterface(
+      String(invocation?.target_service_name),
+      invocation?.target_service_key ? [invocation?.target_service_key] : [],
+      {
+        enabled: Boolean(
+          typeof invocation?.target_service_key === 'string' &&
+            invocation &&
+            invocation.target_service_ty === 'workflow',
+        ),
+        staleTime: 0,
+      },
+    );
+
   if (invocation?.target_service_ty === 'workflow') {
     const state = stateData?.state ?? [];
+    const keys = (stateData?.state || stateInterface?.keys) ?? [];
 
     return (
       <Section className={styles({ className })}>
@@ -66,11 +82,12 @@ export function WorkflowKeySection({
                 <PopoverTrigger>
                   <Button
                     variant="secondary"
-                    disabled={state.length === 0}
+                    onClick={() => setShouldFetchState(true)}
+                    disabled={keys.length === 0 || stateIsPending}
                     className="ml-auto flex h-5 items-center gap-1 rounded-md border bg-white/70 px-1.5 py-0 font-mono text-xs font-medium text-zinc-600 disabled:border-transparent disabled:text-zinc-500 disabled:shadow-none"
                   >
-                    {state.length > 0 ? `(${state.length})` : 'No state'}
-                    {(stateData?.state ?? [])?.length > 0 && (
+                    {keys.length > 0 ? `(${keys.length})` : 'No state'}
+                    {keys.length > 0 && (
                       <Icon
                         name={IconName.ChevronsUpDown}
                         className="h-3 w-3 shrink-0 text-gray-500"

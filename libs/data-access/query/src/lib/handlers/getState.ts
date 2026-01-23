@@ -8,7 +8,7 @@ export async function getState(
   key: string,
 ) {
   const state: { name: string; value: string }[] = await this.query(
-    `SELECT key, value_utf8, value FROM state WHERE service_name = '${service}' AND service_key = '${key}'`,
+    `SELECT key, value FROM state WHERE service_name = '${service}' AND service_key = '${key}'`,
   ).then(({ rows }) =>
     rows.map((row) => ({
       name: row.key,

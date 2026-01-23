@@ -59,6 +59,7 @@ import {
 } from './useInvocationsQueryFilters';
 import { Key } from 'react-aria';
 import { FilterShortcuts } from './FilterShortcuts';
+import { RestateMinimumVersion } from '@restate/util/feature-flag';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: 170,
@@ -327,14 +328,15 @@ function Component() {
                     />
                     Cancel…
                   </DropdownItem>
-
-                  <DropdownItem value="pause" destructive>
-                    <Icon
-                      name={IconName.Pause}
-                      className="h-3.5 w-3.5 shrink-0 opacity-80"
-                    />
-                    Pause…
-                  </DropdownItem>
+                  <RestateMinimumVersion minVersion="1.6.0">
+                    <DropdownItem value="pause" destructive>
+                      <Icon
+                        name={IconName.Pause}
+                        className="h-3.5 w-3.5 shrink-0 opacity-80"
+                      />
+                      Pause…
+                    </DropdownItem>
+                  </RestateMinimumVersion>
                   <DropdownItem value="resume">
                     <Icon
                       name={IconName.Play}

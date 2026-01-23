@@ -908,6 +908,36 @@ export function useGetVirtualObjectState(
   };
 }
 
+export function useGetVirtualObjectStateInterface(
+  serviceName: string,
+  serviceKey: string[],
+  options?: HookQueryOptions<'/query/services/{name}/state/keys', 'get'>,
+) {
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi(
+    'query',
+    '/query/services/{name}/state/keys',
+    'get',
+    {
+      baseUrl,
+      parameters: {
+        path: { name: serviceName },
+        query: { serviceKey },
+      },
+    },
+  );
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+  };
+}
+
 export function useQueryVirtualObjectState(
   serviceName: string,
   filters?: FilterItem[],
