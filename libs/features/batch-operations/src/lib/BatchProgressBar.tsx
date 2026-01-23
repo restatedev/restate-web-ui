@@ -8,6 +8,7 @@ import { ErrorBanner } from '@restate/ui/error';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Spinner } from '@restate/ui/loading';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
+import { HoverTooltip } from '@restate/ui/tooltip';
 import {
   formatNumber,
   formatPercentageWithoutFraction,
@@ -122,10 +123,17 @@ export function BatchProgressBar({
                                 className="ml-auto h-3.5 w-3.5"
                               />
                             </div>
-                            <ErrorBanner
-                              error={new Error(error)}
-                              className="-mt-1 bg-transparent pl-0 group-focus:**:text-red-50 [&_svg]:mt-1 [&_svg]:h-3.5 [&_svg]:w-3.5"
-                            />
+                            <HoverTooltip content={error} className="max-w-lg">
+                              <ErrorBanner
+                                error={
+                                  new Error(
+                                    error.slice(0, 250) +
+                                      (error.length > 250 ? '…' : ''),
+                                  )
+                                }
+                                className="-mt-1 overflow-auto bg-transparent pl-0 group-focus:**:text-red-50 [&_output]:max-h-fit [&_output]:whitespace-normal [&_svg]:mt-1 [&_svg]:h-3.5 [&_svg]:w-3.5"
+                              />
+                            </HoverTooltip>
                           </div>
                         </DropdownItem>
                       ))}

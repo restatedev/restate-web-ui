@@ -282,11 +282,16 @@ export function BatchOperationDialog({
                 <BatchProgressBar
                   successful={progress?.successful || 0}
                   failed={progress?.failed || 0}
-                  total={Math.max(
-                    count || 0,
-                    ((progress?.successful || 0) + (progress?.failed || 0)) *
-                      (mutation.isPending ? 1.01 : 1),
-                  )}
+                  total={
+                    mutation.isSuccess
+                      ? (progress?.successful || 0) + (progress?.failed || 0)
+                      : Math.max(
+                          count || 0,
+                          ((progress?.successful || 0) +
+                            (progress?.failed || 0)) *
+                            (mutation.isPending ? 1.01 : 1),
+                        )
+                  }
                   isPending={mutation.isPending && !mutation.isPaused(state.id)}
                   failedInvocations={progress?.failedInvocationIds}
                   isCompleted={mutation.isSuccess}
