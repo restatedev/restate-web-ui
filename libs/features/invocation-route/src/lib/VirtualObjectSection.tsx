@@ -2,6 +2,7 @@ import type { Invocation } from '@restate/data-access/admin-api';
 import {
   useGetVirtualObjectQueue,
   useGetVirtualObjectState,
+  useGetVirtualObjectStateInterface,
 } from '@restate/data-access/admin-api-hooks';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { tv } from '@restate/util/styles';
@@ -21,6 +22,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
 import { Button } from '@restate/ui/button';
 import { DropdownSection } from '@restate/ui/dropdown';
 import { State } from './State';
+import { Spinner } from '@restate/ui/loading';
+import { useState } from 'react';
 
 const styles = tv({ base: '' });
 export function VirtualObjectSection({
@@ -48,31 +51,46 @@ export function VirtualObjectSection({
       staleTime: 0,
     },
   );
-  const { data: stateData } = useGetVirtualObjectState(
-    String(invocation?.target_service_name),
-    String(invocation?.target_service_key),
-    {
-      enabled: Boolean(
-        typeof invocation?.target_service_key === 'string' &&
-          invocation &&
-          invocation.target_service_ty === 'virtual_object',
-      ),
-      staleTime: 0,
-    },
-  );
+  const [shouldFetchState, setShouldFetchState] = useState(false);
+  const { data: stateData, isPending: stateDataIsPending } =
+    useGetVirtualObjectState(
+      String(invocation?.target_service_name),
+      String(invocation?.target_service_key),
+      {
+        enabled: shouldFetchState,
+        staleTime: 0,
+      },
+    );
+
+  const { data: stateInterface, isPending: stateIsPending } =
+    useGetVirtualObjectStateInterface(
+      String(invocation?.target_service_name),
+      invocation?.target_service_key ? [invocation?.target_service_key] : [],
+      {
+        enabled: Boolean(
+          typeof invocation?.target_service_key === 'string' &&
+            invocation &&
+            invocation.target_service_ty === 'virtual_object',
+        ),
+        staleTime: 0,
+      },
+    );
 
   if (
-    !data ||
     typeof invocation?.target_service_key === 'undefined' ||
     invocation?.target_service_ty !== 'virtual_object'
   ) {
     return null;
   }
-  const { size, head } = data;
-  const position = data[invocation.id];
+  const { size, head } = data ?? {
+    [invocation.id]: undefined,
+    size: undefined,
+    head: undefined,
+  };
+  const position = data?.[invocation.id];
 
   const shouldShowQueue = typeof size === 'number' && typeof head === 'string';
-  const state = stateData?.state ?? [];
+  const keys = (stateData?.state || stateInterface?.keys) ?? [];
   return (
     <Section className={styles({ className })}>
       <div>
@@ -103,15 +121,18 @@ export function VirtualObjectSection({
               <PopoverTrigger>
                 <Button
                   variant="secondary"
-                  disabled={state.length === 0}
+                  onClick={() => setShouldFetchState(true)}
+                  disabled={keys.length === 0 || stateIsPending}
                   className="ml-auto flex h-5 items-center gap-1 rounded-md border bg-white/70 px-1.5 py-0 font-mono text-xs font-medium text-zinc-600 disabled:border-transparent disabled:text-zinc-500 disabled:shadow-none"
                 >
-                  {state.length > 0 ? (
-                    `(${state.length})`
+                  {keys.length > 0 ? (
+                    `(${keys.length})`
+                  ) : stateIsPending ? (
+                    <Spinner className="h-3 w-3" />
                   ) : (
                     <span className="text-gray-400">No state</span>
                   )}
-                  {(stateData?.state ?? [])?.length > 0 && (
+                  {keys.length > 0 && (
                     <Icon
                       name={IconName.ChevronsUpDown}
                       className="h-3 w-3 shrink-0 text-gray-500"
@@ -122,12 +143,13 @@ export function VirtualObjectSection({
               <PopoverContent className="max-w-lg">
                 <DropdownSection
                   title=""
-                  className="mx-0 border-none bg-transparent px-0 font-mono [&&&]:mb-1"
+                  className="mx-0 min-h-12 min-w-80 border-none bg-transparent px-0 font-mono [&&&]:mb-1"
                 >
                   <State
                     state={stateData?.state}
                     service={invocation?.target_service_name}
                     serviceKey={invocation?.target_service_key}
+                    isLoading={stateDataIsPending}
                   />
                 </DropdownSection>
               </PopoverContent>
