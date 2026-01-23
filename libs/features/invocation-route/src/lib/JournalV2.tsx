@@ -375,7 +375,7 @@ export function JournalV2({
             {withTimeline ? (
               <div
                 ref={listRef}
-                className="relative isolate rounded-b-2xl bg-gray-100 font-mono text-0.5xs [clip-path:inset(0_round_0_0_1rem_1rem)]"
+                className="relative isolate rounded-b-2xl bg-gray-100 font-mono text-0.5xs [clip-path:inset(-2.5rem_0_0_0_round_0_0_1rem_1rem)]"
               >
                 <LazyPanelGroup
                   direction="horizontal"

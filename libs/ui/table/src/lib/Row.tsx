@@ -20,7 +20,7 @@ import {
 
 const rowStyles = tv({
   extend: focusRing,
-  base: 'group/row relative transform cursor-default text-sm text-gray-900 -outline-offset-2 transition [content-visibility:auto] hover:bg-gray-100 disabled:text-gray-300 selected:bg-blue-100 selected:hover:bg-blue-200',
+  base: 'group/row relative transform cursor-default text-sm text-gray-900 -outline-offset-2 transition [content-visibility:auto] hover:bg-gray-100 disabled:text-gray-300 selected:bg-blue-100/50 selected:hover:bg-blue-100',
 });
 
 interface RowProps<T extends object>
