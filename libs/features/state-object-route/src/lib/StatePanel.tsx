@@ -83,7 +83,7 @@ function StatePanelContent() {
   const { virtualObject, key } = useStateParam();
   const {
     data,
-    isPending,
+    isFetching,
     error: getStateError,
     dataUpdatedAt,
     errorUpdatedAt,
@@ -133,7 +133,7 @@ function StatePanelContent() {
                   exact: true,
                 });
               }}
-              isPending={isPending}
+              isPending={isFetching}
             >
               Refresh
             </SubmitButton>
@@ -149,10 +149,10 @@ function StatePanelContent() {
             />
           </div>
           <div className="flex min-w-0 flex-auto flex-col items-start gap-1">
-            {isPending ? (
+            {isFetching ? (
               <>
-                <div className="mt-1 h-5 w-[16ch] animate-pulse rounded-md bg-gray-200" />
-                <div className="h-5 w-[8ch] animate-pulse rounded-md bg-gray-200" />
+                <div className="mt-1 h-5 w-[16ch] animate-pulse rounded-md bg-slate-200" />
+                <div className="h-5 w-[8ch] animate-pulse rounded-md bg-slate-200" />
               </>
             ) : (
               <>
@@ -247,7 +247,12 @@ function StatePanelContent() {
       <Section className="mt-2">
         <SectionTitle className="">State</SectionTitle>
         <SectionContent className="-mt-px p-0" raised={false}>
-          <State state={data?.state} service={virtualObject} serviceKey={key} />
+          <State
+            state={data?.state}
+            service={virtualObject}
+            serviceKey={key}
+            isLoading={isFetching}
+          />
         </SectionContent>
       </Section>
     </SnapshotTimeProvider>
