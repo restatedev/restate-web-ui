@@ -473,7 +473,7 @@ export function JournalV2({
                       className="col-start-1 row-start-1"
                       style={{ minHeight: virtualizer.getTotalSize() + 48 }}
                     >
-                      <div className="border border-transparent">
+                      <div className="relative border border-transparent">
                         <LifeCycleProgress
                           className="h-12 px-2"
                           invocation={journalAndInvocationData}
@@ -486,6 +486,7 @@ export function JournalV2({
                               ?.lifeCycleEntries ?? []
                           }
                         />
+                        <ViewportSelector className="absolute inset-0 z-10" />
                       </div>
                       <VirtualizedTimeline
                         virtualItems={virtualizer.getVirtualItems()}
