@@ -85,6 +85,7 @@ export function LifeCycleProgress({
             className="absolute top-1"
             entry={createdEvent}
             invocation={invocation}
+            showFullTrace
           >
             <div className="h-6 w-full rounded-md" />
           </EntryProgressContainer>
@@ -93,7 +94,7 @@ export function LifeCycleProgress({
         {lifeCycleEntries?.map((entry, i) => (
           <div
             className="absolute inset-0 top-2"
-            date-entry-type={entry.type}
+            data-entry-type={entry.type}
             key={entry.type + String(entry.start)}
           >
             <EntryProgress
@@ -101,6 +102,7 @@ export function LifeCycleProgress({
               entry={entry}
               showDuration={false}
               className="*:h-3.5"
+              showFullTrace
             />
           </div>
         ))}
@@ -115,9 +117,11 @@ const unitsStyles = tv({
 export function Units({
   className,
   cancelEvent,
+  showFullTrace = true,
 }: {
   className?: string;
   cancelEvent?: JournalEntryV2;
+  showFullTrace?: boolean;
 }) {
   const { start, end, dataUpdatedAt } = useJournalContext();
   const executionTime = end - start;

@@ -295,6 +295,7 @@ export function EntryProgress(
       typeof useGetInvocationJournalWithInvocationV2
     >['data'];
     precomputedRelatedEntries?: JournalEntryV2[];
+    showFullTrace?: boolean;
   }>,
 ) {
   return (
@@ -326,6 +327,7 @@ function InnerEntryProgress({
   entry,
   invocation,
   precomputedRelatedEntries,
+  showFullTrace = false,
 }: PropsWithChildren<{
   entry?: JournalEntryV2;
   className?: string;
@@ -335,6 +337,7 @@ function InnerEntryProgress({
     typeof useGetInvocationJournalWithInvocationV2
   >['data'];
   precomputedRelatedEntries?: JournalEntryV2[];
+  showFullTrace?: boolean;
 }>) {
   const { dataUpdatedAt, isLive, start, end } = useJournalContext();
 
@@ -385,6 +388,7 @@ function InnerEntryProgress({
         style={{ zIndex: 2 }}
         invocation={invocation}
         isCopiedFromRestart
+        showFullTrace={showFullTrace}
       >
         <div className="flex w-full items-center">
           <div className="flex-auto border-b-2 border-dotted border-gray-500/30" />
@@ -411,6 +415,7 @@ function InnerEntryProgress({
         className={base({ className })}
         style={{ zIndex: 2 }}
         invocation={invocation}
+        showFullTrace={showFullTrace}
       >
         <div className="flex w-full items-center">
           <div className="flex-auto border-b-2 border-dotted border-gray-500/30" />
@@ -457,6 +462,7 @@ function InnerEntryProgress({
         entry={entry}
         className={base({ className })}
         invocation={invocation}
+        showFullTrace={showFullTrace}
       >
         <div className={segmentContainer({})}>
           {isPoint ? (
@@ -501,6 +507,7 @@ function InnerEntryProgress({
           className="@container/segment h-0"
           entry={entry}
           invocation={invocation}
+          showFullTrace={showFullTrace}
         >
           <div className="@max-[1rem]/segment:[&~*]:hidden" />
           <div className={markerStyles({ isPending: entry.isPending })}>
@@ -511,6 +518,7 @@ function InnerEntryProgress({
                   entry={relevantEntry}
                   invocation={invocation}
                   className="absolute inset-0 @max-[1rem]/segment:hidden"
+                  showFullTrace={showFullTrace}
                 />
               );
             })}
@@ -539,6 +547,7 @@ export function EntryProgressContainer({
   entry,
   invocation,
   isCopiedFromRestart,
+  showFullTrace = false,
 }: PropsWithChildren<{
   entry?: JournalEntryV2;
   className?: string;
@@ -547,8 +556,15 @@ export function EntryProgressContainer({
     typeof useGetInvocationJournalWithInvocationV2
   >['data'];
   isCopiedFromRestart?: boolean;
+  showFullTrace?: boolean;
 }>) {
-  const { start, end, dataUpdatedAt } = useJournalContext();
+  const { start, end, viewportStart, viewportEnd, dataUpdatedAt } =
+    useJournalContext();
+
+  // When showFullTrace is true (minimap header), use full trace range
+  // Otherwise use viewport range for zooming
+  const rangeStart = showFullTrace ? start : viewportStart;
+  const rangeEnd = showFullTrace ? end : viewportEnd;
 
   if (!entry?.start) {
     return null;
@@ -569,19 +585,20 @@ export function EntryProgressContainer({
   const isPoint =
     isCopiedFromRestart || Boolean(!entryEnd && !entry?.isPending);
 
+  const rangeDuration = rangeEnd - rangeStart;
   const relativeStart = entryStart
-    ? (entryStart - start) / (end - start)
+    ? (entryStart - rangeStart) / rangeDuration
     : entryStart;
   const relativeEnd = entryEnd
-    ? (entryEnd - start) / (end - start)
+    ? (entryEnd - rangeStart) / rangeDuration
     : entry?.isPending
-      ? (dataUpdatedAt - start) / (end - start)
+      ? (dataUpdatedAt - rangeStart) / rangeDuration
       : undefined;
 
   return (
     <div
       style={{
-        ...(relativeStart && {
+        ...(relativeStart !== undefined && {
           left: `${relativeStart * 100}%`,
         }),
         width: isPoint
