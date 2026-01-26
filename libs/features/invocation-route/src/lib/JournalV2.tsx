@@ -16,7 +16,7 @@ import { Input } from './entries/Input';
 import { EntryProgress } from './EntryProgress';
 import { PortalProvider } from './Portals';
 import { LifeCycleProgress, Units } from './LifeCycleProgress';
-import { ViewportSelector, ViewportSelectorHandle } from './ViewportSelector';
+import { ViewportSelector } from './ViewportSelector';
 import { ErrorBoundary } from './ErrorBoundry';
 import { tv } from '@restate/util/styles';
 import { Retention } from './Retention';
@@ -138,7 +138,6 @@ export function JournalV2({
 
   const { baseUrl } = useRestateContext();
   const listRef = useRef<HTMLDivElement>(null);
-  const viewportSelectorRef = useRef<ViewportSelectorHandle>(null);
 
   const [viewport, setViewportState] = useState<{
     start: number;
