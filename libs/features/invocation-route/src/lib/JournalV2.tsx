@@ -16,6 +16,7 @@ import { Input } from './entries/Input';
 import { EntryProgress } from './EntryProgress';
 import { PortalProvider } from './Portals';
 import { LifeCycleProgress, Units } from './LifeCycleProgress';
+import { ViewportSelector, ViewportSelectorHandle } from './ViewportSelector';
 import { ErrorBoundary } from './ErrorBoundry';
 import { tv } from '@restate/util/styles';
 import { Retention } from './Retention';
@@ -137,6 +138,7 @@ export function JournalV2({
 
   const { baseUrl } = useRestateContext();
   const listRef = useRef<HTMLDivElement>(null);
+  const viewportSelectorRef = useRef<ViewportSelectorHandle>(null);
 
   const [viewport, setViewportState] = useState<{
     start: number;
@@ -161,9 +163,40 @@ export function JournalV2({
   const hasMoreEntries =
     !withTimeline &&
     allEntriesWithoutInput.length > MAX_ENTRIES_WITHOUT_TIMELINE;
-  const entriesWithoutInput = withTimeline
+  const entriesWithoutInputUnfiltered = withTimeline
     ? allEntriesWithoutInput
     : allEntriesWithoutInput.slice(0, MAX_ENTRIES_WITHOUT_TIMELINE);
+
+  const invocationApiError = apiError?.[invocationId];
+  const dataUpdatedAt = allQueriesDataUpdatedAt[invocationId]!;
+
+  const start = journalAndInvocationData
+    ? new Date(
+        journalAndInvocationData?.created_at ??
+          new Date(dataUpdatedAt).toISOString(),
+      ).getTime()
+    : 0;
+  const areAllInvocationsCompleted = invocationIds.every(
+    (id) => !data[id] || data[id]?.completed_at,
+  );
+  const end = journalAndInvocationData
+    ? Math.max(
+        ...entriesWithoutInputUnfiltered.map(({ entry }) =>
+          entry?.end
+            ? new Date(entry.end).getTime()
+            : entry?.start
+              ? new Date(entry.start).getTime()
+              : -1,
+        ),
+        !areAllInvocationsCompleted
+          ? Math.max(
+              ...Array.from(Object.values(allQueriesDataUpdatedAt).map(Number)),
+            )
+          : -1,
+      )
+    : 0;
+
+  const entriesWithoutInput = entriesWithoutInputUnfiltered;
 
   const virtualizer = useWindowVirtualizer({
     count: entriesWithoutInput.length,
@@ -178,13 +211,9 @@ export function JournalV2({
     },
   });
 
-  const invocationApiError = apiError?.[invocationId];
-
   if (invocationApiError && showApiError) {
     return <ErrorBanner error={invocationApiError} className="rounded-2xl" />;
   }
-
-  const dataUpdatedAt = allQueriesDataUpdatedAt[invocationId]!;
 
   if (isPending[invocationId]) {
     return (
@@ -198,27 +227,6 @@ export function JournalV2({
   if (!journalAndInvocationData) {
     return null;
   }
-  const start = new Date(
-    journalAndInvocationData?.created_at ??
-      new Date(dataUpdatedAt).toISOString(),
-  ).getTime();
-  const areAllInvocationsCompleted = invocationIds.every(
-    (id) => !data[id] || data[id]?.completed_at,
-  );
-  const end = Math.max(
-    ...entriesWithoutInput.map(({ entry }) =>
-      entry?.end
-        ? new Date(entry.end).getTime()
-        : entry?.start
-          ? new Date(entry.start).getTime()
-          : -1,
-    ),
-    !areAllInvocationsCompleted
-      ? Math.max(
-          ...Array.from(Object.values(allQueriesDataUpdatedAt).map(Number)),
-        )
-      : -1,
-  );
 
   const isFullTrace =
     viewport === null || (viewport.start <= start && viewport.end >= end);
