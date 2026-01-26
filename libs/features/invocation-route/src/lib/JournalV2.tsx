@@ -1,5 +1,13 @@
 import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
-import { Dispatch, lazy, Suspense, useCallback, useRef, useState } from 'react';
+import {
+  Dispatch,
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import type { VirtualItem } from '@tanstack/react-virtual';
 import { InvocationId } from './InvocationId';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
@@ -695,6 +703,24 @@ function ScrollableTimeline({
   const viewportDuration = viewportEnd - viewportStart;
   const zoomLevel =
     !isFullTrace && viewportDuration > 0 ? traceDuration / viewportDuration : 1;
+
+  // TODO: remove
+  // Sync scroll position when viewport changes from external source (e.g., ViewportSelector)
+  useEffect(() => {
+    if (isFullTrace || isUserScrollingRef.current || !scrollRef.current) return;
+
+    const container = scrollRef.current;
+    const scrollableWidth = container.scrollWidth - container.clientWidth;
+    if (scrollableWidth <= 0) return;
+
+    const scrollPercent =
+      (viewportStart - start) / (traceDuration - viewportDuration);
+    const targetScroll = scrollPercent * scrollableWidth;
+
+    if (Math.abs(container.scrollLeft - targetScroll) > 2) {
+      container.scrollLeft = targetScroll;
+    }
+  }, [isFullTrace, viewportStart, start, traceDuration, viewportDuration]);
 
   const handleScroll = useCallback(
     (e: React.UIEvent<HTMLDivElement>) => {
