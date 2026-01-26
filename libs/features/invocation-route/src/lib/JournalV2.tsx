@@ -138,6 +138,15 @@ export function JournalV2({
   const { baseUrl } = useRestateContext();
   const listRef = useRef<HTMLDivElement>(null);
 
+  const [viewport, setViewportState] = useState<{
+    start: number;
+    end: number;
+  } | null>(null);
+
+  const setViewport = useCallback((newStart: number, newEnd: number) => {
+    setViewportState({ start: newStart, end: newEnd });
+  }, []);
+
   const {
     entriesWithoutInput: allEntriesWithoutInput,
     inputEntry,
@@ -211,6 +220,11 @@ export function JournalV2({
       : -1,
   );
 
+  const isFullTrace =
+    viewport === null || (viewport.start <= start && viewport.end >= end);
+  const viewportStart = isFullTrace ? start : viewport.start;
+  const viewportEnd = isFullTrace ? end : viewport.end;
+
   const typedInputEntry = inputEntry as
     | Extract<JournalEntryV2, { type?: 'Input'; category?: 'command' }>
     | undefined;
@@ -239,6 +253,9 @@ export function JournalV2({
         removeInvocationId={removeInvocationId}
         start={start}
         end={end}
+        viewportStart={viewportStart}
+        viewportEnd={viewportEnd}
+        setViewport={setViewport}
         dataUpdatedAt={dataUpdatedAt}
         isPending={isPending}
         error={apiError}

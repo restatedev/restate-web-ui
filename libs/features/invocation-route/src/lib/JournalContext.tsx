@@ -6,6 +6,9 @@ const JournalContext = createContext<{
   removeInvocationId?: (id: string) => void;
   start: number;
   end: number;
+  viewportStart: number;
+  viewportEnd: number;
+  setViewport: (start: number, end: number) => void;
   cancelTime?: string;
   dataUpdatedAt: number;
   isPending?: Record<string, boolean | undefined>;
@@ -18,6 +21,9 @@ const JournalContext = createContext<{
   invocationIds: [],
   start: 0,
   end: 0,
+  viewportStart: 0,
+  viewportEnd: 0,
+  setViewport: () => undefined,
   dataUpdatedAt: 0,
   isLive: false,
   isCompact: true,
@@ -30,6 +36,9 @@ export function JournalContextProvider({
   children,
   start,
   end,
+  viewportStart,
+  viewportEnd,
+  setViewport,
   dataUpdatedAt,
   cancelTime,
   isPending,
@@ -44,6 +53,9 @@ export function JournalContextProvider({
   removeInvocationId?: (id: string) => void;
   start: number;
   end: number;
+  viewportStart: number;
+  viewportEnd: number;
+  setViewport: (start: number, end: number) => void;
   cancelTime?: string;
   dataUpdatedAt: number;
   isPending?: Record<string, boolean | undefined>;
@@ -61,6 +73,9 @@ export function JournalContextProvider({
         removeInvocationId,
         start,
         end,
+        viewportStart,
+        viewportEnd,
+        setViewport,
         dataUpdatedAt,
         cancelTime,
         containerRef,
