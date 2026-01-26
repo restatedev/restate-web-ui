@@ -15,8 +15,9 @@ import { Entry } from './Entry';
 import { Input } from './entries/Input';
 import { EntryProgress } from './EntryProgress';
 import { PortalProvider } from './Portals';
-import { LifeCycleProgress, Units } from './LifeCycleProgress';
+import { LifeCycleProgress } from './LifeCycleProgress';
 import { ViewportSelector } from './ViewportSelector';
+import { HeaderUnits, Units } from './Units';
 import { ErrorBoundary } from './ErrorBoundry';
 import { tv } from '@restate/util/styles';
 import { Retention } from './Retention';
@@ -68,6 +69,16 @@ const compactStyles = tv({
     isCompact: {
       true: '',
       false: '',
+    },
+  },
+});
+
+const scrollableTimelineStyles = tv({
+  base: '',
+  variants: {
+    isFullTrace: {
+      true: '',
+      false: 'overflow-x-auto overflow-y-hidden',
     },
   },
 });
@@ -460,20 +471,15 @@ export function JournalV2({
                     }}
                   >
                     {/* Sticky background - prevents repaint lag */}
-                    <div className="sticky top-0 z-0 col-start-1 row-start-1 h-full max-h-[calc(100vh+2rem)] rounded-br-2xl bg-gray-100" />
-                    {/* Units - sticky overlay */}
-                    <Units
-                      className="sticky top-0 z-0 col-start-1 row-start-1 h-full max-h-screen"
-                      cancelEvent={
-                        lifecycleDataByInvocation.get(invocationId)?.cancelEvent
-                      }
-                    />
-                    {/* Timeline content */}
-                    <div
-                      className="col-start-1 row-start-1"
-                      style={{ minHeight: virtualizer.getTotalSize() + 48 }}
-                    >
-                      <div className="relative border border-transparent">
+                    <div className="sticky top-0 z-[-1] col-start-1 row-start-1 h-full max-h-[calc(100vh+2rem)] rounded-br-2xl bg-gray-100" />
+                    {/* Sticky header with HeaderUnits and LifeCycleProgress */}
+                    <div className="sticky top-0 z-[2] col-start-1 row-start-1 h-12">
+                      <HeaderUnits
+                        className="pointer-events-none absolute inset-0"
+                        start={start}
+                        end={end}
+                      />
+                      <div className="relative h-full border border-transparent">
                         <LifeCycleProgress
                           className="h-12 px-2"
                           invocation={journalAndInvocationData}
@@ -488,14 +494,27 @@ export function JournalV2({
                         />
                         <ViewportSelector className="absolute inset-0 z-10" />
                       </div>
-                      <VirtualizedTimeline
-                        virtualItems={virtualizer.getVirtualItems()}
-                        totalSize={virtualizer.getTotalSize()}
-                        entriesWithoutInput={entriesWithoutInput}
-                        data={data}
-                        relatedEntriesByInvocation={relatedEntriesByInvocation}
-                      />
                     </div>
+                    {/* Scrollable timeline content with Units overlay */}
+                    <ScrollableTimeline
+                      className="col-start-1 row-start-1"
+                      style={{ minHeight: virtualizer.getTotalSize() + 48 }}
+                      start={start}
+                      end={end}
+                      viewportStart={viewportStart}
+                      viewportEnd={viewportEnd}
+                      dataUpdatedAt={dataUpdatedAt}
+                      cancelEvent={
+                        lifecycleDataByInvocation.get(invocationId)?.cancelEvent
+                      }
+                      isFullTrace={isFullTrace}
+                      setViewport={setViewport}
+                      virtualItems={virtualizer.getVirtualItems()}
+                      totalSize={virtualizer.getTotalSize()}
+                      entriesWithoutInput={entriesWithoutInput}
+                      data={data}
+                      relatedEntriesByInvocation={relatedEntriesByInvocation}
+                    />
                   </LazyPanel>
                 </LazyPanelGroup>
               </div>
@@ -631,6 +650,107 @@ function VirtualizedEntries({
           </div>
         );
       })}
+    </div>
+  );
+}
+
+function ScrollableTimeline({
+  className,
+  style,
+  virtualItems,
+  totalSize,
+  entriesWithoutInput,
+  data,
+  relatedEntriesByInvocation,
+  start,
+  end,
+  viewportStart,
+  viewportEnd,
+  dataUpdatedAt,
+  cancelEvent,
+  isFullTrace,
+  setViewport,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+  virtualItems: VirtualItem[];
+  totalSize: number;
+  entriesWithoutInput: CombinedJournalEntry[];
+  data?: ReturnType<typeof useGetInvocationsJournalWithInvocationsV2>['data'];
+  relatedEntriesByInvocation: Map<string, Map<number, JournalEntryV2[]>>;
+  start: number;
+  end: number;
+  viewportStart: number;
+  viewportEnd: number;
+  dataUpdatedAt: number;
+  cancelEvent?: JournalEntryV2;
+  isFullTrace: boolean;
+  setViewport: (start: number, end: number) => void;
+}) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const isUserScrollingRef = useRef(false);
+  const scrollTimeoutRef = useRef<number | undefined>(undefined);
+
+  const traceDuration = end - start;
+  const viewportDuration = viewportEnd - viewportStart;
+  const zoomLevel =
+    !isFullTrace && viewportDuration > 0 ? traceDuration / viewportDuration : 1;
+
+  const handleScroll = useCallback(
+    (e: React.UIEvent<HTMLDivElement>) => {
+      if (isFullTrace) return;
+
+      const container = e.currentTarget;
+      const scrollableWidth = container.scrollWidth - container.clientWidth;
+      if (scrollableWidth <= 0) return;
+
+      isUserScrollingRef.current = true;
+
+      const scrollPercent = container.scrollLeft / scrollableWidth;
+      const newViewportStart =
+        start + scrollPercent * (traceDuration - viewportDuration);
+      const newViewportEnd = newViewportStart + viewportDuration;
+
+      if (scrollTimeoutRef.current) {
+        window.clearTimeout(scrollTimeoutRef.current);
+      }
+      scrollTimeoutRef.current = window.setTimeout(() => {
+        setViewport(newViewportStart, newViewportEnd);
+        isUserScrollingRef.current = false;
+      }, 150);
+    },
+    [isFullTrace, start, traceDuration, viewportDuration, setViewport],
+  );
+
+  return (
+    <div
+      ref={scrollRef}
+      className={scrollableTimelineStyles({ isFullTrace, className })}
+      style={style}
+      onScroll={handleScroll}
+    >
+      <div
+        className="relative"
+        style={{
+          width: isFullTrace ? '100%' : `${zoomLevel * 100}%`,
+          minWidth: isFullTrace ? '100%' : `${zoomLevel * 100}%`,
+        }}
+      >
+        <Units
+          className="pointer-events-none absolute inset-x-0 top-0 bottom-0"
+          start={start}
+          end={end}
+          dataUpdatedAt={dataUpdatedAt}
+          cancelEvent={cancelEvent}
+        />
+        <VirtualizedTimeline
+          virtualItems={virtualItems}
+          totalSize={totalSize}
+          entriesWithoutInput={entriesWithoutInput}
+          data={data}
+          relatedEntriesByInvocation={relatedEntriesByInvocation}
+        />
+      </div>
     </div>
   );
 }
