@@ -44,7 +44,7 @@ const metadataContainerStyles = tv({
   },
 });
 const lastFailureContainer = tv({
-  base: 'min-w-0 origin-bottom-left rounded-xl p-0',
+  base: 'z-20 -mb-16 min-w-0 origin-bottom-left rounded-xl p-0',
 });
 const lastFailureContent = tv({
   base: 'flex-auto rounded-xl rounded-bl-none border bg-linear-to-b shadow-xl shadow-zinc-800/3 lg:mr-12 [&_.error]:max-h-72',
