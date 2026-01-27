@@ -220,7 +220,7 @@ export function JournalV2({
     count: entriesWithoutInput.length,
     estimateSize: () => 36,
     overscan: 100,
-    scrollMargin: listRef.current?.offsetTop ?? 0,
+    scrollMargin: 0,
     getItemKey: (index) => {
       const entry = entriesWithoutInput[index];
       return entry
@@ -443,17 +443,17 @@ export function JournalV2({
                     }}
                   >
                     {/* Sticky background - prevents repaint lag */}
-                    <div className="sticky top-0 z-[-1] col-start-1 row-start-1 h-full max-h-[calc(100vh+2rem)] rounded-2xl md:rounded-r-none border-0 border-r-0 border-white/50 bg-linear-to-b from-gray-50 to-white shadow-xs" />
+                    <div className="sticky top-0 z-[-1] col-start-1 row-start-1 h-full max-h-[calc(100vh+2rem)] rounded-2xl border-0 border-r-0 border-white/50 bg-linear-to-b from-gray-50 to-white shadow-xs md:rounded-r-none" />
                     {/* Content */}
                     <div
                       className="z-[2] col-start-1 row-start-1 min-w-0"
                       style={{ minHeight: virtualizer.getTotalSize() + 48 }}
                     >
-                      <div className="sticky top-36 z-20 box-border flex h-12 rounded-r-2xl md:rounded-r-none items-center rounded-tl-2xl rounded-bl-2xl border-b border-transparent bg-gray-100 shadow-xs ring-1 ring-gray-300 last:border-none">
+                      <div className="sticky top-36 z-20 box-border flex h-12 items-center rounded-tl-2xl rounded-r-2xl rounded-bl-2xl border-b border-transparent bg-gray-100 shadow-xs ring-1 ring-gray-300 last:border-none md:rounded-r-none">
                         <Input
                           entry={typedInputEntry}
                           invocation={data?.[invocationId]}
-                          className="w-full [--rounded-radius-right:15px] md:[--rounded-radius-right:0px] rounded-r-2xl! md:rounded-r-none! [&&&>*:last-child>*]:rounded-r-2xl! md:[&&&>*:last-child>*]:rounded-r-none!"
+                          className="w-full rounded-r-2xl! [--rounded-radius-right:15px] md:rounded-r-none! md:[--rounded-radius-right:0px] [&&&>*:last-child>*]:rounded-r-2xl! md:[&&&>*:last-child>*]:rounded-r-none!"
                         />
                       </div>
                       <VirtualizedEntries
