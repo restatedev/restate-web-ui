@@ -72,7 +72,7 @@ const intervalStyles = tv({
 });
 
 const remainderStyles = tv({
-  base: 'pointer-events-none flex-auto rounded-r-2xl text-right',
+  base: 'pointer-events-none flex-auto text-right',
   variants: {
     variant: {
       fullTrace: 'even:bg-gray-400/5',
@@ -100,7 +100,7 @@ export function Units({
 
   return (
     <>
-      <div className="absolute right-0 -left-6 z-0 h-12 rounded-2xl border border-t-2 border-white bg-gray-100 shadow-xs" />
+      <div className="sticky top-36 right-0 z-[1] h-12 rounded-r-2xl border border-t-2 border-white bg-gray-100 shadow-xs" />
       {cancelEvent && (
         <div className="pointer-events-none absolute top-12 right-0 bottom-0 left-0 overflow-hidden px-2 transition-all duration-1000">
           <div

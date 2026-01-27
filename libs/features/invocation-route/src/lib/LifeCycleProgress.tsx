@@ -4,7 +4,7 @@ import { tv } from '@restate/util/styles';
 import { EntryProgress, EntryProgressContainer } from './EntryProgress';
 
 const styles = tv({
-  base: 'relative flex flex-col items-center rounded-2xl rounded-sm rounded-t-2xl rounded-l-none border-black/10 shadow-xs',
+  base: 'relative flex flex-col items-center',
 });
 
 export function LifeCycleProgress({

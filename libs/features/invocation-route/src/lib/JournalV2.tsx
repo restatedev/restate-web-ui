@@ -292,14 +292,14 @@ export function JournalV2({
         <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
           <Suspense
             fallback={
-              <div className="flex items-center gap-1.5 p-4 text-sm text-zinc-500">
+              <div className="flex mt-4 items-center gap-1.5 p-4 text-sm text-zinc-500">
                 <Spinner className="h-4 w-4" />
                 Loading…
               </div>
             }
           >
             {withTimeline && (
-              <div className="absolute -top-9 flex h-9 w-full items-center">
+              <div className="sticky top-26 z-20 flex h-9 w-full items-center">
                 <div className="flex flex-col">
                   <div className="relative flex h-full w-full items-center gap-1.5">
                     <div className="absolute left-2.5 h-2 w-2 rounded-full bg-zinc-300">
@@ -428,6 +428,7 @@ export function JournalV2({
                 <LazyPanelGroup
                   direction="horizontal"
                   style={{ overflow: 'visible' }}
+                  className="rounded-2xl border shadow-xs"
                 >
                   {/* Left panel */}
                   <LazyPanel
@@ -442,17 +443,17 @@ export function JournalV2({
                     }}
                   >
                     {/* Sticky background - prevents repaint lag */}
-                    <div className="sticky top-0 z-[-1] col-start-1 row-start-1 h-full max-h-[calc(100vh+2rem)] rounded-2xl rounded-r-none border-0 border-r-0 border-white/50 bg-linear-to-b from-gray-50 to-white shadow-xs" />
+                    <div className="sticky top-0 z-[-1] col-start-1 row-start-1 h-full max-h-[calc(100vh+2rem)] rounded-2xl md:rounded-r-none border-0 border-r-0 border-white/50 bg-linear-to-b from-gray-50 to-white shadow-xs" />
                     {/* Content */}
                     <div
                       className="z-[2] col-start-1 row-start-1 min-w-0"
                       style={{ minHeight: virtualizer.getTotalSize() + 48 }}
                     >
-                      <div className="relative z-[2] box-border flex h-12 items-center rounded-tl-2xl rounded-bl-2xl border-b border-transparent bg-gray-100 shadow-xs ring-1 ring-black/5 last:border-none">
+                      <div className="sticky top-36 z-20 box-border flex h-12 rounded-r-2xl md:rounded-r-none items-center rounded-tl-2xl rounded-bl-2xl border-b border-transparent bg-gray-100 shadow-xs ring-1 ring-gray-300 last:border-none">
                         <Input
                           entry={typedInputEntry}
                           invocation={data?.[invocationId]}
-                          className="w-full"
+                          className="w-full [--rounded-radius-right:15px] md:[--rounded-radius-right:0px] rounded-r-2xl! md:rounded-r-none! [&&&>*:last-child>*]:rounded-r-2xl! md:[&&&>*:last-child>*]:rounded-r-none!"
                         />
                       </div>
                       <VirtualizedEntries
@@ -481,13 +482,13 @@ export function JournalV2({
                     {/* Sticky background - prevents repaint lag */}
                     <div className="sticky top-0 z-[-1] col-start-1 row-start-1 h-full max-h-[calc(100vh+2rem)] rounded-br-2xl bg-gray-100" />
                     {/* Sticky header with HeaderUnits and LifeCycleProgress */}
-                    <div className="sticky top-0 z-[2] col-start-1 row-start-1 h-12">
+                    <div className="sticky top-36 z-[2] col-start-1 row-start-1 h-12">
                       <HeaderUnits
                         className="pointer-events-none absolute inset-0"
                         start={start}
                         end={end}
                       />
-                      <div className="relative h-full border border-transparent">
+                      <div className="relative -my-px h-[calc(100%+2px)] rounded-r-2xl border border-gray-300 border-l-transparent shadow-xs">
                         <LifeCycleProgress
                           className="h-12 px-2"
                           invocation={journalAndInvocationData}
@@ -528,7 +529,7 @@ export function JournalV2({
               </div>
             ) : (
               <div className={className}>
-                <div className="z-10 box-border flex h-12 items-center rounded-tl-2xl rounded-bl-2xl border-b border-transparent bg-gray-100 shadow-xs ring-1 ring-black/5 last:border-none">
+                <div className="z-10 box-border flex h-12 items-center rounded-tl-2xl rounded-bl-2xl border-b border-transparent bg-gray-100 shadow-xs ring-1 ring-gray-300 last:border-none">
                   <Input
                     entry={typedInputEntry}
                     invocation={data?.[invocationId]}
@@ -647,7 +648,7 @@ function VirtualizedEntries({
               transform: `translateY(${virtualItem.start}px)`,
             }}
           >
-            <ErrorBoundary entry={entry} className="h-9">
+            <ErrorBoundary entry={entry} className="sticky top-36 h-9">
               <Entry
                 invocation={invocation}
                 entry={entry}

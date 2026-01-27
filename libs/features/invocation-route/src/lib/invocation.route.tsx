@@ -156,7 +156,6 @@ function Component() {
             </div>
           </div>
         </div>
-
         <div className="flex flex-col gap-4">
           <div
             className={metadataContainerStyles({
@@ -236,14 +235,38 @@ function Component() {
           )}
         </div>
 
-        <div className="mt-24 flex flex-col">
+        <div className="sticky top-0 z-10 -mb-12 h-[calc(36*0.25rem-1px)] bg-gray-100" />
+        <div className="sticky top-[calc(36*0.25rem-1px)] z-10 flex">
+          <svg
+            width="15"
+            height="16"
+            viewBox="0 0 15 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="shrink-0 fill-gray-100"
+          >
+            <path d="M15 0.03125C6.62929 0.547462 1.36358e-06 7.49931 0 16V0H15V0.03125Z" />
+          </svg>
+          <svg
+            width="15"
+            height="16"
+            viewBox="0 0 15 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="ml-auto shrink-0 -scale-x-100 fill-gray-100"
+          >
+            <path d="M15 0.03125C6.62929 0.547462 1.36358e-06 7.49931 0 16V0H15V0.03125Z" />
+          </svg>
+        </div>
+
+        <div className="flex flex-col">
           {OnboardingGuide && (
             <OnboardingGuide
               stage="view-invocation"
               service={journalAndInvocationData?.target_service_name}
             />
           )}
-          <div className="relative rounded-2xl border bg-gray-200/50">
+          <div className="relative rounded-2xl">
             <JournalV2
               invocationId={String(id)}
               key={String(id)}
