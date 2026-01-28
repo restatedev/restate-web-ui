@@ -141,7 +141,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
         </InlineTooltip>
         {'filters' in params && params.filters?.length > 0
           ? 'as new matching the following criteria?'
-          : 'as new?'}
+          : ' as new?'}
       </p>
     ),
     alertType: 'info',

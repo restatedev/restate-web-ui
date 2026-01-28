@@ -40,6 +40,7 @@ function BatchOperationContent({
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
   const { isPast, ...parts } = durationSinceLastSnapshot(now);
   const duration = formatDurations(parts);
+  const hasInvocationIds = state.params && 'invocationIds' in state.params;
 
   if (isCountLoading || count === undefined) {
     return (
@@ -76,7 +77,7 @@ function BatchOperationContent({
         `${duration} ago`,
         state.params,
       )}
-      <Filters state={state} />
+      {!hasInvocationIds && <Filters state={state} />}
     </div>
   );
 }
@@ -118,6 +119,7 @@ function Filters({
       (filter) => !filter.isActionImplicitFilter,
     ),
   ];
+
   return (
     <div className={filterStyles({ className })}>
       {paramsWithFiltersWithServiceAndStatus.map((filter, index) => {
