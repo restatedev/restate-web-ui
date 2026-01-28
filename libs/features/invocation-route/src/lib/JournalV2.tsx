@@ -22,6 +22,7 @@ import { Retention } from './Retention';
 import {
   RESTARTED_FROM_HEADER,
   useGetInvocationsJournalWithInvocationsV2,
+  useGetJournalEntryPayloads,
   useListSubscriptions,
 } from '@restate/data-access/admin-api-hooks';
 import {
@@ -142,6 +143,9 @@ export function JournalV2({
     relatedEntriesByInvocation,
     lifecycleDataByInvocation,
   } = useProcessedJournal(invocationId, data, isCompact);
+  const { data: inputData } = useGetJournalEntryPayloads(invocationId, 0, {
+    enabled: false,
+  });
 
   const MAX_ENTRIES_WITHOUT_TIMELINE = 50;
   const hasMoreEntries =
@@ -209,9 +213,9 @@ export function JournalV2({
   const typedInputEntry = inputEntry as
     | Extract<JournalEntryV2, { type?: 'Input'; category?: 'command' }>
     | undefined;
-  const restartedFromHeader = typedInputEntry?.headers?.find(
-    ({ key }: { key: string }) => key === RESTARTED_FROM_HEADER,
-  );
+  const restartedFromHeader = (
+    inputData?.headers || typedInputEntry?.headers
+  )?.find(({ key }: { key: string }) => key === RESTARTED_FROM_HEADER);
 
   const isRestartedFrom = Boolean(
     journalAndInvocationData.invoked_by === 'restart_as_new' ||

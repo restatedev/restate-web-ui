@@ -26,12 +26,14 @@ export function Info({
             name={IconName.TriangleAlert}
             className="h-3.5 w-3.5 shrink-0 text-orange-500"
           />
-          {formatPlurals(info.length, {
-            one: 'warning',
-            other: 'warnings',
-          })}
+          <div className="min-w-0 truncate">
+            {formatPlurals(info.length, {
+              one: 'warning',
+              other: 'warnings',
+            })}
+          </div>
 
-          <div className="ml-1 truncate rounded-full bg-orange-500 px-1.5 text-2xs font-normal text-white">
+          <div className="ml-1 flex-auto basis-5 truncate rounded-full bg-orange-500 px-1.5 text-2xs font-normal text-white">
             {info.length}
           </div>
         </Button>
