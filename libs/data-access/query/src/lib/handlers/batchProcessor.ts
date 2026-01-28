@@ -23,8 +23,9 @@ export async function batchProcessInvocations(
     'failed' | 'successful' | 'failedInvocationIds'
   >
 > {
-  const newBatchApiIsSupported = restateVersion
-    ? semverGt(restateVersion, '1.6.0')
+  const releasedVersion = restateVersion?.split('-')?.at(0);
+  const newBatchApiIsSupported = releasedVersion
+    ? semverGt(releasedVersion, '1.6.0')
     : false;
 
   const batchProcessorWithTransformation: (ids: string[]) => Promise<
