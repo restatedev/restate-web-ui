@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useMove } from 'react-aria';
 import { useJournalContext } from './JournalContext';
 import { tv } from '@restate/util/styles';
@@ -20,6 +20,15 @@ export function ViewportSelector({ className }: { className?: string }) {
     useJournalContext();
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const [localViewport, setLocalViewport] = useState<{
+    start: number;
+    end: number;
+  } | null>(null);
+
+  const isDragging = localViewport !== null;
+  const displayStart = isDragging ? localViewport.start : viewportStart;
+  const displayEnd = isDragging ? localViewport.end : viewportEnd;
+
   const traceDuration = end - start;
 
   const pixelToTime = useCallback(
@@ -32,51 +41,81 @@ export function ViewportSelector({ className }: { className?: string }) {
   );
 
   const { moveProps: leftHandleMoveProps } = useMove({
+    onMoveStart() {
+      setLocalViewport({ start: viewportStart, end: viewportEnd });
+    },
     onMove(e) {
       const deltaTime = pixelToTime(e.deltaX);
-      const newStart = Math.max(
-        start,
-        Math.min(
-          viewportStart + deltaTime,
-          viewportEnd - MIN_VIEWPORT_DURATION,
-        ),
-      );
-      setViewport(newStart, viewportEnd);
+      setLocalViewport((prev) => {
+        if (!prev) return prev;
+        const newStart = Math.max(
+          start,
+          Math.min(prev.start + deltaTime, prev.end - MIN_VIEWPORT_DURATION),
+        );
+        return { start: newStart, end: prev.end };
+      });
+    },
+    onMoveEnd() {
+      if (localViewport) {
+        setViewport(localViewport.start, localViewport.end);
+      }
+      setLocalViewport(null);
     },
   });
 
   const { moveProps: rightHandleMoveProps } = useMove({
+    onMoveStart() {
+      setLocalViewport({ start: viewportStart, end: viewportEnd });
+    },
     onMove(e) {
       const deltaTime = pixelToTime(e.deltaX);
-      const newEnd = Math.min(
-        end,
-        Math.max(
-          viewportEnd + deltaTime,
-          viewportStart + MIN_VIEWPORT_DURATION,
-        ),
-      );
-      setViewport(viewportStart, newEnd);
+      setLocalViewport((prev) => {
+        if (!prev) return prev;
+        const newEnd = Math.min(
+          end,
+          Math.max(prev.end + deltaTime, prev.start + MIN_VIEWPORT_DURATION),
+        );
+        return { start: prev.start, end: newEnd };
+      });
+    },
+    onMoveEnd() {
+      if (localViewport) {
+        setViewport(localViewport.start, localViewport.end);
+      }
+      setLocalViewport(null);
     },
   });
 
   const { moveProps: panMoveProps } = useMove({
+    onMoveStart() {
+      setLocalViewport({ start: viewportStart, end: viewportEnd });
+    },
     onMove(e) {
       const deltaTime = pixelToTime(e.deltaX);
-      const viewportDuration = viewportEnd - viewportStart;
+      setLocalViewport((prev) => {
+        if (!prev) return prev;
+        const viewportDuration = prev.end - prev.start;
 
-      let newStart = viewportStart + deltaTime;
-      let newEnd = viewportEnd + deltaTime;
+        let newStart = prev.start + deltaTime;
+        let newEnd = prev.end + deltaTime;
 
-      if (newStart < start) {
-        newStart = start;
-        newEnd = start + viewportDuration;
+        if (newStart < start) {
+          newStart = start;
+          newEnd = start + viewportDuration;
+        }
+        if (newEnd > end) {
+          newEnd = end;
+          newStart = end - viewportDuration;
+        }
+
+        return { start: newStart, end: newEnd };
+      });
+    },
+    onMoveEnd() {
+      if (localViewport) {
+        setViewport(localViewport.start, localViewport.end);
       }
-      if (newEnd > end) {
-        newEnd = end;
-        newStart = end - viewportDuration;
-      }
-
-      setViewport(newStart, newEnd);
+      setLocalViewport(null);
     },
   });
 
@@ -86,8 +125,8 @@ export function ViewportSelector({ className }: { className?: string }) {
 
   if (traceDuration <= 0) return null;
 
-  const leftPercent = ((viewportStart - start) / traceDuration) * 100;
-  const widthPercent = ((viewportEnd - viewportStart) / traceDuration) * 100;
+  const leftPercent = ((displayStart - start) / traceDuration) * 100;
+  const widthPercent = ((displayEnd - displayStart) / traceDuration) * 100;
   const rightPercent = 100 - leftPercent - widthPercent;
 
   const showLeftDim = leftPercent > 0.1;
