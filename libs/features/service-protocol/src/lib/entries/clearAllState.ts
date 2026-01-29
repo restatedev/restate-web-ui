@@ -13,12 +13,6 @@ function clearAllStateV1(
   entry: JournalRawEntry,
   invocation?: Invocation,
 ): Extract<JournalEntryV2, { type?: 'ClearAllState' }> {
-  const { raw } = entry;
-
-  if (!raw) {
-    return {};
-  }
-
   const error = getLastFailureV1(entry, invocation);
 
   return {

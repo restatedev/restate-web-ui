@@ -13,6 +13,7 @@ import {
   JournalRawEntryWithCommandIndex,
   parseEntryJson,
 } from './util';
+import { binaryToUtf8 } from '@restate/util/binary';
 
 function getStateKeysV1(
   entry: JournalRawEntryWithCommandIndex,
@@ -58,7 +59,7 @@ function getStateKeysV1(
       return {
         ...metadata,
         resultType: 'success',
-        keys: message.result.value.keys.map(decode),
+        keys: message.result.value.keys.map(binaryToUtf8),
       };
     default:
       return {

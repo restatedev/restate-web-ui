@@ -14,6 +14,7 @@ import {
   JournalRawEntryWithCommandIndex,
   parseEntryJson,
 } from './util';
+import { binaryToUtf8 } from '@restate/util/binary';
 
 function setStateV1(
   entry: JournalRawEntry,
@@ -28,7 +29,7 @@ function setStateV1(
   const error = getLastFailureV1(entry, invocation);
 
   return {
-    key: decode(message.key),
+    key: binaryToUtf8(message.key),
     start: undefined,
     isPending: false,
     commandIndex: entry.index,
