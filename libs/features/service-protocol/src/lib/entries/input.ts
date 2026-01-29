@@ -43,7 +43,7 @@ function inputV1(
       parameters: decode(message.value),
       headers: message.headers.map(({ key, value }) => ({ key, value })),
     }),
-    isLoaded: true,
+    isLoaded: !!raw,
     handlerName: invocation?.target_handler_name,
   };
 }

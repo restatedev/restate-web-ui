@@ -2,8 +2,10 @@ import type {
   JournalEntryPayloads,
   JournalRawEntry,
 } from '@restate/data-access/admin-api/spec';
-import { bytesToBase64 } from '@restate/util/binary';
+import { bytesToBase64, hexToUint8Array } from '@restate/util/binary';
 import type { QueryContext } from './shared';
+import { fromBinary } from '@bufbuild/protobuf';
+import { InputEntryMessageSchema } from '@buf/restatedev_service-protocol.bufbuild_es/dev/restate/service/protocol_pb';
 
 type EntryType = JournalRawEntry['entry_type'];
 
@@ -163,9 +165,9 @@ function parseHeaders(
 function extractPayloads(
   entryType: EntryType,
   entryJSON: EntryJSON,
+  raw?: string,
 ): JournalEntryPayloads | undefined {
   switch (entryType) {
-    // V2 Commands WITH payloads
     case 'Command: Input': {
       const input = entryJSON?.Command?.Input;
       return {
@@ -290,7 +292,18 @@ function extractPayloads(
       return undefined;
 
     // V1 entry types (not supported for payload extraction)
-    case 'Input':
+    case 'Input': {
+      const message = raw
+        ? fromBinary(InputEntryMessageSchema, hexToUint8Array(raw))
+        : undefined;
+      if (message) {
+        return {
+          parameters: bytesToBase64(message.value),
+          headers: message.headers.map(({ key, value }) => ({ key, value })),
+        };
+      }
+      return {};
+    }
     case 'Output':
     case 'GetState':
     case 'GetEagerState':
@@ -324,7 +337,7 @@ export async function getJournalEntryPayloads(
   entryIndex: number,
 ): Promise<Response> {
   const journalQuery = await this.query(
-    `SELECT entry_type, entry_json FROM sys_journal WHERE id = '${invocationId}' AND index = ${entryIndex}`,
+    `SELECT entry_type, entry_json, raw FROM sys_journal WHERE id = '${invocationId}' AND index = ${entryIndex}`,
   );
 
   const entry = journalQuery.rows?.at(0);
@@ -338,7 +351,11 @@ export async function getJournalEntryPayloads(
   }
 
   const entryJSON = parseEntryJson(entry.entry_json);
-  const payloads = extractPayloads(entry.entry_type as EntryType, entryJSON);
+  const payloads = extractPayloads(
+    entry.entry_type as EntryType,
+    entryJSON,
+    entry.raw,
+  );
 
   if (payloads === undefined) {
     return new Response(JSON.stringify({}), {
