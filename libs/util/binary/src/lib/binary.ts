@@ -83,6 +83,10 @@ export function base64ToUint8Array(base64?: string) {
   return array;
 }
 
+export function binaryToUtf8(bytes: Uint8Array) {
+  return new TextDecoder().decode(bytes);
+}
+
 export function base64ToUtf8OrOriginal(base64?: string) {
   if (!base64) {
     return base64;

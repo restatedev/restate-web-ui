@@ -21,10 +21,10 @@ function awakeableV1(
   invocation?: Invocation,
 ): Extract<JournalEntryV2, { type?: 'Awakeable'; category?: 'command' }> {
   const { raw } = entry;
-  if (!raw) {
-    return {};
-  }
-  const message = fromBinary(AwakeableEntryMessageSchema, toUnit8Array(raw));
+
+  const message = raw
+    ? fromBinary(AwakeableEntryMessageSchema, toUnit8Array(raw))
+    : undefined;
   const error = getLastFailureV1(entry, invocation);
 
   const metadata = {
@@ -45,7 +45,7 @@ function awakeableV1(
     value: undefined,
   } as const;
 
-  switch (message.result.case) {
+  switch (message?.result.case) {
     case 'failure':
       return {
         ...metadata,

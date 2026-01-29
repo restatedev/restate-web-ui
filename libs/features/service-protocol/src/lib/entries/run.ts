@@ -50,6 +50,7 @@ function runV1(
       return {
         ...metadata,
         isLoaded: true,
+        isPending: false,
         resultType: 'failure',
         error: message.result.value.message
           ? new RestateError(
@@ -63,6 +64,7 @@ function runV1(
       return {
         ...metadata,
         isLoaded: true,
+        isPending: false,
         resultType: 'success',
         value: decode(message.result.value),
       };

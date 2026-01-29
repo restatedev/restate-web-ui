@@ -15,19 +15,35 @@ export async function getInvocationJournalV2(
   this: QueryContext,
   invocationId: string,
   includePayloads = false,
-) {
+  includeRaw = false,
+): Promise<Response> {
   const entryJsonColumn = includePayloads ? 'entry_json' : 'entry_lite_json';
   const [invocationQuery, journalQuery, eventsQuery] = await Promise.all([
     this.query(
       `SELECT ${SYS_INVOCATION_COLUMNS.join(', ')} FROM sys_invocation WHERE id = '${invocationId}'`,
     ),
     this.query(
-      `SELECT id, index, appended_at, entry_type, name, ${entryJsonColumn}, raw, version, completed, sleep_wakeup_at, invoked_id, invoked_target, promise_name FROM sys_journal WHERE id = '${invocationId}'`,
+      `SELECT id, index, appended_at, entry_type, name, ${entryJsonColumn}, ${includeRaw ? 'raw,' : ''} version, completed, sleep_wakeup_at, invoked_id, invoked_target, promise_name FROM sys_journal WHERE id = '${invocationId}'`,
     ),
     this.query(
       `SELECT after_journal_entry_index, appended_at, event_type, event_json from sys_journal_events WHERE id = '${invocationId}'`,
     ),
   ]);
+  const shoudlFetchWithRaw =
+    !includeRaw &&
+    journalQuery.rows.some(
+      (entry) =>
+        (!entry.version || entry.version === 1) && entry.entry_type !== 'Input',
+    );
+
+  if (shoudlFetchWithRaw) {
+    return getInvocationJournalV2.call(
+      this,
+      invocationId,
+      includePayloads,
+      true,
+    );
+  }
 
   const invocation = invocationQuery.rows
     .map(convertInvocation)

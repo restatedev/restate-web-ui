@@ -1,7 +1,6 @@
 import { fromBinary } from '@bufbuild/protobuf';
 import { ClearStateEntryMessageSchema } from '@buf/restatedev_service-protocol.bufbuild_es/dev/restate/service/protocol_pb';
 import { toUnit8Array } from '../toUni8Array';
-import { decode } from '../decoder';
 import {
   Invocation,
   JournalEntryV2,
@@ -13,6 +12,7 @@ import {
   JournalRawEntryWithCommandIndex,
   parseEntryJson,
 } from './util';
+import { binaryToUtf8 } from '@restate/util/binary';
 
 function clearStateV1(
   entry: JournalRawEntry,
@@ -28,7 +28,7 @@ function clearStateV1(
   const error = getLastFailureV1(entry, invocation);
 
   return {
-    key: decode(message.key),
+    key: binaryToUtf8(message.key),
     start: entry.appended_at,
     isPending: false,
     commandIndex: entry.index,

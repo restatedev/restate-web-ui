@@ -14,6 +14,7 @@ import {
   getEntryResultV2,
   getLastFailureV1,
 } from './util';
+import { binaryToUtf8 } from '@restate/util/binary';
 
 function getStateV1(
   entry: JournalRawEntry,
@@ -28,7 +29,7 @@ function getStateV1(
   const error = getLastFailureV1(entry, invocation);
 
   const metadata = {
-    key: decode(message.key),
+    key: binaryToUtf8(message.key),
     start: undefined,
     isPending: false,
     commandIndex: entry.index,
