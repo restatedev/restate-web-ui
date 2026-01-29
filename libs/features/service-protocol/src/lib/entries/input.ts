@@ -20,10 +20,10 @@ function inputV1(
   invocation?: Invocation,
 ): Extract<JournalEntryV2, { type?: 'Input' }> {
   const { raw } = entry;
-  if (!raw) {
-    return {};
-  }
-  const message = fromBinary(InputEntryMessageSchema, toUnit8Array(raw));
+
+  const message = raw
+    ? fromBinary(InputEntryMessageSchema, toUnit8Array(raw))
+    : undefined;
   const error = getLastFailureV1(entry, invocation);
 
   return {
@@ -39,8 +39,10 @@ function inputV1(
     isRetrying: false,
     error,
     resultType: undefined,
-    parameters: decode(message.value),
-    headers: message.headers.map(({ key, value }) => ({ key, value })),
+    ...(message && {
+      parameters: decode(message.value),
+      headers: message.headers.map(({ key, value }) => ({ key, value })),
+    }),
     isLoaded: true,
     handlerName: invocation?.target_handler_name,
   };
