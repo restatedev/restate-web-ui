@@ -31,10 +31,11 @@ export async function getInvocationJournalV2(
   ]);
   const shoudlFetchWithRaw =
     !includeRaw &&
-    journalQuery.rows.every(
+    journalQuery.rows.some(
       (entry) =>
-        !entry.version && entry.version === 1 && entry.entry_type !== 'Input',
+        (!entry.version || entry.version === 1) && entry.entry_type !== 'Input',
     );
+
   if (shoudlFetchWithRaw) {
     return getInvocationJournalV2.call(
       this,
