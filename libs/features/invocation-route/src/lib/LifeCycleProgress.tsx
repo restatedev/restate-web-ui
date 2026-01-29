@@ -28,7 +28,6 @@ export function LifeCycleProgress({
             className="absolute top-1"
             entry={createdEvent}
             invocation={invocation}
-            showFullTrace
           >
             <div className="h-6 w-full rounded-md" />
           </EntryProgressContainer>
@@ -45,7 +44,6 @@ export function LifeCycleProgress({
               entry={entry}
               showDuration={false}
               className="*:h-3.5"
-              showFullTrace
             />
           </div>
         ))}

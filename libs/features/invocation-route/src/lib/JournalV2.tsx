@@ -1,13 +1,5 @@
 import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
-import {
-  Dispatch,
-  lazy,
-  Suspense,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { Dispatch, lazy, Suspense, useCallback, useRef, useState } from 'react';
 import type { VirtualItem } from '@tanstack/react-virtual';
 import { InvocationId } from './InvocationId';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
@@ -22,10 +14,10 @@ import { Indicator, Spinner } from '@restate/ui/loading';
 import { Entry } from './Entry';
 import { Input } from './entries/Input';
 import { EntryProgress } from './EntryProgress';
-import { PortalProvider } from './Portals';
+import { PortalProvider, ViewportSelectorPortalTarget } from './Portals';
 import { LifeCycleProgress } from './LifeCycleProgress';
-import { ViewportSelector } from './ViewportSelector';
-import { HeaderUnits, Units } from './Units';
+import { HeaderUnits } from './Units';
+import { ScrollableTimeline } from './ScrollableTimeline';
 import { ErrorBoundary } from './ErrorBoundry';
 import { tv } from '@restate/util/styles';
 import { Retention } from './Retention';
@@ -77,16 +69,6 @@ const compactStyles = tv({
     isCompact: {
       true: '',
       false: '',
-    },
-  },
-});
-
-const scrollableTimelineStyles = tv({
-  base: '',
-  variants: {
-    isFullTrace: {
-      true: '',
-      false: 'overflow-x-auto overflow-y-hidden',
     },
   },
 });
@@ -157,15 +139,6 @@ export function JournalV2({
 
   const { baseUrl } = useRestateContext();
   const listRef = useRef<HTMLDivElement>(null);
-
-  const [viewport, setViewportState] = useState<{
-    start: number;
-    end: number;
-  } | null>(null);
-
-  const setViewport = useCallback((newStart: number, newEnd: number) => {
-    setViewportState({ start: newStart, end: newEnd });
-  }, []);
 
   const {
     entriesWithoutInput: allEntriesWithoutInput,
@@ -246,11 +219,6 @@ export function JournalV2({
     return null;
   }
 
-  const isFullTrace =
-    viewport === null || (viewport.start <= start && viewport.end >= end);
-  const viewportStart = isFullTrace ? start : viewport.start;
-  const viewportEnd = isFullTrace ? end : viewport.end;
-
   const typedInputEntry = inputEntry as
     | Extract<JournalEntryV2, { type?: 'Input'; category?: 'command' }>
     | undefined;
@@ -279,9 +247,6 @@ export function JournalV2({
         removeInvocationId={removeInvocationId}
         start={start}
         end={end}
-        viewportStart={viewportStart}
-        viewportEnd={viewportEnd}
-        setViewport={setViewport}
         dataUpdatedAt={dataUpdatedAt}
         isPending={isPending}
         error={apiError}
@@ -292,7 +257,7 @@ export function JournalV2({
         <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
           <Suspense
             fallback={
-              <div className="flex mt-4 items-center gap-1.5 p-4 text-sm text-zinc-500">
+              <div className="mt-4 flex items-center gap-1.5 p-4 text-sm text-zinc-500">
                 <Spinner className="h-4 w-4" />
                 Loading…
               </div>
@@ -501,7 +466,7 @@ export function JournalV2({
                               ?.lifeCycleEntries ?? []
                           }
                         />
-                        <ViewportSelector className="absolute inset-0 z-10" />
+                        <ViewportSelectorPortalTarget className="absolute inset-0 z-10" />
                       </div>
                     </div>
                     {/* Scrollable timeline content with Units overlay */}
@@ -510,20 +475,19 @@ export function JournalV2({
                       style={{ minHeight: virtualizer.getTotalSize() + 48 }}
                       start={start}
                       end={end}
-                      viewportStart={viewportStart}
-                      viewportEnd={viewportEnd}
                       dataUpdatedAt={dataUpdatedAt}
                       cancelEvent={
                         lifecycleDataByInvocation.get(invocationId)?.cancelEvent
                       }
-                      isFullTrace={isFullTrace}
-                      setViewport={setViewport}
-                      virtualItems={virtualizer.getVirtualItems()}
-                      totalSize={virtualizer.getTotalSize()}
-                      entriesWithoutInput={entriesWithoutInput}
-                      data={data}
-                      relatedEntriesByInvocation={relatedEntriesByInvocation}
-                    />
+                    >
+                      <VirtualizedTimeline
+                        virtualItems={virtualizer.getVirtualItems()}
+                        totalSize={virtualizer.getTotalSize()}
+                        entriesWithoutInput={entriesWithoutInput}
+                        data={data}
+                        relatedEntriesByInvocation={relatedEntriesByInvocation}
+                      />
+                    </ScrollableTimeline>
                   </LazyPanel>
                 </LazyPanelGroup>
               </div>
@@ -579,30 +543,6 @@ export function JournalV2({
         </SnapshotTimeProvider>
       </JournalContextProvider>
     </PortalProvider>
-  );
-}
-
-function TimelineContainer({
-  entry,
-  invocation,
-  precomputedRelatedEntries,
-}: {
-  invocationId: string;
-  entry?: JournalEntryV2;
-  invocation?: ReturnType<
-    typeof useGetInvocationsJournalWithInvocationsV2
-  >['data'][string];
-  precomputedRelatedEntries?: JournalEntryV2[];
-}) {
-  return (
-    <div className="relative h-9 w-full border-b border-transparent pr-2 pl-2 [&:not(:has(>*+*))]:hidden">
-      <div className="absolute top-1/2 right-0 left-0 h-px border-spacing-10 -translate-y-px border-b border-dashed border-gray-300/70" />
-      <EntryProgress
-        entry={entry}
-        invocation={invocation}
-        precomputedRelatedEntries={precomputedRelatedEntries}
-      />
-    </div>
   );
 }
 
@@ -663,125 +603,6 @@ function VirtualizedEntries({
   );
 }
 
-function ScrollableTimeline({
-  className,
-  style,
-  virtualItems,
-  totalSize,
-  entriesWithoutInput,
-  data,
-  relatedEntriesByInvocation,
-  start,
-  end,
-  viewportStart,
-  viewportEnd,
-  dataUpdatedAt,
-  cancelEvent,
-  isFullTrace,
-  setViewport,
-}: {
-  className?: string;
-  style?: React.CSSProperties;
-  virtualItems: VirtualItem[];
-  totalSize: number;
-  entriesWithoutInput: CombinedJournalEntry[];
-  data?: ReturnType<typeof useGetInvocationsJournalWithInvocationsV2>['data'];
-  relatedEntriesByInvocation: Map<string, Map<number, JournalEntryV2[]>>;
-  start: number;
-  end: number;
-  viewportStart: number;
-  viewportEnd: number;
-  dataUpdatedAt: number;
-  cancelEvent?: JournalEntryV2;
-  isFullTrace: boolean;
-  setViewport: (start: number, end: number) => void;
-}) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const isUserScrollingRef = useRef(false);
-  const scrollTimeoutRef = useRef<number | undefined>(undefined);
-
-  const traceDuration = end - start;
-  const viewportDuration = viewportEnd - viewportStart;
-  const zoomLevel =
-    !isFullTrace && viewportDuration > 0 ? traceDuration / viewportDuration : 1;
-
-  // TODO: remove
-  // Sync scroll position when viewport changes from external source (e.g., ViewportSelector)
-  useEffect(() => {
-    if (isFullTrace || isUserScrollingRef.current || !scrollRef.current) return;
-
-    const container = scrollRef.current;
-    const scrollableWidth = container.scrollWidth - container.clientWidth;
-    if (scrollableWidth <= 0) return;
-
-    const scrollPercent =
-      (viewportStart - start) / (traceDuration - viewportDuration);
-    const targetScroll = scrollPercent * scrollableWidth;
-
-    if (Math.abs(container.scrollLeft - targetScroll) > 2) {
-      container.scrollLeft = targetScroll;
-    }
-  }, [isFullTrace, viewportStart, start, traceDuration, viewportDuration]);
-
-  const handleScroll = useCallback(
-    (e: React.UIEvent<HTMLDivElement>) => {
-      if (isFullTrace) return;
-
-      const container = e.currentTarget;
-      const scrollableWidth = container.scrollWidth - container.clientWidth;
-      if (scrollableWidth <= 0) return;
-
-      isUserScrollingRef.current = true;
-
-      const scrollPercent = container.scrollLeft / scrollableWidth;
-      const newViewportStart =
-        start + scrollPercent * (traceDuration - viewportDuration);
-      const newViewportEnd = newViewportStart + viewportDuration;
-
-      if (scrollTimeoutRef.current) {
-        window.clearTimeout(scrollTimeoutRef.current);
-      }
-      scrollTimeoutRef.current = window.setTimeout(() => {
-        setViewport(newViewportStart, newViewportEnd);
-        isUserScrollingRef.current = false;
-      }, 150);
-    },
-    [isFullTrace, start, traceDuration, viewportDuration, setViewport],
-  );
-
-  return (
-    <div
-      ref={scrollRef}
-      className={scrollableTimelineStyles({ isFullTrace, className })}
-      style={style}
-      onScroll={handleScroll}
-    >
-      <div
-        className="relative"
-        style={{
-          width: isFullTrace ? '100%' : `${zoomLevel * 100}%`,
-          minWidth: isFullTrace ? '100%' : `${zoomLevel * 100}%`,
-        }}
-      >
-        <Units
-          className="pointer-events-none absolute inset-x-0 top-0 bottom-0"
-          start={start}
-          end={end}
-          dataUpdatedAt={dataUpdatedAt}
-          cancelEvent={cancelEvent}
-        />
-        <VirtualizedTimeline
-          virtualItems={virtualItems}
-          totalSize={totalSize}
-          entriesWithoutInput={entriesWithoutInput}
-          data={data}
-          relatedEntriesByInvocation={relatedEntriesByInvocation}
-        />
-      </div>
-    </div>
-  );
-}
-
 function VirtualizedTimeline({
   virtualItems,
   totalSize,
@@ -835,6 +656,30 @@ function VirtualizedTimeline({
           </div>
         );
       })}
+    </div>
+  );
+}
+
+function TimelineContainer({
+  entry,
+  invocation,
+  precomputedRelatedEntries,
+}: {
+  invocationId: string;
+  entry?: JournalEntryV2;
+  invocation?: ReturnType<
+    typeof useGetInvocationsJournalWithInvocationsV2
+  >['data'][string];
+  precomputedRelatedEntries?: JournalEntryV2[];
+}) {
+  return (
+    <div className="relative h-9 w-full border-b border-transparent pr-2 pl-2 [&:not(:has(>*+*))]:hidden">
+      <div className="absolute top-1/2 right-0 left-0 h-px border-spacing-10 -translate-y-px border-b border-dashed border-gray-300/70" />
+      <EntryProgress
+        entry={entry}
+        invocation={invocation}
+        precomputedRelatedEntries={precomputedRelatedEntries}
+      />
     </div>
   );
 }

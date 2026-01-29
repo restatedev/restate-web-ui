@@ -1,6 +1,5 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useTransition } from 'react';
 import { useMove } from 'react-aria';
-import { useJournalContext } from './JournalContext';
 import { tv } from '@restate/util/styles';
 
 const styles = tv({
@@ -15,19 +14,31 @@ const MIN_VIEWPORT_DURATION = 100;
 const HANDLE_WIDTH = 12;
 const PADDING = 8;
 
-export function ViewportSelector({ className }: { className?: string }) {
-  const { start, end, viewportStart, viewportEnd, setViewport } =
-    useJournalContext();
+export function ViewportSelector({
+  className,
+  start,
+  end,
+  viewportStart,
+  viewportEnd,
+  setViewport,
+  onViewportChange,
+}: {
+  className?: string;
+  start: number;
+  end: number;
+  viewportStart: number;
+  viewportEnd: number;
+  setViewport: (start: number, end: number) => void;
+  onViewportChange?: (start: number, end: number) => void;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [, startTransition] = useTransition();
+  const optimisticViewportRef = useRef<{ start: number; end: number } | null>(
+    null,
+  );
 
-  const [localViewport, setLocalViewport] = useState<{
-    start: number;
-    end: number;
-  } | null>(null);
-
-  const isDragging = localViewport !== null;
-  const displayStart = isDragging ? localViewport.start : viewportStart;
-  const displayEnd = isDragging ? localViewport.end : viewportEnd;
+  const displayStart = optimisticViewportRef.current?.start ?? viewportStart;
+  const displayEnd = optimisticViewportRef.current?.end ?? viewportEnd;
 
   const traceDuration = end - start;
 
@@ -42,80 +53,95 @@ export function ViewportSelector({ className }: { className?: string }) {
 
   const { moveProps: leftHandleMoveProps } = useMove({
     onMoveStart() {
-      setLocalViewport({ start: viewportStart, end: viewportEnd });
+      optimisticViewportRef.current = {
+        start: viewportStart,
+        end: viewportEnd,
+      };
     },
     onMove(e) {
       const deltaTime = pixelToTime(e.deltaX);
-      setLocalViewport((prev) => {
-        if (!prev) return prev;
-        const newStart = Math.max(
-          start,
-          Math.min(prev.start + deltaTime, prev.end - MIN_VIEWPORT_DURATION),
-        );
-        return { start: newStart, end: prev.end };
+      const prev = optimisticViewportRef.current ?? {
+        start: viewportStart,
+        end: viewportEnd,
+      };
+      const newStart = Math.max(
+        start,
+        Math.min(prev.start + deltaTime, prev.end - MIN_VIEWPORT_DURATION),
+      );
+      optimisticViewportRef.current = { start: newStart, end: prev.end };
+      startTransition(() => {
+        onViewportChange?.(newStart, prev.end);
+        setViewport(newStart, prev.end);
       });
     },
     onMoveEnd() {
-      if (localViewport) {
-        setViewport(localViewport.start, localViewport.end);
-      }
-      setLocalViewport(null);
+      optimisticViewportRef.current = null;
     },
   });
 
   const { moveProps: rightHandleMoveProps } = useMove({
     onMoveStart() {
-      setLocalViewport({ start: viewportStart, end: viewportEnd });
+      optimisticViewportRef.current = {
+        start: viewportStart,
+        end: viewportEnd,
+      };
     },
     onMove(e) {
       const deltaTime = pixelToTime(e.deltaX);
-      setLocalViewport((prev) => {
-        if (!prev) return prev;
-        const newEnd = Math.min(
-          end,
-          Math.max(prev.end + deltaTime, prev.start + MIN_VIEWPORT_DURATION),
-        );
-        return { start: prev.start, end: newEnd };
+      const prev = optimisticViewportRef.current ?? {
+        start: viewportStart,
+        end: viewportEnd,
+      };
+      const newEnd = Math.min(
+        end,
+        Math.max(prev.end + deltaTime, prev.start + MIN_VIEWPORT_DURATION),
+      );
+      optimisticViewportRef.current = { start: prev.start, end: newEnd };
+      startTransition(() => {
+        onViewportChange?.(prev.start, newEnd);
+        setViewport(prev.start, newEnd);
       });
     },
     onMoveEnd() {
-      if (localViewport) {
-        setViewport(localViewport.start, localViewport.end);
-      }
-      setLocalViewport(null);
+      optimisticViewportRef.current = null;
     },
   });
 
   const { moveProps: panMoveProps } = useMove({
     onMoveStart() {
-      setLocalViewport({ start: viewportStart, end: viewportEnd });
+      optimisticViewportRef.current = {
+        start: viewportStart,
+        end: viewportEnd,
+      };
     },
     onMove(e) {
       const deltaTime = pixelToTime(e.deltaX);
-      setLocalViewport((prev) => {
-        if (!prev) return prev;
-        const viewportDuration = prev.end - prev.start;
+      const prev = optimisticViewportRef.current ?? {
+        start: viewportStart,
+        end: viewportEnd,
+      };
+      const viewportDuration = prev.end - prev.start;
 
-        let newStart = prev.start + deltaTime;
-        let newEnd = prev.end + deltaTime;
+      let newStart = prev.start + deltaTime;
+      let newEnd = prev.end + deltaTime;
 
-        if (newStart < start) {
-          newStart = start;
-          newEnd = start + viewportDuration;
-        }
-        if (newEnd > end) {
-          newEnd = end;
-          newStart = end - viewportDuration;
-        }
+      if (newStart < start) {
+        newStart = start;
+        newEnd = start + viewportDuration;
+      }
+      if (newEnd > end) {
+        newEnd = end;
+        newStart = end - viewportDuration;
+      }
 
-        return { start: newStart, end: newEnd };
+      optimisticViewportRef.current = { start: newStart, end: newEnd };
+      startTransition(() => {
+        onViewportChange?.(newStart, newEnd);
+        setViewport(newStart, newEnd);
       });
     },
     onMoveEnd() {
-      if (localViewport) {
-        setViewport(localViewport.start, localViewport.end);
-      }
-      setLocalViewport(null);
+      optimisticViewportRef.current = null;
     },
   });
 

@@ -82,3 +82,25 @@ export function usePortals(id: string) {
 
   return { getPortal, setPortal };
 }
+
+const VIEWPORT_SELECTOR_PORTAL_ID = 'viewport-selector-portal';
+
+export function ViewportSelectorPortalTarget({
+  className,
+}: {
+  className?: string;
+}) {
+  const { setPortal } = usePortals(VIEWPORT_SELECTOR_PORTAL_ID);
+  return <div ref={setPortal} className={className} />;
+}
+
+export function ViewportSelectorPortalContent({ children }: PropsWithChildren) {
+  const { getPortal } = usePortals(VIEWPORT_SELECTOR_PORTAL_ID);
+  const element = getPortal?.();
+
+  if (!element) {
+    return null;
+  }
+
+  return createPortal(children, element);
+}
