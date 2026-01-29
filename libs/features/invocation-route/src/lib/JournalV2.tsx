@@ -469,6 +469,8 @@ export function JournalV2({
                         <ViewportSelectorPortalTarget className="absolute inset-0 z-10" />
                       </div>
                     </div>
+                    <div className="sticky top-36 right-0 z-[1] col-start-1 row-start-1 h-12 rounded-r-2xl border border-t-2 border-white bg-gray-100 shadow-xs" />
+
                     {/* Scrollable timeline content with Units overlay */}
                     <ScrollableTimeline
                       className="col-start-1 row-start-1"
