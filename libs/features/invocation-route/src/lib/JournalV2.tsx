@@ -473,7 +473,7 @@ export function JournalV2({
 
                     {/* Scrollable timeline content with Units overlay */}
                     <ScrollableTimeline
-                      className="col-start-1 row-start-1"
+                      className="col-start-1 row-start-1 pt-[calc(3rem+2px)]"
                       style={{ minHeight: virtualizer.getTotalSize() + 48 }}
                       start={start}
                       end={end}
