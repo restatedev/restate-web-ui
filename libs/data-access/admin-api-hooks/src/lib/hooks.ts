@@ -1237,16 +1237,27 @@ export function useRestartWorkflowAsNew(
           },
         }),
       );
+      const payloadData = await queryClient.ensureQueryData(
+        adminApi(
+          'query',
+          '/query/invocations/{invocationId}/journal/{entryIndex}/payloads',
+          'get',
+          {
+            baseUrl,
+            parameters: { path: { invocationId, entryIndex: 0 } },
+          },
+        ),
+      );
       const inputEntry = data?.journal?.entries?.find(
         (entry) => entry.type === 'Input',
       ) as Extract<JournalEntryV2, { type?: 'Input'; category?: 'command' }>;
-      if (!inputEntry) {
+      if (!inputEntry || !payloadData) {
         throw new RestateError(
           'The invocation cannot be restarted because the input is not available. In order to restart an invocation, the journal must be available in order to read the input again. Journal can be retained after completion by enabling journal retention.',
         );
       }
-      const body = inputEntry.parameters;
-      const headers = inputEntry.headers;
+      const body = payloadData.parameters;
+      const headers = payloadData.headers;
 
       return fetch(
         `${ingressUrl}/${data?.target_service_name}/${workflowId}/${data?.target_handler_name}/send`,
