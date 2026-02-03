@@ -181,11 +181,11 @@ function Component() {
     error,
     data: serviceKeysData,
     isFetching,
-    isPending,
     queryKey,
   } = useQueryVirtualObjectState(virtualObject, queryFilters, {
-    refetchOnMount: false,
+    refetchOnMount: true,
     refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
     staleTime: 0,
     enabled: isValid,
   });
@@ -199,6 +199,12 @@ function Component() {
   const listObjects = useListVirtualObjectState(
     virtualObject,
     currentPageItems,
+    {
+      refetchOnMount: true,
+      refetchOnReconnect: false,
+      staleTime: 0,
+      refetchOnWindowFocus: false,
+    },
   );
 
   const flattenedData = useMemo(() => {
@@ -214,7 +220,7 @@ function Component() {
   }, [listObjects.data]);
 
   useEffect(() => {
-    if (!isPending) {
+    if (!isFetching) {
       const keys =
         listObjects.data?.objects
           .map((obj) => obj.state.map(({ name }) => name))
@@ -230,7 +236,7 @@ function Component() {
           ]),
       );
     }
-  }, [listObjects.data, isPending]);
+  }, [listObjects.data, isFetching]);
 
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>();
   const [, startTransition] = useTransition();
@@ -570,7 +576,7 @@ function Component() {
           isFetching={isFetching || listObjects.isFetching}
           key={dataUpdate}
         >
-          {!isPending && !error && totalSize > 1 && (
+          {!isFetching && !error && totalSize > 1 && (
             <div className="flex items-center rounded-lg border bg-zinc-50 py-0.5 shadow-xs">
               <Button
                 variant="icon"
@@ -758,7 +764,9 @@ function Footnote({
     }
 
     return () => {
-      interval && clearInterval(interval);
+      if (interval) {
+        clearInterval(interval);
+      }
     };
   }, [data]);
 
