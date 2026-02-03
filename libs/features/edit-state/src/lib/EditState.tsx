@@ -183,6 +183,7 @@ function EditStateInner({
         error={error}
         onSubmit={submitHandler}
         isSubmitting={mutation.isPending}
+        isFetchingState={query.isPending}
         title={
           isPartial ? (
             <>
@@ -228,7 +229,7 @@ function EditStateInner({
             />
           </>
         )}
-        {query.isPending && (
+        {query.isPending && !isDeleting && (
           <div className="min-h-20 w-full animate-pulse rounded-lg border border-gray-200 bg-slate-200 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]" />
         )}
         {query.data && !isDeleting && (
@@ -276,6 +277,7 @@ function StateDialogContent({
   onSubmit,
   error,
   isSubmitting,
+  isFetchingState,
 }: PropsWithChildren<{
   service?: string;
   stateKey?: string;
@@ -283,6 +285,7 @@ function StateDialogContent({
   isDeleting?: boolean;
   isFetching?: boolean;
   isSubmitting?: boolean;
+  isFetchingState?: boolean;
   title?: ReactNode;
   onSubmit: FormEventHandler<HTMLFormElement>;
   error?: Error | null;
@@ -356,6 +359,7 @@ function StateDialogContent({
                 <SubmitButton
                   form={formId}
                   className="flex-auto"
+                  {...(isFetchingState && { isPending: true })}
                   variant={isDeleting ? 'destructive' : 'primary'}
                 >
                   {isDeleting ? 'Delete' : 'Save'}
