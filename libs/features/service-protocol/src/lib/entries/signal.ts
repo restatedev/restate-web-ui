@@ -55,7 +55,7 @@ export function signal(
     >;
   }
 
-  if (id === 17) {
+  if (id && id >= 17) {
     const result = entry.entry_json
       ? entryJSON?.Notification?.Signal?.result
       : entryLiteJSON?.Notification?.result;
