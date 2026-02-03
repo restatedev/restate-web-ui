@@ -1371,7 +1371,12 @@ export function useEditState(
     },
   );
 
-  const query = useQuery({ ...queryOptions, enabled });
+  const query = useQuery({
+    ...queryOptions,
+    enabled,
+    staleTime: 0,
+    refetchOnMount: true,
+  });
   const version = query.data?.version;
   const decodedQuery = useDecodeState(
     query.data?.state,
@@ -1484,6 +1489,18 @@ export function useEditState(
           }
         },
       );
+      queryClient.invalidateQueries({
+        predicate: (query) => {
+          if (Array.isArray(query.queryKey)) {
+            const [resolvedUrl] = query.queryKey;
+            return (
+              resolvedUrl.startsWith(`/query/services/${service}`) &&
+              resolvedUrl.includes('/state')
+            );
+          }
+          return false;
+        },
+      });
     },
   });
 
