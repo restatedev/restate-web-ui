@@ -182,13 +182,6 @@ function ComplementaryWithSearchParamValue({
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
         if (mutation.type === 'attributes') {
-          console.log(
-            mutation,
-            getIsTop(searchParams, paramName, paramValue),
-            searchParams.toString(),
-            window.location.search,
-            (mutation.target as HTMLElement).dataset,
-          );
           setIsTop(getIsTop(searchParams, paramName, paramValue));
         }
       }
