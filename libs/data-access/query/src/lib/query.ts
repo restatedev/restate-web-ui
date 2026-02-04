@@ -32,6 +32,7 @@ import {
   batchResumeInvocations,
   batchRestartAsNewInvocations,
   countInvocations,
+  getPausedError,
 } from './handlers';
 import { getVersion } from './getVersion';
 
@@ -85,6 +86,7 @@ type BoundHandlers = {
   batchRestartAsNewInvocations: (
     request: BatchInvocationsRequestBody,
   ) => Promise<Response>;
+  getPausedError: (invocationId: string) => Promise<Response>;
 };
 
 function bindHandlers(context: QueryContext): BoundHandlers {
@@ -107,6 +109,7 @@ function bindHandlers(context: QueryContext): BoundHandlers {
     batchPauseInvocations: batchPauseInvocations.bind(context),
     batchResumeInvocations: batchResumeInvocations.bind(context),
     batchRestartAsNewInvocations: batchRestartAsNewInvocations.bind(context),
+    getPausedError: getPausedError.bind(context),
   };
 }
 
@@ -158,6 +161,10 @@ export const routes = createRoutes({
     restartAsNew: {
       method: 'POST',
       pattern: '/invocations/restart-as-new',
+    },
+    pausedError: {
+      method: 'GET',
+      pattern: '/invocations/:invocationId/paused-error',
     },
   },
   invocationsV2: {
@@ -251,6 +258,10 @@ queryRouter.map(routes, {
       const { batchRestartAsNewInvocations } = ctx.storage.get(handlersKey);
       const request: BatchInvocationsRequestBody = await ctx.request.json();
       return batchRestartAsNewInvocations(request);
+    },
+    async pausedError(ctx) {
+      const { getPausedError } = ctx.storage.get(handlersKey);
+      return getPausedError(ctx.params.invocationId);
     },
   },
   invocationsV2: {
