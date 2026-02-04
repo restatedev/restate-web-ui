@@ -39,58 +39,63 @@ export function LifeCycle({
         ] as ComponentType<EntryProps<JournalEntryV2>> | undefined)
       : undefined;
 
+    const hasError = Boolean(entry.code || entry.message || entry.error);
     return (
       <div className="-order-1 mr-2 flex items-center gap-2 font-sans text-zinc-500">
-        <span className="shrink-0">{ENTRY_EVENTS_ENTRY_LABELS['Paused']}</span>
-        <Badge
-          variant="warning"
-          size="sm"
-          className="gap-0 truncate px-0 font-sans font-normal"
-        >
-          {parentCommand && typeof commandIndex === 'number' && (
-            <Popover>
-              <PopoverTrigger>
-                <Button
-                  className="-my-1 translate-x-[-0.5px] rounded-md px-1 py-0 font-mono text-xs text-gray-400"
-                  variant="secondary"
-                >
-                  <div className="flex h-5 items-center">#{commandIndex}</div>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent>
-                <DropdownSection
-                  className="relative px-3 py-2 pr-8 text-0.5xs"
-                  title={
-                    <span className="text-2xs text-gray-400 uppercase">{`Command #${commandIndex}`}</span>
-                  }
-                >
-                  {CommandComponent && (
-                    <CommandComponent
-                      entry={parentCommand}
-                      invocation={invocation}
-                    />
-                  )}
-                </DropdownSection>
-              </PopoverContent>
-            </Popover>
-          )}
-          <Failure
-            title="Paused after"
-            restate_code={String(
-              entry.relatedRestateErrorCode ||
-                entry.code ||
-                entry?.error?.restateCode ||
-                entry?.error?.code ||
-                '',
+        <span className="shrink-0">
+          {hasError ? ENTRY_EVENTS_ENTRY_LABELS['Paused'] : 'Paused'}
+        </span>
+        {hasError && (
+          <Badge
+            variant="warning"
+            size="sm"
+            className="gap-0 truncate px-0 font-sans font-normal"
+          >
+            {parentCommand && typeof commandIndex === 'number' && (
+              <Popover>
+                <PopoverTrigger>
+                  <Button
+                    className="-my-1 translate-x-[-0.5px] rounded-md px-1 py-0 font-mono text-xs text-gray-400"
+                    variant="secondary"
+                  >
+                    <div className="flex h-5 items-center">#{commandIndex}</div>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent>
+                  <DropdownSection
+                    className="relative px-3 py-2 pr-8 text-0.5xs"
+                    title={
+                      <span className="text-2xs text-gray-400 uppercase">{`Command #${commandIndex}`}</span>
+                    }
+                  >
+                    {CommandComponent && (
+                      <CommandComponent
+                        entry={parentCommand}
+                        invocation={invocation}
+                      />
+                    )}
+                  </DropdownSection>
+                </PopoverContent>
+              </Popover>
             )}
-            stacktrace={entry?.stack || entry?.error?.stack}
-            message={[entry.message, entry?.error?.message]
-              .filter(Boolean)
-              .join('\n\n')}
-            isRetrying
-            className="my-[-2px] ml-0 h-5 rounded-md border-none bg-transparent py-0 shadow-none hover:bg-orange-100 pressed:bg-orange-200/50"
-          />
-        </Badge>
+            <Failure
+              title="Paused after"
+              restate_code={String(
+                entry.relatedRestateErrorCode ||
+                  entry.code ||
+                  entry?.error?.restateCode ||
+                  entry?.error?.code ||
+                  '',
+              )}
+              stacktrace={entry?.stack || entry?.error?.stack}
+              message={[entry.message, entry?.error?.message]
+                .filter(Boolean)
+                .join('\n\n')}
+              isRetrying
+              className="my-[-2px] ml-0 h-5 rounded-md border-none bg-transparent py-0 shadow-none hover:bg-orange-100 pressed:bg-orange-200/50"
+            />
+          </Badge>
+        )}
       </div>
     );
   }
