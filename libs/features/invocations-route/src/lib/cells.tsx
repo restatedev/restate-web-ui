@@ -11,6 +11,8 @@ import {
   formatDurations,
   formatNumber,
   formatPlurals,
+  normaliseDuration,
+  parseISODuration,
 } from '@restate/util/intl';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 import { tv } from '@restate/util/styles';
@@ -48,6 +50,7 @@ function withDate({
     | 'completion_expiration'
     | 'journal_expiration'
     | 'next_retry_at'
+    | 'completed_at'
   >;
 }) {
   return (props: { invocation: Invocation }) => {
@@ -304,6 +307,20 @@ function JournalCell({ invocation }: CellProps) {
   );
 }
 
+function DurationCell({ invocation }: CellProps) {
+  if (!invocation.duration) {
+    return null;
+  }
+  const durationObject = normaliseDuration(
+    parseISODuration(invocation.duration),
+  );
+  return (
+    <Badge className="w-full border-none bg-transparent pl-0">
+      <span className="w-full truncate">{formatDurations(durationObject)}</span>
+    </Badge>
+  );
+}
+
 const CELLS: Record<ColumnKey, ComponentType<CellProps>> = {
   id: withCell(InvocationIdCell, 'id'),
   target: withCell(TargetCell, 'target'),
@@ -317,6 +334,10 @@ const CELLS: Record<ColumnKey, ComponentType<CellProps>> = {
   next_retry_at: withCell(
     withDate({ field: 'next_retry_at', tooltipTitle: 'Next retry at' }),
     'next_retry_at',
+  ),
+  completed_at: withCell(
+    withDate({ field: 'completed_at', tooltipTitle: 'Completed at' }),
+    'completed_at',
   ),
   modified_at: withCell(
     withDate({ field: 'modified_at', tooltipTitle: 'Modified at' }),
@@ -378,6 +399,7 @@ const CELLS: Record<ColumnKey, ComponentType<CellProps>> = {
     'journal_retention',
   ),
   restarted_from: withCell(RestartedFromCell, 'restarted_from'),
+  duration: withCell(DurationCell, 'duration'),
 };
 
 export function InvocationCell({

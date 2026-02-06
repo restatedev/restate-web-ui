@@ -49,7 +49,14 @@ const makeShortcuts: (
   {
     id: 'all',
     label: 'All',
-    columns: ['id', 'created_at', 'modified_at', 'target', 'status'],
+    columns: [
+      'id',
+      'created_at',
+      'modified_at',
+      'duration',
+      'target',
+      'status',
+    ],
     sort: {
       field: 'modified_at',
       order: 'DESC',
@@ -68,7 +75,14 @@ const makeShortcuts: (
   {
     id: 'inflight',
     label: 'In-flight invocations',
-    columns: ['id', 'created_at', 'modified_at', 'target', 'status'],
+    columns: [
+      'id',
+      'created_at',
+      'modified_at',
+      'duration',
+      'target',
+      'status',
+    ],
     sort: {
       field: 'modified_at',
       order: 'DESC',
@@ -87,7 +101,14 @@ const makeShortcuts: (
   {
     id: 'stuck',
     label: 'Stuck invocations',
-    columns: ['id', 'created_at', 'modified_at', 'target', 'status'],
+    columns: [
+      'id',
+      'created_at',
+      'modified_at',
+      'duration',
+      'target',
+      'status',
+    ],
     sort: {
       field: 'modified_at',
       order: 'ASC',
@@ -110,7 +131,14 @@ const makeShortcuts: (
   {
     id: 'workflow',
     label: 'Workflow runs',
-    columns: ['id', 'created_at', 'modified_at', 'target', 'status'],
+    columns: [
+      'id',
+      'created_at',
+      'modified_at',
+      'duration',
+      'target',
+      'status',
+    ],
     sort: {
       field: 'modified_at',
       order: 'DESC',
@@ -137,7 +165,14 @@ const makeShortcuts: (
   {
     id: 'vo',
     label: 'Active Virtual Objects',
-    columns: ['id', 'created_at', 'modified_at', 'target', 'status'],
+    columns: [
+      'id',
+      'created_at',
+      'modified_at',
+      'duration',
+      'target',
+      'status',
+    ],
     sort: {
       field: 'modified_at',
       order: 'DESC',
@@ -165,6 +200,7 @@ const makeShortcuts: (
       'id',
       'created_at',
       'modified_at',
+      'duration',
       'target',
       'status',
       'idempotency_key',
@@ -194,6 +230,7 @@ const makeShortcuts: (
       'id',
       'created_at',
       'modified_at',
+      'duration',
       'target',
       'status',
       'retry_count',
@@ -224,6 +261,7 @@ const makeShortcuts: (
       'id',
       'created_at',
       'modified_at',
+      'duration',
       'target',
       'status',
       'restarted_from',
@@ -254,6 +292,7 @@ const makeShortcuts: (
       'id',
       'created_at',
       'modified_at',
+      'duration',
       'scheduled_start_at',
       'target',
       'status',

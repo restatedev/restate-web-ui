@@ -65,6 +65,12 @@ const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: 170,
   created_at: 100,
   modified_at: 110,
+  duration: 110,
+  scheduled_at: 110,
+  scheduled_start_at: 110,
+  running_at: 110,
+  next_retry_at: 110,
+  completed_at: 110,
   journal_size: 180,
   pinned_service_protocol_version: 80,
 };

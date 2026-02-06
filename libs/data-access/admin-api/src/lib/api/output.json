@@ -5269,7 +5269,8 @@
                   "target_service_key",
                   "target_service_name",
                   "target_handler_name",
-                  "retry_count"
+                  "retry_count",
+                  "duration"
                 ]
               },
               "order": {
@@ -7801,6 +7802,10 @@
           },
           "isRetrying": {
             "type": "boolean"
+          },
+          "duration": {
+            "type": "string",
+            "format": "duration"
           }
         }
       },
@@ -7977,6 +7982,10 @@
           },
           "last_failure_error_code": {
             "type": "string"
+          },
+          "duration": {
+            "type": "string",
+            "format": "duration"
           }
         }
       }
