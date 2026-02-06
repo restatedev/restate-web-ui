@@ -1,4 +1,7 @@
-import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api-hooks';
+import {
+  useGetInvocationJournalWithInvocationV2,
+  useGetPausedError,
+} from '@restate/data-access/admin-api-hooks';
 import type { JournalEntryV2 } from '@restate/data-access/admin-api';
 import { ComponentType } from 'react';
 import { AttachInvocation } from './entries/AttachInvocation';
@@ -150,6 +153,12 @@ export function Entry({
     invocation?.journal_commands_size ?? invocation?.journal_size ?? 1;
   const numOfDigits = digitCount(length);
 
+  const isPaused = invocation?.status === 'paused';
+  const { data: pausedErrorData } = useGetPausedError(String(invocation?.id), {
+    enabled: isPaused,
+  });
+  const pausedRelatedCommandIndex = pausedErrorData?.relatedCommandIndex;
+
   const { isCompact } = useJournalContext();
   const EntrySpecificComponent = (
     entry?.type
@@ -177,8 +186,15 @@ export function Entry({
           invocation.last_failure_related_command_index ===
             entry.commandIndex) ||
         (depth === 0 &&
+          isPaused &&
+          typeof pausedRelatedCommandIndex === 'number' &&
+          typeof invocation.last_failure_related_command_index !== 'number' &&
+          pausedRelatedCommandIndex === entry.commandIndex) ||
+        (depth === 0 &&
           typeof invocation.last_failure_related_command_index ===
             'undefined' &&
+          !isPaused &&
+          typeof pausedRelatedCommandIndex === 'undefined' &&
           isEntriesEqual(
             entry,
             invocation.journal?.entries?.findLast(

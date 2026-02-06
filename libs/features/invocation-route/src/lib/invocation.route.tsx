@@ -1,4 +1,7 @@
-import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api-hooks';
+import {
+  useGetInvocationJournalWithInvocationV2,
+  useGetPausedError,
+} from '@restate/data-access/admin-api-hooks';
 import { ErrorBanner } from '@restate/ui/error';
 import { useParams, useSearchParams } from 'react-router';
 import { getRestateError, Status } from './Status';
@@ -18,6 +21,7 @@ import { tv } from '@restate/util/styles';
 import { Copy } from '@restate/ui/copy';
 import { useEffect, useRef, useState } from 'react';
 import { Invocation, JournalEntryV2 } from '@restate/data-access/admin-api';
+import { RestateError } from '@restate/util/errors';
 
 const metadataContainerStyles = tv({
   base: 'mt-6 hidden grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2 gap-y-4 rounded-xl [&:has(*)]:grid',
@@ -65,7 +69,23 @@ function Component() {
 
   const { baseUrl } = useRestateContext();
 
-  const lastError = getRestateError(journalAndInvocationData);
+  const isPaused = journalAndInvocationData?.status === 'paused';
+  const { data: pausedErrorData } = useGetPausedError(String(id), {
+    enabled: isPaused,
+    refetchOnMount: true,
+    staleTime: 0,
+  });
+  const pausedError =
+    isPaused && pausedErrorData?.message
+      ? new RestateError(
+          pausedErrorData.message,
+          pausedErrorData.relatedRestateErrorCode,
+          true,
+          pausedErrorData.stack,
+        )
+      : undefined;
+
+  const lastError = getRestateError(journalAndInvocationData) ?? pausedError;
   const shouldShowFailure =
     Boolean(lastError) &&
     !['killed', 'cancelled'].includes(String(journalAndInvocationData?.status));
@@ -173,7 +193,10 @@ function Component() {
           </div>
           {shouldShowFailure && !error && (
             <>
-              <Anchor invocation={journalAndInvocationData} />
+              <Anchor
+                invocation={journalAndInvocationData}
+                hasLastFailure={Boolean(lastError)}
+              />
 
               <Section
                 id="last-failure-section"
@@ -187,18 +210,18 @@ function Component() {
                 />
               </Section>
               {Boolean(
-                journalAndInvocationData?.last_failure_related_command_index,
+                journalAndInvocationData?.last_failure_related_command_index ??
+                  pausedErrorData?.relatedCommandIndex,
               ) && (
                 <div className="-translate-y-2 px-2">
                   <Link
                     variant="icon"
                     className="inline-flex rounded-md px-2 text-xs"
-                    href={`#command-${journalAndInvocationData?.last_failure_related_command_index}`}
+                    href={`#command-${journalAndInvocationData?.last_failure_related_command_index ?? pausedErrorData?.relatedCommandIndex}`}
                   >
                     Go to the related line (#
-                    {
-                      journalAndInvocationData?.last_failure_related_command_index
-                    }
+                    {journalAndInvocationData?.last_failure_related_command_index ??
+                      pausedErrorData?.relatedCommandIndex}
                     )
                     <Icon
                       name={IconName.ChevronDown}
@@ -252,14 +275,13 @@ const anchorStyles = tv({
 
 function Anchor({
   invocation,
+  hasLastFailure,
 }: {
   invocation?: Invocation & { journal?: { entries?: JournalEntryV2[] } };
+  hasLastFailure?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
 
-  const hasLastFailure = Boolean(
-    invocation?.last_failure || invocation?.completion_failure,
-  );
   const { line, anchor } = anchorStyles({
     isFailed: Boolean(invocation?.completion_failure),
   });
