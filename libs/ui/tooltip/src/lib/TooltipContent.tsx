@@ -17,7 +17,7 @@ interface TooltipContentProps {
 }
 
 const styles = tv({
-  base: 'group max-w-sm border border-zinc-900/80 text-gray-300 drop-shadow-xl will-change-transform',
+  base: 'group max-w-md border border-zinc-900/80 text-gray-300 drop-shadow-xl will-change-transform',
   variants: {
     isEntering: {
       true: 'duration-200 ease-out animate-in fade-in placement-left:slide-in-from-right-0.5 placement-right:slide-in-from-left-0.5 placement-top:slide-in-from-bottom-0.5 placement-bottom:slide-in-from-top-0.5',

@@ -1,6 +1,10 @@
 import { Invocation, ServiceType } from '@restate/data-access/admin-api';
 import { Cell } from '@restate/ui/table';
-import { DateTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
+import {
+  DateTooltip,
+  HoverTooltip,
+  TruncateWithTooltip,
+} from '@restate/ui/tooltip';
 import { ColumnKey } from './columns';
 import { ComponentType } from 'react';
 import { Badge } from '@restate/ui/badge';
@@ -8,9 +12,11 @@ import { ServiceTypeExplainer } from '@restate/features/explainers';
 import { CellProps } from './cells/types';
 import { InvocationIdCell } from './cells/InvocationId';
 import {
+  formatDateTime,
   formatDurations,
   formatNumber,
   formatPlurals,
+  formatRange,
   normaliseDuration,
   parseISODuration,
 } from '@restate/util/intl';
@@ -34,6 +40,7 @@ import { Link } from '@restate/ui/link';
 import { useRestateContext } from '@restate/features/restate-context';
 import { useLocation } from 'react-router';
 import { useListSubscriptions } from '@restate/data-access/admin-api-hooks';
+import { Ellipsis } from '@restate/ui/loading';
 
 function withDate({
   tooltipTitle,
@@ -314,9 +321,44 @@ function DurationCell({ invocation }: CellProps) {
   const durationObject = normaliseDuration(
     parseISODuration(invocation.duration),
   );
+  const formatted = formatDurations(durationObject);
+  const createdAt = new Date(invocation.created_at);
+  const completedAt = invocation.completed_at
+    ? new Date(invocation.completed_at)
+    : undefined;
+  const isCompleted = !!completedAt;
   return (
     <Badge className="w-full border-none bg-transparent pl-0">
-      <span className="w-full truncate">{formatDurations(durationObject)}</span>
+      <HoverTooltip
+        className="mx-[-0.1em] max-w-full truncate rounded-xs px-[0.1em] underline decoration-zinc-400 decoration-dashed decoration-from-font underline-offset-[0.2em] hover:bg-black/5"
+        content={
+          <div className="flex flex-col gap-3">
+            <div className="text-base font-semibold capitalize">Duration</div>
+            <div className="inline font-medium">
+              <div className="inline font-normal opacity-80">
+                {isCompleted ? (
+                  formatRange(createdAt, completedAt)
+                ) : (
+                  <span>
+                    {formatDateTime(createdAt, 'system')} –{' '}
+                    <Ellipsis>now</Ellipsis>
+                  </span>
+                )}
+              </div>
+              <div className="inline font-semibold">
+                {'  '}({formatted})
+              </div>
+            </div>
+          </div>
+        }
+      >
+        {/*<span className="w-full truncate">
+          {isCompleted ? formatted : <Ellipsis>{formatted}</Ellipsis>}
+        </span>*/}
+        <span className="w-full truncate">
+          {formatted} {!isCompleted && <Ellipsis />}
+        </span>
+      </HoverTooltip>
     </Badge>
   );
 }
