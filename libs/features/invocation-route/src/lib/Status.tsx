@@ -112,6 +112,8 @@ export function Status({
   const isPaused = status === 'paused';
   const { data: pausedErrorData } = useGetPausedError(invocation.id, {
     enabled: isPaused,
+    refetchOnMount: true,
+    staleTime: 0,
   });
   const pausedError =
     isPaused && pausedErrorData?.message
@@ -122,7 +124,7 @@ export function Status({
           pausedErrorData.stack,
         )
       : undefined;
-  const hasPausedError = Boolean(pausedError);
+  const hasPausedError = Boolean(pausedError) && invocation.status === 'paused';
   const variant = getBadgeVariant(status, invocation.isRetrying);
   const error = getRestateError(invocation);
   return (
