@@ -215,10 +215,9 @@ export function Entry({
                 entry.commandIndex,
           ) ||
           Boolean(
-            invocation.status === 'paused' &&
-              entry.type === 'Paused' &&
-              entry.category === 'event' &&
-              entry.isPending,
+            isPaused &&
+              typeof pausedRelatedCommandIndex === 'number' &&
+              pausedRelatedCommandIndex === entry.commandIndex,
           ),
       })}
       {...(entry.category === 'command' && {
