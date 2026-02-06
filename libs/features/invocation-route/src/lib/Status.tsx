@@ -155,7 +155,7 @@ export function Status({
             isRetrying
             isFailed={false}
             error={pausedError}
-            popoverTitle="Paused error"
+            popoverTitle="Paused after"
             label="after…"
           />
         )}
