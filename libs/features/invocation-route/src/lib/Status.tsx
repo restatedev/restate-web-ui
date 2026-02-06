@@ -153,8 +153,8 @@ export function Status({
             isRetrying
             isFailed={false}
             error={pausedError}
-            popoverTitle="Paused after"
-            label={pausedErrorData?.relatedRestateErrorCode}
+            popoverTitle="Paused error"
+            label="after…"
           />
         )}
       </Badge>
@@ -261,7 +261,7 @@ export function LastError({
             className={errorIcon()}
           />
           {label ? (
-            label
+            <span className="truncate">{label}</span>
           ) : isFailed ? (
             errorCode
           ) : (
