@@ -27,6 +27,11 @@ import { OPERATION_CONFIG } from './config';
 import { MAX_FAILED_INVOCATIONS } from './BatchProgressBar';
 import { QueryClauseSchema, QueryClauseType } from '@restate/ui/query-builder';
 
+let nextBatchId = 0;
+function generateBatchId() {
+  return `batch-${nextBatchId++}`;
+}
+
 interface BatchOperationsContextValue {
   batchCancel: (
     params: BatchInvocationsRequestBody,
@@ -227,7 +232,7 @@ export function BatchOperationsProvider({
       params: { invocationIds: string[] } | { filters: FilterItem[] },
       schema?: QueryClauseSchema<QueryClauseType>[],
     ) => {
-      const id = crypto.randomUUID();
+      const id = generateBatchId();
       const progressStore = new ProgressStore({
         failed: 0,
         failedInvocationIds: [],
@@ -269,7 +274,7 @@ export function BatchOperationsProvider({
       params: { invocationIds: string[] } | { filters: FilterItem[] },
       schema?: QueryClauseSchema<QueryClauseType>[],
     ) => {
-      const id = crypto.randomUUID();
+      const id = generateBatchId();
       const progressStore = new ProgressStore({
         failed: 0,
         failedInvocationIds: [],
@@ -311,7 +316,7 @@ export function BatchOperationsProvider({
       params: { invocationIds: string[] } | { filters: FilterItem[] },
       schema?: QueryClauseSchema<QueryClauseType>[],
     ) => {
-      const id = crypto.randomUUID();
+      const id = generateBatchId();
       const progressStore = new ProgressStore({
         failed: 0,
         failedInvocationIds: [],
@@ -360,7 +365,7 @@ export function BatchOperationsProvider({
       params: { invocationIds: string[] } | { filters: FilterItem[] },
       schema?: QueryClauseSchema<QueryClauseType>[],
     ) => {
-      const id = crypto.randomUUID();
+      const id = generateBatchId();
       const progressStore = new ProgressStore({
         failed: 0,
         failedInvocationIds: [],
@@ -402,7 +407,7 @@ export function BatchOperationsProvider({
       params: { invocationIds: string[] } | { filters: FilterItem[] },
       schema?: QueryClauseSchema<QueryClauseType>[],
     ) => {
-      const id = crypto.randomUUID();
+      const id = generateBatchId();
       const progressStore = new ProgressStore({
         failed: 0,
         failedInvocationIds: [],
@@ -446,7 +451,7 @@ export function BatchOperationsProvider({
         | { filters: FilterItem[]; deployment?: 'keep' | 'latest' },
       schema?: QueryClauseSchema<QueryClauseType>[],
     ) => {
-      const id = crypto.randomUUID();
+      const id = generateBatchId();
       const progressStore = new ProgressStore({
         failed: 0,
         failedInvocationIds: [],

@@ -7,6 +7,7 @@ import {
   CellProps as AriaCellProps,
   Collection,
   RowProps as AriaRowProps,
+  TableStateContext,
   useTableOptions,
 } from 'react-aria-components';
 import { Checkbox } from '@restate/ui/form-field';
@@ -14,9 +15,12 @@ import {
   PropsWithChildren,
   ReactElement,
   Ref,
+  useContext,
   useDeferredValue,
+  useRef,
   useState,
 } from 'react';
+import type { Key } from 'react-aria-components';
 
 const rowStyles = tv({
   extend: focusRing,
@@ -30,6 +34,27 @@ interface RowProps<T extends object>
   > {
   className?: string;
   ref?: Ref<HTMLTableRowElement>;
+}
+
+function SelectionCheckbox({ rowKey }: { rowKey?: Key }) {
+  const state = useContext(TableStateContext);
+  const shiftKeyRef = useRef(false);
+
+  return (
+    <Checkbox
+      slot="selection"
+      onPressStart={(e) => {
+        shiftKeyRef.current = e.shiftKey;
+      }}
+      onChange={() => {
+        if (shiftKeyRef.current && state && rowKey != null) {
+          state.selectionManager.toggleSelection(rowKey);
+          state.selectionManager.extendSelection(rowKey);
+        }
+        shiftKeyRef.current = false;
+      }}
+    />
+  );
 }
 
 export function Row<T extends { id?: string }>({
@@ -56,7 +81,7 @@ export function Row<T extends { id?: string }>({
       )}
       {selectionBehavior === 'toggle' && (
         <Cell className="items-start pt-2.5 align-baseline">
-          <Checkbox slot="selection" />
+          <SelectionCheckbox rowKey={id} />
         </Cell>
       )}
       <Collection items={columns}>{children}</Collection>
