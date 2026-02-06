@@ -91,6 +91,8 @@ export function normaliseDuration(input: {
   milliseconds?: number;
   microseconds?: number;
 } {
+  const secondsMs = Math.round(((input.seconds ?? 0) % 1) * 1000);
+
   let total =
     toBigInt(input.years) * Y +
     toBigInt(input.months) * MO +
@@ -99,7 +101,8 @@ export function normaliseDuration(input: {
     toBigInt(input.hours) * H +
     toBigInt(input.minutes) * M +
     toBigInt(input.seconds) * S +
-    toBigInt(input.milliseconds) * MS;
+    toBigInt(input.milliseconds) * MS +
+    BigInt(secondsMs) * MS;
 
   // break down to normalized parts (weeks folded into days)
   const days = total / D;

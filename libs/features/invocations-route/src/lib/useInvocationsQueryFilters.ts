@@ -36,6 +36,7 @@ export const SORT_COLUMN_KEYS: ColumnKey[] = [
   'target_service_name',
   'target_handler_name',
   'retry_count',
+  'duration',
 ] as const;
 
 export function isSortValid(searchParams: URLSearchParams) {

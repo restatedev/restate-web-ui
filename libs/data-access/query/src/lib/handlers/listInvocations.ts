@@ -8,6 +8,8 @@ import { type QueryContext, SYS_INVOCATION_LIST_COLUMNS } from './shared';
 
 const INVOCATIONS_LIMIT = 250;
 const COUNT_LIMIT = 50000;
+const DURATION_EXPRESSION =
+  'COALESCE(completed_at, now()) - created_at AS duration';
 
 function countEstimate(
   receivedLessThanLimit: boolean,
@@ -36,15 +38,21 @@ export async function listInvocations(
     `SELECT COUNT(1) as total_count FROM (SELECT * FROM sys_invocation LIMIT ${COUNT_LIMIT}) ${convertInvocationsFilters(filters)}`,
   ).then(({ rows }) => rows?.at(0)?.total_count);
 
+  const isSortByDuration = sort.field === 'duration';
+  const idSelectColumns = isSortByDuration
+    ? `id, ${DURATION_EXPRESSION}`
+    : 'id';
+
   const invocationsPromise = this.query(
-    `SELECT id from sys_invocation ${convertInvocationsFilters(filters)} ORDER BY ${sort.field} ${sort.order} LIMIT ${INVOCATIONS_LIMIT}`,
+    `SELECT ${idSelectColumns} from sys_invocation ${convertInvocationsFilters(filters)} ORDER BY ${sort.field} ${sort.order} LIMIT ${INVOCATIONS_LIMIT}`,
   )
     .then(async ({ rows: idRows }) => {
       const receivedLessThanLimit = idRows.length < INVOCATIONS_LIMIT;
 
       if (idRows.length > 0) {
+        const detailColumns = `${SYS_INVOCATION_LIST_COLUMNS.join(', ')}, ${DURATION_EXPRESSION}`;
         const { rows: invRows } = await this.query(
-          `SELECT ${SYS_INVOCATION_LIST_COLUMNS.join(', ')} from sys_invocation ${convertInvocationsFilters(
+          `SELECT ${detailColumns} from sys_invocation ${convertInvocationsFilters(
             [
               {
                 field: 'id',

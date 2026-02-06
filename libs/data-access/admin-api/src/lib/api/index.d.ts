@@ -1842,7 +1842,8 @@ export interface components {
           | 'target_service_key'
           | 'target_service_name'
           | 'target_handler_name'
-          | 'retry_count';
+          | 'retry_count'
+          | 'duration';
         /** @enum {string} */
         order: 'ASC' | 'DESC';
       };
@@ -2788,6 +2789,8 @@ export interface components {
       last_failure?: string;
       last_failure_error_code?: string;
       isRetrying?: boolean;
+      /** Format: duration */
+      duration?: string;
     };
     RawInvocation: {
       /** Format: duration */
@@ -2862,6 +2865,8 @@ export interface components {
       last_attempt_server?: string;
       last_failure?: string;
       last_failure_error_code?: string;
+      /** Format: duration */
+      duration?: string;
     };
   };
   responses: {
