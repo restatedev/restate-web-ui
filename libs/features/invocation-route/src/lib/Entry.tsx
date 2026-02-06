@@ -193,8 +193,7 @@ export function Entry({
         (depth === 0 &&
           typeof invocation.last_failure_related_command_index ===
             'undefined' &&
-          !isPaused &&
-          typeof pausedRelatedCommandIndex === 'undefined' &&
+          (isPaused ? typeof pausedRelatedCommandIndex !== 'number' : true) &&
           isEntriesEqual(
             entry,
             invocation.journal?.entries?.findLast(
@@ -218,6 +217,18 @@ export function Entry({
             isPaused &&
               typeof pausedRelatedCommandIndex === 'number' &&
               pausedRelatedCommandIndex === entry.commandIndex,
+          ) ||
+          Boolean(
+            isPaused &&
+              typeof pausedRelatedCommandIndex !== 'number' &&
+              isEntriesEqual(
+                entry,
+                invocation.journal?.entries?.findLast(
+                  (entry) =>
+                    !isCompact ||
+                    !['Event: TransientError'].includes(String(entry?.type)),
+                ),
+              ),
           ),
       })}
       {...(entry.category === 'command' && {
