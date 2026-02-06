@@ -622,6 +622,35 @@ export function useGetInvocation(
   };
 }
 
+export function useGetPausedError(
+  invocationId: string,
+  options?: HookQueryOptions<
+    '/query/invocations/{invocationId}/paused-error',
+    'get'
+  >,
+) {
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi(
+    'query',
+    '/query/invocations/{invocationId}/paused-error',
+    'get',
+    {
+      baseUrl,
+      parameters: { path: { invocationId } },
+    },
+  );
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+  };
+}
+
 export function useGetInvocationJournal(
   invocationId: string,
   options?: HookQueryOptions<

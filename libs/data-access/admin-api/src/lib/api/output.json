@@ -2751,6 +2751,97 @@
         }
       }
     },
+    "/query/invocations/{invocationId}/paused-error": {
+      "get": {
+        "tags": ["query-invocations"],
+        "summary": "Get paused error",
+        "description": "Get the error details for a paused invocation. Returns the error that caused the invocation to be paused, including the message, stack trace, error code, and related command information.",
+        "operationId": "get_paused_error",
+        "parameters": [
+          {
+            "name": "invocationId",
+            "in": "path",
+            "description": "Invocation id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paused error details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PausedErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/query/invocations/{invocationId}/journal": {
       "get": {
         "tags": ["query-invocations"],
@@ -6322,6 +6413,45 @@
           },
           "relatedCommandIndex": {
             "type": "integer"
+          }
+        }
+      },
+      "PausedErrorResponse": {
+        "type": "object",
+        "description": "Error details for a paused invocation",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "The error message that caused the invocation to be paused"
+          },
+          "stack": {
+            "type": "string",
+            "description": "Stack trace of the error"
+          },
+          "code": {
+            "type": "integer",
+            "description": "Error code"
+          },
+          "relatedCommandName": {
+            "type": "string",
+            "description": "Name of the command that caused the error"
+          },
+          "relatedCommandType": {
+            "type": "string",
+            "description": "Type of the command that caused the error"
+          },
+          "relatedRestateErrorCode": {
+            "type": "string",
+            "description": "Restate-specific error code"
+          },
+          "relatedCommandIndex": {
+            "type": "integer",
+            "description": "Index of the command that caused the error"
+          },
+          "pausedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when the invocation was paused"
           }
         }
       },

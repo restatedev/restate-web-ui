@@ -2,6 +2,7 @@ import {
   Invocation,
   InvocationComputedStatus2,
 } from '@restate/data-access/admin-api';
+import { useGetPausedError } from '@restate/data-access/admin-api-hooks';
 import { Badge } from '@restate/ui/badge';
 import { Button } from '@restate/ui/button';
 import { DropdownSection } from '@restate/ui/dropdown';
@@ -79,6 +80,10 @@ const styles = tv({
       true: 'border border-dashed border-orange-300/80 py-0.5 pr-0.5',
       false: '',
     },
+    hasPausedError: {
+      true: 'py-0.5 pr-0.5',
+      false: '',
+    },
   },
 });
 
@@ -104,6 +109,22 @@ export function Status({
   className?: string;
 }) {
   const { status } = invocation;
+  const isPaused = status === 'paused';
+  const { data: pausedErrorData } = useGetPausedError(invocation.id, {
+    enabled: isPaused,
+    refetchOnMount: true,
+    staleTime: 0,
+  });
+  const pausedError =
+    isPaused && pausedErrorData?.message
+      ? new RestateError(
+          pausedErrorData.message,
+          pausedErrorData.relatedRestateErrorCode,
+          true,
+          pausedErrorData.stack,
+        )
+      : undefined;
+  const hasPausedError = Boolean(pausedError) && invocation.status === 'paused';
   const variant = getBadgeVariant(status, invocation.isRetrying);
   const error = getRestateError(invocation);
   return (
@@ -114,6 +135,7 @@ export function Status({
           className,
           status,
           isRetrying: Boolean(invocation.isRetrying),
+          hasPausedError,
           variant,
         })}
       >
@@ -126,6 +148,15 @@ export function Status({
             isFailed={status === 'failed'}
             error={error}
             attemptCount={invocation.retry_count}
+          />
+        )}
+        {hasPausedError && (
+          <LastError
+            isRetrying
+            isFailed={false}
+            error={pausedError}
+            popoverTitle="Paused error"
+            label="after…"
           />
         )}
       </Badge>
@@ -203,14 +234,16 @@ export function LastError({
   error,
   attemptCount = 0,
   popoverTitle,
+  label,
 }: {
   isRetrying: boolean;
   isFailed: boolean;
   error?: RestateError;
   attemptCount?: number;
   popoverTitle?: string;
+  label?: string;
 }) {
-  const hasStack = error?.message.includes('\n');
+  const hasStack = error?.message.includes('\n') || !!error?.stack;
   const isLargeError = Boolean(error && error?.message.length > 200);
   const { trigger, errorIcon, errorBanner } = lastErrorStyles({
     isRetrying,
@@ -229,7 +262,9 @@ export function LastError({
             name={isRetrying ? IconName.TriangleAlert : IconName.CircleX}
             className={errorIcon()}
           />
-          {isFailed ? (
+          {label ? (
+            <span className="truncate">{label}</span>
+          ) : isFailed ? (
             errorCode
           ) : (
             <span className="truncate">

@@ -635,6 +635,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/query/invocations/{invocationId}/paused-error': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get paused error
+     * @description Get the error details for a paused invocation. Returns the error that caused the invocation to be paused, including the message, stack trace, error code, and related command information.
+     */
+    get: operations['get_paused_error'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/query/invocations/{invocationId}/journal': {
     parameters: {
       query?: never;
@@ -2256,6 +2276,28 @@ export interface components {
       relatedRestateErrorCode?: string;
       relatedCommandType?: string;
       relatedCommandIndex?: number;
+    };
+    /** @description Error details for a paused invocation */
+    PausedErrorResponse: {
+      /** @description The error message that caused the invocation to be paused */
+      message?: string;
+      /** @description Stack trace of the error */
+      stack?: string;
+      /** @description Error code */
+      code?: number;
+      /** @description Name of the command that caused the error */
+      relatedCommandName?: string;
+      /** @description Type of the command that caused the error */
+      relatedCommandType?: string;
+      /** @description Restate-specific error code */
+      relatedRestateErrorCode?: string;
+      /** @description Index of the command that caused the error */
+      relatedCommandIndex?: number;
+      /**
+       * Format: date-time
+       * @description Timestamp when the invocation was paused
+       */
+      pausedAt?: string;
     };
     CreatedLifecycleJournalEntryV2: {
       /** @enum {string} */
@@ -4854,6 +4896,77 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['Invocation'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  get_paused_error: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Invocation id */
+        invocationId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Paused error details */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['PausedErrorResponse'];
         };
       };
       400: {
