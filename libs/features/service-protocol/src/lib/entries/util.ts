@@ -238,6 +238,10 @@ export function getEntryResultV2(
       );
     }
   }
+  transientFailures.sort(
+    (a, b) =>
+      new Date(a.start ?? 0).getTime() - new Date(b.start ?? 0).getTime(),
+  );
 
   const hasTransientFailures = transientFailures.length > 0;
 
@@ -258,6 +262,7 @@ export function getEntryResultV2(
         true,
       )
     : undefined;
+
   const lastTransientError = isRetrying
     ? new RestateError(
         transientFailures?.at(-1)?.message || '',
