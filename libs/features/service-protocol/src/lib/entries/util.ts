@@ -29,10 +29,14 @@ export function parseResults(result?: any): {
 export function parseResults2(result?: any) {
   if (
     typeof result === 'string' &&
-    ['Success', 'Void', 'Failure'].includes(result)
+    ['Success', 'Void', 'Failure', 'StateKeys'].includes(result)
   ) {
+    const resultType =
+      result === 'StateKeys'
+        ? 'success'
+        : (result.toLowerCase() as 'success' | 'void' | 'failure');
     return {
-      resultType: result.toLowerCase() as 'success' | 'void' | 'failure',
+      resultType,
     };
   }
 

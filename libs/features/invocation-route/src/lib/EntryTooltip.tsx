@@ -217,6 +217,8 @@ const ENTRY_COMMANDS_TITLES: {
   GetPromise: 'Get Promise',
   PeekPromise: 'Peek Promise',
   CompletePromise: 'Complete Promise',
+  GetLazyState: 'Get Lazy State',
+  GetLazyStateKeys: 'Get Lazy State Keys',
 };
 const ENTRY_NOTIFICATIONS_TITLES: {
   [K in NotificationEntryType]: string;
@@ -231,6 +233,8 @@ const ENTRY_NOTIFICATIONS_TITLES: {
   GetPromise: 'Get Promise completion at',
   PeekPromise: 'Peek Promise completion at',
   CompletePromise: 'Complete Promise completion at',
+  GetLazyState: 'Get Lazy State completion at',
+  GetLazyStateKeys: 'Get Lazy State Keys completion at',
 };
 
 export const ENTRY_EVENTS_TITLES: {

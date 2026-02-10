@@ -5970,6 +5970,18 @@
                 "$ref": "#/components/schemas/NotificationRunJournalEntryV2"
               },
               {
+                "$ref": "#/components/schemas/GetLazyStateJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/GetLazyStateKeysJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/NotificationGetStateJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/NotificationGetStateKeysJournalEntryV2"
+              },
+              {
                 "$ref": "#/components/schemas/OneWayCallJournalEntryTypeV2"
               },
               {
@@ -6174,7 +6186,11 @@
               "Notification: GetPromise",
               "Notification: PeekPromise",
               "Notification: CompletePromise",
-              "Notification: Run"
+              "Notification: Run",
+              "Command: GetLazyState",
+              "Command: GetLazyStateKeys",
+              "Notification: GetLazyState",
+              "Notification: GetLazyStateKeys"
             ]
           }
         }
@@ -6749,6 +6765,25 @@
           }
         }
       },
+      "GetLazyStateJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["GetLazyState"]
+          },
+          "key": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string",
+            "enum": ["command"]
+          }
+        }
+      },
       "SetStateJournalEntryType": {
         "type": "object",
         "allOf": [
@@ -6826,6 +6861,25 @@
           "type": {
             "type": "string",
             "enum": ["GetStateKeys", "GetEagerStateKeys"]
+          },
+          "category": {
+            "type": "string",
+            "enum": ["command"]
+          },
+          "keys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "GetLazyStateKeysJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["GetLazyStateKeys"]
           },
           "category": {
             "type": "string",
@@ -7416,6 +7470,41 @@
           "category": {
             "type": "string",
             "enum": ["notification"]
+          }
+        }
+      },
+      "NotificationGetStateJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["GetLazyState"]
+          },
+          "category": {
+            "type": "string",
+            "enum": ["notification"]
+          }
+        }
+      },
+      "NotificationGetStateKeysJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["GetLazyStateKeys"]
+          },
+          "category": {
+            "type": "string",
+            "enum": ["notification"]
+          },
+          "keys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       },

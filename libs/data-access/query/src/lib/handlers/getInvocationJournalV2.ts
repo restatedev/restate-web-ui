@@ -136,6 +136,20 @@ export async function getInvocationJournalV2(
     ) {
       return a.index - b.index;
     } else if (typeof a.start === 'string' && typeof b.start === 'string') {
+      if (
+        a.start === b.start &&
+        a.type === 'Running' &&
+        b.category === 'command'
+      ) {
+        return -1;
+      }
+      if (
+        a.start === b.start &&
+        b.type === 'Running' &&
+        a.category === 'command'
+      ) {
+        return 1;
+      }
       return getTimestamp(a) - getTimestamp(b);
     } else {
       return 0;

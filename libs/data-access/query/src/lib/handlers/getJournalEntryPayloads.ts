@@ -86,6 +86,15 @@ type EntryJSON = {
           Failure?: { message?: string; code?: number };
         };
       };
+      GetLazyState?: {
+        result?: {
+          Success?: number[];
+          Failure?: { message?: string; code?: number };
+        };
+      };
+      GetLazyStateKeys?: {
+        state_keys?: string[];
+      };
     };
     Signal?: {
       result?: {
@@ -263,6 +272,18 @@ function extractPayloads(
       return { value, failure };
     }
 
+    case 'Notification: GetLazyState': {
+      const getLazyState = entryJSON?.Notification?.Completion?.GetLazyState;
+      const { value, failure } = parseResult(getLazyState?.result);
+      return { value, failure };
+    }
+
+    case 'Notification: GetLazyStateKeys': {
+      const getLazyStateKeys =
+        entryJSON?.Notification?.Completion?.GetLazyStateKeys;
+      return { keys: getLazyStateKeys?.state_keys };
+    }
+
     // V2 Commands WITHOUT payloads
     case 'Command: Run':
     case 'Command: Sleep':
@@ -275,6 +296,8 @@ function extractPayloads(
     case 'Command: Awakeable':
     case 'Command: GetState':
     case 'Command: GetStateKeys':
+    case 'Command: GetLazyState':
+    case 'Command: GetLazyStateKeys':
     case 'Command: Custom':
     case 'Command: SendSignal':
       return undefined;

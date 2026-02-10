@@ -35,6 +35,8 @@ const NAME_COMMANDS_COMPONENTS: {
   GetPromise: 'promise',
   PeekPromise: 'promise',
   CompletePromise: 'promise',
+  GetLazyState: 'get',
+  GetLazyStateKeys: 'keys',
 };
 
 const CHAIN_COMMANDS_COMPONENTS: {
@@ -62,6 +64,8 @@ const CHAIN_COMMANDS_COMPONENTS: {
   GetPromise: undefined,
   PeekPromise: undefined,
   CompletePromise: { failure: 'reject', success: 'resolve', void: '' },
+  GetLazyState: undefined,
+  GetLazyStateKeys: undefined,
 };
 
 const styles = tv({ base: 'mr-2 overflow-hidden pr-0' });
@@ -101,7 +105,9 @@ export function EntryExpression({
   if (
     !entry ||
     (entry?.category !== 'command' &&
-      !['CompleteAwakeable', 'Cancel'].includes(String(entry?.type)))
+      !['CompleteAwakeable', 'Cancel', 'GetLazyStateKeys'].includes(
+        String(entry?.type),
+      ))
   ) {
     return null;
   }

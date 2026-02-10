@@ -12,6 +12,8 @@ export * from './lib/entries/getInvocationOutput';
 export * from './lib/entries/getPromise';
 export * from './lib/entries/getState';
 export * from './lib/entries/getStateKeys';
+export * from './lib/entries/getLazyState';
+export * from './lib/entries/getLazyStateKeys';
 export * from './lib/entries/input';
 export * from './lib/entries/oneWayCall';
 export * from './lib/entries/peekPromise';

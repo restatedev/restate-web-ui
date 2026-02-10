@@ -19,7 +19,9 @@ import { TransientError } from './entries/TransientError';
 import { CompletePromise } from './entries/CompletePromise';
 import { GetPromise } from './entries/GetPromise';
 import { GetState } from './entries/GetState';
+import { GetLazyState } from './entries/GetLazyState';
 import { GetStateKeys } from './entries/GetStateKeys';
+import { GetLazyStateKeys } from './entries/GetLazyStateKeys';
 import { OneWayCall } from './entries/OneWayCall';
 import { Output } from './entries/Output';
 import { PeekPromise } from './entries/PeekPromise';
@@ -67,6 +69,8 @@ export const ENTRY_COMMANDS_COMPONENTS: {
   AttachInvocation,
   Output,
   Cancel,
+  GetLazyState,
+  GetLazyStateKeys,
 };
 export const ENTRY_NOTIFICATIONS_COMPONENTS: {
   [K in NotificationEntryType]:
@@ -87,6 +91,8 @@ export const ENTRY_NOTIFICATIONS_COMPONENTS: {
   AttachInvocation: undefined,
   Cancel: CancelSignal,
   CallInvocationId: undefined,
+  GetLazyState: undefined,
+  GetLazyStateKeys: GetLazyStateKeys,
 };
 
 export const ENTRY_EVENTS_COMPONENTS: {
