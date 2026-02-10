@@ -46,6 +46,8 @@ const NAME_COMMANDS_COMPONENTS: {
   GetPromise: 'promise',
   PeekPromise: 'promise',
   CompletePromise: 'promise',
+  GetLazyState: 'get',
+  GetLazyStateKeys: 'keys',
 };
 
 export const RESTART_AS_NEW_INVOCATION_QUERY_PARAM = 'restart-new-invocation';
@@ -65,6 +67,7 @@ function EntryParams({
       return entry.key ? `"${entry.key}", Value` : null;
     case 'GetEagerState':
     case 'GetState':
+    case 'GetLazyState':
     case 'ClearState':
       return entry.key ? `"${entry.key}"` : null;
     case 'Call':

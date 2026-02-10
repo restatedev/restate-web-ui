@@ -32,6 +32,10 @@ import {
   notificationCall,
   notificationSleep,
   notificationCallInvocationId,
+  getLazyState,
+  notificationGetLazyState,
+  getLazyStateKeys,
+  notificationGetLazyStateKeys,
 } from '@restate/features/service-protocol';
 
 export function convertJournalV2(
@@ -100,6 +104,8 @@ const JOURNAL_ENTRY_CONVERT_MAP: Partial<
   'Command: CompleteAwakeable': completeAwakeable,
   'Command: Run': run,
   'Command: AttachInvocation': attachInvocation,
+  'Command: GetLazyState': getLazyState,
+  'Command: GetLazyStateKeys': getLazyStateKeys,
   'Command: SendSignal': sendSignal,
   'Notification: Signal': signal,
   'Notification: Call': notificationCall,
@@ -109,6 +115,8 @@ const JOURNAL_ENTRY_CONVERT_MAP: Partial<
   'Notification: PeekPromise': notificationPeekPromise,
   'Notification: CompletePromise': notificationCompletePromise,
   'Notification: Run': notificationRun,
+  'Notification: GetLazyState': notificationGetLazyState,
+  'Notification: GetLazyStateKeys': notificationGetLazyStateKeys,
   'Notification: Sleep': notificationSleep,
   Event: event,
 

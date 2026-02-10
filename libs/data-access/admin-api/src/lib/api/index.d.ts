@@ -2079,6 +2079,10 @@ export interface components {
         | components['schemas']['NotificationCallJournalEntryV2']
         | components['schemas']['NotificationCallInvocationIdJournalEntryV2']
         | components['schemas']['NotificationRunJournalEntryV2']
+        | components['schemas']['GetLazyStateJournalEntryV2']
+        | components['schemas']['GetLazyStateKeysJournalEntryV2']
+        | components['schemas']['NotificationGetStateJournalEntryV2']
+        | components['schemas']['NotificationGetStateKeysJournalEntryV2']
         | components['schemas']['OneWayCallJournalEntryTypeV2']
         | components['schemas']['SleepJournalEntryTypeV2']
         | components['schemas']['NotificationSleepJournalEntryV2']
@@ -2188,7 +2192,11 @@ export interface components {
         | 'Notification: GetPromise'
         | 'Notification: PeekPromise'
         | 'Notification: CompletePromise'
-        | 'Notification: Run';
+        | 'Notification: Run'
+        | 'Command: GetLazyState'
+        | 'Command: GetLazyStateKeys'
+        | 'Notification: GetLazyState'
+        | 'Notification: GetLazyStateKeys';
     };
     /** @description Payload data for a journal entry. Contains the potentially large fields that are excluded from the lite journal response. */
     JournalEntryPayloads: {
@@ -2410,6 +2418,14 @@ export interface components {
       /** @enum {string} */
       category?: 'command';
     };
+    GetLazyStateJournalEntryV2: {
+      /** @enum {string} */
+      type?: 'GetLazyState';
+      key?: string;
+      value?: string;
+      /** @enum {string} */
+      category?: 'command';
+    };
     SetStateJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       /** @enum {string} */
       entry_type?: 'SetState';
@@ -2434,6 +2450,13 @@ export interface components {
     GetStateKeysJournalEntryV2: {
       /** @enum {string} */
       type?: 'GetStateKeys' | 'GetEagerStateKeys';
+      /** @enum {string} */
+      category?: 'command';
+      keys?: string[];
+    };
+    GetLazyStateKeysJournalEntryV2: {
+      /** @enum {string} */
+      type?: 'GetLazyStateKeys';
       /** @enum {string} */
       category?: 'command';
       keys?: string[];
@@ -2641,6 +2664,20 @@ export interface components {
       type?: 'Run';
       /** @enum {string} */
       category?: 'notification';
+    };
+    NotificationGetStateJournalEntryV2: {
+      value?: string;
+      /** @enum {string} */
+      type?: 'GetLazyState';
+      /** @enum {string} */
+      category?: 'notification';
+    };
+    NotificationGetStateKeysJournalEntryV2: {
+      /** @enum {string} */
+      type?: 'GetLazyStateKeys';
+      /** @enum {string} */
+      category?: 'notification';
+      keys?: string[];
     };
     AwakeableJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       completed?: boolean;
