@@ -34,7 +34,6 @@ import {
   notificationCallInvocationId,
   getLazyState,
   notificationGetLazyState,
-  getLazyStateKeys,
   notificationGetLazyStateKeys,
 } from '@restate/features/service-protocol';
 
@@ -105,7 +104,6 @@ const JOURNAL_ENTRY_CONVERT_MAP: Partial<
   'Command: Run': run,
   'Command: AttachInvocation': attachInvocation,
   'Command: GetLazyState': getLazyState,
-  'Command: GetLazyStateKeys': getLazyStateKeys,
   'Command: SendSignal': sendSignal,
   'Notification: Signal': signal,
   'Notification: Call': notificationCall,
