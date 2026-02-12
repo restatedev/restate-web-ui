@@ -297,7 +297,6 @@ function extractPayloads(
     case 'Command: GetState':
     case 'Command: GetStateKeys':
     case 'Command: GetLazyState':
-    case 'Command: GetLazyStateKeys':
     case 'Command: Custom':
     case 'Command: SendSignal':
       return undefined;
