@@ -9,50 +9,21 @@ import {
   getCompletionEntry,
 } from './util';
 
-type GetLazyStateCommand = Extract<
-  JournalEntryV2,
-  { type?: 'GetLazyState'; category?: 'command' }
->;
-type GetLazyStateKeysCommand = Extract<
-  JournalEntryV2,
-  { type?: 'GetLazyStateKeys'; category?: 'command' }
->;
-type GetLazyStateNotification = Extract<
-  JournalEntryV2,
-  { type?: 'GetLazyState'; category?: 'notification' }
->;
-type GetLazyStateKeysNotification = Extract<
-  JournalEntryV2,
-  { type?: 'GetLazyStateKeys'; category?: 'notification' }
->;
-
 function getLazyStateV2(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
   invocation?: Invocation,
-): GetLazyStateCommand | GetLazyStateKeysCommand {
+): Extract<JournalEntryV2, { type?: 'GetLazyState'; category?: 'command' }> {
   const entryJSON = parseEntryJson(entry.entry_json ?? entry.entry_lite_json);
   const commandIndex = entry.command_index;
-  const key = entryJSON?.Command?.GetLazyState?.key;
+
   const resultCompletionId = entryJSON?.Command?.GetLazyState?.completion_id;
-
-  const stateCompletion = getCompletionEntry<GetLazyStateNotification>(
-    resultCompletionId,
-    'GetLazyState',
-    nextEntries,
-  );
-  const keysCompletion = getCompletionEntry<GetLazyStateKeysNotification>(
-    resultCompletionId,
-    'GetLazyStateKeys',
-    nextEntries,
-  );
-
-  const completionEntry = stateCompletion ?? keysCompletion;
-  const isKeysVariant = keysCompletion
-    ? true
-    : stateCompletion
-      ? false
-      : key === '';
+  const completionEntry = getCompletionEntry<
+    Extract<
+      JournalEntryV2,
+      { type?: 'GetLazyState'; category?: 'notification' }
+    >
+  >(resultCompletionId, 'GetLazyState', nextEntries);
 
   const { isRetrying, error, relatedIndexes } = getEntryResultV2(
     entry,
@@ -62,30 +33,8 @@ function getLazyStateV2(
     [completionEntry?.index],
   );
 
-  if (isKeysVariant) {
-    return {
-      start: entry.appended_at,
-      isPending: !completionEntry,
-      commandIndex,
-      type: 'GetLazyStateKeys',
-      category: 'command',
-      completionId: resultCompletionId,
-      completionIndex: completionEntry?.index,
-      end: completionEntry?.start,
-      index: entry.index,
-      relatedIndexes,
-      isRetrying,
-      error: completionEntry?.error || error,
-      keys: (keysCompletion as GetLazyStateKeysNotification | undefined)?.keys,
-      resultType: completionEntry?.resultType,
-      isLoaded:
-        typeof entry.entry_json !== 'undefined' &&
-        (!completionEntry || completionEntry.isLoaded),
-    };
-  }
-
   return {
-    key,
+    key: entryJSON?.Command?.GetLazyState?.key,
     start: entry.appended_at,
     isPending: !completionEntry,
     commandIndex,
@@ -99,7 +48,7 @@ function getLazyStateV2(
     isRetrying,
     error: completionEntry?.error || error,
     resultType: completionEntry?.resultType,
-    value: (stateCompletion as GetLazyStateNotification | undefined)?.value,
+    value: completionEntry?.value,
     isLoaded:
       typeof entry.entry_json !== 'undefined' &&
       (!completionEntry || completionEntry.isLoaded),
@@ -122,7 +71,10 @@ export function notificationGetLazyState(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
   invocation?: Invocation,
-): GetLazyStateNotification {
+): Extract<
+  JournalEntryV2,
+  { type?: 'GetLazyState'; category?: 'notification' }
+> {
   const entryJSON = parseEntryJson(entry.entry_json);
   const entryLiteJSON = parseEntryJson(entry.entry_lite_json);
   const completionId: number | undefined = entry.entry_json

@@ -72,11 +72,8 @@ function getPayloadEntryIndex(
     case 'PeekPromise':
     case 'AttachInvocation':
     case 'GetLazyState':
-    case 'GetLazyStateKeys':
     case 'Awakeable':
-      return field === 'value' || field === 'failure' || field === 'keys'
-        ? completionIndex
-        : index;
+      return field === 'value' || field === 'failure' ? completionIndex : index;
 
     case 'Input':
     case 'Output':
