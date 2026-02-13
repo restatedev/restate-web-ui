@@ -92,7 +92,7 @@ export const ENTRY_NOTIFICATIONS_COMPONENTS: {
   Cancel: CancelSignal,
   CallInvocationId: undefined,
   GetLazyState: undefined,
-  GetLazyStateKeys: GetLazyStateKeys,
+  GetLazyStateKeys: undefined,
 };
 
 export const ENTRY_EVENTS_COMPONENTS: {

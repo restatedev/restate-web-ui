@@ -105,9 +105,7 @@ export function EntryExpression({
   if (
     !entry ||
     (entry?.category !== 'command' &&
-      !['CompleteAwakeable', 'Cancel', 'GetLazyStateKeys'].includes(
-        String(entry?.type),
-      ))
+      !['CompleteAwakeable', 'Cancel'].includes(String(entry?.type)))
   ) {
     return null;
   }

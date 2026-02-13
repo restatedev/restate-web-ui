@@ -7,11 +7,7 @@ export function GetLazyStateKeys({
   entry,
   invocation,
 }: EntryProps<
-  | Extract<JournalEntryV2, { type?: 'GetLazyStateKeys'; category?: 'command' }>
-  | Extract<
-      JournalEntryV2,
-      { type?: 'GetLazyStateKeys'; category?: 'notification' }
-    >
+  Extract<JournalEntryV2, { type?: 'GetLazyStateKeys'; category?: 'command' }>
 >) {
   return (
     <EntryExpression
