@@ -14,24 +14,31 @@ interface AlertBannerProps {
   children: ReactNode;
 }
 
+const styles = tv({
+  slots: {
+    container: 'mt-2 flex gap-2 rounded-xl p-3 text-0.5xs',
+    icon: 'h-5 w-5 shrink-0',
+  },
+  variants: {
+    type: {
+      warning: {
+        container: 'border border-orange-200 bg-orange-50 text-orange-600',
+        icon: 'fill-orange-600 text-orange-100',
+      },
+      info: {
+        container: 'border border-blue-200 bg-blue-50 text-blue-600',
+        icon: 'fill-blue-600 text-blue-100',
+      },
+    },
+  },
+});
 function AlertBanner({ type, children }: AlertBannerProps) {
-  const styles = {
-    warning: {
-      container: 'bg-orange-50 border border-orange-200 text-orange-600',
-      icon: 'fill-orange-600 text-orange-100',
-    },
-    info: {
-      container: 'bg-blue-50 text-blue-600 border border-blue-200',
-      icon: 'fill-blue-600 text-blue-100',
-    },
-  };
-
-  const { container, icon } = styles[type];
+  const { container, icon } = styles({ type });
 
   return (
-    <p className={`mt-2 flex gap-2 rounded-xl ${container} p-3 text-0.5xs`}>
+    <p className={container()}>
       <Icon
-        className={`h-5 w-5 shrink-0 ${icon}`}
+        className={icon()}
         name={type === 'warning' ? IconName.TriangleAlert : IconName.Info}
       />
       <span className="block">{children}</span>

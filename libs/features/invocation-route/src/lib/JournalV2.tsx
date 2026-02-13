@@ -79,8 +79,6 @@ export function JournalV2({
   withTimeline = true,
   isCompact = true,
   setIsCompact,
-  isLive = false,
-  setIsLive,
 }: {
   invocationId: string;
   className?: string;
@@ -89,9 +87,8 @@ export function JournalV2({
   withTimeline?: boolean;
   isCompact?: boolean;
   setIsCompact?: Dispatch<React.SetStateAction<boolean>>;
-  isLive?: boolean;
-  setIsLive?: Dispatch<React.SetStateAction<boolean>>;
 }) {
+  const [isLive, setIsLive] = useState(true);
   const [invocationIds, setInvocationIds] = useState([String(invocationId)]);
   const {
     data,

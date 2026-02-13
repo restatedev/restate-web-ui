@@ -98,7 +98,6 @@ function Component() {
   const isWorkflow = journalAndInvocationData?.target_service_ty === 'workflow';
 
   const [isCompact, setIsCompact] = useState(true);
-  const [isLive, setIsLive] = useState(true);
 
   const { OnboardingGuide } = useRestateContext();
 
@@ -247,8 +246,6 @@ function Component() {
               key={String(id)}
               isCompact={isCompact}
               setIsCompact={setIsCompact}
-              isLive={isLive}
-              setIsLive={setIsLive}
             />
           </div>
         </div>
@@ -310,6 +307,7 @@ function Anchor({
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    updateStyles();
 
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
@@ -328,7 +326,7 @@ function Anchor({
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       observer.disconnect();
     };
-  }, []);
+  }, [hasLastFailure]);
 
   return (
     <div className="relative z-[11] w-6 -translate-x-full translate-y-4">

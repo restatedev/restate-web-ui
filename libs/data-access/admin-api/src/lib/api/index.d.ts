@@ -2194,6 +2194,7 @@ export interface components {
         | 'Notification: CompletePromise'
         | 'Notification: Run'
         | 'Command: GetLazyState'
+        | 'Command: GetLazyStateKeys'
         | 'Notification: GetLazyState'
         | 'Notification: GetLazyStateKeys';
     };

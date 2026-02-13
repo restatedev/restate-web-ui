@@ -11,6 +11,36 @@ const COUNT_LIMIT = 50000;
 const DURATION_EXPRESSION =
   'COALESCE(completed_at, now()) - created_at AS duration';
 
+const STATE_ONLY_COLUMNS = [
+  'retry_count',
+  'next_retry_at',
+  'last_start_at',
+  'last_attempt_deployment_id',
+  'last_attempt_server',
+  'last_failure',
+  'last_failure_error_code',
+  'last_failure_related_command_index',
+  'last_failure_related_command_name',
+  'last_failure_related_command_type',
+  'last_failure_related_entry_index',
+  'last_failure_related_entry_name',
+  'last_failure_related_entry_type',
+  'in_flight',
+];
+
+function needsStateTable(
+  filterClause: string,
+  sort: { field: string },
+): boolean {
+  if (STATE_ONLY_COLUMNS.some((col) => sort.field === col)) return true;
+  if (
+    filterClause &&
+    STATE_ONLY_COLUMNS.some((col) => filterClause.includes(col))
+  )
+    return true;
+  return false;
+}
+
 function countEstimate(
   receivedLessThanLimit: boolean,
   rows: number,
@@ -34,8 +64,13 @@ export async function listInvocations(
     order: 'DESC',
   },
 ) {
+  const filterClause = convertInvocationsFilters(filters);
+  const table = needsStateTable(filterClause, sort)
+    ? 'sys_invocation'
+    : 'sys_invocation_status';
+
   const minimumCountEstimatePromise = this.query(
-    `SELECT COUNT(1) as total_count FROM (SELECT * FROM sys_invocation LIMIT ${COUNT_LIMIT}) ${convertInvocationsFilters(filters)}`,
+    `SELECT COUNT(1) as total_count FROM (SELECT * FROM ${table} LIMIT ${COUNT_LIMIT}) ${filterClause}`,
   ).then(({ rows }) => rows?.at(0)?.total_count);
 
   const isSortByDuration = sort.field === 'duration';
@@ -44,7 +79,7 @@ export async function listInvocations(
     : 'id';
 
   const invocationsPromise = this.query(
-    `SELECT ${idSelectColumns} from sys_invocation ${convertInvocationsFilters(filters)} ORDER BY ${sort.field} ${sort.order} LIMIT ${INVOCATIONS_LIMIT}`,
+    `SELECT ${idSelectColumns} from ${table} ${filterClause} ORDER BY ${sort.field} ${sort.order} LIMIT ${INVOCATIONS_LIMIT}`,
   )
     .then(async ({ rows: idRows }) => {
       const receivedLessThanLimit = idRows.length < INVOCATIONS_LIMIT;
