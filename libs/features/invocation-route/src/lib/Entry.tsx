@@ -210,7 +210,10 @@ export function Entry({
           )) ||
         (depth === 0 &&
           invocation.completion_failure &&
-          entry.type === 'Output')
+          entry.type === 'Output') ||
+        (depth === 0 &&
+          invocation.status === 'failed' &&
+          entry.commandIndex === (invocation.journal_commands_size || 0) - 1)
       }
       className={styles({
         hasError:

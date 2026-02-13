@@ -307,6 +307,7 @@ function Anchor({
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    updateStyles();
 
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
@@ -325,7 +326,7 @@ function Anchor({
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       observer.disconnect();
     };
-  }, []);
+  }, [hasLastFailure]);
 
   return (
     <div className="relative z-[11] w-6 -translate-x-full translate-y-4">
