@@ -3,6 +3,7 @@ import { tv } from '@restate/util/styles';
 import { formatDurations } from '@restate/util/intl';
 import { getDuration } from '@restate/util/snapshot-time';
 import { DateTooltip } from '@restate/ui/tooltip';
+import { CSSProperties } from 'react';
 
 const NICE_INTERVALS = [
   1,
@@ -83,12 +84,14 @@ const remainderStyles = tv({
 
 export function Units({
   className,
+  style,
   start,
   end,
   dataUpdatedAt,
   cancelEvent,
 }: {
   className?: string;
+  style?: CSSProperties;
   start: number;
   end: number;
   dataUpdatedAt: number;
@@ -99,7 +102,7 @@ export function Units({
   const numOfIntervals = Math.floor(duration / unit);
 
   return (
-    <>
+    <div className={containerStyles({ className })} style={style}>
       {cancelEvent && (
         <div className="pointer-events-none absolute top-12 right-0 bottom-0 left-0 overflow-hidden px-2 transition-all duration-1000">
           <div
@@ -127,7 +130,7 @@ export function Units({
           </div>
         </div>
       )}
-      <div className={containerStyles({ className })}>
+      <div className="h-full">
         <div className="absolute -top-8 bottom-0 left-2 border-l border-dashed border-gray-500/40 font-sans text-2xs text-gray-500">
           <div className="ml-1 flex w-28 -translate-y-1 flex-col justify-start text-left">
             <DateTooltip date={new Date(start)} title="">
@@ -162,7 +165,7 @@ export function Units({
           <div className="w-2 shrink-0 odd:bg-gray-400/5" />
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

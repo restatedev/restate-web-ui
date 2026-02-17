@@ -1,4 +1,3 @@
-import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
 import {
   createContext,
   PropsWithChildren,
@@ -7,35 +6,6 @@ import {
   useState,
 } from 'react';
 import { createPortal } from 'react-dom';
-
-export function getActionId(
-  invocationId: string,
-  index?: number,
-  type?: string,
-  category?: string,
-) {
-  return `${invocationId}-journal-entry-action-${category}-${type}-${index}`;
-}
-
-export function ActionPortal({
-  children,
-  invocationId,
-  entry,
-}: PropsWithChildren<{
-  invocationId: string;
-  entry?: JournalEntryV2;
-}>) {
-  const { getPortal } = usePortals(
-    getActionId(invocationId, entry?.index, entry?.type, entry?.category),
-  );
-  const element = getPortal?.();
-
-  if (!element) {
-    return null;
-  }
-
-  return createPortal(children, element);
-}
 
 const PortalContext = createContext<{
   getPortal?: (id: string) => HTMLElement | null | undefined;
@@ -55,7 +25,12 @@ export function PortalProvider({ children }: PropsWithChildren) {
   );
 
   const setPortal = useCallback((id: string, element: HTMLElement | null) => {
-    return setPortals((p) => ({ ...p, [id]: element }));
+    return setPortals((p) => {
+      if (p[id] === element) {
+        return p;
+      }
+      return { ...p, [id]: element };
+    });
   }, []);
 
   return (
@@ -96,6 +71,24 @@ export function ViewportSelectorPortalTarget({
 
 export function ViewportSelectorPortalContent({ children }: PropsWithChildren) {
   const { getPortal } = usePortals(VIEWPORT_SELECTOR_PORTAL_ID);
+  const element = getPortal?.();
+
+  if (!element) {
+    return null;
+  }
+
+  return createPortal(children, element);
+}
+
+const UNITS_PORTAL_ID = 'units-portal';
+
+export function UnitsPortalTarget({ className }: { className?: string }) {
+  const { setPortal } = usePortals(UNITS_PORTAL_ID);
+  return <div ref={setPortal} className={className} />;
+}
+
+export function UnitsPortalContent({ children }: PropsWithChildren) {
+  const { getPortal } = usePortals(UNITS_PORTAL_ID);
   const element = getPortal?.();
 
   if (!element) {

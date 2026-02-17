@@ -14,7 +14,11 @@ import { Indicator, Spinner } from '@restate/ui/loading';
 import { Entry } from './Entry';
 import { Input } from './entries/Input';
 import { EntryProgress } from './EntryProgress';
-import { PortalProvider, ViewportSelectorPortalTarget } from './Portals';
+import {
+  PortalProvider,
+  UnitsPortalTarget,
+  ViewportSelectorPortalTarget,
+} from './Portals';
 import { LifeCycleProgress } from './LifeCycleProgress';
 import { HeaderUnits } from './Units';
 import { ScrollableTimeline } from './ScrollableTimeline';
@@ -192,7 +196,7 @@ export function JournalV2({
   const virtualizer = useWindowVirtualizer({
     count: entriesWithoutInput.length,
     estimateSize: () => 36,
-    overscan: 100,
+    overscan: 24,
     scrollMargin: 0,
     getItemKey: (index) => {
       const entry = entriesWithoutInput[index];
@@ -201,6 +205,8 @@ export function JournalV2({
         : index;
     },
   });
+  const totalSize = virtualizer.getTotalSize();
+  const virtualItems = virtualizer.getVirtualItems();
 
   if (invocationApiError && showApiError) {
     return <ErrorBanner error={invocationApiError} className="rounded-2xl" />;
@@ -233,12 +239,6 @@ export function JournalV2({
   const restartedFromValue =
     journalAndInvocationData?.restarted_from || restartedFromHeader?.value;
 
-  const firstPendingCommandIndex = journalAndInvocationData.completed_at
-    ? journalAndInvocationData.journal?.entries?.find(
-        (entry) => entry.category === 'command' && entry.isPending,
-      )?.index
-    : undefined;
-
   return (
     <PortalProvider>
       <JournalContextProvider
@@ -252,7 +252,6 @@ export function JournalV2({
         error={apiError}
         isLive={!areAllInvocationsCompleted && isLive}
         isCompact={isCompact}
-        firstPendingCommandIndex={firstPendingCommandIndex}
       >
         <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
           <Suspense
@@ -402,7 +401,7 @@ export function JournalV2({
                     className="z-[2] grid min-w-0"
                     style={{
                       overflow: 'visible',
-                      minHeight: virtualizer.getTotalSize() + 48,
+                      minHeight: totalSize + 48,
                       gridTemplateColumns: '1fr',
                       gridTemplateRows: '1fr',
                     }}
@@ -412,7 +411,7 @@ export function JournalV2({
                     {/* Content */}
                     <div
                       className="z-[2] col-start-1 row-start-1 min-w-0"
-                      style={{ minHeight: virtualizer.getTotalSize() + 48 }}
+                      style={{ minHeight: totalSize + 48 }}
                     >
                       <div className="sticky top-36 z-20 box-border flex h-12 items-center rounded-tl-2xl rounded-r-2xl rounded-bl-2xl border-b border-transparent bg-gray-100 shadow-xs ring-1 ring-gray-300 last:border-none md:rounded-r-none">
                         <Input
@@ -422,8 +421,8 @@ export function JournalV2({
                         />
                       </div>
                       <VirtualizedEntries
-                        virtualItems={virtualizer.getVirtualItems()}
-                        totalSize={virtualizer.getTotalSize()}
+                        virtualItems={virtualItems}
+                        totalSize={totalSize}
                         entriesWithoutInput={entriesWithoutInput}
                         data={data}
                       />
@@ -439,13 +438,15 @@ export function JournalV2({
                     minSize={20}
                     style={{
                       overflow: 'visible',
-                      minHeight: virtualizer.getTotalSize() + 48,
+                      minHeight: totalSize + 48,
                       gridTemplateColumns: '1fr',
                       gridTemplateRows: '1fr',
                     }}
                   >
                     {/* Sticky background - prevents repaint lag */}
                     <div className="sticky top-0 z-[-1] col-start-1 row-start-1 h-full max-h-[calc(100vh+2rem)] rounded-br-2xl bg-gray-100" />
+                    {/* Sticky Units - limited to viewport height */}
+                    <UnitsPortalTarget className="pointer-events-none sticky top-[calc(9rem+2px)] col-start-1 row-start-1 h-[calc(100vh-9rem)] overflow-hidden" />
                     {/* Sticky header with HeaderUnits and LifeCycleProgress */}
                     <div className="sticky top-36 z-[2] col-start-1 row-start-1 h-12">
                       <HeaderUnits
@@ -474,7 +475,7 @@ export function JournalV2({
                     {/* Scrollable timeline content with Units overlay */}
                     <ScrollableTimeline
                       className="col-start-1 row-start-1 pt-[calc(3rem+2px)]"
-                      style={{ minHeight: virtualizer.getTotalSize() + 48 }}
+                      style={{ minHeight: totalSize + 48 }}
                       start={start}
                       end={end}
                       dataUpdatedAt={dataUpdatedAt}
@@ -483,8 +484,8 @@ export function JournalV2({
                       }
                     >
                       <VirtualizedTimeline
-                        virtualItems={virtualizer.getVirtualItems()}
-                        totalSize={virtualizer.getTotalSize()}
+                        virtualItems={virtualItems}
+                        totalSize={totalSize}
                         entriesWithoutInput={entriesWithoutInput}
                         data={data}
                         relatedEntriesByInvocation={relatedEntriesByInvocation}

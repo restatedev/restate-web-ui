@@ -34,8 +34,6 @@ import {
   EventEntryType,
   NotificationEntryType,
 } from './entries/types';
-import { getActionId, usePortals } from './Portals';
-import { RestartAction } from './RelatedEntries';
 import { Cancel } from './entries/Cancel';
 import { LifeCycle } from './entries/LifeCycle';
 import { NoCommandTransientError } from './entries/TransientError';
@@ -244,8 +242,6 @@ export function Entry({
         id: `command-${entry.commandIndex}`,
       })}
     >
-      <ActionContainer invocationId={invocation.id} entry={entry} />
-
       <div
         style={{ width: `${numOfDigits + 2}ch` }}
         className="relative flex h-full shrink-0 items-center justify-center font-mono text-0.5xs text-gray-400/70"
@@ -265,7 +261,6 @@ export function Entry({
         className="flex max-w-fit min-w-0 flex-auto gap-1 [&>*]:min-w-0"
         data-entry
       >
-        <RestartAction invocation={invocation} entry={entry} depth={depth} />
         {entry.category === 'notification' && parentCommand ? (
           <CompletionNotification
             entry={entry}
@@ -290,24 +285,5 @@ export function Entry({
         <div className="absolute right-0 left-0 translate-y-[0.5px] border-b border-dashed border-gray-300/50" />
       </div>
     </div>
-  );
-}
-
-function ActionContainer({
-  invocationId,
-  entry,
-}: {
-  invocationId: string;
-  entry?: JournalEntryV2;
-}) {
-  const { setPortal } = usePortals(
-    getActionId(invocationId, entry?.index, entry?.type, entry?.category),
-  );
-
-  return (
-    <div
-      className="invisible absolute top-0 left-0 h-9 w-9 -translate-x-9 border-b border-transparent group-hover:visible [&:not(:has(*))]:hidden [&>*]:absolute [&>*]:inset-0"
-      ref={setPortal}
-    ></div>
   );
 }
