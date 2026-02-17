@@ -50,6 +50,7 @@ export function ScrollableTimeline({
     end: number;
   } | null>(null);
   const scrollRafRef = useRef<number | null>(null);
+  const suppressNextScrollSyncRef = useRef(false);
 
   const isFullTrace =
     viewport === null || (viewport.start <= start && viewport.end >= end);
@@ -107,8 +108,16 @@ export function ScrollableTimeline({
       const scrollableWidth = container.scrollWidth - container.clientWidth;
       if (scrollableWidth <= 0) return;
 
-      const scrollPercent = (newViewportStart - s) / (td - newViewportDuration);
-      container.scrollLeft = scrollPercent * scrollableWidth;
+      const denominator = td - newViewportDuration;
+      const scrollPercent =
+        denominator > 0 ? (newViewportStart - s) / denominator : 0;
+      const nextScrollLeft = scrollPercent * scrollableWidth;
+
+      if (Math.abs(container.scrollLeft - nextScrollLeft) > 0.5) {
+        suppressNextScrollSyncRef.current = true;
+      }
+
+      container.scrollLeft = nextScrollLeft;
       syncUnitsScroll(container.scrollLeft);
     },
     [syncUnitsScroll],
@@ -126,6 +135,10 @@ export function ScrollableTimeline({
         scrollRafRef.current = null;
 
         syncUnitsScroll(target.scrollLeft);
+        if (suppressNextScrollSyncRef.current) {
+          suppressNextScrollSyncRef.current = false;
+          return;
+        }
 
         const {
           isFullTrace: ift,

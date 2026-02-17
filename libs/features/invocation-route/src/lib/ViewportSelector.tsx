@@ -1,4 +1,4 @@
-import { useCallback, useRef, useTransition } from 'react';
+import { useCallback, useRef } from 'react';
 import { useMove } from 'react-aria';
 import { tv } from '@restate/util/styles';
 
@@ -33,7 +33,6 @@ export function ViewportSelector({
   onViewportChange?: (start: number, end: number) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [, startTransition] = useTransition();
   const optimisticViewportRef = useRef<{ start: number; end: number } | null>(
     null,
   );
@@ -84,13 +83,16 @@ export function ViewportSelector({
         Math.min(prev.start + deltaTime, prev.end - minViewportDuration),
       );
       optimisticViewportRef.current = { start: newStart, end: prev.end };
-      startTransition(() => {
-        onViewportChange?.(newStart, prev.end);
-        setViewport(newStart, prev.end);
-      });
+      onViewportChange?.(newStart, prev.end);
+      setViewport(newStart, prev.end);
     },
     onMoveEnd() {
+      const final = optimisticViewportRef.current;
       optimisticViewportRef.current = null;
+      if (final) {
+        onViewportChange?.(final.start, final.end);
+        setViewport(final.start, final.end);
+      }
     },
   });
 
@@ -113,13 +115,16 @@ export function ViewportSelector({
         Math.max(prev.end + deltaTime, prev.start + minViewportDuration),
       );
       optimisticViewportRef.current = { start: prev.start, end: newEnd };
-      startTransition(() => {
-        onViewportChange?.(prev.start, newEnd);
-        setViewport(prev.start, newEnd);
-      });
+      onViewportChange?.(prev.start, newEnd);
+      setViewport(prev.start, newEnd);
     },
     onMoveEnd() {
+      const final = optimisticViewportRef.current;
       optimisticViewportRef.current = null;
+      if (final) {
+        onViewportChange?.(final.start, final.end);
+        setViewport(final.start, final.end);
+      }
     },
   });
 
@@ -151,13 +156,16 @@ export function ViewportSelector({
       }
 
       optimisticViewportRef.current = { start: newStart, end: newEnd };
-      startTransition(() => {
-        onViewportChange?.(newStart, newEnd);
-        setViewport(newStart, newEnd);
-      });
+      onViewportChange?.(newStart, newEnd);
+      setViewport(newStart, newEnd);
     },
     onMoveEnd() {
+      const final = optimisticViewportRef.current;
       optimisticViewportRef.current = null;
+      if (final) {
+        onViewportChange?.(final.start, final.end);
+        setViewport(final.start, final.end);
+      }
     },
   });
 
