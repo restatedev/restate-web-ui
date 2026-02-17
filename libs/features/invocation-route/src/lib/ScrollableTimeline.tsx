@@ -195,6 +195,7 @@ export function ScrollableTimeline({
             end={end}
             dataUpdatedAt={dataUpdatedAt}
             cancelEvent={cancelEvent}
+            viewportDuration={viewportDuration}
           />
         </div>
       </UnitsPortalContent>

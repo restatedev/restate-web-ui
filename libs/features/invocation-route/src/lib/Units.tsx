@@ -34,28 +34,42 @@ const NICE_INTERVALS = [
   7 * 24 * 60 * 60_000,
 ];
 
+const TARGET_VIEW_INTERVALS = 4;
+const VIEW_INTERVAL_TOLERANCE = 1;
+const MAX_RENDERED_INTERVALS = 2000;
+
 function computeInterval(duration: number) {
-  const idealInterval = duration / 4;
-  const matchedIndex = NICE_INTERVALS.findIndex(
-    (interval) => interval >= idealInterval,
+  if (!Number.isFinite(duration) || duration <= 0) {
+    return 1;
+  }
+
+  const minIntervals = TARGET_VIEW_INTERVALS - VIEW_INTERVAL_TOLERANCE;
+  const maxIntervals = TARGET_VIEW_INTERVALS + VIEW_INTERVAL_TOLERANCE;
+  const idealInterval = duration / TARGET_VIEW_INTERVALS;
+  const minInterval = duration / maxIntervals;
+  const maxInterval = duration / minIntervals;
+
+  const inRangeCandidates = NICE_INTERVALS.filter(
+    (interval) => interval >= minInterval && interval <= maxInterval,
   );
 
-  if (matchedIndex === -1) {
+  if (inRangeCandidates.length > 0) {
+    return inRangeCandidates.reduce((best, current) =>
+      Math.abs(current - idealInterval) < Math.abs(best - idealInterval)
+        ? current
+        : best,
+    );
+  }
+
+  if (idealInterval > NICE_INTERVALS[NICE_INTERVALS.length - 1]!) {
     return Math.ceil(idealInterval);
   }
 
-  const matchedInterval = NICE_INTERVALS[matchedIndex]!;
-
-  if (Math.ceil(duration / matchedInterval) >= 3) {
-    return matchedInterval;
-  } else if (
-    matchedIndex >= 1 &&
-    Math.ceil(duration / NICE_INTERVALS[matchedIndex - 1]!) < 6
-  ) {
-    return NICE_INTERVALS[matchedIndex - 1]!;
-  } else {
-    return Math.ceil(idealInterval);
-  }
+  return NICE_INTERVALS.reduce((best, current) =>
+    Math.abs(current - idealInterval) < Math.abs(best - idealInterval)
+      ? current
+      : best,
+  );
 }
 
 const containerStyles = tv({
@@ -89,6 +103,7 @@ export function Units({
   end,
   dataUpdatedAt,
   cancelEvent,
+  viewportDuration,
 }: {
   className?: string;
   style?: CSSProperties;
@@ -96,9 +111,15 @@ export function Units({
   end: number;
   dataUpdatedAt: number;
   cancelEvent?: JournalEntryV2;
+  viewportDuration?: number;
 }) {
   const duration = end - start;
-  const unit = computeInterval(duration) || duration / 2 || 1;
+  const intervalBaseDuration =
+    viewportDuration && viewportDuration > 0 ? viewportDuration : duration;
+  const targetUnit = computeInterval(intervalBaseDuration);
+  const minUnitForRenderCap =
+    duration > 0 ? Math.ceil(duration / MAX_RENDERED_INTERVALS) : 1;
+  const unit = Math.max(targetUnit, minUnitForRenderCap);
   const numOfIntervals = Math.floor(duration / unit);
 
   return (
