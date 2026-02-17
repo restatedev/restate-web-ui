@@ -3,7 +3,7 @@ import { tv } from '@restate/util/styles';
 import { formatDurations } from '@restate/util/intl';
 import { getDuration } from '@restate/util/snapshot-time';
 import { DateTooltip } from '@restate/ui/tooltip';
-import { CSSProperties } from 'react';
+import { CSSProperties, useDeferredValue, useRef } from 'react';
 
 const NICE_INTERVALS = [
   1,
@@ -37,6 +37,7 @@ const NICE_INTERVALS = [
 const TARGET_VIEW_INTERVALS = 4;
 const VIEW_INTERVAL_TOLERANCE = 1;
 const MAX_RENDERED_INTERVALS = 2000;
+const INTERVAL_SWITCH_HYSTERESIS = 0.5;
 
 function computeInterval(duration: number) {
   if (!Number.isFinite(duration) || duration <= 0) {
@@ -116,10 +117,26 @@ export function Units({
   const duration = end - start;
   const intervalBaseDuration =
     viewportDuration && viewportDuration > 0 ? viewportDuration : duration;
-  const targetUnit = computeInterval(intervalBaseDuration);
+  const deferredIntervalBaseDuration = useDeferredValue(intervalBaseDuration);
+  const desiredUnit = computeInterval(deferredIntervalBaseDuration);
+  const targetUnitRef = useRef(desiredUnit);
+  const intervalsWithCurrentUnit = intervalBaseDuration / targetUnitRef.current;
+  const minAllowedIntervals =
+    TARGET_VIEW_INTERVALS - VIEW_INTERVAL_TOLERANCE - INTERVAL_SWITCH_HYSTERESIS;
+  const maxAllowedIntervals =
+    TARGET_VIEW_INTERVALS + VIEW_INTERVAL_TOLERANCE + INTERVAL_SWITCH_HYSTERESIS;
+
+  if (
+    !Number.isFinite(intervalsWithCurrentUnit) ||
+    intervalsWithCurrentUnit < minAllowedIntervals ||
+    intervalsWithCurrentUnit > maxAllowedIntervals
+  ) {
+    targetUnitRef.current = desiredUnit;
+  }
+
   const minUnitForRenderCap =
     duration > 0 ? Math.ceil(duration / MAX_RENDERED_INTERVALS) : 1;
-  const unit = Math.max(targetUnit, minUnitForRenderCap);
+  const unit = Math.max(targetUnitRef.current, minUnitForRenderCap);
   const numOfIntervals = Math.floor(duration / unit);
 
   return (
