@@ -11,6 +11,7 @@ const panAreaStyles = tv({
 });
 
 const MIN_VIEWPORT_DURATION = 100;
+const MIN_VIEWPORT_WIDTH_PX = 72;
 const HANDLE_WIDTH = 12;
 const PADDING = 8;
 
@@ -51,6 +52,19 @@ export function ViewportSelector({
     [traceDuration],
   );
 
+  const getMinViewportDuration = useCallback(() => {
+    if (!containerRef.current || traceDuration <= 0) {
+      return MIN_VIEWPORT_DURATION;
+    }
+    const rect = containerRef.current.getBoundingClientRect();
+    if (rect.width <= 0) {
+      return MIN_VIEWPORT_DURATION;
+    }
+    const minDurationFromPixels =
+      (MIN_VIEWPORT_WIDTH_PX / rect.width) * traceDuration;
+    return Math.max(MIN_VIEWPORT_DURATION, minDurationFromPixels);
+  }, [traceDuration]);
+
   const { moveProps: leftHandleMoveProps } = useMove({
     onMoveStart() {
       optimisticViewportRef.current = {
@@ -60,13 +74,14 @@ export function ViewportSelector({
     },
     onMove(e) {
       const deltaTime = pixelToTime(e.deltaX);
+      const minViewportDuration = getMinViewportDuration();
       const prev = optimisticViewportRef.current ?? {
         start: viewportStart,
         end: viewportEnd,
       };
       const newStart = Math.max(
         start,
-        Math.min(prev.start + deltaTime, prev.end - MIN_VIEWPORT_DURATION),
+        Math.min(prev.start + deltaTime, prev.end - minViewportDuration),
       );
       optimisticViewportRef.current = { start: newStart, end: prev.end };
       startTransition(() => {
@@ -88,13 +103,14 @@ export function ViewportSelector({
     },
     onMove(e) {
       const deltaTime = pixelToTime(e.deltaX);
+      const minViewportDuration = getMinViewportDuration();
       const prev = optimisticViewportRef.current ?? {
         start: viewportStart,
         end: viewportEnd,
       };
       const newEnd = Math.min(
         end,
-        Math.max(prev.end + deltaTime, prev.start + MIN_VIEWPORT_DURATION),
+        Math.max(prev.end + deltaTime, prev.start + minViewportDuration),
       );
       optimisticViewportRef.current = { start: prev.start, end: newEnd };
       startTransition(() => {
