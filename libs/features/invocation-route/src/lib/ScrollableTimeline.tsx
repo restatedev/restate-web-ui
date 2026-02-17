@@ -3,21 +3,14 @@ import { tv } from '@restate/util/styles';
 import {
   CSSProperties,
   ReactNode,
-  UIEvent,
   useCallback,
   useEffect,
   useRef,
   useState,
 } from 'react';
-import {
-  UnitsPortalContent,
-  usePortals,
-  ViewportSelectorPortalContent,
-} from './Portals';
+import { UnitsPortalContent, ViewportSelectorPortalContent } from './Portals';
 import { ViewportSelector } from './ViewportSelector';
 import { Units } from './Units';
-
-const UNITS_PORTAL_ID = 'units-portal';
 
 const scrollableTimelineStyles = tv({
   base: '',
@@ -28,6 +21,7 @@ const scrollableTimelineStyles = tv({
     },
   },
 });
+
 const VIEWPORT_EPSILON_MS = 1;
 
 export function ScrollableTimeline({
@@ -48,14 +42,14 @@ export function ScrollableTimeline({
   cancelEvent?: JournalEntryV2;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { getPortal: getUnitsPortal } = usePortals(UNITS_PORTAL_ID);
+  const unitsContentRef = useRef<HTMLDivElement>(null);
+  const unitsScrollLeftRef = useRef(0);
 
   const [viewport, setViewportState] = useState<{
     start: number;
     end: number;
   } | null>(null);
   const scrollRafRef = useRef<number | null>(null);
-  const pendingScrollContainerRef = useRef<HTMLDivElement | null>(null);
 
   const isFullTrace =
     viewport === null || (viewport.start <= start && viewport.end >= end);
@@ -71,7 +65,6 @@ export function ScrollableTimeline({
       ) {
         return current;
       }
-
       return { start: newStart, end: newEnd };
     });
   }, []);
@@ -81,82 +74,91 @@ export function ScrollableTimeline({
   const zoomLevel =
     !isFullTrace && viewportDuration > 0 ? traceDuration / viewportDuration : 1;
 
-  const syncUnitsScroll = useCallback(
-    (scrollLeft: number) => {
-      const unitsContainer = getUnitsPortal?.();
-      if (!unitsContainer) return;
-      if (unitsContainer.scrollLeft === scrollLeft) return;
-      unitsContainer.scrollLeft = scrollLeft;
-    },
-    [getUnitsPortal],
-  );
+  const stateRef = useRef({
+    isFullTrace,
+    start,
+    traceDuration,
+    viewportDuration,
+  });
+  stateRef.current = {
+    isFullTrace,
+    start,
+    traceDuration,
+    viewportDuration,
+  };
+
+  const syncUnitsScroll = useCallback((scrollLeft: number) => {
+    if (unitsScrollLeftRef.current === scrollLeft) return;
+    unitsScrollLeftRef.current = scrollLeft;
+
+    const unitsContent = unitsContentRef.current;
+    if (unitsContent) {
+      unitsContent.style.transform = `translateX(${-scrollLeft}px)`;
+    }
+  }, []);
 
   const handleViewportChange = useCallback(
     (newViewportStart: number, newViewportEnd: number) => {
       const container = scrollRef.current;
       if (!container) return;
 
+      const { start: s, traceDuration: td } = stateRef.current;
       const newViewportDuration = newViewportEnd - newViewportStart;
       const scrollableWidth = container.scrollWidth - container.clientWidth;
       if (scrollableWidth <= 0) return;
 
-      const scrollPercent =
-        (newViewportStart - start) / (traceDuration - newViewportDuration);
+      const scrollPercent = (newViewportStart - s) / (td - newViewportDuration);
       container.scrollLeft = scrollPercent * scrollableWidth;
       syncUnitsScroll(container.scrollLeft);
     },
-    [start, traceDuration, syncUnitsScroll],
+    [syncUnitsScroll],
   );
 
   const handleScroll = useCallback(
-    (e: UIEvent<HTMLDivElement>) => {
-      pendingScrollContainerRef.current = e.currentTarget;
+    (e: React.UIEvent<HTMLDivElement>) => {
+      const target = e.currentTarget;
+
       if (scrollRafRef.current !== null) {
-        return;
+        cancelAnimationFrame(scrollRafRef.current);
       }
 
-      scrollRafRef.current = window.requestAnimationFrame(() => {
+      scrollRafRef.current = requestAnimationFrame(() => {
         scrollRafRef.current = null;
 
-        const container = pendingScrollContainerRef.current;
-        pendingScrollContainerRef.current = null;
-        if (!container) return;
+        syncUnitsScroll(target.scrollLeft);
 
-        syncUnitsScroll(container.scrollLeft);
-        if (isFullTrace) return;
+        const {
+          isFullTrace: ift,
+          start: s,
+          traceDuration: td,
+          viewportDuration: vd,
+        } = stateRef.current;
+        if (ift) return;
 
-        const scrollableWidth = container.scrollWidth - container.clientWidth;
+        const scrollableWidth = target.scrollWidth - target.clientWidth;
         if (scrollableWidth <= 0) return;
 
-        const scrollPercent = container.scrollLeft / scrollableWidth;
-        const newViewportStart =
-          start + scrollPercent * (traceDuration - viewportDuration);
-        const newViewportEnd = newViewportStart + viewportDuration;
+        const scrollPercent = target.scrollLeft / scrollableWidth;
+        const newViewportStart = s + scrollPercent * (td - vd);
+        const newViewportEnd = newViewportStart + vd;
 
         setViewport(newViewportStart, newViewportEnd);
       });
     },
-    [
-      isFullTrace,
-      setViewport,
-      start,
-      syncUnitsScroll,
-      traceDuration,
-      viewportDuration,
-    ],
+    [setViewport, syncUnitsScroll],
   );
+
+  useEffect(() => {
+    syncUnitsScroll(scrollRef.current?.scrollLeft ?? 0);
+  }, [zoomLevel, syncUnitsScroll]);
 
   useEffect(() => {
     return () => {
       if (scrollRafRef.current !== null) {
-        window.cancelAnimationFrame(scrollRafRef.current);
+        cancelAnimationFrame(scrollRafRef.current);
       }
     };
   }, []);
-
-  useEffect(() => {
-    syncUnitsScroll(scrollRef.current?.scrollLeft ?? 0);
-  }, [syncUnitsScroll, zoomLevel]);
 
   return (
     <div
@@ -177,17 +179,24 @@ export function ScrollableTimeline({
         />
       </ViewportSelectorPortalContent>
       <UnitsPortalContent>
-        <Units
-          className="pointer-events-none h-full"
+        <div
+          ref={unitsContentRef}
+          className="relative h-full"
           style={{
             width: isFullTrace ? '100%' : `${zoomLevel * 100}%`,
             minWidth: isFullTrace ? '100%' : `${zoomLevel * 100}%`,
+            transform: 'translateX(0px)',
+            willChange: 'transform',
           }}
-          start={start}
-          end={end}
-          dataUpdatedAt={dataUpdatedAt}
-          cancelEvent={cancelEvent}
-        />
+        >
+          <Units
+            className="pointer-events-none absolute inset-0"
+            start={start}
+            end={end}
+            dataUpdatedAt={dataUpdatedAt}
+            cancelEvent={cancelEvent}
+          />
+        </div>
       </UnitsPortalContent>
       <div
         className="relative"
