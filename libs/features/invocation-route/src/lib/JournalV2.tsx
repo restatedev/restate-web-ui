@@ -581,7 +581,6 @@ function VirtualizedEntries({
         return (
           <div
             key={virtualItem.key}
-            className="animate-row-fade-in"
             style={{
               position: 'absolute',
               top: 0,
@@ -640,7 +639,6 @@ function VirtualizedTimeline({
         return (
           <div
             key={virtualItem.key}
-            className="animate-row-fade-in"
             style={{
               position: 'absolute',
               top: 0,
