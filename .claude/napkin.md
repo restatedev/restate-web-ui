@@ -2,6 +2,7 @@
 
 ## Corrections
 
+<<<<<<< HEAD
 | Date       | Source | What Went Wrong                                                                                                                                                   | What To Do Instead                                                                                                                               |
 | ---------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | 2026-02-19 | self   | Removed flex-auto from data-entry div thinking it would let dashed line fill space, but it made content SMALLER because data-entry then had no grow and collapsed | The real issue was flex-wrap + w-full on Expression creating a circular width dependency. Always trace the full flex chain before making changes |
@@ -37,14 +38,34 @@
 | ---------- | ------ | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
 | 2026-02-17 | self   | Ran `pnpm nx typecheck web-ui` with Nx daemon and it stalled on project graph computation in this environment  | Use `NX_DAEMON=false` for validation commands when Nx graphing hangs                 |
 | 2026-02-17 | self   | Refactoring units into a portal wrapper dropped effective height/positioning, making interval labels disappear | Keep portal units wrapper `relative h-full` and render `Units` as `absolute inset-0` |
+=======
+| Date       | Source | What Went Wrong                                                                                                                     | What To Do Instead                                                                                       |
+| ---------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| 2026-02-17 | self   | Ran `pnpm nx typecheck web-ui` with Nx daemon and it stalled on project graph computation in this environment                       | Use `NX_DAEMON=false` for validation commands when Nx graphing hangs                                     |
+| 2026-02-17 | self   | Refactoring units into a portal wrapper dropped effective height/positioning, making interval labels disappear                      | Keep portal units wrapper `relative h-full` and render `Units` as `absolute inset-0`                     |
+| 2026-02-18 | self   | Used `h-[calc(100vh-9rem)]` on UnitsPortalTarget in grid — forced grid row to viewport height creating empty space with few entries | Use `max-h-[calc(100vh-9rem)]` instead so it caps but doesn't force height                               |
+| 2026-02-18 | self   | Created virtual element for tooltip positioning (only `getBoundingClientRect`) — React Aria needs a real DOM node                   | User's approach: `followCursor` with a tiny anchor span moved via `onMouseMove` — much cleaner           |
+| 2026-02-18 | self   | Patched `getBoundingClientRect` on DOM element — hacky, broke tooltip hover behavior                                                | Avoid monkey-patching DOM methods; prefer small positioned anchor elements instead                       |
+| 2026-02-18 | self   | Portaled tooltip into constrained sticky container — tooltip got clipped/mispositioned                                              | `UNSTABLE_portalContainer` doesn't help if the container itself is constrained                           |
+| 2026-02-18 | self   | Assigned stateRef.current = new object every render + did DOM mutation during render for zoom sync                                  | Keep useEffect for DOM sync (runs after paint); object allocation is fine but avoid DOM writes in render |
+>>>>>>> 35d68a8 (update napkin)
 
 ## User Preferences
 
 - Never add comments unless explicitly requested.
+- No `useEffect` for reactive patterns — prefer imperative approaches.
+- No `useState` that causes unnecessary re-renders during scroll/drag — prefer refs and direct DOM manipulation.
+- Follow existing patterns in the codebase (e.g., portal pattern in `Portals.tsx`).
+- Do not use `import('react').CSSProperties` style inline imports — use proper imports at the top.
+- Date/time labels above HeaderUnits: must be placed OUTSIDE the `isolate` stacking context (`listRef` div) to be visible, since the z-20 "INVOKED BY" section paints over everything inside it.
+- Use `tv()` from `@restate/util/styles` for component variants. Never use string interpolation for dynamic Tailwind classes.
 
 ## Patterns That Work
 
 - For zoomed timeline scroll performance, reduce virtualization overscan and batch `onScroll` viewport updates with `requestAnimationFrame` plus no-op state guards.
+- `followCursor` tooltip pattern: tiny absolute 1x1 anchor span, position via `onMouseMove`/`onMouseEnter`, pass as `triggerRef` to React Aria Tooltip.
+- Use `stateRef` pattern (ref with current values updated each render) for stable callbacks that need latest state in rAF/async.
+- `syncUnitsScroll` via `getUnitsPortalRef` (ref to portal lookup) keeps the callback identity stable.
 - When there is no working-tree diff, use file-scoped commit history (`git log -- <file>`) to review the latest implementation changes.
 - Removing action-entry portals (`ActionContainer`/`ActionPortal`/`RestartAction`) isolates timeline perf work by eliminating virtualized row portal churn.
 
