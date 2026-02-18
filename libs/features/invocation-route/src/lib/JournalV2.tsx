@@ -407,7 +407,7 @@ export function JournalV2({
                 <div className="pointer-events-none sticky top-36 z-30 -mb-12 hidden h-12 md:block">
                   <div
                     ref={startDateOverlayRef}
-                    className="pointer-events-auto h-full"
+                    className="h-full"
                     style={{
                       marginLeft: `${(1 - timelineWidth) * 100}%`,
                       width: `${timelineWidth * 100}%`,

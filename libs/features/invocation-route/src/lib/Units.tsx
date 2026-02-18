@@ -38,6 +38,7 @@ const TARGET_VIEW_INTERVALS = 4;
 const VIEW_INTERVAL_TOLERANCE = 1;
 const MAX_RENDERED_INTERVALS = 2000;
 const INTERVAL_SWITCH_HYSTERESIS = 0.5;
+const TIMELINE_HEADER_OFFSET = 'calc(3rem + 2px)';
 
 function computeInterval(duration: number) {
   if (!Number.isFinite(duration) || duration <= 0) {
@@ -98,7 +99,7 @@ const remainderStyles = tv({
 });
 
 const startDateTimeStyles = tv({
-  base: 'relative h-full',
+  base: 'pointer-events-none relative h-full',
 });
 
 export function Units({
@@ -150,7 +151,10 @@ export function Units({
   return (
     <div className={containerStyles({ className })} style={style}>
       {cancelEvent && (
-        <div className="pointer-events-none absolute top-12 right-0 bottom-0 left-0 overflow-hidden px-2 transition-all duration-1000">
+        <div
+          className="pointer-events-none absolute right-0 bottom-0 left-0 overflow-hidden px-2 transition-all duration-1000"
+          style={{ top: TIMELINE_HEADER_OFFSET }}
+        >
           <div
             className="h-full w-full rounded-br-2xl border-l-2 border-black/8 mix-blend-multiply transition-all duration-1000 [background:repeating-linear-gradient(-45deg,--theme(--color-black/0.05),--theme(--color-black/0.05)_2px,--theme(--color-white/0)_2px,--theme(--color-white/0)_4px)_fixed]"
             style={{
@@ -167,8 +171,9 @@ export function Units({
         <div
           style={{
             left: `calc(${((dataUpdatedAt - start) / duration) * 100}% - 2px - 0.5rem)`,
+            top: TIMELINE_HEADER_OFFSET,
           }}
-          className="absolute top-px right-0 bottom-0 rounded-r-2xl border-l-2 border-white/80 font-sans text-2xs text-gray-500 transition-all duration-1000"
+          className="absolute right-0 bottom-0 rounded-r-2xl border-l-2 border-white/80 font-sans text-2xs text-gray-500 transition-all duration-1000"
         >
           <div className="absolute inset-0 rounded-r-2xl mix-blend-screen [background:repeating-linear-gradient(-45deg,--theme(--color-white/.6),--theme(--color-white/.6)_2px,--theme(--color-white/0)_2px,--theme(--color-white/0)_4px)]" />
           <div className="absolute z-4 mt-0.5 ml-px rounded-sm border border-white bg-zinc-500 px-1 text-2xs text-white">
@@ -177,7 +182,10 @@ export function Units({
         </div>
       )}
       <div className="h-full">
-        <div className="pointer-events-none flex h-full w-full overflow-hidden rounded-r-2xl transition-all duration-1000">
+        <div
+          className="pointer-events-none mt-[calc(3rem+2px)] flex w-full overflow-hidden rounded-r-2xl transition-all duration-1000"
+          style={{ height: `calc(100% - ${TIMELINE_HEADER_OFFSET})` }}
+        >
           <div className="w-2 shrink-0" />
           {Array(numOfIntervals)
             .fill(null)
@@ -243,7 +251,7 @@ export function StartDateTimeUnit({
   return (
     <div className={startDateTimeStyles({ className })}>
       <div className="absolute -top-8 bottom-0 left-2 border-l border-dashed border-gray-500/40 font-sans text-2xs text-gray-500">
-        <div className="ml-1 flex w-28 -translate-y-1 flex-col justify-start text-left">
+        <div className="pointer-events-auto ml-1 flex w-28 -translate-y-1 flex-col justify-start text-left">
           <DateTooltip date={new Date(start)} title="">
             {new Date(start).toLocaleDateString('en', {
               year: 'numeric',
