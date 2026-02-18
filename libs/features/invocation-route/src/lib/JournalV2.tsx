@@ -446,7 +446,7 @@ export function JournalV2({
                     {/* Sticky background - prevents repaint lag */}
                     <div className="sticky top-0 z-[-1] col-start-1 row-start-1 h-full max-h-[calc(100vh+2rem)] rounded-br-2xl bg-gray-100" />
                     {/* Sticky Units - limited to viewport height */}
-                    <UnitsPortalTarget className="pointer-events-none sticky top-[calc(9rem+2px)] col-start-1 row-start-1 h-[calc(100vh-9rem)] overflow-hidden" />
+                    <UnitsPortalTarget className="pointer-events-none sticky top-[calc(9rem+2px)] col-start-1 row-start-1 max-h-[calc(100vh-9rem)] overflow-hidden" />
                     {/* Sticky header with HeaderUnits and LifeCycleProgress */}
                     <div className="sticky top-36 z-[2] col-start-1 row-start-1 h-12">
                       <HeaderUnits
