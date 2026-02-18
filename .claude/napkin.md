@@ -48,7 +48,16 @@
 | 2026-02-18 | self   | Patched `getBoundingClientRect` on DOM element — hacky, broke tooltip hover behavior                                                | Avoid monkey-patching DOM methods; prefer small positioned anchor elements instead                       |
 | 2026-02-18 | self   | Portaled tooltip into constrained sticky container — tooltip got clipped/mispositioned                                              | `UNSTABLE_portalContainer` doesn't help if the container itself is constrained                           |
 | 2026-02-18 | self   | Assigned stateRef.current = new object every render + did DOM mutation during render for zoom sync                                  | Keep useEffect for DOM sync (runs after paint); object allocation is fine but avoid DOM writes in render |
+<<<<<<< HEAD
 >>>>>>> 35d68a8 (update napkin)
+=======
+| 2026-02-18 | self   | `pnpm nx show project ...` stalled with plugin-worker/graph lock in sandbox                                                          | Fall back to scoped `pnpm tsc -p <lib>/tsconfig.lib.json --noEmit` for quick validation                  |
+| 2026-02-18 | self   | Moved timeline start date/time into `HeaderUnits`, but it still rendered under the top sticky "Invoked by" section                 | Render that label outside `listRef`'s `isolate` stacking context in `JournalV2`                           |
+| 2026-02-18 | self   | Introduced `PanelGroup onLayout` callback to align timeline date overlay; user considered it hacky                                  | Prefer CSS/stacking-order fixes over resize-callback alignment when possible                               |
+| 2026-02-18 | self   | Raised `listRef` container to `z-30` to surface date label; sticky timeline background then covered traces above                    | Keep container z-index unchanged; use a small sticky overlay (date label only) outside `isolate`          |
+| 2026-02-18 | user   | Requested `onLayout` path to be restored after accidental removal in `JournalV2.tsx`                                                 | Keep `StartDateTimeUnit` sticky overlay + `PanelGroup onLayout` width sync in `JournalV2.tsx`             |
+| 2026-02-18 | self   | Date tooltip on start-date overlay didn’t open because overlay wrapper had `pointer-events-none`                                     | Keep outer sticky wrapper `pointer-events-none`, but set overlay child wrapper to `pointer-events-auto`    |
+>>>>>>> 407ca3f (update start label)
 
 ## User Preferences
 
@@ -68,6 +77,8 @@
 - `syncUnitsScroll` via `getUnitsPortalRef` (ref to portal lookup) keeps the callback identity stable.
 - When there is no working-tree diff, use file-scoped commit history (`git log -- <file>`) to review the latest implementation changes.
 - Removing action-entry portals (`ActionContainer`/`ActionPortal`/`RestartAction`) isolates timeline perf work by eliminating virtualized row portal churn.
+- For timeline labels above the top sticky section, render a small sticky overlay outside `isolate` and avoid raising the entire timeline container z-index.
+- If the user expects live alignment while resizing panels, keep `onLayout` enabled for the date overlay.
 
 ## Patterns That Don't Work
 
@@ -77,3 +88,4 @@
 ## Domain Notes
 
 - `libs/features/invocation-route/src/lib/JournalV2.tsx` and `libs/features/invocation-route/src/lib/ScrollableTimeline.tsx` drive the journal timeline virtualization and zoom/viewport behavior.
+- Timeline start date/time label is rendered by `StartDateTimeUnit` in `JournalV2` as a targeted sticky overlay positioned from `timelineWidth` (no `onLayout` callback).

@@ -97,6 +97,10 @@ const remainderStyles = tv({
   },
 });
 
+const startDateTimeStyles = tv({
+  base: 'relative h-full',
+});
+
 export function Units({
   className,
   style,
@@ -122,9 +126,13 @@ export function Units({
   const targetUnitRef = useRef(desiredUnit);
   const intervalsWithCurrentUnit = intervalBaseDuration / targetUnitRef.current;
   const minAllowedIntervals =
-    TARGET_VIEW_INTERVALS - VIEW_INTERVAL_TOLERANCE - INTERVAL_SWITCH_HYSTERESIS;
+    TARGET_VIEW_INTERVALS -
+    VIEW_INTERVAL_TOLERANCE -
+    INTERVAL_SWITCH_HYSTERESIS;
   const maxAllowedIntervals =
-    TARGET_VIEW_INTERVALS + VIEW_INTERVAL_TOLERANCE + INTERVAL_SWITCH_HYSTERESIS;
+    TARGET_VIEW_INTERVALS +
+    VIEW_INTERVAL_TOLERANCE +
+    INTERVAL_SWITCH_HYSTERESIS;
 
   if (
     !Number.isFinite(intervalsWithCurrentUnit) ||
@@ -169,23 +177,6 @@ export function Units({
         </div>
       )}
       <div className="h-full">
-        <div className="absolute -top-8 bottom-0 left-2 border-l border-dashed border-gray-500/40 font-sans text-2xs text-gray-500">
-          <div className="ml-1 flex w-28 -translate-y-1 flex-col justify-start text-left">
-            <DateTooltip date={new Date(start)} title="">
-              {new Date(start).toLocaleDateString('en', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-              })}
-            </DateTooltip>
-            <DateTooltip date={new Date(start)} title="">
-              {new Date(start).toLocaleTimeString('en', {
-                timeZoneName: 'short',
-              })}
-            </DateTooltip>
-          </div>
-        </div>
-
         <div className="pointer-events-none flex h-full w-full overflow-hidden rounded-r-2xl transition-all duration-1000">
           <div className="w-2 shrink-0" />
           {Array(numOfIntervals)
@@ -237,6 +228,35 @@ export function HeaderUnits({
           ))}
         <div className={remainderStyles({ variant: 'header' })} />
         <div className="w-2 shrink-0 odd:bg-gray-400/5" />
+      </div>
+    </div>
+  );
+}
+
+export function StartDateTimeUnit({
+  className,
+  start,
+}: {
+  className?: string;
+  start: number;
+}) {
+  return (
+    <div className={startDateTimeStyles({ className })}>
+      <div className="absolute -top-8 bottom-0 left-2 border-l border-dashed border-gray-500/40 font-sans text-2xs text-gray-500">
+        <div className="ml-1 flex w-28 -translate-y-1 flex-col justify-start text-left">
+          <DateTooltip date={new Date(start)} title="">
+            {new Date(start).toLocaleDateString('en', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+            })}
+          </DateTooltip>
+          <DateTooltip date={new Date(start)} title="">
+            {new Date(start).toLocaleTimeString('en', {
+              timeZoneName: 'short',
+            })}
+          </DateTooltip>
+        </div>
       </div>
     </div>
   );
