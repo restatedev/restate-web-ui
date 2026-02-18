@@ -79,7 +79,7 @@ const containerStyles = tv({
 });
 
 const intervalStyles = tv({
-  base: 'pointer-events-none border-r border-dotted pt-1 pr-0.5 text-right font-sans text-2xs transition-all duration-1000',
+  base: 'pointer-events-none border-r border-dotted pt-0 pr-0.5 text-right font-sans text-2xs transition-all duration-1000',
   variants: {
     variant: {
       fullTrace: 'z-3 border-black/10 text-gray-500 even:bg-gray-400/5',
@@ -201,41 +201,6 @@ export function Units({
           <div className={remainderStyles({ variant: 'fullTrace' })} />
           <div className="w-2 shrink-0 odd:bg-gray-400/5" />
         </div>
-      </div>
-    </div>
-  );
-}
-
-export function HeaderUnits({
-  className,
-  start,
-  end,
-}: {
-  className?: string;
-  start: number;
-  end: number;
-}) {
-  const duration = end - start;
-  const unit = computeInterval(duration) || duration / 2 || 1;
-  const numOfIntervals = Math.floor(duration / unit);
-
-  return (
-    <div className={containerStyles({ className })}>
-      <div className="pointer-events-none flex h-full w-full overflow-hidden rounded-r-2xl transition-all duration-1000">
-        <div className="w-2 shrink-0" />
-        {Array(numOfIntervals)
-          .fill(null)
-          .map((_, i) => (
-            <div
-              key={i}
-              className={intervalStyles({ variant: 'header' })}
-              style={{ width: `${(unit / duration) * 100}%` }}
-            >
-              +{formatDurations(getDuration(unit * (i + 1)))}
-            </div>
-          ))}
-        <div className={remainderStyles({ variant: 'header' })} />
-        <div className="w-2 shrink-0 odd:bg-gray-400/5" />
       </div>
     </div>
   );
