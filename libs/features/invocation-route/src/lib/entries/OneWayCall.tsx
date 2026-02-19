@@ -1,6 +1,6 @@
 import { JournalEntryV2 } from '@restate/data-access/admin-api';
 import { EntryProps } from './types';
-import { Expression } from '../Expression';
+import { Expression, InputOutput } from '../Expression';
 import { Target } from '../Target';
 import { InvocationId } from '../InvocationId';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
@@ -9,6 +9,7 @@ import { DateTooltip } from '@restate/ui/tooltip';
 import { tv } from '@restate/util/styles';
 import { EntryExpression } from './EntryExpression';
 import { LazyJournalEntryPayload } from './LazyJournalEntryPayload';
+import { Value } from '../Value';
 
 const styles = tv({
   base: 'relative flex flex-auto flex-row items-center gap-1.5 pr-2',
@@ -35,13 +36,30 @@ export function OneWayCall({
         entry={entry}
         invocation={invocation}
         input={
-          <Target
-            showHandler={false}
-            target={[entry.serviceName, entry.serviceKey, entry.handlerName]
-              .filter((v) => typeof v === 'string')
-              .join('/')}
-            className="mx-0.5 h-6 basis-20 font-sans text-2xs not-italic **:data-target:h-6 [&_a]:my-0"
-          />
+          <>
+            {entry.name && (
+              <InputOutput
+                name={JSON.stringify(entry.name)}
+                popoverTitle={'Name'}
+                popoverContent={
+                  <Value
+                    value={entry.name}
+                    className="font-mono text-xs"
+                    showCopyButton
+                    portalId="expression-value"
+                  />
+                }
+              />
+            )}
+            {entry.name && ', '}
+            <Target
+              showHandler={false}
+              target={[entry.serviceName, entry.serviceKey, entry.handlerName]
+                .filter((v) => typeof v === 'string')
+                .join('/')}
+              className="mx-0.5 h-6 basis-20 font-sans text-2xs not-italic **:data-target:h-6 [&_a]:my-0"
+            />
+          </>
         }
         chain={
           <Expression
