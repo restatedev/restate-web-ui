@@ -72,7 +72,12 @@ function EntryParams({
       return entry.key ? `"${entry.key}"` : null;
     case 'Call':
     case 'OneWayCall':
-      return [entry.serviceName, entry.serviceKey].filter(Boolean).join('/');
+      return [
+        entry.name ? `"${entry.name}"` : entry.name,
+        [entry.serviceName, entry.serviceKey].filter(Boolean).join('/'),
+      ]
+        .filter(Boolean)
+        .join(', ');
     case 'AttachInvocation':
     case 'Cancel':
       return `"${entry.invocationId}"`;
