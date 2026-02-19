@@ -9,7 +9,7 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { Portal } from '@restate/ui/portal';
 
 const styles = tv({
-  base: 'relative flex max-w-full flex-row flex-wrap items-center pr-2',
+  base: 'relative flex max-w-full flex-row items-center pr-2',
   variants: {
     isFunction: {
       true: 'font-medium italic',
@@ -43,12 +43,12 @@ export function Expression({
 }) {
   return (
     <div className={styles({ className, isFunction })}>
-      <div className="text-inherits w-full flex-auto text-zinc-600">
+      <div className="text-inherits min-w-0 text-zinc-600">
         <span className="flex min-w-0 items-center">
           {prefix && (
             <span className="shrink-0 font-normal text-blue-500">{prefix}</span>
           )}
-          <span className="flex max-w-fit min-w-0 shrink-0 grow basis-20 items-center font-medium">
+          <span className="flex max-w-fit min-w-0 shrink-0 items-center font-medium">
             {isHandler && (
               <Icon
                 name={IconName.Function}
@@ -118,7 +118,7 @@ export function InputOutput({
         <span
           className={value({
             className:
-              'max-w-fit grow basis-20 truncate px-0.5 py-0 font-sans text-xs leading-5 font-normal text-zinc-600 not-italic',
+              'max-w-fit truncate px-0.5 py-0 font-sans text-xs leading-5 font-normal text-zinc-600 not-italic',
           })}
         >
           <span className="truncate px-0.5">{name}</span>
@@ -147,7 +147,7 @@ export function InputOutput({
           ) : (
             <PopoverTrigger>
               <Button
-                className="my-px max-w-fit grow basis-20 truncate rounded-xl px-0.5 py-0 font-mono [font-size:inherit] leading-5 text-inherit underline decoration-dashed decoration-from-font underline-offset-4 outline-offset-0"
+                className="my-px max-w-fit truncate rounded-xl px-0.5 py-0 font-mono [font-size:inherit] leading-5 text-inherit underline decoration-dashed decoration-from-font underline-offset-4 outline-offset-0"
                 variant="icon"
               >
                 <span className="truncate pr-0.5">{name}</span>

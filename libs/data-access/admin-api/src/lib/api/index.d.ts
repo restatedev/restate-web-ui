@@ -2600,6 +2600,7 @@ export interface components {
       serviceName?: string;
       handlerName?: string;
       parameters?: string;
+      name?: string;
       headers?: {
         key: string;
         value: string;
@@ -2634,6 +2635,7 @@ export interface components {
       serviceName?: string;
       handlerName?: string;
       parameters?: string;
+      name?: string;
       headers?: {
         key: string;
         value: string;
