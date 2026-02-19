@@ -7291,6 +7291,9 @@
           "parameters": {
             "type": "string"
           },
+          "name": {
+            "type": "string"
+          },
           "headers": {
             "type": "array",
             "items": {
@@ -7395,6 +7398,9 @@
             "type": "string"
           },
           "parameters": {
+            "type": "string"
+          },
+          "name": {
             "type": "string"
           },
           "headers": {

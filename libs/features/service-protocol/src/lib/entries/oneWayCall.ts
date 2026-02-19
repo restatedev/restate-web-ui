@@ -86,6 +86,7 @@ function oneWayCallV2(
   );
 
   return {
+    name: entryJSON?.Command?.OneWayCall?.name,
     start: entry.appended_at,
     isPending: false,
     commandIndex,

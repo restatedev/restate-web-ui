@@ -107,6 +107,7 @@ function callV2(
   );
 
   return {
+    name: entryJSON?.Command?.Call?.name,
     start: entry.appended_at,
     isPending: !completionEntry,
     commandIndex,
