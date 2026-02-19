@@ -64,7 +64,7 @@ export function Call({
                 target={[entry.serviceName, entry.serviceKey, entry.handlerName]
                   .filter((v) => typeof v === 'string')
                   .join('/')}
-                className="mx-0.5 h-6 basis-20 font-sans text-2xs not-italic **:data-target:h-6 [&_a]:my-0"
+                className="mx-0.5 h-6 font-sans text-2xs not-italic **:data-target:h-6 [&_a]:my-0"
               />
             </>
           }
