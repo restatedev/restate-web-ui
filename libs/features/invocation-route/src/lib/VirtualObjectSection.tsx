@@ -1,4 +1,4 @@
-import type { Invocation } from '@restate/data-access/admin-api';
+import type { Invocation } from '@restate/data-access/admin-api-spec';
 import {
   useGetVirtualObjectQueue,
   useGetVirtualObjectState,

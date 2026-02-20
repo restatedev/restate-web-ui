@@ -24,7 +24,7 @@ import { useListDeployments } from '@restate/data-access/admin-api-hooks';
 import {
   getEndpoint,
   isLambdaDeployment,
-} from '@restate/data-access/admin-api';
+} from '@restate/data-access/admin-api-spec';
 
 const submitButtonStyles = tv({
   base: 'flex gap-1 pr-3.5',

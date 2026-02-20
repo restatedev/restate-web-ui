@@ -17,7 +17,7 @@ import {
   DropdownTrigger,
 } from '@restate/ui/dropdown';
 import { Button, SubmitButton } from '@restate/ui/button';
-import { SortInvocations } from '@restate/data-access/admin-api';
+import { SortInvocations } from '@restate/data-access/admin-api-spec';
 import { ListData } from 'react-stately';
 import { tv } from '@restate/util/styles';
 import { Icon, IconName } from '@restate/ui/icons';

@@ -1,7 +1,7 @@
 import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from '@restate/util/styles';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
-import { Service } from '@restate/data-access/admin-api';
+import { Service } from '@restate/data-access/admin-api-spec';
 import { SERVICE_QUERY_PARAM } from './constants';
 import { Link } from '@restate/ui/link';
 import { useRef } from 'react';

@@ -1,4 +1,4 @@
-import { JournalEntryV2 } from '@restate/data-access/admin-api';
+import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
 import { Dispatch, lazy, Suspense, useCallback, useRef, useState } from 'react';
 import type { VirtualItem } from '@tanstack/react-virtual';
 import { InvocationId } from './InvocationId';

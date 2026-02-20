@@ -1,4 +1,4 @@
-import { Invocation } from '@restate/data-access/admin-api';
+import { Invocation } from '@restate/data-access/admin-api-spec';
 import { Icon, IconName } from '@restate/ui/icons';
 import { HoverTooltip } from '@restate/ui/tooltip';
 import { tv } from '@restate/util/styles';

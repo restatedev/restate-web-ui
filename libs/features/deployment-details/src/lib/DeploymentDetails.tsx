@@ -12,7 +12,7 @@ import {
   isHttpDeployment,
   isLambdaDeployment,
   getProtocolType,
-} from '@restate/data-access/admin-api';
+} from '@restate/data-access/admin-api-spec';
 import {
   DateTooltip,
   HoverTooltip,

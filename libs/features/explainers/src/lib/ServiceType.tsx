@@ -1,6 +1,6 @@
 import { InlineTooltip } from '@restate/ui/tooltip';
 import { ComponentProps, PropsWithChildren } from 'react';
-import type { ServiceType } from '@restate/data-access/admin-api';
+import type { ServiceType } from '@restate/data-access/admin-api-spec';
 
 const TITLES: Record<ServiceType, string> = {
   Service: 'Basic Service',

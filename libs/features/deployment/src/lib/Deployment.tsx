@@ -6,7 +6,7 @@ import {
   Revision as ServiceRevision,
   getEndpoint,
   isHttpDeployment,
-} from '@restate/data-access/admin-api';
+} from '@restate/data-access/admin-api-spec';
 import { Revision } from './Revision';
 import { DEPLOYMENT_QUERY_PARAM } from './constants';
 import { Link } from '@restate/ui/link';

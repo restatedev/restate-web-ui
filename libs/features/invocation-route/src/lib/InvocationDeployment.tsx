@@ -1,4 +1,4 @@
-import type { Invocation } from '@restate/data-access/admin-api';
+import type { Invocation } from '@restate/data-access/admin-api-spec';
 import { useListDeployments } from '@restate/data-access/admin-api-hooks';
 import { Deployment, SDK } from '@restate/features/deployment';
 import { GithubMetadata, hasGithubMetadata } from '@restate/features/options';

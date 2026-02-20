@@ -2,7 +2,7 @@ import {
   useGetInvocationJournalWithInvocationV2,
   useGetPausedError,
 } from '@restate/data-access/admin-api-hooks';
-import type { JournalEntryV2 } from '@restate/data-access/admin-api';
+import type { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
 import { ComponentType } from 'react';
 import { AttachInvocation } from './entries/AttachInvocation';
 import { Awakeable } from './entries/Awakeable';

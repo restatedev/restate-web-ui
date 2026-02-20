@@ -1,4 +1,4 @@
-import { Invocation } from '@restate/data-access/admin-api';
+import { Invocation } from '@restate/data-access/admin-api-spec';
 import { RetentionExplainer } from '@restate/features/explainers';
 import { Badge } from '@restate/ui/badge';
 import { DateTooltip } from '@restate/ui/tooltip';

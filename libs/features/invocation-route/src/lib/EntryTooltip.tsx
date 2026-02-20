@@ -1,7 +1,7 @@
 import type {
   Invocation,
   JournalEntryV2,
-} from '@restate/data-access/admin-api';
+} from '@restate/data-access/admin-api-spec';
 import { Ellipsis } from '@restate/ui/loading';
 import {
   formatDateTime,

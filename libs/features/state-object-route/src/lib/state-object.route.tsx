@@ -1,4 +1,4 @@
-import type { FilterItem } from '@restate/data-access/admin-api';
+import type { FilterItem } from '@restate/data-access/admin-api-spec';
 import {
   useListDeployments,
   useListServices,

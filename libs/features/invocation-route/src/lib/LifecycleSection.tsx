@@ -1,4 +1,4 @@
-import { Invocation } from '@restate/data-access/admin-api';
+import { Invocation } from '@restate/data-access/admin-api-spec';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { tv } from '@restate/util/styles';
 import { Badge } from '@restate/ui/badge';

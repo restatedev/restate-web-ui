@@ -15,7 +15,7 @@ import {
   getEndpoint,
   isHttpDeployment,
   JournalEntryV2,
-} from '@restate/data-access/admin-api';
+} from '@restate/data-access/admin-api-spec';
 import { FormFieldSelect } from '@restate/ui/form-field';
 import { ListBoxItem } from '@restate/ui/listbox';
 import { Badge } from '@restate/ui/badge';

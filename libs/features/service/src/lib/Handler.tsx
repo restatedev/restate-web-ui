@@ -1,7 +1,7 @@
 import {
   Handler as HandlerType,
   ServiceType,
-} from '@restate/data-access/admin-api';
+} from '@restate/data-access/admin-api-spec';
 import { HandlerTypeExplainer } from '@restate/features/explainers';
 import { DropdownSection } from '@restate/ui/dropdown';
 import { Icon, IconName } from '@restate/ui/icons';
