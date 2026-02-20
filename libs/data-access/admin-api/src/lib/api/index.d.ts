@@ -982,6 +982,9 @@ export interface components {
     /**
      * advertised address
      * @description An externally accessible URI address for http-ingress-server. This can be set to unix:restate-data/ingress.sock to advertise the automatically created unix-socket instead of using tcp if needed
+     * @example http//127.0.0.1:8080/
+     * @example https://my-host/
+     * @example unix:/data/restate-data/ingress.sock
      */
     'AdvertisedAddress-http-ingress-server_HttpIngressPort': string;
     /** @description Cluster health information */
@@ -993,9 +996,11 @@ export interface components {
         | components['schemas']['EmbeddedMetadataClusterHealth'];
     };
     CreateSubscriptionRequest: {
-      /** @description # Options
+      /**
+       * @description # Options
        *
-       *     Additional options to apply to the subscription. */
+       *     Additional options to apply to the subscription.
+       */
       options?: {
         [key: string]: string;
       } | null;
@@ -1021,20 +1026,26 @@ export interface components {
     DeploymentId: string;
     DeploymentResponse:
       | {
-          /** @description # Additional headers
+          /**
+           * @description # Additional headers
            *
-           *     Additional headers used to invoke this service deployment. */
+           *     Additional headers used to invoke this service deployment.
+           */
           additional_headers?: components['schemas']['SerdeableHeaderHashMap'];
           created_at: string;
-          /** @description # HTTP Version
+          /**
+           * @description # HTTP Version
            *
-           *     HTTP Version used to invoke this service deployment. */
+           *     HTTP Version used to invoke this service deployment.
+           */
           http_version: string;
           /** @description # Deployment ID */
           id: components['schemas']['DeploymentId'];
-          /** @description # Info
+          /**
+           * @description # Info
            *
-           *     List of configuration/deprecation information related to this deployment. */
+           *     List of configuration/deprecation information related to this deployment.
+           */
           info?: components['schemas']['Info'][];
           /**
            * Format: int32
@@ -1043,9 +1054,11 @@ export interface components {
            *     During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
            */
           max_protocol_version: number;
-          /** @description # Metadata
+          /**
+           * @description # Metadata
            *
-           *     Deployment metadata. */
+           *     Deployment metadata.
+           */
           metadata?: {
             [key: string]: string;
           };
@@ -1056,17 +1069,23 @@ export interface components {
            *     During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
            */
           min_protocol_version: number;
-          /** @description # Protocol Type
+          /**
+           * @description # Protocol Type
            *
-           *     Protocol type used to invoke this service deployment. */
+           *     Protocol type used to invoke this service deployment.
+           */
           protocol_type: components['schemas']['ProtocolType'];
-          /** @description # SDK version
+          /**
+           * @description # SDK version
            *
-           *     SDK library and version declared during registration. */
+           *     SDK library and version declared during registration.
+           */
           sdk_version?: string | null;
-          /** @description # Services
+          /**
+           * @description # Services
            *
-           *     List of services exposed by this deployment. */
+           *     List of services exposed by this deployment.
+           */
           services: components['schemas']['ServiceNameRevPair'][];
           /**
            * Format: uri
@@ -1077,17 +1096,23 @@ export interface components {
           uri: string;
         }
       | {
-          /** @description # Additional headers
+          /**
+           * @description # Additional headers
            *
-           *     Additional headers used to invoke this service deployment. */
+           *     Additional headers used to invoke this service deployment.
+           */
           additional_headers?: components['schemas']['SerdeableHeaderHashMap'];
-          /** @description # Lambda ARN
+          /**
+           * @description # Lambda ARN
            *
-           *     Lambda ARN used to invoke this service deployment. */
+           *     Lambda ARN used to invoke this service deployment.
+           */
           arn: components['schemas']['LambdaARN'];
-          /** @description # Assume role ARN
+          /**
+           * @description # Assume role ARN
            *
-           *     Assume role ARN used to invoke this deployment. Check https://docs.restate.dev/category/aws-lambda for more details. */
+           *     Assume role ARN used to invoke this deployment. Check https://docs.restate.dev/category/aws-lambda for more details.
+           */
           assume_role_arn?: string | null;
           compression?:
             | null
@@ -1095,9 +1120,11 @@ export interface components {
           created_at: string;
           /** @description # Deployment ID */
           id: components['schemas']['DeploymentId'];
-          /** @description # Info
+          /**
+           * @description # Info
            *
-           *     List of configuration/deprecation information related to this deployment. */
+           *     List of configuration/deprecation information related to this deployment.
+           */
           info?: components['schemas']['Info'][];
           /**
            * Format: int32
@@ -1106,9 +1133,11 @@ export interface components {
            *     During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
            */
           max_protocol_version: number;
-          /** @description # Metadata
+          /**
+           * @description # Metadata
            *
-           *     Deployment metadata. */
+           *     Deployment metadata.
+           */
           metadata?: {
             [key: string]: string;
           };
@@ -1119,32 +1148,42 @@ export interface components {
            *     During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
            */
           min_protocol_version: number;
-          /** @description # SDK version
+          /**
+           * @description # SDK version
            *
-           *     SDK library and version declared during registration. */
+           *     SDK library and version declared during registration.
+           */
           sdk_version?: string | null;
-          /** @description # Services
+          /**
+           * @description # Services
            *
-           *     List of services exposed by this deployment. */
+           *     List of services exposed by this deployment.
+           */
           services: components['schemas']['ServiceNameRevPair'][];
         };
     /** @description Detailed information about Restate deployments */
     DetailedDeploymentResponse:
       | {
-          /** @description # Additional headers
+          /**
+           * @description # Additional headers
            *
-           *     Additional headers used to invoke this service deployment. */
+           *     Additional headers used to invoke this service deployment.
+           */
           additional_headers?: components['schemas']['SerdeableHeaderHashMap'];
           created_at: string;
-          /** @description # HTTP Version
+          /**
+           * @description # HTTP Version
            *
-           *     HTTP Version used to invoke this service deployment. */
+           *     HTTP Version used to invoke this service deployment.
+           */
           http_version: string;
           /** @description # Deployment ID */
           id: components['schemas']['DeploymentId'];
-          /** @description # Info
+          /**
+           * @description # Info
            *
-           *     List of configuration/deprecation information related to this deployment. */
+           *     List of configuration/deprecation information related to this deployment.
+           */
           info?: components['schemas']['Info'][];
           /**
            * Format: int32
@@ -1153,9 +1192,11 @@ export interface components {
            *     During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
            */
           max_protocol_version: number;
-          /** @description # Metadata
+          /**
+           * @description # Metadata
            *
-           *     Deployment metadata. */
+           *     Deployment metadata.
+           */
           metadata?: {
             [key: string]: string;
           };
@@ -1166,17 +1207,23 @@ export interface components {
            *     During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
            */
           min_protocol_version: number;
-          /** @description # Protocol Type
+          /**
+           * @description # Protocol Type
            *
-           *     Protocol type used to invoke this service deployment. */
+           *     Protocol type used to invoke this service deployment.
+           */
           protocol_type: components['schemas']['ProtocolType'];
-          /** @description # SDK version
+          /**
+           * @description # SDK version
            *
-           *     SDK library and version declared during registration. */
+           *     SDK library and version declared during registration.
+           */
           sdk_version?: string | null;
-          /** @description # Services
+          /**
+           * @description # Services
            *
-           *     List of services exposed by this deployment. */
+           *     List of services exposed by this deployment.
+           */
           services: components['schemas']['ServiceMetadata'][];
           /**
            * Format: uri
@@ -1187,17 +1234,23 @@ export interface components {
           uri: string;
         }
       | {
-          /** @description # Additional headers
+          /**
+           * @description # Additional headers
            *
-           *     Additional headers used to invoke this service deployment. */
+           *     Additional headers used to invoke this service deployment.
+           */
           additional_headers?: components['schemas']['SerdeableHeaderHashMap'];
-          /** @description # Lambda ARN
+          /**
+           * @description # Lambda ARN
            *
-           *     Lambda ARN used to invoke this service deployment. */
+           *     Lambda ARN used to invoke this service deployment.
+           */
           arn: components['schemas']['LambdaARN'];
-          /** @description # Assume role ARN
+          /**
+           * @description # Assume role ARN
            *
-           *     Assume role ARN used to invoke this deployment. Check https://docs.restate.dev/category/aws-lambda for more details. */
+           *     Assume role ARN used to invoke this deployment. Check https://docs.restate.dev/category/aws-lambda for more details.
+           */
           assume_role_arn?: string | null;
           compression?:
             | null
@@ -1205,9 +1258,11 @@ export interface components {
           created_at: string;
           /** @description # Deployment ID */
           id: components['schemas']['DeploymentId'];
-          /** @description # Info
+          /**
+           * @description # Info
            *
-           *     List of configuration/deprecation information related to this deployment. */
+           *     List of configuration/deprecation information related to this deployment.
+           */
           info?: components['schemas']['Info'][];
           /**
            * Format: int32
@@ -1216,9 +1271,11 @@ export interface components {
            *     During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
            */
           max_protocol_version: number;
-          /** @description # Metadata
+          /**
+           * @description # Metadata
            *
-           *     Deployment metadata. */
+           *     Deployment metadata.
+           */
           metadata?: {
             [key: string]: string;
           };
@@ -1229,13 +1286,17 @@ export interface components {
            *     During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
            */
           min_protocol_version: number;
-          /** @description # SDK version
+          /**
+           * @description # SDK version
            *
-           *     SDK library and version declared during registration. */
+           *     SDK library and version declared during registration.
+           */
           sdk_version?: string | null;
-          /** @description # Services
+          /**
+           * @description # Services
            *
-           *     List of services exposed by this deployment. */
+           *     List of services exposed by this deployment.
+           */
           services: components['schemas']['ServiceMetadata'][];
         };
     EmbeddedMetadataClusterHealth: {
@@ -1247,19 +1308,24 @@ export interface components {
      * @enum {string}
      */
     EndpointLambdaCompression: 'Zstd';
-    /** @description # Error description response
+    /**
+     * @description # Error description response
      *
-     *     Error details of the response */
+     *     Error details of the response
+     */
     ErrorDescriptionResponse: {
       message: string;
-      /** @description # Restate code
+      /**
+       * @description # Restate code
        *
-       *     Restate error code describing this error */
+       *     Restate error code describing this error
+       */
       restate_code?: string | null;
     };
     /** @description Handler metadata */
     HandlerMetadata: {
-      /** @description # Abort timeout
+      /**
+       * @description # Abort timeout
        *
        *     This timer guards against stalled service/handler invocations that are supposed to
        *     terminate. The abort timeout is started after the 'inactivity timeout' has expired
@@ -1271,26 +1337,34 @@ export interface components {
        *
        *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
        *
-       *     If set, it overrides the value set in the service. */
+       *     If set, it overrides the value set in the service.
+       */
       abort_timeout?: string | null;
-      /** @description # Documentation
+      /**
+       * @description # Documentation
        *
-       *     Documentation of the handler, as propagated by the SDKs. */
+       *     Documentation of the handler, as propagated by the SDKs.
+       */
       documentation?: string | null;
-      /** @description # Enable lazy state
+      /**
+       * @description # Enable lazy state
        *
        *     If true, lazy state will be enabled for all invocations to this service.
        *     This is relevant only for Workflows and Virtual Objects.
        *
-       *     If set, it overrides the value set in the service. */
+       *     If set, it overrides the value set in the service.
+       */
       enable_lazy_state?: boolean | null;
-      /** @description # Idempotency retention
+      /**
+       * @description # Idempotency retention
        *
        *     The retention duration of idempotent requests for this handler. If set, it overrides the value set in the service.
        *
-       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`. */
+       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
+       */
       idempotency_retention?: string | null;
-      /** @description # Inactivity timeout
+      /**
+       * @description # Inactivity timeout
        *
        *     This timer guards against stalled service/handler invocations. Once it expires,
        *     Restate triggers a graceful termination by asking the service invocation to
@@ -1301,21 +1375,29 @@ export interface components {
        *
        *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
        *
-       *     If set, it overrides the value set in the service. */
+       *     If set, it overrides the value set in the service.
+       */
       inactivity_timeout?: string | null;
-      /** @description # Info
+      /**
+       * @description # Info
        *
-       *     List of configuration/deprecation information related to this handler. */
+       *     List of configuration/deprecation information related to this handler.
+       */
       info?: components['schemas']['Info'][];
-      /** @description # Human readable input description
+      /**
+       * @description # Human readable input description
        *
-       *     If empty, no schema was provided by the user at discovery time. */
+       *     If empty, no schema was provided by the user at discovery time.
+       */
       input_description: string;
-      /** @description # Input JSON Schema
+      /**
+       * @description # Input JSON Schema
        *
-       *     JSON Schema of the handler input */
+       *     JSON Schema of the handler input
+       */
       input_json_schema?: unknown;
-      /** @description # Journal retention
+      /**
+       * @description # Journal retention
        *
        *     The journal retention. When set, this applies to all requests to this handler.
        *
@@ -1324,34 +1406,47 @@ export interface components {
        *
        *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
        *
-       *     If set, it overrides the value set in the service. */
+       *     If set, it overrides the value set in the service.
+       */
       journal_retention?: string | null;
-      /** @description # Metadata
+      /**
+       * @description # Metadata
        *
-       *     Additional handler metadata, as propagated by the SDKs. */
+       *     Additional handler metadata, as propagated by the SDKs.
+       */
       metadata?: {
         [key: string]: string;
       };
-      /** @description # Name
+      /**
+       * @description # Name
        *
-       *     The handler name. */
+       *     The handler name.
+       */
       name: string;
-      /** @description # Human readable output description
+      /**
+       * @description # Human readable output description
        *
-       *     If empty, no schema was provided by the user at discovery time. */
+       *     If empty, no schema was provided by the user at discovery time.
+       */
       output_description: string;
-      /** @description # Output JSON Schema
+      /**
+       * @description # Output JSON Schema
        *
-       *     JSON Schema of the handler output */
+       *     JSON Schema of the handler output
+       */
       output_json_schema?: unknown;
-      /** @description # Public
+      /**
+       * @description # Public
        *
        *     If true, this handler can be invoked through the ingress.
-       *     If false, this handler can be invoked only from another Restate service. */
+       *     If false, this handler can be invoked only from another Restate service.
+       */
       public?: boolean;
-      /** @description # Retry policy
+      /**
+       * @description # Retry policy
        *
-       *     Retry policy overrides applied for this handler. */
+       *     Retry policy overrides applied for this handler.
+       */
       retry_policy?: components['schemas']['HandlerRetryPolicyMetadata'];
       ty?: null | components['schemas']['HandlerMetadataType'];
     };
@@ -1366,21 +1461,27 @@ export interface components {
        *     The factor to use to compute the next retry attempt.
        */
       exponentiation_factor?: number | null;
-      /** @description # Initial Interval
+      /**
+       * @description # Initial Interval
        *
        *     Initial interval for the first retry attempt.
        *
-       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`. */
+       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
+       */
       initial_interval?: string | null;
-      /** @description # Max attempts
+      /**
+       * @description # Max attempts
        *
-       *     Number of maximum attempts (including the initial) before giving up. Infinite retries if unset. No retries if set to 1. */
+       *     Number of maximum attempts (including the initial) before giving up. Infinite retries if unset. No retries if set to 1.
+       */
       max_attempts?: number | null;
-      /** @description # Max interval
+      /**
+       * @description # Max interval
        *
        *     Maximum interval between retries.
        *
-       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`. */
+       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
+       */
       max_interval?: string | null;
       on_max_attempts?: null | components['schemas']['OnMaxAttempts'];
     };
@@ -1407,7 +1508,8 @@ export interface components {
       subscriptions: components['schemas']['SubscriptionResponse'][];
     };
     ModifyServiceRequest: {
-      /** @description # Abort timeout
+      /**
+       * @description # Abort timeout
        *
        *     This timer guards against stalled service/handler invocations that are supposed to
        *     terminate. The abort timeout is started after the 'inactivity timeout' has expired
@@ -1419,15 +1521,19 @@ export interface components {
        *
        *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
        *
-       *     This overrides the default abort timeout set in invoker options. */
+       *     This overrides the default abort timeout set in invoker options.
+       */
       abort_timeout?: string | null;
-      /** @description # Idempotency retention
+      /**
+       * @description # Idempotency retention
        *
        *     Modify the retention of idempotent requests for this service.
        *
-       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`. */
+       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
+       */
       idempotency_retention?: string | null;
-      /** @description # Inactivity timeout
+      /**
+       * @description # Inactivity timeout
        *
        *     This timer guards against stalled service/handler invocations. Once it expires,
        *     Restate triggers a graceful termination by asking the service invocation to
@@ -1438,44 +1544,57 @@ export interface components {
        *
        *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
        *
-       *     This overrides the default inactivity timeout set in invoker options. */
+       *     This overrides the default inactivity timeout set in invoker options.
+       */
       inactivity_timeout?: string | null;
-      /** @description # Journal retention
+      /**
+       * @description # Journal retention
        *
        *     Modify the journal retention for this service. When set, this applies to all requests to all handlers of this service.
        *
        *     In case the invocation has an idempotency key, the `idempotency_retention` caps the maximum `journal_retention` time.
        *     In case the invocation targets a workflow handler, the `workflow_completion_retention` caps the maximum `journal_retention` time.
        *
-       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`. */
+       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
+       */
       journal_retention?: string | null;
-      /** @description # Public
+      /**
+       * @description # Public
        *
        *     If true, the service can be invoked through the ingress.
-       *     If false, the service can be invoked only from another Restate service. */
+       *     If false, the service can be invoked only from another Restate service.
+       */
       public?: boolean | null;
-      /** @description # Workflow completion retention
+      /**
+       * @description # Workflow completion retention
        *
        *     Modify the retention of the workflow completion. This can be modified only for workflow services!
        *
-       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`. */
+       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
+       */
       workflow_completion_retention?: string | null;
     };
     ModifyServiceStateRequest: {
-      /** @description # New State
+      /**
+       * @description # New State
        *
-       *     The new state to replace the previous state with */
+       *     The new state to replace the previous state with
+       */
       new_state: {
         [key: string]: number[];
       };
-      /** @description # Service key
+      /**
+       * @description # Service key
        *
-       *     To what virtual object key to apply this change */
+       *     To what virtual object key to apply this change
+       */
       object_key: string;
-      /** @description # Version
+      /**
+       * @description # Version
        *
        *     If set, the latest version of the state is compared with this value and the operation will fail
-       *     when the versions differ. */
+       *     when the versions differ.
+       */
       version?: string | null;
     };
     /** @enum {string} */
@@ -1493,18 +1612,22 @@ export interface components {
           additional_headers?:
             | null
             | components['schemas']['SerdeableHeaderHashMap'];
-          /** @description # Breaking
+          /**
+           * @description # Breaking
            *
            *     If `true`, it allows registering new service revisions with
            *     schemas incompatible with previous service revisions, such as changing service type, removing a handler, etc.
            *
-           *     See the [versioning documentation](https://docs.restate.dev/operate/versioning) for more information. */
+           *     See the [versioning documentation](https://docs.restate.dev/operate/versioning) for more information.
+           */
           breaking?: boolean;
-          /** @description # Dry-run mode
+          /**
+           * @description # Dry-run mode
            *
            *     If `true`, discovery will run but the deployment will not be registered.
            *     This is useful to see the impact of a new deployment before registering it.
-           *     `force` and `breaking` will be respected. */
+           *     `force` and `breaking` will be respected.
+           */
           dry_run?: boolean;
           /**
            * @description # Force
@@ -1517,10 +1640,12 @@ export interface components {
            *     See the [versioning documentation](https://docs.restate.dev/operate/versioning) for more information.
            * @default true
            */
-          force: boolean;
-          /** @description # Metadata
+          force: boolean | null;
+          /**
+           * @description # Metadata
            *
-           *     Deployment metadata. */
+           *     Deployment metadata.
+           */
           metadata?: {
             [key: string]: string;
           };
@@ -1531,39 +1656,48 @@ export interface components {
            *     Uri to use to discover/invoke the http deployment.
            */
           uri: string;
-          /** @description # Use http1.1
+          /**
+           * @description # Use http1.1
            *
            *     If `true`, discovery will be attempted using a client that defaults to HTTP1.1
            *     instead of a prior-knowledge HTTP2 client. HTTP2 may still be used for TLS servers
            *     that advertise HTTP2 support via ALPN. HTTP1.1 deployments will only work in
            *     request-response mode.
-           *      */
+           */
           use_http_11?: boolean;
         }
       | {
           additional_headers?:
             | null
             | components['schemas']['SerdeableHeaderHashMap'];
-          /** @description # ARN
+          /**
+           * @description # ARN
            *
-           *     ARN to use to discover/invoke the lambda deployment. */
+           *     ARN to use to discover/invoke the lambda deployment.
+           */
           arn: string;
-          /** @description # Assume role ARN
+          /**
+           * @description # Assume role ARN
            *
-           *     Optional ARN of a role to assume when invoking the addressed Lambda, to support role chaining */
+           *     Optional ARN of a role to assume when invoking the addressed Lambda, to support role chaining
+           */
           assume_role_arn?: string | null;
-          /** @description # Breaking
+          /**
+           * @description # Breaking
            *
            *     If `true`, it allows registering new service revisions with
            *     schemas incompatible with previous service revisions, such as changing service type, removing a handler, etc.
            *
-           *     See the [versioning documentation](https://docs.restate.dev/operate/versioning) for more information. */
+           *     See the [versioning documentation](https://docs.restate.dev/operate/versioning) for more information.
+           */
           breaking?: boolean;
-          /** @description # Dry-run mode
+          /**
+           * @description # Dry-run mode
            *
            *     If `true`, discovery will run but the deployment will not be registered.
            *     This is useful to see the impact of a new deployment before registering it.
-           *     `force` and `breaking` will be respected. */
+           *     `force` and `breaking` will be respected.
+           */
           dry_run?: boolean;
           /**
            * @description # Force
@@ -1576,19 +1710,23 @@ export interface components {
            *     See the [versioning documentation](https://docs.restate.dev/operate/versioning) for more information.
            * @default true
            */
-          force: boolean;
-          /** @description # Metadata
+          force: boolean | null;
+          /**
+           * @description # Metadata
            *
-           *     Deployment metadata. */
+           *     Deployment metadata.
+           */
           metadata?: {
             [key: string]: string;
           };
         };
     RegisterDeploymentResponse: {
       id: components['schemas']['DeploymentId'];
-      /** @description # Info
+      /**
+       * @description # Info
        *
-       *     List of configuration/deprecation information related to this deployment. */
+       *     List of configuration/deprecation information related to this deployment.
+       */
       info?: components['schemas']['Info'][];
       /**
        * Format: int32
@@ -1604,9 +1742,11 @@ export interface components {
        *     During registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version.
        */
       min_protocol_version?: number;
-      /** @description # SDK version
+      /**
+       * @description # SDK version
        *
-       *     SDK library and version declared during registration. */
+       *     SDK library and version declared during registration.
+       */
       sdk_version?: string | null;
       services: components['schemas']['ServiceMetadata'][];
     };
@@ -1615,14 +1755,17 @@ export interface components {
       /** @description The invocation id of the new invocation. */
       new_invocation_id: components['schemas']['String'];
     };
-    /** @description Proxy type to implement HashMap<HeaderName, HeaderValue> ser/de
-     *     Use it directly or with `#[serde(with = "serde_with::As::<serde_with::FromInto<restate_serde_util::SerdeableHeaderMap>>")]`. */
+    /**
+     * @description Proxy type to implement HashMap<HeaderName, HeaderValue> ser/de
+     *     Use it directly or with `#[serde(with = "serde_with::As::<serde_with::FromInto<restate_serde_util::SerdeableHeaderMap>>")]`.
+     */
     SerdeableHeaderHashMap: {
       [key: string]: string;
     };
     /** @description Metadata of a registered service. */
     ServiceMetadata: {
-      /** @description # Abort timeout
+      /**
+       * @description # Abort timeout
        *
        *     This timer guards against stalled service/handler invocations that are supposed to
        *     terminate. The abort timeout is started after the 'inactivity timeout' has expired
@@ -1634,34 +1777,46 @@ export interface components {
        *
        *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
        *
-       *     If unset, this returns the default abort timeout configured in invoker options. */
+       *     If unset, this returns the default abort timeout configured in invoker options.
+       */
       abort_timeout?: string;
-      /** @description # Deployment Id
+      /**
+       * @description # Deployment Id
        *
-       *     Deployment exposing the latest revision of the service. */
+       *     Deployment exposing the latest revision of the service.
+       */
       deployment_id: components['schemas']['DeploymentId'];
-      /** @description # Documentation
+      /**
+       * @description # Documentation
        *
-       *     Documentation of the service, as propagated by the SDKs. */
+       *     Documentation of the service, as propagated by the SDKs.
+       */
       documentation?: string | null;
-      /** @description # Enable lazy state
+      /**
+       * @description # Enable lazy state
        *
        *     If true, lazy state will be enabled for all invocations to this service.
-       *     This is relevant only for Workflows and Virtual Objects. */
+       *     This is relevant only for Workflows and Virtual Objects.
+       */
       enable_lazy_state?: boolean;
-      /** @description # Handlers
+      /**
+       * @description # Handlers
        *
-       *     Handlers for this service. */
+       *     Handlers for this service.
+       */
       handlers: components['schemas']['HandlerMetadata'][];
-      /** @description # Idempotency retention
+      /**
+       * @description # Idempotency retention
        *
        *     The retention duration of idempotent requests for this service.
        *
        *     If not configured, this returns the default idempotency retention.
        *
-       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`. */
+       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
+       */
       idempotency_retention?: string;
-      /** @description # Inactivity timeout
+      /**
+       * @description # Inactivity timeout
        *
        *     This timer guards against stalled service/handler invocations. Once it expires,
        *     Restate triggers a graceful termination by asking the service invocation to
@@ -1672,55 +1827,74 @@ export interface components {
        *
        *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
        *
-       *     If unset, this returns the default inactivity timeout configured in invoker options. */
+       *     If unset, this returns the default inactivity timeout configured in invoker options.
+       */
       inactivity_timeout?: string;
-      /** @description # Info
+      /**
+       * @description # Info
        *
-       *     List of configuration/deprecation information related to this service. */
+       *     List of configuration/deprecation information related to this service.
+       */
       info?: components['schemas']['Info'][];
-      /** @description # Journal retention
+      /**
+       * @description # Journal retention
        *
        *     The journal retention. When set, this applies to all requests to all handlers of this service.
        *
        *     In case the invocation has an idempotency key, the `idempotency_retention` caps the maximum `journal_retention` time.
        *     In case the invocation targets a workflow handler, the `workflow_completion_retention` caps the maximum `journal_retention` time.
        *
-       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`. */
+       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
+       */
       journal_retention?: string | null;
-      /** @description # Metadata
+      /**
+       * @description # Metadata
        *
-       *     Additional service metadata, as propagated by the SDKs. */
+       *     Additional service metadata, as propagated by the SDKs.
+       */
       metadata?: {
         [key: string]: string;
       };
-      /** @description # Name
+      /**
+       * @description # Name
        *
-       *     Fully qualified name of the service */
+       *     Fully qualified name of the service
+       */
       name: string;
-      /** @description # Public
+      /**
+       * @description # Public
        *
        *     If true, the service can be invoked through the ingress.
-       *     If false, the service can be invoked only from another Restate service. */
+       *     If false, the service can be invoked only from another Restate service.
+       */
       public?: boolean;
-      /** @description # Retry policy
+      /**
+       * @description # Retry policy
        *
        *     Retry policy applied to invocations of this service.
        *
-       *     If unset, it returns the default values configured in the Restate configuration. */
+       *     If unset, it returns the default values configured in the Restate configuration.
+       */
       retry_policy?: components['schemas']['ServiceRetryPolicyMetadata'];
-      /** @description # Revision
+      /**
+       * @description # Revision
        *
-       *     Latest revision of the service. */
+       *     Latest revision of the service.
+       */
       revision: components['schemas']['u32'];
-      /** @description # Type
+      /**
+       * @description # Type
        *
-       *     Service type */
+       *     Service type
+       */
       ty: components['schemas']['ServiceType'];
-      /** @description # Workflow completion retention
+      /**
+       * @description # Workflow completion retention
        *
        *     The retention duration of workflows. Only available on workflow services.
        *
-       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`. */
+       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
+       */
       workflow_completion_retention?: string | null;
     };
     ServiceNameRevPair: {
@@ -1736,25 +1910,33 @@ export interface components {
        *     The factor to use to compute the next retry attempt. Default: `2.0`.
        */
       exponentiation_factor?: number;
-      /** @description # Initial Interval
+      /**
+       * @description # Initial Interval
        *
        *     Initial interval for the first retry attempt.
        *
-       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`. */
+       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
+       */
       initial_interval?: string;
-      /** @description # Max attempts
+      /**
+       * @description # Max attempts
        *
-       *     Number of maximum attempts (including the initial) before giving up. Infinite retries if unset. No retries if set to 1. */
+       *     Number of maximum attempts (including the initial) before giving up. Infinite retries if unset. No retries if set to 1.
+       */
       max_attempts?: number | null;
-      /** @description # Max interval
+      /**
+       * @description # Max interval
        *
        *     Maximum interval between retries.
        *
-       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`. */
+       *     Can be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.
+       */
       max_interval?: string | null;
-      /** @description # On max attempts
+      /**
+       * @description # On max attempts
        *
-       *     Behavior when max attempts are reached. */
+       *     Behavior when max attempts are reached.
+       */
       on_max_attempts?: components['schemas']['OnMaxAttempts'];
     };
     /** @enum {string} */
@@ -1775,14 +1957,18 @@ export interface components {
           additional_headers?:
             | null
             | components['schemas']['SerdeableHeaderHashMap'];
-          /** @description # Dry-run mode
+          /**
+           * @description # Dry-run mode
            *
            *     If `true`, discovery will run but the deployment will not be registered.
-           *     This is useful to see the impact of a new deployment before registering it. */
+           *     This is useful to see the impact of a new deployment before registering it.
+           */
           dry_run?: boolean;
-          /** @description # Overwrite
+          /**
+           * @description # Overwrite
            *
-           *     If `true`, the update will overwrite the schema information, including the exposed service and handlers and service configuration, allowing **breaking changes** too. Use with caution. */
+           *     If `true`, the update will overwrite the schema information, including the exposed service and handlers and service configuration, allowing **breaking changes** too. Use with caution.
+           */
           overwrite?: boolean;
           /**
            * Format: uri
@@ -1791,34 +1977,44 @@ export interface components {
            *     Uri to use to discover/invoke the http deployment.
            */
           uri?: string | null;
-          /** @description # Use http1.1
+          /**
+           * @description # Use http1.1
            *
            *     If `true`, discovery will be attempted using a client that defaults to HTTP1.1
            *     instead of a prior-knowledge HTTP2 client. HTTP2 may still be used for TLS servers
            *     that advertise HTTP2 support via ALPN. HTTP1.1 deployments will only work in
-           *     request-response mode. */
+           *     request-response mode.
+           */
           use_http_11?: boolean | null;
         }
       | {
           additional_headers?:
             | null
             | components['schemas']['SerdeableHeaderHashMap'];
-          /** @description # ARN
+          /**
+           * @description # ARN
            *
-           *     ARN to use to discover/invoke the lambda deployment. */
+           *     ARN to use to discover/invoke the lambda deployment.
+           */
           arn?: string | null;
-          /** @description # Assume role ARN
+          /**
+           * @description # Assume role ARN
            *
-           *     Optional ARN of a role to assume when invoking the addressed Lambda, to support role chaining. */
+           *     Optional ARN of a role to assume when invoking the addressed Lambda, to support role chaining.
+           */
           assume_role_arn?: string | null;
-          /** @description # Dry-run mode
+          /**
+           * @description # Dry-run mode
            *
            *     If `true`, discovery will run but the deployment will not be registered.
-           *     This is useful to see the impact of a new deployment before registering it. */
+           *     This is useful to see the impact of a new deployment before registering it.
+           */
           dry_run?: boolean;
-          /** @description # Overwrite
+          /**
+           * @description # Overwrite
            *
-           *     If `true`, the update will overwrite the schema information, including the exposed service and handlers and service configuration, allowing **breaking changes** too. Use with caution. */
+           *     If `true`, the update will overwrite the schema information, including the exposed service and handlers and service configuration, allowing **breaking changes** too. Use with caution.
+           */
           overwrite?: boolean;
         };
     /** @description Admin API version information */
@@ -1840,9 +2036,11 @@ export interface components {
        *     Minimum supported admin API version by the admin server
        */
       min_admin_api_version: number;
-      /** @description # Admin server version
+      /**
+       * @description # Admin server version
        *
-       *     Version of the admin server */
+       *     Version of the admin server
+       */
       version: string;
     };
     /** Format: int32 */
@@ -3253,9 +3451,11 @@ export interface operations {
         content: {
           'application/json': {
             message: string;
-            /** @description # Restate code
+            /**
+             * @description # Restate code
              *
-             *     Restate error code describing this error */
+             *     Restate error code describing this error
+             */
             restate_code?: string | null;
           };
         };
@@ -3267,9 +3467,11 @@ export interface operations {
         content: {
           'application/json': {
             message: string;
-            /** @description # Restate code
+            /**
+             * @description # Restate code
              *
-             *     Restate error code describing this error */
+             *     Restate error code describing this error
+             */
             restate_code?: string | null;
           };
         };
@@ -3282,9 +3484,11 @@ export interface operations {
         content: {
           'application/json': {
             message: string;
-            /** @description # Restate code
+            /**
+             * @description # Restate code
              *
-             *     Restate error code describing this error */
+             *     Restate error code describing this error
+             */
             restate_code?: string | null;
           };
         };
@@ -3297,9 +3501,11 @@ export interface operations {
         content: {
           'application/json': {
             message: string;
-            /** @description # Restate code
+            /**
+             * @description # Restate code
              *
-             *     Restate error code describing this error */
+             *     Restate error code describing this error
+             */
             restate_code?: string | null;
           };
         };
@@ -3332,9 +3538,11 @@ export interface operations {
         content: {
           'application/json': {
             message: string;
-            /** @description # Restate code
+            /**
+             * @description # Restate code
              *
-             *     Restate error code describing this error */
+             *     Restate error code describing this error
+             */
             restate_code?: string | null;
           };
         };
@@ -3346,9 +3554,11 @@ export interface operations {
         content: {
           'application/json': {
             message: string;
-            /** @description # Restate code
+            /**
+             * @description # Restate code
              *
-             *     Restate error code describing this error */
+             *     Restate error code describing this error
+             */
             restate_code?: string | null;
           };
         };
@@ -3361,9 +3571,11 @@ export interface operations {
         content: {
           'application/json': {
             message: string;
-            /** @description # Restate code
+            /**
+             * @description # Restate code
              *
-             *     Restate error code describing this error */
+             *     Restate error code describing this error
+             */
             restate_code?: string | null;
           };
         };
@@ -3376,9 +3588,11 @@ export interface operations {
         content: {
           'application/json': {
             message: string;
-            /** @description # Restate code
+            /**
+             * @description # Restate code
              *
-             *     Restate error code describing this error */
+             *     Restate error code describing this error
+             */
             restate_code?: string | null;
           };
         };
@@ -3418,9 +3632,11 @@ export interface operations {
         content: {
           'application/json': {
             message: string;
-            /** @description # Restate code
+            /**
+             * @description # Restate code
              *
-             *     Restate error code describing this error */
+             *     Restate error code describing this error
+             */
             restate_code?: string | null;
           };
         };
@@ -3432,9 +3648,11 @@ export interface operations {
         content: {
           'application/json': {
             message: string;
-            /** @description # Restate code
+            /**
+             * @description # Restate code
              *
-             *     Restate error code describing this error */
+             *     Restate error code describing this error
+             */
             restate_code?: string | null;
           };
         };
@@ -3447,9 +3665,11 @@ export interface operations {
         content: {
           'application/json': {
             message: string;
-            /** @description # Restate code
+            /**
+             * @description # Restate code
              *
-             *     Restate error code describing this error */
+             *     Restate error code describing this error
+             */
             restate_code?: string | null;
           };
         };
@@ -3462,9 +3682,11 @@ export interface operations {
         content: {
           'application/json': {
             message: string;
-            /** @description # Restate code
+            /**
+             * @description # Restate code
              *
-             *     Restate error code describing this error */
+             *     Restate error code describing this error
+             */
             restate_code?: string | null;
           };
         };
@@ -3497,9 +3719,11 @@ export interface operations {
         content: {
           'application/json': {
             message: string;
-            /** @description # Restate code
+            /**
+             * @description # Restate code
              *
-             *     Restate error code describing this error */
+             *     Restate error code describing this error
+             */
             restate_code?: string | null;
           };
         };
@@ -3511,9 +3735,11 @@ export interface operations {
         content: {
           'application/json': {
             message: string;
-            /** @description # Restate code
+            /**
+             * @description # Restate code
              *
-             *     Restate error code describing this error */
+             *     Restate error code describing this error
+             */
             restate_code?: string | null;
           };
         };
@@ -3526,9 +3752,11 @@ export interface operations {
         content: {
           'application/json': {
             message: string;
-            /** @description # Restate code
+            /**
+             * @description # Restate code
              *
-             *     Restate error code describing this error */
+             *     Restate error code describing this error
+             */
             restate_code?: string | null;
           };
         };
@@ -3541,9 +3769,11 @@ export interface operations {
         content: {
           'application/json': {
             message: string;
-            /** @description # Restate code
+            /**
+             * @description # Restate code
              *
-             *     Restate error code describing this error */
+             *     Restate error code describing this error
+             */
             restate_code?: string | null;
           };
         };
@@ -3576,9 +3806,11 @@ export interface operations {
         content: {
           'application/json': {
             message: string;
-            /** @description # Restate code
+            /**
+             * @description # Restate code
              *
-             *     Restate error code describing this error */
+             *     Restate error code describing this error
+             */
             restate_code?: string | null;
           };
         };
@@ -3590,9 +3822,11 @@ export interface operations {
         content: {
           'application/json': {
             message: string;
-            /** @description # Restate code
+            /**
+             * @description # Restate code
              *
-             *     Restate error code describing this error */
+             *     Restate error code describing this error
+             */
             restate_code?: string | null;
           };
         };
@@ -3605,9 +3839,11 @@ export interface operations {
         content: {
           'application/json': {
             message: string;
-            /** @description # Restate code
+            /**
+             * @description # Restate code
              *
-             *     Restate error code describing this error */
+             *     Restate error code describing this error
+             */
             restate_code?: string | null;
           };
         };
@@ -3620,9 +3856,11 @@ export interface operations {
         content: {
           'application/json': {
             message: string;
-            /** @description # Restate code
+            /**
+             * @description # Restate code
              *
-             *     Restate error code describing this error */
+             *     Restate error code describing this error
+             */
             restate_code?: string | null;
           };
         };
@@ -3632,15 +3870,19 @@ export interface operations {
   restart_as_new_invocation: {
     parameters: {
       query?: {
-        /** @description From which entry index the invocation should restart from.
+        /**
+         * @description From which entry index the invocation should restart from.
          *     By default the invocation restarts from the beginning (equivalent to 'from = 0'), retaining only the input of the original invocation.
          *     When greater than 0, the new invocation will copy the old journal prefix up to 'from' included, plus eventual completions for commands in the given prefix.
-         *     If the journal prefix contains commands that have not been completed, this operation will fail. */
+         *     If the journal prefix contains commands that have not been completed, this operation will fail.
+         */
         from?: null | components['schemas']['u32'];
-        /** @description When restarting from journal prefix, provide a deployment id to use to replace the currently pinned deployment id.
+        /**
+         * @description When restarting from journal prefix, provide a deployment id to use to replace the currently pinned deployment id.
          *     If 'latest', use the latest deployment id. If 'keep', keeps the pinned deployment id.
          *     When not provided, the invocation will resume on latest.
-         *     Note: this parameter can be used only in combination with 'from'. */
+         *     Note: this parameter can be used only in combination with 'from'.
+         */
         deployment?:
           | null
           | (
@@ -3677,9 +3919,11 @@ export interface operations {
         content: {
           'application/json': {
             message: string;
-            /** @description # Restate code
+            /**
+             * @description # Restate code
              *
-             *     Restate error code describing this error */
+             *     Restate error code describing this error
+             */
             restate_code?: string | null;
           };
         };
@@ -3691,9 +3935,11 @@ export interface operations {
         content: {
           'application/json': {
             message: string;
-            /** @description # Restate code
+            /**
+             * @description # Restate code
              *
-             *     Restate error code describing this error */
+             *     Restate error code describing this error
+             */
             restate_code?: string | null;
           };
         };
@@ -3706,9 +3952,11 @@ export interface operations {
         content: {
           'application/json': {
             message: string;
-            /** @description # Restate code
+            /**
+             * @description # Restate code
              *
-             *     Restate error code describing this error */
+             *     Restate error code describing this error
+             */
             restate_code?: string | null;
           };
         };
@@ -3721,9 +3969,11 @@ export interface operations {
         content: {
           'application/json': {
             message: string;
-            /** @description # Restate code
+            /**
+             * @description # Restate code
              *
-             *     Restate error code describing this error */
+             *     Restate error code describing this error
+             */
             restate_code?: string | null;
           };
         };
@@ -3736,9 +3986,11 @@ export interface operations {
         content: {
           'application/json': {
             message: string;
-            /** @description # Restate code
+            /**
+             * @description # Restate code
              *
-             *     Restate error code describing this error */
+             *     Restate error code describing this error
+             */
             restate_code?: string | null;
           };
         };
@@ -3751,9 +4003,11 @@ export interface operations {
         content: {
           'application/json': {
             message: string;
-            /** @description # Restate code
+            /**
+             * @description # Restate code
              *
-             *     Restate error code describing this error */
+             *     Restate error code describing this error
+             */
             restate_code?: string | null;
           };
         };
@@ -3766,9 +4020,11 @@ export interface operations {
         content: {
           'application/json': {
             message: string;
-            /** @description # Restate code
+            /**
+             * @description # Restate code
              *
-             *     Restate error code describing this error */
+             *     Restate error code describing this error
+             */
             restate_code?: string | null;
           };
         };
@@ -3778,10 +4034,12 @@ export interface operations {
   resume_invocation: {
     parameters: {
       query?: {
-        /** @description When resuming from paused/suspended, provide a deployment id to use to replace the currently pinned deployment id.
+        /**
+         * @description When resuming from paused/suspended, provide a deployment id to use to replace the currently pinned deployment id.
          *     If 'latest', use the latest deployment id. If 'keep', keeps the pinned deployment id.
          *     When not provided, the invocation will resume on the pinned deployment id.
-         *     When provided and the invocation is either running, or no deployment is pinned, this operation will fail. */
+         *     When provided and the invocation is either running, or no deployment is pinned, this operation will fail.
+         */
         deployment?:
           | null
           | (
@@ -3816,9 +4074,11 @@ export interface operations {
         content: {
           'application/json': {
             message: string;
-            /** @description # Restate code
+            /**
+             * @description # Restate code
              *
-             *     Restate error code describing this error */
+             *     Restate error code describing this error
+             */
             restate_code?: string | null;
           };
         };
@@ -3830,9 +4090,11 @@ export interface operations {
         content: {
           'application/json': {
             message: string;
-            /** @description # Restate code
+            /**
+             * @description # Restate code
              *
-             *     Restate error code describing this error */
+             *     Restate error code describing this error
+             */
             restate_code?: string | null;
           };
         };
@@ -3845,9 +4107,11 @@ export interface operations {
         content: {
           'application/json': {
             message: string;
-            /** @description # Restate code
+            /**
+             * @description # Restate code
              *
-             *     Restate error code describing this error */
+             *     Restate error code describing this error
+             */
             restate_code?: string | null;
           };
         };
@@ -3860,9 +4124,11 @@ export interface operations {
         content: {
           'application/json': {
             message: string;
-            /** @description # Restate code
+            /**
+             * @description # Restate code
              *
-             *     Restate error code describing this error */
+             *     Restate error code describing this error
+             */
             restate_code?: string | null;
           };
         };
@@ -3875,9 +4141,11 @@ export interface operations {
         content: {
           'application/json': {
             message: string;
-            /** @description # Restate code
+            /**
+             * @description # Restate code
              *
-             *     Restate error code describing this error */
+             *     Restate error code describing this error
+             */
             restate_code?: string | null;
           };
         };
