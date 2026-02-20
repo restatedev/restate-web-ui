@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
 import { UnauthorizedError, RestateError } from '@restate/util/errors';
 import { query } from '@restate/data-access/query';
-import { getAuthToken } from '@restate/util/auth-token';
+import { getAuthToken, getRestateVersion } from '@restate/util/api-config';
 import type { paths } from '@restate/data-access/admin-api-spec';
 import { UseMutationOptions, UseQueryOptions } from '@tanstack/react-query';
 import type { FetchResponse, Middleware } from 'openapi-fetch';
@@ -22,6 +22,10 @@ const authMiddleware: Middleware = {
     const token = getAuthToken();
     if (token) {
       request.headers.set('Authorization', `Bearer ${token}`);
+    }
+    const version = getRestateVersion();
+    if (version) {
+      request.headers.set('x-restate-version', version);
     }
     return request;
   },
