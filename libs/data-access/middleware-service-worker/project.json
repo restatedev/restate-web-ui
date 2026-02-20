@@ -1,9 +1,0 @@
-{
-  "name": "middleware-service-worker",
-  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/data-access/middleware-service-worker/src",
-  "projectType": "library",
-  "tags": [],
-  "// targets": "to see all targets run: nx show project middleware-service-worker --web",
-  "targets": {}
-}
