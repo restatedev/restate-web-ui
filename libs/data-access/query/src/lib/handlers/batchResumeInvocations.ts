@@ -1,4 +1,4 @@
-import type { BatchResumeInvocationsRequestBody } from '@restate/data-access/admin-api/spec';
+import type { BatchResumeInvocationsRequestBody } from '@restate/data-access/admin-api-spec';
 import { type QueryContext } from './shared';
 import { batchProcessInvocations } from './batchProcessor';
 import { getInvocationIds } from './getInvocationIds';

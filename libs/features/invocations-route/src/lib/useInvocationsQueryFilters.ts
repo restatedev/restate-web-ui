@@ -2,7 +2,7 @@ import { FilterItem } from '@restate/data-access/admin-api';
 import {
   components,
   SortInvocations,
-} from '@restate/data-access/admin-api/spec';
+} from '@restate/data-access/admin-api-spec';
 import {
   QueryClause,
   QueryClauseSchema,

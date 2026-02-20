@@ -3,13 +3,13 @@ import type {
   FilterItem,
   BatchInvocationsRequestBody,
   components,
-} from '@restate/data-access/admin-api/spec';
+} from '@restate/data-access/admin-api-spec';
 import { RestateError } from '@restate/util/errors';
 import {
   createRouter,
   createRoutes,
   createStorageKey,
-  Middleware,
+  type Middleware,
 } from '@remix-run/fetch-router';
 import {
   type QueryContext,
@@ -136,7 +136,7 @@ async function extractErrorPayload(res: Response): Promise<string | undefined> {
   return (await res.text()) as string;
 }
 
-export const routes = createRoutes({
+export const routes = createRoutes('/query', {
   invocations: {
     list: { method: 'POST', pattern: '/invocations' },
     count: { method: 'POST', pattern: '/invocations/count' },
@@ -186,11 +186,12 @@ export const routes = createRoutes({
   },
 });
 
-const queryRouter = createRouter();
+const router = createRouter({
+  defaultHandler: () => new Response('Not implemented', { status: 501 }),
+  middleware: [handlersMiddleware],
+});
 
-queryRouter.use(handlersMiddleware);
-
-queryRouter.map(routes, {
+router.map(routes, {
   invocations: {
     async list(ctx) {
       const { listInvocations } = ctx.storage.get(handlersKey);
@@ -312,15 +313,8 @@ queryRouter.map(routes, {
   },
 });
 
-const router = createRouter({
-  defaultHandler: () => new Response('Not implemented', { status: 501 }),
-});
-
-router.mount('/query', queryRouter);
-
 async function queryHandler(req: Request) {
-  const response = await router.dispatch(req);
-  return response ?? new Response('Not implemented', { status: 501 });
+  return router.fetch(req);
 }
 
 export async function query(req: Request) {
@@ -334,6 +328,8 @@ export async function query(req: Request) {
           headers: { 'Content-Type': 'application/json' },
         },
       );
+    } else if (error instanceof DOMException && error.name === 'AbortError') {
+      throw error;
     } else {
       console.log('/query call failed!', error);
       return new Response(

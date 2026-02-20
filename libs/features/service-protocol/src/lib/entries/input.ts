@@ -6,7 +6,7 @@ import {
   Invocation,
   JournalEntryV2,
   JournalRawEntry,
-} from '@restate/data-access/admin-api/spec';
+} from '@restate/data-access/admin-api-spec';
 import {
   decodeBinary,
   getEntryResultV2,

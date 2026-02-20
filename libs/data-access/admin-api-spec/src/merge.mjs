@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import query from './lib/api/query.json' with { type: "json" };
-import spec from './lib/api/spec.json' with { type: "json" };
+import query from './lib/query.json' with { type: "json" };
+import spec from './lib/spec.json' with { type: "json" };
 import { writeFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -29,7 +29,7 @@ const output = {
   },
 };
 writeFileSync(
-  path.join(__dirname, './lib/api/output.json'),
+  path.join(__dirname, './lib/output.json'),
   JSON.stringify(output, null, 2),
   'utf8'
 );

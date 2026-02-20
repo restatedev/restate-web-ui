@@ -1,5 +1,5 @@
 import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api-hooks';
-import { Invocation } from '@restate/data-access/admin-api/spec';
+import { Invocation } from '@restate/data-access/admin-api-spec';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { JournalV2 } from './JournalV2';
 import { tv } from '@restate/util/styles';

@@ -28,11 +28,8 @@
       "@restate/data-access/admin-api-hooks": [
         "libs/data-access/admin-api-hooks/src/index.ts"
       ],
-      "@restate/data-access/admin-api/spec": [
-        "libs/data-access/admin-api/src/api.ts"
-      ],
-      "@restate/data-access/middleware-service-worker": [
-        "libs/data-access/middleware-service-worker/src/index.ts"
+      "@restate/data-access/admin-api-spec": [
+        "libs/data-access/admin-api-spec/src/index.ts"
       ],
       "@restate/data-access/query": ["libs/data-access/query/src/index.ts"],
       "@restate/features/batch-operations": [
@@ -114,6 +111,7 @@
       "@restate/ui/split-button": ["libs/ui/split-button/src/index.ts"],
       "@restate/ui/table": ["libs/ui/table/src/index.ts"],
       "@restate/ui/tooltip": ["libs/ui/tooltip/src/index.ts"],
+      "@restate/util/auth-token": ["libs/util/auth-token/src/index.ts"],
       "@restate/util/binary": ["libs/util/binary/src/index.ts"],
       "@restate/util/errors": ["libs/util/errors/src/index.ts"],
       "@restate/util/feature-flag": ["libs/util/feature-flag/src/index.ts"],

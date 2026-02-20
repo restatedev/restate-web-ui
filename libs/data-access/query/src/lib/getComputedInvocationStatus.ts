@@ -1,7 +1,7 @@
 import type {
   InvocationComputedStatus2,
   RawInvocation,
-} from '@restate/data-access/admin-api/spec';
+} from '@restate/data-access/admin-api-spec';
 
 export function getComputedInvocationStatus(invocation: RawInvocation): {
   isRetrying: boolean;

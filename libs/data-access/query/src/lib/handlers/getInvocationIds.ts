@@ -1,7 +1,7 @@
 import type {
   FilterItem,
   RawInvocation,
-} from '@restate/data-access/admin-api/spec';
+} from '@restate/data-access/admin-api-spec';
 import { convertInvocationsFilters } from '../convertFilters';
 import { type QueryContext } from './shared';
 

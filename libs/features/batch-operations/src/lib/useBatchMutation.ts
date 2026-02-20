@@ -6,7 +6,7 @@ import {
   useBatchResumeInvocations,
   useBatchRestateAsNewInvocations,
 } from '@restate/data-access/admin-api-hooks';
-import type { BatchInvocationsResponse } from '@restate/data-access/admin-api/spec';
+import type { BatchInvocationsResponse } from '@restate/data-access/admin-api-spec';
 import { showSuccessNotification } from '@restate/ui/notification';
 import { formatNumber } from '@restate/util/intl';
 import { OperationType } from './types';

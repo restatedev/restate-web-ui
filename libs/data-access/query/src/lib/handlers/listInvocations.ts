@@ -1,7 +1,7 @@
 import type {
   FilterItem,
   components,
-} from '@restate/data-access/admin-api/spec';
+} from '@restate/data-access/admin-api-spec';
 import { convertInvocation } from '../convertInvocation';
 import { convertInvocationsFilters } from '../convertFilters';
 import { type QueryContext, SYS_INVOCATION_LIST_COLUMNS } from './shared';

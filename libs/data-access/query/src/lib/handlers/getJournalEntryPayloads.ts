@@ -1,7 +1,7 @@
 import type {
   JournalEntryPayloads,
   JournalRawEntry,
-} from '@restate/data-access/admin-api/spec';
+} from '@restate/data-access/admin-api-spec';
 import { bytesToBase64, hexToUint8Array } from '@restate/util/binary';
 import type { QueryContext } from './shared';
 import { fromBinary } from '@bufbuild/protobuf';

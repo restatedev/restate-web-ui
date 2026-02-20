@@ -1,4 +1,4 @@
-import type { Handler } from '@restate/data-access/admin-api/spec';
+import type { Handler } from '@restate/data-access/admin-api-spec';
 import type { QueryContext } from './shared';
 
 export async function getInbox(

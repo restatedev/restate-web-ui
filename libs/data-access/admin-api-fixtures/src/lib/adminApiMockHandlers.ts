@@ -1,4 +1,4 @@
-import * as adminApi from '@restate/data-access/admin-api/spec';
+import * as adminApi from '@restate/data-access/admin-api-spec';
 import { http, HttpResponse } from 'msw';
 import { adminApiDb, getName } from './adminApiDb';
 

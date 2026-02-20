@@ -1,4 +1,4 @@
-import * as adminApi from '@restate/data-access/admin-api/spec';
+import * as adminApi from '@restate/data-access/admin-api-spec';
 import { Icon, IconName } from '@restate/ui/icons';
 import { useRegisterDeploymentContext } from './Context';
 import { Disclosure, DisclosurePanel } from 'react-aria-components';
