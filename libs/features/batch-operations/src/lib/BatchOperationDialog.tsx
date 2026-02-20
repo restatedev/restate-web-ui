@@ -3,7 +3,7 @@ import { useCountInvocations } from '@restate/data-access/admin-api-hooks';
 import type {
   BatchInvocationsRequestBody,
   BatchInvocationsResponse,
-} from '@restate/data-access/admin-api/spec';
+} from '@restate/data-access/admin-api-spec';
 import { ConfirmationDialog } from '@restate/ui/dialog';
 import { Icon, IconName } from '@restate/ui/icons';
 import { FormFieldSelect, Option } from '@restate/ui/form-field';

@@ -1,0 +1,22 @@
+{
+  "name": "admin-api-spec",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/data-access/admin-api-spec/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project admin-api-spec --web",
+  "targets": {
+    "create": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "./libs/data-access/admin-api-spec/src/merge.mjs",
+          "redocly lint ./libs/data-access/admin-api-spec/src/lib/output.json || true",
+          "openapi-typescript ./libs/data-access/admin-api-spec/src/lib/output.json -o ./libs/data-access/admin-api-spec/src/lib/index.d.ts",
+          "nx format"
+        ],
+        "parallel": false
+      }
+    }
+  }
+}

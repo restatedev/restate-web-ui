@@ -28,10 +28,10 @@
       "@restate/data-access/admin-api-hooks": [
         "libs/data-access/admin-api-hooks/src/index.ts"
       ],
-      "@restate/data-access/admin-api/spec": [
-        "libs/data-access/admin-api/src/api.ts"
+      "@restate/data-access/admin-api-spec": [
+        "libs/data-access/admin-api-spec/src/index.ts"
       ],
-"@restate/data-access/query": ["libs/data-access/query/src/index.ts"],
+      "@restate/data-access/query": ["libs/data-access/query/src/index.ts"],
       "@restate/features/batch-operations": [
         "libs/features/batch-operations/src/index.ts"
       ],

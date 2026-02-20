@@ -1,6 +1,6 @@
 import { InlineTooltip } from '@restate/ui/tooltip';
 import { ComponentProps, PropsWithChildren } from 'react';
-import * as adminApi from '@restate/data-access/admin-api/spec';
+import * as adminApi from '@restate/data-access/admin-api-spec';
 type HandlerType = Exclude<
   adminApi.components['schemas']['HandlerMetadata']['ty'],
   undefined | null

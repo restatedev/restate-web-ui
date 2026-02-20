@@ -4,7 +4,7 @@ import type {
   Invocation,
   JournalEntryV2,
   JournalRawEntry,
-} from '@restate/data-access/admin-api/spec';
+} from '@restate/data-access/admin-api-spec';
 
 export function parseResults(result?: any): {
   value?: string;

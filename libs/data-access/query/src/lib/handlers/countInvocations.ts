@@ -1,4 +1,4 @@
-import type { FilterItem } from '@restate/data-access/admin-api/spec';
+import type { FilterItem } from '@restate/data-access/admin-api-spec';
 import { convertInvocationsFilters } from '../convertFilters';
 import { type QueryContext } from './shared';
 

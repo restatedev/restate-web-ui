@@ -5,7 +5,7 @@ import type {
   FilterNumberItem,
   FilterStringListItem,
   FilterNullItem,
-} from '@restate/data-access/admin-api/spec';
+} from '@restate/data-access/admin-api-spec';
 
 function convertFilterNumberToSqlClause(
   filter: FilterNumberItem & Pick<FilterItem, 'field'>,

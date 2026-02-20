@@ -23,7 +23,7 @@ import type {
   RunJournalEntryType,
   SetStateJournalEntryType,
   SleepJournalEntryType,
-} from '@restate/data-access/admin-api/spec';
+} from '@restate/data-access/admin-api-spec';
 import {
   getState,
   getStateKeys,

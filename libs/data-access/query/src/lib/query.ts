@@ -3,7 +3,7 @@ import type {
   FilterItem,
   BatchInvocationsRequestBody,
   components,
-} from '@restate/data-access/admin-api/spec';
+} from '@restate/data-access/admin-api-spec';
 import { RestateError } from '@restate/util/errors';
 import {
   createRouter,

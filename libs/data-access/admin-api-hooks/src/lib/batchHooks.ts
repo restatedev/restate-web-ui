@@ -1,7 +1,7 @@
 import type {
   BatchInvocationsRequestBody,
   BatchInvocationsResponse,
-} from '@restate/data-access/admin-api/spec';
+} from '@restate/data-access/admin-api-spec';
 import {
   MutationOptions,
   useMutation,

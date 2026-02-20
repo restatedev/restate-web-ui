@@ -10,7 +10,7 @@ import type {
   BatchResumeInvocationsRequestBody,
   BatchInvocationsResponse,
   FilterItem,
-} from '@restate/data-access/admin-api/spec';
+} from '@restate/data-access/admin-api-spec';
 import { showProgressNotification } from '@restate/ui/notification';
 import {
   formatNumber,
