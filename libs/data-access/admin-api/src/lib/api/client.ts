@@ -8,7 +8,7 @@ import { UseMutationOptions, UseQueryOptions } from '@tanstack/react-query';
 import type { FetchResponse, Middleware } from 'openapi-fetch';
 import createClient from 'openapi-fetch';
 
-const client = createClient<paths>({
+export const client = createClient<paths>({
   fetch: (input: Request) => {
     if (new URL(input.url).pathname.startsWith('/query/')) {
       return query(input);
