@@ -39,8 +39,8 @@ importers:
         specifier: 7.12.0
         version: 7.12.0(react-router@7.12.0(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(typescript@5.8.3)
       '@remix-run/fetch-router':
-        specifier: ^0.6.0
-        version: 0.6.0
+        specifier: ^0.16.0
+        version: 0.16.0
       '@stoplight/json-schema-viewer':
         specifier: 4.16.4
         version: 4.16.4(@babel/core@7.24.7)(@babel/template@7.27.2)(@stoplight/markdown-viewer@5.7.1(@stoplight/mosaic-code-viewer@1.53.4(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(@stoplight/mosaic@1.53.4(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(@stoplight/mosaic-code-viewer@1.53.4(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(@stoplight/mosaic@1.53.4(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
@@ -3496,23 +3496,17 @@ packages:
     peerDependencies:
       react: '>=16.8.0'
 
-  '@remix-run/fetch-router@0.6.0':
-    resolution: {integrity: sha512-N5AMK2XxTFO3d8AMRWphFoRos4NjvfZpQeZW859Ade+FgP1yYRZhEYep2T3FVPBUJWPqrG7c9lIxVLcVcZUBSQ==}
-
-  '@remix-run/form-data-parser@0.11.0':
-    resolution: {integrity: sha512-vD1xko5NntvKKzCOM6hAmCfUOPguIWJJ3WqcBFMqqUYlk3Z4j9t4CpvL0taq9gaB8kMtYN78lD4r8Nb8xXI4zw==}
-
-  '@remix-run/headers@0.12.0':
-    resolution: {integrity: sha512-eqVSL5UOIyqVx0NTqgtNKMKVokE9jPchkZHl/N13KKPQYw/leS8VCoX5zRhkB1UvcLyfj113LX0OvEcuNbc5Hg==}
-
-  '@remix-run/multipart-parser@0.11.0':
-    resolution: {integrity: sha512-AE/H+ok0fWOZb84sJ8vREOJiSwYoEoGL0rpHZSAiPmCkBKbnsmHCbiUtg5+wELem4Q0HAEY6vjVK83u9cIlAhw==}
+  '@remix-run/fetch-router@0.16.0':
+    resolution: {integrity: sha512-7X4sBkL3/64X0GJdOwP5f+sW8GrcAG1vBAX55Ysimafj/JaP4ibNgYQVZBg5ebG9cuumO3Gqzo4FCUUJp9uP3g==}
 
   '@remix-run/node-fetch-server@0.9.0':
     resolution: {integrity: sha512-SoLMv7dbH+njWzXnOY6fI08dFMI5+/dQ+vY3n8RnnbdG7MdJEgiP28Xj/xWlnRnED/aB6SFw56Zop+LbmaaKqA==}
 
-  '@remix-run/route-pattern@0.14.0':
-    resolution: {integrity: sha512-Wlq1LAsGZBJ5uEnUmxJDBQvpLKhay1mVvxmNl0oeKBOin6yWDB5YkJkSMAlYQi7mM/vVIDlqr183MiHi4SO7AA==}
+  '@remix-run/route-pattern@0.18.0':
+    resolution: {integrity: sha512-m0ySsUen9Xczzduiscms57rw5whE7HpqPW7SzjSEyWkLFV3sTbKairTildVDRlypLSyb34wKxCrYTRnsgdlhDA==}
+
+  '@remix-run/session@0.4.1':
+    resolution: {integrity: sha512-Bm6aKYgutb/raHZ3laloz8g/Qu7f3CeK3o4gUVDMxtEiAdWCzJamwHoTpGOc5+g1Kuy7z85v4M6nGrF06MFDSg==}
 
   '@rolldown/pluginutils@1.0.0-beta.27':
     resolution: {integrity: sha512-+d0F4MKMCbeVUJwG96uQ4SgAznZNSq93I3V+9NHA4OpvqG8mRCpGdKmK8l/dl02h2CCDHwW2FqilnTyDcAnqjA==}
@@ -14225,7 +14219,7 @@ snapshots:
 
   '@react-types/button@3.4.1(react@19.2.1)':
     dependencies:
-      '@react-types/shared': 3.33.0(react@19.2.1)
+      '@react-types/shared': 3.9.0(react@19.2.1)
       react: 19.2.1
 
   '@react-types/calendar@3.8.0(react@19.2.1)':
@@ -14317,7 +14311,7 @@ snapshots:
 
   '@react-types/radio@3.1.2(react@19.2.1)':
     dependencies:
-      '@react-types/shared': 3.33.0(react@19.2.1)
+      '@react-types/shared': 3.9.0(react@19.2.1)
       react: 19.2.1
 
   '@react-types/radio@3.9.2(react@19.2.1)':
@@ -14356,7 +14350,7 @@ snapshots:
   '@react-types/switch@3.1.2(react@19.2.1)':
     dependencies:
       '@react-types/checkbox': 3.10.3(react@19.2.1)
-      '@react-types/shared': 3.33.0(react@19.2.1)
+      '@react-types/shared': 3.9.0(react@19.2.1)
       react: 19.2.1
 
   '@react-types/switch@3.5.15(react@19.2.1)':
@@ -14382,7 +14376,7 @@ snapshots:
 
   '@react-types/textfield@3.3.0(react@19.2.1)':
     dependencies:
-      '@react-types/shared': 3.33.0(react@19.2.1)
+      '@react-types/shared': 3.9.0(react@19.2.1)
       react: 19.2.1
 
   '@react-types/tooltip@3.4.21(react@19.2.1)':
@@ -14514,24 +14508,16 @@ snapshots:
     dependencies:
       react: 19.2.1
 
-  '@remix-run/fetch-router@0.6.0':
+  '@remix-run/fetch-router@0.16.0':
     dependencies:
-      '@remix-run/form-data-parser': 0.11.0
-      '@remix-run/route-pattern': 0.14.0
-
-  '@remix-run/form-data-parser@0.11.0':
-    dependencies:
-      '@remix-run/multipart-parser': 0.11.0
-
-  '@remix-run/headers@0.12.0': {}
-
-  '@remix-run/multipart-parser@0.11.0':
-    dependencies:
-      '@remix-run/headers': 0.12.0
+      '@remix-run/route-pattern': 0.18.0
+      '@remix-run/session': 0.4.1
 
   '@remix-run/node-fetch-server@0.9.0': {}
 
-  '@remix-run/route-pattern@0.14.0': {}
+  '@remix-run/route-pattern@0.18.0': {}
+
+  '@remix-run/session@0.4.1': {}
 
   '@rolldown/pluginutils@1.0.0-beta.27': {}
 
