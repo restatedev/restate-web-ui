@@ -328,6 +328,8 @@ export async function query(req: Request) {
           headers: { 'Content-Type': 'application/json' },
         },
       );
+    } else if (error instanceof DOMException && error.name === 'AbortError') {
+      throw error;
     } else {
       console.log('/query call failed!', error);
       return new Response(
