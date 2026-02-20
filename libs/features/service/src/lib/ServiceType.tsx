@@ -1,4 +1,4 @@
-import type { ServiceType } from '@restate/data-access/admin-api';
+import type { ServiceType } from '@restate/data-access/admin-api-spec';
 import { ServiceTypeExplainer } from '@restate/features/explainers';
 import { Badge } from '@restate/ui/badge';
 import { tv } from '@restate/util/styles';

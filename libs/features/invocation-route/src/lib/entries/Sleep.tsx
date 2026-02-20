@@ -1,4 +1,4 @@
-import { JournalEntryV2 } from '@restate/data-access/admin-api';
+import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
 import { EntryProps } from './types';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 import { formatDurations } from '@restate/util/intl';

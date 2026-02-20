@@ -11,7 +11,7 @@ import {
   Deployment,
   getEndpoint,
   isHttpDeployment,
-} from '@restate/data-access/admin-api';
+} from '@restate/data-access/admin-api-spec';
 import { ListBoxItem } from '@restate/ui/listbox';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Revision } from '@restate/features/deployment';

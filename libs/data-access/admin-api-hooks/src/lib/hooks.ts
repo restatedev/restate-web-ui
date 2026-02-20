@@ -23,6 +23,8 @@ import type {
   FilterItem,
   Service,
   StateResponse,
+} from '@restate/data-access/admin-api-spec';
+import type {
   HookQueryOptions,
   HookMutationOptions,
 } from '@restate/data-access/admin-api';

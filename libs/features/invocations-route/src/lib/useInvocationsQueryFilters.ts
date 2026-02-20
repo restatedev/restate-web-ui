@@ -1,4 +1,4 @@
-import { FilterItem } from '@restate/data-access/admin-api';
+import { FilterItem } from '@restate/data-access/admin-api-spec';
 import {
   components,
   SortInvocations,

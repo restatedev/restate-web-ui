@@ -1,4 +1,4 @@
-import { Invocation } from '@restate/data-access/admin-api';
+import { Invocation } from '@restate/data-access/admin-api-spec';
 import { DropdownItem } from '@restate/ui/dropdown';
 import { Link } from '@restate/ui/link';
 import { tv } from '@restate/util/styles';

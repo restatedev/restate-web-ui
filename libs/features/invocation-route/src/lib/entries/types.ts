@@ -1,4 +1,4 @@
-import type { JournalEntryV2 } from '@restate/data-access/admin-api';
+import type { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
 import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api-hooks';
 import { RestateError } from '@restate/util/errors';
 

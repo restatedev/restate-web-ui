@@ -1,7 +1,7 @@
 import {
   Invocation,
   InvocationComputedStatus2,
-} from '@restate/data-access/admin-api';
+} from '@restate/data-access/admin-api-spec';
 import { useGetPausedError } from '@restate/data-access/admin-api-hooks';
 import { Badge } from '@restate/ui/badge';
 import { Button } from '@restate/ui/button';

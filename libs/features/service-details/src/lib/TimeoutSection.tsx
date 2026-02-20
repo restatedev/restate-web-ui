@@ -9,7 +9,7 @@ import { PropsWithChildren } from 'react';
 import { Icon, IconName } from '@restate/ui/icons';
 import { InlineTooltip } from '@restate/ui/tooltip';
 import { Link } from '@restate/ui/link';
-import { getProtocolType } from '@restate/data-access/admin-api';
+import { getProtocolType } from '@restate/data-access/admin-api-spec';
 import { Warning } from './Explainers';
 
 export function TimeoutSection({

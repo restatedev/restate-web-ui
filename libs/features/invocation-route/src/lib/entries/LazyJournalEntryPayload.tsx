@@ -1,7 +1,7 @@
 import type {
   JournalEntryPayloads,
   JournalEntryV2,
-} from '@restate/data-access/admin-api';
+} from '@restate/data-access/admin-api-spec';
 import { useGetJournalEntryPayloads } from '@restate/data-access/admin-api-hooks';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';

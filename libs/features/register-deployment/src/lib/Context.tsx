@@ -11,7 +11,7 @@ import {
 } from 'react';
 import { ListData, useListData } from 'react-stately';
 import * as adminApi from '@restate/data-access/admin-api-spec';
-import { getEndpoint } from '@restate/data-access/admin-api';
+import { getEndpoint } from '@restate/data-access/admin-api-spec';
 import { useDialog } from '@restate/ui/dialog';
 import { showSuccessNotification } from '@restate/ui/notification';
 import { RestateError } from '@restate/util/errors';

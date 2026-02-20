@@ -3,7 +3,7 @@ import {
   getEndpoint,
   Handler as HandlerType,
   ServiceType,
-} from '@restate/data-access/admin-api';
+} from '@restate/data-access/admin-api-spec';
 import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from '@restate/util/styles';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';

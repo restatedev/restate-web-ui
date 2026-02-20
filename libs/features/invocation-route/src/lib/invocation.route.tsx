@@ -20,7 +20,10 @@ import { WorkflowKeySection } from './WorkflowKeySection';
 import { tv } from '@restate/util/styles';
 import { Copy } from '@restate/ui/copy';
 import { useEffect, useRef, useState } from 'react';
-import { Invocation, JournalEntryV2 } from '@restate/data-access/admin-api';
+import {
+  Invocation,
+  JournalEntryV2,
+} from '@restate/data-access/admin-api-spec';
 import { RestateError } from '@restate/util/errors';
 
 const metadataContainerStyles = tv({

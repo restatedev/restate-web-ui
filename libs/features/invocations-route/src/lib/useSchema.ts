@@ -1,4 +1,4 @@
-import { getEndpoint } from '@restate/data-access/admin-api';
+import { getEndpoint } from '@restate/data-access/admin-api-spec';
 import {
   useListDeployments,
   useListSubscriptions,

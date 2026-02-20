@@ -1,4 +1,4 @@
-import { JournalEntryV2 } from '@restate/data-access/admin-api';
+import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
 import { useGetInvocationsJournalWithInvocationsV2 } from '@restate/data-access/admin-api-hooks';
 import { useMemo } from 'react';
 

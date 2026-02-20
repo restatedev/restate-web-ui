@@ -1,4 +1,4 @@
-import { Invocation, ServiceType } from '@restate/data-access/admin-api';
+import { Invocation, ServiceType } from '@restate/data-access/admin-api-spec';
 import { Cell } from '@restate/ui/table';
 import {
   DateTooltip,

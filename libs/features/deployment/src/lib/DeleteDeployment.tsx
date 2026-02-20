@@ -13,7 +13,7 @@ import { Button, SubmitButton } from '@restate/ui/button';
 import { ErrorBanner } from '@restate/ui/error';
 import { FormFieldInput } from '@restate/ui/form-field';
 import { FormEvent, PropsWithChildren, useId, useState } from 'react';
-import { getEndpoint } from '@restate/data-access/admin-api';
+import { getEndpoint } from '@restate/data-access/admin-api-spec';
 import {
   useDeleteDeployment,
   useListDeployments,

@@ -1,7 +1,7 @@
 import type {
   Invocation,
   JournalEntryV2,
-} from '@restate/data-access/admin-api';
+} from '@restate/data-access/admin-api-spec';
 import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api-hooks';
 import { formatDurations } from '@restate/util/intl';
 import { getDuration } from '@restate/util/snapshot-time';
