@@ -103,11 +103,11 @@ export function JournalV2({
     refetchInterval(query) {
       if (
         query.state.status === 'success' &&
-        !query.state.data?.completed_at &&
-        query.state.data?.journal_commands_size !==
-          query.state.data?.journal?.entries?.filter(
-            (e) => e.category === 'command',
-          ).length &&
+        (!query.state.data?.completed_at ||
+          query.state.data?.journal_commands_size !==
+            query.state.data?.journal?.entries?.filter(
+              (e) => e.category === 'command',
+            ).length) &&
         isLive
       ) {
         return 1000;
