@@ -97,13 +97,16 @@ export function ScrollableTimeline({
       if (Math.abs(e.deltaX) < Math.abs(e.deltaY)) return;
       e.preventDefault();
 
+      let deltaX = e.deltaX;
+      if (e.deltaMode === 1) deltaX *= 16;
+
       const {
         start: s,
         traceDuration: td,
         viewportDuration: vd,
         viewportStart: vs,
       } = stateRef.current;
-      const timeDelta = (e.deltaX / container.clientWidth) * vd;
+      const timeDelta = (deltaX / container.clientWidth) * vd;
       const newVS = Math.max(s, Math.min(s + td - vd, vs + timeDelta));
       setViewport(newVS, newVS + vd);
     };
