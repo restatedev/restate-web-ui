@@ -1,13 +1,16 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useMove } from 'react-aria';
 import { tv } from '@restate/util/styles';
+import { formatDurations, formatRange } from '@restate/util/intl';
+import { getDuration } from '@restate/util/snapshot-time';
+import { Tooltip, TooltipContent } from '@restate/ui/tooltip';
 
 const styles = tv({
   base: '',
 });
 
 const panAreaStyles = tv({
-  base: 'absolute inset-y-0 z-10 cursor-grab rounded-md shadow-[0_0_0_1px_rgba(96,165,250,0.2),0_1px_3px_1px_rgba(96,165,250,0.08)] backdrop-brightness-110 backdrop-saturate-[1.1] transition-shadow duration-[140ms] ease-out hover:shadow-[0_0_0_1px_rgba(96,165,250,0.3),0_1px_5px_2px_rgba(96,165,250,0.1)] active:shadow-[0_0_0_1px_rgba(96,165,250,0.4),0_2px_6px_2px_rgba(96,165,250,0.12)]',
+  base: 'h-full cursor-grab rounded-md shadow-[0_0_0_1px_rgba(96,165,250,0.2),0_1px_3px_1px_rgba(96,165,250,0.08)] backdrop-brightness-110 backdrop-saturate-[1.1] transition-shadow duration-[140ms] ease-out hover:shadow-[0_0_0_1px_rgba(96,165,250,0.3),0_1px_5px_2px_rgba(96,165,250,0.1)] active:shadow-[0_0_0_1px_rgba(96,165,250,0.4),0_2px_6px_2px_rgba(96,165,250,0.12)]',
 });
 
 const MIN_VIEWPORT_DURATION = 100;
@@ -33,9 +36,13 @@ export function ViewportSelector({
   onViewportChange?: (start: number, end: number) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const panRef = useRef<HTMLDivElement>(null);
   const optimisticViewportRef = useRef<{ start: number; end: number } | null>(
     null,
   );
+
+  const [isDragging, setIsDragging] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
 
   const displayStart = optimisticViewportRef.current?.start ?? viewportStart;
   const displayEnd = optimisticViewportRef.current?.end ?? viewportEnd;
@@ -66,6 +73,7 @@ export function ViewportSelector({
 
   const { moveProps: leftHandleMoveProps } = useMove({
     onMoveStart() {
+      setIsDragging(true);
       optimisticViewportRef.current = {
         start: viewportStart,
         end: viewportEnd,
@@ -87,6 +95,7 @@ export function ViewportSelector({
       setViewport(newStart, prev.end);
     },
     onMoveEnd() {
+      setIsDragging(false);
       const final = optimisticViewportRef.current;
       optimisticViewportRef.current = null;
       if (final) {
@@ -98,6 +107,7 @@ export function ViewportSelector({
 
   const { moveProps: rightHandleMoveProps } = useMove({
     onMoveStart() {
+      setIsDragging(true);
       optimisticViewportRef.current = {
         start: viewportStart,
         end: viewportEnd,
@@ -119,6 +129,7 @@ export function ViewportSelector({
       setViewport(prev.start, newEnd);
     },
     onMoveEnd() {
+      setIsDragging(false);
       const final = optimisticViewportRef.current;
       optimisticViewportRef.current = null;
       if (final) {
@@ -130,6 +141,7 @@ export function ViewportSelector({
 
   const { moveProps: panMoveProps } = useMove({
     onMoveStart() {
+      setIsDragging(true);
       optimisticViewportRef.current = {
         start: viewportStart,
         end: viewportEnd,
@@ -160,6 +172,7 @@ export function ViewportSelector({
       setViewport(newStart, newEnd);
     },
     onMoveEnd() {
+      setIsDragging(false);
       const final = optimisticViewportRef.current;
       optimisticViewportRef.current = null;
       if (final) {
@@ -174,6 +187,17 @@ export function ViewportSelector({
   }, [start, end, setViewport]);
 
   if (traceDuration <= 0) return null;
+
+  const isZoomed = displayStart > start || displayEnd < end;
+  const isTooltipOpen = isZoomed && (isHovering || isDragging);
+  const tooltipContent = isZoomed ? (
+    <span>
+      {formatRange(new Date(displayStart), new Date(displayEnd))}{' '}
+      <strong>
+        ({formatDurations(getDuration(Math.round(displayEnd - displayStart)))})
+      </strong>
+    </span>
+  ) : null;
 
   const leftPercent = ((displayStart - start) / traceDuration) * 100;
   const widthPercent = ((displayEnd - displayStart) / traceDuration) * 100;
@@ -213,16 +237,36 @@ export function ViewportSelector({
 
       {/* Selection box - for panning */}
       <div className="absolute inset-x-2 inset-y-0" />
-      <div
-        {...panMoveProps}
-        tabIndex={0}
-        className={panAreaStyles()}
-        style={{
-          left: `calc(${leftPercent}% + ${PADDING}px)`,
-          right: `calc(${rightPercent}% + ${PADDING}px)`,
-        }}
-        onDoubleClick={handleDoubleClick}
-      />
+      <Tooltip
+        delay={isDragging ? 0 : 250}
+        isOpen={isTooltipOpen}
+        onOpenChange={(open) => setIsHovering(open)}
+      >
+        <div
+          className="absolute inset-y-0 z-10"
+          style={{
+            left: `calc(${leftPercent}% + ${PADDING}px)`,
+            right: `calc(${rightPercent}% + ${PADDING}px)`,
+          }}
+          onMouseEnter={() => setIsHovering(true)}
+          onMouseLeave={() => setIsHovering(false)}
+        >
+          <div
+            ref={panRef}
+            {...panMoveProps}
+            tabIndex={0}
+            className={panAreaStyles()}
+            onDoubleClick={handleDoubleClick}
+          />
+        </div>
+        <TooltipContent size="sm" triggerRef={panRef}>
+          <div className="flex items-start gap-4 py-0 break-all **:text-xs **:text-gray-200">
+            <div className="flex flex-col items-start gap-1">
+              {tooltipContent}
+            </div>
+          </div>
+        </TooltipContent>
+      </Tooltip>
 
       {/* Right resize handle */}
       <div

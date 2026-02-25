@@ -5,6 +5,8 @@ interface TooltipProps {
   disabled?: boolean;
   delay?: number;
   closeDelay?: number;
+  isOpen?: boolean;
+  onOpenChange?: (isOpen: boolean) => void;
 }
 
 export function Tooltip({
@@ -12,9 +14,17 @@ export function Tooltip({
   disabled,
   delay = 0,
   closeDelay,
+  isOpen,
+  onOpenChange,
 }: PropsWithChildren<TooltipProps>) {
   return (
-    <TooltipTrigger delay={delay} closeDelay={closeDelay} isDisabled={disabled}>
+    <TooltipTrigger
+      delay={delay}
+      closeDelay={closeDelay}
+      isDisabled={disabled}
+      isOpen={isOpen}
+      onOpenChange={onOpenChange}
+    >
       {children}
     </TooltipTrigger>
   );
