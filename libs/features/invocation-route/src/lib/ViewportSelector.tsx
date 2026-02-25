@@ -7,11 +7,11 @@ const styles = tv({
 });
 
 const panAreaStyles = tv({
-  base: 'absolute inset-y-0 z-10 cursor-grab border-y-2 border-blue-500/40 bg-blue-500/5',
+  base: 'absolute inset-y-0 z-10 cursor-grab border-y-2 border-blue-500/40 backdrop-brightness-[1.07]',
 });
 
 const MIN_VIEWPORT_DURATION = 100;
-const MIN_VIEWPORT_WIDTH_PX = 72;
+const MIN_VIEWPORT_WIDTH_PX = 40;
 const HANDLE_WIDTH = 12;
 const PADDING = 8;
 
@@ -179,51 +179,47 @@ export function ViewportSelector({
   const widthPercent = ((displayEnd - displayStart) / traceDuration) * 100;
   const rightPercent = 100 - leftPercent - widthPercent;
 
-  const showLeftDim = leftPercent > 0.1;
-  const showRightDim = rightPercent > 0.1;
-
   return (
     <div ref={containerRef} className={styles({ className })}>
-      {/* Left dimmed area */}
-      {showLeftDim && (
+      {leftPercent > 0.1 && (
         <div
-          className="absolute inset-y-0 left-2 rounded-l-md bg-gray-500/30"
+          className="pointer-events-none absolute inset-y-0 rounded-l-md bg-gray-100/60"
           style={{
-            width: `calc(${leftPercent}% - ${PADDING}px)`,
+            left: 0,
+            width: `calc(${leftPercent}% + ${PADDING}px)`,
           }}
         />
       )}
-
-      {/* Right dimmed area */}
-      {showRightDim && (
+      {rightPercent > 0.1 && (
         <div
-          className="absolute inset-y-0 right-2 rounded-r-md bg-gray-500/30"
+          className="pointer-events-none absolute inset-y-0 rounded-r-md bg-gray-100/60"
           style={{
-            width: `calc(${rightPercent}% - ${PADDING}px)`,
+            right: 0,
+            width: `calc(${rightPercent}% + ${PADDING}px)`,
           }}
         />
       )}
-
       {/* Left resize handle */}
       <div
         {...leftHandleMoveProps}
         tabIndex={0}
-        className="absolute inset-y-0 z-20 flex w-3 cursor-ew-resize items-center justify-center rounded-l-sm bg-blue-500 hover:bg-blue-600"
+        className="group absolute inset-y-0 z-20 flex w-3 translate-x-1 cursor-ew-resize items-center justify-center"
         style={{
-          left: `calc(${leftPercent}% + ${PADDING}px)`,
+          left: `calc(${leftPercent}%)`,
         }}
       >
-        <div className="h-4 w-0.5 rounded-full bg-white/70" />
+        <div className="absolute top-0 left-0 h-full w-1 rounded-l-sm bg-blue-500/40 group-hover:bg-blue-600" />
       </div>
 
       {/* Selection box - for panning */}
+      <div className="absolute inset-x-2 inset-y-0" />
       <div
         {...panMoveProps}
         tabIndex={0}
         className={panAreaStyles()}
         style={{
-          left: `calc(${leftPercent}% + ${PADDING}px + ${HANDLE_WIDTH}px)`,
-          right: `calc(${rightPercent}% + ${PADDING}px + ${HANDLE_WIDTH}px)`,
+          left: `calc(${leftPercent}% + ${PADDING}px)`,
+          right: `calc(${rightPercent}% + ${PADDING}px)`,
         }}
         onDoubleClick={handleDoubleClick}
       />
@@ -232,12 +228,12 @@ export function ViewportSelector({
       <div
         {...rightHandleMoveProps}
         tabIndex={0}
-        className="absolute inset-y-0 z-20 flex w-3 cursor-ew-resize items-center justify-center rounded-r-sm bg-blue-500 hover:bg-blue-600"
+        className="group absolute inset-y-0 z-20 flex w-3 translate-x-1 cursor-ew-resize items-center justify-center rounded-r-sm"
         style={{
           right: `calc(${rightPercent}% + ${PADDING}px)`,
         }}
       >
-        <div className="h-4 w-0.5 rounded-full bg-white/70" />
+        <div className="absolute top-0 right-0 h-full w-1 rounded-r-sm bg-blue-500/40 group-hover:bg-blue-600" />
       </div>
     </div>
   );

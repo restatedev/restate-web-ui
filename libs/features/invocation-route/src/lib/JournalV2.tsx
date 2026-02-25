@@ -460,7 +460,7 @@ export function JournalV2({
                         />
                       </div>
                     </LazyPanel>
-                    <LazyPanelResizeHandle className="group relative z-10 -mx-2 hidden w-4 cursor-col-resize items-center justify-center md:flex">
+                    <LazyPanelResizeHandle className="group relative z-10 mx-[-5px] hidden w-2.5 cursor-col-resize items-center justify-center md:flex">
                       <div className="absolute top-0 bottom-0 left-1/2 w-px -translate-x-1/2 cursor-col-resize bg-transparent group-hover:w-[2px] group-hover:bg-blue-500" />
                     </LazyPanelResizeHandle>
                     {/* Right panel - grid container for overlapping Units */}
@@ -494,7 +494,7 @@ export function JournalV2({
                                 ?.lifeCycleEntries ?? []
                             }
                           />
-                          <ViewportSelectorPortalTarget className="absolute inset-0 z-10" />
+                          <ViewportSelectorPortalTarget className="absolute right-0 bottom-1 left-0 z-10 h-6" />
                         </div>
                       </div>
                       <div className="sticky top-36 right-0 z-[1] col-start-1 row-start-1 h-12 rounded-r-2xl border border-t-2 border-white bg-gray-100 shadow-xs" />
