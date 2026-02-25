@@ -593,6 +593,7 @@ function VirtualizedEntries({
 }) {
   return (
     <div
+      className="overflow-clip rounded-b-2xl md:rounded-br-none"
       style={{
         height: totalSize,
         position: 'relative',
