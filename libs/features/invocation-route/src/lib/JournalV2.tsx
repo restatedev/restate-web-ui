@@ -466,7 +466,7 @@ export function JournalV2({
                     {/* Right panel - grid container for overlapping Units */}
                     <LazyPanel
                       defaultSize={timelineWidth * 100}
-                      className="relative hidden md:grid"
+                      className="relative hidden overflow-x-clip md:grid"
                       minSize={20}
                       style={{
                         overflow: 'visible',

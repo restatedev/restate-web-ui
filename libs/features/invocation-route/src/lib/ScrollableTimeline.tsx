@@ -17,7 +17,7 @@ const scrollableTimelineStyles = tv({
   variants: {
     isFullTrace: {
       true: '',
-      false: 'overflow-x-auto overflow-y-hidden',
+      false: 'overflow-x-auto overflow-y-hidden overscroll-x-contain',
     },
   },
 });
