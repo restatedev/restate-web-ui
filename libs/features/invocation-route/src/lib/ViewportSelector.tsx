@@ -7,7 +7,7 @@ const styles = tv({
 });
 
 const panAreaStyles = tv({
-  base: 'absolute inset-y-0 z-10 cursor-grab rounded-sm ring-1 ring-blue-400/40 shadow-[0_0_6px_rgba(96,165,250,0.25)] backdrop-brightness-110 backdrop-saturate-[1.3] transition-shadow duration-150 ease-out hover:shadow-[0_0_8px_rgba(96,165,250,0.35)]',
+  base: 'absolute inset-y-0 z-10 cursor-grab rounded-md shadow-[0_0_0_1px_rgba(96,165,250,0.2),0_1px_3px_1px_rgba(96,165,250,0.08)] backdrop-brightness-110 backdrop-saturate-[1.1] transition-shadow duration-[140ms] ease-out hover:shadow-[0_0_0_1px_rgba(96,165,250,0.3),0_1px_5px_2px_rgba(96,165,250,0.1)] active:shadow-[0_0_0_1px_rgba(96,165,250,0.4),0_2px_6px_2px_rgba(96,165,250,0.12)]',
 });
 
 const MIN_VIEWPORT_DURATION = 100;
