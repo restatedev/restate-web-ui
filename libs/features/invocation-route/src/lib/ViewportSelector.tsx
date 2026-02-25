@@ -7,7 +7,7 @@ const styles = tv({
 });
 
 const panAreaStyles = tv({
-  base: 'absolute inset-y-0 z-10 cursor-grab border-y-2 border-blue-500/40 backdrop-brightness-[1.07]',
+  base: 'absolute inset-y-0 z-10 cursor-grab rounded-sm ring-1 ring-blue-400/40 shadow-[0_0_6px_rgba(96,165,250,0.25)] backdrop-brightness-110 backdrop-saturate-[1.3] transition-shadow duration-150 ease-out hover:shadow-[0_0_8px_rgba(96,165,250,0.35)]',
 });
 
 const MIN_VIEWPORT_DURATION = 100;
@@ -208,7 +208,7 @@ export function ViewportSelector({
           left: `calc(${leftPercent}%)`,
         }}
       >
-        <div className="absolute top-0 left-0 h-full w-1 rounded-l-sm bg-blue-500/40 group-hover:bg-blue-600" />
+        <div className="absolute top-0 left-0 h-full w-0.5 bg-blue-400/0 transition-colors duration-150 ease-out group-hover:bg-blue-400" />
       </div>
 
       {/* Selection box - for panning */}
@@ -228,12 +228,12 @@ export function ViewportSelector({
       <div
         {...rightHandleMoveProps}
         tabIndex={0}
-        className="group absolute inset-y-0 z-20 flex w-3 translate-x-1 cursor-ew-resize items-center justify-center rounded-r-sm"
+        className="group absolute inset-y-0 z-20 flex w-3 translate-x-1 cursor-ew-resize items-center justify-center"
         style={{
           right: `calc(${rightPercent}% + ${PADDING}px)`,
         }}
       >
-        <div className="absolute top-0 right-0 h-full w-1 rounded-r-sm bg-blue-500/40 group-hover:bg-blue-600" />
+        <div className="absolute top-0 right-0 h-full w-0.5 bg-blue-400/0 transition-colors duration-150 ease-out group-hover:bg-blue-400" />
       </div>
     </div>
   );
