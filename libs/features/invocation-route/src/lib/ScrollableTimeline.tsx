@@ -17,7 +17,7 @@ const scrollableTimelineStyles = tv({
   variants: {
     isFullTrace: {
       true: '',
-      false: 'overflow-x-auto overflow-y-hidden overscroll-x-contain',
+      false: 'overflow-hidden',
     },
   },
 });
@@ -42,15 +42,11 @@ export function ScrollableTimeline({
   cancelEvent?: JournalEntryV2;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const unitsContentRef = useRef<HTMLDivElement>(null);
-  const unitsScrollLeftRef = useRef(0);
 
   const [viewport, setViewportState] = useState<{
     start: number;
     end: number;
   } | null>(null);
-  const scrollRafRef = useRef<number | null>(null);
-  const suppressNextScrollSyncRef = useRef(false);
 
   const isFullTrace =
     viewport === null || (viewport.start <= start && viewport.end >= end);
@@ -75,110 +71,52 @@ export function ScrollableTimeline({
   const zoomLevel =
     !isFullTrace && viewportDuration > 0 ? traceDuration / viewportDuration : 1;
 
+  const offsetPercent = isFullTrace
+    ? 0
+    : ((viewportStart - start) / traceDuration) * 100;
+
   const stateRef = useRef({
-    isFullTrace,
     start,
     traceDuration,
     viewportDuration,
+    viewportStart,
   });
   stateRef.current = {
-    isFullTrace,
     start,
     traceDuration,
     viewportDuration,
+    viewportStart,
   };
 
-  const syncUnitsScroll = useCallback((scrollLeft: number) => {
-    if (unitsScrollLeftRef.current === scrollLeft) return;
-    unitsScrollLeftRef.current = scrollLeft;
-
-    const unitsContent = unitsContentRef.current;
-    if (unitsContent) {
-      unitsContent.style.transform = `translateX(${-scrollLeft}px)`;
-    }
-  }, []);
-
-  const handleViewportChange = useCallback(
-    (newViewportStart: number, newViewportEnd: number) => {
-      const container = scrollRef.current;
-      if (!container) return;
-
-      const { start: s, traceDuration: td } = stateRef.current;
-      const newViewportDuration = newViewportEnd - newViewportStart;
-      const scrollableWidth = container.scrollWidth - container.clientWidth;
-      if (scrollableWidth <= 0) return;
-
-      const denominator = td - newViewportDuration;
-      const scrollPercent =
-        denominator > 0 ? (newViewportStart - s) / denominator : 0;
-      const nextScrollLeft = scrollPercent * scrollableWidth;
-
-      if (Math.abs(container.scrollLeft - nextScrollLeft) > 0.5) {
-        suppressNextScrollSyncRef.current = true;
-      }
-
-      container.scrollLeft = nextScrollLeft;
-      syncUnitsScroll(container.scrollLeft);
-    },
-    [syncUnitsScroll],
-  );
-
-  const handleScroll = useCallback(
-    (e: React.UIEvent<HTMLDivElement>) => {
-      const target = e.currentTarget;
-
-      if (scrollRafRef.current !== null) {
-        cancelAnimationFrame(scrollRafRef.current);
-      }
-
-      scrollRafRef.current = requestAnimationFrame(() => {
-        scrollRafRef.current = null;
-
-        syncUnitsScroll(target.scrollLeft);
-        if (suppressNextScrollSyncRef.current) {
-          suppressNextScrollSyncRef.current = false;
-          return;
-        }
-
-        const {
-          isFullTrace: ift,
-          start: s,
-          traceDuration: td,
-          viewportDuration: vd,
-        } = stateRef.current;
-        if (ift) return;
-
-        const scrollableWidth = target.scrollWidth - target.clientWidth;
-        if (scrollableWidth <= 0) return;
-
-        const scrollPercent = target.scrollLeft / scrollableWidth;
-        const newViewportStart = s + scrollPercent * (td - vd);
-        const newViewportEnd = newViewportStart + vd;
-
-        setViewport(newViewportStart, newViewportEnd);
-      });
-    },
-    [setViewport, syncUnitsScroll],
-  );
-
   useEffect(() => {
-    syncUnitsScroll(scrollRef.current?.scrollLeft ?? 0);
-  }, [zoomLevel, syncUnitsScroll]);
+    if (isFullTrace) return;
+    const container = scrollRef.current;
+    if (!container) return;
 
-  useEffect(() => {
-    return () => {
-      if (scrollRafRef.current !== null) {
-        cancelAnimationFrame(scrollRafRef.current);
-      }
+    const handleWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaX) < Math.abs(e.deltaY)) return;
+      e.preventDefault();
+
+      const {
+        start: s,
+        traceDuration: td,
+        viewportDuration: vd,
+        viewportStart: vs,
+      } = stateRef.current;
+      const timeDelta = (e.deltaX / container.clientWidth) * vd;
+      const newVS = Math.max(s, Math.min(s + td - vd, vs + timeDelta));
+      setViewport(newVS, newVS + vd);
     };
-  }, []);
+
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    return () => container.removeEventListener('wheel', handleWheel);
+  }, [isFullTrace, setViewport]);
 
   return (
     <div
       ref={scrollRef}
       className={scrollableTimelineStyles({ isFullTrace, className })}
       style={style}
-      onScroll={handleScroll}
     >
       <ViewportSelectorPortalContent>
         <ViewportSelector
@@ -188,17 +126,15 @@ export function ScrollableTimeline({
           viewportStart={viewportStart}
           viewportEnd={viewportEnd}
           setViewport={setViewport}
-          onViewportChange={handleViewportChange}
         />
       </ViewportSelectorPortalContent>
       <UnitsPortalContent>
         <div
-          ref={unitsContentRef}
           className="relative h-full"
           style={{
             width: isFullTrace ? '100%' : `${zoomLevel * 100}%`,
             minWidth: isFullTrace ? '100%' : `${zoomLevel * 100}%`,
-            transform: 'translateX(0px)',
+            transform: `translateX(-${offsetPercent}%)`,
             willChange: 'transform',
           }}
         >
@@ -217,6 +153,7 @@ export function ScrollableTimeline({
         style={{
           width: isFullTrace ? '100%' : `${zoomLevel * 100}%`,
           minWidth: isFullTrace ? '100%' : `${zoomLevel * 100}%`,
+          transform: `translateX(-${offsetPercent}%)`,
         }}
       >
         {children}
