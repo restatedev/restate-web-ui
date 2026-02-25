@@ -25,6 +25,7 @@ export function ViewportSelector({
   viewportStart,
   viewportEnd,
   setViewport,
+  resetViewport,
   onViewportChange,
 }: {
   className?: string;
@@ -33,6 +34,7 @@ export function ViewportSelector({
   viewportStart: number;
   viewportEnd: number;
   setViewport: (start: number, end: number) => void;
+  resetViewport?: () => void;
   onViewportChange?: (start: number, end: number) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -183,8 +185,12 @@ export function ViewportSelector({
   });
 
   const handleDoubleClick = useCallback(() => {
-    setViewport(start, end);
-  }, [start, end, setViewport]);
+    if (resetViewport) {
+      resetViewport();
+    } else {
+      setViewport(start, end);
+    }
+  }, [start, end, setViewport, resetViewport]);
 
   if (traceDuration <= 0) return null;
 

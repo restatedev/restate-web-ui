@@ -66,6 +66,10 @@ export function ScrollableTimeline({
     });
   }, []);
 
+  const resetViewport = useCallback(() => {
+    setViewportState(null);
+  }, []);
+
   const traceDuration = end - start;
   const viewportDuration = viewportEnd - viewportStart;
   const zoomLevel =
@@ -129,6 +133,7 @@ export function ScrollableTimeline({
           viewportStart={viewportStart}
           viewportEnd={viewportEnd}
           setViewport={setViewport}
+          resetViewport={resetViewport}
         />
       </ViewportSelectorPortalContent>
       <UnitsPortalContent>
