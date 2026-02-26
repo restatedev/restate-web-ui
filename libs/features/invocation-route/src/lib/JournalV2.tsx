@@ -480,7 +480,7 @@ export function JournalV2({
                       {/* Sticky Units - limited to viewport height */}
                       <UnitsPortalTarget className="pointer-events-none sticky top-[calc(9rem+2px)] col-start-1 row-start-1 max-h-[calc(100vh-9rem)] overflow-hidden" />
                       {/* Sticky header with HeaderUnits and LifeCycleProgress */}
-                      <div className="sticky top-36 z-[2] col-start-1 row-start-1 h-12">
+                      <div className="sticky top-36 z-[11] col-start-1 row-start-1 h-12">
                         <div className="relative -my-px h-[calc(100%+2px)] rounded-r-2xl border border-gray-300 border-l-transparent shadow-xs">
                           <LifeCycleProgress
                             className="h-12 px-2"
