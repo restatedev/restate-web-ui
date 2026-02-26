@@ -1,5 +1,10 @@
 import ky from 'ky';
 
+export const DURATION_CALC =
+  "CASE WHEN status = 'scheduled' THEN NULL ELSE COALESCE(completed_at, now()) - COALESCE(scheduled_start_at, created_at) END";
+
+export const DURATION_EXPRESSION = `${DURATION_CALC} AS duration`;
+
 export const SYS_INVOCATION_LIST_COLUMNS = [
   'id',
   'target',

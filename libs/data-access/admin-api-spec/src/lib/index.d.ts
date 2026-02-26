@@ -495,6 +495,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/query/invocations/summary': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Get invocations summary
+     * @description Get an aggregated summary of invocations: counts by status, counts by service, and duration percentiles (p50, p90, p99).
+     */
+    post: operations['get_invocations_summary'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/query/invocations/cancel': {
     parameters: {
       query?: never;
@@ -3147,6 +3167,34 @@ export interface components {
       /** Format: duration */
       duration?: string;
     };
+    InvocationsSummaryResponse: {
+      totalCount: number;
+      isEstimate: boolean;
+      byStatus: {
+        name: string;
+        count: number;
+        isIncluded: boolean;
+      }[];
+      byService: {
+        name: string;
+        count: number;
+        isIncluded: boolean;
+      }[];
+      byServiceAndStatus: {
+        service: string;
+        status: string;
+        count: number;
+        isIncluded: boolean;
+      }[];
+      duration?: {
+        /** Format: duration */
+        p50: string;
+        /** Format: duration */
+        p90: string;
+        /** Format: duration */
+        p99: string;
+      };
+    };
   };
   responses: {
     /** @description Bad request */
@@ -4701,6 +4749,86 @@ export interface operations {
             count: number;
             isLowerBound?: boolean;
           };
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  get_invocations_summary: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          filters?: components['schemas']['FilterItem'][];
+          /** @default true */
+          sampled?: boolean;
+          /** @default 50000 */
+          sampleSize?: number;
+          /** @default false */
+          includeDuration?: boolean;
+        };
+      };
+    };
+    responses: {
+      /** @description Invocations summary */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['InvocationsSummaryResponse'];
         };
       };
       400: {

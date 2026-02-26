@@ -4,12 +4,14 @@ import type {
 } from '@restate/data-access/admin-api-spec';
 import { convertInvocation } from '../convertInvocation';
 import { convertInvocationsFilters } from '../convertFilters';
-import { type QueryContext, SYS_INVOCATION_LIST_COLUMNS } from './shared';
+import {
+  type QueryContext,
+  SYS_INVOCATION_LIST_COLUMNS,
+  DURATION_EXPRESSION,
+} from './shared';
 
 const INVOCATIONS_LIMIT = 250;
 const COUNT_LIMIT = 50000;
-const DURATION_EXPRESSION =
-  "CASE WHEN status = 'scheduled' THEN NULL ELSE COALESCE(completed_at, now()) - COALESCE(scheduled_start_at, created_at) END AS duration";
 
 function countEstimate(
   receivedLessThanLimit: boolean,
