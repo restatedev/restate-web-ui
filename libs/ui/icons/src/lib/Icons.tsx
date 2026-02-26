@@ -84,6 +84,8 @@ import {
   Command,
   Binoculars,
   ChartNoAxesCombined,
+  ZoomOut,
+  ZoomIn,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from '@restate/util/styles';
@@ -214,6 +216,8 @@ export const enum IconName {
   Command = 'Command',
   Binoculars = 'Binoculars',
   ChartNoAxesCombined = 'ChartNoAxesCombined',
+  ZoomOut = 'ZoomOut',
+  ZoomIn = 'ZoomIn',
 }
 export interface IconsProps {
   name: IconName;
@@ -328,6 +332,8 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Command]: Command,
   [IconName.Binoculars]: Binoculars,
   [IconName.ChartNoAxesCombined]: ChartNoAxesCombined,
+  [IconName.ZoomOut]: ZoomOut,
+  [IconName.ZoomIn]: ZoomIn,
 };
 
 const styles = tv({
