@@ -18,6 +18,7 @@ import {
   PortalProvider,
   UnitsPortalTarget,
   ViewportSelectorPortalTarget,
+  ZoomControlsPortalTarget,
 } from './Portals';
 import { LifeCycleProgress } from './LifeCycleProgress';
 import { StartDateTimeUnit } from './Units';
@@ -367,6 +368,7 @@ export function JournalV2({
                       </DropdownSection>
                     </DropdownPopover>
                   </Dropdown>
+                  <ZoomControlsPortalTarget className="hidden md:flex" />
                   {!areAllInvocationsCompleted && setIsLive && (
                     <Button
                       variant="icon"

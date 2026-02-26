@@ -8,9 +8,16 @@ import {
   useRef,
   useState,
 } from 'react';
-import { UnitsPortalContent, ViewportSelectorPortalContent } from './Portals';
+import {
+  UnitsPortalContent,
+  ViewportSelectorPortalContent,
+  ZoomControlsPortalContent,
+} from './Portals';
 import { ViewportSelector } from './ViewportSelector';
 import { Units } from './Units';
+import { Button } from '@restate/ui/button';
+import { Icon, IconName } from '@restate/ui/icons';
+import { HoverTooltip } from '@restate/ui/tooltip';
 
 const scrollableTimelineStyles = tv({
   base: '',
@@ -125,6 +132,28 @@ export function ScrollableTimeline({
       className={scrollableTimelineStyles({ isFullTrace, className })}
       style={style}
     >
+      <ZoomControlsPortalContent>
+        <HoverTooltip content={isFullTrace ? 'Zoom' : 'Reset zoom'}>
+          <Button
+            variant="icon"
+            onClick={() => {
+              if (isFullTrace) {
+                const td = end - start;
+                if (td > 0) {
+                  setViewport(end - td / 2, end);
+                }
+              } else {
+                resetViewport();
+              }
+            }}
+          >
+            <Icon
+              name={isFullTrace ? IconName.ZoomIn : IconName.ZoomOut}
+              className="h-4 w-4"
+            />
+          </Button>
+        </HoverTooltip>
+      </ZoomControlsPortalContent>
       <ViewportSelectorPortalContent>
         <ViewportSelector
           className="absolute inset-0"

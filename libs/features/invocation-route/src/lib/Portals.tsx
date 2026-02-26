@@ -97,3 +97,25 @@ export function UnitsPortalContent({ children }: PropsWithChildren) {
 
   return createPortal(children, element);
 }
+
+const ZOOM_CONTROLS_PORTAL_ID = 'zoom-controls-portal';
+
+export function ZoomControlsPortalTarget({
+  className,
+}: {
+  className?: string;
+}) {
+  const { setPortal } = usePortals(ZOOM_CONTROLS_PORTAL_ID);
+  return <div ref={setPortal} className={className} />;
+}
+
+export function ZoomControlsPortalContent({ children }: PropsWithChildren) {
+  const { getPortal } = usePortals(ZOOM_CONTROLS_PORTAL_ID);
+  const element = getPortal?.();
+
+  if (!element) {
+    return null;
+  }
+
+  return createPortal(children, element);
+}
