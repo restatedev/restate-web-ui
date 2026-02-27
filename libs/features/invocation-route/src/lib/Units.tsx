@@ -6,20 +6,14 @@ import { DateTooltip } from '@restate/ui/tooltip';
 import { CSSProperties, useEffect, useRef, useState } from 'react';
 import { useTimelineEngineContext } from './TimelineEngineContext';
 
-type FadePhase = 'stable' | 'fading-out' | 'fading-in';
+const FADE_DURATION = 100;
 
 const intervalStyles = tv({
   base: 'pointer-events-none absolute top-0 bottom-0 border-r border-dotted border-black/10 pt-0 pr-0.5 text-right font-sans text-2xs text-gray-500',
 });
 
 const tickContainerStyles = tv({
-  base: 'pointer-events-none relative mt-[calc(3rem+2px)] h-[calc(100%-3rem-2px)] w-full overflow-hidden rounded-r-2xl transition-opacity duration-100',
-  variants: {
-    visible: {
-      true: 'opacity-100',
-      false: 'opacity-0',
-    },
-  },
+  base: 'pointer-events-none relative mt-[calc(3rem+2px)] h-[calc(100%-3rem-2px)] w-full overflow-hidden rounded-r-2xl',
 });
 
 const backgroundStyles = tv({
@@ -55,54 +49,33 @@ export function Units({
   const engine = useTimelineEngineContext();
   const targetInterval = engine.tickInterval;
 
+  const tickContainerRef = useRef<HTMLDivElement>(null);
+  const animationRef = useRef<Animation | null>(null);
   const [renderedInterval, setRenderedInterval] = useState(targetInterval);
-  const [fadePhase, setFadePhase] = useState<FadePhase>('stable');
-  const pendingIntervalRef = useRef(targetInterval);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    pendingIntervalRef.current = targetInterval;
     if (targetInterval === renderedInterval) return;
+    const el = tickContainerRef.current;
+    if (!el) return;
 
-    if (fadePhase === 'stable') {
-      setFadePhase('fading-out');
-      timerRef.current = setTimeout(() => {
-        setRenderedInterval(pendingIntervalRef.current);
-        setFadePhase('fading-in');
-        timerRef.current = setTimeout(() => {
-          setFadePhase('stable');
-          timerRef.current = null;
-        }, 100);
-      }, 100);
-    } else {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-        timerRef.current = null;
-      }
-      setRenderedInterval(pendingIntervalRef.current);
-      setFadePhase('fading-in');
-      timerRef.current = setTimeout(() => {
-        setFadePhase('stable');
-        timerRef.current = null;
-      }, 100);
-    }
+    animationRef.current?.cancel();
 
-    return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-        timerRef.current = null;
-      }
+    const fadeOut = el.animate(
+      [{ opacity: 1 }, { opacity: 0 }],
+      { duration: FADE_DURATION, easing: 'ease-out' },
+    );
+
+    fadeOut.onfinish = () => {
+      setRenderedInterval(targetInterval);
+      animationRef.current = el.animate(
+        [{ opacity: 0 }, { opacity: 1 }],
+        { duration: FADE_DURATION, easing: 'ease-in' },
+      );
     };
-  }, [targetInterval, renderedInterval, fadePhase]);
 
-  useEffect(() => {
-    if (
-      fadePhase === 'stable' &&
-      renderedInterval !== pendingIntervalRef.current
-    ) {
-      setRenderedInterval(pendingIntervalRef.current);
-    }
-  }, [fadePhase, renderedInterval]);
+    animationRef.current = fadeOut;
+    return () => animationRef.current?.cancel();
+  }, [targetInterval, renderedInterval]);
 
   const unit = renderedInterval;
 
@@ -123,10 +96,6 @@ export function Units({
       ticks.push(t);
     }
   }
-
-  const ticksVisible =
-    fadePhase !== 'fading-out' &&
-    !(fadePhase === 'fading-in' && renderedInterval !== targetInterval);
 
   return (
     <div className={className} style={style}>
@@ -158,7 +127,7 @@ export function Units({
         </div>
       )}
       <div className="h-full">
-        <div className={tickContainerStyles({ visible: ticksVisible })}>
+        <div ref={tickContainerRef} className={tickContainerStyles()}>
           <div className="absolute inset-y-0 left-0 w-2" />
           {ticks.map((tickMs, i) => {
             const leftPercent = (tickMs / duration) * 100;
