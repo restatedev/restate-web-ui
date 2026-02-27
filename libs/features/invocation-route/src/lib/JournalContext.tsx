@@ -13,7 +13,6 @@ const JournalContext = createContext<{
   containerRef?: RefObject<HTMLDivElement | null>;
   isLive: boolean;
   isCompact: boolean;
-  firstPendingCommandIndex?: number;
 }>({
   invocationIds: [],
   start: 0,
@@ -37,7 +36,6 @@ export function JournalContextProvider({
   containerRef,
   isLive,
   isCompact,
-  firstPendingCommandIndex,
 }: PropsWithChildren<{
   invocationIds: string[];
   addInvocationId?: (id: string) => void;
@@ -51,7 +49,6 @@ export function JournalContextProvider({
   containerRef?: RefObject<HTMLDivElement | null>;
   isLive: boolean;
   isCompact: boolean;
-  firstPendingCommandIndex?: number;
 }>) {
   return (
     <JournalContext.Provider
@@ -68,7 +65,6 @@ export function JournalContextProvider({
         error,
         isLive,
         isCompact,
-        firstPendingCommandIndex,
       }}
     >
       {children}

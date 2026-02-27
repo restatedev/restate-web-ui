@@ -180,7 +180,7 @@ export function EntryExpression({
       operationSymbol={operationSymbol}
       prefix={
         entry.type === 'Output'
-          ? entry.error
+          ? entry.error || entry.resultType === 'failure'
             ? 'throws'
             : 'return '
           : undefined

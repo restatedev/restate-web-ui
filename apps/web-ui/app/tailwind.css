@@ -91,14 +91,4 @@
   }
 
   --animate-pulseButton: pulseButton 1.5s ease-in-out infinite;
-
-  @keyframes rowFadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-  --animate-row-fade-in: rowFadeIn 100ms ease-out;
 }

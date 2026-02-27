@@ -183,7 +183,7 @@ export function InvocationId({
         )}
 
         {isIcon ? (
-          <HoverTooltip content={id} offset={20}>
+          <HoverTooltip content={id} offset={20} className="static">
             {linkElement}
           </HoverTooltip>
         ) : (

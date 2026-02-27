@@ -55,6 +55,8 @@ export function EntryTooltip({
       }
       className={entryTooltipStyles({ className })}
       size="lg"
+      followCursor
+      suppressOnScroll
     >
       {children}
     </HoverTooltip>
