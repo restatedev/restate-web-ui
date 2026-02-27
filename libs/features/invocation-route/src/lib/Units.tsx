@@ -17,12 +17,19 @@ const tickContainerStyles = tv({
 });
 
 const backgroundStyles = tv({
-  base: 'pointer-events-none absolute top-0 bottom-0 transform transition-[width,left,right]',
+  base: 'pointer-events-none absolute top-0 bottom-0',
   variants: {
     isEven: {
       true: 'bg-gray-400/5',
       false: '',
     },
+    trailing: {
+      false: 'transform transition-[width,left,right]',
+      true: '',
+    },
+  },
+  defaultVariants: {
+    trailing: false,
   },
 });
 
@@ -158,6 +165,7 @@ export function Units({
               className={backgroundStyles({
                 isEven:
                   (Math.round(ticks[ticks.length - 1]! / unit) + 1) % 2 === 0,
+                trailing: true,
               })}
               style={{
                 left: `calc(${(ticks[ticks.length - 1]! / duration) * 100}% + 0.5rem)`,
