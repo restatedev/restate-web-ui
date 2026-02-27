@@ -21,7 +21,7 @@ const zoomContainerStyles = tv({
   base: 'relative',
   variants: {
     animate: {
-      true: 'transition-transform duration-300 ease-out',
+      true: 'transition-[transform,width,min-width] duration-300 ease-out',
       false: '',
     },
   },
@@ -31,7 +31,7 @@ const unitsContainerStyles = tv({
   base: 'relative h-full',
   variants: {
     animate: {
-      true: 'transition-transform duration-300 ease-out',
+      true: 'transition-[transform,width,min-width] duration-300 ease-out',
       false: '',
     },
   },
