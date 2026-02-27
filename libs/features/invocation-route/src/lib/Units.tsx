@@ -62,6 +62,13 @@ export function Units({
 
   useEffect(() => {
     if (targetInterval === renderedInterval) return;
+
+    if (engine.mode === 'live-follow') {
+      animationRef.current?.cancel();
+      setRenderedInterval(targetInterval);
+      return;
+    }
+
     const el = tickContainerRef.current;
     if (!el) return;
 
@@ -82,7 +89,7 @@ export function Units({
 
     animationRef.current = fadeOut;
     return () => animationRef.current?.cancel();
-  }, [targetInterval, renderedInterval]);
+  }, [targetInterval, renderedInterval, engine.mode]);
 
   const unit = renderedInterval;
 
