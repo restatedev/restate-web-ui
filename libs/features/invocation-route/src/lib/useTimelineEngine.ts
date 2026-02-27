@@ -28,6 +28,7 @@ export interface TimelineEngineOutput {
   offsetPercent: number;
   tickInterval: number;
   isFullTrace: boolean;
+  canReturnToLive: boolean;
 
   // Overview domain – used by the overview bar and ViewportSelector.
   // Always tight to the trace (no headroom) so entries fill the full overview width.
@@ -60,12 +61,12 @@ const FLOOR_VIEWPORT_RIGHT = 3_000;
 
 // --- Tail-follow (live-follow auto-scroll for long traces) ---
 // Traces shorter than this show the full range; longer ones show a trailing window
-const TAIL_FOLLOW_THRESHOLD = 30_000;
 // Discrete step ladder for the trailing viewport window (15s … 4h)
 const TAIL_FOLLOW_STEPS = [
   15_000, 30_000, 60_000, 120_000, 300_000, 600_000, 900_000, 1_800_000,
   3_600_000, 7_200_000, 14_400_000,
 ];
+export const TAIL_FOLLOW_THRESHOLD = TAIL_FOLLOW_STEPS[0]!;
 
 // --- Tick interval selection ---
 // Candidate intervals for tick marks (1ms … 12h)
@@ -95,7 +96,10 @@ export function selectCoordinateWindow(
   actualDuration: number,
   currentCoordinateWindow: number,
 ): number {
-  const desired = Math.max(actualDuration * OVERSHOOT_FACTOR, FLOOR_COORDINATE_WINDOW);
+  const desired = Math.max(
+    actualDuration * OVERSHOOT_FACTOR,
+    FLOOR_COORDINATE_WINDOW,
+  );
 
   for (const step of COORDINATE_WINDOW_STEPS) {
     if (step >= desired) return Math.max(currentCoordinateWindow, step);
@@ -118,10 +122,7 @@ function computeTailViewportWindow(actualDuration: number): number {
   return Math.max(tailWindow, 15_000);
 }
 
-function findBestInterval(
-  viewportDuration: number,
-  widthPx: number,
-): number {
+function findBestInterval(viewportDuration: number, widthPx: number): number {
   if (widthPx <= 0 || viewportDuration <= 0) return NICE_INTERVALS[0]!;
 
   let best = NICE_INTERVALS[0]!;
@@ -284,7 +285,10 @@ export function useTimelineEngine({
 
   // live-follow: coordinate = viewport (tight to live edge), auto-scrolls
   if (mode === 'live-follow') {
-    const coordinateWindow = selectCoordinateWindow(actualDuration, prevCoordinateWindowRef.current);
+    const coordinateWindow = selectCoordinateWindow(
+      actualDuration,
+      prevCoordinateWindowRef.current,
+    );
     prevCoordinateWindowRef.current = coordinateWindow;
 
     coordinateStart = actualStart;
@@ -304,7 +308,7 @@ export function useTimelineEngine({
     overviewStart = coordinateStart;
     overviewEnd = viewportEnd;
 
-  // inspect: coordinate spans the full actual trace, viewport is user-controlled
+    // inspect: coordinate spans the full actual trace, viewport is user-controlled
   } else if (mode === 'inspect') {
     coordinateStart = actualStart;
     coordinateEnd = actualStart + actualDuration;
@@ -328,7 +332,7 @@ export function useTimelineEngine({
     overviewStart = coordinateStart;
     overviewEnd = coordinateEnd;
 
-  // static: all completed, coordinate = actual trace, viewport may be zoomed
+    // static: all completed, coordinate = actual trace, viewport may be zoomed
   } else {
     coordinateStart = actualStart;
     coordinateEnd = actualStart + actualDuration;
@@ -364,6 +368,7 @@ export function useTimelineEngine({
 
   const isFullTrace =
     inspectViewport === null || Math.abs(zoomLevel - 1) < 0.01;
+  const canReturnToLive = mode === 'inspect' && isLiveEnabled;
 
   const now = Date.now();
   const rawInterval = selectTickInterval(
@@ -386,29 +391,30 @@ export function useTimelineEngine({
     prevIntervalRef.current = tickInterval;
   }
 
-  const setViewport = useCallback(
-    (newStart: number, newEnd: number) => {
-      const duration = newEnd - newStart;
-      if (duration < MIN_VIEWPORT_DURATION) return;
+  const setViewport = useCallback((newStart: number, newEnd: number) => {
+    const duration = newEnd - newStart;
+    if (duration < MIN_VIEWPORT_DURATION) return;
 
-      const ad = actualDurationRef.current;
-      const coordStart = coordinateStartRef.current;
-      const coordEnd = coordinateEndRef.current;
-      const liveEdge = coordStart + ad;
-      const coordDuration = coordEnd - coordStart;
-      if (ad > 0 && coordDuration > 0) {
-        const snapThreshold = Math.max(
-          ad * STICKY_SNAP_FRACTION,
-          (STICKY_SNAP_MIN_PX / Math.max(1, containerWidthPxRef.current)) *
-            coordDuration,
-        );
-        rightEdgeStickyRef.current = newEnd >= liveEdge - snapThreshold;
-      }
+    const ad = actualDurationRef.current;
+    const coordStart = coordinateStartRef.current;
+    const coordEnd = coordinateEndRef.current;
+    const liveEdge = coordStart + ad;
+    const coordDuration = coordEnd - coordStart;
+    const prevDuration = viewportEndRef.current - viewportStartRef.current;
+    const isPanMove = Math.abs(duration - prevDuration) < 0.5;
+    if (prevModeRef.current === 'live-follow' || isPanMove) {
+      rightEdgeStickyRef.current = false;
+    } else if (ad > 0 && coordDuration > 0) {
+      const snapThreshold = Math.max(
+        ad * STICKY_SNAP_FRACTION,
+        (STICKY_SNAP_MIN_PX / Math.max(1, containerWidthPxRef.current)) *
+          coordDuration,
+      );
+      rightEdgeStickyRef.current = newEnd >= liveEdge - snapThreshold;
+    }
 
-      setInspectViewport({ start: newStart, end: newEnd });
-    },
-    [],
-  );
+    setInspectViewport({ start: newStart, end: newEnd });
+  }, []);
 
   const resetViewport = useCallback(() => {
     rightEdgeStickyRef.current = false;
@@ -417,11 +423,11 @@ export function useTimelineEngine({
 
   const panViewport = useCallback((deltaMs: number) => {
     rightEdgeStickyRef.current = false;
-    setInspectViewport(() => {
+    setInspectViewport((prev) => {
       const coordStart = coordinateStartRef.current;
       const coordEnd = coordinateEndRef.current;
-      const vs = viewportStartRef.current;
-      const ve = viewportEndRef.current;
+      const vs = prev?.start ?? viewportStartRef.current;
+      const ve = prev?.end ?? viewportEndRef.current;
       const vd = ve - vs;
 
       const newStart = Math.max(
@@ -455,6 +461,7 @@ export function useTimelineEngine({
       offsetPercent,
       tickInterval,
       isFullTrace,
+      canReturnToLive,
       overviewStart,
       overviewEnd,
       setViewport,
@@ -474,6 +481,7 @@ export function useTimelineEngine({
       offsetPercent,
       tickInterval,
       isFullTrace,
+      canReturnToLive,
       overviewStart,
       overviewEnd,
       setViewport,

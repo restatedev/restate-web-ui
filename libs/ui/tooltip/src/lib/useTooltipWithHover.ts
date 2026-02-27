@@ -20,11 +20,13 @@ export function useTooltipWithHover({
     let timeout: ReturnType<typeof setTimeout> | null = null;
 
     const enterHandler = () => {
-      const shouldDisplay = shouldDisplayTooltip
-        ? shouldDisplayTooltip()
-        : true;
-      timeout && clearTimeout(timeout);
+      if (timeout) {
+        clearTimeout(timeout);
+      }
       timeout = setTimeout(() => {
+        const shouldDisplay = shouldDisplayTooltip
+          ? shouldDisplayTooltip()
+          : true;
         if (shouldDisplay) {
           open();
         }
@@ -37,12 +39,16 @@ export function useTooltipWithHover({
       contentRef.current?.addEventListener(
         'mouseenter',
         () => {
-          timeout && clearTimeout(timeout);
+          if (timeout) {
+            clearTimeout(timeout);
+          }
         },
         { once: true },
       );
       if (!isHoverElementTooltip) {
-        timeout && clearTimeout(timeout);
+        if (timeout) {
+          clearTimeout(timeout);
+        }
         timeout = setTimeout(() => {
           close();
         }, delay);
@@ -52,7 +58,9 @@ export function useTooltipWithHover({
     elementTriggeringHover?.addEventListener('mouseleave', leaveHandler);
 
     return () => {
-      timeout && clearTimeout(timeout);
+      if (timeout) {
+        clearTimeout(timeout);
+      }
       elementTriggeringHover?.removeEventListener('mouseenter', enterHandler);
       elementTriggeringHover?.removeEventListener('mouseleave', leaveHandler);
     };

@@ -1,8 +1,5 @@
 import { createContext, PropsWithChildren, use } from 'react';
-import {
-  TimelineEngineOutput,
-  useTimelineEngine,
-} from './useTimelineEngine';
+import { TimelineEngineOutput, useTimelineEngine } from './useTimelineEngine';
 
 const TimelineEngineContext = createContext<TimelineEngineOutput | null>(null);
 

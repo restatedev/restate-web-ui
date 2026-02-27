@@ -3,6 +3,7 @@ import {
   PropsWithChildren,
   ReactNode,
   useCallback,
+  useEffect,
   useRef,
   useState,
 } from 'react';
@@ -15,6 +16,14 @@ import { tv } from '@restate/util/styles';
 const styles = tv({
   base: 'relative block',
 });
+
+const SCROLL_SUPPRESS_MS = 700;
+let scrollSuppressUntil = 0;
+
+function markScrollSuppressed() {
+  scrollSuppressUntil = Date.now() + SCROLL_SUPPRESS_MS;
+}
+
 export function HoverTooltip({
   children,
   content,
@@ -23,6 +32,7 @@ export function HoverTooltip({
   crossOffset,
   size = 'sm',
   followCursor = false,
+  suppressOnScroll = false,
 }: PropsWithChildren<{
   content: ReactNode;
   className?: string;
@@ -30,10 +40,14 @@ export function HoverTooltip({
   crossOffset?: number;
   size?: 'sm' | 'default' | 'lg';
   followCursor?: boolean;
+  suppressOnScroll?: boolean;
 }>) {
   const triggerRef = useRef<HTMLElement>(null);
   const cursorAnchorRef = useRef<HTMLSpanElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const isPointerOverRef = useRef(false);
+  const lastPointerPosRef = useRef<{ x: number; y: number } | null>(null);
+  const reopenTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [isOpen, setIsOpen] = useState(false);
   const open = useCallback(() => {
@@ -43,7 +57,74 @@ export function HoverTooltip({
     setIsOpen(false);
   }, []);
 
+  const clearReopenTimeout = useCallback(() => {
+    if (reopenTimeoutRef.current) {
+      clearTimeout(reopenTimeoutRef.current);
+      reopenTimeoutRef.current = null;
+    }
+  }, []);
+
+  const scheduleReopenIfHovered = useCallback(() => {
+    clearReopenTimeout();
+    reopenTimeoutRef.current = setTimeout(() => {
+      reopenTimeoutRef.current = null;
+      if (!isPointerOverRef.current || Date.now() < scrollSuppressUntil) {
+        return;
+      }
+
+      const trigger = triggerRef.current;
+      const pointerPos = lastPointerPosRef.current;
+      if (!trigger || !pointerPos) {
+        return;
+      }
+
+      const hoveredElement = document.elementFromPoint(
+        pointerPos.x,
+        pointerPos.y,
+      );
+      if (!hoveredElement || !trigger.contains(hoveredElement)) {
+        isPointerOverRef.current = false;
+        return;
+      }
+
+      if (followCursor) {
+        const anchor = cursorAnchorRef.current;
+        if (!anchor) {
+          return;
+        }
+        const rect = trigger.getBoundingClientRect();
+        anchor.style.left = `${pointerPos.x - rect.left}px`;
+        anchor.style.top = `${pointerPos.y - rect.top}px`;
+      }
+
+      open();
+    }, SCROLL_SUPPRESS_MS + 20);
+  }, [clearReopenTimeout, followCursor, open]);
+
+  useEffect(() => {
+    return () => {
+      clearReopenTimeout();
+    };
+  }, [clearReopenTimeout]);
+
+  const shouldDisplayTooltip = useCallback(() => {
+    if (!suppressOnScroll) {
+      return true;
+    }
+    return Date.now() >= scrollSuppressUntil;
+  }, [suppressOnScroll]);
+
+  const handleWheelStart = useCallback(() => {
+    if (!suppressOnScroll) {
+      return;
+    }
+    markScrollSuppressed();
+    close();
+    scheduleReopenIfHovered();
+  }, [close, scheduleReopenIfHovered, suppressOnScroll]);
+
   useTooltipWithHover({
+    shouldDisplayTooltip,
     open,
     close,
     triggerRef,
@@ -52,6 +133,7 @@ export function HoverTooltip({
 
   const updateCursorAnchor = useCallback(
     (e: MouseEvent<HTMLElement>) => {
+      lastPointerPosRef.current = { x: e.clientX, y: e.clientY };
       if (!followCursor) {
         return;
       }
@@ -67,6 +149,19 @@ export function HoverTooltip({
     [followCursor],
   );
 
+  const handleMouseEnter = useCallback(
+    (e: MouseEvent<HTMLElement>) => {
+      isPointerOverRef.current = true;
+      updateCursorAnchor(e);
+    },
+    [updateCursorAnchor],
+  );
+
+  const handleMouseLeave = useCallback(() => {
+    isPointerOverRef.current = false;
+    clearReopenTimeout();
+  }, [clearReopenTimeout]);
+
   const tooltipTriggerRef = followCursor ? cursorAnchorRef : triggerRef;
 
   return (
@@ -76,7 +171,9 @@ export function HoverTooltip({
           ref={triggerRef}
           className={styles({ className })}
           onMouseMove={updateCursorAnchor}
-          onMouseEnter={updateCursorAnchor}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          onWheelCapture={handleWheelStart}
         >
           {children}
           {followCursor && (

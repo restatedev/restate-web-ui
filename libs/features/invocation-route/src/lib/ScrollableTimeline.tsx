@@ -63,6 +63,7 @@ export function ScrollableTimeline({
     zoomLevel,
     offsetPercent,
     isFullTrace,
+    canReturnToLive,
     mode,
     overviewStart,
     overviewEnd,
@@ -94,7 +95,18 @@ export function ScrollableTimeline({
     return () => container.removeEventListener('wheel', handleWheel);
   }, [panViewport]);
 
-  const animate = mode !== 'inspect';
+  const animateSelector = mode !== 'static';
+  const animateTimeline = mode === 'live-follow';
+  const zoomTooltip = isFullTrace
+    ? 'Zoom'
+    : canReturnToLive
+      ? 'Return to live'
+      : 'Reset zoom';
+  const zoomIcon = isFullTrace
+    ? IconName.ZoomIn
+    : canReturnToLive
+      ? IconName.Forward
+      : IconName.ZoomOut;
 
   return (
     <div
@@ -103,7 +115,7 @@ export function ScrollableTimeline({
       style={style}
     >
       <ZoomControlsPortalContent>
-        <HoverTooltip content={isFullTrace ? 'Zoom' : 'Reset zoom'}>
+        <HoverTooltip content={zoomTooltip}>
           <Button
             variant="icon"
             onClick={() => {
@@ -122,10 +134,7 @@ export function ScrollableTimeline({
               }
             }}
           >
-            <Icon
-              name={isFullTrace ? IconName.ZoomIn : IconName.ZoomOut}
-              className="h-4 w-4"
-            />
+            <Icon name={zoomIcon} className="h-4 w-4" />
           </Button>
         </HoverTooltip>
       </ZoomControlsPortalContent>
@@ -136,13 +145,14 @@ export function ScrollableTimeline({
           end={overviewEnd}
           viewportStart={viewportStart}
           viewportEnd={viewportEnd}
+          animate={animateSelector}
           setViewport={setViewport}
           resetViewport={resetViewport}
         />
       </ViewportSelectorPortalContent>
       <UnitsPortalContent>
         <div
-          className={unitsContainerStyles({ animate })}
+          className={unitsContainerStyles({ animate: animateTimeline })}
           style={{
             width: `${zoomLevel * 100}%`,
             minWidth: `${zoomLevel * 100}%`,
@@ -160,7 +170,7 @@ export function ScrollableTimeline({
         </div>
       </UnitsPortalContent>
       <div
-        className={zoomContainerStyles({ animate })}
+        className={zoomContainerStyles({ animate: animateTimeline })}
         style={{
           width: `${zoomLevel * 100}%`,
           minWidth: `${zoomLevel * 100}%`,

@@ -86,6 +86,7 @@ import {
   ChartNoAxesCombined,
   ZoomOut,
   ZoomIn,
+  Forward,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from '@restate/util/styles';
@@ -218,6 +219,7 @@ export const enum IconName {
   ChartNoAxesCombined = 'ChartNoAxesCombined',
   ZoomOut = 'ZoomOut',
   ZoomIn = 'ZoomIn',
+  Forward = 'Forward',
 }
 export interface IconsProps {
   name: IconName;
@@ -334,6 +336,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.ChartNoAxesCombined]: ChartNoAxesCombined,
   [IconName.ZoomOut]: ZoomOut,
   [IconName.ZoomIn]: ZoomIn,
+  [IconName.Forward]: Forward,
 };
 
 const styles = tv({

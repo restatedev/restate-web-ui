@@ -49,7 +49,6 @@ const panWrapperStyles = tv({
 
 const MIN_VIEWPORT_DURATION = 100;
 const MIN_VIEWPORT_WIDTH_PX = 24;
-const HANDLE_WIDTH = 12;
 const PADDING = 8;
 
 export function ViewportSelector({
@@ -58,6 +57,7 @@ export function ViewportSelector({
   end,
   viewportStart,
   viewportEnd,
+  animate = true,
   setViewport,
   resetViewport,
   onViewportChange,
@@ -67,6 +67,7 @@ export function ViewportSelector({
   end: number;
   viewportStart: number;
   viewportEnd: number;
+  animate?: boolean;
   setViewport: (start: number, end: number) => void;
   resetViewport?: () => void;
   onViewportChange?: (start: number, end: number) => void;
@@ -239,7 +240,7 @@ export function ViewportSelector({
     </span>
   ) : null;
 
-  const animate = !isDragging;
+  const shouldAnimate = animate && !isDragging;
 
   const leftPercent = ((displayStart - start) / traceDuration) * 100;
   const widthPercent = ((displayEnd - displayStart) / traceDuration) * 100;
@@ -249,7 +250,7 @@ export function ViewportSelector({
     <div ref={containerRef} className={styles({ className })}>
       {leftPercent > 0.1 && (
         <div
-          className={overlayStyles({ side: 'left', animate })}
+          className={overlayStyles({ side: 'left', animate: shouldAnimate })}
           style={{
             left: 0,
             width: `calc(${leftPercent}% + ${PADDING}px)`,
@@ -258,7 +259,7 @@ export function ViewportSelector({
       )}
       {rightPercent > 0.1 && (
         <div
-          className={overlayStyles({ side: 'right', animate })}
+          className={overlayStyles({ side: 'right', animate: shouldAnimate })}
           style={{
             right: 0,
             width: `calc(${rightPercent}% + ${PADDING}px)`,
@@ -269,7 +270,7 @@ export function ViewportSelector({
       <div
         {...leftHandleMoveProps}
         tabIndex={0}
-        className={handleStyles({ animate })}
+        className={handleStyles({ animate: shouldAnimate })}
         style={{
           left: `calc(${leftPercent}%)`,
         }}
@@ -285,7 +286,7 @@ export function ViewportSelector({
         onOpenChange={(open) => setIsHovering(open)}
       >
         <div
-          className={panWrapperStyles({ animate })}
+          className={panWrapperStyles({ animate: shouldAnimate })}
           style={{
             left: `calc(${leftPercent}% + ${PADDING}px)`,
             right: `calc(${rightPercent}% + ${PADDING}px)`,
@@ -314,7 +315,7 @@ export function ViewportSelector({
       <div
         {...rightHandleMoveProps}
         tabIndex={0}
-        className={handleStyles({ animate })}
+        className={handleStyles({ animate: shouldAnimate })}
         style={{
           right: `calc(${rightPercent}% + ${PADDING}px)`,
         }}

@@ -1,5 +1,13 @@
 import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
-import { Dispatch, lazy, Suspense, useCallback, useRef, useState } from 'react';
+import {
+  Dispatch,
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import type { VirtualItem } from '@tanstack/react-virtual';
 import { InvocationId } from './InvocationId';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
@@ -49,6 +57,7 @@ import {
   TimelineEngineProvider,
   useTimelineEngineContext,
 } from './TimelineEngineContext';
+import { TAIL_FOLLOW_THRESHOLD } from './useTimelineEngine';
 import { useContainerWidth } from './useContainerWidth';
 
 const LazyPanel = lazy(() =>
@@ -83,6 +92,9 @@ const compactStyles = tv({
   },
 });
 
+const LIVE_TIME_STEP_MS = 300;
+const LIVE_SMOOTH_DURATION_CUTOFF_MS = TAIL_FOLLOW_THRESHOLD;
+
 export function JournalV2({
   invocationId,
   className,
@@ -102,6 +114,7 @@ export function JournalV2({
 }) {
   const [isLive, setIsLive] = useState(true);
   const [invocationIds, setInvocationIds] = useState([String(invocationId)]);
+  const [liveNow, setLiveNow] = useState(() => Date.now());
   const {
     data,
     isPending,
@@ -171,6 +184,10 @@ export function JournalV2({
 
   const invocationApiError = apiError?.[invocationId];
   const dataUpdatedAt = allQueriesDataUpdatedAt[invocationId]!;
+  const latestDataUpdatedAt = Math.max(
+    dataUpdatedAt,
+    ...Object.values(allQueriesDataUpdatedAt).map(Number),
+  );
 
   const start = journalAndInvocationData
     ? new Date(
@@ -181,22 +198,47 @@ export function JournalV2({
   const areAllInvocationsCompleted = invocationIds.every(
     (id) => !data[id] || data[id]?.completed_at,
   );
+  const maxEntryTimestamp = Math.max(
+    ...entriesWithoutInputUnfiltered.map(({ entry }) =>
+      entry?.end
+        ? new Date(entry.end).getTime()
+        : entry?.start
+          ? new Date(entry.start).getTime()
+          : -1,
+    ),
+  );
+  const rawEnd = Math.max(
+    maxEntryTimestamp,
+    !areAllInvocationsCompleted ? latestDataUpdatedAt : -1,
+  );
+  const shouldSmoothLiveHeadroom =
+    withTimeline &&
+    isLive &&
+    !areAllInvocationsCompleted &&
+    rawEnd - start < LIVE_SMOOTH_DURATION_CUTOFF_MS;
+  const smoothLatestDataUpdatedAt = shouldSmoothLiveHeadroom
+    ? Math.max(latestDataUpdatedAt, liveNow)
+    : latestDataUpdatedAt;
   const end = journalAndInvocationData
     ? Math.max(
-        ...entriesWithoutInputUnfiltered.map(({ entry }) =>
-          entry?.end
-            ? new Date(entry.end).getTime()
-            : entry?.start
-              ? new Date(entry.start).getTime()
-              : -1,
-        ),
-        !areAllInvocationsCompleted
-          ? Math.max(
-              ...Array.from(Object.values(allQueriesDataUpdatedAt).map(Number)),
-            )
-          : -1,
+        maxEntryTimestamp,
+        !areAllInvocationsCompleted ? smoothLatestDataUpdatedAt : -1,
       )
     : 0;
+
+  useEffect(() => {
+    if (!shouldSmoothLiveHeadroom) {
+      setLiveNow(Date.now());
+      return;
+    }
+
+    setLiveNow(Date.now());
+    const interval = setInterval(() => {
+      setLiveNow(Date.now());
+    }, LIVE_TIME_STEP_MS);
+
+    return () => clearInterval(interval);
+  }, [shouldSmoothLiveHeadroom]);
 
   const entriesWithoutInput = entriesWithoutInputUnfiltered;
 
@@ -278,8 +320,6 @@ export function JournalV2({
           invocationIds={invocationIds}
           addInvocationId={addInvocationId}
           removeInvocationId={removeInvocationId}
-          actualStart={start}
-          actualEnd={end}
           dataUpdatedAt={dataUpdatedAt}
           isPending={isPending}
           error={apiError}
@@ -406,10 +446,7 @@ export function JournalV2({
                         href={`${baseUrl}/introspection?query=SELECT id, index, appended_at, entry_type, name, entry_lite_json AS metadata FROM sys_journal WHERE id = '${journalAndInvocationData?.id}'`}
                         target="_blank"
                       >
-                        <Icon
-                          name={IconName.ScanSearch}
-                          className="h-4 w-4"
-                        />
+                        <Icon name={IconName.ScanSearch} className="h-4 w-4" />
                       </Link>
                     </HoverTooltip>
                   </div>
@@ -494,22 +531,22 @@ export function JournalV2({
                           className="sticky top-0 z-[-1] col-start-1 row-start-1 h-full max-h-[calc(100vh+2rem)] rounded-br-2xl bg-gray-100"
                         />
                         {/* Sticky Units - limited to viewport height */}
-                        <UnitsPortalTarget className="pointer-events-none sticky top-[calc(9rem+2px)] col-start-1 row-start-1 max-h-[calc(100vh-9rem)] overflow-hidden" />
+                        <UnitsPortalTarget className="pointer-events-none sticky top-[calc(9rem+2px)] z-10 col-start-1 row-start-1 max-h-[calc(100vh-9rem)] overflow-hidden" />
                         {/* Sticky header with HeaderUnits and LifeCycleProgress */}
                         <div className="sticky top-36 z-[11] col-start-1 row-start-1 h-12">
                           <div className="relative -my-px h-[calc(100%+2px)] rounded-r-2xl border border-gray-300 border-l-transparent shadow-xs">
-                              <LifeCycleProgress
-                                className="h-12 px-2"
-                                invocation={journalAndInvocationData}
-                                createdEvent={
-                                  lifecycleDataByInvocation.get(invocationId)
-                                    ?.createdEvent
-                                }
-                                lifeCycleEntries={
-                                  lifecycleDataByInvocation.get(invocationId)
-                                    ?.lifeCycleEntries ?? []
-                                }
-                              />
+                            <LifeCycleProgress
+                              className="h-12 px-2"
+                              invocation={journalAndInvocationData}
+                              createdEvent={
+                                lifecycleDataByInvocation.get(invocationId)
+                                  ?.createdEvent
+                              }
+                              lifeCycleEntries={
+                                lifecycleDataByInvocation.get(invocationId)
+                                  ?.lifeCycleEntries ?? []
+                              }
+                            />
                             <ViewportSelectorPortalTarget className="absolute right-0 bottom-1 left-0 z-10 h-6" />
                           </div>
                         </div>
@@ -599,8 +636,6 @@ function TimelineEngineJournalBridge({
   invocationIds,
   addInvocationId,
   removeInvocationId,
-  actualStart,
-  actualEnd,
   dataUpdatedAt,
   isPending,
   error,
@@ -612,8 +647,6 @@ function TimelineEngineJournalBridge({
   invocationIds: string[];
   addInvocationId: (id: string) => void;
   removeInvocationId: (id: string) => void;
-  actualStart: number;
-  actualEnd: number;
   dataUpdatedAt: number;
   isPending: Record<string, boolean | undefined>;
   error?: Record<string, Error | null | undefined>;
@@ -665,10 +698,7 @@ function ReturnToLiveButton({
         }}
       >
         <div className="">Live</div>
-        <Icon
-          name={IconName.Play}
-          className="mb-px h-2.5 w-2.5 fill-current"
-        />
+        <Icon name={IconName.Play} className="mb-px h-2.5 w-2.5 fill-current" />
       </Button>
     );
   }
@@ -682,10 +712,7 @@ function ReturnToLiveButton({
       <div className="">Live</div>
       {isLive && <Indicator status="INFO" className="mb-0.5" />}
       {!isLive && (
-        <Icon
-          name={IconName.Play}
-          className="mb-px h-2.5 w-2.5 fill-current"
-        />
+        <Icon name={IconName.Play} className="mb-px h-2.5 w-2.5 fill-current" />
       )}
     </Button>
   );

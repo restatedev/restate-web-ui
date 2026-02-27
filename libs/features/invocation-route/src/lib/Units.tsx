@@ -7,9 +7,14 @@ import { CSSProperties, useEffect, useRef, useState } from 'react';
 import { useTimelineEngineContext } from './TimelineEngineContext';
 
 const FADE_DURATION = 100;
-
 const intervalStyles = tv({
-  base: 'pointer-events-none absolute top-0 bottom-0 transform border-r border-dotted border-black/10 pt-0 pr-0.5 text-right font-sans text-2xs text-gray-500 transition-[width,left,right]',
+  base: 'pointer-events-none absolute top-0 bottom-0 transform border-r border-dotted border-black/10 pt-0 pr-0.5 text-right font-sans text-2xs text-gray-500',
+  variants: {
+    animate: {
+      true: 'transition-[width,left,right] duration-300 ease-out',
+      false: '',
+    },
+  },
 });
 
 const tickContainerStyles = tv({
@@ -24,17 +29,32 @@ const backgroundStyles = tv({
       false: '',
     },
     trailing: {
-      false: 'transform transition-[width,left,right]',
+      false: 'transform',
       true: '',
+    },
+    animate: {
+      true: 'transition-[width,left,right] duration-300 ease-out',
+      false: '',
     },
   },
   defaultVariants: {
     trailing: false,
+    animate: false,
   },
 });
 
 const startDateTimeStyles = tv({
   base: 'pointer-events-none relative h-full',
+});
+
+const nowLabelStyles = tv({
+  base: 'absolute z-4 mt-0.5 rounded-sm border border-white bg-zinc-500 px-1 text-2xs text-white',
+  variants: {
+    side: {
+      right: 'left-px',
+      left: 'left-px -translate-x-full',
+    },
+  },
 });
 
 export function Units({
@@ -92,9 +112,14 @@ export function Units({
   }, [targetInterval, renderedInterval, engine.mode]);
 
   const unit = renderedInterval;
+  const shouldAnimateTickLayout = engine.mode === 'live-follow';
 
   const relViewportLeft = engine.viewportStart - start;
   const relViewportRight = engine.viewportEnd - start;
+  const nowMs = Math.max(start, Math.min(dataUpdatedAt, end));
+  const shouldShowNow = dataUpdatedAt <= end;
+  const nowLabelSide =
+    nowMs > (engine.viewportStart + engine.viewportEnd) / 2 ? 'left' : 'right';
 
   const ticks: number[] = [];
   if (duration > 0 && unit > 0) {
@@ -110,6 +135,7 @@ export function Units({
 
   return (
     <div className={className} style={style}>
+      <div className="pointer-events-none absolute top-0 bottom-0 left-2 border-l border-dashed border-gray-500/40" />
       {cancelEvent && (
         <div className="pointer-events-none absolute top-[calc(3rem+2px)] right-0 bottom-0 left-0 overflow-hidden px-2 transition-all duration-300">
           <div
@@ -124,17 +150,15 @@ export function Units({
           />
         </div>
       )}
-      {dataUpdatedAt < end && (
+      {shouldShowNow && (
         <div
           style={{
-            left: `calc(${((dataUpdatedAt - start) / duration) * 100}% - 2px - 0.5rem)`,
+            left: `calc(${((nowMs - start) / duration) * 100}% - 2px - 0.5rem)`,
           }}
           className="absolute top-[calc(3rem+2px)] right-0 bottom-0 rounded-r-2xl border-l-2 border-white/80 font-sans text-2xs text-gray-500 transition-all duration-300"
         >
           <div className="absolute inset-0 rounded-r-2xl mix-blend-screen [background:repeating-linear-gradient(-45deg,--theme(--color-white/.6),--theme(--color-white/.6)_2px,--theme(--color-white/0)_2px,--theme(--color-white/0)_4px)]" />
-          <div className="absolute z-4 mt-0.5 ml-px rounded-sm border border-white bg-zinc-500 px-1 text-2xs text-white">
-            Now
-          </div>
+          <div className={nowLabelStyles({ side: nowLabelSide })}>Now</div>
         </div>
       )}
       <div className="h-full">
@@ -149,14 +173,19 @@ export function Units({
             return (
               <div key={tickMs}>
                 <div
-                  className={backgroundStyles({ isEven })}
+                  className={backgroundStyles({
+                    isEven,
+                    animate: shouldAnimateTickLayout,
+                  })}
                   style={{
                     left: `calc(${prevPercent}% + 0.5rem)`,
                     width: `${leftPercent - prevPercent}%`,
                   }}
                 />
                 <div
-                  className={intervalStyles()}
+                  className={intervalStyles({
+                    animate: shouldAnimateTickLayout,
+                  })}
                   style={{
                     left: `calc(0.5rem + ${prevPercent}%)`,
                     width: `${leftPercent - prevPercent}%`,
@@ -173,6 +202,7 @@ export function Units({
                 isEven:
                   (Math.round(ticks[ticks.length - 1]! / unit) + 1) % 2 === 0,
                 trailing: true,
+                animate: shouldAnimateTickLayout,
               })}
               style={{
                 left: `calc(${(ticks[ticks.length - 1]! / duration) * 100}% + 0.5rem)`,
