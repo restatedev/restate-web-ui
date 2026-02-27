@@ -9,7 +9,7 @@ import { useTimelineEngineContext } from './TimelineEngineContext';
 const FADE_DURATION = 100;
 
 const intervalStyles = tv({
-  base: 'pointer-events-none absolute top-0 bottom-0 border-r border-dotted border-black/10 pt-0 pr-0.5 text-right font-sans text-2xs text-gray-500',
+  base: 'pointer-events-none absolute top-0 bottom-0 transform border-r border-dotted border-black/10 pt-0 pr-0.5 text-right font-sans text-2xs text-gray-500 transition-[width,left,right]',
 });
 
 const tickContainerStyles = tv({
@@ -17,7 +17,7 @@ const tickContainerStyles = tv({
 });
 
 const backgroundStyles = tv({
-  base: 'pointer-events-none absolute top-0 bottom-0',
+  base: 'pointer-events-none absolute top-0 bottom-0 transform transition-[width,left,right]',
   variants: {
     isEven: {
       true: 'bg-gray-400/5',
@@ -60,17 +60,17 @@ export function Units({
 
     animationRef.current?.cancel();
 
-    const fadeOut = el.animate(
-      [{ opacity: 1 }, { opacity: 0 }],
-      { duration: FADE_DURATION, easing: 'ease-out' },
-    );
+    const fadeOut = el.animate([{ opacity: 1 }, { opacity: 0 }], {
+      duration: FADE_DURATION,
+      easing: 'ease-out',
+    });
 
     fadeOut.onfinish = () => {
       setRenderedInterval(targetInterval);
-      animationRef.current = el.animate(
-        [{ opacity: 0 }, { opacity: 1 }],
-        { duration: FADE_DURATION, easing: 'ease-in' },
-      );
+      animationRef.current = el.animate([{ opacity: 0 }, { opacity: 1 }], {
+        duration: FADE_DURATION,
+        easing: 'ease-in',
+      });
     };
 
     animationRef.current = fadeOut;
@@ -88,10 +88,7 @@ export function Units({
       unit,
       Math.ceil(Math.max(0, relViewportLeft - unit) / unit) * unit,
     );
-    const lastTick = Math.min(
-      duration,
-      relViewportRight + unit,
-    );
+    const lastTick = Math.min(duration, relViewportRight + unit);
     for (let t = firstTick; t <= lastTick; t += unit) {
       ticks.push(t);
     }
@@ -132,7 +129,7 @@ export function Units({
           {ticks.map((tickMs, i) => {
             const leftPercent = (tickMs / duration) * 100;
             const globalIndex = Math.round(tickMs / unit);
-            const prevTickMs = i === 0 ? (ticks[0]! - unit) : ticks[i - 1]!;
+            const prevTickMs = i === 0 ? ticks[0]! - unit : ticks[i - 1]!;
             const prevPercent = Math.max(0, (prevTickMs / duration) * 100);
             const isEven = globalIndex % 2 === 0;
             return (
@@ -159,7 +156,8 @@ export function Units({
           {ticks.length > 0 && (
             <div
               className={backgroundStyles({
-                isEven: (Math.round(ticks[ticks.length - 1]! / unit) + 1) % 2 === 0,
+                isEven:
+                  (Math.round(ticks[ticks.length - 1]! / unit) + 1) % 2 === 0,
               })}
               style={{
                 left: `calc(${(ticks[ticks.length - 1]! / duration) * 100}% + 0.5rem)`,
