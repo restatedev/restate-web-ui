@@ -13,6 +13,40 @@ const panAreaStyles = tv({
   base: 'h-full cursor-grab rounded-md shadow-[0_0_0_1px_rgba(96,165,250,0.2),0_1px_3px_1px_rgba(96,165,250,0.08)] backdrop-brightness-110 backdrop-saturate-[1.1] transition-shadow duration-[140ms] ease-out hover:shadow-[0_0_0_1px_rgba(96,165,250,0.3),0_1px_5px_2px_rgba(96,165,250,0.1)] active:shadow-[0_0_0_1px_rgba(96,165,250,0.4),0_2px_6px_2px_rgba(96,165,250,0.12)]',
 });
 
+const overlayStyles = tv({
+  base: 'pointer-events-none absolute inset-y-0',
+  variants: {
+    side: {
+      left: 'rounded-l-md bg-gray-100/60',
+      right: 'rounded-r-md bg-gray-100/60',
+    },
+    animate: {
+      true: 'transition-[width] duration-300 ease-out',
+      false: '',
+    },
+  },
+});
+
+const handleStyles = tv({
+  base: 'group absolute inset-y-0 z-20 flex w-3 translate-x-1 cursor-ew-resize items-center justify-center',
+  variants: {
+    animate: {
+      true: 'transition-[left,right] duration-300 ease-out',
+      false: '',
+    },
+  },
+});
+
+const panWrapperStyles = tv({
+  base: 'absolute inset-y-0 z-10',
+  variants: {
+    animate: {
+      true: 'transition-[left,right] duration-300 ease-out',
+      false: '',
+    },
+  },
+});
+
 const MIN_VIEWPORT_DURATION = 100;
 const MIN_VIEWPORT_WIDTH_PX = 24;
 const HANDLE_WIDTH = 12;
@@ -205,6 +239,8 @@ export function ViewportSelector({
     </span>
   ) : null;
 
+  const animate = !isDragging;
+
   const leftPercent = ((displayStart - start) / traceDuration) * 100;
   const widthPercent = ((displayEnd - displayStart) / traceDuration) * 100;
   const rightPercent = 100 - leftPercent - widthPercent;
@@ -213,7 +249,7 @@ export function ViewportSelector({
     <div ref={containerRef} className={styles({ className })}>
       {leftPercent > 0.1 && (
         <div
-          className="pointer-events-none absolute inset-y-0 rounded-l-md bg-gray-100/60"
+          className={overlayStyles({ side: 'left', animate })}
           style={{
             left: 0,
             width: `calc(${leftPercent}% + ${PADDING}px)`,
@@ -222,7 +258,7 @@ export function ViewportSelector({
       )}
       {rightPercent > 0.1 && (
         <div
-          className="pointer-events-none absolute inset-y-0 rounded-r-md bg-gray-100/60"
+          className={overlayStyles({ side: 'right', animate })}
           style={{
             right: 0,
             width: `calc(${rightPercent}% + ${PADDING}px)`,
@@ -233,7 +269,7 @@ export function ViewportSelector({
       <div
         {...leftHandleMoveProps}
         tabIndex={0}
-        className="group absolute inset-y-0 z-20 flex w-3 translate-x-1 cursor-ew-resize items-center justify-center"
+        className={handleStyles({ animate })}
         style={{
           left: `calc(${leftPercent}%)`,
         }}
@@ -249,7 +285,7 @@ export function ViewportSelector({
         onOpenChange={(open) => setIsHovering(open)}
       >
         <div
-          className="absolute inset-y-0 z-10"
+          className={panWrapperStyles({ animate })}
           style={{
             left: `calc(${leftPercent}% + ${PADDING}px)`,
             right: `calc(${rightPercent}% + ${PADDING}px)`,
@@ -278,7 +314,7 @@ export function ViewportSelector({
       <div
         {...rightHandleMoveProps}
         tabIndex={0}
-        className="group absolute inset-y-0 z-20 flex w-3 translate-x-1 cursor-ew-resize items-center justify-center"
+        className={handleStyles({ animate })}
         style={{
           right: `calc(${rightPercent}% + ${PADDING}px)`,
         }}
