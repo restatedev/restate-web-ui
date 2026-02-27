@@ -1,13 +1,6 @@
-import { JournalEntryV2 } from '@restate/data-access/admin-api';
+import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
 import { tv } from '@restate/util/styles';
-import {
-  CSSProperties,
-  ReactNode,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { CSSProperties, ReactNode, useEffect, useRef } from 'react';
 import {
   UnitsPortalContent,
   ViewportSelectorPortalContent,
@@ -18,118 +11,95 @@ import { Units } from './Units';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import { HoverTooltip } from '@restate/ui/tooltip';
+import { useTimelineEngineContext } from './TimelineEngineContext';
 
 const scrollableTimelineStyles = tv({
-  base: '',
+  base: 'overflow-hidden',
+});
+
+const zoomContainerStyles = tv({
+  base: 'relative',
   variants: {
-    isFullTrace: {
-      true: '',
-      false: 'overflow-hidden',
+    animate: {
+      true: 'transition-transform duration-300 ease-out',
+      false: '',
     },
   },
 });
 
-const VIEWPORT_EPSILON_MS = 1;
+const unitsContainerStyles = tv({
+  base: 'relative h-full',
+  variants: {
+    animate: {
+      true: 'transition-transform duration-300 ease-out',
+      false: '',
+    },
+  },
+});
 
 export function ScrollableTimeline({
   className,
   style,
   children,
-  start,
-  end,
   dataUpdatedAt,
   cancelEvent,
 }: {
   className?: string;
   style?: CSSProperties;
   children: ReactNode;
-  start: number;
-  end: number;
   dataUpdatedAt: number;
   cancelEvent?: JournalEntryV2;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const engine = useTimelineEngineContext();
 
-  const [viewport, setViewportState] = useState<{
-    start: number;
-    end: number;
-  } | null>(null);
-
-  const isFullTrace =
-    viewport === null || (viewport.start <= start && viewport.end >= end);
-  const viewportStart = isFullTrace ? start : viewport.start;
-  const viewportEnd = isFullTrace ? end : viewport.end;
-
-  const setViewport = useCallback((newStart: number, newEnd: number) => {
-    setViewportState((current) => {
-      if (
-        current &&
-        Math.abs(current.start - newStart) < VIEWPORT_EPSILON_MS &&
-        Math.abs(current.end - newEnd) < VIEWPORT_EPSILON_MS
-      ) {
-        return current;
-      }
-      return { start: newStart, end: newEnd };
-    });
-  }, []);
-
-  const resetViewport = useCallback(() => {
-    setViewportState(null);
-  }, []);
-
-  const traceDuration = end - start;
-  const viewportDuration = viewportEnd - viewportStart;
-  const zoomLevel =
-    !isFullTrace && viewportDuration > 0 ? traceDuration / viewportDuration : 1;
-
-  const offsetPercent = isFullTrace
-    ? 0
-    : ((viewportStart - start) / traceDuration) * 100;
-
-  const stateRef = useRef({
-    start,
-    traceDuration,
-    viewportDuration,
+  const {
+    coordinateStart,
+    coordinateEnd,
+    actualDuration,
     viewportStart,
-  });
-  stateRef.current = {
-    start,
-    traceDuration,
+    viewportEnd,
     viewportDuration,
-    viewportStart,
-  };
+    zoomLevel,
+    offsetPercent,
+    isFullTrace,
+    mode,
+    overviewStart,
+    overviewEnd,
+    setViewport,
+    resetViewport,
+    panViewport,
+  } = engine;
+
+  const stateRef = useRef({ viewportDuration });
+  stateRef.current = { viewportDuration };
 
   useEffect(() => {
-    if (isFullTrace) return;
     const container = scrollRef.current;
     if (!container) return;
 
     const handleWheel = (e: WheelEvent) => {
       if (Math.abs(e.deltaX) < Math.abs(e.deltaY)) return;
+      const { viewportDuration: vd } = stateRef.current;
       e.preventDefault();
 
       let deltaX = e.deltaX;
       if (e.deltaMode === 1) deltaX *= 16;
 
-      const {
-        start: s,
-        traceDuration: td,
-        viewportDuration: vd,
-        viewportStart: vs,
-      } = stateRef.current;
       const timeDelta = (deltaX / container.clientWidth) * vd;
-      const newVS = Math.max(s, Math.min(s + td - vd, vs + timeDelta));
-      setViewport(newVS, newVS + vd);
+      panViewport(timeDelta);
     };
 
     container.addEventListener('wheel', handleWheel, { passive: false });
     return () => container.removeEventListener('wheel', handleWheel);
-  }, [isFullTrace, setViewport]);
+  }, [panViewport]);
+
+  const animate = mode !== 'inspect';
 
   return (
     <div
       ref={scrollRef}
-      className={scrollableTimelineStyles({ isFullTrace, className })}
+      className={scrollableTimelineStyles({ className })}
       style={style}
     >
       <ZoomControlsPortalContent>
@@ -138,9 +108,14 @@ export function ScrollableTimeline({
             variant="icon"
             onClick={() => {
               if (isFullTrace) {
-                const td = end - start;
-                if (td > 0) {
-                  setViewport(end - td / 2, end);
+                const traceEnd = coordinateStart + actualDuration;
+                const vd = viewportEnd - viewportStart;
+                if (vd > 0) {
+                  const newDuration = vd / 2;
+                  setViewport(
+                    Math.max(coordinateStart, traceEnd - newDuration),
+                    traceEnd,
+                  );
                 }
               } else {
                 resetViewport();
@@ -157,8 +132,8 @@ export function ScrollableTimeline({
       <ViewportSelectorPortalContent>
         <ViewportSelector
           className="absolute inset-0"
-          start={start}
-          end={end}
+          start={overviewStart}
+          end={overviewEnd}
           viewportStart={viewportStart}
           viewportEnd={viewportEnd}
           setViewport={setViewport}
@@ -167,29 +142,28 @@ export function ScrollableTimeline({
       </ViewportSelectorPortalContent>
       <UnitsPortalContent>
         <div
-          className="relative h-full"
+          className={unitsContainerStyles({ animate })}
           style={{
-            width: isFullTrace ? '100%' : `${zoomLevel * 100}%`,
-            minWidth: isFullTrace ? '100%' : `${zoomLevel * 100}%`,
+            width: `${zoomLevel * 100}%`,
+            minWidth: `${zoomLevel * 100}%`,
             transform: `translateX(-${offsetPercent}%)`,
             willChange: 'transform',
           }}
         >
           <Units
             className="pointer-events-none absolute inset-0"
-            start={start}
-            end={end}
+            start={coordinateStart}
+            end={coordinateEnd}
             dataUpdatedAt={dataUpdatedAt}
             cancelEvent={cancelEvent}
-            viewportDuration={viewportDuration}
           />
         </div>
       </UnitsPortalContent>
       <div
-        className="relative"
+        className={zoomContainerStyles({ animate })}
         style={{
-          width: isFullTrace ? '100%' : `${zoomLevel * 100}%`,
-          minWidth: isFullTrace ? '100%' : `${zoomLevel * 100}%`,
+          width: `${zoomLevel * 100}%`,
+          minWidth: `${zoomLevel * 100}%`,
           transform: `translateX(-${offsetPercent}%)`,
         }}
       >

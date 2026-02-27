@@ -45,6 +45,11 @@ import {
   CombinedJournalEntry,
   useProcessedJournal,
 } from './useProcessedJournal';
+import {
+  TimelineEngineProvider,
+  useTimelineEngineContext,
+} from './TimelineEngineContext';
+import { useContainerWidth } from './useContainerWidth';
 
 const LazyPanel = lazy(() =>
   import('react-resizable-panels').then((m) => ({ default: m.Panel })),
@@ -227,6 +232,8 @@ export function JournalV2({
     element.style.width = `${nextTimelinePanelSize}%`;
   }, []);
 
+  const [containerWidthRef, containerWidthPx] = useContainerWidth();
+
   if (invocationApiError && showApiError) {
     return <ErrorBanner error={invocationApiError} className="rounded-2xl" />;
   }
@@ -260,325 +267,427 @@ export function JournalV2({
 
   return (
     <PortalProvider>
-      <JournalContextProvider
-        invocationIds={invocationIds}
-        addInvocationId={addInvocationId}
-        removeInvocationId={removeInvocationId}
-        start={start}
-        end={end}
-        dataUpdatedAt={dataUpdatedAt}
-        isPending={isPending}
-        error={apiError}
-        isLive={!areAllInvocationsCompleted && isLive}
-        isCompact={isCompact}
+      <TimelineEngineProvider
+        actualStart={start}
+        actualEnd={end}
+        areAllCompleted={areAllInvocationsCompleted}
+        isLiveEnabled={isLive}
+        containerWidthPx={containerWidthPx}
       >
-        <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
-          <Suspense
-            fallback={
-              <div className="mt-4 flex items-center gap-1.5 p-4 text-sm text-zinc-500">
-                <Spinner className="h-4 w-4" />
-                Loading…
-              </div>
-            }
-          >
-            {withTimeline && (
-              <div className="sticky top-26 z-20 flex h-9 w-full items-center">
-                <div className="flex flex-col">
-                  <div className="relative flex h-full w-full items-center gap-1.5">
-                    <div className="absolute left-2.5 h-2 w-2 rounded-full bg-zinc-300">
-                      <div className="absolute top-full left-1/2 h-8 w-px -translate-x-1/2 border border-dashed border-zinc-300" />
-                    </div>
-                    <div className="shrink-0 pl-6 text-xs font-semibold text-gray-400 uppercase">
-                      {isRestartedFrom ? 'Restarted from' : 'Invoked by'}
-                    </div>
-                    {journalAndInvocationData?.invoked_by === 'ingress' &&
-                    !isRestartedFrom ? (
-                      <div className="text-xs font-medium">Ingress</div>
-                    ) : journalAndInvocationData?.invoked_by_id ? (
-                      <InvocationId
-                        id={journalAndInvocationData?.invoked_by_id}
-                        className="max-w-[20ch] min-w-0 text-0.5xs font-semibold"
-                      />
-                    ) : restartedFromValue ? (
-                      <InvocationId
-                        id={restartedFromValue}
-                        className="max-w-[20ch] min-w-0 text-0.5xs font-semibold"
-                      />
-                    ) : journalAndInvocationData?.invoked_by ===
-                      'subscription' ? (
-                      <div className="text-xs font-medium">
-                        {subscriptions?.subscriptions?.find(
-                          (sub) =>
-                            sub.id ===
-                            journalAndInvocationData?.invoked_by_subscription_id,
-                        )?.source ||
-                          journalAndInvocationData?.invoked_by_subscription_id}
+        <TimelineEngineJournalBridge
+          invocationIds={invocationIds}
+          addInvocationId={addInvocationId}
+          removeInvocationId={removeInvocationId}
+          actualStart={start}
+          actualEnd={end}
+          dataUpdatedAt={dataUpdatedAt}
+          isPending={isPending}
+          error={apiError}
+          areAllInvocationsCompleted={areAllInvocationsCompleted}
+          isLive={isLive}
+          isCompact={isCompact}
+        >
+          <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
+            <Suspense
+              fallback={
+                <div className="mt-4 flex items-center gap-1.5 p-4 text-sm text-zinc-500">
+                  <Spinner className="h-4 w-4" />
+                  Loading…
+                </div>
+              }
+            >
+              {withTimeline && (
+                <div className="sticky top-26 z-20 flex h-9 w-full items-center">
+                  <div className="flex flex-col">
+                    <div className="relative flex h-full w-full items-center gap-1.5">
+                      <div className="absolute left-2.5 h-2 w-2 rounded-full bg-zinc-300">
+                        <div className="absolute top-full left-1/2 h-8 w-px -translate-x-1/2 border border-dashed border-zinc-300" />
                       </div>
-                    ) : null}
+                      <div className="shrink-0 pl-6 text-xs font-semibold text-gray-400 uppercase">
+                        {isRestartedFrom ? 'Restarted from' : 'Invoked by'}
+                      </div>
+                      {journalAndInvocationData?.invoked_by === 'ingress' &&
+                      !isRestartedFrom ? (
+                        <div className="text-xs font-medium">Ingress</div>
+                      ) : journalAndInvocationData?.invoked_by_id ? (
+                        <InvocationId
+                          id={journalAndInvocationData?.invoked_by_id}
+                          className="max-w-[20ch] min-w-0 text-0.5xs font-semibold"
+                        />
+                      ) : restartedFromValue ? (
+                        <InvocationId
+                          id={restartedFromValue}
+                          className="max-w-[20ch] min-w-0 text-0.5xs font-semibold"
+                        />
+                      ) : journalAndInvocationData?.invoked_by ===
+                        'subscription' ? (
+                        <div className="text-xs font-medium">
+                          {subscriptions?.subscriptions?.find(
+                            (sub) =>
+                              sub.id ===
+                              journalAndInvocationData?.invoked_by_subscription_id,
+                          )?.source ||
+                            journalAndInvocationData?.invoked_by_subscription_id}
+                        </div>
+                      ) : null}
+                    </div>
+                    <div className="pb-4 pl-6">
+                      <Retention
+                        invocation={journalAndInvocationData}
+                        type="journal"
+                        prefixForCompletion="retention "
+                        prefixForInProgress="retained "
+                        className="text-xs"
+                      />
+                    </div>
                   </div>
-                  <div className="pb-4 pl-6">
-                    <Retention
-                      invocation={journalAndInvocationData}
-                      type="journal"
-                      prefixForCompletion="retention "
-                      prefixForInProgress="retained "
-                      className="text-xs"
+                  <div className="z-10 ml-auto flex h-full flex-row items-center justify-end gap-1 rounded-lg bg-linear-to-l from-gray-100 via-gray-100 to-gray-100/0 pl-10">
+                    <Dropdown>
+                      <DropdownTrigger>
+                        <Button
+                          variant="icon"
+                          onClick={() => setIsCompact?.((v) => !v)}
+                          className={compactStyles({ isCompact })}
+                        >
+                          {isCompact ? 'Compact' : 'Detailed'}
+                          <Icon
+                            name={IconName.ChevronsUpDown}
+                            className="ml-1 h-3.5 w-3.5"
+                          />
+                        </Button>
+                      </DropdownTrigger>
+                      <DropdownPopover>
+                        <DropdownSection title="View mode">
+                          <DropdownMenu
+                            selectable
+                            selectedItems={
+                              isCompact ? ['compact'] : ['expanded']
+                            }
+                            onSelect={(key) =>
+                              setIsCompact?.(key === 'compact')
+                            }
+                          >
+                            <DropdownItem value="compact">
+                              <div>
+                                <div>Compact</div>
+                                <div className="text-0.5xs opacity-70">
+                                  Actions only
+                                </div>
+                              </div>
+                            </DropdownItem>
+                            <DropdownItem value="expanded">
+                              <div>
+                                <div>Detailed</div>
+                                <div className="text-0.5xs opacity-70">
+                                  Include transient errors and completions
+                                </div>
+                              </div>
+                            </DropdownItem>
+                          </DropdownMenu>
+                        </DropdownSection>
+                      </DropdownPopover>
+                    </Dropdown>
+                    <ZoomControlsPortalTarget className="hidden md:flex" />
+                    <ReturnToLiveButton
+                      areAllCompleted={areAllInvocationsCompleted}
+                      isLive={isLive}
+                      setIsLive={setIsLive}
+                    />
+                    {areAllInvocationsCompleted && (
+                      <HoverTooltip content="Refresh">
+                        <Button variant="icon" onClick={refetch}>
+                          <Icon name={IconName.Retry} className="h-4 w-4" />
+                        </Button>
+                      </HoverTooltip>
+                    )}
+                    <HoverTooltip content="Introspect">
+                      <Link
+                        variant="icon"
+                        href={`${baseUrl}/introspection?query=SELECT id, index, appended_at, entry_type, name, entry_lite_json AS metadata FROM sys_journal WHERE id = '${journalAndInvocationData?.id}'`}
+                        target="_blank"
+                      >
+                        <Icon
+                          name={IconName.ScanSearch}
+                          className="h-4 w-4"
+                        />
+                      </Link>
+                    </HoverTooltip>
+                  </div>
+                </div>
+              )}
+              {withTimeline ? (
+                <div className="relative">
+                  <div className="pointer-events-none sticky top-36 z-30 -mb-12 hidden h-12 md:block">
+                    <div
+                      ref={startDateOverlayRef}
+                      className="h-full"
+                      style={{
+                        marginLeft: `${(1 - timelineWidth) * 100}%`,
+                        width: `${timelineWidth * 100}%`,
+                      }}
+                    >
+                      <StartDateTimeUnit start={start} />
+                    </div>
+                  </div>
+                  <div
+                    ref={listRef}
+                    className="relative isolate rounded-b-2xl bg-gray-100 font-mono text-0.5xs [clip-path:inset(-2.5rem_0_0_0_round_0_0_1rem_1rem)]"
+                  >
+                    <LazyPanelGroup
+                      direction="horizontal"
+                      onLayout={handlePanelLayout}
+                      style={{ overflow: 'visible' }}
+                      className="rounded-2xl border shadow-xs"
+                    >
+                      {/* Left panel */}
+                      <LazyPanel
+                        defaultSize={(1 - timelineWidth) * 100}
+                        minSize={20}
+                        className="z-[2] grid min-w-0"
+                        style={{
+                          overflow: 'visible',
+                          minHeight: totalSize + 48,
+                          gridTemplateColumns: '1fr',
+                          gridTemplateRows: '1fr',
+                        }}
+                      >
+                        {/* Sticky background - prevents repaint lag */}
+                        <div className="sticky top-0 z-[-1] col-start-1 row-start-1 h-full max-h-[calc(100vh+2rem)] rounded-2xl border-0 border-r-0 border-white/50 bg-linear-to-b from-gray-50 to-white shadow-xs md:rounded-r-none" />
+                        {/* Content */}
+                        <div
+                          className="z-[2] col-start-1 row-start-1 min-w-0"
+                          style={{ minHeight: totalSize + 48 }}
+                        >
+                          <div className="sticky top-36 z-20 box-border flex h-12 items-center rounded-tl-2xl rounded-r-2xl rounded-bl-2xl border-b border-transparent bg-gray-100 shadow-xs ring-1 ring-gray-300 last:border-none md:rounded-r-none">
+                            <Input
+                              entry={typedInputEntry}
+                              invocation={data?.[invocationId]}
+                              className="w-full rounded-r-2xl! [--rounded-radius-right:15px] md:rounded-r-none! md:[--rounded-radius-right:0px] [&&&>*:last-child>*]:rounded-r-2xl! md:[&&&>*:last-child>*]:rounded-r-none!"
+                            />
+                          </div>
+                          <VirtualizedEntries
+                            virtualItems={virtualItems}
+                            totalSize={totalSize}
+                            entriesWithoutInput={entriesWithoutInput}
+                            data={data}
+                          />
+                        </div>
+                      </LazyPanel>
+                      <LazyPanelResizeHandle className="group relative z-10 mx-[-5px] hidden w-2.5 cursor-col-resize items-center justify-center md:flex">
+                        <div className="absolute top-0 bottom-0 left-1/2 w-px -translate-x-1/2 cursor-col-resize bg-transparent group-hover:w-[2px] group-hover:bg-blue-500" />
+                      </LazyPanelResizeHandle>
+                      {/* Right panel - grid container for overlapping Units */}
+                      <LazyPanel
+                        defaultSize={timelineWidth * 100}
+                        className="relative hidden overflow-x-clip md:grid"
+                        minSize={20}
+                        style={{
+                          overflow: 'visible',
+                          minHeight: totalSize + 48,
+                          gridTemplateColumns: '1fr',
+                          gridTemplateRows: '1fr',
+                        }}
+                      >
+                        {/* Sticky background - prevents repaint lag */}
+                        <div
+                          ref={containerWidthRef}
+                          className="sticky top-0 z-[-1] col-start-1 row-start-1 h-full max-h-[calc(100vh+2rem)] rounded-br-2xl bg-gray-100"
+                        />
+                        {/* Sticky Units - limited to viewport height */}
+                        <UnitsPortalTarget className="pointer-events-none sticky top-[calc(9rem+2px)] col-start-1 row-start-1 max-h-[calc(100vh-9rem)] overflow-hidden" />
+                        {/* Sticky header with HeaderUnits and LifeCycleProgress */}
+                        <div className="sticky top-36 z-[11] col-start-1 row-start-1 h-12">
+                          <div className="relative -my-px h-[calc(100%+2px)] rounded-r-2xl border border-gray-300 border-l-transparent shadow-xs">
+                              <LifeCycleProgress
+                                className="h-12 px-2"
+                                invocation={journalAndInvocationData}
+                                createdEvent={
+                                  lifecycleDataByInvocation.get(invocationId)
+                                    ?.createdEvent
+                                }
+                                lifeCycleEntries={
+                                  lifecycleDataByInvocation.get(invocationId)
+                                    ?.lifeCycleEntries ?? []
+                                }
+                              />
+                            <ViewportSelectorPortalTarget className="absolute right-0 bottom-1 left-0 z-10 h-6" />
+                          </div>
+                        </div>
+                        <div className="sticky top-36 right-0 z-[1] col-start-1 row-start-1 h-12 rounded-r-2xl border border-t-2 border-white bg-gray-100 shadow-xs" />
+
+                        {/* Scrollable timeline content with Units overlay */}
+                        <ScrollableTimeline
+                          className="col-start-1 row-start-1 pt-[calc(3rem+2px)]"
+                          style={{ minHeight: totalSize + 48 }}
+                          dataUpdatedAt={dataUpdatedAt}
+                          cancelEvent={
+                            lifecycleDataByInvocation.get(invocationId)
+                              ?.cancelEvent
+                          }
+                        >
+                          <VirtualizedTimeline
+                            virtualItems={virtualItems}
+                            totalSize={totalSize}
+                            entriesWithoutInput={entriesWithoutInput}
+                            data={data}
+                            relatedEntriesByInvocation={
+                              relatedEntriesByInvocation
+                            }
+                          />
+                        </ScrollableTimeline>
+                      </LazyPanel>
+                    </LazyPanelGroup>
+                  </div>
+                </div>
+              ) : (
+                <div className={className}>
+                  <div className="z-10 box-border flex h-12 items-center rounded-tl-2xl rounded-bl-2xl border-b border-transparent bg-gray-100 shadow-xs ring-1 ring-gray-300 last:border-none">
+                    <Input
+                      entry={typedInputEntry}
+                      invocation={data?.[invocationId]}
+                      className="w-full"
                     />
                   </div>
-                </div>
-                <div className="z-10 ml-auto flex h-full flex-row items-center justify-end gap-1 rounded-lg bg-linear-to-l from-gray-100 via-gray-100 to-gray-100/0 pl-10">
-                  <Dropdown>
-                    <DropdownTrigger>
-                      <Button
-                        variant="icon"
-                        onClick={() => setIsCompact?.((v) => !v)}
-                        className={compactStyles({ isCompact })}
-                      >
-                        {isCompact ? 'Compact' : 'Detailed'}
-                        <Icon
-                          name={IconName.ChevronsUpDown}
-                          className="ml-1 h-3.5 w-3.5"
-                        />
-                      </Button>
-                    </DropdownTrigger>
-                    <DropdownPopover>
-                      <DropdownSection title="View mode">
-                        <DropdownMenu
-                          selectable
-                          selectedItems={isCompact ? ['compact'] : ['expanded']}
-                          onSelect={(key) => setIsCompact?.(key === 'compact')}
+                  {entriesWithoutInput.map(
+                    (
+                      {
+                        invocationId: entryInvocationId,
+                        entry,
+                        depth,
+                        parentCommand,
+                      },
+                      index,
+                    ) => {
+                      const invocation = data?.[entryInvocationId];
+                      return (
+                        <ErrorBoundary
+                          entry={entry}
+                          className="h-9"
+                          key={`${entryInvocationId}-${entry?.category}-${entry?.type}-${index}`}
                         >
-                          <DropdownItem value="compact">
-                            <div>
-                              <div>Compact</div>
-                              <div className="text-0.5xs opacity-70">
-                                Actions only
-                              </div>
-                            </div>
-                          </DropdownItem>
-                          <DropdownItem value="expanded">
-                            <div>
-                              <div>Detailed</div>
-                              <div className="text-0.5xs opacity-70">
-                                Include transient errors and completions
-                              </div>
-                            </div>
-                          </DropdownItem>
-                        </DropdownMenu>
-                      </DropdownSection>
-                    </DropdownPopover>
-                  </Dropdown>
-                  <ZoomControlsPortalTarget className="hidden md:flex" />
-                  {!areAllInvocationsCompleted && setIsLive && (
-                    <Button
-                      variant="icon"
-                      className={liveStyles({ isLive })}
-                      onClick={() => setIsLive((v) => !v)}
-                    >
-                      <div className="">Live</div>
-                      {isLive && <Indicator status="INFO" className="mb-0.5" />}
-                      {!isLive && (
-                        <Icon
-                          name={IconName.Play}
-                          className="mb-px h-2.5 w-2.5 fill-current"
-                        />
-                      )}
-                    </Button>
+                          <Entry
+                            invocation={invocation}
+                            entry={entry}
+                            depth={depth}
+                            parentCommand={parentCommand}
+                          />
+                        </ErrorBoundary>
+                      );
+                    },
                   )}
-                  {areAllInvocationsCompleted && (
-                    <HoverTooltip content="Refresh">
-                      <Button variant="icon" onClick={refetch}>
-                        <Icon name={IconName.Retry} className="h-4 w-4" />
-                      </Button>
-                    </HoverTooltip>
-                  )}
-                  <HoverTooltip content="Introspect">
+                  {hasMoreEntries && (
                     <Link
                       variant="icon"
-                      href={`${baseUrl}/introspection?query=SELECT id, index, appended_at, entry_type, name, entry_lite_json AS metadata FROM sys_journal WHERE id = '${journalAndInvocationData?.id}'`}
-                      target="_blank"
+                      href={`${baseUrl}/invocations/${invocationId}`}
+                      className="flex items-center justify-center gap-1 py-3 text-xs text-blue-600 hover:text-blue-700"
                     >
-                      <Icon name={IconName.ScanSearch} className="h-4 w-4" />
+                      View all entries
+                      <Icon name={IconName.ChevronRight} className="h-3 w-3" />
                     </Link>
-                  </HoverTooltip>
+                  )}
                 </div>
-              </div>
-            )}
-            {withTimeline ? (
-              <div className="relative">
-                <div className="pointer-events-none sticky top-36 z-30 -mb-12 hidden h-12 md:block">
-                  <div
-                    ref={startDateOverlayRef}
-                    className="h-full"
-                    style={{
-                      marginLeft: `${(1 - timelineWidth) * 100}%`,
-                      width: `${timelineWidth * 100}%`,
-                    }}
-                  >
-                    <StartDateTimeUnit start={start} />
-                  </div>
-                </div>
-                <div
-                  ref={listRef}
-                  className="relative isolate rounded-b-2xl bg-gray-100 font-mono text-0.5xs [clip-path:inset(-2.5rem_0_0_0_round_0_0_1rem_1rem)]"
-                >
-                  <LazyPanelGroup
-                    direction="horizontal"
-                    onLayout={handlePanelLayout}
-                    style={{ overflow: 'visible' }}
-                    className="rounded-2xl border shadow-xs"
-                  >
-                    {/* Left panel */}
-                    <LazyPanel
-                      defaultSize={(1 - timelineWidth) * 100}
-                      minSize={20}
-                      className="z-[2] grid min-w-0"
-                      style={{
-                        overflow: 'visible',
-                        minHeight: totalSize + 48,
-                        gridTemplateColumns: '1fr',
-                        gridTemplateRows: '1fr',
-                      }}
-                    >
-                      {/* Sticky background - prevents repaint lag */}
-                      <div className="sticky top-0 z-[-1] col-start-1 row-start-1 h-full max-h-[calc(100vh+2rem)] rounded-2xl border-0 border-r-0 border-white/50 bg-linear-to-b from-gray-50 to-white shadow-xs md:rounded-r-none" />
-                      {/* Content */}
-                      <div
-                        className="z-[2] col-start-1 row-start-1 min-w-0"
-                        style={{ minHeight: totalSize + 48 }}
-                      >
-                        <div className="sticky top-36 z-20 box-border flex h-12 items-center rounded-tl-2xl rounded-r-2xl rounded-bl-2xl border-b border-transparent bg-gray-100 shadow-xs ring-1 ring-gray-300 last:border-none md:rounded-r-none">
-                          <Input
-                            entry={typedInputEntry}
-                            invocation={data?.[invocationId]}
-                            className="w-full rounded-r-2xl! [--rounded-radius-right:15px] md:rounded-r-none! md:[--rounded-radius-right:0px] [&&&>*:last-child>*]:rounded-r-2xl! md:[&&&>*:last-child>*]:rounded-r-none!"
-                          />
-                        </div>
-                        <VirtualizedEntries
-                          virtualItems={virtualItems}
-                          totalSize={totalSize}
-                          entriesWithoutInput={entriesWithoutInput}
-                          data={data}
-                        />
-                      </div>
-                    </LazyPanel>
-                    <LazyPanelResizeHandle className="group relative z-10 mx-[-5px] hidden w-2.5 cursor-col-resize items-center justify-center md:flex">
-                      <div className="absolute top-0 bottom-0 left-1/2 w-px -translate-x-1/2 cursor-col-resize bg-transparent group-hover:w-[2px] group-hover:bg-blue-500" />
-                    </LazyPanelResizeHandle>
-                    {/* Right panel - grid container for overlapping Units */}
-                    <LazyPanel
-                      defaultSize={timelineWidth * 100}
-                      className="relative hidden overflow-x-clip md:grid"
-                      minSize={20}
-                      style={{
-                        overflow: 'visible',
-                        minHeight: totalSize + 48,
-                        gridTemplateColumns: '1fr',
-                        gridTemplateRows: '1fr',
-                      }}
-                    >
-                      {/* Sticky background - prevents repaint lag */}
-                      <div className="sticky top-0 z-[-1] col-start-1 row-start-1 h-full max-h-[calc(100vh+2rem)] rounded-br-2xl bg-gray-100" />
-                      {/* Sticky Units - limited to viewport height */}
-                      <UnitsPortalTarget className="pointer-events-none sticky top-[calc(9rem+2px)] col-start-1 row-start-1 max-h-[calc(100vh-9rem)] overflow-hidden" />
-                      {/* Sticky header with HeaderUnits and LifeCycleProgress */}
-                      <div className="sticky top-36 z-[11] col-start-1 row-start-1 h-12">
-                        <div className="relative -my-px h-[calc(100%+2px)] rounded-r-2xl border border-gray-300 border-l-transparent shadow-xs">
-                          <LifeCycleProgress
-                            className="h-12 px-2"
-                            invocation={journalAndInvocationData}
-                            createdEvent={
-                              lifecycleDataByInvocation.get(invocationId)
-                                ?.createdEvent
-                            }
-                            lifeCycleEntries={
-                              lifecycleDataByInvocation.get(invocationId)
-                                ?.lifeCycleEntries ?? []
-                            }
-                          />
-                          <ViewportSelectorPortalTarget className="absolute right-0 bottom-1 left-0 z-10 h-6" />
-                        </div>
-                      </div>
-                      <div className="sticky top-36 right-0 z-[1] col-start-1 row-start-1 h-12 rounded-r-2xl border border-t-2 border-white bg-gray-100 shadow-xs" />
-
-                      {/* Scrollable timeline content with Units overlay */}
-                      <ScrollableTimeline
-                        className="col-start-1 row-start-1 pt-[calc(3rem+2px)]"
-                        style={{ minHeight: totalSize + 48 }}
-                        start={start}
-                        end={end}
-                        dataUpdatedAt={dataUpdatedAt}
-                        cancelEvent={
-                          lifecycleDataByInvocation.get(invocationId)
-                            ?.cancelEvent
-                        }
-                      >
-                        <VirtualizedTimeline
-                          virtualItems={virtualItems}
-                          totalSize={totalSize}
-                          entriesWithoutInput={entriesWithoutInput}
-                          data={data}
-                          relatedEntriesByInvocation={
-                            relatedEntriesByInvocation
-                          }
-                        />
-                      </ScrollableTimeline>
-                    </LazyPanel>
-                  </LazyPanelGroup>
-                </div>
-              </div>
-            ) : (
-              <div className={className}>
-                <div className="z-10 box-border flex h-12 items-center rounded-tl-2xl rounded-bl-2xl border-b border-transparent bg-gray-100 shadow-xs ring-1 ring-gray-300 last:border-none">
-                  <Input
-                    entry={typedInputEntry}
-                    invocation={data?.[invocationId]}
-                    className="w-full"
-                  />
-                </div>
-                {entriesWithoutInput.map(
-                  (
-                    {
-                      invocationId: entryInvocationId,
-                      entry,
-                      depth,
-                      parentCommand,
-                    },
-                    index,
-                  ) => {
-                    const invocation = data?.[entryInvocationId];
-                    return (
-                      <ErrorBoundary
-                        entry={entry}
-                        className="h-9"
-                        key={`${entryInvocationId}-${entry?.category}-${entry?.type}-${index}`}
-                      >
-                        <Entry
-                          invocation={invocation}
-                          entry={entry}
-                          depth={depth}
-                          parentCommand={parentCommand}
-                        />
-                      </ErrorBoundary>
-                    );
-                  },
-                )}
-                {hasMoreEntries && (
-                  <Link
-                    variant="icon"
-                    href={`${baseUrl}/invocations/${invocationId}`}
-                    className="flex items-center justify-center gap-1 py-3 text-xs text-blue-600 hover:text-blue-700"
-                  >
-                    View all entries
-                    <Icon name={IconName.ChevronRight} className="h-3 w-3" />
-                  </Link>
-                )}
-              </div>
-            )}
-          </Suspense>
-        </SnapshotTimeProvider>
-      </JournalContextProvider>
+              )}
+            </Suspense>
+          </SnapshotTimeProvider>
+        </TimelineEngineJournalBridge>
+      </TimelineEngineProvider>
     </PortalProvider>
+  );
+}
+
+function TimelineEngineJournalBridge({
+  invocationIds,
+  addInvocationId,
+  removeInvocationId,
+  actualStart,
+  actualEnd,
+  dataUpdatedAt,
+  isPending,
+  error,
+  areAllInvocationsCompleted,
+  isLive,
+  isCompact,
+  children,
+}: {
+  invocationIds: string[];
+  addInvocationId: (id: string) => void;
+  removeInvocationId: (id: string) => void;
+  actualStart: number;
+  actualEnd: number;
+  dataUpdatedAt: number;
+  isPending: Record<string, boolean | undefined>;
+  error?: Record<string, Error | null | undefined>;
+  areAllInvocationsCompleted: boolean;
+  isLive: boolean;
+  isCompact: boolean;
+  children: React.ReactNode;
+}) {
+  const engine = useTimelineEngineContext();
+  return (
+    <JournalContextProvider
+      invocationIds={invocationIds}
+      addInvocationId={addInvocationId}
+      removeInvocationId={removeInvocationId}
+      start={engine.coordinateStart}
+      end={engine.coordinateEnd}
+      dataUpdatedAt={dataUpdatedAt}
+      isPending={isPending}
+      error={error}
+      isLive={!areAllInvocationsCompleted && isLive}
+      isCompact={isCompact}
+    >
+      {children}
+    </JournalContextProvider>
+  );
+}
+
+function ReturnToLiveButton({
+  areAllCompleted,
+  isLive,
+  setIsLive,
+}: {
+  areAllCompleted: boolean;
+  isLive: boolean;
+  setIsLive: Dispatch<React.SetStateAction<boolean>>;
+}) {
+  const engine = useTimelineEngineContext();
+
+  if (areAllCompleted) return null;
+
+  if (engine.mode === 'inspect') {
+    return (
+      <Button
+        variant="icon"
+        className={liveStyles({ isLive: true })}
+        onClick={() => {
+          engine.returnToLive();
+          setIsLive(true);
+        }}
+      >
+        <div className="">Live</div>
+        <Icon
+          name={IconName.Play}
+          className="mb-px h-2.5 w-2.5 fill-current"
+        />
+      </Button>
+    );
+  }
+
+  return (
+    <Button
+      variant="icon"
+      className={liveStyles({ isLive })}
+      onClick={() => setIsLive((v) => !v)}
+    >
+      <div className="">Live</div>
+      {isLive && <Indicator status="INFO" className="mb-0.5" />}
+      {!isLive && (
+        <Icon
+          name={IconName.Play}
+          className="mb-px h-2.5 w-2.5 fill-current"
+        />
+      )}
+    </Button>
   );
 }
 

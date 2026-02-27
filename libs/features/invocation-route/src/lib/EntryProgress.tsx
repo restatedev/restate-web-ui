@@ -49,7 +49,7 @@ const pointStyles = tv({
 });
 
 const pendingStyles = tv({
-  base: 'absolute top-0 right-0 bottom-0 left-[calc(100%-200px)] max-w-[223px] rounded-md mask-[linear-gradient(to_right,transparent_calc(100%-200px),black_100%)] mix-blend-overlay transition-all duration-1000 [background:repeating-linear-gradient(-45deg,--theme(--color-black/.15),--theme(--color-black/.15)_8px,--theme(--color-white/.40)_8px,--theme(--color-white/.40)_16px)]',
+  base: 'absolute top-0 right-0 bottom-0 left-[calc(100%-200px)] max-w-[223px] rounded-md mask-[linear-gradient(to_right,transparent_calc(100%-200px),black_100%)] mix-blend-overlay transition-all duration-300 [background:repeating-linear-gradient(-45deg,--theme(--color-black/.15),--theme(--color-black/.15)_8px,--theme(--color-white/.40)_8px,--theme(--color-white/.40)_16px)]',
   variants: {
     isLive: {
       true: 'animate-moveAndGrow',
@@ -190,10 +190,10 @@ function Line({
 }
 
 const progressStyles = tv({
-  base: 'relative flex h-full min-w-[4px] -translate-x-px flex-col items-start justify-center gap-0.5 transition-all duration-1000',
+  base: 'relative flex h-full min-w-[4px] -translate-x-px flex-col items-start justify-center gap-0.5 transition-all duration-300',
   slots: {
     segmentContainer:
-      'flex w-full items-center transition-all duration-1000 *:w-full',
+      'flex w-full items-center transition-all duration-300 *:w-full',
   },
   variants: {
     isPending: {
@@ -518,7 +518,7 @@ function InnerEntryProgress({
               endTransientError &&
               transientErrorTimes.length > 0 && (
                 <div
-                  className="absolute top-px bottom-px max-w-full rounded-full bg-[linear-gradient(to_right,--theme(--color-orange-300/0)_0px,--theme(--color-orange-300/1)_20px,--theme(--color-orange-300/1)_calc(100%-20px),--theme(--color-orange-300/0)_100%)] transition-all duration-1000"
+                  className="absolute top-px bottom-px max-w-full rounded-full bg-[linear-gradient(to_right,--theme(--color-orange-300/0)_0px,--theme(--color-orange-300/1)_20px,--theme(--color-orange-300/1)_calc(100%-20px),--theme(--color-orange-300/0)_100%)] transition-all duration-300"
                   style={{
                     left: `max(calc(${((startTransientError - start) / (end - start)) * 100}% - 20px), 0px)`,
                     right: `max(calc(${((end - endTransientError) / (end - start)) * 100}% - 20px), ${entryEnd || unambiguousEnd ? ((end - new Date((entryEnd || unambiguousEnd)!).getTime()) / (end - start)) * 100 : 0}%, 0px)`,

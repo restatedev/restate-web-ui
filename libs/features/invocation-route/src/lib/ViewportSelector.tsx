@@ -14,7 +14,7 @@ const panAreaStyles = tv({
 });
 
 const MIN_VIEWPORT_DURATION = 100;
-const MIN_VIEWPORT_WIDTH_PX = 40;
+const MIN_VIEWPORT_WIDTH_PX = 24;
 const HANDLE_WIDTH = 12;
 const PADDING = 8;
 

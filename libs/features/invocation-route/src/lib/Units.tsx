@@ -1,99 +1,33 @@
-import { JournalEntryV2 } from '@restate/data-access/admin-api';
+import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
 import { tv } from '@restate/util/styles';
 import { formatDurations } from '@restate/util/intl';
 import { getDuration } from '@restate/util/snapshot-time';
 import { DateTooltip } from '@restate/ui/tooltip';
-import { CSSProperties, useDeferredValue, useRef } from 'react';
+import { CSSProperties, useEffect, useRef, useState } from 'react';
+import { useTimelineEngineContext } from './TimelineEngineContext';
 
-const NICE_INTERVALS = [
-  1,
-  5,
-  10,
-  25,
-  50,
-  100,
-  500,
-  1000,
-  2000,
-  5000,
-  10_000,
-  15_000,
-  30_000,
-  60_000,
-  2 * 60_000,
-  5 * 60_000,
-  10 * 60_000,
-  15 * 60_000,
-  30 * 60_000,
-  60 * 60_000,
-  2 * 60 * 60_000,
-  6 * 60 * 60_000,
-  12 * 60 * 60_000,
-  24 * 60 * 60_000,
-  2 * 24 * 60 * 60_000,
-  7 * 24 * 60 * 60_000,
-];
-
-const TARGET_VIEW_INTERVALS = 4;
-const VIEW_INTERVAL_TOLERANCE = 1;
-const MAX_RENDERED_INTERVALS = 2000;
-const INTERVAL_SWITCH_HYSTERESIS = 0.5;
-const TIMELINE_HEADER_OFFSET = 'calc(3rem + 2px)';
-
-function computeInterval(duration: number) {
-  if (!Number.isFinite(duration) || duration <= 0) {
-    return 1;
-  }
-
-  const minIntervals = TARGET_VIEW_INTERVALS - VIEW_INTERVAL_TOLERANCE;
-  const maxIntervals = TARGET_VIEW_INTERVALS + VIEW_INTERVAL_TOLERANCE;
-  const idealInterval = duration / TARGET_VIEW_INTERVALS;
-  const minInterval = duration / maxIntervals;
-  const maxInterval = duration / minIntervals;
-
-  const inRangeCandidates = NICE_INTERVALS.filter(
-    (interval) => interval >= minInterval && interval <= maxInterval,
-  );
-
-  if (inRangeCandidates.length > 0) {
-    return inRangeCandidates.reduce((best, current) =>
-      Math.abs(current - idealInterval) < Math.abs(best - idealInterval)
-        ? current
-        : best,
-    );
-  }
-
-  if (idealInterval > NICE_INTERVALS[NICE_INTERVALS.length - 1]!) {
-    return Math.ceil(idealInterval);
-  }
-
-  return NICE_INTERVALS.reduce((best, current) =>
-    Math.abs(current - idealInterval) < Math.abs(best - idealInterval)
-      ? current
-      : best,
-  );
-}
-
-const containerStyles = tv({
-  base: 'transition-all duration-1000',
-});
+type FadePhase = 'stable' | 'fading-out' | 'fading-in';
 
 const intervalStyles = tv({
-  base: 'pointer-events-none border-r border-dotted pt-0 pr-0.5 text-right font-sans text-2xs transition-all duration-1000',
+  base: 'pointer-events-none absolute top-0 bottom-0 border-r border-dotted border-black/10 pt-0 pr-0.5 text-right font-sans text-2xs text-gray-500',
+});
+
+const tickContainerStyles = tv({
+  base: 'pointer-events-none relative mt-[calc(3rem+2px)] h-[calc(100%-3rem-2px)] w-full overflow-hidden rounded-r-2xl transition-opacity duration-100',
   variants: {
-    variant: {
-      fullTrace: 'z-3 border-black/10 text-gray-500 even:bg-gray-400/5',
-      header: 'z-3 border-black/10 text-gray-500 even:bg-gray-400/5',
+    visible: {
+      true: 'opacity-100',
+      false: 'opacity-0',
     },
   },
 });
 
-const remainderStyles = tv({
-  base: 'pointer-events-none flex-auto text-right',
+const backgroundStyles = tv({
+  base: 'pointer-events-none absolute top-0 bottom-0',
   variants: {
-    variant: {
-      fullTrace: 'even:bg-gray-400/5',
-      header: 'even:bg-gray-400/5',
+    isEven: {
+      true: 'bg-gray-400/5',
+      false: '',
     },
   },
 });
@@ -109,7 +43,6 @@ export function Units({
   end,
   dataUpdatedAt,
   cancelEvent,
-  viewportDuration,
 }: {
   className?: string;
   style?: CSSProperties;
@@ -117,46 +50,90 @@ export function Units({
   end: number;
   dataUpdatedAt: number;
   cancelEvent?: JournalEntryV2;
-  viewportDuration?: number;
 }) {
   const duration = end - start;
-  const intervalBaseDuration =
-    viewportDuration && viewportDuration > 0 ? viewportDuration : duration;
-  const deferredIntervalBaseDuration = useDeferredValue(intervalBaseDuration);
-  const desiredUnit = computeInterval(deferredIntervalBaseDuration);
-  const targetUnitRef = useRef(desiredUnit);
-  const intervalsWithCurrentUnit = intervalBaseDuration / targetUnitRef.current;
-  const minAllowedIntervals =
-    TARGET_VIEW_INTERVALS -
-    VIEW_INTERVAL_TOLERANCE -
-    INTERVAL_SWITCH_HYSTERESIS;
-  const maxAllowedIntervals =
-    TARGET_VIEW_INTERVALS +
-    VIEW_INTERVAL_TOLERANCE +
-    INTERVAL_SWITCH_HYSTERESIS;
+  const engine = useTimelineEngineContext();
+  const targetInterval = engine.tickInterval;
 
-  if (
-    !Number.isFinite(intervalsWithCurrentUnit) ||
-    intervalsWithCurrentUnit < minAllowedIntervals ||
-    intervalsWithCurrentUnit > maxAllowedIntervals
-  ) {
-    targetUnitRef.current = desiredUnit;
+  const [renderedInterval, setRenderedInterval] = useState(targetInterval);
+  const [fadePhase, setFadePhase] = useState<FadePhase>('stable');
+  const pendingIntervalRef = useRef(targetInterval);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    pendingIntervalRef.current = targetInterval;
+    if (targetInterval === renderedInterval) return;
+
+    if (fadePhase === 'stable') {
+      setFadePhase('fading-out');
+      timerRef.current = setTimeout(() => {
+        setRenderedInterval(pendingIntervalRef.current);
+        setFadePhase('fading-in');
+        timerRef.current = setTimeout(() => {
+          setFadePhase('stable');
+          timerRef.current = null;
+        }, 100);
+      }, 100);
+    } else {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+      setRenderedInterval(pendingIntervalRef.current);
+      setFadePhase('fading-in');
+      timerRef.current = setTimeout(() => {
+        setFadePhase('stable');
+        timerRef.current = null;
+      }, 100);
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [targetInterval, renderedInterval, fadePhase]);
+
+  useEffect(() => {
+    if (
+      fadePhase === 'stable' &&
+      renderedInterval !== pendingIntervalRef.current
+    ) {
+      setRenderedInterval(pendingIntervalRef.current);
+    }
+  }, [fadePhase, renderedInterval]);
+
+  const unit = renderedInterval;
+
+  const relViewportLeft = engine.viewportStart - start;
+  const relViewportRight = engine.viewportEnd - start;
+
+  const ticks: number[] = [];
+  if (duration > 0 && unit > 0) {
+    const firstTick = Math.max(
+      unit,
+      Math.ceil(Math.max(0, relViewportLeft - unit) / unit) * unit,
+    );
+    const lastTick = Math.min(
+      duration,
+      relViewportRight + unit,
+    );
+    for (let t = firstTick; t <= lastTick; t += unit) {
+      ticks.push(t);
+    }
   }
 
-  const minUnitForRenderCap =
-    duration > 0 ? Math.ceil(duration / MAX_RENDERED_INTERVALS) : 1;
-  const unit = Math.max(targetUnitRef.current, minUnitForRenderCap);
-  const numOfIntervals = Math.floor(duration / unit);
+  const ticksVisible =
+    fadePhase !== 'fading-out' &&
+    !(fadePhase === 'fading-in' && renderedInterval !== targetInterval);
 
   return (
-    <div className={containerStyles({ className })} style={style}>
+    <div className={className} style={style}>
       {cancelEvent && (
-        <div
-          className="pointer-events-none absolute right-0 bottom-0 left-0 overflow-hidden px-2 transition-all duration-1000"
-          style={{ top: TIMELINE_HEADER_OFFSET }}
-        >
+        <div className="pointer-events-none absolute top-[calc(3rem+2px)] right-0 bottom-0 left-0 overflow-hidden px-2 transition-all duration-300">
           <div
-            className="h-full w-full rounded-br-2xl border-l-2 border-black/8 mix-blend-multiply transition-all duration-1000 [background:repeating-linear-gradient(-45deg,--theme(--color-black/0.05),--theme(--color-black/0.05)_2px,--theme(--color-white/0)_2px,--theme(--color-white/0)_4px)_fixed]"
+            className="h-full w-full rounded-br-2xl border-l-2 border-black/8 mix-blend-multiply transition-all duration-300 [background:repeating-linear-gradient(-45deg,--theme(--color-black/0.05),--theme(--color-black/0.05)_2px,--theme(--color-white/0)_2px,--theme(--color-white/0)_4px)_fixed]"
             style={{
               marginLeft: `calc(${
                 ((new Date(String(cancelEvent?.start)).getTime() - start) /
@@ -171,9 +148,8 @@ export function Units({
         <div
           style={{
             left: `calc(${((dataUpdatedAt - start) / duration) * 100}% - 2px - 0.5rem)`,
-            top: TIMELINE_HEADER_OFFSET,
           }}
-          className="absolute right-0 bottom-0 rounded-r-2xl border-l-2 border-white/80 font-sans text-2xs text-gray-500 transition-all duration-1000"
+          className="absolute top-[calc(3rem+2px)] right-0 bottom-0 rounded-r-2xl border-l-2 border-white/80 font-sans text-2xs text-gray-500 transition-all duration-300"
         >
           <div className="absolute inset-0 rounded-r-2xl mix-blend-screen [background:repeating-linear-gradient(-45deg,--theme(--color-white/.6),--theme(--color-white/.6)_2px,--theme(--color-white/0)_2px,--theme(--color-white/0)_4px)]" />
           <div className="absolute z-4 mt-0.5 ml-px rounded-sm border border-white bg-zinc-500 px-1 text-2xs text-white">
@@ -182,24 +158,47 @@ export function Units({
         </div>
       )}
       <div className="h-full">
-        <div
-          className="pointer-events-none mt-[calc(3rem+2px)] flex w-full overflow-hidden rounded-r-2xl transition-all duration-1000"
-          style={{ height: `calc(100% - ${TIMELINE_HEADER_OFFSET})` }}
-        >
-          <div className="w-2 shrink-0" />
-          {Array(numOfIntervals)
-            .fill(null)
-            .map((_, i) => (
-              <div
-                key={i}
-                className={intervalStyles({ variant: 'fullTrace' })}
-                style={{ width: `${(unit / duration) * 100}%` }}
-              >
-                +{formatDurations(getDuration(unit * (i + 1)))}
+        <div className={tickContainerStyles({ visible: ticksVisible })}>
+          <div className="absolute inset-y-0 left-0 w-2" />
+          {ticks.map((tickMs, i) => {
+            const leftPercent = (tickMs / duration) * 100;
+            const globalIndex = Math.round(tickMs / unit);
+            const prevTickMs = i === 0 ? (ticks[0]! - unit) : ticks[i - 1]!;
+            const prevPercent = Math.max(0, (prevTickMs / duration) * 100);
+            const isEven = globalIndex % 2 === 0;
+            return (
+              <div key={tickMs}>
+                <div
+                  className={backgroundStyles({ isEven })}
+                  style={{
+                    left: `calc(${prevPercent}% + 0.5rem)`,
+                    width: `${leftPercent - prevPercent}%`,
+                  }}
+                />
+                <div
+                  className={intervalStyles()}
+                  style={{
+                    left: `calc(0.5rem + ${prevPercent}%)`,
+                    width: `${leftPercent - prevPercent}%`,
+                  }}
+                >
+                  +{formatDurations(getDuration(tickMs))}
+                </div>
               </div>
-            ))}
-          <div className={remainderStyles({ variant: 'fullTrace' })} />
-          <div className="w-2 shrink-0 odd:bg-gray-400/5" />
+            );
+          })}
+          {ticks.length > 0 && (
+            <div
+              className={backgroundStyles({
+                isEven: (Math.round(ticks[ticks.length - 1]! / unit) + 1) % 2 === 0,
+              })}
+              style={{
+                left: `calc(${(ticks[ticks.length - 1]! / duration) * 100}% + 0.5rem)`,
+                right: 0,
+              }}
+            />
+          )}
+          <div className="absolute inset-y-0 right-0 w-2" />
         </div>
       </div>
     </div>
