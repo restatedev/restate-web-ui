@@ -89,3 +89,9 @@
 
 - `libs/features/invocation-route/src/lib/JournalV2.tsx` and `libs/features/invocation-route/src/lib/ScrollableTimeline.tsx` drive the journal timeline virtualization and zoom/viewport behavior.
 - Timeline start date/time label is rendered by `StartDateTimeUnit` in `JournalV2` as a targeted sticky overlay positioned from `timelineWidth` (no `onLayout` callback).
+
+- For `ViewportSelector` minimum visible width, include both side paddings in duration math: `(MIN_VIEWPORT_WIDTH_PX + 2 * PADDING) / rect.width`; also clamp externally-provided viewport range before rendering.
+
+- When enforcing minimum viewport width in `ViewportSelector`, do not fallback to `end - minDuration` after edge clipping; instead center then clamp start into `[start, end - minDuration]` to avoid teleporting selector to the right edge near left boundary.
+
+- Center-anchored visual min-width clamping in `ViewportSelector` can oscillate with live updates; anchor clamped range to raw start and disable transitions while clamped to avoid periodic left-right jumps.
