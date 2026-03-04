@@ -9,7 +9,7 @@ import { type QueryContext, SYS_INVOCATION_LIST_COLUMNS } from './shared';
 const INVOCATIONS_LIMIT = 250;
 const COUNT_LIMIT = 50000;
 const DURATION_EXPRESSION =
-  'COALESCE(completed_at, now()) - created_at AS duration';
+  "CASE WHEN status = 'scheduled' THEN NULL ELSE COALESCE(completed_at, now()) - COALESCE(scheduled_start_at, created_at) END AS duration";
 
 function countEstimate(
   receivedLessThanLimit: boolean,
