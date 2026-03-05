@@ -109,7 +109,8 @@ export function ViewportSelector({
   }, [traceDuration]);
 
   const minViewportDuration = getMinViewportDuration();
-  const isMinWidthClamped = rawDisplayEnd - rawDisplayStart < minViewportDuration;
+  const isMinWidthClamped =
+    rawDisplayEnd - rawDisplayStart < minViewportDuration;
   let displayStart = rawDisplayStart;
   let displayEnd = rawDisplayEnd;
   if (isMinWidthClamped) {

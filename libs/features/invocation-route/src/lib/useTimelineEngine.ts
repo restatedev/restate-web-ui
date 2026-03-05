@@ -382,7 +382,9 @@ export function useTimelineEngine({
       Math.max(1, coordinateDuration),
   );
   const isInspectAtLiveEdge =
-    mode === 'inspect' && isLiveEnabled && viewportEnd >= liveEdge - liveSnapThreshold;
+    mode === 'inspect' &&
+    isLiveEnabled &&
+    viewportEnd >= liveEdge - liveSnapThreshold;
 
   const now = Date.now();
   const intervalMode = isInspectAtLiveEdge ? 'live-follow' : mode;
@@ -453,10 +455,10 @@ export function useTimelineEngine({
       const coordEnd = coordinateEndRef.current;
       const vs = wasFullTraceFollow
         ? viewportStartRef.current
-        : prev?.start ?? viewportStartRef.current;
+        : (prev?.start ?? viewportStartRef.current);
       const ve = wasFullTraceFollow
         ? viewportEndRef.current
-        : prev?.end ?? viewportEndRef.current;
+        : (prev?.end ?? viewportEndRef.current);
       const vd = ve - vs;
 
       const newStart = Math.max(
