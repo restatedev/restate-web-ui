@@ -7,6 +7,7 @@ import { CSSProperties, useEffect, useRef, useState } from 'react';
 import { useTimelineEngineContext } from './TimelineEngineContext';
 
 const FADE_DURATION = 100;
+const LIVE_EDGE_ANIMATION_THRESHOLD_MS = 500;
 const intervalStyles = tv({
   base: 'pointer-events-none absolute top-0 bottom-0 transform border-r border-dotted border-black/10 pt-0 pr-0.5 text-right font-sans text-2xs text-gray-500',
   variants: {
@@ -79,11 +80,16 @@ export function Units({
   const tickContainerRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<Animation | null>(null);
   const [renderedInterval, setRenderedInterval] = useState(targetInterval);
+  const liveEdge = start + engine.actualDuration;
+  const isInspectLiveAtEdge =
+    engine.mode === 'inspect' &&
+    engine.canReturnToLive &&
+    engine.viewportEnd >= liveEdge - LIVE_EDGE_ANIMATION_THRESHOLD_MS;
 
   useEffect(() => {
     if (targetInterval === renderedInterval) return;
 
-    if (engine.mode === 'live-follow') {
+    if (engine.mode === 'live-follow' || engine.canReturnToLive) {
       animationRef.current?.cancel();
       setRenderedInterval(targetInterval);
       return;
@@ -109,10 +115,11 @@ export function Units({
 
     animationRef.current = fadeOut;
     return () => animationRef.current?.cancel();
-  }, [targetInterval, renderedInterval, engine.mode]);
+  }, [targetInterval, renderedInterval, engine.mode, engine.canReturnToLive]);
 
   const unit = renderedInterval;
-  const shouldAnimateTickLayout = engine.mode === 'live-follow';
+  const shouldAnimateTickLayout =
+    engine.mode === 'live-follow' || isInspectLiveAtEdge;
 
   const relViewportLeft = engine.viewportStart - start;
   const relViewportRight = engine.viewportEnd - start;

@@ -246,6 +246,7 @@ export function useTimelineEngine({
   const actualDurationRef = useRef(0);
   const containerWidthPxRef = useRef(containerWidthPx);
   const rightEdgeStickyRef = useRef(false);
+  const fullTraceFollowRef = useRef(false);
 
   containerWidthPxRef.current = containerWidthPx;
 
@@ -274,6 +275,7 @@ export function useTimelineEngine({
 
   if (mode === 'live-follow') {
     rightEdgeStickyRef.current = false;
+    fullTraceFollowRef.current = false;
   }
 
   let coordinateStart: number;
@@ -314,15 +316,19 @@ export function useTimelineEngine({
     coordinateEnd = actualStart + actualDuration;
 
     if (inspectViewport) {
-      viewportStart = inspectViewport.start;
-      viewportEnd = inspectViewport.end;
+      if (!areAllCompleted && isLiveEnabled && fullTraceFollowRef.current) {
+        viewportStart = coordinateStart;
+        viewportEnd = coordinateEnd;
+      } else {
+        viewportStart = inspectViewport.start;
+        viewportEnd = inspectViewport.end;
 
-      // Sticky: slide the entire viewport to the live edge, preserving duration
-      if (!areAllCompleted && rightEdgeStickyRef.current) {
-        const stickyEnd = actualStart + actualDuration;
-        const stickyDuration = inspectViewport.end - inspectViewport.start;
-        viewportEnd = stickyEnd;
-        viewportStart = stickyEnd - stickyDuration;
+        if (!areAllCompleted && rightEdgeStickyRef.current) {
+          const stickyEnd = actualStart + actualDuration;
+          const stickyDuration = inspectViewport.end - inspectViewport.start;
+          viewportEnd = stickyEnd;
+          viewportStart = stickyEnd - stickyDuration;
+        }
       }
     } else {
       viewportStart = coordinateStart;
@@ -369,21 +375,32 @@ export function useTimelineEngine({
   const isFullTrace =
     inspectViewport === null || Math.abs(zoomLevel - 1) < 0.01;
   const canReturnToLive = mode === 'inspect' && isLiveEnabled;
+  const liveEdge = coordinateStart + actualDuration;
+  const liveSnapThreshold = Math.max(
+    actualDuration * STICKY_SNAP_FRACTION,
+    (STICKY_SNAP_MIN_PX / Math.max(1, containerWidthPx)) *
+      Math.max(1, coordinateDuration),
+  );
+  const isInspectAtLiveEdge =
+    mode === 'inspect' &&
+    isLiveEnabled &&
+    viewportEnd >= liveEdge - liveSnapThreshold;
 
   const now = Date.now();
+  const intervalMode = isInspectAtLiveEdge ? 'live-follow' : mode;
   const rawInterval = selectTickInterval(
     viewportDuration,
     containerWidthPx,
     prevIntervalRef.current,
     lastIntervalChangeTimeRef.current,
-    mode,
+    intervalMode,
     now,
     bypassCooldown,
   );
   const tickInterval = applyTickCountGuardrail(
     viewportDuration,
     rawInterval,
-    mode,
+    intervalMode,
   );
 
   if (tickInterval !== prevIntervalRef.current) {
@@ -401,8 +418,15 @@ export function useTimelineEngine({
     const liveEdge = coordStart + ad;
     const coordDuration = coordEnd - coordStart;
     const prevDuration = viewportEndRef.current - viewportStartRef.current;
+    const isFullTraceViewport =
+      Math.abs(newStart - coordStart) <= 0.5 &&
+      Math.abs(newEnd - coordEnd) <= 0.5;
+    fullTraceFollowRef.current = isFullTraceViewport;
     const isPanMove = Math.abs(duration - prevDuration) < 0.5;
-    if (prevModeRef.current === 'live-follow' || isPanMove) {
+
+    if (isFullTraceViewport) {
+      rightEdgeStickyRef.current = false;
+    } else if (prevModeRef.current === 'live-follow' || isPanMove) {
       rightEdgeStickyRef.current = false;
     } else if (ad > 0 && coordDuration > 0) {
       const snapThreshold = Math.max(
@@ -418,16 +442,23 @@ export function useTimelineEngine({
 
   const resetViewport = useCallback(() => {
     rightEdgeStickyRef.current = false;
+    fullTraceFollowRef.current = false;
     setInspectViewport(null);
   }, []);
 
   const panViewport = useCallback((deltaMs: number) => {
+    const wasFullTraceFollow = fullTraceFollowRef.current;
+    fullTraceFollowRef.current = false;
     rightEdgeStickyRef.current = false;
     setInspectViewport((prev) => {
       const coordStart = coordinateStartRef.current;
       const coordEnd = coordinateEndRef.current;
-      const vs = prev?.start ?? viewportStartRef.current;
-      const ve = prev?.end ?? viewportEndRef.current;
+      const vs = wasFullTraceFollow
+        ? viewportStartRef.current
+        : (prev?.start ?? viewportStartRef.current);
+      const ve = wasFullTraceFollow
+        ? viewportEndRef.current
+        : (prev?.end ?? viewportEndRef.current);
       const vd = ve - vs;
 
       const newStart = Math.max(
@@ -445,6 +476,7 @@ export function useTimelineEngine({
     prevIntervalRef.current = 0;
     lastIntervalChangeTimeRef.current = 0;
     rightEdgeStickyRef.current = false;
+    fullTraceFollowRef.current = false;
     setInspectViewport(null);
   }, []);
 

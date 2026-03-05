@@ -56,14 +56,11 @@ export function ScrollableTimeline({
   const {
     coordinateStart,
     coordinateEnd,
-    actualDuration,
     viewportStart,
     viewportEnd,
     viewportDuration,
     zoomLevel,
     offsetPercent,
-    isFullTrace,
-    canReturnToLive,
     mode,
     overviewStart,
     overviewEnd,
@@ -97,16 +94,30 @@ export function ScrollableTimeline({
 
   const animateSelector = mode !== 'static';
   const animateTimeline = mode === 'live-follow';
-  const zoomTooltip = isFullTrace
-    ? 'Zoom'
-    : canReturnToLive
-      ? 'Return to live'
-      : 'Reset zoom';
-  const zoomIcon = isFullTrace
-    ? IconName.ZoomIn
-    : canReturnToLive
-      ? IconName.Forward
-      : IconName.ZoomOut;
+  const coordinateDuration = Math.max(1, coordinateEnd - coordinateStart);
+  const currentViewportDuration = Math.max(1, viewportEnd - viewportStart);
+
+  const zoomToDuration = (targetDuration: number) => {
+    const boundedDuration = Math.max(
+      1,
+      Math.min(targetDuration, coordinateDuration),
+    );
+    const maxStart = coordinateEnd - boundedDuration;
+    const anchoredStart = viewportEnd - boundedDuration;
+    const newStart = Math.max(
+      coordinateStart,
+      Math.min(maxStart, anchoredStart),
+    );
+    setViewport(newStart, newStart + boundedDuration);
+  };
+
+  const zoomIn = () => {
+    zoomToDuration(currentViewportDuration / 2);
+  };
+
+  const zoomOut = () => {
+    setViewport(coordinateStart, coordinateEnd);
+  };
 
   return (
     <div
@@ -115,28 +126,18 @@ export function ScrollableTimeline({
       style={style}
     >
       <ZoomControlsPortalContent>
-        <HoverTooltip content={zoomTooltip}>
-          <Button
-            variant="icon"
-            onClick={() => {
-              if (isFullTrace) {
-                const traceEnd = coordinateStart + actualDuration;
-                const vd = viewportEnd - viewportStart;
-                if (vd > 0) {
-                  const newDuration = vd / 2;
-                  setViewport(
-                    Math.max(coordinateStart, traceEnd - newDuration),
-                    traceEnd,
-                  );
-                }
-              } else {
-                resetViewport();
-              }
-            }}
-          >
-            <Icon name={zoomIcon} className="h-4 w-4" />
-          </Button>
-        </HoverTooltip>
+        <div className="flex items-center gap-1">
+          <HoverTooltip content="Reset zoom (full trace)">
+            <Button variant="icon" onClick={zoomOut}>
+              <Icon name={IconName.ZoomOut} className="h-4 w-4" />
+            </Button>
+          </HoverTooltip>
+          <HoverTooltip content="Zoom in (2x)">
+            <Button variant="icon" onClick={zoomIn}>
+              <Icon name={IconName.ZoomIn} className="h-4 w-4" />
+            </Button>
+          </HoverTooltip>
+        </div>
       </ZoomControlsPortalContent>
       <ViewportSelectorPortalContent>
         <ViewportSelector

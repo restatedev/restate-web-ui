@@ -81,8 +81,8 @@ export function ViewportSelector({
   const [isDragging, setIsDragging] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
 
-  const displayStart = optimisticViewportRef.current?.start ?? viewportStart;
-  const displayEnd = optimisticViewportRef.current?.end ?? viewportEnd;
+  const rawDisplayStart = optimisticViewportRef.current?.start ?? viewportStart;
+  const rawDisplayEnd = optimisticViewportRef.current?.end ?? viewportEnd;
 
   const traceDuration = end - start;
 
@@ -104,9 +104,21 @@ export function ViewportSelector({
       return MIN_VIEWPORT_DURATION;
     }
     const minDurationFromPixels =
-      (MIN_VIEWPORT_WIDTH_PX / rect.width) * traceDuration;
+      ((MIN_VIEWPORT_WIDTH_PX + 2 * PADDING) / rect.width) * traceDuration;
     return Math.max(MIN_VIEWPORT_DURATION, minDurationFromPixels);
   }, [traceDuration]);
+
+  const minViewportDuration = getMinViewportDuration();
+  const isMinWidthClamped =
+    rawDisplayEnd - rawDisplayStart < minViewportDuration;
+  let displayStart = rawDisplayStart;
+  let displayEnd = rawDisplayEnd;
+  if (isMinWidthClamped) {
+    const enforcedDuration = Math.min(minViewportDuration, traceDuration);
+    const maxStart = end - enforcedDuration;
+    displayStart = Math.max(start, Math.min(maxStart, displayStart));
+    displayEnd = displayStart + enforcedDuration;
+  }
 
   const { moveProps: leftHandleMoveProps } = useMove({
     onMoveStart() {
@@ -190,7 +202,10 @@ export function ViewportSelector({
         start: viewportStart,
         end: viewportEnd,
       };
-      const viewportDuration = prev.end - prev.start;
+      const viewportDuration = Math.max(
+        prev.end - prev.start,
+        minViewportDuration,
+      );
 
       let newStart = prev.start + deltaTime;
       let newEnd = prev.end + deltaTime;
@@ -240,7 +255,7 @@ export function ViewportSelector({
     </span>
   ) : null;
 
-  const shouldAnimate = animate && !isDragging;
+  const shouldAnimate = animate && !isDragging && !isMinWidthClamped;
 
   const leftPercent = ((displayStart - start) / traceDuration) * 100;
   const widthPercent = ((displayEnd - displayStart) / traceDuration) * 100;

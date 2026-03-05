@@ -10,7 +10,7 @@ import {
 } from 'react';
 import type { VirtualItem } from '@tanstack/react-virtual';
 import { InvocationId } from './InvocationId';
-import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
+import { getDuration, SnapshotTimeProvider } from '@restate/util/snapshot-time';
 import { Link } from '@restate/ui/link';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Button } from '@restate/ui/button';
@@ -49,6 +49,7 @@ import {
   DropdownTrigger,
 } from '@restate/ui/dropdown';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
+import { formatDurations } from '@restate/util/intl';
 import {
   CombinedJournalEntry,
   useProcessedJournal,
@@ -94,6 +95,7 @@ const compactStyles = tv({
 
 const LIVE_TIME_STEP_MS = 300;
 const LIVE_SMOOTH_DURATION_CUTOFF_MS = TAIL_FOLLOW_THRESHOLD;
+const LIVE_EDGE_THRESHOLD_MS = 500;
 
 export function JournalV2({
   invocationId,
@@ -684,18 +686,19 @@ function ReturnToLiveButton({
   setIsLive: Dispatch<React.SetStateAction<boolean>>;
 }) {
   const engine = useTimelineEngineContext();
+  const liveEdge = engine.coordinateStart + engine.actualDuration;
+  const lagMs = Math.max(0, liveEdge - engine.viewportEnd);
+  const isAtLiveEdge = lagMs <= LIVE_EDGE_THRESHOLD_MS;
+  const lagLabel = `-${formatDurations(getDuration(Math.round(lagMs)))}`;
 
   if (areAllCompleted) return null;
 
-  if (engine.mode === 'inspect') {
+  if (!isLive) {
     return (
       <Button
         variant="icon"
-        className={liveStyles({ isLive: true })}
-        onClick={() => {
-          engine.returnToLive();
-          setIsLive(true);
-        }}
+        className={liveStyles({ isLive: false })}
+        onClick={() => setIsLive(true)}
       >
         <div className="">Live</div>
         <Icon name={IconName.Play} className="mb-px h-2.5 w-2.5 fill-current" />
@@ -703,17 +706,30 @@ function ReturnToLiveButton({
     );
   }
 
+  if (engine.mode !== 'live-follow' && !isAtLiveEdge) {
+    return (
+      <Button
+        variant="icon"
+        className={liveStyles({ isLive: true, className: 'normal-case' })}
+        onClick={() => {
+          engine.returnToLive();
+          setIsLive(true);
+        }}
+      >
+        <div className="tabular-nums">{lagLabel}</div>
+        <Indicator status="INFO" className="mb-0.5" />
+      </Button>
+    );
+  }
+
   return (
     <Button
       variant="icon"
-      className={liveStyles({ isLive })}
-      onClick={() => setIsLive((v) => !v)}
+      className={liveStyles({ isLive: true })}
+      onClick={() => setIsLive(false)}
     >
       <div className="">Live</div>
-      {isLive && <Indicator status="INFO" className="mb-0.5" />}
-      {!isLive && (
-        <Icon name={IconName.Play} className="mb-px h-2.5 w-2.5 fill-current" />
-      )}
+      <Indicator status="INFO" className="mb-0.5" />
     </Button>
   );
 }
