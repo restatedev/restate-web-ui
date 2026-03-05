@@ -126,3 +126,7 @@
 - 2026-03-05 | self | If `useTimelineZoom` is internal-only, keep it out of package public API (`index.ts`) and export only engine-facing provider/context + threshold constant.
 - 2026-03-05 | self | `timelineZoom.engine.ts` had grown too large to be readable. Keep it as a documented facade and move logic into focused modules (`mode`, `ticks`, `viewportController`, `state`, `constants`) while preserving the public API.
 - 2026-03-05 | user | Requested naming cleanup (`timelineZoom.*` file prefixes removed) and explicit docs for functions. Keep module names short inside scoped folder and document helper/exported functions with concise JSDoc.
+- 2026-03-05 | self | `ScrollableTimeline` had mixed UI layout with timeline behavior (inspect-live frame stabilization, wheel pan conversion, zoom window math). Move those behaviors into headless hooks in `libs/ui/timeline-zoom` and keep feature component as composition-only.
+- 2026-03-05 | user | Preferred one public hook over multiple exported helper hooks. Keep lower-level hooks internal to the lib and export a single composed hook for feature integration.
+- 2026-03-05 | user | Called out unnecessary `useMemo` around small returned object in composed viewport hook. Prefer plain return unless memoization has a clear consumer-facing identity/perf benefit.
+- 2026-03-05 | user | Requested removing redundant local aliases for render-frame fields in `ScrollableTimeline`. Prefer direct property access when aliases add no clarity and only bloat the component.

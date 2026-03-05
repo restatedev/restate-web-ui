@@ -3,6 +3,7 @@ export {
   TimelineEngineProvider,
   useTimelineEngineContext,
 } from './lib/TimelineEngineContext';
+export { useTimelineViewportInteractions } from './lib/useTimelineViewportInteractions';
 export type {
   TimelineEngineOutput,
   TimelineMode,

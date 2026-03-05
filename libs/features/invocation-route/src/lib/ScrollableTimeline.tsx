@@ -1,6 +1,6 @@
 import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
 import { tv } from '@restate/util/styles';
-import { CSSProperties, ReactNode, useEffect, useRef } from 'react';
+import { CSSProperties, ReactNode, useRef } from 'react';
 import {
   UnitsPortalContent,
   ViewportSelectorPortalContent,
@@ -10,8 +10,11 @@ import { ViewportSelector } from './ViewportSelector';
 import { Units } from './Units';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
+import {
+  useTimelineEngineContext,
+  useTimelineViewportInteractions,
+} from '@restate/ui/timeline-zoom';
 import { HoverTooltip } from '@restate/ui/tooltip';
-import { useTimelineEngineContext } from './TimelineEngineContext';
 
 const scrollableTimelineStyles = tv({
   base: 'overflow-hidden',
@@ -54,70 +57,20 @@ export function ScrollableTimeline({
   const engine = useTimelineEngineContext();
 
   const {
-    coordinateStart,
-    coordinateEnd,
-    viewportStart,
-    viewportEnd,
-    viewportDuration,
-    zoomLevel,
-    offsetPercent,
     mode,
-    overviewStart,
-    overviewEnd,
     setViewport,
     resetViewport,
-    panViewport,
   } = engine;
 
-  const stateRef = useRef({ viewportDuration });
-  stateRef.current = { viewportDuration };
-
-  useEffect(() => {
-    const container = scrollRef.current;
-    if (!container) return;
-
-    const handleWheel = (e: WheelEvent) => {
-      if (Math.abs(e.deltaX) < Math.abs(e.deltaY)) return;
-      const { viewportDuration: vd } = stateRef.current;
-      e.preventDefault();
-
-      let deltaX = e.deltaX;
-      if (e.deltaMode === 1) deltaX *= 16;
-
-      const timeDelta = (deltaX / container.clientWidth) * vd;
-      panViewport(timeDelta);
-    };
-
-    container.addEventListener('wheel', handleWheel, { passive: false });
-    return () => container.removeEventListener('wheel', handleWheel);
-  }, [panViewport]);
+  const { frame: renderFrame, zoomIn, resetZoom } =
+    useTimelineViewportInteractions({
+      engine,
+      containerRef: scrollRef,
+      zoomInFactor: 2,
+    });
 
   const animateSelector = mode !== 'static';
   const animateTimeline = mode === 'live-follow';
-  const coordinateDuration = Math.max(1, coordinateEnd - coordinateStart);
-  const currentViewportDuration = Math.max(1, viewportEnd - viewportStart);
-
-  const zoomToDuration = (targetDuration: number) => {
-    const boundedDuration = Math.max(
-      1,
-      Math.min(targetDuration, coordinateDuration),
-    );
-    const maxStart = coordinateEnd - boundedDuration;
-    const anchoredStart = viewportEnd - boundedDuration;
-    const newStart = Math.max(
-      coordinateStart,
-      Math.min(maxStart, anchoredStart),
-    );
-    setViewport(newStart, newStart + boundedDuration);
-  };
-
-  const zoomIn = () => {
-    zoomToDuration(currentViewportDuration / 2);
-  };
-
-  const zoomOut = () => {
-    setViewport(coordinateStart, coordinateEnd);
-  };
 
   return (
     <div
@@ -128,7 +81,7 @@ export function ScrollableTimeline({
       <ZoomControlsPortalContent>
         <div className="flex items-center gap-1">
           <HoverTooltip content="Reset zoom (full trace)">
-            <Button variant="icon" onClick={zoomOut}>
+            <Button variant="icon" onClick={resetZoom}>
               <Icon name={IconName.ZoomOut} className="h-4 w-4" />
             </Button>
           </HoverTooltip>
@@ -142,10 +95,10 @@ export function ScrollableTimeline({
       <ViewportSelectorPortalContent>
         <ViewportSelector
           className="absolute inset-0"
-          start={overviewStart}
-          end={overviewEnd}
-          viewportStart={viewportStart}
-          viewportEnd={viewportEnd}
+          start={renderFrame.overviewStart}
+          end={renderFrame.overviewEnd}
+          viewportStart={renderFrame.viewportStart}
+          viewportEnd={renderFrame.viewportEnd}
           animate={animateSelector}
           setViewport={setViewport}
           resetViewport={resetViewport}
@@ -155,16 +108,16 @@ export function ScrollableTimeline({
         <div
           className={unitsContainerStyles({ animate: animateTimeline })}
           style={{
-            width: `${zoomLevel * 100}%`,
-            minWidth: `${zoomLevel * 100}%`,
-            transform: `translateX(-${offsetPercent}%)`,
+            width: `${renderFrame.zoomLevel * 100}%`,
+            minWidth: `${renderFrame.zoomLevel * 100}%`,
+            transform: `translateX(-${renderFrame.offsetPercent}%)`,
             willChange: 'transform',
           }}
         >
           <Units
             className="pointer-events-none absolute inset-0"
-            start={coordinateStart}
-            end={coordinateEnd}
+            start={renderFrame.coordinateStart}
+            end={renderFrame.coordinateEnd}
             dataUpdatedAt={dataUpdatedAt}
             cancelEvent={cancelEvent}
           />
@@ -173,9 +126,9 @@ export function ScrollableTimeline({
       <div
         className={zoomContainerStyles({ animate: animateTimeline })}
         style={{
-          width: `${zoomLevel * 100}%`,
-          minWidth: `${zoomLevel * 100}%`,
-          transform: `translateX(-${offsetPercent}%)`,
+          width: `${renderFrame.zoomLevel * 100}%`,
+          minWidth: `${renderFrame.zoomLevel * 100}%`,
+          transform: `translateX(-${renderFrame.offsetPercent}%)`,
         }}
       >
         {children}
