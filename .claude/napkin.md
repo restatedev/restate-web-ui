@@ -110,3 +110,19 @@
 - Rolled back inspect-live away-from-edge interval freezing in `useTimelineEngine` (too hacky/no UX win); kept only inspect-at-live-edge behavior alignment with live-follow.
 
 - Created generic headless timeline zoom library at `libs/ui/timeline-zoom` with behavior spec (`SPEC.md`) and moved engine logic there; kept `useTimelineEngine` as a compatibility adapter so `JournalV2` integration stays stable during migration.
+
+- Phase 2 integration: removed feature-level `useTimelineEngine` adapter file and mapped `TimelineEngineContext` directly from `@restate/ui/timeline-zoom`; feature now depends on generic headless engine with minimal local mapping only.
+
+- Refactored `useTimelineZoom` structure: grouped mutable engine fields into one `EngineMemory` ref and split derivation into pure helpers (`resolveMode`, `resolveDomains`, `latestSnapThreshold`) to reduce scattered refs and inline branching.
+
+- Rewrote `useTimelineZoom` with an explicit reducer (`viewportControllerReducer`) and action model (`set-window`, `pan-window`, `reset-automatic`), plus descriptive output names/JSDoc (`selectorDomainStartMs`, `renderDomainStartMs`, `visibleWindowStartMs`) to improve readability and reasoning.
+- 2026-03-05 | self | Refactored `useTimelineZoom` to reducer-centric engine state (removed ref-driven runtime context) by adding `sync-inputs` reducer action + pure `deriveTimelineFrame`; keep persistent memory in reducer state and commit only changed fields to limit extra rerenders.
+- 2026-03-05 | self | Reducer rewrite introduced stale-input closure risk by passing `timelineInputs` in `set/pan` action payloads; during live polling this can cause temporary right/left viewport snaps. Use reducer-stored latest inputs (synced via layout effect) for user actions instead of closure payloads.
+- 2026-03-05 | self | Engine-level freeze fixes alone may still leave visible jitter in UI integration. Add a render-frame stabilizer in `ScrollableTimeline` for live-inspect-away-from-edge: keep rendered frame fixed across poll updates unless viewport itself changed (user interaction).
+- 2026-03-05 | self | After fixing jump with UI frame stabilizer, removed unnecessary engine freeze-state plumbing (`frozenObservedRangeDurationMs`) and reverted selector animation gating change; keep only changes that materially support stability.
+- 2026-03-05 | self | Split `useTimelineZoom` into `timelineZoom.types.ts` + `timelineZoom.engine.ts` + thin `useTimelineZoom.ts` orchestration hook to improve maintainability without behavior changes.
+- 2026-03-05 | self | Moved `TimelineEngineContext` from invocation feature into `libs/ui/timeline-zoom` and rewired feature imports to consume provider/context from `@restate/ui/timeline-zoom`.
+- 2026-03-05 | self | In `useTimelineZoom`, `timelineInputs` memo object was unnecessary; using primitive deps in sync effect and inline payload keeps behavior and simplifies code.
+- 2026-03-05 | self | If `useTimelineZoom` is internal-only, keep it out of package public API (`index.ts`) and export only engine-facing provider/context + threshold constant.
+- 2026-03-05 | self | `timelineZoom.engine.ts` had grown too large to be readable. Keep it as a documented facade and move logic into focused modules (`mode`, `ticks`, `viewportController`, `state`, `constants`) while preserving the public API.
+- 2026-03-05 | user | Requested naming cleanup (`timelineZoom.*` file prefixes removed) and explicit docs for functions. Keep module names short inside scoped folder and document helper/exported functions with concise JSDoc.

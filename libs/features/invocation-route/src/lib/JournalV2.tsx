@@ -51,14 +51,14 @@ import {
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { formatDurations } from '@restate/util/intl';
 import {
+  FOLLOW_LATEST_THRESHOLD,
+  TimelineEngineProvider,
+  useTimelineEngineContext,
+} from '@restate/ui/timeline-zoom';
+import {
   CombinedJournalEntry,
   useProcessedJournal,
 } from './useProcessedJournal';
-import {
-  TimelineEngineProvider,
-  useTimelineEngineContext,
-} from './TimelineEngineContext';
-import { TAIL_FOLLOW_THRESHOLD } from './useTimelineEngine';
 import { useContainerWidth } from './useContainerWidth';
 
 const LazyPanel = lazy(() =>
@@ -94,7 +94,7 @@ const compactStyles = tv({
 });
 
 const LIVE_TIME_STEP_MS = 300;
-const LIVE_SMOOTH_DURATION_CUTOFF_MS = TAIL_FOLLOW_THRESHOLD;
+const LIVE_SMOOTH_DURATION_CUTOFF_MS = FOLLOW_LATEST_THRESHOLD;
 const LIVE_EDGE_THRESHOLD_MS = 500;
 
 export function JournalV2({

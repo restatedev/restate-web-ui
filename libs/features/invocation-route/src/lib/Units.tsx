@@ -2,9 +2,9 @@ import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
 import { tv } from '@restate/util/styles';
 import { formatDurations } from '@restate/util/intl';
 import { getDuration } from '@restate/util/snapshot-time';
+import { useTimelineEngineContext } from '@restate/ui/timeline-zoom';
 import { DateTooltip } from '@restate/ui/tooltip';
 import { CSSProperties, useEffect, useRef, useState } from 'react';
-import { useTimelineEngineContext } from './TimelineEngineContext';
 
 const FADE_DURATION = 100;
 const LIVE_EDGE_ANIMATION_THRESHOLD_MS = 500;
