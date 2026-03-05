@@ -1,0 +1,9 @@
+{
+  "name": "timeline-zoom",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/ui/timeline-zoom/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project timeline-zoom --web",
+  "targets": {}
+}

@@ -108,3 +108,5 @@
 - In live inspect mode, treat near-live-edge viewport as live-follow for interval behavior (layout animation + conservative interval switching). Away from edge, freeze interval step across polls unless viewport duration/width changed.
 
 - Rolled back inspect-live away-from-edge interval freezing in `useTimelineEngine` (too hacky/no UX win); kept only inspect-at-live-edge behavior alignment with live-follow.
+
+- Created generic headless timeline zoom library at `libs/ui/timeline-zoom` with behavior spec (`SPEC.md`) and moved engine logic there; kept `useTimelineEngine` as a compatibility adapter so `JournalV2` integration stays stable during migration.
