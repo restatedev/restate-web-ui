@@ -171,4 +171,6 @@
 
 - 2026-03-06 | self | To avoid empty partial-interval gaps, ensure tick window includes at least the interval containing `now` (not only viewport-buffer ticks). For smoother interval-step changes, add intermediate NICE interval values (3,4,6,8,...).
 
+- 2026-03-06 | self | Suspected infinite loop/hang during latest timeline-zoom tweak; rolled back `mode.ts`/`ticks.ts` delta-based coordinate-window/interval-step changes immediately and kept behavior at previous stable state for safety.
+
 - 2026-03-06 | self | When iterative visual tuning diverges, user prefers stepping back: revert code experiments first, then lock a detailed behavior spec before re-implementing.
