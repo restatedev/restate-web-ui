@@ -130,3 +130,45 @@
 - 2026-03-05 | user | Preferred one public hook over multiple exported helper hooks. Keep lower-level hooks internal to the lib and export a single composed hook for feature integration.
 - 2026-03-05 | user | Called out unnecessary `useMemo` around small returned object in composed viewport hook. Prefer plain return unless memoization has a clear consumer-facing identity/perf benefit.
 - 2026-03-05 | user | Requested removing redundant local aliases for render-frame fields in `ScrollableTimeline`. Prefer direct property access when aliases add no clarity and only bloat the component.
+- 2026-03-05 | user | Requested interval transitions in `Units` to feel right-to-left. Use right-anchored positioning (`right + width`) instead of left-anchored (`left + width`) for tick segments and trailing fill.
+- 2026-03-05 | user | Preferred left-based tick geometry in `Units`; switched back from right-anchored layout and applied right-origin classes while keeping left positioning.
+- 2026-03-05 | self | Interval overlap artifact in `Units` was caused by animating `left` while segment topology changed and keys were too coarse (`tickMs`). Stabilize by animating `width` only and keying segments by both bounds (`prevTickMs-tickMs`).
+- 2026-03-05 | self | Width-only transitions removed jitter but made intervals feel static. Keep improved segment keys (`prevTickMs-tickMs`) and re-enable `left` transition for smooth drift of stable segments.
+- 2026-03-05 | self | To avoid interval-overlap artifacts while keeping smooth movement, gate tick `left` animation by topology stability (same unit + same first/last/count). Disable animation only on topology-change frames.
+- 2026-03-05 | self | Remaining "interval over sibling" artifact can come from label text escaping narrow segments. Keep motion but clip labels with `overflow-hidden whitespace-nowrap` in interval segment styles.
+- 2026-03-05 | user | Requested new intervals animate from zero width and reveal labels only after enter animation. Implemented per-segment mount animation (`scaleX` from left) with delayed label visibility in `Units`.
+- 2026-03-05 | self | `scaleX` enter with delayed labels looked wrong in practice. Better fallback for new intervals: fade-in at final geometry while keeping labels visible.
+- 2026-03-05 | self | Per-segment enter animations added more visual jumping. Reverted to plain segment rendering; kept only topology-aware layout animation gate and boundary-based keys.
+- 2026-03-05 | user | Desired interval model: all segments exist, each segment width fills based on `now` progress, and labels appear only once a segment is complete. Implement in `Units` by deriving per-segment filled width from `nowOffsetMs` and conditional label rendering.
+- 2026-03-05 | self | Orange dashed bar artifact in screenshot came from `EntryProgress` container transition (not `Units`). Restrict transitions to width so bars don't animate `left` across grid columns.
+- 2026-03-05 | user | Asked to undo recent `EntryProgress` transition experiment and temporarily use vivid interval debug colors in `Units` (red/yellow fills, blue border) to make artifacts easier to inspect.
+- 2026-03-05 | self | With fill-by-now interval model, animating `left` still causes sibling overlap when boundaries shift. Keep only `width` transitions for interval/background segments.
+- 2026-03-05 | self | For smooth-but-stable interval motion, animate `left/width` only when topology is stable; disable those transitions on topology-change frames to avoid cross-over artifacts.
+
+- 2026-03-05 | self | Interval fill looked like it grew from the right when position and fill were coupled in one element. Split into stable segment geometry (left/width) plus inner fill (width only) to keep growth visually left-to-right while preserving smooth drift.
+
+- 2026-03-05 | self | To avoid interval overlap/jump from per-segment absolute positioning, switched `Units` intervals to flex slots with fixed slot width and width-only animated fills; this removes `left` motion from individual interval blocks.
+
+- 2026-03-05 | self | Flex-slot model still looked non-animated because only fill width transitioned; added width transitions to slot and spacer elements too, with linear 1s duration to match poll cadence.
+
+- 2026-03-05 | self | User expected upcoming intervals to stay visible (alternating color) even before `now` reaches them. Split interval rendering into always-visible slot background + animated progress overlay width to avoid empty gaps.
+
+- 2026-03-05 | self | Segment keys based on raw float boundaries can drift (`x.199999`) and cause remount churn. Use integer tick indices as identity (`unit-index`) and derive ticks from index range.
+
+- 2026-03-05 | self | Empty gap after the last full interval came from rendering the tail remainder as a plain spacer. Render tail remainder as a real slot (background + fill) so partial current interval is always visible.
+
+- 2026-03-05 | self | Excessive motion during interval step changes came from animating slot/spacer layout widths. Keep layout widths static and animate only progress fill width.
+
+- 2026-03-06 | self | Same-interval visible snaps can come from too-small viewport tick buffer (first/last index window shifts inside the viewport). Use a wider offscreen interval buffer so churn happens offscreen.
+
+- 2026-03-06 | self | Removing layout transitions globally fixed unit-switch churn but introduced same-interval snap at boundary shifts. Better: animate slot/spacer width only when interval unit is unchanged; disable on unit-change frame.
+
+- 2026-03-06 | self | Same-interval jitter can also come from parent timeline transform using 300ms ease-out against 1s poll cadence. In live-follow, use 1000ms linear for transform/width and keep Units motion duration aligned.
+
+- 2026-03-06 | self | Biggest live jump came from interval downshift (e.g., 10s -> 5s) causing full re-bucket. In live context, keep rendered interval monotonic (ignore downshifts) to avoid abrupt relayout.
+
+- 2026-03-06 | self | User requested all timeline motion durations be 300ms, not 1000ms. Keep transform/Now/interval durations aligned at 300ms to avoid mismatch artifacts.
+
+- 2026-03-06 | self | To avoid empty partial-interval gaps, ensure tick window includes at least the interval containing `now` (not only viewport-buffer ticks). For smoother interval-step changes, add intermediate NICE interval values (3,4,6,8,...).
+
+- 2026-03-06 | self | When iterative visual tuning diverges, user prefers stepping back: revert code experiments first, then lock a detailed behavior spec before re-implementing.
