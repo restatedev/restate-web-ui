@@ -22,14 +22,14 @@ const tickContainerStyles = tv({
 });
 
 const intervalRowStyles = tv({
-  base: 'pointer-events-none absolute inset-y-0 left-2 right-0 z-10 flex flex-nowrap overflow-hidden',
+  base: 'pointer-events-none absolute inset-y-0 right-0 left-2 z-10 flex flex-nowrap overflow-hidden',
 });
 
 const spacerStyles = tv({
   base: 'h-full flex-shrink-0',
   variants: {
     animateWidth: {
-      true: 'transition-[width] duration-300 linear',
+      true: 'linear transition-[width] duration-300',
       false: '',
     },
   },
@@ -39,7 +39,7 @@ const intervalSlotStyles = tv({
   base: 'pointer-events-none relative h-full flex-shrink-0 overflow-hidden',
   variants: {
     animateWidth: {
-      true: 'transition-[width] duration-300 linear',
+      true: 'linear transition-[width] duration-300',
       false: '',
     },
   },
@@ -73,7 +73,7 @@ const nowMarkerStyles = tv({
   base: 'pointer-events-none absolute top-[calc(3rem+2px)] bottom-0 z-20 w-0 border-l-2 border-white/80 font-sans text-2xs text-gray-500',
   variants: {
     animateLeft: {
-      true: 'transition-[left] duration-300 linear',
+      true: 'linear transition-[left] duration-300',
       false: '',
     },
   },
@@ -153,7 +153,9 @@ export function Units({
           <div className={intervalRowStyles()}>
             {leadingSpacerPercent > 0 && (
               <div
-                className={spacerStyles({ animateWidth: shouldAnimateSlotWidth })}
+                className={spacerStyles({
+                  animateWidth: shouldAnimateSlotWidth,
+                })}
                 style={{
                   width: `${leadingSpacerPercent}%`,
                   transitionDuration: shouldAnimateSlotWidth
@@ -180,7 +182,9 @@ export function Units({
                       : segment.widthPercent + leftSiblingWidth
                     : segment.widthPercent;
               const displayIsEven =
-                mergeTransition === null ? segment.isEven : segment.mergedIsEven;
+                mergeTransition === null
+                  ? segment.isEven
+                  : segment.mergedIsEven;
               const shouldShowBoundary =
                 mergeTransition === null || !isLeftSlot;
               const shouldShowLabel =
@@ -199,7 +203,9 @@ export function Units({
                     transitionDuration: shouldAnimateSlotWidth
                       ? `${transitionDurationMs}ms`
                       : undefined,
-                    transformOrigin: isLeftSlot ? 'left center' : 'right center',
+                    transformOrigin: isLeftSlot
+                      ? 'left center'
+                      : 'right center',
                   }}
                 >
                   <div
@@ -207,7 +213,9 @@ export function Units({
                       isEven: displayIsEven,
                     })}
                   />
-                  {shouldShowBoundary && <div className={intervalBoundaryStyles()} />}
+                  {shouldShowBoundary && (
+                    <div className={intervalBoundaryStyles()} />
+                  )}
                   {shouldShowLabel && labelBoundaryMs !== null && (
                     <div className={intervalLabelStyles()}>
                       +{formatDurations(getDuration(labelBoundaryMs))}

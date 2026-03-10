@@ -25,7 +25,10 @@ const FOLLOW_WINDOW_MATERIAL_DELTA_FLOOR_MS = 500;
 /**
  * Compares optional window ranges by value.
  */
-function areWindowRangesEqual(a: WindowRange | null, b: WindowRange | null): boolean {
+function areWindowRangesEqual(
+  a: WindowRange | null,
+  b: WindowRange | null,
+): boolean {
   if (a === b) return true;
   if (a === null || b === null) return false;
   return a.startMs === b.startMs && a.endMs === b.endMs;
@@ -77,7 +80,10 @@ export function deriveTimelineFrame(
     Math.abs(state.previousContainerWidthPx - inputs.containerWidthPx) > 1;
   const bypassCooldown = modeChanged || widthChanged;
 
-  const rawRangeDurationMs = Math.max(0, inputs.rangeEndMs - inputs.rangeStartMs);
+  const rawRangeDurationMs = Math.max(
+    0,
+    inputs.rangeEndMs - inputs.rangeStartMs,
+  );
   const observedRangeDurationMs = Math.max(
     state.observedRangeDurationMs,
     rawRangeDurationMs,
@@ -106,7 +112,10 @@ export function deriveTimelineFrame(
         );
         const lockedDurationMs = Math.max(
           MIN_VISIBLE_WINDOW_DURATION,
-          Math.min(state.previousVisibleWindowDurationMs, maxAvailableDurationMs),
+          Math.min(
+            state.previousVisibleWindowDurationMs,
+            maxAvailableDurationMs,
+          ),
         );
         const visibleWindowEndMs = domainWindows.visibleWindowEndMs;
         const visibleWindowStartMs = Math.max(
@@ -123,21 +132,22 @@ export function deriveTimelineFrame(
 
   const visibleWindowDurationMs = Math.max(
     MIN_VISIBLE_WINDOW_DURATION,
-    lockedDomainWindows.visibleWindowEndMs - lockedDomainWindows.visibleWindowStartMs,
+    lockedDomainWindows.visibleWindowEndMs -
+      lockedDomainWindows.visibleWindowStartMs,
   );
   const hasMaterialFollowWindowChange =
     timelineMode === 'follow-latest' &&
     state.previousVisibleWindowDurationMs > 0 &&
-    Math.abs(
-      visibleWindowDurationMs - state.previousVisibleWindowDurationMs,
-    ) >=
+    Math.abs(visibleWindowDurationMs - state.previousVisibleWindowDurationMs) >=
       Math.max(
         FOLLOW_WINDOW_MATERIAL_DELTA_FLOOR_MS,
-        state.previousVisibleWindowDurationMs * FOLLOW_WINDOW_MATERIAL_DELTA_RATIO,
+        state.previousVisibleWindowDurationMs *
+          FOLLOW_WINDOW_MATERIAL_DELTA_RATIO,
       );
 
   const renderDomainDurationMs =
-    lockedDomainWindows.renderDomainEndMs - lockedDomainWindows.renderDomainStartMs;
+    lockedDomainWindows.renderDomainEndMs -
+    lockedDomainWindows.renderDomainStartMs;
 
   const zoomFactor =
     renderDomainDurationMs > 0
@@ -167,7 +177,8 @@ export function deriveTimelineFrame(
   const isInspectAtLatestEdge =
     timelineMode === 'inspect' &&
     inputs.isStreaming &&
-    lockedDomainWindows.visibleWindowEndMs >= latestEdgeMs - latestEdgeThresholdMs;
+    lockedDomainWindows.visibleWindowEndMs >=
+      latestEdgeMs - latestEdgeThresholdMs;
 
   const intervalSelectionMode = isInspectAtLatestEdge
     ? 'follow-latest'
@@ -287,7 +298,10 @@ function commitDerivedMemory(
 export function createInitialTimelineZoomState(
   inputs: TimelineInputs,
 ): TimelineZoomState {
-  const observedRangeDurationMs = Math.max(0, inputs.rangeEndMs - inputs.rangeStartMs);
+  const observedRangeDurationMs = Math.max(
+    0,
+    inputs.rangeEndMs - inputs.rangeStartMs,
+  );
   const initialTimelineMode = resolveTimelineMode(
     inputs.isComplete,
     inputs.isStreaming,
@@ -391,9 +405,11 @@ export function timelineZoomReducer(
       {
         type: 'set-window',
         window: action.window,
-        previousVisibleWindowDurationMs: derivedBeforeAction.visibleWindowDurationMs,
+        previousVisibleWindowDurationMs:
+          derivedBeforeAction.visibleWindowDurationMs,
         previousTimelineMode: derivedBeforeAction.timelineMode,
-        renderDomainStartMs: derivedBeforeAction.domainWindows.renderDomainStartMs,
+        renderDomainStartMs:
+          derivedBeforeAction.domainWindows.renderDomainStartMs,
         renderDomainEndMs: derivedBeforeAction.domainWindows.renderDomainEndMs,
         latestEdgeMs: derivedBeforeAction.latestEdgeMs,
         observedRangeDurationMs: derivedBeforeAction.observedRangeDurationMs,
@@ -421,16 +437,20 @@ export function timelineZoomReducer(
 
   const derivedBeforeAction = deriveTimelineFrame(state, state.latestInputs);
 
-  const nextViewportController = viewportControllerReducer(state.viewportController, {
-    type: 'pan-window',
-    deltaMs: action.deltaMs,
-    renderDomainStartMs: derivedBeforeAction.domainWindows.renderDomainStartMs,
-    renderDomainEndMs: derivedBeforeAction.domainWindows.renderDomainEndMs,
-    currentVisibleWindow: {
-      startMs: derivedBeforeAction.domainWindows.visibleWindowStartMs,
-      endMs: derivedBeforeAction.domainWindows.visibleWindowEndMs,
+  const nextViewportController = viewportControllerReducer(
+    state.viewportController,
+    {
+      type: 'pan-window',
+      deltaMs: action.deltaMs,
+      renderDomainStartMs:
+        derivedBeforeAction.domainWindows.renderDomainStartMs,
+      renderDomainEndMs: derivedBeforeAction.domainWindows.renderDomainEndMs,
+      currentVisibleWindow: {
+        startMs: derivedBeforeAction.domainWindows.visibleWindowStartMs,
+        endMs: derivedBeforeAction.domainWindows.visibleWindowEndMs,
+      },
     },
-  });
+  );
 
   const stateWithNextViewport = {
     ...state,

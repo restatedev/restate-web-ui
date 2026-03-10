@@ -88,7 +88,10 @@ export function resolveIntervalSlotAnchors({
     visibleDuration * bufferRatio,
   );
   const anchorStartMs = Math.max(0, visibleLeft - sideBufferMs);
-  const anchorEndMs = Math.max(anchorStartMs + unitMs, visibleRight + sideBufferMs);
+  const anchorEndMs = Math.max(
+    anchorStartMs + unitMs,
+    visibleRight + sideBufferMs,
+  );
 
   return {
     anchorStartMs,
@@ -136,7 +139,8 @@ function buildIntervalSlotSegments({
   });
   const anchorStartMs =
     mergeAnchors?.anchorStartMs ?? fallbackAnchors?.anchorStartMs ?? 0;
-  const anchorEndMs = mergeAnchors?.anchorEndMs ?? fallbackAnchors?.anchorEndMs ?? 0;
+  const anchorEndMs =
+    mergeAnchors?.anchorEndMs ?? fallbackAnchors?.anchorEndMs ?? 0;
 
   if (anchorEndMs <= anchorStartMs) {
     return {
@@ -208,7 +212,9 @@ export function useTimelineIntervalSlots({
   );
   const [mergeTransition, setMergeTransition] =
     useState<TimelineIntervalMergeTransition | null>(null);
-  const [mergeAnchors, setMergeAnchors] = useState<IntervalSlotAnchors | null>(null);
+  const [mergeAnchors, setMergeAnchors] = useState<IntervalSlotAnchors | null>(
+    null,
+  );
 
   const mergePrepareTimeoutRef = useRef<number | null>(null);
   const mergeCommitTimeoutRef = useRef<number | null>(null);
@@ -247,7 +253,10 @@ export function useTimelineIntervalSlots({
         ? Math.min(normalizedTargetIntervalMs, intervalMs * 2)
         : normalizedTargetIntervalMs;
 
-    if (nextAppliedTargetIntervalMs === intervalMs && mergeTransition === null) {
+    if (
+      nextAppliedTargetIntervalMs === intervalMs &&
+      mergeTransition === null
+    ) {
       return;
     }
 
@@ -307,19 +316,24 @@ export function useTimelineIntervalSlots({
         mergePrepareTimeoutRef.current = null;
       }, mergePrepareDurationMs);
 
-      mergeCommitTimeoutRef.current = window.setTimeout(() => {
-        setIntervalMs(nextAppliedTargetIntervalMs);
-        setMergeTransition(null);
-        if (mergeSnapshotClearFrameRef.current !== null) {
-          window.cancelAnimationFrame(mergeSnapshotClearFrameRef.current);
-          mergeSnapshotClearFrameRef.current = null;
-        }
-        mergeSnapshotClearFrameRef.current = window.requestAnimationFrame(() => {
-          setMergeAnchors(null);
-          mergeSnapshotClearFrameRef.current = null;
-        });
-        mergeCommitTimeoutRef.current = null;
-      }, mergePrepareDurationMs + transitionDurationMs + mergeRemoveDelayMs);
+      mergeCommitTimeoutRef.current = window.setTimeout(
+        () => {
+          setIntervalMs(nextAppliedTargetIntervalMs);
+          setMergeTransition(null);
+          if (mergeSnapshotClearFrameRef.current !== null) {
+            window.cancelAnimationFrame(mergeSnapshotClearFrameRef.current);
+            mergeSnapshotClearFrameRef.current = null;
+          }
+          mergeSnapshotClearFrameRef.current = window.requestAnimationFrame(
+            () => {
+              setMergeAnchors(null);
+              mergeSnapshotClearFrameRef.current = null;
+            },
+          );
+          mergeCommitTimeoutRef.current = null;
+        },
+        mergePrepareDurationMs + transitionDurationMs + mergeRemoveDelayMs,
+      );
       return;
     }
 
@@ -369,7 +383,8 @@ export function useTimelineIntervalSlots({
   const hasStableLayout =
     previousLayout !== null &&
     previousLayout.intervalMs === intervalMs &&
-    previousLayout.firstRenderedSlotIndex === slotModel.firstRenderedSlotIndex &&
+    previousLayout.firstRenderedSlotIndex ===
+      slotModel.firstRenderedSlotIndex &&
     previousLayout.segmentCount === slotModel.segments.length;
   const isSingleSlotShiftLayout =
     previousLayout !== null &&

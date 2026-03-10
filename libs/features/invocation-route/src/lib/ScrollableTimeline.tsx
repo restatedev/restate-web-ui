@@ -58,7 +58,10 @@ function TimelineShading({
 }) {
   const duration = Math.max(1, end - start);
   const clampedNowMs = Math.max(start, Math.min(nowMs, end));
-  const nowPercent = Math.max(0, Math.min(100, ((clampedNowMs - start) / duration) * 100));
+  const nowPercent = Math.max(
+    0,
+    Math.min(100, ((clampedNowMs - start) / duration) * 100),
+  );
   const transitionDurationMs = LIVE_TRANSITION_DURATION_MS;
 
   return (
@@ -69,7 +72,9 @@ function TimelineShading({
             className="pointer-events-none h-full w-full rounded-br-2xl border-l-2 border-black/8 mix-blend-multiply transition-all duration-300 [background:repeating-linear-gradient(-45deg,--theme(--color-black/0.05),--theme(--color-black/0.05)_2px,--theme(--color-white/0)_2px,--theme(--color-white/0)_4px)_fixed]"
             style={{
               marginLeft: `calc(${
-                ((new Date(String(cancelEvent.start)).getTime() - start) / duration) * 100
+                ((new Date(String(cancelEvent.start)).getTime() - start) /
+                  duration) *
+                100
               }% - 1px)`,
             }}
           />
@@ -77,10 +82,12 @@ function TimelineShading({
       )}
       {renderNowOverlay && nowPercent < 100 && (
         <div
-          className="pointer-events-none absolute inset-y-0 right-0 overflow-hidden rounded-r-2xl transition-[left] duration-300 linear"
+          className="linear pointer-events-none absolute inset-y-0 right-0 overflow-hidden rounded-r-2xl transition-[left] duration-300"
           style={{
             left: `calc(${nowPercent}% - 0.5rem)`,
-            transitionDuration: animate ? `${transitionDurationMs}ms` : undefined,
+            transitionDuration: animate
+              ? `${transitionDurationMs}ms`
+              : undefined,
           }}
         >
           <div className="pointer-events-none absolute inset-0 rounded-r-2xl mix-blend-screen [background:repeating-linear-gradient(-45deg,--theme(--color-white/.6),--theme(--color-white/.6)_2px,--theme(--color-white/0)_2px,--theme(--color-white/0)_4px)]" />
@@ -104,18 +111,18 @@ export function ScrollableTimeline({
   const scrollRef = useRef<HTMLDivElement>(null);
   const engine = useTimelineEngineContext();
 
-  const {
-    mode,
-    setViewport,
-    resetViewport,
-  } = engine;
+  const { mode, setViewport, resetViewport } = engine;
 
-  const { frame: renderFrame, nowMarker, zoomIn, resetZoom } =
-    useTimelineViewportInteractions({
-      engine,
-      containerRef: scrollRef,
-      zoomInFactor: 2,
-    });
+  const {
+    frame: renderFrame,
+    nowMarker,
+    zoomIn,
+    resetZoom,
+  } = useTimelineViewportInteractions({
+    engine,
+    containerRef: scrollRef,
+    zoomInFactor: 2,
+  });
 
   const shouldPinNowMarker = nowMarker.pinToRightEdge;
   const transitionDurationMs = LIVE_TRANSITION_DURATION_MS;
@@ -180,7 +187,7 @@ export function ScrollableTimeline({
         </div>
         {shouldPinNowMarker && (
           <div className="pointer-events-none absolute top-[calc(3rem+2px)] right-0 bottom-0 z-20 w-0 border-l-2 border-white/80 font-sans text-2xs text-gray-500">
-            <div className="pointer-events-none absolute z-4 mt-0.5 rounded-sm border border-white bg-zinc-500 px-1 text-2xs text-white left-px -translate-x-full">
+            <div className="pointer-events-none absolute left-px z-4 mt-0.5 -translate-x-full rounded-sm border border-white bg-zinc-500 px-1 text-2xs text-white">
               Now
             </div>
           </div>

@@ -15,14 +15,19 @@ export function usePresentedRangeEnd({
   const [presentationHeadroomMs, setPresentationHeadroomMs] = useState(0);
   const lastAuthoritativeNowMsRef = useRef(authoritativeNowMs);
   const lastAuthoritativeWallClockMsRef = useRef<number | null>(null);
-  const presentedRangeEndMsRef = useRef(Math.max(actualEndMs, authoritativeNowMs));
+  const presentedRangeEndMsRef = useRef(
+    Math.max(actualEndMs, authoritativeNowMs),
+  );
 
   useEffect(() => {
     if (!shouldAdvance) {
       setPresentationHeadroomMs(0);
       lastAuthoritativeNowMsRef.current = authoritativeNowMs;
       lastAuthoritativeWallClockMsRef.current = null;
-      presentedRangeEndMsRef.current = Math.max(actualEndMs, authoritativeNowMs);
+      presentedRangeEndMsRef.current = Math.max(
+        actualEndMs,
+        authoritativeNowMs,
+      );
       return;
     }
 
@@ -65,7 +70,9 @@ export function usePresentedRangeEnd({
   }, [shouldAdvance, authoritativeNowMs]);
 
   const nowMs = shouldAdvance ? authoritativeNowMs : actualEndMs;
-  const baseRangeEndMs = shouldAdvance ? Math.max(actualEndMs, nowMs) : actualEndMs;
+  const baseRangeEndMs = shouldAdvance
+    ? Math.max(actualEndMs, nowMs)
+    : actualEndMs;
   const candidateRangeEndMs = shouldAdvance
     ? baseRangeEndMs + presentationHeadroomMs
     : baseRangeEndMs;

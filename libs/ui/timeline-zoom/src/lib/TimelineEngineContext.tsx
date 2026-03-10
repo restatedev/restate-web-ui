@@ -1,9 +1,4 @@
-import {
-  createContext,
-  PropsWithChildren,
-  use,
-  useMemo,
-} from 'react';
+import { createContext, PropsWithChildren, use, useMemo } from 'react';
 import { useTimelineZoom } from './useTimelineZoom';
 import type { TimelineZoomMode } from './types';
 import { usePresentedRangeEnd } from './usePresentedRangeEnd';

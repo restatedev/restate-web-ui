@@ -99,7 +99,8 @@ export function useTimelineZoom({
     visibleWindowEndMs: derivedFrame.domainWindows.visibleWindowEndMs,
     visibleWindowDurationMs: derivedFrame.visibleWindowDurationMs,
     zoomFactor: derivedFrame.zoomFactor,
-    offsetWithinRenderDomainPercent: derivedFrame.offsetWithinRenderDomainPercent,
+    offsetWithinRenderDomainPercent:
+      derivedFrame.offsetWithinRenderDomainPercent,
     majorTickIntervalMs: derivedFrame.majorTickIntervalMs,
     isViewingFullRange: derivedFrame.isViewingFullRange,
     canFollowLatest: derivedFrame.canFollowLatest,

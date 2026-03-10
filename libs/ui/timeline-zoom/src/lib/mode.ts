@@ -115,7 +115,9 @@ export function resolveDomainWindows({
         Math.max(observedRangeDurationMs, FLOOR_FOLLOW_LATEST_END);
     } else {
       visibleWindowEndMs = renderDomainStartMs + observedRangeDurationMs;
-      const baseFollowWindow = computeFollowLatestWindow(observedRangeDurationMs);
+      const baseFollowWindow = computeFollowLatestWindow(
+        observedRangeDurationMs,
+      );
       const clampedNowMs = Math.max(
         renderDomainStartMs,
         Math.min(nowMs, visibleWindowEndMs),
@@ -130,7 +132,8 @@ export function resolveDomainWindows({
         futureHeadroomMs + minPastContextMs,
       );
       visibleWindowStartMs =
-        renderDomainStartMs + Math.max(0, observedRangeDurationMs - followWindow);
+        renderDomainStartMs +
+        Math.max(0, observedRangeDurationMs - followWindow);
     }
 
     return {

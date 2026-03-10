@@ -1,12 +1,5 @@
 import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
-import {
-  Dispatch,
-  lazy,
-  Suspense,
-  useCallback,
-  useRef,
-  useState,
-} from 'react';
+import { Dispatch, lazy, Suspense, useCallback, useRef, useState } from 'react';
 import type { VirtualItem } from '@tanstack/react-virtual';
 import { InvocationId } from './InvocationId';
 import { getDuration, SnapshotTimeProvider } from '@restate/util/snapshot-time';
@@ -685,7 +678,9 @@ function ReturnToLiveButton({
           setIsLive(true);
         }}
       >
-        <div className="w-[8ch] text-right font-mono tabular-nums">{lagLabel}</div>
+        <div className="w-[8ch] text-right font-mono tabular-nums">
+          {lagLabel}
+        </div>
         <Indicator status="INFO" className="mb-0.5" />
       </Button>
     );

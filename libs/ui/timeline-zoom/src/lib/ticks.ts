@@ -144,9 +144,13 @@ export function selectTickInterval(
     timelineMode === 'follow-latest'
       ? Math.max(HYSTERESIS_LOW_PX, FOLLOW_LATEST_UPSHIFT_TRIGGER_PX)
       : HYSTERESIS_LOW_PX;
-  const currentSpacingPx = (currentIntervalMs / visibleWindowDurationMs) * widthPx;
+  const currentSpacingPx =
+    (currentIntervalMs / visibleWindowDurationMs) * widthPx;
 
-  if (currentSpacingPx >= lowThresholdPx && currentSpacingPx <= HYSTERESIS_HIGH_PX) {
+  if (
+    currentSpacingPx >= lowThresholdPx &&
+    currentSpacingPx <= HYSTERESIS_HIGH_PX
+  ) {
     return currentIntervalMs;
   }
 

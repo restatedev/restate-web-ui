@@ -3,6 +3,7 @@
 ## 1. Purpose
 
 Define user-visible behavior for a time-based trace timeline that supports:
+
 - live streaming updates,
 - manual inspection,
 - zoom and pan,

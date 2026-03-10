@@ -65,7 +65,8 @@ export function viewportControllerReducer(
       renderDomainDurationMs,
       action.containerWidthPx,
     );
-    stickyToLatestEdge = action.window.endMs >= action.latestEdgeMs - snapThreshold;
+    stickyToLatestEdge =
+      action.window.endMs >= action.latestEdgeMs - snapThreshold;
   }
 
   return {
