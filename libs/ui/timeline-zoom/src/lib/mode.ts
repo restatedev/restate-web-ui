@@ -3,6 +3,8 @@ import {
   DAY_MS,
   FLOOR_COORDINATE_WINDOW,
   FLOOR_FOLLOW_LATEST_END,
+  FOLLOW_LATEST_MIN_PAST_CONTEXT_MS,
+  FOLLOW_LATEST_PAST_CONTEXT_RATIO,
   FOLLOW_LATEST_STEPS,
   FOLLOW_LATEST_THRESHOLD,
   OVERSHOOT_FACTOR,
@@ -49,21 +51,14 @@ export function selectCoordinateWindow(
 }
 
 /**
- * Chooses the trailing follow window size from predefined steps.
+ * Chooses the trailing follow window size with continuous growth.
  */
 function computeFollowLatestWindow(observedRangeDurationMs: number): number {
-  const target = observedRangeDurationMs * 0.5;
-  let windowSize = FOLLOW_LATEST_STEPS[0]!;
-
-  for (const step of FOLLOW_LATEST_STEPS) {
-    if (step <= target) {
-      windowSize = step;
-    } else {
-      break;
-    }
-  }
-
-  return Math.max(windowSize, 15_000);
+  const minWindowMs = FOLLOW_LATEST_STEPS[0] ?? FOLLOW_LATEST_THRESHOLD;
+  const maxWindowMs =
+    FOLLOW_LATEST_STEPS[FOLLOW_LATEST_STEPS.length - 1] ?? minWindowMs;
+  const targetWindowMs = observedRangeDurationMs * 0.5;
+  return Math.max(minWindowMs, Math.min(maxWindowMs, targetWindowMs));
 }
 
 /**
@@ -87,6 +82,7 @@ export function computeLatestSnapThreshold(
 export function resolveDomainWindows({
   timelineMode,
   rangeStartMs,
+  nowMs,
   observedRangeDurationMs,
   viewportController,
   isComplete,
@@ -95,6 +91,7 @@ export function resolveDomainWindows({
 }: {
   timelineMode: TimelineZoomMode;
   rangeStartMs: number;
+  nowMs: number;
   observedRangeDurationMs: number;
   viewportController: ViewportControllerState;
   isComplete: boolean;
@@ -117,8 +114,21 @@ export function resolveDomainWindows({
         renderDomainStartMs +
         Math.max(observedRangeDurationMs, FLOOR_FOLLOW_LATEST_END);
     } else {
-      const followWindow = computeFollowLatestWindow(observedRangeDurationMs);
       visibleWindowEndMs = renderDomainStartMs + observedRangeDurationMs;
+      const baseFollowWindow = computeFollowLatestWindow(observedRangeDurationMs);
+      const clampedNowMs = Math.max(
+        renderDomainStartMs,
+        Math.min(nowMs, visibleWindowEndMs),
+      );
+      const futureHeadroomMs = Math.max(0, visibleWindowEndMs - clampedNowMs);
+      const minPastContextMs = Math.max(
+        FOLLOW_LATEST_MIN_PAST_CONTEXT_MS,
+        baseFollowWindow * FOLLOW_LATEST_PAST_CONTEXT_RATIO,
+      );
+      const followWindow = Math.max(
+        baseFollowWindow,
+        futureHeadroomMs + minPastContextMs,
+      );
       visibleWindowStartMs =
         renderDomainStartMs + Math.max(0, observedRangeDurationMs - followWindow);
     }

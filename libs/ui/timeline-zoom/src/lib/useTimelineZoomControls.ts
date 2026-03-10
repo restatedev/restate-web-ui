@@ -4,9 +4,11 @@ import type { TimelineRenderFrame } from './renderFrame';
 export function useTimelineZoomControls({
   frame,
   setViewport,
+  zoomAnchor = 'center',
 }: {
   frame: TimelineRenderFrame;
   setViewport: (start: number, end: number) => void;
+  zoomAnchor?: 'right' | 'center';
 }) {
   const coordinateDuration = Math.max(
     1,
@@ -21,7 +23,14 @@ export function useTimelineZoomControls({
         Math.min(targetDuration, coordinateDuration),
       );
       const maxStart = frame.coordinateEnd - boundedDuration;
-      const anchoredStart = frame.viewportEnd - boundedDuration;
+      const anchorMs =
+        zoomAnchor === 'right'
+          ? frame.viewportEnd
+          : (frame.viewportStart + frame.viewportEnd) / 2;
+      const anchoredStart =
+        zoomAnchor === 'right'
+          ? anchorMs - boundedDuration
+          : anchorMs - boundedDuration / 2;
       const newStart = Math.max(
         frame.coordinateStart,
         Math.min(maxStart, anchoredStart),
@@ -33,7 +42,9 @@ export function useTimelineZoomControls({
       frame.coordinateEnd,
       frame.coordinateStart,
       frame.viewportEnd,
+      frame.viewportStart,
       setViewport,
+      zoomAnchor,
     ],
   );
 

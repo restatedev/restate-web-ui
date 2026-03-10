@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useMemo, useReducer } from 'react';
+import { useCallback, useLayoutEffect, useReducer } from 'react';
 import {
   applyTickCountGuardrail,
   createInitialTimelineZoomState,
@@ -24,19 +24,22 @@ export {
 export function useTimelineZoom({
   rangeStartMs,
   rangeEndMs,
+  nowMs,
   isComplete,
   isStreaming,
   containerWidthPx,
 }: {
   rangeStartMs: number;
   rangeEndMs: number;
+  nowMs: number;
   isComplete: boolean;
   isStreaming: boolean;
   containerWidthPx: number;
 }): TimelineZoomOutput {
-  const initialInputs: TimelineInputs = {
+  const currentInputs: TimelineInputs = {
     rangeStartMs,
     rangeEndMs,
+    nowMs,
     isComplete,
     isStreaming,
     containerWidthPx,
@@ -44,27 +47,25 @@ export function useTimelineZoom({
 
   const [state, dispatch] = useReducer(
     timelineZoomReducer,
-    initialInputs,
+    currentInputs,
     createInitialTimelineZoomState,
   );
 
   useLayoutEffect(() => {
     dispatch({
       type: 'sync-inputs',
-      inputs: {
-        rangeStartMs,
-        rangeEndMs,
-        isComplete,
-        isStreaming,
-        containerWidthPx,
-      },
+      inputs: currentInputs,
     });
-  }, [rangeStartMs, rangeEndMs, isComplete, isStreaming, containerWidthPx]);
+  }, [
+    rangeStartMs,
+    rangeEndMs,
+    nowMs,
+    isComplete,
+    isStreaming,
+    containerWidthPx,
+  ]);
 
-  const derivedFrame = useMemo(
-    () => deriveTimelineFrame(state, state.latestInputs),
-    [state],
-  );
+  const derivedFrame = deriveTimelineFrame(state, currentInputs);
 
   /** Sets an explicit visible window in milliseconds. */
   const setVisibleWindow = useCallback((startMs: number, endMs: number) => {
@@ -89,46 +90,24 @@ export function useTimelineZoom({
     dispatch({ type: 'follow-latest' });
   }, []);
 
-  return useMemo(
-    () => ({
-      timelineMode: derivedFrame.timelineMode,
-      renderDomainStartMs: derivedFrame.domainWindows.renderDomainStartMs,
-      renderDomainEndMs: derivedFrame.domainWindows.renderDomainEndMs,
-      observedRangeDurationMs: derivedFrame.observedRangeDurationMs,
-      visibleWindowStartMs: derivedFrame.domainWindows.visibleWindowStartMs,
-      visibleWindowEndMs: derivedFrame.domainWindows.visibleWindowEndMs,
-      visibleWindowDurationMs: derivedFrame.visibleWindowDurationMs,
-      zoomFactor: derivedFrame.zoomFactor,
-      offsetWithinRenderDomainPercent: derivedFrame.offsetWithinRenderDomainPercent,
-      majorTickIntervalMs: derivedFrame.majorTickIntervalMs,
-      isViewingFullRange: derivedFrame.isViewingFullRange,
-      canFollowLatest: derivedFrame.canFollowLatest,
-      selectorDomainStartMs: derivedFrame.domainWindows.selectorDomainStartMs,
-      selectorDomainEndMs: derivedFrame.domainWindows.selectorDomainEndMs,
-      setVisibleWindow,
-      resetToAutomaticWindow,
-      panVisibleWindowBy,
-      followLatest,
-    }),
-    [
-      derivedFrame.timelineMode,
-      derivedFrame.domainWindows.renderDomainStartMs,
-      derivedFrame.domainWindows.renderDomainEndMs,
-      derivedFrame.observedRangeDurationMs,
-      derivedFrame.domainWindows.visibleWindowStartMs,
-      derivedFrame.domainWindows.visibleWindowEndMs,
-      derivedFrame.visibleWindowDurationMs,
-      derivedFrame.zoomFactor,
-      derivedFrame.offsetWithinRenderDomainPercent,
-      derivedFrame.majorTickIntervalMs,
-      derivedFrame.isViewingFullRange,
-      derivedFrame.canFollowLatest,
-      derivedFrame.domainWindows.selectorDomainStartMs,
-      derivedFrame.domainWindows.selectorDomainEndMs,
-      setVisibleWindow,
-      resetToAutomaticWindow,
-      panVisibleWindowBy,
-      followLatest,
-    ],
-  );
+  return {
+    timelineMode: derivedFrame.timelineMode,
+    renderDomainStartMs: derivedFrame.domainWindows.renderDomainStartMs,
+    renderDomainEndMs: derivedFrame.domainWindows.renderDomainEndMs,
+    observedRangeDurationMs: derivedFrame.observedRangeDurationMs,
+    visibleWindowStartMs: derivedFrame.domainWindows.visibleWindowStartMs,
+    visibleWindowEndMs: derivedFrame.domainWindows.visibleWindowEndMs,
+    visibleWindowDurationMs: derivedFrame.visibleWindowDurationMs,
+    zoomFactor: derivedFrame.zoomFactor,
+    offsetWithinRenderDomainPercent: derivedFrame.offsetWithinRenderDomainPercent,
+    majorTickIntervalMs: derivedFrame.majorTickIntervalMs,
+    isViewingFullRange: derivedFrame.isViewingFullRange,
+    canFollowLatest: derivedFrame.canFollowLatest,
+    selectorDomainStartMs: derivedFrame.domainWindows.selectorDomainStartMs,
+    selectorDomainEndMs: derivedFrame.domainWindows.selectorDomainEndMs,
+    setVisibleWindow,
+    resetToAutomaticWindow,
+    panVisibleWindowBy,
+    followLatest,
+  };
 }

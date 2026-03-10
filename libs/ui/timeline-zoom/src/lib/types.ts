@@ -84,6 +84,7 @@ export interface DomainWindows {
 export interface TimelineInputs {
   rangeStartMs: number;
   rangeEndMs: number;
+  nowMs: number;
   isComplete: boolean;
   isStreaming: boolean;
   containerWidthPx: number;
@@ -93,6 +94,7 @@ export interface TimelineZoomState {
   viewportController: ViewportControllerState;
   observedRangeDurationMs: number;
   coordinateWindowMs: number;
+  previousVisibleWindowDurationMs: number;
   majorTickIntervalMs: number;
   majorTickIntervalChangedAtMs: number;
   previousTimelineMode: TimelineZoomMode;

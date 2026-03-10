@@ -271,3 +271,7 @@
 - 2026-03-08 | self | Productionization pass was safer when done as extraction + cleanup without changing behavior contracts. Keep feature components rendering-focused and move timeline math/state orchestration into `libs/ui/timeline-zoom` helpers/hooks.
 
 - 2026-03-10 | self | Interval guardrail step-by-step (single 2x per derive) can leave timeline in permanently overcrowded state when inputs are stable. Ensure engine interval selection reaches a guardrail-compliant target in one derive, and let presentation layer animate convergence steps.
+- 2026-03-10 | self | Moving shading from `Units` into transformed timeline content changed vertical anchoring because `ScrollableTimeline` already applies top padding. If overlay must reach the visual top, compensate with a negative top offset equal to that padding.
+- 2026-03-10 | self | Right-anchored zoom-in on every click feels like a forced jump in inspect mode. Anchor zoom to viewport center by default, and only keep right-anchor when `Now` is pinned to the edge.
+- 2026-03-10 | self | Live lag label (`-1h40m`) can feel distracting because text width changes while scrolling. Stabilize with a fixed-width label slot (`w-[8ch]`) and tabular/mono numerals.
+- 2026-03-10 | self | Inspect sticky-to-latest should not trigger on zoom actions; otherwise zoom can unexpectedly jump viewport to right edge. Trigger sticky only on pan-near-edge moves.

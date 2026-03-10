@@ -1,5 +1,6 @@
 import {
   CHANGE_COOLDOWN_MS,
+  FOLLOW_LATEST_UPSHIFT_TRIGGER_PX,
   HYSTERESIS_HIGH_PX,
   HYSTERESIS_LOW_PX,
   MAX_TICK_COUNT,
@@ -9,6 +10,88 @@ import {
 } from './constants';
 import type { TimelineZoomMode } from './types';
 
+const MIN_INTERVAL = NICE_INTERVALS[0] ?? 1;
+
+function selectFallbackIntervalForUnknownWidth(
+  visibleWindowDurationMs: number,
+): number {
+  if (visibleWindowDurationMs <= 0) {
+    return MIN_INTERVAL;
+  }
+
+  const budgetInterval = visibleWindowDurationMs / MAX_TICK_COUNT;
+  for (const candidate of NICE_INTERVALS) {
+    if (candidate >= budgetInterval) {
+      return candidate;
+    }
+  }
+
+  return Math.max(1, Math.ceil(budgetInterval));
+}
+
+function stepUpshiftInterval(currentIntervalMs: number): number {
+  if (currentIntervalMs <= 0) {
+    return MIN_INTERVAL;
+  }
+  return Math.max(1, Math.ceil(currentIntervalMs * 2));
+}
+
+function stepDownshiftInterval(currentIntervalMs: number): number {
+  if (currentIntervalMs <= 1) {
+    return 1;
+  }
+  return Math.max(1, Math.floor(currentIntervalMs / 2));
+}
+
+function upshiftToFitMaxTickCount(
+  visibleWindowDurationMs: number,
+  intervalMs: number,
+): number {
+  const minimumIntervalMs = Math.max(
+    1,
+    Math.ceil(visibleWindowDurationMs / MAX_TICK_COUNT),
+  );
+  let nextIntervalMs = Math.max(intervalMs, 1);
+
+  if (nextIntervalMs <= 2) {
+    nextIntervalMs = Math.max(
+      nextIntervalMs,
+      selectFallbackIntervalForUnknownWidth(visibleWindowDurationMs),
+    );
+  }
+
+  while (nextIntervalMs < minimumIntervalMs) {
+    const steppedIntervalMs = stepUpshiftInterval(nextIntervalMs);
+    if (steppedIntervalMs === nextIntervalMs) {
+      break;
+    }
+    nextIntervalMs = steppedIntervalMs;
+  }
+
+  return nextIntervalMs;
+}
+
+function downshiftToFitMinTickCount(
+  visibleWindowDurationMs: number,
+  intervalMs: number,
+): number {
+  const maximumIntervalMs = Math.max(
+    1,
+    Math.floor(visibleWindowDurationMs / MIN_TICK_COUNT),
+  );
+  let nextIntervalMs = Math.max(intervalMs, 1);
+
+  while (nextIntervalMs > maximumIntervalMs) {
+    const steppedIntervalMs = stepDownshiftInterval(nextIntervalMs);
+    if (steppedIntervalMs === nextIntervalMs) {
+      break;
+    }
+    nextIntervalMs = steppedIntervalMs;
+  }
+
+  return nextIntervalMs;
+}
+
 /**
  * Finds the interval whose pixel spacing is closest to the target major-tick spacing.
  */
@@ -17,10 +100,10 @@ function findBestTickInterval(
   widthPx: number,
 ): number {
   if (widthPx <= 0 || visibleWindowDurationMs <= 0) {
-    return NICE_INTERVALS[0]!;
+    return MIN_INTERVAL;
   }
 
-  let best = NICE_INTERVALS[0]!;
+  let best = MIN_INTERVAL;
   let bestDiff = Infinity;
 
   for (const interval of NICE_INTERVALS) {
@@ -48,19 +131,22 @@ export function selectTickInterval(
   bypassCooldown: boolean,
 ): number {
   if (widthPx <= 0 || visibleWindowDurationMs <= 0) {
-    return currentIntervalMs > 0 ? currentIntervalMs : NICE_INTERVALS[0]!;
+    return currentIntervalMs > 0
+      ? currentIntervalMs
+      : selectFallbackIntervalForUnknownWidth(visibleWindowDurationMs);
   }
 
   if (currentIntervalMs <= 0) {
     return findBestTickInterval(visibleWindowDurationMs, widthPx);
   }
 
+  const lowThresholdPx =
+    timelineMode === 'follow-latest'
+      ? Math.max(HYSTERESIS_LOW_PX, FOLLOW_LATEST_UPSHIFT_TRIGGER_PX)
+      : HYSTERESIS_LOW_PX;
   const currentSpacingPx = (currentIntervalMs / visibleWindowDurationMs) * widthPx;
 
-  if (
-    currentSpacingPx >= HYSTERESIS_LOW_PX &&
-    currentSpacingPx <= HYSTERESIS_HIGH_PX
-  ) {
+  if (currentSpacingPx >= lowThresholdPx && currentSpacingPx <= HYSTERESIS_HIGH_PX) {
     return currentIntervalMs;
   }
 
@@ -68,19 +154,13 @@ export function selectTickInterval(
     return currentIntervalMs;
   }
 
-  if (currentSpacingPx < HYSTERESIS_LOW_PX) {
-    for (const interval of NICE_INTERVALS) {
-      if (interval > currentIntervalMs) return interval;
-    }
-    return currentIntervalMs;
+  if (currentSpacingPx < lowThresholdPx) {
+    return stepUpshiftInterval(currentIntervalMs);
   }
 
   if (currentSpacingPx > HYSTERESIS_HIGH_PX) {
     if (timelineMode === 'follow-latest') return currentIntervalMs;
-    for (let i = NICE_INTERVALS.length - 1; i >= 0; i--) {
-      if (NICE_INTERVALS[i]! < currentIntervalMs) return NICE_INTERVALS[i]!;
-    }
-    return currentIntervalMs;
+    return stepDownshiftInterval(currentIntervalMs);
   }
 
   return currentIntervalMs;
@@ -99,23 +179,11 @@ export function applyTickCountGuardrail(
   const count = visibleWindowDurationMs / intervalMs;
 
   if (count > MAX_TICK_COUNT) {
-    for (const candidate of NICE_INTERVALS) {
-      if (
-        candidate >= intervalMs &&
-        visibleWindowDurationMs / candidate <= MAX_TICK_COUNT
-      ) {
-        return candidate;
-      }
-    }
-    return Math.ceil(visibleWindowDurationMs / MAX_TICK_COUNT);
+    return upshiftToFitMaxTickCount(visibleWindowDurationMs, intervalMs);
   }
 
   if (count < MIN_TICK_COUNT && timelineMode !== 'follow-latest') {
-    for (let i = NICE_INTERVALS.length - 1; i >= 0; i--) {
-      const candidate = NICE_INTERVALS[i]!;
-      if (visibleWindowDurationMs / candidate >= MIN_TICK_COUNT) return candidate;
-    }
-    return NICE_INTERVALS[0]!;
+    return downshiftToFitMinTickCount(visibleWindowDurationMs, intervalMs);
   }
 
   return intervalMs;

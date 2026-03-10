@@ -1,6 +1,12 @@
-import { createContext, PropsWithChildren, use, useMemo } from 'react';
+import {
+  createContext,
+  PropsWithChildren,
+  use,
+  useMemo,
+} from 'react';
 import { useTimelineZoom } from './useTimelineZoom';
 import type { TimelineZoomMode } from './types';
+import { usePresentedRangeEnd } from './usePresentedRangeEnd';
 
 export type TimelineMode = 'live-follow' | 'inspect' | 'static';
 
@@ -9,6 +15,7 @@ export interface TimelineEngineOutput {
   coordinateStart: number;
   coordinateEnd: number;
   actualDuration: number;
+  nowMs: number;
   viewportStart: number;
   viewportEnd: number;
   viewportDuration: number;
@@ -43,6 +50,7 @@ function fromTimelineZoomMode(mode: TimelineZoomMode): TimelineMode {
 export function TimelineEngineProvider({
   actualStart,
   actualEnd,
+  authoritativeNowMs,
   areAllCompleted,
   isLiveEnabled,
   containerWidthPx,
@@ -50,13 +58,23 @@ export function TimelineEngineProvider({
 }: PropsWithChildren<{
   actualStart: number;
   actualEnd: number;
+  authoritativeNowMs: number;
   areAllCompleted: boolean;
   isLiveEnabled: boolean;
   containerWidthPx: number;
 }>) {
+  const shouldAdvanceNow = isLiveEnabled && !areAllCompleted;
+  const { rangeEndMs: effectiveRangeEndMs, nowMs: effectiveNowMs } =
+    usePresentedRangeEnd({
+      actualEndMs: actualEnd,
+      authoritativeNowMs,
+      shouldAdvance: shouldAdvanceNow,
+    });
+
   const zoom = useTimelineZoom({
     rangeStartMs: actualStart,
-    rangeEndMs: actualEnd,
+    rangeEndMs: effectiveRangeEndMs,
+    nowMs: effectiveNowMs,
     isComplete: areAllCompleted,
     isStreaming: isLiveEnabled,
     containerWidthPx,
@@ -68,6 +86,7 @@ export function TimelineEngineProvider({
       coordinateStart: zoom.renderDomainStartMs,
       coordinateEnd: zoom.renderDomainEndMs,
       actualDuration: zoom.observedRangeDurationMs,
+      nowMs: effectiveNowMs,
       viewportStart: zoom.visibleWindowStartMs,
       viewportEnd: zoom.visibleWindowEndMs,
       viewportDuration: zoom.visibleWindowDurationMs,
@@ -83,7 +102,7 @@ export function TimelineEngineProvider({
       panViewport: zoom.panVisibleWindowBy,
       returnToLive: zoom.followLatest,
     }),
-    [zoom],
+    [zoom, effectiveNowMs],
   );
 
   return (

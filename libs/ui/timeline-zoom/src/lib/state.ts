@@ -19,6 +19,9 @@ import type {
   WindowRange,
 } from './types';
 
+const FOLLOW_WINDOW_MATERIAL_DELTA_RATIO = 0.12;
+const FOLLOW_WINDOW_MATERIAL_DELTA_FLOOR_MS = 500;
+
 /**
  * Compares optional window ranges by value.
  */
@@ -49,6 +52,7 @@ function areTimelineInputsEqual(a: TimelineInputs, b: TimelineInputs): boolean {
   return (
     a.rangeStartMs === b.rangeStartMs &&
     a.rangeEndMs === b.rangeEndMs &&
+    a.nowMs === b.nowMs &&
     a.isComplete === b.isComplete &&
     a.isStreaming === b.isStreaming &&
     a.containerWidthPx === b.containerWidthPx
@@ -82,20 +86,58 @@ export function deriveTimelineFrame(
   const domainWindows = resolveDomainWindows({
     timelineMode,
     rangeStartMs: inputs.rangeStartMs,
+    nowMs: inputs.nowMs,
     observedRangeDurationMs,
     viewportController: state.viewportController,
     isComplete: inputs.isComplete,
     isStreaming: inputs.isStreaming,
     currentCoordinateWindowMs: state.coordinateWindowMs,
   });
+  const shouldLockFollowWindowDurationBetweenPolls =
+    timelineMode === 'follow-latest' &&
+    !modeChanged &&
+    state.latestInputs.nowMs === inputs.nowMs &&
+    state.previousVisibleWindowDurationMs > 0;
+  const lockedDomainWindows = shouldLockFollowWindowDurationBetweenPolls
+    ? (() => {
+        const maxAvailableDurationMs = Math.max(
+          MIN_VISIBLE_WINDOW_DURATION,
+          domainWindows.visibleWindowEndMs - domainWindows.renderDomainStartMs,
+        );
+        const lockedDurationMs = Math.max(
+          MIN_VISIBLE_WINDOW_DURATION,
+          Math.min(state.previousVisibleWindowDurationMs, maxAvailableDurationMs),
+        );
+        const visibleWindowEndMs = domainWindows.visibleWindowEndMs;
+        const visibleWindowStartMs = Math.max(
+          domainWindows.renderDomainStartMs,
+          visibleWindowEndMs - lockedDurationMs,
+        );
+        return {
+          ...domainWindows,
+          visibleWindowStartMs,
+          visibleWindowEndMs,
+        };
+      })()
+    : domainWindows;
 
   const visibleWindowDurationMs = Math.max(
     MIN_VISIBLE_WINDOW_DURATION,
-    domainWindows.visibleWindowEndMs - domainWindows.visibleWindowStartMs,
+    lockedDomainWindows.visibleWindowEndMs - lockedDomainWindows.visibleWindowStartMs,
   );
+  const hasMaterialFollowWindowChange =
+    timelineMode === 'follow-latest' &&
+    state.previousVisibleWindowDurationMs > 0 &&
+    Math.abs(
+      visibleWindowDurationMs - state.previousVisibleWindowDurationMs,
+    ) >=
+      Math.max(
+        FOLLOW_WINDOW_MATERIAL_DELTA_FLOOR_MS,
+        state.previousVisibleWindowDurationMs * FOLLOW_WINDOW_MATERIAL_DELTA_RATIO,
+      );
 
   const renderDomainDurationMs =
-    domainWindows.renderDomainEndMs - domainWindows.renderDomainStartMs;
+    lockedDomainWindows.renderDomainEndMs - lockedDomainWindows.renderDomainStartMs;
 
   const zoomFactor =
     renderDomainDurationMs > 0
@@ -104,7 +146,8 @@ export function deriveTimelineFrame(
 
   const offsetWithinRenderDomainPercent =
     renderDomainDurationMs > 0
-      ? ((domainWindows.visibleWindowStartMs - domainWindows.renderDomainStartMs) /
+      ? ((lockedDomainWindows.visibleWindowStartMs -
+          lockedDomainWindows.renderDomainStartMs) /
           renderDomainDurationMs) *
         100
       : 0;
@@ -124,7 +167,7 @@ export function deriveTimelineFrame(
   const isInspectAtLatestEdge =
     timelineMode === 'inspect' &&
     inputs.isStreaming &&
-    domainWindows.visibleWindowEndMs >= latestEdgeMs - latestEdgeThresholdMs;
+    lockedDomainWindows.visibleWindowEndMs >= latestEdgeMs - latestEdgeThresholdMs;
 
   const intervalSelectionMode = isInspectAtLatestEdge
     ? 'follow-latest'
@@ -141,11 +184,14 @@ export function deriveTimelineFrame(
     bypassCooldown,
   );
 
-  const majorTickIntervalMs = applyTickCountGuardrail(
-    visibleWindowDurationMs,
-    rawMajorTickIntervalMs,
-    intervalSelectionMode,
-  );
+  const majorTickIntervalMs =
+    hasMaterialFollowWindowChange && state.majorTickIntervalMs > 0
+      ? state.majorTickIntervalMs
+      : applyTickCountGuardrail(
+          visibleWindowDurationMs,
+          rawMajorTickIntervalMs,
+          intervalSelectionMode,
+        );
 
   const majorTickIntervalChangedAtMs =
     majorTickIntervalMs !== state.majorTickIntervalMs
@@ -155,7 +201,7 @@ export function deriveTimelineFrame(
   return {
     timelineMode,
     observedRangeDurationMs,
-    domainWindows,
+    domainWindows: lockedDomainWindows,
     visibleWindowDurationMs,
     zoomFactor,
     offsetWithinRenderDomainPercent,
@@ -188,6 +234,9 @@ function commitDerivedMemory(
   const hasCoordinateWindowChanged =
     state.coordinateWindowMs !== derived.domainWindows.coordinateWindowMs;
 
+  const hasPreviousVisibleWindowDurationChanged =
+    state.previousVisibleWindowDurationMs !== derived.visibleWindowDurationMs;
+
   const hasMajorTickIntervalChanged =
     state.majorTickIntervalMs !== derived.majorTickIntervalMs;
 
@@ -209,6 +258,7 @@ function commitDerivedMemory(
     !hasViewportControllerChanged &&
     !hasObservedRangeDurationChanged &&
     !hasCoordinateWindowChanged &&
+    !hasPreviousVisibleWindowDurationChanged &&
     !hasMajorTickIntervalChanged &&
     !hasMajorTickIntervalChangedAtChanged &&
     !hasPreviousModeChanged &&
@@ -222,6 +272,7 @@ function commitDerivedMemory(
     viewportController,
     observedRangeDurationMs: derived.observedRangeDurationMs,
     coordinateWindowMs: derived.domainWindows.coordinateWindowMs,
+    previousVisibleWindowDurationMs: derived.visibleWindowDurationMs,
     majorTickIntervalMs: derived.majorTickIntervalMs,
     majorTickIntervalChangedAtMs: derived.majorTickIntervalChangedAtMs,
     previousTimelineMode: derived.timelineMode,
@@ -236,17 +287,36 @@ function commitDerivedMemory(
 export function createInitialTimelineZoomState(
   inputs: TimelineInputs,
 ): TimelineZoomState {
+  const observedRangeDurationMs = Math.max(0, inputs.rangeEndMs - inputs.rangeStartMs);
+  const initialTimelineMode = resolveTimelineMode(
+    inputs.isComplete,
+    inputs.isStreaming,
+    null,
+  );
+  const initialDomainWindows = resolveDomainWindows({
+    timelineMode: initialTimelineMode,
+    rangeStartMs: inputs.rangeStartMs,
+    nowMs: inputs.nowMs,
+    observedRangeDurationMs,
+    viewportController: INITIAL_VIEWPORT_CONTROLLER_STATE,
+    isComplete: inputs.isComplete,
+    isStreaming: inputs.isStreaming,
+    currentCoordinateWindowMs: FLOOR_COORDINATE_WINDOW,
+  });
+  const initialVisibleWindowDurationMs = Math.max(
+    MIN_VISIBLE_WINDOW_DURATION,
+    initialDomainWindows.visibleWindowEndMs -
+      initialDomainWindows.visibleWindowStartMs,
+  );
+
   return {
     viewportController: INITIAL_VIEWPORT_CONTROLLER_STATE,
-    observedRangeDurationMs: Math.max(0, inputs.rangeEndMs - inputs.rangeStartMs),
+    observedRangeDurationMs,
     coordinateWindowMs: FLOOR_COORDINATE_WINDOW,
+    previousVisibleWindowDurationMs: initialVisibleWindowDurationMs,
     majorTickIntervalMs: 0,
     majorTickIntervalChangedAtMs: 0,
-    previousTimelineMode: resolveTimelineMode(
-      inputs.isComplete,
-      inputs.isStreaming,
-      null,
-    ),
+    previousTimelineMode: initialTimelineMode,
     previousContainerWidthPx: inputs.containerWidthPx,
     latestInputs: inputs,
   };

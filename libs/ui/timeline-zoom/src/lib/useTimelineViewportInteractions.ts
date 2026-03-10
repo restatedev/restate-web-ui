@@ -1,6 +1,7 @@
 import type { RefObject } from 'react';
 import { useCallback } from 'react';
 import type { TimelineEngineOutput } from './TimelineEngineContext';
+import { resolveTimelineNowMarkerState } from './nowMarker';
 import { useTimelineRenderFrame } from './renderFrame';
 import { useTimelineWheelPan } from './useTimelineWheelPan';
 import { useTimelineZoomControls } from './useTimelineZoomControls';
@@ -19,6 +20,13 @@ export function useTimelineViewportInteractions({
   const frame = useTimelineRenderFrame(engine, {
     inspectStabilizeLagThresholdMs,
   });
+  const nowMarker = resolveTimelineNowMarkerState({
+    mode: engine.mode,
+    coordinateStartMs: frame.coordinateStart,
+    viewportStartMs: frame.viewportStart,
+    viewportEndMs: frame.viewportEnd,
+    nowMs: engine.nowMs,
+  });
 
   useTimelineWheelPan({
     containerRef,
@@ -29,6 +37,7 @@ export function useTimelineViewportInteractions({
   const { zoomIn, resetZoom } = useTimelineZoomControls({
     frame,
     setViewport: engine.setViewport,
+    zoomAnchor: nowMarker.pinToRightEdge ? 'right' : 'center',
   });
 
   const zoomInStep = useCallback(() => {
@@ -37,6 +46,7 @@ export function useTimelineViewportInteractions({
 
   return {
     frame,
+    nowMarker,
     zoomIn: zoomInStep,
     resetZoom,
   };

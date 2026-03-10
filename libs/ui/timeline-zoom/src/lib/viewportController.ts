@@ -55,7 +55,7 @@ export function viewportControllerReducer(
   if (
     !isViewingFullRange &&
     action.previousTimelineMode !== 'follow-latest' &&
-    !isPanMove &&
+    isPanMove &&
     action.observedRangeDurationMs > 0
   ) {
     const renderDomainDurationMs =

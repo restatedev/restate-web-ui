@@ -4,7 +4,6 @@ import {
   lazy,
   Suspense,
   useCallback,
-  useEffect,
   useRef,
   useState,
 } from 'react';
@@ -51,7 +50,6 @@ import {
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { formatDurations } from '@restate/util/intl';
 import {
-  FOLLOW_LATEST_THRESHOLD,
   TimelineEngineProvider,
   useTimelineEngineContext,
 } from '@restate/ui/timeline-zoom';
@@ -93,8 +91,6 @@ const compactStyles = tv({
   },
 });
 
-const LIVE_TIME_STEP_MS = 300;
-const LIVE_SMOOTH_DURATION_CUTOFF_MS = FOLLOW_LATEST_THRESHOLD;
 const LIVE_EDGE_THRESHOLD_MS = 500;
 
 export function JournalV2({
@@ -116,7 +112,6 @@ export function JournalV2({
 }) {
   const [isLive, setIsLive] = useState(true);
   const [invocationIds, setInvocationIds] = useState([String(invocationId)]);
-  const [liveNow, setLiveNow] = useState(() => Date.now());
   const {
     data,
     isPending,
@@ -209,38 +204,12 @@ export function JournalV2({
           : -1,
     ),
   );
-  const rawEnd = Math.max(
-    maxEntryTimestamp,
-    !areAllInvocationsCompleted ? latestDataUpdatedAt : -1,
-  );
-  const shouldSmoothLiveHeadroom =
-    withTimeline &&
-    isLive &&
-    !areAllInvocationsCompleted &&
-    rawEnd - start < LIVE_SMOOTH_DURATION_CUTOFF_MS;
-  const smoothLatestDataUpdatedAt = shouldSmoothLiveHeadroom
-    ? Math.max(latestDataUpdatedAt, liveNow)
-    : latestDataUpdatedAt;
   const end = journalAndInvocationData
     ? Math.max(
         maxEntryTimestamp,
-        !areAllInvocationsCompleted ? smoothLatestDataUpdatedAt : -1,
+        !areAllInvocationsCompleted ? latestDataUpdatedAt : -1,
       )
     : 0;
-
-  useEffect(() => {
-    if (!shouldSmoothLiveHeadroom) {
-      setLiveNow(Date.now());
-      return;
-    }
-
-    setLiveNow(Date.now());
-    const interval = setInterval(() => {
-      setLiveNow(Date.now());
-    }, LIVE_TIME_STEP_MS);
-
-    return () => clearInterval(interval);
-  }, [shouldSmoothLiveHeadroom]);
 
   const entriesWithoutInput = entriesWithoutInputUnfiltered;
 
@@ -314,6 +283,7 @@ export function JournalV2({
       <TimelineEngineProvider
         actualStart={start}
         actualEnd={end}
+        authoritativeNowMs={latestDataUpdatedAt}
         areAllCompleted={areAllInvocationsCompleted}
         isLiveEnabled={isLive}
         containerWidthPx={containerWidthPx}
@@ -558,7 +528,6 @@ export function JournalV2({
                         <ScrollableTimeline
                           className="col-start-1 row-start-1 pt-[calc(3rem+2px)]"
                           style={{ minHeight: totalSize + 48 }}
-                          dataUpdatedAt={dataUpdatedAt}
                           cancelEvent={
                             lifecycleDataByInvocation.get(invocationId)
                               ?.cancelEvent
@@ -716,7 +685,7 @@ function ReturnToLiveButton({
           setIsLive(true);
         }}
       >
-        <div className="tabular-nums">{lagLabel}</div>
+        <div className="w-[8ch] text-right font-mono tabular-nums">{lagLabel}</div>
         <Indicator status="INFO" className="mb-0.5" />
       </Button>
     );
