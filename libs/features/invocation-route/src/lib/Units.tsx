@@ -1,46 +1,57 @@
-import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
 import { tv } from '@restate/util/styles';
 import { formatDurations } from '@restate/util/intl';
 import { getDuration } from '@restate/util/snapshot-time';
+import {
+  LIVE_TRANSITION_DURATION_MS,
+  useTimelineEngineContext,
+  useTimelineIntervalSlots,
+} from '@restate/ui/timeline-zoom';
 import { DateTooltip } from '@restate/ui/tooltip';
-import { CSSProperties, useEffect, useRef, useState } from 'react';
-import { useTimelineEngineContext } from './TimelineEngineContext';
+import { CSSProperties } from 'react';
 
-const FADE_DURATION = 100;
-const LIVE_EDGE_ANIMATION_THRESHOLD_MS = 500;
-const intervalStyles = tv({
-  base: 'pointer-events-none absolute top-0 bottom-0 transform border-r border-dotted border-black/10 pt-0 pr-0.5 text-right font-sans text-2xs text-gray-500',
-  variants: {
-    animate: {
-      true: 'transition-[width,left,right] duration-300 ease-out',
-      false: '',
-    },
-  },
+const intervalBoundaryStyles = tv({
+  base: 'pointer-events-none absolute inset-y-0 right-0 border-r border-dotted border-black/10',
+});
+
+const intervalLabelStyles = tv({
+  base: 'pointer-events-none absolute top-0 right-0 pt-0 pr-0.5 text-right font-sans text-2xs whitespace-nowrap text-gray-500',
 });
 
 const tickContainerStyles = tv({
   base: 'pointer-events-none relative mt-[calc(3rem+2px)] h-[calc(100%-3rem-2px)] w-full overflow-hidden rounded-r-2xl',
 });
 
-const backgroundStyles = tv({
-  base: 'pointer-events-none absolute top-0 bottom-0',
+const intervalRowStyles = tv({
+  base: 'pointer-events-none absolute inset-y-0 right-0 left-2 z-10 flex flex-nowrap overflow-hidden',
+});
+
+const spacerStyles = tv({
+  base: 'h-full flex-shrink-0',
+  variants: {
+    animateWidth: {
+      true: 'linear transition-[width] duration-300',
+      false: '',
+    },
+  },
+});
+
+const intervalSlotStyles = tv({
+  base: 'pointer-events-none relative h-full flex-shrink-0 overflow-hidden',
+  variants: {
+    animateWidth: {
+      true: 'linear transition-[width] duration-300',
+      false: '',
+    },
+  },
+});
+
+const intervalBackgroundStyles = tv({
+  base: 'pointer-events-none absolute inset-0',
   variants: {
     isEven: {
       true: 'bg-gray-400/5',
       false: '',
     },
-    trailing: {
-      false: 'transform',
-      true: '',
-    },
-    animate: {
-      true: 'transition-[width,left,right] duration-300 ease-out',
-      false: '',
-    },
-  },
-  defaultVariants: {
-    trailing: false,
-    animate: false,
   },
 });
 
@@ -49,11 +60,21 @@ const startDateTimeStyles = tv({
 });
 
 const nowLabelStyles = tv({
-  base: 'absolute z-4 mt-0.5 rounded-sm border border-white bg-zinc-500 px-1 text-2xs text-white',
+  base: 'pointer-events-none absolute z-4 mt-0.5 rounded-sm border border-white bg-zinc-500 px-1 text-2xs text-white',
   variants: {
     side: {
       right: 'left-px',
       left: 'left-px -translate-x-full',
+    },
+  },
+});
+
+const nowMarkerStyles = tv({
+  base: 'pointer-events-none absolute top-[calc(3rem+2px)] bottom-0 z-20 w-0 border-l-2 border-white/80 font-sans text-2xs text-gray-500',
+  variants: {
+    animateLeft: {
+      true: 'linear transition-[left] duration-300',
+      false: '',
     },
   },
 });
@@ -63,160 +84,148 @@ export function Units({
   style,
   start,
   end,
-  dataUpdatedAt,
-  cancelEvent,
+  nowMs,
+  renderNowMarker = true,
+  pinNowToRightEdge = false,
 }: {
   className?: string;
   style?: CSSProperties;
   start: number;
   end: number;
-  dataUpdatedAt: number;
-  cancelEvent?: JournalEntryV2;
+  nowMs: number;
+  renderNowMarker?: boolean;
+  pinNowToRightEdge?: boolean;
 }) {
   const duration = end - start;
+  const safeDuration = Math.max(1, duration);
   const engine = useTimelineEngineContext();
-  const targetInterval = engine.tickInterval;
-
-  const tickContainerRef = useRef<HTMLDivElement>(null);
-  const animationRef = useRef<Animation | null>(null);
-  const [renderedInterval, setRenderedInterval] = useState(targetInterval);
-  const liveEdge = start + engine.actualDuration;
-  const isInspectLiveAtEdge =
-    engine.mode === 'inspect' &&
-    engine.canReturnToLive &&
-    engine.viewportEnd >= liveEdge - LIVE_EDGE_ANIMATION_THRESHOLD_MS;
-
-  useEffect(() => {
-    if (targetInterval === renderedInterval) return;
-
-    if (engine.mode === 'live-follow' || engine.canReturnToLive) {
-      animationRef.current?.cancel();
-      setRenderedInterval(targetInterval);
-      return;
-    }
-
-    const el = tickContainerRef.current;
-    if (!el) return;
-
-    animationRef.current?.cancel();
-
-    const fadeOut = el.animate([{ opacity: 1 }, { opacity: 0 }], {
-      duration: FADE_DURATION,
-      easing: 'ease-out',
-    });
-
-    fadeOut.onfinish = () => {
-      setRenderedInterval(targetInterval);
-      animationRef.current = el.animate([{ opacity: 0 }, { opacity: 1 }], {
-        duration: FADE_DURATION,
-        easing: 'ease-in',
-      });
-    };
-
-    animationRef.current = fadeOut;
-    return () => animationRef.current?.cancel();
-  }, [targetInterval, renderedInterval, engine.mode, engine.canReturnToLive]);
-
-  const unit = renderedInterval;
-  const shouldAnimateTickLayout =
-    engine.mode === 'live-follow' || isInspectLiveAtEdge;
+  const transitionDurationMs = LIVE_TRANSITION_DURATION_MS;
 
   const relViewportLeft = engine.viewportStart - start;
   const relViewportRight = engine.viewportEnd - start;
-  const nowMs = Math.max(start, Math.min(dataUpdatedAt, end));
-  const shouldShowNow = dataUpdatedAt <= end;
-  const nowLabelSide =
-    nowMs > (engine.viewportStart + engine.viewportEnd) / 2 ? 'left' : 'right';
+  const {
+    mergeTransition,
+    segments,
+    leadingSpacerPercent,
+    shouldAnimateSlotWidth,
+  } = useTimelineIntervalSlots({
+    durationMs: duration,
+    viewportStartOffsetMs: relViewportLeft,
+    viewportEndOffsetMs: relViewportRight,
+    targetIntervalMs: engine.tickInterval,
+    mode: engine.mode,
+    transitionDurationMs,
+  });
 
-  const ticks: number[] = [];
-  if (duration > 0 && unit > 0) {
-    const firstTick = Math.max(
-      unit,
-      Math.ceil(Math.max(0, relViewportLeft - unit) / unit) * unit,
-    );
-    const lastTick = Math.min(duration, relViewportRight + unit);
-    for (let t = firstTick; t <= lastTick; t += unit) {
-      ticks.push(t);
-    }
-  }
+  const clampedNowMs = Math.max(start, Math.min(nowMs, end));
+  const nowRelativeMs = Math.max(0, clampedNowMs - start);
+  const rawNowPercent = Math.max(
+    0,
+    Math.min(100, (nowRelativeMs / safeDuration) * 100),
+  );
+  const nowPercent = pinNowToRightEdge ? 100 : rawNowPercent;
+  const shouldShowNow =
+    renderNowMarker && engine.mode !== 'static' && clampedNowMs <= end;
+  const shouldAnimateNowPosition = shouldShowNow && !pinNowToRightEdge;
+  const nowLabelSide =
+    clampedNowMs > (engine.viewportStart + engine.viewportEnd) / 2
+      ? 'left'
+      : 'right';
 
   return (
     <div className={className} style={style}>
       <div className="pointer-events-none absolute top-0 bottom-0 left-2 border-l border-dashed border-gray-500/40" />
-      {cancelEvent && (
-        <div className="pointer-events-none absolute top-[calc(3rem+2px)] right-0 bottom-0 left-0 overflow-hidden px-2 transition-all duration-300">
-          <div
-            className="h-full w-full rounded-br-2xl border-l-2 border-black/8 mix-blend-multiply transition-all duration-300 [background:repeating-linear-gradient(-45deg,--theme(--color-black/0.05),--theme(--color-black/0.05)_2px,--theme(--color-white/0)_2px,--theme(--color-white/0)_4px)_fixed]"
-            style={{
-              marginLeft: `calc(${
-                ((new Date(String(cancelEvent?.start)).getTime() - start) /
-                  duration) *
-                100
-              }% - 1px)`,
-            }}
-          />
-        </div>
-      )}
       {shouldShowNow && (
         <div
           style={{
-            left: `calc(${((nowMs - start) / duration) * 100}% - 2px - 0.5rem)`,
+            left: `calc(${nowPercent}% - 2px - 0.5rem)`,
+            transitionDuration: shouldAnimateNowPosition
+              ? `${transitionDurationMs}ms`
+              : undefined,
           }}
-          className="absolute top-[calc(3rem+2px)] right-0 bottom-0 rounded-r-2xl border-l-2 border-white/80 font-sans text-2xs text-gray-500 transition-all duration-300"
+          className={nowMarkerStyles({ animateLeft: shouldAnimateNowPosition })}
         >
-          <div className="absolute inset-0 rounded-r-2xl mix-blend-screen [background:repeating-linear-gradient(-45deg,--theme(--color-white/.6),--theme(--color-white/.6)_2px,--theme(--color-white/0)_2px,--theme(--color-white/0)_4px)]" />
           <div className={nowLabelStyles({ side: nowLabelSide })}>Now</div>
         </div>
       )}
       <div className="h-full">
-        <div ref={tickContainerRef} className={tickContainerStyles()}>
-          <div className="absolute inset-y-0 left-0 w-2" />
-          {ticks.map((tickMs, i) => {
-            const leftPercent = (tickMs / duration) * 100;
-            const globalIndex = Math.round(tickMs / unit);
-            const prevTickMs = i === 0 ? ticks[0]! - unit : ticks[i - 1]!;
-            const prevPercent = Math.max(0, (prevTickMs / duration) * 100);
-            const isEven = globalIndex % 2 === 0;
-            return (
-              <div key={tickMs}>
+        <div className={tickContainerStyles()}>
+          <div className={intervalRowStyles()}>
+            {leadingSpacerPercent > 0 && (
+              <div
+                className={spacerStyles({
+                  animateWidth: shouldAnimateSlotWidth,
+                })}
+                style={{
+                  width: `${leadingSpacerPercent}%`,
+                  transitionDuration: shouldAnimateSlotWidth
+                    ? `${transitionDurationMs}ms`
+                    : undefined,
+                }}
+              />
+            )}
+            {segments.map((segment, segmentIndex) => {
+              const previousSegment =
+                segmentIndex > 0 ? segments[segmentIndex - 1] : undefined;
+              const leftSiblingWidth =
+                previousSegment &&
+                previousSegment.gridIndex === segment.gridIndex - 1
+                  ? previousSegment.widthPercent
+                  : 0;
+              const isLeftSlot = segment.gridIndex % 2 === 0;
+              const displayWidthPercent =
+                mergeTransition === null
+                  ? segment.widthPercent
+                  : mergeTransition.phase === 'collapse'
+                    ? isLeftSlot
+                      ? 0
+                      : segment.widthPercent + leftSiblingWidth
+                    : segment.widthPercent;
+              const displayIsEven =
+                mergeTransition === null
+                  ? segment.isEven
+                  : segment.mergedIsEven;
+              const shouldShowBoundary =
+                mergeTransition === null || !isLeftSlot;
+              const shouldShowLabel =
+                segment.labelBoundaryMs !== null &&
+                (mergeTransition === null || !isLeftSlot);
+              const labelBoundaryMs = segment.labelBoundaryMs;
+
+              return (
                 <div
-                  className={backgroundStyles({
-                    isEven,
-                    animate: shouldAnimateTickLayout,
+                  key={segment.key}
+                  className={intervalSlotStyles({
+                    animateWidth: shouldAnimateSlotWidth,
                   })}
                   style={{
-                    left: `calc(${prevPercent}% + 0.5rem)`,
-                    width: `${leftPercent - prevPercent}%`,
-                  }}
-                />
-                <div
-                  className={intervalStyles({
-                    animate: shouldAnimateTickLayout,
-                  })}
-                  style={{
-                    left: `calc(0.5rem + ${prevPercent}%)`,
-                    width: `${leftPercent - prevPercent}%`,
+                    width: `${displayWidthPercent}%`,
+                    transitionDuration: shouldAnimateSlotWidth
+                      ? `${transitionDurationMs}ms`
+                      : undefined,
+                    transformOrigin: isLeftSlot
+                      ? 'left center'
+                      : 'right center',
                   }}
                 >
-                  +{formatDurations(getDuration(tickMs))}
+                  <div
+                    className={intervalBackgroundStyles({
+                      isEven: displayIsEven,
+                    })}
+                  />
+                  {shouldShowBoundary && (
+                    <div className={intervalBoundaryStyles()} />
+                  )}
+                  {shouldShowLabel && labelBoundaryMs !== null && (
+                    <div className={intervalLabelStyles()}>
+                      +{formatDurations(getDuration(labelBoundaryMs))}
+                    </div>
+                  )}
                 </div>
-              </div>
-            );
-          })}
-          {ticks.length > 0 && (
-            <div
-              className={backgroundStyles({
-                isEven:
-                  (Math.round(ticks[ticks.length - 1]! / unit) + 1) % 2 === 0,
-                trailing: true,
-                animate: shouldAnimateTickLayout,
-              })}
-              style={{
-                left: `calc(${(ticks[ticks.length - 1]! / duration) * 100}% + 0.5rem)`,
-                right: 0,
-              }}
-            />
-          )}
+              );
+            })}
+          </div>
+          <div className="absolute inset-y-0 left-0 w-2" />
           <div className="absolute inset-y-0 right-0 w-2" />
         </div>
       </div>

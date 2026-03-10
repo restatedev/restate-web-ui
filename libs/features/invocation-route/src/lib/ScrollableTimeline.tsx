@@ -1,6 +1,6 @@
 import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
 import { tv } from '@restate/util/styles';
-import { CSSProperties, ReactNode, useEffect, useRef } from 'react';
+import { CSSProperties, ReactNode, useRef } from 'react';
 import {
   UnitsPortalContent,
   ViewportSelectorPortalContent,
@@ -10,8 +10,12 @@ import { ViewportSelector } from './ViewportSelector';
 import { Units } from './Units';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
+import {
+  LIVE_TRANSITION_DURATION_MS,
+  useTimelineEngineContext,
+  useTimelineViewportInteractions,
+} from '@restate/ui/timeline-zoom';
 import { HoverTooltip } from '@restate/ui/tooltip';
-import { useTimelineEngineContext } from './TimelineEngineContext';
 
 const scrollableTimelineStyles = tv({
   base: 'overflow-hidden',
@@ -21,7 +25,7 @@ const zoomContainerStyles = tv({
   base: 'relative',
   variants: {
     animate: {
-      true: 'transition-[transform,width,min-width] duration-300 ease-out',
+      true: 'transition-[transform,width,min-width] ease-linear',
       false: '',
     },
   },
@@ -31,93 +35,100 @@ const unitsContainerStyles = tv({
   base: 'relative h-full',
   variants: {
     animate: {
-      true: 'transition-[transform,width,min-width] duration-300 ease-out',
+      true: 'transition-[transform,width,min-width] ease-linear',
       false: '',
     },
   },
 });
 
+function TimelineShading({
+  start,
+  end,
+  nowMs,
+  animate,
+  cancelEvent,
+  renderNowOverlay,
+}: {
+  start: number;
+  end: number;
+  nowMs: number;
+  animate: boolean;
+  cancelEvent?: JournalEntryV2;
+  renderNowOverlay: boolean;
+}) {
+  const duration = Math.max(1, end - start);
+  const clampedNowMs = Math.max(start, Math.min(nowMs, end));
+  const nowPercent = Math.max(
+    0,
+    Math.min(100, ((clampedNowMs - start) / duration) * 100),
+  );
+  const transitionDurationMs = LIVE_TRANSITION_DURATION_MS;
+
+  return (
+    <div className="pointer-events-none absolute top-[calc(-3rem-2px)] right-0 bottom-0 left-0 z-0">
+      {cancelEvent && (
+        <div className="pointer-events-none absolute inset-x-0 top-0 bottom-0 overflow-hidden px-2 transition-all duration-300">
+          <div
+            className="pointer-events-none h-full w-full rounded-br-2xl border-l-2 border-black/8 mix-blend-multiply transition-all duration-300 [background:repeating-linear-gradient(-45deg,--theme(--color-black/0.05),--theme(--color-black/0.05)_2px,--theme(--color-white/0)_2px,--theme(--color-white/0)_4px)_fixed]"
+            style={{
+              marginLeft: `calc(${
+                ((new Date(String(cancelEvent.start)).getTime() - start) /
+                  duration) *
+                100
+              }% - 1px)`,
+            }}
+          />
+        </div>
+      )}
+      {renderNowOverlay && nowPercent < 100 && (
+        <div
+          className="linear pointer-events-none absolute inset-y-0 right-0 overflow-hidden rounded-r-2xl transition-[left] duration-300"
+          style={{
+            left: `calc(${nowPercent}% - 0.5rem)`,
+            transitionDuration: animate
+              ? `${transitionDurationMs}ms`
+              : undefined,
+          }}
+        >
+          <div className="pointer-events-none absolute inset-0 rounded-r-2xl mix-blend-screen [background:repeating-linear-gradient(-45deg,--theme(--color-white/.6),--theme(--color-white/.6)_2px,--theme(--color-white/0)_2px,--theme(--color-white/0)_4px)]" />
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function ScrollableTimeline({
   className,
   style,
   children,
-  dataUpdatedAt,
   cancelEvent,
 }: {
   className?: string;
   style?: CSSProperties;
   children: ReactNode;
-  dataUpdatedAt: number;
   cancelEvent?: JournalEntryV2;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const engine = useTimelineEngineContext();
 
+  const { mode, setViewport, resetViewport } = engine;
+
   const {
-    coordinateStart,
-    coordinateEnd,
-    viewportStart,
-    viewportEnd,
-    viewportDuration,
-    zoomLevel,
-    offsetPercent,
-    mode,
-    overviewStart,
-    overviewEnd,
-    setViewport,
-    resetViewport,
-    panViewport,
-  } = engine;
+    frame: renderFrame,
+    nowMarker,
+    zoomIn,
+    resetZoom,
+  } = useTimelineViewportInteractions({
+    engine,
+    containerRef: scrollRef,
+    zoomInFactor: 2,
+  });
 
-  const stateRef = useRef({ viewportDuration });
-  stateRef.current = { viewportDuration };
-
-  useEffect(() => {
-    const container = scrollRef.current;
-    if (!container) return;
-
-    const handleWheel = (e: WheelEvent) => {
-      if (Math.abs(e.deltaX) < Math.abs(e.deltaY)) return;
-      const { viewportDuration: vd } = stateRef.current;
-      e.preventDefault();
-
-      let deltaX = e.deltaX;
-      if (e.deltaMode === 1) deltaX *= 16;
-
-      const timeDelta = (deltaX / container.clientWidth) * vd;
-      panViewport(timeDelta);
-    };
-
-    container.addEventListener('wheel', handleWheel, { passive: false });
-    return () => container.removeEventListener('wheel', handleWheel);
-  }, [panViewport]);
+  const shouldPinNowMarker = nowMarker.pinToRightEdge;
+  const transitionDurationMs = LIVE_TRANSITION_DURATION_MS;
 
   const animateSelector = mode !== 'static';
   const animateTimeline = mode === 'live-follow';
-  const coordinateDuration = Math.max(1, coordinateEnd - coordinateStart);
-  const currentViewportDuration = Math.max(1, viewportEnd - viewportStart);
-
-  const zoomToDuration = (targetDuration: number) => {
-    const boundedDuration = Math.max(
-      1,
-      Math.min(targetDuration, coordinateDuration),
-    );
-    const maxStart = coordinateEnd - boundedDuration;
-    const anchoredStart = viewportEnd - boundedDuration;
-    const newStart = Math.max(
-      coordinateStart,
-      Math.min(maxStart, anchoredStart),
-    );
-    setViewport(newStart, newStart + boundedDuration);
-  };
-
-  const zoomIn = () => {
-    zoomToDuration(currentViewportDuration / 2);
-  };
-
-  const zoomOut = () => {
-    setViewport(coordinateStart, coordinateEnd);
-  };
 
   return (
     <div
@@ -128,7 +139,7 @@ export function ScrollableTimeline({
       <ZoomControlsPortalContent>
         <div className="flex items-center gap-1">
           <HoverTooltip content="Reset zoom (full trace)">
-            <Button variant="icon" onClick={zoomOut}>
+            <Button variant="icon" onClick={resetZoom}>
               <Icon name={IconName.ZoomOut} className="h-4 w-4" />
             </Button>
           </HoverTooltip>
@@ -142,10 +153,10 @@ export function ScrollableTimeline({
       <ViewportSelectorPortalContent>
         <ViewportSelector
           className="absolute inset-0"
-          start={overviewStart}
-          end={overviewEnd}
-          viewportStart={viewportStart}
-          viewportEnd={viewportEnd}
+          start={renderFrame.overviewStart}
+          end={renderFrame.overviewEnd}
+          viewportStart={renderFrame.viewportStart}
+          viewportEnd={renderFrame.viewportEnd}
           animate={animateSelector}
           setViewport={setViewport}
           resetViewport={resetViewport}
@@ -155,30 +166,54 @@ export function ScrollableTimeline({
         <div
           className={unitsContainerStyles({ animate: animateTimeline })}
           style={{
-            width: `${zoomLevel * 100}%`,
-            minWidth: `${zoomLevel * 100}%`,
-            transform: `translateX(-${offsetPercent}%)`,
+            width: `${renderFrame.zoomLevel * 100}%`,
+            minWidth: `${renderFrame.zoomLevel * 100}%`,
+            transform: `translateX(-${renderFrame.offsetPercent}%)`,
+            transitionDuration: animateTimeline
+              ? `${transitionDurationMs}ms`
+              : undefined,
+            transitionTimingFunction: animateTimeline ? 'linear' : undefined,
             willChange: 'transform',
           }}
         >
           <Units
             className="pointer-events-none absolute inset-0"
-            start={coordinateStart}
-            end={coordinateEnd}
-            dataUpdatedAt={dataUpdatedAt}
-            cancelEvent={cancelEvent}
+            start={renderFrame.coordinateStart}
+            end={renderFrame.coordinateEnd}
+            nowMs={engine.nowMs}
+            renderNowMarker={nowMarker.renderInTimeline}
+            pinNowToRightEdge={shouldPinNowMarker}
           />
         </div>
+        {shouldPinNowMarker && (
+          <div className="pointer-events-none absolute top-[calc(3rem+2px)] right-0 bottom-0 z-20 w-0 border-l-2 border-white/80 font-sans text-2xs text-gray-500">
+            <div className="pointer-events-none absolute left-px z-4 mt-0.5 -translate-x-full rounded-sm border border-white bg-zinc-500 px-1 text-2xs text-white">
+              Now
+            </div>
+          </div>
+        )}
       </UnitsPortalContent>
       <div
         className={zoomContainerStyles({ animate: animateTimeline })}
         style={{
-          width: `${zoomLevel * 100}%`,
-          minWidth: `${zoomLevel * 100}%`,
-          transform: `translateX(-${offsetPercent}%)`,
+          width: `${renderFrame.zoomLevel * 100}%`,
+          minWidth: `${renderFrame.zoomLevel * 100}%`,
+          transform: `translateX(-${renderFrame.offsetPercent}%)`,
+          transitionDuration: animateTimeline
+            ? `${transitionDurationMs}ms`
+            : undefined,
+          transitionTimingFunction: animateTimeline ? 'linear' : undefined,
         }}
       >
-        {children}
+        <TimelineShading
+          start={renderFrame.coordinateStart}
+          end={renderFrame.coordinateEnd}
+          nowMs={engine.nowMs}
+          animate={animateTimeline}
+          cancelEvent={cancelEvent}
+          renderNowOverlay={nowMarker.renderInTimeline}
+        />
+        <div className="relative z-10">{children}</div>
       </div>
     </div>
   );
