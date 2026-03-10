@@ -524,6 +524,39 @@ export function useCountInvocations(
   return { ...results, queryKey: queryOptions.queryKey };
 }
 
+export function useSummaryInvocations(
+  filters: FilterItem[],
+  {
+    sampled,
+    sampleSize,
+    includeDuration,
+    ...options
+  }: HookQueryOptions<'/query/invocations/summary', 'post'> & {
+    sampled?: boolean;
+    sampleSize?: number;
+    includeDuration?: boolean;
+  } = {},
+) {
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi('query', '/query/invocations/summary', 'post', {
+    baseUrl,
+    body: {
+      filters,
+      sampled,
+      sampleSize,
+      includeDuration,
+    },
+  });
+
+  const results = useQuery({
+    staleTime: 0,
+    ...queryOptions,
+    ...options,
+  });
+
+  return { ...results, queryKey: queryOptions.queryKey };
+}
+
 export function useModifyService(
   service: string,
   options?: HookMutationOptions<'/services/{service}', 'patch'>,

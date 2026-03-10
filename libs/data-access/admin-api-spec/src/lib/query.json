@@ -408,6 +408,117 @@
         }
       }
     },
+    "/query/invocations/summary": {
+      "post": {
+        "tags": ["query-invocations"],
+        "summary": "Get invocations summary",
+        "description": "Get an aggregated summary of invocations: counts by status, counts by service, and duration percentiles (p50, p90, p99).",
+        "operationId": "get_invocations_summary",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "filters": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/FilterItem"
+                    }
+                  },
+                  "sampled": {
+                    "type": "boolean",
+                    "default": true
+                  },
+                  "sampleSize": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "default": 50000
+                  },
+                  "includeDuration": {
+                    "type": "boolean",
+                    "default": false
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Invocations summary",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvocationsSummaryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/query/invocations/cancel": {
       "post": {
         "tags": ["batch-cancel-invocations"],
@@ -4951,6 +5062,99 @@
           "duration": {
             "type": "string",
             "format": "duration"
+          }
+        }
+      },
+      "InvocationsSummaryResponse": {
+        "type": "object",
+        "required": [
+          "byStatus",
+          "byService",
+          "byServiceAndStatus",
+          "totalCount",
+          "isEstimate"
+        ],
+        "properties": {
+          "totalCount": {
+            "type": "integer"
+          },
+          "isEstimate": {
+            "type": "boolean"
+          },
+          "byStatus": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name", "count", "isIncluded"],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "count": {
+                  "type": "integer"
+                },
+                "isIncluded": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "byService": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name", "count", "isIncluded"],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "count": {
+                  "type": "integer"
+                },
+                "isIncluded": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "byServiceAndStatus": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["service", "status", "count", "isIncluded"],
+              "properties": {
+                "service": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "count": {
+                  "type": "integer"
+                },
+                "isIncluded": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "duration": {
+            "type": "object",
+            "required": ["p50", "p90", "p99"],
+            "properties": {
+              "p50": {
+                "type": "string",
+                "format": "duration"
+              },
+              "p90": {
+                "type": "string",
+                "format": "duration"
+              },
+              "p99": {
+                "type": "string",
+                "format": "duration"
+              }
+            }
           }
         }
       }

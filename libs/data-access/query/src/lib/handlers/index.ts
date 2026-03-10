@@ -15,6 +15,7 @@ export { batchPauseInvocations } from './batchPauseInvocations';
 export { batchResumeInvocations } from './batchResumeInvocations';
 export { batchRestartAsNewInvocations } from './batchRestartAsNewInvocations';
 export { countInvocations } from './countInvocations';
+export { summaryInvocations } from './summaryInvocations';
 export { getJournalEntryPayloads } from './getJournalEntryPayloads';
 export { getPausedError } from './getPausedError';
 export { type QueryContext, createQueryContext } from './shared';
