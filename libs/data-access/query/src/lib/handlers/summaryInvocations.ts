@@ -47,9 +47,7 @@ function buildInclusionMatcher(filters: FilterItem[]): {
   matchService: Predicate | null;
 } {
   return {
-    matchStatus: buildPredicate(
-      filters.filter((f) => f.field === 'status'),
-    ),
+    matchStatus: buildPredicate(filters.filter((f) => f.field === 'status')),
     matchService: buildPredicate(
       filters.filter((f) => f.field === 'target_service_name'),
     ),
@@ -156,7 +154,7 @@ export async function summaryInvocations(
   if (durationResult) {
     const p = durationResult.rows?.at(0);
     if (p?.p50 != null && p?.p90 != null && p?.p99 != null) {
-      response.duration = {
+      response['duration'] = {
         p50: String(p.p50),
         p90: String(p.p90),
         p99: String(p.p99),
