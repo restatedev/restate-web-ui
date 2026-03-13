@@ -23,10 +23,33 @@ function formatMs(ms: number): string {
 
 export interface DurationPercentilesProps {
   data?: DurationPercentilesData;
+  isFetching?: boolean;
 }
 
 const containerStyles = tv({
   base: 'flex min-w-44 shrink-0 flex-col self-stretch rounded-2xl bg-zinc-700 filter-[drop-shadow(0_12px_10px_rgb(39_39_42/0.15))_drop-shadow(0_4px_5px_rgb(39_39_42/0.2))]',
+});
+
+const innerStyles = tv({
+  base: 'flex min-h-0 flex-1 flex-col py-1.5',
+  variants: {
+    loading: {
+      true: 'animate-pulse',
+    },
+  },
+});
+
+const barStyles = tv({
+  base: 'h-full rounded-full transition-all duration-500 ease-out',
+  variants: {
+    loading: {
+      true: 'animate-pulse bg-white/15',
+      false: 'bg-blue-400/50',
+    },
+  },
+  defaultVariants: {
+    loading: false,
+  },
 });
 
 const ROWS = [
@@ -35,14 +58,15 @@ const ROWS = [
   { key: 'p99', label: 'p99' },
 ] as const;
 
-export function DurationPercentiles({ data }: DurationPercentilesProps) {
-  if (!data) return null;
+const PLACEHOLDER_PCTS = [30, 60, 90];
 
-  const max = Math.max(data.p50, data.p90, data.p99, 1);
+export function DurationPercentiles({ data, isFetching }: DurationPercentilesProps) {
+  const isLoading = !data || Boolean(isFetching);
+  const max = data ? Math.max(data.p50, data.p90, data.p99, 1) : 1;
 
   return (
     <div className={containerStyles()}>
-      <div className="flex min-h-0 flex-1 flex-col py-1.5">
+      <div className={innerStyles({ loading: isLoading })}>
         <div className="border-b border-black/20 pb-0.5">
           <div className="flex h-10 flex-col justify-center px-4">
             <div className="text-sm font-medium text-zinc-300">
@@ -54,21 +78,25 @@ export function DurationPercentiles({ data }: DurationPercentilesProps) {
           </div>
         </div>
         <div className="flex min-h-0 flex-1 flex-col justify-center divide-y divide-black/20">
-          {ROWS.map((row) => {
-            const ms = data[row.key];
-            const pct = (ms / max) * 100;
+          {ROWS.map((row, i) => {
+            const ms = isLoading ? undefined : data?.[row.key];
+            const pct = ms !== undefined ? (ms / max) * 100 : (PLACEHOLDER_PCTS[i] ?? 50);
             return (
               <div
                 key={row.key}
                 className="flex min-h-0 flex-1 flex-col justify-center gap-0.5 px-4"
               >
                 <span className="text-xs text-zinc-400">{row.label}</span>
-                <span className="text-lg font-semibold tracking-tight text-zinc-200 tabular-nums">
-                  {formatMs(ms)}
-                </span>
+                {ms !== undefined ? (
+                  <span className="text-lg font-semibold tracking-tight text-zinc-200 tabular-nums">
+                    {formatMs(ms)}
+                  </span>
+                ) : (
+                  <span className="my-0.5 h-5 w-24 rounded bg-white/10" />
+                )}
                 <div className="mt-0.5 h-1 w-full">
                   <div
-                    className="h-full rounded-full bg-blue-400/50"
+                    className={barStyles({ loading: isLoading })}
                     style={{ width: `${Math.max(pct, 2)}%` }}
                   />
                 </div>

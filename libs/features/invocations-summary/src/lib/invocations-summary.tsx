@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useRef, useMemo, useState } from 'react';
 import { tv } from '@restate/util/styles';
 import { formatNumber, formatPercentage } from '@restate/util/intl';
 import { ErrorBanner } from '@restate/ui/error';
@@ -8,6 +8,25 @@ import { STATUS_COLUMNS, MAX_VISIBLE_SERVICES } from './constants';
 import { buildHeatmapData } from './heatmap-data';
 import type { InvocationsSummaryProps, CellData } from './types';
 
+
+const PLACEHOLDER_BAR_PCTS = [75, 40, 55, 90, 20, 35, 60, 45, 30];
+function useRandomOpacities(isLoading: boolean) {
+  const map = useRef(new Map<string, number>());
+  const wasLoading = useRef(false);
+  if (isLoading && !wasLoading.current) {
+    map.current.clear();
+  }
+  wasLoading.current = isLoading;
+
+  return (key: string) => {
+    let value = map.current.get(key);
+    if (value === undefined) {
+      value = 0.01 + Math.random() * 0.09;
+      map.current.set(key, value);
+    }
+    return value;
+  };
+}
 
 type StatusVariant =
   | 'ready'
@@ -22,11 +41,6 @@ type StatusVariant =
 
 const wrapperStyles = tv({
   base: 'relative min-w-0 filter-[drop-shadow(0_12px_10px_rgb(39_39_42/0.15))_drop-shadow(0_4px_5px_rgb(39_39_42/0.2))]',
-  variants: {
-    placeholder: {
-      true: 'animate-pulse',
-    },
-  },
 });
 
 const containerStyles = tv({
@@ -85,7 +99,7 @@ const serviceColStyles = tv({
 });
 
 const barTrackStyles = tv({
-  base: 'h-4 min-w-1 rounded-sm border',
+  base: 'h-4 rounded-sm border transition-all duration-500',
   variants: {
     status: {
       ready: 'border-dashed border-zinc-400 bg-zinc-500/40',
@@ -98,14 +112,18 @@ const barTrackStyles = tv({
       succeeded: 'border-green-400/50 bg-green-500/30',
       failed: 'border-red-400 bg-red-500/50',
     },
-  },
-  defaultVariants: {
-    status: 'ready',
+    loading: {
+      true: 'border-transparent bg-white/10',
+    },
   },
 });
 
+const placeholderFillStyles = tv({
+  base: 'rounded-sm transition-[background-color] duration-500',
+});
+
 const heatFillStyles = tv({
-  base: 'absolute inset-0 rounded-sm',
+  base: 'absolute inset-0 rounded-sm transition-opacity duration-500',
   variants: {
     status: {
       ready: 'bg-zinc-300',
@@ -264,11 +282,14 @@ function EmptyState() {
 export function InvocationsSummary({
   data,
   isPending,
+  isFetching,
   isPlaceholderData,
   error,
   onClick,
   toolbar,
 }: InvocationsSummaryProps) {
+  const isLoading = Boolean(isFetching || isPlaceholderData);
+  const getPlaceholderOpacity = useRandomOpacities(isLoading);
   const [visibleCount, setVisibleCount] = useState(MAX_VISIBLE_SERVICES);
   const heatmap = useMemo(
     () => (data ? buildHeatmapData(data, visibleCount) : null),
@@ -291,11 +312,11 @@ export function InvocationsSummary({
       </div>
     );
   }
-  if (!data || (!isPlaceholderData && data.totalCount === 0))
+  if (!data || (!isLoading && data.totalCount === 0))
     return <EmptyState />;
 
   return (
-    <div className={wrapperStyles({ placeholder: isPlaceholderData })}>
+    <div className={wrapperStyles()}>
       {(toolbar || ranked.length > MAX_VISIBLE_SERVICES) && (
         <div className="absolute -top-6 right-0 left-0 z-30 flex items-center justify-between px-2">
           <div>{toolbar}</div>
@@ -332,7 +353,7 @@ export function InvocationsSummary({
       >
         <div className="relative">
           <div className={firstColStyles()}>
-            <div className="py-1">
+            <div className={isLoading ? 'animate-pulse py-1' : 'py-1'}>
               <div className="mb-1.5 flex border-b border-black/30 pb-0.5">
                 <div className={statusLabelColStyles({ size: 'lg' })}>
                   <span className="text-sm font-medium text-zinc-300">
@@ -340,12 +361,18 @@ export function InvocationsSummary({
                   </span>
                 </div>
                 <div className={barChartColStyles({ size: 'lg' })}>
-                  <span className="text-sm font-semibold text-zinc-200">
-                    {data.isEstimate && (
-                      <span className="font-normal text-zinc-400">{'> '}</span>
-                    )}
-                    {formatNumber(data.totalCount, true)}
-                  </span>
+                  {isLoading ? (
+                    <span
+                      className={placeholderFillStyles({ className: 'h-4 w-16 rounded bg-white/10' })}
+                    />
+                  ) : (
+                    <span className="text-sm font-semibold text-zinc-200">
+                      {data.isEstimate && (
+                        <span className="font-normal text-zinc-400">{'> '}</span>
+                      )}
+                      {formatNumber(data.totalCount, true)}
+                    </span>
+                  )}
                 </div>
               </div>
               {statusRows.map((row) => {
@@ -376,19 +403,34 @@ export function InvocationsSummary({
                     </div>
                     <div className={barChartColStyles({ size: 'sm' })}>
                       <div className="flex flex-1 items-center">
-                        {barPct > 0 && (
-                          <div
-                            className={barTrackStyles({
-                              status: statusVariant,
-                            })}
-                            style={{ width: `${barPct}%` }}
-                          />
-                        )}
+                        <div
+                          className={barTrackStyles(
+                            isLoading
+                              ? { loading: true }
+                              : { status: statusVariant },
+                          )}
+                          style={{
+                            width: isLoading
+                              ? `${PLACEHOLDER_BAR_PCTS[statusRows.indexOf(row)] ?? 30}%`
+                              : barPct > 0
+                                ? `${barPct}%`
+                                : '0%',
+                            opacity: !isLoading && barPct === 0 ? 0 : 1,
+                          }}
+                        />
                       </div>
-                      <span className="w-12 shrink-0 text-right text-2xs text-zinc-300 tabular-nums">
-                        {data.isEstimate
-                          ? formatPercentage(row.count / data.totalCount)
-                          : formatNumber(row.count, true)}
+                      <span className="flex w-12 shrink-0 items-center justify-end">
+                        {isLoading ? (
+                          <span
+                            className={placeholderFillStyles({ className: 'h-3 w-8 rounded bg-white/10' })}
+                          />
+                        ) : (
+                          <span className="text-right text-2xs text-zinc-300 tabular-nums">
+                            {data.isEstimate
+                              ? formatPercentage(row.count / data.totalCount)
+                              : formatNumber(row.count, true)}
+                          </span>
+                        )}
                       </span>
                     </div>
                   </div>
@@ -397,7 +439,7 @@ export function InvocationsSummary({
             </div>
           </div>
           <div className="overflow-x-auto overscroll-x-contain [scrollbar-color:rgb(113_113_122/0.4)_transparent] [scrollbar-width:thin]">
-            <div className="min-w-max w-full py-1.5 pl-91">
+            <div className={isLoading ? 'min-w-max w-full animate-pulse py-1.5 pl-91' : 'min-w-max w-full py-1.5 pl-91'}>
               <div className={heatmapRowStyles({ variant: 'header' })}>
                 {serviceColumns.map((svc) => (
                   <div
@@ -423,7 +465,10 @@ export function InvocationsSummary({
                     }}
                   >
                     <span className="w-full truncate">{svc.name}</span>
-                    <span className="w-full truncate text-2xs font-normal text-zinc-400">
+                    <span
+                      className="w-full truncate text-2xs font-normal text-zinc-400 transition-opacity duration-500"
+                      style={{ opacity: isLoading ? 0 : 1 }}
+                    >
                       {data.isEstimate
                         ? formatPercentage(svc.count / data.totalCount)
                         : formatNumber(svc.count, true)}
@@ -445,22 +490,24 @@ export function InvocationsSummary({
                       const fillOpacity = cellOpacities.get(cellKey);
                       const isNonInteractive = Boolean(svc.isOthers);
 
+                      const placeholderBg = getPlaceholderOpacity(cellKey);
                       const cellContent = (
                         <div
                           className={heatCellStyles({
                             shaded: false,
-                            isIncluded: row.isIncluded,
-                            isNonInteractive,
+                            isIncluded: isLoading || row.isIncluded,
+                            isNonInteractive: isLoading || isNonInteractive,
                           })}
-                          role={isNonInteractive ? undefined : 'button'}
-                          tabIndex={isNonInteractive ? undefined : 0}
+                          role={isLoading || isNonInteractive ? undefined : 'button'}
+                          tabIndex={isLoading || isNonInteractive ? undefined : 0}
                           onClick={() => {
-                            if (!isNonInteractive) {
+                            if (!isLoading && !isNonInteractive) {
                               onClick?.({ status: row.key, service: svc.name });
                             }
                           }}
                           onKeyDown={(e) => {
                             if (
+                              !isLoading &&
                               !isNonInteractive &&
                               (e.key === 'Enter' || e.key === ' ')
                             ) {
@@ -469,27 +516,39 @@ export function InvocationsSummary({
                             }
                           }}
                         >
-                          {fillOpacity !== undefined && (
-                            <div
-                              className={heatFillStyles({
-                                status: statusVariant,
-                              })}
-                              style={{ opacity: fillOpacity }}
-                            />
-                          )}
+                          <div
+                            className={placeholderFillStyles({ className: 'absolute inset-0' })}
+                            style={{
+                              backgroundColor: isLoading
+                                ? `rgb(255 255 255 / ${placeholderBg})`
+                                : 'transparent',
+                            }}
+                          />
+                          <div
+                            className={heatFillStyles({
+                              status: statusVariant,
+                            })}
+                            style={{ opacity: isLoading ? 0 : (fillOpacity ?? 0) }}
+                          />
                           {(cell?.count ?? 0) > 0 ? (
                             <span
                               className={cellCountStyles({
                                 prominent: (fillOpacity ?? 0) >= 0.5,
                                 status: statusVariant,
                               })}
+                              style={{ opacity: isLoading ? 0 : 1, transition: 'opacity 500ms' }}
                             >
                               {data.isEstimate
                                 ? formatPercentage((cell?.count ?? 0) / data.totalCount)
                                 : formatNumber(cell?.count ?? 0, true)}
                             </span>
                           ) : (
-                            <span className={emptyCellStyles()}>–</span>
+                            <span
+                              className={emptyCellStyles()}
+                              style={{ opacity: isLoading ? 0 : 1, transition: 'opacity 500ms' }}
+                            >
+                              –
+                            </span>
                           )}
                         </div>
                       );
