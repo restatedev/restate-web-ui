@@ -10,7 +10,7 @@ import type {
 // invocations exceeds its reference rate, the heatmap row ceiling is boosted
 // so cells become visually prominent even with uniform distribution.
 const ATTENTION_REF: Record<string, number> = {
-  ready: 0.05,
+  ready: 0.01,
   pending: 0.2,
   paused: 0.01,
   'backing-off': 0.05,
@@ -26,7 +26,7 @@ const BASE_LEVEL: Record<string, number> = {
   'backing-off': 0.13,
   paused: 0.13,
   failed: 0.21,
-  ready: 0.1,
+  ready: 0.2,
   scheduled: 0.16,
   suspended: 0.16,
 };

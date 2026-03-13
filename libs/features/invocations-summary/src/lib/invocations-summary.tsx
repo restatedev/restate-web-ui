@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react';
 import { tv } from '@restate/util/styles';
-import { formatNumber } from '@restate/util/intl';
+import { formatNumber, formatPercentage } from '@restate/util/intl';
 import { ErrorBanner } from '@restate/ui/error';
 import { HoverTooltip } from '@restate/ui/tooltip';
 import { Icon, IconName } from '@restate/ui/icons';
 import { STATUS_COLUMNS, MAX_VISIBLE_SERVICES } from './constants';
 import { buildHeatmapData } from './heatmap-data';
 import type { InvocationsSummaryProps, CellData } from './types';
+
 
 type StatusVariant =
   | 'ready'
@@ -19,8 +20,17 @@ type StatusVariant =
   | 'succeeded'
   | 'failed';
 
+const wrapperStyles = tv({
+  base: 'relative min-w-0',
+  variants: {
+    placeholder: {
+      true: 'animate-pulse',
+    },
+  },
+});
+
 const containerStyles = tv({
-  base: 'w-fit max-w-full overflow-hidden rounded-2xl bg-zinc-700 filter-[drop-shadow(0_8px_6px_rgb(39_39_42/0.15))_drop-shadow(0_4px_3px_rgb(39_39_42/0.2))]',
+  base: 'w-fit max-w-full overflow-hidden rounded-2xl bg-zinc-700 shadow-[inset_-4px_0_6px_-3px_rgb(0_0_0/0.08)] filter-[drop-shadow(0_8px_6px_rgb(39_39_42/0.15))_drop-shadow(0_4px_3px_rgb(39_39_42/0.2))]',
 });
 
 const heatmapRowStyles = tv({
@@ -166,7 +176,7 @@ const serviceHeaderStyles = tv({
   base: 'flex h-10 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-sm px-1 text-center text-xs font-medium text-zinc-300 transition-colors select-none hover:bg-white/5 hover:text-zinc-100',
   variants: {
     isOthers: {
-      true: 'cursor-default text-zinc-500 italic hover:text-zinc-500',
+      true: 'cursor-default text-zinc-400 italic hover:text-zinc-400',
       false: '',
     },
     shaded: {
@@ -254,6 +264,7 @@ function EmptyState() {
 export function InvocationsSummary({
   data,
   isPending,
+  isPlaceholderData,
   error,
   onClick,
   toolbar,
@@ -272,7 +283,7 @@ export function InvocationsSummary({
     cellOpacities = new Map<string, number | undefined>(),
   } = heatmap ?? {};
 
-  if (isPending) return <LoadingSkeleton />;
+  if (isPending && !isPlaceholderData) return <LoadingSkeleton />;
   if (error) {
     return (
       <div className={containerStyles()}>
@@ -280,10 +291,11 @@ export function InvocationsSummary({
       </div>
     );
   }
-  if (!data || data.totalCount === 0) return <EmptyState />;
+  if (!data || (!isPlaceholderData && data.totalCount === 0))
+    return <EmptyState />;
 
   return (
-    <div className="relative min-w-0">
+    <div className={wrapperStyles({ placeholder: isPlaceholderData })}>
       {(toolbar || ranked.length > MAX_VISIBLE_SERVICES) && (
         <div className="absolute -top-6 right-0 left-0 z-30 flex items-center justify-between px-2">
           <div>{toolbar}</div>
@@ -324,7 +336,9 @@ export function InvocationsSummary({
                 </div>
                 <div className={barChartColStyles({ size: 'lg' })}>
                   <span className="text-sm font-semibold text-zinc-200">
-                    {data.isEstimate && '~'}
+                    {data.isEstimate && (
+                      <span className="font-normal text-zinc-400">{'> '}</span>
+                    )}
                     {formatNumber(data.totalCount, true)}
                   </span>
                 </div>
@@ -367,7 +381,9 @@ export function InvocationsSummary({
                         )}
                       </div>
                       <span className="w-12 shrink-0 text-right text-2xs text-zinc-300 tabular-nums">
-                        {formatNumber(row.count, true)}
+                        {data.isEstimate
+                          ? formatPercentage(row.count / data.totalCount)
+                          : formatNumber(row.count, true)}
                       </span>
                     </div>
                   </div>
@@ -403,7 +419,9 @@ export function InvocationsSummary({
                   >
                     <span className="w-full truncate">{svc.name}</span>
                     <span className="w-full truncate text-2xs font-normal text-zinc-400">
-                      {formatNumber(svc.count, true)}
+                      {data.isEstimate
+                        ? formatPercentage(svc.count / data.totalCount)
+                        : formatNumber(svc.count, true)}
                     </span>
                   </div>
                 ))}
@@ -461,7 +479,9 @@ export function InvocationsSummary({
                                 status: statusVariant,
                               })}
                             >
-                              {formatNumber(cell?.count ?? 0, true)}
+                              {data.isEstimate
+                                ? formatPercentage((cell?.count ?? 0) / data.totalCount)
+                                : formatNumber(cell?.count ?? 0, true)}
                             </span>
                           ) : (
                             <span className={emptyCellStyles()}>–</span>

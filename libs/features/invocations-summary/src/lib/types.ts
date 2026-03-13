@@ -21,6 +21,7 @@ export interface InvocationsSummaryData {
 export interface InvocationsSummaryProps {
   data?: InvocationsSummaryData;
   isPending?: boolean;
+  isPlaceholderData?: boolean;
   error?: Error | null;
   onClick?: (params: { status?: string; service?: string }) => void;
   toolbar?: ReactNode;
