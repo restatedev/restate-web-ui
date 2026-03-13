@@ -3187,12 +3187,12 @@ export interface components {
         isIncluded: boolean;
       }[];
       duration?: {
-        /** Format: duration */
-        p50: string;
-        /** Format: duration */
-        p90: string;
-        /** Format: duration */
-        p99: string;
+        /** @description 50th percentile duration in milliseconds */
+        p50: number;
+        /** @description 90th percentile duration in milliseconds */
+        p90: number;
+        /** @description 99th percentile duration in milliseconds */
+        p99: number;
       };
     };
   };

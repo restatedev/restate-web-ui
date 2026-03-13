@@ -71,14 +71,18 @@ export async function summaryInvocations(
     `SELECT status, completion_result, target_service_name, COUNT(1) as count FROM ${subquery} ${where} GROUP BY status, completion_result, target_service_name`,
   );
 
+  const servicesPromise = this.query(`SELECT name FROM sys_service`);
+
+  const DURATION_MS = `arrow_cast(${DURATION_CALC}, 'Int64')`;
   const durationPromise = includeDuration
     ? this.query(
-        `SELECT APPROX_PERCENTILE_CONT(${DURATION_CALC}, 0.5) as p50, APPROX_PERCENTILE_CONT(${DURATION_CALC}, 0.9) as p90, APPROX_PERCENTILE_CONT(${DURATION_CALC}, 0.99) as p99 FROM ${subquery} ${where}`,
+        `SELECT APPROX_PERCENTILE_CONT(${DURATION_MS}, 0.5) as p50, APPROX_PERCENTILE_CONT(${DURATION_MS}, 0.9) as p90, APPROX_PERCENTILE_CONT(${DURATION_MS}, 0.99) as p99 FROM ${subquery} ${where}`,
       )
     : undefined;
 
-  const [{ rows }, durationResult] = await Promise.all([
+  const [{ rows }, { rows: serviceRows }, durationResult] = await Promise.all([
     countsPromise,
+    servicesPromise,
     durationPromise,
   ]);
 
@@ -119,6 +123,13 @@ export async function summaryInvocations(
     if (included) totalCount += count;
   }
 
+  for (const row of serviceRows) {
+    const name = row.name as string;
+    if (!serviceCounts[name]) {
+      serviceCounts[name] = { total: 0, included: 0 };
+    }
+  }
+
   const byStatus = Object.entries(statusCounts).map(
     ([name, { total, included }]) => ({
       name,
@@ -155,9 +166,9 @@ export async function summaryInvocations(
     const p = durationResult.rows?.at(0);
     if (p?.p50 != null && p?.p90 != null && p?.p99 != null) {
       response['duration'] = {
-        p50: String(p.p50),
-        p90: String(p.p90),
-        p99: String(p.p99),
+        p50: Number(p.p50),
+        p90: Number(p.p90),
+        p99: Number(p.p99),
       };
     }
   }

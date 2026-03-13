@@ -8403,16 +8403,16 @@
             "required": ["p50", "p90", "p99"],
             "properties": {
               "p50": {
-                "type": "string",
-                "format": "duration"
+                "type": "number",
+                "description": "50th percentile duration in milliseconds"
               },
               "p90": {
-                "type": "string",
-                "format": "duration"
+                "type": "number",
+                "description": "90th percentile duration in milliseconds"
               },
               "p99": {
-                "type": "string",
-                "format": "duration"
+                "type": "number",
+                "description": "99th percentile duration in milliseconds"
               }
             }
           }
