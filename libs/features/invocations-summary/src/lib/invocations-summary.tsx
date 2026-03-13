@@ -21,7 +21,7 @@ type StatusVariant =
   | 'failed';
 
 const wrapperStyles = tv({
-  base: 'relative min-w-0',
+  base: 'relative min-w-0 filter-[drop-shadow(0_8px_6px_rgb(39_39_42/0.15))_drop-shadow(0_4px_3px_rgb(39_39_42/0.2))]',
   variants: {
     placeholder: {
       true: 'animate-pulse',
@@ -30,7 +30,7 @@ const wrapperStyles = tv({
 });
 
 const containerStyles = tv({
-  base: 'w-fit max-w-full overflow-hidden rounded-2xl bg-zinc-700 shadow-[inset_-4px_0_6px_-3px_rgb(0_0_0/0.08)] filter-[drop-shadow(0_8px_6px_rgb(39_39_42/0.15))_drop-shadow(0_4px_3px_rgb(39_39_42/0.2))]',
+  base: 'max-w-full overflow-hidden rounded-2xl bg-zinc-700 shadow-[inset_-4px_0_6px_-3px_rgb(0_0_0/0.08)]',
 });
 
 const heatmapRowStyles = tv({
@@ -324,7 +324,12 @@ export function InvocationsSummary({
           )}
         </div>
       )}
-      <div className={containerStyles()}>
+      <div
+        className={containerStyles()}
+        style={{
+          width: `calc(23.5rem + ${serviceColumns.length} * 7.5rem)`,
+        }}
+      >
         <div className="relative">
           <div className={firstColStyles()}>
             <div className="py-1">
@@ -392,7 +397,7 @@ export function InvocationsSummary({
             </div>
           </div>
           <div className="overflow-x-auto overscroll-x-contain [scrollbar-color:rgb(113_113_122/0.4)_transparent] [scrollbar-width:thin]">
-            <div className="min-w-max py-1.5 pl-91">
+            <div className="min-w-max w-full py-1.5 pl-91">
               <div className={heatmapRowStyles({ variant: 'header' })}>
                 {serviceColumns.map((svc) => (
                   <div
