@@ -194,7 +194,7 @@ const serviceHeaderStyles = tv({
   base: 'flex h-10 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-sm px-1 text-center text-xs font-medium text-zinc-300 transition-colors select-none hover:bg-white/5 hover:text-zinc-100',
   variants: {
     isOthers: {
-      true: 'cursor-default text-zinc-400 italic hover:text-zinc-400',
+      true: 'cursor-default text-zinc-400 italic hover:bg-transparent hover:text-zinc-400',
       false: '',
     },
     shaded: {
@@ -317,31 +317,6 @@ export function InvocationsSummary({
 
   return (
     <div className={wrapperStyles()}>
-      {ranked.length > MAX_VISIBLE_SERVICES && (
-        <div className="absolute -top-6 right-0 left-0 z-30 flex items-center justify-end px-2">
-          <label className="inline-flex cursor-pointer items-center gap-0.5 rounded-md px-1.5 py-0.5 text-xs whitespace-nowrap text-zinc-500 transition-colors hover:bg-black/5">
-            Top {Math.min(visibleCount, ranked.length)}
-            <Icon
-              name={IconName.ChevronsUpDown}
-              className="aspect-square h-3.5 w-3.5 opacity-80"
-            />
-            <select
-              className="absolute inset-0 cursor-pointer text-xs opacity-0"
-              value={visibleCount}
-              onChange={(e) => setVisibleCount(Number(e.target.value))}
-            >
-              {Array.from(
-                { length: Math.ceil(Math.min(ranked.length, 100) / 10) },
-                (_, i) => (i + 1) * 10,
-              ).map((n) => (
-                <option key={n} value={n}>
-                  Top {Math.min(n, ranked.length)}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-      )}
       <div
         className={containerStyles()}
         style={{
@@ -462,15 +437,51 @@ export function InvocationsSummary({
                       }
                     }}
                   >
-                    <span className="w-full truncate">{svc.name}</span>
-                    <span
-                      className="w-full truncate text-2xs font-normal text-zinc-400 transition-opacity duration-500"
-                      style={{ opacity: isLoading ? 0 : 1 }}
-                    >
-                      {data.isEstimate
-                        ? formatPercentage(svc.count / data.totalCount)
-                        : formatNumber(svc.count, true)}
-                    </span>
+                    {svc.isOthers && ranked.length > MAX_VISIBLE_SERVICES ? (
+                      <>
+                        <label className="relative inline-flex cursor-pointer items-center gap-0.5 rounded-full border border-zinc-500/30 bg-zinc-600/40 px-1.5 py-0 text-2xs leading-4 not-italic whitespace-nowrap text-zinc-300 transition-colors hover:bg-zinc-500/40">
+                          {svc.name}
+                          <Icon
+                            name={IconName.ChevronsUpDown}
+                            className="aspect-square h-3 w-3 opacity-60"
+                          />
+                          <select
+                            className="absolute inset-0 cursor-pointer text-xs opacity-0"
+                            value={visibleCount}
+                            onChange={(e) => setVisibleCount(Number(e.target.value))}
+                          >
+                            {Array.from(
+                              { length: Math.ceil(Math.min(ranked.length, 100) / 10) },
+                              (_, i) => (i + 1) * 10,
+                            ).map((n) => (
+                              <option key={n} value={n}>
+                                Show top {Math.min(n, ranked.length)}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <span
+                          className="w-full truncate text-2xs font-normal not-italic text-zinc-400 transition-opacity duration-500"
+                          style={{ opacity: isLoading ? 0 : 1 }}
+                        >
+                          {data.isEstimate
+                            ? formatPercentage(svc.count / data.totalCount)
+                            : formatNumber(svc.count, true)}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="w-full truncate">{svc.name}</span>
+                        <span
+                          className="w-full truncate text-2xs font-normal text-zinc-400 transition-opacity duration-500"
+                          style={{ opacity: isLoading ? 0 : 1 }}
+                        >
+                          {data.isEstimate
+                            ? formatPercentage(svc.count / data.totalCount)
+                            : formatNumber(svc.count, true)}
+                        </span>
+                      </>
+                    )}
                   </div>
                 ))}
               </div>
