@@ -31,6 +31,11 @@
 | 2026-02-26 | self   | Tried `pnpm nx create admin-api` — wrong project name                                                                                                             | Type generation is on `admin-api-spec`: `pnpm nx create admin-api-spec`                                                                               |
 | 2026-02-26 | user   | Created 3 parallel SQL queries when the data could come from 1 GROUP BY                                                                                           | Combine dimensions into a single GROUP BY and aggregate both axes in JS — avoids multiple round-trips                                                 |
 | 2026-02-26 | user   | Split completed invocations into failed/cancelled/killed using completion_failure                                                                                 | For summary/aggregate views, group all non-success completions as "failed" — simpler and avoids needing completion_failure in the query               |
+| 2026-03-13 | self   | Tried 6+ CSS approaches to fix heatmap header border not extending to full scrollable width (`-mr-1.5`, `min-w-full`, `<hr>`, etc.) without understanding the root cause | In scrollable containers, `display: flex` containers don't grow to fit non-shrinking children — items overflow the box. `border-b` only spans the container box, not overflowing items. Fix: add `min-w-max` to the scroll content wrapper so all children size to max-content |
+| 2026-03-13 | self   | Kept randomly trying CSS fixes for the border issue instead of tracing the actual layout model | When a CSS layout issue persists, stop and trace the exact box model: which element has what width, what determines it, and why the border stops where it does. Understand the root cause BEFORE trying fixes |
+| 2026-03-13 | self   | Used `border-image` for gradient border on first col, which broke `border-radius` | `border-image` and `border-radius` are incompatible in CSS. For gradient borders with rounded corners, use multi-layer background: `[background:linear-gradient(...)_padding-box,linear-gradient(...)_border-box]` with `border-transparent` |
+| 2026-03-13 | self   | Used px-based inline `style` props for layout widths when Tailwind classes would work | Prefer Tailwind spacing classes (`w-42`, `w-45`, `basis-30`, `min-w-20`, `pl-91`) over inline `style={{ width: N }}`. Define layout widths via `tv()` styles. Only use inline styles for runtime-computed values (percentages, opacity) |
+| 2026-03-13 | self   | Had unused `tv()` styles (`statusLabelStyles`, `barCellStyles`) left in component | Clean up dead code during refactoring — unused style definitions add confusion |
 
 ## User Preferences
 
@@ -42,6 +47,10 @@
 
 ## Patterns That Work
 
+- For gradient borders with `border-radius`, use multi-layer background approach: `[background:linear-gradient(...)_padding-box,linear-gradient(...)_border-box]` with `border border-transparent`
+- In scrollable `overflow-x-auto` containers, child `display: flex` rows don't auto-size to their content — items overflow the container box. Add `min-w-max` to the scroll content wrapper so borders/backgrounds span the full scrollable width
+- When an absolutely positioned overlay (like a sticky first col) needs a visible border but sits flush against its parent edges, use small inset (`inset-y-px left-px`) to reveal the border, and compensate inner padding accordingly
+- For dark-on-dark card panels, define layout widths via `tv()` styles using Tailwind spacing (`w-42`, `basis-30`) rather than px constants + inline styles. Keep inline `style` only for runtime-computed values (dynamic percentages, opacity)
 - When smooth-interpolating timestamps between API polls, advance related timestamps (e.g., `dataUpdatedAt`) by the same elapsed amount to avoid flicker — simplest form: use `Date.now()` in live-follow mode
 - For `Now` marker visibility under headroom smoothing, use a stable bound check (`dataUpdatedAt <= end (+epsilon)`) instead of a near-zero threshold that toggles every poll
 - For right-edge `Now` cut-off, keep marker mounted and switch badge side by viewport half (render badge to the left when `Now` is in right half)
