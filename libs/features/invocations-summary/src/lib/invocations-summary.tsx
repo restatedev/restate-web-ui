@@ -317,32 +317,29 @@ export function InvocationsSummary({
 
   return (
     <div className={wrapperStyles()}>
-      {(toolbar || ranked.length > MAX_VISIBLE_SERVICES) && (
-        <div className="absolute -top-6 right-0 left-0 z-30 flex items-center justify-between px-2">
-          <div>{toolbar}</div>
-          {ranked.length > MAX_VISIBLE_SERVICES && (
-            <label className="inline-flex cursor-pointer items-center gap-0.5 rounded-md px-1.5 py-0.5 text-xs whitespace-nowrap text-zinc-500 transition-colors hover:bg-black/5">
-              Top {Math.min(visibleCount, ranked.length)}
-              <Icon
-                name={IconName.ChevronsUpDown}
-                className="aspect-square h-3.5 w-3.5 opacity-80"
-              />
-              <select
-                className="absolute inset-0 cursor-pointer text-xs opacity-0"
-                value={visibleCount}
-                onChange={(e) => setVisibleCount(Number(e.target.value))}
-              >
-                {Array.from(
-                  { length: Math.ceil(Math.min(ranked.length, 100) / 10) },
-                  (_, i) => (i + 1) * 10,
-                ).map((n) => (
-                  <option key={n} value={n}>
-                    Top {Math.min(n, ranked.length)}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
+      {ranked.length > MAX_VISIBLE_SERVICES && (
+        <div className="absolute -top-6 right-0 left-0 z-30 flex items-center justify-end px-2">
+          <label className="inline-flex cursor-pointer items-center gap-0.5 rounded-md px-1.5 py-0.5 text-xs whitespace-nowrap text-zinc-500 transition-colors hover:bg-black/5">
+            Top {Math.min(visibleCount, ranked.length)}
+            <Icon
+              name={IconName.ChevronsUpDown}
+              className="aspect-square h-3.5 w-3.5 opacity-80"
+            />
+            <select
+              className="absolute inset-0 cursor-pointer text-xs opacity-0"
+              value={visibleCount}
+              onChange={(e) => setVisibleCount(Number(e.target.value))}
+            >
+              {Array.from(
+                { length: Math.ceil(Math.min(ranked.length, 100) / 10) },
+                (_, i) => (i + 1) * 10,
+              ).map((n) => (
+                <option key={n} value={n}>
+                  Top {Math.min(n, ranked.length)}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
       )}
       <div
@@ -356,6 +353,7 @@ export function InvocationsSummary({
             <div className={isLoading ? 'animate-pulse py-1' : 'py-1'}>
               <div className="mb-1.5 flex border-b border-black/30 pb-0.5">
                 <div className={statusLabelColStyles({ size: 'lg' })}>
+                  {toolbar}
                   <span className="text-sm font-medium text-zinc-300">
                     Total
                   </span>
