@@ -21,7 +21,7 @@ type StatusVariant =
   | 'failed';
 
 const wrapperStyles = tv({
-  base: 'relative min-w-0 filter-[drop-shadow(0_8px_6px_rgb(39_39_42/0.15))_drop-shadow(0_4px_3px_rgb(39_39_42/0.2))]',
+  base: 'relative min-w-0 filter-[drop-shadow(0_12px_10px_rgb(39_39_42/0.15))_drop-shadow(0_4px_5px_rgb(39_39_42/0.2))]',
   variants: {
     placeholder: {
       true: 'animate-pulse',

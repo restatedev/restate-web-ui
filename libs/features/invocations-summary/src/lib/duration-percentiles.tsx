@@ -26,7 +26,7 @@ export interface DurationPercentilesProps {
 }
 
 const containerStyles = tv({
-  base: 'flex min-w-44 shrink-0 flex-col self-stretch rounded-2xl bg-zinc-700 filter-[drop-shadow(0_8px_6px_rgb(39_39_42/0.15))_drop-shadow(0_4px_3px_rgb(39_39_42/0.2))]',
+  base: 'flex min-w-44 shrink-0 flex-col self-stretch rounded-2xl bg-zinc-700 filter-[drop-shadow(0_12px_10px_rgb(39_39_42/0.15))_drop-shadow(0_4px_5px_rgb(39_39_42/0.2))]',
 });
 
 const ROWS = [
