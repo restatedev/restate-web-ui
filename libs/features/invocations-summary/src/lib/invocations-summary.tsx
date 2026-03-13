@@ -163,7 +163,7 @@ const emptyCellStyles = tv({
 });
 
 const serviceHeaderStyles = tv({
-  base: 'flex h-10 cursor-pointer flex-col items-center justify-center overflow-hidden px-1 text-center text-xs font-medium text-zinc-300 transition-colors select-none hover:text-zinc-100',
+  base: 'flex h-10 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-sm px-1 text-center text-xs font-medium text-zinc-300 transition-colors select-none hover:bg-white/5 hover:text-zinc-100',
   variants: {
     isOthers: {
       true: 'cursor-default text-zinc-500 italic hover:text-zinc-500',
