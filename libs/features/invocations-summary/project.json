@@ -1,0 +1,9 @@
+{
+  "name": "invocations-summary",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/features/invocations-summary/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project invocations-summary --web",
+  "targets": {}
+}
