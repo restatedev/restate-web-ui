@@ -27,7 +27,7 @@ const heatmapRowStyles = tv({
   base: 'flex',
   variants: {
     variant: {
-      header: 'mb-1.5 border-b border-black/20 pb-0.5 pr-1.5',
+      header: 'mb-1.5 border-b border-black/20 pr-1.5 pb-0.5',
       data: 'pr-1.5',
     },
   },
@@ -71,7 +71,7 @@ const barChartColStyles = tv({
 });
 
 const serviceColStyles = tv({
-  base: 'shrink-0 grow-0 basis-30 min-w-20',
+  base: 'min-w-20 shrink-0 grow-0 basis-30',
 });
 
 const barTrackStyles = tv({
@@ -180,7 +180,6 @@ const serviceHeaderStyles = tv({
   },
 });
 
-
 function CellTooltipContent({ cell }: { cell: CellData }) {
   const pctOfStatus = cell.columnTotal > 0 ? cell.count / cell.columnTotal : 0;
   const pctOfService =
@@ -257,6 +256,7 @@ export function InvocationsSummary({
   isPending,
   error,
   onClick,
+  toolbar,
 }: InvocationsSummaryProps) {
   const [visibleCount, setVisibleCount] = useState(MAX_VISIBLE_SERVICES);
   const heatmap = useMemo(
@@ -284,28 +284,33 @@ export function InvocationsSummary({
 
   return (
     <div className="relative min-w-0">
-      {ranked.length > MAX_VISIBLE_SERVICES && (
-        <label className="absolute -top-6 right-2 z-30 inline-flex cursor-pointer items-center gap-0.5 whitespace-nowrap rounded-md px-1.5 py-0.5 text-xs text-zinc-500 transition-colors hover:bg-black/5">
-          Top {Math.min(visibleCount, ranked.length)}
-          <Icon
-            name={IconName.ChevronsUpDown}
-            className="aspect-square h-3.5 w-3.5 opacity-80"
-          />
-          <select
-            className="absolute inset-0 cursor-pointer text-xs opacity-0"
-            value={visibleCount}
-            onChange={(e) => setVisibleCount(Number(e.target.value))}
-          >
-            {Array.from(
-              { length: Math.ceil(Math.min(ranked.length, 100) / 10) },
-              (_, i) => (i + 1) * 10,
-            ).map((n) => (
-              <option key={n} value={n}>
-                Top {Math.min(n, ranked.length)}
-              </option>
-            ))}
-          </select>
-        </label>
+      {(toolbar || ranked.length > MAX_VISIBLE_SERVICES) && (
+        <div className="absolute -top-6 right-0 left-0 z-30 flex items-center justify-between px-2">
+          <div>{toolbar}</div>
+          {ranked.length > MAX_VISIBLE_SERVICES && (
+            <label className="inline-flex cursor-pointer items-center gap-0.5 rounded-md px-1.5 py-0.5 text-xs whitespace-nowrap text-zinc-500 transition-colors hover:bg-black/5">
+              Top {Math.min(visibleCount, ranked.length)}
+              <Icon
+                name={IconName.ChevronsUpDown}
+                className="aspect-square h-3.5 w-3.5 opacity-80"
+              />
+              <select
+                className="absolute inset-0 cursor-pointer text-xs opacity-0"
+                value={visibleCount}
+                onChange={(e) => setVisibleCount(Number(e.target.value))}
+              >
+                {Array.from(
+                  { length: Math.ceil(Math.min(ranked.length, 100) / 10) },
+                  (_, i) => (i + 1) * 10,
+                ).map((n) => (
+                  <option key={n} value={n}>
+                    Top {Math.min(n, ranked.length)}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+        </div>
       )}
       <div className={containerStyles()}>
         <div className="relative">
@@ -361,7 +366,7 @@ export function InvocationsSummary({
                           />
                         )}
                       </div>
-                      <span className="w-12 shrink-0 text-right text-2xs tabular-nums text-zinc-300">
+                      <span className="w-12 shrink-0 text-right text-2xs text-zinc-300 tabular-nums">
                         {formatNumber(row.count, true)}
                       </span>
                     </div>
@@ -407,7 +412,10 @@ export function InvocationsSummary({
                 const statusVariant = row.key as StatusVariant;
 
                 return (
-                  <div key={row.key} className={heatmapRowStyles({ variant: 'data' })}>
+                  <div
+                    key={row.key}
+                    className={heatmapRowStyles({ variant: 'data' })}
+                  >
                     {serviceColumns.map((svc) => {
                       const cellKey = `${svc.name}::${row.key}`;
                       const cell = cellMap.get(cellKey);

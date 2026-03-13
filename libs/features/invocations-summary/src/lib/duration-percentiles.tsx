@@ -54,27 +54,27 @@ export function DurationPercentiles({ data }: DurationPercentilesProps) {
           </div>
         </div>
         <div className="flex min-h-0 flex-1 flex-col justify-center divide-y divide-black/20">
-        {ROWS.map((row) => {
-          const ms = data[row.key];
-          const pct = (ms / max) * 100;
-          return (
-            <div
-              key={row.key}
-              className="flex min-h-0 flex-1 flex-col justify-center gap-0.5 px-4"
-            >
-              <span className="text-xs text-zinc-400">{row.label}</span>
-              <span className="text-lg font-semibold tracking-tight text-zinc-200 tabular-nums">
-                {formatMs(ms)}
-              </span>
-              <div className="mt-0.5 h-1 w-full">
-                <div
-                  className="h-full rounded-full bg-blue-400/50"
-                  style={{ width: `${Math.max(pct, 2)}%` }}
-                />
+          {ROWS.map((row) => {
+            const ms = data[row.key];
+            const pct = (ms / max) * 100;
+            return (
+              <div
+                key={row.key}
+                className="flex min-h-0 flex-1 flex-col justify-center gap-0.5 px-4"
+              >
+                <span className="text-xs text-zinc-400">{row.label}</span>
+                <span className="text-lg font-semibold tracking-tight text-zinc-200 tabular-nums">
+                  {formatMs(ms)}
+                </span>
+                <div className="mt-0.5 h-1 w-full">
+                  <div
+                    className="h-full rounded-full bg-blue-400/50"
+                    style={{ width: `${Math.max(pct, 2)}%` }}
+                  />
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
         </div>
       </div>
     </div>

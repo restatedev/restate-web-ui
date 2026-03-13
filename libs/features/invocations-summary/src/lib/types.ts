@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 export interface InvocationsSummaryData {
   totalCount: number;
   isEstimate: boolean;
@@ -21,6 +23,7 @@ export interface InvocationsSummaryProps {
   isPending?: boolean;
   error?: Error | null;
   onClick?: (params: { status?: string; service?: string }) => void;
+  toolbar?: ReactNode;
 }
 
 export interface StatusColumn {
