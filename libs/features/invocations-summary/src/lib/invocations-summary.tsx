@@ -208,7 +208,7 @@ const serviceHeaderStyles = tv({
   },
 });
 
-function CellTooltipContent({ cell }: { cell: CellData }) {
+function CellTooltipContent({ cell, isEstimate }: { cell: CellData; isEstimate: boolean }) {
   const pctOfStatus = cell.columnTotal > 0 ? cell.count / cell.columnTotal : 0;
   const pctOfService =
     cell.serviceTotal > 0 ? cell.count / cell.serviceTotal : 0;
@@ -216,22 +216,28 @@ function CellTooltipContent({ cell }: { cell: CellData }) {
   const statusLabel = colDef?.label ?? cell.columnKey;
 
   return (
-    <div className="flex flex-col gap-0.5">
-      <div className="flex items-center gap-1.5">
-        <span className="font-medium">{statusLabel}</span>
-        <span className="text-gray-400">&middot;</span>
-        <span className="max-w-[200px] truncate text-gray-300">
-          {cell.service}
-        </span>
-      </div>
-      <div>
-        <span className="font-medium">{formatNumber(cell.count)}</span>
-      </div>
-      <div className="flex gap-3 text-gray-400">
-        <span>{Math.round(pctOfService * 100)}% of service</span>
-        <span>
-          {Math.round(pctOfStatus * 100)}% of {statusLabel}
-        </span>
+    <div className="flex min-w-40 flex-col gap-1.5">
+      <div className="flex flex-col gap-0.5">
+        <div className="flex justify-between gap-4 pb-1">
+          <span className="text-zinc-400">% of {cell.service}</span>
+          <span className="font-semibold tabular-nums text-zinc-200">
+            {formatPercentage(pctOfService)}
+          </span>
+        </div>
+        <div className="flex justify-between gap-4 opacity-70">
+          <span className="text-zinc-400">% of {statusLabel}</span>
+          <span className="tabular-nums text-zinc-400">
+            {formatPercentage(pctOfStatus)}
+          </span>
+        </div>
+        {!isEstimate && (
+          <div className="flex justify-between gap-4 opacity-70">
+            <span className="text-zinc-400">Count</span>
+            <span className="tabular-nums text-zinc-400">
+              {formatNumber(cell.count)}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -573,7 +579,7 @@ export function InvocationsSummary({
                       return (
                         <div key={svc.name} className={serviceColStyles()}>
                           <HoverTooltip
-                            content={<CellTooltipContent cell={cell} />}
+                            content={<CellTooltipContent cell={cell} isEstimate={data.isEstimate} />}
                           >
                             {cellContent}
                           </HoverTooltip>
