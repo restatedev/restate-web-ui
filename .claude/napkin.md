@@ -38,6 +38,7 @@
 - Never use string interpolation for dynamic Tailwind classes
 - Never add comments unless explicitly requested
 - Nothing should wrap in entry rows — if not enough space, elements should shrink
+- Don't use `useMemo` for trivial computations (e.g., `Math.max(a, b, c)`). Only memoize when there's a real perf benefit (large data transformations, expensive object allocations that trigger downstream rerenders). A simple derivation from props is fine as a plain `const`.
 
 ## Patterns That Work
 
