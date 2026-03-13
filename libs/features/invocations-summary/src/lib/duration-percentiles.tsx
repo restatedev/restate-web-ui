@@ -16,9 +16,17 @@ function formatMs(ms: number): string {
   const rem3 = rem2 % 60_000;
   const seconds = Math.floor(rem3 / 1_000);
   const milliseconds = Math.round(rem3 % 1_000);
-  return formatDurations(
-    normaliseDuration({ days, hours, minutes, seconds, milliseconds }),
-  );
+  const units: [string, number][] = [
+    ['days', days],
+    ['hours', hours],
+    ['minutes', minutes],
+    ['seconds', seconds],
+    ['milliseconds', milliseconds],
+  ];
+  const firstNonZero = units.findIndex(([, v]) => v > 0);
+  const top = units.slice(firstNonZero, firstNonZero + 3);
+  const trimmed = Object.fromEntries(top);
+  return formatDurations(normaliseDuration(trimmed));
 }
 
 export interface DurationPercentilesProps {
@@ -88,7 +96,7 @@ export function DurationPercentiles({ data, isFetching }: DurationPercentilesPro
               >
                 <span className="text-xs text-zinc-400">{row.label}</span>
                 {ms !== undefined ? (
-                  <span className="text-lg font-semibold tracking-tight text-zinc-200 tabular-nums">
+                  <span className="text-base font-medium tracking-tight text-zinc-200 tabular-nums">
                     {formatMs(ms)}
                   </span>
                 ) : (
