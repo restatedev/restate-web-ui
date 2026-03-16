@@ -41,6 +41,8 @@ jobs:
       - run: NX_BASE=origin/main NX_HEAD=HEAD ./scripts/typecheck.js
       - run: NX_BASE=origin/main NX_HEAD=HEAD pnpm nx format:check
       - run: pnpm audit --prod --audit-level high
+      - name: Check dependency licenses
+        run: pnpm run check-licenses
   e2e:
     runs-on: warp-ubuntu-latest-x64-4x
     permissions:

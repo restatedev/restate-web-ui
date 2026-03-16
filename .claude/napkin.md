@@ -32,12 +32,15 @@
 | 2026-02-26 | user   | Created 3 parallel SQL queries when the data could come from 1 GROUP BY                                                                                           | Combine dimensions into a single GROUP BY and aggregate both axes in JS — avoids multiple round-trips                                                 |
 | 2026-02-26 | user   | Split completed invocations into failed/cancelled/killed using completion_failure                                                                                 | For summary/aggregate views, group all non-success completions as "failed" — simpler and avoids needing completion_failure in the query               |
 
+| 2026-03-16 | user | Silently changed approach from `pnpm licenses list` to `pnpm ls` + manual package.json reading without explaining the tradeoff or asking for approval | When a planned approach hits a wall and you need to change direction, explicitly explain what failed and why, present the alternative, and ask for approval before proceeding |
+
 ## User Preferences
 
 - Uses Tailwind CSS with `tv()` from `@restate/util/styles` for component variants
 - Never use string interpolation for dynamic Tailwind classes
 - Never add comments unless explicitly requested
 - Nothing should wrap in entry rows — if not enough space, elements should shrink
+- When changing technical direction mid-task, be explicit about what failed, why, and get approval for the new approach before writing code
 
 ## Patterns That Work
 
