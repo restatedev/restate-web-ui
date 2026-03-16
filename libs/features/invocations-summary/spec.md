@@ -98,7 +98,7 @@ interface InvocationsSummaryProps {
 
 ### Cell Color Intensity Algorithm
 
-Cell opacity answers: **"How much of this service is in this status?"**
+Cell opacity answers: **"How much of this service is in this status?"** with a subtle volume boost so dominant services pop out first.
 
 #### Step 1 — Row ceiling
 
@@ -114,7 +114,7 @@ Some statuses have **expected limits** — the rate above which that status is c
 | Status      | Expected limit |
 | ----------- | -------------- |
 | ready       | 1%             |
-| pending     | 20%            |
+| pending     | 5%             |
 | paused      | 1%             |
 | backing-off | 5%             |
 | failed      | 2.5%           |
@@ -137,26 +137,35 @@ serviceRate = cellCount / serviceTotal
 
 #### Step 3 — Health signal
 
-For statuses with an expected limit, compare the service-local rate to the same limit:
+For statuses with an expected limit, use a soft exponential curve so rates beyond the limit keep increasing (no hard cap):
 ```
-healthSignal = clamp(serviceRate / expectedLimit, 0, 1)
+healthSignal = 1 − exp(−serviceRate / expectedLimit)
 ```
-A service at or above the expected limit is fully saturated (healthSignal = 1).
+At the expected limit, healthSignal ≈ 0.63. At 3× the limit, ≈ 0.95. The signal approaches 1.0 asymptotically — higher rates always produce brighter cells.
 
-For normal statuses (no expected limit), use a soft curve on the raw rate:
+For normal statuses (no expected limit), use a power curve on the raw rate:
 ```
 healthSignal = serviceRate ^ 0.6
 ```
 
-#### Step 4 — Final opacity
+#### Step 4 — Volume boost
+
+A subtle multiplier based on this cell's share of the status row, so dominant services pop out:
+```
+rowShare = cellCount / rowTotal
+volumeBoost = 1 + rowShare ^ 0.4 × 0.5
+```
+Ranges from 1.0 (tiny service) to 1.5 (service owns 100% of the row). The `^0.4` exponent compresses the curve so small services stay nearly unchanged.
+
+#### Step 5 — Final opacity
 
 ```
 baseLevel = per-status floor (0.10–0.21)
 cellStrength = baseLevel + (1 − baseLevel) × healthSignal
-opacity = min(rowCeiling × cellStrength, 0.80)
+opacity = min(rowCeiling × cellStrength × volumeBoost × 0.64, 0.512)
 ```
 
-The `baseLevel` keeps cells visible even at low rates. The `rowCeiling` ensures minor statuses don't overpower the display.
+The `baseLevel` keeps cells visible even at low rates. The `rowCeiling` ensures minor statuses don't overpower the display. The `× 0.64` global dampening and `0.512` cap keep the overall palette subtle.
 
 ### Service Column Order
 

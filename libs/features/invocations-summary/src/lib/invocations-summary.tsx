@@ -101,9 +101,9 @@ const barTrackStyles = tv({
   base: 'h-4 rounded-sm border transition-all duration-500',
   variants: {
     status: {
-      ready: 'border-dashed border-zinc-400 bg-zinc-500/40',
+      ready: 'border-dashed border-zinc-400 bg-zinc-500/20',
       scheduled: 'border-dashed border-zinc-400 bg-zinc-500/40',
-      pending: 'border-dashed border-amber-300/70 bg-amber-400/20',
+      pending: 'border-dashed border-amber-400/70 bg-amber-400/10',
       running: 'border-dashed border-blue-400/70 bg-blue-500/30',
       'backing-off': 'border-dashed border-amber-400/70 bg-amber-500/30',
       paused: 'border-amber-400/70 bg-amber-500/30',
@@ -351,10 +351,9 @@ export function InvocationsSummary({
                     />
                   ) : (
                     <span className="text-sm font-semibold text-zinc-200">
-                      {data.isEstimate && (
-                        <span className="font-normal text-zinc-400">{'> '}</span>
-                      )}
-                      {formatNumber(grandTotal, true)}
+                      {data.isEstimate
+                        ? '100%'
+                        : formatNumber(grandTotal, true)}
                     </span>
                   )}
                 </div>
@@ -560,7 +559,7 @@ export function InvocationsSummary({
                               style={{ opacity: isLoading ? 0 : 1, transition: 'opacity 500ms' }}
                             >
                               {data.isEstimate
-                                ? formatPercentage((cell?.count ?? 0) / grandTotal)
+                                ? formatPercentage((cell?.count ?? 0) / (cell?.serviceTotal || 1))
                                 : formatNumber(cell?.count ?? 0, true)}
                             </span>
                           ) : (

@@ -11,7 +11,7 @@ import type {
 // so cells become visually prominent even with uniform distribution.
 const ATTENTION_REF: Record<string, number> = {
   ready: 0.01,
-  pending: 0.2,
+  pending: 0.05,
   paused: 0.01,
   'backing-off': 0.05,
   failed: 0.025,
@@ -152,20 +152,22 @@ function buildCellMap(
 
 function computeCellOpacity(
   cell: CellData,
-  rowMax: number,
-  rowTotal: number,
   rowCeiling: number,
-  baseline: number,
+  rowTotal: number,
 ): number | undefined {
   if (cell.count === 0) return undefined;
-  const ownership = rowMax === 0 ? 0 : Math.pow(cell.count / rowMax, 0.7);
-  const rowShare = rowTotal > 0 ? cell.count / rowTotal : 0;
-  const deviation = Math.max(rowShare - baseline, 0);
-  const deviationSignal = Math.min(Math.max((deviation - 0.02) / 0.08, 0), 1);
+  const serviceRate =
+    cell.serviceTotal > 0 ? cell.count / cell.serviceTotal : 0;
+  const ref = ATTENTION_REF[cell.columnKey];
+  const healthSignal =
+    ref !== undefined
+      ? 1 - Math.exp(-serviceRate / ref)
+      : Math.pow(serviceRate, 0.6);
   const baseLevel = BASE_LEVEL[cell.columnKey] ?? 0.05;
-  const cellStrength =
-    ownership * (baseLevel + (1 - baseLevel) * deviationSignal);
-  return Math.min(rowCeiling * cellStrength, 0.8);
+  const cellStrength = baseLevel + (1 - baseLevel) * healthSignal;
+  const rowShare = rowTotal > 0 ? cell.count / rowTotal : 0;
+  const volumeBoost = 1 + Math.pow(rowShare, 0.4) * 0.5;
+  return Math.min(rowCeiling * cellStrength * volumeBoost * 0.64, 0.512);
 }
 
 export function buildHeatmapData(
@@ -178,22 +180,9 @@ export function buildHeatmapData(
   const cellMap = buildCellMap(data, statusRows, serviceColumns);
   const maxStatusCount = Math.max(...statusRows.map((r) => r.count), 1);
 
-  const globalServiceTotal =
-    serviceColumns.reduce((sum, s) => sum + s.count, 0) || 1;
   const maxRowTotal = Math.max(...statusRows.map((r) => r.count), 1);
   const globalStatusTotal =
     statusRows.reduce((sum, r) => sum + r.count, 0) || 1;
-
-  const baselines = new Map<string, number>();
-  for (const svc of serviceColumns) {
-    baselines.set(svc.name, svc.count / globalServiceTotal);
-  }
-
-  const rowMaxes = new Map<string, number>();
-  for (const [key, cell] of cellMap) {
-    const statusKey = key.split('::')[1] ?? '';
-    rowMaxes.set(statusKey, Math.max(rowMaxes.get(statusKey) ?? 0, cell.count));
-  }
 
   const rowCeilings = new Map<string, number>();
   for (const row of statusRows) {
@@ -210,6 +199,11 @@ export function buildHeatmapData(
     }
   }
 
+  const rowTotals = new Map<string, number>();
+  for (const row of statusRows) {
+    rowTotals.set(row.key, row.count);
+  }
+
   const cellOpacities = new Map<string, number | undefined>();
   for (const [key, cell] of cellMap) {
     const statusKey = key.split('::')[1] ?? '';
@@ -217,10 +211,8 @@ export function buildHeatmapData(
       key,
       computeCellOpacity(
         cell,
-        rowMaxes.get(statusKey) ?? 0,
-        statusRows.find((r) => r.key === statusKey)?.count ?? 0,
         rowCeilings.get(statusKey) ?? 0.08,
-        baselines.get(cell.service) ?? 0,
+        rowTotals.get(statusKey) ?? 0,
       ),
     );
   }
