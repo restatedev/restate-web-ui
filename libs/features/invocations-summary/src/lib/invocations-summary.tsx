@@ -8,7 +8,6 @@ import { STATUS_COLUMNS, MAX_VISIBLE_SERVICES } from './constants';
 import { buildHeatmapData } from './heatmap-data';
 import type { InvocationsSummaryProps, CellData } from './types';
 
-
 const PLACEHOLDER_BAR_PCTS = [75, 40, 55, 90, 20, 35, 60, 45, 30];
 function useRandomOpacities(isLoading: boolean) {
   const map = useRef(new Map<string, number>());
@@ -201,10 +200,15 @@ const serviceHeaderStyles = tv({
       true: 'bg-white/5',
       false: '',
     },
+    isIncluded: {
+      true: '',
+      false: 'opacity-40',
+    },
   },
   defaultVariants: {
     isOthers: false,
     shaded: false,
+    isIncluded: true,
   },
 });
 
@@ -297,10 +301,10 @@ export function InvocationsSummary({
   const isLoading = Boolean(isFetching || isPlaceholderData);
   const getPlaceholderOpacity = useRandomOpacities(isLoading);
   const [visibleCount, setVisibleCount] = useState(MAX_VISIBLE_SERVICES);
-  const heatmap = useMemo(
-    () => (data ? buildHeatmapData(data, visibleCount) : null),
-    [data, visibleCount],
-  );
+  const heatmap = useMemo(() => {
+    if (!data) return null;
+    return buildHeatmapData(data, visibleCount);
+  }, [data, visibleCount]);
   const {
     statusRows = [],
     ranked = [],
@@ -308,6 +312,7 @@ export function InvocationsSummary({
     cellMap = new Map<string, CellData>(),
     maxStatusCount = 1,
     cellOpacities = new Map<string, number | undefined>(),
+    grandTotal = 1,
   } = heatmap ?? {};
 
   if (isPending && !isPlaceholderData) return <LoadingSkeleton />;
@@ -318,7 +323,7 @@ export function InvocationsSummary({
       </div>
     );
   }
-  if (!data || (!isLoading && data.totalCount === 0))
+  if (!data || (!isLoading && data.byService.length === 0))
     return <EmptyState />;
 
   return (
@@ -406,7 +411,7 @@ export function InvocationsSummary({
                         ) : (
                           <span className="text-right text-2xs text-zinc-300 tabular-nums">
                             {data.isEstimate
-                              ? formatPercentage(row.count / data.totalCount)
+                              ? formatPercentage(row.count / grandTotal)
                               : formatNumber(row.count, true)}
                           </span>
                         )}
@@ -425,6 +430,7 @@ export function InvocationsSummary({
                     key={svc.name}
                     className={serviceHeaderStyles({
                       isOthers: svc.isOthers,
+                      isIncluded: svc.isIncluded,
                       shaded: false,
                       className: serviceColStyles(),
                     })}
@@ -471,7 +477,7 @@ export function InvocationsSummary({
                           style={{ opacity: isLoading ? 0 : 1 }}
                         >
                           {data.isEstimate
-                            ? formatPercentage(svc.count / data.totalCount)
+                            ? formatPercentage(svc.count / grandTotal)
                             : formatNumber(svc.count, true)}
                         </span>
                       </>
@@ -483,7 +489,7 @@ export function InvocationsSummary({
                           style={{ opacity: isLoading ? 0 : 1 }}
                         >
                           {data.isEstimate
-                            ? formatPercentage(svc.count / data.totalCount)
+                            ? formatPercentage(svc.count / grandTotal)
                             : formatNumber(svc.count, true)}
                         </span>
                       </>
@@ -510,7 +516,7 @@ export function InvocationsSummary({
                         <div
                           className={heatCellStyles({
                             shaded: false,
-                            isIncluded: isLoading || row.isIncluded,
+                            isIncluded: isLoading || (row.isIncluded && svc.isIncluded),
                             isNonInteractive: isLoading || isNonInteractive,
                           })}
                           role={isLoading || isNonInteractive ? undefined : 'button'}
@@ -554,7 +560,7 @@ export function InvocationsSummary({
                               style={{ opacity: isLoading ? 0 : 1, transition: 'opacity 500ms' }}
                             >
                               {data.isEstimate
-                                ? formatPercentage((cell?.count ?? 0) / data.totalCount)
+                                ? formatPercentage((cell?.count ?? 0) / grandTotal)
                                 : formatNumber(cell?.count ?? 0, true)}
                             </span>
                           ) : (

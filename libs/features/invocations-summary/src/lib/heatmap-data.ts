@@ -38,6 +38,7 @@ export interface HeatmapData {
   cellMap: Map<string, CellData>;
   maxStatusCount: number;
   cellOpacities: Map<string, number | undefined>;
+  grandTotal: number;
 }
 
 function buildStatusRows(data: InvocationsSummaryData): StatusColumn[] {
@@ -51,8 +52,10 @@ function buildStatusRows(data: InvocationsSummaryData): StatusColumn[] {
         if (entry.isIncluded) allExcluded = false;
       }
     }
-    if (col.statuses.every((s) => !data.byStatus.find((b) => b.name === s))) {
-      allExcluded = false;
+    const hasAnyEntry = col.statuses.some((s) => data.byStatus.find((b) => b.name === s));
+    if (!hasAnyEntry) {
+      const hasStatusFilter = data.byStatus.some((b) => !b.isIncluded);
+      allExcluded = hasStatusFilter;
     }
     return {
       key: col.key,
@@ -65,20 +68,12 @@ function buildStatusRows(data: InvocationsSummaryData): StatusColumn[] {
 }
 
 function buildRankedServices(data: InvocationsSummaryData): ServiceRow[] {
-  const included = data.byService.filter((s) => s.isIncluded);
-  const notIncluded = data.byService.filter((s) => !s.isIncluded);
-  const pinnedNames = new Set(included.map((s) => s.name));
-  const pinned: ServiceRow[] = included
-    .sort((a, b) => b.count - a.count)
+  return [...data.byService]
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
     .map((s) => ({ name: s.name, count: s.count, isIncluded: s.isIncluded }));
-  const remaining = notIncluded
-    .filter((s) => !pinnedNames.has(s.name))
-    .sort((a, b) => b.count - a.count)
-    .map((s) => ({ name: s.name, count: s.count, isIncluded: s.isIncluded }));
-  return [...pinned, ...remaining];
 }
 
-function buildServiceColumns(
+export function buildServiceColumns(
   data: InvocationsSummaryData,
   ranked: ServiceRow[],
   count: number,
@@ -237,5 +232,6 @@ export function buildHeatmapData(
     cellMap,
     maxStatusCount,
     cellOpacities,
+    grandTotal: globalStatusTotal,
   };
 }

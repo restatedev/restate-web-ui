@@ -32,6 +32,7 @@ function formatMs(ms: number): string {
 export interface DurationPercentilesProps {
   data?: DurationPercentilesData;
   isFetching?: boolean;
+  isPending?: boolean;
 }
 
 const containerStyles = tv({
@@ -68,8 +69,9 @@ const ROWS = [
 
 const PLACEHOLDER_PCTS = [30, 60, 90];
 
-export function DurationPercentiles({ data, isFetching }: DurationPercentilesProps) {
-  const isLoading = !data || Boolean(isFetching);
+export function DurationPercentiles({ data, isFetching, isPending }: DurationPercentilesProps) {
+  const isLoading = Boolean(isPending) || Boolean(isFetching);
+  const hasData = Boolean(data);
   const max = data ? Math.max(data.p50, data.p90, data.p99, 1) : 1;
 
   return (
@@ -99,13 +101,17 @@ export function DurationPercentiles({ data, isFetching }: DurationPercentilesPro
                   <span className="text-base font-medium tracking-tight text-zinc-200 tabular-nums">
                     {formatMs(ms)}
                   </span>
-                ) : (
+                ) : isLoading ? (
                   <span className="my-0.5 h-5 w-24 rounded bg-white/10" />
+                ) : (
+                  <span className="text-base font-medium tracking-tight text-zinc-500">
+                    –
+                  </span>
                 )}
                 <div className="mt-0.5 h-1 w-full">
                   <div
                     className={barStyles({ loading: isLoading })}
-                    style={{ width: `${Math.max(pct, 2)}%` }}
+                    style={{ width: isLoading ? `${PLACEHOLDER_PCTS[i] ?? 50}%` : hasData ? `${Math.max(pct, 2)}%` : '0%' }}
                   />
                 </div>
               </div>

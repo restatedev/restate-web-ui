@@ -26,6 +26,7 @@ export interface InvocationsSummaryProps {
   error?: Error | null;
   onClick?: (params: { status?: string; service?: string }) => void;
   toolbar?: ReactNode;
+
 }
 
 export interface StatusColumn {

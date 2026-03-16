@@ -524,6 +524,20 @@ export function useCountInvocations(
   return { ...results, queryKey: queryOptions.queryKey };
 }
 
+const ALL_SUMMARY_STATUSES = [
+  'ready',
+  'scheduled',
+  'pending',
+  'running',
+  'backing-off',
+  'suspended',
+  'paused',
+  'succeeded',
+  'failed',
+  'cancelled',
+  'killed',
+];
+
 export function useSummaryInvocations(
   filters: FilterItem[],
   {
@@ -538,6 +552,10 @@ export function useSummaryInvocations(
   } = {},
 ) {
   const baseUrl = useAdminBaseUrl();
+  const queryClient = useQueryClient();
+  const { data: deploymentsData } = useListDeployments();
+  const deploymentServiceNames = deploymentsData?.sortedServiceNames;
+
   const queryOptions = adminApi('query', '/query/invocations/summary', 'post', {
     baseUrl,
     body: {
@@ -552,6 +570,77 @@ export function useSummaryInvocations(
     staleTime: 0,
     ...queryOptions,
     ...options,
+    placeholderData: (previousData) => {
+      const serviceMaxCount = new Map<string, number>();
+
+      if (previousData) {
+        for (const s of previousData.byService) {
+          serviceMaxCount.set(
+            s.name,
+            Math.max(serviceMaxCount.get(s.name) ?? 0, s.count),
+          );
+        }
+      }
+
+      const cache = queryClient.getQueryCache();
+      for (const q of cache.findAll({
+        queryKey: ['/query/invocations/summary'],
+      })) {
+        if (
+          !q.state.data ||
+          (q.queryKey[1] as { baseUrl?: string })?.baseUrl !== baseUrl
+        )
+          continue;
+        const d = q.state.data as {
+          byService: { name: string; count: number }[];
+        };
+        for (const s of d.byService) {
+          serviceMaxCount.set(
+            s.name,
+            Math.max(serviceMaxCount.get(s.name) ?? 0, s.count),
+          );
+        }
+      }
+
+      const depNames = deploymentServiceNames ?? [];
+      for (const name of depNames) {
+        if (!serviceMaxCount.has(name)) {
+          serviceMaxCount.set(name, 0);
+        }
+      }
+
+      if (serviceMaxCount.size === 0) return undefined;
+
+      const serviceNames = [...serviceMaxCount.entries()]
+        .sort(
+          ([aName, aCount], [bName, bCount]) =>
+            bCount - aCount || aName.localeCompare(bName),
+        )
+        .map(([name]) => name);
+
+      return {
+        totalCount: 1,
+        isEstimate: true,
+        byStatus: ALL_SUMMARY_STATUSES.map((s) => ({
+          name: s,
+          count: 0,
+          isIncluded: false,
+        })),
+        byService: serviceNames.map((name, i) => ({
+          name,
+          count: serviceNames.length - i,
+          isIncluded: false,
+        })),
+        byServiceAndStatus: serviceNames.flatMap((service) =>
+          ALL_SUMMARY_STATUSES.map((status) => ({
+            service,
+            status,
+            count: 0,
+            isIncluded: false,
+          })),
+        ),
+      };
+    },
   });
 
   return { ...results, queryKey: queryOptions.queryKey };
