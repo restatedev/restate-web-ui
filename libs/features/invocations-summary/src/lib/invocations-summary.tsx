@@ -354,7 +354,7 @@ export function InvocationsSummary({
                       {data.isEstimate && (
                         <span className="font-normal text-zinc-400">{'> '}</span>
                       )}
-                      {formatNumber(data.totalCount, true)}
+                      {formatNumber(grandTotal, true)}
                     </span>
                   )}
                 </div>
