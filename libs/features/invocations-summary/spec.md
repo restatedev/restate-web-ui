@@ -1,28 +1,36 @@
-# Invocations Summary — Component Spec (v2)
+# Invocations Summary — Component Spec (v3)
 
 ## Overview
 
 A dashboard widget with two integrated visualizations side-by-side:
 
 1. **Bar chart** (first column, sticky): horizontal bars showing total invocation count per status across all services
-2. **Heat map** (remaining columns, horizontally scrollable): a matrix where columns are services and rows are statuses, with cell color intensity encoding each service's contribution to that status
+2. **Heat map** (remaining columns, horizontally scrollable): a matrix where columns are services and rows are statuses, with cell color intensity encoding each service's health in that status
 
 ```
 ┌───────────┬──────────────────────╥──────────┬──────────┬──────────┬─────┐
-│           │ All services  71.4K  ║ cart-svc  │ chk-svc  │ inv-svc  │ ... │→
+│  Sampled   │ Total        100%   ║ cart-svc  │ chk-svc  │ inv-svc  │ ... │→
+│  (50k)     │                     ║  37.5%    │  25%     │  12.5%   │     │
 │───────────┼──────────────────────╫──────────┼──────────┼──────────┼─────│
-│ Ready     │ [████       ]  1.2K  ║   ▓▓     │   ░░     │   ░      │     │
-│ Scheduled │ [██         ]   530  ║   ▓      │   ░      │   ░      │     │
-│ Pending   │ [███        ]   850  ║   ▓▓▓    │   ░░     │   ░      │     │
-│ Running   │ [████████   ]  3.4K  ║   ████    │   ▓▓▓    │   ░░     │     │
-│ Backing-  │ [█          ]   120  ║   ▓      │   ░░     │   ░      │     │
-│ Paused    │ [██         ]   450  ║   ▓▓     │   ░      │   ░      │     │
-│ Suspended │ [█████      ]  2.1K  ║   ▓▓▓    │   ░░     │   ░      │     │
-│ Succeeded │ [██████████ ]  8.5K  ║   ████    │   ████    │   ▓▓▓    │     │
-│ Failed    │ [█          ]   200  ║   ▓      │   ▓▓     │   ░      │     │
+│ Ready     │ [████       ]  2.8%  ║  3.33%   │  2.5%    │  2%      │     │
+│ Scheduled │ [██         ]  1.2%  ║  2%      │  1.5%    │  1%      │     │
+│ Pending   │ [███        ]  2%    ║  3.33%   │  2.5%    │  2.5%    │     │
+│ Running   │ [████████   ]  8%    ║  10%     │  10%     │  10%     │     │
+│ Backing-  │ [█          ]  0.4%  ║  0.13%   │  0.1%    │  0.1%    │     │
+│ Paused    │ [██         ]  1%    ║  0.13%   │  0.1%    │  0.1%    │     │
+│ Suspended │ [█████      ]  5%    ║  0.13%   │  0.1%    │  0.1%    │     │
+│ Succeeded │ [██████████ ] 78.2%  ║  80%     │  82%     │  82%     │     │
+│ Failed    │ [█          ]  1.4%  ║  1%      │  1%      │  0.75%   │     │
 └───────────┴──────────────────────╨──────────┴──────────┴──────────┴─────┘
   ↑ sticky (status labels + bar chart)       ↑ horizontally scrollable
 ```
+
+## Display Modes
+
+The component has two display modes driven by `data.isEstimate`:
+
+- **Sampled** (`isEstimate: true`): Total shows "100%", status bars show percentages of grand total, service headers show percentages of grand total, cell values show **% of service** (e.g., "80%" means 80% of that service's invocations are in this status)
+- **Full scan** (`isEstimate: false`): Total shows the actual count (e.g., "42.52K"), status bars show absolute counts, service headers show absolute counts, cell values show absolute counts
 
 ## Data Input
 
@@ -30,8 +38,8 @@ The component receives pre-fetched data — it does **not** call `useSummaryInvo
 
 ```tsx
 interface InvocationsSummaryData {
-  totalCount: number;
-  isEstimate: boolean;
+  totalCount: number;       // count of included/filtered invocations (from API)
+  isEstimate: boolean;      // true when sampled, false for full scan
   byStatus: { name: string; count: number; isIncluded: boolean }[];
   byService: { name: string; count: number; isIncluded: boolean }[];
   byServiceAndStatus: {
@@ -40,8 +48,11 @@ interface InvocationsSummaryData {
     count: number;
     isIncluded: boolean;
   }[];
+  duration?: { p50: number; p90: number; p99: number };
 }
 ```
+
+Note: `totalCount` reflects the filtered/included count. The **displayed Total** is computed from the sum of all `byStatus` counts (`grandTotal`), which stays constant regardless of active service/status filters. Only `isIncluded` flags change when filters are toggled.
 
 ### Props
 
@@ -49,8 +60,11 @@ interface InvocationsSummaryData {
 interface InvocationsSummaryProps {
   data?: InvocationsSummaryData;
   isPending?: boolean;
+  isFetching?: boolean;
+  isPlaceholderData?: boolean;
   error?: Error | null;
   onClick?: (params: { status?: string; service?: string }) => void;
+  toolbar?: ReactNode;
 }
 ```
 
@@ -58,98 +72,117 @@ interface InvocationsSummaryProps {
   - Click a **status row label** → `onClick({ status: 'running' })`
   - Click a **service column header** → `onClick({ service: 'cart-service' })`
   - Click a **heat map cell** → `onClick({ status: 'running', service: 'cart-service' })`
-  - Click a **bar chart bar** → `onClick({ status: 'running' })`
+- `toolbar` — rendered in the sticky column header area (e.g., the Sampled/Full scan dropdown)
 
 ## Axes
 
 - **Vertical axis (rows)**: 9 status groups in fixed semantic order
 - **Horizontal axis (columns)**:
-  - Column 1: "All services" — aggregate bar chart (sticky)
+  - Column 1: "Total" — aggregate bar chart (sticky)
   - Columns 2+: individual services — heat map cells (scrollable)
 
 ## Bar Chart (Column 1 — Sticky)
 
-- **Header**: "All services" + total count in compact form (e.g., "71.4K"), prefixed with `~` when estimate
-- Each row shows a **horizontal bar** + **count label**
+- **Header**: "Total" + displayed total ("100%" when sampled, formatted count when full scan)
+- Each row shows a **horizontal bar** + **count/percentage label**
 - **Bar width**: proportional to that status's count relative to the max status count (so the largest status fills the full bar width)
-- **Bar color**: status-specific (same color system as current bars)
-- **Count label**: compact formatted number (e.g., "3.4K"), shown after the bar
-- The entire column (status labels + bar chart) is `position: sticky; left: 0` — stays visible during horizontal scroll
+- **Bar color**: status-specific (dark theme colors)
+- **Count label**: percentage of grand total when sampled, compact formatted number (e.g., "3.4K") when full scan
+- The entire column (status labels + bar chart) is positioned absolutely with backdrop blur — stays visible during horizontal scroll
 
 ## Heat Map (Columns 2+)
 
-- **Header**: service name, horizontal text, `truncate` if too long
+- **Header**: service name (truncated if long) + count/percentage below
 - Each cell is a **filled rectangle** with status-specific color at varying opacity
-- **Normalized global heatmap**: applies a status-specific multiplier to raw counts, then compares against a single global maximum
-  - **Multipliers**: standard traffic (×1) for ready, scheduled, running, succeeded; error-weight (×100) for pending, backing-off, paused, failed, suspended
-  - **NormalizedValue** = `rawCount × statusMultiplier`
-  - **GlobalMax** = max of all normalized values across the entire table
-  - **Ratio** = `normalizedValue / globalMax`
-  - **Opacity buckets**: 0% (zero count), 10% (ratio ≤ 0.2), 25% (≤ 0.4), 40% (≤ 0.6), 55% (≤ 0.8), 70% (> 0.8)
-- When errors spike, GlobalMax increases from the error cells, automatically fading healthy states into low buckets
-- Columns scroll horizontally when they overflow the container
+- **Cell value**: % of service when sampled, absolute count when full scan
+
+### Cell Color Intensity Algorithm
+
+Cell opacity answers: **"How much of this service is in this status?"**
+
+#### Step 1 — Row ceiling
+
+Each status row gets a max brightness cap based on its significance:
+
+```
+rowVolume = sqrt(rowTotal / maxRowTotal)
+volumeCeiling = 0.08 + rowVolume × 0.47
+```
+
+Some statuses have **expected limits** — the rate above which that status is considered concerning. These are the "normal operating range" ceilings:
+
+| Status      | Expected limit |
+| ----------- | -------------- |
+| ready       | 1%             |
+| pending     | 20%            |
+| paused      | 1%             |
+| backing-off | 5%             |
+| failed      | 2.5%           |
+
+For these statuses, an attention boost kicks in as the system-wide rate approaches the expected limit:
+
+```
+attention = clamp(rowRate / expectedLimit, 0, 1)
+badFloor = 0.18 + attention × 0.52
+rowCeiling = max(volumeCeiling, badFloor)
+```
+
+For normal statuses (succeeded, running, scheduled, suspended) — no expected limit: `rowCeiling = volumeCeiling`
+
+#### Step 2 — Service-local rate
+
+```
+serviceRate = cellCount / serviceTotal
+```
+
+#### Step 3 — Health signal
+
+For statuses with an expected limit, compare the service-local rate to the same limit:
+```
+healthSignal = clamp(serviceRate / expectedLimit, 0, 1)
+```
+A service at or above the expected limit is fully saturated (healthSignal = 1).
+
+For normal statuses (no expected limit), use a soft curve on the raw rate:
+```
+healthSignal = serviceRate ^ 0.6
+```
+
+#### Step 4 — Final opacity
+
+```
+baseLevel = per-status floor (0.10–0.21)
+cellStrength = baseLevel + (1 − baseLevel) × healthSignal
+opacity = min(rowCeiling × cellStrength, 0.80)
+```
+
+The `baseLevel` keeps cells visible even at low rates. The `rowCeiling` ensures minor statuses don't overpower the display.
 
 ### Service Column Order
 
-- Top N services by total count (default N = 20)
-- If any services have `isIncluded === true` (explicitly filtered), they are **pinned first**
+- Top N services by total count (default N = 10)
+- Sorted by count descending, then name ascending
 - Optional **"Others"** aggregation column at the end when services exceed the visible count
 
 ### Show More
 
-- When more than 20 services exist, a "Show more" control appears
-- Clicking increases visible service count by 20
-- The container stays the **same size** — additional columns are accessible via horizontal scroll
+- When more than 10 services exist, an "Others" column header contains a dropdown
+- The dropdown offers multiples of 10 (10, 20, 30, ...) up to 100 or the total service count
+- The container width grows with additional columns; overflow is handled by horizontal scroll
 
 ## Status Rows (fixed semantic order)
 
-| Row         | Includes statuses                     | Label       |
-| ----------- | ------------------------------------- | ----------- |
-| Ready       | `ready`                               | Ready       |
-| Scheduled   | `scheduled`                           | Scheduled   |
-| Pending     | `pending`                             | Pending     |
-| Running     | `running`                             | Running     |
-| Backing-off | `backing-off`                         | Backing-off |
-| Paused      | `paused`                              | Paused      |
-| Suspended   | `suspended`                           | Suspended   |
-| Succeeded   | `succeeded`                           | Succeeded   |
-| **Failed**  | **`failed` + `cancelled` + `killed`** | **Failed**  |
-
-## Color System
-
-### Bar Chart Bars
-
-Status-specific colors matching `Status.tsx` badge variants:
-
-| Status      | Bar classes                                     |
-| ----------- | ----------------------------------------------- |
-| Ready       | `border-dashed border-zinc-400 bg-zinc-50`      |
-| Scheduled   | `border-dashed border-zinc-500/60 bg-zinc-50`   |
-| Pending     | `border-dashed border-orange-400 bg-orange-50`  |
-| Running     | `border-dashed border-blue-500/50 bg-blue-100`  |
-| Backing-off | `border-dashed border-orange-400 bg-orange-100` |
-| Paused      | `border-dashed border-orange-400 bg-orange-100` |
-| Suspended   | `border-dashed border-zinc-500/60 bg-zinc-200`  |
-| Succeeded   | `border-green-600/30 bg-green-100`              |
-| Failed      | `border-red-600/20 bg-red-200`                  |
-
-### Heat Map Cells
-
-Each cell uses a status-specific background color with **varying opacity** based on volume-weighted, tier-capped intensity:
-
-| Status      | Heat map color  |
-| ----------- | --------------- |
-| Ready       | `bg-zinc-200`   |
-| Scheduled   | `bg-zinc-300`   |
-| Pending     | `bg-orange-200` |
-| Running     | `bg-blue-300`   |
-| Backing-off | `bg-orange-300` |
-| Paused      | `bg-orange-300` |
-| Suspended   | `bg-zinc-400`   |
-| Succeeded   | `bg-green-400`  |
-| Failed      | `bg-red-400`    |
-
-Opacity is set via inline style using the normalized global heatmap algorithm. See the Heat Map section above for the full formula.
+| Row         | Includes statuses                     | Label                    |
+| ----------- | ------------------------------------- | ------------------------ |
+| Ready       | `ready`                               | Ready                    |
+| Scheduled   | `scheduled`                           | Scheduled                |
+| Pending     | `pending`                             | Pending                  |
+| Running     | `running`                             | Running                  |
+| Backing-off | `backing-off`                         | Backing-off              |
+| Suspended   | `suspended`                           | Suspended                |
+| Paused      | `paused`                              | Paused                   |
+| Succeeded   | `succeeded`                           | Succeeded                |
+| **Failed**  | **`failed` + `cancelled` + `killed`** | **Failed / Cancelled / Killed** |
 
 ## Filtering Behavior
 
@@ -158,21 +191,17 @@ Opacity is set via inline style using the normalized global heatmap algorithm. S
 - All 9 rows are **always shown** regardless of active status filters
 - Rows where **all** constituent statuses have `isIncluded === false` render **dimmed** (`opacity-40`)
 - Dimmed rows are still interactive
+- **Numbers do not change** when filters are toggled — only `isIncluded` (dimming) changes
 
 ### Service Columns
 
-- Top 20 by total count, plus optional "Others"
-- Pinned services (`isIncluded === true`) appear first
+- Top N by total count, plus optional "Others"
+- Services where `isIncluded === false` render **dimmed** (`opacity-40`)
+- **Numbers do not change** when filters are toggled
 
 ## Interaction
 
-### Click — Status Row Label
-
-```tsx
-onClick({ status: 'running' });
-```
-
-### Click — Bar Chart Bar
+### Click — Status Row
 
 ```tsx
 onClick({ status: 'running' });
@@ -192,25 +221,37 @@ onClick({ status: 'running', service: 'cart-service' });
 
 ### Hover — Heat Map Cell Tooltip
 
-| Field        | Example             |
-| ------------ | ------------------- |
-| Status       | Running             |
-| Service      | `cart-service`      |
-| Count        | 1,204               |
-| % of service | 12% of cart-service |
-| % of status  | 34% of all Running  |
+| Field        | Example               | When shown |
+| ------------ | --------------------- | ---------- |
+| % of service | 12% of cart-service   | Always     |
+| % of status  | 34% of all Running    | Always     |
+| Count        | 1,204                 | Full scan only |
 
 Use `<HoverTooltip>` from `@restate/ui/tooltip`.
 
-## Sticky + Scroll Behavior
+## Loading Behavior
 
-- **Sticky area** (left): status labels + "All services" bar chart column — `position: sticky; left: 0` with `bg-white` to occlude scrolled content
-- **Scrollable area** (right): service heat map columns — `overflow-x: auto`
-- A subtle shadow or border on the sticky column's right edge when content is scrolled to indicate more content
+### Placeholder data
+
+When fetching, the component receives placeholder data from the query cache to keep service columns stable. The `placeholderData` callback in `useSummaryInvocations` merges services from:
+
+1. **Previous query data** (if the observer didn't remount)
+2. **All cached summary queries** for the same base URL (survives remounts)
+3. **Deployment service names** (catches services with no invocations yet)
+
+Services are sorted by max count seen across sources (descending). Synthetic descending counts ensure `buildRankedServices` preserves column order. The loading overlay hides synthetic values.
+
+### Loading overlay
+
+When `isFetching` or `isPlaceholderData` is true:
+- The entire panel gets `animate-pulse`
+- All numbers are hidden (opacity 0 or replaced by placeholder bars)
+- Cell backgrounds show random low-opacity white fills
+- Heat map fill colors are hidden (opacity 0)
 
 ## States
 
-### Loading (`isPending`)
+### Loading (`isPending && !isPlaceholderData`)
 
 Skeleton placeholder with `animate-pulse`.
 
@@ -218,29 +259,13 @@ Skeleton placeholder with `animate-pulse`.
 
 `<ErrorBanner>` from `@restate/ui/error`.
 
-### Empty (`totalCount === 0`)
+### Empty (`totalCount === 0` and not loading)
 
 Centered empty state with "No invocations found".
 
 ### Normal
 
 Full widget with bar chart + heat map.
-
-## Styling Notes
-
-- Container: `rounded-lg border border-zinc-200 overflow-hidden`
-- Sticky area background: `bg-white` (to occlude scrolled heat map columns)
-- Status labels: `text-xs font-medium text-zinc-700`, fixed width (~100px)
-- Bar chart column: fixed width (~200px)
-- Heat map service columns: fixed width (~80px each)
-- Row height: fixed `h-7` for all rows
-- Row dividers: `border-b` default border color
-- Column dividers in heat map: `border-l border-l-zinc-200`
-- Heat map cells: `rounded-sm`, status-colored bg with varying opacity via inline style
-- Service column headers: `text-xs font-medium text-zinc-700 truncate`, horizontal text
-- "Others" column: `text-zinc-400 italic`, not clickable
-- Alternating column backgrounds (`bg-zinc-200/25` on odd columns) for readability in the heat map
-- All dynamic styling uses `tv()` from `@restate/util/styles` — never string interpolation for Tailwind classes
 
 ## File Structure
 
@@ -249,6 +274,8 @@ libs/features/invocations-summary/src/
   index.ts
   lib/
     invocations-summary.tsx     (main component + sub-components)
+    heatmap-data.ts             (data transformation + opacity algorithm)
+    duration-percentiles.tsx    (p50/p90/p99 sidebar widget)
     types.ts                    (props & data interfaces)
     constants.ts                (status order, config constants)
     mock-scenarios.ts           (dev-only mock data for testing)
