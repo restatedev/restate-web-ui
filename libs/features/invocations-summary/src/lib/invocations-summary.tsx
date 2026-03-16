@@ -222,9 +222,17 @@ function CellTooltipContent({ cell, isEstimate }: { cell: CellData; isEstimate: 
   return (
     <div className="flex min-w-40 flex-col gap-1.5">
       <div className="flex flex-col gap-0.5">
-        <div className="flex justify-between gap-4 pb-1">
+        {!isEstimate && (
+          <div className="flex justify-between gap-4 pb-1">
+            <span className="text-zinc-400">Count</span>
+            <span className="font-semibold tabular-nums text-zinc-200">
+              {formatNumber(cell.count)}
+            </span>
+          </div>
+        )}
+        <div className={`flex justify-between gap-4 ${isEstimate ? 'pb-1' : 'opacity-70'}`}>
           <span className="text-zinc-400">% of {cell.service}</span>
-          <span className="font-semibold tabular-nums text-zinc-200">
+          <span className={`tabular-nums ${isEstimate ? 'font-semibold text-zinc-200' : 'text-zinc-400'}`}>
             {formatPercentage(pctOfService)}
           </span>
         </div>
@@ -234,14 +242,6 @@ function CellTooltipContent({ cell, isEstimate }: { cell: CellData; isEstimate: 
             {formatPercentage(pctOfStatus)}
           </span>
         </div>
-        {!isEstimate && (
-          <div className="flex justify-between gap-4 opacity-70">
-            <span className="text-zinc-400">Count</span>
-            <span className="tabular-nums text-zinc-400">
-              {formatNumber(cell.count)}
-            </span>
-          </div>
-        )}
       </div>
     </div>
   );
