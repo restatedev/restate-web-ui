@@ -2,7 +2,9 @@
   "name": "@restate/web-ui",
   "version": "0.1.51",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "check-licenses": "node scripts/check-licenses.js"
+  },
   "private": true,
   "dependencies": {
     "@buf/restatedev_service-protocol.bufbuild_es": "2.2.3-20240606160341-127256df3b4d.1",
