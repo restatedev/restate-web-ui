@@ -56,7 +56,5 @@ if (violations.length > 0) {
   console.error(`\nAllowed licenses: ${ALLOWED_LICENSES.join(', ')}`);
   process.exit(1);
 } else {
-  console.log(
-    `✅ All ${total} production packages have allowed licenses.`,
-  );
+  console.log(`✅ All ${total} production packages have allowed licenses.`);
 }
