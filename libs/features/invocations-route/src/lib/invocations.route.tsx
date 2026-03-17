@@ -22,7 +22,13 @@ import {
   SnapshotTimeProvider,
   useDurationSinceLastSnapshot,
 } from '@restate/util/snapshot-time';
-import { PropsWithChildren, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  PropsWithChildren,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useSubmitShortcut, SubmitShortcutKey } from '@restate/ui/keyboard';
 import { formatDurations, formatNumber } from '@restate/util/intl';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
@@ -38,7 +44,10 @@ import {
   useSearchParams,
 } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { useListInvocations } from '@restate/data-access/admin-api-hooks';
+import {
+  useListInvocations,
+  useSummaryInvocations,
+} from '@restate/data-access/admin-api-hooks';
 import { useRestateContext } from '@restate/features/restate-context';
 import { useBatchOperations } from '@restate/features/batch-operations';
 import {
@@ -60,6 +69,11 @@ import {
 import { Key } from 'react-aria';
 import { FilterShortcuts } from './FilterShortcuts';
 import { RestateMinimumVersion } from '@restate/util/feature-flag';
+import { QueryClause } from '@restate/ui/query-builder';
+import {
+  InvocationsSummary,
+  MOCK_SCENARIOS,
+} from '@restate/features/invocations-summary';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: 170,
@@ -191,6 +205,34 @@ function Component() {
     };
   }, []);
 
+  const [mockScenarioIndex, setMockScenarioIndex] = useState(-1);
+  const mockScenario =
+    mockScenarioIndex >= 0 ? MOCK_SCENARIOS[mockScenarioIndex] : undefined;
+
+  const [sampled, setSampled] = useState(true);
+
+  const {
+    data: summaryData,
+    isPending: summaryIsPending,
+    isFetching: summaryIsFetching,
+    isPlaceholderData: summaryIsPlaceholderData,
+    error: summaryError,
+    queryKey: summaryQueryKey,
+  } = useSummaryInvocations(listInvocationsParameters.filters ?? [], {
+    sampled,
+    includeDuration: true,
+    enabled: mockScenarioIndex < 0,
+    refetchOnMount: true,
+    staleTime: 0,
+    refetchOnWindowFocus: false,
+  });
+
+  const totalCount = summaryData
+    ? { count: summaryData.totalCount, isLowerBound: summaryData.isEstimate }
+    : data
+      ? { count: data.rows.length, isLowerBound: data.rows.length >= 250 }
+      : undefined;
+
   useEffect(() => {
     saveQueryForNextVisit(new URLSearchParams(window.location.search));
   }, [searchParams]);
@@ -198,7 +240,84 @@ function Component() {
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdate}>
       <div className="relative flex flex-auto flex-col gap-2">
-        <div className="ml-auto flex items-center gap-1.5 pr-1.5">
+        <div>
+          <div className="-mt-10 mb-16 flex items-center gap-2">
+            <label
+              htmlFor="mock-scenario"
+              className="text-xs font-medium text-zinc-500"
+            >
+              Scenario:
+            </label>
+            <select
+              id="mock-scenario"
+              value={mockScenarioIndex}
+              onChange={(e) => setMockScenarioIndex(Number(e.target.value))}
+              className="rounded-md border border-zinc-300 bg-white px-2 py-1 text-xs text-zinc-700 shadow-xs"
+            >
+              <option value={-1}>Live data</option>
+              {MOCK_SCENARIOS.map((scenario, i) => (
+                <option key={i} value={i}>
+                  {scenario.name} — {scenario.description}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="mb-3 flex items-stretch gap-3">
+            <InvocationsSummary
+              data={mockScenario?.data ?? summaryData}
+              isPending={!mockScenario && summaryIsPending}
+              isFetching={!mockScenario && summaryIsFetching}
+              isPlaceholderData={!mockScenario && summaryIsPlaceholderData}
+              error={!mockScenario ? summaryError : undefined}
+              onClick={(params) => {
+                if (params.status) {
+                  const clause = query.items.find(
+                    (c) => c.fieldValue === 'status',
+                  );
+                  if (clause) {
+                    query.update(clause.id, new QueryClause(clause.schema, {
+                      operation: 'IN',
+                      value: [params.status],
+                    }));
+                  }
+                }
+                if (params.service) {
+                  const clause = query.items.find(
+                    (c) => c.fieldValue === 'target_service_name',
+                  );
+                  if (clause) {
+                    query.update(clause.id, new QueryClause(clause.schema, {
+                      operation: 'IN',
+                      value: [params.service],
+                    }));
+                  }
+                }
+                setPageIndex(0);
+                setTimeout(() => {
+                  submitRef.current?.click();
+                }, 0);
+              }}
+              toolbar={
+                <label className="relative inline-flex cursor-pointer items-center gap-0.5 mr-1.5 rounded-full border border-zinc-500/30 bg-zinc-600/40 px-1.5 py-0 text-2xs leading-4 whitespace-nowrap text-zinc-300 transition-colors hover:bg-zinc-500/40">
+                  {(mockScenario?.data ?? summaryData)?.isEstimate ?? sampled ? 'Sampled (50k)' : 'Full scan'}
+                  <Icon
+                    name={IconName.ChevronsUpDown}
+                    className="aspect-square h-3 w-3 opacity-60"
+                  />
+                  <select
+                    className="absolute inset-0 cursor-pointer text-xs opacity-0"
+                    value={(mockScenario?.data ?? summaryData)?.isEstimate ?? sampled ? 'sampled' : 'full'}
+                    onChange={(e) => setSampled(e.target.value === 'sampled')}
+                  >
+                    <option value="sampled">Sampled (50k)</option>
+                    <option value="full">Full scan</option>
+                  </select>
+                </label>
+              }
+            />
+          </div>
+        </div>
+        <div className="mt-8 ml-auto flex items-center gap-1.5 pr-1.5">
           <Dropdown>
             <DropdownTrigger>
               <Button
@@ -240,7 +359,7 @@ function Component() {
                 className="flex items-center gap-1.5 self-end rounded-lg p-0.5 px-2 text-0.5xs"
               >
                 Actions
-                {Boolean(selectedInvocationIds.size || data?.total_count) && (
+                {Boolean(selectedInvocationIds.size || totalCount?.count) && (
                   <Badge
                     size="xs"
                     variant={
@@ -249,8 +368,8 @@ function Component() {
                   >
                     {selectedInvocationIds.size
                       ? `${selectedInvocationIds.size}`
-                      : data?.total_count
-                        ? `${formatNumber(data?.total_count, data?.total_count_lower_bound)}${data?.total_count_lower_bound ? '+' : ''}`
+                      : totalCount?.count
+                        ? `${formatNumber(totalCount.count, totalCount.isLowerBound)}${totalCount.isLowerBound ? '+' : ''}`
                         : ''}
                   </Badge>
                 )}
@@ -271,16 +390,16 @@ function Component() {
                           on {selectedInvocationIds.size} selected items
                         </span>
                       </span>
-                    ) : data?.total_count ? (
+                    ) : totalCount?.count ? (
                       <span>
                         Actions{' '}
                         <span className="font-normal opacity-90">
                           on all{' '}
                           {formatNumber(
-                            data?.total_count,
-                            data?.total_count_lower_bound,
+                            totalCount.count,
+                            totalCount.isLowerBound,
                           )}
-                          {data?.total_count_lower_bound ? '+' : ''} results
+                          {totalCount.isLowerBound ? '+' : ''} results
                         </span>
                       </span>
                     ) : (
@@ -482,7 +601,12 @@ function Component() {
             )}
           </TableBody>
         </Table>
-        <Footnote data={data} isFetching={isFetching} key={dataUpdate}>
+        <Footnote
+          data={data}
+          totalCount={totalCount}
+          isFetching={isFetching}
+          key={dataUpdate}
+        >
           {!isPending && !error && totalSize > 1 && (
             <div className="flex items-center rounded-lg border bg-zinc-50 py-0.5 shadow-xs">
               <Button
@@ -538,7 +662,10 @@ function Component() {
             event.preventDefault();
             commitQuery();
             saveQueryForNextVisit(new URLSearchParams(window.location.search));
-            await queryCLient.invalidateQueries({ queryKey });
+            await Promise.all([
+              queryCLient.invalidateQueries({ queryKey }),
+              queryCLient.invalidateQueries({ queryKey: summaryQueryKey }),
+            ]);
           }}
         >
           <QueryBuilder
@@ -596,11 +723,13 @@ function canRemoveItem(key: Key) {
 
 function Footnote({
   data,
+  totalCount,
   isFetching,
   children,
 }: PropsWithChildren<{
   isFetching: boolean;
   data?: ReturnType<typeof useListInvocations>['data'];
+  totalCount?: { count: number; isLowerBound: boolean };
 }>) {
   const [now, setNow] = useState(() => Date.now());
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
@@ -627,14 +756,12 @@ function Footnote({
     <div className="flex w-full flex-row-reverse flex-wrap items-center text-center text-xs text-gray-500/80">
       {data && (
         <div className="ml-auto">
-          {data.total_count ? (
+          {totalCount?.count ? (
             <>
               <span>{data.rows.length}</span>
               {' of '}
               <span className="font-medium text-gray-500">
-                {data.total_count
-                  ? `${formatNumber(data.total_count, data.total_count_lower_bound)}${data.total_count_lower_bound ? '+' : ''}`
-                  : ''}
+                {`${formatNumber(totalCount.count, totalCount.isLowerBound)}${totalCount.isLowerBound ? '+' : ''}`}
               </span>{' '}
               recently modified invocations
             </>
