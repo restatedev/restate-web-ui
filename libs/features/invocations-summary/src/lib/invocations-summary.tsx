@@ -139,7 +139,7 @@ const heatFillStyles = tv({
 });
 
 const heatCellStyles = tv({
-  base: 'relative h-6 cursor-pointer rounded-sm border border-transparent transition-all hover:z-10 hover:border-white/20 hover:shadow-sm hover:shadow-black/20',
+  base: 'relative h-6 cursor-pointer rounded-md border border-transparent transition-all hover:z-10 hover:border-white/40 hover:shadow-sm hover:shadow-black/20',
   variants: {
     shaded: {
       true: 'bg-white/5',
