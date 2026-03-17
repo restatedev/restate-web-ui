@@ -47,7 +47,6 @@ type BoundHandlers = {
     filters: FilterItem[],
     sampled?: boolean,
     sampleSize?: number,
-    includeDuration?: boolean,
   ) => Promise<Response>;
   getInvocation: (invocationId: string) => Promise<Response>;
   getInvocationJournal: (invocationId: string) => Promise<Response>;
@@ -223,14 +222,12 @@ router.map(routes, {
         filters = [],
         sampled,
         sampleSize,
-        includeDuration,
       }: {
         filters: FilterItem[];
         sampled?: boolean;
         sampleSize?: number;
-        includeDuration?: boolean;
       } = await ctx.request.json();
-      return summaryInvocations(filters, sampled, sampleSize, includeDuration);
+      return summaryInvocations(filters, sampled, sampleSize);
     },
     async get(ctx) {
       const { getInvocation } = ctx.storage.get(handlersKey);

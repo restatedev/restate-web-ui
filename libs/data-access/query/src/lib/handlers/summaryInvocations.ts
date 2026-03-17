@@ -1,6 +1,6 @@
 import type { FilterItem } from '@restate/data-access/admin-api-spec';
 import { convertInvocationsFilters } from '../convertFilters';
-import { type QueryContext, DURATION_CALC } from './shared';
+import { type QueryContext } from './shared';
 
 const DEFAULT_SAMPLE_SIZE = 50000;
 const HIGHLIGHT_FIELDS = new Set(['status', 'target_service_name']);
@@ -59,7 +59,6 @@ export async function summaryInvocations(
   filters: FilterItem[],
   sampled = true,
   sampleSize = DEFAULT_SAMPLE_SIZE,
-  includeDuration = false,
 ) {
   const baseFilters = filters.filter((f) => !HIGHLIGHT_FIELDS.has(f.field));
   const where = convertInvocationsFilters(baseFilters);
@@ -73,17 +72,9 @@ export async function summaryInvocations(
 
   const servicesPromise = this.query(`SELECT name FROM sys_service`);
 
-  const DURATION_MS = `arrow_cast(${DURATION_CALC}, 'Int64')`;
-  const durationPromise = includeDuration
-    ? this.query(
-        `SELECT APPROX_PERCENTILE_CONT(${DURATION_MS}, 0.5) as p50, APPROX_PERCENTILE_CONT(${DURATION_MS}, 0.9) as p90, APPROX_PERCENTILE_CONT(${DURATION_MS}, 0.99) as p99 FROM ${subquery} ${where}`,
-      )
-    : undefined;
-
-  const [{ rows }, { rows: serviceRows }, durationResult] = await Promise.all([
+  const [{ rows }, { rows: serviceRows }] = await Promise.all([
     countsPromise,
     servicesPromise,
-    durationPromise,
   ]);
 
   const { matchStatus, matchService } = buildInclusionMatcher(filters);
@@ -154,24 +145,11 @@ export async function summaryInvocations(
       })),
   );
 
-  const response: Record<string, unknown> = {
+  return Response.json({
     totalCount,
     isEstimate: sampled,
     byStatus,
     byService,
     byServiceAndStatus,
-  };
-
-  if (durationResult) {
-    const p = durationResult.rows?.at(0);
-    if (p?.p50 != null && p?.p90 != null && p?.p99 != null) {
-      response['duration'] = {
-        p50: Number(p.p50),
-        p90: Number(p.p90),
-        p99: Number(p.p99),
-      };
-    }
-  }
-
-  return Response.json(response);
+  });
 }

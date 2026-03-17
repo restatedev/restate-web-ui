@@ -543,12 +543,10 @@ export function useSummaryInvocations(
   {
     sampled,
     sampleSize,
-    includeDuration,
     ...options
   }: HookQueryOptions<'/query/invocations/summary', 'post'> & {
     sampled?: boolean;
     sampleSize?: number;
-    includeDuration?: boolean;
   } = {},
 ) {
   const baseUrl = useAdminBaseUrl();
@@ -562,7 +560,6 @@ export function useSummaryInvocations(
       filters,
       sampled,
       sampleSize,
-      includeDuration,
     },
   });
 

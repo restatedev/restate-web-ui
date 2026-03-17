@@ -220,7 +220,6 @@ function Component() {
     queryKey: summaryQueryKey,
   } = useSummaryInvocations(listInvocationsParameters.filters ?? [], {
     sampled,
-    includeDuration: true,
     enabled: mockScenarioIndex < 0,
     refetchOnMount: true,
     staleTime: 0,
