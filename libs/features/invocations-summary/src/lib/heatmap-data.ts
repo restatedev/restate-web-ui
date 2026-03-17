@@ -52,7 +52,9 @@ function buildStatusRows(data: InvocationsSummaryData): StatusColumn[] {
         if (entry.isIncluded) allExcluded = false;
       }
     }
-    const hasAnyEntry = col.statuses.some((s) => data.byStatus.find((b) => b.name === s));
+    const hasAnyEntry = col.statuses.some((s) =>
+      data.byStatus.find((b) => b.name === s),
+    );
     if (!hasAnyEntry) {
       const hasStatusFilter = data.byStatus.some((b) => !b.isIncluded);
       allExcluded = hasStatusFilter;

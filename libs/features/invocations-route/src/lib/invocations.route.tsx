@@ -22,13 +22,7 @@ import {
   SnapshotTimeProvider,
   useDurationSinceLastSnapshot,
 } from '@restate/util/snapshot-time';
-import {
-  PropsWithChildren,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { PropsWithChildren, useEffect, useMemo, useRef, useState } from 'react';
 import { useSubmitShortcut, SubmitShortcutKey } from '@restate/ui/keyboard';
 import { formatDurations, formatNumber } from '@restate/util/intl';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
@@ -47,6 +41,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
   useListInvocations,
   useSummaryInvocations,
+  useSummaryInvocationsSplit
 } from '@restate/data-access/admin-api-hooks';
 import { useRestateContext } from '@restate/features/restate-context';
 import { useBatchOperations } from '@restate/features/batch-operations';
@@ -274,10 +269,13 @@ function Component() {
                     (c) => c.fieldValue === 'status',
                   );
                   if (clause) {
-                    query.update(clause.id, new QueryClause(clause.schema, {
-                      operation: 'IN',
-                      value: [params.status],
-                    }));
+                    query.update(
+                      clause.id,
+                      new QueryClause(clause.schema, {
+                        operation: 'IN',
+                        value: [params.status],
+                      }),
+                    );
                   }
                 }
                 if (params.service) {
@@ -285,10 +283,13 @@ function Component() {
                     (c) => c.fieldValue === 'target_service_name',
                   );
                   if (clause) {
-                    query.update(clause.id, new QueryClause(clause.schema, {
-                      operation: 'IN',
-                      value: [params.service],
-                    }));
+                    query.update(
+                      clause.id,
+                      new QueryClause(clause.schema, {
+                        operation: 'IN',
+                        value: [params.service],
+                      }),
+                    );
                   }
                 }
                 setPageIndex(0);
@@ -297,15 +298,22 @@ function Component() {
                 }, 0);
               }}
               toolbar={
-                <label className="relative inline-flex cursor-pointer items-center gap-0.5 mr-1.5 rounded-full border border-zinc-500/30 bg-zinc-600/40 px-1.5 py-0 text-2xs leading-4 whitespace-nowrap text-zinc-300 transition-colors hover:bg-zinc-500/40">
-                  {(mockScenario?.data ?? summaryData)?.isEstimate ?? sampled ? 'Sampled (50k)' : 'Full scan'}
+                <label className="relative mr-1.5 inline-flex cursor-pointer items-center gap-0.5 rounded-full border border-zinc-500/30 bg-zinc-600/40 px-1.5 py-0 text-2xs leading-4 whitespace-nowrap text-zinc-300 transition-colors hover:bg-zinc-500/40">
+                  {((mockScenario?.data ?? summaryData)?.isEstimate ?? sampled)
+                    ? 'Sampled (50k)'
+                    : 'Full scan'}
                   <Icon
                     name={IconName.ChevronsUpDown}
                     className="aspect-square h-3 w-3 opacity-60"
                   />
                   <select
                     className="absolute inset-0 cursor-pointer text-xs opacity-0"
-                    value={(mockScenario?.data ?? summaryData)?.isEstimate ?? sampled ? 'sampled' : 'full'}
+                    value={
+                      ((mockScenario?.data ?? summaryData)?.isEstimate ??
+                      sampled)
+                        ? 'sampled'
+                        : 'full'
+                    }
                     onChange={(e) => setSampled(e.target.value === 'sampled')}
                   >
                     <option value="sampled">Sampled (50k)</option>

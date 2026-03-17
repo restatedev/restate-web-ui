@@ -2225,6 +2225,73 @@
         }
       }
     },
+    "/query/invocations/summary-v2": {
+      "post": {
+        "tags": ["query-invocations"],
+        "summary": "Get invocations summary (split-table)",
+        "description": "Get an aggregated summary of invocations using split queries to sys_invocation_status and sys_invocation_state tables.",
+        "operationId": "get_invocations_summary_v2",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "filters": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/FilterItem"
+                    }
+                  },
+                  "sampled": {
+                    "type": "boolean",
+                    "default": true
+                  },
+                  "sampleSize": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "default": 50000
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Invocations summary",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvocationsSummaryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/query/invocations/cancel": {
       "post": {
         "tags": ["batch-cancel-invocations"],

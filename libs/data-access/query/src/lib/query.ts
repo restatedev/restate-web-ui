@@ -33,6 +33,7 @@ import {
   batchRestartAsNewInvocations,
   countInvocations,
   summaryInvocations,
+  summaryInvocationsSplit,
   getPausedError,
 } from './handlers';
 import { getVersion } from './getVersion';
@@ -44,6 +45,11 @@ type BoundHandlers = {
   ) => Promise<Response>;
   countInvocations: (filters: FilterItem[]) => Promise<Response>;
   summaryInvocations: (
+    filters: FilterItem[],
+    sampled?: boolean,
+    sampleSize?: number,
+  ) => Promise<Response>;
+  summaryInvocationsSplit: (
     filters: FilterItem[],
     sampled?: boolean,
     sampleSize?: number,
@@ -99,6 +105,7 @@ function bindHandlers(context: QueryContext): BoundHandlers {
   return {
     countInvocations: countInvocations.bind(context),
     summaryInvocations: summaryInvocations.bind(context),
+    summaryInvocationsSplit: summaryInvocationsSplit.bind(context),
     listInvocations: listInvocations.bind(context),
     getInvocation: getInvocation.bind(context),
     getInvocationJournal: getInvocationJournal.bind(context),
@@ -148,6 +155,7 @@ export const routes = createRoutes('/query', {
     list: { method: 'POST', pattern: '/invocations' },
     count: { method: 'POST', pattern: '/invocations/count' },
     summary: { method: 'POST', pattern: '/invocations/summary' },
+    summaryV2: { method: 'POST', pattern: '/invocations/summary-v2' },
     get: { method: 'GET', pattern: '/invocations/:invocationId' },
     journalEntry: {
       method: 'GET',
@@ -228,6 +236,19 @@ router.map(routes, {
         sampleSize?: number;
       } = await ctx.request.json();
       return summaryInvocations(filters, sampled, sampleSize);
+    },
+    async summaryV2(ctx) {
+      const { summaryInvocationsSplit } = ctx.storage.get(handlersKey);
+      const {
+        filters = [],
+        sampled,
+        sampleSize,
+      }: {
+        filters: FilterItem[];
+        sampled?: boolean;
+        sampleSize?: number;
+      } = await ctx.request.json();
+      return summaryInvocationsSplit(filters, sampled, sampleSize);
     },
     async get(ctx) {
       const { getInvocation } = ctx.storage.get(handlersKey);

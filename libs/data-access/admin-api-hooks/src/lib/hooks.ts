@@ -643,6 +643,42 @@ export function useSummaryInvocations(
   return { ...results, queryKey: queryOptions.queryKey };
 }
 
+export function useSummaryInvocationsSplit(
+  filters: FilterItem[],
+  {
+    sampled,
+    sampleSize,
+    ...options
+  }: HookQueryOptions<'/query/invocations/summary-v2', 'post'> & {
+    sampled?: boolean;
+    sampleSize?: number;
+  } = {},
+) {
+  const baseUrl = useAdminBaseUrl();
+
+  const queryOptions = adminApi(
+    'query',
+    '/query/invocations/summary-v2',
+    'post',
+    {
+      baseUrl,
+      body: {
+        filters,
+        sampled,
+        sampleSize,
+      },
+    },
+  );
+
+  const results = useQuery({
+    staleTime: 0,
+    ...queryOptions,
+    ...options,
+  });
+
+  return { ...results, queryKey: queryOptions.queryKey };
+}
+
 export function useModifyService(
   service: string,
   options?: HookMutationOptions<'/services/{service}', 'patch'>,

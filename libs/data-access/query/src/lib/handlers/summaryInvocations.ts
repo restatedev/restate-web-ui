@@ -6,11 +6,14 @@ const DEFAULT_SAMPLE_SIZE = 50000;
 const HIGHLIGHT_FIELDS = new Set(['status', 'target_service_name']);
 const FAILED_SUBSTATES = ['failed', 'cancelled', 'killed'];
 
-function expandStatus(status: string): string[] {
+export function expandStatus(status: string): string[] {
   return status === 'failed' ? FAILED_SUBSTATES : [status];
 }
 
-function computedStatus(status: string, completionResult?: string): string {
+export function computedStatus(
+  status: string,
+  completionResult?: string,
+): string {
   if (status === 'completed') {
     if (completionResult === 'success') return 'succeeded';
     return 'failed';
@@ -18,9 +21,9 @@ function computedStatus(status: string, completionResult?: string): string {
   return status;
 }
 
-type Predicate = (value: string) => boolean;
+export type Predicate = (value: string) => boolean;
 
-function buildPredicate(filters: FilterItem[]): Predicate | null {
+export function buildPredicate(filters: FilterItem[]): Predicate | null {
   if (filters.length === 0) return null;
 
   const predicates: Predicate[] = [];
@@ -42,7 +45,7 @@ function buildPredicate(filters: FilterItem[]): Predicate | null {
   return (value) => predicates.every((p) => p(value));
 }
 
-function buildInclusionMatcher(filters: FilterItem[]): {
+export function buildInclusionMatcher(filters: FilterItem[]): {
   matchStatus: Predicate | null;
   matchService: Predicate | null;
 } {

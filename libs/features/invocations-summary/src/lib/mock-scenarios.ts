@@ -113,7 +113,8 @@ export const MOCK_SCENARIOS: {
 }[] = [
   {
     name: 'Healthy (full scan)',
-    description: 'Full scan — most invocations succeeded, few failures across 5 services',
+    description:
+      'Full scan — most invocations succeeded, few failures across 5 services',
     data: {
       ...summarize(
         crossProduct(SERVICES_5, ALL_STATUSES, (svc, status) => {
@@ -171,7 +172,8 @@ export const MOCK_SCENARIOS: {
   },
   {
     name: 'High failure (full scan)',
-    description: 'Full scan — significant failures in payment and checkout services',
+    description:
+      'Full scan — significant failures in payment and checkout services',
     data: {
       ...summarize(
         crossProduct(SERVICES_5, ALL_STATUSES, (svc, status) => {
@@ -225,7 +227,8 @@ export const MOCK_SCENARIOS: {
   },
   {
     name: 'Status filter (full scan)',
-    description: 'Full scan — only running + failed statuses are selected in filters',
+    description:
+      'Full scan — only running + failed statuses are selected in filters',
     data: {
       ...summarize(
         crossProduct(SERVICES_5, ALL_STATUSES, (svc, status) => {
@@ -263,7 +266,8 @@ export const MOCK_SCENARIOS: {
   },
   {
     name: 'Service filter (full scan)',
-    description: 'Full scan — two services explicitly selected, others still visible',
+    description:
+      'Full scan — two services explicitly selected, others still visible',
     data: {
       ...summarize(
         crossProduct(SERVICES_12, ALL_STATUSES, (svc, status) => {
@@ -324,7 +328,8 @@ export const MOCK_SCENARIOS: {
   },
   {
     name: 'Dominant service (sampled)',
-    description: 'Sampled — one service has 95% of all traffic, shows percentages',
+    description:
+      'Sampled — one service has 95% of all traffic, shows percentages',
     data: {
       ...summarize(
         crossProduct(SERVICES_5, ALL_STATUSES, (svc, status) => {
@@ -397,7 +402,8 @@ export const MOCK_SCENARIOS: {
   },
   {
     name: 'Single service (full scan)',
-    description: 'Full scan — one service with a realistic distribution of statuses',
+    description:
+      'Full scan — one service with a realistic distribution of statuses',
     data: {
       ...summarize(
         crossProduct(['cart-service'], ALL_STATUSES, (_svc, status) => {
@@ -456,7 +462,8 @@ export const MOCK_SCENARIOS: {
   },
   {
     name: 'No invocations svc (full scan)',
-    description: 'Full scan — two services registered but only one has invocations',
+    description:
+      'Full scan — two services registered but only one has invocations',
     data: {
       ...summarize(
         crossProduct(
@@ -484,7 +491,8 @@ export const MOCK_SCENARIOS: {
   },
   {
     name: 'Huge running (full scan)',
-    description: 'Full scan — massive number of running invocations across services',
+    description:
+      'Full scan — massive number of running invocations across services',
     data: {
       ...summarize(
         crossProduct(SERVICES_5, ALL_STATUSES, (svc, status) => {
@@ -515,7 +523,8 @@ export const MOCK_SCENARIOS: {
   },
   {
     name: 'One svc failing (sampled)',
-    description: 'Sampled — payment service causing almost all failures and backing-off',
+    description:
+      'Sampled — payment service causing almost all failures and backing-off',
     data: {
       ...summarize(
         crossProduct(SERVICES_5, ALL_STATUSES, (svc, status) => {

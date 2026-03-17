@@ -515,6 +515,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/query/invocations/summary-v2': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Get invocations summary (split-table)
+     * @description Get an aggregated summary of invocations using split queries to sys_invocation_status and sys_invocation_state tables.
+     */
+    post: operations['get_invocations_summary_v2'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/query/invocations/cancel': {
     parameters: {
       query?: never;
@@ -4870,6 +4890,52 @@ export interface operations {
         };
       };
       503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  get_invocations_summary_v2: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          filters?: components['schemas']['FilterItem'][];
+          /** @default true */
+          sampled?: boolean;
+          /** @default 50000 */
+          sampleSize?: number;
+        };
+      };
+    };
+    responses: {
+      /** @description Invocations summary */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['InvocationsSummaryResponse'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
         headers: {
           [name: string]: unknown;
         };

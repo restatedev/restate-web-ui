@@ -38,8 +38,8 @@ The component receives pre-fetched data — it does **not** call `useSummaryInvo
 
 ```tsx
 interface InvocationsSummaryData {
-  totalCount: number;       // count of included/filtered invocations (from API)
-  isEstimate: boolean;      // true when sampled, false for full scan
+  totalCount: number; // count of included/filtered invocations (from API)
+  isEstimate: boolean; // true when sampled, false for full scan
   byStatus: { name: string; count: number; isIncluded: boolean }[];
   byService: { name: string; count: number; isIncluded: boolean }[];
   byServiceAndStatus: {
@@ -138,12 +138,15 @@ serviceRate = cellCount / serviceTotal
 #### Step 3 — Health signal
 
 For statuses with an expected limit, use a soft exponential curve so rates beyond the limit keep increasing (no hard cap):
+
 ```
 healthSignal = 1 − exp(−serviceRate / expectedLimit)
 ```
+
 At the expected limit, healthSignal ≈ 0.63. At 3× the limit, ≈ 0.95. The signal approaches 1.0 asymptotically — higher rates always produce brighter cells.
 
 For normal statuses (no expected limit), use a power curve on the raw rate:
+
 ```
 healthSignal = serviceRate ^ 0.6
 ```
@@ -151,10 +154,12 @@ healthSignal = serviceRate ^ 0.6
 #### Step 4 — Volume boost
 
 A subtle multiplier based on this cell's share of the status row, so dominant services pop out:
+
 ```
 rowShare = cellCount / rowTotal
 volumeBoost = 1 + rowShare ^ 0.4 × 0.5
 ```
+
 Ranges from 1.0 (tiny service) to 1.5 (service owns 100% of the row). The `^0.4` exponent compresses the curve so small services stay nearly unchanged.
 
 #### Step 5 — Final opacity
@@ -181,16 +186,16 @@ The `baseLevel` keeps cells visible even at low rates. The `rowCeiling` ensures 
 
 ## Status Rows (fixed semantic order)
 
-| Row         | Includes statuses                     | Label                    |
-| ----------- | ------------------------------------- | ------------------------ |
-| Ready       | `ready`                               | Ready                    |
-| Scheduled   | `scheduled`                           | Scheduled                |
-| Pending     | `pending`                             | Pending                  |
-| Running     | `running`                             | Running                  |
-| Backing-off | `backing-off`                         | Backing-off              |
-| Suspended   | `suspended`                           | Suspended                |
-| Paused      | `paused`                              | Paused                   |
-| Succeeded   | `succeeded`                           | Succeeded                |
+| Row         | Includes statuses                     | Label                           |
+| ----------- | ------------------------------------- | ------------------------------- |
+| Ready       | `ready`                               | Ready                           |
+| Scheduled   | `scheduled`                           | Scheduled                       |
+| Pending     | `pending`                             | Pending                         |
+| Running     | `running`                             | Running                         |
+| Backing-off | `backing-off`                         | Backing-off                     |
+| Suspended   | `suspended`                           | Suspended                       |
+| Paused      | `paused`                              | Paused                          |
+| Succeeded   | `succeeded`                           | Succeeded                       |
 | **Failed**  | **`failed` + `cancelled` + `killed`** | **Failed / Cancelled / Killed** |
 
 ## Filtering Behavior
@@ -230,11 +235,11 @@ onClick({ status: 'running', service: 'cart-service' });
 
 ### Hover — Heat Map Cell Tooltip
 
-| Field        | Example               | When shown |
-| ------------ | --------------------- | ---------- |
-| % of service | 12% of cart-service   | Always     |
-| % of status  | 34% of all Running    | Always     |
-| Count        | 1,204                 | Full scan only |
+| Field        | Example             | When shown     |
+| ------------ | ------------------- | -------------- |
+| % of service | 12% of cart-service | Always         |
+| % of status  | 34% of all Running  | Always         |
+| Count        | 1,204               | Full scan only |
 
 Use `<HoverTooltip>` from `@restate/ui/tooltip`.
 
@@ -253,6 +258,7 @@ Services are sorted by max count seen across sources (descending). Synthetic des
 ### Loading overlay
 
 When `isFetching` or `isPlaceholderData` is true:
+
 - The entire panel gets `animate-pulse`
 - All numbers are hidden (opacity 0 or replaced by placeholder bars)
 - Cell backgrounds show random low-opacity white fills

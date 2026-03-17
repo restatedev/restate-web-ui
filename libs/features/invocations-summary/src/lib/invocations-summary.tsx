@@ -212,7 +212,13 @@ const serviceHeaderStyles = tv({
   },
 });
 
-function CellTooltipContent({ cell, isEstimate }: { cell: CellData; isEstimate: boolean }) {
+function CellTooltipContent({
+  cell,
+  isEstimate,
+}: {
+  cell: CellData;
+  isEstimate: boolean;
+}) {
   const pctOfStatus = cell.columnTotal > 0 ? cell.count / cell.columnTotal : 0;
   const pctOfService =
     cell.serviceTotal > 0 ? cell.count / cell.serviceTotal : 0;
@@ -225,20 +231,24 @@ function CellTooltipContent({ cell, isEstimate }: { cell: CellData; isEstimate: 
         {!isEstimate && (
           <div className="flex justify-between gap-4 pb-1">
             <span className="text-zinc-400">Count</span>
-            <span className="font-semibold tabular-nums text-zinc-200">
+            <span className="font-semibold text-zinc-200 tabular-nums">
               {formatNumber(cell.count)}
             </span>
           </div>
         )}
-        <div className={`flex justify-between gap-4 ${isEstimate ? 'pb-1' : 'opacity-70'}`}>
+        <div
+          className={`flex justify-between gap-4 ${isEstimate ? 'pb-1' : 'opacity-70'}`}
+        >
           <span className="text-zinc-400">% of {cell.service}</span>
-          <span className={`tabular-nums ${isEstimate ? 'font-semibold text-zinc-200' : 'text-zinc-400'}`}>
+          <span
+            className={`tabular-nums ${isEstimate ? 'font-semibold text-zinc-200' : 'text-zinc-400'}`}
+          >
             {formatPercentage(pctOfService)}
           </span>
         </div>
         <div className="flex justify-between gap-4 opacity-70">
           <span className="text-zinc-400">% of {statusLabel}</span>
-          <span className="tabular-nums text-zinc-400">
+          <span className="text-zinc-400 tabular-nums">
             {formatPercentage(pctOfStatus)}
           </span>
         </div>
@@ -347,7 +357,9 @@ export function InvocationsSummary({
                 <div className={barChartColStyles({ size: 'lg' })}>
                   {isLoading ? (
                     <span
-                      className={placeholderFillStyles({ className: 'h-4 w-16 rounded bg-white/10' })}
+                      className={placeholderFillStyles({
+                        className: 'h-4 w-16 rounded bg-white/10',
+                      })}
                     />
                   ) : (
                     <span className="text-sm font-semibold text-zinc-200">
@@ -405,7 +417,9 @@ export function InvocationsSummary({
                       <span className="flex w-12 shrink-0 items-center justify-end">
                         {isLoading ? (
                           <span
-                            className={placeholderFillStyles({ className: 'h-3 w-8 rounded bg-white/10' })}
+                            className={placeholderFillStyles({
+                              className: 'h-3 w-8 rounded bg-white/10',
+                            })}
                           />
                         ) : (
                           <span className="text-right text-2xs text-zinc-300 tabular-nums">
@@ -422,7 +436,13 @@ export function InvocationsSummary({
             </div>
           </div>
           <div className="overflow-x-auto overscroll-x-contain [scrollbar-color:rgb(113_113_122/0.4)_transparent] [scrollbar-width:thin]">
-            <div className={isLoading ? 'min-w-max w-full animate-pulse py-1.5 pl-91' : 'min-w-max w-full py-1.5 pl-91'}>
+            <div
+              className={
+                isLoading
+                  ? 'w-full min-w-max animate-pulse py-1.5 pl-91'
+                  : 'w-full min-w-max py-1.5 pl-91'
+              }
+            >
               <div className={heatmapRowStyles({ variant: 'header' })}>
                 {serviceColumns.map((svc) => (
                   <div
@@ -450,7 +470,7 @@ export function InvocationsSummary({
                   >
                     {svc.isOthers && ranked.length > MAX_VISIBLE_SERVICES ? (
                       <>
-                        <label className="relative inline-flex cursor-pointer items-center gap-0.5 rounded-full border border-zinc-500/30 bg-zinc-600/40 px-1.5 py-0 text-2xs leading-4 not-italic whitespace-nowrap text-zinc-300 transition-colors hover:bg-zinc-500/40">
+                        <label className="relative inline-flex cursor-pointer items-center gap-0.5 rounded-full border border-zinc-500/30 bg-zinc-600/40 px-1.5 py-0 text-2xs leading-4 whitespace-nowrap text-zinc-300 not-italic transition-colors hover:bg-zinc-500/40">
                           {svc.name}
                           <Icon
                             name={IconName.ChevronsUpDown}
@@ -459,10 +479,16 @@ export function InvocationsSummary({
                           <select
                             className="absolute inset-0 cursor-pointer text-xs opacity-0"
                             value={visibleCount}
-                            onChange={(e) => setVisibleCount(Number(e.target.value))}
+                            onChange={(e) =>
+                              setVisibleCount(Number(e.target.value))
+                            }
                           >
                             {Array.from(
-                              { length: Math.ceil(Math.min(ranked.length, 100) / 10) },
+                              {
+                                length: Math.ceil(
+                                  Math.min(ranked.length, 100) / 10,
+                                ),
+                              },
                               (_, i) => (i + 1) * 10,
                             ).map((n) => (
                               <option key={n} value={n}>
@@ -472,7 +498,7 @@ export function InvocationsSummary({
                           </select>
                         </label>
                         <span
-                          className="w-full truncate text-2xs font-normal not-italic text-zinc-400 transition-opacity duration-500"
+                          className="w-full truncate text-2xs font-normal text-zinc-400 not-italic transition-opacity duration-500"
                           style={{ opacity: isLoading ? 0 : 1 }}
                         >
                           {data.isEstimate
@@ -515,11 +541,16 @@ export function InvocationsSummary({
                         <div
                           className={heatCellStyles({
                             shaded: false,
-                            isIncluded: isLoading || (row.isIncluded && svc.isIncluded),
+                            isIncluded:
+                              isLoading || (row.isIncluded && svc.isIncluded),
                             isNonInteractive: isLoading || isNonInteractive,
                           })}
-                          role={isLoading || isNonInteractive ? undefined : 'button'}
-                          tabIndex={isLoading || isNonInteractive ? undefined : 0}
+                          role={
+                            isLoading || isNonInteractive ? undefined : 'button'
+                          }
+                          tabIndex={
+                            isLoading || isNonInteractive ? undefined : 0
+                          }
                           onClick={() => {
                             if (!isLoading && !isNonInteractive) {
                               onClick?.({ status: row.key, service: svc.name });
@@ -537,7 +568,9 @@ export function InvocationsSummary({
                           }}
                         >
                           <div
-                            className={placeholderFillStyles({ className: 'absolute inset-0' })}
+                            className={placeholderFillStyles({
+                              className: 'absolute inset-0',
+                            })}
                             style={{
                               backgroundColor: isLoading
                                 ? `rgb(255 255 255 / ${placeholderBg})`
@@ -548,7 +581,9 @@ export function InvocationsSummary({
                             className={heatFillStyles({
                               status: statusVariant,
                             })}
-                            style={{ opacity: isLoading ? 0 : (fillOpacity ?? 0) }}
+                            style={{
+                              opacity: isLoading ? 0 : (fillOpacity ?? 0),
+                            }}
                           />
                           {(cell?.count ?? 0) > 0 ? (
                             <span
@@ -556,16 +591,25 @@ export function InvocationsSummary({
                                 prominent: (fillOpacity ?? 0) >= 0.5,
                                 status: statusVariant,
                               })}
-                              style={{ opacity: isLoading ? 0 : 1, transition: 'opacity 500ms' }}
+                              style={{
+                                opacity: isLoading ? 0 : 1,
+                                transition: 'opacity 500ms',
+                              }}
                             >
                               {data.isEstimate
-                                ? formatPercentage((cell?.count ?? 0) / (cell?.serviceTotal || 1))
+                                ? formatPercentage(
+                                    (cell?.count ?? 0) /
+                                      (cell?.serviceTotal || 1),
+                                  )
                                 : formatNumber(cell?.count ?? 0, true)}
                             </span>
                           ) : (
                             <span
                               className={emptyCellStyles()}
-                              style={{ opacity: isLoading ? 0 : 1, transition: 'opacity 500ms' }}
+                              style={{
+                                opacity: isLoading ? 0 : 1,
+                                transition: 'opacity 500ms',
+                              }}
                             >
                               –
                             </span>
@@ -584,7 +628,12 @@ export function InvocationsSummary({
                       return (
                         <div key={svc.name} className={serviceColStyles()}>
                           <HoverTooltip
-                            content={<CellTooltipContent cell={cell} isEstimate={data.isEstimate} />}
+                            content={
+                              <CellTooltipContent
+                                cell={cell}
+                                isEstimate={data.isEstimate}
+                              />
+                            }
                           >
                             {cellContent}
                           </HoverTooltip>
