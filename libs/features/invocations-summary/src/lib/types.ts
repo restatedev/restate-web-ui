@@ -11,11 +11,6 @@ export interface InvocationsSummaryData {
     count: number;
     isIncluded: boolean;
   }[];
-  duration?: {
-    p50: number;
-    p90: number;
-    p99: number;
-  };
 }
 
 export interface InvocationsSummaryProps {
