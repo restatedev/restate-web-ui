@@ -9,8 +9,6 @@ import {
 const DEFAULT_SAMPLE_SIZE = 50000;
 const HIGHLIGHT_FIELDS = new Set(['status', 'target_service_name']);
 
-const INVOKED_SUBSTATES = ['running', 'backing-off', 'ready'] as const;
-
 function distributeProportionally(
   total: number,
   ratios: Record<string, number>,
@@ -65,20 +63,29 @@ export async function summaryInvocationsSplit(
   const queryMs = performance.now() - queryStart;
   const joinStart = performance.now();
 
-  let invokedTotal = 0;
-  const invokedRatios: Record<string, number> = {};
+  let runningCount = 0;
+  let backingOffCount = 0;
   for (const row of stateRows) {
     const count = Number(row.count);
-    invokedRatios[row.derived_status as string] = count;
-    invokedTotal += count;
+    if (row.derived_status === 'running') runningCount = count;
+    else if (row.derived_status === 'backing-off') backingOffCount = count;
   }
-  if (invokedTotal > 0) {
-    for (const key of Object.keys(invokedRatios)) {
-      invokedRatios[key] = invokedRatios[key]! / invokedTotal;
-    }
-  } else {
-    invokedRatios['ready'] = 1;
+
+  let totalInvoked = 0;
+  for (const row of rows) {
+    if (row.status === 'invoked') totalInvoked += Number(row.count);
   }
+
+  const readyCount = Math.max(0, totalInvoked - runningCount - backingOffCount);
+
+  const invokedRatios: Record<string, number> =
+    totalInvoked > 0
+      ? {
+          running: runningCount / totalInvoked,
+          'backing-off': backingOffCount / totalInvoked,
+          ready: readyCount / totalInvoked,
+        }
+      : { ready: 1 };
 
   const { matchStatus, matchService } = buildInclusionMatcher(filters);
 
