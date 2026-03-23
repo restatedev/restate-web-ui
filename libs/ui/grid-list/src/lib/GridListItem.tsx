@@ -55,7 +55,13 @@ export function GridListItem<T>({
       {({ isHovered, isPressed, isFocusVisible, isSelected }) => {
         const cells = <Cells item={item} columns={columns} />;
         return children
-          ? children({ cells, isHovered, isPressed, isFocusVisible, isSelected })
+          ? children({
+              cells,
+              isHovered,
+              isPressed,
+              isFocusVisible,
+              isSelected,
+            })
           : cells;
       }}
     </AriaGridListItem>
