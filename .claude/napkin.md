@@ -33,6 +33,15 @@
 | 2026-02-26 | user   | Split completed invocations into failed/cancelled/killed using completion_failure                                                                                 | For summary/aggregate views, group all non-success completions as "failed" — simpler and avoids needing completion_failure in the query               |
 
 | 2026-03-16 | user | Silently changed approach from `pnpm licenses list` to `pnpm ls` + manual package.json reading without explaining the tradeoff or asking for approval | When a planned approach hits a wall and you need to change direction, explicitly explain what failed and why, present the alternative, and ask for approval before proceeding |
+| 2026-03-23 | self | CSS `filter` (goo SVG filter) on canvas causes visual overflow that escapes parent `overflow: hidden` + `border-radius` | Use `clip-path: inset(Npx round N%)` instead — it creates a hard clip that CSS filter effects cannot escape |
+| 2026-03-23 | self | Continuous mouse push force in animation update loop caused directional bias from tiny coordinate errors | Only apply mouse interaction forces when mouse is actively moving (`velocity > threshold`), never when stationary |
+| 2026-03-23 | self | SVG goo filter (blur + alpha threshold) destroys all internal color gradients — blur averages nearby colors to one flat tone | Use two canvases: shape canvas (goo filtered, solid fill for merging) + color canvas (no filter, preserves gradients) |
+| 2026-03-23 | self | Dark ferrofluid colors (lightness 12-22%) were invisible through a 70% white SVG overlay — only 30% of color shows through | Design canvas colors for the COMPOSITE result: use lightness 45-55% and saturation 55-70% to be visible through overlays |
+| 2026-03-23 | self | React Aria Button `onClick` receives PressEvent (not MouseEvent). PressEvent has `.x`/`.y` which are `clientX`/`clientY` from the native event | Don't assume `.clientX`/`.clientY` on PressEvent — use `.x`/`.y` |
+
+| 2026-03-23 | self | Used `forwardRef` in a React 19 project | React 19 supports `ref` as a regular prop — no `forwardRef` needed |
+| 2026-03-23 | self | Wrapped a synchronous engine property assignment in `useEffect` for no reason | If a value can be set synchronously during render (e.g., `engine.status = status`), just do it — don't wrap in `useEffect` |
+| 2026-03-23 | self | Used inline `style={{ }}` for CSS properties that can be Tailwind classes | Use `tv()` + Tailwind arbitrary values (e.g., `[clip-path:inset(4px_round_28%)]`) instead of inline styles. Use `className="absolute"` instead of `style={{ position: 'absolute' }}` |
 
 ## User Preferences
 

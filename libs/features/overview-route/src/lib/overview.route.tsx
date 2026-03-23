@@ -1,5 +1,6 @@
 import { useListDeployments } from '@restate/data-access/admin-api-hooks';
-import { RestateServer } from './RestateServer';
+import { RestateServer } from '@restate/ui/restate-server';
+import { useRestateServerStatus } from './useRestateServerStatus';
 import { tv } from '@restate/util/styles';
 import {
   ServiceDeploymentExplainer,
@@ -14,6 +15,11 @@ import { ErrorBanner } from '@restate/ui/error';
 import { ServiceCard } from '@restate/features/service';
 import { TriggerRegisterDeploymentDialog } from '@restate/features/register-deployment';
 import { useRestateContext } from '@restate/features/restate-context';
+import {
+  useIsFetching,
+  useIsMutating,
+  useQueryClient,
+} from '@tanstack/react-query';
 
 function MultipleDeploymentsPlaceholder({
   filterText,
@@ -172,6 +178,21 @@ function Component() {
   const filterQuery = useDeferredValue(filter);
   const { GettingStarted, status, isNew } = useRestateContext();
 
+  const adminQueryPredicate = {
+    predicate(query: { meta?: Record<string, unknown> }) {
+      return Boolean(query.meta?.isAdmin);
+    },
+  };
+  const isAdminFetching = useIsFetching(adminQueryPredicate) > 0;
+  const isAdminMutating = useIsMutating(adminQueryPredicate) > 0;
+  const queryClient = useQueryClient();
+
+  const ferrofluidStatus = useRestateServerStatus({
+    isHealthy: status === 'HEALTHY',
+    isError,
+    isActive: isAdminFetching || isAdminMutating,
+  });
+
   useLayoutEffect(() => {
     let isCanceled = false;
     const resizeObserver = new ResizeObserver(() => {
@@ -237,8 +258,14 @@ function Component() {
           isError,
           isPending,
         })}
-        isError={isError}
+        status={ferrofluidStatus}
         isEmpty={isEmpty}
+        onPress={() => {
+          queryClient.refetchQueries(
+            adminQueryPredicate,
+            { cancelRefetch: true },
+          );
+        }}
       >
         {isEmpty && <NoDeploymentPlaceholder error={error} />}
 
