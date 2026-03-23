@@ -152,8 +152,7 @@ function supportsSplitTable(restateVersion: string): boolean {
 function filtersCompatibleWithSplitTable(filters: FilterItem[]): boolean {
   return filters.every(
     (f) =>
-      HIGHLIGHT_FIELDS.has(f.field) ||
-      SPLIT_TABLE_SHARED_FIELDS.has(f.field),
+      HIGHLIGHT_FIELDS.has(f.field) || SPLIT_TABLE_SHARED_FIELDS.has(f.field),
   );
 }
 
