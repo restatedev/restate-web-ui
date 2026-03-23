@@ -3,11 +3,11 @@ import type { AxisType } from '../types';
 
 export function useDatasetSource<T extends object>(
   data: T[],
-  xKey: keyof T,
+  xKey: keyof T | undefined,
   xType: AxisType,
 ) {
   return useMemo(() => {
-    if (xType !== 'time') {
+    if (xType !== 'time' || !xKey) {
       return data;
     }
     return data.map((row) => {

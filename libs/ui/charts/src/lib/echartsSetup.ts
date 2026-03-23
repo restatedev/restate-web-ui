@@ -1,5 +1,5 @@
 import { use } from 'echarts/core';
-import { BarChart, CustomChart } from 'echarts/charts';
+import { BarChart, CustomChart, PieChart } from 'echarts/charts';
 import {
   GridComponent,
   DatasetComponent,
@@ -17,6 +17,7 @@ export function ensureEchartsRegistered() {
   use([
     BarChart,
     CustomChart,
+    PieChart,
     GridComponent,
     DatasetComponent,
     TooltipComponent,

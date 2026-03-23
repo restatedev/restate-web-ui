@@ -12,4 +12,6 @@ export {
   TimeXAxis,
   BarTimeSeries,
   ValueYAxis,
+  Pie,
+  Slice,
 } from './lib/configParser';

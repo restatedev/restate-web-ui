@@ -14,10 +14,50 @@ export function useTooltip(
     const show = tooltipCfg?.show ?? true;
     const trigger = tooltipCfg?.trigger ?? 'item';
 
+    const pieFormatter = (params: TopLevelFormatterParams) => {
+      if (Array.isArray(params)) {
+        return '';
+      }
+      const { name, value } = params;
+      const yFormatter = tooltipCfg?.formatValue ?? noOp;
+
+      const container = document.createElement('div');
+      const header = document.createElement('div');
+      header.textContent = name ?? '';
+      header.style.color = 'rgba(255,255,255,0.9)';
+      header.style.fontWeight = '500';
+
+      const separator = document.createElement('hr');
+      separator.style.marginLeft = '-16px';
+      separator.style.marginRight = '-16px';
+      separator.style.backgroundColor = 'white';
+      separator.style.opacity = '0.2';
+      separator.style.marginTop = '16px';
+      separator.style.marginBottom = '16px';
+
+      const body = document.createElement('div');
+      body.textContent =
+        typeof value === 'number' ? yFormatter(value) : String(value ?? '');
+      body.style.fontSize = typeof value === 'number' ? '1.4em' : '1em';
+      body.style.fontWeight = '400';
+      body.style.color = 'rgba(255,255,255,0.9)';
+
+      container.appendChild(header);
+      container.appendChild(separator);
+      container.appendChild(body);
+
+      return container;
+    };
+
     const defaultFormatter = (params: TopLevelFormatterParams) => {
       if (Array.isArray(params)) {
         return '';
       }
+
+      if (params.seriesType === 'pie') {
+        return pieFormatter(params);
+      }
+
       const {
         encode = { x: [], y: [] },
         dimensionNames = {} as string[],

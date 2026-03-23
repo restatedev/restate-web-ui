@@ -8,6 +8,7 @@ import { useMarkLines } from './hooks/useMarkLines';
 import { useDatasetSource } from './hooks/useDatasetSource';
 import { useEchartsInit } from './hooks/useEchartsInit';
 import { useApplyOption } from './hooks/useApplyOption';
+import { usePie } from './hooks/usePie';
 import invariant from 'tiny-invariant';
 
 export function Chart<T extends object>({
@@ -23,27 +24,40 @@ export function Chart<T extends object>({
 }: ChartProps<T>) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const parsed = buildConfigFromChildren<T>(children);
-  invariant(parsed.xAxis, 'Missing XAxis');
+  const isPie = Boolean(parsed.pie);
 
-  const xType = parsed.xAxis.type;
-  const resolvedXKey = parsed.xAxis.dataKey;
+  if (!isPie) {
+    invariant(parsed.xAxis, 'Missing XAxis');
+  }
 
-  const datasetSource = useDatasetSource(data, resolvedXKey, xType);
+  const xType = parsed.xAxis?.type ?? 'category';
+  const resolvedXKey = parsed.xAxis?.dataKey;
+
+  const datasetSource = useDatasetSource(data ?? [], resolvedXKey, xType);
   const series = useSeries<T>(parsed, resolvedXKey);
   const tooltip = useTooltip(parsed.tooltip, xType, timeZone);
   const { xAxis, yAxis, grid } = useAxes(
-    parsed.xAxis,
+    parsed.xAxis ?? { type: 'category', dataKey: '' as any },
     parsed.yAxis,
     xType,
     parsed.grid,
   );
   const markLines = useMarkLines(parsed.refLines, xType);
+  const pieSeries = usePie(parsed.pie);
 
   const option: ECOption = useMemo(() => {
+    if (pieSeries) {
+      return {
+        animation: true,
+        tooltip,
+        legend: parsed.legend,
+        series: [pieSeries],
+      };
+    }
+
     return {
       animation: true,
       dataset: [{ id: 'main', source: datasetSource }],
-
       color: '#51a2ff',
       grid,
       tooltip,
@@ -53,7 +67,17 @@ export function Chart<T extends object>({
         markLines ? { ...s, markLine: markLines } : s,
       ),
     };
-  }, [datasetSource, grid, tooltip, xAxis, yAxis, series, markLines]);
+  }, [
+    pieSeries,
+    datasetSource,
+    grid,
+    tooltip,
+    xAxis,
+    yAxis,
+    series,
+    markLines,
+    parsed.legend,
+  ]);
 
   const chartRef = useEchartsInit(containerRef, theme);
   useApplyOption(chartRef, option);

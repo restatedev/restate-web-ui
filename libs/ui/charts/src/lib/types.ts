@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
 import type { EChartsType, SetOptionOpts, ComposeOption } from 'echarts/core';
-import type { BarSeriesOption, CustomSeriesOption } from 'echarts/charts';
+import type {
+  BarSeriesOption,
+  CustomSeriesOption,
+  PieSeriesOption,
+} from 'echarts/charts';
 import type {
   GridComponentOption,
   DatasetComponentOption,
@@ -82,6 +86,23 @@ export type BarTimeSeriesCfg = BaseSeriesCfg & {
 };
 export type AnySeriesCfg = BarSeriesCfg | BarTimeSeriesCfg | BaseSeriesCfg;
 
+export type SliceConfig = {
+  name: string;
+  value: number;
+  color?: string;
+  borderColor?: string;
+  borderWidth?: number;
+  borderRadius?: number;
+};
+
+export type PieConfig = {
+  radius?: string | [string, string];
+  center?: [string, string];
+  startAngle?: number;
+  endAngle?: number;
+  slices: SliceConfig[];
+};
+
 export type ChartConfig<T extends object> = {
   xAxis?: XAxisConfig<T>;
   yAxis?: YAxisConfig<T>;
@@ -90,10 +111,11 @@ export type ChartConfig<T extends object> = {
   legend?: LegendConfig;
   series: AnySeriesCfg[];
   refLines: RefLineConfig[];
+  pie?: PieConfig;
 };
 
 export type ChartProps<T extends object> = {
-  data: T[];
+  data?: T[];
   width?: number | string;
   height?: number | string;
   style?: CSSProperties;
@@ -113,6 +135,7 @@ export type ChartHandle = {
 export type ECOption = ComposeOption<
   | BarSeriesOption
   | CustomSeriesOption
+  | PieSeriesOption
   | GridComponentOption
   | DatasetComponentOption
   | TooltipComponentOption

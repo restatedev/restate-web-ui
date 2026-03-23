@@ -7,7 +7,13 @@ import {
   ReactNode,
 } from 'react';
 
-import type { AnySeriesCfg, BarTimeSeriesCfg, ChartConfig } from './types';
+import type {
+  AnySeriesCfg,
+  BarTimeSeriesCfg,
+  ChartConfig,
+  PieConfig,
+  SliceConfig,
+} from './types';
 
 export function XAxis<T extends object>(props: ChartConfig<T>['xAxis']) {
   return null;
@@ -57,6 +63,14 @@ export function BarTimeSeries<T extends object>(
 ) {
   return null;
 }
+export function Slice(props: SliceConfig) {
+  return null;
+}
+export function Pie(
+  props: Omit<PieConfig, 'slices'> & { children?: ReactNode },
+) {
+  return null;
+}
 
 function componentGuardFactory<C extends ComponentType<any>>(component: C) {
   return (ch: ReactElement): ch is ReactElement<ComponentProps<C>, C> => {
@@ -74,6 +88,8 @@ const isCartesianGrid = componentGuardFactory(CartesianGrid);
 const isReferenceLine = componentGuardFactory(ReferenceLine);
 const isSeries = componentGuardFactory(Series);
 const isBarTimeSeries = componentGuardFactory(BarTimeSeries);
+const isSlice = componentGuardFactory(Slice);
+const isPie = componentGuardFactory(Pie);
 
 export function buildConfigFromChildren<T extends object>(
   children: ReactNode,
@@ -149,6 +165,17 @@ export function buildConfigFromChildren<T extends object>(
         ...(ch.props as AnySeriesCfg),
         type: 'bar-time',
       });
+    }
+    if (isPie(ch)) {
+      const { children: pieChildren, ...pieProps } = ch.props;
+      const slices: SliceConfig[] = [];
+      Children.forEach(pieChildren, (sliceCh) => {
+        if (!isValidElement(sliceCh)) return;
+        if (isSlice(sliceCh)) {
+          slices.push({ ...sliceCh.props });
+        }
+      });
+      cfg.pie = { ...pieProps, slices };
     }
   });
 

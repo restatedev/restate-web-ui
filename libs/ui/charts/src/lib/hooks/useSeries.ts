@@ -10,10 +10,11 @@ function isSeries(
 
 export function useSeries<T extends object>(
   config: ChartConfig<T>,
-  resolvedXKey: Exclude<keyof T, number | symbol>,
+  resolvedXKey: Exclude<keyof T, number | symbol> | undefined,
 ) {
   const series = useMemo(() => {
-    const ctx: SeriesBuildCtx = { resolvedXKey };
+    if (!config.series.length) return [];
+    const ctx: SeriesBuildCtx = { resolvedXKey: resolvedXKey ?? '' };
     const buildSeries = config.series
       .map((cfg, idx) => {
         const builder = seriesBuilders[cfg.type as keyof typeof seriesBuilders];
