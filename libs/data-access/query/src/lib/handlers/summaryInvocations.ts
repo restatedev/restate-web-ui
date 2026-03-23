@@ -7,6 +7,41 @@ const DEFAULT_SAMPLE_SIZE = 50000;
 const HIGHLIGHT_FIELDS = new Set(['status', 'target_service_name']);
 const FAILED_SUBSTATES = ['failed', 'cancelled', 'killed'];
 const SPLIT_TABLE_MIN_VERSION = '1.7.0';
+const STATUS_TABLE_FIELDS = new Set([
+  'id',
+  'status',
+  'completion_result',
+  'completion_failure',
+  'target',
+  'target_service_name',
+  'target_service_key',
+  'target_handler_name',
+  'target_service_ty',
+  'idempotency_key',
+  'invoked_by',
+  'invoked_by_id',
+  'invoked_by_subscription_id',
+  'invoked_by_service_name',
+  'invoked_by_target',
+  'restarted_from',
+  'pinned_deployment_id',
+  'pinned_service_protocol_version',
+  'trace_id',
+  'journal_size',
+  'journal_commands_size',
+  'created_at',
+  'created_using_restate_version',
+  'modified_at',
+  'inboxed_at',
+  'scheduled_at',
+  'scheduled_start_at',
+  'running_at',
+  'completed_at',
+  'completion_retention',
+  'journal_retention',
+  'suspended_waiting_for_completions',
+  'suspended_waiting_for_signals',
+]);
 
 function expandStatus(status: string): string[] {
   return status === 'failed' ? FAILED_SUBSTATES : [status];
@@ -141,6 +176,14 @@ function supportsSplitTable(restateVersion: string): boolean {
   return released ? semverGte(released, SPLIT_TABLE_MIN_VERSION) : false;
 }
 
+function filtersCompatibleWithSplitTable(filters: FilterItem[]): boolean {
+  return filters.every(
+    (f) =>
+      HIGHLIGHT_FIELDS.has(f.field) ||
+      STATUS_TABLE_FIELDS.has(f.field),
+  );
+}
+
 export async function summaryInvocations(
   this: QueryContext,
   filters: FilterItem[],
@@ -148,7 +191,10 @@ export async function summaryInvocations(
   sampleSize = DEFAULT_SAMPLE_SIZE,
   includeDuration = false,
 ) {
-  if (supportsSplitTable(this.restateVersion)) {
+  if (
+    supportsSplitTable(this.restateVersion) &&
+    filtersCompatibleWithSplitTable(filters)
+  ) {
     return summaryInvocationsSplit.call(
       this,
       filters,
