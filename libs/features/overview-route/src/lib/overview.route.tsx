@@ -261,10 +261,9 @@ function Component() {
         status={ferrofluidStatus}
         isEmpty={isEmpty}
         onPress={() => {
-          queryClient.refetchQueries(
-            adminQueryPredicate,
-            { cancelRefetch: true },
-          );
+          queryClient.refetchQueries(adminQueryPredicate, {
+            cancelRefetch: true,
+          });
         }}
       >
         {isEmpty && <NoDeploymentPlaceholder error={error} />}

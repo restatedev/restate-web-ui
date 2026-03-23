@@ -161,35 +161,63 @@ export class FerrofluidEngine {
     for (let i = 0; i < 3; i++) {
       const a = (TWO_PI / 3) * i + Math.random() * 0.5;
       this.addBall(
-        cx + Math.cos(a) * r * 0.1, cy + Math.sin(a) * r * 0.1,
-        r * 0.34, a, r * 0.22, 0.3 + i * 0.15, 30 + i * 25,
+        cx + Math.cos(a) * r * 0.1,
+        cy + Math.sin(a) * r * 0.1,
+        r * 0.34,
+        a,
+        r * 0.22,
+        0.3 + i * 0.15,
+        30 + i * 25,
       );
     }
 
     for (let i = 0; i < 5; i++) {
       const a = (TWO_PI / 5) * i + Math.random() * 0.3;
       this.addBall(
-        cx + Math.cos(a) * r * 0.15, cy + Math.sin(a) * r * 0.15,
-        r * 0.16, a, r * 0.4, 0.45 + i * 0.1, 15 + i * 18,
+        cx + Math.cos(a) * r * 0.15,
+        cy + Math.sin(a) * r * 0.15,
+        r * 0.16,
+        a,
+        r * 0.4,
+        0.45 + i * 0.1,
+        15 + i * 18,
       );
     }
 
     for (let i = 0; i < 4; i++) {
       const a = (TWO_PI / 4) * i + Math.random();
       this.addBall(
-        cx + Math.cos(a) * r * 0.2, cy + Math.sin(a) * r * 0.2,
-        r * 0.1, a, r * 0.5, 0.6 + i * 0.12, 40 + i * 20,
+        cx + Math.cos(a) * r * 0.2,
+        cy + Math.sin(a) * r * 0.2,
+        r * 0.1,
+        a,
+        r * 0.5,
+        0.6 + i * 0.12,
+        40 + i * 20,
       );
     }
   }
 
   private addBall(
-    x: number, y: number, radius: number,
-    baseAngle: number, orbitRadius: number, orbitSpeed: number, hueOffset: number,
+    x: number,
+    y: number,
+    radius: number,
+    baseAngle: number,
+    orbitRadius: number,
+    orbitSpeed: number,
+    hueOffset: number,
   ) {
     this.metaballs.push({
-      x, y, vx: 0, vy: 0, radius, baseAngle,
-      orbitRadius, orbitSpeed, noisePhase: Math.random() * 100, hueOffset,
+      x,
+      y,
+      vx: 0,
+      vy: 0,
+      radius,
+      baseAngle,
+      orbitRadius,
+      orbitSpeed,
+      noisePhase: Math.random() * 100,
+      hueOffset,
     });
   }
 
@@ -212,7 +240,16 @@ export class FerrofluidEngine {
   }
 
   private updatePhysics() {
-    const { cx, cy, baseRadius, time, curSpread, curSpeed, curNoiseAmp, curNoiseSpeed } = this;
+    const {
+      cx,
+      cy,
+      baseRadius,
+      time,
+      curSpread,
+      curSpeed,
+      curNoiseAmp,
+      curNoiseSpeed,
+    } = this;
     const softMax = this._logicalSize * 0.38;
     const hardMax = this._logicalSize * 0.45;
 
@@ -224,10 +261,16 @@ export class FerrofluidEngine {
       const n2x = noise2D(b.noisePhase + 100, time * curNoiseSpeed * 0.5);
       const n2y = noise2D(b.noisePhase + 150, time * curNoiseSpeed * 0.5);
 
-      const tx = cx + Math.cos(b.baseAngle) * b.orbitRadius * curSpread
-        + n1x * curNoiseAmp + n2x * curNoiseAmp * 0.3;
-      const ty = cy + Math.sin(b.baseAngle) * b.orbitRadius * curSpread
-        + n1y * curNoiseAmp + n2y * curNoiseAmp * 0.3;
+      const tx =
+        cx +
+        Math.cos(b.baseAngle) * b.orbitRadius * curSpread +
+        n1x * curNoiseAmp +
+        n2x * curNoiseAmp * 0.3;
+      const ty =
+        cy +
+        Math.sin(b.baseAngle) * b.orbitRadius * curSpread +
+        n1y * curNoiseAmp +
+        n2y * curNoiseAmp * 0.3;
 
       b.vx += (tx - b.x) * SPRING;
       b.vy += (ty - b.y) * SPRING;
@@ -289,10 +332,15 @@ export class FerrofluidEngine {
 
     const baseHue = 250 + Math.sin(time * 0.15) * 12;
     for (const b of metaballs) {
-      const h = baseHue + b.hueOffset + Math.sin(time * 0.3 + b.noisePhase) * 10;
+      const h =
+        baseHue + b.hueOffset + Math.sin(time * 0.3 + b.noisePhase) * 10;
       const grad = cCtx.createRadialGradient(
-        b.x - b.radius * 0.15, b.y - b.radius * 0.15, 0,
-        b.x, b.y, b.radius * 1.1,
+        b.x - b.radius * 0.15,
+        b.y - b.radius * 0.15,
+        0,
+        b.x,
+        b.y,
+        b.radius * 1.1,
       );
       grad.addColorStop(0, `hsla(${h}, 65%, 55%, 0.85)`);
       grad.addColorStop(0.6, `hsla(${h + 15}, 55%, 48%, 0.4)`);
@@ -309,9 +357,24 @@ export class FerrofluidEngine {
       baseHue - 30 + Math.cos(time * 0.18) * 12,
     ];
     const meshPoints = [
-      { x: cx + Math.cos(time * 0.1) * baseRadius * 0.45, y: cy + Math.sin(time * 0.13) * baseRadius * 0.4, r: baseRadius * 0.9, a: 0.7 },
-      { x: cx + Math.cos(time * 0.08 + 2.2) * baseRadius * 0.5, y: cy + Math.sin(time * 0.11 + 2.2) * baseRadius * 0.45, r: baseRadius * 0.85, a: 0.6 },
-      { x: cx + Math.cos(time * 0.07 + 4.0) * baseRadius * 0.4, y: cy + Math.sin(time * 0.09 + 4.0) * baseRadius * 0.5, r: baseRadius * 0.8, a: 0.5 },
+      {
+        x: cx + Math.cos(time * 0.1) * baseRadius * 0.45,
+        y: cy + Math.sin(time * 0.13) * baseRadius * 0.4,
+        r: baseRadius * 0.9,
+        a: 0.7,
+      },
+      {
+        x: cx + Math.cos(time * 0.08 + 2.2) * baseRadius * 0.5,
+        y: cy + Math.sin(time * 0.11 + 2.2) * baseRadius * 0.45,
+        r: baseRadius * 0.85,
+        a: 0.6,
+      },
+      {
+        x: cx + Math.cos(time * 0.07 + 4.0) * baseRadius * 0.4,
+        y: cy + Math.sin(time * 0.09 + 4.0) * baseRadius * 0.5,
+        r: baseRadius * 0.8,
+        a: 0.5,
+      },
     ];
     for (let i = 0; i < meshPoints.length; i++) {
       const p = meshPoints[i]!;
@@ -324,9 +387,20 @@ export class FerrofluidEngine {
     }
 
     const shineAngle = time * 0.2;
-    const sx = this.mousePos ? cx + (this.mousePos.x - cx) * 0.2 : cx + Math.cos(shineAngle) * baseRadius * 0.15;
-    const sy = this.mousePos ? cy + (this.mousePos.y - cy) * 0.2 : cy + Math.sin(shineAngle) * baseRadius * 0.15;
-    const specGrad = cCtx.createRadialGradient(sx, sy, 0, sx, sy, baseRadius * 0.5);
+    const sx = this.mousePos
+      ? cx + (this.mousePos.x - cx) * 0.2
+      : cx + Math.cos(shineAngle) * baseRadius * 0.15;
+    const sy = this.mousePos
+      ? cy + (this.mousePos.y - cy) * 0.2
+      : cy + Math.sin(shineAngle) * baseRadius * 0.15;
+    const specGrad = cCtx.createRadialGradient(
+      sx,
+      sy,
+      0,
+      sx,
+      sy,
+      baseRadius * 0.5,
+    );
     specGrad.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
     specGrad.addColorStop(0.25, 'rgba(255, 255, 255, 0.08)');
     specGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
