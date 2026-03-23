@@ -1102,7 +1102,7 @@ packages:
     engines: {node: '>=18'}
 
   '@buf/restatedev_service-protocol.bufbuild_es@2.2.3-20240606160341-127256df3b4d.1':
-    resolution: {tarball: https://buf.build/gen/npm/v1/@buf/restatedev_service-protocol.bufbuild_es/-/restatedev_service-protocol.bufbuild_es-2.2.3-20240606160341-127256df3b4d.1.tgz, integrity: sha512-v5EQW3umv7sWka+SsRRMHdM9D53pING7aD9Mrw//kj5C46RwSTO24U4SGq8ubJBQc46G3VGs4GvTKVAuR8iUYg==}
+    resolution: {integrity: sha512-v5EQW3umv7sWka+SsRRMHdM9D53pING7aD9Mrw//kj5C46RwSTO24U4SGq8ubJBQc46G3VGs4GvTKVAuR8iUYg==}
     peerDependencies:
       '@bufbuild/protobuf': ^2.2.3
 
