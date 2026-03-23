@@ -87,6 +87,7 @@ import {
   ZoomOut,
   ZoomIn,
   Forward,
+  Search,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from '@restate/util/styles';
@@ -220,6 +221,7 @@ export const enum IconName {
   ZoomOut = 'ZoomOut',
   ZoomIn = 'ZoomIn',
   Forward = 'Forward',
+  Search = 'Search',
 }
 export interface IconsProps {
   name: IconName;
@@ -337,6 +339,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.ZoomOut]: ZoomOut,
   [IconName.ZoomIn]: ZoomIn,
   [IconName.Forward]: Forward,
+  [IconName.Search]: Search,
 };
 
 const styles = tv({

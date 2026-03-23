@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
 import {
   GridList as AriaGridList,
-  Input,
+  Input as AriaInput,
+  Label,
   SearchField,
   Virtualizer,
   ListLayout,
@@ -12,19 +13,19 @@ import { GridListColumnsContext } from './GridListContext';
 import { GridListColumn, GridListProps } from './types';
 
 const containerStyles = tv({
-  base: 'flex flex-col overflow-hidden rounded-xl border bg-gray-50 shadow-xs shadow-zinc-800/5',
+  base: 'flex flex-col',
 });
 
 const filterStyles = tv({
-  base: 'flex items-center gap-2 border-b bg-white px-3 py-2',
+  base: 'w-[30ch] outline-none',
 });
 
 const filterInputStyles = tv({
-  base: 'w-full bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400',
+  base: 'mt-0 w-full min-w-0 rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 pl-8 text-sm text-gray-900 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] placeholder:text-gray-500/70 focus:border-gray-200 focus:shadow-none focus:[box-shadow:inset_0_1px_0px_0px_rgba(0,0,0,0.03)] focus:outline-2 focus:outline-blue-600',
 });
 
 const headerStyles = tv({
-  base: 'sticky top-0 z-10 grid items-center bg-gray-100/80 px-3 py-2 drop-shadow-[0px_1px_0px_rgba(0,0,0,0.1)] backdrop-blur-xl backdrop-saturate-200 supports-[-moz-appearance:none]:bg-gray-100',
+  base: 'grid items-center gap-x-2 py-2',
 });
 
 const headerCellStyles = tv({
@@ -48,7 +49,16 @@ const sortIconStyles = tv({
 });
 
 const listStyles = tv({
-  base: 'flex flex-col gap-2 overflow-auto p-2 outline-none [scrollbar-gutter:stable] [scrollbar-width:thin]',
+  base: 'gap-2 p-2 outline-none [scrollbar-gutter:stable] [scrollbar-width:thin]',
+  variants: {
+    virtualized: {
+      true: 'block',
+      false: 'flex flex-col overflow-auto',
+    },
+  },
+  defaultVariants: {
+    virtualized: false,
+  },
 });
 
 function GridListHeader<T extends object>({
@@ -56,16 +66,18 @@ function GridListHeader<T extends object>({
   gridTemplateColumns,
   sortDescriptor,
   onSortChange,
+  className,
 }: {
   columns: GridListColumn<T>[];
   gridTemplateColumns: string;
   sortDescriptor?: GridListProps<T>['sortDescriptor'];
   onSortChange?: GridListProps<T>['onSortChange'];
+  className?: string;
 }) {
   return (
     <div
       role="presentation"
-      className={headerStyles()}
+      className={headerStyles({ className })}
       style={{ gridTemplateColumns }}
     >
       {columns.map((column) => {
@@ -142,18 +154,20 @@ export function GridList<T extends object>({
   onSelectionChange,
   onAction,
   renderEmptyState,
+  virtualized = false,
   estimatedRowHeight = 60,
   className,
+  headerClassName,
   ...props
 }: GridListProps<T>) {
   const gridTemplateColumns = useMemo(
     () => columns.map((c) => c.width ?? '1fr').join(' '),
-    [columns]
+    [columns],
   );
 
   const layoutOptions = useMemo(
     () => ({ estimatedRowHeight, gap: 8, padding: 0 }),
-    [estimatedRowHeight]
+    [estimatedRowHeight],
   );
 
   return (
@@ -173,14 +187,17 @@ export function GridList<T extends object>({
             onChange={onFilterChange}
             className={filterStyles()}
           >
-            <Icon
-              name={IconName.ScanSearch}
-              className="h-4 w-4 shrink-0 text-gray-400"
-            />
-            <Input
-              placeholder={filterPlaceholder}
-              className={filterInputStyles()}
-            />
+            <Label className="sr-only">{filterPlaceholder}</Label>
+            <div className="relative min-h-8.5">
+              <AriaInput
+                placeholder={filterPlaceholder}
+                className={filterInputStyles()}
+              />
+              <Icon
+                name={IconName.Search}
+                className="pointer-events-none absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+              />
+            </div>
           </SearchField>
         )}
         <GridListHeader
@@ -188,8 +205,24 @@ export function GridList<T extends object>({
           gridTemplateColumns={gridTemplateColumns}
           sortDescriptor={sortDescriptor}
           onSortChange={onSortChange}
+          className={headerClassName}
         />
-        <Virtualizer layout={ListLayout} layoutOptions={layoutOptions}>
+        {virtualized ? (
+          <Virtualizer layout={ListLayout} layoutOptions={layoutOptions}>
+            <AriaGridList
+              aria-label={props['aria-label']}
+              items={items}
+              selectionMode={selectionMode}
+              selectedKeys={selectedKeys}
+              onSelectionChange={onSelectionChange}
+              onAction={onAction}
+              renderEmptyState={renderEmptyState}
+              className={listStyles({ virtualized: true })}
+            >
+              {children}
+            </AriaGridList>
+          </Virtualizer>
+        ) : (
           <AriaGridList
             aria-label={props['aria-label']}
             items={items}
@@ -199,11 +232,10 @@ export function GridList<T extends object>({
             onAction={onAction}
             renderEmptyState={renderEmptyState}
             className={listStyles()}
-            style={{ display: 'block', padding: 0 }}
           >
             {children}
           </AriaGridList>
-        </Virtualizer>
+        )}
       </div>
     </GridListColumnsContext.Provider>
   );

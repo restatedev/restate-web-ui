@@ -42,6 +42,8 @@
 | 2026-03-23 | self | Used `forwardRef` in a React 19 project | React 19 supports `ref` as a regular prop — no `forwardRef` needed |
 | 2026-03-23 | self | Wrapped a synchronous engine property assignment in `useEffect` for no reason | If a value can be set synchronously during render (e.g., `engine.status = status`), just do it — don't wrap in `useEffect` |
 | 2026-03-23 | self | Used inline `style={{ }}` for CSS properties that can be Tailwind classes | Use `tv()` + Tailwind arbitrary values (e.g., `[clip-path:inset(4px_round_28%)]`) instead of inline styles. Use `className="absolute"` instead of `style={{ position: 'absolute' }}` |
+| 2026-03-23 | self | Tried multiple broken focus ring approaches (CSS focus-within, ring utilities, composeRenderProps) for SearchField filter input | Follow the exact `FormFieldInput` pattern: `SearchField` with `outline-none`, `div.relative.min-h-8.5` container, `AriaInput` in normal flow (not absolute) with `focus:outline-2 focus:outline-blue-600`, icon as absolute sibling. Don't invent new focus patterns — copy working ones from the codebase |
+| 2026-03-23 | self | SearchField render props don't include `isFocusVisible` — so `focusRing` tv variant never triggers on SearchField | Check actual render props types before using `focusRing` — it requires `isFocusVisible` which only some React Aria components provide |
 
 ## User Preferences
 

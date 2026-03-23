@@ -1,16 +1,11 @@
 import { ReactNode, useMemo } from 'react';
-import {
-  GridListItem as AriaGridListItem,
-  composeRenderProps,
-} from 'react-aria-components';
+import { GridListItem as AriaGridListItem } from 'react-aria-components';
 import { tv } from '@restate/util/styles';
-import { focusRing } from '@restate/ui/focus';
 import { useGridListColumns } from './GridListContext';
 import { GridListItemProps } from './types';
 
 const itemStyles = tv({
-  extend: focusRing,
-  base: 'cursor-default outline-none -outline-offset-2',
+  base: 'cursor-default outline-none',
 });
 
 function Cells<T>({
@@ -22,13 +17,13 @@ function Cells<T>({
 }) {
   const gridTemplateColumns = useMemo(
     () => columns.map((c) => c.width ?? '1fr').join(' '),
-    [columns]
+    [columns],
   );
 
   return (
     <div
       role="presentation"
-      className="grid items-center gap-x-2 px-3 py-2"
+      className="grid items-center gap-x-2"
       style={{ gridTemplateColumns }}
     >
       {columns.map((column) => (
@@ -44,22 +39,25 @@ export function GridListItem<T>({
   id,
   item,
   textValue,
+  href,
   children,
   className,
 }: GridListItemProps<T>) {
   const columns = useGridListColumns<T>();
 
-  const cells = <Cells item={item} columns={columns} />;
-
   return (
     <AriaGridListItem
       id={id}
       textValue={textValue}
-      className={composeRenderProps(className, (cls, renderProps) =>
-        itemStyles({ ...renderProps, className: cls })
-      )}
+      href={href}
+      className={itemStyles({ className })}
     >
-      {children ? children({ cells }) : cells}
+      {({ isHovered, isPressed, isFocusVisible, isSelected }) => {
+        const cells = <Cells item={item} columns={columns} />;
+        return children
+          ? children({ cells, isHovered, isPressed, isFocusVisible, isSelected })
+          : cells;
+      }}
     </AriaGridListItem>
   );
 }
