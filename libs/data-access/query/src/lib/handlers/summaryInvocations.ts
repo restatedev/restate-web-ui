@@ -11,6 +11,9 @@ const SPLIT_TABLE_SHARED_FIELDS = new Set([
   'id',
   'partition_key',
   'target_service_name',
+  'target_service_key',
+  'target_handler_name',
+  'target_service_ty',
 ]);
 
 function expandStatus(status: string): string[] {
