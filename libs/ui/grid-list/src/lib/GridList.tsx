@@ -1,14 +1,12 @@
 import { useMemo } from 'react';
 import {
   GridList as AriaGridList,
-  Input as AriaInput,
-  Label,
-  SearchField,
   Virtualizer,
   ListLayout,
 } from 'react-aria-components';
 import { tv } from '@restate/util/styles';
 import { Icon, IconName } from '@restate/ui/icons';
+import { Button } from '@restate/ui/button';
 import { GridListColumnsContext } from './GridListContext';
 import { GridListColumn, GridListProps } from './types';
 
@@ -16,23 +14,15 @@ const containerStyles = tv({
   base: 'flex flex-col',
 });
 
-const filterStyles = tv({
-  base: 'w-[30ch] outline-none',
-});
-
-const filterInputStyles = tv({
-  base: 'mt-0 w-full min-w-0 rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 pl-8 text-sm text-gray-900 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] placeholder:text-gray-500/70 focus:border-gray-200 focus:shadow-none focus:[box-shadow:inset_0_1px_0px_0px_rgba(0,0,0,0.03)] focus:outline-2 focus:outline-blue-600',
-});
-
 const headerStyles = tv({
-  base: 'grid items-center gap-x-2 py-2',
+  base: 'grid items-center gap-x-2 py-1',
 });
 
 const headerCellStyles = tv({
-  base: 'flex items-center gap-1 text-start text-sm font-semibold text-gray-700',
+  base: 'flex items-center gap-1 text-start text-sm font-medium text-gray-500',
   variants: {
     allowsSorting: {
-      true: 'cursor-pointer select-none',
+      true: 'w-auto cursor-pointer justify-start justify-self-start rounded-lg select-none',
       false: 'cursor-default',
     },
   },
@@ -49,7 +39,7 @@ const sortIconStyles = tv({
 });
 
 const listStyles = tv({
-  base: 'gap-2 p-2 outline-none [scrollbar-gutter:stable] [scrollbar-width:thin]',
+  base: 'gap-2 px-2 pt-1 pb-2 outline-none [scrollbar-gutter:stable] [scrollbar-width:thin]',
   variants: {
     virtualized: {
       true: 'block',
@@ -84,55 +74,42 @@ function GridListHeader<T extends object>({
         const isSorted = sortDescriptor?.column === column.id;
         const sortDirection = isSorted ? sortDescriptor.direction : undefined;
 
+        if (column.allowsSorting && onSortChange) {
+          return (
+            <Button
+              key={column.id}
+              variant="icon"
+              className={headerCellStyles({ allowsSorting: true })}
+              onClick={() => {
+                onSortChange({
+                  column: column.id,
+                  direction:
+                    isSorted && sortDescriptor.direction === 'ascending'
+                      ? 'descending'
+                      : 'ascending',
+                });
+              }}
+            >
+              {column.title}
+              {sortDirection && (
+                <span className={sortIconStyles({ direction: sortDirection })}>
+                  <Icon
+                    name={IconName.ArrowUp}
+                    className="h-3 w-3 text-gray-600"
+                  />
+                </span>
+              )}
+            </Button>
+          );
+        }
+
         return (
           <div
             key={column.id}
-            role={column.allowsSorting ? 'button' : 'presentation'}
-            tabIndex={column.allowsSorting ? 0 : undefined}
-            className={headerCellStyles({
-              allowsSorting: Boolean(column.allowsSorting),
-            })}
-            onClick={
-              column.allowsSorting && onSortChange
-                ? () => {
-                    onSortChange({
-                      column: column.id,
-                      direction:
-                        isSorted && sortDescriptor.direction === 'ascending'
-                          ? 'descending'
-                          : 'ascending',
-                    });
-                  }
-                : undefined
-            }
-            onKeyDown={
-              column.allowsSorting && onSortChange
-                ? (e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      onSortChange({
-                        column: column.id,
-                        direction:
-                          isSorted && sortDescriptor.direction === 'ascending'
-                            ? 'descending'
-                            : 'ascending',
-                      });
-                    }
-                  }
-                : undefined
-            }
+            role="presentation"
+            className={headerCellStyles({ allowsSorting: false })}
           >
             {column.title}
-            {column.allowsSorting && (
-              <span className={sortIconStyles({ direction: sortDirection })}>
-                {sortDirection && (
-                  <Icon
-                    name={IconName.ChevronUp}
-                    className="h-4 w-4 text-gray-500"
-                  />
-                )}
-              </span>
-            )}
           </div>
         );
       })}
@@ -146,14 +123,12 @@ export function GridList<T extends object>({
   children,
   sortDescriptor,
   onSortChange,
-  filterValue,
-  onFilterChange,
-  filterPlaceholder = 'Filter…',
   selectionMode,
   selectedKeys,
   onSelectionChange,
   onAction,
   renderEmptyState,
+  dependencies,
   virtualized = false,
   estimatedRowHeight = 60,
   className,
@@ -180,26 +155,6 @@ export function GridList<T extends object>({
           } as React.CSSProperties
         }
       >
-        {onFilterChange !== undefined && (
-          <SearchField
-            aria-label="Filter"
-            value={filterValue ?? ''}
-            onChange={onFilterChange}
-            className={filterStyles()}
-          >
-            <Label className="sr-only">{filterPlaceholder}</Label>
-            <div className="relative min-h-8.5">
-              <AriaInput
-                placeholder={filterPlaceholder}
-                className={filterInputStyles()}
-              />
-              <Icon
-                name={IconName.Search}
-                className="pointer-events-none absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2 text-gray-400"
-              />
-            </div>
-          </SearchField>
-        )}
         <GridListHeader
           columns={columns}
           gridTemplateColumns={gridTemplateColumns}
@@ -212,6 +167,7 @@ export function GridList<T extends object>({
             <AriaGridList
               aria-label={props['aria-label']}
               items={items}
+              dependencies={dependencies}
               selectionMode={selectionMode}
               selectedKeys={selectedKeys}
               onSelectionChange={onSelectionChange}
@@ -226,6 +182,7 @@ export function GridList<T extends object>({
           <AriaGridList
             aria-label={props['aria-label']}
             items={items}
+            dependencies={dependencies}
             selectionMode={selectionMode}
             selectedKeys={selectedKeys}
             onSelectionChange={onSelectionChange}

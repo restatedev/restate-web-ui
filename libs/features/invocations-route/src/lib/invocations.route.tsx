@@ -660,16 +660,25 @@ export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
   );
   sessionStorage.removeItem('query');
 
-  Array.from(previousSearchParams.keys()).forEach((key) => {
-    reqSearchParams.delete(key);
-  });
-  previousSearchParams.forEach((value, name) => {
-    if (reqSearchParams.has(name)) {
-      reqSearchParams.append(name, value);
-    } else {
-      reqSearchParams.set(name, value);
-    }
-  });
+  const hasExplicitParams = Array.from(reqSearchParams.keys()).some(
+    (key) =>
+      key.startsWith(FILTER_QUERY_PREFIX) ||
+      key.startsWith(SORT_QUERY_PREFIX) ||
+      key.startsWith(COLUMN_QUERY_PREFIX),
+  );
+
+  if (!hasExplicitParams) {
+    Array.from(previousSearchParams.keys()).forEach((key) => {
+      reqSearchParams.delete(key);
+    });
+    previousSearchParams.forEach((value, name) => {
+      if (reqSearchParams.has(name)) {
+        reqSearchParams.append(name, value);
+      } else {
+        reqSearchParams.set(name, value);
+      }
+    });
+  }
 
   if (
     isSortValid(reqSearchParams) &&

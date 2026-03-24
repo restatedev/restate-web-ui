@@ -11,7 +11,7 @@ const containerStyles = tv({
 });
 
 const buttonStyles = tv({
-  base: 'group flex h-[142px] w-[142px] border-none bg-none px-0 py-0 shadow-none transition-all hover:scale-105 hover:bg-transparent focus:outline-hidden pressed:scale-95 pressed:bg-transparent [&:has([data-status=active])_.server]:filter-[drop-shadow(0_4px_3px_--theme(--color-zinc-800/6%))_drop-shadow(0_10px_8px_--theme(--color-blue-400/12%))_drop-shadow(0_24px_18px_--theme(--color-blue-400/8%))] [&:not(:hover):has([data-status=active])]:scale-[1.025]',
+  base: 'group flex h-[142px] w-[142px] border-none bg-none px-0 py-0 shadow-none transition-all duration-300 hover:scale-105 hover:bg-transparent focus:outline-hidden pressed:scale-95 pressed:bg-transparent [&:has([data-status=active])_.server]:filter-[drop-shadow(0_4px_3px_--theme(--color-zinc-800/6%))_drop-shadow(0_10px_8px_--theme(--color-blue-400/12%))_drop-shadow(0_24px_18px_--theme(--color-blue-400/8%))] [&:not(:hover):has([data-status=active])]:scale-[1.025]',
   variants: {
     isEmpty: {
       true: 'relative m-[4px]',
@@ -65,7 +65,7 @@ export function RestateServer({
             fillRule="evenodd"
             clipRule="evenodd"
             d="M60 0C10.59 0 0 10.59 0 60C0 109.41 10.59 120 60 120C109.41 120 120 109.41 120 60C120 10.59 109.41 0 60 0Z"
-            className="border fill-gray-200/50 stroke-gray-200 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]"
+            className="border fill-gray-100/60 stroke-gray-300/60 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]"
           />
         </svg>
       )}
@@ -98,7 +98,7 @@ export function RestateServer({
             fillRule="evenodd"
             clipRule="evenodd"
             d="M60 0C10.59 0 0 10.59 0 60C0 109.41 10.59 120 60 120C109.41 120 120 109.41 120 60C120 10.59 109.41 0 60 0Z"
-            className="background fill-gray-50/70 backdrop-blur-3xl backdrop-saturate-200"
+            className="background fill-white/20 backdrop-blur-lg backdrop-saturate-200"
           />
         </svg>
         <svg

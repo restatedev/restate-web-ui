@@ -150,7 +150,7 @@ export function useSqlQuery(
   const results = useQuery({
     ...queryOptions,
     ...options,
-    enabled: Boolean(query),
+    enabled: Boolean(query) && (options?.enabled !== false),
   });
 
   return {

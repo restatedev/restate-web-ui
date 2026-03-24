@@ -1,4 +1,5 @@
 import { useMemo, useRef, useImperativeHandle } from 'react';
+import type { EChartsType } from 'echarts/core';
 import type { ChartProps, ECOption } from './types';
 import { buildConfigFromChildren } from './configParser';
 import { useSeries } from './hooks/useSeries';
@@ -43,7 +44,8 @@ export function Chart<T extends object>({
     parsed.grid,
   );
   const markLines = useMarkLines(parsed.refLines, xType);
-  const pieSeries = usePie(parsed.pie);
+  const echartsInstanceRef = useRef<EChartsType | null>(null);
+  const pieSeries = usePie(parsed.pie, echartsInstanceRef);
 
   const option: ECOption = useMemo(() => {
     if (pieSeries) {
@@ -51,7 +53,7 @@ export function Chart<T extends object>({
         animation: true,
         tooltip,
         legend: parsed.legend,
-        series: [pieSeries],
+        series: pieSeries,
       };
     }
 
@@ -80,6 +82,7 @@ export function Chart<T extends object>({
   ]);
 
   const chartRef = useEchartsInit(containerRef, theme);
+  echartsInstanceRef.current = chartRef.current;
   useApplyOption(chartRef, option);
 
   useImperativeHandle(ref, () => ({

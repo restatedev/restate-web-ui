@@ -14,6 +14,7 @@ import {
 import semverGt from 'semver/functions/gte';
 import { base64ToUtf8OrOriginal, utf8ToBase64 } from '@restate/util/binary';
 import { useQueryClient } from '@tanstack/react-query';
+import { QueryHealthCheck } from './QueryHealthCheck';
 
 export type Status = 'HEALTHY' | 'DEGRADED' | 'PENDING' | (string & {});
 type OnboardingComponent = ComponentType<{
@@ -163,6 +164,7 @@ function InternalRestateContextProvider({
       }}
     >
       <APIStatusProvider enabled={status === 'HEALTHY'}>
+        <QueryHealthCheck />
         {children}
       </APIStatusProvider>
     </InternalRestateContext.Provider>

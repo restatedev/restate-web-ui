@@ -122,7 +122,7 @@ export function Deployment({
         <Popover>
           <PopoverTrigger>
             <Button
-              className="z-[2] rounded-md border-orange-200 bg-orange-50 p-1"
+              className="z-[2] mr-1.5 rounded-md border-orange-200 bg-orange-50 p-1"
               variant="secondary"
             >
               <Icon
@@ -155,7 +155,7 @@ export function Deployment({
         </div>
       )}
 
-      <div className="flex min-w-[6ch] flex-auto flex-row items-center gap-1 text-zinc-600">
+      <div className="mr-2 flex min-w-[6ch] flex-auto flex-row items-center gap-1 text-zinc-600">
         {
           <div className="flex max-w-full min-w-0 items-center gap-1.5 [&>*]:max-w-fit [&>*]:flex-auto [&>*:not(.deployment)]:min-w-[0ch] [&>*:not(.deployment)]:basis-[40ch]">
             {isTunnel && (

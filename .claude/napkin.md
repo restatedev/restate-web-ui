@@ -44,14 +44,28 @@
 | 2026-03-23 | self | Used inline `style={{ }}` for CSS properties that can be Tailwind classes | Use `tv()` + Tailwind arbitrary values (e.g., `[clip-path:inset(4px_round_28%)]`) instead of inline styles. Use `className="absolute"` instead of `style={{ position: 'absolute' }}` |
 | 2026-03-23 | self | Tried multiple broken focus ring approaches (CSS focus-within, ring utilities, composeRenderProps) for SearchField filter input | Follow the exact `FormFieldInput` pattern: `SearchField` with `outline-none`, `div.relative.min-h-8.5` container, `AriaInput` in normal flow (not absolute) with `focus:outline-2 focus:outline-blue-600`, icon as absolute sibling. Don't invent new focus patterns — copy working ones from the codebase |
 | 2026-03-23 | self | SearchField render props don't include `isFocusVisible` — so `focusRing` tv variant never triggers on SearchField | Check actual render props types before using `focusRing` — it requires `isFocusVisible` which only some React Aria components provide |
+| 2026-03-27 | self | Used negative margins on cells container which clipped the focus outline due to list's `overflow-auto` | Negative margins cause layout overflow which gets clipped. Instead of making the top row wider, add positive margin to the expanded content (handlers) to make it narrower |
+| 2026-03-27 | user | Kept proposing complex approaches (moving focusRing, negative margins, scale alternatives) when user wanted simple positive margin on handlers | Listen to user's suggestion first — "why not add margin to expanded content" was the right answer from the start |
+| 2026-03-27 | self | `serviceIssuesMap` was missing from `columns` useMemo dependency array — Health column always showed stale empty data | Always check useMemo dependency arrays when adding new data sources to column render functions |
+| 2026-03-27 | self | Spent many rounds guessing why Health showed "OK" instead of adding console.log | When debugging data flow issues, add console.log early instead of theorizing — the user had to tell me to do this |
+| 2026-03-27 | self | Used `rgba(251,191,36,0.1)` in Tailwind arbitrary values | Use `--theme(--color-amber-400/10%)` syntax for colors in Tailwind v4 arbitrary values — no need for `color-mix`, `rgba`, or `srgb` |
+| 2026-03-27 | self | Used string interpolation for dynamic className with severity variants | NEVER use template literals for dynamic Tailwind classes. Always use `tv()` with variants |
+| 2026-03-27 | self | Kept changing GridList.tsx when user wanted changes only in overview page | Don't modify shared components when the change belongs in the consuming page. Listen to scope hints |
+| 2026-03-27 | user | Wrapped cells container in a `<Link>` which created invalid HTML with nested interactive elements | Never wrap cells/grid content in a `<Link>`. Use pseudo-element (`before:absolute before:inset-0`) on the service name link to fill the container instead |
+| 2026-03-27 | self | Interactive elements inside pseudo-link-filled container were not clickable | Elements inside a pseudo-link container need `relative z-10` to sit above the pseudo-element |
+| 2026-03-29 | self | Animating `background-position` on repeating-linear-gradient caused subpixel jumps between iterations | Use `transform: translateX` instead — GPU-accelerated and avoids background tiling rounding. For 135deg stripes at 24px repeat, 23px translateX gives the smoothest loop |
 
 ## User Preferences
 
 - Uses Tailwind CSS with `tv()` from `@restate/util/styles` for component variants
-- Never use string interpolation for dynamic Tailwind classes
+- Never use string interpolation for dynamic Tailwind classes — always use `tv()` with variants
 - Never add comments unless explicitly requested
 - Nothing should wrap in entry rows — if not enough space, elements should shrink
 - When changing technical direction mid-task, be explicit about what failed, why, and get approval for the new approach before writing code
+- Use `--theme(--color-*/opacity%)` for colors in Tailwind arbitrary values, not `rgba()` or `color-mix()`
+- When debugging data issues, add console.log early rather than theorizing for many rounds
+- Wait for user instruction before making changes — don't guess and iterate when told to wait
+- Don't modify shared UI library components when the fix belongs in the consuming page
 
 ## Patterns That Work
 
