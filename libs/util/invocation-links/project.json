@@ -1,0 +1,9 @@
+{
+  "name": "invocation-links",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/util/invocation-links/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project invocation-links --web",
+  "targets": {}
+}
