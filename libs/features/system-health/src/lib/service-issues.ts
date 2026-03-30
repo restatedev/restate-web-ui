@@ -1,8 +1,10 @@
 import type { Deployment, Service } from '@restate/data-access/admin-api-spec';
 import { MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION } from '@restate/features/deployment';
-import type { IssueSeverity } from '@restate/ui/notification';
+import { SLA_THRESHOLDS, MIN_TRAFFIC_THRESHOLD } from './thresholds';
 
-export type IssueKind = 'sla' | 'deprecated-sdk';
+export type IssueSeverity = 'high' | 'low';
+
+export type IssueKind = 'sla' | 'deprecated-sdk' | 'throttled';
 
 export interface ServiceIssue {
   kind: IssueKind;
@@ -10,48 +12,6 @@ export interface ServiceIssue {
   label: string;
   status?: string;
 }
-
-const MIN_TRAFFIC_THRESHOLD = 10;
-
-interface SlaThreshold {
-  low: number;
-  high: number;
-  lowLabel: string;
-  highLabel: string;
-}
-
-const SLA_THRESHOLDS: Record<string, SlaThreshold> = {
-  failed: {
-    low: 0.1,
-    high: Infinity,
-    lowLabel: 'Failure rate above 10% of completed invocations',
-    highLabel: 'Failure rate above 100% of completed invocations',
-  },
-  'backing-off': {
-    low: 0.05,
-    high: 0.1,
-    lowLabel: 'More than 5% of inflight invocations are backing-off',
-    highLabel: 'More than 10% of inflight invocations are backing-off',
-  },
-  paused: {
-    low: 0.01,
-    high: 0.05,
-    lowLabel: 'More than 1% of inflight invocations are paused',
-    highLabel: 'More than 5% of inflight invocations are paused',
-  },
-  pending: {
-    low: 0.01,
-    high: 0.05,
-    lowLabel: 'More than 1% of inflight invocations are pending',
-    highLabel: 'More than 5% of inflight invocations are pending',
-  },
-  ready: {
-    low: 0.01,
-    high: 0.05,
-    lowLabel: 'More than 1% of inflight invocations are waiting to run',
-    highLabel: 'More than 5% of inflight invocations are waiting to run',
-  },
-};
 
 const COMPLETED_STATUSES = ['succeeded', 'failed'];
 const NON_COMPLETED_STATUSES = [
@@ -64,7 +24,9 @@ const NON_COMPLETED_STATUSES = [
   'paused',
 ];
 
-function checkSlaThresholds(statusCounts: Map<string, number>): ServiceIssue[] {
+function checkSlaThresholds(
+  statusCounts: Map<string, number>,
+): ServiceIssue[] {
   const issues: ServiceIssue[] = [];
 
   let completed = 0;
@@ -86,9 +48,19 @@ function checkSlaThresholds(statusCounts: Map<string, number>): ServiceIssue[] {
 
     const ratio = count / denominator;
     if (ratio >= threshold.high) {
-      issues.push({ kind: 'sla', severity: 'high', label: threshold.highLabel, status });
+      issues.push({
+        kind: 'sla',
+        severity: 'high',
+        label: threshold.highLabel,
+        status,
+      });
     } else if (ratio >= threshold.low) {
-      issues.push({ kind: 'sla', severity: 'low', label: threshold.lowLabel, status });
+      issues.push({
+        kind: 'sla',
+        severity: 'low',
+        label: threshold.lowLabel,
+        status,
+      });
     }
   }
 
@@ -139,3 +111,4 @@ export function issuesSortScore(issues: ServiceIssue[]): number {
   }
   return highCount * 1000 + lowCount;
 }
+

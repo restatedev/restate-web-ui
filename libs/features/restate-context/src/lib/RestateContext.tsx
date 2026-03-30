@@ -14,7 +14,7 @@ import {
 import semverGt from 'semver/functions/gte';
 import { base64ToUtf8OrOriginal, utf8ToBase64 } from '@restate/util/binary';
 import { useQueryClient } from '@tanstack/react-query';
-import { QueryHealthCheck } from './QueryHealthCheck';
+import { QueryHealthCheck } from '@restate/features/system-health';
 
 export type Status = 'HEALTHY' | 'DEGRADED' | 'PENDING' | (string & {});
 type OnboardingComponent = ComponentType<{

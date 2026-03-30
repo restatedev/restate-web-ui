@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { useSqlQuery } from '@restate/data-access/admin-api-hooks';
-import { issueQueue } from '@restate/ui/notification';
+import { issueQueue } from '@restate/features/issue-queue';
 import { RestateError } from '@restate/util/errors';
-import { useRestateContext } from './RestateContext';
+import { useRestateContext } from '@restate/features/restate-context';
 
 function useQueryHealthQuery() {
   const { status } = useRestateContext();
