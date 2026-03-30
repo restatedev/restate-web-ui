@@ -10,11 +10,11 @@ import {
   PropsWithChildren,
   useCallback,
   useContext,
-  useEffect,
 } from 'react';
 import semverGt from 'semver/functions/gte';
 import { base64ToUtf8OrOriginal, utf8ToBase64 } from '@restate/util/binary';
 import { useQueryClient } from '@tanstack/react-query';
+import { useQueryHealthCheck } from '@restate/data-access/admin-api-hooks';
 
 export type Status = 'HEALTHY' | 'DEGRADED' | 'PENDING' | (string & {});
 type OnboardingComponent = ComponentType<{
@@ -101,7 +101,7 @@ function InternalRestateContextProvider({
   isNew?: boolean;
   identityKey?: { value: string; url?: string };
   awsRolePolicy?: { value: string; url?: string };
-  systemHealthMonitor?: () => () => void;
+  systemHealthMonitor?: { cleanup: () => void };
 }>) {
   const { isSuccess, failureCount } = useHealth({
     enabled: !isPending,
@@ -145,10 +145,11 @@ function InternalRestateContextProvider({
     });
   }, [queryClient]);
 
-  useEffect(() => {
-    if (!systemHealthMonitor) return;
-    return systemHealthMonitor();
-  }, [systemHealthMonitor]);
+  useQueryHealthCheck({
+    enabled: status === 'HEALTHY',
+    refetchInterval: 60_000,
+  });
+
 
   return (
     <InternalRestateContext.Provider
@@ -215,7 +216,7 @@ export function RestateContextProvider({
   isNew?: boolean;
   identityKey?: { value: string; url?: string };
   awsRolePolicy?: { value: string; url?: string };
-  systemHealthMonitor?: () => () => void;
+  systemHealthMonitor?: { cleanup: () => void };
 }>) {
   return (
     <AdminBaseURLProvider baseUrl={adminBaseUrl}>

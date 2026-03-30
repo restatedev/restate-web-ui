@@ -23,6 +23,10 @@ type SummaryData = {
   byStatus: { name: string; count: number }[];
 };
 
+export interface SystemHealthMonitor {
+  cleanup: () => void;
+}
+
 function closeKeys(keys: string[]) {
   for (const key of keys) issueQueue.close(key);
 }
@@ -54,55 +58,57 @@ function toRestateError(error: unknown): RestateError {
 export function createSystemHealthMonitor(
   queryClient: QueryClient,
   { additionalObservers = [] }: SystemHealthMonitorOptions = {},
-) {
-  return (): (() => void) => {
-    const tracked = {
-      sla: [] as string[],
-      queryHealth: null as string | null,
-      additional: new Map<number, string[]>(),
-    };
+): SystemHealthMonitor {
+  const tracked = {
+    sla: [] as string[],
+    queryHealth: null as string | null,
+    additional: new Map<number, string[]>(),
+  };
 
-    const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
-      if (!event || event.type !== 'updated') return;
+  const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
+    if (!event || event.type !== 'updated') return;
 
-      if (isSummaryInvocationsQuery(event)) {
-        const data = event.query.state.data as SummaryData | undefined;
-        if (!data) return;
+    if (isSummaryInvocationsQuery(event)) {
+      const data = event.query.state.data as SummaryData | undefined;
+      if (!data) return;
+      closeKeys(tracked.sla);
+      tracked.sla = tracked.queryHealth ? [] : computeGlobalIssues(data);
+    }
+
+    if (isQueryHealthCheckQuery(event)) {
+      const { state } = event.query;
+      if (state.status === 'error' && state.error && !tracked.queryHealth) {
         closeKeys(tracked.sla);
-        tracked.sla = computeGlobalIssues(data);
+        tracked.sla = [];
+        tracked.queryHealth = issueQueue.add({
+          severity: 'high',
+          label:
+            'Cannot retrieve invocation data — some dashboard features may not work as expected',
+          details: toRestateError(state.error),
+        });
+      } else if (state.status === 'success' && tracked.queryHealth) {
+        issueQueue.close(tracked.queryHealth);
+        tracked.queryHealth = null;
       }
+    }
 
-      if (isQueryHealthCheckQuery(event)) {
-        const { state } = event.query;
-        if (state.status === 'error' && state.error && !tracked.queryHealth) {
-          tracked.queryHealth = issueQueue.add({
-            severity: 'high',
-            label:
-              'Cannot retrieve invocation data — some dashboard features may not work as expected',
-            details: toRestateError(state.error),
-          });
-        } else if (state.status === 'success' && tracked.queryHealth) {
-          issueQueue.close(tracked.queryHealth);
-          tracked.queryHealth = null;
-        }
-      }
+    for (let i = 0; i < additionalObservers.length; i++) {
+      const observer = additionalObservers[i];
+      if (!observer?.match(event)) continue;
+      closeKeys(tracked.additional.get(i) ?? []);
+      tracked.additional.set(
+        i,
+        observer.onResult(event, { issueQueue }),
+      );
+    }
+  });
 
-      for (let i = 0; i < additionalObservers.length; i++) {
-        const observer = additionalObservers[i];
-        if (!observer?.match(event)) continue;
-        closeKeys(tracked.additional.get(i) ?? []);
-        tracked.additional.set(
-          i,
-          observer.onResult(event, { issueQueue }),
-        );
-      }
-    });
-
-    return () => {
+  return {
+    cleanup() {
       unsubscribe();
       closeKeys(tracked.sla);
       if (tracked.queryHealth) issueQueue.close(tracked.queryHealth);
       for (const keys of tracked.additional.values()) closeKeys(keys);
-    };
+    },
   };
 }

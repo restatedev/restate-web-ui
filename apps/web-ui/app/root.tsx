@@ -124,6 +124,8 @@ const queryClient = new QueryClient({
   }),
 });
 
+const monitor = createSystemHealthMonitor(queryClient);
+
 export function Layout({ children }: { children: React.ReactNode }) {
   const remixNavigate = useNavigate();
 
@@ -209,7 +211,7 @@ export default function App() {
           <RestateContextProvider
             adminBaseUrl={getCookieValue('adminBaseUrl')}
             GettingStarted={RestateGettingStarted}
-            systemHealthMonitor={createSystemHealthMonitor(queryClient)}
+            systemHealthMonitor={monitor}
           >
             <BatchOperationsProvider>
               <EditState>
