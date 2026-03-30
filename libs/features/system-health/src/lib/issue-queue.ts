@@ -1,7 +1,6 @@
 import { UNSTABLE_ToastQueue as ToastQueue } from 'react-aria-components';
 import { useSyncExternalStore, type ReactNode } from 'react';
-
-export type IssueSeverity = 'high' | 'low';
+import type { IssueSeverity } from './service-issues';
 
 export interface IssueContent {
   severity: IssueSeverity;
@@ -14,9 +13,8 @@ export const issueQueue = new ToastQueue<IssueContent>({
 });
 
 export function useIssueQueue() {
-  const toasts = useSyncExternalStore(
+  return useSyncExternalStore(
     (cb) => issueQueue.subscribe(cb),
-    () => issueQueue.visibleToasts
+    () => issueQueue.visibleToasts,
   );
-  return toasts;
 }

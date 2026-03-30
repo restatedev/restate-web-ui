@@ -54,9 +54,6 @@
       "@restate/features/invocations-route": [
         "libs/features/invocations-route/src/index.ts"
       ],
-      "@restate/features/issue-queue": [
-        "libs/features/issue-queue/src/index.ts"
-      ],
       "@restate/features/options": ["libs/features/options/src/index.ts"],
       "@restate/features/overview-route": [
         "libs/features/overview-route/src/index.ts"
@@ -74,9 +71,6 @@
       "@restate/features/service-details": [
         "libs/features/service-details/src/index.ts"
       ],
-      "@restate/features/service-health": [
-        "libs/features/service-health/src/index.ts"
-      ],
       "@restate/features/service-protocol": [
         "libs/features/service-protocol/src/index.ts"
       ],
@@ -90,6 +84,9 @@
         "libs/features/status-chart/src/index.ts"
       ],
       "@restate/features/support": ["libs/features/support/src/index.ts"],
+      "@restate/features/system-health": [
+        "libs/features/system-health/src/index.ts"
+      ],
       "@restate/features/user-preference": [
         "libs/features/user-preference/src/index.ts"
       ],

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useSqlQuery } from '@restate/data-access/admin-api-hooks';
-import { issueQueue } from '@restate/features/issue-queue';
+import { issueQueue } from './issue-queue';
 import { RestateError } from '@restate/util/errors';
 import { useRestateContext } from '@restate/features/restate-context';
 
