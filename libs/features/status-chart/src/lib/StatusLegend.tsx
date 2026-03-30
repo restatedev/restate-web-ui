@@ -15,7 +15,7 @@ import {
 import { getOrderedStatuses, type StatusEntry } from './useOrderedStatuses';
 
 export const legendStyles = tv({
-  base: 'flex max-w-2xl flex-wrap items-center justify-center gap-x-3 gap-y-1 outline-none',
+  base: 'flex min-h-11 max-w-2xl flex-wrap items-center justify-center gap-x-3 gap-y-1 outline-none',
   variants: {
     isLoading: {
       true: 'animate-pulse',
