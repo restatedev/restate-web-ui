@@ -164,7 +164,7 @@ function InternalRestateContextProvider({
       }}
     >
       <APIStatusProvider enabled={status === 'HEALTHY'}>
-        <QueryHealthCheck />
+        <QueryHealthCheck status={status} />
         {children}
       </APIStatusProvider>
     </InternalRestateContext.Provider>

@@ -1,11 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { useSqlQuery } from '@restate/data-access/admin-api-hooks';
-import { issueQueue } from './issue-queue';
 import { RestateError } from '@restate/util/errors';
-import { useRestateContext } from '@restate/features/restate-context';
-
-function useQueryHealthQuery() {
-  const { status } = useRestateContext();
+import { issueQueue } from './issue-queue';
+function useQueryHealthQuery(status: string) {
   return useSqlQuery('SELECT 1 FROM sys_invocation LIMIT 1', {
     enabled: status === 'HEALTHY',
     refetchInterval: 60_000,
@@ -13,13 +10,13 @@ function useQueryHealthQuery() {
   });
 }
 
-export function useQueryHealthStatus() {
-  const { isError, isFetching } = useQueryHealthQuery();
+export function useQueryHealthStatus(status: string) {
+  const { isError, isFetching } = useQueryHealthQuery(status);
   return { isError, isFetching };
 }
 
-export function QueryHealthCheck() {
-  const { error, isError, isSuccess } = useQueryHealthQuery();
+export function QueryHealthCheck({ status }: { status: string }) {
+  const { error, isError, isSuccess } = useQueryHealthQuery(status);
   const keyRef = useRef<string | null>(null);
 
   useEffect(() => {
