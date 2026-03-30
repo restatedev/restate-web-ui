@@ -16,7 +16,7 @@ export const issueQueue = new ToastQueue<IssueContent>({
 export function useIssueQueue() {
   const toasts = useSyncExternalStore(
     (cb) => issueQueue.subscribe(cb),
-    () => issueQueue.visibleToasts,
+    () => issueQueue.visibleToasts
   );
   return toasts;
 }
