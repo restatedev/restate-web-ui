@@ -54,6 +54,9 @@
       "@restate/features/invocations-route": [
         "libs/features/invocations-route/src/index.ts"
       ],
+      "@restate/features/issue-queue": [
+        "libs/features/issue-queue/src/index.ts"
+      ],
       "@restate/features/options": ["libs/features/options/src/index.ts"],
       "@restate/features/overview-route": [
         "libs/features/overview-route/src/index.ts"
@@ -71,6 +74,9 @@
       "@restate/features/service-details": [
         "libs/features/service-details/src/index.ts"
       ],
+      "@restate/features/service-health": [
+        "libs/features/service-health/src/index.ts"
+      ],
       "@restate/features/service-protocol": [
         "libs/features/service-protocol/src/index.ts"
       ],
@@ -79,6 +85,9 @@
       ],
       "@restate/features/state-route": [
         "libs/features/state-route/src/index.ts"
+      ],
+      "@restate/features/status-chart": [
+        "libs/features/status-chart/src/index.ts"
       ],
       "@restate/features/support": ["libs/features/support/src/index.ts"],
       "@restate/features/user-preference": [
@@ -101,6 +110,7 @@
       "@restate/ui/form-field": ["libs/ui/form-field/src/index.ts"],
       "@restate/ui/grid-list": ["libs/ui/grid-list/src/index.ts"],
       "@restate/ui/icons": ["libs/ui/icons/src/index.ts"],
+      "@restate/ui/issue-banner": ["libs/ui/issue-banner/src/index.ts"],
       "@restate/ui/keyboard": ["libs/ui/keyboard/src/index.ts"],
       "@restate/ui/layout": ["libs/ui/layout/src/index.ts"],
       "@restate/ui/link": ["libs/ui/link/src/index.ts"],
@@ -118,12 +128,16 @@
       "@restate/ui/table": ["libs/ui/table/src/index.ts"],
       "@restate/ui/timeline-zoom": ["libs/ui/timeline-zoom/src/index.ts"],
       "@restate/ui/tooltip": ["libs/ui/tooltip/src/index.ts"],
+      "@restate/ui/wave-animation": ["libs/ui/wave-animation/src/index.ts"],
       "@restate/util/api-config": ["libs/util/api-config/src/index.ts"],
       "@restate/util/binary": ["libs/util/binary/src/index.ts"],
       "@restate/util/errors": ["libs/util/errors/src/index.ts"],
       "@restate/util/feature-flag": ["libs/util/feature-flag/src/index.ts"],
       "@restate/util/humantime": ["libs/util/humantime/src/index.ts"],
       "@restate/util/intl": ["libs/util/intl/src/index.ts"],
+      "@restate/util/invocation-links": [
+        "libs/util/invocation-links/src/index.ts"
+      ],
       "@restate/util/mock-api": ["libs/util/mock-api/src/index.ts"],
       "@restate/util/playwright": ["libs/util/playwright/src/index.ts"],
       "@restate/util/react-query": ["libs/util/react-query/src/index.ts"],
