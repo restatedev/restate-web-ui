@@ -1,0 +1,9 @@
+{
+  "name": "wave-animation",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/ui/wave-animation/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project wave-animation --web",
+  "targets": {}
+}

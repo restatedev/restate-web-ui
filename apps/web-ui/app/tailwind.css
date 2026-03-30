@@ -76,21 +76,6 @@
   }
   --animate-serverWave: serverWave 1.5s ease-out forwards;
 
-  @keyframes cardBounce {
-    0% {
-      transform: translateY(0);
-    }
-    30% {
-      transform: translateY(-4px);
-    }
-    60% {
-      transform: translateY(2px);
-    }
-    100% {
-      transform: translateY(0);
-    }
-  }
-  --animate-cardBounce: cardBounce 0.6s ease-out;
 
   @keyframes stripeScroll {
     from {
