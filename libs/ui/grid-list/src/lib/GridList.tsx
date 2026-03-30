@@ -135,10 +135,7 @@ export function GridList<T extends object>({
   headerClassName,
   ...props
 }: GridListProps<T>) {
-  const gridTemplateColumns = useMemo(
-    () => columns.map((c) => c.width ?? '1fr').join(' '),
-    [columns],
-  );
+  const gridTemplateColumns = columns.map((c) => c.width ?? '1fr').join(' ');
 
   const layoutOptions = useMemo(
     () => ({ estimatedRowHeight, gap: 8, padding: 0 }),
