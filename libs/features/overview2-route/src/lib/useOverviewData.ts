@@ -54,8 +54,7 @@ export function useOverviewData() {
     const map = new Map<string, ServiceIssue[]>();
     for (const service of servicesMap?.values() ?? []) {
       const deployment = deploymentsMap?.get(service.deployment_id);
-      const statusCounts =
-        serviceStatusCounts.get(service.name) ?? new Map();
+      const statusCounts = serviceStatusCounts.get(service.name) ?? new Map();
       const issues = getServiceIssues({
         service,
         deployment,

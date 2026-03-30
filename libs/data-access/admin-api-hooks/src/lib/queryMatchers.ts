@@ -7,30 +7,20 @@ export function isQueryForPath(
   path: string,
   method: string,
 ): boolean {
-  return (
-    query.meta?.['path'] === path && query.meta?.['method'] === method
-  );
+  return query.meta?.['path'] === path && query.meta?.['method'] === method;
 }
 
-export function isDeploymentsQuery(
-  event: QueryCacheNotifyEvent,
-): boolean {
+export function isDeploymentsQuery(event: QueryCacheNotifyEvent): boolean {
   return isQueryForPath(event.query, '/deployments', 'get');
 }
 
 export function isSummaryInvocationsQuery(
   event: QueryCacheNotifyEvent,
 ): boolean {
-  return isQueryForPath(
-    event.query,
-    '/query/invocations/summary',
-    'post',
-  );
+  return isQueryForPath(event.query, '/query/invocations/summary', 'post');
 }
 
-export function isQueryHealthCheckQuery(
-  event: QueryCacheNotifyEvent,
-): boolean {
+export function isQueryHealthCheckQuery(event: QueryCacheNotifyEvent): boolean {
   return event.query.meta?.[QUERY_HEALTH_META_TAG] === true;
 }
 

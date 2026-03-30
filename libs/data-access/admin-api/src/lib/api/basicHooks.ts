@@ -26,9 +26,10 @@ export function getQueryHealthCheckMeta() {
   return { [QUERY_HEALTH_META_TAG]: true };
 }
 
-export function useQueryHealthCheck(
-  options?: { enabled?: boolean; refetchInterval?: number },
-) {
+export function useQueryHealthCheck(options?: {
+  enabled?: boolean;
+  refetchInterval?: number;
+}) {
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi('query', '/query', 'post', {
     baseUrl,

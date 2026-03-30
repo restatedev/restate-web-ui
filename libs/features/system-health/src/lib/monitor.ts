@@ -96,10 +96,7 @@ export function createSystemHealthMonitor(
       const observer = additionalObservers[i];
       if (!observer?.match(event)) continue;
       closeKeys(tracked.additional.get(i) ?? []);
-      tracked.additional.set(
-        i,
-        observer.onResult(event, { issueQueue }),
-      );
+      tracked.additional.set(i, observer.onResult(event, { issueQueue }));
     }
   });
 

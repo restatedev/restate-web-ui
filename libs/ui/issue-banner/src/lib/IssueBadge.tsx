@@ -6,11 +6,7 @@ import { Link } from '@restate/ui/link';
 import { formatPlurals } from '@restate/util/intl';
 import { toServiceStatusInvocationsHref } from '@restate/util/invocation-links';
 import type { ServiceIssue } from '@restate/features/system-health';
-import {
-  issueButtonStyles,
-  issuePingStyles,
-  issueDotStyles,
-} from './styles';
+import { issueButtonStyles, issuePingStyles, issueDotStyles } from './styles';
 
 export function IssueBadge({
   issues,
@@ -23,7 +19,7 @@ export function IssueBadge({
 }) {
   const hasHigh = useMemo(
     () => issues.some((i) => i.severity === 'high'),
-    [issues]
+    [issues],
   );
   const severity = hasHigh ? 'high' : 'low';
 
@@ -74,7 +70,7 @@ export function IssueBadge({
                     ? toServiceStatusInvocationsHref(
                         baseUrl,
                         serviceName,
-                        issue.status
+                        issue.status,
                       )
                     : undefined;
                 const content = (

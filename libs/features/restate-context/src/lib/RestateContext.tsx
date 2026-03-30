@@ -150,7 +150,6 @@ function InternalRestateContextProvider({
     refetchInterval: 60_000,
   });
 
-
   return (
     <InternalRestateContext.Provider
       value={{

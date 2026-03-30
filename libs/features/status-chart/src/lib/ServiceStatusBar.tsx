@@ -8,7 +8,10 @@ import { useRestateContext } from '@restate/features/restate-context';
 import { HoverTooltip } from '@restate/ui/tooltip';
 import { Link } from '@restate/ui/link';
 import { Icon, IconName } from '@restate/ui/icons';
-import type { ServiceIssue, IssueSeverity } from '@restate/features/system-health';
+import type {
+  ServiceIssue,
+  IssueSeverity,
+} from '@restate/features/system-health';
 import { issueAlertIconStyles } from '@restate/ui/issue-banner';
 import {
   STATUS_ORDER,

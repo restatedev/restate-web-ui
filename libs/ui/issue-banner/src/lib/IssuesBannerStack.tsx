@@ -1,5 +1,8 @@
 import { useState } from 'react';
-import { useIssueQueue, type IssueContent } from '@restate/features/system-health';
+import {
+  useIssueQueue,
+  type IssueContent,
+} from '@restate/features/system-health';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import { formatPlurals } from '@restate/util/intl';

@@ -73,8 +73,7 @@ export function useWaveAnimation() {
           }
         }
 
-        const cards =
-          document.querySelectorAll<HTMLElement>(targetSelector);
+        const cards = document.querySelectorAll<HTMLElement>(targetSelector);
         cards.forEach((card) => {
           const cardRect = card.getBoundingClientRect();
           const distance = cardRect.top - originCenterY;

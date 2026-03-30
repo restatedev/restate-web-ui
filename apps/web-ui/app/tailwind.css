@@ -76,7 +76,6 @@
   }
   --animate-serverWave: serverWave 1.5s ease-out forwards;
 
-
   @keyframes stripeScroll {
     from {
       transform: translateX(0);

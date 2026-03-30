@@ -203,7 +203,6 @@ export async function summaryInvocations(
   sampleSize = DEFAULT_SAMPLE_SIZE,
   includeDuration = false,
 ) {
-
   // TODO: re-enable split table path once compatible
   if (
     false &&

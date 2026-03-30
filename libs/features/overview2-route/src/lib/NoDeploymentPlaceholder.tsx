@@ -6,11 +6,7 @@ import {
 import { TriggerRegisterDeploymentDialog } from '@restate/features/register-deployment';
 import { ErrorBanner } from '@restate/ui/error';
 
-export function NoDeploymentPlaceholder({
-  error,
-}: {
-  error?: Error | null;
-}) {
+export function NoDeploymentPlaceholder({ error }: { error?: Error | null }) {
   const { OnboardingGuide } = useRestateContext();
 
   if (error) {

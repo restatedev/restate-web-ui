@@ -9,10 +9,7 @@ export const DEFAULT_INVOCATION_COLUMNS = [
 
 const FAILED_SUBSTATES = ['failed', 'cancelled', 'killed'];
 
-function resolveStatuses(
-  statusName: string,
-  expandFailed = true,
-): string[] {
+function resolveStatuses(statusName: string, expandFailed = true): string[] {
   if (expandFailed && statusName === 'failed') return FAILED_SUBSTATES;
   return [statusName];
 }
@@ -40,7 +37,10 @@ export function toInvocationsHref(
   const params = buildParams(existingParams);
   params.set(
     'filter_status',
-    JSON.stringify({ operation: 'IN', value: resolveStatuses(statusName, expandFailed) }),
+    JSON.stringify({
+      operation: 'IN',
+      value: resolveStatuses(statusName, expandFailed),
+    }),
   );
   return `${baseUrl}/invocations?${params.toString()}`;
 }
@@ -74,7 +74,10 @@ export function toServiceStatusInvocationsHref(
   );
   params.set(
     'filter_status',
-    JSON.stringify({ operation: 'IN', value: resolveStatuses(statusName, expandFailed) }),
+    JSON.stringify({
+      operation: 'IN',
+      value: resolveStatuses(statusName, expandFailed),
+    }),
   );
   return `${baseUrl}/invocations?${params.toString()}`;
 }

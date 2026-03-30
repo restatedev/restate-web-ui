@@ -34,7 +34,6 @@ import { useAPIStatus } from '@restate/data-access/admin-api';
 import { useRestateContext } from '@restate/features/restate-context';
 import { base64ToUint8Array } from '@restate/util/binary';
 
-
 export const RESTARTED_FROM_HEADER = 'x-restate-restarted-from';
 
 const SERVICE_TIMESTAMP = new Map<string, Date>();
@@ -151,7 +150,7 @@ export function useSqlQuery(
   const results = useQuery({
     ...queryOptions,
     ...options,
-    enabled: Boolean(query) && (options?.enabled !== false),
+    enabled: Boolean(query) && options?.enabled !== false,
   });
 
   return {
@@ -159,8 +158,6 @@ export function useSqlQuery(
     queryKey: queryOptions.queryKey,
   };
 }
-
-
 
 export function isVersionQuery(
   data: unknown,

@@ -42,11 +42,7 @@ export function LatestRevisionDeployment({
   );
 }
 
-export function OlderRevisions({
-  serviceName,
-}: {
-  serviceName: string;
-}) {
+export function OlderRevisions({ serviceName }: { serviceName: string }) {
   const pairs = useDeploymentPairs(serviceName);
   const older = pairs.slice(1);
 

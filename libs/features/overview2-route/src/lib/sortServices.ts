@@ -1,6 +1,9 @@
 import type { Service } from '@restate/data-access/admin-api-spec';
 import type { SortDescriptor } from 'react-aria-components';
-import { issuesSortScore, type ServiceIssue } from '@restate/features/system-health';
+import {
+  issuesSortScore,
+  type ServiceIssue,
+} from '@restate/features/system-health';
 
 export function sortServices(
   services: Service[],
