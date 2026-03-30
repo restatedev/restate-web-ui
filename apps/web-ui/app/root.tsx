@@ -18,6 +18,7 @@ import { QueryProvider } from '@restate/util/react-query';
 import { Nav, NavItem } from '@restate/ui/nav';
 import { IconName, Restate } from '@restate/ui/icons';
 import { RestateContextProvider } from '@restate/features/restate-context';
+import { createSystemHealthMonitor } from '@restate/features/system-health';
 import { Version } from '@restate/features/version';
 import {
   HealthCheckNotification,
@@ -208,6 +209,7 @@ export default function App() {
           <RestateContextProvider
             adminBaseUrl={getCookieValue('adminBaseUrl')}
             GettingStarted={RestateGettingStarted}
+            systemHealthMonitor={createSystemHealthMonitor(queryClient)}
           >
             <BatchOperationsProvider>
               <EditState>

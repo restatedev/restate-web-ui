@@ -10,11 +10,11 @@ import {
   PropsWithChildren,
   useCallback,
   useContext,
+  useEffect,
 } from 'react';
 import semverGt from 'semver/functions/gte';
 import { base64ToUtf8OrOriginal, utf8ToBase64 } from '@restate/util/binary';
 import { useQueryClient } from '@tanstack/react-query';
-import { QueryHealthCheck } from '@restate/features/system-health';
 
 export type Status = 'HEALTHY' | 'DEGRADED' | 'PENDING' | (string & {});
 type OnboardingComponent = ComponentType<{
@@ -72,6 +72,7 @@ const InternalRestateContext = createContext<RestateContext>({
 function InternalRestateContextProvider({
   children,
   isPending,
+  systemHealthMonitor,
   ingressUrl,
   baseUrl = '',
   decoder,
@@ -100,6 +101,7 @@ function InternalRestateContextProvider({
   isNew?: boolean;
   identityKey?: { value: string; url?: string };
   awsRolePolicy?: { value: string; url?: string };
+  systemHealthMonitor?: () => () => void;
 }>) {
   const { isSuccess, failureCount } = useHealth({
     enabled: !isPending,
@@ -143,6 +145,11 @@ function InternalRestateContextProvider({
     });
   }, [queryClient]);
 
+  useEffect(() => {
+    if (!systemHealthMonitor) return;
+    return systemHealthMonitor();
+  }, [systemHealthMonitor]);
+
   return (
     <InternalRestateContext.Provider
       value={{
@@ -164,7 +171,6 @@ function InternalRestateContextProvider({
       }}
     >
       <APIStatusProvider enabled={status === 'HEALTHY'}>
-        <QueryHealthCheck status={status} />
         {children}
       </APIStatusProvider>
     </InternalRestateContext.Provider>
@@ -186,6 +192,7 @@ export function RestateContextProvider({
   isNew,
   awsRolePolicy,
   identityKey,
+  systemHealthMonitor,
 }: PropsWithChildren<{
   adminBaseUrl?: string;
   ingressUrl?: string;
@@ -208,6 +215,7 @@ export function RestateContextProvider({
   isNew?: boolean;
   identityKey?: { value: string; url?: string };
   awsRolePolicy?: { value: string; url?: string };
+  systemHealthMonitor?: () => () => void;
 }>) {
   return (
     <AdminBaseURLProvider baseUrl={adminBaseUrl}>
@@ -224,6 +232,7 @@ export function RestateContextProvider({
         isNew={isNew}
         awsRolePolicy={awsRolePolicy}
         identityKey={identityKey}
+        systemHealthMonitor={systemHealthMonitor}
       >
         {children}
       </InternalRestateContextProvider>
