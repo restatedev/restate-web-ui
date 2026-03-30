@@ -34,10 +34,6 @@ export function isQueryHealthCheckQuery(
   return event.query.meta?.[QUERY_HEALTH_META_TAG] === true;
 }
 
-export function getQueryHealthCheckMeta() {
-  return { [QUERY_HEALTH_META_TAG]: true };
-}
-
 export function findSuccessfulQueryData<T>(
   queries: Query[],
   path: string,

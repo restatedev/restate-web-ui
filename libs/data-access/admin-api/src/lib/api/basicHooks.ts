@@ -19,3 +19,29 @@ export function useHealth(options?: HookQueryOptions<'/health', 'get'>) {
     ...options,
   });
 }
+
+const QUERY_HEALTH_META_TAG = 'query-health-check';
+
+export function getQueryHealthCheckMeta() {
+  return { [QUERY_HEALTH_META_TAG]: true };
+}
+
+export function useQueryHealthCheck(
+  options?: { enabled?: boolean; refetchInterval?: number },
+) {
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi('query', '/query', 'post', {
+    baseUrl,
+    body: { query: 'SELECT 1 FROM sys_invocation LIMIT 1' },
+  });
+
+  return useQuery({
+    ...queryOptions,
+    ...options,
+    meta: {
+      ...queryOptions.meta,
+      ...getQueryHealthCheckMeta(),
+    },
+    retry: false,
+  });
+}

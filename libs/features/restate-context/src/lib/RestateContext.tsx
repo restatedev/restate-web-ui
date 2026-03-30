@@ -3,6 +3,7 @@ import {
   APIStatusProvider,
   useHealth,
   useVersion,
+  useQueryHealthCheck,
 } from '@restate/data-access/admin-api';
 import {
   ComponentType,
@@ -14,7 +15,6 @@ import {
 import semverGt from 'semver/functions/gte';
 import { base64ToUtf8OrOriginal, utf8ToBase64 } from '@restate/util/binary';
 import { useQueryClient } from '@tanstack/react-query';
-import { useQueryHealthCheck } from '@restate/data-access/admin-api-hooks';
 
 export type Status = 'HEALTHY' | 'DEGRADED' | 'PENDING' | (string & {});
 type OnboardingComponent = ComponentType<{

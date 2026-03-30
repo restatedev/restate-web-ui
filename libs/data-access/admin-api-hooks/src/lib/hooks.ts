@@ -33,7 +33,7 @@ import { RestateError } from '@restate/util/errors';
 import { useAPIStatus } from '@restate/data-access/admin-api';
 import { useRestateContext } from '@restate/features/restate-context';
 import { base64ToUint8Array } from '@restate/util/binary';
-import { getQueryHealthCheckMeta } from './queryMatchers';
+
 
 export const RESTARTED_FROM_HEADER = 'x-restate-restarted-from';
 
@@ -160,25 +160,7 @@ export function useSqlQuery(
   };
 }
 
-export function useQueryHealthCheck(
-  options?: { enabled?: boolean; refetchInterval?: number },
-) {
-  const baseUrl = useAdminBaseUrl();
-  const queryOptions = adminApi('query', '/query', 'post', {
-    baseUrl,
-    body: { query: 'SELECT 1 FROM sys_invocation LIMIT 1' },
-  });
 
-  return useQuery({
-    ...queryOptions,
-    ...options,
-    meta: {
-      ...queryOptions.meta,
-      ...getQueryHealthCheckMeta(),
-    },
-    retry: false,
-  });
-}
 
 export function isVersionQuery(
   data: unknown,
