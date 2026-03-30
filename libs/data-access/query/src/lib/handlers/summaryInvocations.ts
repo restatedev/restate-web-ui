@@ -1,3 +1,4 @@
+/* eslint-disable no-constant-binary-expression */
 import type { FilterItem } from '@restate/data-access/admin-api-spec';
 import semverGte from 'semver/functions/gte';
 import { convertInvocationsFilters } from '../convertFilters';
@@ -205,6 +206,7 @@ export async function summaryInvocations(
 ) {
   // TODO: re-enable split table path once compatible
   if (
+    // eslint-disable-next-line no-constant-condition
     false &&
     supportsSplitTable(this.restateVersion) &&
     filtersCompatibleWithSplitTable(filters)
