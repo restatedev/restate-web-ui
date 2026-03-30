@@ -9,9 +9,3 @@ export {
   showCountdownNotification,
   showProgressNotification,
 } from './lib/queue';
-export {
-  issueQueue,
-  useIssueQueue,
-  type IssueContent,
-  type IssueSeverity,
-} from './lib/issueQueue';
