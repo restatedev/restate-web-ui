@@ -121,10 +121,18 @@ function Component() {
     issueSeverity: overallIssueSeverity,
   });
 
-  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
-    column: 'name',
-    direction: 'ascending',
-  });
+  const initialSortRef = useRef<SortDescriptor | null>(null);
+  if (!initialSortRef.current && !isSummaryLoading && !isSummaryError) {
+    initialSortRef.current =
+      serviceIssuesMap.size > 0
+        ? { column: 'health', direction: 'descending' }
+        : { column: 'name', direction: 'ascending' };
+  }
+  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor | null>(
+    null,
+  );
+  const resolvedSortDescriptor: SortDescriptor = sortDescriptor ??
+    initialSortRef.current ?? { column: 'name', direction: 'ascending' };
   const [filter, setFilter] = useState('');
   const filterRef = useFocusShortcut<HTMLInputElement>();
 
@@ -143,7 +151,7 @@ function Component() {
     : allServices;
   const services = sortServices(
     filtered,
-    sortDescriptor,
+    resolvedSortDescriptor,
     invocationCounts,
     serviceIssuesMap,
   );
@@ -319,7 +327,7 @@ function Component() {
           columns={columns}
           items={services}
           dependencies={[serviceIssuesMap, columns]}
-          sortDescriptor={sortDescriptor}
+          sortDescriptor={resolvedSortDescriptor}
           onSortChange={setSortDescriptor}
           estimatedRowHeight={100}
           className="[--grid-list-template-columns:1fr_2.5rem] md:[--grid-list-template-columns:calc(33%-0.5rem)_calc(33%-0.5rem)_1fr_2.5rem] xl:[--grid-list-template-columns:calc(33%-0.5rem)_calc(33%-0.5rem)_1fr_10rem]"
