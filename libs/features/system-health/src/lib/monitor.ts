@@ -69,6 +69,7 @@ export function createSystemHealthMonitor(
     if (!event || event.type !== 'updated') return;
 
     if (isSummaryInvocationsQuery(event)) {
+      if (event.query.getObserversCount() === 0) return;
       const data = event.query.state.data as SummaryData | undefined;
       if (!data) return;
       closeKeys(tracked.sla);
