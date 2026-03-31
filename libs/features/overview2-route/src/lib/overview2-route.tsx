@@ -38,6 +38,9 @@ import { useFocusShortcut, FocusShortcutKey } from '@restate/ui/keyboard';
 import { formatNumber } from '@restate/util/intl';
 import { toCreatedAfterParam } from '@restate/util/invocation-links';
 import { IssuesBannerStack } from '@restate/ui/issue-banner';
+import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
+import { ErrorBanner } from '@restate/ui/error';
+import { Button } from '@restate/ui/button';
 import { StatusArcEcharts, StatusLegend } from '@restate/features/status-chart';
 import { useWaveAnimation } from '@restate/ui/wave-animation';
 import { useRestateServerStatus } from './useRestateServerStatus';
@@ -72,6 +75,7 @@ function Component() {
     serviceIssuesMap,
     isSummaryLoading,
     isSummaryError,
+    summaryError,
     isEmpty,
     isError,
     error,
@@ -215,8 +219,24 @@ function Component() {
           </div>
         </div>
         <TimeRangeToggle />
-        <div className="flex min-h-8 items-baseline justify-center gap-1.5">
-          {!isSummaryLoading && !isSummaryError && (
+        <div className="flex min-h-8 items-center justify-center gap-1.5">
+          {summaryError ? (
+            <Popover>
+              <PopoverTrigger>
+                <Button
+                  variant="secondary"
+                  className="flex items-center gap-1.5 rounded-lg border-orange-200/80 bg-orange-50/80 px-3 py-1.5 text-xs text-orange-600 shadow-none hover:bg-orange-100/80"
+                >
+                  <Icon name={IconName.TriangleAlert} className="h-3.5 w-3.5 fill-orange-200 text-orange-500" />
+                  Could not load invocation data
+                  <Icon name={IconName.ChevronsUpDown} className="h-3 w-3 text-orange-400" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="max-w-sm">
+                <ErrorBanner error={summaryError} className="rounded-xl" />
+              </PopoverContent>
+            </Popover>
+          ) : !isSummaryLoading && (
             noInvocations ? (
               <div className="flex flex-col items-center gap-1 text-center">
                 <p className="text-lg font-medium text-gray-600">All quiet</p>
@@ -249,7 +269,7 @@ function Component() {
           <StatusLegend byStatus={byStatus} isLoading={isSummaryLoading} isError={isSummaryError} linkParams={linkParams} />
         )}
       </div>
-      {totalCount > 0 && <IssuesBannerStack className="-mt-4" />}
+      <IssuesBannerStack className="-mt-4" />
 
       <div className="mt-8 flex min-h-0 w-full flex-1 flex-col">
         <div className="mb-2 flex flex-col gap-2 px-5 md:flex-row md:items-center md:justify-between">

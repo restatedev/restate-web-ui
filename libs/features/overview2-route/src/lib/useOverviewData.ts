@@ -24,6 +24,7 @@ export function useOverviewData(filters: FilterItem[] = []) {
     data: rawSummaryData,
     isFetching: isSummaryLoading,
     isError: isSummaryError,
+    error: summaryError,
   } = useSummaryInvocations(filters, { sampled: false });
   const summaryData = isSummaryError ? undefined : rawSummaryData;
 
@@ -82,6 +83,7 @@ export function useOverviewData(filters: FilterItem[] = []) {
     serviceIssuesMap,
     isSummaryLoading,
     isSummaryError,
+    summaryError,
     isEmpty,
     isError,
     error,
