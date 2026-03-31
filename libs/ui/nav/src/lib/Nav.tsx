@@ -6,6 +6,10 @@ import {
   useEffect,
   useRef,
 } from 'react';
+import {
+  GridList as AriaGridList,
+  GridListItem as AriaGridListItem,
+} from 'react-aria-components';
 import { tv } from '@restate/util/styles';
 import { NavContext } from './NavContext';
 import {
@@ -39,9 +43,9 @@ const styles = tv({
   base: 'flex items-center gap-0',
   slots: {
     indicator:
-      'absolute rounded-xl border border-black/10 bg-white shadow-xs transition-all duration-300 ease-in-out [&:not(:has(+ul>li>*[data-active=true]))]:hidden',
+      'absolute rounded-xl border border-black/10 bg-white shadow-xs transition-all duration-300 ease-in-out [&:not(:has(~*_[data-active=true]))]:hidden',
     container:
-      'relative rounded-xl border-[0.5px] border-transparent [&:has(a:focus)]:border-[0.5px] [&:has(a:focus)]:border-zinc-800/5 [&:has(a:focus)]:bg-black/3 [&:has(a:focus)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] [&:has(a:hover)]:border-[0.5px] [&:has(a:hover)]:border-zinc-800/5 [&:has(a:hover)]:bg-black/3 [&:has(a:hover)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]',
+      'relative rounded-xl border-[0.5px] border-transparent [&:has(:focus)]:border-[0.5px] [&:has(:focus)]:border-zinc-800/5 [&:has(:focus)]:bg-black/3 [&:has(:focus)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] [&:has(:hover)]:border-[0.5px] [&:has(:hover)]:border-zinc-800/5 [&:has(:hover)]:bg-black/3 [&:has(:hover)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]',
     dropdown: '',
   },
   variants: {
@@ -95,7 +99,7 @@ export function Nav({
         containerElement &&
           updateStyle(
             containerElement.querySelector(
-              'a[data-active=true],button[data-active=true]',
+              '[data-active=true]',
             ),
           );
       }
@@ -108,7 +112,7 @@ export function Nav({
     const updateStyleWithDetails = () =>
       updateStyle(
         containerElement?.querySelector(
-          'a[data-active=true],button[data-active=true]',
+          '[data-active=true]',
         ) ?? null,
       );
     if (containerElement) {
@@ -123,7 +127,7 @@ export function Nav({
       });
       updateStyle(
         containerElement.querySelector(
-          'a[data-active=true],button[data-active=true]',
+          '[data-active=true]',
         ),
       );
     }
@@ -144,7 +148,15 @@ export function Nav({
         ref={containerElementRef}
       >
         <div className={indicator()} ref={activeIndicatorElement} />
-        <ul className={base({ className })}>{children}</ul>
+        <AriaGridList
+          aria-label="Navigation"
+          className={base({ className })}
+          layout="grid"
+          orientation="horizontal"
+          selectionMode="none"
+        >
+          {children}
+        </AriaGridList>
       </div>
       <div className={dropdown()}>
         <Dropdown>
