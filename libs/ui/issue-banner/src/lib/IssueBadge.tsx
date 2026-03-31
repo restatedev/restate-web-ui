@@ -55,7 +55,7 @@ export function IssueBadge({
           </Button>
         </PopoverTrigger>
         <PopoverContent className="max-w-lg">
-          <div className="-m-px flex flex-col gap-1 rounded-2xl border border-zinc-900/80 bg-zinc-800/90 p-3 pb-1.5 shadow-[inset_0_1px_0_0_var(--color-gray-500)] drop-shadow-xl backdrop-blur-xl">
+          <div className="flex flex-col gap-1 rounded-2xl border border-zinc-900/80 bg-zinc-800/90 p-3 pb-1.5 shadow-[inset_0_1px_0_0_var(--color-gray-500)] drop-shadow-xl backdrop-blur-xl">
             <div className="text-0.5xs font-medium text-zinc-400">
               {issues.length}{' '}
               {formatPlurals(issues.length, {

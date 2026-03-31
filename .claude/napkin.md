@@ -54,6 +54,9 @@
 | 2026-03-27 | user | Wrapped cells container in a `<Link>` which created invalid HTML with nested interactive elements | Never wrap cells/grid content in a `<Link>`. Use pseudo-element (`before:absolute before:inset-0`) on the service name link to fill the container instead |
 | 2026-03-27 | self | Interactive elements inside pseudo-link-filled container were not clickable | Elements inside a pseudo-link container need `relative z-10` to sit above the pseudo-element |
 | 2026-03-29 | self | Animating `background-position` on repeating-linear-gradient caused subpixel jumps between iterations | Use `transform: translateX` instead — GPU-accelerated and avoids background tiling rounding. For 135deg stripes at 24px repeat, 23px translateX gives the smoothest loop |
+| 2026-03-31 | self | Scrollbars appearing in popovers/tooltips — threw 4 speculative fixes (removing `overflow-auto`, changing to `overflow-hidden`, adding `!important` hacks) before diagnosing | **DIAGNOSE FIRST**: Ask user to inspect in DevTools, identify which element scrolls, check computed styles, find the actual overflow source. Root cause was `-m-px` and `-mx-4` negative margins pushing content beyond `overflow-auto` containers. Fix was trivial once diagnosed |
+| 2026-03-31 | self | CSS custom properties in `@keyframes` (e.g., `var(--emit-to)`) don't work — spent 3 rounds on inline styles, React DOM, and style tags | For per-element animation targets, use Web Animations API (`el.animate()`) which supports dynamic values natively, or generate unique `@keyframes` per element |
+| 2026-03-31 | self | Tailwind v4 tree-shakes `@keyframes` inside `@layer base` that aren't referenced by Tailwind utilities | Keyframes referenced only via inline `style={{ animation: '...' }}` or JS need to be outside Tailwind's processing — use Web Animations API or a `<style>` tag |
 
 ## User Preferences
 
@@ -64,6 +67,7 @@
 - When changing technical direction mid-task, be explicit about what failed, why, and get approval for the new approach before writing code
 - Use `--theme(--color-*/opacity%)` for colors in Tailwind arbitrary values, not `rgba()` or `color-mix()`
 - When debugging data issues, add console.log early rather than theorizing for many rounds
+- When debugging UI/CSS bugs, DIAGNOSE FIRST — ask user to inspect DevTools, identify the element, check computed styles — then fix. Never throw speculative fixes at the wall
 - Wait for user instruction before making changes — don't guess and iterate when told to wait
 - Don't modify shared UI library components when the fix belongs in the consuming page
 

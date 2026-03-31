@@ -112,7 +112,7 @@ export function ServiceStatusBar({
           />
         </Link>
       </div>
-      <div className="-mx-4 border-t border-white/10" />
+      <div className="-mx-3 border-t border-white/10" />
       <div className="mt-4 flex flex-col">
         {statuses.map((s) => {
           const severity = issuesByStatus.get(s.name);
