@@ -6,7 +6,12 @@ import { Link } from '@restate/ui/link';
 import { formatPlurals } from '@restate/util/intl';
 import { toServiceStatusInvocationsHref } from '@restate/util/invocation-links';
 import type { ServiceIssue } from '@restate/features/system-health';
-import { issueButtonStyles, issuePingStyles, issueDotStyles } from './styles';
+import {
+  issueButtonStyles,
+  issuePingStyles,
+  issueDotStyles,
+  issueAlertIconStyles,
+} from './styles';
 
 export function IssueBadge({
   issues,
@@ -35,11 +40,18 @@ export function IssueBadge({
             variant="secondary"
             className={issueButtonStyles({ severity })}
           >
-            <div className="relative mx-0.5 flex h-2 w-2 shrink-0">
+            <Icon
+              name={IconName.TriangleAlert}
+              className={issueAlertIconStyles({
+                severity,
+                className: 'h-4 w-4 shrink-0 xl:hidden',
+              })}
+            />
+            <div className="relative mx-0.5 hidden h-2 w-2 shrink-0 xl:flex">
               <span className={issuePingStyles({ severity })} />
               <span className={issueDotStyles({ severity })} />
             </div>
-            <span className="font-semibold">
+            <span className="hidden font-semibold xl:inline">
               {issues.length}{' '}
               <span className="font-normal">
                 {formatPlurals(issues.length, {
@@ -50,7 +62,7 @@ export function IssueBadge({
             </span>
             <Icon
               name={IconName.ChevronsUpDown}
-              className="shrink- h-3.5 w-3.5 opacity-50"
+              className="hidden h-3.5 w-3.5 shrink-0 opacity-50 xl:block"
             />
           </Button>
         </PopoverTrigger>

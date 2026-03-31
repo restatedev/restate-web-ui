@@ -4,7 +4,6 @@ import { Key, Selection, SortDescriptor } from 'react-aria-components';
 export interface GridListColumn<T> {
   id: string;
   title: ReactNode;
-  width?: string;
   allowsSorting?: boolean;
   render: (item: T) => ReactNode;
 }

@@ -16,15 +16,9 @@ import {
   SERVICE_PLAYGROUND_QUERY_PARAM,
   HANDLER_QUERY_PARAM,
 } from '@restate/features/service';
-import {
-  INVOCATION_QUERY_NAME,
-} from '@restate/features/invocation-route';
-import {
-  STATE_QUERY_NAME,
-} from '@restate/features/state-object-route';
-import {
-  DEPLOYMENT_QUERY_PARAM,
-} from '@restate/features/deployment';
+import { INVOCATION_QUERY_NAME } from '@restate/features/invocation-route';
+import { STATE_QUERY_NAME } from '@restate/features/state-object-route';
+import { DEPLOYMENT_QUERY_PARAM } from '@restate/features/deployment';
 import { Link } from '@restate/ui/link';
 import { RestateServer } from '@restate/ui/restate-server';
 import { useRestateContext } from '@restate/features/restate-context';
@@ -166,7 +160,8 @@ function Component() {
   const { triggerWave } = useWaveAnimation();
   const serverRef = useRef<HTMLDivElement>(null);
   const pieRef = useRef<HTMLDivElement>(null);
-  const noInvocations = !isSummaryLoading && !isSummaryError && totalCount === 0;
+  const noInvocations =
+    !isSummaryLoading && !isSummaryError && totalCount === 0;
   const firstServiceName = services[0]?.name;
 
   const onRefresh = () => {
@@ -203,8 +198,15 @@ function Component() {
   return (
     <div className="mx-auto flex h-full w-full flex-col items-center gap-8 px-6 pt-8 pb-6">
       <div className="relative flex flex-col items-center gap-3">
-        <div ref={pieRef} className="relative -mb-12 h-[280px] w-[280px] overflow-visible">
-          <StatusArcEcharts byStatus={byStatus} isLoading={isSummaryLoading} linkParams={linkParams} />
+        <div
+          ref={pieRef}
+          className="relative -mb-12 h-[280px] w-[280px] overflow-visible"
+        >
+          <StatusArcEcharts
+            byStatus={byStatus}
+            isLoading={isSummaryLoading}
+            linkParams={linkParams}
+          />
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
             <div
               ref={serverRef}
@@ -227,17 +229,24 @@ function Component() {
                   variant="secondary"
                   className="flex items-center gap-1.5 rounded-lg border-orange-200/80 bg-orange-50/80 px-3 py-1.5 text-xs text-orange-600 shadow-none hover:bg-orange-100/80"
                 >
-                  <Icon name={IconName.TriangleAlert} className="h-3.5 w-3.5 fill-orange-200 text-orange-500" />
+                  <Icon
+                    name={IconName.TriangleAlert}
+                    className="h-3.5 w-3.5 fill-orange-200 text-orange-500"
+                  />
                   Could not load invocation data
-                  <Icon name={IconName.ChevronsUpDown} className="h-3 w-3 text-orange-400" />
+                  <Icon
+                    name={IconName.ChevronsUpDown}
+                    className="h-3 w-3 text-orange-400"
+                  />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="max-w-sm">
                 <ErrorBanner error={summaryError} className="rounded-xl" />
               </PopoverContent>
             </Popover>
-          ) : !isSummaryLoading && (
-            noInvocations ? (
+          ) : (
+            !isSummaryLoading &&
+            (noInvocations ? (
               <div className="flex flex-col items-center gap-1 text-center">
                 <p className="text-lg font-medium text-gray-600">All quiet</p>
                 <p className="flex items-center gap-1 text-sm text-gray-400">
@@ -249,7 +258,9 @@ function Component() {
                     className="flex items-center gap-1.5 rounded-xl text-gray-500/80"
                   >
                     No invocations yet —{' '}
-                    <span className="font-medium underline">try sending one</span>
+                    <span className="font-medium underline">
+                      try sending one
+                    </span>
                   </Link>
                 </p>
               </div>
@@ -262,11 +273,16 @@ function Component() {
                   {totalCount === 1 ? 'invocation' : 'invocations'}
                 </span>
               </>
-            )
+            ))
           )}
         </div>
         {totalCount > 0 && (
-          <StatusLegend byStatus={byStatus} isLoading={isSummaryLoading} isError={isSummaryError} linkParams={linkParams} />
+          <StatusLegend
+            byStatus={byStatus}
+            isLoading={isSummaryLoading}
+            isError={isSummaryError}
+            linkParams={linkParams}
+          />
         )}
       </div>
       <IssuesBannerStack className="-mt-4" />
@@ -306,7 +322,8 @@ function Component() {
           sortDescriptor={sortDescriptor}
           onSortChange={setSortDescriptor}
           estimatedRowHeight={100}
-          headerClassName="px-[calc(0.5rem+1px+0.75rem)]"
+          className="[--grid-list-template-columns:1fr_2.5rem] md:[--grid-list-template-columns:calc(33%-0.5rem)_calc(33%-0.5rem)_1fr_2.5rem] xl:[--grid-list-template-columns:calc(33%-0.5rem)_calc(33%-0.5rem)_1fr_10rem]"
+          headerClassName="hidden px-[calc(0.5rem+1px+0.75rem)] md:grid"
         >
           {(service) => (
             <GridListItem

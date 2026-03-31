@@ -19,7 +19,7 @@ const headerStyles = tv({
 });
 
 const headerCellStyles = tv({
-  base: 'flex items-center gap-1 text-start text-sm font-medium text-gray-500',
+  base: 'flex min-w-0 items-center gap-1 truncate overflow-hidden text-start text-sm font-medium text-gray-500',
   variants: {
     allowsSorting: {
       true: 'w-auto cursor-pointer justify-start justify-self-start rounded-lg select-none',
@@ -53,13 +53,11 @@ const listStyles = tv({
 
 function GridListHeader<T extends object>({
   columns,
-  gridTemplateColumns,
   sortDescriptor,
   onSortChange,
   className,
 }: {
   columns: GridListColumn<T>[];
-  gridTemplateColumns: string;
   sortDescriptor?: GridListProps<T>['sortDescriptor'];
   onSortChange?: GridListProps<T>['onSortChange'];
   className?: string;
@@ -68,7 +66,7 @@ function GridListHeader<T extends object>({
     <div
       role="presentation"
       className={headerStyles({ className })}
-      style={{ gridTemplateColumns }}
+      style={{ gridTemplateColumns: 'var(--grid-list-template-columns)' }}
     >
       {columns.map((column) => {
         const isSorted = sortDescriptor?.column === column.id;
@@ -135,8 +133,6 @@ export function GridList<T extends object>({
   headerClassName,
   ...props
 }: GridListProps<T>) {
-  const gridTemplateColumns = columns.map((c) => c.width ?? '1fr').join(' ');
-
   const layoutOptions = useMemo(
     () => ({ estimatedRowHeight, gap: 8, padding: 0 }),
     [estimatedRowHeight],
@@ -144,17 +140,9 @@ export function GridList<T extends object>({
 
   return (
     <GridListColumnsContext.Provider value={columns as GridListColumn<never>[]}>
-      <div
-        className={containerStyles({ className })}
-        style={
-          {
-            '--grid-list-template-columns': gridTemplateColumns,
-          } as React.CSSProperties
-        }
-      >
+      <div className={containerStyles({ className })}>
         <GridListHeader
           columns={columns}
-          gridTemplateColumns={gridTemplateColumns}
           sortDescriptor={sortDescriptor}
           onSortChange={onSortChange}
           className={headerClassName}

@@ -32,11 +32,10 @@ export function useServiceColumns({
     {
       id: 'name',
       title: 'Service',
-      width: 'calc(33% - 0.5rem)',
       allowsSorting: true,
       render: (s: Service) => (
         <div className="flex flex-col px-1">
-          <div className="-mx-1 flex w-fit items-center gap-2 rounded-lg px-1 py-0.5 hover:bg-black/3">
+          <div className="-mx-1 flex min-w-0 items-center gap-2 rounded-lg px-1 py-0.5 hover:bg-black/3">
             <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border bg-white shadow-xs">
               <Icon
                 name={IconName.Box}
@@ -46,7 +45,7 @@ export function useServiceColumns({
             <span className="min-w-0 truncate text-base font-medium text-zinc-700">
               {s.name}
             </span>
-            <div className="ml-1 shrink-0">
+            <div className="ml-1 hidden shrink-0 xl:block">
               <ServiceType type={s.ty} />
             </div>
             <Icon
@@ -63,10 +62,9 @@ export function useServiceColumns({
     {
       id: 'revision',
       title: 'Deployment',
-      width: 'calc(33% - 0.5rem)',
       allowsSorting: true,
       render: (s: Service) => (
-        <div className="flex w-fit min-w-0 flex-col p-1">
+        <div className="hidden min-w-0 flex-col p-1 md:flex">
           <LatestRevisionDeployment serviceName={s.name} />
           <div className="pl-8">
             <OlderRevisions serviceName={s.name} />
@@ -77,7 +75,6 @@ export function useServiceColumns({
     {
       id: 'invocations',
       title: 'Invocations',
-      width: 'calc(100% - 66% - 10rem - 0.5rem)',
       allowsSorting: true,
       render: (s: Service) => {
         const serviceStatuses = byServiceAndStatus.filter(
@@ -88,7 +85,7 @@ export function useServiceColumns({
           0,
         );
         return (
-          <div className="flex flex-col pr-3">
+          <div className="hidden min-w-0 flex-col pr-3 md:flex">
             <div className="flex min-h-7 items-center">
               <div className="w-full">
                 <ServiceStatusBar
@@ -101,12 +98,14 @@ export function useServiceColumns({
                 />
               </div>
             </div>
-            <div>
+            <div className="min-w-0 truncate">
               {serviceTotal > 0 ? (
                 <Link
-                  href={toServiceInvocationsHref(baseUrl, s.name, { existingParams: linkParams })}
+                  href={toServiceInvocationsHref(baseUrl, s.name, {
+                    existingParams: linkParams,
+                  })}
                   variant="secondary"
-                  className="relative z-10 inline-flex w-auto items-center gap-0.5 rounded-lg border-none bg-transparent px-1.5 py-0.5 text-0.5xs text-zinc-500 no-underline shadow-none hover:bg-black/3 hover:text-zinc-700"
+                  className="relative z-10 inline-flex w-auto min-w-0 items-center gap-0.5 truncate rounded-lg border-none bg-transparent px-1.5 py-0.5 text-0.5xs text-zinc-500 no-underline shadow-none hover:bg-black/3 hover:text-zinc-700"
                 >
                   {formatNumber(serviceTotal, true)}{' '}
                   {formatPlurals(serviceTotal, {
@@ -124,7 +123,6 @@ export function useServiceColumns({
     {
       id: 'health',
       title: 'Issues',
-      width: '10rem',
       allowsSorting: true,
       render: (s: Service) => {
         const issues = serviceIssuesMap.get(s.name) ?? [];
