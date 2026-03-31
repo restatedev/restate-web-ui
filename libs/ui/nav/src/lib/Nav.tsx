@@ -60,6 +60,7 @@ export function Nav({
   const containerElementRef = useRef<HTMLDivElement | null>(null);
   const activeIndicatorElement = useRef<HTMLDivElement | null>(null);
   const { base, indicator } = styles({ layout });
+  const location = useLocation();
 
   useEffect(() => {
     const updateStyle = (activeElement: Node | null) => {
@@ -121,9 +122,7 @@ export function Nav({
       detailsElement?.removeEventListener('toggle', updateStyleWithDetails);
       window.removeEventListener('resize', updateStyleWithDetails);
     };
-  }, [layout]);
-
-  const location = useLocation();
+  }, [layout, location.search]);
   const getHref = useGetHrefFromSearch();
 
   return (
