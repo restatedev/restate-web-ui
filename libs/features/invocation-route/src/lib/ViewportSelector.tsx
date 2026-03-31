@@ -28,7 +28,7 @@ const overlayStyles = tv({
 });
 
 const handleStyles = tv({
-  base: 'group absolute inset-y-0 z-20 flex w-3 translate-x-1 cursor-ew-resize items-center justify-center',
+  base: 'group absolute inset-y-0 z-20 flex w-3 cursor-ew-resize items-center justify-center',
   variants: {
     animate: {
       true: 'transition-[left,right] duration-300 ease-out',
@@ -287,10 +287,10 @@ export function ViewportSelector({
         tabIndex={0}
         className={handleStyles({ animate: shouldAnimate })}
         style={{
-          left: `calc(${leftPercent}%)`,
+          left: `calc(${leftPercent}% + ${PADDING}px)`,
         }}
       >
-        <div className="absolute top-0 left-0 h-full w-0.5 bg-blue-400/0 transition-colors duration-150 ease-out group-hover:bg-blue-400" />
+        <div className="absolute inset-y-1 left-0.5 w-0.5 rounded-full bg-gray-400/40 transition-colors duration-150 ease-out group-hover:bg-blue-400/80" />
       </div>
 
       {/* Selection box - for panning */}
@@ -335,7 +335,7 @@ export function ViewportSelector({
           right: `calc(${rightPercent}% + ${PADDING}px)`,
         }}
       >
-        <div className="absolute top-0 right-0 h-full w-0.5 bg-blue-400/0 transition-colors duration-150 ease-out group-hover:bg-blue-400" />
+        <div className="absolute inset-y-1 right-0.5 w-0.5 rounded-full bg-gray-400/40 transition-colors duration-150 ease-out group-hover:bg-blue-400/80" />
       </div>
     </div>
   );
