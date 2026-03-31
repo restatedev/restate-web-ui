@@ -27,12 +27,6 @@ export const legendStyles = tv({
 
 const legendItemStyles = tv({
   base: 'flex cursor-pointer items-center gap-1.5 rounded-md px-1.5 py-0.5 text-gray-700 no-underline outline-offset-2 outline-blue-600 hover:bg-black/5 focus-visible:outline-2',
-  variants: {
-    isEmpty: {
-      true: 'opacity-50',
-      false: '',
-    },
-  },
 });
 
 const ALL_STATUSES = STATUS_ORDER.map((name) => ({
@@ -52,11 +46,8 @@ export function StatusLegend({
   const items = getOrderedStatuses(byStatus);
   const { baseUrl } = useRestateContext();
   const state = isLoading ? 'loading' : isError ? 'error' : 'success';
-  const countsByName = new Map(items.map((s) => [s.name, s.count]));
-  const displayItems = ALL_STATUSES.map((s) => ({
-    ...s,
-    count: countsByName.get(s.name) ?? 0,
-  }));
+  const hasData = items.length > 0;
+  const displayItems = hasData ? items : ALL_STATUSES;
 
   return (
     <AriaGridList
@@ -65,14 +56,15 @@ export function StatusLegend({
       layout="grid"
     >
       {displayItems.map((s) => {
-        if (state === 'success') {
+        const count = 'count' in s ? (s as { count: number }).count : 0;
+        if (state === 'success' && hasData) {
           return (
             <AriaGridListItem
               key={s.name}
               id={s.name}
-              textValue={`${STATUS_LABELS[s.name] ?? s.name} ${s.count}`}
+              textValue={`${STATUS_LABELS[s.name] ?? s.name} ${count}`}
               href={toInvocationsHref(baseUrl, s.name)}
-              className={legendItemStyles({ isEmpty: s.count === 0 })}
+              className={legendItemStyles()}
             >
               <div
                 className="h-3 w-3 shrink-0 rounded-full"
@@ -86,7 +78,7 @@ export function StatusLegend({
                 {STATUS_LABELS[s.name] ?? s.name}
               </span>
               <span className="text-xs text-gray-400 tabular-nums">
-                {formatNumber(s.count, true)}
+                {formatNumber(count, true)}
               </span>
               <Icon
                 name={IconName.ChevronRight}
