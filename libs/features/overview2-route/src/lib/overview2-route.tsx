@@ -33,6 +33,9 @@ import { useServiceColumns } from './columns';
 import { cellsContainerStyles } from './cellsContainerStyles';
 import { NoDeploymentPlaceholder } from './NoDeploymentPlaceholder';
 import { sortServices } from './sortServices';
+import { useRangeFilters } from './useRangeFilters';
+import { TimeRangeToggle } from './TimeRangeToggle';
+import { NoInvocationsHero } from './NoInvocationsHero';
 
 const emptyServerStyles = tv({
   base: 'flex w-full flex-auto flex-col items-center justify-center overflow-hidden rounded-xl border bg-gray-200/50 pt-24 pb-8 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] @tall:pt-10 @tall:pb-40',
@@ -45,6 +48,7 @@ const emptyServerStyles = tv({
 });
 
 function Component() {
+  const rangeFilters = useRangeFilters();
   const {
     servicesMap,
     deploymentsMap,
@@ -58,7 +62,7 @@ function Component() {
     isEmpty,
     isError,
     error,
-  } = useOverviewData();
+  } = useOverviewData(rangeFilters);
 
   const { GettingStarted, status, baseUrl } = useRestateContext();
 
@@ -125,6 +129,9 @@ function Component() {
   const { triggerWave } = useWaveAnimation();
   const serverRef = useRef<HTMLDivElement>(null);
   const pieRef = useRef<HTMLDivElement>(null);
+  const lastTotalRef = useRef(totalCount);
+  if (!isSummaryLoading) lastTotalRef.current = totalCount;
+  const showEmptyHero = lastTotalRef.current === 0 && !isSummaryError;
 
   const onRefresh = () => {
     pieRef.current?.animate(
@@ -159,31 +166,45 @@ function Component() {
 
   return (
     <div className="mx-auto flex h-full w-full flex-col items-center gap-8 px-6 pt-8 pb-6">
-      <div className="relative flex flex-col items-center gap-3">
-        <div ref={pieRef} className="relative -mb-12 h-[280px] w-[280px]">
-          <StatusArcEcharts byStatus={byStatus} isLoading={isSummaryLoading} />
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-            <div
-              ref={serverRef}
-              className="pointer-events-auto scale-90 filter-[drop-shadow(0_4px_12px_rgba(0,0,0,0.08))_drop-shadow(0_1px_3px_rgba(0,0,0,0.06))]"
-            >
-              <RestateServer status={ferrofluidStatus} onPress={onRefresh} />
+      {showEmptyHero ? (
+        <NoInvocationsHero
+          serverRef={serverRef}
+          ferrofluidStatus={ferrofluidStatus}
+          onRefresh={onRefresh}
+          firstServiceName={services[0]?.name}
+        />
+      ) : (
+        <>
+          <div className="relative flex flex-col items-center gap-3">
+            <div ref={pieRef} className="relative -mb-12 h-[280px] w-[280px]">
+              <StatusArcEcharts byStatus={byStatus} isLoading={isSummaryLoading} />
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                <div
+                  ref={serverRef}
+                  className="pointer-events-auto scale-90 filter-[drop-shadow(0_4px_12px_rgba(0,0,0,0.08))_drop-shadow(0_1px_3px_rgba(0,0,0,0.06))]"
+                >
+                  <RestateServer status={ferrofluidStatus} onPress={onRefresh} />
+                </div>
+              </div>
             </div>
+            <TimeRangeToggle />
+            <div className="flex min-h-8 items-baseline justify-center gap-1.5">
+              {!isSummaryLoading && !isSummaryError && (
+                <>
+                  <span className="text-2xl font-bold text-gray-700 tabular-nums">
+                    {formatNumber(totalCount, true)}
+                  </span>
+                  <span className="text-sm text-gray-400">
+                    {totalCount === 1 ? 'invocation' : 'invocations'}
+                  </span>
+                </>
+              )}
+            </div>
+            <StatusLegend byStatus={byStatus} isLoading={isSummaryLoading} isError={isSummaryError} />
           </div>
-        </div>
-        <div className="flex min-h-8 items-baseline justify-center gap-1.5">
-          {totalCount > 0 && (
-            <>
-              <span className="text-2xl font-bold text-gray-700 tabular-nums">
-                {formatNumber(totalCount, true)}
-              </span>
-              <span className="text-sm text-gray-400">invocations</span>
-            </>
-          )}
-        </div>
-        <StatusLegend byStatus={byStatus} isLoading={isSummaryLoading} />
-      </div>
-      <IssuesBannerStack />
+          <IssuesBannerStack className="-mt-4" />
+        </>
+      )}
 
       <div className="mt-8 flex min-h-0 w-full flex-1 flex-col">
         <div className="mb-2 flex flex-col gap-2 px-5 md:flex-row md:items-center md:justify-between">

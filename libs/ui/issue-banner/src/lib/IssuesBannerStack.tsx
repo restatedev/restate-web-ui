@@ -6,10 +6,21 @@ import {
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import { formatPlurals } from '@restate/util/intl';
+import { tv } from '@restate/util/styles';
 import { issueBannerStyles } from './styles';
 import { IssueBannerPill } from './IssueBannerPill';
 
-export function IssuesBannerStack() {
+const stackStyles = tv({
+  base: 'animate-in fade-in zoom-in-95 duration-300',
+  variants: {
+    multi: {
+      true: 'flex flex-col items-center',
+      false: '',
+    },
+  },
+});
+
+export function IssuesBannerStack({ className }: { className?: string }) {
   const toasts = useIssueQueue();
   const issues = toasts.map((t: { content: IssueContent }) => t.content);
   const [expanded, setExpanded] = useState(false);
@@ -19,7 +30,7 @@ export function IssuesBannerStack() {
   if (issues.length === 1) {
     const issue = issues[0]!;
     return (
-      <div className="animate-in fade-in zoom-in-95 duration-300">
+      <div className={stackStyles({ multi: false, className })}>
         <IssueBannerPill severity={issue.severity} details={issue.details}>
           {issue.label}
         </IssueBannerPill>
@@ -31,7 +42,7 @@ export function IssuesBannerStack() {
   const stackCount = Math.min(issues.length, maxStacked);
 
   return (
-    <div className="flex animate-in fade-in zoom-in-95 flex-col items-center duration-300">
+    <div className={stackStyles({ multi: true, className })}>
       <div className="relative flex flex-col-reverse items-center">
         <Button
           variant="icon"

@@ -9,8 +9,9 @@ import {
   getServiceIssues,
   type ServiceIssue,
 } from '@restate/features/system-health';
+import type { FilterItem } from '@restate/data-access/admin-api-spec';
 
-export function useOverviewData() {
+export function useOverviewData(filters: FilterItem[] = []) {
   const {
     data: { sortedServiceNames, deployments: deploymentsMap } = {},
     isFetched,
@@ -23,7 +24,7 @@ export function useOverviewData() {
     data: rawSummaryData,
     isFetching: isSummaryLoading,
     isError: isSummaryError,
-  } = useSummaryInvocations([], { sampled: false });
+  } = useSummaryInvocations(filters, { sampled: false });
   const summaryData = isSummaryError ? undefined : rawSummaryData;
 
   const { isNew, isVersionGte } = useRestateContext();
