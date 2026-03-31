@@ -142,7 +142,6 @@ export function Nav({
           aria-label="Navigation"
           className={base({ className })}
           layout="grid"
-          orientation="horizontal"
           selectionMode="none"
         >
           {children}
