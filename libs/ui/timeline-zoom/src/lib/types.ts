@@ -58,9 +58,7 @@ export type ViewportControllerAction =
       previousTimelineMode: TimelineZoomMode;
       renderDomainStartMs: number;
       renderDomainEndMs: number;
-      latestEdgeMs: number;
       observedRangeDurationMs: number;
-      containerWidthPx: number;
     }
   | {
       type: 'pan-window';
