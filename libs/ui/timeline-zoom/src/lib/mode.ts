@@ -8,8 +8,6 @@ import {
   FOLLOW_LATEST_STEPS,
   FOLLOW_LATEST_THRESHOLD,
   OVERSHOOT_FACTOR,
-  STICKY_SNAP_FRACTION,
-  STICKY_SNAP_MIN_PX,
 } from './constants';
 import type {
   DomainWindows,
@@ -59,21 +57,6 @@ function computeFollowLatestWindow(observedRangeDurationMs: number): number {
     FOLLOW_LATEST_STEPS[FOLLOW_LATEST_STEPS.length - 1] ?? minWindowMs;
   const targetWindowMs = observedRangeDurationMs * 0.5;
   return Math.max(minWindowMs, Math.min(maxWindowMs, targetWindowMs));
-}
-
-/**
- * Computes how close the visible end must be to the latest edge to snap/stick to it.
- */
-export function computeLatestSnapThreshold(
-  observedRangeDurationMs: number,
-  renderDomainDurationMs: number,
-  containerWidthPx: number,
-): number {
-  return Math.max(
-    observedRangeDurationMs * STICKY_SNAP_FRACTION,
-    (STICKY_SNAP_MIN_PX / Math.max(1, containerWidthPx)) *
-      Math.max(1, renderDomainDurationMs),
-  );
 }
 
 /**

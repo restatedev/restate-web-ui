@@ -135,7 +135,8 @@ This spec is intentionally agnostic to rendering technology and internal archite
 
 - If user is away from live edge, viewport remains stable where placed.
 - Incoming data must not force viewport displacement.
-- Returning to live edge restores follow-latest behavior.
+- When the user pans or scrolls the viewport so that its trailing edge contacts the render domain boundary, the viewport re-attaches and tracks incoming data (sticky-to-latest-edge). The viewport remains in inspect mode; only the explicit "Return to Live" action restores full follow-latest mode.
+- Sticky-to-latest-edge uses edge-contact detection (viewport end reaches render domain end), not proximity thresholds, so it behaves consistently regardless of trace duration.
 
 ### 7.3 `Now` Marker Presentation
 
@@ -154,6 +155,8 @@ This spec is intentionally agnostic to rendering technology and internal archite
 
 - Selector enforces minimum usable width visually and interactively.
 - Selector operations do not teleport to opposite edge.
+- Dragging the selector away from the live edge must not snap the viewport back to live, regardless of trace duration.
+- Dragging or scrolling the selector to the render domain boundary activates sticky-to-latest-edge (see §7.2).
 - Selector remains usable for short and very long traces.
 
 ## 10. Long-Running Trace Behavior

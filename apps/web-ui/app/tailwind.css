@@ -108,14 +108,14 @@
   --animate-stripeScroll: stripeScroll 4s linear infinite;
 
   @keyframes moveAndGrow {
-    0% {
-      right: 0px;
+    from {
+      background-position: 0 0;
     }
-    100% {
-      right: -23px;
+    to {
+      background-position: 22.63px 0;
     }
   }
-  --animate-moveAndGrow: moveAndGrow 2s ease-in-out infinite;
+  --animate-moveAndGrow: moveAndGrow 1s linear infinite;
 
   @keyframes pulseButton {
     0%,

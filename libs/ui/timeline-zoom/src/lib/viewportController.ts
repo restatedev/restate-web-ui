@@ -2,7 +2,6 @@ import {
   INITIAL_VIEWPORT_CONTROLLER_STATE,
   MIN_VISIBLE_WINDOW_DURATION,
 } from './constants';
-import { computeLatestSnapThreshold } from './mode';
 import type {
   ViewportControllerAction,
   ViewportControllerState,
@@ -27,13 +26,14 @@ export function viewportControllerReducer(
       action.renderDomainStartMs,
       Math.min(maxStart, action.currentVisibleWindow.startMs + action.deltaMs),
     );
+    const nextEnd = nextStart + currentDuration;
 
     return {
       manualVisibleWindow: {
         startMs: nextStart,
-        endMs: nextStart + currentDuration,
+        endMs: nextEnd,
       },
-      stickyToLatestEdge: false,
+      stickyToLatestEdge: nextEnd >= action.renderDomainEndMs,
       keepFullRangeWhileStreaming: false,
     };
   }
@@ -58,15 +58,7 @@ export function viewportControllerReducer(
     isPanMove &&
     action.observedRangeDurationMs > 0
   ) {
-    const renderDomainDurationMs =
-      action.renderDomainEndMs - action.renderDomainStartMs;
-    const snapThreshold = computeLatestSnapThreshold(
-      action.observedRangeDurationMs,
-      renderDomainDurationMs,
-      action.containerWidthPx,
-    );
-    stickyToLatestEdge =
-      action.window.endMs >= action.latestEdgeMs - snapThreshold;
+    stickyToLatestEdge = action.window.endMs >= action.renderDomainEndMs;
   }
 
   return {

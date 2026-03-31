@@ -3,11 +3,7 @@ import {
   INITIAL_VIEWPORT_CONTROLLER_STATE,
   MIN_VISIBLE_WINDOW_DURATION,
 } from './constants';
-import {
-  computeLatestSnapThreshold,
-  resolveDomainWindows,
-  resolveTimelineMode,
-} from './mode';
+import { resolveDomainWindows, resolveTimelineMode } from './mode';
 import { applyTickCountGuardrail, selectTickInterval } from './ticks';
 import { viewportControllerReducer } from './viewportController';
 import type {
@@ -168,17 +164,12 @@ export function deriveTimelineFrame(
 
   const canFollowLatest = timelineMode === 'inspect' && inputs.isStreaming;
   const latestEdgeMs = inputs.rangeStartMs + observedRangeDurationMs;
-  const latestEdgeThresholdMs = computeLatestSnapThreshold(
-    observedRangeDurationMs,
-    renderDomainDurationMs,
-    inputs.containerWidthPx,
-  );
 
   const isInspectAtLatestEdge =
     timelineMode === 'inspect' &&
     inputs.isStreaming &&
     lockedDomainWindows.visibleWindowEndMs >=
-      latestEdgeMs - latestEdgeThresholdMs;
+      lockedDomainWindows.renderDomainEndMs;
 
   const intervalSelectionMode = isInspectAtLatestEdge
     ? 'follow-latest'
@@ -411,9 +402,7 @@ export function timelineZoomReducer(
         renderDomainStartMs:
           derivedBeforeAction.domainWindows.renderDomainStartMs,
         renderDomainEndMs: derivedBeforeAction.domainWindows.renderDomainEndMs,
-        latestEdgeMs: derivedBeforeAction.latestEdgeMs,
         observedRangeDurationMs: derivedBeforeAction.observedRangeDurationMs,
-        containerWidthPx: state.latestInputs.containerWidthPx,
       },
     );
 

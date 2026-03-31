@@ -37,6 +37,3 @@ export const CHANGE_COOLDOWN_MS = 800;
 export const MIN_TICK_COUNT = 3;
 export const MAX_TICK_COUNT = 10;
 export const LIVE_TRANSITION_DURATION_MS = 300;
-
-export const STICKY_SNAP_FRACTION = 0.05;
-export const STICKY_SNAP_MIN_PX = 8;
