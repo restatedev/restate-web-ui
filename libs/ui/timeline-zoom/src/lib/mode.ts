@@ -59,7 +59,6 @@ function computeFollowLatestWindow(observedRangeDurationMs: number): number {
   return Math.max(minWindowMs, Math.min(maxWindowMs, targetWindowMs));
 }
 
-
 /**
  * Derives render/visible/selector domains from current mode and viewport-controller state.
  */
