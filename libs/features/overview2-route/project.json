@@ -1,0 +1,9 @@
+{
+  "name": "overview2-route",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/features/overview2-route/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project overview2-route --web",
+  "targets": {}
+}

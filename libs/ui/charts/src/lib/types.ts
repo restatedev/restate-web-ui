@@ -90,9 +90,16 @@ export type SliceConfig = {
   name: string;
   value: number;
   color?: string;
+  colorLight?: string;
+  colorDark?: string;
   borderColor?: string;
   borderWidth?: number;
+  borderType?: 'solid' | 'dashed' | 'dotted' | number[];
+  borderCap?: 'butt' | 'round' | 'square';
   borderRadius?: number;
+  shadowBlur?: number;
+  shadowColor?: string;
+  shadowOffsetY?: number;
 };
 
 export type PieConfig = {
@@ -100,6 +107,11 @@ export type PieConfig = {
   center?: [string, string];
   startAngle?: number;
   endAngle?: number;
+  padAngle?: number;
+  minAngle?: number;
+  showLabel?: boolean;
+  silent?: boolean;
+  gradient?: boolean;
   slices: SliceConfig[];
 };
 

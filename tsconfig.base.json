@@ -58,6 +58,9 @@
       "@restate/features/overview-route": [
         "libs/features/overview-route/src/index.ts"
       ],
+      "@restate/features/overview2-route": [
+        "libs/features/overview2-route/src/index.ts"
+      ],
       "@restate/features/register-deployment": [
         "libs/features/register-deployment/src/index.ts"
       ],
@@ -77,7 +80,13 @@
       "@restate/features/state-route": [
         "libs/features/state-route/src/index.ts"
       ],
+      "@restate/features/status-chart": [
+        "libs/features/status-chart/src/index.ts"
+      ],
       "@restate/features/support": ["libs/features/support/src/index.ts"],
+      "@restate/features/system-health": [
+        "libs/features/system-health/src/index.ts"
+      ],
       "@restate/features/user-preference": [
         "libs/features/user-preference/src/index.ts"
       ],
@@ -98,6 +107,7 @@
       "@restate/ui/form-field": ["libs/ui/form-field/src/index.ts"],
       "@restate/ui/grid-list": ["libs/ui/grid-list/src/index.ts"],
       "@restate/ui/icons": ["libs/ui/icons/src/index.ts"],
+      "@restate/ui/issue-banner": ["libs/ui/issue-banner/src/index.ts"],
       "@restate/ui/keyboard": ["libs/ui/keyboard/src/index.ts"],
       "@restate/ui/layout": ["libs/ui/layout/src/index.ts"],
       "@restate/ui/link": ["libs/ui/link/src/index.ts"],
@@ -115,12 +125,16 @@
       "@restate/ui/table": ["libs/ui/table/src/index.ts"],
       "@restate/ui/timeline-zoom": ["libs/ui/timeline-zoom/src/index.ts"],
       "@restate/ui/tooltip": ["libs/ui/tooltip/src/index.ts"],
+      "@restate/ui/wave-animation": ["libs/ui/wave-animation/src/index.ts"],
       "@restate/util/api-config": ["libs/util/api-config/src/index.ts"],
       "@restate/util/binary": ["libs/util/binary/src/index.ts"],
       "@restate/util/errors": ["libs/util/errors/src/index.ts"],
       "@restate/util/feature-flag": ["libs/util/feature-flag/src/index.ts"],
       "@restate/util/humantime": ["libs/util/humantime/src/index.ts"],
       "@restate/util/intl": ["libs/util/intl/src/index.ts"],
+      "@restate/util/invocation-links": [
+        "libs/util/invocation-links/src/index.ts"
+      ],
       "@restate/util/mock-api": ["libs/util/mock-api/src/index.ts"],
       "@restate/util/playwright": ["libs/util/playwright/src/index.ts"],
       "@restate/util/react-query": ["libs/util/react-query/src/index.ts"],

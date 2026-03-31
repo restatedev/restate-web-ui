@@ -1,6 +1,7 @@
-import { ReactNode, useMemo } from 'react';
+import { Fragment, ReactNode } from 'react';
 import { GridListItem as AriaGridListItem } from 'react-aria-components';
 import { tv } from '@restate/util/styles';
+import { useHrefWithQueryParams } from '@restate/ui/link';
 import { useGridListColumns } from './GridListContext';
 import { GridListItemProps } from './types';
 
@@ -13,23 +14,16 @@ function Cells<T>({
   columns,
 }: {
   item: T;
-  columns: { id: string; render: (item: T) => ReactNode; width?: string }[];
+  columns: { id: string; render: (item: T) => ReactNode }[];
 }) {
-  const gridTemplateColumns = useMemo(
-    () => columns.map((c) => c.width ?? '1fr').join(' '),
-    [columns],
-  );
-
   return (
     <div
       role="presentation"
       className="grid items-center gap-x-2"
-      style={{ gridTemplateColumns }}
+      style={{ gridTemplateColumns: 'var(--grid-list-template-columns)' }}
     >
       {columns.map((column) => (
-        <div key={column.id} className="min-w-0 truncate">
-          {column.render(item)}
-        </div>
+        <Fragment key={column.id}>{column.render(item)}</Fragment>
       ))}
     </div>
   );
@@ -44,12 +38,16 @@ export function GridListItem<T>({
   className,
 }: GridListItemProps<T>) {
   const columns = useGridListColumns<T>();
+  const resolvedHref = useHrefWithQueryParams({
+    preserveQueryParams: true,
+    href,
+  });
 
   return (
     <AriaGridListItem
       id={id}
       textValue={textValue}
-      href={href}
+      href={resolvedHref}
       className={itemStyles({ className })}
     >
       {({ isHovered, isPressed, isFocusVisible, isSelected }) => {

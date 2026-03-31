@@ -38,6 +38,29 @@ import { OverrideBreaking } from './OverrideBreaking';
 import { Metadata } from './Metadata';
 import { Link } from '@restate/ui/link';
 
+const customRadioStyles = tv({
+  base: 'group relative flex cursor-default justify-center rounded-lg border bg-clip-padding shadow-none outline-hidden',
+  variants: {
+    isFocusVisible: {
+      true: 'ring-2 ring-blue-600 ring-offset-1 ring-offset-white/80',
+    },
+    isSelected: {
+      true: 'z-10 scale-105 border text-gray-800 shadow-xs',
+      false: 'border-transparent text-gray-500',
+    },
+    isPressed: { true: '', false: '' },
+    isDisabled: {
+      true: 'opacity-50',
+    },
+  },
+  compoundVariants: [
+    { isSelected: true, isPressed: true, className: 'bg-gray-50' },
+    { isSelected: true, isPressed: false, className: 'bg-white' },
+    { isSelected: false, isPressed: true, className: 'bg-gray-100' },
+    { isSelected: false, isPressed: false, className: 'bg-white/50' },
+  ],
+});
+
 function CustomRadio({
   value,
   children,
@@ -54,17 +77,13 @@ function CustomRadio({
       {...props}
       value={value}
       className={({ isFocusVisible, isSelected, isPressed, isDisabled }) =>
-        `${className} group relative flex cursor-default justify-center rounded-lg border bg-clip-padding shadow-none outline-hidden ${
-          isFocusVisible
-            ? 'ring-2 ring-blue-600 ring-offset-1 ring-offset-white/80'
-            : ''
-        } ${
-          isSelected
-            ? `${
-                isPressed ? 'bg-gray-50' : 'bg-white'
-              } z-10 scale-105 border text-gray-800 shadow-xs`
-            : 'border-transparent text-gray-500'
-        } ${isPressed && !isSelected ? 'bg-gray-100' : ''} ${!isSelected && !isPressed ? 'bg-white/50' : ''} ${isDisabled ? 'opacity-50' : ''} `
+        customRadioStyles({
+          isFocusVisible,
+          isSelected,
+          isPressed,
+          isDisabled,
+          className,
+        })
       }
     >
       {children}

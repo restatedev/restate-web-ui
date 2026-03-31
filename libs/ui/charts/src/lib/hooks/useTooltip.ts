@@ -18,35 +18,50 @@ export function useTooltip(
       if (Array.isArray(params)) {
         return '';
       }
-      const { name, value } = params;
+      const { name, value, color, percent } = params;
       const yFormatter = tooltipCfg?.formatValue ?? noOp;
-
-      const container = document.createElement('div');
-      const header = document.createElement('div');
-      header.textContent = name ?? '';
-      header.style.color = 'rgba(255,255,255,0.9)';
-      header.style.fontWeight = '500';
-
-      const separator = document.createElement('hr');
-      separator.style.marginLeft = '-16px';
-      separator.style.marginRight = '-16px';
-      separator.style.backgroundColor = 'white';
-      separator.style.opacity = '0.2';
-      separator.style.marginTop = '16px';
-      separator.style.marginBottom = '16px';
-
-      const body = document.createElement('div');
-      body.textContent =
+      const formattedValue =
         typeof value === 'number' ? yFormatter(value) : String(value ?? '');
-      body.style.fontSize = typeof value === 'number' ? '1.4em' : '1em';
-      body.style.fontWeight = '400';
-      body.style.color = 'rgba(255,255,255,0.9)';
 
-      container.appendChild(header);
-      container.appendChild(separator);
-      container.appendChild(body);
+      const colorStr = String(color ?? '#ccc');
 
-      return container;
+      const dot = document.createElement('span');
+      dot.style.display = 'inline-block';
+      dot.style.width = '12px';
+      dot.style.height = '12px';
+      dot.style.borderRadius = '50%';
+      dot.style.backgroundColor = colorStr;
+      dot.style.border = `1.5px solid color-mix(in srgb, ${colorStr} 70%, black)`;
+      dot.style.boxShadow = `inset 0 1px 0 0 rgba(255,255,255,0.35)`;
+      dot.style.marginRight = '8px';
+      dot.style.flexShrink = '0';
+
+      const label = document.createElement('span');
+      label.textContent = name ?? '';
+      label.style.color = 'rgba(255,255,255,0.7)';
+      label.style.marginRight = '8px';
+
+      const val = document.createElement('span');
+      val.textContent = formattedValue;
+      val.style.fontWeight = '600';
+      val.style.color = 'rgba(255,255,255,0.95)';
+      val.style.marginLeft = 'auto';
+
+      const pct = document.createElement('span');
+      pct.textContent = percent != null ? ` (${percent}%)` : '';
+      pct.style.color = 'rgba(255,255,255,0.85)';
+      pct.style.fontWeight = '500';
+      pct.style.marginLeft = '4px';
+
+      const row = document.createElement('div');
+      row.style.display = 'flex';
+      row.style.alignItems = 'center';
+      row.appendChild(dot);
+      row.appendChild(label);
+      row.appendChild(val);
+      row.appendChild(pct);
+
+      return row;
     };
 
     const defaultFormatter = (params: TopLevelFormatterParams) => {

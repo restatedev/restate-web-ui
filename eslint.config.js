@@ -36,7 +36,15 @@ module.exports = [
   },
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
-    // Override or add rules here
-    rules: {},
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'JSXAttribute[name.name="className"] TemplateLiteral',
+          message:
+            'Do not use template literals in className. Use tv() with variants instead.',
+        },
+      ],
+    },
   },
 ];

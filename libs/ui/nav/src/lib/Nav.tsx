@@ -6,6 +6,10 @@ import {
   useEffect,
   useRef,
 } from 'react';
+import {
+  GridList as AriaGridList,
+  GridListItem as AriaGridListItem,
+} from 'react-aria-components';
 import { tv } from '@restate/util/styles';
 import { NavContext } from './NavContext';
 import {
@@ -32,13 +36,17 @@ interface NavProps {
     ComponentProps<typeof NavItem | typeof NavSearchItem>
   >[];
   layout?: 'vertical' | 'horizontal';
+  responsive?: boolean;
 }
 
 const styles = tv({
   base: 'flex items-center gap-0',
   slots: {
     indicator:
-      'absolute rounded-xl border border-black/10 bg-white shadow-xs transition-all duration-300 ease-in-out [&:not(:has(+ul>li>*[data-active=true]))]:hidden',
+      'absolute rounded-xl border border-black/10 bg-white shadow-xs transition-all duration-300 ease-in-out [&:not(:has(~*_[data-active=true]))]:hidden',
+    container:
+      'relative rounded-xl border-[0.5px] border-transparent [&:has(:focus)]:border-[0.5px] [&:has(:focus)]:border-zinc-800/5 [&:has(:focus)]:bg-black/3 [&:has(:focus)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] [&:has(:hover)]:border-[0.5px] [&:has(:hover)]:border-zinc-800/5 [&:has(:hover)]:bg-black/3 [&:has(:hover)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]',
+    dropdown: '',
   },
   variants: {
     layout: {
@@ -48,6 +56,13 @@ const styles = tv({
         indicator: 'top-0 h-full',
       },
     },
+    responsive: {
+      true: { container: 'hidden lg:block', dropdown: 'lg:hidden' },
+      false: { container: 'block', dropdown: 'hidden' },
+    },
+  },
+  defaultVariants: {
+    responsive: true,
   },
 });
 
@@ -56,16 +71,21 @@ export function Nav({
   className,
   ariaCurrentValue,
   layout = 'horizontal',
+  responsive = true,
 }: NavProps) {
   const containerElementRef = useRef<HTMLDivElement | null>(null);
   const activeIndicatorElement = useRef<HTMLDivElement | null>(null);
-  const { base, indicator } = styles({ layout });
+  const { base, indicator, container, dropdown } = styles({
+    layout,
+    responsive,
+  });
+  const location = useLocation();
 
   useEffect(() => {
     const updateStyle = (activeElement: Node | null) => {
       if (
         activeElement instanceof HTMLElement &&
-        activeElement.dataset.active === 'true' &&
+        activeElement.dataset['active'] === 'true' &&
         activeIndicatorElement.current
       ) {
         if (layout === 'vertical') {
@@ -80,11 +100,7 @@ export function Nav({
     const callback: MutationCallback = (mutationList) => {
       for (const mutation of mutationList) {
         containerElement &&
-          updateStyle(
-            containerElement.querySelector(
-              'a[data-active=true],button[data-active=true]',
-            ),
-          );
+          updateStyle(containerElement.querySelector('[data-active=true]'));
       }
     };
 
@@ -94,9 +110,7 @@ export function Nav({
     // TODO
     const updateStyleWithDetails = () =>
       updateStyle(
-        containerElement?.querySelector(
-          'a[data-active=true],button[data-active=true]',
-        ) ?? null,
+        containerElement?.querySelector('[data-active=true]') ?? null,
       );
     if (containerElement) {
       observer.observe(containerElement, {
@@ -108,11 +122,7 @@ export function Nav({
       detailsElement?.addEventListener('toggle', updateStyleWithDetails, {
         once: true,
       });
-      updateStyle(
-        containerElement.querySelector(
-          'a[data-active=true],button[data-active=true]',
-        ),
-      );
+      updateStyle(containerElement.querySelector('[data-active=true]'));
     }
 
     window.addEventListener('resize', updateStyleWithDetails);
@@ -121,21 +131,23 @@ export function Nav({
       detailsElement?.removeEventListener('toggle', updateStyleWithDetails);
       window.removeEventListener('resize', updateStyleWithDetails);
     };
-  }, [layout]);
-
-  const location = useLocation();
+  }, [layout, location.search]);
   const getHref = useGetHrefFromSearch();
 
   return (
     <NavContext.Provider value={{ value: ariaCurrentValue }}>
-      <div
-        className="relative hidden rounded-xl border-[0.5px] border-transparent lg:block [&:has(a:focus)]:border-[0.5px] [&:has(a:focus)]:border-zinc-800/5 [&:has(a:focus)]:bg-black/3 [&:has(a:focus)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] [&:has(a:hover)]:border-[0.5px] [&:has(a:hover)]:border-zinc-800/5 [&:has(a:hover)]:bg-black/3 [&:has(a:hover)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]"
-        ref={containerElementRef}
-      >
+      <div className={container()} ref={containerElementRef}>
         <div className={indicator()} ref={activeIndicatorElement} />
-        <ul className={base({ className })}>{children}</ul>
+        <AriaGridList
+          aria-label="Navigation"
+          className={base({ className })}
+          layout="grid"
+          selectionMode="none"
+        >
+          {children}
+        </AriaGridList>
       </div>
-      <div className="lg:hidden">
+      <div className={dropdown()}>
         <Dropdown>
           <DropdownTrigger>
             <Button

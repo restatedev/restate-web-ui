@@ -2,7 +2,12 @@ import { noise2D } from './noise';
 
 const TWO_PI = Math.PI * 2;
 
-export type FerrofluidStatus = 'idle' | 'active' | 'pause';
+export type FerrofluidStatus =
+  | 'idle'
+  | 'active'
+  | 'pause'
+  | 'warning'
+  | 'danger';
 
 interface Metaball {
   x: number;
@@ -28,12 +33,24 @@ const STATUS_PARAMS: Record<FerrofluidStatus, StatusParams> = {
   idle: { spread: 1.4, speedMul: 0.5, noiseAmp: 10, noiseSpeed: 0.5 },
   active: { spread: 2.2, speedMul: 1.5, noiseAmp: 18, noiseSpeed: 1.1 },
   pause: { spread: 0.3, speedMul: 0.05, noiseAmp: 1.5, noiseSpeed: 0.1 },
+  warning: { spread: 1.8, speedMul: 0.8, noiseAmp: 14, noiseSpeed: 0.7 },
+  danger: { spread: 1.8, speedMul: 0.8, noiseAmp: 14, noiseSpeed: 0.7 },
+};
+
+const STATUS_HUE: Record<FerrofluidStatus, number> = {
+  idle: 235,
+  active: 235,
+  pause: 235,
+  warning: 35,
+  danger: 0,
 };
 
 const SPRING = 0.012;
 const DAMPING = 0.965;
 const LERP = 0.02;
-const SHAPE_FILL = 'rgba(155, 145, 175, 1)';
+function shapeFill(hue: number) {
+  return `hsla(${hue}, 20%, 65%, 1)`;
+}
 
 export class FerrofluidEngine {
   private shapeCanvas: HTMLCanvasElement | null = null;
@@ -55,6 +72,8 @@ export class FerrofluidEngine {
   private curSpeed = STATUS_PARAMS.idle.speedMul;
   private curNoiseAmp = STATUS_PARAMS.idle.noiseAmp;
   private curNoiseSpeed = STATUS_PARAMS.idle.noiseSpeed;
+  private curHue = STATUS_HUE.idle;
+  private nextJolt = 0;
 
   public isInitialized = false;
 
@@ -237,6 +256,8 @@ export class FerrofluidEngine {
     this.curSpeed += (t.speedMul - this.curSpeed) * LERP;
     this.curNoiseAmp += (t.noiseAmp - this.curNoiseAmp) * LERP;
     this.curNoiseSpeed += (t.noiseSpeed - this.curNoiseSpeed) * LERP;
+    const targetHue = STATUS_HUE[this._status];
+    this.curHue += (targetHue - this.curHue) * 0.08;
   }
 
   private updatePhysics() {
@@ -274,6 +295,18 @@ export class FerrofluidEngine {
 
       b.vx += (tx - b.x) * SPRING;
       b.vy += (ty - b.y) * SPRING;
+
+      if (
+        (this._status === 'danger' || this._status === 'warning') &&
+        time > this.nextJolt
+      ) {
+        const angle = Math.random() * TWO_PI;
+        b.vx += Math.cos(angle) * 2 * (0.5 + Math.random());
+        b.vy += Math.sin(angle) * 2 * (0.5 + Math.random());
+        if (b === this.metaballs[this.metaballs.length - 1]) {
+          this.nextJolt = time + 0.4 + Math.random() * 2.5;
+        }
+      }
 
       if (this.mousePos && this._status !== 'pause' && this.mouseVelocity > 1) {
         const mdx = b.x - this.mousePos.x;
@@ -323,17 +356,20 @@ export class FerrofluidEngine {
     sCtx.clearRect(0, 0, size, size);
     cCtx.clearRect(0, 0, size, size);
 
-    sCtx.fillStyle = SHAPE_FILL;
+    sCtx.fillStyle = shapeFill(this.curHue);
     for (const b of metaballs) {
       sCtx.beginPath();
       sCtx.arc(b.x, b.y, b.radius, 0, TWO_PI);
       sCtx.fill();
     }
 
-    const baseHue = 250 + Math.sin(time * 0.15) * 12;
+    const baseHue = this.curHue + Math.sin(time * 0.15) * 8;
+
     for (const b of metaballs) {
       const h =
-        baseHue + b.hueOffset + Math.sin(time * 0.3 + b.noisePhase) * 10;
+        baseHue +
+        ((b.hueOffset % 25) - 12) +
+        Math.sin(time * 0.3 + b.noisePhase) * 6;
       const grad = cCtx.createRadialGradient(
         b.x - b.radius * 0.15,
         b.y - b.radius * 0.15,
@@ -343,8 +379,8 @@ export class FerrofluidEngine {
         b.radius * 1.1,
       );
       grad.addColorStop(0, `hsla(${h}, 65%, 55%, 0.85)`);
-      grad.addColorStop(0.6, `hsla(${h + 15}, 55%, 48%, 0.4)`);
-      grad.addColorStop(1, `hsla(${h + 30}, 45%, 42%, 0)`);
+      grad.addColorStop(0.6, `hsla(${h + 8}, 55%, 48%, 0.4)`);
+      grad.addColorStop(1, `hsla(${h + 15}, 45%, 42%, 0)`);
       cCtx.fillStyle = grad;
       cCtx.beginPath();
       cCtx.arc(b.x, b.y, b.radius * 1.1, 0, TWO_PI);
@@ -353,8 +389,8 @@ export class FerrofluidEngine {
 
     const meshHues = [
       baseHue,
-      baseHue + 45 + Math.sin(time * 0.2) * 15,
-      baseHue - 30 + Math.cos(time * 0.18) * 12,
+      baseHue + 20 + Math.sin(time * 0.2) * 10,
+      baseHue - 12 + Math.cos(time * 0.18) * 8,
     ];
     const meshPoints = [
       {
@@ -385,26 +421,5 @@ export class FerrofluidEngine {
       cCtx.fillStyle = grad;
       cCtx.fillRect(0, 0, size, size);
     }
-
-    const shineAngle = time * 0.2;
-    const sx = this.mousePos
-      ? cx + (this.mousePos.x - cx) * 0.2
-      : cx + Math.cos(shineAngle) * baseRadius * 0.15;
-    const sy = this.mousePos
-      ? cy + (this.mousePos.y - cy) * 0.2
-      : cy + Math.sin(shineAngle) * baseRadius * 0.15;
-    const specGrad = cCtx.createRadialGradient(
-      sx,
-      sy,
-      0,
-      sx,
-      sy,
-      baseRadius * 0.5,
-    );
-    specGrad.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
-    specGrad.addColorStop(0.25, 'rgba(255, 255, 255, 0.08)');
-    specGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-    cCtx.fillStyle = specGrad;
-    cCtx.fillRect(0, 0, size, size);
   }
 }

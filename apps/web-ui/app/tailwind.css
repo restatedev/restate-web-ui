@@ -54,6 +54,27 @@
   --font-mono: JetBrainsMonoVariable, monospace;
   --pulse-color: color-mix(in srgb, var(--color-blue-500) 25%, transparent);
 
+  @keyframes ripple {
+    0% {
+      transform: scale(0.8);
+      opacity: 0.5;
+    }
+    100% {
+      transform: scale(2.2);
+      opacity: 0;
+    }
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-6px);
+    }
+  }
+
   @keyframes countdown {
     0% {
       width: 0px;
@@ -63,6 +84,28 @@
     }
   }
   --animate-countdown: countdown 5s linear;
+
+  @keyframes serverWave {
+    0% {
+      transform: scale(0);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 0;
+    }
+  }
+  --animate-serverWave: serverWave 1.5s ease-out forwards;
+
+  @keyframes stripeScroll {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(23px);
+    }
+  }
+  --animate-stripeScroll: stripeScroll 4s linear infinite;
 
   @keyframes moveAndGrow {
     0% {

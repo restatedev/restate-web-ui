@@ -53,20 +53,9 @@ export function FerrofluidCanvas({
     const color = colorRef.current;
     if (!shape || !color) return;
 
-    const initIfWide = () => {
-      if (window.innerWidth > 1024 && !engine.isInitialized) {
-        engine.init(shape, color);
-      }
-      if (window.innerWidth <= 1024) {
-        engine.cleanup();
-      }
-    };
-
-    initIfWide();
-    window.addEventListener('resize', initIfWide);
+    engine.init(shape, color);
 
     return () => {
-      window.removeEventListener('resize', initIfWide);
       engine.cleanup();
     };
   }, [engine]);

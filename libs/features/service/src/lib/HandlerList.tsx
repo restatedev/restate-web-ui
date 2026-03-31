@@ -1,0 +1,79 @@
+import type { Service } from '@restate/data-access/admin-api-spec';
+import { Button } from '@restate/ui/button';
+import { Icon, IconName } from '@restate/ui/icons';
+import {
+  Dropdown,
+  DropdownTrigger,
+  DropdownPopover,
+  DropdownSection,
+} from '@restate/ui/dropdown';
+import { formatPlurals } from '@restate/util/intl';
+import { Handler } from './Handler';
+import { HandlerGridList } from './HandlerGridList';
+
+export function HandlerList({
+  serviceName,
+  handlers,
+  serviceType,
+  maxVisible = 9,
+  className,
+}: {
+  serviceName: string;
+  handlers: Service['handlers'];
+  serviceType: Service['ty'];
+  maxVisible?: number;
+  className?: string;
+}) {
+  if (handlers.length === 0) return null;
+
+  const visible = handlers.slice(0, maxVisible);
+  const overflowCount = handlers.length - maxVisible;
+
+  return (
+    <div className={className}>
+      {visible.map((handler) => (
+        <Handler
+          key={handler.name}
+          handler={handler}
+          className="ml-1.5 w-fit pr-0 pl-0"
+          service={serviceName}
+          withPlayground
+          serviceType={serviceType}
+          showLink
+          showType={false}
+        />
+      ))}
+      {overflowCount > 0 && (
+        <div className="ml-8 w-fit">
+          <Dropdown>
+            <DropdownTrigger>
+              <Button
+                variant="icon"
+                className="h-auto w-auto gap-0.5 rounded-lg px-1.5 py-0.5 text-0.5xs text-zinc-500 hover:bg-black/3 hover:text-zinc-700"
+              >
+                +{overflowCount}{' '}
+                {formatPlurals(overflowCount, {
+                  one: 'handler',
+                  other: 'handlers',
+                })}
+                <Icon
+                  name={IconName.ChevronsUpDown}
+                  className="h-4 w-4 text-gray-400"
+                />
+              </Button>
+            </DropdownTrigger>
+            <DropdownPopover placement="bottom start">
+              <DropdownSection title="Handlers">
+                <HandlerGridList
+                  serviceName={serviceName}
+                  handlers={handlers}
+                  serviceType={serviceType}
+                />
+              </DropdownSection>
+            </DropdownPopover>
+          </Dropdown>
+        </div>
+      )}
+    </div>
+  );
+}

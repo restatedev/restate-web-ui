@@ -3,6 +3,7 @@ import {
   APIStatusProvider,
   useHealth,
   useVersion,
+  useQueryHealthCheck,
 } from '@restate/data-access/admin-api';
 import {
   ComponentType,
@@ -71,6 +72,7 @@ const InternalRestateContext = createContext<RestateContext>({
 function InternalRestateContextProvider({
   children,
   isPending,
+  systemHealthMonitor,
   ingressUrl,
   baseUrl = '',
   decoder,
@@ -99,6 +101,7 @@ function InternalRestateContextProvider({
   isNew?: boolean;
   identityKey?: { value: string; url?: string };
   awsRolePolicy?: { value: string; url?: string };
+  systemHealthMonitor?: { cleanup: () => void };
 }>) {
   const { isSuccess, failureCount } = useHealth({
     enabled: !isPending,
@@ -142,6 +145,11 @@ function InternalRestateContextProvider({
     });
   }, [queryClient]);
 
+  useQueryHealthCheck({
+    enabled: status === 'HEALTHY',
+    refetchInterval: 60_000,
+  });
+
   return (
     <InternalRestateContext.Provider
       value={{
@@ -184,6 +192,7 @@ export function RestateContextProvider({
   isNew,
   awsRolePolicy,
   identityKey,
+  systemHealthMonitor,
 }: PropsWithChildren<{
   adminBaseUrl?: string;
   ingressUrl?: string;
@@ -206,6 +215,7 @@ export function RestateContextProvider({
   isNew?: boolean;
   identityKey?: { value: string; url?: string };
   awsRolePolicy?: { value: string; url?: string };
+  systemHealthMonitor?: { cleanup: () => void };
 }>) {
   return (
     <AdminBaseURLProvider baseUrl={adminBaseUrl}>
@@ -222,6 +232,7 @@ export function RestateContextProvider({
         isNew={isNew}
         awsRolePolicy={awsRolePolicy}
         identityKey={identityKey}
+        systemHealthMonitor={systemHealthMonitor}
       >
         {children}
       </InternalRestateContextProvider>

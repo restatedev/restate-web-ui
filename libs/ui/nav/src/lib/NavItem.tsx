@@ -1,7 +1,7 @@
 import { useLocation, useNavigation } from 'react-router';
-import { focusRing } from '@restate/ui/focus';
-import { Link } from '@restate/ui/link';
-import { PropsWithChildren, useCallback, useContext, useMemo } from 'react';
+import { GridListItem as AriaGridListItem } from 'react-aria-components';
+import { Link, useHrefWithQueryParams } from '@restate/ui/link';
+import { PropsWithChildren, useCallback, useContext } from 'react';
 import { tv } from '@restate/util/styles';
 import { NavContext } from './NavContext';
 import { Button } from '@restate/ui/button';
@@ -13,8 +13,7 @@ interface NavItemProps {
 }
 
 const styles = tv({
-  extend: focusRing,
-  base: 'group isolate flex cursor-default rounded-xl px-3 py-1.5 text-center text-sm no-underline transition hover:bg-black/3 pressed:bg-gray-200',
+  base: 'group isolate flex cursor-default rounded-xl px-3 py-1.5 text-center text-sm no-underline outline-offset-2 outline-blue-600 transition hover:bg-black/3 focus-visible:outline-2 pressed:bg-gray-200',
   variants: {
     isCurrent: {
       true: 'font-medium text-gray-700',
@@ -39,33 +38,20 @@ export function NavItem({
   const location = useLocation();
   const isActive = location.pathname.startsWith(href);
   const { value } = useContext(NavContext);
-
-  const search = useMemo(() => {
-    if (Array.isArray(preserveSearchParams)) {
-      const searchParams = new URLSearchParams(location.search);
-      Array.from(searchParams.keys()).forEach((key) => {
-        if (!preserveSearchParams.includes(key)) {
-          searchParams.delete(key);
-        }
-      });
-      return '?' + searchParams.toString();
-    } else {
-      return location.search;
-    }
-  }, [location.search, preserveSearchParams]);
-
+  const resolvedHref = useHrefWithQueryParams({
+    preserveQueryParams: Boolean(preserveSearchParams),
+    href,
+  });
   return (
-    <li>
-      <Link
-        disabled={disabled}
-        className={styles({ isCurrent: isActive, isDisabled: disabled })}
-        href={preserveSearchParams ? `${href}${search}${location.hash}` : href}
-        data-active={isActive}
-        {...(isActive && { 'aria-current': value })}
-      >
-        {children}
-      </Link>
-    </li>
+    <AriaGridListItem
+      textValue={typeof children === 'string' ? children : undefined}
+      href={resolvedHref}
+      className={styles({ isCurrent: isActive, isDisabled: disabled })}
+      data-active={isActive}
+      {...(isActive && { 'aria-current': value })}
+    >
+      {children}
+    </AriaGridListItem>
   );
 }
 
@@ -118,16 +104,15 @@ export function NavSearchItem({
   const { value } = useContext(NavContext);
 
   return (
-    <li>
-      <Link
-        className={styles()}
-        href={href}
-        data-active={isActive}
-        {...(isActive && { 'aria-current': value })}
-      >
-        {children}
-      </Link>
-    </li>
+    <AriaGridListItem
+      textValue={typeof children === 'string' ? children : undefined}
+      href={href}
+      className={styles()}
+      data-active={isActive}
+      {...(isActive && { 'aria-current': value })}
+    >
+      {children}
+    </AriaGridListItem>
   );
 }
 
@@ -155,16 +140,14 @@ export function NavButtonItem({
   className,
 }: PropsWithChildren<NavButtonItemProps>) {
   return (
-    <li>
-      <Button
-        variant="secondary"
-        className={buttonStyles({ isActive, className })}
-        onClick={onClick}
-        data-active={isActive}
-        {...(isActive && { 'aria-pressed': true })}
-      >
-        {children}
-      </Button>
-    </li>
+    <AriaGridListItem
+      textValue={typeof children === 'string' ? children : undefined}
+      className={buttonStyles({ isActive, className })}
+      data-active={isActive}
+      onAction={onClick}
+      {...(isActive && { 'aria-pressed': true })}
+    >
+      {children}
+    </AriaGridListItem>
   );
 }
