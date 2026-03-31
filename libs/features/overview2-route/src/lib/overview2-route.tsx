@@ -5,6 +5,7 @@ import {
   Input as AriaInput,
   Label,
 } from 'react-aria-components';
+import { useSearchParams } from 'react-router';
 import { getEndpoint } from '@restate/data-access/admin-api-spec';
 import { GridList, GridListItem } from '@restate/ui/grid-list';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -15,6 +16,15 @@ import {
   SERVICE_PLAYGROUND_QUERY_PARAM,
   HANDLER_QUERY_PARAM,
 } from '@restate/features/service';
+import {
+  INVOCATION_QUERY_NAME,
+} from '@restate/features/invocation-route';
+import {
+  STATE_QUERY_NAME,
+} from '@restate/features/state-object-route';
+import {
+  DEPLOYMENT_QUERY_PARAM,
+} from '@restate/features/deployment';
 import { Link } from '@restate/ui/link';
 import { RestateServer } from '@restate/ui/restate-server';
 import { useRestateContext } from '@restate/features/restate-context';
@@ -26,6 +36,7 @@ import {
 import { TriggerRegisterDeploymentDialog } from '@restate/features/register-deployment';
 import { useFocusShortcut, FocusShortcutKey } from '@restate/ui/keyboard';
 import { formatNumber } from '@restate/util/intl';
+import { toCreatedAfterParam } from '@restate/util/invocation-links';
 import { IssuesBannerStack } from '@restate/ui/issue-banner';
 import { StatusArcEcharts, StatusLegend } from '@restate/features/status-chart';
 import { useWaveAnimation } from '@restate/ui/wave-animation';
@@ -50,6 +61,7 @@ const emptyServerStyles = tv({
 
 function Component() {
   const rangeFilters = useRangeFilters();
+  const [searchParams] = useSearchParams();
   const {
     servicesMap,
     deploymentsMap,
@@ -66,6 +78,25 @@ function Component() {
   } = useOverviewData(rangeFilters);
 
   const { GettingStarted, status, baseUrl } = useRestateContext();
+
+  const PRESERVE_PARAMS = [
+    SERVICE_PLAYGROUND_QUERY_PARAM,
+    SERVICE_QUERY_PARAM,
+    DEPLOYMENT_QUERY_PARAM,
+    INVOCATION_QUERY_NAME,
+    STATE_QUERY_NAME,
+    HANDLER_QUERY_PARAM,
+  ];
+  const linkParams = new URLSearchParams();
+  for (const key of PRESERVE_PARAMS) {
+    const val = searchParams.get(key);
+    if (val != null) linkParams.set(key, val);
+  }
+  const rangeFilter = rangeFilters[0];
+  if (rangeFilter && rangeFilter.type === 'DATE') {
+    const afterParams = toCreatedAfterParam(rangeFilter.value);
+    for (const [k, v] of afterParams) linkParams.set(k, v);
+  }
 
   const adminQueryPredicate = {
     predicate(query: { meta?: Record<string, unknown> }) {
@@ -125,6 +156,7 @@ function Component() {
     serviceIssuesMap,
     isSummaryError,
     isSummaryLoading,
+    linkParams,
   });
 
   const { triggerWave } = useWaveAnimation();
@@ -168,7 +200,7 @@ function Component() {
     <div className="mx-auto flex h-full w-full flex-col items-center gap-8 px-6 pt-8 pb-6">
       <div className="relative flex flex-col items-center gap-3">
         <div ref={pieRef} className="relative -mb-12 h-[280px] w-[280px] overflow-visible">
-          <StatusArcEcharts byStatus={byStatus} isLoading={isSummaryLoading} />
+          <StatusArcEcharts byStatus={byStatus} isLoading={isSummaryLoading} linkParams={linkParams} />
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
             <div
               ref={serverRef}
@@ -214,7 +246,7 @@ function Component() {
           )}
         </div>
         {totalCount > 0 && (
-          <StatusLegend byStatus={byStatus} isLoading={isSummaryLoading} isError={isSummaryError} />
+          <StatusLegend byStatus={byStatus} isLoading={isSummaryLoading} isError={isSummaryError} linkParams={linkParams} />
         )}
       </div>
       {totalCount > 0 && <IssuesBannerStack className="-mt-4" />}

@@ -19,12 +19,14 @@ export function useServiceColumns({
   serviceIssuesMap,
   isSummaryError,
   isSummaryLoading,
+  linkParams,
 }: {
   byServiceAndStatus: { service: string; status: string; count: number }[];
   baseUrl: string;
   serviceIssuesMap: Map<string, ServiceIssue[]>;
   isSummaryError: boolean;
   isSummaryLoading: boolean;
+  linkParams?: URLSearchParams;
 }): GridListColumn<Service>[] {
   return [
     {
@@ -95,13 +97,14 @@ export function useServiceColumns({
                   serviceIssues={serviceIssuesMap.get(s.name)}
                   isSummaryError={isSummaryError}
                   isSummaryLoading={isSummaryLoading}
+                  linkParams={linkParams}
                 />
               </div>
             </div>
             <div>
               {serviceTotal > 0 ? (
                 <Link
-                  href={toServiceInvocationsHref(baseUrl, s.name)}
+                  href={toServiceInvocationsHref(baseUrl, s.name, { existingParams: linkParams })}
                   variant="secondary"
                   className="relative z-10 inline-flex w-auto items-center gap-0.5 rounded-lg border-none bg-transparent px-1.5 py-0.5 text-0.5xs text-zinc-500 no-underline shadow-none hover:bg-black/3 hover:text-zinc-700"
                 >

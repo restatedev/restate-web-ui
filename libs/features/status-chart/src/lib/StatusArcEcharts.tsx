@@ -67,9 +67,11 @@ function usePieInteractions(
 export function StatusArcEcharts({
   byStatus,
   isLoading,
+  linkParams,
 }: {
   byStatus: StatusEntry[];
   isLoading?: boolean;
+  linkParams?: URLSearchParams;
 }) {
   const items = getOrderedStatuses(byStatus);
   const chartRef = useRef<ChartHandle>(null);
@@ -78,9 +80,9 @@ export function StatusArcEcharts({
 
   const onClickStatus = useCallback(
     (statusName: string) => {
-      navigate(toInvocationsHref(baseUrl, statusName));
+      navigate(toInvocationsHref(baseUrl, statusName, { existingParams: linkParams }));
     },
-    [baseUrl, navigate],
+    [baseUrl, navigate, linkParams],
   );
 
   usePieInteractions(chartRef, onClickStatus);

@@ -26,6 +26,15 @@ function buildParams(existingParams?: URLSearchParams) {
   return params;
 }
 
+export function toCreatedAfterParam(isoDate: string): URLSearchParams {
+  const params = new URLSearchParams();
+  params.set(
+    'filter_created_at',
+    JSON.stringify({ operation: 'AFTER', value: isoDate }),
+  );
+  return params;
+}
+
 export function toInvocationsHref(
   baseUrl: string,
   statusName: string,

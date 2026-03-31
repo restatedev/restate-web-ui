@@ -38,10 +38,12 @@ export function StatusLegend({
   byStatus,
   isLoading,
   isError,
+  linkParams,
 }: {
   byStatus: StatusEntry[];
   isLoading?: boolean;
   isError?: boolean;
+  linkParams?: URLSearchParams;
 }) {
   const items = getOrderedStatuses(byStatus);
   const { baseUrl } = useRestateContext();
@@ -63,7 +65,7 @@ export function StatusLegend({
               key={s.name}
               id={s.name}
               textValue={`${STATUS_LABELS[s.name] ?? s.name} ${count}`}
-              href={toInvocationsHref(baseUrl, s.name)}
+              href={toInvocationsHref(baseUrl, s.name, { existingParams: linkParams })}
               className={legendItemStyles()}
             >
               <div
