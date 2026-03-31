@@ -11,7 +11,7 @@ import { issueBannerStyles } from './styles';
 import { IssueBannerPill } from './IssueBannerPill';
 
 const stackStyles = tv({
-  base: 'animate-in fade-in zoom-in-95 duration-300',
+  base: 'duration-300 animate-in fade-in zoom-in-95',
   variants: {
     multi: {
       true: 'flex flex-col items-center',

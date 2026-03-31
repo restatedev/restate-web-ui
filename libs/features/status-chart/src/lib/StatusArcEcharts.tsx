@@ -80,7 +80,9 @@ export function StatusArcEcharts({
 
   const onClickStatus = useCallback(
     (statusName: string) => {
-      navigate(toInvocationsHref(baseUrl, statusName, { existingParams: linkParams }));
+      navigate(
+        toInvocationsHref(baseUrl, statusName, { existingParams: linkParams }),
+      );
     },
     [baseUrl, navigate, linkParams],
   );

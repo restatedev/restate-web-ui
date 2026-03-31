@@ -75,7 +75,10 @@ export function Nav({
 }: NavProps) {
   const containerElementRef = useRef<HTMLDivElement | null>(null);
   const activeIndicatorElement = useRef<HTMLDivElement | null>(null);
-  const { base, indicator, container, dropdown } = styles({ layout, responsive });
+  const { base, indicator, container, dropdown } = styles({
+    layout,
+    responsive,
+  });
   const location = useLocation();
 
   useEffect(() => {
@@ -97,11 +100,7 @@ export function Nav({
     const callback: MutationCallback = (mutationList) => {
       for (const mutation of mutationList) {
         containerElement &&
-          updateStyle(
-            containerElement.querySelector(
-              '[data-active=true]',
-            ),
-          );
+          updateStyle(containerElement.querySelector('[data-active=true]'));
       }
     };
 
@@ -111,9 +110,7 @@ export function Nav({
     // TODO
     const updateStyleWithDetails = () =>
       updateStyle(
-        containerElement?.querySelector(
-          '[data-active=true]',
-        ) ?? null,
+        containerElement?.querySelector('[data-active=true]') ?? null,
       );
     if (containerElement) {
       observer.observe(containerElement, {
@@ -125,11 +122,7 @@ export function Nav({
       detailsElement?.addEventListener('toggle', updateStyleWithDetails, {
         once: true,
       });
-      updateStyle(
-        containerElement.querySelector(
-          '[data-active=true]',
-        ),
-      );
+      updateStyle(containerElement.querySelector('[data-active=true]'));
     }
 
     window.addEventListener('resize', updateStyleWithDetails);
@@ -143,10 +136,7 @@ export function Nav({
 
   return (
     <NavContext.Provider value={{ value: ariaCurrentValue }}>
-      <div
-        className={container()}
-        ref={containerElementRef}
-      >
+      <div className={container()} ref={containerElementRef}>
         <div className={indicator()} ref={activeIndicatorElement} />
         <AriaGridList
           aria-label="Navigation"

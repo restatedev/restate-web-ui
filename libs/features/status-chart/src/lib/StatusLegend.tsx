@@ -65,7 +65,9 @@ export function StatusLegend({
               key={s.name}
               id={s.name}
               textValue={`${STATUS_LABELS[s.name] ?? s.name} ${count}`}
-              href={toInvocationsHref(baseUrl, s.name, { existingParams: linkParams })}
+              href={toInvocationsHref(baseUrl, s.name, {
+                existingParams: linkParams,
+              })}
               className={legendItemStyles()}
             >
               <div

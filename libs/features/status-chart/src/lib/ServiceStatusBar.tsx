@@ -96,7 +96,9 @@ export function ServiceStatusBar({
           {serviceName}
         </div>
         <Link
-          href={toServiceInvocationsHref(baseUrl, serviceName, { existingParams: linkParams })}
+          href={toServiceInvocationsHref(baseUrl, serviceName, {
+            existingParams: linkParams,
+          })}
           variant="secondary"
           className="-mx-2 flex items-baseline gap-1 rounded-lg border-none bg-transparent px-2 py-1 !text-inherit no-underline shadow-none hover:bg-white/10"
         >

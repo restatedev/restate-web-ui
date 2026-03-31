@@ -62,7 +62,10 @@ export function RestateServer({
   return (
     <div className={containerStyles({ className })}>
       {aura && (
-        <div ref={auraRef} className="pointer-events-none absolute inset-0 overflow-visible">
+        <div
+          ref={auraRef}
+          className="pointer-events-none absolute inset-0 overflow-visible"
+        >
           <ServerRings status={status} intensity={aura} />
         </div>
       )}

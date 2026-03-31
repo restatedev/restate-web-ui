@@ -23,10 +23,25 @@ const STATUS_PARTICLE_COLOR: Record<FerrofluidStatus, string> = {
 
 const INTENSITY_CONFIG: Record<
   AuraIntensity,
-  { particleCount: number; durationScale: number; delaySpread: number; opacity: number }
+  {
+    particleCount: number;
+    durationScale: number;
+    delaySpread: number;
+    opacity: number;
+  }
 > = {
-  subtle: { particleCount: 3, durationScale: 1.8, delaySpread: 2.5, opacity: 0.5 },
-  prominent: { particleCount: 6, durationScale: 1, delaySpread: 1, opacity: 0.8 },
+  subtle: {
+    particleCount: 3,
+    durationScale: 1.8,
+    delaySpread: 2.5,
+    opacity: 0.5,
+  },
+  prominent: {
+    particleCount: 6,
+    durationScale: 1,
+    delaySpread: 1,
+    opacity: 0.8,
+  },
 };
 
 export function useServerAura(
@@ -102,10 +117,21 @@ export function ServerRings({
   const gap = intensity === 'subtle' ? speed / 2 : speed / 3;
   return (
     <>
-      <div className={ringStyle({ status })} style={{ animation: `ripple ${speed}s ease-out infinite` }} />
-      <div className={ringStyle({ status })} style={{ animation: `ripple ${speed}s ease-out ${gap}s infinite` }} />
+      <div
+        className={ringStyle({ status })}
+        style={{ animation: `ripple ${speed}s ease-out infinite` }}
+      />
+      <div
+        className={ringStyle({ status })}
+        style={{ animation: `ripple ${speed}s ease-out ${gap}s infinite` }}
+      />
       {intensity === 'prominent' && (
-        <div className={ringStyle({ status })} style={{ animation: `ripple ${speed}s ease-out ${gap * 2}s infinite` }} />
+        <div
+          className={ringStyle({ status })}
+          style={{
+            animation: `ripple ${speed}s ease-out ${gap * 2}s infinite`,
+          }}
+        />
       )}
     </>
   );
