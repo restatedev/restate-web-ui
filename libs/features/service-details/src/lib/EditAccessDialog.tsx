@@ -21,6 +21,7 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { Radio } from 'react-aria-components';
 import { RadioGroup } from '@restate/ui/radio-group';
 import { FormFieldLabel } from '@restate/ui/form-field';
+import { tv } from '@restate/util/styles';
 
 export function EditAccessDialog() {
   const formId = useId();
@@ -173,6 +174,26 @@ export function EditAccessDialog() {
   );
 }
 
+const customRadioStyles = tv({
+  base: 'group relative flex cursor-default rounded-lg border bg-clip-padding px-4 py-3 shadow-none outline-none',
+  variants: {
+    isFocusVisible: {
+      true: 'ring-2 ring-blue-600 ring-offset-1 ring-offset-white/80',
+    },
+    isSelected: {
+      true: 'border text-gray-800 shadow-sm',
+      false: 'border-transparent text-gray-500',
+    },
+    isPressed: { true: '', false: '' },
+  },
+  compoundVariants: [
+    { isSelected: true, isPressed: true, className: 'bg-gray-50' },
+    { isSelected: true, isPressed: false, className: 'bg-white' },
+    { isSelected: false, isPressed: true, className: 'bg-gray-100' },
+    { isSelected: false, isPressed: false, className: 'bg-white/50' },
+  ],
+});
+
 function CustomRadio({
   value,
   label,
@@ -186,17 +207,7 @@ function CustomRadio({
     <Radio
       value={value}
       className={({ isFocusVisible, isSelected, isPressed }) =>
-        `group relative flex cursor-default rounded-lg border bg-clip-padding px-4 py-3 shadow-none outline-none ${
-          isFocusVisible
-            ? 'ring-2 ring-blue-600 ring-offset-1 ring-offset-white/80'
-            : ''
-        } ${
-          isSelected
-            ? `${
-                isPressed ? 'bg-gray-50' : 'bg-white'
-              } border text-gray-800 shadow-sm`
-            : 'border-transparent text-gray-500'
-        } ${isPressed && !isSelected ? 'bg-gray-100' : ''} ${!isSelected && !isPressed ? 'bg-white/50' : ''} `
+        customRadioStyles({ isFocusVisible, isSelected, isPressed })
       }
     >
       <div className="flex w-full items-center justify-between gap-3">
