@@ -4,7 +4,7 @@ import { OVERVIEW_RANGE_PARAM, PeriodRange } from './useRangeFilters';
 export function TimeRangeToggle() {
   return (
     <div className="-mt-2 [&>div]:border-[0.5px] [&>div]:border-zinc-800/5 [&>div]:bg-black/3 [&>div]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] [&_a]:px-5 [&_a]:py-1 [&_a]:text-xs [&_a[aria-current]]:font-semibold">
-      <Nav ariaCurrentValue="time">
+      <Nav ariaCurrentValue="time" responsive={false}>
         <NavSearchItem
           search={`${OVERVIEW_RANGE_PARAM}=${PeriodRange.PT1H}`}
         >

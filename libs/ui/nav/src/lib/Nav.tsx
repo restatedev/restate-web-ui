@@ -32,6 +32,7 @@ interface NavProps {
     ComponentProps<typeof NavItem | typeof NavSearchItem>
   >[];
   layout?: 'vertical' | 'horizontal';
+  responsive?: boolean;
 }
 
 const styles = tv({
@@ -39,6 +40,9 @@ const styles = tv({
   slots: {
     indicator:
       'absolute rounded-xl border border-black/10 bg-white shadow-xs transition-all duration-300 ease-in-out [&:not(:has(+ul>li>*[data-active=true]))]:hidden',
+    container:
+      'relative rounded-xl border-[0.5px] border-transparent [&:has(a:focus)]:border-[0.5px] [&:has(a:focus)]:border-zinc-800/5 [&:has(a:focus)]:bg-black/3 [&:has(a:focus)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] [&:has(a:hover)]:border-[0.5px] [&:has(a:hover)]:border-zinc-800/5 [&:has(a:hover)]:bg-black/3 [&:has(a:hover)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]',
+    dropdown: '',
   },
   variants: {
     layout: {
@@ -48,6 +52,13 @@ const styles = tv({
         indicator: 'top-0 h-full',
       },
     },
+    responsive: {
+      true: { container: 'hidden lg:block', dropdown: 'lg:hidden' },
+      false: { container: 'block', dropdown: 'hidden' },
+    },
+  },
+  defaultVariants: {
+    responsive: true,
   },
 });
 
@@ -56,10 +67,11 @@ export function Nav({
   className,
   ariaCurrentValue,
   layout = 'horizontal',
+  responsive = true,
 }: NavProps) {
   const containerElementRef = useRef<HTMLDivElement | null>(null);
   const activeIndicatorElement = useRef<HTMLDivElement | null>(null);
-  const { base, indicator } = styles({ layout });
+  const { base, indicator, container, dropdown } = styles({ layout, responsive });
   const location = useLocation();
 
   useEffect(() => {
@@ -128,13 +140,13 @@ export function Nav({
   return (
     <NavContext.Provider value={{ value: ariaCurrentValue }}>
       <div
-        className="relative hidden rounded-xl border-[0.5px] border-transparent lg:block [&:has(a:focus)]:border-[0.5px] [&:has(a:focus)]:border-zinc-800/5 [&:has(a:focus)]:bg-black/3 [&:has(a:focus)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] [&:has(a:hover)]:border-[0.5px] [&:has(a:hover)]:border-zinc-800/5 [&:has(a:hover)]:bg-black/3 [&:has(a:hover)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]"
+        className={container()}
         ref={containerElementRef}
       >
         <div className={indicator()} ref={activeIndicatorElement} />
         <ul className={base({ className })}>{children}</ul>
       </div>
-      <div className="lg:hidden">
+      <div className={dropdown()}>
         <Dropdown>
           <DropdownTrigger>
             <Button
