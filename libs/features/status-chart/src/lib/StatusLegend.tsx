@@ -3,6 +3,7 @@ import {
   GridListItem as AriaGridListItem,
 } from 'react-aria-components';
 import { tv } from '@restate/util/styles';
+import { Icon, IconName } from '@restate/ui/icons';
 import { formatNumber } from '@restate/util/intl';
 import { toInvocationsHref } from '@restate/util/invocation-links';
 import { useRestateContext } from '@restate/features/restate-context';
@@ -71,6 +72,10 @@ export function StatusLegend({
             <span className="text-xs text-gray-400 tabular-nums">
               {formatNumber(count, true)}
             </span>
+            <Icon
+              name={IconName.ChevronRight}
+              className="h-3.5 w-3.5 shrink-0 text-gray-400"
+            />
           </AriaGridListItem>
         ) : (
           <AriaGridListItem

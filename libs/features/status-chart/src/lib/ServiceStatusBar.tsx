@@ -3,7 +3,10 @@ import {
   formatPlurals,
   formatPercentageWithoutFraction,
 } from '@restate/util/intl';
-import { toServiceStatusInvocationsHref } from '@restate/util/invocation-links';
+import {
+  toServiceInvocationsHref,
+  toServiceStatusInvocationsHref,
+} from '@restate/util/invocation-links';
 import { useRestateContext } from '@restate/features/restate-context';
 import { HoverTooltip } from '@restate/ui/tooltip';
 import { Link } from '@restate/ui/link';
@@ -76,7 +79,7 @@ export function ServiceStatusBar({
     if (isSummaryError || isSummaryLoading) return null;
     return (
       <div className="flex min-w-0 flex-col">
-        <div className="text-0.5xs text-gray-400">No invocations</div>
+        <div className="pl-1.5 text-0.5xs text-gray-400">No invocations</div>
         <div>
           <br />
         </div>
@@ -86,19 +89,27 @@ export function ServiceStatusBar({
 
   const tooltipContent = (
     <div className="flex flex-col">
-      <div className="mb-4">
+      <Link
+        href={toServiceInvocationsHref(baseUrl, serviceName)}
+        variant="secondary"
+        className="-mx-2 mb-4 flex flex-col rounded-lg border-none bg-transparent px-2 py-1.5 !text-inherit no-underline shadow-none hover:bg-white/10"
+      >
         <div className="!text-base leading-7 font-medium !text-gray-300">
           {serviceName}
         </div>
-        <div>
+        <div className="flex items-baseline gap-1">
           <span className="!text-xl !text-gray-50">
-            {formatNumber(total, true)}{' '}
+            {formatNumber(total, true)}
           </span>
           <span className="!text-sm !text-gray-400">
             {formatPlurals(total, { one: 'invocation', other: 'invocations' })}
           </span>
+          <Icon
+            name={IconName.ChevronRight}
+            className="ml-auto h-3.5 w-3.5 shrink-0 !text-zinc-500"
+          />
         </div>
-      </div>
+      </Link>
       <div className="-mx-4 border-t border-white/10" />
       <div className="mt-4 flex flex-col">
         {statuses.map((s) => {
