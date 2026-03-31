@@ -19,9 +19,11 @@ export function IssuesBannerStack() {
   if (issues.length === 1) {
     const issue = issues[0]!;
     return (
-      <IssueBannerPill severity={issue.severity} details={issue.details}>
-        {issue.label}
-      </IssueBannerPill>
+      <div className="animate-in fade-in zoom-in-95 duration-300">
+        <IssueBannerPill severity={issue.severity} details={issue.details}>
+          {issue.label}
+        </IssueBannerPill>
+      </div>
     );
   }
 
@@ -29,7 +31,7 @@ export function IssuesBannerStack() {
   const stackCount = Math.min(issues.length, maxStacked);
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex animate-in fade-in zoom-in-95 flex-col items-center duration-300">
       <div className="relative flex flex-col-reverse items-center">
         <Button
           variant="icon"
