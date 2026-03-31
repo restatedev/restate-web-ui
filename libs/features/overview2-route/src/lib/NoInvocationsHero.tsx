@@ -3,6 +3,7 @@ import { RestateServer } from '@restate/ui/restate-server';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Link } from '@restate/ui/link';
 import { SERVICE_PLAYGROUND_QUERY_PARAM } from '@restate/features/service';
+import { StatusArcEcharts } from '@restate/features/status-chart';
 import { TimeRangeToggle } from './TimeRangeToggle';
 
 const PARTICLES = [
@@ -73,6 +74,7 @@ export function NoInvocationsHero({
         ref={particlesRef}
         className="relative -mb-12 h-[280px] w-[280px] overflow-visible"
       >
+        <StatusArcEcharts byStatus={[]} />
         <div className="absolute top-1/2 left-1/2 h-28 w-28 -translate-1/2 animate-[ripple_3s_ease-out_infinite] rounded-full border border-indigo-300/40" />
         <div className="absolute top-1/2 left-1/2 h-28 w-28 -translate-1/2 animate-[ripple_3s_ease-out_infinite_0.8s] rounded-full border border-indigo-300/40" />
         <div className="absolute top-1/2 left-1/2 h-28 w-28 -translate-1/2 animate-[ripple_3s_ease-out_infinite_1.6s] rounded-full border border-indigo-300/40" />
@@ -88,22 +90,22 @@ export function NoInvocationsHero({
       <TimeRangeToggle />
       <div className="flex flex-col items-center gap-3 text-center">
         <div>
-          <p className="text-base font-medium text-gray-600">
-            Your services are live
-          </p>
-          <p className="mt-1 text-sm text-gray-400">
-            Make your first invocation to see them light up
+          <p className="text-lg font-medium text-gray-600">All quiet</p>
+          <p className="flex items-center gap-1 text-sm text-gray-400">
+            {' '}
+            <Link
+              {...(firstServiceName && {
+                href: `?${SERVICE_PLAYGROUND_QUERY_PARAM}=${firstServiceName}`,
+              })}
+              variant="icon"
+              className="flex items-center gap-1.5 rounded-xl text-gray-500/80"
+            >
+              {/*<Icon name={IconName.Play} className="h-3.5 w-3.5" />*/}
+              No invocations yet —{' '}
+              <span className="font-medium underline">try sending one</span>
+            </Link>
           </p>
         </div>
-        {firstServiceName && (
-          <Link
-            href={`?${SERVICE_PLAYGROUND_QUERY_PARAM}=${firstServiceName}`}
-            className="group mt-1 inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-600 no-underline shadow-sm transition hover:border-indigo-300 hover:bg-indigo-100"
-          >
-            <Icon name={IconName.Play} className="h-3.5 w-3.5" />
-            Try the playground
-          </Link>
-        )}
       </div>
     </div>
   );
