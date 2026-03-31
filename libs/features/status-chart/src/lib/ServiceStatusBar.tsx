@@ -89,15 +89,15 @@ export function ServiceStatusBar({
 
   const tooltipContent = (
     <div className="flex flex-col">
-      <Link
-        href={toServiceInvocationsHref(baseUrl, serviceName)}
-        variant="secondary"
-        className="-mx-2 mb-4 flex flex-col rounded-lg border-none bg-transparent px-2 py-1.5 !text-inherit no-underline shadow-none hover:bg-white/10"
-      >
+      <div className="mb-4">
         <div className="!text-base leading-7 font-medium !text-gray-300">
           {serviceName}
         </div>
-        <div className="flex items-baseline gap-1">
+        <Link
+          href={toServiceInvocationsHref(baseUrl, serviceName)}
+          variant="secondary"
+          className="-mx-2 flex items-baseline gap-1 rounded-lg border-none bg-transparent px-2 py-1 !text-inherit no-underline shadow-none hover:bg-white/10"
+        >
           <span className="!text-xl !text-gray-50">
             {formatNumber(total, true)}
           </span>
@@ -108,8 +108,8 @@ export function ServiceStatusBar({
             name={IconName.ChevronRight}
             className="ml-auto h-3.5 w-3.5 shrink-0 !text-zinc-500"
           />
-        </div>
-      </Link>
+        </Link>
+      </div>
       <div className="-mx-4 border-t border-white/10" />
       <div className="mt-4 flex flex-col">
         {statuses.map((s) => {

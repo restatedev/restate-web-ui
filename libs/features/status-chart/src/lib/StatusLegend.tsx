@@ -56,7 +56,7 @@ export function StatusLegend({
             id={s.name}
             textValue={`${STATUS_LABELS[s.name] ?? s.name} ${count}`}
             href={toInvocationsHref(baseUrl, s.name)}
-            className="flex cursor-default items-center gap-1.5 rounded-md px-1.5 py-0.5 text-gray-700 no-underline outline-offset-2 outline-blue-600 hover:bg-black/5 focus-visible:outline-2"
+            className="flex cursor-pointer items-center gap-1.5 rounded-md px-1.5 py-0.5 text-gray-700 no-underline outline-offset-2 outline-blue-600 hover:bg-black/5 focus-visible:outline-2"
           >
             <div
               className="h-3 w-3 shrink-0 rounded-full"
