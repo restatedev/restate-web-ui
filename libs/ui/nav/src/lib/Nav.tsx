@@ -85,7 +85,7 @@ export function Nav({
     const updateStyle = (activeElement: Node | null) => {
       if (
         activeElement instanceof HTMLElement &&
-        activeElement.dataset.active === 'true' &&
+        activeElement.dataset['active'] === 'true' &&
         activeIndicatorElement.current
       ) {
         if (layout === 'vertical') {

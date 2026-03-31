@@ -70,11 +70,7 @@ function usePerspectiveRay(svgRef: React.RefObject<SVGSVGElement | null>) {
       path.style.strokeDasharray = '';
       path.style.strokeDashoffset = '';
       path.animate(
-        [
-          { opacity: 0 },
-          { opacity: 0.1, offset: 0.15 },
-          { opacity: 0 },
-        ],
+        [{ opacity: 0 }, { opacity: 0.1, offset: 0.15 }, { opacity: 0 }],
         {
           duration: 800,
           delay: Math.abs(i - (LINE_COUNT - 1) / 2) * 50,
@@ -273,7 +269,7 @@ function Component() {
   }
 
   return (
-    <div className="relative mx-auto flex h-full w-full flex-col items-center gap-8  px-6 pt-8 pb-6">
+    <div className="relative mx-auto flex h-full w-full flex-col items-center gap-8 px-6 pt-8 pb-6">
       <PerspectiveLines svgRef={linesSvgRef} />
       <div className="relative flex flex-col items-center gap-3">
         <div
