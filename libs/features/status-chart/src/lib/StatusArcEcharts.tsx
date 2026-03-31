@@ -1,8 +1,11 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router';
 import { Chart, Pie, Slice, Tooltip } from '@restate/ui/charts';
 import type { ChartHandle } from '@restate/ui/charts';
 import { tv } from '@restate/util/styles';
 import { formatNumber } from '@restate/util/intl';
+import { toInvocationsHref } from '@restate/util/invocation-links';
+import { useRestateContext } from '@restate/features/restate-context';
 import { STATUS_LABELS } from './constants';
 import { getOrderedStatuses, type StatusEntry } from './useOrderedStatuses';
 
@@ -16,7 +19,14 @@ export const chartContainerStyles = tv({
   },
 });
 
-function useLinkPieEmphasis(chartRef: React.RefObject<ChartHandle | null>) {
+const LABEL_TO_STATUS = new Map(
+  Object.entries(STATUS_LABELS).map(([k, v]) => [v, k]),
+);
+
+function usePieInteractions(
+  chartRef: React.RefObject<ChartHandle | null>,
+  onClickStatus: (statusName: string) => void,
+) {
   useEffect(() => {
     const instance = chartRef.current?.getInstance();
     if (!instance) return;
@@ -37,14 +47,21 @@ function useLinkPieEmphasis(chartRef: React.RefObject<ChartHandle | null>) {
         dataIndex: params.dataIndex,
       });
     };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const onClick = (params: any) => {
+      const status = LABEL_TO_STATUS.get(params.name) ?? params.name;
+      onClickStatus(status);
+    };
 
     instance.on('mouseover', { seriesType: 'pie' }, onOver);
     instance.on('mouseout', { seriesType: 'pie' }, onOut);
+    instance.on('click', { seriesType: 'pie' }, onClick);
     return () => {
       instance.off('mouseover', onOver);
       instance.off('mouseout', onOut);
+      instance.off('click', onClick);
     };
-  }, [chartRef]);
+  }, [chartRef, onClickStatus]);
 }
 
 export function StatusArcEcharts({
@@ -56,8 +73,17 @@ export function StatusArcEcharts({
 }) {
   const items = getOrderedStatuses(byStatus);
   const chartRef = useRef<ChartHandle>(null);
+  const { baseUrl } = useRestateContext();
+  const navigate = useNavigate();
 
-  useLinkPieEmphasis(chartRef);
+  const onClickStatus = useCallback(
+    (statusName: string) => {
+      navigate(toInvocationsHref(baseUrl, statusName));
+    },
+    [baseUrl, navigate],
+  );
+
+  usePieInteractions(chartRef, onClickStatus);
 
   return (
     <>
