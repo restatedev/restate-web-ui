@@ -3,8 +3,11 @@ import { PropsWithChildren, useEffect, useRef } from 'react';
 import { FerrofluidCanvas, type FerrofluidHandle } from './Ferrofluid';
 import { tv } from '@restate/util/styles';
 import type { FerrofluidStatus } from './ferrofluid-engine';
+import { useServerAura, ServerRings } from './ServerAura';
 
 export type { FerrofluidStatus };
+
+export type AuraIntensity = 'subtle' | 'prominent';
 
 const containerStyles = tv({
   base: 'relative h-[150px] min-w-[150px]',
@@ -26,14 +29,18 @@ export function RestateServer({
   status,
   isEmpty = false,
   onPress,
+  aura,
 }: PropsWithChildren<{
   className?: string;
   status: FerrofluidStatus;
   isEmpty?: boolean;
   onPress?: () => void;
+  aura?: AuraIntensity;
 }>) {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const ferrofluidRef = useRef<FerrofluidHandle>(null);
+  const auraRef = useRef<HTMLDivElement>(null);
+  useServerAura(auraRef, status, aura);
 
   useEffect(() => {
     const button = buttonRef.current;
@@ -54,6 +61,11 @@ export function RestateServer({
 
   return (
     <div className={containerStyles({ className })}>
+      {aura && (
+        <div ref={auraRef} className="pointer-events-none absolute inset-0 overflow-visible">
+          <ServerRings status={status} intensity={aura} />
+        </div>
+      )}
       {!isEmpty && (
         <svg
           viewBox="0 0 120 120"

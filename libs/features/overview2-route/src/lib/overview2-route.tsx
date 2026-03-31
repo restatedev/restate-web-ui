@@ -12,8 +12,10 @@ import { tv } from '@restate/util/styles';
 import {
   HandlerList,
   SERVICE_QUERY_PARAM,
+  SERVICE_PLAYGROUND_QUERY_PARAM,
   HANDLER_QUERY_PARAM,
 } from '@restate/features/service';
+import { Link } from '@restate/ui/link';
 import { RestateServer } from '@restate/ui/restate-server';
 import { useRestateContext } from '@restate/features/restate-context';
 import {
@@ -35,7 +37,6 @@ import { NoDeploymentPlaceholder } from './NoDeploymentPlaceholder';
 import { sortServices } from './sortServices';
 import { useRangeFilters } from './useRangeFilters';
 import { TimeRangeToggle } from './TimeRangeToggle';
-import { NoInvocationsHero } from './NoInvocationsHero';
 
 const emptyServerStyles = tv({
   base: 'flex w-full flex-auto flex-col items-center justify-center overflow-hidden rounded-xl border bg-gray-200/50 pt-24 pb-8 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] @tall:pt-10 @tall:pb-40',
@@ -129,9 +130,8 @@ function Component() {
   const { triggerWave } = useWaveAnimation();
   const serverRef = useRef<HTMLDivElement>(null);
   const pieRef = useRef<HTMLDivElement>(null);
-  const lastTotalRef = useRef(totalCount);
-  if (!isSummaryLoading) lastTotalRef.current = totalCount;
-  const showEmptyHero = lastTotalRef.current === 0 && !isSummaryError;
+  const noInvocations = !isSummaryLoading && !isSummaryError && totalCount === 0;
+  const firstServiceName = services[0]?.name;
 
   const onRefresh = () => {
     pieRef.current?.animate(
@@ -166,45 +166,58 @@ function Component() {
 
   return (
     <div className="mx-auto flex h-full w-full flex-col items-center gap-8 px-6 pt-8 pb-6">
-      {showEmptyHero ? (
-        <NoInvocationsHero
-          serverRef={serverRef}
-          ferrofluidStatus={ferrofluidStatus}
-          onRefresh={onRefresh}
-          firstServiceName={services[0]?.name}
-        />
-      ) : (
-        <>
-          <div className="relative flex flex-col items-center gap-3">
-            <div ref={pieRef} className="relative -mb-12 h-[280px] w-[280px]">
-              <StatusArcEcharts byStatus={byStatus} isLoading={isSummaryLoading} />
-              <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                <div
-                  ref={serverRef}
-                  className="pointer-events-auto scale-90 filter-[drop-shadow(0_4px_12px_rgba(0,0,0,0.08))_drop-shadow(0_1px_3px_rgba(0,0,0,0.06))]"
-                >
-                  <RestateServer status={ferrofluidStatus} onPress={onRefresh} />
-                </div>
-              </div>
+      <div className="relative flex flex-col items-center gap-3">
+        <div ref={pieRef} className="relative -mb-12 h-[280px] w-[280px] overflow-visible">
+          <StatusArcEcharts byStatus={byStatus} isLoading={isSummaryLoading} />
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+            <div
+              ref={serverRef}
+              className="pointer-events-auto z-20 scale-90 filter-[drop-shadow(0_4px_12px_rgba(0,0,0,0.08))_drop-shadow(0_1px_3px_rgba(0,0,0,0.06))]"
+            >
+              <RestateServer
+                status={ferrofluidStatus}
+                onPress={onRefresh}
+                aura={noInvocations ? 'prominent' : 'subtle'}
+              />
             </div>
-            <TimeRangeToggle />
-            <div className="flex min-h-8 items-baseline justify-center gap-1.5">
-              {!isSummaryLoading && !isSummaryError && (
-                <>
-                  <span className="text-2xl font-bold text-gray-700 tabular-nums">
-                    {formatNumber(totalCount, true)}
-                  </span>
-                  <span className="text-sm text-gray-400">
-                    {totalCount === 1 ? 'invocation' : 'invocations'}
-                  </span>
-                </>
-              )}
-            </div>
-            <StatusLegend byStatus={byStatus} isLoading={isSummaryLoading} isError={isSummaryError} />
           </div>
-          <IssuesBannerStack className="-mt-4" />
-        </>
-      )}
+        </div>
+        <TimeRangeToggle />
+        <div className="flex min-h-8 items-baseline justify-center gap-1.5">
+          {!isSummaryLoading && !isSummaryError && (
+            noInvocations ? (
+              <div className="flex flex-col items-center gap-1 text-center">
+                <p className="text-lg font-medium text-gray-600">All quiet</p>
+                <p className="flex items-center gap-1 text-sm text-gray-400">
+                  <Link
+                    {...(firstServiceName && {
+                      href: `?${SERVICE_PLAYGROUND_QUERY_PARAM}=${firstServiceName}`,
+                    })}
+                    variant="icon"
+                    className="flex items-center gap-1.5 rounded-xl text-gray-500/80"
+                  >
+                    No invocations yet —{' '}
+                    <span className="font-medium underline">try sending one</span>
+                  </Link>
+                </p>
+              </div>
+            ) : (
+              <>
+                <span className="text-2xl font-bold text-gray-700 tabular-nums">
+                  {formatNumber(totalCount, true)}
+                </span>
+                <span className="text-sm text-gray-400">
+                  {totalCount === 1 ? 'invocation' : 'invocations'}
+                </span>
+              </>
+            )
+          )}
+        </div>
+        {totalCount > 0 && (
+          <StatusLegend byStatus={byStatus} isLoading={isSummaryLoading} isError={isSummaryError} />
+        )}
+      </div>
+      {totalCount > 0 && <IssuesBannerStack className="-mt-4" />}
 
       <div className="mt-8 flex min-h-0 w-full flex-1 flex-col">
         <div className="mb-2 flex flex-col gap-2 px-5 md:flex-row md:items-center md:justify-between">
