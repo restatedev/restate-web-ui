@@ -1,6 +1,7 @@
 import { ReactNode, useMemo } from 'react';
 import { GridListItem as AriaGridListItem } from 'react-aria-components';
 import { tv } from '@restate/util/styles';
+import { useHrefWithQueryParams } from '@restate/ui/link';
 import { useGridListColumns } from './GridListContext';
 import { GridListItemProps } from './types';
 
@@ -44,12 +45,16 @@ export function GridListItem<T>({
   className,
 }: GridListItemProps<T>) {
   const columns = useGridListColumns<T>();
+  const resolvedHref = useHrefWithQueryParams({
+    preserveQueryParams: true,
+    href,
+  });
 
   return (
     <AriaGridListItem
       id={id}
       textValue={textValue}
-      href={href}
+      href={resolvedHref}
       className={itemStyles({ className })}
     >
       {({ isHovered, isPressed, isFocusVisible, isSelected }) => {
