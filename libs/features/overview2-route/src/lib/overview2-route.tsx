@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import {
   SortDescriptor,
   SearchField,
@@ -45,6 +45,72 @@ import { NoDeploymentPlaceholder } from './NoDeploymentPlaceholder';
 import { sortServices } from './sortServices';
 import { useRangeFilters } from './useRangeFilters';
 import { TimeRangeToggle } from './TimeRangeToggle';
+
+const LINE_COUNT = 9;
+const TOP_SPACING = 10;
+const BOTTOM_SPACING = 100;
+const CURVE_Y1 = 150;
+const CURVE_Y2 = 290;
+
+function buildLinePath(i: number) {
+  const t = (i - (LINE_COUNT - 1) / 2) / ((LINE_COUNT - 1) / 2);
+  const topX = 500 + t * TOP_SPACING * ((LINE_COUNT - 1) / 2);
+  const bottomX = 500 + t * BOTTOM_SPACING * ((LINE_COUNT - 1) / 2);
+  const cp1Y = CURVE_Y1 + (CURVE_Y2 - CURVE_Y1) * 0.7;
+  const cp2Y = CURVE_Y1 + (CURVE_Y2 - CURVE_Y1) * 0.8;
+  return `M${topX},80 L${topX},${CURVE_Y1} C${topX},${cp1Y} ${bottomX},${cp2Y} ${bottomX},${CURVE_Y2} L${bottomX},800`;
+}
+
+function usePerspectiveRay(svgRef: React.RefObject<SVGSVGElement | null>) {
+  return useCallback(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const paths = svg.querySelectorAll('path');
+    paths.forEach((path, i) => {
+      path.style.strokeDasharray = '';
+      path.style.strokeDashoffset = '';
+      path.animate(
+        [
+          { opacity: 0 },
+          { opacity: 0.1, offset: 0.15 },
+          { opacity: 0 },
+        ],
+        {
+          duration: 800,
+          delay: Math.abs(i - (LINE_COUNT - 1) / 2) * 50,
+          easing: 'ease-out',
+          fill: 'forwards',
+        },
+      );
+    });
+  }, [svgRef]);
+}
+
+function PerspectiveLines({
+  svgRef,
+}: {
+  svgRef: React.RefObject<SVGSVGElement | null>;
+}) {
+  return (
+    <svg
+      ref={svgRef}
+      className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-full w-full text-indigo-400"
+      preserveAspectRatio="none"
+      viewBox="0 0 1000 800"
+      fill="none"
+    >
+      {Array.from({ length: LINE_COUNT }, (_, i) => (
+        <path
+          key={i}
+          d={buildLinePath(i)}
+          stroke="currentColor"
+          strokeWidth="0.8"
+          opacity="0"
+        />
+      ))}
+    </svg>
+  );
+}
 
 const emptyServerStyles = tv({
   base: 'flex w-full flex-auto flex-col items-center justify-center overflow-hidden rounded-xl border bg-gray-200/50 pt-24 pb-8 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] @tall:pt-10 @tall:pb-40',
@@ -168,6 +234,8 @@ function Component() {
   const { triggerWave } = useWaveAnimation();
   const serverRef = useRef<HTMLDivElement>(null);
   const pieRef = useRef<HTMLDivElement>(null);
+  const linesSvgRef = useRef<SVGSVGElement>(null);
+  const triggerRay = usePerspectiveRay(linesSvgRef);
   const noInvocations =
     !isSummaryLoading && !isSummaryError && totalCount === 0;
   const firstServiceName = services[0]?.name;
@@ -181,6 +249,7 @@ function Component() {
       ],
       { duration: 500, easing: 'ease-in-out' },
     );
+    triggerRay();
     triggerWave(serverRef, '[data-wave-card]');
     queryClient.refetchQueries(adminQueryPredicate, {
       cancelRefetch: true,
@@ -204,7 +273,8 @@ function Component() {
   }
 
   return (
-    <div className="mx-auto flex h-full w-full flex-col items-center gap-8 px-6 pt-8 pb-6">
+    <div className="relative mx-auto flex h-full w-full flex-col items-center gap-8  px-6 pt-8 pb-6">
+      <PerspectiveLines svgRef={linesSvgRef} />
       <div className="relative flex flex-col items-center gap-3">
         <div
           ref={pieRef}
@@ -229,7 +299,7 @@ function Component() {
           </div>
         </div>
         <TimeRangeToggle />
-        <div className="flex min-h-8 items-center justify-center gap-1.5">
+        <div className="flex min-h-14 items-center justify-center gap-1.5">
           {summaryError ? (
             <Popover>
               <PopoverTrigger>
