@@ -9,9 +9,13 @@ overrides:
   qs@<6.14.1: '>=6.14.1'
   tar@<=7.5.9: '>=7.5.11'
   axios@<=1.13.4: '>=1.13.5'
+  axios@1.14.1: 1.14.0
   rollup@>=4.0.0 <4.59.0: '>=4.59.0'
   immutable@<4.3.8: '>=4.3.8'
   undici@>=7.0.0 <7.24.0: '>=7.24.0'
+  path-to-regexp@<0.1.13: '>=0.1.13'
+  picomatch@>=4.0.0 <4.0.4: '>=4.0.4'
+  path-to-regexp@>=8.0.0 <8.4.0: '>=8.4.0'
 
 importers:
 
@@ -60,8 +64,8 @@ importers:
         specifier: ^7.7.0
         version: 7.7.0
       axios:
-        specifier: '>=1.13.5'
-        version: 1.13.5
+        specifier: 1.14.0
+        version: 1.14.0
       cors:
         specifier: 2.8.5
         version: 2.8.5
@@ -96,8 +100,8 @@ importers:
         specifier: 0.17.0
         version: 0.17.0
       path-to-regexp:
-        specifier: 8.2.0
-        version: 8.2.0
+        specifier: '>=8.4.0'
+        version: 8.4.1
       postcss-prefix-selector:
         specifier: ^2.1.1
         version: 2.1.1(postcss@8.4.38)
@@ -359,7 +363,7 @@ importers:
         version: 0.6.14(prettier@3.6.2)
       rollup-plugin-license:
         specifier: 3.5.3
-        version: 3.5.3(picomatch@4.0.3)(rollup@4.59.0)
+        version: 3.5.3(picomatch@4.0.4)(rollup@4.59.0)
       tailwindcss:
         specifier: 4.1.11
         version: 4.1.11
@@ -5003,8 +5007,8 @@ packages:
     resolution: {integrity: sha512-Xm7bpRXnDSX2YE2YFfBk2FnF0ep6tmG7xPh8iHee8MIcrgq762Nkce856dYtJYLkuIoYZvGfTs/PbZhideTcEg==}
     engines: {node: '>=4'}
 
-  axios@1.13.5:
-    resolution: {integrity: sha512-cz4ur7Vb0xS4/KUN0tPWe44eqxrIu31me+fbang3ijiNscE129POzipJJA6zniq2C/Z6sJCjMimjS8Lc/GAs8Q==}
+  axios@1.14.0:
+    resolution: {integrity: sha512-3Y8yrqLSwjuzpXuZ0oIYZ/XGgLwUIBU3uLvbcpb0pidD9ctpShJd43KSlEEkVQg6DS0G9NKyzOvBfUtDKEyHvQ==}
 
   axobject-query@4.1.0:
     resolution: {integrity: sha512-qIj0G9wZbMGNLjLmg1PT6v2mE9AH2zlnADJD/2tC6E00hgmhUOfEB6greHPAfLRSufHqROIUTkw6E+M3lH0PTQ==}
@@ -6230,7 +6234,7 @@ packages:
   fdir@6.3.0:
     resolution: {integrity: sha512-QOnuT+BOtivR77wYvCWHfGt9s4Pz1VIMbD463vegT5MLqNXy8rYFT/lPVEqf/bhYeT6qmqrNHhsX+rWwe3rOCQ==}
     peerDependencies:
-      picomatch: ^3 || ^4
+      picomatch: '>=4.0.4'
     peerDependenciesMeta:
       picomatch:
         optional: true
@@ -6238,7 +6242,7 @@ packages:
   fdir@6.4.6:
     resolution: {integrity: sha512-hiFoqpyZcfNm1yc4u8oWCf9A2c4D3QjCrks3zmoVKVxpQRzmPNar1hUJcBG2RQHvEVGDN+Jm81ZheVLAQMK6+w==}
     peerDependencies:
-      picomatch: ^3 || ^4
+      picomatch: '>=4.0.4'
     peerDependenciesMeta:
       picomatch:
         optional: true
@@ -6247,7 +6251,7 @@ packages:
     resolution: {integrity: sha512-tIbYtZbucOs0BRGqPJkshJUYdL+SDH7dVM8gjy+ERp3WAUjLEFJE+02kanyHtwjWOnwrKYBiwAmM0p4kLJAnXg==}
     engines: {node: '>=12.0.0'}
     peerDependencies:
-      picomatch: ^3 || ^4
+      picomatch: '>=4.0.4'
     peerDependenciesMeta:
       picomatch:
         optional: true
@@ -8281,15 +8285,11 @@ packages:
     resolution: {integrity: sha512-Xa4Nw17FS9ApQFJ9umLiJS4orGjm7ZzwUrwamcGQuHSzDyth9boKDaycYdDcZDuqYATXw4HFXgaqWTctW/v1HA==}
     engines: {node: '>=16 || 14 >=14.18'}
 
-  path-to-regexp@0.1.12:
-    resolution: {integrity: sha512-RA1GjUVMnvYFxuqovrEqZoxxW5NUZqbwKtYz/Tt7nXerk0LbLblQmrsgdeOxV5SFHf0UDggjS/bSeOZwt1pmEQ==}
-
   path-to-regexp@6.3.0:
     resolution: {integrity: sha512-Yhpw4T9C6hPpgPeA28us07OJeqZ5EzQTkbfwuhsUg0c237RomFoETJgmp2sa3F/41gfLE6G5cqcYwznmeEeOlQ==}
 
-  path-to-regexp@8.2.0:
-    resolution: {integrity: sha512-TdrF7fW9Rphjq4RjrW0Kp2AW0Ahwu9sRGTkS6bvDi0SCwZlEZYmcfDbEsTz8RVk0EHIS/Vd1bv3JhG+1xZuAyQ==}
-    engines: {node: '>=16'}
+  path-to-regexp@8.4.1:
+    resolution: {integrity: sha512-fvU78fIjZ+SBM9YwCknCvKOUKkLVqtWDVctl0s7xIqfmfb38t2TT4ZU2gHm+Z8xGwgW+QWEU3oQSAzIbo89Ggw==}
 
   path-type@4.0.0:
     resolution: {integrity: sha512-gDKb8aZMDeD/tZWs9P6+q0J9Mwkdl6xMV8TjnGP3qJVJ06bdMgkbBlLU8IdfOsIsFz2BW1rNVT3XuNEl8zPAvw==}
@@ -8318,12 +8318,8 @@ packages:
     resolution: {integrity: sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==}
     engines: {node: '>=8.6'}
 
-  picomatch@4.0.2:
-    resolution: {integrity: sha512-M7BAV6Rlcy5u+m6oPhAPFgJTzAioX/6B0DxyvDlo9l8+T3nLKbrczg2WLUyzd45L8RqfUMyGPzekbMvX2Ldkwg==}
-    engines: {node: '>=12'}
-
-  picomatch@4.0.3:
-    resolution: {integrity: sha512-5gTmgEY/sqK6gFXLIsQNH19lWb4ebPDLA4SdLP7dsWkIXHWlG66oPuVvXSGFPppYZz8ZDZq0dYYrbHfBCVUb1Q==}
+  picomatch@4.0.4:
+    resolution: {integrity: sha512-QP88BAKvMam/3NxH6vj2o21R6MjxZUAd6nlwAS/pnGvN9IVLocLHxGYIzFhg6fUQ+5th6P4dv4eW9jX3DSIj7A==}
     engines: {node: '>=12'}
 
   pify@2.3.0:
@@ -8541,8 +8537,9 @@ packages:
     resolution: {integrity: sha512-llQsMLSUDUPT44jdrU/O37qlnifitDP+ZwrmmZcoSKyLKvtZxpyV0n2/bD/N4tBAAZ/gJEdZU7KMraoK1+XYAg==}
     engines: {node: '>= 0.10'}
 
-  proxy-from-env@1.1.0:
-    resolution: {integrity: sha512-D+zkORCbA9f1tdWRK0RaCR3GPv50cMxcrz4X8k5LTSUD1Dkw47mKJEZQNunItRTkWwgtaUSo1RVFRIG9ZXiFYg==}
+  proxy-from-env@2.1.0:
+    resolution: {integrity: sha512-cJ+oHTW1VAEa8cJslgmUZrc+sjRKgAKl3Zyse6+PV38hZe/V6Z14TbCuXcan9F9ghlz4QrFr2c92TNF82UkYHA==}
+    engines: {node: '>=10'}
 
   prr@1.0.1:
     resolution: {integrity: sha512-yPw4Sng1gWghHQWj0B3ZggWUm4qVbPwPFcRG8KyxiU7J2OHFSoEHKS+EZ3fv5l1t9CyCiop6l/ZYeWbrgoQejw==}
@@ -12243,7 +12240,7 @@ snapshots:
       '@module-federation/third-party-dts-extractor': 0.17.1
       adm-zip: 0.5.16
       ansi-colors: 4.1.3
-      axios: 1.13.5
+      axios: 1.14.0
       chalk: 3.0.0
       fs-extra: 9.1.0
       isomorphic-ws: 5.0.0(ws@8.18.0)
@@ -12268,7 +12265,7 @@ snapshots:
       '@module-federation/third-party-dts-extractor': 0.18.0
       adm-zip: 0.5.16
       ansi-colors: 4.1.3
-      axios: 1.13.5
+      axios: 1.14.0
       chalk: 3.0.0
       fs-extra: 9.1.0
       isomorphic-ws: 5.0.0(ws@8.18.0)
@@ -12786,7 +12783,7 @@ snapshots:
       npm-run-path: 4.0.1
       ora: 5.3.0
       picocolors: 1.1.1
-      picomatch: 4.0.2
+      picomatch: 4.0.4
       semver: 7.7.2
       source-map-support: 0.5.19
       tinyglobby: 0.2.14
@@ -12982,7 +12979,7 @@ snapshots:
       '@swc/helpers': 0.5.11
       ajv: 8.17.1
       enquirer: 2.3.6
-      picomatch: 4.0.2
+      picomatch: 4.0.4
       semver: 7.7.2
       tsconfig-paths: 4.2.0
       vite: 6.3.5(@types/node@22.9.0)(jiti@2.4.2)(less@4.1.3)(lightningcss@1.30.1)(sass@1.79.5)(terser@5.43.1)(yaml@2.8.1)
@@ -13021,7 +13018,7 @@ snapshots:
       chalk: 4.1.2
       enquirer: 2.3.6
       nx: 21.3.11(@swc-node/register@1.9.2(@swc/core@1.5.7(@swc/helpers@0.5.11))(@swc/types@0.1.7)(typescript@5.8.3))(@swc/core@1.5.7(@swc/helpers@0.5.11))
-      picomatch: 4.0.2
+      picomatch: 4.0.4
       tslib: 2.6.3
       yargs-parser: 21.1.1
     transitivePeerDependencies:
@@ -13171,7 +13168,7 @@ snapshots:
       detect-libc: 2.1.2
       is-glob: 4.0.3
       node-addon-api: 7.1.1
-      picomatch: 4.0.3
+      picomatch: 4.0.4
     optionalDependencies:
       '@parcel/watcher-android-arm64': 2.5.6
       '@parcel/watcher-darwin-arm64': 2.5.6
@@ -16234,11 +16231,11 @@ snapshots:
 
   axe-core@4.10.3: {}
 
-  axios@1.13.5:
+  axios@1.14.0:
     dependencies:
       follow-redirects: 1.15.11(debug@4.4.1)
       form-data: 4.0.5
-      proxy-from-env: 1.1.0
+      proxy-from-env: 2.1.0
     transitivePeerDependencies:
       - debug
 
@@ -17660,7 +17657,7 @@ snapshots:
       methods: 1.1.2
       on-finished: 2.4.1
       parseurl: 1.3.3
-      path-to-regexp: 0.1.12
+      path-to-regexp: 8.4.1
       proxy-addr: 2.0.7
       qs: 6.14.1
       range-parser: 1.2.1
@@ -17728,17 +17725,17 @@ snapshots:
     dependencies:
       bser: 2.1.1
 
-  fdir@6.3.0(picomatch@4.0.3):
+  fdir@6.3.0(picomatch@4.0.4):
     optionalDependencies:
-      picomatch: 4.0.3
+      picomatch: 4.0.4
 
-  fdir@6.4.6(picomatch@4.0.3):
+  fdir@6.4.6(picomatch@4.0.4):
     optionalDependencies:
-      picomatch: 4.0.3
+      picomatch: 4.0.4
 
-  fdir@6.5.0(picomatch@4.0.3):
+  fdir@6.5.0(picomatch@4.0.4):
     optionalDependencies:
-      picomatch: 4.0.3
+      picomatch: 4.0.4
 
   fflate@0.8.2: {}
 
@@ -18935,7 +18932,7 @@ snapshots:
       chalk: 4.1.2
       ci-info: 4.3.0
       graceful-fs: 4.2.11
-      picomatch: 4.0.3
+      picomatch: 4.0.4
 
   jest-validate@30.0.5:
     dependencies:
@@ -20019,7 +20016,7 @@ snapshots:
       '@yarnpkg/lockfile': 1.1.0
       '@yarnpkg/parsers': 3.0.2
       '@zkochan/js-yaml': 0.0.7
-      axios: 1.13.5
+      axios: 1.14.0
       chalk: 4.1.2
       cli-cursor: 3.1.0
       cli-spinners: 2.6.1
@@ -20316,11 +20313,9 @@ snapshots:
       lru-cache: 10.4.3
       minipass: 7.1.2
 
-  path-to-regexp@0.1.12: {}
-
   path-to-regexp@6.3.0: {}
 
-  path-to-regexp@8.2.0: {}
+  path-to-regexp@8.4.1: {}
 
   path-type@4.0.0: {}
 
@@ -20338,9 +20333,7 @@ snapshots:
 
   picomatch@2.3.1: {}
 
-  picomatch@4.0.2: {}
-
-  picomatch@4.0.3: {}
+  picomatch@4.0.4: {}
 
   pify@2.3.0: {}
 
@@ -20511,7 +20504,7 @@ snapshots:
       forwarded: 0.2.0
       ipaddr.js: 1.9.1
 
-  proxy-from-env@1.1.0: {}
+  proxy-from-env@2.1.0: {}
 
   prr@1.0.1:
     optional: true
@@ -20959,10 +20952,10 @@ snapshots:
       rollup-pluginutils: 2.8.2
     optional: true
 
-  rollup-plugin-license@3.5.3(picomatch@4.0.3)(rollup@4.59.0):
+  rollup-plugin-license@3.5.3(picomatch@4.0.4)(rollup@4.59.0):
     dependencies:
       commenting: 1.1.0
-      fdir: 6.3.0(picomatch@4.0.3)
+      fdir: 6.3.0(picomatch@4.0.4)
       lodash: 4.17.21
       magic-string: 0.30.17
       moment: 2.30.1
@@ -21690,13 +21683,13 @@ snapshots:
 
   tinyglobby@0.2.14:
     dependencies:
-      fdir: 6.4.6(picomatch@4.0.3)
-      picomatch: 4.0.3
+      fdir: 6.4.6(picomatch@4.0.4)
+      picomatch: 4.0.4
 
   tinyglobby@0.2.15:
     dependencies:
-      fdir: 6.5.0(picomatch@4.0.3)
-      picomatch: 4.0.3
+      fdir: 6.5.0(picomatch@4.0.4)
+      picomatch: 4.0.4
 
   tinypool@1.1.1: {}
 
@@ -22217,8 +22210,8 @@ snapshots:
   vite@6.3.5(@types/node@22.9.0)(jiti@2.4.2)(less@4.1.3)(lightningcss@1.30.1)(sass@1.79.5)(terser@5.43.1)(yaml@2.8.1):
     dependencies:
       esbuild: 0.25.8
-      fdir: 6.4.6(picomatch@4.0.3)
-      picomatch: 4.0.3
+      fdir: 6.4.6(picomatch@4.0.4)
+      picomatch: 4.0.4
       postcss: 8.5.6
       rollup: 4.59.0
       tinyglobby: 0.2.14
@@ -22247,7 +22240,7 @@ snapshots:
       expect-type: 1.2.2
       magic-string: 0.30.17
       pathe: 2.0.3
-      picomatch: 4.0.3
+      picomatch: 4.0.4
       std-env: 3.9.0
       tinybench: 2.9.0
       tinyexec: 0.3.2
