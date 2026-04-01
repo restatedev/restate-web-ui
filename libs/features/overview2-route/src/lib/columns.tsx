@@ -5,13 +5,17 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { Link } from '@restate/ui/link';
 import { formatNumber, formatPlurals } from '@restate/util/intl';
 import { toServiceInvocationsHref } from '@restate/util/invocation-links';
-import { ServiceType } from '@restate/features/service';
+import {
+  ServiceType,
+  SERVICE_PLAYGROUND_QUERY_PARAM,
+} from '@restate/features/service';
 import {
   LatestRevisionDeployment,
   OlderRevisions,
 } from '@restate/features/deployment';
 import { ServiceStatusBar } from '@restate/features/status-chart';
 import { IssueBadge } from '@restate/ui/issue-banner';
+import { HoverTooltip } from '@restate/ui/tooltip';
 
 export function useServiceColumns({
   byServiceAndStatus,
@@ -34,27 +38,38 @@ export function useServiceColumns({
       title: 'Service',
       allowsSorting: true,
       render: (s: Service) => (
-        <div className="flex flex-col px-1">
-          <div className="-mx-1 flex min-w-0 items-center gap-2 rounded-lg px-1 py-0.5 hover:bg-black/3">
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border bg-white shadow-xs">
-              <Icon
-                name={IconName.Box}
-                className="h-full w-full fill-blue-50 p-1 text-blue-400 drop-shadow-md"
-              />
+        <div className="max-w-fit min-w-0 truncate">
+          <div className="flex flex-col px-1">
+            <div className="-mx-1 flex min-w-0 items-center gap-2 rounded-lg px-1 py-0.5 hover:bg-black/3">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border bg-white shadow-xs">
+                <Icon
+                  name={IconName.Box}
+                  className="h-full w-full fill-blue-50 p-1 text-blue-400 drop-shadow-md"
+                />
+              </div>
+              <span className="min-w-0 truncate text-base font-medium text-zinc-700">
+                {s.name}
+              </span>
+
+              <HoverTooltip content="Playground">
+                <Link
+                  href={`?${SERVICE_PLAYGROUND_QUERY_PARAM}=${s.name}`}
+                  variant="secondary-button"
+                  className=" ml-0 mr-0.5 px-1 py-1 mt-1.5 shrink-0"
+                >
+                  <Icon
+                    name={IconName.Play}
+                    className="h-3 w-3 text-blue-700 ml-px"
+                  />
+                </Link>
+              </HoverTooltip>
+
             </div>
-            <span className="min-w-0 truncate text-base font-medium text-zinc-700">
-              {s.name}
-            </span>
-            <div className="ml-1 hidden shrink-0 xl:block">
-              <ServiceType type={s.ty} />
+            <div>
+              <div className="ml-7.5 -mt-2 mb-2 invisible shrink-0 xl:visible">
+                <ServiceType type={s.ty} className=' bg-transparent border-transparent text-gray-500 font-normal'/>
+              </div>
             </div>
-            <Icon
-              name={IconName.ChevronRight}
-              className="h-4 w-4 shrink-0 text-gray-400"
-            />
-          </div>
-          <div>
-            <br />
           </div>
         </div>
       ),
@@ -64,10 +79,12 @@ export function useServiceColumns({
       title: 'Deployment',
       allowsSorting: true,
       render: (s: Service) => (
-        <div className="hidden min-w-0 flex-col p-1 md:flex">
-          <LatestRevisionDeployment serviceName={s.name} />
-          <div className="pl-8">
-            <OlderRevisions serviceName={s.name} />
+        <div className="hidden md:block max-w-fit min-w-0 truncate">
+          <div className=" min-w-0 flex-col p-1 flex">
+            <LatestRevisionDeployment serviceName={s.name} />
+            <div className="pl-8">
+              <OlderRevisions serviceName={s.name} />
+            </div>
           </div>
         </div>
       ),

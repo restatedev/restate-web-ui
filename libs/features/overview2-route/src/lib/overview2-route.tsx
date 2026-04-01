@@ -438,7 +438,7 @@ function Component() {
                       {visibleHandlers.length > 0 && (
                         <div className="flex flex-col gap-1 border-gray-200/90 pt-3 pb-2.5">
                           <div className="-mt-5 flex items-center gap-2 text-2xs font-semibold tracking-wide text-gray-400 uppercase">
-                            <div className="grow-0 basis-1.5 border-t border-gray-200/90" />
+                            <div className="grow-0 basis-9.5 border-t border-gray-200/90" />
                             Handlers
                             <div className="flex-auto border-t border-gray-200/90" />
                           </div>
