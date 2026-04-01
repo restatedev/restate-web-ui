@@ -59,6 +59,13 @@ import { queryCacheOnSuccess } from '@restate/data-access/admin-api-hooks';
 import { PortalProvider } from '@restate/ui/portal';
 import { BatchOperationsProvider } from '@restate/features/batch-operations';
 
+if (import.meta.env.DEV) {
+  setInterval(() => {
+    performance.clearMeasures();
+    performance.clearMarks();
+  }, 30_000);
+}
+
 export const links: LinksFunction = () => [
   // TODO: move to the its own lib
   {
