@@ -55,19 +55,21 @@ export function useServiceColumns({
                 <Link
                   href={`?${SERVICE_PLAYGROUND_QUERY_PARAM}=${s.name}`}
                   variant="secondary-button"
-                  className=" ml-0 mr-0.5 px-1 py-1 mt-1.5 shrink-0"
+                  className="mt-1.5 mr-0.5 ml-0 shrink-0 px-1 py-1"
                 >
                   <Icon
                     name={IconName.Play}
-                    className="h-3 w-3 text-blue-700 ml-px"
+                    className="ml-px h-3 w-3 text-blue-700"
                   />
                 </Link>
               </HoverTooltip>
-
             </div>
             <div>
-              <div className="ml-7.5 -mt-2 mb-2 invisible shrink-0 xl:visible">
-                <ServiceType type={s.ty} className=' bg-transparent border-transparent text-gray-500 font-normal'/>
+              <div className="invisible -mt-2 mb-2 ml-7.5 shrink-0 xl:visible">
+                <ServiceType
+                  type={s.ty}
+                  className="border-transparent bg-transparent font-normal text-gray-500"
+                />
               </div>
             </div>
           </div>
@@ -79,8 +81,8 @@ export function useServiceColumns({
       title: 'Deployment',
       allowsSorting: true,
       render: (s: Service) => (
-        <div className="hidden md:block max-w-fit min-w-0 truncate">
-          <div className=" min-w-0 flex-col p-1 flex">
+        <div className="hidden max-w-fit min-w-0 truncate md:block">
+          <div className="flex min-w-0 flex-col p-1">
             <LatestRevisionDeployment serviceName={s.name} />
             <div className="pl-8">
               <OlderRevisions serviceName={s.name} />
