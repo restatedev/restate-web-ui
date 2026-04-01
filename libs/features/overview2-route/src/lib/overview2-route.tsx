@@ -240,6 +240,7 @@ function Component() {
   const { triggerWave } = useWaveAnimation();
   const serverRef = useRef<HTMLDivElement>(null);
   const pieRef = useRef<HTMLDivElement>(null);
+  const issuesRef = useRef<HTMLDivElement>(null);
   const linesSvgRef = useRef<SVGSVGElement>(null);
   const triggerRay = usePerspectiveRay(linesSvgRef);
   const noInvocations =
@@ -257,6 +258,14 @@ function Component() {
     );
     triggerRay();
     triggerWave(serverRef, '[data-wave-card]');
+    issuesRef.current?.animate(
+      [
+        { transform: 'translateY(0)' },
+        { transform: 'translateY(-3px)' },
+        { transform: 'translateY(0)' },
+      ],
+      { duration: 400, easing: 'ease-in-out' },
+    );
     queryClient.refetchQueries(adminQueryPredicate, {
       cancelRefetch: true,
     });
@@ -376,7 +385,9 @@ function Component() {
           />
         )}
       </div>
-      <IssuesBannerStack className="-mt-4" />
+      <div ref={issuesRef}>
+        <IssuesBannerStack className="-mt-4" />
+      </div>
 
       <div className="mt-8 flex min-h-0 w-full flex-1 flex-col">
         <div className="mb-2 flex flex-col gap-2 px-5 md:flex-row md:items-center md:justify-between">
