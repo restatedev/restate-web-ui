@@ -136,7 +136,12 @@ const decodeParamsMiddleware: Middleware = (ctx, next) => {
 const handlersMiddleware: Middleware = (ctx, next) => {
   const baseUrl = `${ctx.url.protocol}//${ctx.url.host}`;
   const restateVersion = getVersion(ctx.headers);
-  const queryContext = createQueryContext(baseUrl, ctx.headers, restateVersion);
+  const queryContext = createQueryContext(
+    baseUrl,
+    ctx.headers,
+    restateVersion,
+    ctx.request.signal,
+  );
   const handlers = bindHandlers(queryContext);
   ctx.storage.set(handlersKey, handlers);
   return next();

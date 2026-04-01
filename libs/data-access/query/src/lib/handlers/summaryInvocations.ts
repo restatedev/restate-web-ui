@@ -157,46 +157,6 @@ function filtersCompatibleWithSplitTable(filters: FilterItem[]): boolean {
   );
 }
 
-// TODO: remove mock response
-function mockSummaryResponse() {
-  const services = ['greeter', 'Greeter', 'myObject3'];
-  const statuses = [
-    { name: 'running', count: 42 },
-    { name: 'pending', count: 18 },
-    { name: 'ready', count: 7 },
-    { name: 'scheduled', count: 3 },
-    { name: 'suspended', count: 12 },
-    { name: 'backing-off', count: 9 },
-    { name: 'paused', count: 5 },
-    { name: 'succeeded', count: 230 },
-    { name: 'failed', count: 35 },
-    { name: 'cancelled', count: 4 },
-    { name: 'killed', count: 2 },
-  ];
-  const totalCount = statuses.reduce((s, e) => s + e.count, 0);
-
-  const byServiceAndStatus = services.flatMap((service, i) =>
-    statuses.map((st) => ({
-      service,
-      status: st.name,
-      count: Math.max(1, Math.round(st.count / (i + 1))),
-      isIncluded: true,
-    })),
-  );
-
-  return Response.json({
-    totalCount,
-    isEstimate: false,
-    byStatus: statuses.map((s) => ({ ...s, isIncluded: true })),
-    byService: services.map((name) => ({
-      name,
-      count: Math.round(totalCount / services.length),
-      isIncluded: true,
-    })),
-    byServiceAndStatus,
-  });
-}
-
 export async function summaryInvocations(
   this: QueryContext,
   filters: FilterItem[],
