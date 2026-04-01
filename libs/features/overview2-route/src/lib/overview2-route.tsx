@@ -444,17 +444,20 @@ function Component() {
                     >
                       <div className="px-1 py-2.5">{cells}</div>
                       {visibleHandlers.length > 0 && (
-                        <div className="flex flex-col gap-1 border-gray-200/90 pt-3 pb-2.5">
-                          <div className="-mt-5 flex items-center gap-2 text-2xs font-semibold tracking-wide text-gray-400 uppercase">
-                            <div className="grow-0 basis-9.5 border-t border-gray-200/90" />
-                            Handlers
+                        <div className="flex flex-col gap-1 border-gray-200/90 pt-3 pb-2.5  bg-black/2">
+                          <div className="-mt-5 flex items-center text-2xs font-semibold tracking-wide  uppercase">
+                            <div className="grow-0 basis-9.5 border-t border-gray-200/90 " />
+                            <div className='px-2 text-black/30'>
+
+                              Handlers
+                            </div>
                             <div className="flex-auto border-t border-gray-200/90" />
                           </div>
                           <HandlerList
                             serviceName={service.name}
                             handlers={visibleHandlers}
                             serviceType={service.ty}
-                            className="flex flex-col gap-1 px-1 opacity-95 @5xl:grid @5xl:grid-cols-[calc(33%-0.5rem)_calc(33%-0.5rem)_1fr] @5xl:gap-x-2"
+                            className="flex flex-col gap-1 px-1 opacity-90 @5xl:grid @5xl:grid-cols-[calc(33%-0.5rem)_calc(33%-0.5rem)_1fr] @5xl:gap-x-2 "
                           />
                         </div>
                       )}
