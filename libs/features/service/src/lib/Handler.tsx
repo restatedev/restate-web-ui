@@ -79,7 +79,10 @@ export function Handler({
     <div className={styles({ className })}>
       <div className="flex min-w-0 flex-auto flex-row items-end gap-2">
         <div className="flex h-[1.75rem] items-center">
-          <div className="h-6 w-6 shrink-0 rounded-md border bg-white shadow-xs">
+          <div
+            className="h-6 w-6 shrink-0 rounded-md border bg-white shadow-xs"
+            data-icon
+          >
             <Icon
               name={IconName.Function}
               className="h-full w-full text-zinc-400"
@@ -123,7 +126,7 @@ export function Handler({
                 service={service}
                 withPlayground={withPlayground}
                 handler={handler.name}
-                className="[&_a]:z-[2]"
+                className="[&_a]:z-[2] [&_button]:text-zinc-500/80"
               />
               <span className="shrink-0 text-zinc-400">
                 {')'}
@@ -136,7 +139,7 @@ export function Handler({
                 service={service}
                 withPlayground={withPlayground}
                 handler={handler.name}
-                className="[&_a]:z-[2]"
+                className="[&_a]:z-[2] [&_button]:text-zinc-500/80"
               />
               {showLink && (
                 <Link
@@ -146,7 +149,7 @@ export function Handler({
                 >
                   <Icon
                     name={IconName.ChevronRight}
-                    className="h-4 w-4 text-gray-400"
+                    className="h-4 w-4 text-gray-400/80"
                   />
                 </Link>
               )}

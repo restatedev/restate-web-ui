@@ -138,7 +138,13 @@ function getCombinedJournal(
   data: ReturnType<typeof useGetInvocationsJournalWithInvocationsV2>['data'],
   preprocessedData: Map<string, PreprocessedInvocationData>,
   depth = 0,
+  visited: Set<string> = new Set(),
 ): CombinedJournalEntry[] {
+  if (visited.has(invocationId)) {
+    return [];
+  }
+  visited.add(invocationId);
+
   const entries = data?.[invocationId]?.journal?.entries;
   const processed = preprocessedData.get(invocationId);
 
@@ -179,6 +185,7 @@ function getCombinedJournal(
         data,
         preprocessedData,
         depth + 1,
+        visited,
       );
       combinedEntries.push(...nestedEntries);
     }

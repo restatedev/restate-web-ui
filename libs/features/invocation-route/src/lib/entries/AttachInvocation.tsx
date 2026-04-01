@@ -3,8 +3,9 @@ import { EntryProps } from './types';
 import { InvocationId } from '../InvocationId';
 import { EntryExpression } from './EntryExpression';
 import { tv } from '@restate/util/styles';
-import { useJournalContext } from '../JournalContext';
+import { useIsCircularRef, useJournalContext } from '../JournalContext';
 import { CallInvokedLoadingError } from './CallInvokedLoadingError';
+import { CircularRefWarning } from './CircularRefWarning';
 import { Button } from '@restate/ui/button';
 import { Spinner } from '@restate/ui/loading';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -28,7 +29,9 @@ export function AttachInvocation({
     invocationIds,
     error: invocationsError,
   } = useJournalContext();
+  const isCircularRef = useIsCircularRef(entry.invocationId, invocation?.id);
   const isExpanded =
+    !isCircularRef &&
     entry.invocationId &&
     invocationIds.includes(entry.invocationId) &&
     !isPending;
@@ -61,7 +64,9 @@ export function AttachInvocation({
         />
       </div>
       <div className="absolute top-0 right-1 bottom-0 flex items-center">
-        {invokedError ? (
+        {isCircularRef ? (
+          <CircularRefWarning />
+        ) : invokedError ? (
           <CallInvokedLoadingError error={invokedError} className="" />
         ) : (
           <Button

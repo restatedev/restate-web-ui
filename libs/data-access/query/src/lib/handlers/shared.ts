@@ -68,7 +68,11 @@ export type QueryContext = {
 
 function queryFetcher(
   query: string,
-  { baseUrl, headers = new Headers() }: { baseUrl: string; headers: Headers },
+  {
+    baseUrl,
+    headers = new Headers(),
+    signal,
+  }: { baseUrl: string; headers: Headers; signal?: AbortSignal },
 ) {
   const queryHeaders = new Headers(headers);
   queryHeaders.set('accept', 'application/json');
@@ -79,6 +83,7 @@ function queryFetcher(
       json: { query },
       headers: queryHeaders,
       timeout: 60_000,
+      signal,
     })
     .json<{ rows: any[] }>();
 }
@@ -90,11 +95,13 @@ function adminApiFetcher<T>(
     headers = new Headers(),
     method = 'GET',
     json,
+    signal,
   }: {
     baseUrl: string;
     headers: Headers;
     method?: string;
     json?: unknown;
+    signal?: AbortSignal;
   },
 ): Promise<T> {
   const apiHeaders = new Headers(headers);
@@ -108,6 +115,7 @@ function adminApiFetcher<T>(
     headers: apiHeaders,
     json,
     timeout: 60_000,
+    signal,
   }).json<T>();
 }
 
@@ -115,9 +123,10 @@ export function createQueryContext(
   baseUrl: string,
   headers: Headers,
   restateVersion: string,
+  signal?: AbortSignal,
 ): QueryContext {
   return {
-    query: (sql: string) => queryFetcher(sql, { baseUrl, headers }),
+    query: (sql: string) => queryFetcher(sql, { baseUrl, headers, signal }),
     adminApi: <T>(
       path: string,
       options?: { method?: string; json?: unknown },
@@ -127,6 +136,7 @@ export function createQueryContext(
         headers,
         method: options?.method,
         json: options?.json,
+        signal,
       }),
     baseUrl,
     restateVersion,

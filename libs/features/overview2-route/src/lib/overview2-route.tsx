@@ -6,7 +6,7 @@ import {
   Label,
 } from 'react-aria-components';
 import { useSearchParams } from 'react-router';
-import { getEndpoint } from '@restate/data-access/admin-api-spec';
+import { getEndpoint, type Service } from '@restate/data-access/admin-api-spec';
 import { GridList, GridListItem } from '@restate/ui/grid-list';
 import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from '@restate/util/styles';
@@ -132,6 +132,7 @@ function Component() {
     isSummaryLoading,
     isSummaryError,
     summaryError,
+    summaryQueryKey,
     isEmpty,
     isError,
     error,
@@ -199,15 +200,24 @@ function Component() {
   const filterRef = useFocusShortcut<HTMLInputElement>();
 
   const allServices = Array.from(servicesMap?.values() ?? []);
-  const lc = filter.toLowerCase();
+  const lc = filter.trim().toLowerCase();
+  const filteredHandlersMap = new Map<string, Service['handlers']>();
   const filtered = filter
     ? allServices.filter((s) => {
-        if (s.name.toLowerCase().includes(lc)) return true;
-        if (s.ty.toLowerCase().includes(lc)) return true;
-        if (s.handlers.some((h) => h.name.toLowerCase().includes(lc)))
+        const serviceMatches =
+          s.name.toLowerCase().includes(lc) ||
+          s.ty.toLowerCase().includes(lc) ||
+          getEndpoint(deploymentsMap?.get(s.deployment_id))
+            ?.toLowerCase()
+            .includes(lc);
+        if (serviceMatches) return true;
+        const matchedHandlers = s.handlers.filter((h) =>
+          h.name.toLowerCase().includes(lc),
+        );
+        if (matchedHandlers.length > 0) {
+          filteredHandlersMap.set(s.name, matchedHandlers);
           return true;
-        const endpoint = getEndpoint(deploymentsMap?.get(s.deployment_id));
-        if (endpoint?.toLowerCase().includes(lc)) return true;
+        }
         return false;
       })
     : allServices;
@@ -230,6 +240,7 @@ function Component() {
   const { triggerWave } = useWaveAnimation();
   const serverRef = useRef<HTMLDivElement>(null);
   const pieRef = useRef<HTMLDivElement>(null);
+  const issuesRef = useRef<HTMLDivElement>(null);
   const linesSvgRef = useRef<SVGSVGElement>(null);
   const triggerRay = usePerspectiveRay(linesSvgRef);
   const noInvocations =
@@ -247,6 +258,14 @@ function Component() {
     );
     triggerRay();
     triggerWave(serverRef, '[data-wave-card]');
+    issuesRef.current?.animate(
+      [
+        { transform: 'translateY(0)' },
+        { transform: 'translateY(-3px)' },
+        { transform: 'translateY(0)' },
+      ],
+      { duration: 400, easing: 'ease-in-out' },
+    );
     queryClient.refetchQueries(adminQueryPredicate, {
       cancelRefetch: true,
     });
@@ -294,7 +313,14 @@ function Component() {
             </div>
           </div>
         </div>
-        <TimeRangeToggle />
+        <TimeRangeToggle
+          onChange={() => {
+            queryClient.cancelQueries({
+              queryKey: summaryQueryKey,
+              exact: true,
+            });
+          }}
+        />
         <div className="flex min-h-14 items-center justify-center gap-1.5">
           {summaryError ? (
             <Popover>
@@ -318,36 +344,35 @@ function Component() {
                 <ErrorBanner error={summaryError} className="rounded-xl" />
               </PopoverContent>
             </Popover>
+          ) : isSummaryLoading ? (
+            <>
+              <div className="h-7 w-32 animate-pulse rounded-lg bg-gray-200" />
+            </>
+          ) : noInvocations ? (
+            <div className="flex flex-col items-center gap-1 pt-2 text-center">
+              <p className="text-lg font-medium text-gray-600">All quiet</p>
+              <p className="flex items-center gap-1 text-sm text-gray-400">
+                <Link
+                  {...(firstServiceName && {
+                    href: `?${SERVICE_PLAYGROUND_QUERY_PARAM}=${firstServiceName}`,
+                  })}
+                  variant="icon"
+                  className="-mb-3 flex items-center gap-1.5 rounded-xl text-gray-500/80"
+                >
+                  No invocations yet —{' '}
+                  <span className="font-medium underline">try sending one</span>
+                </Link>
+              </p>
+            </div>
           ) : (
-            !isSummaryLoading &&
-            (noInvocations ? (
-              <div className="flex flex-col items-center gap-1 text-center">
-                <p className="text-lg font-medium text-gray-600">All quiet</p>
-                <p className="flex items-center gap-1 text-sm text-gray-400">
-                  <Link
-                    {...(firstServiceName && {
-                      href: `?${SERVICE_PLAYGROUND_QUERY_PARAM}=${firstServiceName}`,
-                    })}
-                    variant="icon"
-                    className="flex items-center gap-1.5 rounded-xl text-gray-500/80"
-                  >
-                    No invocations yet —{' '}
-                    <span className="font-medium underline">
-                      try sending one
-                    </span>
-                  </Link>
-                </p>
-              </div>
-            ) : (
-              <>
-                <span className="text-2xl font-bold text-gray-700 tabular-nums">
-                  {formatNumber(totalCount, true)}
-                </span>
-                <span className="text-sm text-gray-400">
-                  {totalCount === 1 ? 'invocation' : 'invocations'}
-                </span>
-              </>
-            ))
+            <>
+              <span className="text-2xl font-bold text-gray-700 tabular-nums">
+                {formatNumber(totalCount, true)}
+              </span>
+              <span className="text-sm text-gray-400">
+                {totalCount === 1 ? 'invocation' : 'invocations'}
+              </span>
+            </>
           )}
         </div>
         {totalCount > 0 && (
@@ -359,7 +384,9 @@ function Component() {
           />
         )}
       </div>
-      <IssuesBannerStack className="-mt-4" />
+      <div ref={issuesRef}>
+        <IssuesBannerStack className="-mt-4" />
+      </div>
 
       <div className="mt-8 flex min-h-0 w-full flex-1 flex-col">
         <div className="mb-2 flex flex-col gap-2 px-5 md:flex-row md:items-center md:justify-between">
@@ -413,6 +440,8 @@ function Component() {
                   : issues.length > 0
                     ? ('low' as const)
                     : ('none' as const);
+                const visibleHandlers =
+                  filteredHandlersMap.get(service.name) ?? service.handlers;
                 return (
                   <div className="mb-4 px-2 pt-1">
                     <div
@@ -424,18 +453,18 @@ function Component() {
                       })}
                     >
                       <div className="px-1 py-2.5">{cells}</div>
-                      {service.handlers.length > 0 && (
-                        <div className="flex flex-col gap-1 border-gray-200/90 pt-3 pb-2.5">
-                          <div className="-mt-5 flex items-center gap-2 text-2xs font-semibold tracking-wide text-gray-400 uppercase">
-                            <div className="grow-0 basis-1.5 border-t border-gray-200/90" />
-                            Handlers
+                      {visibleHandlers.length > 0 && (
+                        <div className="flex flex-col gap-1 border-gray-200/90 bg-black/2 pt-3 pb-2.5">
+                          <div className="-mt-5 flex items-center text-2xs font-semibold tracking-wide uppercase">
+                            <div className="grow-0 basis-9.5 border-t border-gray-200/90" />
+                            <div className="px-2 text-black/30">Handlers</div>
                             <div className="flex-auto border-t border-gray-200/90" />
                           </div>
                           <HandlerList
                             serviceName={service.name}
-                            handlers={service.handlers}
+                            handlers={visibleHandlers}
                             serviceType={service.ty}
-                            className="flex flex-col gap-1 px-1 opacity-95 @5xl:grid @5xl:grid-cols-[calc(33%-0.5rem)_calc(33%-0.5rem)_1fr] @5xl:gap-x-2"
+                            className="flex flex-col gap-1 px-1 opacity-90 @5xl:grid @5xl:grid-cols-[calc(33%-0.5rem)_calc(33%-0.5rem)_1fr] @5xl:gap-x-2"
                           />
                         </div>
                       )}

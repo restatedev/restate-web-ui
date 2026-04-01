@@ -86,7 +86,9 @@ export function useGetHrefFromSearch() {
       return {
         href: `${location.pathname}${targetSearch}${location.hash}`,
         isActive:
-          currentSearchParams.toString() === withNewParamsSorted.toString(),
+          targetSearchParams.size === 0
+            ? currentSearchParams.toString() === ''
+            : currentSearchParams.toString() === withNewParamsSorted.toString(),
       };
     },
     [location.hash, location.pathname, location.search],
