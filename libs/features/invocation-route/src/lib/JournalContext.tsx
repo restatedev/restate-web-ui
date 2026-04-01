@@ -75,3 +75,15 @@ export function JournalContextProvider({
 export function useJournalContext() {
   return use(JournalContext);
 }
+
+export function useIsCircularRef(
+  calledInvocationId: string | undefined,
+  callerInvocationId: string | undefined,
+) {
+  const { invocationIds } = useJournalContext();
+  if (!calledInvocationId) return false;
+  const calledIdx = invocationIds.indexOf(String(calledInvocationId));
+  if (calledIdx === -1) return false;
+  const callerIdx = invocationIds.indexOf(String(callerInvocationId));
+  return calledIdx <= callerIdx;
+}

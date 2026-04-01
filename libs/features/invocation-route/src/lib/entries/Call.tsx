@@ -5,10 +5,11 @@ import { Target } from '../Target';
 import { InvocationId } from '../InvocationId';
 import { Spinner } from '@restate/ui/loading';
 import { tv } from '@restate/util/styles';
-import { useJournalContext } from '../JournalContext';
+import { useIsCircularRef, useJournalContext } from '../JournalContext';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import { CallInvokedLoadingError } from './CallInvokedLoadingError';
+import { CircularRefWarning } from './CircularRefWarning';
 import { EntryExpression } from './EntryExpression';
 import { LazyJournalEntryPayload } from './LazyJournalEntryPayload';
 import { Value } from '../Value';
@@ -30,8 +31,11 @@ export function Call({
     invocationIds,
     error: invocationsError,
   } = useJournalContext();
+  const isCircularRef = useIsCircularRef(entry.invocationId, invocation?.id);
   const isExpanded =
-    entry.invocationId && invocationIds.includes(entry.invocationId);
+    !isCircularRef &&
+    entry.invocationId &&
+    invocationIds.includes(entry.invocationId);
 
   const invokedIsPending = isPending?.[String(entry.invocationId)];
   const invokedError = invocationsError?.[String(entry.invocationId)];
@@ -105,7 +109,9 @@ export function Call({
         )}
       </div>
       <div className="absolute top-0 right-1 bottom-0 flex items-center">
-        {invokedError ? (
+        {isCircularRef ? (
+          <CircularRefWarning />
+        ) : invokedError ? (
           <CallInvokedLoadingError error={invokedError} className="" />
         ) : (
           <Button
