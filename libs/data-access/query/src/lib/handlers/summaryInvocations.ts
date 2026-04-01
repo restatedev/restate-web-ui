@@ -165,20 +165,20 @@ export async function summaryInvocations(
   includeDuration = false,
 ) {
   // TODO: re-enable split table path once compatible
-  if (
-    // eslint-disable-next-line no-constant-condition
-    false &&
-    supportsSplitTable(this.restateVersion) &&
-    filtersCompatibleWithSplitTable(filters)
-  ) {
-    return summaryInvocationsSplit.call(
-      this,
-      filters,
-      sampled,
-      sampleSize,
-      includeDuration,
-    );
-  }
+  // if (
+  //   // eslint-disable-next-line no-constant-condition
+  //   false &&
+  //   supportsSplitTable(this.restateVersion) &&
+  //   filtersCompatibleWithSplitTable(filters)
+  // ) {
+  //   return summaryInvocationsSplit.call(
+  //     this,
+  //     filters,
+  //     sampled,
+  //     sampleSize,
+  //     includeDuration,
+  //   );
+  // }
   return summaryInvocationsLegacy.call(
     this,
     filters,
