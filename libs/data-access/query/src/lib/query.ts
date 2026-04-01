@@ -123,6 +123,16 @@ function bindHandlers(context: QueryContext): BoundHandlers {
 
 const handlersKey = createStorageKey<BoundHandlers>();
 
+const decodeParamsMiddleware: Middleware = (ctx, next) => {
+  const params = ctx.params as Record<string, string | undefined>;
+  for (const key in params) {
+    if (params[key] !== undefined) {
+      params[key] = decodeURIComponent(params[key]!);
+    }
+  }
+  return next();
+};
+
 const handlersMiddleware: Middleware = (ctx, next) => {
   const baseUrl = `${ctx.url.protocol}//${ctx.url.host}`;
   const restateVersion = getVersion(ctx.headers);
@@ -201,137 +211,145 @@ const router = createRouter({
 });
 
 router.map(routes, {
-  invocations: {
-    async list(ctx) {
-      const { listInvocations } = ctx.storage.get(handlersKey);
-      const {
-        filters = [],
-        sort,
-      }: components['schemas']['ListInvocationsRequestBody'] =
-        await ctx.request.json();
-      return listInvocations(filters, sort);
-    },
-    async count(ctx) {
-      const { countInvocations } = ctx.storage.get(handlersKey);
-      const { filters = [] }: { filters: FilterItem[] } =
-        await ctx.request.json();
-      return countInvocations(filters);
-    },
-    async summary(ctx) {
-      const { summaryInvocations } = ctx.storage.get(handlersKey);
-      const {
-        filters = [],
-        sampled,
-        sampleSize,
-        includeDuration,
-      }: {
-        filters: FilterItem[];
-        sampled?: boolean;
-        sampleSize?: number;
-        includeDuration?: boolean;
-      } = await ctx.request.json();
-      return summaryInvocations(filters, sampled, sampleSize, includeDuration);
-    },
-    async get(ctx) {
-      const { getInvocation } = ctx.storage.get(handlersKey);
-      return getInvocation(ctx.params.invocationId);
-    },
-    async journalEntry(ctx) {
-      const { getJournalEntryV2 } = ctx.storage.get(handlersKey);
-      return getJournalEntryV2(
-        ctx.params.invocationId,
-        Number(ctx.params.entryIndex),
-      );
-    },
-    async journalEntryPayloads(ctx) {
-      const { getJournalEntryPayloads } = ctx.storage.get(handlersKey);
-      return getJournalEntryPayloads(
-        ctx.params.invocationId,
-        Number(ctx.params.entryIndex),
-      );
-    },
-    async journal(ctx) {
-      const { getInvocationJournal } = ctx.storage.get(handlersKey);
-      return getInvocationJournal(ctx.params.invocationId);
-    },
-    async cancel(ctx) {
-      const { batchCancelInvocations } = ctx.storage.get(handlersKey);
-      const request: BatchInvocationsRequestBody = await ctx.request.json();
-      return batchCancelInvocations(request);
-    },
-    async purge(ctx) {
-      const { batchPurgeInvocations } = ctx.storage.get(handlersKey);
-      const request: BatchInvocationsRequestBody = await ctx.request.json();
-      return batchPurgeInvocations(request);
-    },
-    async kill(ctx) {
-      const { batchKillInvocations } = ctx.storage.get(handlersKey);
-      const request: BatchInvocationsRequestBody = await ctx.request.json();
-      return batchKillInvocations(request);
-    },
-    async pause(ctx) {
-      const { batchPauseInvocations } = ctx.storage.get(handlersKey);
-      const request: BatchInvocationsRequestBody = await ctx.request.json();
-      return batchPauseInvocations(request);
-    },
-    async resume(ctx) {
-      const { batchResumeInvocations } = ctx.storage.get(handlersKey);
-      const request: BatchInvocationsRequestBody = await ctx.request.json();
-      return batchResumeInvocations(request);
-    },
-    async restartAsNew(ctx) {
-      const { batchRestartAsNewInvocations } = ctx.storage.get(handlersKey);
-      const request: BatchInvocationsRequestBody = await ctx.request.json();
-      return batchRestartAsNewInvocations(request);
-    },
-    async pausedError(ctx) {
-      const { getPausedError } = ctx.storage.get(handlersKey);
-      return getPausedError(ctx.params.invocationId);
-    },
-  },
-  invocationsV2: {
-    async get(ctx) {
-      const { getInvocationJournalV2 } = ctx.storage.get(handlersKey);
-      const includePayloads =
-        ctx.url.searchParams.get('includePayloads') === 'true';
-      return getInvocationJournalV2(ctx.params.invocationId, includePayloads);
-    },
-  },
-  virtualObjects: {
-    async queue(ctx) {
-      const { getInbox } = ctx.storage.get(handlersKey);
-      return getInbox(
-        ctx.params.name,
-        ctx.params.key,
-        ctx.url.searchParams.has('invocationId')
-          ? String(ctx.url.searchParams.get('invocationId'))
-          : undefined,
-      );
-    },
-  },
-  services: {
-    state: {
-      async get(ctx) {
-        const { getState } = ctx.storage.get(handlersKey);
-        return getState(ctx.params.name, ctx.params.key);
+  middleware: [decodeParamsMiddleware],
+  actions: {
+    invocations: {
+      async list(ctx) {
+        const { listInvocations } = ctx.storage.get(handlersKey);
+        const {
+          filters = [],
+          sort,
+        }: components['schemas']['ListInvocationsRequestBody'] =
+          await ctx.request.json();
+        return listInvocations(filters, sort);
       },
-      async keys(ctx) {
-        const { getStateInterface } = ctx.storage.get(handlersKey);
-        return getStateInterface(
-          ctx.params.name,
-          ctx.url.searchParams.getAll('serviceKey'),
-        );
-      },
-      async query(ctx) {
-        const { queryState } = ctx.storage.get(handlersKey);
+      async count(ctx) {
+        const { countInvocations } = ctx.storage.get(handlersKey);
         const { filters = [] }: { filters: FilterItem[] } =
           await ctx.request.json();
-        return queryState(ctx.params.name, filters);
+        return countInvocations(filters);
       },
-      async list(ctx) {
-        const { listState } = ctx.storage.get(handlersKey);
-        const { keys = [] }: { keys: string[] } = await ctx.request.json();
-        return listState(ctx.params.name, keys);
+      async summary(ctx) {
+        const { summaryInvocations } = ctx.storage.get(handlersKey);
+        const {
+          filters = [],
+          sampled,
+          sampleSize,
+          includeDuration,
+        }: {
+          filters: FilterItem[];
+          sampled?: boolean;
+          sampleSize?: number;
+          includeDuration?: boolean;
+        } = await ctx.request.json();
+        return summaryInvocations(
+          filters,
+          sampled,
+          sampleSize,
+          includeDuration,
+        );
+      },
+      async get(ctx) {
+        const { getInvocation } = ctx.storage.get(handlersKey);
+        return getInvocation(ctx.params.invocationId);
+      },
+      async journalEntry(ctx) {
+        const { getJournalEntryV2 } = ctx.storage.get(handlersKey);
+        return getJournalEntryV2(
+          ctx.params.invocationId,
+          Number(ctx.params.entryIndex),
+        );
+      },
+      async journalEntryPayloads(ctx) {
+        const { getJournalEntryPayloads } = ctx.storage.get(handlersKey);
+        return getJournalEntryPayloads(
+          ctx.params.invocationId,
+          Number(ctx.params.entryIndex),
+        );
+      },
+      async journal(ctx) {
+        const { getInvocationJournal } = ctx.storage.get(handlersKey);
+        return getInvocationJournal(ctx.params.invocationId);
+      },
+      async cancel(ctx) {
+        const { batchCancelInvocations } = ctx.storage.get(handlersKey);
+        const request: BatchInvocationsRequestBody = await ctx.request.json();
+        return batchCancelInvocations(request);
+      },
+      async purge(ctx) {
+        const { batchPurgeInvocations } = ctx.storage.get(handlersKey);
+        const request: BatchInvocationsRequestBody = await ctx.request.json();
+        return batchPurgeInvocations(request);
+      },
+      async kill(ctx) {
+        const { batchKillInvocations } = ctx.storage.get(handlersKey);
+        const request: BatchInvocationsRequestBody = await ctx.request.json();
+        return batchKillInvocations(request);
+      },
+      async pause(ctx) {
+        const { batchPauseInvocations } = ctx.storage.get(handlersKey);
+        const request: BatchInvocationsRequestBody = await ctx.request.json();
+        return batchPauseInvocations(request);
+      },
+      async resume(ctx) {
+        const { batchResumeInvocations } = ctx.storage.get(handlersKey);
+        const request: BatchInvocationsRequestBody = await ctx.request.json();
+        return batchResumeInvocations(request);
+      },
+      async restartAsNew(ctx) {
+        const { batchRestartAsNewInvocations } = ctx.storage.get(handlersKey);
+        const request: BatchInvocationsRequestBody = await ctx.request.json();
+        return batchRestartAsNewInvocations(request);
+      },
+      async pausedError(ctx) {
+        const { getPausedError } = ctx.storage.get(handlersKey);
+        return getPausedError(ctx.params.invocationId);
+      },
+    },
+    invocationsV2: {
+      async get(ctx) {
+        const { getInvocationJournalV2 } = ctx.storage.get(handlersKey);
+        const includePayloads =
+          ctx.url.searchParams.get('includePayloads') === 'true';
+        return getInvocationJournalV2(ctx.params.invocationId, includePayloads);
+      },
+    },
+    virtualObjects: {
+      async queue(ctx) {
+        const { getInbox } = ctx.storage.get(handlersKey);
+        return getInbox(
+          ctx.params.name,
+          ctx.params.key,
+          ctx.url.searchParams.has('invocationId')
+            ? String(ctx.url.searchParams.get('invocationId'))
+            : undefined,
+        );
+      },
+    },
+    services: {
+      state: {
+        async get(ctx) {
+          const { getState } = ctx.storage.get(handlersKey);
+          return getState(ctx.params.name, ctx.params.key);
+        },
+        async keys(ctx) {
+          const { getStateInterface } = ctx.storage.get(handlersKey);
+          return getStateInterface(
+            ctx.params.name,
+            ctx.url.searchParams.getAll('serviceKey'),
+          );
+        },
+        async query(ctx) {
+          const { queryState } = ctx.storage.get(handlersKey);
+          const { filters = [] }: { filters: FilterItem[] } =
+            await ctx.request.json();
+          return queryState(ctx.params.name, filters);
+        },
+        async list(ctx) {
+          const { listState } = ctx.storage.get(handlersKey);
+          const { keys = [] }: { keys: string[] } = await ctx.request.json();
+          return listState(ctx.params.name, keys);
+        },
       },
     },
   },
