@@ -344,10 +344,13 @@ function Component() {
                 <ErrorBanner error={summaryError} className="rounded-xl" />
               </PopoverContent>
             </Popover>
+          ) : (isSummaryLoading ) ? (
+            <>
+              <div className="h-7 w-32 animate-pulse rounded-lg bg-gray-200" />
+            </>
           ) : (
-            !isSummaryLoading &&
             (noInvocations ? (
-              <div className="flex flex-col items-center gap-1 text-center">
+              <div className="flex flex-col items-center gap-1 text-center pt-2">
                 <p className="text-lg font-medium text-gray-600">All quiet</p>
                 <p className="flex items-center gap-1 text-sm text-gray-400">
                   <Link
@@ -355,7 +358,7 @@ function Component() {
                       href: `?${SERVICE_PLAYGROUND_QUERY_PARAM}=${firstServiceName}`,
                     })}
                     variant="icon"
-                    className="flex items-center gap-1.5 rounded-xl text-gray-500/80"
+                    className="flex items-center gap-1.5 rounded-xl text-gray-500/80 -mb-3"
                   >
                     No invocations yet —{' '}
                     <span className="font-medium underline">
@@ -373,8 +376,8 @@ function Component() {
                   {totalCount === 1 ? 'invocation' : 'invocations'}
                 </span>
               </>
-            ))
-          )}
+            )))
+          }
         </div>
         {totalCount > 0 && (
           <StatusLegend
