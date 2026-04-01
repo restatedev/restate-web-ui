@@ -25,6 +25,7 @@ export function useOverviewData(filters: FilterItem[] = []) {
     isFetching: isSummaryLoading,
     isError: isSummaryError,
     error: summaryError,
+    queryKey: summaryQueryKey,
   } = useSummaryInvocations(filters, { sampled: false });
   const summaryData = isSummaryError ? undefined : rawSummaryData;
 
@@ -84,6 +85,7 @@ export function useOverviewData(filters: FilterItem[] = []) {
     isSummaryLoading,
     isSummaryError,
     summaryError,
+    summaryQueryKey,
     isEmpty,
     isError,
     error,

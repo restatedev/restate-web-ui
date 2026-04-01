@@ -132,6 +132,7 @@ function Component() {
     isSummaryLoading,
     isSummaryError,
     summaryError,
+    summaryQueryKey,
     isEmpty,
     isError,
     error,
@@ -303,7 +304,14 @@ function Component() {
             </div>
           </div>
         </div>
-        <TimeRangeToggle />
+        <TimeRangeToggle
+          onChange={() => {
+            queryClient.cancelQueries({
+              queryKey: summaryQueryKey,
+              exact: true,
+            });
+          }}
+        />
         <div className="flex min-h-14 items-center justify-center gap-1.5">
           {summaryError ? (
             <Popover>
