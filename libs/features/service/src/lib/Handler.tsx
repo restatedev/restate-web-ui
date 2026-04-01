@@ -79,11 +79,13 @@ export function Handler({
     <div className={styles({ className })}>
       <div className="flex min-w-0 flex-auto flex-row items-end gap-2">
         <div className="flex h-[1.75rem] items-center">
-          <div className="h-6 w-6 shrink-0 rounded-md border bg-white shadow-xs" data-icon>
+          <div
+            className="h-6 w-6 shrink-0 rounded-md border bg-white shadow-xs"
+            data-icon
+          >
             <Icon
               name={IconName.Function}
               className="h-full w-full text-zinc-400"
-
             />
           </div>
         </div>

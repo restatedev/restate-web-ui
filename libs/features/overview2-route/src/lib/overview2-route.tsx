@@ -344,40 +344,36 @@ function Component() {
                 <ErrorBanner error={summaryError} className="rounded-xl" />
               </PopoverContent>
             </Popover>
-          ) : (isSummaryLoading ) ? (
+          ) : isSummaryLoading ? (
             <>
               <div className="h-7 w-32 animate-pulse rounded-lg bg-gray-200" />
             </>
+          ) : noInvocations ? (
+            <div className="flex flex-col items-center gap-1 pt-2 text-center">
+              <p className="text-lg font-medium text-gray-600">All quiet</p>
+              <p className="flex items-center gap-1 text-sm text-gray-400">
+                <Link
+                  {...(firstServiceName && {
+                    href: `?${SERVICE_PLAYGROUND_QUERY_PARAM}=${firstServiceName}`,
+                  })}
+                  variant="icon"
+                  className="-mb-3 flex items-center gap-1.5 rounded-xl text-gray-500/80"
+                >
+                  No invocations yet —{' '}
+                  <span className="font-medium underline">try sending one</span>
+                </Link>
+              </p>
+            </div>
           ) : (
-            (noInvocations ? (
-              <div className="flex flex-col items-center gap-1 text-center pt-2">
-                <p className="text-lg font-medium text-gray-600">All quiet</p>
-                <p className="flex items-center gap-1 text-sm text-gray-400">
-                  <Link
-                    {...(firstServiceName && {
-                      href: `?${SERVICE_PLAYGROUND_QUERY_PARAM}=${firstServiceName}`,
-                    })}
-                    variant="icon"
-                    className="flex items-center gap-1.5 rounded-xl text-gray-500/80 -mb-3"
-                  >
-                    No invocations yet —{' '}
-                    <span className="font-medium underline">
-                      try sending one
-                    </span>
-                  </Link>
-                </p>
-              </div>
-            ) : (
-              <>
-                <span className="text-2xl font-bold text-gray-700 tabular-nums">
-                  {formatNumber(totalCount, true)}
-                </span>
-                <span className="text-sm text-gray-400">
-                  {totalCount === 1 ? 'invocation' : 'invocations'}
-                </span>
-              </>
-            )))
-          }
+            <>
+              <span className="text-2xl font-bold text-gray-700 tabular-nums">
+                {formatNumber(totalCount, true)}
+              </span>
+              <span className="text-sm text-gray-400">
+                {totalCount === 1 ? 'invocation' : 'invocations'}
+              </span>
+            </>
+          )}
         </div>
         {totalCount > 0 && (
           <StatusLegend
@@ -458,20 +454,17 @@ function Component() {
                     >
                       <div className="px-1 py-2.5">{cells}</div>
                       {visibleHandlers.length > 0 && (
-                        <div className="flex flex-col gap-1 border-gray-200/90 pt-3 pb-2.5  bg-black/2">
-                          <div className="-mt-5 flex items-center text-2xs font-semibold tracking-wide  uppercase">
-                            <div className="grow-0 basis-9.5 border-t border-gray-200/90 " />
-                            <div className='px-2 text-black/30'>
-
-                              Handlers
-                            </div>
+                        <div className="flex flex-col gap-1 border-gray-200/90 bg-black/2 pt-3 pb-2.5">
+                          <div className="-mt-5 flex items-center text-2xs font-semibold tracking-wide uppercase">
+                            <div className="grow-0 basis-9.5 border-t border-gray-200/90" />
+                            <div className="px-2 text-black/30">Handlers</div>
                             <div className="flex-auto border-t border-gray-200/90" />
                           </div>
                           <HandlerList
                             serviceName={service.name}
                             handlers={visibleHandlers}
                             serviceType={service.ty}
-                            className="flex flex-col gap-1 px-1 opacity-90 @5xl:grid @5xl:grid-cols-[calc(33%-0.5rem)_calc(33%-0.5rem)_1fr] @5xl:gap-x-2 "
+                            className="flex flex-col gap-1 px-1 opacity-90 @5xl:grid @5xl:grid-cols-[calc(33%-0.5rem)_calc(33%-0.5rem)_1fr] @5xl:gap-x-2"
                           />
                         </div>
                       )}
