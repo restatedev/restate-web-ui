@@ -147,6 +147,7 @@ export function useSqlQuery(
   query: string,
   options?: HookQueryOptions<'/query', 'post'>,
 ) {
+  const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi('query', '/query', 'post', {
     baseUrl,
@@ -156,7 +157,7 @@ export function useSqlQuery(
   const results = useQuery({
     ...queryOptions,
     ...options,
-    enabled: Boolean(query) && options?.enabled !== false,
+    enabled: Boolean(query) && options?.enabled !== false && enabled,
   });
 
   return {
@@ -413,6 +414,7 @@ export function useServiceDetails(
   service: string,
   options?: HookQueryOptions<'/services/{service}', 'get'>,
 ) {
+  const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
   const { queryFn, ...queryOptions } = getServiceAdminApi({
     baseUrl,
@@ -434,6 +436,7 @@ export function useServiceDetails(
       }),
     ...options,
     meta: { ...queryOptions.meta, ...getOverviewRefreshMeta() },
+    enabled: options?.enabled !== false && enabled,
   });
 
   return { ...results, queryKey: queryOptions.queryKey };
@@ -477,6 +480,7 @@ export function useDeploymentDetails(
   deployment: string,
   options?: HookQueryOptions<'/deployments/{deployment}', 'get'>,
 ) {
+  const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi('query', '/deployments/{deployment}', 'get', {
     baseUrl,
@@ -488,6 +492,7 @@ export function useDeploymentDetails(
     staleTime: 0,
     ...queryOptions,
     ...options,
+    enabled: options?.enabled !== false && enabled,
   });
 
   return { ...results, queryKey: queryOptions.queryKey };
@@ -496,6 +501,7 @@ export function useDeploymentDetails(
 export function useListSubscriptions(
   options?: HookQueryOptions<'/subscriptions', 'get'>,
 ) {
+  const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi('query', '/subscriptions', 'get', {
     baseUrl,
@@ -505,6 +511,7 @@ export function useListSubscriptions(
     staleTime: 0,
     ...queryOptions,
     ...options,
+    enabled: options?.enabled !== false && enabled,
   });
 
   return { ...results, queryKey: queryOptions.queryKey };
@@ -514,6 +521,7 @@ export function useCountInvocations(
   filters: FilterItem[],
   options?: HookQueryOptions<'/query/invocations/count', 'post'>,
 ) {
+  const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi('query', '/query/invocations/count', 'post', {
     baseUrl,
@@ -526,6 +534,7 @@ export function useCountInvocations(
     staleTime: 0,
     ...queryOptions,
     ...options,
+    enabled: options?.enabled !== false && enabled,
   });
 
   return { ...results, queryKey: queryOptions.queryKey };
@@ -544,6 +553,7 @@ export function useSummaryInvocations(
     includeDuration?: boolean;
   } = {},
 ) {
+  const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi('query', '/query/invocations/summary', 'post', {
     baseUrl,
@@ -561,6 +571,7 @@ export function useSummaryInvocations(
     ...queryOptions,
     ...options,
     meta: { ...queryOptions.meta, ...getOverviewRefreshMeta() },
+    enabled: options?.enabled !== false && enabled,
   });
 
   return { ...results, queryKey: queryOptions.queryKey };
@@ -600,6 +611,7 @@ export function useServiceOpenApi(
   service: string,
   options?: HookQueryOptions<'/services/{service}/openapi', 'get'>,
 ) {
+  const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi('query', '/services/{service}/openapi', 'get', {
     baseUrl,
@@ -610,6 +622,7 @@ export function useServiceOpenApi(
     staleTime: 0,
     ...queryOptions,
     ...options,
+    enabled: options?.enabled !== false && enabled,
   });
 
   return { ...results, queryKey: queryOptions.queryKey };
@@ -644,6 +657,7 @@ export function useGetInvocation(
   invocationId: string,
   options?: HookQueryOptions<'/query/invocations/{invocationId}', 'get'>,
 ) {
+  const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi(
     'query',
@@ -658,6 +672,7 @@ export function useGetInvocation(
   const results = useQuery({
     ...queryOptions,
     ...options,
+    enabled: options?.enabled !== false && enabled,
   });
 
   return {
@@ -673,6 +688,7 @@ export function useGetPausedError(
     'get'
   >,
 ) {
+  const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi(
     'query',
@@ -687,6 +703,7 @@ export function useGetPausedError(
   const results = useQuery({
     ...queryOptions,
     ...options,
+    enabled: options?.enabled !== false && enabled,
   });
 
   return {
@@ -702,6 +719,7 @@ export function useGetInvocationJournal(
     'get'
   >,
 ) {
+  const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi(
     'query',
@@ -716,6 +734,7 @@ export function useGetInvocationJournal(
   const results = useQuery({
     ...queryOptions,
     ...options,
+    enabled: options?.enabled !== false && enabled,
   });
 
   return {
@@ -732,6 +751,7 @@ export function useGetInvocationJournalEntry(
     'get'
   >,
 ) {
+  const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi(
     'query',
@@ -747,6 +767,7 @@ export function useGetInvocationJournalEntry(
   const results = useQuery({
     ...queryOptions,
     ...options,
+    enabled: options?.enabled !== false && enabled,
   });
 
   return results;
@@ -760,6 +781,7 @@ export function useGetJournalEntryPayloads(
     'get'
   >,
 ) {
+  const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi(
     'query',
@@ -774,6 +796,7 @@ export function useGetJournalEntryPayloads(
   return useQuery({
     ...queryOptions,
     ...options,
+    enabled: options?.enabled !== false && enabled,
   });
 }
 
@@ -781,6 +804,7 @@ export function useGetInvocationJournalWithInvocationV2(
   invocationId: string,
   options?: HookQueryOptions<'/query/v2/invocations/{invocationId}', 'get'>,
 ) {
+  const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
   const query = adminApi(
     'query',
@@ -797,6 +821,7 @@ export function useGetInvocationJournalWithInvocationV2(
   const results = useQuery({
     ...query,
     ...options,
+    enabled: options?.enabled !== false && enabled,
   });
 
   return { queryKey: query.queryKey, ...results };
@@ -806,6 +831,7 @@ export function useGetInvocationsJournalWithInvocationsV2(
   invocationIds: string[],
   options?: HookQueryOptions<'/query/v2/invocations/{invocationId}', 'get'>,
 ) {
+  const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
   const invocationQueries = useMemo(
     () =>
@@ -889,7 +915,7 @@ export function useGetInvocationsJournalWithInvocationsV2(
         ...invocationQuery,
         ...options,
         refetchOnMount: options?.refetchOnMount !== false,
-        enabled: options?.enabled !== false,
+        enabled: options?.enabled !== false && enabled,
         staleTime: 0,
       })),
     ],
@@ -932,6 +958,7 @@ export function useGetVirtualObjectQueue(
     'get'
   >,
 ) {
+  const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi(
     'query',
@@ -946,6 +973,7 @@ export function useGetVirtualObjectQueue(
   const results = useQuery({
     ...queryOptions,
     ...options,
+    enabled: options?.enabled !== false && enabled,
   });
 
   return {
@@ -959,6 +987,7 @@ export function useGetVirtualObjectState(
   key: string,
   options?: HookQueryOptions<'/query/services/{name}/keys/{key}/state', 'get'>,
 ) {
+  const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi(
     'query',
@@ -973,6 +1002,7 @@ export function useGetVirtualObjectState(
   const results = useQuery({
     ...queryOptions,
     ...options,
+    enabled: options?.enabled !== false && enabled,
   });
 
   return {
@@ -986,6 +1016,7 @@ export function useGetVirtualObjectStateInterface(
   serviceKey: string[],
   options?: HookQueryOptions<'/query/services/{name}/state/keys', 'get'>,
 ) {
+  const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi(
     'query',
@@ -1003,6 +1034,7 @@ export function useGetVirtualObjectStateInterface(
   const results = useQuery({
     ...queryOptions,
     ...options,
+    enabled: options?.enabled !== false && enabled,
   });
 
   return {
@@ -1049,6 +1081,7 @@ export function useListVirtualObjectState(
   keys: string[],
   options?: HookQueryOptions<'/query/services/{name}/state', 'post'>,
 ) {
+  const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi(
     'query',
@@ -1067,7 +1100,7 @@ export function useListVirtualObjectState(
   const results = useQuery({
     ...queryOptions,
     ...options,
-    ...(keys.length === 0 && { enabled: false }),
+    enabled: keys.length > 0 && options?.enabled !== false && enabled,
   });
 
   return {
