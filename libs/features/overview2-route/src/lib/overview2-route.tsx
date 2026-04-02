@@ -269,6 +269,7 @@ function Component() {
     );
     queryClient.refetchQueries(
       {
+        type: 'active',
         predicate: isOverviewRefreshQuery,
       },
       {
