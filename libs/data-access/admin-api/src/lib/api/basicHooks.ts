@@ -5,10 +5,12 @@ import { HookQueryOptions } from './hookTypes';
 
 export function useVersion(options?: HookQueryOptions<'/version', 'get'>) {
   const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi('query', '/version', 'get', { baseUrl });
 
   return useQuery({
-    ...adminApi('query', '/version', 'get', { baseUrl }),
+    ...queryOptions,
     ...options,
+    meta: { ...queryOptions.meta, ...getOverviewRefreshMeta() },
   });
 }
 export function useHealth(options?: HookQueryOptions<'/health', 'get'>) {
@@ -17,13 +19,25 @@ export function useHealth(options?: HookQueryOptions<'/health', 'get'>) {
   return useQuery({
     ...queryOptions,
     ...options,
+    meta: { ...queryOptions.meta, ...getOverviewRefreshMeta() },
   });
 }
 
 const QUERY_HEALTH_META_TAG = 'query-health-check';
+const OVERVIEW_REFRESH_META_TAG = 'overviewRefresh';
 
 export function getQueryHealthCheckMeta() {
   return { [QUERY_HEALTH_META_TAG]: true };
+}
+
+export function getOverviewRefreshMeta() {
+  return { [OVERVIEW_REFRESH_META_TAG]: true } as const;
+}
+
+export function isOverviewRefreshQuery(query: {
+  meta?: Record<string, unknown>;
+}) {
+  return query.meta?.[OVERVIEW_REFRESH_META_TAG] === true;
 }
 
 export function useQueryHealthCheck(options?: {
@@ -42,6 +56,7 @@ export function useQueryHealthCheck(options?: {
     meta: {
       ...queryOptions.meta,
       ...getQueryHealthCheckMeta(),
+      ...getOverviewRefreshMeta(),
     },
     retry: false,
   });
