@@ -85,6 +85,7 @@ function InternalRestateContextProvider({
   OnboardingGuide,
   awsRolePolicy,
   identityKey,
+  queryHealthCheckEnabled = false,
 }: PropsWithChildren<{
   isPending?: boolean;
   ingressUrl?: string;
@@ -103,6 +104,7 @@ function InternalRestateContextProvider({
   identityKey?: { value: string; url?: string };
   awsRolePolicy?: { value: string; url?: string };
   systemHealthMonitor?: { reset: () => void; cleanup: () => void };
+  queryHealthCheckEnabled?: boolean;
 }>) {
   const { isSuccess, failureCount } = useHealth({
     enabled: !isPending,
@@ -147,7 +149,7 @@ function InternalRestateContextProvider({
   }, [queryClient]);
 
   useQueryHealthCheck({
-    enabled: status === 'HEALTHY',
+    enabled: queryHealthCheckEnabled && status === 'HEALTHY',
     refetchInterval: 60_000,
   });
 
@@ -194,6 +196,7 @@ export function RestateContextProvider({
   awsRolePolicy,
   identityKey,
   systemHealthMonitor,
+  queryHealthCheckEnabled = false,
 }: PropsWithChildren<{
   adminBaseUrl?: string;
   ingressUrl?: string;
@@ -217,6 +220,7 @@ export function RestateContextProvider({
   identityKey?: { value: string; url?: string };
   awsRolePolicy?: { value: string; url?: string };
   systemHealthMonitor?: { reset: () => void; cleanup: () => void };
+  queryHealthCheckEnabled?: boolean;
 }>) {
   useEffect(() => {
     return () => {
@@ -240,6 +244,7 @@ export function RestateContextProvider({
         awsRolePolicy={awsRolePolicy}
         identityKey={identityKey}
         systemHealthMonitor={systemHealthMonitor}
+        queryHealthCheckEnabled={queryHealthCheckEnabled}
       >
         {children}
       </InternalRestateContextProvider>

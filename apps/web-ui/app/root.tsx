@@ -219,6 +219,7 @@ export default function App() {
             adminBaseUrl={getCookieValue('adminBaseUrl')}
             GettingStarted={RestateGettingStarted}
             systemHealthMonitor={monitor}
+            queryHealthCheckEnabled
           >
             <BatchOperationsProvider>
               <EditState>
