@@ -24,6 +24,7 @@ type SummaryData = {
 };
 
 export interface SystemHealthMonitor {
+  reset: () => void;
   cleanup: () => void;
 }
 
@@ -100,12 +101,24 @@ export function createSystemHealthMonitor(
     }
   });
 
+  function clearTracked() {
+    closeKeys(tracked.sla);
+    tracked.sla = [];
+    if (tracked.queryHealth) {
+      issueQueue.close(tracked.queryHealth);
+      tracked.queryHealth = null;
+    }
+    for (const keys of tracked.additional.values()) closeKeys(keys);
+    tracked.additional.clear();
+  }
+
   return {
+    reset() {
+      clearTracked();
+    },
     cleanup() {
       unsubscribe();
-      closeKeys(tracked.sla);
-      if (tracked.queryHealth) issueQueue.close(tracked.queryHealth);
-      for (const keys of tracked.additional.values()) closeKeys(keys);
+      clearTracked();
     },
   };
 }

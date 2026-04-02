@@ -11,6 +11,7 @@ import {
   PropsWithChildren,
   useCallback,
   useContext,
+  useEffect,
 } from 'react';
 import semverGt from 'semver/functions/gte';
 import { base64ToUtf8OrOriginal, utf8ToBase64 } from '@restate/util/binary';
@@ -101,7 +102,7 @@ function InternalRestateContextProvider({
   isNew?: boolean;
   identityKey?: { value: string; url?: string };
   awsRolePolicy?: { value: string; url?: string };
-  systemHealthMonitor?: { cleanup: () => void };
+  systemHealthMonitor?: { reset: () => void; cleanup: () => void };
 }>) {
   const { isSuccess, failureCount } = useHealth({
     enabled: !isPending,
@@ -215,8 +216,14 @@ export function RestateContextProvider({
   isNew?: boolean;
   identityKey?: { value: string; url?: string };
   awsRolePolicy?: { value: string; url?: string };
-  systemHealthMonitor?: { cleanup: () => void };
+  systemHealthMonitor?: { reset: () => void; cleanup: () => void };
 }>) {
+  useEffect(() => {
+    return () => {
+      systemHealthMonitor?.reset();
+    };
+  }, [adminBaseUrl, systemHealthMonitor]);
+
   return (
     <AdminBaseURLProvider baseUrl={adminBaseUrl}>
       <InternalRestateContextProvider
