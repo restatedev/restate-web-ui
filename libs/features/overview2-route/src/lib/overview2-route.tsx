@@ -27,6 +27,7 @@ import {
   useIsMutating,
   useQueryClient,
 } from '@tanstack/react-query';
+import { isOverviewRefreshQuery } from '@restate/data-access/admin-api';
 import { TriggerRegisterDeploymentDialog } from '@restate/features/register-deployment';
 import { useFocusShortcut, FocusShortcutKey } from '@restate/ui/keyboard';
 import { formatNumber } from '@restate/util/intl';
@@ -266,9 +267,14 @@ function Component() {
       ],
       { duration: 400, easing: 'ease-in-out' },
     );
-    queryClient.refetchQueries(adminQueryPredicate, {
-      cancelRefetch: true,
-    });
+    queryClient.refetchQueries(
+      {
+        predicate: isOverviewRefreshQuery,
+      },
+      {
+        cancelRefetch: true,
+      },
+    );
   };
 
   if (isEmpty) {

@@ -14,7 +14,11 @@ import {
   useQueryClient,
   UseQueryResult,
 } from '@tanstack/react-query';
-import { adminApi, OperationParameters } from '@restate/data-access/admin-api';
+import {
+  adminApi,
+  OperationParameters,
+  getOverviewRefreshMeta,
+} from '@restate/data-access/admin-api';
 import { useAdminBaseUrl } from '@restate/data-access/admin-api';
 import type {
   DeploymentId,
@@ -127,6 +131,7 @@ export function useListDeployments(
   const results = useQuery({
     ...queryOptions,
     ...options,
+    meta: { ...queryOptions.meta, ...getOverviewRefreshMeta() },
     select: listDeploymentsSelector,
     enabled: options?.enabled !== false && enabled,
   });
@@ -428,6 +433,7 @@ export function useServiceDetails(
         };
       }),
     ...options,
+    meta: { ...queryOptions.meta, ...getOverviewRefreshMeta() },
   });
 
   return { ...results, queryKey: queryOptions.queryKey };
@@ -554,6 +560,7 @@ export function useSummaryInvocations(
     placeholderData: keepPreviousData,
     ...queryOptions,
     ...options,
+    meta: { ...queryOptions.meta, ...getOverviewRefreshMeta() },
   });
 
   return { ...results, queryKey: queryOptions.queryKey };
