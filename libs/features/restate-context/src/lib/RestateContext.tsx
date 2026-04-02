@@ -4,6 +4,7 @@ import {
   useHealth,
   useVersion,
   useQueryHealthCheck,
+  useAdminBaseUrl,
 } from '@restate/data-access/admin-api';
 import {
   ComponentType,
@@ -153,6 +154,13 @@ function InternalRestateContextProvider({
     refetchInterval: 60_000,
   });
 
+  const adminBaseUrl = useAdminBaseUrl();
+  useEffect(() => {
+    return () => {
+      systemHealthMonitor?.reset();
+    };
+  }, [adminBaseUrl, systemHealthMonitor]);
+
   return (
     <InternalRestateContext.Provider
       value={{
@@ -222,12 +230,6 @@ export function RestateContextProvider({
   systemHealthMonitor?: { reset: () => void; cleanup: () => void };
   queryHealthCheckEnabled?: boolean;
 }>) {
-  useEffect(() => {
-    return () => {
-      systemHealthMonitor?.reset();
-    };
-  }, [adminBaseUrl, systemHealthMonitor]);
-
   return (
     <AdminBaseURLProvider baseUrl={adminBaseUrl}>
       <InternalRestateContextProvider
