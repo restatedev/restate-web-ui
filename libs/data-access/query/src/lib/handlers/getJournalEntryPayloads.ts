@@ -53,6 +53,12 @@ type EntryJSON = {
         Failure?: { message?: string; code?: number };
       };
     };
+    SendSignal?: {
+      result?: {
+        Success?: number[];
+        Failure?: { message?: string; code?: number };
+      };
+    };
   };
   Notification?: {
     Completion?: {
@@ -299,8 +305,13 @@ function extractPayloads(
     case 'Command: GetLazyState':
     case 'Command: GetLazyStateKeys':
     case 'Command: Custom':
-    case 'Command: SendSignal':
       return undefined;
+
+    case 'Command: SendSignal': {
+      const sendSignal = entryJSON?.Command?.SendSignal;
+      const { value, failure } = parseResult(sendSignal?.result);
+      return { value, failure };
+    }
 
     // V2 Notifications WITHOUT payloads
     case 'Notification: Sleep':

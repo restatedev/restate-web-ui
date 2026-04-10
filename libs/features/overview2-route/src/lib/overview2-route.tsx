@@ -420,7 +420,7 @@ function Component() {
               />
             </div>
           </SearchField>
-          <TriggerRegisterDeploymentDialog className="justify-center py-1.5 md:ml-auto md:justify-normal" />
+          <TriggerRegisterDeploymentDialog className="mr-1.5 justify-center py-1.5 md:ml-auto md:justify-normal" />
         </div>
         <GridList
           aria-label="Services"

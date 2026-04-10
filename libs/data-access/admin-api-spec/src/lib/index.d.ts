@@ -2306,6 +2306,8 @@ export interface components {
         | components['schemas']['NotificationSleepJournalEntryV2']
         | components['schemas']['CompleteAwakeableJournalEntryV2']
         | components['schemas']['NotificationCompleteAwakeableJournalEntryV2']
+        | components['schemas']['NotificationSignalJournalEntryV2']
+        | components['schemas']['SendSignalJournalEntryV2']
         | components['schemas']['AwakeableJournalEntryV2']
         | components['schemas']['AttachInvocationJournalEntryV2']
         | components['schemas']['NotificationAttachInvocationJournalEntryV2']
@@ -2929,6 +2931,15 @@ export interface components {
       value?: string;
       id?: string;
     };
+    SendSignalJournalEntryV2: {
+      /** @enum {string} */
+      type?: 'SendSignal';
+      /** @enum {string} */
+      category?: 'command';
+      value?: string;
+      signalName?: string;
+      invocationId?: string;
+    };
     NotificationCompleteAwakeableJournalEntryV2: {
       /** @enum {string} */
       type?: 'CompleteAwakeable';
@@ -2936,6 +2947,14 @@ export interface components {
       category?: 'notification';
       value?: string;
       id?: string;
+    };
+    NotificationSignalJournalEntryV2: {
+      /** @enum {string} */
+      type?: 'Signal';
+      /** @enum {string} */
+      category?: 'notification';
+      value?: string;
+      signalName?: string;
     };
     NotificationCancelJournalEntryV2: {
       /** @enum {string} */

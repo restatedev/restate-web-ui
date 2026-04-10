@@ -3257,6 +3257,12 @@
                 "$ref": "#/components/schemas/NotificationCompleteAwakeableJournalEntryV2"
               },
               {
+                "$ref": "#/components/schemas/NotificationSignalJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/SendSignalJournalEntryV2"
+              },
+              {
                 "$ref": "#/components/schemas/AwakeableJournalEntryV2"
               },
               {
@@ -4509,6 +4515,16 @@
           "id": { "type": "string" }
         }
       },
+      "SendSignalJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "type": { "type": "string", "enum": ["SendSignal"] },
+          "category": { "type": "string", "enum": ["command"] },
+          "value": { "type": "string" },
+          "signalName": { "type": "string" },
+          "invocationId": { "type": "string" }
+        }
+      },
       "NotificationCompleteAwakeableJournalEntryV2": {
         "type": "object",
         "properties": {
@@ -4516,6 +4532,15 @@
           "category": { "type": "string", "enum": ["notification"] },
           "value": { "type": "string" },
           "id": { "type": "string" }
+        }
+      },
+      "NotificationSignalJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "type": { "type": "string", "enum": ["Signal"] },
+          "category": { "type": "string", "enum": ["notification"] },
+          "value": { "type": "string" },
+          "signalName": { "type": "string" }
         }
       },
       "NotificationCancelJournalEntryV2": {
