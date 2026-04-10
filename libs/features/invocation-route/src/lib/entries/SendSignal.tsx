@@ -1,8 +1,10 @@
 import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
 import { EntryProps } from './types';
-import { Expression } from '../Expression';
+import { Expression, InputOutput } from '../Expression';
 import { EntryExpression } from './EntryExpression';
 import { LazyJournalEntryPayload } from './LazyJournalEntryPayload';
+import { InvocationId } from '../InvocationId';
+import { Value } from '../Value';
 
 export function SendSignal({
   entry,
@@ -14,14 +16,32 @@ export function SendSignal({
     <EntryExpression
       entry={entry}
       invocation={invocation}
-      inputParams={[
-        {
-          paramName: 'signalName',
-          title: 'Signal name',
-          placeholderLabel: 'name',
-          shouldStringified: true,
-        },
-      ]}
+      input={
+        <>
+          {entry.invocationId && (
+            <InvocationId
+              id={entry.invocationId}
+              size="md"
+              className="max-w-[15ch] truncate px-0.5 text-2xs font-semibold text-gray-500 not-italic"
+            />
+          )}
+          {entry.invocationId && entry.signalName && ', '}
+          {entry.signalName && (
+            <InputOutput
+              name={JSON.stringify(entry.signalName)}
+              popoverTitle="Signal name"
+              popoverContent={
+                <Value
+                  value={entry.signalName}
+                  className="font-mono text-xs"
+                  showCopyButton
+                  portalId="expression-value"
+                />
+              }
+            />
+          )}
+        </>
+      }
       operationSymbol=""
       chain={
         <Expression
