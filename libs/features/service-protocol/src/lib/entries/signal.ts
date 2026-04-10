@@ -18,6 +18,7 @@ export function signal(
       { type?: 'CompleteAwakeable'; category?: 'notification' }
     >
   | Extract<JournalEntryV2, { type?: 'Cancel'; category?: 'notification' }>
+  | Extract<JournalEntryV2, { type?: 'Signal'; category?: 'notification' }>
   | JournalEntryV2 {
   const entryJSON = parseEntryJson(entry.entry_json);
   const entryLiteJSON = parseEntryJson(entry.entry_lite_json);
@@ -25,6 +26,10 @@ export function signal(
   const id: number | undefined = entry.entry_json
     ? entryJSON?.Notification?.Signal?.id?.Index
     : entryLiteJSON?.Notification?.id?.SignalIndex;
+
+  const signalName: string | undefined = entry.entry_json
+    ? entryJSON?.Notification?.Signal?.id?.Name
+    : entryLiteJSON?.Notification?.id?.SignalName;
 
   if (id === 1) {
     const { error, relatedIndexes } = getEntryResultV2(
@@ -52,6 +57,40 @@ export function signal(
     } as Extract<
       JournalEntryV2,
       { type?: 'Cancel'; category?: 'notification' }
+    >;
+  }
+
+  if (signalName) {
+    const result = entry.entry_json
+      ? entryJSON?.Notification?.Signal?.result
+      : entryLiteJSON?.Notification?.result;
+
+    const { error, resultType, value, isRetrying } = getEntryResultV2(
+      entry,
+      invocation,
+      nextEntries,
+      result,
+    );
+
+    return {
+      start: entry.appended_at,
+      isPending: false,
+      commandIndex: undefined,
+      type: 'Signal',
+      category: 'notification',
+      completionId: undefined,
+      end: undefined,
+      index: entry.index,
+      relatedIndexes: undefined,
+      isRetrying,
+      isLoaded: typeof entry.entry_json !== 'undefined',
+      error,
+      value,
+      resultType,
+      signalName,
+    } as Extract<
+      JournalEntryV2,
+      { type?: 'Signal'; category?: 'notification' }
     >;
   }
 
