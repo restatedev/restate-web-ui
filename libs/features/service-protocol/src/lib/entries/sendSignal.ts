@@ -80,10 +80,7 @@ export function sendSignal(
       resultType,
       signalName,
       invocationId,
-    } as Extract<
-      JournalEntryV2,
-      { type?: 'SendSignal'; category?: 'command' }
-    >;
+    } as Extract<JournalEntryV2, { type?: 'SendSignal'; category?: 'command' }>;
   }
 
   return entry as JournalEntryV2;
