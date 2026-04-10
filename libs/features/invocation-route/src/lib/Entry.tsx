@@ -14,6 +14,7 @@ import {
   CompleteAwakeable,
   CompleteAwakeableNotification,
 } from './entries/CompleteAwakeable';
+import { SignalNotification } from './entries/Signal';
 import { CompletionNotification } from './entries/CompletionNotification';
 import { TransientError } from './entries/TransientError';
 import { CompletePromise } from './entries/CompletePromise';
@@ -91,6 +92,7 @@ export const ENTRY_NOTIFICATIONS_COMPONENTS: {
   CallInvocationId: undefined,
   GetLazyState: undefined,
   GetLazyStateKeys: undefined,
+  Signal: SignalNotification,
 };
 
 export const ENTRY_EVENTS_COMPONENTS: {

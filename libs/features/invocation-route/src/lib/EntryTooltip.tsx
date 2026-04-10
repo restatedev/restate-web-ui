@@ -237,6 +237,7 @@ const ENTRY_NOTIFICATIONS_TITLES: {
   CompletePromise: 'Complete Promise completion at',
   GetLazyState: 'Get Lazy State completion at',
   GetLazyStateKeys: 'Get Lazy State Keys completion at',
+  Signal: 'Signal completion at',
 };
 
 export const ENTRY_EVENTS_TITLES: {

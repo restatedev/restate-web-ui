@@ -251,6 +251,7 @@ function getPointVariant(entry?: JournalEntryV2) {
         'CompleteAwakeable',
         'Run',
         'AttachInvocation',
+        'Signal',
       ].includes(String(entry?.type))) ||
     entry?.type === 'Output'
   ) {

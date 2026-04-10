@@ -105,7 +105,7 @@ export function EntryExpression({
   if (
     !entry ||
     (entry?.category !== 'command' &&
-      !['CompleteAwakeable', 'Cancel'].includes(String(entry?.type)))
+      !['CompleteAwakeable', 'Cancel', 'Signal'].includes(String(entry?.type)))
   ) {
     return null;
   }
