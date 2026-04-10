@@ -48,6 +48,7 @@ const NAME_COMMANDS_COMPONENTS: {
   CompletePromise: 'promise',
   GetLazyState: 'get',
   GetLazyStateKeys: 'keys',
+  SendSignal: 'signal',
 };
 
 export const RESTART_AS_NEW_INVOCATION_QUERY_PARAM = 'restart-new-invocation';

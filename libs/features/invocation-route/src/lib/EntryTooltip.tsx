@@ -221,6 +221,7 @@ const ENTRY_COMMANDS_TITLES: {
   CompletePromise: 'Complete Promise',
   GetLazyState: 'Get Lazy State',
   GetLazyStateKeys: 'Get Lazy State Keys',
+  SendSignal: 'Send Signal',
 };
 const ENTRY_NOTIFICATIONS_TITLES: {
   [K in NotificationEntryType]: string;

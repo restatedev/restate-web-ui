@@ -2307,6 +2307,7 @@ export interface components {
         | components['schemas']['CompleteAwakeableJournalEntryV2']
         | components['schemas']['NotificationCompleteAwakeableJournalEntryV2']
         | components['schemas']['NotificationSignalJournalEntryV2']
+        | components['schemas']['SendSignalJournalEntryV2']
         | components['schemas']['AwakeableJournalEntryV2']
         | components['schemas']['AttachInvocationJournalEntryV2']
         | components['schemas']['NotificationAttachInvocationJournalEntryV2']
@@ -2929,6 +2930,15 @@ export interface components {
       category?: 'command';
       value?: string;
       id?: string;
+    };
+    SendSignalJournalEntryV2: {
+      /** @enum {string} */
+      type?: 'SendSignal';
+      /** @enum {string} */
+      category?: 'command';
+      value?: string;
+      signalName?: string;
+      invocationId?: string;
     };
     NotificationCompleteAwakeableJournalEntryV2: {
       /** @enum {string} */

@@ -3260,6 +3260,9 @@
                 "$ref": "#/components/schemas/NotificationSignalJournalEntryV2"
               },
               {
+                "$ref": "#/components/schemas/SendSignalJournalEntryV2"
+              },
+              {
                 "$ref": "#/components/schemas/AwakeableJournalEntryV2"
               },
               {
@@ -4510,6 +4513,16 @@
           "category": { "type": "string", "enum": ["command"] },
           "value": { "type": "string" },
           "id": { "type": "string" }
+        }
+      },
+      "SendSignalJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "type": { "type": "string", "enum": ["SendSignal"] },
+          "category": { "type": "string", "enum": ["command"] },
+          "value": { "type": "string" },
+          "signalName": { "type": "string" },
+          "invocationId": { "type": "string" }
         }
       },
       "NotificationCompleteAwakeableJournalEntryV2": {

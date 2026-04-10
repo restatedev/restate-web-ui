@@ -37,6 +37,7 @@ const NAME_COMMANDS_COMPONENTS: {
   CompletePromise: 'promise',
   GetLazyState: 'get',
   GetLazyStateKeys: 'keys',
+  SendSignal: 'signal',
 };
 
 const CHAIN_COMMANDS_COMPONENTS: {
@@ -66,6 +67,7 @@ const CHAIN_COMMANDS_COMPONENTS: {
   CompletePromise: { failure: 'reject', success: 'resolve', void: '' },
   GetLazyState: undefined,
   GetLazyStateKeys: undefined,
+  SendSignal: { failure: 'reject', success: 'resolve', void: '' },
 };
 
 const styles = tv({ base: 'mr-2 overflow-hidden pr-0' });
