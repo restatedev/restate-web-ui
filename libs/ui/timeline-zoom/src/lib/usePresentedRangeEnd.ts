@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { startTransition, useEffect, useRef, useState } from 'react';
 
 export function usePresentedRangeEnd({
   actualEndMs,
@@ -52,15 +52,17 @@ export function usePresentedRangeEnd({
 
     let frame = 0;
     const tick = () => {
-      setPresentationHeadroomMs((currentHeadroomMs) => {
-        const anchorWallClockMs = lastAuthoritativeWallClockMsRef.current;
-        if (anchorWallClockMs === null) {
-          return currentHeadroomMs;
-        }
-        const nextHeadroomMs = Math.max(0, Date.now() - anchorWallClockMs);
-        return nextHeadroomMs === currentHeadroomMs
-          ? currentHeadroomMs
-          : nextHeadroomMs;
+      startTransition(() => {
+        setPresentationHeadroomMs((currentHeadroomMs) => {
+          const anchorWallClockMs = lastAuthoritativeWallClockMsRef.current;
+          if (anchorWallClockMs === null) {
+            return currentHeadroomMs;
+          }
+          const nextHeadroomMs = Math.max(0, Date.now() - anchorWallClockMs);
+          return nextHeadroomMs === currentHeadroomMs
+            ? currentHeadroomMs
+            : nextHeadroomMs;
+        });
       });
       frame = window.requestAnimationFrame(tick);
     };

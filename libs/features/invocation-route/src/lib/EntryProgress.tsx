@@ -7,7 +7,7 @@ import { formatDurations } from '@restate/util/intl';
 import { getDuration } from '@restate/util/snapshot-time';
 import { CSSProperties, PropsWithChildren } from 'react';
 import { tv } from '@restate/util/styles';
-import { useJournalContext } from './JournalContext';
+import { useJournalTimelineContext } from './JournalContext';
 import { Ellipsis } from '@restate/ui/loading';
 import { EntryTooltip } from './EntryTooltip';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -337,7 +337,7 @@ function InnerEntryProgress({
   >['data'];
   precomputedRelatedEntries?: JournalEntryV2[];
 }>) {
-  const { dataUpdatedAt, isLive, start, end } = useJournalContext();
+  const { dataUpdatedAt, isLive, start, end } = useJournalTimelineContext();
 
   if (!entry?.start) {
     return null;
@@ -549,7 +549,7 @@ export function EntryProgressContainer({
   >['data'];
   isCopiedFromRestart?: boolean;
 }>) {
-  const { start, end, dataUpdatedAt } = useJournalContext();
+  const { start, end, dataUpdatedAt } = useJournalTimelineContext();
 
   const rangeStart = start;
   const rangeEnd = end;

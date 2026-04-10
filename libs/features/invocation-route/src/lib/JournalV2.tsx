@@ -1,5 +1,13 @@
 import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
-import { Dispatch, lazy, Suspense, useCallback, useRef, useState } from 'react';
+import {
+  Dispatch,
+  lazy,
+  memo,
+  Suspense,
+  useCallback,
+  useRef,
+  useState,
+} from 'react';
 import type { VirtualItem } from '@tanstack/react-virtual';
 import { InvocationId } from './InvocationId';
 import { getDuration, SnapshotTimeProvider } from '@restate/util/snapshot-time';
@@ -811,7 +819,7 @@ function VirtualizedTimeline({
   );
 }
 
-function TimelineContainer({
+const TimelineContainer = memo(function TimelineContainer({
   entry,
   invocation,
   precomputedRelatedEntries,
@@ -833,4 +841,4 @@ function TimelineContainer({
       />
     </div>
   );
-}
+});

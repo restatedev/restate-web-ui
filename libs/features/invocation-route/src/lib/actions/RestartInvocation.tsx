@@ -217,7 +217,11 @@ function RestartInvocationContent() {
               ?.map((entry, index) => {
                 if (entry.type === 'Input') {
                   return (
-                    <ListBoxItem className="w-full max-w-xl" value={'0'}>
+                    <ListBoxItem
+                      className="w-full max-w-xl"
+                      value={'0'}
+                      key="input"
+                    >
                       <div>Beginning</div>
                       <div className="text-xs opacity-70">
                         (retains only the original input)
