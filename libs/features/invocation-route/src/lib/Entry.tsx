@@ -3,7 +3,7 @@ import {
   useGetPausedError,
 } from '@restate/data-access/admin-api-hooks';
 import type { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
-import { ComponentType } from 'react';
+import { ComponentType, memo } from 'react';
 import { AttachInvocation } from './entries/AttachInvocation';
 import { Awakeable } from './entries/Awakeable';
 import { Call } from './entries/Call';
@@ -39,7 +39,7 @@ import {
 import { Cancel } from './entries/Cancel';
 import { LifeCycle } from './entries/LifeCycle';
 import { NoCommandTransientError } from './entries/TransientError';
-import { useJournalContext } from './JournalContext';
+import { useJournalEntriesContext } from './JournalContext';
 import { tv } from '@restate/util/styles';
 
 export const ENTRY_COMMANDS_COMPONENTS: {
@@ -144,7 +144,7 @@ function isEntriesEqual(a?: JournalEntryV2, b?: JournalEntryV2) {
   );
 }
 
-export function Entry({
+export const Entry = memo(function Entry({
   invocation,
   entry,
   depth,
@@ -167,7 +167,7 @@ export function Entry({
   });
   const pausedRelatedCommandIndex = pausedErrorData?.relatedCommandIndex;
 
-  const { isCompact } = useJournalContext();
+  const { isCompact } = useJournalEntriesContext();
   const EntrySpecificComponent = (
     entry?.type
       ? entry.category === 'command'
@@ -290,4 +290,4 @@ export function Entry({
       </div>
     </div>
   );
-}
+});

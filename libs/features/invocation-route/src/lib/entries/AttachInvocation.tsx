@@ -3,7 +3,7 @@ import { EntryProps } from './types';
 import { InvocationId } from '../InvocationId';
 import { EntryExpression } from './EntryExpression';
 import { tv } from '@restate/util/styles';
-import { useIsCircularRef, useJournalContext } from '../JournalContext';
+import { useIsCircularRef, useJournalEntriesContext } from '../JournalContext';
 import { CallInvokedLoadingError } from './CallInvokedLoadingError';
 import { CircularRefWarning } from './CircularRefWarning';
 import { Button } from '@restate/ui/button';
@@ -28,7 +28,7 @@ export function AttachInvocation({
     isPending,
     invocationIds,
     error: invocationsError,
-  } = useJournalContext();
+  } = useJournalEntriesContext();
   const isCircularRef = useIsCircularRef(entry.invocationId, invocation?.id);
   const isExpanded =
     !isCircularRef &&

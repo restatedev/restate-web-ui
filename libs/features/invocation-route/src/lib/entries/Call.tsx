@@ -5,7 +5,7 @@ import { Target } from '../Target';
 import { InvocationId } from '../InvocationId';
 import { Spinner } from '@restate/ui/loading';
 import { tv } from '@restate/util/styles';
-import { useIsCircularRef, useJournalContext } from '../JournalContext';
+import { useIsCircularRef, useJournalEntriesContext } from '../JournalContext';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import { CallInvokedLoadingError } from './CallInvokedLoadingError';
@@ -30,7 +30,7 @@ export function Call({
     isPending,
     invocationIds,
     error: invocationsError,
-  } = useJournalContext();
+  } = useJournalEntriesContext();
   const isCircularRef = useIsCircularRef(entry.invocationId, invocation?.id);
   const isExpanded =
     !isCircularRef &&

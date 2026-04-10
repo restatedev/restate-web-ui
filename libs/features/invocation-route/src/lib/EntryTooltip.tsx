@@ -10,7 +10,7 @@ import {
 } from '@restate/util/intl';
 import { getDuration } from '@restate/util/snapshot-time';
 import { DOMAttributes, ReactElement } from 'react';
-import { useJournalContext } from './JournalContext';
+import { useJournalTimelineContext } from './JournalContext';
 import { HoverTooltip } from '@restate/ui/tooltip';
 import {
   CommandEntryType,
@@ -82,7 +82,7 @@ function EntryContent({
     !entryCompletionIsAmbiguous &&
     (!entry.isRetrying || invocation?.status !== 'backing-off');
   const isFinished = !!entry.end;
-  const { end } = useJournalContext();
+  const { end } = useJournalTimelineContext();
   const categoryTitles: Record<string, string> =
     entry.category === 'command'
       ? ENTRY_COMMANDS_TITLES
