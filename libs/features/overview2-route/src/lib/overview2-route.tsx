@@ -176,7 +176,7 @@ function OverviewContent() {
       { duration: 500, easing: 'ease-in-out' },
     );
     triggerRay();
-    triggerWave(serverRef, '[data-wave-card]');
+    triggerWave(serverRef, 'overview-card');
     issuesRef.current?.animate(
       [
         { transform: 'translateY(0)' },

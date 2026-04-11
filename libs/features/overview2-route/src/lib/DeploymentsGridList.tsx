@@ -4,9 +4,10 @@ import {
 } from '@restate/data-access/admin-api-spec';
 import { DEPLOYMENT_QUERY_PARAM } from '@restate/features/deployment';
 import { GridList, GridListItem } from '@restate/ui/grid-list';
-import { OverviewCard } from './OverviewCard';
+import { waveAnimationProps } from '@restate/ui/wave-animation';
 import { DeploymentServicesList } from './DeploymentServicesList';
 import { useOverviewContext } from './OverviewContext';
+import { OverviewCard } from './OverviewCard';
 import { cellsContainerStyles } from './cellsContainerStyles';
 import { useDeploymentColumns } from './columns';
 import {
@@ -71,7 +72,7 @@ export function DeploymentsGridList() {
 
             return (
               <OverviewCard
-                data-wave-card
+                {...waveAnimationProps('overview-card')}
                 cells={cells}
                 className={cellsContainerStyles({
                   isFocusVisible,

@@ -218,6 +218,7 @@
 - 2026-03-06 | self | Suspected infinite loop/hang during latest timeline-zoom tweak; rolled back `mode.ts`/`ticks.ts` delta-based coordinate-window/interval-step changes immediately and kept behavior at previous stable state for safety.
 
 - 2026-03-06 | self | When iterative visual tuning diverges, user prefers stepping back: revert code experiments first, then lock a detailed behavior spec before re-implementing.
+- 2026-04-11 | self | A shared `WaveAnimation` wrapper component made overview cards awkward because the feature only needed a DOM marker on the real card element. Prefer a small prop helper from the wave lib (`waveAnimationProps`) over wrapper components or base-card coupling when the concern is attribute-only.
 
 - 2026-03-06 | self | For stable live interval rendering, model intervals as a contiguous flex-row slot stream with buffered offscreen slots, and include the active slot even when only partially complete.
 
@@ -246,6 +247,7 @@
 - 2026-04-11 | self | If a route still ends up threading the same filter/sort/query-derived props into extracted view components, a route-scoped context/provider is a good next step. It keeps one subscription to the shared data while letting the route focus on page chrome and the children focus on their own rendering.
 - 2026-04-11 | self | Query param names can be short (`view`) while the code stays explicit with semantic module/type names (`overviewMode`). Keep the URL simple, and let internal naming carry the domain meaning.
 - 2026-04-11 | self | If a tiny helper module only exists to hold a closely related type/sort utility (like deployment-service sorting next to deployment sorting), prefer merging it into the existing domain helper file instead of keeping a second micro-file.
+- 2026-04-11 | self | If a feature invents a one-off wrapper like `OverviewAnimatedCard`, that usually belongs in the shared primitive library instead. Keep DOM-marker details (`data-*` selectors) inside the shared lib, and let features pass a simple semantic key like `overview-card`.
 
 - 2026-03-06 | self | In full-trace live view (`zoomLevel=1`), interval drift comes from slot width recomputation, not container transform. Keep slot/spacer `width` transitions enabled for live edge states, and don't gate edge animation solely on `canReturnToLive`.
 

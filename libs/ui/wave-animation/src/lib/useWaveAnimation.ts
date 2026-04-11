@@ -1,4 +1,5 @@
 import { type RefObject, useCallback } from 'react';
+import { getWaveAnimationSelector } from './waveAnimationProps';
 
 function createRing(parent: HTMLElement, delay: number) {
   const ring = document.createElement('div');
@@ -58,7 +59,7 @@ function bounceCard(card: HTMLElement, delay: number) {
 
 export function useWaveAnimation() {
   const triggerWave = useCallback(
-    (originRef: RefObject<HTMLElement | null>, targetSelector: string) => {
+    (originRef: RefObject<HTMLElement | null>, selector: string) => {
       const originEl = originRef.current;
       if (!originEl) return;
 
@@ -73,7 +74,9 @@ export function useWaveAnimation() {
           }
         }
 
-        const cards = document.querySelectorAll<HTMLElement>(targetSelector);
+        const cards = document.querySelectorAll<HTMLElement>(
+          getWaveAnimationSelector(selector),
+        );
         cards.forEach((card) => {
           const cardRect = card.getBoundingClientRect();
           const distance = cardRect.top - originCenterY;

@@ -4,13 +4,14 @@ import {
   type Service,
 } from '@restate/data-access/admin-api-spec';
 import { GridList, GridListItem } from '@restate/ui/grid-list';
+import { waveAnimationProps } from '@restate/ui/wave-animation';
 import {
   HANDLER_QUERY_PARAM,
   HandlerList,
   SERVICE_QUERY_PARAM,
 } from '@restate/features/service';
-import { OverviewCard } from './OverviewCard';
 import { useOverviewContext } from './OverviewContext';
+import { OverviewCard } from './OverviewCard';
 import { cellsContainerStyles } from './cellsContainerStyles';
 import { useServiceColumns } from './columns';
 import { sortServices } from './sortServices';
@@ -83,7 +84,7 @@ export function ServicesGridList() {
 
             return (
               <OverviewCard
-                data-wave-card
+                {...waveAnimationProps('overview-card')}
                 cells={cells}
                 className={cellsContainerStyles({
                   isFocusVisible,
