@@ -219,6 +219,8 @@
 
 - 2026-03-06 | self | When iterative visual tuning diverges, user prefers stepping back: revert code experiments first, then lock a detailed behavior spec before re-implementing.
 - 2026-04-11 | self | A shared `WaveAnimation` wrapper component made overview cards awkward because the feature only needed a DOM marker on the real card element. Prefer a small prop helper from the wave lib (`waveAnimationProps`) over wrapper components or base-card coupling when the concern is attribute-only.
+- 2026-04-11 | self | For icon-only segmented controls tied to search params, reusing the existing `Nav` active-indicator with local descendant styling and `sr-only` labels is simpler than inventing a separate toggle component or widening the shared nav API.
+- 2026-04-11 | self | When a feature already uses a shared search-param nav primitive, don’t replace it with custom links just to tune visuals. Keep `Nav`/`NavSearchItem` and tighten the indicator/container/item styling locally.
 
 - 2026-03-06 | self | For stable live interval rendering, model intervals as a contiguous flex-row slot stream with buffered offscreen slots, and include the active slot even when only partially complete.
 

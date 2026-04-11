@@ -21,10 +21,7 @@ import { ErrorBanner } from '@restate/ui/error';
 import { Button } from '@restate/ui/button';
 import { StatusArcEcharts, StatusLegend } from '@restate/features/status-chart';
 import { useWaveAnimation } from '@restate/ui/wave-animation';
-import {
-  OverviewProvider,
-  useOverviewContext,
-} from './OverviewContext';
+import { OverviewProvider, useOverviewContext } from './OverviewContext';
 import { useRestateServerStatus } from './useRestateServerStatus';
 import { NoDeploymentPlaceholder } from './NoDeploymentPlaceholder';
 import { TimeRangeToggle } from './TimeRangeToggle';
@@ -314,13 +311,14 @@ function OverviewContent() {
       </div>
 
       <div className="mt-8 flex min-h-0 w-full flex-1 flex-col">
-        <div className="mb-2 flex flex-col gap-2 px-5 xl:flex-row xl:items-center xl:justify-between">
-          <div className="flex flex-col gap-2 md:flex-row md:items-center">
+        <div className="mb-2 flex flex-col gap-2 px-5 md:flex-row md:items-center md:justify-between">
+          <div className="flex min-w-0 flex-auto items-center gap-2">
+            <OverviewModeToggle />
             <SearchField
               aria-label="Filter"
               value={filter}
               onChange={setFilter}
-              className="w-full outline-none md:max-w-[30ch] md:min-w-[30ch]"
+              className="min-w-0 flex-auto grow-1 outline-none md:grow-0 md:basis-[40ch]"
             >
               <Label className="sr-only">{filterPlaceholder}</Label>
               <div className="relative min-h-8.5">
@@ -339,15 +337,10 @@ function OverviewContent() {
                 />
               </div>
             </SearchField>
-            <OverviewModeToggle />
           </div>
-          <TriggerRegisterDeploymentDialog className="mr-1.5 justify-center py-1.5 md:ml-auto md:justify-normal" />
+          <TriggerRegisterDeploymentDialog className="mr-1.5 shrink-0 justify-center py-1.5 md:ml-auto md:justify-normal" />
         </div>
-        {mode === 'services' ? (
-          <ServicesGridList />
-        ) : (
-          <DeploymentsGridList />
-        )}
+        {mode === 'services' ? <ServicesGridList /> : <DeploymentsGridList />}
       </div>
     </div>
   );

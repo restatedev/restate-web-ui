@@ -33,6 +33,7 @@ export function NavItem({
   href,
   preserveSearchParams = false,
   disabled,
+  className,
 }: PropsWithChildren<NavItemProps>) {
   const location = useLocation();
   const isActive = location.pathname.startsWith(href);
@@ -45,7 +46,11 @@ export function NavItem({
     <AriaGridListItem
       textValue={typeof children === 'string' ? children : undefined}
       href={resolvedHref}
-      className={styles({ isCurrent: isActive, isDisabled: disabled })}
+      className={styles({
+        isCurrent: isActive,
+        isDisabled: disabled,
+        className,
+      })}
       data-active={isActive}
       {...(isActive && { 'aria-current': value })}
     >
@@ -57,6 +62,7 @@ export function NavItem({
 interface NavSearchItemProps {
   param: string;
   value?: string;
+  className?: string;
 }
 
 export function useGetHrefFromSearch() {
@@ -93,6 +99,7 @@ export function NavSearchItem({
   children,
   param,
   value,
+  className,
 }: PropsWithChildren<NavSearchItemProps>) {
   const getHref = useGetHrefFromSearch();
   const { href, isActive } = getHref(param, value);
@@ -102,7 +109,7 @@ export function NavSearchItem({
     <AriaGridListItem
       textValue={typeof children === 'string' ? children : undefined}
       href={href}
-      className={styles()}
+      className={styles({ className })}
       data-active={isActive}
       {...(isActive && { 'aria-current': ariaCurrentValue })}
     >
