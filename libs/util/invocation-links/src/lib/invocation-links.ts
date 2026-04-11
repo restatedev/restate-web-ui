@@ -67,6 +67,19 @@ export function toServiceInvocationsHref(
   return `${baseUrl}/invocations?${params.toString()}`;
 }
 
+export function toDeploymentInvocationsHref(
+  baseUrl: string,
+  deploymentId: string,
+  { existingParams }: { existingParams?: URLSearchParams } = {},
+) {
+  const params = buildParams(existingParams);
+  params.set(
+    'filter_deployment',
+    JSON.stringify({ operation: 'IN', value: [deploymentId] }),
+  );
+  return `${baseUrl}/invocations?${params.toString()}`;
+}
+
 export function toServiceStatusInvocationsHref(
   baseUrl: string,
   serviceName: string,
