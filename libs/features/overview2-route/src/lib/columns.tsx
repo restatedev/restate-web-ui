@@ -260,16 +260,24 @@ export function useDeploymentColumns({
             )
           }
           secondary={
-            <Link
-              href={toDeploymentInvocationsHref(baseUrl, deployment.id, {
-                existingParams: withoutCreatedAtFilter(linkParams),
-              })}
-              variant="secondary"
-              className="relative z-10 inline-flex w-auto min-w-0 items-center gap-0.5 truncate rounded-lg border-none bg-transparent px-1.5 py-0.5 text-0.5xs text-zinc-500 no-underline shadow-none hover:bg-black/3 hover:text-zinc-700"
-            >
-              Invocations
-              <Icon name={IconName.ChevronRight} className="h-4 w-4" />
-            </Link>
+            <>
+              {deployment.status === 'active' ? (
+                <Link
+                  href={toDeploymentInvocationsHref(baseUrl, deployment.id, {
+                    existingParams: withoutCreatedAtFilter(linkParams),
+                  })}
+                  variant="secondary"
+                  className="relative z-10 inline-flex w-auto min-w-0 items-center gap-0.5 truncate rounded-lg border-none bg-transparent px-1.5 py-0.5 text-0.5xs text-zinc-500 no-underline shadow-none hover:bg-black/3 hover:text-zinc-700"
+                >
+                  Invocations
+                  <Icon name={IconName.ChevronRight} className="h-4 w-4" />
+                </Link>
+              ) : (
+                <div>
+                  <br />
+                </div>
+              )}
+            </>
           }
         />
       ),
@@ -415,7 +423,7 @@ function DeploymentCreatedAt({ value }: { value: string }) {
   const createdAt = new Date(value);
 
   return (
-    <Badge className="w-full border-none bg-transparent pl-0">
+    <Badge className="w-full border-none bg-transparent pl-1.5">
       <span className="w-full truncate">
         <span className="font-normal text-zinc-500">{!isPast && 'in '}</span>
         <DateTooltip date={createdAt} title="Created at">
