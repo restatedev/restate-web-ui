@@ -8,6 +8,7 @@ export const DEFAULT_INVOCATION_COLUMNS = [
 ];
 
 const FAILED_SUBSTATES = ['failed', 'cancelled', 'killed'];
+const NON_IN_FLIGHT_STATUSES = ['succeeded', 'failed', 'cancelled', 'killed'];
 
 function resolveStatuses(statusName: string, expandFailed = true): string[] {
   if (expandFailed && statusName === 'failed') return FAILED_SUBSTATES;
@@ -70,13 +71,25 @@ export function toServiceInvocationsHref(
 export function toDeploymentInvocationsHref(
   baseUrl: string,
   deploymentId: string,
-  { existingParams }: { existingParams?: URLSearchParams } = {},
+  {
+    existingParams,
+    inFlightOnly = false,
+  }: { existingParams?: URLSearchParams; inFlightOnly?: boolean } = {},
 ) {
   const params = buildParams(existingParams);
   params.set(
     'filter_deployment',
     JSON.stringify({ operation: 'IN', value: [deploymentId] }),
   );
+  if (inFlightOnly) {
+    params.set(
+      'filter_status',
+      JSON.stringify({
+        operation: 'NOT_IN',
+        value: NON_IN_FLIGHT_STATUSES,
+      }),
+    );
+  }
   return `${baseUrl}/invocations?${params.toString()}`;
 }
 

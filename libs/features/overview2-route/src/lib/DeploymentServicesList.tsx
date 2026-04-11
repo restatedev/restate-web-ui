@@ -39,7 +39,7 @@ function DeploymentServiceItem({
       <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border bg-white shadow-xs">
         <Icon name={IconName.Box} className="h-full w-full p-1 text-zinc-400" />
       </div>
-      <div className="flex max-w-full min-w-0 items-center gap-1.5 text-0.5xs font-medium text-zinc-600">
+      <div className="flex max-w-full min-w-0 items-center gap-1.5 pl-0.5 text-0.5xs font-medium text-zinc-600">
         <TruncateWithTooltip copyText={service.name} triggerRef={linkRef}>
           <span className="truncate">{service.name}</span>
         </TruncateWithTooltip>

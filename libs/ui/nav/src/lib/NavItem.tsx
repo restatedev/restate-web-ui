@@ -9,6 +9,7 @@ interface NavItemProps {
   href: string;
   preserveSearchParams?: boolean | string[];
   disabled?: boolean;
+  className?: string;
 }
 
 const styles = tv({
