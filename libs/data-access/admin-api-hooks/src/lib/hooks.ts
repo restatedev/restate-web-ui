@@ -120,6 +120,16 @@ function listDeploymentsSelector(
   return { services, deployments, sortedServiceNames };
 }
 
+function listDrainedDeploymentsSelector(
+  data:
+    | {
+        deployment_ids?: string[];
+      }
+    | undefined,
+) {
+  return new Set(data?.deployment_ids ?? []);
+}
+
 export function useListDeployments(
   options?: HookQueryOptions<'/deployments', 'get'>,
 ) {
@@ -179,6 +189,7 @@ export function useListDrainedDeployments(
     ...queryOptions,
     ...options,
     meta: { ...queryOptions.meta, ...getOverviewRefreshMeta() },
+    select: listDrainedDeploymentsSelector,
     enabled: options?.enabled !== false && enabled,
   });
 

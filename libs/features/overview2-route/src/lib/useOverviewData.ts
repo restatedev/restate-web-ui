@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import {
+  useListDrainedDeployments,
   useListDeployments,
   useListServices,
   useSummaryInvocations,
@@ -27,6 +28,10 @@ export function useOverviewData(filters: FilterItem[] = []) {
     error: summaryError,
     queryKey: summaryQueryKey,
   } = useSummaryInvocations(filters, { sampled: false });
+  const {
+    data: drainedDeploymentIds = new Set(),
+    isPending: isDeploymentStatusLoading,
+  } = useListDrainedDeployments();
   const summaryData = isSummaryError ? undefined : rawSummaryData;
 
   const { isNew, isVersionGte } = useRestateContext();
@@ -82,6 +87,8 @@ export function useOverviewData(filters: FilterItem[] = []) {
     totalCount,
     invocationCounts,
     serviceIssuesMap,
+    drainedDeploymentIds,
+    isDeploymentStatusLoading,
     isSummaryLoading,
     isSummaryError,
     summaryError,
