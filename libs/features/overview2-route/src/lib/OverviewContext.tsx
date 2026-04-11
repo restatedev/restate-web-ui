@@ -23,10 +23,10 @@ import { toCreatedAfterParam } from '@restate/util/invocation-links';
 import { useOverviewData } from './useOverviewData';
 import { useRangeFilters } from './useRangeFilters';
 import {
-  getOverviewView,
-  OVERVIEW_VIEW_PARAM,
-  type OverviewView,
-} from './overviewView';
+  getOverviewMode,
+  OVERVIEW_MODE_PARAM,
+  type OverviewMode,
+} from './overviewMode';
 
 const PRESERVE_PARAMS = [
   SERVICE_PLAYGROUND_QUERY_PARAM,
@@ -46,7 +46,7 @@ type OverviewContextValue = ReturnType<typeof useOverviewData> & {
   resolvedDeploymentSortDescriptor: SortDescriptor;
   setServiceSortDescriptor: Dispatch<SetStateAction<SortDescriptor | null>>;
   setDeploymentSortDescriptor: Dispatch<SetStateAction<SortDescriptor | null>>;
-  view: OverviewView;
+  mode: OverviewMode;
 };
 
 const OverviewContext = createContext<OverviewContextValue>(null as never);
@@ -54,7 +54,7 @@ const OverviewContext = createContext<OverviewContextValue>(null as never);
 export function OverviewProvider({ children }: { children: ReactNode }) {
   const rangeFilters = useRangeFilters();
   const [searchParams] = useSearchParams();
-  const view = getOverviewView(searchParams.get(OVERVIEW_VIEW_PARAM));
+  const mode = getOverviewMode(searchParams.get(OVERVIEW_MODE_PARAM));
   const overviewData = useOverviewData(rangeFilters);
   const { baseUrl } = useRestateContext();
 
@@ -112,7 +112,7 @@ export function OverviewProvider({ children }: { children: ReactNode }) {
       resolvedDeploymentSortDescriptor,
       setServiceSortDescriptor,
       setDeploymentSortDescriptor,
-      view,
+      mode,
     }),
     [
       overviewData,
@@ -121,7 +121,7 @@ export function OverviewProvider({ children }: { children: ReactNode }) {
       linkParams,
       resolvedServiceSortDescriptor,
       resolvedDeploymentSortDescriptor,
-      view,
+      mode,
     ],
   );
 
