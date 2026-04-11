@@ -7,7 +7,9 @@
   "paths": {
     "/cluster-health": {
       "get": {
-        "tags": ["cluster_health"],
+        "tags": [
+          "cluster_health"
+        ],
         "summary": "Cluster state endpoint",
         "operationId": "cluster_health",
         "responses": {
@@ -47,7 +49,9 @@
     },
     "/deployments": {
       "get": {
-        "tags": ["deployment"],
+        "tags": [
+          "deployment"
+        ],
         "summary": "List deployments",
         "description": "Returns a list of all registered deployments, including their endpoints and associated services.",
         "operationId": "list_deployments",
@@ -65,7 +69,9 @@
         }
       },
       "post": {
-        "tags": ["deployment"],
+        "tags": [
+          "deployment"
+        ],
         "summary": "Register deployment",
         "description": "Registers a new deployment (HTTP or Lambda). Restate will invoke the endpoint to discover available services and handlers,\nand make them available for invocation. For more information, see the [deployment documentation](https://docs.restate.dev/services/versioning#registering-a-deployment).",
         "operationId": "create_deployment",
@@ -136,7 +142,9 @@
     },
     "/deployments/{deployment}": {
       "get": {
-        "tags": ["deployment"],
+        "tags": [
+          "deployment"
+        ],
         "summary": "Get deployment",
         "description": "Returns detailed information about a registered deployment, including deployment metadata and the services it exposes.",
         "operationId": "get_deployment",
@@ -180,7 +188,9 @@
         }
       },
       "delete": {
-        "tags": ["deployment"],
+        "tags": [
+          "deployment"
+        ],
         "summary": "Delete deployment",
         "description": "Delete a deployment. Currently, only forced deletions are supported.\n**Use with caution**: forcing a deployment deletion can break in-flight invocations.",
         "operationId": "delete_deployment",
@@ -200,7 +210,10 @@
             "description": "If true, the deployment will be forcefully deleted. This might break in-flight invocations, use with caution.",
             "required": false,
             "schema": {
-              "type": ["boolean", "null"]
+              "type": [
+                "boolean",
+                "null"
+              ]
             }
           }
         ],
@@ -236,7 +249,9 @@
         }
       },
       "patch": {
-        "tags": ["deployment"],
+        "tags": [
+          "deployment"
+        ],
         "summary": "Update deployment",
         "description": "Updates an existing deployment configuration, such as the endpoint address or invocation headers.\nBy default, service schemas are not re-discovered. Set `overwrite: true` to trigger re-discovery.",
         "operationId": "update_deployment",
@@ -292,7 +307,9 @@
     },
     "/health": {
       "get": {
-        "tags": ["health"],
+        "tags": [
+          "health"
+        ],
         "summary": "Health check endpoint",
         "operationId": "health",
         "responses": {
@@ -304,7 +321,9 @@
     },
     "/invocations/{invocation_id}/cancel": {
       "patch": {
-        "tags": ["invocation"],
+        "tags": [
+          "invocation"
+        ],
         "summary": "Cancel an invocation",
         "description": "Gracefully cancels an invocation. The invocation is terminated, but its progress is persisted, allowing consistency guarantees to be maintained.\nFor more information, see the [cancellation documentation](https://docs.restate.dev/services/invocation/managing-invocations#cancel).",
         "operationId": "cancel_invocation",
@@ -333,13 +352,18 @@
                 "schema": {
                   "type": "object",
                   "description": "# Error description response\n\nError details of the response",
-                  "required": ["message"],
+                  "required": [
+                    "message"
+                  ],
                   "properties": {
                     "message": {
                       "type": "string"
                     },
                     "restate_code": {
-                      "type": ["string", "null"],
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "description": "# Restate code\n\nRestate error code describing this error"
                     }
                   }
@@ -354,13 +378,18 @@
                 "schema": {
                   "type": "object",
                   "description": "# Error description response\n\nError details of the response",
-                  "required": ["message"],
+                  "required": [
+                    "message"
+                  ],
                   "properties": {
                     "message": {
                       "type": "string"
                     },
                     "restate_code": {
-                      "type": ["string", "null"],
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "description": "# Restate code\n\nRestate error code describing this error"
                     }
                   }
@@ -375,13 +404,18 @@
                 "schema": {
                   "type": "object",
                   "description": "# Error description response\n\nError details of the response",
-                  "required": ["message"],
+                  "required": [
+                    "message"
+                  ],
                   "properties": {
                     "message": {
                       "type": "string"
                     },
                     "restate_code": {
-                      "type": ["string", "null"],
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "description": "# Restate code\n\nRestate error code describing this error"
                     }
                   }
@@ -396,13 +430,18 @@
                 "schema": {
                   "type": "object",
                   "description": "# Error description response\n\nError details of the response",
-                  "required": ["message"],
+                  "required": [
+                    "message"
+                  ],
                   "properties": {
                     "message": {
                       "type": "string"
                     },
                     "restate_code": {
-                      "type": ["string", "null"],
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "description": "# Restate code\n\nRestate error code describing this error"
                     }
                   }
@@ -415,7 +454,9 @@
     },
     "/invocations/{invocation_id}/kill": {
       "patch": {
-        "tags": ["invocation"],
+        "tags": [
+          "invocation"
+        ],
         "summary": "Kill an invocation",
         "description": "Forcefully terminates an invocation. **Warning**: This operation does not guarantee consistency for virtual object instance state,\nin-flight invocations to other services, or other side effects. Use with caution.\nFor more information, see the [cancellation documentation](https://docs.restate.dev/services/invocation/managing-invocations#kill).",
         "operationId": "kill_invocation",
@@ -441,13 +482,18 @@
                 "schema": {
                   "type": "object",
                   "description": "# Error description response\n\nError details of the response",
-                  "required": ["message"],
+                  "required": [
+                    "message"
+                  ],
                   "properties": {
                     "message": {
                       "type": "string"
                     },
                     "restate_code": {
-                      "type": ["string", "null"],
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "description": "# Restate code\n\nRestate error code describing this error"
                     }
                   }
@@ -462,13 +508,18 @@
                 "schema": {
                   "type": "object",
                   "description": "# Error description response\n\nError details of the response",
-                  "required": ["message"],
+                  "required": [
+                    "message"
+                  ],
                   "properties": {
                     "message": {
                       "type": "string"
                     },
                     "restate_code": {
-                      "type": ["string", "null"],
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "description": "# Restate code\n\nRestate error code describing this error"
                     }
                   }
@@ -483,13 +534,18 @@
                 "schema": {
                   "type": "object",
                   "description": "# Error description response\n\nError details of the response",
-                  "required": ["message"],
+                  "required": [
+                    "message"
+                  ],
                   "properties": {
                     "message": {
                       "type": "string"
                     },
                     "restate_code": {
-                      "type": ["string", "null"],
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "description": "# Restate code\n\nRestate error code describing this error"
                     }
                   }
@@ -504,13 +560,18 @@
                 "schema": {
                   "type": "object",
                   "description": "# Error description response\n\nError details of the response",
-                  "required": ["message"],
+                  "required": [
+                    "message"
+                  ],
                   "properties": {
                     "message": {
                       "type": "string"
                     },
                     "restate_code": {
-                      "type": ["string", "null"],
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "description": "# Restate code\n\nRestate error code describing this error"
                     }
                   }
@@ -523,7 +584,9 @@
     },
     "/invocations/{invocation_id}/pause": {
       "patch": {
-        "tags": ["invocation"],
+        "tags": [
+          "invocation"
+        ],
         "summary": "Pause an invocation",
         "operationId": "pause_invocation",
         "parameters": [
@@ -551,13 +614,18 @@
                 "schema": {
                   "type": "object",
                   "description": "# Error description response\n\nError details of the response",
-                  "required": ["message"],
+                  "required": [
+                    "message"
+                  ],
                   "properties": {
                     "message": {
                       "type": "string"
                     },
                     "restate_code": {
-                      "type": ["string", "null"],
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "description": "# Restate code\n\nRestate error code describing this error"
                     }
                   }
@@ -572,13 +640,18 @@
                 "schema": {
                   "type": "object",
                   "description": "# Error description response\n\nError details of the response",
-                  "required": ["message"],
+                  "required": [
+                    "message"
+                  ],
                   "properties": {
                     "message": {
                       "type": "string"
                     },
                     "restate_code": {
-                      "type": ["string", "null"],
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "description": "# Restate code\n\nRestate error code describing this error"
                     }
                   }
@@ -593,13 +666,18 @@
                 "schema": {
                   "type": "object",
                   "description": "# Error description response\n\nError details of the response",
-                  "required": ["message"],
+                  "required": [
+                    "message"
+                  ],
                   "properties": {
                     "message": {
                       "type": "string"
                     },
                     "restate_code": {
-                      "type": ["string", "null"],
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "description": "# Restate code\n\nRestate error code describing this error"
                     }
                   }
@@ -614,13 +692,18 @@
                 "schema": {
                   "type": "object",
                   "description": "# Error description response\n\nError details of the response",
-                  "required": ["message"],
+                  "required": [
+                    "message"
+                  ],
                   "properties": {
                     "message": {
                       "type": "string"
                     },
                     "restate_code": {
-                      "type": ["string", "null"],
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "description": "# Restate code\n\nRestate error code describing this error"
                     }
                   }
@@ -633,7 +716,9 @@
     },
     "/invocations/{invocation_id}/purge": {
       "patch": {
-        "tags": ["invocation"],
+        "tags": [
+          "invocation"
+        ],
         "summary": "Purge a completed invocation",
         "description": "Deletes all state associated with a completed invocation, including its journal and metadata.\nThis operation only applies to invocations that have already completed. For more information,\nsee the [purging documentation](https://docs.restate.dev/services/invocation/managing-invocations#purge).",
         "operationId": "purge_invocation",
@@ -659,13 +744,18 @@
                 "schema": {
                   "type": "object",
                   "description": "# Error description response\n\nError details of the response",
-                  "required": ["message"],
+                  "required": [
+                    "message"
+                  ],
                   "properties": {
                     "message": {
                       "type": "string"
                     },
                     "restate_code": {
-                      "type": ["string", "null"],
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "description": "# Restate code\n\nRestate error code describing this error"
                     }
                   }
@@ -680,13 +770,18 @@
                 "schema": {
                   "type": "object",
                   "description": "# Error description response\n\nError details of the response",
-                  "required": ["message"],
+                  "required": [
+                    "message"
+                  ],
                   "properties": {
                     "message": {
                       "type": "string"
                     },
                     "restate_code": {
-                      "type": ["string", "null"],
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "description": "# Restate code\n\nRestate error code describing this error"
                     }
                   }
@@ -701,13 +796,18 @@
                 "schema": {
                   "type": "object",
                   "description": "# Error description response\n\nError details of the response",
-                  "required": ["message"],
+                  "required": [
+                    "message"
+                  ],
                   "properties": {
                     "message": {
                       "type": "string"
                     },
                     "restate_code": {
-                      "type": ["string", "null"],
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "description": "# Restate code\n\nRestate error code describing this error"
                     }
                   }
@@ -722,13 +822,18 @@
                 "schema": {
                   "type": "object",
                   "description": "# Error description response\n\nError details of the response",
-                  "required": ["message"],
+                  "required": [
+                    "message"
+                  ],
                   "properties": {
                     "message": {
                       "type": "string"
                     },
                     "restate_code": {
-                      "type": ["string", "null"],
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "description": "# Restate code\n\nRestate error code describing this error"
                     }
                   }
@@ -741,7 +846,9 @@
     },
     "/invocations/{invocation_id}/purge-journal": {
       "patch": {
-        "tags": ["invocation"],
+        "tags": [
+          "invocation"
+        ],
         "summary": "Purge invocation journal",
         "description": "Deletes only the journal entries for a completed invocation, while retaining its metadata.\nThis operation only applies to invocations that have already completed.",
         "operationId": "purge_journal",
@@ -767,13 +874,18 @@
                 "schema": {
                   "type": "object",
                   "description": "# Error description response\n\nError details of the response",
-                  "required": ["message"],
+                  "required": [
+                    "message"
+                  ],
                   "properties": {
                     "message": {
                       "type": "string"
                     },
                     "restate_code": {
-                      "type": ["string", "null"],
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "description": "# Restate code\n\nRestate error code describing this error"
                     }
                   }
@@ -788,13 +900,18 @@
                 "schema": {
                   "type": "object",
                   "description": "# Error description response\n\nError details of the response",
-                  "required": ["message"],
+                  "required": [
+                    "message"
+                  ],
                   "properties": {
                     "message": {
                       "type": "string"
                     },
                     "restate_code": {
-                      "type": ["string", "null"],
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "description": "# Restate code\n\nRestate error code describing this error"
                     }
                   }
@@ -809,13 +926,18 @@
                 "schema": {
                   "type": "object",
                   "description": "# Error description response\n\nError details of the response",
-                  "required": ["message"],
+                  "required": [
+                    "message"
+                  ],
                   "properties": {
                     "message": {
                       "type": "string"
                     },
                     "restate_code": {
-                      "type": ["string", "null"],
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "description": "# Restate code\n\nRestate error code describing this error"
                     }
                   }
@@ -830,13 +952,18 @@
                 "schema": {
                   "type": "object",
                   "description": "# Error description response\n\nError details of the response",
-                  "required": ["message"],
+                  "required": [
+                    "message"
+                  ],
                   "properties": {
                     "message": {
                       "type": "string"
                     },
                     "restate_code": {
-                      "type": ["string", "null"],
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "description": "# Restate code\n\nRestate error code describing this error"
                     }
                   }
@@ -849,7 +976,9 @@
     },
     "/invocations/{invocation_id}/restart-as-new": {
       "patch": {
-        "tags": ["invocation"],
+        "tags": [
+          "invocation"
+        ],
         "summary": "Restart invocation as new",
         "description": "Creates a new invocation from a completed invocation, optionally copying partial progress from the original invocation's journal.\nThe new invocation will have a different invocation ID. Use the `from` parameter to specify how much of the original journal to preserve.",
         "operationId": "restart_as_new_invocation",
@@ -893,15 +1022,21 @@
                   "oneOf": [
                     {
                       "type": "string",
-                      "enum": ["Keep"]
+                      "enum": [
+                        "Keep"
+                      ]
                     },
                     {
                       "type": "string",
-                      "enum": ["Latest"]
+                      "enum": [
+                        "Latest"
+                      ]
                     },
                     {
                       "type": "object",
-                      "required": ["Id"],
+                      "required": [
+                        "Id"
+                      ],
                       "properties": {
                         "Id": {
                           "type": "string"
@@ -932,13 +1067,18 @@
                 "schema": {
                   "type": "object",
                   "description": "# Error description response\n\nError details of the response",
-                  "required": ["message"],
+                  "required": [
+                    "message"
+                  ],
                   "properties": {
                     "message": {
                       "type": "string"
                     },
                     "restate_code": {
-                      "type": ["string", "null"],
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "description": "# Restate code\n\nRestate error code describing this error"
                     }
                   }
@@ -953,13 +1093,18 @@
                 "schema": {
                   "type": "object",
                   "description": "# Error description response\n\nError details of the response",
-                  "required": ["message"],
+                  "required": [
+                    "message"
+                  ],
                   "properties": {
                     "message": {
                       "type": "string"
                     },
                     "restate_code": {
-                      "type": ["string", "null"],
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "description": "# Restate code\n\nRestate error code describing this error"
                     }
                   }
@@ -974,13 +1119,18 @@
                 "schema": {
                   "type": "object",
                   "description": "# Error description response\n\nError details of the response",
-                  "required": ["message"],
+                  "required": [
+                    "message"
+                  ],
                   "properties": {
                     "message": {
                       "type": "string"
                     },
                     "restate_code": {
-                      "type": ["string", "null"],
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "description": "# Restate code\n\nRestate error code describing this error"
                     }
                   }
@@ -995,13 +1145,18 @@
                 "schema": {
                   "type": "object",
                   "description": "# Error description response\n\nError details of the response",
-                  "required": ["message"],
+                  "required": [
+                    "message"
+                  ],
                   "properties": {
                     "message": {
                       "type": "string"
                     },
                     "restate_code": {
-                      "type": ["string", "null"],
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "description": "# Restate code\n\nRestate error code describing this error"
                     }
                   }
@@ -1016,13 +1171,18 @@
                 "schema": {
                   "type": "object",
                   "description": "# Error description response\n\nError details of the response",
-                  "required": ["message"],
+                  "required": [
+                    "message"
+                  ],
                   "properties": {
                     "message": {
                       "type": "string"
                     },
                     "restate_code": {
-                      "type": ["string", "null"],
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "description": "# Restate code\n\nRestate error code describing this error"
                     }
                   }
@@ -1037,13 +1197,18 @@
                 "schema": {
                   "type": "object",
                   "description": "# Error description response\n\nError details of the response",
-                  "required": ["message"],
+                  "required": [
+                    "message"
+                  ],
                   "properties": {
                     "message": {
                       "type": "string"
                     },
                     "restate_code": {
-                      "type": ["string", "null"],
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "description": "# Restate code\n\nRestate error code describing this error"
                     }
                   }
@@ -1058,13 +1223,18 @@
                 "schema": {
                   "type": "object",
                   "description": "# Error description response\n\nError details of the response",
-                  "required": ["message"],
+                  "required": [
+                    "message"
+                  ],
                   "properties": {
                     "message": {
                       "type": "string"
                     },
                     "restate_code": {
-                      "type": ["string", "null"],
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "description": "# Restate code\n\nRestate error code describing this error"
                     }
                   }
@@ -1077,7 +1247,9 @@
     },
     "/invocations/{invocation_id}/resume": {
       "patch": {
-        "tags": ["invocation"],
+        "tags": [
+          "invocation"
+        ],
         "summary": "Resume an invocation",
         "description": "Resumes a paused or suspended invocation. If the invocation is backing off due to a retry, this will immediately trigger the retry.\nOptionally, you can change the deployment ID that will be used when the invocation resumes. For more information see [resume documentation](https://docs.restate.dev/services/invocation/managing-invocations#resume)",
         "operationId": "resume_invocation",
@@ -1105,15 +1277,21 @@
                   "oneOf": [
                     {
                       "type": "string",
-                      "enum": ["Keep"]
+                      "enum": [
+                        "Keep"
+                      ]
                     },
                     {
                       "type": "string",
-                      "enum": ["Latest"]
+                      "enum": [
+                        "Latest"
+                      ]
                     },
                     {
                       "type": "object",
-                      "required": ["Id"],
+                      "required": [
+                        "Id"
+                      ],
                       "properties": {
                         "Id": {
                           "type": "string"
@@ -1137,13 +1315,18 @@
                 "schema": {
                   "type": "object",
                   "description": "# Error description response\n\nError details of the response",
-                  "required": ["message"],
+                  "required": [
+                    "message"
+                  ],
                   "properties": {
                     "message": {
                       "type": "string"
                     },
                     "restate_code": {
-                      "type": ["string", "null"],
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "description": "# Restate code\n\nRestate error code describing this error"
                     }
                   }
@@ -1158,13 +1341,18 @@
                 "schema": {
                   "type": "object",
                   "description": "# Error description response\n\nError details of the response",
-                  "required": ["message"],
+                  "required": [
+                    "message"
+                  ],
                   "properties": {
                     "message": {
                       "type": "string"
                     },
                     "restate_code": {
-                      "type": ["string", "null"],
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "description": "# Restate code\n\nRestate error code describing this error"
                     }
                   }
@@ -1179,13 +1367,18 @@
                 "schema": {
                   "type": "object",
                   "description": "# Error description response\n\nError details of the response",
-                  "required": ["message"],
+                  "required": [
+                    "message"
+                  ],
                   "properties": {
                     "message": {
                       "type": "string"
                     },
                     "restate_code": {
-                      "type": ["string", "null"],
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "description": "# Restate code\n\nRestate error code describing this error"
                     }
                   }
@@ -1200,13 +1393,18 @@
                 "schema": {
                   "type": "object",
                   "description": "# Error description response\n\nError details of the response",
-                  "required": ["message"],
+                  "required": [
+                    "message"
+                  ],
                   "properties": {
                     "message": {
                       "type": "string"
                     },
                     "restate_code": {
-                      "type": ["string", "null"],
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "description": "# Restate code\n\nRestate error code describing this error"
                     }
                   }
@@ -1221,13 +1419,18 @@
                 "schema": {
                   "type": "object",
                   "description": "# Error description response\n\nError details of the response",
-                  "required": ["message"],
+                  "required": [
+                    "message"
+                  ],
                   "properties": {
                     "message": {
                       "type": "string"
                     },
                     "restate_code": {
-                      "type": ["string", "null"],
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "description": "# Restate code\n\nRestate error code describing this error"
                     }
                   }
@@ -1240,7 +1443,9 @@
     },
     "/query": {
       "post": {
-        "tags": ["query"],
+        "tags": [
+          "query"
+        ],
         "summary": "Query journal",
         "description": "Query journal",
         "operationId": "query",
@@ -1249,7 +1454,9 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["query"],
+                "required": [
+                  "query"
+                ],
                 "properties": {
                   "query": {
                     "type": "string"
@@ -1347,7 +1554,9 @@
     },
     "/services": {
       "get": {
-        "tags": ["service"],
+        "tags": [
+          "service"
+        ],
         "summary": "List services",
         "description": "Returns a list of all registered services, including their metadata and configuration.",
         "operationId": "list_services",
@@ -1382,7 +1591,9 @@
     },
     "/services/{service}": {
       "get": {
-        "tags": ["service"],
+        "tags": [
+          "service"
+        ],
         "summary": "Get service",
         "description": "Returns detailed metadata about a specific service, including its type, handlers, and configuration settings.",
         "operationId": "get_service",
@@ -1426,7 +1637,9 @@
         }
       },
       "patch": {
-        "tags": ["service"],
+        "tags": [
+          "service"
+        ],
         "summary": "Modify service configuration",
         "description": "Updates the configuration of a registered service, such as public visibility, retention policies, and timeout settings.\nNote: Service re-discovery will update these settings based on the service endpoint configuration.",
         "operationId": "modify_service",
@@ -1482,7 +1695,9 @@
     },
     "/services/{service}/handlers": {
       "get": {
-        "tags": ["service_handler"],
+        "tags": [
+          "service_handler"
+        ],
         "summary": "List service handlers",
         "description": "Returns a list of all handlers (methods) available in the specified service.",
         "operationId": "list_service_handlers",
@@ -1528,7 +1743,9 @@
     },
     "/services/{service}/handlers/{handler}": {
       "get": {
-        "tags": ["service_handler"],
+        "tags": [
+          "service_handler"
+        ],
         "summary": "Get service handler",
         "description": "Returns detailed metadata about a specific handler within a service, including its input/output types and handler type.",
         "operationId": "get_service_handler",
@@ -1583,7 +1800,9 @@
     },
     "/services/{service}/openapi": {
       "get": {
-        "tags": ["service"],
+        "tags": [
+          "service"
+        ],
         "summary": "Get service OpenAPI",
         "description": "Get the service OpenAPI 3.1 contract.",
         "operationId": "get_service_openapi",
@@ -1672,7 +1891,9 @@
     },
     "/services/{service}/state": {
       "post": {
-        "tags": ["service"],
+        "tags": [
+          "service"
+        ],
         "summary": "Modify service state",
         "description": "Modifies the K/V state of a Virtual Object. For a detailed description of this API and how to use it, see the [state documentation](https://docs.restate.dev/operate/invocation#modifying-service-state).",
         "operationId": "modify_service_state",
@@ -1721,7 +1942,9 @@
     },
     "/subscriptions": {
       "get": {
-        "tags": ["subscription"],
+        "tags": [
+          "subscription"
+        ],
         "summary": "List subscriptions",
         "description": "Returns a list of all registered subscriptions, optionally filtered by source or sink.",
         "operationId": "list_subscriptions",
@@ -1732,7 +1955,10 @@
             "description": "Filter by the exact specified sink.",
             "required": false,
             "schema": {
-              "type": ["string", "null"]
+              "type": [
+                "string",
+                "null"
+              ]
             }
           },
           {
@@ -1741,7 +1967,10 @@
             "description": "Filter by the exact specified source.",
             "required": false,
             "schema": {
-              "type": ["string", "null"]
+              "type": [
+                "string",
+                "null"
+              ]
             }
           }
         ],
@@ -1759,7 +1988,9 @@
         }
       },
       "post": {
-        "tags": ["subscription"],
+        "tags": [
+          "subscription"
+        ],
         "summary": "Create subscription",
         "description": "Creates a new subscription that connects an event source (e.g., a Kafka topic) to a Restate service handler.\nFor more information, see the [subscription documentation](https://docs.restate.dev/operate/invocation#managing-kafka-subscriptions).",
         "operationId": "create_subscription",
@@ -1812,7 +2043,9 @@
     },
     "/subscriptions/{subscription}": {
       "get": {
-        "tags": ["subscription"],
+        "tags": [
+          "subscription"
+        ],
         "summary": "Get subscription",
         "description": "Returns the details of a specific subscription, including its source, sink, and configuration options.",
         "operationId": "get_subscription",
@@ -1856,7 +2089,9 @@
         }
       },
       "delete": {
-        "tags": ["subscription"],
+        "tags": [
+          "subscription"
+        ],
         "summary": "Delete subscription",
         "description": "Deletes a subscription. This will stop events from the source from being forwarded to the sink.",
         "operationId": "delete_subscription",
@@ -1895,7 +2130,9 @@
     },
     "/version": {
       "get": {
-        "tags": ["version"],
+        "tags": [
+          "version"
+        ],
         "summary": "Get version information",
         "description": "Returns the server version, supported Admin API versions, and the advertised ingress endpoint.",
         "operationId": "version",
@@ -1915,7 +2152,9 @@
     },
     "/query/invocations": {
       "post": {
-        "tags": ["query-invocations"],
+        "tags": [
+          "query-invocations"
+        ],
         "summary": "List invocations",
         "description": "List invocations",
         "operationId": "list_invocations",
@@ -1936,7 +2175,10 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "required": ["rows", "total_count"],
+                  "required": [
+                    "rows",
+                    "total_count"
+                  ],
                   "properties": {
                     "rows": {
                       "type": "array",
@@ -2023,7 +2265,9 @@
     },
     "/query/invocations/count": {
       "post": {
-        "tags": ["count-invocations"],
+        "tags": [
+          "count-invocations"
+        ],
         "summary": "Count invocations",
         "description": "Count invocations",
         "operationId": "count_invocations",
@@ -2044,7 +2288,9 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "required": ["count"],
+                  "required": [
+                    "count"
+                  ],
                   "properties": {
                     "count": {
                       "type": "integer"
@@ -2122,7 +2368,9 @@
     },
     "/query/invocations/summary": {
       "post": {
-        "tags": ["query-invocations"],
+        "tags": [
+          "query-invocations"
+        ],
         "summary": "Get invocations summary",
         "description": "Get an aggregated summary of invocations: counts by status, counts by service, and duration percentiles (p50, p90, p99).",
         "operationId": "get_invocations_summary",
@@ -2233,7 +2481,9 @@
     },
     "/query/invocations/cancel": {
       "post": {
-        "tags": ["batch-cancel-invocations"],
+        "tags": [
+          "batch-cancel-invocations"
+        ],
         "summary": "Batch cancel invocations",
         "description": "Batch cancel invocations",
         "operationId": "batch_cancel_invocations",
@@ -2323,7 +2573,9 @@
     },
     "/query/invocations/restart-as-new": {
       "post": {
-        "tags": ["batch-restart-as-new-invocations"],
+        "tags": [
+          "batch-restart-as-new-invocations"
+        ],
         "summary": "Batch restart-as-new invocations",
         "description": "Batch restart-as-new invocations",
         "operationId": "batch_restart_as_new_invocations",
@@ -2413,7 +2665,9 @@
     },
     "/query/invocations/purge": {
       "post": {
-        "tags": ["batch-purge-invocations"],
+        "tags": [
+          "batch-purge-invocations"
+        ],
         "summary": "Batch purge invocations",
         "description": "Batch purge invocations",
         "operationId": "batch_purge_invocations",
@@ -2503,7 +2757,9 @@
     },
     "/query/invocations/kill": {
       "post": {
-        "tags": ["batch-kill-invocations"],
+        "tags": [
+          "batch-kill-invocations"
+        ],
         "summary": "Batch kill invocations",
         "description": "Batch kill invocations",
         "operationId": "batch_kill_invocations",
@@ -2593,7 +2849,9 @@
     },
     "/query/invocations/pause": {
       "post": {
-        "tags": ["batch-pause-invocations"],
+        "tags": [
+          "batch-pause-invocations"
+        ],
         "summary": "Batch pause invocations",
         "description": "Batch pause invocations",
         "operationId": "batch_pause_invocations",
@@ -2683,7 +2941,9 @@
     },
     "/query/invocations/resume": {
       "post": {
-        "tags": ["batch-resume-invocations"],
+        "tags": [
+          "batch-resume-invocations"
+        ],
         "summary": "Batch resume invocations",
         "description": "Batch resume invocations",
         "operationId": "batch_resume_invocations",
@@ -2773,7 +3033,9 @@
     },
     "/query/invocations/{invocationId}": {
       "get": {
-        "tags": ["query-invocations"],
+        "tags": [
+          "query-invocations"
+        ],
         "summary": "Get invocation",
         "description": "Get invocation",
         "operationId": "get_invocation",
@@ -2864,7 +3126,9 @@
     },
     "/query/invocations/{invocationId}/paused-error": {
       "get": {
-        "tags": ["query-invocations"],
+        "tags": [
+          "query-invocations"
+        ],
         "summary": "Get paused error",
         "description": "Get the error details for a paused invocation. Returns the error that caused the invocation to be paused, including the message, stack trace, error code, and related command information.",
         "operationId": "get_paused_error",
@@ -2955,7 +3219,9 @@
     },
     "/query/invocations/{invocationId}/journal": {
       "get": {
-        "tags": ["query-invocations"],
+        "tags": [
+          "query-invocations"
+        ],
         "summary": "Get invocation journal",
         "description": "Get invocation journal",
         "operationId": "get_invocation_journal",
@@ -2977,7 +3243,9 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "required": ["entries"],
+                  "required": [
+                    "entries"
+                  ],
                   "properties": {
                     "entries": {
                       "type": "array",
@@ -3055,7 +3323,9 @@
     },
     "/query/invocations/{invocationId}/journal/{entryIndex}": {
       "get": {
-        "tags": ["get-journal-entry"],
+        "tags": [
+          "get-journal-entry"
+        ],
         "summary": "Get journal entry",
         "description": "Get journal entry",
         "operationId": "get_journal_entry",
@@ -3155,7 +3425,9 @@
     },
     "/query/invocations/{invocationId}/journal/{entryIndex}/payloads": {
       "get": {
-        "tags": ["get-journal-entry-payloads"],
+        "tags": [
+          "get-journal-entry-payloads"
+        ],
         "summary": "Get journal entry payloads",
         "description": "Get payload data for a specific journal entry. This endpoint returns the potentially large payload fields (parameters, value, failure, headers) that are excluded from the lite journal response. Use this for on-demand loading of payload data.",
         "operationId": "get_journal_entry_payloads",
@@ -3255,7 +3527,9 @@
     },
     "/query/v2/invocations/{invocationId}": {
       "get": {
-        "tags": ["get-invocation"],
+        "tags": [
+          "get-invocation"
+        ],
         "summary": "Get invocation and journal",
         "description": "Get invocation journal v2",
         "operationId": "get_invocation_journal_v2",
@@ -3387,7 +3661,9 @@
     },
     "/query/virtualObjects/{name}/keys/{key}/queue": {
       "get": {
-        "tags": ["query-invocations"],
+        "tags": [
+          "query-invocations"
+        ],
         "summary": "Get Virtual Object inbox inbox for a key",
         "description": "Get Virtual Object inbox inbox for a key",
         "operationId": "get_inbox",
@@ -3495,7 +3771,9 @@
     },
     "/query/services/{name}/state/keys": {
       "get": {
-        "tags": ["query-invocations"],
+        "tags": [
+          "query-invocations"
+        ],
         "summary": "Get state keys",
         "description": "Get state keys",
         "operationId": "get_state_keys",
@@ -3597,7 +3875,9 @@
     },
     "/query/services/{name}/state": {
       "post": {
-        "tags": ["list-state"],
+        "tags": [
+          "list-state"
+        ],
         "summary": "List virtual object state",
         "description": "List virtual object state",
         "operationId": "list_virtual_object_state",
@@ -3617,7 +3897,9 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["keys"],
+                "required": [
+                  "keys"
+                ],
                 "properties": {
                   "keys": {
                     "type": "array",
@@ -3638,7 +3920,9 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "required": ["objects"],
+                  "required": [
+                    "objects"
+                  ],
                   "properties": {
                     "objects": {
                       "type": "array",
@@ -3650,7 +3934,9 @@
                           },
                           {
                             "type": "object",
-                            "required": ["key"],
+                            "required": [
+                              "key"
+                            ],
                             "properties": {
                               "key": {
                                 "type": "string"
@@ -3730,7 +4016,9 @@
     },
     "/query/services/{name}/keys/{key}/state": {
       "get": {
-        "tags": ["get-state"],
+        "tags": [
+          "get-state"
+        ],
         "summary": "Get state keys",
         "description": "Get state keys",
         "operationId": "get_state",
@@ -3761,7 +4049,9 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "required": ["state"],
+                  "required": [
+                    "state"
+                  ],
                   "allOf": [
                     {
                       "$ref": "#/components/schemas/StateResponse"
@@ -3844,7 +4134,9 @@
     },
     "/query/services/{name}/state/query": {
       "post": {
-        "tags": ["query-state"],
+        "tags": [
+          "query-state"
+        ],
         "summary": "Query virtual object state",
         "description": "Query virtual object state",
         "operationId": "query_virtual_object_state",
@@ -3876,7 +4168,9 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "required": ["keys"],
+                  "required": [
+                    "keys"
+                  ],
                   "properties": {
                     "keys": {
                       "type": "array",
@@ -3952,9 +4246,93 @@
         }
       }
     },
+    "/query/deployments/drained": {
+      "get": {
+        "tags": [
+          "query-deployments"
+        ],
+        "summary": "List drained deployments",
+        "description": "List drained deployments",
+        "operationId": "list_drained_deployments",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListDrainedDeploymentsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/internal/invocations_batch_operations/kill": {
       "post": {
-        "tags": ["batch-invocation-operations"],
+        "tags": [
+          "batch-invocation-operations"
+        ],
         "summary": "Batch kill invocations",
         "description": "Kill multiple invocations in batch. All operations execute in parallel and results are collected.",
         "operationId": "batch_kill_invocations_internal",
@@ -4004,7 +4382,9 @@
     },
     "/internal/invocations_batch_operations/cancel": {
       "post": {
-        "tags": ["batch-invocation-operations"],
+        "tags": [
+          "batch-invocation-operations"
+        ],
         "summary": "Batch cancel invocations",
         "description": "Cancel multiple invocations in batch. All operations execute in parallel and results are collected.",
         "operationId": "batch_cancel_invocations_internal",
@@ -4054,7 +4434,9 @@
     },
     "/internal/invocations_batch_operations/purge": {
       "post": {
-        "tags": ["batch-invocation-operations"],
+        "tags": [
+          "batch-invocation-operations"
+        ],
         "summary": "Batch purge invocations",
         "description": "Purge multiple completed invocations in batch. All operations execute in parallel and results are collected.",
         "operationId": "batch_purge_invocations_internal",
@@ -4104,7 +4486,9 @@
     },
     "/internal/invocations_batch_operations/purge-journal": {
       "post": {
-        "tags": ["batch-invocation-operations"],
+        "tags": [
+          "batch-invocation-operations"
+        ],
         "summary": "Batch purge invocation journals",
         "description": "Purge journals for multiple completed invocations in batch. All operations execute in parallel and results are collected.",
         "operationId": "batch_purge_journal_internal",
@@ -4154,7 +4538,9 @@
     },
     "/internal/invocations_batch_operations/restart-as-new": {
       "post": {
-        "tags": ["batch-invocation-operations"],
+        "tags": [
+          "batch-invocation-operations"
+        ],
         "summary": "Batch restart invocations as new",
         "description": "Restart multiple invocations as new in batch. All operations execute in parallel and results are collected.",
         "operationId": "batch_restart_as_new_invocations_internal",
@@ -4204,7 +4590,9 @@
     },
     "/internal/invocations_batch_operations/resume": {
       "post": {
-        "tags": ["batch-invocation-operations"],
+        "tags": [
+          "batch-invocation-operations"
+        ],
         "summary": "Batch resume invocations",
         "description": "Resume multiple paused or suspended invocations in batch. All operations execute in parallel and results are collected.",
         "operationId": "batch_resume_invocations_internal",
@@ -4254,7 +4642,9 @@
     },
     "/internal/invocations_batch_operations/pause": {
       "post": {
-        "tags": ["batch-invocation-operations"],
+        "tags": [
+          "batch-invocation-operations"
+        ],
         "summary": "Batch pause invocations",
         "description": "Pause multiple running invocations in batch. All operations execute in parallel and results are collected.",
         "operationId": "batch_pause_invocations_internal",
@@ -4318,7 +4708,9 @@
       "ClusterHealthResponse": {
         "type": "object",
         "description": "Cluster health information",
-        "required": ["cluster_name"],
+        "required": [
+          "cluster_name"
+        ],
         "properties": {
           "cluster_name": {
             "type": "string",
@@ -4339,10 +4731,16 @@
       },
       "CreateSubscriptionRequest": {
         "type": "object",
-        "required": ["source", "sink"],
+        "required": [
+          "source",
+          "sink"
+        ],
         "properties": {
           "options": {
-            "type": ["object", "null"],
+            "type": [
+              "object",
+              "null"
+            ],
             "description": "# Options\n\nAdditional options to apply to the subscription.",
             "additionalProperties": {
               "type": "string"
@@ -4430,7 +4828,10 @@
                 "description": "# Protocol Type\n\nProtocol type used to invoke this service deployment."
               },
               "sdk_version": {
-                "type": ["string", "null"],
+                "type": [
+                  "string",
+                  "null"
+                ],
                 "description": "# SDK version\n\nSDK library and version declared during registration."
               },
               "services": {
@@ -4469,7 +4870,10 @@
                 "description": "# Lambda ARN\n\nLambda ARN used to invoke this service deployment."
               },
               "assume_role_arn": {
-                "type": ["string", "null"],
+                "type": [
+                  "string",
+                  "null"
+                ],
                 "description": "# Assume role ARN\n\nAssume role ARN used to invoke this deployment. Check https://docs.restate.dev/category/aws-lambda for more details."
               },
               "compression": {
@@ -4518,7 +4922,10 @@
                 "description": "# Minimum Service Protocol version\n\nDuring registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version."
               },
               "sdk_version": {
-                "type": ["string", "null"],
+                "type": [
+                  "string",
+                  "null"
+                ],
                 "description": "# SDK version\n\nSDK library and version declared during registration."
               },
               "services": {
@@ -4596,7 +5003,10 @@
                 "description": "# Protocol Type\n\nProtocol type used to invoke this service deployment."
               },
               "sdk_version": {
-                "type": ["string", "null"],
+                "type": [
+                  "string",
+                  "null"
+                ],
                 "description": "# SDK version\n\nSDK library and version declared during registration."
               },
               "services": {
@@ -4635,7 +5045,10 @@
                 "description": "# Lambda ARN\n\nLambda ARN used to invoke this service deployment."
               },
               "assume_role_arn": {
-                "type": ["string", "null"],
+                "type": [
+                  "string",
+                  "null"
+                ],
                 "description": "# Assume role ARN\n\nAssume role ARN used to invoke this deployment. Check https://docs.restate.dev/category/aws-lambda for more details."
               },
               "compression": {
@@ -4684,7 +5097,10 @@
                 "description": "# Minimum Service Protocol version\n\nDuring registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version."
               },
               "sdk_version": {
-                "type": ["string", "null"],
+                "type": [
+                  "string",
+                  "null"
+                ],
                 "description": "# SDK version\n\nSDK library and version declared during registration."
               },
               "services": {
@@ -4701,7 +5117,9 @@
       },
       "EmbeddedMetadataClusterHealth": {
         "type": "object",
-        "required": ["members"],
+        "required": [
+          "members"
+        ],
         "properties": {
           "members": {
             "type": "array",
@@ -4715,18 +5133,25 @@
       "EndpointLambdaCompression": {
         "type": "string",
         "description": "Lambda compression",
-        "enum": ["Zstd"]
+        "enum": [
+          "Zstd"
+        ]
       },
       "ErrorDescriptionResponse": {
         "type": "object",
         "description": "# Error description response\n\nError details of the response",
-        "required": ["message"],
+        "required": [
+          "message"
+        ],
         "properties": {
           "message": {
             "type": "string"
           },
           "restate_code": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "# Restate code\n\nRestate error code describing this error"
           }
         }
@@ -4734,26 +5159,45 @@
       "HandlerMetadata": {
         "type": "object",
         "description": "Handler metadata",
-        "required": ["name", "input_description", "output_description"],
+        "required": [
+          "name",
+          "input_description",
+          "output_description"
+        ],
         "properties": {
           "abort_timeout": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "# Abort timeout\n\nThis timer guards against stalled service/handler invocations that are supposed to\nterminate. The abort timeout is started after the 'inactivity timeout' has expired\nand the service/handler invocation has been asked to gracefully terminate. Once the\ntimer expires, it will abort the service/handler invocation.\n\nThis timer potentially **interrupts** user code. If the user code needs longer to\ngracefully terminate, then this value needs to be set accordingly.\n\nCan be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.\n\nIf set, it overrides the value set in the service."
           },
           "documentation": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "# Documentation\n\nDocumentation of the handler, as propagated by the SDKs."
           },
           "enable_lazy_state": {
-            "type": ["boolean", "null"],
+            "type": [
+              "boolean",
+              "null"
+            ],
             "description": "# Enable lazy state\n\nIf true, lazy state will be enabled for all invocations to this service.\nThis is relevant only for Workflows and Virtual Objects.\n\nIf set, it overrides the value set in the service."
           },
           "idempotency_retention": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "# Idempotency retention\n\nThe retention duration of idempotent requests for this handler. If set, it overrides the value set in the service.\n\nCan be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`."
           },
           "inactivity_timeout": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "# Inactivity timeout\n\nThis timer guards against stalled service/handler invocations. Once it expires,\nRestate triggers a graceful termination by asking the service invocation to\nsuspend (which preserves intermediate progress).\n\nThe 'abort timeout' is used to abort the invocation, in case it doesn't react to\nthe request to suspend.\n\nCan be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.\n\nIf set, it overrides the value set in the service."
           },
           "info": {
@@ -4771,7 +5215,10 @@
             "description": "# Input JSON Schema\n\nJSON Schema of the handler input"
           },
           "journal_retention": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "# Journal retention\n\nThe journal retention. When set, this applies to all requests to this handler.\n\nIn case the invocation has an idempotency key, the `idempotency_retention` caps the maximum `journal_retention` time.\nIn case this handler is a workflow handler, the `workflow_completion_retention` caps the maximum `journal_retention` time.\n\nCan be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.\n\nIf set, it overrides the value set in the service."
           },
           "metadata": {
@@ -4818,28 +5265,44 @@
       },
       "HandlerMetadataType": {
         "type": "string",
-        "enum": ["Exclusive", "Shared", "Workflow"]
+        "enum": [
+          "Exclusive",
+          "Shared",
+          "Workflow"
+        ]
       },
       "HandlerRetryPolicyMetadata": {
         "type": "object",
         "description": "# Handler retry policy overrides",
         "properties": {
           "exponentiation_factor": {
-            "type": ["number", "null"],
+            "type": [
+              "number",
+              "null"
+            ],
             "format": "float",
             "description": "# Factor\n\nThe factor to use to compute the next retry attempt."
           },
           "initial_interval": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "# Initial Interval\n\nInitial interval for the first retry attempt.\n\nCan be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`."
           },
           "max_attempts": {
-            "type": ["integer", "null"],
+            "type": [
+              "integer",
+              "null"
+            ],
             "description": "# Max attempts\n\nNumber of maximum attempts (including the initial) before giving up. Infinite retries if unset. No retries if set to 1.",
             "minimum": 1
           },
           "max_interval": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "# Max interval\n\nMaximum interval between retries.\n\nCan be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`."
           },
           "on_max_attempts": {
@@ -4857,10 +5320,15 @@
       },
       "Info": {
         "type": "object",
-        "required": ["message"],
+        "required": [
+          "message"
+        ],
         "properties": {
           "code": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "message": {
             "type": "string"
@@ -4874,7 +5342,9 @@
       "ListDeploymentsResponse": {
         "type": "object",
         "description": "List of all registered deployments",
-        "required": ["deployments"],
+        "required": [
+          "deployments"
+        ],
         "properties": {
           "deployments": {
             "type": "array",
@@ -4887,7 +5357,9 @@
       "ListServiceHandlersResponse": {
         "type": "object",
         "description": "List of all the handlers of a service",
-        "required": ["handlers"],
+        "required": [
+          "handlers"
+        ],
         "properties": {
           "handlers": {
             "type": "array",
@@ -4900,7 +5372,9 @@
       "ListServicesResponse": {
         "type": "object",
         "description": "List of all registered services.",
-        "required": ["services"],
+        "required": [
+          "services"
+        ],
         "properties": {
           "services": {
             "type": "array",
@@ -4913,7 +5387,9 @@
       "ListSubscriptionsResponse": {
         "type": "object",
         "description": "List of all subscriptions.",
-        "required": ["subscriptions"],
+        "required": [
+          "subscriptions"
+        ],
         "properties": {
           "subscriptions": {
             "type": "array",
@@ -4927,34 +5403,55 @@
         "type": "object",
         "properties": {
           "abort_timeout": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "# Abort timeout\n\nThis timer guards against stalled service/handler invocations that are supposed to\nterminate. The abort timeout is started after the 'inactivity timeout' has expired\nand the service/handler invocation has been asked to gracefully terminate. Once the\ntimer expires, it will abort the service/handler invocation.\n\nThis timer potentially **interrupts** user code. If the user code needs longer to\ngracefully terminate, then this value needs to be set accordingly.\n\nCan be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.\n\nThis overrides the default abort timeout set in invoker options."
           },
           "idempotency_retention": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "# Idempotency retention\n\nModify the retention of idempotent requests for this service.\n\nCan be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`."
           },
           "inactivity_timeout": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "# Inactivity timeout\n\nThis timer guards against stalled service/handler invocations. Once it expires,\nRestate triggers a graceful termination by asking the service invocation to\nsuspend (which preserves intermediate progress).\n\nThe 'abort timeout' is used to abort the invocation, in case it doesn't react to\nthe request to suspend.\n\nCan be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`.\n\nThis overrides the default inactivity timeout set in invoker options."
           },
           "journal_retention": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "# Journal retention\n\nModify the journal retention for this service. When set, this applies to all requests to all handlers of this service.\n\nIn case the invocation has an idempotency key, the `idempotency_retention` caps the maximum `journal_retention` time.\nIn case the invocation targets a workflow handler, the `workflow_completion_retention` caps the maximum `journal_retention` time.\n\nCan be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`."
           },
           "public": {
-            "type": ["boolean", "null"],
+            "type": [
+              "boolean",
+              "null"
+            ],
             "description": "# Public\n\nIf true, the service can be invoked through the ingress.\nIf false, the service can be invoked only from another Restate service."
           },
           "workflow_completion_retention": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "# Workflow completion retention\n\nModify the retention of the workflow completion. This can be modified only for workflow services!\n\nCan be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`."
           }
         }
       },
       "ModifyServiceStateRequest": {
         "type": "object",
-        "required": ["object_key", "new_state"],
+        "required": [
+          "object_key",
+          "new_state"
+        ],
         "properties": {
           "new_state": {
             "type": "object",
@@ -4976,14 +5473,20 @@
             "description": "# Service key\n\nTo what virtual object key to apply this change"
           },
           "version": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "# Version\n\nIf set, the latest version of the state is compared with this value and the operation will fail\nwhen the versions differ."
           }
         }
       },
       "OnMaxAttempts": {
         "type": "string",
-        "enum": ["Pause", "Kill"]
+        "enum": [
+          "Pause",
+          "Kill"
+        ]
       },
       "PlainNodeId": {
         "type": "integer",
@@ -4992,11 +5495,16 @@
       },
       "ProtocolType": {
         "type": "string",
-        "enum": ["RequestResponse", "BidiStream"]
+        "enum": [
+          "RequestResponse",
+          "BidiStream"
+        ]
       },
       "QueryRequest": {
         "type": "object",
-        "required": ["query"],
+        "required": [
+          "query"
+        ],
         "properties": {
           "query": {
             "type": "string",
@@ -5010,7 +5518,9 @@
             "type": "object",
             "title": "RegisterHttpDeploymentRequest",
             "description": "Register HTTP deployment request",
-            "required": ["uri"],
+            "required": [
+              "uri"
+            ],
             "properties": {
               "additional_headers": {
                 "oneOf": [
@@ -5032,7 +5542,10 @@
                 "description": "# Dry-run mode\n\nIf `true`, discovery will run but the deployment will not be registered.\nThis is useful to see the impact of a new deployment before registering it.\n`force` and `breaking` will be respected."
               },
               "force": {
-                "type": ["boolean", "null"],
+                "type": [
+                  "boolean",
+                  "null"
+                ],
                 "description": "# Force\n\nIf `true`, it overrides, if existing, any deployment using the same `uri`.\nBeware that this can lead inflight invocations to an unrecoverable error state.\n\nWhen set to `true`, it implies `breaking = true`.\n\nSee the [versioning documentation](https://docs.restate.dev/operate/versioning) for more information.",
                 "default": true
               },
@@ -5061,7 +5574,9 @@
             "type": "object",
             "title": "RegisterLambdaDeploymentRequest",
             "description": "Register Lambda deployment request",
-            "required": ["arn"],
+            "required": [
+              "arn"
+            ],
             "properties": {
               "additional_headers": {
                 "oneOf": [
@@ -5079,7 +5594,10 @@
                 "description": "# ARN\n\nARN to use to discover/invoke the lambda deployment."
               },
               "assume_role_arn": {
-                "type": ["string", "null"],
+                "type": [
+                  "string",
+                  "null"
+                ],
                 "description": "# Assume role ARN\n\nOptional ARN of a role to assume when invoking the addressed Lambda, to support role chaining"
               },
               "breaking": {
@@ -5091,7 +5609,10 @@
                 "description": "# Dry-run mode\n\nIf `true`, discovery will run but the deployment will not be registered.\nThis is useful to see the impact of a new deployment before registering it.\n`force` and `breaking` will be respected."
               },
               "force": {
-                "type": ["boolean", "null"],
+                "type": [
+                  "boolean",
+                  "null"
+                ],
                 "description": "# Force\n\nIf `true`, it overrides, if existing, any deployment using the same `uri`.\nBeware that this can lead inflight invocations to an unrecoverable error state.\n\nThis implies `breaking = true`.\n\nSee the [versioning documentation](https://docs.restate.dev/operate/versioning) for more information.",
                 "default": true
               },
@@ -5111,7 +5632,10 @@
       },
       "RegisterDeploymentResponse": {
         "type": "object",
-        "required": ["id", "services"],
+        "required": [
+          "id",
+          "services"
+        ],
         "properties": {
           "id": {
             "$ref": "#/components/schemas/DeploymentId"
@@ -5134,7 +5658,10 @@
             "description": "# Minimum Service Protocol version\n\nDuring registration, the SDKs declare a range from minimum (included) to maximum (included) Service Protocol supported version."
           },
           "sdk_version": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "# SDK version\n\nSDK library and version declared during registration."
           },
           "services": {
@@ -5148,7 +5675,9 @@
       "RestartAsNewInvocationResponse": {
         "type": "object",
         "description": "The invocation was restarted as new.",
-        "required": ["new_invocation_id"],
+        "required": [
+          "new_invocation_id"
+        ],
         "properties": {
           "new_invocation_id": {
             "$ref": "#/components/schemas/String",
@@ -5169,7 +5698,13 @@
       "ServiceMetadata": {
         "type": "object",
         "description": "Metadata of a registered service.",
-        "required": ["name", "ty", "handlers", "deployment_id", "revision"],
+        "required": [
+          "name",
+          "ty",
+          "handlers",
+          "deployment_id",
+          "revision"
+        ],
         "properties": {
           "abort_timeout": {
             "type": "string",
@@ -5180,7 +5715,10 @@
             "description": "# Deployment Id\n\nDeployment exposing the latest revision of the service."
           },
           "documentation": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "# Documentation\n\nDocumentation of the service, as propagated by the SDKs."
           },
           "enable_lazy_state": {
@@ -5210,7 +5748,10 @@
             "description": "# Info\n\nList of configuration/deprecation information related to this service."
           },
           "journal_retention": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "# Journal retention\n\nThe journal retention. When set, this applies to all requests to all handlers of this service.\n\nIn case the invocation has an idempotency key, the `idempotency_retention` caps the maximum `journal_retention` time.\nIn case the invocation targets a workflow handler, the `workflow_completion_retention` caps the maximum `journal_retention` time.\n\nCan be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`."
           },
           "metadata": {
@@ -5244,14 +5785,20 @@
             "description": "# Type\n\nService type"
           },
           "workflow_completion_retention": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "# Workflow completion retention\n\nThe retention duration of workflows. Only available on workflow services.\n\nCan be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`."
           }
         }
       },
       "ServiceNameRevPair": {
         "type": "object",
-        "required": ["name", "revision"],
+        "required": [
+          "name",
+          "revision"
+        ],
         "properties": {
           "name": {
             "type": "string"
@@ -5275,12 +5822,18 @@
             "description": "# Initial Interval\n\nInitial interval for the first retry attempt.\n\nCan be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`."
           },
           "max_attempts": {
-            "type": ["integer", "null"],
+            "type": [
+              "integer",
+              "null"
+            ],
             "description": "# Max attempts\n\nNumber of maximum attempts (including the initial) before giving up. Infinite retries if unset. No retries if set to 1.",
             "minimum": 1
           },
           "max_interval": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "# Max interval\n\nMaximum interval between retries.\n\nCan be configured using the [`jiff::fmt::friendly`](https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html) format or ISO8601, for example `5 hours`."
           },
           "on_max_attempts": {
@@ -5291,7 +5844,11 @@
       },
       "ServiceType": {
         "type": "string",
-        "enum": ["Service", "VirtualObject", "Workflow"]
+        "enum": [
+          "Service",
+          "VirtualObject",
+          "Workflow"
+        ]
       },
       "String": {
         "type": "string"
@@ -5302,7 +5859,12 @@
       "SubscriptionResponse": {
         "type": "object",
         "description": "Subscription details.",
-        "required": ["id", "source", "sink", "options"],
+        "required": [
+          "id",
+          "source",
+          "sink",
+          "options"
+        ],
         "properties": {
           "id": {
             "$ref": "#/components/schemas/SubscriptionId"
@@ -5351,12 +5913,18 @@
                 "description": "# Overwrite\n\nIf `true`, the update will overwrite the schema information, including the exposed service and handlers and service configuration, allowing **breaking changes** too. Use with caution."
               },
               "uri": {
-                "type": ["string", "null"],
+                "type": [
+                  "string",
+                  "null"
+                ],
                 "format": "uri",
                 "description": "# Uri\n\nUri to use to discover/invoke the http deployment."
               },
               "use_http_11": {
-                "type": ["boolean", "null"],
+                "type": [
+                  "boolean",
+                  "null"
+                ],
                 "description": "# Use http1.1\n\nIf `true`, discovery will be attempted using a client that defaults to HTTP1.1\ninstead of a prior-knowledge HTTP2 client. HTTP2 may still be used for TLS servers\nthat advertise HTTP2 support via ALPN. HTTP1.1 deployments will only work in\nrequest-response mode."
               }
             }
@@ -5378,11 +5946,17 @@
                 ]
               },
               "arn": {
-                "type": ["string", "null"],
+                "type": [
+                  "string",
+                  "null"
+                ],
                 "description": "# ARN\n\nARN to use to discover/invoke the lambda deployment."
               },
               "assume_role_arn": {
-                "type": ["string", "null"],
+                "type": [
+                  "string",
+                  "null"
+                ],
                 "description": "# Assume role ARN\n\nOptional ARN of a role to assume when invoking the addressed Lambda, to support role chaining."
               },
               "dry_run": {
@@ -5440,6 +6014,20 @@
         "format": "int32",
         "minimum": 0
       },
+      "ListDrainedDeploymentsResponse": {
+        "type": "object",
+        "required": [
+          "deployment_ids"
+        ],
+        "properties": {
+          "deployment_ids": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeploymentId"
+            }
+          }
+        }
+      },
       "VirtualObjectState": {
         "type": "array",
         "items": {
@@ -5457,7 +6045,10 @@
           },
           "sort": {
             "type": "object",
-            "required": ["field", "order"],
+            "required": [
+              "field",
+              "order"
+            ],
             "properties": {
               "field": {
                 "type": "string",
@@ -5477,7 +6068,10 @@
               },
               "order": {
                 "type": "string",
-                "enum": ["ASC", "DESC"]
+                "enum": [
+                  "ASC",
+                  "DESC"
+                ]
               }
             }
           }
@@ -5487,7 +6081,9 @@
         "oneOf": [
           {
             "type": "object",
-            "required": ["invocationIds"],
+            "required": [
+              "invocationIds"
+            ],
             "properties": {
               "invocationIds": {
                 "type": "array",
@@ -5503,7 +6099,9 @@
           },
           {
             "type": "object",
-            "required": ["filters"],
+            "required": [
+              "filters"
+            ],
             "properties": {
               "filters": {
                 "type": "array",
@@ -5539,7 +6137,9 @@
         "oneOf": [
           {
             "type": "object",
-            "required": ["invocationIds"],
+            "required": [
+              "invocationIds"
+            ],
             "properties": {
               "invocationIds": {
                 "type": "array",
@@ -5549,7 +6149,10 @@
               },
               "deployment": {
                 "type": "string",
-                "enum": ["keep", "latest"],
+                "enum": [
+                  "keep",
+                  "latest"
+                ],
                 "description": "Deployment selection strategy: 'keep' uses the current deployment, 'latest' uses the latest deployment"
               },
               "pageSize": {
@@ -5560,7 +6163,9 @@
           },
           {
             "type": "object",
-            "required": ["filters"],
+            "required": [
+              "filters"
+            ],
             "properties": {
               "filters": {
                 "type": "array",
@@ -5590,7 +6195,10 @@
               },
               "deployment": {
                 "type": "string",
-                "enum": ["keep", "latest"],
+                "enum": [
+                  "keep",
+                  "latest"
+                ],
                 "description": "Deployment selection strategy: 'keep' uses the current deployment, 'latest' uses the latest deployment"
               }
             }
@@ -5599,7 +6207,10 @@
       },
       "BatchInvocationsResponse": {
         "type": "object",
-        "required": ["successful", "failed"],
+        "required": [
+          "successful",
+          "failed"
+        ],
         "properties": {
           "successful": {
             "type": "integer",
@@ -5613,7 +6224,10 @@
             "type": "array",
             "items": {
               "type": "object",
-              "required": ["invocationId", "error"],
+              "required": [
+                "invocationId",
+                "error"
+              ],
               "properties": {
                 "invocationId": {
                   "type": "string",
@@ -5640,7 +6254,9 @@
       },
       "BatchInvocationRequest": {
         "type": "object",
-        "required": ["invocation_ids"],
+        "required": [
+          "invocation_ids"
+        ],
         "properties": {
           "invocation_ids": {
             "type": "array",
@@ -5653,7 +6269,9 @@
       },
       "BatchResumeRequest": {
         "type": "object",
-        "required": ["invocation_ids"],
+        "required": [
+          "invocation_ids"
+        ],
         "properties": {
           "invocation_ids": {
             "type": "array",
@@ -5670,7 +6288,9 @@
       },
       "BatchRestartAsNewRequest": {
         "type": "object",
-        "required": ["invocation_ids"],
+        "required": [
+          "invocation_ids"
+        ],
         "properties": {
           "invocation_ids": {
             "type": "array",
@@ -5689,12 +6309,18 @@
         "oneOf": [
           {
             "type": "string",
-            "enum": ["Keep", "keep"],
+            "enum": [
+              "Keep",
+              "keep"
+            ],
             "description": "Keep the currently pinned deployment"
           },
           {
             "type": "string",
-            "enum": ["Latest", "latest"],
+            "enum": [
+              "Latest",
+              "latest"
+            ],
             "description": "Use the latest deployment"
           },
           {
@@ -5706,7 +6332,10 @@
       },
       "BatchOperationResult": {
         "type": "object",
-        "required": ["succeeded", "failed"],
+        "required": [
+          "succeeded",
+          "failed"
+        ],
         "properties": {
           "succeeded": {
             "type": "array",
@@ -5726,7 +6355,10 @@
       },
       "FailedInvocationOperation": {
         "type": "object",
-        "required": ["invocation_id", "error"],
+        "required": [
+          "invocation_id",
+          "error"
+        ],
         "properties": {
           "invocation_id": {
             "type": "string",
@@ -5740,7 +6372,10 @@
       },
       "BatchRestartAsNewResult": {
         "type": "object",
-        "required": ["succeeded", "failed"],
+        "required": [
+          "succeeded",
+          "failed"
+        ],
         "properties": {
           "succeeded": {
             "type": "array",
@@ -5760,7 +6395,10 @@
       },
       "RestartedInvocation": {
         "type": "object",
-        "required": ["old_invocation_id", "new_invocation_id"],
+        "required": [
+          "old_invocation_id",
+          "new_invocation_id"
+        ],
         "properties": {
           "old_invocation_id": {
             "type": "string",
@@ -5811,11 +6449,20 @@
       },
       "FilterBaseItem": {
         "type": "object",
-        "required": ["type", "field"],
+        "required": [
+          "type",
+          "field"
+        ],
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["STRING", "NUMBER", "DATE", "STRING_LIST", "NULL"]
+            "enum": [
+              "STRING",
+              "NUMBER",
+              "DATE",
+              "STRING_LIST",
+              "NULL"
+            ]
           },
           "field": {
             "type": "string"
@@ -5824,11 +6471,16 @@
       },
       "FilterNumberItem": {
         "type": "object",
-        "required": ["type", "operation"],
+        "required": [
+          "type",
+          "operation"
+        ],
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["NUMBER"]
+            "enum": [
+              "NUMBER"
+            ]
           },
           "operation": {
             "type": "string",
@@ -5848,11 +6500,16 @@
       },
       "FilterStringItem": {
         "type": "object",
-        "required": ["type", "operation"],
+        "required": [
+          "type",
+          "operation"
+        ],
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["STRING"]
+            "enum": [
+              "STRING"
+            ]
           },
           "operation": {
             "type": "string",
@@ -5872,29 +6529,46 @@
       },
       "FilterNullItem": {
         "type": "object",
-        "required": ["type", "operation"],
+        "required": [
+          "type",
+          "operation"
+        ],
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["NULL"]
+            "enum": [
+              "NULL"
+            ]
           },
           "operation": {
             "type": "string",
-            "enum": ["IS", "IS_NOT"]
+            "enum": [
+              "IS",
+              "IS_NOT"
+            ]
           }
         }
       },
       "FilterStringListItem": {
         "type": "object",
-        "required": ["type", "operation", "value"],
+        "required": [
+          "type",
+          "operation",
+          "value"
+        ],
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["STRING_LIST"]
+            "enum": [
+              "STRING_LIST"
+            ]
           },
           "operation": {
             "type": "string",
-            "enum": ["IN", "NOT_IN"]
+            "enum": [
+              "IN",
+              "NOT_IN"
+            ]
           },
           "value": {
             "type": "array",
@@ -5906,15 +6580,24 @@
       },
       "FilterDateItem": {
         "type": "object",
-        "required": ["type", "operation", "value"],
+        "required": [
+          "type",
+          "operation",
+          "value"
+        ],
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["DATE"]
+            "enum": [
+              "DATE"
+            ]
           },
           "operation": {
             "type": "string",
-            "enum": ["BEFORE", "AFTER"]
+            "enum": [
+              "BEFORE",
+              "AFTER"
+            ]
           },
           "value": {
             "type": "string",
@@ -5929,7 +6612,9 @@
             "type": "array",
             "items": {
               "type": "object",
-              "required": ["name"],
+              "required": [
+                "name"
+              ],
               "properties": {
                 "name": {
                   "type": "string"
@@ -5941,13 +6626,18 @@
       },
       "StateResponse": {
         "type": "object",
-        "required": ["state"],
+        "required": [
+          "state"
+        ],
         "properties": {
           "state": {
             "type": "array",
             "items": {
               "type": "object",
-              "required": ["name", "value"],
+              "required": [
+                "name",
+                "value"
+              ],
               "properties": {
                 "name": {
                   "type": "string"
@@ -6193,7 +6883,10 @@
       },
       "JournalRawEntry": {
         "type": "object",
-        "required": ["index", "entry_type"],
+        "required": [
+          "index",
+          "entry_type"
+        ],
         "properties": {
           "index": {
             "type": "integer"
@@ -6341,7 +7034,10 @@
                   "type": "string"
                 }
               },
-              "required": ["key", "value"]
+              "required": [
+                "key",
+                "value"
+              ]
             }
           },
           "keys": {
@@ -6355,7 +7051,10 @@
       },
       "JournalBaseEntry": {
         "type": "object",
-        "required": ["index", "entry_type"],
+        "required": [
+          "index",
+          "entry_type"
+        ],
         "properties": {
           "index": {
             "type": "integer"
@@ -6387,7 +7086,11 @@
           },
           "resultType": {
             "type": "string",
-            "enum": ["success", "failure", "void"]
+            "enum": [
+              "success",
+              "failure",
+              "void"
+            ]
           },
           "isRetrying": {
             "type": "boolean"
@@ -6443,7 +7146,11 @@
           },
           "category": {
             "type": "string",
-            "enum": ["notification", "command", "event"]
+            "enum": [
+              "notification",
+              "command",
+              "event"
+            ]
           },
           "type": {
             "type": "string"
@@ -6472,7 +7179,9 @@
             "properties": {
               "entry_type": {
                 "type": "string",
-                "enum": ["CancelSignal"]
+                "enum": [
+                  "CancelSignal"
+                ]
               }
             }
           }
@@ -6483,11 +7192,15 @@
         "properties": {
           "category": {
             "type": "string",
-            "enum": ["event"]
+            "enum": [
+              "event"
+            ]
           },
           "type": {
             "type": "string",
-            "enum": ["Event: TransientError"]
+            "enum": [
+              "Event: TransientError"
+            ]
           },
           "relatedCommandName": {
             "type": "string"
@@ -6520,11 +7233,15 @@
         "properties": {
           "category": {
             "type": "string",
-            "enum": ["event"]
+            "enum": [
+              "event"
+            ]
           },
           "type": {
             "type": "string",
-            "enum": ["Event: Paused"]
+            "enum": [
+              "Event: Paused"
+            ]
           },
           "relatedCommandName": {
             "type": "string"
@@ -6593,11 +7310,15 @@
         "properties": {
           "category": {
             "type": "string",
-            "enum": ["event"]
+            "enum": [
+              "event"
+            ]
           },
           "type": {
             "type": "string",
-            "enum": ["Created"]
+            "enum": [
+              "Created"
+            ]
           }
         }
       },
@@ -6606,11 +7327,15 @@
         "properties": {
           "category": {
             "type": "string",
-            "enum": ["event"]
+            "enum": [
+              "event"
+            ]
           },
           "type": {
             "type": "string",
-            "enum": ["Running"]
+            "enum": [
+              "Running"
+            ]
           }
         }
       },
@@ -6619,11 +7344,15 @@
         "properties": {
           "category": {
             "type": "string",
-            "enum": ["event"]
+            "enum": [
+              "event"
+            ]
           },
           "type": {
             "type": "string",
-            "enum": ["Retrying"]
+            "enum": [
+              "Retrying"
+            ]
           }
         }
       },
@@ -6632,11 +7361,15 @@
         "properties": {
           "category": {
             "type": "string",
-            "enum": ["event"]
+            "enum": [
+              "event"
+            ]
           },
           "type": {
             "type": "string",
-            "enum": ["Scheduled"]
+            "enum": [
+              "Scheduled"
+            ]
           }
         }
       },
@@ -6645,11 +7378,15 @@
         "properties": {
           "category": {
             "type": "string",
-            "enum": ["event"]
+            "enum": [
+              "event"
+            ]
           },
           "type": {
             "type": "string",
-            "enum": ["Suspended"]
+            "enum": [
+              "Suspended"
+            ]
           }
         }
       },
@@ -6658,11 +7395,15 @@
         "properties": {
           "category": {
             "type": "string",
-            "enum": ["event"]
+            "enum": [
+              "event"
+            ]
           },
           "type": {
             "type": "string",
-            "enum": ["Paused"]
+            "enum": [
+              "Paused"
+            ]
           },
           "message": {
             "type": "string"
@@ -6692,11 +7433,15 @@
         "properties": {
           "category": {
             "type": "string",
-            "enum": ["event"]
+            "enum": [
+              "event"
+            ]
           },
           "type": {
             "type": "string",
-            "enum": ["Pending"]
+            "enum": [
+              "Pending"
+            ]
           }
         }
       },
@@ -6705,11 +7450,15 @@
         "properties": {
           "category": {
             "type": "string",
-            "enum": ["event"]
+            "enum": [
+              "event"
+            ]
           },
           "type": {
             "type": "string",
-            "enum": ["Completion"]
+            "enum": [
+              "Completion"
+            ]
           }
         }
       },
@@ -6718,11 +7467,15 @@
         "properties": {
           "category": {
             "type": "string",
-            "enum": ["event"]
+            "enum": [
+              "event"
+            ]
           },
           "type": {
             "type": "string",
-            "enum": ["Killed"]
+            "enum": [
+              "Killed"
+            ]
           }
         }
       },
@@ -6737,7 +7490,9 @@
             "properties": {
               "entry_type": {
                 "type": "string",
-                "enum": ["Input"]
+                "enum": [
+                  "Input"
+                ]
               },
               "body": {
                 "type": "string"
@@ -6746,7 +7501,10 @@
                 "type": "array",
                 "items": {
                   "type": "object",
-                  "required": ["key", "value"],
+                  "required": [
+                    "key",
+                    "value"
+                  ],
                   "properties": {
                     "key": {
                       "type": "string"
@@ -6766,11 +7524,15 @@
         "properties": {
           "category": {
             "type": "string",
-            "enum": ["command"]
+            "enum": [
+              "command"
+            ]
           },
           "type": {
             "type": "string",
-            "enum": ["Input"]
+            "enum": [
+              "Input"
+            ]
           },
           "handlerName": {
             "type": "string"
@@ -6782,7 +7544,10 @@
             "type": "array",
             "items": {
               "type": "object",
-              "required": ["key", "value"],
+              "required": [
+                "key",
+                "value"
+              ],
               "properties": {
                 "key": {
                   "type": "string"
@@ -6806,7 +7571,9 @@
             "properties": {
               "entry_type": {
                 "type": "string",
-                "enum": ["Output"]
+                "enum": [
+                  "Output"
+                ]
               },
               "body": {
                 "type": "string"
@@ -6823,14 +7590,18 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["Output"]
+            "enum": [
+              "Output"
+            ]
           },
           "value": {
             "type": "string"
           },
           "category": {
             "type": "string",
-            "enum": ["command"]
+            "enum": [
+              "command"
+            ]
           }
         }
       },
@@ -6845,7 +7616,10 @@
             "properties": {
               "entry_type": {
                 "type": "string",
-                "enum": ["GetState", "GetEagerState"]
+                "enum": [
+                  "GetState",
+                  "GetEagerState"
+                ]
               },
               "key": {
                 "type": "string"
@@ -6868,7 +7642,10 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["GetState", "GetEagerState"]
+            "enum": [
+              "GetState",
+              "GetEagerState"
+            ]
           },
           "key": {
             "type": "string"
@@ -6878,7 +7655,9 @@
           },
           "category": {
             "type": "string",
-            "enum": ["command"]
+            "enum": [
+              "command"
+            ]
           }
         }
       },
@@ -6887,7 +7666,9 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["GetLazyState"]
+            "enum": [
+              "GetLazyState"
+            ]
           },
           "key": {
             "type": "string"
@@ -6897,7 +7678,9 @@
           },
           "category": {
             "type": "string",
-            "enum": ["command"]
+            "enum": [
+              "command"
+            ]
           }
         }
       },
@@ -6912,7 +7695,9 @@
             "properties": {
               "entry_type": {
                 "type": "string",
-                "enum": ["SetState"]
+                "enum": [
+                  "SetState"
+                ]
               },
               "key": {
                 "type": "string"
@@ -6929,7 +7714,9 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["SetState"]
+            "enum": [
+              "SetState"
+            ]
           },
           "key": {
             "type": "string"
@@ -6939,7 +7726,9 @@
           },
           "category": {
             "type": "string",
-            "enum": ["command"]
+            "enum": [
+              "command"
+            ]
           }
         }
       },
@@ -6954,7 +7743,10 @@
             "properties": {
               "entry_type": {
                 "type": "string",
-                "enum": ["GetStateKeys", "GetEagerStateKeys"]
+                "enum": [
+                  "GetStateKeys",
+                  "GetEagerStateKeys"
+                ]
               },
               "completed": {
                 "type": "boolean"
@@ -6977,11 +7769,16 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["GetStateKeys", "GetEagerStateKeys"]
+            "enum": [
+              "GetStateKeys",
+              "GetEagerStateKeys"
+            ]
           },
           "category": {
             "type": "string",
-            "enum": ["command"]
+            "enum": [
+              "command"
+            ]
           },
           "keys": {
             "type": "array",
@@ -6996,11 +7793,15 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["GetLazyStateKeys"]
+            "enum": [
+              "GetLazyStateKeys"
+            ]
           },
           "category": {
             "type": "string",
-            "enum": ["command"]
+            "enum": [
+              "command"
+            ]
           },
           "keys": {
             "type": "array",
@@ -7024,7 +7825,9 @@
               },
               "entry_type": {
                 "type": "string",
-                "enum": ["ClearState"]
+                "enum": [
+                  "ClearState"
+                ]
               }
             }
           }
@@ -7038,11 +7841,15 @@
           },
           "type": {
             "type": "string",
-            "enum": ["ClearState"]
+            "enum": [
+              "ClearState"
+            ]
           },
           "category": {
             "type": "string",
-            "enum": ["command"]
+            "enum": [
+              "command"
+            ]
           }
         }
       },
@@ -7057,7 +7864,9 @@
             "properties": {
               "entry_type": {
                 "type": "string",
-                "enum": ["ClearAllState"]
+                "enum": [
+                  "ClearAllState"
+                ]
               }
             }
           }
@@ -7068,11 +7877,15 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["ClearAllState"]
+            "enum": [
+              "ClearAllState"
+            ]
           },
           "category": {
             "type": "string",
-            "enum": ["command"]
+            "enum": [
+              "command"
+            ]
           }
         }
       },
@@ -7097,7 +7910,9 @@
               },
               "entry_type": {
                 "type": "string",
-                "enum": ["Sleep"]
+                "enum": [
+                  "Sleep"
+                ]
               },
               "name": {
                 "type": "string"
@@ -7115,11 +7930,15 @@
           },
           "type": {
             "type": "string",
-            "enum": ["Sleep"]
+            "enum": [
+              "Sleep"
+            ]
           },
           "category": {
             "type": "string",
-            "enum": ["command"]
+            "enum": [
+              "command"
+            ]
           },
           "name": {
             "type": "string"
@@ -7131,11 +7950,15 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["Sleep"]
+            "enum": [
+              "Sleep"
+            ]
           },
           "category": {
             "type": "string",
-            "enum": ["notification"]
+            "enum": [
+              "notification"
+            ]
           }
         }
       },
@@ -7153,7 +7976,9 @@
               },
               "entry_type": {
                 "type": "string",
-                "enum": ["GetPromise"]
+                "enum": [
+                  "GetPromise"
+                ]
               },
               "promise_name": {
                 "type": "string"
@@ -7173,11 +7998,15 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["GetPromise"]
+            "enum": [
+              "GetPromise"
+            ]
           },
           "category": {
             "type": "string",
-            "enum": ["command"]
+            "enum": [
+              "command"
+            ]
           },
           "promiseName": {
             "type": "string"
@@ -7192,11 +8021,15 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["PeekPromise"]
+            "enum": [
+              "PeekPromise"
+            ]
           },
           "category": {
             "type": "string",
-            "enum": ["command"]
+            "enum": [
+              "command"
+            ]
           },
           "promiseName": {
             "type": "string"
@@ -7211,11 +8044,15 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["CompletePromise"]
+            "enum": [
+              "CompletePromise"
+            ]
           },
           "category": {
             "type": "string",
-            "enum": ["command"]
+            "enum": [
+              "command"
+            ]
           },
           "promiseName": {
             "type": "string"
@@ -7230,11 +8067,15 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["GetPromise"]
+            "enum": [
+              "GetPromise"
+            ]
           },
           "category": {
             "type": "string",
-            "enum": ["notification"]
+            "enum": [
+              "notification"
+            ]
           },
           "value": {
             "type": "string"
@@ -7246,11 +8087,15 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["PeekPromise"]
+            "enum": [
+              "PeekPromise"
+            ]
           },
           "category": {
             "type": "string",
-            "enum": ["notification"]
+            "enum": [
+              "notification"
+            ]
           },
           "value": {
             "type": "string"
@@ -7262,11 +8107,15 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["CompletePromise"]
+            "enum": [
+              "CompletePromise"
+            ]
           },
           "category": {
             "type": "string",
-            "enum": ["notification"]
+            "enum": [
+              "notification"
+            ]
           }
         }
       },
@@ -7284,7 +8133,9 @@
               },
               "entry_type": {
                 "type": "string",
-                "enum": ["PeekPromise"]
+                "enum": [
+                  "PeekPromise"
+                ]
               },
               "promise_name": {
                 "type": "string"
@@ -7316,7 +8167,9 @@
               },
               "entry_type": {
                 "type": "string",
-                "enum": ["CompletePromise"]
+                "enum": [
+                  "CompletePromise"
+                ]
               },
               "completion": {
                 "type": "object",
@@ -7367,7 +8220,10 @@
                 "type": "array",
                 "items": {
                   "type": "object",
-                  "required": ["key", "value"],
+                  "required": [
+                    "key",
+                    "value"
+                  ],
                   "properties": {
                     "key": {
                       "type": "string"
@@ -7384,7 +8240,9 @@
               },
               "entry_type": {
                 "type": "string",
-                "enum": ["OneWayCall"]
+                "enum": [
+                  "OneWayCall"
+                ]
               }
             }
           }
@@ -7415,7 +8273,10 @@
             "type": "array",
             "items": {
               "type": "object",
-              "required": ["key", "value"],
+              "required": [
+                "key",
+                "value"
+              ],
               "properties": {
                 "key": {
                   "type": "string"
@@ -7432,11 +8293,15 @@
           },
           "type": {
             "type": "string",
-            "enum": ["OneWayCall"]
+            "enum": [
+              "OneWayCall"
+            ]
           },
           "category": {
             "type": "string",
-            "enum": ["command"]
+            "enum": [
+              "command"
+            ]
           }
         }
       },
@@ -7477,7 +8342,10 @@
                 "type": "array",
                 "items": {
                   "type": "object",
-                  "required": ["key", "value"],
+                  "required": [
+                    "key",
+                    "value"
+                  ],
                   "properties": {
                     "key": {
                       "type": "string"
@@ -7493,7 +8361,9 @@
               },
               "entry_type": {
                 "type": "string",
-                "enum": ["Call"]
+                "enum": [
+                  "Call"
+                ]
               }
             }
           }
@@ -7524,7 +8394,10 @@
             "type": "array",
             "items": {
               "type": "object",
-              "required": ["key", "value"],
+              "required": [
+                "key",
+                "value"
+              ],
               "properties": {
                 "key": {
                   "type": "string"
@@ -7540,11 +8413,15 @@
           },
           "type": {
             "type": "string",
-            "enum": ["Call"]
+            "enum": [
+              "Call"
+            ]
           },
           "category": {
             "type": "string",
-            "enum": ["command"]
+            "enum": [
+              "command"
+            ]
           }
         }
       },
@@ -7556,11 +8433,15 @@
           },
           "type": {
             "type": "string",
-            "enum": ["Call"]
+            "enum": [
+              "Call"
+            ]
           },
           "category": {
             "type": "string",
-            "enum": ["notification"]
+            "enum": [
+              "notification"
+            ]
           }
         }
       },
@@ -7572,11 +8453,15 @@
           },
           "type": {
             "type": "string",
-            "enum": ["CallInvocationId"]
+            "enum": [
+              "CallInvocationId"
+            ]
           },
           "category": {
             "type": "string",
-            "enum": ["notification"]
+            "enum": [
+              "notification"
+            ]
           }
         }
       },
@@ -7588,11 +8473,15 @@
           },
           "type": {
             "type": "string",
-            "enum": ["Run"]
+            "enum": [
+              "Run"
+            ]
           },
           "category": {
             "type": "string",
-            "enum": ["notification"]
+            "enum": [
+              "notification"
+            ]
           }
         }
       },
@@ -7604,11 +8493,15 @@
           },
           "type": {
             "type": "string",
-            "enum": ["GetLazyState"]
+            "enum": [
+              "GetLazyState"
+            ]
           },
           "category": {
             "type": "string",
-            "enum": ["notification"]
+            "enum": [
+              "notification"
+            ]
           }
         }
       },
@@ -7617,11 +8510,15 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["GetLazyStateKeys"]
+            "enum": [
+              "GetLazyStateKeys"
+            ]
           },
           "category": {
             "type": "string",
-            "enum": ["notification"]
+            "enum": [
+              "notification"
+            ]
           },
           "keys": {
             "type": "array",
@@ -7645,7 +8542,9 @@
               },
               "entry_type": {
                 "type": "string",
-                "enum": ["Awakeable"]
+                "enum": [
+                  "Awakeable"
+                ]
               },
               "failure": {
                 "$ref": "#/components/schemas/FailureEntry"
@@ -7662,11 +8561,15 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["Awakeable"]
+            "enum": [
+              "Awakeable"
+            ]
           },
           "category": {
             "type": "string",
-            "enum": ["command"]
+            "enum": [
+              "command"
+            ]
           },
           "value": {
             "type": "string"
@@ -7687,7 +8590,9 @@
             "properties": {
               "entry_type": {
                 "type": "string",
-                "enum": ["CompleteAwakeable"]
+                "enum": [
+                  "CompleteAwakeable"
+                ]
               },
               "failure": {
                 "$ref": "#/components/schemas/FailureEntry"
@@ -7707,11 +8612,15 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["CompleteAwakeable"]
+            "enum": [
+              "CompleteAwakeable"
+            ]
           },
           "category": {
             "type": "string",
-            "enum": ["command"]
+            "enum": [
+              "command"
+            ]
           },
           "value": {
             "type": "string"
@@ -7726,11 +8635,15 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["SendSignal"]
+            "enum": [
+              "SendSignal"
+            ]
           },
           "category": {
             "type": "string",
-            "enum": ["command"]
+            "enum": [
+              "command"
+            ]
           },
           "value": {
             "type": "string"
@@ -7748,11 +8661,15 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["CompleteAwakeable"]
+            "enum": [
+              "CompleteAwakeable"
+            ]
           },
           "category": {
             "type": "string",
-            "enum": ["notification"]
+            "enum": [
+              "notification"
+            ]
           },
           "value": {
             "type": "string"
@@ -7767,11 +8684,15 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["Signal"]
+            "enum": [
+              "Signal"
+            ]
           },
           "category": {
             "type": "string",
-            "enum": ["notification"]
+            "enum": [
+              "notification"
+            ]
           },
           "value": {
             "type": "string"
@@ -7786,11 +8707,15 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["Cancel"]
+            "enum": [
+              "Cancel"
+            ]
           },
           "category": {
             "type": "string",
-            "enum": ["notification"]
+            "enum": [
+              "notification"
+            ]
           }
         }
       },
@@ -7799,11 +8724,15 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["Cancel"]
+            "enum": [
+              "Cancel"
+            ]
           },
           "category": {
             "type": "string",
-            "enum": ["command"]
+            "enum": [
+              "command"
+            ]
           },
           "invocationId": {
             "type": "string"
@@ -7821,7 +8750,9 @@
             "properties": {
               "entry_type": {
                 "type": "string",
-                "enum": ["CancelInvocation"]
+                "enum": [
+                  "CancelInvocation"
+                ]
               }
             }
           }
@@ -7841,7 +8772,9 @@
               },
               "entry_type": {
                 "type": "string",
-                "enum": ["GetCallInvocationId"]
+                "enum": [
+                  "GetCallInvocationId"
+                ]
               }
             }
           }
@@ -7858,7 +8791,9 @@
             "properties": {
               "entry_type": {
                 "type": "string",
-                "enum": ["AttachInvocation"]
+                "enum": [
+                  "AttachInvocation"
+                ]
               },
               "invocationId": {
                 "type": "string"
@@ -7878,11 +8813,15 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["AttachInvocation"]
+            "enum": [
+              "AttachInvocation"
+            ]
           },
           "category": {
             "type": "string",
-            "enum": ["command"]
+            "enum": [
+              "command"
+            ]
           },
           "invocationId": {
             "type": "string"
@@ -7897,11 +8836,15 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["AttachInvocation"]
+            "enum": [
+              "AttachInvocation"
+            ]
           },
           "category": {
             "type": "string",
-            "enum": ["notification"]
+            "enum": [
+              "notification"
+            ]
           },
           "value": {
             "type": "string"
@@ -7919,7 +8862,9 @@
             "properties": {
               "entry_type": {
                 "type": "string",
-                "enum": ["GetInvocationOutput"]
+                "enum": [
+                  "GetInvocationOutput"
+                ]
               }
             }
           }
@@ -7936,7 +8881,9 @@
             "properties": {
               "entry_type": {
                 "type": "string",
-                "enum": ["Custom"]
+                "enum": [
+                  "Custom"
+                ]
               }
             }
           }
@@ -7944,7 +8891,9 @@
       },
       "RunJournalEntryType": {
         "type": "object",
-        "required": ["name"],
+        "required": [
+          "name"
+        ],
         "allOf": [
           {
             "$ref": "#/components/schemas/JournalBaseEntry"
@@ -7957,7 +8906,9 @@
               },
               "entry_type": {
                 "type": "string",
-                "enum": ["Run"]
+                "enum": [
+                  "Run"
+                ]
               },
               "failure": {
                 "$ref": "#/components/schemas/FailureEntry"
@@ -7977,11 +8928,15 @@
           },
           "type": {
             "type": "string",
-            "enum": ["Run"]
+            "enum": [
+              "Run"
+            ]
           },
           "category": {
             "type": "string",
-            "enum": ["command"]
+            "enum": [
+              "command"
+            ]
           },
           "value": {
             "type": "string"
@@ -7990,7 +8945,10 @@
       },
       "InboxResponse": {
         "type": "object",
-        "required": ["length", "head"],
+        "required": [
+          "length",
+          "head"
+        ],
         "properties": {
           "size": {
             "type": "integer"
@@ -8070,7 +9028,12 @@
           },
           "invoked_by": {
             "type": "string",
-            "enum": ["ingress", "service", "restart_as_new", "subscription"]
+            "enum": [
+              "ingress",
+              "service",
+              "restart_as_new",
+              "subscription"
+            ]
           },
           "restarted_from": {
             "type": "string"
@@ -8105,11 +9068,18 @@
           },
           "target_service_ty": {
             "type": "string",
-            "enum": ["service", "virtual_object", "workflow"]
+            "enum": [
+              "service",
+              "virtual_object",
+              "workflow"
+            ]
           },
           "completion_result": {
             "type": "string",
-            "enum": ["success", "failure"]
+            "enum": [
+              "success",
+              "failure"
+            ]
           },
           "completion_failure": {
             "type": "string"
@@ -8256,7 +9226,12 @@
           },
           "invoked_by": {
             "type": "string",
-            "enum": ["ingress", "service", "restart_as_new", "subscription"]
+            "enum": [
+              "ingress",
+              "service",
+              "restart_as_new",
+              "subscription"
+            ]
           },
           "restarted_from": {
             "type": "string"
@@ -8288,11 +9263,18 @@
           },
           "target_service_ty": {
             "type": "string",
-            "enum": ["service", "virtual_object", "workflow"]
+            "enum": [
+              "service",
+              "virtual_object",
+              "workflow"
+            ]
           },
           "completion_result": {
             "type": "string",
-            "enum": ["success", "failure"]
+            "enum": [
+              "success",
+              "failure"
+            ]
           },
           "completion_failure": {
             "type": "string"
@@ -8392,7 +9374,11 @@
             "type": "array",
             "items": {
               "type": "object",
-              "required": ["name", "count", "isIncluded"],
+              "required": [
+                "name",
+                "count",
+                "isIncluded"
+              ],
               "properties": {
                 "name": {
                   "type": "string"
@@ -8410,7 +9396,11 @@
             "type": "array",
             "items": {
               "type": "object",
-              "required": ["name", "count", "isIncluded"],
+              "required": [
+                "name",
+                "count",
+                "isIncluded"
+              ],
               "properties": {
                 "name": {
                   "type": "string"
@@ -8428,7 +9418,12 @@
             "type": "array",
             "items": {
               "type": "object",
-              "required": ["service", "status", "count", "isIncluded"],
+              "required": [
+                "service",
+                "status",
+                "count",
+                "isIncluded"
+              ],
               "properties": {
                 "service": {
                   "type": "string"
@@ -8447,7 +9442,11 @@
           },
           "duration": {
             "type": "object",
-            "required": ["p50", "p90", "p99"],
+            "required": [
+              "p50",
+              "p90",
+              "p99"
+            ],
             "properties": {
               "p50": {
                 "type": "string",
