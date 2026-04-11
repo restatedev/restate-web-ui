@@ -1,10 +1,9 @@
 import { useLocation, useNavigation } from 'react-router';
 import { GridListItem as AriaGridListItem } from 'react-aria-components';
-import { Link, useHrefWithQueryParams } from '@restate/ui/link';
+import { useHrefWithQueryParams } from '@restate/ui/link';
 import { PropsWithChildren, useCallback, useContext } from 'react';
 import { tv } from '@restate/util/styles';
 import { NavContext } from './NavContext';
-import { Button } from '@restate/ui/button';
 
 interface NavItemProps {
   href: string;
@@ -56,7 +55,8 @@ export function NavItem({
 }
 
 interface NavSearchItemProps {
-  search: string;
+  param: string;
+  value?: string;
 }
 
 export function useGetHrefFromSearch() {
@@ -65,30 +65,22 @@ export function useGetHrefFromSearch() {
   const location = state === 'loading' ? nextLocation : currentLocation;
 
   const getHref = useCallback(
-    (search: string) => {
+    (param: string, value?: string) => {
       const currentSearchParams = new URLSearchParams(location.search);
       currentSearchParams.sort();
-      const targetSearchParams = new URLSearchParams(search);
-      const keys = Array.from(targetSearchParams.keys());
-      const excludingNewParams = keys.reduce((search, key) => {
-        search.delete(key);
-        return search;
-      }, new URLSearchParams(location.search));
-      const withNewParams = new URLSearchParams([
-        ...excludingNewParams,
-        ...new URLSearchParams(search),
-      ]);
+      const withNewParams = new URLSearchParams(location.search);
+      withNewParams.delete(param);
+      if (value !== undefined) {
+        withNewParams.set(param, value);
+      }
       const withNewParamsSorted = new URLSearchParams(withNewParams);
       withNewParamsSorted.sort();
 
-      const targetSearch =
-        targetSearchParams.size > 0 ? `?${withNewParams.toString()}` : '';
+      const targetSearch = withNewParams.toString();
       return {
-        href: `${location.pathname}${targetSearch}${location.hash}`,
+        href: `${location.pathname}${targetSearch ? `?${targetSearch}` : ''}${location.hash}`,
         isActive:
-          targetSearchParams.size === 0
-            ? currentSearchParams.toString() === ''
-            : currentSearchParams.toString() === withNewParamsSorted.toString(),
+          currentSearchParams.toString() === withNewParamsSorted.toString(),
       };
     },
     [location.hash, location.pathname, location.search],
@@ -99,11 +91,12 @@ export function useGetHrefFromSearch() {
 
 export function NavSearchItem({
   children,
-  search,
+  param,
+  value,
 }: PropsWithChildren<NavSearchItemProps>) {
   const getHref = useGetHrefFromSearch();
-  const { href, isActive } = getHref(search);
-  const { value } = useContext(NavContext);
+  const { href, isActive } = getHref(param, value);
+  const { value: ariaCurrentValue } = useContext(NavContext);
 
   return (
     <AriaGridListItem
@@ -111,7 +104,7 @@ export function NavSearchItem({
       href={href}
       className={styles()}
       data-active={isActive}
-      {...(isActive && { 'aria-current': value })}
+      {...(isActive && { 'aria-current': ariaCurrentValue })}
     >
       {children}
     </AriaGridListItem>
