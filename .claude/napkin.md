@@ -242,6 +242,8 @@
 - 2026-04-11 | self | Reusing `Deployment` for the overview deployment column kept logic centralized, but the component's outer flex centered the icon across the whole two-line body. When a shared renderer gets reused in a two-line card header, align the icon to the primary row through the consuming class hooks instead of duplicating the markup.
 - 2026-04-11 | self | For overview first-column consistency, let the overview own the second-row rhythm and reserve `Deployment` for the complex endpoint/icon logic only. Reusing a shared renderer for both rows made service/deployment toggles drift because internal spacing competed with the card shell.
 - 2026-04-11 | self | Reusable component variants should use semantic names when possible. `default`/`overview` made `Deployment` feel implementation-specific; `primary`/`secondary` reads better at call sites and survives future reuse better.
+- 2026-04-11 | self | When extracting conditional `GridList` branches into separate components, push filtering, derived rows, and section rendering into the new files, but keep user state in the parent if unmounting would otherwise reset behavior across view toggles.
+- 2026-04-11 | self | If a route still ends up threading the same filter/sort/query-derived props into extracted view components, a route-scoped context/provider is a good next step. It keeps one subscription to the shared data while letting the route focus on page chrome and the children focus on their own rendering.
 
 - 2026-03-06 | self | In full-trace live view (`zoomLevel=1`), interval drift comes from slot width recomputation, not container transform. Keep slot/spacer `width` transitions enabled for live edge states, and don't gate edge animation solely on `canReturnToLive`.
 
