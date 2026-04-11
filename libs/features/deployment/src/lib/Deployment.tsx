@@ -22,12 +22,72 @@ import { MiniGithubMetadata } from '@restate/features/options';
 import { MiniSDK } from './SDK';
 
 const styles = tv({
-  base: 'relative -m-1 flex flex-row items-center gap-0.5 border p-1 text-0.5xs transition-all ease-in-out',
+  base: 'relative flex flex-row items-center border text-0.5xs transition-all ease-in-out',
   variants: {
     isSelected: {
-      true: 'z-10 -mx-1 rounded-lg border bg-white px-1 font-medium shadow-xs shadow-zinc-800/3',
+      true: 'z-10 rounded-lg border bg-white font-medium shadow-xs shadow-zinc-800/3',
       false: 'border-transparent',
     },
+    variant: {
+      secondary: '-m-1 gap-0.5 p-1',
+      primary:
+        '-mx-1 my-0 min-h-[2.625rem] gap-2 rounded-lg px-1 py-0.5 hover:bg-black/3',
+    },
+  },
+  defaultVariants: {
+    variant: 'secondary',
+  },
+});
+
+const iconContainerStyles = tv({
+  base: 'shrink-0 border bg-white shadow-xs',
+  variants: {
+    variant: {
+      secondary: 'mr-1.5 h-6 w-6 rounded-md',
+      primary: 'h-7 w-7 rounded-lg',
+    },
+  },
+  defaultVariants: {
+    variant: 'secondary',
+  },
+});
+
+const iconStyles = tv({
+  base: 'h-full w-full p-1',
+  variants: {
+    variant: {
+      secondary: 'text-zinc-400',
+      primary: 'fill-blue-50 text-blue-400 drop-shadow-md',
+    },
+  },
+  defaultVariants: {
+    variant: 'secondary',
+  },
+});
+
+const bodyStyles = tv({
+  base: 'min-w-[6ch] flex-auto text-zinc-600',
+  variants: {
+    variant: {
+      secondary: 'mr-2',
+      primary: 'mr-0',
+    },
+  },
+  defaultVariants: {
+    variant: 'secondary',
+  },
+});
+
+const endpointStyles = tv({
+  base: 'min-w-0 flex-auto basis-full',
+  variants: {
+    variant: {
+      secondary: '',
+      primary: 'text-base font-medium text-zinc-700',
+    },
+  },
+  defaultVariants: {
+    variant: 'secondary',
   },
 });
 
@@ -39,18 +99,20 @@ export function Deployment({
   deploymentId,
   highlightSelection = true,
   showEndpoint = true,
+  showLink = true,
   showGithubMetadata = false,
   showSdk = false,
-  lastAttemptServer,
+  variant = 'secondary',
 }: {
   revision?: ServiceRevision;
   className?: string;
   deploymentId?: DeploymentId;
   highlightSelection?: boolean;
   showEndpoint?: boolean;
+  showLink?: boolean;
   showGithubMetadata?: boolean;
   showSdk?: boolean;
-  lastAttemptServer?: string;
+  variant?: 'primary' | 'secondary';
 }) {
   const { tunnel, isVersionGte } = useRestateContext();
   const { data: { deployments } = {} } = useListDeployments({
@@ -75,28 +137,32 @@ export function Deployment({
   if (!deployment) {
     if (deploymentId) {
       return (
-        <div className={styles({ className, isSelected })}>
-          <div className="deployment min-w-0 flex-auto basis-full pl-1 text-gray-600">
-            <TruncateWithTooltip
-              copyText={deploymentId}
-              triggerRef={linkRef}
-              className="[&_.badge]:bg-gray-700"
-            >
-              {deploymentId}
-            </TruncateWithTooltip>
+        <div className={styles({ className, isSelected, variant })}>
+          <div className={bodyStyles({ variant })}>
+            <div className={endpointStyles({ variant })}>
+              <TruncateWithTooltip
+                copyText={deploymentId}
+                triggerRef={linkRef}
+                className="[&_.badge]:bg-gray-700"
+              >
+                {deploymentId}
+              </TruncateWithTooltip>
+            </div>
           </div>
-          <Link
-            ref={linkRef}
-            aria-label={deploymentId}
-            variant="secondary"
-            href={`?${DEPLOYMENT_QUERY_PARAM}=${deploymentId}`}
-            className="m-1 ml-0 rounded-full outline-offset-0 before:absolute before:inset-0 before:rounded-lg before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5"
-          >
-            <Icon
-              name={IconName.ChevronRight}
-              className="h-4 w-4 text-gray-400"
-            />
-          </Link>
+          {showLink && (
+            <Link
+              ref={linkRef}
+              aria-label={deploymentId}
+              variant="secondary"
+              href={`?${DEPLOYMENT_QUERY_PARAM}=${deploymentId}`}
+              className="m-1 ml-0 rounded-full outline-offset-0 before:absolute before:inset-0 before:rounded-lg before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5"
+            >
+              <Icon
+                name={IconName.ChevronRight}
+                className="h-4 w-4 text-gray-400"
+              />
+            </Link>
+          )}
         </div>
       );
     }
@@ -115,7 +181,7 @@ export function Deployment({
 
   return (
     <div
-      className={styles({ className, isSelected })}
+      className={styles({ className, isSelected, variant })}
       data-deprecated={isDeprecated}
     >
       {isDeprecated ? (
@@ -141,7 +207,7 @@ export function Deployment({
           </PopoverContent>
         </Popover>
       ) : (
-        <div className="mr-1.5 h-6 w-6 shrink-0 rounded-md border bg-white shadow-xs">
+        <div className={iconContainerStyles({ variant })}>
           <Icon
             name={
               isTunnel
@@ -150,49 +216,47 @@ export function Deployment({
                   ? IconName.Http
                   : IconName.Lambda
             }
-            className="h-full w-full p-1 text-zinc-400"
+            className={iconStyles({ variant })}
           />
         </div>
       )}
 
-      <div className="mr-2 flex min-w-[6ch] flex-auto flex-row items-center gap-1 text-zinc-600">
-        {
-          <div className="flex max-w-full min-w-0 items-center gap-1.5 [&>*]:max-w-fit [&>*]:flex-auto [&>*:not(.deployment)]:min-w-[0ch] [&>*:not(.deployment)]:basis-[40ch]">
-            {isTunnel && (
-              <HoverTooltip
-                content={
-                  <p className="flex items-center">
-                    Tunnel name:{' '}
-                    <code className="ml-1 inline-block">
-                      {tunnelEndpoint?.name}
-                    </code>
-                    <Copy
-                      copyText={String(tunnelEndpoint?.name)}
-                      className="ml-4 h-5 w-5 rounded-xs bg-zinc-800/90 p-1 hover:bg-zinc-600 pressed:bg-zinc-500"
-                    />
-                  </p>
-                }
+      <div className={bodyStyles({ variant })}>
+        <div className="flex max-w-full min-w-0 items-center gap-1.5">
+          {isTunnel && (
+            <HoverTooltip
+              content={
+                <p className="flex items-center">
+                  Tunnel name:{' '}
+                  <code className="ml-1 inline-block">
+                    {tunnelEndpoint?.name}
+                  </code>
+                  <Copy
+                    copyText={String(tunnelEndpoint?.name)}
+                    className="ml-4 h-5 w-5 rounded-xs bg-zinc-800/90 p-1 hover:bg-zinc-600 pressed:bg-zinc-500"
+                  />
+                </p>
+              }
+            >
+              <Badge
+                size="xs"
+                className="relative z-[2] max-w-fit shrink-0 translate-y-px cursor-default rounded-sm py-0.5 font-mono text-2xs leading-3 font-medium"
               >
-                <Badge
-                  size="xs"
-                  className="relative z-[2] max-w-full flex-auto shrink-0 translate-y-px cursor-default rounded-sm py-0.5 font-mono text-2xs leading-3 font-medium"
-                >
-                  <Icon name={IconName.AtSign} className="mr-0.5 h-3 w-3" />
-                  <div className="w-full truncate">{tunnelEndpoint?.name}</div>
-                </Badge>
-              </HoverTooltip>
-            )}
-            <div className="deployment min-w-0 flex-auto basis-full">
-              <TruncateWithTooltip
-                copyText={deploymentEndpoint}
-                triggerRef={linkRef}
-                className="[&_.badge]:bg-gray-700"
-              >
-                {showEndpoint ? deploymentEndpoint : deploymentId}
-              </TruncateWithTooltip>
-            </div>
+                <Icon name={IconName.AtSign} className="mr-0.5 h-3 w-3" />
+                <div className="max-w-[20ch] truncate">{tunnelEndpoint?.name}</div>
+              </Badge>
+            </HoverTooltip>
+          )}
+          <div className={endpointStyles({ variant })}>
+            <TruncateWithTooltip
+              copyText={deploymentEndpoint}
+              triggerRef={linkRef}
+              className="[&_.badge]:bg-gray-700"
+            >
+              {showEndpoint ? deploymentEndpoint : deploymentId}
+            </TruncateWithTooltip>
           </div>
-        }
+        </div>
       </div>
 
       {showSdk && (
@@ -205,15 +269,20 @@ export function Deployment({
         <MiniGithubMetadata metadata={deployment.metadata} className="z-[2]" />
       )}
       {revision && <Revision revision={revision} className="z-2 ml-auto" />}
-      <Link
-        ref={linkRef}
-        aria-label={deploymentEndpoint}
-        variant="secondary"
-        href={`?${DEPLOYMENT_QUERY_PARAM}=${deployment.id}`}
-        className="m-1 ml-0 rounded-full outline-offset-0 before:absolute before:inset-0 before:rounded-lg before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5"
-      >
-        <Icon name={IconName.ChevronRight} className="h-4 w-4 text-gray-400" />
-      </Link>
+      {showLink && (
+        <Link
+          ref={linkRef}
+          aria-label={deploymentEndpoint}
+          variant="secondary"
+          href={`?${DEPLOYMENT_QUERY_PARAM}=${deployment.id}`}
+          className="m-1 ml-0 rounded-full outline-offset-0 before:absolute before:inset-0 before:rounded-lg before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5"
+        >
+          <Icon
+            name={IconName.ChevronRight}
+            className="h-4 w-4 text-gray-400"
+          />
+        </Link>
+      )}
     </div>
   );
 }

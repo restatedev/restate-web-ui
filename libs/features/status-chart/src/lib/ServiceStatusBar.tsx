@@ -80,11 +80,8 @@ export function ServiceStatusBar({
   if (total === 0) {
     if (isSummaryError || isSummaryLoading) return null;
     return (
-      <div className="flex min-w-0 flex-col">
-        <div className="pl-1.5 text-0.5xs text-gray-400">No invocations</div>
-        <div>
-          <br />
-        </div>
+      <div className="inline-flex min-w-0 items-center px-1.5 py-0.5 text-0.5xs text-gray-400">
+        No invocations
       </div>
     );
   }
