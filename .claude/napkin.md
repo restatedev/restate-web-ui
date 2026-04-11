@@ -245,6 +245,7 @@
 - 2026-04-11 | self | When extracting conditional `GridList` branches into separate components, push filtering, derived rows, and section rendering into the new files, but keep user state in the parent if unmounting would otherwise reset behavior across view toggles.
 - 2026-04-11 | self | If a route still ends up threading the same filter/sort/query-derived props into extracted view components, a route-scoped context/provider is a good next step. It keeps one subscription to the shared data while letting the route focus on page chrome and the children focus on their own rendering.
 - 2026-04-11 | self | Query param names can be short (`view`) while the code stays explicit with semantic module/type names (`overviewMode`). Keep the URL simple, and let internal naming carry the domain meaning.
+- 2026-04-11 | self | If a tiny helper module only exists to hold a closely related type/sort utility (like deployment-service sorting next to deployment sorting), prefer merging it into the existing domain helper file instead of keeping a second micro-file.
 
 - 2026-03-06 | self | In full-trace live view (`zoomLevel=1`), interval drift comes from slot width recomputation, not container transform. Keep slot/spacer `width` transitions enabled for live edge states, and don't gate edge animation solely on `canReturnToLive`.
 

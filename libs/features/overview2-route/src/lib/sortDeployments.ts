@@ -10,6 +10,8 @@ export type OverviewDeployment = Deployment & {
   status: DeploymentStatus;
 };
 
+export type OverviewDeploymentService = OverviewDeployment['services'][number];
+
 const deploymentStatusOrder: Record<DeploymentStatus, number> = {
   active: 0,
   drained: 1,
@@ -42,6 +44,12 @@ export function sortDeployments(
         return 0;
     }
   });
+}
+
+export function sortDeploymentServices(services: OverviewDeploymentService[]) {
+  return [...services].sort(
+    (a, b) => a.name.localeCompare(b.name) || b.revision - a.revision,
+  );
 }
 
 function getDeploymentLabel(deployment: Deployment) {
