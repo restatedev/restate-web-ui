@@ -4,7 +4,7 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Revision } from '@restate/features/deployment';
 import { SERVICE_QUERY_PARAM } from '@restate/features/service';
-import type { OverviewDeploymentService } from './sortDeploymentServices';
+import type { OverviewDeploymentService } from './sortDeployments';
 
 export function DeploymentServicesList({
   services,
