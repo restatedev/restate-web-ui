@@ -62,7 +62,7 @@ export function ServicesGridList() {
       sortDescriptor={resolvedServiceSortDescriptor}
       onSortChange={setServiceSortDescriptor}
       estimatedRowHeight={100}
-      className="[--grid-list-template-columns:1fr_2.5rem] md:[--grid-list-template-columns:calc(33%-0.5rem)_calc(33%-0.5rem)_1fr_2.5rem] xl:[--grid-list-template-columns:calc(33%-0.5rem)_calc(33%-0.5rem)_1fr_10rem]"
+      className="[--grid-list-template-columns:1fr_2.5rem] md:[--grid-list-template-columns:calc(33%-0.5rem)_calc(33%-0.5rem)_1fr_2.5rem] xl:[--grid-list-template-columns:calc(33%-0.5rem)_calc(33%-0.5rem)_1fr_4rem]"
       headerClassName="hidden px-[calc(0.5rem+1px+0.75rem)] md:grid"
     >
       {(service) => (
@@ -74,7 +74,9 @@ export function ServicesGridList() {
         >
           {({ cells, isFocusVisible }) => {
             const issues = serviceIssuesMap.get(service.name) ?? [];
-            const issueSeverity = issues.some((issue) => issue.severity === 'high')
+            const issueSeverity = issues.some(
+              (issue) => issue.severity === 'high',
+            )
               ? ('high' as const)
               : issues.length > 0
                 ? ('low' as const)

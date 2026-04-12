@@ -53,12 +53,6 @@ export function IssueBadge({
             </div>
             <span className="hidden font-semibold xl:inline">
               {issues.length}{' '}
-              <span className="font-normal">
-                {formatPlurals(issues.length, {
-                  one: 'issue',
-                  other: 'issues',
-                })}
-              </span>
             </span>
             <Icon
               name={IconName.ChevronsUpDown}
