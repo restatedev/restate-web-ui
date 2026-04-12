@@ -157,6 +157,8 @@ function OverviewContent() {
   const triggerRay = usePerspectiveRay(linesSvgRef);
   const noInvocations =
     !isSummaryLoading && !isSummaryError && totalCount === 0;
+  const statusCount = byStatus.filter((s) => s.count > 0).length;
+  const showLegend = statusCount > 1;
   const firstServiceName = servicesMap?.values().next().value?.name;
   const filterPlaceholder =
     mode === 'services'
@@ -215,7 +217,7 @@ function OverviewContent() {
       <PerspectiveLines svgRef={linesSvgRef} />
       <div className="relative flex w-full items-center justify-center">
         <div className="hidden min-w-0 flex-1 justify-end pr-6 md:flex">
-          {totalCount > 0 && (
+          {showLegend && (
             <StatusLegend
               byStatus={byStatus}
               isLoading={isSummaryLoading}
@@ -308,7 +310,7 @@ function OverviewContent() {
           </div>
         </div>
         <div className="hidden min-w-0 flex-1 justify-start pl-6 md:flex">
-          {totalCount > 0 && (
+          {showLegend && (
             <StatusLegend
               byStatus={byStatus}
               isLoading={isSummaryLoading}
