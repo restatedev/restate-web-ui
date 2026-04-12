@@ -16,7 +16,7 @@ import {
 import { getOrderedStatuses, type StatusEntry } from './useOrderedStatuses';
 
 export const legendStyles = tv({
-  base: 'flex outline-none',
+  base: 'flex items-start outline-none',
   variants: {
     isLoading: {
       true: 'animate-pulse',

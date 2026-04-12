@@ -1,4 +1,4 @@
-import { PropsWithChildren } from 'react';
+import { PropsWithChildren, ComponentPropsWithoutRef } from 'react';
 import { tv } from '@restate/util/styles';
 
 interface BadgeProps {
@@ -34,6 +34,11 @@ export function Badge({
   variant,
   className,
   size,
-}: PropsWithChildren<BadgeProps>) {
-  return <div className={styles({ className, variant, size })}>{children}</div>;
+  ...props
+}: PropsWithChildren<BadgeProps & ComponentPropsWithoutRef<'div'>>) {
+  return (
+    <div {...props} className={styles({ className, variant, size })}>
+      {children}
+    </div>
+  );
 }

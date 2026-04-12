@@ -28,6 +28,7 @@ import { TimeRangeToggle } from './TimeRangeToggle';
 import { OverviewModeToggle } from './OverviewModeToggle';
 import { ServicesGridList } from './ServicesGridList';
 import { DeploymentsGridList } from './DeploymentsGridList';
+import { Ellipsis } from '@restate/ui/loading';
 
 const LINE_COUNT = 7;
 const TOP_SPACING = 10;
@@ -249,55 +250,30 @@ function OverviewContent() {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-5">
-            <div className="flex items-center gap-1.5">
-              {summaryError ? (
-                <Popover>
-                  <PopoverTrigger>
-                    <Button
-                      variant="secondary"
-                      className="flex items-center gap-1.5 rounded-lg border-orange-200/80 bg-orange-50/80 px-3 py-1.5 text-xs text-orange-600 shadow-none hover:bg-orange-100/80"
-                    >
-                      <Icon
-                        name={IconName.TriangleAlert}
-                        className="h-3.5 w-3.5 fill-orange-200 text-orange-500"
-                      />
-                      Could not load invocation data
-                      <Icon
-                        name={IconName.ChevronsUpDown}
-                        className="h-3 w-3 text-orange-400"
-                      />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="max-w-sm">
-                    <ErrorBanner error={summaryError} className="rounded-xl" />
-                  </PopoverContent>
-                </Popover>
-              ) : isSummaryLoading ? (
-                <div className="h-6 w-32 animate-pulse rounded-lg bg-gray-200" />
-              ) : noInvocations ? (
-                <p className="text-sm text-gray-400">
-                  <Link
-                    {...(firstServiceName && {
-                      href: `?${SERVICE_PLAYGROUND_QUERY_PARAM}=${firstServiceName}`,
-                    })}
-                    variant="icon"
-                    className="flex items-center gap-1.5 rounded-xl text-gray-500/80"
+          <div className="flex items-center gap-3">
+            {summaryError && (
+              <Popover>
+                <PopoverTrigger>
+                  <Button
+                    variant="secondary"
+                    className="flex items-center gap-1.5 rounded-lg border-orange-200/80 bg-orange-50/80 px-3 py-1.5 text-xs text-orange-600 shadow-none hover:bg-orange-100/80"
                   >
-                    No invocations yet
-                  </Link>
-                </p>
-              ) : (
-                <div className="h-6">
-                  <span className="text-xl leading-6 font-semibold text-gray-600 tabular-nums">
-                    {formatNumber(totalCount, true)}
-                  </span>{' '}
-                  <span className="text-sm leading-6 text-gray-400">
-                    {totalCount === 1 ? 'invocation' : 'invocations'}
-                  </span>
-                </div>
-              )}
-            </div>
+                    <Icon
+                      name={IconName.TriangleAlert}
+                      className="h-3.5 w-3.5 fill-orange-200 text-orange-500"
+                    />
+                    Could not load invocation data
+                    <Icon
+                      name={IconName.ChevronsUpDown}
+                      className="h-3 w-3 text-orange-400"
+                    />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="max-w-sm">
+                  <ErrorBanner error={summaryError} className="rounded-xl" />
+                </PopoverContent>
+              </Popover>
+            )}
             <TimeRangeToggle
               onChange={() => {
                 queryClient.cancelQueries({
@@ -305,6 +281,13 @@ function OverviewContent() {
                   exact: true,
                 });
               }}
+              countLabel={
+                isSummaryLoading ? (
+                  <Ellipsis className="min-w-11" />
+                ) : noInvocations ? undefined : !summaryError ? (
+                  formatNumber(totalCount, true)
+                ) : undefined
+              }
             />
           </div>
         </div>
