@@ -40,18 +40,17 @@ export function IssueBadge({
             variant="secondary"
             className={issueButtonStyles({ severity })}
           >
-            <Icon
-              name={IconName.TriangleAlert}
-              className={issueAlertIconStyles({
-                severity,
-                className: 'h-4 w-4 shrink-0 xl:hidden',
-              })}
-            />
-            <div className="relative mx-0.5 hidden h-2 w-2 shrink-0 xl:flex">
-              <span className={issuePingStyles({ severity })} />
-              <span className={issueDotStyles({ severity })} />
+            <div className="relative mx-0.5 flex h-2.5 w-2.5 shrink-0">
+              <Icon
+                name={IconName.TriangleAlert}
+                className={issuePingStyles({ severity })}
+              />
+              <Icon
+                name={IconName.TriangleAlert}
+                className={issueDotStyles({ severity })}
+              />
             </div>
-            <span className="hidden font-semibold xl:inline">
+            <span className="hidden font-medium xl:inline">
               {issues.length}{' '}
             </span>
             <Icon
