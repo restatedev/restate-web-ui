@@ -1,19 +1,28 @@
 import { type RefObject, useCallback } from 'react';
 import { getWaveAnimationSelector } from './waveAnimationProps';
 
-function createRing(parent: HTMLElement, delay: number) {
+function createRing(origin: HTMLElement, delay: number) {
+  const rect = origin.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height);
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+
   const ring = document.createElement('div');
-  ring.style.position = 'absolute';
-  ring.style.inset = '0';
+  ring.style.position = 'fixed';
+  ring.style.width = `${size}px`;
+  ring.style.height = `${size}px`;
+  ring.style.left = `${cx - size / 2}px`;
+  ring.style.top = `${cy - size / 2}px`;
   ring.style.borderRadius = '50%';
   ring.style.pointerEvents = 'none';
-  ring.style.border = '3px solid rgba(255,255,255,0.6)';
+  ring.style.border = '3px solid rgba(255,255,255,0.35)';
   ring.style.zIndex = '-1';
-  parent.appendChild(ring);
+  document.body.appendChild(ring);
 
   ring.animate(
     [
-      { transform: 'scale(0.5)', opacity: '0.6' },
+      { transform: 'scale(1)', opacity: '0' },
+      { transform: 'scale(1.2)', opacity: '0.5', offset: 0.1 },
       { transform: 'scale(4)', opacity: '0' },
     ],
     { duration: 1800, delay, easing: 'ease-out', fill: 'forwards' },
