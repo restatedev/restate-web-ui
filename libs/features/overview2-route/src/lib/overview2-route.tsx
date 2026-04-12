@@ -342,7 +342,7 @@ function OverviewContent() {
           <div className="flex flex-wrap items-center gap-2">
             <OverviewModeToggle />
             <SortByDropdown />
-            <TriggerRegisterDeploymentDialog className="shrink-0 justify-center py-1.5">
+            <TriggerRegisterDeploymentDialog className="shrink-0 justify-center py-1">
               Deployment
             </TriggerRegisterDeploymentDialog>
           </div>
@@ -353,15 +353,15 @@ function OverviewContent() {
             className="min-w-0 flex-auto outline-none lg:grow-0 lg:basis-[38ch]"
           >
             <Label className="sr-only">{filterPlaceholder}</Label>
-            <div className="relative min-h-8.5">
+            <div className="relative min-h-7">
               <AriaInput
                 ref={filterRef}
                 placeholder={filterPlaceholder}
-                className="mt-0 w-full min-w-0 rounded-xl border border-gray-200 bg-gray-50 px-2 py-1.5 pr-8 pl-8 text-sm text-gray-900 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] placeholder:text-gray-500/70 focus:border-gray-200 focus:shadow-none focus:[box-shadow:inset_0_1px_0px_0px_rgba(0,0,0,0.03)] focus:outline-2 focus:outline-blue-600"
+                className="mt-0 w-full min-w-0 rounded-xl border border-gray-200 bg-white px-2 py-1 pr-8 pl-8 text-sm text-gray-900 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] placeholder:text-gray-500/70 focus:border-gray-200 focus:shadow-none focus:[box-shadow:inset_0_1px_0px_0px_rgba(0,0,0,0.03)] focus:outline-2 focus:outline-blue-600"
               />
               <Icon
                 name={IconName.Search}
-                className="pointer-events-none absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                className="pointer-events-none absolute top-0 bottom-0 left-2 aspect-square h-full p-1 text-gray-400"
               />
               <FocusShortcutKey
                 variant="light"

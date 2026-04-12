@@ -57,10 +57,10 @@ export function SortByDropdown() {
           variant="secondary"
           className="flex shrink-0 items-stretch gap-0 overflow-hidden p-0 text-sm font-normal"
         >
-          <span className="flex items-center border-r border-gray-200 bg-gray-50 px-2.5 py-1.5 text-gray-400">
+          <span className="flex items-center border-r border-gray-200 bg-gray-50 px-2.5 py-1 text-gray-400">
             Sort by
           </span>
-          <span className="flex items-center gap-0.5 px-2 py-1.5 font-medium text-gray-600">
+          <span className="flex items-center gap-0.5 px-2 py-1 font-medium text-gray-600">
             {label}
             <Icon
               name={IconName.ChevronsUpDown}
