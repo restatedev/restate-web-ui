@@ -66,7 +66,7 @@ const overviewPrimaryRowStyles = tv({
 });
 
 const overviewFirstColumnSecondaryStyles = tv({
-  base: '-mt-2 mb-2 ml-7.5 min-h-6 min-w-0',
+  base: 'mb-2 ml-7.5 min-h-6 min-w-0',
 });
 
 export function useServiceColumns({
@@ -119,12 +119,10 @@ export function useServiceColumns({
           }
           secondary={
             <div className="flex items-center gap-1.5">
-              <div className="invisible shrink-0 xl:visible">
-                <ServiceType
-                  type={s.ty}
-                  className="border-transparent bg-transparent font-normal text-gray-500"
-                />
-              </div>
+              <ServiceType
+                type={s.ty}
+                className="border-zinc-600/10 bg-zinc-50 text-zinc-500"
+              />
               {(() => {
                 const issues = serviceIssuesMap.get(s.name) ?? [];
                 if (issues.length === 0) return null;
@@ -172,7 +170,7 @@ export function useServiceColumns({
         return (
           <OverviewColumnMeta
             className="pr-3"
-            primary={
+            secondary={
               <div className="w-full">
                 <ServiceStatusBar
                   serviceName={s.name}
@@ -184,7 +182,7 @@ export function useServiceColumns({
                 />
               </div>
             }
-            secondary={
+            primary={
               serviceTotal > 0 ? (
                 <Link
                   href={toServiceInvocationsHref(baseUrl, s.name, {
@@ -200,7 +198,11 @@ export function useServiceColumns({
                   })}
                   <Icon name={IconName.ChevronRight} className="h-4 w-4" />
                 </Link>
-              ) : undefined
+              ) : (
+                <div className="inline-flex min-w-0 items-center px-1.5 py-0.5 text-0.5xs text-gray-400">
+                  No invocations
+                </div>
+              )
             }
           />
         );
@@ -324,7 +326,7 @@ function OverviewColumnMeta({
   return (
     <div className={overviewColumnMetaStyles({ className })}>
       <div className="flex min-h-7 items-center">{primary}</div>
-      <div className="min-h-6 min-w-0">
+      <div className="flex min-h-6 min-w-0 items-center">
         {secondary ?? (
           <div className="px-1.5 py-0.5 text-0.5xs leading-5 text-transparent">
             <br />
@@ -427,6 +429,7 @@ function DeploymentCreatedAt({ value }: { value: string }) {
   return (
     <Badge className="w-full border-none bg-transparent pl-1.5">
       <span className="w-full truncate">
+        <span className="font-normal text-zinc-500">Created at </span>
         <span className="font-normal text-zinc-500">{!isPast && 'in '}</span>
         <DateTooltip date={createdAt} title="Created at">
           {duration}

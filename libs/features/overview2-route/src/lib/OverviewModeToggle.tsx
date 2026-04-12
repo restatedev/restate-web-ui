@@ -36,7 +36,7 @@ export function OverviewModeToggle() {
           <span className="flex items-center border-r border-gray-200 bg-gray-50 px-2.5 py-1 text-gray-400">
             Group by
           </span>
-          <span className="flex items-center gap-0.5 px-2 py-1 font-medium text-gray-600">
+          <span className="flex items-center gap-0.5 px-2 py-1 text-gray-600">
             {label}
             <Icon
               name={IconName.ChevronsUpDown}

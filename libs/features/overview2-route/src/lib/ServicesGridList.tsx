@@ -62,7 +62,7 @@ export function ServicesGridList() {
       sortDescriptor={resolvedServiceSortDescriptor}
       onSortChange={setServiceSortDescriptor}
       estimatedRowHeight={100}
-      className="[--grid-list-template-columns:1fr] md:[--grid-list-template-columns:1fr_1fr_1fr]"
+      className="[--grid-list-template-columns:1fr] md:[--grid-list-template-columns:1.5fr_1.5fr_1fr]"
       headerClassName="hidden"
     >
       {(service) => (

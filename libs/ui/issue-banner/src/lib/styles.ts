@@ -44,11 +44,11 @@ export const issueBannerStyles = tv({
 });
 
 export const issueButtonStyles = tv({
-  base: 'relative z-10 flex min-h-5 items-center gap-1 self-start rounded-md px-1 py-0 text-0.5xs',
+  base: 'relative z-10 flex items-center gap-1 self-start rounded-md border px-1.5 py-0.5 text-xs font-medium',
   variants: {
     severity: {
-      high: 'text-red-500',
-      low: 'text-orange-500',
+      high: 'border-red-200 bg-red-50 text-red-600',
+      low: 'border-orange-200 bg-orange-50 text-orange-600',
     },
   },
   defaultVariants: {

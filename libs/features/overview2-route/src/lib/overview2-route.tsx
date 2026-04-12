@@ -342,7 +342,7 @@ function OverviewContent() {
           <div className="flex flex-wrap items-center gap-2">
             <OverviewModeToggle />
             <SortByDropdown />
-            <TriggerRegisterDeploymentDialog className="shrink-0 justify-center py-1">
+            <TriggerRegisterDeploymentDialog className="shrink-0 justify-center py-1 text-gray-600">
               Deployment
             </TriggerRegisterDeploymentDialog>
           </div>

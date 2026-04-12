@@ -15,7 +15,7 @@ export function HandlerList({
   serviceName,
   handlers,
   serviceType,
-  maxVisible = 9,
+  maxVisible = 5,
   className,
 }: {
   serviceName: string;

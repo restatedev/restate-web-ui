@@ -55,7 +55,7 @@ export function DeploymentsGridList() {
       sortDescriptor={resolvedDeploymentSortDescriptor}
       onSortChange={setDeploymentSortDescriptor}
       estimatedRowHeight={100}
-      className="[--grid-list-template-columns:1fr] md:[--grid-list-template-columns:minmax(0,1.8fr)_10rem_12rem]"
+      className="[--grid-list-template-columns:1fr] md:[--grid-list-template-columns:2fr_1fr_1fr]"
       headerClassName="hidden"
     >
       {(deployment) => (
@@ -83,18 +83,11 @@ export function DeploymentsGridList() {
                 }
                 detailsContent={
                   visibleServices.length > 0 ? (
-                    <div
-                      className="grid px-1"
-                      style={{
-                        gridTemplateColumns: 'var(--grid-list-template-columns)',
-                      }}
-                    >
-                      <div className="min-w-0 md:col-start-1 md:col-end-2">
-                        <DeploymentServicesList
-                          services={visibleServices}
-                          className="flex flex-col gap-1 px-1 opacity-90 xl:grid xl:grid-cols-2 xl:justify-items-start xl:gap-x-2"
-                        />
-                      </div>
+                    <div className="px-8">
+                      <DeploymentServicesList
+                        services={visibleServices}
+                        className="flex flex-col gap-1 px-1 opacity-90 xl:grid xl:grid-cols-2 xl:justify-items-start xl:gap-x-2"
+                      />
                     </div>
                   ) : undefined
                 }

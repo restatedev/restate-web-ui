@@ -102,7 +102,7 @@ export function StatusLegend({
               <span className="text-xs text-gray-600">
                 {STATUS_LABELS[s.name] ?? s.name}
               </span>
-              <span className="inline-block rounded-xs bg-gray-50/80 px-1 py-px text-xs font-medium text-gray-500 tabular-nums">
+              <span className="inline-block rounded-xs bg-gray-50/60 px-1 py-px text-xs font-medium text-gray-500 tabular-nums">
                 {formatNumber(count, true)}
               </span>
               <Icon
