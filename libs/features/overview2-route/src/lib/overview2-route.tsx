@@ -29,11 +29,11 @@ import { OverviewModeToggle } from './OverviewModeToggle';
 import { ServicesGridList } from './ServicesGridList';
 import { DeploymentsGridList } from './DeploymentsGridList';
 
-const LINE_COUNT = 9;
+const LINE_COUNT = 7;
 const TOP_SPACING = 10;
 const BOTTOM_SPACING = 100;
-const CURVE_Y1 = 150;
-const CURVE_Y2 = 290;
+const CURVE_Y1 = 110;
+const CURVE_Y2 = 230;
 
 function buildLinePath(i: number) {
   const t = (i - (LINE_COUNT - 1) / 2) / ((LINE_COUNT - 1) / 2);
@@ -229,7 +229,7 @@ function OverviewContent() {
         <div className="flex shrink-0 flex-col items-center gap-3">
           <div
             ref={pieRef}
-            className="relative -mb-12 h-[280px] w-[280px] overflow-visible"
+            className="relative -mb-10 h-[240px] w-[240px] overflow-visible"
           >
             <StatusArcEcharts
               byStatus={byStatus}
@@ -239,7 +239,7 @@ function OverviewContent() {
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
               <div
                 ref={serverRef}
-                className="pointer-events-auto z-20 scale-90 filter-[drop-shadow(0_2px_6px_rgba(0,0,0,0.04))_drop-shadow(0_1px_2px_rgba(0,0,0,0.03))]"
+                className="pointer-events-auto z-20 scale-75 filter-[drop-shadow(0_2px_6px_rgba(0,0,0,0.04))_drop-shadow(0_1px_2px_rgba(0,0,0,0.03))]"
               >
                 <RestateServer
                   status={ferrofluidStatus}
@@ -274,7 +274,7 @@ function OverviewContent() {
                   </PopoverContent>
                 </Popover>
               ) : isSummaryLoading ? (
-                <div className="h-7 w-32 animate-pulse rounded-lg bg-gray-200" />
+                <div className="h-6 w-32 animate-pulse rounded-lg bg-gray-200" />
               ) : noInvocations ? (
                 <p className="text-sm text-gray-400">
                   <Link
@@ -288,14 +288,14 @@ function OverviewContent() {
                   </Link>
                 </p>
               ) : (
-                <span>
+                <div className="h-6">
                   <span className="text-xl leading-6 font-semibold text-gray-600 tabular-nums">
                     {formatNumber(totalCount, true)}
                   </span>{' '}
                   <span className="text-sm leading-6 text-gray-400">
                     {totalCount === 1 ? 'invocation' : 'invocations'}
                   </span>
-                </span>
+                </div>
               )}
             </div>
             <TimeRangeToggle
