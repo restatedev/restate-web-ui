@@ -13,7 +13,7 @@ export function TimeRangeToggle({ onChange }: { onChange?: () => void }) {
   return (
     <div
       onClick={handleClick}
-      className="-mt-2 [&_a]:px-5 [&_a]:py-1 [&_a]:text-xs [&_a[aria-current]]:font-semibold [&>div]:border-[0.5px] [&>div]:border-zinc-800/5 [&>div]:bg-black/3 [&>div]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]"
+      className="[&_[role=row]]:py-0.5 [&_a]:px-5 [&_a]:py-1 [&_a]:text-xs [&_a[aria-current]]:font-semibold [&>div]:border-[0.5px] [&>div]:border-zinc-800/5 [&>div]:bg-black/3 [&>div]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]"
     >
       <Nav ariaCurrentValue="time" responsive={false}>
         <NavSearchItem param={OVERVIEW_RANGE_PARAM}>1h</NavSearchItem>

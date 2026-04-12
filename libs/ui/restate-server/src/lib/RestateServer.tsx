@@ -80,7 +80,7 @@ export function RestateServer({
             fillRule="evenodd"
             clipRule="evenodd"
             d="M60 0C10.59 0 0 10.59 0 60C0 109.41 10.59 120 60 120C109.41 120 120 109.41 120 60C120 10.59 109.41 0 60 0Z"
-            className="border fill-gray-100/60 stroke-gray-300/60 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]"
+            className="fill-white/40 stroke-gray-300/25"
           />
         </svg>
       )}
@@ -120,7 +120,7 @@ export function RestateServer({
           viewBox="0 0 120 120"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className="server absolute inset-0 filter-[drop-shadow(0_10px_8px_--theme(--color-zinc-800/5%))_drop-shadow(0_4px_3px_--theme(--color-zinc-800/10%))] group-pressed:[filter:drop-shadow(0_6px_3px_theme(colors.zinc.800/5%))_drop-shadow(0_4px_3px_theme(colors.zinc.800/10%))]"
+          className="server absolute inset-0 filter-[drop-shadow(0_4px_3px_--theme(--color-zinc-800/3%))_drop-shadow(0_2px_2px_--theme(--color-zinc-800/5%))] group-pressed:[filter:drop-shadow(0_2px_2px_theme(colors.zinc.800/3%))_drop-shadow(0_1px_1px_theme(colors.zinc.800/5%))]"
         >
           <path
             fillRule="evenodd"

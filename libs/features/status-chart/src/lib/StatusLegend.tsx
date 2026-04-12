@@ -16,12 +16,20 @@ import {
 import { getOrderedStatuses, type StatusEntry } from './useOrderedStatuses';
 
 export const legendStyles = tv({
-  base: 'flex max-w-2xl flex-wrap items-center justify-center gap-x-3 gap-y-1 outline-none',
+  base: 'flex outline-none',
   variants: {
     isLoading: {
       true: 'animate-pulse',
       false: '',
     },
+    orientation: {
+      horizontal:
+        'max-w-2xl flex-wrap items-center justify-center gap-x-3 gap-y-1',
+      vertical: 'flex-col gap-0.5',
+    },
+  },
+  defaultVariants: {
+    orientation: 'horizontal',
   },
 });
 
@@ -39,22 +47,35 @@ export function StatusLegend({
   isLoading,
   isError,
   linkParams,
+  orientation = 'horizontal',
+  half,
+  className,
 }: {
   byStatus: StatusEntry[];
   isLoading?: boolean;
   isError?: boolean;
   linkParams?: URLSearchParams;
+  orientation?: 'horizontal' | 'vertical';
+  half?: 'first' | 'second';
+  className?: string;
 }) {
   const items = getOrderedStatuses(byStatus);
   const { baseUrl } = useRestateContext();
   const state = isLoading ? 'loading' : isError ? 'error' : 'success';
   const hasData = items.length > 0;
-  const displayItems = hasData ? items : ALL_STATUSES;
+  const fullItems = hasData ? items : ALL_STATUSES;
+  const mid = Math.ceil(fullItems.length / 2);
+  const displayItems =
+    half === 'first'
+      ? fullItems.slice(0, mid)
+      : half === 'second'
+        ? fullItems.slice(mid)
+        : fullItems;
 
   return (
     <AriaGridList
       aria-label="Invocation statuses"
-      className={legendStyles({ isLoading })}
+      className={legendStyles({ isLoading, orientation, class: className })}
       layout="grid"
     >
       {displayItems.map((s) => {

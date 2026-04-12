@@ -212,100 +212,125 @@ function OverviewContent() {
   return (
     <div className="relative mx-auto flex h-full w-full flex-col items-center gap-8 px-6 pt-8 pb-6">
       <PerspectiveLines svgRef={linesSvgRef} />
-      <div className="relative flex flex-col items-center gap-3">
-        <div
-          ref={pieRef}
-          className="relative -mb-12 h-[280px] w-[280px] overflow-visible"
-        >
-          <StatusArcEcharts
-            byStatus={byStatus}
-            isLoading={isSummaryLoading}
-            linkParams={linkParams}
-          />
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-            <div
-              ref={serverRef}
-              className="pointer-events-auto z-20 scale-90 filter-[drop-shadow(0_4px_12px_rgba(0,0,0,0.08))_drop-shadow(0_1px_3px_rgba(0,0,0,0.06))]"
-            >
-              <RestateServer
-                status={ferrofluidStatus}
-                onPress={onRefresh}
-                aura={noInvocations ? 'prominent' : 'subtle'}
-              />
-            </div>
-          </div>
-        </div>
-        <TimeRangeToggle
-          onChange={() => {
-            queryClient.cancelQueries({
-              queryKey: summaryQueryKey,
-              exact: true,
-            });
-          }}
-        />
-        <div className="flex min-h-14 items-center justify-center gap-1.5">
-          {summaryError ? (
-            <Popover>
-              <PopoverTrigger>
-                <Button
-                  variant="secondary"
-                  className="flex items-center gap-1.5 rounded-lg border-orange-200/80 bg-orange-50/80 px-3 py-1.5 text-xs text-orange-600 shadow-none hover:bg-orange-100/80"
-                >
-                  <Icon
-                    name={IconName.TriangleAlert}
-                    className="h-3.5 w-3.5 fill-orange-200 text-orange-500"
-                  />
-                  Could not load invocation data
-                  <Icon
-                    name={IconName.ChevronsUpDown}
-                    className="h-3 w-3 text-orange-400"
-                  />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="max-w-sm">
-                <ErrorBanner error={summaryError} className="rounded-xl" />
-              </PopoverContent>
-            </Popover>
-          ) : isSummaryLoading ? (
-            <>
-              <div className="h-7 w-32 animate-pulse rounded-lg bg-gray-200" />
-            </>
-          ) : noInvocations ? (
-            <div className="flex flex-col items-center gap-1 pt-2 text-center">
-              <p className="text-lg font-medium text-gray-600">All quiet</p>
-              <p className="flex items-center gap-1 text-sm text-gray-400">
-                <Link
-                  {...(firstServiceName && {
-                    href: `?${SERVICE_PLAYGROUND_QUERY_PARAM}=${firstServiceName}`,
-                  })}
-                  variant="icon"
-                  className="-mb-3 flex items-center gap-1.5 rounded-xl text-gray-500/80"
-                >
-                  No invocations yet —{' '}
-                  <span className="font-medium underline">try sending one</span>
-                </Link>
-              </p>
-            </div>
-          ) : (
-            <>
-              <span className="text-2xl font-bold text-gray-700 tabular-nums">
-                {formatNumber(totalCount, true)}
-              </span>
-              <span className="text-sm text-gray-400">
-                {totalCount === 1 ? 'invocation' : 'invocations'}
-              </span>
-            </>
+      <div className="relative flex w-full items-center justify-center">
+        <div className="hidden min-w-0 flex-1 justify-end pr-6 md:flex">
+          {totalCount > 0 && (
+            <StatusLegend
+              byStatus={byStatus}
+              isLoading={isSummaryLoading}
+              isError={isSummaryError}
+              linkParams={linkParams}
+              orientation="vertical"
+              half="first"
+              className="flex-col-reverse items-end"
+            />
           )}
         </div>
-        {totalCount > 0 && (
+        <div className="flex shrink-0 flex-col items-center gap-3">
+          <div
+            ref={pieRef}
+            className="relative -mb-12 h-[280px] w-[280px] overflow-visible"
+          >
+            <StatusArcEcharts
+              byStatus={byStatus}
+              isLoading={isSummaryLoading}
+              linkParams={linkParams}
+            />
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+              <div
+                ref={serverRef}
+                className="pointer-events-auto z-20 scale-90 filter-[drop-shadow(0_2px_6px_rgba(0,0,0,0.04))_drop-shadow(0_1px_2px_rgba(0,0,0,0.03))]"
+              >
+                <RestateServer
+                  status={ferrofluidStatus}
+                  onPress={onRefresh}
+                  aura={noInvocations ? 'prominent' : 'subtle'}
+                />
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-5">
+            <div className="flex items-center gap-1.5">
+              {summaryError ? (
+                <Popover>
+                  <PopoverTrigger>
+                    <Button
+                      variant="secondary"
+                      className="flex items-center gap-1.5 rounded-lg border-orange-200/80 bg-orange-50/80 px-3 py-1.5 text-xs text-orange-600 shadow-none hover:bg-orange-100/80"
+                    >
+                      <Icon
+                        name={IconName.TriangleAlert}
+                        className="h-3.5 w-3.5 fill-orange-200 text-orange-500"
+                      />
+                      Could not load invocation data
+                      <Icon
+                        name={IconName.ChevronsUpDown}
+                        className="h-3 w-3 text-orange-400"
+                      />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="max-w-sm">
+                    <ErrorBanner error={summaryError} className="rounded-xl" />
+                  </PopoverContent>
+                </Popover>
+              ) : isSummaryLoading ? (
+                <div className="h-7 w-32 animate-pulse rounded-lg bg-gray-200" />
+              ) : noInvocations ? (
+                <p className="text-sm text-gray-400">
+                  <Link
+                    {...(firstServiceName && {
+                      href: `?${SERVICE_PLAYGROUND_QUERY_PARAM}=${firstServiceName}`,
+                    })}
+                    variant="icon"
+                    className="flex items-center gap-1.5 rounded-xl text-gray-500/80"
+                  >
+                    No invocations yet
+                  </Link>
+                </p>
+              ) : (
+                <span>
+                  <span className="text-xl leading-6 font-semibold text-gray-600 tabular-nums">
+                    {formatNumber(totalCount, true)}
+                  </span>{' '}
+                  <span className="text-sm leading-6 text-gray-400">
+                    {totalCount === 1 ? 'invocation' : 'invocations'}
+                  </span>
+                </span>
+              )}
+            </div>
+            <TimeRangeToggle
+              onChange={() => {
+                queryClient.cancelQueries({
+                  queryKey: summaryQueryKey,
+                  exact: true,
+                });
+              }}
+            />
+          </div>
+        </div>
+        <div className="hidden min-w-0 flex-1 justify-start pl-6 md:flex">
+          {totalCount > 0 && (
+            <StatusLegend
+              byStatus={byStatus}
+              isLoading={isSummaryLoading}
+              isError={isSummaryError}
+              linkParams={linkParams}
+              orientation="vertical"
+              half="second"
+            />
+          )}
+        </div>
+      </div>
+      {totalCount > 0 && (
+        <div className="md:hidden">
           <StatusLegend
             byStatus={byStatus}
             isLoading={isSummaryLoading}
             isError={isSummaryError}
             linkParams={linkParams}
           />
-        )}
-      </div>
+        </div>
+      )}
       <div ref={issuesRef}>
         <IssuesBannerStack className="-mt-4" />
       </div>
