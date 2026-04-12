@@ -10,12 +10,22 @@ export const issuePingStyles = tv({
   },
 });
 
-export const issueDotStyles = tv({
+export const issueIconStyles = tv({
   base: 'relative inline-flex h-full w-full',
   variants: {
     severity: {
       high: 'fill-red-400/80 text-red-400/80',
       low: 'fill-orange-400/80 text-orange-400/80',
+    },
+  },
+});
+
+export const issueDotStyles = tv({
+  base: 'relative inline-flex h-2 w-2 rounded-full',
+  variants: {
+    severity: {
+      high: 'bg-red-300',
+      low: 'bg-orange-300',
     },
   },
 });
