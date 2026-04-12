@@ -26,6 +26,7 @@ import { useRestateServerStatus } from './useRestateServerStatus';
 import { NoDeploymentPlaceholder } from './NoDeploymentPlaceholder';
 import { TimeRangeToggle } from './TimeRangeToggle';
 import { OverviewModeToggle } from './OverviewModeToggle';
+import { SortByDropdown } from './SortByDropdown';
 import { ServicesGridList } from './ServicesGridList';
 import { DeploymentsGridList } from './DeploymentsGridList';
 
@@ -337,34 +338,37 @@ function OverviewContent() {
       </div>
 
       <div className="mt-8 flex min-h-0 w-full flex-1 flex-col">
-        <div className="mb-2 flex flex-col gap-2 px-5 md:flex-row md:items-center md:justify-between">
-          <div className="flex min-w-0 flex-auto items-center gap-2">
+        <div className="mb-2 flex flex-col gap-2 px-5 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-wrap items-center gap-2">
             <OverviewModeToggle />
-            <SearchField
-              aria-label="Filter"
-              value={filter}
-              onChange={setFilter}
-              className="min-w-0 flex-auto grow-1 outline-none md:grow-0 md:basis-[40ch]"
-            >
-              <Label className="sr-only">{filterPlaceholder}</Label>
-              <div className="relative min-h-8.5">
-                <AriaInput
-                  ref={filterRef}
-                  placeholder={filterPlaceholder}
-                  className="mt-0 w-full min-w-0 rounded-xl border border-gray-200 bg-gray-50 px-2 py-1.5 pr-8 pl-8 text-sm text-gray-900 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] placeholder:text-gray-500/70 focus:border-gray-200 focus:shadow-none focus:[box-shadow:inset_0_1px_0px_0px_rgba(0,0,0,0.03)] focus:outline-2 focus:outline-blue-600"
-                />
-                <Icon
-                  name={IconName.Search}
-                  className="pointer-events-none absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2 text-gray-400"
-                />
-                <FocusShortcutKey
-                  variant="light"
-                  className="pointer-events-none absolute top-1/2 right-2 -translate-y-1/2"
-                />
-              </div>
-            </SearchField>
+            <SortByDropdown />
+            <TriggerRegisterDeploymentDialog className="shrink-0 justify-center py-1.5">
+              Deployment
+            </TriggerRegisterDeploymentDialog>
           </div>
-          <TriggerRegisterDeploymentDialog className="mr-1.5 shrink-0 justify-center py-1.5 md:ml-auto md:justify-normal" />
+          <SearchField
+            aria-label="Filter"
+            value={filter}
+            onChange={setFilter}
+            className="min-w-0 flex-auto outline-none lg:grow-0 lg:basis-[38ch]"
+          >
+            <Label className="sr-only">{filterPlaceholder}</Label>
+            <div className="relative min-h-8.5">
+              <AriaInput
+                ref={filterRef}
+                placeholder={filterPlaceholder}
+                className="mt-0 w-full min-w-0 rounded-xl border border-gray-200 bg-gray-50 px-2 py-1.5 pr-8 pl-8 text-sm text-gray-900 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] placeholder:text-gray-500/70 focus:border-gray-200 focus:shadow-none focus:[box-shadow:inset_0_1px_0px_0px_rgba(0,0,0,0.03)] focus:outline-2 focus:outline-blue-600"
+              />
+              <Icon
+                name={IconName.Search}
+                className="pointer-events-none absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2 text-gray-400"
+              />
+              <FocusShortcutKey
+                variant="light"
+                className="pointer-events-none absolute top-1/2 right-2 -translate-y-1/2"
+              />
+            </div>
+          </SearchField>
         </div>
         {mode === 'services' ? <ServicesGridList /> : <DeploymentsGridList />}
       </div>

@@ -1,36 +1,72 @@
+import { useSearchParams } from 'react-router';
 import { Icon, IconName } from '@restate/ui/icons';
-import { Nav, NavSearchItem } from '@restate/ui/nav';
+import {
+  Dropdown,
+  DropdownTrigger,
+  DropdownPopover,
+  DropdownMenu,
+  DropdownItem,
+  DropdownSection,
+} from '@restate/ui/dropdown';
+import { Button } from '@restate/ui/button';
 import { OVERVIEW_MODE_PARAM } from './overviewMode';
-import { HoverTooltip } from '@restate/ui/tooltip';
+
+const MODES = [
+  { value: '', label: 'Service' },
+  { value: 'deployments', label: 'Deployment' },
+] as const;
+
+function getCurrentLabel(searchParams: URLSearchParams) {
+  const mode = searchParams.get(OVERVIEW_MODE_PARAM);
+  return mode === 'deployments' ? 'Deployment' : 'Service';
+}
 
 export function OverviewModeToggle() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const label = getCurrentLabel(searchParams);
+  const currentMode = searchParams.get(OVERVIEW_MODE_PARAM) ?? '';
+
   return (
-    <div className="shrink-0 [&>div]:rounded-xl [&>div]:border-[0.5px] [&>div]:border-zinc-800/5 [&>div]:bg-black/3 [&>div]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
-      <Nav
-        ariaCurrentValue="page"
-        responsive={false}
-        className="[&>[data-active=true]_svg]:fill-blue-50 [&>[data-active=true]_svg]:text-blue-400"
-      >
-        <NavSearchItem param={OVERVIEW_MODE_PARAM} className="group">
-          <HoverTooltip content="Services">
-            <Icon name={IconName.Box} className="icon fill-transparent p-0.5" />
-            <span className="sr-only">Services</span>
-          </HoverTooltip>
-        </NavSearchItem>
-        <NavSearchItem
-          param={OVERVIEW_MODE_PARAM}
-          value="deployments"
-          className="group"
+    <Dropdown>
+      <DropdownTrigger>
+        <Button
+          variant="secondary"
+          className="flex shrink-0 items-stretch gap-0 overflow-hidden p-0 text-sm font-normal"
         >
-          <HoverTooltip content="Deployments">
+          <span className="flex items-center border-r border-gray-200 bg-gray-50 px-2.5 py-1.5 text-gray-400">
+            Group by
+          </span>
+          <span className="flex items-center gap-0.5 px-2 py-1.5 font-medium text-gray-600">
+            {label}
             <Icon
-              name={IconName.Http}
-              className="icon fill-transparent p-0.5"
+              name={IconName.ChevronsUpDown}
+              className="h-4 w-4 text-gray-400"
             />
-            <span className="sr-only">Deployments</span>
-          </HoverTooltip>
-        </NavSearchItem>
-      </Nav>
-    </div>
+          </span>
+        </Button>
+      </DropdownTrigger>
+      <DropdownPopover>
+        <DropdownSection title="Group by">
+          <DropdownMenu
+            selectable
+            selectedItems={[currentMode]}
+            onSelect={(key) => {
+              setSearchParams((prev) => {
+                prev.delete(OVERVIEW_MODE_PARAM);
+                if (key) prev.set(OVERVIEW_MODE_PARAM, key);
+                return prev;
+              });
+            }}
+            aria-label="Group by"
+          >
+            {MODES.map((mode) => (
+              <DropdownItem key={mode.value} value={mode.value}>
+                {mode.label}
+              </DropdownItem>
+            ))}
+          </DropdownMenu>
+        </DropdownSection>
+      </DropdownPopover>
+    </Dropdown>
   );
 }
