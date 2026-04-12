@@ -252,7 +252,7 @@ function OverviewContent() {
               </div>
             </div>
           </div>
-          <div className="relative z-10 flex items-baseline gap-1.5">
+          <div className="relative z-10 -mt-4 flex items-baseline gap-1.5">
             {summaryError ? (
               <Popover>
                 <PopoverTrigger>
