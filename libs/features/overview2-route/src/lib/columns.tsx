@@ -118,11 +118,24 @@ export function useServiceColumns({
             </div>
           }
           secondary={
-            <div className="invisible shrink-0 xl:visible">
-              <ServiceType
-                type={s.ty}
-                className="border-transparent bg-transparent font-normal text-gray-500"
-              />
+            <div className="flex items-center gap-1.5">
+              <div className="invisible shrink-0 xl:visible">
+                <ServiceType
+                  type={s.ty}
+                  className="border-transparent bg-transparent font-normal text-gray-500"
+                />
+              </div>
+              {(() => {
+                const issues = serviceIssuesMap.get(s.name) ?? [];
+                if (issues.length === 0) return null;
+                return (
+                  <IssueBadge
+                    issues={issues}
+                    serviceName={s.name}
+                    baseUrl={baseUrl}
+                  />
+                );
+              })()}
             </div>
           }
         />
@@ -190,18 +203,6 @@ export function useServiceColumns({
               ) : undefined
             }
           />
-        );
-      },
-    },
-    {
-      id: 'health',
-      title: 'Issues',
-      allowsSorting: true,
-      render: (s: Service) => {
-        const issues = serviceIssuesMap.get(s.name) ?? [];
-        if (issues.length === 0) return null;
-        return (
-          <IssueBadge issues={issues} serviceName={s.name} baseUrl={baseUrl} />
         );
       },
     },

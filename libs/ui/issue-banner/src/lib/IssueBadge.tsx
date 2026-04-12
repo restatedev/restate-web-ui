@@ -117,9 +117,6 @@ export function IssueBadge({
           </div>
         </PopoverContent>
       </Popover>
-      <div>
-        <br />
-      </div>
     </div>
   );
 }

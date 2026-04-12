@@ -35,7 +35,7 @@ export function HandlerList({
         <Handler
           key={handler.name}
           handler={handler}
-          className="ml-1.5 w-fit pr-0 pl-0 [&_[data-icon]]:border-transparent [&_[data-icon]]:bg-transparent [&_[data-icon]]:shadow-none [&_[data-icon]>svg]:text-zinc-500/80"
+          className="ml-1.5 w-fit pr-0 pl-0 [&_[data-icon]]:-mr-2.5 [&_[data-icon]]:border-transparent [&_[data-icon]]:bg-transparent [&_[data-icon]]:shadow-none [&_[data-icon]>svg]:text-zinc-500/80"
           service={serviceName}
           withPlayground
           serviceType={serviceType}
@@ -49,7 +49,7 @@ export function HandlerList({
             <DropdownTrigger>
               <Button
                 variant="icon"
-                className="h-auto w-auto gap-0.5 rounded-lg px-1.5 py-0.5 text-0.5xs text-zinc-500 hover:bg-black/3 hover:text-zinc-700"
+                className="-ml-2.5 h-auto w-auto gap-0.5 rounded-lg px-1.5 py-0.5 text-0.5xs text-zinc-500 hover:bg-black/3 hover:text-zinc-700"
               >
                 +{overflowCount}{' '}
                 {formatPlurals(overflowCount, {
