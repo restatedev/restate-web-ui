@@ -53,7 +53,7 @@ const deploymentStatusStyles = tv({
 });
 
 const overviewPrimaryRowStyles = tv({
-  base: '-mx-1 flex min-w-0 items-center gap-2 rounded-lg px-1 py-0.5 hover:bg-black/3',
+  base: '-mx-1 flex min-w-0 items-center gap-2 self-start rounded-lg px-1 py-0.5 hover:bg-black/3',
   variants: {
     balancedHeight: {
       true: 'min-h-[2.625rem]',

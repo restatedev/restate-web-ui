@@ -36,8 +36,8 @@ function DeploymentServiceItem({
 
   return (
     <div className="relative flex w-fit max-w-full items-center gap-2 rounded-lg px-1 py-0.5">
-      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border bg-white shadow-xs">
-        <Icon name={IconName.Box} className="h-full w-full p-1 text-zinc-400" />
+      <div className="flex h-4 w-4 shrink-0 items-center justify-center">
+        <Icon name={IconName.Box} className="h-full w-full text-zinc-500/80" />
       </div>
       <div className="flex max-w-full min-w-0 items-center gap-1.5 pl-0.5 text-0.5xs font-medium text-zinc-600">
         <TruncateWithTooltip copyText={service.name} triggerRef={linkRef}>
