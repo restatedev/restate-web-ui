@@ -8,19 +8,57 @@ import { useServerAura, ServerRings } from './ServerAura';
 export type { FerrofluidStatus };
 
 export type AuraIntensity = 'subtle' | 'prominent';
+export type ServerAppearance = 'ghost' | 'solid';
 
 const containerStyles = tv({
-  base: 'relative h-[150px] min-w-[150px]',
+  base: 'group/server relative h-[150px] min-w-[150px]',
 });
 
 const buttonStyles = tv({
-  base: 'group flex h-[142px] w-[142px] border-none bg-none px-0 py-0 shadow-none transition-all duration-300 hover:scale-105 hover:bg-transparent focus:outline-hidden pressed:scale-95 pressed:bg-transparent [&:has([data-status=active])_.server]:filter-[drop-shadow(0_4px_3px_--theme(--color-zinc-800/6%))_drop-shadow(0_10px_8px_--theme(--color-blue-400/12%))_drop-shadow(0_24px_18px_--theme(--color-blue-400/8%))] [&:not(:hover):has([data-status=active])]:scale-[1.025]',
+  base: 'group flex h-[142px] w-[142px] border-none bg-none px-0 py-0 shadow-none drop-shadow-none transition-all duration-300 hover:scale-105 hover:bg-transparent focus:outline-hidden pressed:scale-95 pressed:bg-transparent [&:hover:has([data-status=active])_.server]:filter-[drop-shadow(0_4px_3px_--theme(--color-zinc-800/6%))_drop-shadow(0_10px_8px_--theme(--color-blue-400/12%))_drop-shadow(0_24px_18px_--theme(--color-blue-400/8%))]',
   variants: {
     isEmpty: {
       true: 'relative m-[4px]',
       false: 'absolute inset-1',
     },
   },
+});
+
+const overlayStyles = tv({
+  base: '',
+  variants: {
+    appearance: {
+      ghost:
+        'opacity-0 transition-opacity duration-300 group-hover/server:opacity-100',
+      solid: '',
+    },
+  },
+  defaultVariants: { appearance: 'ghost' },
+});
+
+const serverIconStyles = tv({
+  base: 'server absolute inset-0 group-pressed:[filter:drop-shadow(0_2px_2px_theme(colors.zinc.800/3%))_drop-shadow(0_1px_1px_theme(colors.zinc.800/5%))]',
+  variants: {
+    appearance: {
+      ghost:
+        'filter-none transition-[filter] duration-300 group-hover/server:filter-[drop-shadow(0_4px_3px_--theme(--color-zinc-800/3%))_drop-shadow(0_2px_2px_--theme(--color-zinc-800/5%))]',
+      solid:
+        'filter-[drop-shadow(0_4px_3px_--theme(--color-zinc-800/3%))_drop-shadow(0_2px_2px_--theme(--color-zinc-800/5%))]',
+    },
+  },
+  defaultVariants: { appearance: 'ghost' },
+});
+
+const serverFillStyles = tv({
+  base: '',
+  variants: {
+    appearance: {
+      ghost:
+        'fill-gray-100/80 transition-[fill] duration-300 group-hover/server:fill-white/70',
+      solid: 'fill-white/70 backdrop-blur-3xl backdrop-saturate-200',
+    },
+  },
+  defaultVariants: { appearance: 'ghost' },
 });
 
 export function RestateServer({
@@ -30,12 +68,14 @@ export function RestateServer({
   isEmpty = false,
   onPress,
   aura,
+  appearance = 'ghost',
 }: PropsWithChildren<{
   className?: string;
   status: FerrofluidStatus;
   isEmpty?: boolean;
   onPress?: () => void;
   aura?: AuraIntensity;
+  appearance?: ServerAppearance;
 }>) {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const ferrofluidRef = useRef<FerrofluidHandle>(null);
@@ -64,7 +104,10 @@ export function RestateServer({
       {aura && (
         <div
           ref={auraRef}
-          className="pointer-events-none absolute inset-0 overflow-visible"
+          className={overlayStyles({
+            appearance,
+            class: 'pointer-events-none absolute inset-0 overflow-visible',
+          })}
         >
           <ServerRings status={status} intensity={aura} />
         </div>
@@ -73,7 +116,7 @@ export function RestateServer({
         <svg
           viewBox="0 0 120 120"
           fill="none"
-          className="absolute inset-0"
+          className={overlayStyles({ appearance, class: 'absolute inset-0' })}
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
@@ -106,7 +149,7 @@ export function RestateServer({
         <svg
           viewBox="0 0 120 120"
           fill="none"
-          className="absolute inset-0"
+          className={overlayStyles({ appearance, class: 'absolute inset-0' })}
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
@@ -120,7 +163,7 @@ export function RestateServer({
           viewBox="0 0 120 120"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className="server absolute inset-0 filter-[drop-shadow(0_4px_3px_--theme(--color-zinc-800/3%))_drop-shadow(0_2px_2px_--theme(--color-zinc-800/5%))] group-pressed:[filter:drop-shadow(0_2px_2px_theme(colors.zinc.800/3%))_drop-shadow(0_1px_1px_theme(colors.zinc.800/5%))]"
+          className={serverIconStyles({ appearance })}
         >
           <mask id="restate-logo-mask">
             <rect width="120" height="120" fill="white" />
@@ -131,7 +174,7 @@ export function RestateServer({
           </mask>
           <path
             d="M60 0C10.59 0 0 10.59 0 60C0 109.41 10.59 120 60 120C109.41 120 120 109.41 120 60C120 10.59 109.41 0 60 0Z"
-            className="fill-white/70 backdrop-blur-3xl backdrop-saturate-200"
+            className={serverFillStyles({ appearance })}
             mask="url(#restate-logo-mask)"
           />
         </svg>

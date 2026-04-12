@@ -199,6 +199,7 @@ function OverviewContent() {
         <RestateServer
           className={emptyServerStyles({ isError })}
           status={ferrofluidStatus}
+          appearance="solid"
           isEmpty
           onPress={onRefresh}
         >
@@ -239,7 +240,7 @@ function OverviewContent() {
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
               <div
                 ref={serverRef}
-                className="pointer-events-auto z-20 scale-75 filter-[drop-shadow(0_2px_6px_rgba(0,0,0,0.04))_drop-shadow(0_1px_2px_rgba(0,0,0,0.03))]"
+                className="pointer-events-auto z-20 scale-75"
               >
                 <RestateServer
                   status={ferrofluidStatus}
