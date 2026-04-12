@@ -99,10 +99,10 @@ export function StatusLegend({
                   boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.35)',
                 }}
               />
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-gray-600">
                 {STATUS_LABELS[s.name] ?? s.name}
               </span>
-              <span className="text-xs text-gray-400 tabular-nums">
+              <span className="text-xs font-medium text-gray-500 tabular-nums">
                 {formatNumber(count, true)}
               </span>
               <Icon
