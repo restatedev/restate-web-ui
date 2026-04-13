@@ -40,7 +40,7 @@ export function OverviewModeToggle() {
             {label}
             <Icon
               name={IconName.ChevronsUpDown}
-              className="ml-0.5 aspect-square h-3.5 w-3.5 opacity-80"
+              className="ml-0.5 aspect-square h-[1em] w-[1em] opacity-80"
             />
           </span>
         </Button>

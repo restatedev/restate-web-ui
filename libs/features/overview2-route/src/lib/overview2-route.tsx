@@ -12,7 +12,6 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import { isOverviewRefreshQuery } from '@restate/data-access/admin-api';
-import { TriggerRegisterDeploymentDialog } from '@restate/features/register-deployment';
 import { useFocusShortcut, FocusShortcutKey } from '@restate/ui/keyboard';
 import { formatNumber } from '@restate/util/intl';
 import { IssuesBannerStack } from '@restate/ui/issue-banner';
@@ -27,6 +26,7 @@ import { NoDeploymentPlaceholder } from './NoDeploymentPlaceholder';
 import { TimeRangeToggle } from './TimeRangeToggle';
 import { OverviewModeToggle } from './OverviewModeToggle';
 import { SortByDropdown } from './SortByDropdown';
+import { DeploymentActions } from './DeploymentActions';
 import { ServicesGridList } from './ServicesGridList';
 import { DeploymentsGridList } from './DeploymentsGridList';
 
@@ -342,9 +342,7 @@ function OverviewContent() {
           <div className="flex flex-wrap items-center gap-2">
             <OverviewModeToggle />
             <SortByDropdown />
-            <TriggerRegisterDeploymentDialog className="shrink-0 justify-center rounded-lg py-0.5 pl-1.5 text-0.5xs [&_svg]:h-3.5 [&_svg]:w-3.5">
-              Deployment
-            </TriggerRegisterDeploymentDialog>
+            <DeploymentActions />
           </div>
           <SearchField
             aria-label="Filter"

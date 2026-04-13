@@ -50,6 +50,7 @@ export function SplitButton({
   onSelect,
   variant = 'secondary',
   splitClassName,
+  disabled,
 }: PropsWithChildren<{
   mini?: boolean;
   className?: string;
@@ -57,6 +58,7 @@ export function SplitButton({
   onSelect?: (key: string) => void;
   variant?: ComponentProps<typeof Button>['variant'];
   splitClassName?: string;
+  disabled?: boolean;
 }>) {
   const { base, primary } = styles({ mini });
   return (
@@ -66,6 +68,7 @@ export function SplitButton({
         <DropdownTrigger>
           <Button
             variant={variant}
+            disabled={disabled}
             className={menuTriggerStyles({ mini, className: splitClassName })}
           >
             <Icon name={IconName.ChevronsUpDown} className="h-[1em] w-[1em]" />

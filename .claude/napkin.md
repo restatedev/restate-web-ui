@@ -349,3 +349,4 @@
 - 2026-04-11 | self | If multiple overview columns share the same “primary row + optional secondary row” rhythm, centralize that wrapper instead of hand-building the same `hidden md:flex flex-col` structure in each column.
 - 2026-04-11 | user | The overview mode toggle didn’t need custom segmented-control logic. A simple `Nav`/`NavSearchItem` implementation with a few local descendant selectors for radius and active icon color was clearer and easier to tune than layering extra control abstractions.
 - 2026-04-11 | self | When an overview link is conceptually “in-flight invocations”, encode that status filter in the shared invocation-link helper instead of leaving the caller to imply it only through link text.
+- 2026-04-13 | self | When a feature-local split button wraps an already-disabled primary action, make the shared `SplitButton` accept `disabled` too; otherwise the dropdown half can accidentally bypass the same guard.
