@@ -91,7 +91,7 @@ export function ServicesGridList() {
                 className={cellsContainerStyles({
                   isFocusVisible,
                   issueSeverity,
-                  className: 'relative hover:from-gray-100',
+                  className: 'relative hover:bg-gray-50',
                 })}
                 detailsTitle={
                   visibleHandlers.length > 0 ? 'Handlers' : undefined

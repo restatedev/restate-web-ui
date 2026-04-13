@@ -3,7 +3,7 @@ import { focusRing } from '@restate/ui/focus';
 
 export const cellsContainerStyles = tv({
   extend: focusRing,
-  base: '@container cursor-default overflow-hidden rounded-2xl border border-gray-200 bg-linear-to-b from-white/85 to-gray-50/50 shadow-xs ring-1 ring-white transition ring-inset',
+  base: '@container cursor-default overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xs ring-1 ring-white transition ring-inset',
   variants: {
     issueSeverity: {
       none: '',

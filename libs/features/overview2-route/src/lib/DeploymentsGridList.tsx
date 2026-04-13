@@ -76,7 +76,7 @@ export function DeploymentsGridList() {
                 cells={cells}
                 className={cellsContainerStyles({
                   isFocusVisible,
-                  className: 'relative hover:from-gray-100',
+                  className: 'relative hover:bg-gray-50',
                 })}
                 detailsTitle={
                   visibleServices.length > 0 ? 'Services' : undefined
