@@ -65,12 +65,7 @@ export function ServicesGridList() {
       headerClassName="hidden"
     >
       {(service) => (
-        <GridListItem
-          id={service.name}
-          item={service}
-          textValue={service.name}
-          href={`?${SERVICE_QUERY_PARAM}=${service.name}&${HANDLER_QUERY_PARAM}`}
-        >
+        <GridListItem id={service.name} item={service} textValue={service.name}>
           {({ cells, isFocusVisible }) => {
             const issues = serviceIssuesMap.get(service.name) ?? [];
             const issueSeverity = issues.some(
@@ -87,10 +82,10 @@ export function ServicesGridList() {
               <OverviewCard
                 {...waveAnimationProps('overview-card')}
                 cells={cells}
+                primaryHref={`?${SERVICE_QUERY_PARAM}=${service.name}&${HANDLER_QUERY_PARAM}`}
                 className={cellsContainerStyles({
                   isFocusVisible,
                   issueSeverity,
-                  className: 'relative hover:bg-gray-50',
                 })}
                 detailsTitle={
                   visibleHandlers.length > 0 ? 'Handlers' : undefined
@@ -101,7 +96,7 @@ export function ServicesGridList() {
                       serviceName={service.name}
                       handlers={visibleHandlers}
                       serviceType={service.ty}
-                      className="flex flex-col gap-1 px-8 opacity-90 @3xl:grid @3xl:grid-cols-2 @3xl:gap-x-2"
+                      className="flex flex-col gap-1 px-5 opacity-90 @3xl:grid @3xl:grid-cols-2 @3xl:gap-x-2"
                     />
                   ) : undefined
                 }

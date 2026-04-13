@@ -348,7 +348,7 @@ function OverviewDeploymentId({ deploymentId }: { deploymentId: string }) {
       </div>
       <Copy
         copyText={deploymentId}
-        className="ml-0.5 shrink-0 rounded-xs p-1 text-gray-400 hover:bg-black/5 hover:text-gray-500 pressed:bg-black/8 [&_svg]:h-2.5 [&_svg]:w-2.5"
+        className="ml-1 shrink-0 rounded-xs p-1 text-gray-400 hover:bg-black/5 hover:text-gray-500 pressed:bg-black/8 [&_svg]:h-3 [&_svg]:w-3"
       />
     </Badge>
   );

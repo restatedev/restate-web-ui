@@ -62,7 +62,6 @@ export function DeploymentsGridList() {
           id={deployment.id}
           item={deployment}
           textValue={getEndpoint(deployment) ?? deployment.id}
-          href={`?${DEPLOYMENT_QUERY_PARAM}=${deployment.id}`}
         >
           {({ cells, isFocusVisible }) => {
             const visibleServices =
@@ -73,16 +72,16 @@ export function DeploymentsGridList() {
               <OverviewCard
                 {...waveAnimationProps('overview-card')}
                 cells={cells}
+                primaryHref={`?${DEPLOYMENT_QUERY_PARAM}=${deployment.id}`}
                 className={cellsContainerStyles({
                   isFocusVisible,
-                  className: 'relative hover:bg-gray-50',
                 })}
                 detailsTitle={
                   visibleServices.length > 0 ? 'Services' : undefined
                 }
                 detailsContent={
                   visibleServices.length > 0 ? (
-                    <div className="px-8">
+                    <div className="px-6">
                       <DeploymentServicesList
                         services={visibleServices}
                         className="flex flex-col gap-1 px-1 opacity-90 xl:grid xl:grid-cols-2 xl:justify-items-start xl:gap-x-2"
