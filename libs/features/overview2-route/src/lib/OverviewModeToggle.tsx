@@ -31,16 +31,16 @@ export function OverviewModeToggle() {
       <DropdownTrigger>
         <Button
           variant="secondary"
-          className="flex shrink-0 items-stretch gap-0 overflow-hidden p-0 text-sm font-normal"
+          className="flex shrink-0 items-stretch gap-0 overflow-hidden rounded-lg p-0 text-0.5xs"
         >
-          <span className="flex items-center border-r border-gray-200 bg-gray-50 px-2.5 py-1 text-gray-400">
+          <span className="flex items-center border-r border-gray-200 bg-gray-50 px-2 py-0.5 text-gray-400">
             Group by
           </span>
-          <span className="flex items-center gap-0.5 px-2 py-1 text-gray-600">
+          <span className="flex items-center gap-0.5 py-0.5 pr-1 pl-2">
             {label}
             <Icon
               name={IconName.ChevronsUpDown}
-              className="h-4 w-4 text-gray-400"
+              className="ml-0.5 aspect-square h-3.5 w-3.5 opacity-80"
             />
           </span>
         </Button>
