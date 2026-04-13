@@ -84,7 +84,7 @@ export function DeploymentsGridList() {
                     <div className="px-6">
                       <DeploymentServicesList
                         services={visibleServices}
-                        className="flex flex-col gap-1 px-1 opacity-90 xl:grid xl:grid-cols-2 xl:justify-items-start xl:gap-x-2"
+                        className="flex flex-col gap-1 px-1 opacity-90 @3xl:grid @3xl:grid-cols-2 @3xl:justify-items-start @3xl:gap-x-2"
                       />
                     </div>
                   ) : undefined
