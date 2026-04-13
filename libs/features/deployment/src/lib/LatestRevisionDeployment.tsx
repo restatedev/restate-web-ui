@@ -38,6 +38,7 @@ export function LatestRevisionDeployment({
       deploymentId={latest.id}
       revision={latest.revision}
       highlightSelection={false}
+      className="min-w-0"
     />
   );
 }

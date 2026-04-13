@@ -238,14 +238,6 @@ export function useDeploymentColumns({
             }
             secondary={<OverviewDeploymentId deploymentId={deployment.id} />}
           />
-          <div className="-mt-1 mb-1 ml-7.5 flex items-center gap-2 text-0.5xs text-gray-500 md:hidden">
-            {isDeploymentStatusLoading ? (
-              <div className="h-5 w-20 animate-pulse rounded-full bg-gray-200" />
-            ) : (
-              <DeploymentStatusBadge status={deployment.status} />
-            )}
-            <DeploymentCreatedAt value={deployment.created_at} />
-          </div>
         </div>
       ),
     },
@@ -255,6 +247,7 @@ export function useDeploymentColumns({
       allowsSorting: true,
       render: (deployment) => (
         <OverviewColumnMeta
+          className="flex flex-col"
           primary={
             isDeploymentStatusLoading ? (
               <div className="h-6 w-20 animate-pulse rounded-full bg-gray-200" />
@@ -271,9 +264,9 @@ export function useDeploymentColumns({
                     inFlightOnly: true,
                   })}
                   variant="secondary"
-                  className="relative z-10 inline-flex w-auto min-w-0 items-center gap-0.5 truncate rounded-lg border-none bg-transparent px-1.5 py-0.5 text-0.5xs text-zinc-500 no-underline shadow-none hover:bg-black/3 hover:text-zinc-700"
+                  className="relative z-10 flex min-w-0 items-center gap-0.5 truncate rounded-lg border-none bg-transparent px-1.5 py-0.5 text-0.5xs text-zinc-500 no-underline shadow-none hover:bg-black/3 hover:text-zinc-700"
                 >
-                  In-flight invocations
+                  <div className="min-w-0 truncate">In-flight invocations</div>
                   <Icon name={IconName.ChevronRight} className="h-4 w-4" />
                 </Link>
               ) : (
@@ -325,8 +318,8 @@ function OverviewColumnMeta({
 }) {
   return (
     <div className={overviewColumnMetaStyles({ className })}>
-      <div className="flex min-h-7 items-center">{primary}</div>
-      <div className="flex min-h-6 min-w-0 items-center">
+      <div className="flex min-h-10.5 items-center">{primary}</div>
+      <div className="mb-2 flex min-h-6 min-w-0 items-center">
         {secondary ?? (
           <div className="px-1.5 py-0.5 text-0.5xs leading-5 text-transparent">
             <br />
@@ -427,7 +420,7 @@ function DeploymentCreatedAt({ value }: { value: string }) {
   const createdAt = new Date(value);
 
   return (
-    <Badge className="w-full border-none bg-transparent pl-1.5">
+    <Badge className="hidden w-full border-none bg-transparent pl-1.5 md:flex">
       <span className="w-full truncate">
         <span className="font-normal text-zinc-500">Created at </span>
         <span className="font-normal text-zinc-500">{!isPast && 'in '}</span>

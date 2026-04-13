@@ -54,7 +54,7 @@ export function DeploymentsGridList() {
       sortDescriptor={resolvedDeploymentSortDescriptor}
       onSortChange={setDeploymentSortDescriptor}
       estimatedRowHeight={100}
-      className="[--grid-list-template-columns:1fr] md:[--grid-list-template-columns:2fr_1fr_1fr]"
+      className="[--grid-list-template-columns:2fr_1fr] md:[--grid-list-template-columns:2fr_1fr_1fr]"
       headerClassName="hidden"
     >
       {(deployment) => (
