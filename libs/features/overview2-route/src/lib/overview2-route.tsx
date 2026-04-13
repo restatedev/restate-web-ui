@@ -259,7 +259,7 @@ function OverviewContent() {
                 <PopoverTrigger>
                   <Button
                     variant="secondary"
-                    className="flex items-center gap-1.5 rounded-lg border-orange-200/80 bg-orange-50/80 px-3 py-1.5 text-xs text-orange-600 shadow-none hover:bg-orange-100/80"
+                    className="flex shrink-0 translate-y-0.5 items-center gap-1.5 rounded-xl border-orange-200/80 bg-orange-50/80 px-3 py-1.5 text-xs text-orange-600 shadow-none hover:bg-orange-100/80"
                   >
                     <Icon
                       name={IconName.TriangleAlert}
@@ -268,7 +268,7 @@ function OverviewContent() {
                     Could not load invocation data
                     <Icon
                       name={IconName.ChevronsUpDown}
-                      className="h-3 w-3 text-orange-400"
+                      className="h-3.5 w-3.5 text-orange-400"
                     />
                   </Button>
                 </PopoverTrigger>
