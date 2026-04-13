@@ -11,7 +11,6 @@ import {
   issuePingStyles,
   issueIconStyles,
   issueDotStyles,
-  issueAlertIconStyles,
 } from './styles';
 
 export function IssueBadge({
@@ -47,10 +46,10 @@ export function IssueBadge({
               className={issueIconStyles({ severity })}
             />
           </div>
-          <span className="hidden font-medium xl:inline">{issues.length} </span>
+          <span className="font-medium">{issues.length} </span>
           <Icon
             name={IconName.ChevronsUpDown}
-            className="hidden h-3.5 w-3.5 shrink-0 opacity-50 xl:block"
+            className="block h-3.5 w-3.5 shrink-0 opacity-50"
           />
         </Button>
       </PopoverTrigger>

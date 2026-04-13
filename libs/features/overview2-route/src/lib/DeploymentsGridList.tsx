@@ -7,8 +7,7 @@ import { GridList, GridListItem } from '@restate/ui/grid-list';
 import { waveAnimationProps } from '@restate/ui/wave-animation';
 import { DeploymentServicesList } from './DeploymentServicesList';
 import { useOverviewContext } from './OverviewContext';
-import { OverviewCard } from './OverviewCard';
-import { cellsContainerStyles } from './cellsContainerStyles';
+import { OverviewCard, cellsContainerStyles } from './OverviewCard';
 import { useDeploymentColumns } from './columns';
 import {
   type OverviewDeployment,

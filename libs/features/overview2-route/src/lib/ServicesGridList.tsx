@@ -11,8 +11,7 @@ import {
   SERVICE_QUERY_PARAM,
 } from '@restate/features/service';
 import { useOverviewContext } from './OverviewContext';
-import { OverviewCard } from './OverviewCard';
-import { cellsContainerStyles } from './cellsContainerStyles';
+import { OverviewCard, cellsContainerStyles } from './OverviewCard';
 import { useServiceColumns } from './columns';
 import { sortServices } from './sortServices';
 
