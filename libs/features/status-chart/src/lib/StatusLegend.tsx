@@ -130,7 +130,13 @@ export function StatusLegend({
               <span className="text-xs text-gray-400">
                 {STATUS_LABELS[s.name] ?? s.name}
               </span>
-              <span className="h-3 w-6 animate-pulse rounded bg-gray-200" />
+              <span className="animate-pulse rounded bg-gray-200 px-1 py-px text-xs font-medium text-transparent tabular-nums">
+                {typeof count === 'number' ? formatNumber(count, true) : <br />}
+              </span>
+              <Icon
+                name={IconName.ChevronRight}
+                className="h-3.5 w-3.5 shrink-0 text-gray-400"
+              />
             </AriaGridListItem>
           );
         }

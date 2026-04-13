@@ -253,7 +253,7 @@ function OverviewContent() {
               </div>
             </div>
           </div>
-          <div className="relative z-10 -mt-4 flex items-baseline gap-1.5">
+          <div className="relative z-10 -mt-4 flex w-[18rem] items-baseline justify-center gap-1.5">
             {summaryError ? (
               <Popover>
                 <PopoverTrigger>
@@ -277,7 +277,7 @@ function OverviewContent() {
                 </PopoverContent>
               </Popover>
             ) : isSummaryLoading ? (
-              <div className="h-5 w-48 translate-y-1.5 animate-pulse rounded-lg bg-gray-200" />
+              <div className="h-5 w-36 translate-y-1.5 animate-pulse rounded-lg bg-gray-200" />
             ) : noInvocations ? (
               <p className="text-sm text-gray-400">
                 <Link
