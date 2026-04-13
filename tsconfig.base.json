@@ -61,6 +61,9 @@
       "@restate/features/overview2-route": [
         "libs/features/overview2-route/src/index.ts"
       ],
+      "@restate/features/prune-deployments": [
+        "libs/features/prune-deployments/src/index.ts"
+      ],
       "@restate/features/register-deployment": [
         "libs/features/register-deployment/src/index.ts"
       ],
