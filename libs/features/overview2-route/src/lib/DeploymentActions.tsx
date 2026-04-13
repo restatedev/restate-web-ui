@@ -25,6 +25,7 @@ export function DeploymentActions() {
           <DropdownItem
             href={`?${PRUNE_DRAINED_DEPLOYMENTS_QUERY}=true`}
             isDisabled={drainedDeploymentIds.size === 0}
+            destructive
           >
             <Icon name={IconName.Trash} className="h-3.5 w-3.5 shrink-0" />
             Prune drained deployments
