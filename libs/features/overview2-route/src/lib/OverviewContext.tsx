@@ -92,14 +92,12 @@ export function OverviewProvider({ children }: { children: ReactNode }) {
     return next;
   }, [rangeFilters, searchParams]);
 
-  const resolvedServiceSortDescriptor =
-    serviceSortDescriptor ??
+  const resolvedServiceSortDescriptor = serviceSortDescriptor ??
     initialSortRef.current ?? { column: 'name', direction: 'ascending' };
-  const resolvedDeploymentSortDescriptor =
-    deploymentSortDescriptor ?? {
-      column: 'created_at',
-      direction: 'descending',
-    };
+  const resolvedDeploymentSortDescriptor = deploymentSortDescriptor ?? {
+    column: 'created_at',
+    direction: 'descending',
+  };
 
   const value = useMemo(
     () => ({

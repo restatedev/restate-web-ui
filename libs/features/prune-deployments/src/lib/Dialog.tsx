@@ -151,10 +151,9 @@ export function PruneDrainedDeploymentsDialog() {
   };
 
   const removeDialogQueryParam = () => {
-    setSearchParams(
-      removePruneDeploymentsQueryParam,
-      { preventScrollReset: true },
-    );
+    setSearchParams(removePruneDeploymentsQueryParam, {
+      preventScrollReset: true,
+    });
   };
 
   const submitHandler = async (event: FormEvent<HTMLFormElement>) => {
@@ -170,10 +169,13 @@ export function PruneDrainedDeploymentsDialog() {
       const deletedCount = availableDeploymentIds.length;
 
       showSuccessNotification(
-        `Successfully deleted ${formatNumber(deletedCount)} drained ${formatPlurals(deletedCount, {
-          one: 'deployment',
-          other: 'deployments',
-        })}`,
+        `Successfully deleted ${formatNumber(deletedCount)} drained ${formatPlurals(
+          deletedCount,
+          {
+            one: 'deployment',
+            other: 'deployments',
+          },
+        )}`,
       );
       resetDialog();
       removeDialogQueryParam();
@@ -181,10 +183,7 @@ export function PruneDrainedDeploymentsDialog() {
   };
 
   return (
-    <QueryDialog
-      query={PRUNE_DRAINED_DEPLOYMENTS_QUERY}
-      onClose={resetDialog}
-    >
+    <QueryDialog query={PRUNE_DRAINED_DEPLOYMENTS_QUERY} onClose={resetDialog}>
       <DialogContent className="max-w-2xl" isDismissable={!isRunning}>
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
@@ -215,7 +214,9 @@ export function PruneDrainedDeploymentsDialog() {
                     deploymentIds={availableDeploymentIds}
                     visibleCount={visibleCount}
                     onShowMore={() =>
-                      setVisibleCount((count) => count + VISIBLE_DEPLOYMENTS_STEP)
+                      setVisibleCount(
+                        (count) => count + VISIBLE_DEPLOYMENTS_STEP,
+                      )
                     }
                   />
                 </>

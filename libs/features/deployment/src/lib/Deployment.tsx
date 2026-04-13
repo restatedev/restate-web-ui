@@ -243,7 +243,9 @@ export function Deployment({
                 className="relative z-[2] max-w-fit shrink-0 translate-y-px cursor-default rounded-sm py-0.5 font-mono text-2xs leading-3 font-medium"
               >
                 <Icon name={IconName.AtSign} className="mr-0.5 h-3 w-3" />
-                <div className="max-w-[20ch] truncate">{tunnelEndpoint?.name}</div>
+                <div className="max-w-[20ch] truncate">
+                  {tunnelEndpoint?.name}
+                </div>
               </Badge>
             </HoverTooltip>
           )}
