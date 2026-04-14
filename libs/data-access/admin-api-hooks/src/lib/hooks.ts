@@ -38,6 +38,7 @@ import { useCallback, useMemo } from 'react';
 import { RestateError } from '@restate/util/errors';
 import { useAPIStatus } from '@restate/data-access/admin-api';
 import { useRestateContext } from '@restate/features/restate-context';
+import { type RestateCodecOptions } from '@restate/features/codec';
 import { base64ToUint8Array } from '@restate/util/binary';
 
 export const RESTARTED_FROM_HEADER = 'x-restate-restarted-from';
@@ -1545,6 +1546,11 @@ export function useEditState(
     query.data?.state,
     query.data?.version,
     true,
+    {
+      service,
+      key: objectKey,
+      command: { type: 'GetState' },
+    },
   );
   const { encoder } = useRestateContext();
 
@@ -1579,7 +1585,16 @@ export function useEditState(
     const encodedVariables = convertStateToObject(
       await Promise.all(
         Object.entries(variables.state).map(([k, v]) =>
-          Promise.resolve(encoder(v)).then((encodedV) => ({
+          Promise.resolve(
+            encoder(v, {
+              service,
+              key: objectKey,
+              command: {
+                type: 'SetState',
+                name: k,
+              },
+            }),
+          ).then((encodedV) => ({
             name: k,
             value: Array.from(base64ToUint8Array(encodedV)),
           })),
@@ -1678,22 +1693,11 @@ export function useEditState(
   };
 }
 
-export function useDecode(value?: string, isBase64?: boolean) {
-  const { decoder } = useRestateContext();
-
-  return useQuery({
-    queryKey: [value, 'decode'],
-    queryFn: ({ queryKey }) => {
-      const [value] = queryKey;
-      return decoder(value);
-    },
-    staleTime: Infinity,
-    refetchOnMount: false,
-    placeholderData: value,
-    enabled: isBase64,
-    initialData: isBase64 ? undefined : value,
-  });
-}
+type CodecQueryKey<Mode extends 'decode' | 'encode'> = readonly [
+  value: string | undefined,
+  mode: Mode,
+  codecOptions: RestateCodecOptions | undefined,
+];
 
 function safeParse(value: string) {
   try {
@@ -1706,6 +1710,7 @@ function safeParse(value: string) {
     }
   }
 }
+
 export function useDecodeState(
   state: {
     name: string;
@@ -1713,15 +1718,16 @@ export function useDecodeState(
   }[] = [],
   version?: string,
   isBase64?: boolean,
+  codecOptions?: RestateCodecOptions,
 ) {
   const { decoder } = useRestateContext();
 
   return useQueries({
     queries: state.map(({ name, value }) => ({
-      queryKey: [value, 'decode'],
-      queryFn: async ({ queryKey }: { queryKey: string[] }) => {
-        const [value] = queryKey;
-        return decoder(value);
+      queryKey: [value, 'decode', codecOptions] as CodecQueryKey<'decode'>,
+      queryFn: async ({ queryKey }: { queryKey: CodecQueryKey<'decode'> }) => {
+        const [decodedValue, , decodedCodecOptions] = queryKey;
+        return decoder(decodedValue, decodedCodecOptions);
       },
       staleTime: Infinity,
       refetchOnMount: false,
@@ -1733,28 +1739,53 @@ export function useDecodeState(
       return {
         data: {
           state: convertStateToObject(
-            results.filter(Boolean).map((r, i) => ({
-              value: safeParse(r.data ?? ''),
-              name: state.at(i)!.name,
+            results.filter(Boolean).map((result, index) => ({
+              value: safeParse(result.data ?? ''),
+              name: state.at(index)!.name,
             })),
           ),
           version,
         },
-        error: results.find((r) => r.error)?.error,
-        isPending: results.some((r) => r.isFetching),
+        error: results.find((result) => result.error)?.error,
+        isPending: results.some((result) => result.isFetching),
       };
     },
   });
 }
 
-export function useEncode(value?: string, isBase64?: boolean) {
+export function useDecode(
+  value?: string,
+  isBase64?: boolean,
+  codecOptions?: RestateCodecOptions,
+) {
+  const { decoder } = useRestateContext();
+
+  return useQuery({
+    queryKey: [value, 'decode', codecOptions] as CodecQueryKey<'decode'>,
+    queryFn: ({ queryKey }: { queryKey: CodecQueryKey<'decode'> }) => {
+      const [decodedValue, , decodedCodecOptions] = queryKey;
+      return decoder(decodedValue, decodedCodecOptions);
+    },
+    staleTime: Infinity,
+    refetchOnMount: false,
+    placeholderData: value,
+    enabled: isBase64,
+    initialData: isBase64 ? undefined : value,
+  });
+}
+
+export function useEncode(
+  value?: string,
+  isBase64?: boolean,
+  codecOptions?: RestateCodecOptions,
+) {
   const { encoder } = useRestateContext();
 
   return useQuery({
-    queryKey: [value, 'decode'],
-    queryFn: ({ queryKey }) => {
-      const [value] = queryKey;
-      return encoder(value);
+    queryKey: [value, 'encode', codecOptions] as CodecQueryKey<'encode'>,
+    queryFn: ({ queryKey }: { queryKey: CodecQueryKey<'encode'> }) => {
+      const [encodedValue, , encodedCodecOptions] = queryKey;
+      return encoder(encodedValue, encodedCodecOptions);
     },
     staleTime: Infinity,
     refetchOnMount: false,

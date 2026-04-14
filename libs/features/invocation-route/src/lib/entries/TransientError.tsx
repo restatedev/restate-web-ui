@@ -9,6 +9,7 @@ import { ComponentType } from 'react';
 import { Badge } from '@restate/ui/badge';
 import { Failure } from '../Failure';
 import { CommandEntryType, EntryProps } from './types';
+import { EntryCodecProvider } from './EntryCodecProvider';
 
 function isTransientError(
   entry: JournalEntryV2,
@@ -77,10 +78,15 @@ export function TransientError({
                   }
                 >
                   {CommandComponent && (
-                    <CommandComponent
+                    <EntryCodecProvider
                       entry={parentCommand}
                       invocation={invocation}
-                    />
+                    >
+                      <CommandComponent
+                        entry={parentCommand}
+                        invocation={invocation}
+                      />
+                    </EntryCodecProvider>
                   )}
                 </DropdownSection>
               </PopoverContent>

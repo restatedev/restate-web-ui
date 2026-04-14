@@ -6,6 +6,7 @@ import {
   useQueryHealthCheck,
   useAdminBaseUrl,
 } from '@restate/data-access/admin-api';
+import type { RestateCodecOptions } from '@restate/features/codec';
 import {
   ComponentType,
   createContext,
@@ -19,6 +20,15 @@ import { base64ToUtf8OrOriginal, utf8ToBase64 } from '@restate/util/binary';
 import { useQueryClient } from '@tanstack/react-query';
 
 export type Status = 'HEALTHY' | 'DEGRADED' | 'PENDING' | (string & {});
+export type {
+  RestateCodecCommand,
+  RestateCodecHandlerMetadata,
+  RestateCodecOptions,
+} from '@restate/features/codec';
+export type RestateCodec = (
+  value?: string,
+  options?: RestateCodecOptions,
+) => Promise<string | undefined> | string | undefined;
 type OnboardingComponent = ComponentType<{
   className?: string;
   stage:
@@ -41,8 +51,8 @@ type RestateContext = {
   isVersionGte?: (version: string) => boolean;
   ingressUrl: string;
   baseUrl: string;
-  decoder: (value?: string) => Promise<string | undefined> | string | undefined;
-  encoder: (value?: string) => Promise<string | undefined> | string | undefined;
+  decoder: RestateCodec;
+  encoder: RestateCodec;
   refreshCodec?: VoidFunction;
   EncodingWaterMark?: ComponentType<{
     value?: string;
@@ -91,8 +101,8 @@ function InternalRestateContextProvider({
   isPending?: boolean;
   ingressUrl?: string;
   baseUrl?: string;
-  decoder: (value?: string) => Promise<string | undefined> | string | undefined;
-  encoder: (value?: string) => Promise<string | undefined> | string | undefined;
+  decoder: RestateCodec;
+  encoder: RestateCodec;
   EncodingWaterMark?: ComponentType<{
     value?: string;
     className?: string;
@@ -210,12 +220,8 @@ export function RestateContextProvider({
   ingressUrl?: string;
   isPending?: boolean;
   baseUrl?: string;
-  decoder?: (
-    value?: string,
-  ) => Promise<string | undefined> | string | undefined;
-  encoder?: (
-    value?: string,
-  ) => Promise<string | undefined> | string | undefined;
+  decoder?: RestateCodec;
+  encoder?: RestateCodec;
   EncodingWaterMark?: ComponentType<{
     value?: string;
     className?: string;

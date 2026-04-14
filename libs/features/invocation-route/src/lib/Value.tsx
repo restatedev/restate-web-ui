@@ -3,6 +3,7 @@ import type { editor } from 'monaco-editor';
 import { Editor } from '@restate/ui/editor';
 import { Ellipsis, Spinner } from '@restate/ui/loading';
 import { useDecode } from '@restate/data-access/admin-api-hooks';
+import { useCodec } from '@restate/features/codec';
 import { tv } from '@restate/util/styles';
 import { Copy } from '@restate/ui/copy';
 import { InPortal } from '@restate/ui/portal';
@@ -25,7 +26,12 @@ export function Value({
   portalId?: string;
 }) {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
-  const { data: decodedValue, isFetching } = useDecode(value, isBase64);
+  const codecOptions = useCodec();
+  const { data: decodedValue, isFetching } = useDecode(
+    value,
+    isBase64,
+    codecOptions,
+  );
 
   if (typeof decodedValue === 'undefined') {
     return null;
@@ -68,7 +74,12 @@ export function DecodedValue({
   className?: string;
   isBase64?: boolean;
 }) {
-  const { data: decodedValue, isFetching } = useDecode(value, isBase64);
+  const codecOptions = useCodec();
+  const { data: decodedValue, isFetching } = useDecode(
+    value,
+    isBase64,
+    codecOptions,
+  );
   if (typeof decodedValue === 'undefined') {
     return null;
   } else if (isFetching) {

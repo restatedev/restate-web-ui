@@ -75,6 +75,7 @@ import { tv } from '@restate/util/styles';
 import { STATE_QUERY_NAME } from './constants';
 import { Link } from '@restate/ui/link';
 import { useEditStateContext } from '@restate/features/edit-state';
+import { CodecProvider } from '@restate/features/codec';
 import { toStateParam } from './toStateParam';
 import { SplitButton } from '@restate/ui/split-button';
 import { useRestateContext } from '@restate/features/restate-context';
@@ -470,6 +471,15 @@ function Component() {
                         </Cell>
                       );
                     } else {
+                      const codecOptions = {
+                        service: virtualObject,
+                        key: row.key!,
+                        command: {
+                          type: 'GetState' as const,
+                          name: id,
+                        },
+                      };
+
                       return (
                         <Cell
                           key={id}
@@ -492,10 +502,12 @@ function Component() {
                                         />
                                       )}
                                       <span className="block truncate">
-                                        <DecodedValue
-                                          value={row.state?.[id]}
-                                          isBase64
-                                        />
+                                        <CodecProvider options={codecOptions}>
+                                          <DecodedValue
+                                            value={row.state?.[id]}
+                                            isBase64
+                                          />
+                                        </CodecProvider>
                                       </span>
                                     </span>
                                   </Button>
@@ -533,12 +545,14 @@ function Component() {
                                       </div>
                                     }
                                   >
-                                    <Value
-                                      value={row.state?.[id]}
-                                      className="w-full py-0 font-mono text-xs"
-                                      showCopyButton
-                                      portalId="state-value"
-                                    />
+                                    <CodecProvider options={codecOptions}>
+                                      <Value
+                                        value={row.state?.[id]}
+                                        className="w-full py-0 font-mono text-xs"
+                                        showCopyButton
+                                        portalId="state-value"
+                                      />
+                                    </CodecProvider>
                                   </DropdownSection>
                                 </PopoverContent>
                               </Popover>

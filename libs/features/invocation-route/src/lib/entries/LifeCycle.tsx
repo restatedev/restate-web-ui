@@ -8,6 +8,7 @@ import { DropdownSection } from '@restate/ui/dropdown';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
 import { ENTRY_COMMANDS_COMPONENTS } from '../Entry';
 import { ComponentType } from 'react';
+import { EntryCodecProvider } from './EntryCodecProvider';
 
 export function LifeCycle({
   entry,
@@ -69,10 +70,15 @@ export function LifeCycle({
                     }
                   >
                     {CommandComponent && (
-                      <CommandComponent
+                      <EntryCodecProvider
                         entry={parentCommand}
                         invocation={invocation}
-                      />
+                      >
+                        <CommandComponent
+                          entry={parentCommand}
+                          invocation={invocation}
+                        />
+                      </EntryCodecProvider>
                     )}
                   </DropdownSection>
                 </PopoverContent>
