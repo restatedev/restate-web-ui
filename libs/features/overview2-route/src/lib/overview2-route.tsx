@@ -334,7 +334,9 @@ function OverviewContent() {
                 </PopoverContent>
               </Popover>
             ) : isSummaryLoading ? (
-              <div className="h-5 w-36 translate-y-1.5 animate-pulse rounded-lg bg-gray-200" />
+              <div className="w-36 translate-y-0.5 animate-pulse rounded-lg bg-gray-200 text-xl leading-6 font-semibold">
+                <br />
+              </div>
             ) : noInvocations ? (
               <p className="text-sm text-gray-400">
                 <Link
