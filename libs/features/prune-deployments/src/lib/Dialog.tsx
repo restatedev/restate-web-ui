@@ -16,7 +16,7 @@ import { formatNumber, formatPlurals } from '@restate/util/intl';
 import { tv } from '@restate/util/styles';
 import { useQueryClient } from '@tanstack/react-query';
 import { FormEvent, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { Form, useSearchParams } from 'react-router';
 import { PRUNE_DRAINED_DEPLOYMENTS_QUERY } from './constants';
 import { PruneDeploymentsProgressBar } from './PruneDeploymentsProgressBar';
 import { useDeleteDeployments } from './useDeleteDeployments';
@@ -75,8 +75,8 @@ function DrainedDeploymentList({
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="max-h-80 overflow-auto rounded-xl border border-black/10 bg-gray-50/80 p-2 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
-        <div className="flex flex-col gap-2">
+      <div className="max-h-80 overflow-auto rounded-2xl border border-black/10 bg-gray-200/50 p-1 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
+        <div className="flex flex-col gap-1">
           {visibleDeploymentIds.map((deploymentId) => (
             <div
               key={deploymentId}
@@ -102,7 +102,7 @@ function DrainedDeploymentList({
             })}
           </span>
           <Button
-            variant="secondary"
+            variant="icon"
             className="px-3 py-1 text-0.5xs"
             onClick={onShowMore}
           >
@@ -157,6 +157,7 @@ export function PruneDrainedDeploymentsDialog() {
   };
 
   const submitHandler = async (event: FormEvent<HTMLFormElement>) => {
+    console.log(event);
     event.preventDefault();
     const result = await deleteDeployments.mutateAsync(availableDeploymentIds);
 
@@ -231,8 +232,8 @@ export function PruneDrainedDeploymentsDialog() {
               />
             )}
           </div>
-          <form onSubmit={submitHandler}>
-            <DialogFooter>
+          <DialogFooter>
+            <Form onSubmit={submitHandler}>
               <div className="flex flex-col gap-2">
                 {run?.error && <ErrorBanner error={run.error} />}
                 <div className={footerActionsStyles()}>
@@ -250,8 +251,8 @@ export function PruneDrainedDeploymentsDialog() {
                   </SubmitButton>
                 </div>
               </div>
-            </DialogFooter>
-          </form>
+            </Form>
+          </DialogFooter>
         </div>
       </DialogContent>
     </QueryDialog>
