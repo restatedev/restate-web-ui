@@ -53,7 +53,7 @@ const deploymentStatusStyles = tv({
 });
 
 const overviewPrimaryRowStyles = tv({
-  base: 'z-[1] -mx-1 flex min-w-0 items-center gap-2 self-start rounded-lg px-1 py-0.5 hover:bg-black/3',
+  base: 'pointer-events-none z-[1] -mx-1 flex min-w-0 items-center gap-2 self-start rounded-lg px-1 py-0.5',
   variants: {
     balancedHeight: {
       true: 'min-h-[2.625rem]',
@@ -107,7 +107,7 @@ export function useServiceColumns({
                 <Link
                   href={`?${SERVICE_PLAYGROUND_QUERY_PARAM}=${s.name}`}
                   variant="secondary-button"
-                  className="mt-1.5 mr-0.5 ml-0 shrink-0 px-1 py-1"
+                  className="pointer-events-auto z-[2] mt-1.5 mr-0.5 ml-0 shrink-0 px-1 py-1"
                 >
                   <Icon
                     name={IconName.Play}
@@ -234,6 +234,7 @@ export function useDeploymentColumns({
                 highlightSelection={false}
                 showLink={false}
                 variant="primary"
+                className="pointer-events-none"
               />
             }
             secondary={<OverviewDeploymentId deploymentId={deployment.id} />}
