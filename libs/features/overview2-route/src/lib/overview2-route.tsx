@@ -310,7 +310,7 @@ function OverviewContent() {
               </div>
             </div>
           </div>
-          <div className="relative z-10 -mt-4 flex w-[18rem] items-baseline justify-center gap-1.5">
+          <div className="relative z-10 -mt-4 flex min-h-7 w-[18rem] items-baseline justify-center gap-1.5">
             {summaryError ? (
               <Popover>
                 <PopoverTrigger>
@@ -392,7 +392,7 @@ function OverviewContent() {
           />
         </div>
       )}
-      <div ref={issuesRef}>
+      <div ref={issuesRef} className="min-h-6.5">
         <IssuesBannerStack className="-mt-4" />
       </div>
 
