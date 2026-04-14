@@ -5,12 +5,12 @@ import { Link } from '@restate/ui/link';
 
 export const cellsContainerStyles = tv({
   extend: focusRing,
-  base: '@container relative isolate cursor-default overflow-hidden rounded-2xl border bg-gray-200/70 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] transition',
+  base: '@container relative isolate cursor-default overflow-hidden rounded-2xl border border-white/60 bg-gray-200/50 shadow-[inset_0_-0.5px_0px_1px_rgba(0,0,0,0.05)] transition',
   variants: {
     issueSeverity: {
       none: '',
-      low: 'before:pointer-events-none before:absolute before:inset-y-0 before:right-0 before:-left-6 before:z-10 before:animate-stripeScroll before:bg-[repeating-linear-gradient(135deg,transparent,transparent_8px,--theme(--color-orange-500/6%)_8px,--theme(--color-orange-500/6%)_16px)] before:[mask-image:linear-gradient(to_top_left,transparent_calc(100%-3rem),black_100%)] after:pointer-events-none after:absolute after:inset-0 after:z-10 after:rounded-2xl after:bg-[linear-gradient(to_top_left,transparent_40%,--theme(--color-orange-500/5%))] after:[mask-image:linear-gradient(to_top_left,transparent_calc(100%-3rem),black_100%)]',
-      high: 'before:pointer-events-none before:absolute before:inset-y-0 before:right-0 before:-left-6 before:z-10 before:animate-stripeScroll before:bg-[repeating-linear-gradient(135deg,transparent,transparent_8px,--theme(--color-red-500/6%)_8px,--theme(--color-red-500/6%)_16px)] before:[mask-image:linear-gradient(to_top_left,transparent_calc(100%-3rem),black_100%)] after:pointer-events-none after:absolute after:inset-0 after:z-10 after:rounded-2xl after:bg-[linear-gradient(to_top_left,transparent_40%,--theme(--color-red-500/5%))] after:[mask-image:linear-gradient(to_top_left,transparent_calc(100%-3rem),black_100%)]',
+      low: 'before:pointer-events-none before:absolute before:inset-y-[2px] before:right-[2px] before:-left-6 before:z-10 before:animate-stripeScroll before:bg-[repeating-linear-gradient(135deg,transparent,transparent_8px,--theme(--color-orange-500/6%)_8px,--theme(--color-orange-500/6%)_16px)] before:[mask-image:linear-gradient(to_top_left,transparent_calc(100%-3rem),black_100%)] after:pointer-events-none after:absolute after:inset-[2px] after:z-10 after:rounded-2xl after:bg-[linear-gradient(to_top_left,transparent_40%,--theme(--color-orange-500/5%))] after:[mask-image:linear-gradient(to_top_left,transparent_calc(100%-3rem),black_100%)]',
+      high: 'before:pointer-events-none before:absolute before:inset-y-[2px] before:right-[2px] before:-left-6 before:z-10 before:animate-stripeScroll before:bg-[repeating-linear-gradient(135deg,transparent,transparent_8px,--theme(--color-red-500/6%)_8px,--theme(--color-red-500/6%)_16px)] before:[mask-image:linear-gradient(to_top_left,transparent_calc(100%-3rem),black_100%)] after:pointer-events-none after:absolute after:inset-[2px] after:z-10 after:rounded-2xl after:bg-[linear-gradient(to_top_left,transparent_40%,--theme(--color-red-500/5%))] after:[mask-image:linear-gradient(to_top_left,transparent_calc(100%-3rem),black_100%)]',
     },
   },
   defaultVariants: {
@@ -19,10 +19,10 @@ export const cellsContainerStyles = tv({
 });
 
 const primaryStyles = tv({
-  base: 'w-full overflow-hidden rounded-2xl border border-white/70 bg-linear-to-b from-gray-50 to-gray-50/80 shadow-xs transition',
+  base: 'm-[2px] overflow-hidden rounded-[calc(1rem-2px)] border border-white bg-linear-to-b from-gray-50 to-gray-50/80 shadow-xs transition',
   variants: {
     isInteractive: {
-      true: 'shadow-zinc-800/3',
+      true: '',
       false: '',
     },
   },
@@ -33,7 +33,7 @@ const primaryLinkStyles = tv({
   base: 'absolute inset-0 z-0 block no-underline',
   variants: {
     isInteractive: {
-      true: 'hover:from-white hover:to-white hover:no-underline hover:shadow-md pressed:from-gray-50 pressed:to-gray-50/90 pressed:shadow-xs',
+      true: 'hover:from-white hover:to-white/80 hover:no-underline hover:shadow-md hover:shadow-zinc-800/3 pressed:from-gray-50 pressed:to-gray-50/90 pressed:shadow-xs',
       false: '',
     },
   },
