@@ -137,15 +137,18 @@ function listDrainedDeploymentsSelector(
   return new Set(data?.deployment_ids ?? []);
 }
 
-export function useListDeployments(
-  options?: ListDeploymentsOptions,
-) {
+export function useListDeployments(options?: ListDeploymentsOptions) {
   const enabled = useAPIStatus();
 
   const baseUrl = useAdminBaseUrl();
-  const { queryFn, ...queryOptions } = adminApi('query', '/deployments', 'get', {
-    baseUrl,
-  });
+  const { queryFn, ...queryOptions } = adminApi(
+    'query',
+    '/deployments',
+    'get',
+    {
+      baseUrl,
+    },
+  );
 
   const results = useQuery<ListDeploymentsData>({
     ...queryOptions,
