@@ -5,12 +5,12 @@ import { Link } from '@restate/ui/link';
 
 export const cellsContainerStyles = tv({
   extend: focusRing,
-  base: '@container relative cursor-default overflow-hidden rounded-2xl border bg-gray-200/70 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] transition',
+  base: '@container isolate relative cursor-default overflow-hidden rounded-2xl border bg-gray-200/70 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] transition',
   variants: {
     issueSeverity: {
       none: '',
-      low: 'before:pointer-events-none before:absolute before:inset-y-0 before:right-0 before:-left-6 before:animate-stripeScroll before:bg-[repeating-linear-gradient(135deg,transparent,transparent_8px,--theme(--color-orange-500/6%)_8px,--theme(--color-orange-500/6%)_16px)] before:[mask-image:linear-gradient(to_top_left,transparent_calc(100%-3rem),black_100%)] after:pointer-events-none after:absolute after:inset-0 after:rounded-2xl after:bg-[linear-gradient(to_top_left,transparent_40%,--theme(--color-orange-500/5%))] after:[mask-image:linear-gradient(to_top_left,transparent_calc(100%-3rem),black_100%)]',
-      high: 'before:pointer-events-none before:absolute before:inset-y-0 before:right-0 before:-left-6 before:animate-stripeScroll before:bg-[repeating-linear-gradient(135deg,transparent,transparent_8px,--theme(--color-red-500/6%)_8px,--theme(--color-red-500/6%)_16px)] before:[mask-image:linear-gradient(to_top_left,transparent_calc(100%-3rem),black_100%)] after:pointer-events-none after:absolute after:inset-0 after:rounded-2xl after:bg-[linear-gradient(to_top_left,transparent_40%,--theme(--color-red-500/5%))] after:[mask-image:linear-gradient(to_top_left,transparent_calc(100%-3rem),black_100%)]',
+      low: 'before:pointer-events-none before:absolute before:inset-y-0 before:right-0 before:z-10 before:-left-6 before:animate-stripeScroll before:bg-[repeating-linear-gradient(135deg,transparent,transparent_8px,--theme(--color-orange-500/6%)_8px,--theme(--color-orange-500/6%)_16px)] before:[mask-image:linear-gradient(to_top_left,transparent_calc(100%-3rem),black_100%)] after:pointer-events-none after:absolute after:inset-0 after:z-10 after:rounded-2xl after:bg-[linear-gradient(to_top_left,transparent_40%,--theme(--color-orange-500/5%))] after:[mask-image:linear-gradient(to_top_left,transparent_calc(100%-3rem),black_100%)]',
+      high: 'before:pointer-events-none before:absolute before:inset-y-0 before:right-0 before:z-10 before:-left-6 before:animate-stripeScroll before:bg-[repeating-linear-gradient(135deg,transparent,transparent_8px,--theme(--color-red-500/6%)_8px,--theme(--color-red-500/6%)_16px)] before:[mask-image:linear-gradient(to_top_left,transparent_calc(100%-3rem),black_100%)] after:pointer-events-none after:absolute after:inset-0 after:z-10 after:rounded-2xl after:bg-[linear-gradient(to_top_left,transparent_40%,--theme(--color-red-500/5%))] after:[mask-image:linear-gradient(to_top_left,transparent_calc(100%-3rem),black_100%)]',
     },
   },
   defaultVariants: {
@@ -45,7 +45,7 @@ const primarySurfaceStyles = tv({
 });
 
 const primaryContentStyles = tv({
-  base: 'relative z-10 px-1 py-2',
+  base: 'relative z-20 px-1 py-2',
   variants: {
     hasOverlayLink: {
       true: 'pointer-events-none [&_a]:pointer-events-auto [&_a]:relative [&_a]:z-20 [&_button]:pointer-events-auto [&_button]:relative [&_button]:z-20',
@@ -109,7 +109,7 @@ function OverviewCardDetails({
   children: ReactNode;
 }) {
   return (
-    <div className="mt-1.5 flex flex-col gap-1 rounded-md rounded-t-sm px-3 pt-1 pb-3">
+    <div className="relative z-20 mt-1.5 flex flex-col gap-1 rounded-md rounded-t-sm px-3 pt-1 pb-3">
       <div className="flex items-center gap-2 pl-8.5 text-xs leading-6 font-semibold text-gray-500/70 uppercase">
         {title}
       </div>
