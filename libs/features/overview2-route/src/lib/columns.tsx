@@ -53,7 +53,7 @@ const deploymentStatusStyles = tv({
 });
 
 const overviewPrimaryRowStyles = tv({
-  base: '-mx-1 flex min-w-0 items-center gap-2 self-start rounded-lg px-1 py-0.5 hover:bg-black/3',
+  base: 'z-[1] -mx-1 flex min-w-0 items-center gap-2 self-start rounded-lg px-1 py-0.5 hover:bg-black/3',
   variants: {
     balancedHeight: {
       true: 'min-h-[2.625rem]',
@@ -66,7 +66,7 @@ const overviewPrimaryRowStyles = tv({
 });
 
 const overviewFirstColumnSecondaryStyles = tv({
-  base: 'mb-2 ml-7.5 min-h-6 min-w-0',
+  base: 'z-[1] mb-2 ml-7.5 min-h-6 min-w-0 self-start',
 });
 
 export function useServiceColumns({

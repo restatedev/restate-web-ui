@@ -39,21 +39,6 @@ const primaryLinkStyles = tv({
   },
 });
 
-const primarySurfaceStyles = tv({
-  extend: primaryStyles,
-  base: 'absolute inset-0 z-0',
-});
-
-const primaryContentStyles = tv({
-  base: 'relative z-20 px-1 py-2',
-  variants: {
-    hasOverlayLink: {
-      true: 'pointer-events-none [&_a]:pointer-events-auto [&_a]:relative [&_a]:z-20 [&_button]:pointer-events-auto [&_button]:relative [&_button]:z-20',
-      false: '',
-    },
-  },
-});
-
 export function OverviewCard({
   cells,
   className,
@@ -72,22 +57,16 @@ export function OverviewCard({
     <div className="mb-4 px-2 pt-1">
       <div {...props} className={className}>
         <div className="relative">
-          {primaryHref ? (
-            <Link
-              href={primaryHref}
-              variant="secondary"
-              className={primaryLinkStyles({ isInteractive: true })}
-            >
-              <span className="sr-only">Open details</span>
-            </Link>
-          ) : (
-            <div className={primarySurfaceStyles({ isInteractive: false })} />
-          )}
-          <div
-            className={primaryContentStyles({
-              hasOverlayLink: Boolean(primaryHref),
-            })}
-          >
+          <div className="px-1 py-2">
+            {primaryHref ? (
+              <Link
+                href={primaryHref}
+                variant="secondary"
+                className={primaryLinkStyles({ isInteractive: true })}
+              >
+                <span className="sr-only">Open details</span>
+              </Link>
+            ) : null}
             {cells}
           </div>
         </div>
