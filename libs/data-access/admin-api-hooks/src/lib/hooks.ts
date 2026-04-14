@@ -11,6 +11,7 @@ import {
   UseMutationOptions,
   useQueries,
   useQuery,
+  UseQueryOptions,
   useQueryClient,
   UseQueryResult,
 } from '@tanstack/react-query';
@@ -120,6 +121,12 @@ function listDeploymentsSelector(
   return { services, deployments, sortedServiceNames };
 }
 
+type ListDeploymentsData = ReturnType<typeof listDeploymentsSelector>;
+type ListDeploymentsOptions = Omit<
+  UseQueryOptions<ListDeploymentsData, RestateError | Error>,
+  'queryFn' | 'queryKey'
+>;
+
 function listDrainedDeploymentsSelector(
   data:
     | {
@@ -131,18 +138,21 @@ function listDrainedDeploymentsSelector(
 }
 
 export function useListDeployments(
-  options?: HookQueryOptions<'/deployments', 'get'>,
+  options?: ListDeploymentsOptions,
 ) {
   const enabled = useAPIStatus();
 
   const baseUrl = useAdminBaseUrl();
-  const queryOptions = adminApi('query', '/deployments', 'get', { baseUrl });
+  const { queryFn, ...queryOptions } = adminApi('query', '/deployments', 'get', {
+    baseUrl,
+  });
 
-  const results = useQuery({
+  const results = useQuery<ListDeploymentsData>({
     ...queryOptions,
     ...options,
     meta: { ...queryOptions.meta, ...getOverviewRefreshMeta() },
-    select: listDeploymentsSelector,
+    queryFn: (...args) =>
+      Promise.resolve(queryFn(...args)).then(listDeploymentsSelector),
     enabled: options?.enabled !== false && enabled,
   });
 
@@ -210,7 +220,7 @@ export function isVersionQuery(
 export function isListDeployments(
   data: unknown,
   query: Query<unknown, unknown, unknown>,
-): data is components['schemas']['ListDeploymentsResponse'] {
+): data is NonNullable<ListDeploymentsData> {
   const { queryKey, meta } = query;
   return (
     Array.isArray(queryKey) &&

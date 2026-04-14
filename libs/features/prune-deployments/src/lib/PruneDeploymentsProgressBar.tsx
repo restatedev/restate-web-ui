@@ -52,10 +52,6 @@ const markerStyles = tv({
   },
 });
 
-function truncateError(error: string) {
-  return error.length > 250 ? `${error.slice(0, 250)}…` : error;
-}
-
 export function PruneDeploymentsProgressBar({
   successful,
   failed,

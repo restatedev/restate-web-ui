@@ -117,6 +117,28 @@ function DrainedDeploymentList({
 export function PruneDrainedDeploymentsDialog() {
   const [searchParams, setSearchParams] = useSearchParams();
   const isOpen = searchParams.has(PRUNE_DRAINED_DEPLOYMENTS_QUERY);
+
+  const removeDialogQueryParam = () => {
+    setSearchParams(removePruneDeploymentsQueryParam, {
+      preventScrollReset: true,
+    });
+  };
+
+  return (
+    <QueryDialog query={PRUNE_DRAINED_DEPLOYMENTS_QUERY}>
+      <PruneDrainedDeploymentsDialogContent
+        key={String(isOpen)}
+        onSuccessClose={removeDialogQueryParam}
+      />
+    </QueryDialog>
+  );
+}
+
+function PruneDrainedDeploymentsDialogContent({
+  onSuccessClose,
+}: {
+  onSuccessClose: VoidFunction;
+}) {
   const queryClient = useQueryClient();
   const {
     data: drainedDeploymentIds = new Set(),
@@ -124,14 +146,14 @@ export function PruneDrainedDeploymentsDialog() {
     error: drainedDeploymentsError,
     queryKey: drainedQueryKey,
   } = useListDrainedDeployments({
-    enabled: isOpen,
+    refetchOnMount: 'always',
   });
   const {
     isPending: isDeploymentsPending,
     error: deploymentsError,
     queryKey: deploymentsQueryKey,
   } = useListDeployments({
-    enabled: isOpen,
+    refetchOnMount: 'always',
   });
   const deleteDeployments = useDeleteDeployments();
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_DEPLOYMENTS);
@@ -144,17 +166,6 @@ export function PruneDrainedDeploymentsDialog() {
   const total = run ? run.deploymentIds.length : availableDeploymentIds.length;
   const canSubmit =
     !run && !isLoading && !loadError && availableDeploymentIds.length > 0;
-
-  const resetDialog = () => {
-    setVisibleCount(INITIAL_VISIBLE_DEPLOYMENTS);
-    deleteDeployments.reset();
-  };
-
-  const removeDialogQueryParam = () => {
-    setSearchParams(removePruneDeploymentsQueryParam, {
-      preventScrollReset: true,
-    });
-  };
 
   const submitHandler = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -177,83 +188,78 @@ export function PruneDrainedDeploymentsDialog() {
           },
         )}`,
       );
-      resetDialog();
-      removeDialogQueryParam();
+      onSuccessClose();
     }
   };
 
   return (
-    <QueryDialog query={PRUNE_DRAINED_DEPLOYMENTS_QUERY} onClose={resetDialog}>
-      <DialogContent className="max-w-2xl" isDismissable={!isRunning}>
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-2">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
-              Prune drained deployments
-            </h3>
-            {isLoading ? (
-              <DrainedDeploymentListSkeleton />
-            ) : loadError ? (
-              <ErrorBanner error={loadError} />
-            ) : !run ? (
-              availableDeploymentIds.length === 0 ? (
-                <p className="text-sm text-gray-500">
-                  There are no drained deployments to delete right now.
-                </p>
-              ) : (
-                <>
-                  <p className="text-sm text-gray-500">
-                    These {formatNumber(availableDeploymentIds.length)} drained{' '}
-                    {formatPlurals(availableDeploymentIds.length, {
-                      one: 'deployment',
-                      other: 'deployments',
-                    })}{' '}
-                    are no longer serving traffic. Review the list below and
-                    confirm if you want to proceed.
-                  </p>
-                  <DrainedDeploymentList
-                    deploymentIds={availableDeploymentIds}
-                    visibleCount={visibleCount}
-                    onShowMore={() =>
-                      setVisibleCount(
-                        (count) => count + VISIBLE_DEPLOYMENTS_STEP,
-                      )
-                    }
-                  />
-                </>
-              )
+    <DialogContent className="max-w-2xl" isDismissable={!isRunning}>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
+          <h3 className="text-lg leading-6 font-medium text-gray-900">
+            Prune drained deployments
+          </h3>
+          {isLoading ? (
+            <DrainedDeploymentListSkeleton />
+          ) : loadError ? (
+            <ErrorBanner error={loadError} />
+          ) : !run ? (
+            availableDeploymentIds.length === 0 ? (
+              <p className="text-sm text-gray-500">
+                There are no drained deployments to delete right now.
+              </p>
             ) : (
-              <PruneDeploymentsProgressBar
-                successful={run.successfulDeploymentIds.length}
-                failed={run.failedCount}
-                total={total}
-                isPending={isRunning}
-                failedDeployments={run.failedDeployments}
-              />
-            )}
-          </div>
-          <DialogFooter>
-            <Form onSubmit={submitHandler}>
-              <div className="flex flex-col gap-2">
-                {run?.error && <ErrorBanner error={run.error} />}
-                <div className={footerActionsStyles()}>
-                  <DialogClose>
-                    <Button variant="secondary" disabled={isRunning} autoFocus>
-                      Close
-                    </Button>
-                  </DialogClose>
-                  <SubmitButton
-                    variant="destructive"
-                    isPending={isRunning}
-                    disabled={!canSubmit}
-                  >
-                    Prune deployments
-                  </SubmitButton>
-                </div>
-              </div>
-            </Form>
-          </DialogFooter>
+              <>
+                <p className="text-sm text-gray-500">
+                  These {formatNumber(availableDeploymentIds.length)} drained{' '}
+                  {formatPlurals(availableDeploymentIds.length, {
+                    one: 'deployment',
+                    other: 'deployments',
+                  })}{' '}
+                  are no longer serving traffic. Review the list below and
+                  confirm if you want to proceed.
+                </p>
+                <DrainedDeploymentList
+                  deploymentIds={availableDeploymentIds}
+                  visibleCount={visibleCount}
+                  onShowMore={() =>
+                    setVisibleCount((count) => count + VISIBLE_DEPLOYMENTS_STEP)
+                  }
+                />
+              </>
+            )
+          ) : (
+            <PruneDeploymentsProgressBar
+              successful={run.successfulDeploymentIds.length}
+              failed={run.failedCount}
+              total={total}
+              isPending={isRunning}
+              failedDeployments={run.failedDeployments}
+            />
+          )}
         </div>
-      </DialogContent>
-    </QueryDialog>
+        <DialogFooter>
+          <Form onSubmit={submitHandler}>
+            <div className="flex flex-col gap-2">
+              {run?.error && <ErrorBanner error={run.error} />}
+              <div className={footerActionsStyles()}>
+                <DialogClose>
+                  <Button variant="secondary" disabled={isRunning} autoFocus>
+                    Close
+                  </Button>
+                </DialogClose>
+                <SubmitButton
+                  variant="destructive"
+                  isPending={isRunning}
+                  disabled={!canSubmit}
+                >
+                  Prune deployments
+                </SubmitButton>
+              </div>
+            </div>
+          </Form>
+        </DialogFooter>
+      </div>
+    </DialogContent>
   );
 }

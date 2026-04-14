@@ -250,6 +250,7 @@
 - 2026-04-11 | self | Query param names can be short (`view`) while the code stays explicit with semantic module/type names (`overviewMode`). Keep the URL simple, and let internal naming carry the domain meaning.
 - 2026-04-11 | self | If a tiny helper module only exists to hold a closely related type/sort utility (like deployment-service sorting next to deployment sorting), prefer merging it into the existing domain helper file instead of keeping a second micro-file.
 - 2026-04-11 | self | If a feature invents a one-off wrapper like `OverviewAnimatedCard`, that usually belongs in the shared primitive library instead. Keep DOM-marker details (`data-*` selectors) inside the shared lib, and let features pass a simple semantic key like `overview-card`.
+- 2026-04-14 | self | Moving a heavy TanStack Query transform from `select` into the shared `queryFn` path is a good way to pay the cost once, but you also have to change the hook's options type to the transformed data shape. Reusing raw `HookQueryOptions` leaks raw `staleTime`/query generics and breaks consumers even if the runtime behavior is correct.
 
 - 2026-03-06 | self | In full-trace live view (`zoomLevel=1`), interval drift comes from slot width recomputation, not container transform. Keep slot/spacer `width` transitions enabled for live edge states, and don't gate edge animation solely on `canReturnToLive`.
 
