@@ -199,7 +199,7 @@ export function useServiceColumns({
                   <Icon name={IconName.ChevronRight} className="h-4 w-4" />
                 </Link>
               ) : (
-                <div className="inline-flex min-w-0 items-center px-1.5 py-0.5 text-0.5xs text-gray-400">
+                <div className="z-10 inline-flex min-w-0 items-center px-1.5 py-0.5 text-0.5xs text-gray-400">
                   No invocations
                 </div>
               )

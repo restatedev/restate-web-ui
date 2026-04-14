@@ -77,10 +77,7 @@ export function ServiceStatusBar({
   const total = statuses.reduce((sum, s) => sum + s.count, 0);
   const issuesByStatus = getIssuesByStatus(serviceIssues);
 
-  if (total === 0) {
-    if (isSummaryError || isSummaryLoading) return null;
-    return null;
-  }
+  if (isSummaryError || isSummaryLoading) return null;
 
   const tooltipContent = (
     <div className="flex flex-col">
@@ -162,7 +159,7 @@ export function ServiceStatusBar({
 
   return (
     <HoverTooltip content={tooltipContent} size="lg">
-      <div className="flex h-3 min-w-[60px] gap-1 overflow-hidden rounded-lg border border-gray-200 bg-gray-100 p-0.5">
+      <div className="flex h-3 gap-1 overflow-hidden rounded-lg border border-gray-200 bg-gray-100 p-0.5 [&:not(:has(*))]:h-2.5 [&:not(:has(*))]:border-transparent">
         {statuses.map((s) => (
           <div
             key={s.name}
