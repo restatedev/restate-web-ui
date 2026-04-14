@@ -38,6 +38,7 @@ export function LatestRevisionDeployment({
       deploymentId={latest.id}
       revision={latest.revision}
       highlightSelection={false}
+      className="min-w-0 text-sm"
     />
   );
 }
@@ -79,6 +80,7 @@ export function OlderRevisions({ serviceName }: { serviceName: string }) {
                   deploymentId={id}
                   revision={revision}
                   highlightSelection={false}
+                  showLink={false}
                   className="[&>*]:text-inherit"
                 />
               </DropdownItem>

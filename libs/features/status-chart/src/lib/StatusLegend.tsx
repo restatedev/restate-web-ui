@@ -16,12 +16,20 @@ import {
 import { getOrderedStatuses, type StatusEntry } from './useOrderedStatuses';
 
 export const legendStyles = tv({
-  base: 'flex max-w-2xl flex-wrap items-center justify-center gap-x-3 gap-y-1 outline-none',
+  base: 'flex items-start outline-none',
   variants: {
     isLoading: {
       true: 'animate-pulse',
       false: '',
     },
+    orientation: {
+      horizontal:
+        'max-w-2xl flex-wrap items-center justify-center gap-x-3 gap-y-1',
+      vertical: 'flex-col gap-0.5',
+    },
+  },
+  defaultVariants: {
+    orientation: 'horizontal',
   },
 });
 
@@ -39,22 +47,35 @@ export function StatusLegend({
   isLoading,
   isError,
   linkParams,
+  orientation = 'horizontal',
+  half,
+  className,
 }: {
   byStatus: StatusEntry[];
   isLoading?: boolean;
   isError?: boolean;
   linkParams?: URLSearchParams;
+  orientation?: 'horizontal' | 'vertical';
+  half?: 'first' | 'second';
+  className?: string;
 }) {
   const items = getOrderedStatuses(byStatus);
   const { baseUrl } = useRestateContext();
   const state = isLoading ? 'loading' : isError ? 'error' : 'success';
   const hasData = items.length > 0;
-  const displayItems = hasData ? items : ALL_STATUSES;
+  const fullItems = hasData ? items : ALL_STATUSES;
+  const mid = Math.ceil(fullItems.length / 2);
+  const displayItems =
+    half === 'first'
+      ? fullItems.slice(0, mid)
+      : half === 'second'
+        ? fullItems.slice(mid)
+        : fullItems;
 
   return (
     <AriaGridList
       aria-label="Invocation statuses"
-      className={legendStyles({ isLoading })}
+      className={legendStyles({ isLoading, orientation, class: className })}
       layout="grid"
     >
       {displayItems.map((s) => {
@@ -78,10 +99,10 @@ export function StatusLegend({
                   boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.35)',
                 }}
               />
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-gray-600">
                 {STATUS_LABELS[s.name] ?? s.name}
               </span>
-              <span className="text-xs text-gray-400 tabular-nums">
+              <span className="inline-block rounded-xs bg-gray-50/60 px-1 py-px text-xs font-medium text-gray-500 tabular-nums">
                 {formatNumber(count, true)}
               </span>
               <Icon
@@ -109,7 +130,13 @@ export function StatusLegend({
               <span className="text-xs text-gray-400">
                 {STATUS_LABELS[s.name] ?? s.name}
               </span>
-              <span className="h-3 w-6 animate-pulse rounded bg-gray-200" />
+              <span className="animate-pulse rounded bg-gray-200 px-1 py-px text-xs font-medium text-transparent tabular-nums">
+                {typeof count === 'number' ? formatNumber(count, true) : <br />}
+              </span>
+              <Icon
+                name={IconName.ChevronRight}
+                className="h-3.5 w-3.5 shrink-0 text-gray-400"
+              />
             </AriaGridListItem>
           );
         }

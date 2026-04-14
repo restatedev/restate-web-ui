@@ -1,18 +1,28 @@
 import { type RefObject, useCallback } from 'react';
+import { getWaveAnimationSelector } from './waveAnimationProps';
 
-function createRing(parent: HTMLElement, delay: number) {
+function createRing(origin: HTMLElement, delay: number) {
+  const rect = origin.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height);
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+
   const ring = document.createElement('div');
-  ring.style.position = 'absolute';
-  ring.style.inset = '0';
+  ring.style.position = 'fixed';
+  ring.style.width = `${size}px`;
+  ring.style.height = `${size}px`;
+  ring.style.left = `${cx - size / 2}px`;
+  ring.style.top = `${cy - size / 2}px`;
   ring.style.borderRadius = '50%';
   ring.style.pointerEvents = 'none';
-  ring.style.border = '3px solid rgba(255,255,255,0.6)';
+  ring.style.border = '3px solid rgba(255,255,255,0.35)';
   ring.style.zIndex = '-1';
-  parent.appendChild(ring);
+  document.body.appendChild(ring);
 
   ring.animate(
     [
-      { transform: 'scale(0.5)', opacity: '0.6' },
+      { transform: 'scale(1)', opacity: '0' },
+      { transform: 'scale(1.2)', opacity: '0.5', offset: 0.1 },
       { transform: 'scale(4)', opacity: '0' },
     ],
     { duration: 1800, delay, easing: 'ease-out', fill: 'forwards' },
@@ -35,7 +45,7 @@ function createSweep(card: HTMLElement, delay: number) {
   sweep.style.right = '-20%';
   sweep.style.height = '120%';
   sweep.style.background =
-    'linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.08) 20%, rgba(255,255,255,0.25) 45%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0.25) 55%, rgba(255,255,255,0.08) 80%, transparent 100%)';
+    'linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.05) 20%, rgba(255,255,255,0.15) 45%, rgba(255,255,255,0.25) 50%, rgba(255,255,255,0.15) 55%, rgba(255,255,255,0.05) 80%, transparent 100%)';
   overlay.appendChild(sweep);
 
   sweep.animate(
@@ -58,7 +68,7 @@ function bounceCard(card: HTMLElement, delay: number) {
 
 export function useWaveAnimation() {
   const triggerWave = useCallback(
-    (originRef: RefObject<HTMLElement | null>, targetSelector: string) => {
+    (originRef: RefObject<HTMLElement | null>, selector: string) => {
       const originEl = originRef.current;
       if (!originEl) return;
 
@@ -73,7 +83,9 @@ export function useWaveAnimation() {
           }
         }
 
-        const cards = document.querySelectorAll<HTMLElement>(targetSelector);
+        const cards = document.querySelectorAll<HTMLElement>(
+          getWaveAnimationSelector(selector),
+        );
         cards.forEach((card) => {
           const cardRect = card.getBoundingClientRect();
           const distance = cardRect.top - originCenterY;

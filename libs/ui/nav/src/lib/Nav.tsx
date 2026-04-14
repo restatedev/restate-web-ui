@@ -6,10 +6,7 @@ import {
   useEffect,
   useRef,
 } from 'react';
-import {
-  GridList as AriaGridList,
-  GridListItem as AriaGridListItem,
-} from 'react-aria-components';
+import { GridList as AriaGridList } from 'react-aria-components';
 import { tv } from '@restate/util/styles';
 import { NavContext } from './NavContext';
 import {
@@ -98,9 +95,8 @@ export function Nav({
       }
     };
     const callback: MutationCallback = (mutationList) => {
-      for (const mutation of mutationList) {
-        containerElement &&
-          updateStyle(containerElement.querySelector('[data-active=true]'));
+      if (mutationList.length > 0 && containerElement) {
+        updateStyle(containerElement.querySelector('[data-active=true]'));
       }
     };
 
@@ -133,6 +129,21 @@ export function Nav({
     };
   }, [layout, location.search]);
   const getHref = useGetHrefFromSearch();
+  const isNavActive = (
+    nav: ReactElement<
+      | ComponentProps<typeof NavItem>
+      | ComponentProps<typeof NavButtonItem>
+      | ComponentProps<typeof NavSearchItem>
+    >,
+  ) => {
+    if ('href' in nav.props) {
+      return location.pathname.startsWith(nav.props.href);
+    }
+    if ('param' in nav.props) {
+      return getHref(nav.props.param, nav.props.value).isActive;
+    }
+    return 'isActive' in nav.props ? nav.props.isActive : false;
+  };
 
   return (
     <NavContext.Provider value={{ value: ariaCurrentValue }}>
@@ -155,22 +166,13 @@ export function Nav({
               className="flex items-center gap-2 py-1.5 pr-1.5 pl-3"
             >
               {Children.map(children, (child) => {
+                const nav = child as ReactElement<
+                  | ComponentProps<typeof NavItem>
+                  | ComponentProps<typeof NavButtonItem>
+                  | ComponentProps<typeof NavSearchItem>
+                >;
                 return (
-                  <span
-                    className={
-                      'href' in child.props
-                        ? location.pathname.startsWith(child.props.href)
-                          ? ''
-                          : 'hidden'
-                        : location.search.includes(child.props.search)
-                          ? ''
-                          : 'isActive' in child.props
-                            ? child.props.isActive
-                              ? ''
-                              : 'hidden'
-                            : 'hidden'
-                    }
-                  >
+                  <span className={isNavActive(nav) ? '' : 'hidden'}>
                     {child.props.children}
                   </span>
                 );
@@ -213,6 +215,11 @@ export function Nav({
                       isActive: location.pathname.startsWith(nav.props.href),
                       value: nav.props.href,
                     };
+                  } else if ('param' in nav.props) {
+                    return {
+                      isActive: isNavActive(nav),
+                      value: nav.props.children?.toString() ?? '',
+                    };
                   } else if ('isActive' in nav.props) {
                     return {
                       isActive: nav.props.isActive,
@@ -237,12 +244,12 @@ export function Nav({
                     href={
                       'href' in child.props
                         ? child.props.href
-                        : getHref(child.props.search).href
+                        : getHref(child.props.param, child.props.value).href
                     }
                     value={
                       'href' in child.props
                         ? child.props.href
-                        : child.props.search
+                        : (child.props.children?.toString() ?? '')
                     }
                   >
                     {child.props.children}

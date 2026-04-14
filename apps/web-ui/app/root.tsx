@@ -42,6 +42,7 @@ import {
   DEPLOYMENT_QUERY_PARAM,
   DeleteDeployment,
 } from '@restate/features/deployment';
+import { PruneDrainedDeploymentsDialog } from '@restate/features/prune-deployments';
 import {
   HANDLER_QUERY_PARAM,
   SERVICE_PLAYGROUND_QUERY_PARAM,
@@ -310,6 +311,7 @@ export default function App() {
                 <StatePanel />
                 <EditService />
                 <InvocationActions />
+                <PruneDrainedDeploymentsDialog />
                 <RegisterDeploymentDialog />
                 <UpdateDeploymentDialog />
                 <Support />

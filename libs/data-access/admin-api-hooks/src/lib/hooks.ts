@@ -11,6 +11,7 @@ import {
   UseMutationOptions,
   useQueries,
   useQuery,
+  UseQueryOptions,
   useQueryClient,
   UseQueryResult,
 } from '@tanstack/react-query';
@@ -120,19 +121,41 @@ function listDeploymentsSelector(
   return { services, deployments, sortedServiceNames };
 }
 
-export function useListDeployments(
-  options?: HookQueryOptions<'/deployments', 'get'>,
+type ListDeploymentsData = ReturnType<typeof listDeploymentsSelector>;
+type ListDeploymentsOptions = Omit<
+  UseQueryOptions<ListDeploymentsData, RestateError | Error>,
+  'queryFn' | 'queryKey'
+>;
+
+function listDrainedDeploymentsSelector(
+  data:
+    | {
+        deployment_ids?: string[];
+      }
+    | undefined,
 ) {
+  return new Set(data?.deployment_ids ?? []);
+}
+
+export function useListDeployments(options?: ListDeploymentsOptions) {
   const enabled = useAPIStatus();
 
   const baseUrl = useAdminBaseUrl();
-  const queryOptions = adminApi('query', '/deployments', 'get', { baseUrl });
+  const { queryFn, ...queryOptions } = adminApi(
+    'query',
+    '/deployments',
+    'get',
+    {
+      baseUrl,
+    },
+  );
 
-  const results = useQuery({
+  const results = useQuery<ListDeploymentsData>({
     ...queryOptions,
     ...options,
     meta: { ...queryOptions.meta, ...getOverviewRefreshMeta() },
-    select: listDeploymentsSelector,
+    queryFn: (...args) =>
+      Promise.resolve(queryFn(...args)).then(listDeploymentsSelector),
     enabled: options?.enabled !== false && enabled,
   });
 
@@ -166,6 +189,29 @@ export function useSqlQuery(
   };
 }
 
+export function useListDrainedDeployments(
+  options?: HookQueryOptions<'/query/deployments/drained', 'get'>,
+) {
+  const enabled = useAPIStatus();
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi('query', '/query/deployments/drained', 'get', {
+    baseUrl,
+  });
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+    meta: { ...queryOptions.meta, ...getOverviewRefreshMeta() },
+    select: listDrainedDeploymentsSelector,
+    enabled: options?.enabled !== false && enabled,
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+  };
+}
+
 export function isVersionQuery(
   data: unknown,
   query: Query<unknown, unknown, unknown>,
@@ -177,7 +223,7 @@ export function isVersionQuery(
 export function isListDeployments(
   data: unknown,
   query: Query<unknown, unknown, unknown>,
-): data is components['schemas']['ListDeploymentsResponse'] {
+): data is NonNullable<ListDeploymentsData> {
   const { queryKey, meta } = query;
   return (
     Array.isArray(queryKey) &&

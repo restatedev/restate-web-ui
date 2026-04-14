@@ -77,6 +77,7 @@ interface BaseDropdownItemProps
   }> {
   destructive?: boolean;
   className?: string;
+  isDisabled?: boolean;
 }
 
 interface DropdownCustomItemProps
@@ -122,7 +123,7 @@ export function DropdownItem(props: DropdownItemProps) {
     return (
       <StyledDropdownItem
         {...rest}
-        href={hrefWithQUeryParams}
+        href={hrefWithQUeryParams ?? href}
         id={value}
         textValue={value}
       />

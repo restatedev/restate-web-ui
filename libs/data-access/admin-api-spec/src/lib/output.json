@@ -3952,6 +3952,86 @@
         }
       }
     },
+    "/query/deployments/drained": {
+      "get": {
+        "tags": ["query-deployments"],
+        "summary": "List drained deployments",
+        "description": "List drained deployments",
+        "operationId": "list_drained_deployments",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListDrainedDeploymentsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/internal/invocations_batch_operations/kill": {
       "post": {
         "tags": ["batch-invocation-operations"],
@@ -5439,6 +5519,18 @@
         "type": "integer",
         "format": "int32",
         "minimum": 0
+      },
+      "ListDrainedDeploymentsResponse": {
+        "type": "object",
+        "required": ["deployment_ids"],
+        "properties": {
+          "deployment_ids": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeploymentId"
+            }
+          }
+        }
       },
       "VirtualObjectState": {
         "type": "array",

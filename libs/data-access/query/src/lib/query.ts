@@ -34,6 +34,7 @@ import {
   countInvocations,
   summaryInvocations,
   getPausedError,
+  listDrainedDeployments,
 } from './handlers';
 import { getVersion } from './getVersion';
 
@@ -94,6 +95,7 @@ type BoundHandlers = {
     request: BatchInvocationsRequestBody,
   ) => Promise<Response>;
   getPausedError: (invocationId: string) => Promise<Response>;
+  listDrainedDeployments: () => Promise<Response>;
 };
 
 function bindHandlers(context: QueryContext): BoundHandlers {
@@ -118,6 +120,7 @@ function bindHandlers(context: QueryContext): BoundHandlers {
     batchResumeInvocations: batchResumeInvocations.bind(context),
     batchRestartAsNewInvocations: batchRestartAsNewInvocations.bind(context),
     getPausedError: getPausedError.bind(context),
+    listDrainedDeployments: listDrainedDeployments.bind(context),
   };
 }
 
@@ -207,6 +210,9 @@ export const routes = createRoutes('/query', {
       query: { method: 'POST', pattern: '/services/:name/state/query' },
       list: { method: 'POST', pattern: '/services/:name/state' },
     },
+  },
+  deployments: {
+    drained: { method: 'GET', pattern: '/deployments/drained' },
   },
 });
 
@@ -355,6 +361,12 @@ router.map(routes, {
           const { keys = [] }: { keys: string[] } = await ctx.request.json();
           return listState(ctx.params.name, keys);
         },
+      },
+    },
+    deployments: {
+      async drained(ctx) {
+        const { listDrainedDeployments } = ctx.storage.get(handlersKey);
+        return listDrainedDeployments();
       },
     },
   },

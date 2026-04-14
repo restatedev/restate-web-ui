@@ -258,6 +258,7 @@ function Component() {
           isError,
           isPending,
         })}
+        appearance="solid"
         status={ferrofluidStatus}
         isEmpty={isEmpty}
         onPress={() => {
