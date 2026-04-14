@@ -22,7 +22,33 @@ const primaryStyles = tv({
   base: 'w-full overflow-hidden rounded-2xl border border-white/70 bg-linear-to-b from-gray-50 to-gray-50/80 shadow-xs transition',
   variants: {
     isInteractive: {
-      true: 'block no-underline shadow-zinc-800/3 hover:from-white hover:to-white hover:no-underline hover:shadow-sm pressed:from-gray-50 pressed:to-gray-50/90 pressed:shadow-xs',
+      true: 'shadow-zinc-800/3',
+      false: '',
+    },
+  },
+});
+
+const primaryLinkStyles = tv({
+  extend: primaryStyles,
+  base: 'absolute inset-0 z-0 block no-underline',
+  variants: {
+    isInteractive: {
+      true: 'hover:from-white hover:to-white hover:no-underline hover:shadow-md pressed:from-gray-50 pressed:to-gray-50/90 pressed:shadow-xs',
+      false: '',
+    },
+  },
+});
+
+const primarySurfaceStyles = tv({
+  extend: primaryStyles,
+  base: 'absolute inset-0 z-0',
+});
+
+const primaryContentStyles = tv({
+  base: 'relative z-10 px-1 py-2',
+  variants: {
+    hasOverlayLink: {
+      true: 'pointer-events-none [&_a]:pointer-events-auto [&_a]:relative [&_a]:z-20 [&_button]:pointer-events-auto [&_button]:relative [&_button]:z-20',
       false: '',
     },
   },
@@ -45,19 +71,26 @@ export function OverviewCard({
   return (
     <div className="mb-4 px-2 pt-1">
       <div {...props} className={className}>
-        {primaryHref ? (
-          <Link
-            href={primaryHref}
-            variant="secondary"
-            className={primaryStyles({ isInteractive: true })}
+        <div className="relative">
+          {primaryHref ? (
+            <Link
+              href={primaryHref}
+              variant="secondary"
+              className={primaryLinkStyles({ isInteractive: true })}
+            >
+              <span className="sr-only">Open details</span>
+            </Link>
+          ) : (
+            <div className={primarySurfaceStyles({ isInteractive: false })} />
+          )}
+          <div
+            className={primaryContentStyles({
+              hasOverlayLink: Boolean(primaryHref),
+            })}
           >
-            <div className="px-1 py-2">{cells}</div>
-          </Link>
-        ) : (
-          <div className={primaryStyles({ isInteractive: false })}>
-            <div className="px-1 py-2">{cells}</div>
+            {cells}
           </div>
-        )}
+        </div>
         {detailsContent && detailsTitle ? (
           <OverviewCardDetails title={detailsTitle}>
             {detailsContent}
