@@ -1,4 +1,9 @@
+import { useServiceDetails } from '@restate/data-access/admin-api-hooks';
 import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
+import {
+  CodecProvider,
+  type RestateCodecOptions,
+} from '@restate/features/codec';
 import { EntryProps } from './types';
 import { Target } from '../Target';
 import { tv } from '@restate/util/styles';
@@ -20,6 +25,37 @@ export function Input({
 }: Partial<
   EntryProps<Extract<JournalEntryV2, { type?: 'Input'; category?: 'command' }>>
 >) {
+  const handlerName = invocation?.target_handler_name;
+  const { data: serviceDetails } = useServiceDetails(
+    invocation?.target_service_name ?? '',
+    {
+      enabled: Boolean(invocation?.target_service_name && handlerName),
+      refetchOnMount: false,
+    },
+  );
+  const handler = handlerName
+    ? serviceDetails?.handlers.find(({ name }) => name === handlerName)
+    : undefined;
+  const codecOptions = entry
+    ? ({
+        service: invocation?.target_service_name,
+        key: invocation?.target_service_key,
+        handler: handler
+          ? {
+              name: handler.name,
+              metadata: handler.metadata,
+              input_description: handler.input_description,
+              input_json_schema: handler.input_json_schema,
+              output_description: handler.output_description,
+              output_json_schema: handler.output_json_schema,
+            }
+          : handlerName
+            ? { name: handlerName }
+            : undefined,
+        command: { type: entry.type },
+      } satisfies RestateCodecOptions)
+    : undefined;
+
   return (
     <Target
       target={invocation?.target}
@@ -40,12 +76,14 @@ export function Input({
             name={invocation?.target_handler_name}
             operationSymbol={''}
             input={
-              <LazyJournalEntryPayload.Input
-                invocationId={invocation?.id}
-                entry={entry}
-                title="Input"
-                isBase64
-              />
+              <CodecProvider options={codecOptions}>
+                <LazyJournalEntryPayload.Input
+                  invocationId={invocation?.id}
+                  entry={entry}
+                  title="Input"
+                  isBase64
+                />
+              </CodecProvider>
             }
           />
           <div data-fill />

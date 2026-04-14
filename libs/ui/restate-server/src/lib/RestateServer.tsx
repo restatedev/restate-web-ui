@@ -67,7 +67,7 @@ const serverFillStyles = tv({
     appearance: {
       ghost:
         'fill-gray-100/85 transition-[fill] duration-300 group-hover/server:fill-white/70',
-      solid: 'fill-white/70 backdrop-blur-3xl backdrop-saturate-200',
+      solid: 'fill-white/70',
     },
   },
   defaultVariants: { appearance: 'ghost' },

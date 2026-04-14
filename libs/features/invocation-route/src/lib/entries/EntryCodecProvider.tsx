@@ -1,0 +1,107 @@
+import {
+  useGetInvocationJournalWithInvocationV2,
+  useServiceDetails,
+} from '@restate/data-access/admin-api-hooks';
+import type { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
+import {
+  CodecProvider,
+  type RestateCodecOptions,
+} from '@restate/features/codec';
+import type { PropsWithChildren } from 'react';
+
+type Invocation = ReturnType<
+  typeof useGetInvocationJournalWithInvocationV2
+>['data'];
+
+function getEntryCodecTarget(entry?: JournalEntryV2, invocation?: Invocation) {
+  if (entry?.type === 'Call' || entry?.type === 'OneWayCall') {
+    return {
+      service: (entry as { serviceName?: string }).serviceName,
+      key: (entry as { serviceKey?: string }).serviceKey,
+      handlerName: (entry as { handlerName?: string }).handlerName,
+    };
+  }
+
+  return {
+    service: invocation?.target_service_name,
+    key: invocation?.target_service_key,
+    handlerName: invocation?.target_handler_name,
+  };
+}
+
+function getEntryCodecCommand(
+  entry?: JournalEntryV2,
+): RestateCodecOptions['command'] {
+  if (!entry) {
+    return undefined;
+  }
+
+  switch (entry.type) {
+    case 'SetState':
+    case 'GetState':
+    case 'GetEagerState':
+    case 'GetLazyState':
+      return { type: entry.type, name: (entry as { key?: string }).key };
+    case 'GetPromise':
+    case 'PeekPromise':
+    case 'CompletePromise':
+      return {
+        type: entry.type,
+        name: (entry as { promiseName?: string }).promiseName,
+      };
+    case 'Awakeable':
+    case 'CompleteAwakeable':
+      return { type: entry.type, name: (entry as { id?: string }).id };
+    case 'Signal':
+    case 'SendSignal':
+      return {
+        type: entry.type,
+        name: (entry as { signalName?: string }).signalName,
+      };
+    case 'Run':
+    case 'Call':
+    case 'OneWayCall':
+      return { type: entry.type, name: (entry as { name?: string }).name };
+    default:
+      return { type: entry.type };
+  }
+}
+
+export function EntryCodecProvider({
+  entry,
+  invocation,
+  children,
+}: PropsWithChildren<{
+  entry?: JournalEntryV2;
+  invocation?: Invocation;
+}>) {
+  const { service, key, handlerName } = getEntryCodecTarget(entry, invocation);
+  const { data: serviceDetails } = useServiceDetails(service ?? '', {
+    enabled: Boolean(service && handlerName),
+    refetchOnMount: false,
+  });
+  const handler = handlerName
+    ? serviceDetails?.handlers.find(({ name }) => name === handlerName)
+    : undefined;
+  const options = entry
+    ? ({
+        service,
+        key,
+        handler: handler
+          ? {
+              name: handler.name,
+              metadata: handler.metadata,
+              input_description: handler.input_description,
+              input_json_schema: handler.input_json_schema,
+              output_description: handler.output_description,
+              output_json_schema: handler.output_json_schema,
+            }
+          : handlerName
+            ? { name: handlerName }
+            : undefined,
+        command: getEntryCodecCommand(entry),
+      } satisfies RestateCodecOptions)
+    : undefined;
+
+  return <CodecProvider options={options}>{children}</CodecProvider>;
+}

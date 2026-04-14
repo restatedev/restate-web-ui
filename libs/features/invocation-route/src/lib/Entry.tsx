@@ -41,6 +41,7 @@ import { LifeCycle } from './entries/LifeCycle';
 import { NoCommandTransientError } from './entries/TransientError';
 import { useJournalEntriesContext } from './JournalContext';
 import { tv } from '@restate/util/styles';
+import { EntryCodecProvider } from './entries/EntryCodecProvider';
 
 export const ENTRY_COMMANDS_COMPONENTS: {
   [K in CommandEntryType]:
@@ -166,7 +167,6 @@ export const Entry = memo(function Entry({
     enabled: isPaused,
   });
   const pausedRelatedCommandIndex = pausedErrorData?.relatedCommandIndex;
-
   const { isCompact } = useJournalEntriesContext();
   const EntrySpecificComponent = (
     entry?.type
@@ -183,111 +183,113 @@ export const Entry = memo(function Entry({
   }
 
   return (
-    <div
-      style={{
-        paddingLeft: `${depth * 3}em`,
-      }}
-      data-depth={Boolean(depth)}
-      data-last-failure={
-        (depth === 0 &&
-          typeof invocation.last_failure_related_command_index === 'number' &&
-          invocation.last_failure_related_command_index ===
-            entry.commandIndex) ||
-        (depth === 0 &&
-          isPaused &&
-          typeof pausedRelatedCommandIndex === 'number' &&
-          typeof invocation.last_failure_related_command_index !== 'number' &&
-          pausedRelatedCommandIndex === entry.commandIndex) ||
-        (depth === 0 &&
-          typeof invocation.last_failure_related_command_index ===
-            'undefined' &&
-          (isPaused ? typeof pausedRelatedCommandIndex !== 'number' : true) &&
-          isEntriesEqual(
-            entry,
-            invocation.journal?.entries?.findLast(
-              (entry) =>
-                !isCompact ||
-                !['Event: TransientError'].includes(String(entry?.type)),
-            ),
-          )) ||
-        (depth === 0 &&
-          invocation.completion_failure &&
-          entry.type === 'Output') ||
-        (depth === 0 &&
-          invocation.status === 'failed' &&
-          entry.commandIndex === (invocation.journal_commands_size || 0) - 1)
-      }
-      className={styles({
-        hasError:
-          Boolean(
-            invocation.last_failure_related_command_index &&
-              invocation?.last_failure_related_command_index ===
-                entry.commandIndex,
-          ) ||
-          Boolean(
-            isPaused &&
-              typeof pausedRelatedCommandIndex === 'number' &&
-              pausedRelatedCommandIndex === entry.commandIndex,
-          ) ||
-          Boolean(
-            isPaused &&
-              typeof pausedRelatedCommandIndex !== 'number' &&
-              isEntriesEqual(
-                entry,
-                invocation.journal?.entries?.findLast(
-                  (entry) =>
-                    !isCompact ||
-                    !['Event: TransientError'].includes(String(entry?.type)),
-                ),
-              ),
-          ),
-      })}
-      {...(entry.category === 'command' && {
-        id: `command-${entry.commandIndex}`,
-      })}
-    >
+    <EntryCodecProvider entry={entry} invocation={invocation}>
       <div
-        style={{ width: `${numOfDigits + 2}ch` }}
-        className="relative flex h-full shrink-0 items-center justify-center font-mono text-0.5xs text-gray-400/70"
+        style={{
+          paddingLeft: `${depth * 3}em`,
+        }}
+        data-depth={Boolean(depth)}
+        data-last-failure={
+          (depth === 0 &&
+            typeof invocation.last_failure_related_command_index === 'number' &&
+            invocation.last_failure_related_command_index ===
+              entry.commandIndex) ||
+          (depth === 0 &&
+            isPaused &&
+            typeof pausedRelatedCommandIndex === 'number' &&
+            typeof invocation.last_failure_related_command_index !== 'number' &&
+            pausedRelatedCommandIndex === entry.commandIndex) ||
+          (depth === 0 &&
+            typeof invocation.last_failure_related_command_index ===
+              'undefined' &&
+            (isPaused ? typeof pausedRelatedCommandIndex !== 'number' : true) &&
+            isEntriesEqual(
+              entry,
+              invocation.journal?.entries?.findLast(
+                (entry) =>
+                  !isCompact ||
+                  !['Event: TransientError'].includes(String(entry?.type)),
+              ),
+            )) ||
+          (depth === 0 &&
+            invocation.completion_failure &&
+            entry.type === 'Output') ||
+          (depth === 0 &&
+            invocation.status === 'failed' &&
+            entry.commandIndex === (invocation.journal_commands_size || 0) - 1)
+        }
+        className={styles({
+          hasError:
+            Boolean(
+              invocation.last_failure_related_command_index &&
+                invocation?.last_failure_related_command_index ===
+                  entry.commandIndex,
+            ) ||
+            Boolean(
+              isPaused &&
+                typeof pausedRelatedCommandIndex === 'number' &&
+                pausedRelatedCommandIndex === entry.commandIndex,
+            ) ||
+            Boolean(
+              isPaused &&
+                typeof pausedRelatedCommandIndex !== 'number' &&
+                isEntriesEqual(
+                  entry,
+                  invocation.journal?.entries?.findLast(
+                    (entry) =>
+                      !isCompact ||
+                      !['Event: TransientError'].includes(String(entry?.type)),
+                  ),
+                ),
+            ),
+        })}
+        {...(entry.category === 'command' && {
+          id: `command-${entry.commandIndex}`,
+        })}
       >
         <div
-          data-border
-          className="absolute top-0 bottom-0 left-0 border-dashed border-gray-400/40"
-        />
-        {entry?.category === 'command' ? (
-          (entry?.commandIndex ?? entry?.index ?? 0)
-        ) : (
-          <div className="mt-0.5 mr-1 hidden w-full border-b border-dashed border-gray-400/30" />
-        )}
-      </div>
+          style={{ width: `${numOfDigits + 2}ch` }}
+          className="relative flex h-full shrink-0 items-center justify-center font-mono text-0.5xs text-gray-400/70"
+        >
+          <div
+            data-border
+            className="absolute top-0 bottom-0 left-0 border-dashed border-gray-400/40"
+          />
+          {entry?.category === 'command' ? (
+            (entry?.commandIndex ?? entry?.index ?? 0)
+          ) : (
+            <div className="mt-0.5 mr-1 hidden w-full border-b border-dashed border-gray-400/30" />
+          )}
+        </div>
 
-      <div
-        className="flex max-w-fit min-w-0 flex-auto gap-1 [&>*]:min-w-0"
-        data-entry
-      >
-        {entry.category === 'notification' && parentCommand ? (
-          <CompletionNotification
-            entry={entry}
-            parentCommand={parentCommand}
-            invocation={invocation}
-            commandComponents={ENTRY_COMMANDS_COMPONENTS}
-          />
-        ) : entry.category === 'event' &&
-          entry.type === 'Event: TransientError' &&
-          parentCommand ? (
-          <TransientError
-            entry={entry}
-            parentCommand={parentCommand}
-            invocation={invocation}
-            commandComponents={ENTRY_COMMANDS_COMPONENTS}
-          />
-        ) : EntrySpecificComponent ? (
-          <EntrySpecificComponent entry={entry} invocation={invocation} />
-        ) : null}
+        <div
+          className="flex max-w-fit min-w-0 flex-auto gap-1 [&>*]:min-w-0"
+          data-entry
+        >
+          {entry.category === 'notification' && parentCommand ? (
+            <CompletionNotification
+              entry={entry}
+              parentCommand={parentCommand}
+              invocation={invocation}
+              commandComponents={ENTRY_COMMANDS_COMPONENTS}
+            />
+          ) : entry.category === 'event' &&
+            entry.type === 'Event: TransientError' &&
+            parentCommand ? (
+            <TransientError
+              entry={entry}
+              parentCommand={parentCommand}
+              invocation={invocation}
+              commandComponents={ENTRY_COMMANDS_COMPONENTS}
+            />
+          ) : EntrySpecificComponent ? (
+            <EntrySpecificComponent entry={entry} invocation={invocation} />
+          ) : null}
+        </div>
+        <div className="relative min-w-20 flex-auto">
+          <div className="absolute right-0 left-0 translate-y-[0.5px] border-b border-dashed border-gray-300/50" />
+        </div>
       </div>
-      <div className="relative min-w-20 flex-auto">
-        <div className="absolute right-0 left-0 translate-y-[0.5px] border-b border-dashed border-gray-300/50" />
-      </div>
-    </div>
+    </EntryCodecProvider>
   );
 });

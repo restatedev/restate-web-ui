@@ -159,7 +159,7 @@ export function ServiceStatusBar({
 
   return (
     <HoverTooltip content={tooltipContent} size="lg">
-      <div className="flex h-3 gap-1 overflow-hidden rounded-lg border border-gray-200 bg-gray-100 p-0.5 [&:not(:has(*))]:h-2.5 [&:not(:has(*))]:border-transparent">
+      <div className="flex h-3 gap-1 overflow-hidden rounded-lg border border-gray-200 bg-gray-100 p-0.5 [&:not(:has(*))]:h-2.5">
         {statuses.map((s) => (
           <div
             key={s.name}

@@ -9,6 +9,7 @@ import { ComponentType } from 'react';
 import { Badge } from '@restate/ui/badge';
 import { LazyJournalEntryPayload } from './LazyJournalEntryPayload';
 import { CommandEntryType, EntryProps } from './types';
+import { EntryCodecProvider } from './EntryCodecProvider';
 
 export function CompletionNotification({
   entry,
@@ -61,10 +62,15 @@ export function CompletionNotification({
                 }
               >
                 {CommandComponent && (
-                  <CommandComponent
+                  <EntryCodecProvider
                     entry={parentCommand}
                     invocation={invocation}
-                  />
+                  >
+                    <CommandComponent
+                      entry={parentCommand}
+                      invocation={invocation}
+                    />
+                  </EntryCodecProvider>
                 )}
               </DropdownSection>
             </PopoverContent>

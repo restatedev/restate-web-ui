@@ -98,7 +98,7 @@ function usePerspectiveRay(svgRef: React.RefObject<SVGSVGElement | null>) {
       path.style.strokeDasharray = '';
       path.style.strokeDashoffset = '';
       path.animate(
-        [{ opacity: 0 }, { opacity: 0.2, offset: 0.15 }, { opacity: 0 }],
+        [{ opacity: 0 }, { opacity: 0.15, offset: 0.15 }, { opacity: 0 }],
         {
           duration: 800,
           delay: Math.abs(i - (LINE_COUNT - 1) / 2) * 50,

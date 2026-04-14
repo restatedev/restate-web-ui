@@ -234,19 +234,19 @@ function PayloadPopover({
               </span>
             </Button>
           </PopoverTrigger>
-          <PopoverContent>
+          <PopoverContent className="[&_header]:px-0">
             <DropdownSection
               className={content({ className: contentClassName })}
               title={
                 <div className="flex items-center text-0.5xs">
                   {tabs ? (
-                    <Nav ariaCurrentValue="true" className="-mx-4 gap-0">
+                    <Nav ariaCurrentValue="true" className="gap-0">
                       {tabs.items.map((tab) => (
                         <NavButtonItem
                           key={tab}
                           isActive={tabs.active === tab}
                           onClick={() => tabs.onChange(tab)}
-                          className="[&:not([data-active=true])]:text-gray-500"
+                          className="px-4 [&:not([data-active=true])]:text-gray-500"
                         >
                           {tab.charAt(0).toUpperCase() + tab.slice(1)}
                         </NavButtonItem>
