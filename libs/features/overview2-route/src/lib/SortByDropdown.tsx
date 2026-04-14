@@ -22,6 +22,19 @@ const DEPLOYMENT_SORT_OPTIONS = [
   { value: 'status', label: 'Status' },
 ] as const;
 
+const DIRECTION_OPTIONS = [
+  {
+    value: 'ascending',
+    label: 'Ascending',
+    icon: IconName.ArrowUp,
+  },
+  {
+    value: 'descending',
+    label: 'Descending',
+    icon: IconName.ArrowDown,
+  },
+] as const;
+
 function getSortLabel(column: string | undefined, mode: string) {
   const options =
     mode === 'deployments' ? DEPLOYMENT_SORT_OPTIONS : SERVICE_SORT_OPTIONS;
@@ -49,6 +62,10 @@ export function SortByDropdown() {
     mode === 'deployments' ? DEPLOYMENT_SORT_OPTIONS : SERVICE_SORT_OPTIONS;
   const label = getSortLabel(String(sortDescriptor.column), mode);
   const currentColumn = String(sortDescriptor.column);
+  const currentDirection =
+    sortDescriptor.direction === 'descending' ? 'descending' : 'ascending';
+  const currentDirectionIcon =
+    currentDirection === 'ascending' ? IconName.ArrowUp : IconName.ArrowDown;
 
   return (
     <Dropdown>
@@ -63,8 +80,8 @@ export function SortByDropdown() {
           <span className="flex items-center gap-0.5 py-0.5 pr-1 pl-2">
             {label}
             <Icon
-              name={IconName.ChevronsUpDown}
-              className="ml-0.5 aspect-square h-[1em] w-[1em] opacity-80"
+              name={currentDirectionIcon}
+              className="ml-0.5 h-3.5 w-3.5 opacity-80"
             />
           </span>
         </Button>
@@ -77,10 +94,7 @@ export function SortByDropdown() {
             onSelect={(key) => {
               setSortDescriptor({
                 column: key,
-                direction:
-                  key === 'name' || key === 'deployment'
-                    ? 'ascending'
-                    : 'descending',
+                direction: currentDirection,
               });
             }}
             aria-label="Sort by"
@@ -88,6 +102,28 @@ export function SortByDropdown() {
             {options.map((option) => (
               <DropdownItem key={option.value} value={option.value}>
                 {option.label}
+              </DropdownItem>
+            ))}
+          </DropdownMenu>
+        </DropdownSection>
+        <DropdownSection title="Direction">
+          <DropdownMenu
+            selectable
+            selectedItems={[currentDirection]}
+            onSelect={(key) => {
+              setSortDescriptor({
+                column: currentColumn,
+                direction: key === 'descending' ? 'descending' : 'ascending',
+              });
+            }}
+            aria-label="Sort direction"
+          >
+            {DIRECTION_OPTIONS.map((option) => (
+              <DropdownItem key={option.value} value={option.value}>
+                <span className="flex items-center gap-2">
+                  <Icon name={option.icon} className="h-3.5 w-3.5" />
+                  {option.label}
+                </span>
               </DropdownItem>
             ))}
           </DropdownMenu>
