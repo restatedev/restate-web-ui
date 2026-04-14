@@ -97,7 +97,7 @@ export function PruneDeploymentsProgressBar({
                     className="py-0 underline decoration-dashed decoration-from-font underline-offset-4 outline-offset-0"
                   >
                     <span className="text-0.5xs text-gray-500">
-                      <span className="text-lg text-orange-600">
+                      <span className="text-sm text-orange-600">
                         {formatNumber(failed)}
                       </span>{' '}
                       failed
