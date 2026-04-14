@@ -320,7 +320,7 @@ function OverviewColumnMeta({
   return (
     <div className={overviewColumnMetaStyles({ className })}>
       <div className="flex min-h-10.5 items-center">{primary}</div>
-      <div className="mb-2 flex min-h-6 min-w-0 items-center">
+      <div className="mb-2 flex min-h-6 min-w-0 -translate-y-1.5 items-center">
         {secondary ?? (
           <div className="px-1.5 py-0.5 text-0.5xs leading-5 text-transparent">
             <br />

@@ -1,4 +1,4 @@
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useState, useEffect } from 'react';
 import { SearchField, Input as AriaInput, Label } from 'react-aria-components';
 import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from '@restate/util/styles';
@@ -31,18 +31,62 @@ import { ServicesGridList } from './ServicesGridList';
 import { DeploymentsGridList } from './DeploymentsGridList';
 
 const LINE_COUNT = 7;
-const TOP_SPACING = 10;
-const BOTTOM_SPACING = 100;
-const CURVE_Y1 = 110;
-const CURVE_Y2 = 230;
 
-function buildLinePath(i: number) {
-  const t = (i - (LINE_COUNT - 1) / 2) / ((LINE_COUNT - 1) / 2);
-  const topX = 500 + t * TOP_SPACING * ((LINE_COUNT - 1) / 2);
-  const bottomX = 500 + t * BOTTOM_SPACING * ((LINE_COUNT - 1) / 2);
-  const cp1Y = CURVE_Y1 + (CURVE_Y2 - CURVE_Y1) * 0.7;
-  const cp2Y = CURVE_Y1 + (CURVE_Y2 - CURVE_Y1) * 0.8;
-  return `M${topX},80 L${topX},${CURVE_Y1} C${topX},${cp1Y} ${bottomX},${cp2Y} ${bottomX},${CURVE_Y2} L${bottomX},800`;
+function usePerspectiveLines(
+  containerRef: React.RefObject<HTMLDivElement | null>,
+  serverRef: React.RefObject<HTMLDivElement | null>,
+  gridRef: React.RefObject<HTMLDivElement | null>,
+) {
+  const [lineData, setLineData] = useState({
+    paths: [] as string[],
+    viewBox: '0 0 1 1',
+  });
+
+  useEffect(() => {
+    const container = containerRef.current;
+    const server = serverRef.current;
+    const grid = gridRef.current;
+    if (!container || !server || !grid) return;
+
+    const update = () => {
+      const cRect = container.getBoundingClientRect();
+      const sRect = server.getBoundingClientRect();
+      const gRect = grid.getBoundingClientRect();
+
+      const w = cRect.width;
+      const h = cRect.height;
+      if (w === 0 || h === 0) return;
+
+      const serverCenterX = sRect.left + sRect.width / 2 - cRect.left;
+      const startY = sRect.bottom - cRect.top;
+      const startSpread = sRect.width / 4;
+      const endY = gRect.top - cRect.top;
+      const gridCenter = gRect.left + gRect.width / 2 - cRect.left;
+      const endSpread = gRect.width * 0.35;
+
+      const paths: string[] = [];
+      for (let i = 0; i < LINE_COUNT; i++) {
+        const t = (i - (LINE_COUNT - 1) / 2) / ((LINE_COUNT - 1) / 2);
+        const topX = serverCenterX + t * startSpread;
+        const bottomX = gridCenter + t * endSpread;
+        const verticalEnd = startY + (endY - startY) * 0.15;
+        const cpY1 = verticalEnd + (endY - verticalEnd) * 0.55;
+        const cpY2 = verticalEnd + (endY - verticalEnd) * 0.85;
+        paths.push(
+          `M${topX},${startY} L${topX},${verticalEnd} C${topX},${cpY1} ${bottomX},${cpY2} ${bottomX},${endY} L${bottomX},${h}`,
+        );
+      }
+      setLineData({ paths, viewBox: `0 0 ${w} ${h}` });
+    };
+
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(container);
+    observer.observe(grid);
+    return () => observer.disconnect();
+  }, [containerRef, serverRef, gridRef]);
+
+  return lineData;
 }
 
 function usePerspectiveRay(svgRef: React.RefObject<SVGSVGElement | null>) {
@@ -54,7 +98,7 @@ function usePerspectiveRay(svgRef: React.RefObject<SVGSVGElement | null>) {
       path.style.strokeDasharray = '';
       path.style.strokeDashoffset = '';
       path.animate(
-        [{ opacity: 0 }, { opacity: 0.1, offset: 0.15 }, { opacity: 0 }],
+        [{ opacity: 0 }, { opacity: 0.2, offset: 0.15 }, { opacity: 0 }],
         {
           duration: 800,
           delay: Math.abs(i - (LINE_COUNT - 1) / 2) * 50,
@@ -68,21 +112,24 @@ function usePerspectiveRay(svgRef: React.RefObject<SVGSVGElement | null>) {
 
 function PerspectiveLines({
   svgRef,
+  paths,
+  viewBox,
 }: {
   svgRef: React.RefObject<SVGSVGElement | null>;
+  paths: string[];
+  viewBox: string;
 }) {
   return (
     <svg
       ref={svgRef}
       className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-full w-full text-indigo-400"
-      preserveAspectRatio="none"
-      viewBox="0 0 1000 800"
+      viewBox={viewBox}
       fill="none"
     >
-      {Array.from({ length: LINE_COUNT }, (_, i) => (
+      {paths.map((d, i) => (
         <path
           key={i}
-          d={buildLinePath(i)}
+          d={d}
           stroke="currentColor"
           strokeWidth="0.8"
           opacity="0"
@@ -155,6 +202,13 @@ function OverviewContent() {
   const pieRef = useRef<HTMLDivElement>(null);
   const issuesRef = useRef<HTMLDivElement>(null);
   const linesSvgRef = useRef<SVGSVGElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const { paths, viewBox } = usePerspectiveLines(
+    containerRef,
+    serverRef,
+    gridRef,
+  );
   const triggerRay = usePerspectiveRay(linesSvgRef);
   const noInvocations =
     !isSummaryLoading && !isSummaryError && totalCount === 0;
@@ -214,8 +268,11 @@ function OverviewContent() {
   }
 
   return (
-    <div className="relative mx-auto flex h-full w-full flex-col items-center gap-8 px-6 pt-8 pb-6">
-      <PerspectiveLines svgRef={linesSvgRef} />
+    <div
+      ref={containerRef}
+      className="relative mx-auto flex h-full w-full flex-col items-center gap-8 px-6 pt-8 pb-6"
+    >
+      <PerspectiveLines svgRef={linesSvgRef} paths={paths} viewBox={viewBox} />
       <div className="relative flex w-full items-center justify-center">
         <div className="hidden min-w-0 flex-1 justify-end pr-6 md:flex">
           {showLegend && (
@@ -253,7 +310,7 @@ function OverviewContent() {
               </div>
             </div>
           </div>
-          <div className="relative z-10 -mt-4 flex w-[18rem] items-baseline justify-center gap-1.5">
+          <div className="relative z-10 -mt-4 flex min-h-7 w-[18rem] items-baseline justify-center gap-1.5">
             {summaryError ? (
               <Popover>
                 <PopoverTrigger>
@@ -277,7 +334,9 @@ function OverviewContent() {
                 </PopoverContent>
               </Popover>
             ) : isSummaryLoading ? (
-              <div className="h-5 w-36 translate-y-1.5 animate-pulse rounded-lg bg-gray-200" />
+              <div className="w-36 translate-y-0.5 animate-pulse rounded-lg bg-gray-200 text-xl leading-6 font-semibold">
+                <br />
+              </div>
             ) : noInvocations ? (
               <p className="text-sm text-gray-400">
                 <Link
@@ -333,7 +392,7 @@ function OverviewContent() {
           />
         </div>
       )}
-      <div ref={issuesRef}>
+      <div ref={issuesRef} className="min-h-6.5">
         <IssuesBannerStack className="-mt-4" />
       </div>
 
@@ -368,7 +427,9 @@ function OverviewContent() {
             </div>
           </SearchField>
         </div>
-        {mode === 'services' ? <ServicesGridList /> : <DeploymentsGridList />}
+        <div ref={gridRef}>
+          {mode === 'services' ? <ServicesGridList /> : <DeploymentsGridList />}
+        </div>
       </div>
     </div>
   );
