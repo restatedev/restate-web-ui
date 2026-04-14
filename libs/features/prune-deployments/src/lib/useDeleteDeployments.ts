@@ -88,14 +88,14 @@ export function useDeleteDeployments() {
     },
     mutationFn: async (deploymentIds: string[]) => {
       const results = await Promise.allSettled(
-        deploymentIds.map(async (deploymentId) => {
-          await deleteDeployment.mutateAsync({
+        deploymentIds.map(async (deploymentId) =>
+          deleteDeployment.mutateAsync({
             parameters: {
               path: { deployment: deploymentId },
               query: { force: true },
             },
-          });
-        }),
+          }),
+        ),
       );
 
       return {

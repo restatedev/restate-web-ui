@@ -1,3 +1,4 @@
+import { useRestateContext } from '@restate/features/restate-context';
 import { Button } from '@restate/ui/button';
 import {
   DropdownItem,
@@ -67,6 +68,7 @@ export function BatchProgressBar({
   isCompleted: boolean;
   failedInvocations?: { invocationId: string; error: string }[];
 }>) {
+  const { baseUrl } = useRestateContext();
   const processed = successful + failed;
   const successRatio = total && total > 0 ? successful / total : 0;
   const failedRatio = total && total > 0 ? failed / total : 0;
@@ -92,7 +94,7 @@ export function BatchProgressBar({
                     className="py-0 underline decoration-dashed decoration-from-font underline-offset-4 outline-offset-0"
                   >
                     <span className="text-0.5xs text-gray-500">
-                      <span className="text-sm text-orange-600">
+                      <span className="text-lg text-orange-600">
                         {formatNumber(failed)}
                       </span>{' '}
                       failed
@@ -107,7 +109,7 @@ export function BatchProgressBar({
                       {failedInvocations?.map(({ invocationId, error }) => (
                         <DropdownItem
                           key={invocationId}
-                          href={`/invocations/${invocationId}`}
+                          href={`${baseUrl}/invocations/${invocationId}`}
                         >
                           <div className="flex flex-col gap-0 text-0.5xs">
                             <div className="flex flex-row items-center gap-1 font-mono">

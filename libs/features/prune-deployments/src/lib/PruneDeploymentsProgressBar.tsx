@@ -1,8 +1,17 @@
-import { Deployment } from '@restate/features/deployment';
+import {
+  Deployment,
+  DEPLOYMENT_QUERY_PARAM,
+} from '@restate/features/deployment';
 import { Button } from '@restate/ui/button';
+import {
+  DropdownItem,
+  DropdownMenu,
+  DropdownSection,
+} from '@restate/ui/dropdown';
 import { ErrorBanner } from '@restate/ui/error';
 import { Spinner } from '@restate/ui/loading';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
+import { HoverTooltip } from '@restate/ui/tooltip';
 import {
   formatNumber,
   formatPercentageWithoutFraction,
@@ -88,7 +97,7 @@ export function PruneDeploymentsProgressBar({
                     className="py-0 underline decoration-dashed decoration-from-font underline-offset-4 outline-offset-0"
                   >
                     <span className="text-0.5xs text-gray-500">
-                      <span className="text-sm text-orange-600">
+                      <span className="text-lg text-orange-600">
                         {formatNumber(failed)}
                       </span>{' '}
                       failed
@@ -97,27 +106,38 @@ export function PruneDeploymentsProgressBar({
                 </span>
               </PopoverTrigger>
               <PopoverContent className="max-w-lg">
-                <div className="flex max-h-80 flex-col gap-2 overflow-auto pr-1">
-                  <div className="text-0.5xs font-medium text-gray-600">
-                    Failed deployments
-                  </div>
-                  {failedDeployments.map(({ deploymentId, error }) => (
-                    <div
-                      key={deploymentId}
-                      className="rounded-xl border border-black/10 bg-white p-2"
-                    >
-                      <Deployment
-                        deploymentId={deploymentId}
-                        showLink={false}
-                        highlightSelection={false}
-                      />
-                      <ErrorBanner
-                        error={new Error(truncateError(error))}
-                        className="mt-2 bg-transparent pl-0 text-0.5xs [&_output]:whitespace-normal [&_svg]:mt-1 [&_svg]:h-3.5 [&_svg]:w-3.5"
-                      />
-                    </div>
-                  ))}
-                </div>
+                <DropdownSection title="Failed deployments">
+                  <DropdownMenu>
+                    {failedDeployments.map(({ deploymentId, error }) => (
+                      <DropdownItem
+                        key={deploymentId}
+                        className=""
+                        href={`?${DEPLOYMENT_QUERY_PARAM}=${deploymentId}`}
+                      >
+                        <div className="flex flex-col gap-0 text-0.5xs">
+                          <Deployment
+                            deploymentId={deploymentId}
+                            showLink={false}
+                            highlightSelection={false}
+                            className="[&_*:not(svg)]:text-inherit"
+                          />
+
+                          <HoverTooltip content={error} className="max-w-lg">
+                            <ErrorBanner
+                              error={
+                                new Error(
+                                  error.slice(0, 250) +
+                                    (error.length > 250 ? '…' : ''),
+                                )
+                              }
+                              className="-mt-1 overflow-auto bg-transparent pl-3 group-focus:**:text-red-50 [&_output]:max-h-fit [&_output]:whitespace-normal [&_svg]:mt-1 [&_svg]:h-3.5 [&_svg]:w-3.5"
+                            />
+                          </HoverTooltip>
+                        </div>
+                      </DropdownItem>
+                    ))}
+                  </DropdownMenu>
+                </DropdownSection>
               </PopoverContent>
             </Popover>
           )}

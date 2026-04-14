@@ -157,7 +157,6 @@ export function PruneDrainedDeploymentsDialog() {
   };
 
   const submitHandler = async (event: FormEvent<HTMLFormElement>) => {
-    console.log(event);
     event.preventDefault();
     const result = await deleteDeployments.mutateAsync(availableDeploymentIds);
 
