@@ -14,6 +14,8 @@ export default defineConfig({
   // },
 
   test: {
+    passWithNoTests: true,
+    watch: false,
     setupFiles: ['./src/test-setup.ts'],
     globals: true,
     cache: { dir: '../../../node_modules/.vitest' },

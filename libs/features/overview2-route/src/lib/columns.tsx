@@ -53,7 +53,7 @@ const deploymentStatusStyles = tv({
 });
 
 const overviewPrimaryRowStyles = tv({
-  base: 'pointer-events-none z-[1] -mx-1 flex min-w-0 items-center gap-2 self-start rounded-lg px-1 py-0.5',
+  base: 'z-[1] -mx-1 flex min-w-0 items-center gap-2 self-start rounded-lg px-1 py-0.5',
   variants: {
     balancedHeight: {
       true: 'min-h-[2.625rem]',
@@ -66,7 +66,7 @@ const overviewPrimaryRowStyles = tv({
 });
 
 const overviewFirstColumnSecondaryStyles = tv({
-  base: 'z-[1] mb-2 ml-7.5 min-h-6 min-w-0 self-start',
+  base: 'z-[1] mb-0 ml-7.5 min-w-0 self-start',
 });
 
 export function useServiceColumns({
@@ -91,6 +91,7 @@ export function useServiceColumns({
       allowsSorting: true,
       render: (s: Service) => (
         <OverviewFirstColumn
+          className="pointer-events-none"
           primary={
             <div className={overviewPrimaryRowStyles()}>
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border bg-white shadow-xs">
@@ -118,7 +119,7 @@ export function useServiceColumns({
             </div>
           }
           secondary={
-            <div className="flex items-center gap-1.5">
+            <div className="pointer-events-auto mb-0.5 flex items-center gap-1.5">
               <ServiceType
                 type={s.ty}
                 className="border-zinc-600/10 bg-zinc-50 text-zinc-500"
@@ -232,9 +233,9 @@ export function useDeploymentColumns({
               <Deployment
                 deploymentId={deployment.id}
                 highlightSelection={false}
-                showLink={false}
                 variant="primary"
-                className="pointer-events-none"
+                className="[&:not(:hover)_a]:invisible"
+                showEndpointCopyButton
               />
             }
             secondary={<OverviewDeploymentId deploymentId={deployment.id} />}
@@ -293,15 +294,21 @@ export function useDeploymentColumns({
   ];
 }
 
+const firstCol = tv({
+  base: 'relative z-[2] flex flex-col px-1',
+});
+
 function OverviewFirstColumn({
   primary,
   secondary,
+  className,
 }: {
   primary: ReactNode;
   secondary: ReactNode;
+  className?: string;
 }) {
   return (
-    <div className="flex flex-col px-1">
+    <div className={firstCol({ className })}>
       {primary}
       <div className={overviewFirstColumnSecondaryStyles()}>{secondary}</div>
     </div>
@@ -320,7 +327,7 @@ function OverviewColumnMeta({
   return (
     <div className={overviewColumnMetaStyles({ className })}>
       <div className="flex min-h-10.5 items-center">{primary}</div>
-      <div className="mb-2 flex min-h-6 min-w-0 -translate-y-1.5 items-center">
+      <div className="flex min-w-0 items-center">
         {secondary ?? (
           <div className="px-1.5 py-0.5 text-0.5xs leading-5 text-transparent">
             <br />
@@ -332,7 +339,7 @@ function OverviewColumnMeta({
 }
 
 const overviewColumnMetaStyles = tv({
-  base: 'hidden min-w-0 md:flex md:flex-col',
+  base: 'relative z-[2] hidden min-w-0 md:flex md:flex-col',
 });
 
 function OverviewDeploymentId({ deploymentId }: { deploymentId: string }) {
@@ -340,7 +347,7 @@ function OverviewDeploymentId({ deploymentId }: { deploymentId: string }) {
     <Badge
       variant="info"
       size="sm"
-      className="max-w-full border-transparent bg-transparent font-normal text-gray-500"
+      className="group max-w-full border-transparent bg-transparent py-0 font-normal text-gray-500"
     >
       <div className="min-w-0 truncate">
         <TruncateWithTooltip copyText={deploymentId} hideCopy>
@@ -349,7 +356,7 @@ function OverviewDeploymentId({ deploymentId }: { deploymentId: string }) {
       </div>
       <Copy
         copyText={deploymentId}
-        className="ml-1 shrink-0 rounded-xs p-1 text-gray-400 hover:bg-black/5 hover:text-gray-500 pressed:bg-black/8 [&_svg]:h-3 [&_svg]:w-3"
+        className="invisible ml-1 shrink-0 rounded-sm p-1 text-gray-400 group-hover:visible hover:bg-black/5 hover:text-gray-500 pressed:bg-black/8 [&_svg]:h-3 [&_svg]:w-3"
       />
     </Badge>
   );
@@ -421,7 +428,7 @@ function DeploymentCreatedAt({ value }: { value: string }) {
   const createdAt = new Date(value);
 
   return (
-    <Badge className="hidden w-full border-none bg-transparent pl-1.5 md:flex">
+    <Badge className="z-[2] hidden w-full border-none bg-transparent pl-1.5 md:flex">
       <span className="w-full truncate">
         <span className="font-normal text-zinc-500">Created at </span>
         <span className="font-normal text-zinc-500">{!isPast && 'in '}</span>

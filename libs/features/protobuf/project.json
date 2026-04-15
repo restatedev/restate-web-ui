@@ -1,0 +1,9 @@
+{
+  "name": "feature-protobuf",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/features/protobuf/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project feature-protobuf --web",
+  "targets": {}
+}
