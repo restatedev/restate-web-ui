@@ -235,6 +235,7 @@
 - 2026-04-15 | user | When UI rendering depends on several schema/content-type branches, prefer one unified view-model builder over splitting label/title logic across metadata and component files.
 - 2026-04-15 | user | For handler input/output, the schema-layer helper should take the full inputs (`schema`, `contentType`, `label`, `metadata`) and return the full rendering model, instead of only returning a protobuf subset and leaving the component to branch further.
 - 2026-04-15 | user | When a render-model helper has several branch cases, prefer an explicit `variant` selector plus per-variant builders over a stack of opaque `if` returns. Put the case explanations in JSDoc near the selector.
+- 2026-04-15 | user | For discriminated UI models, prefer one flat discriminator field and top-level payload properties over duplicated `variant` + `kind` fields or nested `content` wrappers.
 
 - 2026-04-14 | self | Moving codec context to `Entry.tsx` looked straightforward, but popover command previews in `CompletionNotification`/`TransientError`/`LifeCycle` bypass the normal row boundary. When centralizing context, always search for alternate render paths that mount the same child components outside the main tree.
 - 2026-04-14 | self | Added `useServiceDetails` for codec context without disabling mount refetch. For journal rows and cached metadata lookups, explicitly set `refetchOnMount: false` unless fresh-on-navigation behavior is actually needed.

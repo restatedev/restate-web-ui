@@ -88,25 +88,25 @@ export type HandlerSchema =
       text: string;
     }
   | {
-      kind: 'popover';
+      kind: 'protobuf-popover';
       triggerLabel: string;
       title: string;
-      content:
-        | {
-            kind: 'protobuf';
-            schema: HandlerProtobufSchema;
-          }
-        | {
-            kind: 'json-schema';
-            schema: JsonSchemaLike;
-          }
-        | {
-            kind: 'content-type';
-            contentType: string;
-          };
+      protobufSchema: HandlerProtobufSchema;
+    }
+  | {
+      kind: 'json-schema-popover';
+      triggerLabel: string;
+      title: string;
+      jsonSchema: JsonSchemaLike;
+    }
+  | {
+      kind: 'content-type-popover';
+      triggerLabel: string;
+      title: string;
+      contentType: string;
     };
 
-type HandlerSchemaVariant =
+type HandlerSchemaKind =
   // No payload for this surface, so the request row renders nothing.
   | 'hidden'
   // A simple inline label like `string` is enough; no popover needed.
@@ -382,7 +382,7 @@ function getHandlerSchemaRenderContext({
 }
 
 /**
- * Decides which rendering variant the handler input/output should use.
+ * Decides which rendering kind the handler input/output should use.
  *
  * Cases covered:
  * - `text`: there is a non-object JSON schema like `{ type: 'string' }`, so a
@@ -397,7 +397,7 @@ function getHandlerSchemaRenderContext({
  *   still want a popover that shows the content type.
  *
  * @example
- * getHandlerSchemaVariant({
+ * getHandlerSchemaKind({
  *   contentType: 'application/json',
  *   defaultTriggerLabel: 'JSON',
  *   hasJsonObjectSchema: false,
@@ -408,7 +408,7 @@ function getHandlerSchemaRenderContext({
  * // => 'text'
  *
  * @example
- * getHandlerSchemaVariant({
+ * getHandlerSchemaKind({
  *   contentType: 'application/protobuf',
  *   defaultTriggerLabel: 'PROTOBUF',
  *   hasJsonObjectSchema: false,
@@ -422,9 +422,9 @@ function getHandlerSchemaRenderContext({
  * })
  * // => 'protobuf-popover'
  */
-function getHandlerSchemaVariant(
+function getHandlerSchemaKind(
   context: HandlerSchemaRenderContext,
-): HandlerSchemaVariant {
+): HandlerSchemaKind {
   if (
     !context.protobufSchema &&
     !context.hasJsonObjectSchema &&
@@ -464,12 +464,12 @@ function getHandlerSchemaVariant(
  *   label: 'Response',
  *   protobufSchema: null,
  * })
- * // => { kind: 'popover', triggerLabel: 'User', title: 'User', content: { kind: 'json-schema', ... } }
+ * // => { kind: 'json-schema-popover', triggerLabel: 'User', title: 'User', jsonSchema: { ... } }
  */
 function buildHandlerSchema(
   context: HandlerSchemaRenderContext,
 ): HandlerSchema {
-  switch (getHandlerSchemaVariant(context)) {
+  switch (getHandlerSchemaKind(context)) {
     case 'text':
       return {
         kind: 'text',
@@ -489,33 +489,24 @@ function buildHandlerSchema(
           };
     case 'protobuf-popover':
       return {
-        kind: 'popover',
+        kind: 'protobuf-popover',
         triggerLabel: context.displayName ?? context.defaultTriggerLabel,
         title: context.displayName ?? context.label,
-        content: {
-          kind: 'protobuf',
-          schema: context.protobufSchema as HandlerProtobufSchema,
-        },
+        protobufSchema: context.protobufSchema as HandlerProtobufSchema,
       };
     case 'json-schema-popover':
       return {
-        kind: 'popover',
+        kind: 'json-schema-popover',
         triggerLabel: context.displayName ?? context.defaultTriggerLabel,
         title: context.displayName ?? context.label,
-        content: {
-          kind: 'json-schema',
-          schema: context.jsonSchema as JsonSchemaLike,
-        },
+        jsonSchema: context.jsonSchema as JsonSchemaLike,
       };
     case 'content-type-popover':
       return {
-        kind: 'popover',
+        kind: 'content-type-popover',
         triggerLabel: context.defaultTriggerLabel,
         title: context.label,
-        content: {
-          kind: 'content-type',
-          contentType: context.contentType,
-        },
+        contentType: context.contentType,
       };
   }
 }
@@ -529,7 +520,7 @@ function buildHandlerSchema(
  *   contentType: 'application/json',
  *   label: 'Response',
  * })
- * // => { kind: 'popover', triggerLabel: 'User', title: 'User', content: { kind: 'json-schema', ... } }
+ * // => { kind: 'json-schema-popover', triggerLabel: 'User', title: 'User', jsonSchema: { ... } }
  *
  * @example
  * getHandlerSchema({
