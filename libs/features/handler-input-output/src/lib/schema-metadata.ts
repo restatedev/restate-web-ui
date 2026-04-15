@@ -59,7 +59,7 @@ interface JsonSchemaLike {
   anyOf?: unknown;
 }
 
-export type HandlerProtobufSchema = {
+export type HandlerInputOutputProtobufView = {
   kind: 'protobuf';
   contentType: string;
   messageType: string;
@@ -79,7 +79,7 @@ export type HandlerProtobufSchema = {
       };
 };
 
-export type HandlerSchema =
+export type HandlerInputOutputView =
   | {
       kind: 'hidden';
     }
@@ -91,7 +91,7 @@ export type HandlerSchema =
       kind: 'protobuf-popover';
       triggerLabel: string;
       title: string;
-      protobufSchema: HandlerProtobufSchema;
+      protobufView: HandlerInputOutputProtobufView;
     }
   | {
       kind: 'json-schema-popover';
@@ -106,7 +106,7 @@ export type HandlerSchema =
       contentType: string;
     };
 
-type HandlerSchemaKind =
+type HandlerInputOutputViewKind =
   // No payload for this surface, so the request row renders nothing.
   | 'hidden'
   // A simple inline label like `string` is enough; no popover needed.
@@ -118,14 +118,14 @@ type HandlerSchemaKind =
   // Fallback popover that only shows the resolved content type.
   | 'content-type-popover';
 
-interface HandlerSchemaRenderContext {
+interface HandlerInputOutputViewContext {
   contentType: string;
   defaultTriggerLabel: string;
   displayName?: string;
   hasJsonObjectSchema: boolean;
   jsonSchema?: JsonSchemaLike;
   label: HandlerInputOutputLabel;
-  protobufSchema: HandlerProtobufSchema | null;
+  protobufView: HandlerInputOutputProtobufView | null;
 }
 
 /**
@@ -242,17 +242,17 @@ function isProtobufContentType(contentType?: string) {
  */
 function getProtobufSchemaSource(
   metadata?: HandlerSchemaMetadata,
-): HandlerProtobufSchema['source'] | null {
+): HandlerInputOutputProtobufView['source'] | null {
   switch (metadata?.['schema.source.kind']) {
     case 'inline':
       return {
         kind: 'inline',
         format: metadata?.['schema.source.format'] as Extract<
-          HandlerProtobufSchema['source'],
+          HandlerInputOutputProtobufView['source'],
           { kind: 'inline' }
         >['format'],
         encoding: metadata?.['schema.source.encoding'] as Extract<
-          HandlerProtobufSchema['source'],
+          HandlerInputOutputProtobufView['source'],
           { kind: 'inline' }
         >['encoding'],
         data: metadata?.['schema.source.data'] as string,
@@ -261,7 +261,7 @@ function getProtobufSchemaSource(
       return {
         kind: 'url',
         encoding: metadata?.['schema.source.encoding'] as Extract<
-          HandlerProtobufSchema['source'],
+          HandlerInputOutputProtobufView['source'],
           { kind: 'url' }
         >['encoding'],
         url: metadata?.['schema.source.url'] as string,
@@ -276,7 +276,7 @@ function getProtobufSchemaSource(
  * indicates protobuf input/output.
  *
  * @example
- * getHandlerProtobufSchema({
+ * getHandlerProtobufView({
  *   path: 'input',
  *   contentType: 'application/protobuf',
  *   metadata: {
@@ -288,7 +288,7 @@ function getProtobufSchemaSource(
  * })
  * // => { kind: 'protobuf', contentType: 'application/protobuf', messageType: 'examples.v1.GreetRequest', source: { kind: 'url', url: 'https://example.com/schema.bin' } }
  */
-function getHandlerProtobufSchema({
+function getHandlerProtobufView({
   path,
   contentType,
   metadata,
@@ -296,7 +296,7 @@ function getHandlerProtobufSchema({
   path: HandlerSchemaPath;
   contentType: string;
   metadata?: HandlerSchemaMetadata;
-}): HandlerProtobufSchema | null {
+}): HandlerInputOutputProtobufView | null {
   const metadataContentType = metadata?.[`schema.${path}.content_type`];
   const resolvedContentType = metadataContentType ?? contentType;
 
@@ -327,57 +327,59 @@ function getHandlerProtobufSchema({
  * render.
  *
  * @example
- * getHandlerSchemaRenderContext({
- *   schema: { title: 'User', type: 'object' },
+ * getHandlerInputOutputViewContext({
+ *   jsonSchema: { title: 'User', type: 'object' },
  *   contentType: 'application/json',
  *   label: 'Response',
  * })
  * // => context used to derive a json-schema popover
  */
-function getHandlerSchemaRenderContext({
-  schema,
+function getHandlerInputOutputViewContext({
+  jsonSchema,
   contentType,
   label,
   metadata,
 }: {
-  schema?: unknown;
+  jsonSchema?: unknown;
   contentType: string;
   label: HandlerInputOutputLabel;
   metadata?: HandlerSchemaMetadata;
-}): HandlerSchemaRenderContext {
-  const jsonSchema = getJsonSchema(schema);
+}): HandlerInputOutputViewContext {
+  const parsedJsonSchema = getJsonSchema(jsonSchema);
   const path: HandlerSchemaPath = label === 'Request' ? 'input' : 'output';
-  const protobufSchema = getHandlerProtobufSchema({
+  const protobufView = getHandlerProtobufView({
     path,
     contentType,
     metadata,
   });
-  const jsonSchemaTypes = Array.isArray(jsonSchema?.type)
-    ? jsonSchema.type
+  const jsonSchemaTypes = Array.isArray(parsedJsonSchema?.type)
+    ? parsedJsonSchema.type
     : undefined;
   const hasJsonObjectSchema = Boolean(
-    jsonSchema &&
-      (jsonSchema.type === 'object' ||
-        jsonSchema.anyOf ||
+    parsedJsonSchema &&
+      (parsedJsonSchema.type === 'object' ||
+        parsedJsonSchema.anyOf ||
         jsonSchemaTypes?.includes('object')),
   );
   const defaultTriggerLabel =
     getContentTypeDisplayName(contentType).toUpperCase();
   const displayName =
-    jsonSchema?.title ??
-    (protobufSchema
-      ? getProtobufMessageDisplayName(protobufSchema.messageType)
+    parsedJsonSchema?.title ??
+    (protobufView
+      ? getProtobufMessageDisplayName(protobufView.messageType)
       : undefined) ??
-    (typeof jsonSchema?.type === 'string' ? jsonSchema.type : undefined);
+    (typeof parsedJsonSchema?.type === 'string'
+      ? parsedJsonSchema.type
+      : undefined);
 
   return {
     contentType,
     defaultTriggerLabel,
     displayName,
     hasJsonObjectSchema,
-    jsonSchema,
+    jsonSchema: parsedJsonSchema,
     label,
-    protobufSchema,
+    protobufView,
   };
 }
 
@@ -397,23 +399,23 @@ function getHandlerSchemaRenderContext({
  *   still want a popover that shows the content type.
  *
  * @example
- * getHandlerSchemaKind({
+ * getHandlerInputOutputViewKind({
  *   contentType: 'application/json',
  *   defaultTriggerLabel: 'JSON',
  *   hasJsonObjectSchema: false,
  *   jsonSchema: { type: 'string' },
  *   label: 'Response',
- *   protobufSchema: null,
+ *   protobufView: null,
  * })
  * // => 'text'
  *
  * @example
- * getHandlerSchemaKind({
+ * getHandlerInputOutputViewKind({
  *   contentType: 'application/protobuf',
  *   defaultTriggerLabel: 'PROTOBUF',
  *   hasJsonObjectSchema: false,
  *   label: 'Request',
- *   protobufSchema: {
+ *   protobufView: {
  *     kind: 'protobuf',
  *     contentType: 'application/protobuf',
  *     messageType: 'examples.v1.GreetRequest',
@@ -422,11 +424,11 @@ function getHandlerSchemaRenderContext({
  * })
  * // => 'protobuf-popover'
  */
-function getHandlerSchemaKind(
-  context: HandlerSchemaRenderContext,
-): HandlerSchemaKind {
+function getHandlerInputOutputViewKind(
+  context: HandlerInputOutputViewContext,
+): HandlerInputOutputViewKind {
   if (
-    !context.protobufSchema &&
+    !context.protobufView &&
     !context.hasJsonObjectSchema &&
     context.jsonSchema
   ) {
@@ -434,14 +436,14 @@ function getHandlerSchemaKind(
   }
 
   if (
-    !context.protobufSchema &&
+    !context.protobufView &&
     !context.jsonSchema &&
     context.contentType === 'none'
   ) {
     return 'hidden';
   }
 
-  if (context.protobufSchema) {
+  if (context.protobufView) {
     return 'protobuf-popover';
   }
 
@@ -453,23 +455,23 @@ function getHandlerSchemaKind(
 }
 
 /**
- * Builds the final UI model returned by `getHandlerSchema()`.
+ * Builds the final UI model returned by `getHandlerInputOutputView()`.
  *
  * @example
- * buildHandlerSchema({
+ * buildHandlerInputOutputView({
  *   contentType: 'application/json',
  *   defaultTriggerLabel: 'JSON',
  *   hasJsonObjectSchema: true,
  *   jsonSchema: { title: 'User', type: 'object' },
  *   label: 'Response',
- *   protobufSchema: null,
+ *   protobufView: null,
  * })
  * // => { kind: 'json-schema-popover', triggerLabel: 'User', title: 'User', jsonSchema: { ... } }
  */
-function buildHandlerSchema(
-  context: HandlerSchemaRenderContext,
-): HandlerSchema {
-  switch (getHandlerSchemaKind(context)) {
+function buildHandlerInputOutputView(
+  context: HandlerInputOutputViewContext,
+): HandlerInputOutputView {
+  switch (getHandlerInputOutputViewKind(context)) {
     case 'text':
       return {
         kind: 'text',
@@ -492,7 +494,7 @@ function buildHandlerSchema(
         kind: 'protobuf-popover',
         triggerLabel: context.displayName ?? context.defaultTriggerLabel,
         title: context.displayName ?? context.label,
-        protobufSchema: context.protobufSchema as HandlerProtobufSchema,
+        protobufView: context.protobufView as HandlerInputOutputProtobufView,
       };
     case 'json-schema-popover':
       return {
@@ -515,34 +517,34 @@ function buildHandlerSchema(
  * Returns the complete render model for handler input/output UI.
  *
  * @example
- * getHandlerSchema({
- *   schema: { title: 'User', type: 'object' },
+ * getHandlerInputOutputView({
+ *   jsonSchema: { title: 'User', type: 'object' },
  *   contentType: 'application/json',
  *   label: 'Response',
  * })
  * // => { kind: 'json-schema-popover', triggerLabel: 'User', title: 'User', jsonSchema: { ... } }
  *
  * @example
- * getHandlerSchema({
+ * getHandlerInputOutputView({
  *   contentType: 'none',
  *   label: 'Request',
  * })
  * // => { kind: 'hidden' }
  */
-export function getHandlerSchema({
-  schema,
+export function getHandlerInputOutputView({
+  jsonSchema,
   contentType,
   label,
   metadata,
 }: {
-  schema?: unknown;
+  jsonSchema?: unknown;
   contentType: string;
   label: HandlerInputOutputLabel;
   metadata?: HandlerSchemaMetadata;
-}): HandlerSchema {
-  return buildHandlerSchema(
-    getHandlerSchemaRenderContext({
-      schema,
+}): HandlerInputOutputView {
+  return buildHandlerInputOutputView(
+    getHandlerInputOutputViewContext({
+      jsonSchema,
       contentType,
       label,
       metadata,
