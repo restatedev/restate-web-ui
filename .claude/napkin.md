@@ -238,6 +238,7 @@
 - 2026-04-15 | user | For discriminated UI models, prefer one flat discriminator field and top-level payload properties over duplicated `variant` + `kind` fields or nested `content` wrappers.
 - 2026-04-15 | user | In variant-driven UI, keep the shared outer shell inline in the main component when only the body varies. Split per-variant body/content components, and keep data-fetching hooks like `useQuery` inside the relevant body component instead of around the whole widget.
 - 2026-04-15 | user | Avoid overloading `schema` across multiple layers. Use distinct names for raw JSON schema input (`jsonSchema`), schema metadata (`HandlerSchemaMetadata`), and the final UI render model (`HandlerInputOutputView`).
+- 2026-04-16 | user | For protobuf previews, prefer a focused view of the selected message plus its reachable same-file descendant types over dumping the whole `.proto` file with unrelated sibling messages.
 
 - 2026-04-14 | self | Moving codec context to `Entry.tsx` looked straightforward, but popover command previews in `CompletionNotification`/`TransientError`/`LifeCycle` bypass the normal row boundary. When centralizing context, always search for alternate render paths that mount the same child components outside the main tree.
 - 2026-04-14 | self | Added `useServiceDetails` for codec context without disabling mount refetch. For journal rows and cached metadata lookups, explicitly set `refetchOnMount: false` unless fresh-on-navigation behavior is actually needed.

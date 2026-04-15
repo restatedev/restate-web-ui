@@ -399,6 +399,72 @@ function createProto2ExtensionTypeRef(): ProtobufTypeRef {
   return createDescriptorSetTypeRefFor('test.v1.Extensible', [file]);
 }
 
+function createSiblingMessageTypeRef(): ProtobufTypeRef {
+  const file = create(FileDescriptorProtoSchema, {
+    name: 'greet.proto',
+    package: 'examples.protobuf.v1',
+    syntax: 'proto3',
+    messageType: [
+      create(DescriptorProtoSchema, {
+        name: 'GreetRequest',
+        field: [
+          create(FieldDescriptorProtoSchema, {
+            name: 'name',
+            jsonName: 'name',
+            number: 1,
+            label: LABEL_OPTIONAL,
+            type: TYPE_STRING,
+          }),
+          create(FieldDescriptorProtoSchema, {
+            name: 'title',
+            jsonName: 'title',
+            number: 2,
+            label: LABEL_OPTIONAL,
+            type: TYPE_STRING,
+          }),
+          create(FieldDescriptorProtoSchema, {
+            name: 'tags',
+            jsonName: 'tags',
+            number: 3,
+            label: LABEL_REPEATED,
+            type: TYPE_STRING,
+          }),
+        ],
+      }),
+      create(DescriptorProtoSchema, {
+        name: 'GreetResponse',
+        field: [
+          create(FieldDescriptorProtoSchema, {
+            name: 'message',
+            jsonName: 'message',
+            number: 1,
+            label: LABEL_OPTIONAL,
+            type: TYPE_STRING,
+          }),
+          create(FieldDescriptorProtoSchema, {
+            name: 'normalized_name',
+            jsonName: 'normalizedName',
+            number: 2,
+            label: LABEL_OPTIONAL,
+            type: TYPE_STRING,
+          }),
+          create(FieldDescriptorProtoSchema, {
+            name: 'tag_count',
+            jsonName: 'tagCount',
+            number: 3,
+            label: LABEL_OPTIONAL,
+            type: TYPE_INT32,
+          }),
+        ],
+      }),
+    ],
+  });
+
+  return createDescriptorSetTypeRefFor('examples.protobuf.v1.GreetRequest', [
+    file,
+  ]);
+}
+
 describe('proto file content', () => {
   afterEach(() => {
     vi.restoreAllMocks();
@@ -436,6 +502,26 @@ describe('proto file content', () => {
     const protoFileContent = await getProtoFileContent(createUrlTypeRef());
 
     expect(protoFileContent).toBe(expectedProtoFileContent);
+  });
+
+  it('can scope proto file content to the selected message and reachable descendants', async () => {
+    const protoFileContent = await getProtoFileContent(
+      createSiblingMessageTypeRef(),
+      {
+        scope: 'message',
+      },
+    );
+
+    expect(protoFileContent).toBe(`syntax = "proto3";
+
+package examples.protobuf.v1;
+
+message GreetRequest {
+  string name = 1;
+  string title = 2;
+  repeated string tags = 3;
+}
+`);
   });
 
   it('returns a safe fallback when the descriptor set is corrupted', async () => {

@@ -12,6 +12,17 @@ import type {
 import { resolveMessageDescriptor } from './schema';
 import type { ProtobufTypeRef } from './types';
 
+export interface GetProtoFileContentOptions {
+  scope?: 'file' | 'message';
+}
+
+interface ProtoFileSelection {
+  includedEnumTypeNames: ReadonlySet<string>;
+  includedExtensions: ReadonlySet<DescExtension>;
+  includedMessageTypeNames: ReadonlySet<string>;
+  materializedMessageTypeNames: ReadonlySet<string>;
+}
+
 /**
  * Indents a multi-line block by the requested protobuf nesting level.
  *
@@ -302,28 +313,84 @@ function formatService(service: DescService) {
 }
 
 /**
+ * Checks whether a message declaration should be emitted for the current
+ * selection.
+ */
+function shouldIncludeMessage(
+  selection: ProtoFileSelection | undefined,
+  message: DescMessage,
+) {
+  return !selection || selection.includedMessageTypeNames.has(message.typeName);
+}
+
+/**
+ * Checks whether the fields/oneofs inside a selected message should be
+ * materialized, as opposed to only keeping the message as an ancestor shell.
+ */
+function shouldIncludeMessageMembers(
+  selection: ProtoFileSelection | undefined,
+  message: DescMessage,
+) {
+  return (
+    !selection || selection.materializedMessageTypeNames.has(message.typeName)
+  );
+}
+
+/**
+ * Checks whether an enum declaration should be emitted for the current
+ * selection.
+ */
+function shouldIncludeEnum(
+  selection: ProtoFileSelection | undefined,
+  enumDescriptor: DescEnum,
+) {
+  return (
+    !selection || selection.includedEnumTypeNames.has(enumDescriptor.typeName)
+  );
+}
+
+/**
+ * Checks whether an extension block should be emitted for the current
+ * selection.
+ */
+function shouldIncludeExtension(
+  selection: ProtoFileSelection | undefined,
+  extension: DescExtension,
+) {
+  return !selection || selection.includedExtensions.has(extension);
+}
+
+/**
  * Formats a message declaration, including fields, oneofs, and nested types.
  *
  * @example
  * // => 'message ExamplePayload {\\n  string foo = 1;\\n}'
  */
-function formatMessage(message: DescMessage): string {
+function formatMessage(
+  message: DescMessage,
+  selection?: ProtoFileSelection,
+): string {
   const bodySections: string[] = [
-    message.members
-      .map((member) =>
-        member.kind === 'oneof'
-          ? formatOneof(member, message)
-          : formatField(member, message),
-      )
-      .map((member) => indent(member))
-      .join('\n'),
+    shouldIncludeMessageMembers(selection, message)
+      ? message.members
+          .map((member) =>
+            member.kind === 'oneof'
+              ? formatOneof(member, message)
+              : formatField(member, message),
+          )
+          .map((member) => indent(member))
+          .join('\n')
+      : '',
     message.nestedEnums
+      .filter((enumDescriptor) => shouldIncludeEnum(selection, enumDescriptor))
       .map((enumDescriptor) => indent(formatEnum(enumDescriptor)))
       .join('\n\n'),
     message.nestedMessages
-      .map((nestedMessage) => indent(formatMessage(nestedMessage)))
+      .filter((nestedMessage) => shouldIncludeMessage(selection, nestedMessage))
+      .map((nestedMessage) => indent(formatMessage(nestedMessage, selection)))
       .join('\n\n'),
     message.nestedExtensions
+      .filter((extension) => shouldIncludeExtension(selection, extension))
       .map((extension) => indent(formatNestedExtension(extension, message)))
       .join('\n\n'),
   ].filter((section) => section.length > 0);
@@ -336,12 +403,206 @@ function formatMessage(message: DescMessage): string {
 }
 
 /**
+ * Ensures the selected message and each of its containing parent messages are
+ * kept in the output.
+ *
+ * @example
+ * // selecting `test.v1.Outer.Inner` also keeps `test.v1.Outer`
+ */
+function addMessageAncestors(
+  message: DescMessage,
+  includedMessageTypeNames: Set<string>,
+) {
+  let current: DescMessage | undefined = message;
+
+  while (current) {
+    includedMessageTypeNames.add(current.typeName);
+    current = current.parent;
+  }
+}
+
+/**
+ * Ensures parent messages of a selected enum remain in the output so nested
+ * enum declarations have a container.
+ */
+function addEnumAncestors(
+  enumDescriptor: DescEnum,
+  includedMessageTypeNames: Set<string>,
+) {
+  let current = enumDescriptor.parent;
+
+  while (current) {
+    includedMessageTypeNames.add(current.typeName);
+    current = current.parent;
+  }
+}
+
+/**
+ * Walks a field or extension and records any same-file message/enum types it
+ * references so the focused `.proto` view can include them transitively.
+ *
+ * @example
+ * // `Detail detail = 1;` enqueues `Detail`
+ *
+ * @example
+ * // `map<string, Status>` includes enum `Status`
+ */
+function collectReferencedTypes(
+  field: DescField | DescExtension,
+  file: DescFile,
+  enqueueMessage: (message: DescMessage) => void,
+  includeEnum: (enumDescriptor: DescEnum) => void,
+) {
+  switch (field.fieldKind) {
+    case 'message':
+      if (field.message.file === file) {
+        enqueueMessage(field.message);
+      }
+      return;
+    case 'enum':
+      if (field.enum.file === file) {
+        includeEnum(field.enum);
+      }
+      return;
+    case 'list':
+      if (field.listKind === 'message' && field.message.file === file) {
+        enqueueMessage(field.message);
+      }
+
+      if (field.listKind === 'enum' && field.enum.file === file) {
+        includeEnum(field.enum);
+      }
+
+      return;
+    case 'map':
+      if (field.mapKind === 'message' && field.message.file === file) {
+        enqueueMessage(field.message);
+      }
+
+      if (field.mapKind === 'enum' && field.enum.file === file) {
+        includeEnum(field.enum);
+      }
+
+      return;
+    case 'scalar':
+      return;
+  }
+}
+
+/**
+ * Computes the subset of declarations needed to render only the requested
+ * message plus same-file descendant types it references transitively.
+ *
+ * This keeps ancestor message shells when a nested type is selected, and also
+ * includes extensions declared against included same-file messages.
+ *
+ * @example
+ * // selecting `GreetRequest` excludes sibling `GreetResponse`
+ */
+function getMessageScopedSelection(
+  rootMessage: DescMessage,
+): ProtoFileSelection {
+  const file = rootMessage.file;
+  const includedEnumTypeNames = new Set<string>();
+  const includedExtensions = new Set<DescExtension>();
+  const includedMessageTypeNames = new Set<string>();
+  const materializedMessageTypeNames = new Set<string>();
+  const queue: DescMessage[] = [];
+
+  const includeEnum = (enumDescriptor: DescEnum) => {
+    if (enumDescriptor.file !== file) {
+      return;
+    }
+
+    includedEnumTypeNames.add(enumDescriptor.typeName);
+    addEnumAncestors(enumDescriptor, includedMessageTypeNames);
+  };
+
+  const enqueueMessage = (message: DescMessage) => {
+    if (message.file !== file) {
+      return;
+    }
+
+    addMessageAncestors(message, includedMessageTypeNames);
+
+    if (materializedMessageTypeNames.has(message.typeName)) {
+      return;
+    }
+
+    materializedMessageTypeNames.add(message.typeName);
+    queue.push(message);
+  };
+
+  const includeExtension = (extension: DescExtension) => {
+    if (extension.file !== file || includedExtensions.has(extension)) {
+      return;
+    }
+
+    includedExtensions.add(extension);
+    collectReferencedTypes(extension, file, enqueueMessage, includeEnum);
+  };
+
+  enqueueMessage(rootMessage);
+
+  while (true) {
+    while (queue.length > 0) {
+      const message = queue.shift();
+
+      if (!message) {
+        continue;
+      }
+
+      for (const member of message.members) {
+        if (member.kind === 'oneof') {
+          for (const field of member.fields) {
+            collectReferencedTypes(field, file, enqueueMessage, includeEnum);
+          }
+
+          continue;
+        }
+
+        collectReferencedTypes(member, file, enqueueMessage, includeEnum);
+      }
+
+      for (const extension of message.nestedExtensions) {
+        includeExtension(extension);
+      }
+    }
+
+    let addedTopLevelExtension = false;
+
+    for (const extension of file.extensions) {
+      if (
+        !includedExtensions.has(extension) &&
+        extension.extendee.file === file &&
+        includedMessageTypeNames.has(extension.extendee.typeName)
+      ) {
+        includeExtension(extension);
+        addedTopLevelExtension = true;
+      }
+    }
+
+    if (!addedTopLevelExtension) {
+      break;
+    }
+  }
+
+  return {
+    includedEnumTypeNames,
+    includedExtensions,
+    includedMessageTypeNames,
+    materializedMessageTypeNames,
+  };
+}
+
+/**
  * Formats a protobuf file descriptor back into `.proto` source text.
  *
  * The output includes syntax, package, imports, and all top-level declarations
- * from the file that owns the requested type.
+ * from the file that owns the requested type. When `selection` is provided,
+ * only the chosen subset of declarations is emitted.
  */
-function formatProtoFile(file: DescFile) {
+function formatProtoFile(file: DescFile, selection?: ProtoFileSelection) {
   const importKindsByDependency = new Map<number, 'public' | 'weak'>();
 
   for (const dependencyIndex of file.proto.publicDependency) {
@@ -367,10 +628,21 @@ function formatProtoFile(file: DescFile) {
     .join('\n');
 
   const declarations = [
-    file.enums.map((enumDescriptor) => formatEnum(enumDescriptor)).join('\n\n'),
-    file.messages.map((message) => formatMessage(message)).join('\n\n'),
-    file.extensions.map((extension) => formatExtension(extension)).join('\n\n'),
-    file.services.map((service) => formatService(service)).join('\n\n'),
+    file.enums
+      .filter((enumDescriptor) => shouldIncludeEnum(selection, enumDescriptor))
+      .map((enumDescriptor) => formatEnum(enumDescriptor))
+      .join('\n\n'),
+    file.messages
+      .filter((message) => shouldIncludeMessage(selection, message))
+      .map((message) => formatMessage(message, selection))
+      .join('\n\n'),
+    file.extensions
+      .filter((extension) => shouldIncludeExtension(selection, extension))
+      .map((extension) => formatExtension(extension))
+      .join('\n\n'),
+    selection
+      ? ''
+      : file.services.map((service) => formatService(service)).join('\n\n'),
   ];
 
   return `${joinSections([
@@ -407,17 +679,37 @@ function formatProtoFileFallback(
  * invalid, incompatible, or otherwise fails to load, a fallback comment string
  * is returned instead of throwing so UI consumers can render safely.
  *
+ * Use `scope: 'message'` to render only the selected message plus same-file
+ * descendant types that are referenced transitively from it.
+ *
  * @example
  * const proto = await getProtoFileContent({
  *   schema: { type: 'descriptor-set', fileDescriptorSet: bytes },
  *   messageType: 'test.v1.ExamplePayload',
  * });
+ *
+ * @example
+ * const focusedProto = await getProtoFileContent(
+ *   {
+ *     schema: { type: 'descriptor-set', fileDescriptorSet: bytes },
+ *     messageType: 'examples.protobuf.v1.GreetRequest',
+ *   },
+ *   { scope: 'message' },
+ * );
  */
 export async function getProtoFileContent(
   typeRef: ProtobufTypeRef,
+  options?: GetProtoFileContentOptions,
 ): Promise<string> {
   try {
     const { messageDescriptor } = await resolveMessageDescriptor(typeRef);
+    if (options?.scope === 'message') {
+      return formatProtoFile(
+        messageDescriptor.file,
+        getMessageScopedSelection(messageDescriptor),
+      );
+    }
+
     return formatProtoFile(messageDescriptor.file);
   } catch (error) {
     return formatProtoFileFallback(typeRef, error);
