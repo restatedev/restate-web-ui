@@ -219,6 +219,8 @@
 
 - 2026-03-06 | self | When iterative visual tuning diverges, user prefers stepping back: revert code experiments first, then lock a detailed behavior spec before re-implementing.
 
+- 2026-04-16 | user | For protobuf display in Monaco, preferred the editor's built-in protobuf language over a custom tokenizer. Check the installed Monaco package first and use its first-party language contribution when available.
+
 - 2026-04-15 | self | In `Deployment`, `TruncateWithTooltip` copies its `copyText` prop, not necessarily the visible label, so `showEndpoint={false}` can still support an endpoint copy action without changing the displayed text.
 
 - 2026-04-15 | self | Treated `nx run-many -t test` as a test-runner hang first. In this sandbox the real blocker is earlier: Nx isolated plugin workers cannot `listen()` on Unix sockets and time out with `Failed to start plugin worker`; with `NX_ISOLATE_PLUGINS=false` graph creation works, and a separate broad-run issue remains because many projects have `test` targets but no spec files. When Nx appears hung here, check socket `EPERM` and disable isolated plugins before debugging individual tests.
