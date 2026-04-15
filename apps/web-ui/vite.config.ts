@@ -96,6 +96,8 @@ export default defineConfig(({ mode }) => {
     },
 
     test: {
+      passWithNoTests: true,
+      watch: false,
       setupFiles: ['test-setup.ts'],
       globals: true,
       cache: {

@@ -218,6 +218,9 @@
 - 2026-03-06 | self | Suspected infinite loop/hang during latest timeline-zoom tweak; rolled back `mode.ts`/`ticks.ts` delta-based coordinate-window/interval-step changes immediately and kept behavior at previous stable state for safety.
 
 - 2026-03-06 | self | When iterative visual tuning diverges, user prefers stepping back: revert code experiments first, then lock a detailed behavior spec before re-implementing.
+
+- 2026-04-15 | self | Treated `nx run-many -t test` as a test-runner hang first. In this sandbox the real blocker is earlier: Nx isolated plugin workers cannot `listen()` on Unix sockets and time out with `Failed to start plugin worker`; with `NX_ISOLATE_PLUGINS=false` graph creation works, and a separate broad-run issue remains because many projects have `test` targets but no spec files. When Nx appears hung here, check socket `EPERM` and disable isolated plugins before debugging individual tests.
+- 2026-04-15 | self | Adding `passWithNoTests: true` alone fixed non-interactive Vitest runs but not TTY runs: `nx test <project>` still opened Vitest `DEV` mode and sat on "No test files found". In this workspace, explicitly set `watch: false` inside each `vite.config.ts` `test` block as well; Nx's executor-level default was not enough to prevent interactive watch mode.
 - 2026-04-14 | self | Verified `@bufbuild/protobuf` v2 can build registries directly from `FileDescriptorSet` or `FileDescriptorProto` via `createFileRegistry`; use that for dynamic protobuf payload codecs instead of inventing custom descriptor parsing.
 - 2026-04-14 | self | `@bufbuild/protobuf` is about 1.9M on disk in this repo. For optional protobuf tooling, lazy-load the runtime with `import()` so the feature stays on-demand instead of eagerly inflating the app bundle.
 - 2026-04-14 | user | Even if a new feature lib starts as TS-only, if it may later host React components, scaffold it with the repo's React-capable feature-lib tsconfig/vite layout up front.

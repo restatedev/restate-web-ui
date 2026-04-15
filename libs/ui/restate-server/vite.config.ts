@@ -9,6 +9,8 @@ export default defineConfig({
   plugins: [react(), nxViteTsPaths()],
 
   test: {
+    passWithNoTests: true,
+    watch: false,
     globals: true,
     cache: { dir: '../../../node_modules/.vitest' },
     environment: 'jsdom',

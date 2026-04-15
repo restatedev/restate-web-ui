@@ -14,6 +14,8 @@ export default defineConfig({
   // },
 
   test: {
+    passWithNoTests: true,
+    watch: false,
     globals: true,
     cache: { dir: '../../../node_modules/.vitest' },
     environment: 'jsdom',
