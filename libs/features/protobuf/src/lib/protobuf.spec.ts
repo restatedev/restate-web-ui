@@ -1,84 +1,14 @@
-import { create, toBinary, toJson } from '@bufbuild/protobuf';
-import {
-  DescriptorProtoSchema,
-  FieldDescriptorProtoSchema,
-  FileDescriptorProtoSchema,
-  FileDescriptorSetSchema,
-} from '@bufbuild/protobuf/wkt';
+import { toJson } from '@bufbuild/protobuf';
+import { FileDescriptorSetSchema } from '@bufbuild/protobuf/wkt';
 import { decodeProtobuf, encodeProtobuf, loadProtobufCodec } from './protobuf';
-import type { ProtobufTypeRef } from './types';
-
-const messageType = 'test.v1.ExamplePayload';
-const samplePayload = {
-  foo: 'baz',
-};
-const LABEL_OPTIONAL = 1;
-const TYPE_STRING = 9;
-
-function createTestFieldDescriptor() {
-  return create(FieldDescriptorProtoSchema, {
-    name: 'foo',
-    jsonName: 'foo',
-    number: 1,
-    type: TYPE_STRING,
-    label: LABEL_OPTIONAL,
-  });
-}
-
-function createTestMessageDescriptor() {
-  return create(DescriptorProtoSchema, {
-    name: 'ExamplePayload',
-    field: [createTestFieldDescriptor()],
-  });
-}
-
-function createTestFileDescriptor() {
-  return create(FileDescriptorProtoSchema, {
-    name: 'test/example_payload.proto',
-    package: 'test.v1',
-    syntax: 'proto3',
-    messageType: [createTestMessageDescriptor()],
-  });
-}
-
-function createDescriptorSet() {
-  return create(FileDescriptorSetSchema, {
-    file: [createTestFileDescriptor()],
-  });
-}
-
-function createDescriptorSetTypeRef(): ProtobufTypeRef {
-  return {
-    schema: {
-      type: 'descriptor-set',
-      fileDescriptorSet: toBinary(
-        FileDescriptorSetSchema,
-        createDescriptorSet(),
-      ),
-    },
-    messageType,
-  };
-}
-
-function createDescriptorTypeRef(): ProtobufTypeRef {
-  return {
-    schema: {
-      type: 'descriptor',
-      fileDescriptor: createTestFileDescriptor(),
-    },
-    messageType,
-  };
-}
-
-function createUrlTypeRef(): ProtobufTypeRef {
-  return {
-    schema: {
-      type: 'url',
-      url: 'https://example.test/schema.json',
-    },
-    messageType,
-  };
-}
+import {
+  createDescriptorSet,
+  createDescriptorSetTypeRef,
+  createDescriptorTypeRef,
+  createUrlTypeRef,
+  messageType,
+  samplePayload,
+} from '../../test/test-fixtures';
 
 describe('protobuf codec', () => {
   afterEach(() => {
