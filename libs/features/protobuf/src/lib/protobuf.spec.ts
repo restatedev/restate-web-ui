@@ -5,11 +5,7 @@ import {
   FileDescriptorProtoSchema,
   FileDescriptorSetSchema,
 } from '@bufbuild/protobuf/wkt';
-import {
-  decodeProtobuf,
-  encodeProtobuf,
-  loadProtobufCodec,
-} from './protobuf';
+import { decodeProtobuf, encodeProtobuf, loadProtobufCodec } from './protobuf';
 import type { ProtobufTypeRef } from './types';
 
 const messageType = 'test.v1.ExamplePayload';
@@ -55,7 +51,10 @@ function createDescriptorSetTypeRef(): ProtobufTypeRef {
   return {
     schema: {
       type: 'descriptor-set',
-      fileDescriptorSet: toBinary(FileDescriptorSetSchema, createDescriptorSet()),
+      fileDescriptorSet: toBinary(
+        FileDescriptorSetSchema,
+        createDescriptorSet(),
+      ),
     },
     messageType,
   };
@@ -116,16 +115,17 @@ describe('protobuf codec', () => {
   });
 
   it('loads a codec from a schema url and round-trips a payload', async () => {
-    const fetchSpy = vi
-      .spyOn(globalThis, 'fetch')
-      .mockResolvedValue(
-        new Response(JSON.stringify(toJson(FileDescriptorSetSchema, createDescriptorSet())), {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify(toJson(FileDescriptorSetSchema, createDescriptorSet())),
+        {
           headers: {
             'content-type': 'application/json',
           },
           status: 200,
-        }),
-      );
+        },
+      ),
+    );
 
     const codec = await loadProtobufCodec(createUrlTypeRef());
     const encodedPayload = codec.encode(samplePayload);

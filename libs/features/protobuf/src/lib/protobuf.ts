@@ -70,13 +70,22 @@ async function loadFileDescriptorSetFromUrl(
     );
   }
 
-  const format = inferSchemaFormat(schema, response.headers.get('content-type'));
+  const format = inferSchemaFormat(
+    schema,
+    response.headers.get('content-type'),
+  );
 
   if (format === 'json') {
-    return fromJson(FileDescriptorSetSchema, (await response.json()) as JsonValue);
+    return fromJson(
+      FileDescriptorSetSchema,
+      (await response.json()) as JsonValue,
+    );
   }
 
-  return fromBinary(FileDescriptorSetSchema, new Uint8Array(await response.arrayBuffer()));
+  return fromBinary(
+    FileDescriptorSetSchema,
+    new Uint8Array(await response.arrayBuffer()),
+  );
 }
 
 /**
@@ -102,9 +111,8 @@ async function loadRegistry(schema: ProtobufSchema): Promise<FileRegistry> {
     case 'descriptor-set':
       return createFileRegistry(normalizeFileDescriptorSet(schema));
     case 'descriptor':
-      return createFileRegistry(
-        schema.fileDescriptor,
-        (fileName: string) => schema.resolveImport?.(fileName),
+      return createFileRegistry(schema.fileDescriptor, (fileName: string) =>
+        schema.resolveImport?.(fileName),
       );
   }
 }
@@ -188,7 +196,8 @@ function bytesToOutput(
 export async function loadProtobufCodec(
   typeRef: ProtobufTypeRef,
 ): Promise<ProtobufCodec> {
-  const { registry, messageDescriptor } = await resolveMessageDescriptor(typeRef);
+  const { registry, messageDescriptor } =
+    await resolveMessageDescriptor(typeRef);
 
   return {
     messageType: messageDescriptor.typeName,
