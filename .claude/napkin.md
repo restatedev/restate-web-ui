@@ -225,6 +225,7 @@
 - 2026-04-14 | self | `@bufbuild/protobuf` is about 1.9M on disk in this repo. For optional protobuf tooling, lazy-load the runtime with `import()` so the feature stays on-demand instead of eagerly inflating the app bundle.
 - 2026-04-14 | user | Even if a new feature lib starts as TS-only, if it may later host React components, scaffold it with the repo's React-capable feature-lib tsconfig/vite layout up front.
 - 2026-04-14 | user | Preferred simplifying protobuf loading by making the feature module itself the lazy boundary instead of adding an internal `loadProtobufRuntime()` layer. If consumers can lazy-import the feature, keep the implementation direct.
+- 2026-04-15 | self | I initially covered the protobuf `.proto` formatter mostly with happy-path shape tests. For UI-facing helpers that must not crash the app, also add explicit failure-path tests for corrupted schemas, missing types, load failures, and unexpected internal errors.
 
 - 2026-04-14 | self | Moving codec context to `Entry.tsx` looked straightforward, but popover command previews in `CompletionNotification`/`TransientError`/`LifeCycle` bypass the normal row boundary. When centralizing context, always search for alternate render paths that mount the same child components outside the main tree.
 - 2026-04-14 | self | Added `useServiceDetails` for codec context without disabling mount refetch. For journal rows and cached metadata lookups, explicitly set `refetchOnMount: false` unless fresh-on-navigation behavior is actually needed.

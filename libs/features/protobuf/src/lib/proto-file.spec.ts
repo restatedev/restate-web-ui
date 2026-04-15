@@ -14,6 +14,7 @@ import {
   type FileDescriptorProto,
 } from '@bufbuild/protobuf/wkt';
 import { getProtoFileContent } from './proto-file';
+import * as schemaModule from './schema';
 import type { ProtobufTypeRef } from './types';
 import {
   createDescriptorSet,
@@ -435,6 +436,64 @@ describe('proto file content', () => {
     const protoFileContent = await getProtoFileContent(createUrlTypeRef());
 
     expect(protoFileContent).toBe(expectedProtoFileContent);
+  });
+
+  it('returns a safe fallback when the descriptor set is corrupted', async () => {
+    const protoFileContent = await getProtoFileContent({
+      schema: {
+        type: 'descriptor-set',
+        fileDescriptorSet: new Uint8Array([1, 2, 3]),
+      },
+      messageType: 'test.v1.ExamplePayload',
+    });
+
+    expect(protoFileContent)
+      .toBe(`// Unable to render .proto source for "test.v1.ExamplePayload".
+// The schema could not be parsed or formatted into .proto source.
+`);
+  });
+
+  it('returns a safe fallback when the requested message type is missing', async () => {
+    const protoFileContent = await getProtoFileContent({
+      ...createDescriptorSetTypeRef(),
+      messageType: 'test.v1.DoesNotExist',
+    });
+
+    expect(protoFileContent)
+      .toBe(`// Unable to render .proto source for "test.v1.DoesNotExist".
+// The requested message type was not found in the provided schema.
+`);
+  });
+
+  it('returns a safe fallback when the schema url cannot be loaded', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response('boom', {
+        status: 500,
+        statusText: 'Internal Server Error',
+      }),
+    );
+
+    const protoFileContent = await getProtoFileContent(createUrlTypeRef());
+
+    expect(protoFileContent)
+      .toBe(`// Unable to render .proto source for "test.v1.ExamplePayload".
+// The schema could not be loaded from the provided URL.
+`);
+  });
+
+  it('returns a safe fallback when an unexpected internal error happens', async () => {
+    vi.spyOn(schemaModule, 'resolveMessageDescriptor').mockRejectedValue(
+      new Error('boom'),
+    );
+
+    const protoFileContent = await getProtoFileContent(
+      createDescriptorSetTypeRef(),
+    );
+
+    expect(protoFileContent)
+      .toBe(`// Unable to render .proto source for "test.v1.ExamplePayload".
+// The schema could not be parsed or formatted into .proto source.
+`);
   });
 
   it('formats complex proto3 shapes including imports, collections, nested types, oneofs, and services', async () => {

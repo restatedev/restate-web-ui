@@ -381,11 +381,31 @@ function formatProtoFile(file: DescFile) {
   ])}\n`;
 }
 
+function formatProtoFileFallback(
+  typeRef: ProtobufTypeRef,
+  error: unknown,
+): string {
+  const message = error instanceof Error ? error.message : '';
+
+  let reason =
+    'The schema could not be parsed or formatted into .proto source.';
+
+  if (message.includes('was not found in the provided protobuf schema')) {
+    reason = 'The requested message type was not found in the provided schema.';
+  } else if (message.startsWith('Failed to load protobuf schema from "')) {
+    reason = 'The schema could not be loaded from the provided URL.';
+  }
+
+  return `// Unable to render .proto source for "${typeRef.messageType}".\n// ${reason}\n`;
+}
+
 /**
  * Returns the `.proto` source for the file that declares the requested type.
  *
  * This works with any supported schema source and is useful for UI previews or
- * copy/export actions that need readable protobuf definitions.
+ * copy/export actions that need readable protobuf definitions. If the schema is
+ * invalid, incompatible, or otherwise fails to load, a fallback comment string
+ * is returned instead of throwing so UI consumers can render safely.
  *
  * @example
  * const proto = await getProtoFileContent({
@@ -396,6 +416,10 @@ function formatProtoFile(file: DescFile) {
 export async function getProtoFileContent(
   typeRef: ProtobufTypeRef,
 ): Promise<string> {
-  const { messageDescriptor } = await resolveMessageDescriptor(typeRef);
-  return formatProtoFile(messageDescriptor.file);
+  try {
+    const { messageDescriptor } = await resolveMessageDescriptor(typeRef);
+    return formatProtoFile(messageDescriptor.file);
+  } catch (error) {
+    return formatProtoFileFallback(typeRef, error);
+  }
 }
