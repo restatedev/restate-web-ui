@@ -68,7 +68,7 @@ function getPolygon(
 ): [number, number][] {
   const triggerRect = triggerEl.getBoundingClientRect();
   const popoverRect = popoverEl.getBoundingClientRect();
-  const placement = popoverEl.dataset.placement?.split('-').at(0);
+  const placement = popoverEl.dataset['placement']?.split('-').at(0);
   const buffer = 10; // Increased from 5 to 10 for more forgiveness
 
   switch (placement) {
@@ -281,6 +281,8 @@ export function PopoverHoverTrigger({
         clearCloseTimeout();
       };
     }
+
+    return undefined;
   }, [clearCloseTimeout, handleMouseMove, isOpen]);
 
   return children;

@@ -2,20 +2,11 @@ import {
   Handler as HandlerType,
   ServiceType,
 } from '@restate/data-access/admin-api-spec';
+import { HandlerInputOutput } from '@restate/feature/handler-input-output';
 import { HandlerTypeExplainer } from '@restate/features/explainers';
-import { DropdownSection } from '@restate/ui/dropdown';
 import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from '@restate/util/styles';
-import {
-  Popover,
-  PopoverContent,
-  PopoverHoverTrigger,
-  PopoverTrigger,
-  usePopover,
-} from '@restate/ui/popover';
 import { ServicePlaygroundTrigger } from './ServicePlayground';
-import { ComponentProps } from 'react';
-import { JsonSchemaViewer } from '@restate/ui/api';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Badge } from '@restate/ui/badge';
 import { Link } from '@restate/ui/link';
@@ -24,39 +15,10 @@ import {
   SERVICE_PLAYGROUND_QUERY_PARAM,
   SERVICE_QUERY_PARAM,
 } from './constants';
-import { Button } from '@restate/ui/button';
 
 const styles = tv({
   base: 'relative flex flex-row flex-wrap items-center pr-2',
 });
-
-function getContentTypeLabel(contentType: string) {
-  if (
-    contentType.startsWith('one of [') ||
-    contentType.startsWith('value of content-type') ||
-    contentType.startsWith('JSON value of content-type')
-  ) {
-    try {
-      let parsedContentType = contentType;
-      if (contentType.startsWith('one of [')) {
-        parsedContentType = JSON.parse(contentType.replace('one of ', '')).at(
-          1,
-        );
-      }
-      return (
-        parsedContentType
-          ?.match(/'.*'/)
-          ?.at(0)
-          ?.split('application/')
-          .at(-1)
-          ?.replace(/'/g, '') || contentType
-      );
-    } catch (error) {
-      return contentType;
-    }
-  }
-  return contentType.split('application/').at(-1);
-}
 
 export function Handler({
   handler,
@@ -123,9 +85,19 @@ export function Handler({
                 schema={handler.input_json_schema}
                 contentType={handler.input_description}
                 label="Request"
-                service={service}
-                withPlayground={withPlayground}
-                handler={handler.name}
+                metadata={handler.metadata}
+                renderHeaderAction={
+                  withPlayground
+                    ? (close) => (
+                        <ServicePlaygroundTrigger
+                          service={service}
+                          handler={handler.name}
+                          variant="icon"
+                          onClick={close}
+                        />
+                      )
+                    : undefined
+                }
                 className="[&_a]:z-[2] [&_button]:text-zinc-500/80"
               />
               <span className="shrink-0 text-zinc-400">
@@ -136,9 +108,19 @@ export function Handler({
                 schema={handler.output_json_schema}
                 contentType={handler.output_description}
                 label="Response"
-                service={service}
-                withPlayground={withPlayground}
-                handler={handler.name}
+                metadata={handler.metadata}
+                renderHeaderAction={
+                  withPlayground
+                    ? (close) => (
+                        <ServicePlaygroundTrigger
+                          service={service}
+                          handler={handler.name}
+                          variant="icon"
+                          onClick={close}
+                        />
+                      )
+                    : undefined
+                }
                 className="[&_a]:z-[2] [&_button]:text-zinc-500/80"
               />
               {showLink && (
@@ -159,128 +141,4 @@ export function Handler({
       </div>
     </div>
   );
-}
-
-const inputOutputStyles = tv({
-  base: 'contents items-center gap-1 rounded-md py-0 pl-0.5 text-2xs text-zinc-700',
-  slots: {
-    value: 'mr-0.5 contents font-mono leading-5 font-semibold text-zinc-500',
-  },
-  variants: {
-    hasSchema: {
-      true: {
-        base: '',
-        value: '',
-      },
-      false: {
-        base: '',
-        value: '',
-      },
-    },
-  },
-});
-
-function HandlerInputOutput({
-  className,
-  schema,
-  contentType,
-  label: labelProp,
-  service,
-  handler,
-  withPlayground,
-}: {
-  className?: string;
-  schema?: any;
-  contentType: string;
-  label: string;
-  service: string;
-  handler: string;
-  withPlayground?: boolean;
-}) {
-  const hasSchema = Boolean(schema);
-  const hasMultipleType = Array.isArray(schema?.type);
-  const isObjectSchema =
-    hasSchema &&
-    (schema.type === 'object' ||
-      schema.anyOf ||
-      (hasMultipleType && schema.type.includes('object')));
-  const { base, value } = inputOutputStyles({
-    hasSchema,
-  });
-
-  if (!isObjectSchema && hasSchema) {
-    return (
-      <span className="max-w-fit grow basis-20 truncate rounded-xs px-0.5 py-0 font-mono text-2xs text-inherit">
-        {schema.type ?? getContentTypeLabel(contentType)}
-      </span>
-    );
-  }
-
-  if (!hasSchema && contentType === 'none') {
-    return labelProp === 'Request' ? null : (
-      <span className="max-w-fit grow basis-20 truncate rounded-xs px-0.5 py-0 font-mono text-2xs text-inherit">
-        void
-      </span>
-    );
-  }
-  return (
-    <div className={base({ className })}>
-      <span className={value()}>
-        <Popover>
-          <PopoverTrigger>
-            <Button
-              className="z-[2] max-w-fit grow basis-20 truncate rounded-xs px-0.5 py-0.5 font-mono [font-size:inherit] text-inherit [font-style:inherit] underline decoration-dashed decoration-from-font underline-offset-4 [&:not([href])]:cursor-default"
-              variant="icon"
-            >
-              <span className="truncate pr-0.5">
-                {schema?.title ?? schema?.type ?? (
-                  <span className="uppercase">
-                    {getContentTypeLabel(contentType)}
-                  </span>
-                )}
-              </span>
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="[&_header]:font-mono [&_header]:text-0.5xs">
-            <DropdownSection
-              className="mb-1 max-w-[min(90vw,600px)] min-w-80 overflow-auto px-4"
-              title={
-                <div className="flex items-center">
-                  <span>{hasSchema ? schema.title : labelProp}</span>
-                  {withPlayground && (
-                    <div className="ml-auto">
-                      <ServicePlaygroundTriggerWithClosePopover
-                        service={service}
-                        handler={handler}
-                        variant="icon"
-                      />
-                    </div>
-                  )}
-                </div>
-              }
-            >
-              {isObjectSchema ? (
-                <JsonSchemaViewer
-                  className="font-mono [&:has([aria-haspopup])]:min-h-32 [&>*>[aria-haspopup]]:mt-2 [&>*[data-test='property-description']]:mt-2"
-                  schema={schema}
-                />
-              ) : (
-                <div className="flex items-center gap-2 py-2 font-mono text-0.5xs text-zinc-500">
-                  Content-Type:<Badge size="sm">{contentType}</Badge>
-                </div>
-              )}
-            </DropdownSection>
-          </PopoverContent>
-        </Popover>
-      </span>
-    </div>
-  );
-}
-
-function ServicePlaygroundTriggerWithClosePopover(
-  props: ComponentProps<typeof ServicePlaygroundTrigger>,
-) {
-  const { close } = usePopover();
-
-  return <ServicePlaygroundTrigger {...props} onClick={close} />;
 }
