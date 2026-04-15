@@ -35,7 +35,7 @@ export function HandlerList({
         <Handler
           key={handler.name}
           handler={handler}
-          className="ml-1.5 w-fit pr-0 pl-0 [&_[data-icon]]:-mr-2.5 [&_[data-icon]]:border-transparent [&_[data-icon]]:bg-transparent [&_[data-icon]]:shadow-none [&_[data-icon]>svg]:text-zinc-500/80"
+          className="ml-1.5 min-w-0 pr-0 pl-0 [&_[data-icon]]:-mr-2.5 [&_[data-icon]]:border-transparent [&_[data-icon]]:bg-transparent [&_[data-icon]]:shadow-none [&_[data-icon]>svg]:text-zinc-500/80"
           service={serviceName}
           withPlayground
           serviceType={serviceType}

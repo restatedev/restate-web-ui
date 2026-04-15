@@ -421,7 +421,7 @@ function DeploymentCreatedAt({ value }: { value: string }) {
   const createdAt = new Date(value);
 
   return (
-    <Badge className="hidden w-full border-none bg-transparent pl-1.5 md:flex">
+    <Badge className="z-[2] hidden w-full border-none bg-transparent pl-1.5 md:flex">
       <span className="w-full truncate">
         <span className="font-normal text-zinc-500">Created at </span>
         <span className="font-normal text-zinc-500">{!isPast && 'in '}</span>
