@@ -66,7 +66,7 @@ const overviewPrimaryRowStyles = tv({
 });
 
 const overviewFirstColumnSecondaryStyles = tv({
-  base: 'z-[1] mb-2 ml-7.5 min-h-6 min-w-0 self-start',
+  base: 'z-[1] mb-0 ml-7.5 min-w-0 self-start',
 });
 
 export function useServiceColumns({
@@ -119,7 +119,7 @@ export function useServiceColumns({
             </div>
           }
           secondary={
-            <div className="pointer-events-auto flex items-center gap-1.5">
+            <div className="pointer-events-auto mb-0.5 flex items-center gap-1.5">
               <ServiceType
                 type={s.ty}
                 className="border-zinc-600/10 bg-zinc-50 text-zinc-500"
@@ -327,7 +327,7 @@ function OverviewColumnMeta({
   return (
     <div className={overviewColumnMetaStyles({ className })}>
       <div className="flex min-h-10.5 items-center">{primary}</div>
-      <div className="mb-2 flex min-h-6 min-w-0 -translate-y-1.5 items-center">
+      <div className="flex min-w-0 items-center">
         {secondary ?? (
           <div className="px-1.5 py-0.5 text-0.5xs leading-5 text-transparent">
             <br />
@@ -347,7 +347,7 @@ function OverviewDeploymentId({ deploymentId }: { deploymentId: string }) {
     <Badge
       variant="info"
       size="sm"
-      className="max-w-full border-transparent bg-transparent font-normal text-gray-500"
+      className="group max-w-full border-transparent bg-transparent py-0 font-normal text-gray-500"
     >
       <div className="min-w-0 truncate">
         <TruncateWithTooltip copyText={deploymentId} hideCopy>
@@ -356,7 +356,7 @@ function OverviewDeploymentId({ deploymentId }: { deploymentId: string }) {
       </div>
       <Copy
         copyText={deploymentId}
-        className="ml-1 shrink-0 rounded-xs p-1 text-gray-400 hover:bg-black/5 hover:text-gray-500 pressed:bg-black/8 [&_svg]:h-3 [&_svg]:w-3"
+        className="invisible ml-1 shrink-0 rounded-sm p-1 text-gray-400 group-hover:visible hover:bg-black/5 hover:text-gray-500 pressed:bg-black/8 [&_svg]:h-3 [&_svg]:w-3"
       />
     </Badge>
   );

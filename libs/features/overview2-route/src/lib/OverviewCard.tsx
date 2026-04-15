@@ -50,7 +50,9 @@ export function OverviewCard({
     <div className="mb-4 px-2 pt-1">
       <div {...props} className={className}>
         <div className="relative">
-          <div className={primaryStyles({ className: 'relative px-1 py-2' })}>
+          <div
+            className={primaryStyles({ className: 'relative px-1 pt-2 pb-3' })}
+          >
             {primaryHref ? (
               <>
                 <Link

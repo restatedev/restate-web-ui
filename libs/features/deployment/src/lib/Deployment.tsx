@@ -39,7 +39,7 @@ const styles = tv({
 });
 
 const copyButtonStyles = tv({
-  base: 'relative z-[2] h-5.5 w-5.5 shrink-0 p-1 opacity-0 transition-opacity duration-150 group-focus-within/deployment:opacity-100 group-hover/deployment:opacity-100 focus-visible:opacity-100',
+  base: 'relative z-[2] h-5.5 w-5.5 shrink-0 rounded-md p-1 opacity-0 transition-opacity duration-150 group-focus-within/deployment:opacity-100 group-hover/deployment:opacity-100 focus-visible:opacity-100',
 });
 
 const iconContainerStyles = tv({
