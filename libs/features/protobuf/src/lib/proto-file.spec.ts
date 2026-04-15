@@ -404,13 +404,17 @@ describe('proto file content', () => {
   });
 
   it('returns proto file content from a file descriptor set', async () => {
-    const protoFileContent = await getProtoFileContent(createDescriptorSetTypeRef());
+    const protoFileContent = await getProtoFileContent(
+      createDescriptorSetTypeRef(),
+    );
 
     expect(protoFileContent).toBe(expectedProtoFileContent);
   });
 
   it('returns proto file content from a single file descriptor', async () => {
-    const protoFileContent = await getProtoFileContent(createDescriptorTypeRef());
+    const protoFileContent = await getProtoFileContent(
+      createDescriptorTypeRef(),
+    );
 
     expect(protoFileContent).toBe(expectedProtoFileContent);
   });
@@ -434,7 +438,9 @@ describe('proto file content', () => {
   });
 
   it('formats complex proto3 shapes including imports, collections, nested types, oneofs, and services', async () => {
-    const protoFileContent = await getProtoFileContent(createComplexProto3TypeRef());
+    const protoFileContent = await getProtoFileContent(
+      createComplexProto3TypeRef(),
+    );
 
     expect(protoFileContent).toBe(`syntax = "proto3";
 
@@ -483,7 +489,9 @@ service ComplexService {
   });
 
   it('formats proto2 field labels and extensions', async () => {
-    const protoFileContent = await getProtoFileContent(createProto2ExtensionTypeRef());
+    const protoFileContent = await getProtoFileContent(
+      createProto2ExtensionTypeRef(),
+    );
 
     expect(protoFileContent).toBe(`syntax = "proto2";
 

@@ -1,8 +1,4 @@
-import {
-  createFileRegistry,
-  fromBinary,
-  fromJson,
-} from '@bufbuild/protobuf';
+import { createFileRegistry, fromBinary, fromJson } from '@bufbuild/protobuf';
 import type { DescMessage, FileRegistry, JsonValue } from '@bufbuild/protobuf';
 import {
   FileDescriptorSetSchema,
@@ -112,7 +108,9 @@ async function loadRegistry(schema: ProtobufSchema): Promise<FileRegistry> {
  * Resolves the target message descriptor and keeps the registry alongside it so
  * JSON conversion can still resolve dependent types like `Any`.
  */
-export async function resolveMessageDescriptor(typeRef: ProtobufTypeRef): Promise<{
+export async function resolveMessageDescriptor(
+  typeRef: ProtobufTypeRef,
+): Promise<{
   registry: FileRegistry;
   messageDescriptor: DescMessage;
 }> {

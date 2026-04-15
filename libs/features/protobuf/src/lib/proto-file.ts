@@ -105,10 +105,7 @@ function getScopeSegments(scope: DescFile | DescMessage) {
  * formatTypeReference('test.v1.ExamplePayload', fileScope)
  * // => 'ExamplePayload'
  */
-function formatTypeReference(
-  typeName: string,
-  scope: DescFile | DescMessage,
-) {
+function formatTypeReference(typeName: string, scope: DescFile | DescMessage) {
   const typeSegments = typeName.split('.');
   const scopeSegments = getScopeSegments(scope);
   let sharedPrefixLength = 0;
@@ -247,7 +244,10 @@ function formatEnum(enumDescriptor: DescEnum) {
  * Formats a top-level `extend` block.
  */
 function formatExtension(extension: DescExtension) {
-  const extendee = formatTypeReference(extension.extendee.typeName, extension.file);
+  const extendee = formatTypeReference(
+    extension.extendee.typeName,
+    extension.file,
+  );
   const body = indent(formatField(extension, extension.file));
 
   return `extend ${extendee} {\n${body}\n}`;
@@ -256,10 +256,7 @@ function formatExtension(extension: DescExtension) {
 /**
  * Formats a nested `extend` block declared inside a message.
  */
-function formatNestedExtension(
-  extension: DescExtension,
-  scope: DescMessage,
-) {
+function formatNestedExtension(extension: DescExtension, scope: DescMessage) {
   const extendee = formatTypeReference(extension.extendee.typeName, scope);
   const body = indent(formatField(extension, scope));
 
