@@ -218,6 +218,10 @@
 - 2026-03-06 | self | Suspected infinite loop/hang during latest timeline-zoom tweak; rolled back `mode.ts`/`ticks.ts` delta-based coordinate-window/interval-step changes immediately and kept behavior at previous stable state for safety.
 
 - 2026-03-06 | self | When iterative visual tuning diverges, user prefers stepping back: revert code experiments first, then lock a detailed behavior spec before re-implementing.
+- 2026-04-14 | self | Verified `@bufbuild/protobuf` v2 can build registries directly from `FileDescriptorSet` or `FileDescriptorProto` via `createFileRegistry`; use that for dynamic protobuf payload codecs instead of inventing custom descriptor parsing.
+- 2026-04-14 | self | `@bufbuild/protobuf` is about 1.9M on disk in this repo. For optional protobuf tooling, lazy-load the runtime with `import()` so the feature stays on-demand instead of eagerly inflating the app bundle.
+- 2026-04-14 | user | Even if a new feature lib starts as TS-only, if it may later host React components, scaffold it with the repo's React-capable feature-lib tsconfig/vite layout up front.
+- 2026-04-14 | user | Preferred simplifying protobuf loading by making the feature module itself the lazy boundary instead of adding an internal `loadProtobufRuntime()` layer. If consumers can lazy-import the feature, keep the implementation direct.
 
 - 2026-04-14 | self | Moving codec context to `Entry.tsx` looked straightforward, but popover command previews in `CompletionNotification`/`TransientError`/`LifeCycle` bypass the normal row boundary. When centralizing context, always search for alternate render paths that mount the same child components outside the main tree.
 - 2026-04-14 | self | Added `useServiceDetails` for codec context without disabling mount refetch. For journal rows and cached metadata lookups, explicitly set `refetchOnMount: false` unless fresh-on-navigation behavior is actually needed.

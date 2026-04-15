@@ -46,6 +46,7 @@
         "libs/features/getting-started/src/index.ts"
       ],
       "@restate/features/health": ["libs/features/health/src/index.ts"],
+      "@restate/feature/protobuf": ["libs/features/protobuf/src/index.ts"],
       "@restate/features/introspection-route": [
         "libs/features/introspection-route/src/index.ts"
       ],
