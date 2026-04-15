@@ -19,7 +19,7 @@ export const cellsContainerStyles = tv({
 });
 
 const primaryStyles = tv({
-  base: 'm-[2px] overflow-hidden rounded-[calc(1rem-2px)] border border-white bg-linear-to-b from-white/90 to-gray-50/80 shadow-xs transition',
+  base: 'm-[2px] overflow-hidden rounded-[calc(1rem-2px)] border border-white bg-linear-to-b from-white/90 to-gray-50/80 shadow-xs transition hover:to-white/80 hover:shadow-md hover:shadow-zinc-800/3',
   variants: {
     isInteractive: {
       true: '',
@@ -29,14 +29,7 @@ const primaryStyles = tv({
 });
 
 const primaryLinkStyles = tv({
-  extend: primaryStyles,
-  base: 'absolute inset-0 z-0 block no-underline',
-  variants: {
-    isInteractive: {
-      true: 'hover:from-white hover:to-white/80 hover:no-underline hover:shadow-md hover:shadow-zinc-800/3 pressed:from-gray-50 pressed:to-gray-50/90 pressed:shadow-xs',
-      false: '',
-    },
-  },
+  base: 'peer absolute inset-0 z-[1] block border-transparent no-underline shadow-none hover:bg-transparent pressed:bg-transparent',
 });
 
 export function OverviewCard({
@@ -57,15 +50,18 @@ export function OverviewCard({
     <div className="mb-4 px-2 pt-1">
       <div {...props} className={className}>
         <div className="relative">
-          <div className="px-1 py-2">
+          <div className={primaryStyles({ className: 'relative px-1 py-2' })}>
             {primaryHref ? (
-              <Link
-                href={primaryHref}
-                variant="secondary"
-                className={primaryLinkStyles({ isInteractive: true })}
-              >
-                <span className="sr-only">Open details</span>
-              </Link>
+              <>
+                <Link
+                  href={primaryHref}
+                  variant="secondary"
+                  className={primaryLinkStyles()}
+                >
+                  <span className="sr-only">Open details</span>
+                </Link>
+                <div className="absolute inset-0 rounded-[calc(1rem-2px)] peer-pressed:bg-black/2" />
+              </>
             ) : null}
             {cells}
           </div>

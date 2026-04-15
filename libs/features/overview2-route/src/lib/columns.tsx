@@ -53,7 +53,7 @@ const deploymentStatusStyles = tv({
 });
 
 const overviewPrimaryRowStyles = tv({
-  base: 'pointer-events-none z-[1] -mx-1 flex min-w-0 items-center gap-2 self-start rounded-lg px-1 py-0.5',
+  base: 'z-[1] -mx-1 flex min-w-0 items-center gap-2 self-start rounded-lg px-1 py-0.5',
   variants: {
     balancedHeight: {
       true: 'min-h-[2.625rem]',
@@ -91,6 +91,7 @@ export function useServiceColumns({
       allowsSorting: true,
       render: (s: Service) => (
         <OverviewFirstColumn
+          className="pointer-events-none"
           primary={
             <div className={overviewPrimaryRowStyles()}>
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border bg-white shadow-xs">
@@ -118,7 +119,7 @@ export function useServiceColumns({
             </div>
           }
           secondary={
-            <div className="flex items-center gap-1.5">
+            <div className="pointer-events-auto flex items-center gap-1.5">
               <ServiceType
                 type={s.ty}
                 className="border-zinc-600/10 bg-zinc-50 text-zinc-500"
@@ -232,9 +233,9 @@ export function useDeploymentColumns({
               <Deployment
                 deploymentId={deployment.id}
                 highlightSelection={false}
-                showLink={false}
                 variant="primary"
-                className="pointer-events-none"
+                className="[&:not(:hover)_a]:invisible"
+                showEndpointCopyButton
               />
             }
             secondary={<OverviewDeploymentId deploymentId={deployment.id} />}
@@ -293,15 +294,21 @@ export function useDeploymentColumns({
   ];
 }
 
+const firstCol = tv({
+  base: 'relative z-[2] flex flex-col px-1',
+});
+
 function OverviewFirstColumn({
   primary,
   secondary,
+  className,
 }: {
   primary: ReactNode;
   secondary: ReactNode;
+  className?: string;
 }) {
   return (
-    <div className="flex flex-col px-1">
+    <div className={firstCol({ className })}>
       {primary}
       <div className={overviewFirstColumnSecondaryStyles()}>{secondary}</div>
     </div>
@@ -332,7 +339,7 @@ function OverviewColumnMeta({
 }
 
 const overviewColumnMetaStyles = tv({
-  base: 'hidden min-w-0 md:flex md:flex-col',
+  base: 'relative z-[2] hidden min-w-0 md:flex md:flex-col',
 });
 
 function OverviewDeploymentId({ deploymentId }: { deploymentId: string }) {

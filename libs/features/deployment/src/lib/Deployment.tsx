@@ -22,7 +22,7 @@ import { MiniGithubMetadata } from '@restate/features/options';
 import { MiniSDK } from './SDK';
 
 const styles = tv({
-  base: 'relative flex flex-row items-center border text-0.5xs transition-all ease-in-out',
+  base: 'group/deployment relative flex flex-row items-center border text-0.5xs transition-all ease-in-out',
   variants: {
     isSelected: {
       true: 'z-10 rounded-lg border bg-white font-medium shadow-xs shadow-zinc-800/3',
@@ -30,13 +30,16 @@ const styles = tv({
     },
     variant: {
       secondary: '-m-1 gap-0.5 p-1',
-      primary:
-        '-mx-1 my-0 min-h-[2.625rem] gap-2 rounded-lg px-1 py-0.5 hover:bg-black/3',
+      primary: '-mx-1 my-0 min-h-[2.625rem] gap-2 rounded-lg px-1 py-0.5',
     },
   },
   defaultVariants: {
     variant: 'secondary',
   },
+});
+
+const copyButtonStyles = tv({
+  base: 'relative z-[2] h-5.5 w-5.5 shrink-0 p-1 opacity-0 transition-opacity duration-150 group-focus-within/deployment:opacity-100 group-hover/deployment:opacity-100 focus-visible:opacity-100',
 });
 
 const iconContainerStyles = tv({
@@ -99,6 +102,7 @@ export function Deployment({
   deploymentId,
   highlightSelection = true,
   showEndpoint = true,
+  showEndpointCopyButton = false,
   showLink = true,
   showGithubMetadata = false,
   showSdk = false,
@@ -109,6 +113,7 @@ export function Deployment({
   deploymentId?: DeploymentId;
   highlightSelection?: boolean;
   showEndpoint?: boolean;
+  showEndpointCopyButton?: boolean;
   showLink?: boolean;
   showGithubMetadata?: boolean;
   showSdk?: boolean;
@@ -253,11 +258,18 @@ export function Deployment({
             <TruncateWithTooltip
               copyText={deploymentEndpoint}
               triggerRef={linkRef}
+              hideCopy={showEndpointCopyButton}
               className="[&_.badge]:bg-gray-700"
             >
               {showEndpoint ? deploymentEndpoint : deploymentId}
             </TruncateWithTooltip>
           </div>
+          {showEndpointCopyButton && deploymentEndpoint && (
+            <Copy
+              copyText={deploymentEndpoint}
+              className={copyButtonStyles()}
+            />
+          )}
         </div>
       </div>
 

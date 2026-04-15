@@ -39,6 +39,7 @@ export function LatestRevisionDeployment({
       revision={latest.revision}
       highlightSelection={false}
       className="min-w-0 text-sm"
+      showEndpointCopyButton
     />
   );
 }

@@ -33,7 +33,7 @@ export function OverviewModeToggle() {
           variant="secondary"
           className="flex shrink-0 items-stretch gap-0 overflow-hidden rounded-lg p-0 text-0.5xs"
         >
-          <span className="flex items-center border-r border-gray-200 bg-gray-50 px-2 py-0.5 text-gray-400">
+          <span className="flex items-center border-r border-gray-200 bg-gray-50 px-2 py-0.5 text-gray-500/80">
             Group by
           </span>
           <span className="flex items-center gap-0.5 py-0.5 pr-1 pl-2">
