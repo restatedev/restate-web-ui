@@ -1,5 +1,5 @@
 export type HandlerInputOutputLabel = 'Request' | 'Response';
-export type HandlerSchemaPath =
+type HandlerSchemaPath =
   | 'input'
   | 'output'
   | `state.${string}`
@@ -53,9 +53,14 @@ export interface HandlerSchemaMetadata {
     | (string & {});
 }
 
-export type HandlerSchema = {
+interface JsonSchemaLike {
+  title?: string;
+  type?: string | string[];
+  anyOf?: unknown;
+}
+
+export type HandlerProtobufSchema = {
   kind: 'protobuf';
-  displayName: string;
   contentType: string;
   messageType: string;
   source:
@@ -74,11 +79,98 @@ export type HandlerSchema = {
       };
 };
 
-function getTypeDisplayName(messageType?: string) {
-  return messageType?.split('.').at(-1) ?? 'protobuf';
+export type HandlerSchema =
+  | {
+      kind: 'hidden';
+    }
+  | {
+      kind: 'text';
+      text: string;
+    }
+  | {
+      kind: 'popover';
+      triggerLabel: string;
+      title: string;
+      content:
+        | {
+            kind: 'protobuf';
+            schema: HandlerProtobufSchema;
+          }
+        | {
+            kind: 'json-schema';
+            schema: JsonSchemaLike;
+          }
+        | {
+            kind: 'content-type';
+            contentType: string;
+          };
+    };
+
+type HandlerSchemaVariant =
+  // No payload for this surface, so the request row renders nothing.
+  | 'hidden'
+  // A simple inline label like `string` is enough; no popover needed.
+  | 'text'
+  // Show a popover with protobuf schema source rendered as `.proto`.
+  | 'protobuf-popover'
+  // Show a popover with the JSON schema viewer for object-like schemas.
+  | 'json-schema-popover'
+  // Fallback popover that only shows the resolved content type.
+  | 'content-type-popover';
+
+interface HandlerSchemaRenderContext {
+  contentType: string;
+  defaultTriggerLabel: string;
+  displayName?: string;
+  hasJsonObjectSchema: boolean;
+  jsonSchema?: JsonSchemaLike;
+  label: HandlerInputOutputLabel;
+  protobufSchema: HandlerProtobufSchema | null;
 }
 
-export function getContentTypeLabel(contentType: string) {
+/**
+ * Narrows an unknown handler schema payload into the JSON-schema-like shape
+ * used by the input/output viewer.
+ *
+ * @example
+ * getJsonSchema({ title: 'User', type: 'object' })
+ * // => { title: 'User', type: 'object' }
+ *
+ * @example
+ * getJsonSchema('not-a-schema')
+ * // => undefined
+ */
+function getJsonSchema(schema?: unknown) {
+  if (!schema || typeof schema !== 'object') {
+    return undefined;
+  }
+
+  return schema as JsonSchemaLike;
+}
+
+/**
+ * Extracts the last segment from a fully-qualified protobuf message name.
+ *
+ * @example
+ * getProtobufMessageDisplayName('examples.protobuf.v1.GreetRequest')
+ * // => 'GreetRequest'
+ */
+function getProtobufMessageDisplayName(messageType: string) {
+  return messageType.split('.').at(-1) ?? 'protobuf';
+}
+
+/**
+ * Normalizes content-type strings into the short label shown in the UI.
+ *
+ * @example
+ * getContentTypeDisplayName('application/json')
+ * // => 'json'
+ *
+ * @example
+ * getContentTypeDisplayName("value of content-type header 'application/protobuf'")
+ * // => 'protobuf'
+ */
+function getContentTypeDisplayName(contentType: string) {
   if (
     contentType.startsWith('one of [') ||
     contentType.startsWith('value of content-type') ||
@@ -107,6 +199,17 @@ export function getContentTypeLabel(contentType: string) {
   return contentType.split('application/').at(-1) ?? contentType;
 }
 
+/**
+ * Detects whether a content type should be treated as protobuf by the viewer.
+ *
+ * @example
+ * isProtobufContentType('application/protobuf')
+ * // => true
+ *
+ * @example
+ * isProtobufContentType('application/json')
+ * // => false
+ */
 function isProtobufContentType(contentType?: string) {
   if (!contentType) {
     return false;
@@ -114,23 +217,42 @@ function isProtobufContentType(contentType?: string) {
 
   return (
     contentType.includes('application/protobuf') ||
-    getContentTypeLabel(contentType) === 'protobuf'
+    getContentTypeDisplayName(contentType) === 'protobuf'
   );
 }
 
-function getSchemaSource(
+/**
+ * Extracts the protobuf schema source information from handler metadata.
+ *
+ * @example
+ * getProtobufSchemaSource({
+ *   'schema.source.kind': 'inline',
+ *   'schema.source.format': 'google.protobuf.FileDescriptorSet',
+ *   'schema.source.encoding': 'base64',
+ *   'schema.source.data': 'Zm9v',
+ * })
+ * // => { kind: 'inline', format: 'google.protobuf.FileDescriptorSet', encoding: 'base64', data: 'Zm9v' }
+ *
+ * @example
+ * getProtobufSchemaSource({
+ *   'schema.source.kind': 'url',
+ *   'schema.source.url': 'https://example.com/schema.bin',
+ * })
+ * // => { kind: 'url', url: 'https://example.com/schema.bin', encoding: undefined }
+ */
+function getProtobufSchemaSource(
   metadata?: HandlerSchemaMetadata,
-): HandlerSchema['source'] | null {
+): HandlerProtobufSchema['source'] | null {
   switch (metadata?.['schema.source.kind']) {
     case 'inline':
       return {
         kind: 'inline',
         format: metadata?.['schema.source.format'] as Extract<
-          HandlerSchema['source'],
+          HandlerProtobufSchema['source'],
           { kind: 'inline' }
         >['format'],
         encoding: metadata?.['schema.source.encoding'] as Extract<
-          HandlerSchema['source'],
+          HandlerProtobufSchema['source'],
           { kind: 'inline' }
         >['encoding'],
         data: metadata?.['schema.source.data'] as string,
@@ -139,7 +261,7 @@ function getSchemaSource(
       return {
         kind: 'url',
         encoding: metadata?.['schema.source.encoding'] as Extract<
-          HandlerSchema['source'],
+          HandlerProtobufSchema['source'],
           { kind: 'url' }
         >['encoding'],
         url: metadata?.['schema.source.url'] as string,
@@ -149,7 +271,24 @@ function getSchemaSource(
   }
 }
 
-export function getHandlerSchema({
+/**
+ * Builds the protobuf-specific part of the handler schema when the metadata
+ * indicates protobuf input/output.
+ *
+ * @example
+ * getHandlerProtobufSchema({
+ *   path: 'input',
+ *   contentType: 'application/protobuf',
+ *   metadata: {
+ *     'schema.kind': 'protobuf',
+ *     'schema.source.kind': 'url',
+ *     'schema.source.url': 'https://example.com/schema.bin',
+ *     'schema.input.type': 'examples.v1.GreetRequest',
+ *   },
+ * })
+ * // => { kind: 'protobuf', contentType: 'application/protobuf', messageType: 'examples.v1.GreetRequest', source: { kind: 'url', url: 'https://example.com/schema.bin' } }
+ */
+function getHandlerProtobufSchema({
   path,
   contentType,
   metadata,
@@ -157,7 +296,7 @@ export function getHandlerSchema({
   path: HandlerSchemaPath;
   contentType: string;
   metadata?: HandlerSchemaMetadata;
-}): HandlerSchema | null {
+}): HandlerProtobufSchema | null {
   const metadataContentType = metadata?.[`schema.${path}.content_type`];
   const resolvedContentType = metadataContentType ?? contentType;
 
@@ -169,8 +308,7 @@ export function getHandlerSchema({
   }
 
   const messageType = metadata?.[`schema.${path}.type`];
-  const displayName = getTypeDisplayName(messageType);
-  const source = getSchemaSource(metadata);
+  const source = getProtobufSchemaSource(metadata);
 
   if (!messageType || !source) {
     return null;
@@ -178,9 +316,245 @@ export function getHandlerSchema({
 
   return {
     kind: 'protobuf',
-    displayName,
     contentType: resolvedContentType,
     messageType,
     source,
   };
+}
+
+/**
+ * Collects the shared state used to decide how a handler input/output should
+ * render.
+ *
+ * @example
+ * getHandlerSchemaRenderContext({
+ *   schema: { title: 'User', type: 'object' },
+ *   contentType: 'application/json',
+ *   label: 'Response',
+ * })
+ * // => context used to derive a json-schema popover
+ */
+function getHandlerSchemaRenderContext({
+  schema,
+  contentType,
+  label,
+  metadata,
+}: {
+  schema?: unknown;
+  contentType: string;
+  label: HandlerInputOutputLabel;
+  metadata?: HandlerSchemaMetadata;
+}): HandlerSchemaRenderContext {
+  const jsonSchema = getJsonSchema(schema);
+  const path: HandlerSchemaPath = label === 'Request' ? 'input' : 'output';
+  const protobufSchema = getHandlerProtobufSchema({
+    path,
+    contentType,
+    metadata,
+  });
+  const jsonSchemaTypes = Array.isArray(jsonSchema?.type)
+    ? jsonSchema.type
+    : undefined;
+  const hasJsonObjectSchema = Boolean(
+    jsonSchema &&
+      (jsonSchema.type === 'object' ||
+        jsonSchema.anyOf ||
+        jsonSchemaTypes?.includes('object')),
+  );
+  const defaultTriggerLabel =
+    getContentTypeDisplayName(contentType).toUpperCase();
+  const displayName =
+    jsonSchema?.title ??
+    (protobufSchema
+      ? getProtobufMessageDisplayName(protobufSchema.messageType)
+      : undefined) ??
+    (typeof jsonSchema?.type === 'string' ? jsonSchema.type : undefined);
+
+  return {
+    contentType,
+    defaultTriggerLabel,
+    displayName,
+    hasJsonObjectSchema,
+    jsonSchema,
+    label,
+    protobufSchema,
+  };
+}
+
+/**
+ * Decides which rendering variant the handler input/output should use.
+ *
+ * Cases covered:
+ * - `text`: there is a non-object JSON schema like `{ type: 'string' }`, so a
+ *   short inline label is enough.
+ * - `hidden`: this is a request with `contentType === 'none'`, so nothing
+ *   should be rendered.
+ * - `protobuf-popover`: protobuf metadata is available, so we should show the
+ *   protobuf source viewer in a popover.
+ * - `json-schema-popover`: an object or `anyOf` JSON schema is available, so
+ *   we should show the JSON schema viewer in a popover.
+ * - `content-type-popover`: fallback when we do not have a richer schema, but
+ *   still want a popover that shows the content type.
+ *
+ * @example
+ * getHandlerSchemaVariant({
+ *   contentType: 'application/json',
+ *   defaultTriggerLabel: 'JSON',
+ *   hasJsonObjectSchema: false,
+ *   jsonSchema: { type: 'string' },
+ *   label: 'Response',
+ *   protobufSchema: null,
+ * })
+ * // => 'text'
+ *
+ * @example
+ * getHandlerSchemaVariant({
+ *   contentType: 'application/protobuf',
+ *   defaultTriggerLabel: 'PROTOBUF',
+ *   hasJsonObjectSchema: false,
+ *   label: 'Request',
+ *   protobufSchema: {
+ *     kind: 'protobuf',
+ *     contentType: 'application/protobuf',
+ *     messageType: 'examples.v1.GreetRequest',
+ *     source: { kind: 'url', url: 'https://example.com/schema.bin' },
+ *   },
+ * })
+ * // => 'protobuf-popover'
+ */
+function getHandlerSchemaVariant(
+  context: HandlerSchemaRenderContext,
+): HandlerSchemaVariant {
+  if (
+    !context.protobufSchema &&
+    !context.hasJsonObjectSchema &&
+    context.jsonSchema
+  ) {
+    return 'text';
+  }
+
+  if (
+    !context.protobufSchema &&
+    !context.jsonSchema &&
+    context.contentType === 'none'
+  ) {
+    return 'hidden';
+  }
+
+  if (context.protobufSchema) {
+    return 'protobuf-popover';
+  }
+
+  if (context.hasJsonObjectSchema && context.jsonSchema) {
+    return 'json-schema-popover';
+  }
+
+  return 'content-type-popover';
+}
+
+/**
+ * Builds the final UI model returned by `getHandlerSchema()`.
+ *
+ * @example
+ * buildHandlerSchema({
+ *   contentType: 'application/json',
+ *   defaultTriggerLabel: 'JSON',
+ *   hasJsonObjectSchema: true,
+ *   jsonSchema: { title: 'User', type: 'object' },
+ *   label: 'Response',
+ *   protobufSchema: null,
+ * })
+ * // => { kind: 'popover', triggerLabel: 'User', title: 'User', content: { kind: 'json-schema', ... } }
+ */
+function buildHandlerSchema(
+  context: HandlerSchemaRenderContext,
+): HandlerSchema {
+  switch (getHandlerSchemaVariant(context)) {
+    case 'text':
+      return {
+        kind: 'text',
+        text:
+          typeof context.jsonSchema?.type === 'string'
+            ? context.jsonSchema.type
+            : getContentTypeDisplayName(context.contentType),
+      };
+    case 'hidden':
+      return context.label === 'Request'
+        ? {
+            kind: 'hidden',
+          }
+        : {
+            kind: 'text',
+            text: 'void',
+          };
+    case 'protobuf-popover':
+      return {
+        kind: 'popover',
+        triggerLabel: context.displayName ?? context.defaultTriggerLabel,
+        title: context.displayName ?? context.label,
+        content: {
+          kind: 'protobuf',
+          schema: context.protobufSchema as HandlerProtobufSchema,
+        },
+      };
+    case 'json-schema-popover':
+      return {
+        kind: 'popover',
+        triggerLabel: context.displayName ?? context.defaultTriggerLabel,
+        title: context.displayName ?? context.label,
+        content: {
+          kind: 'json-schema',
+          schema: context.jsonSchema as JsonSchemaLike,
+        },
+      };
+    case 'content-type-popover':
+      return {
+        kind: 'popover',
+        triggerLabel: context.defaultTriggerLabel,
+        title: context.label,
+        content: {
+          kind: 'content-type',
+          contentType: context.contentType,
+        },
+      };
+  }
+}
+
+/**
+ * Returns the complete render model for handler input/output UI.
+ *
+ * @example
+ * getHandlerSchema({
+ *   schema: { title: 'User', type: 'object' },
+ *   contentType: 'application/json',
+ *   label: 'Response',
+ * })
+ * // => { kind: 'popover', triggerLabel: 'User', title: 'User', content: { kind: 'json-schema', ... } }
+ *
+ * @example
+ * getHandlerSchema({
+ *   contentType: 'none',
+ *   label: 'Request',
+ * })
+ * // => { kind: 'hidden' }
+ */
+export function getHandlerSchema({
+  schema,
+  contentType,
+  label,
+  metadata,
+}: {
+  schema?: unknown;
+  contentType: string;
+  label: HandlerInputOutputLabel;
+  metadata?: HandlerSchemaMetadata;
+}): HandlerSchema {
+  return buildHandlerSchema(
+    getHandlerSchemaRenderContext({
+      schema,
+      contentType,
+      label,
+      metadata,
+    }),
+  );
 }
