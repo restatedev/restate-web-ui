@@ -5,7 +5,7 @@ import { Link } from '@restate/ui/link';
 
 export const cellsContainerStyles = tv({
   extend: focusRing,
-  base: '@container relative isolate cursor-default overflow-hidden rounded-2xl border border-white/60 bg-gray-200/50 shadow-[inset_0_-0.5px_0px_1px_rgba(0,0,0,0.05)] transition',
+  base: '@container relative isolate cursor-default overflow-hidden rounded-2xl border border-white/80 bg-gray-200/50 shadow-[inset_0_-0.5px_0px_1px_rgba(0,0,0,0.05)] transition',
   variants: {
     issueSeverity: {
       none: '',
@@ -19,7 +19,7 @@ export const cellsContainerStyles = tv({
 });
 
 const primaryStyles = tv({
-  base: 'm-[2px] overflow-hidden rounded-[calc(1rem-2px)] border border-white bg-linear-to-b from-gray-50 to-gray-50/80 shadow-xs transition',
+  base: 'm-[2px] overflow-hidden rounded-[calc(1rem-2px)] border border-white bg-linear-to-b from-white/90 to-gray-50/80 shadow-xs transition',
   variants: {
     isInteractive: {
       true: '',
