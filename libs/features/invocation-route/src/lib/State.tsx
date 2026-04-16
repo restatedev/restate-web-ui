@@ -11,11 +11,13 @@ export function State({
   state = [],
   service,
   serviceKey,
+  deploymentId,
   isLoading,
 }: {
   state?: { name: string; value: string }[];
   service: string;
   serviceKey: string;
+  deploymentId?: string;
   isLoading?: boolean;
 }) {
   return (
@@ -33,6 +35,7 @@ export function State({
               key={name}
               service={service}
               serviceKey={serviceKey}
+              deploymentId={deploymentId}
             />
           ))}
         {isLoading && (
@@ -51,17 +54,20 @@ function StateKey({
   value,
   service,
   serviceKey,
+  deploymentId,
 }: {
   name: string;
   value: string;
   service: string;
   serviceKey: string;
+  deploymentId?: string;
 }) {
   const setEditState = useEditStateContext();
   const { close } = usePopover();
   const { EncodingWaterMark } = useRestateContext();
   const codecOptions = {
     service,
+    deploymentId,
     key: serviceKey,
     command: {
       type: 'GetState' as const,

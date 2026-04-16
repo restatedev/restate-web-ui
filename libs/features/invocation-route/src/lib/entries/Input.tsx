@@ -39,6 +39,9 @@ export function Input({
   const codecOptions = entry
     ? ({
         service: invocation?.target_service_name,
+        deploymentId:
+          invocation?.pinned_deployment_id ??
+          invocation?.last_attempt_deployment_id,
         key: invocation?.target_service_key,
         handler: handler
           ? {

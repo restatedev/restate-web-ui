@@ -22,6 +22,7 @@ export interface RestateCodecCommand {
 
 export interface RestateCodecOptions {
   service?: string;
+  deploymentId?: string;
   key?: string;
   handler?: RestateCodecHandlerMetadata;
   command?: RestateCodecCommand;

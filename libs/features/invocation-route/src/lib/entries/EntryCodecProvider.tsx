@@ -26,6 +26,9 @@ function getEntryCodecTarget(entry?: JournalEntryV2, invocation?: Invocation) {
     service: invocation?.target_service_name,
     key: invocation?.target_service_key,
     handlerName: invocation?.target_handler_name,
+    deploymentId:
+      invocation?.pinned_deployment_id ??
+      invocation?.last_attempt_deployment_id,
   };
 }
 
@@ -75,7 +78,10 @@ export function EntryCodecProvider({
   entry?: JournalEntryV2;
   invocation?: Invocation;
 }>) {
-  const { service, key, handlerName } = getEntryCodecTarget(entry, invocation);
+  const { service, key, handlerName, deploymentId } = getEntryCodecTarget(
+    entry,
+    invocation,
+  );
   const { data: serviceDetails } = useServiceDetails(service ?? '', {
     enabled: Boolean(service && handlerName),
     refetchOnMount: false,
@@ -86,6 +92,7 @@ export function EntryCodecProvider({
   const options = entry
     ? ({
         service,
+        deploymentId,
         key,
         handler: handler
           ? {

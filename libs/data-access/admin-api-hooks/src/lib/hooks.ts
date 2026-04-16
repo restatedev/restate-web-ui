@@ -1720,8 +1720,48 @@ export function useEditState(
 type CodecQueryKey<Mode extends 'decode' | 'encode'> = readonly [
   value: string | undefined,
   mode: Mode,
-  codecOptions: RestateCodecOptions | undefined,
+  codecOptions: RestateCodecOptions,
 ];
+
+function resolveCodecDeploymentId(
+  service: string | undefined,
+  deploymentId: string | undefined,
+  listDeployments: ListDeploymentsData,
+) {
+  if (!deploymentId || !service || listDeployments?.deployments.has(deploymentId)) {
+    return deploymentId;
+  }
+
+  const serviceData = listDeployments?.services.get(service);
+  const latestRevision = serviceData?.sortedRevisions[0];
+  return latestRevision
+    ? serviceData?.deployments[latestRevision]?.[0]
+    : deploymentId;
+}
+
+function useResolvedCodecDeployment(codecOptions?: RestateCodecOptions) {
+  const shouldResolveDeployment = Boolean(
+    codecOptions?.service && codecOptions?.deploymentId,
+  );
+  const { data: listDeployments, isPending } = useListDeployments({
+    enabled: shouldResolveDeployment,
+    refetchOnMount: false,
+  });
+
+  const resolvedDeploymentId = resolveCodecDeploymentId(
+    codecOptions?.service,
+    codecOptions?.deploymentId,
+    listDeployments,
+  );
+
+  return {
+    codecOptions: {
+      ...(codecOptions ?? {}),
+      deploymentId: resolvedDeploymentId,
+    },
+    isPending: shouldResolveDeployment && isPending,
+  };
+}
 
 function safeParse(value: string) {
   try {
@@ -1745,10 +1785,18 @@ export function useDecodeState(
   codecOptions?: RestateCodecOptions,
 ) {
   const { decoder } = useRestateContext();
+  const {
+    codecOptions: resolvedCodecOptions,
+    isPending: codecOptionsPending,
+  } = useResolvedCodecDeployment(codecOptions);
 
   return useQueries({
     queries: state.map(({ name, value }) => ({
-      queryKey: [value, 'decode', codecOptions] as CodecQueryKey<'decode'>,
+      queryKey: [
+        value,
+        'decode',
+        resolvedCodecOptions,
+      ] as CodecQueryKey<'decode'>,
       queryFn: async ({ queryKey }: { queryKey: CodecQueryKey<'decode'> }) => {
         const [decodedValue, , decodedCodecOptions] = queryKey;
         return decoder(decodedValue, decodedCodecOptions);
@@ -1756,7 +1804,7 @@ export function useDecodeState(
       staleTime: Infinity,
       refetchOnMount: false,
       placeholderData: value,
-      enabled: isBase64,
+      enabled: Boolean(isBase64 && !codecOptionsPending),
       initialData: isBase64 ? undefined : value,
     })),
     combine: (results) => {
@@ -1771,7 +1819,8 @@ export function useDecodeState(
           version,
         },
         error: results.find((result) => result.error)?.error,
-        isPending: results.some((result) => result.isFetching),
+        isPending:
+          codecOptionsPending || results.some((result) => result.isFetching),
       };
     },
   });
@@ -1783,9 +1832,13 @@ export function useDecode(
   codecOptions?: RestateCodecOptions,
 ) {
   const { decoder } = useRestateContext();
+  const {
+    codecOptions: resolvedCodecOptions,
+    isPending: codecOptionsPending,
+  } = useResolvedCodecDeployment(codecOptions);
 
   return useQuery({
-    queryKey: [value, 'decode', codecOptions] as CodecQueryKey<'decode'>,
+    queryKey: [value, 'decode', resolvedCodecOptions] as CodecQueryKey<'decode'>,
     queryFn: ({ queryKey }: { queryKey: CodecQueryKey<'decode'> }) => {
       const [decodedValue, , decodedCodecOptions] = queryKey;
       return decoder(decodedValue, decodedCodecOptions);
@@ -1793,7 +1846,7 @@ export function useDecode(
     staleTime: Infinity,
     refetchOnMount: false,
     placeholderData: value,
-    enabled: isBase64,
+    enabled: Boolean(isBase64 && !codecOptionsPending),
     initialData: isBase64 ? undefined : value,
   });
 }
@@ -1804,9 +1857,13 @@ export function useEncode(
   codecOptions?: RestateCodecOptions,
 ) {
   const { encoder } = useRestateContext();
+  const {
+    codecOptions: resolvedCodecOptions,
+    isPending: codecOptionsPending,
+  } = useResolvedCodecDeployment(codecOptions);
 
   return useQuery({
-    queryKey: [value, 'encode', codecOptions] as CodecQueryKey<'encode'>,
+    queryKey: [value, 'encode', resolvedCodecOptions] as CodecQueryKey<'encode'>,
     queryFn: ({ queryKey }: { queryKey: CodecQueryKey<'encode'> }) => {
       const [encodedValue, , encodedCodecOptions] = queryKey;
       return encoder(encodedValue, encodedCodecOptions);
@@ -1814,7 +1871,7 @@ export function useEncode(
     staleTime: Infinity,
     refetchOnMount: false,
     placeholderData: value,
-    enabled: isBase64,
+    enabled: Boolean(isBase64 && !codecOptionsPending),
     initialData: isBase64 ? undefined : value,
   });
 }

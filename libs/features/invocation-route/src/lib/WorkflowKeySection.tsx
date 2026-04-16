@@ -104,6 +104,10 @@ export function WorkflowKeySection({
                       state={stateData?.state}
                       service={invocation?.target_service_name}
                       serviceKey={invocation?.target_service_key}
+                      deploymentId={
+                        invocation?.pinned_deployment_id ??
+                        invocation?.last_attempt_deployment_id
+                      }
                     />
                   </DropdownSection>
                 </PopoverContent>
