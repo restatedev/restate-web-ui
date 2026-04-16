@@ -14,7 +14,11 @@ type Invocation = ReturnType<
 >['data'];
 
 function getEntryCodecTarget(entry?: JournalEntryV2, invocation?: Invocation) {
-  if (entry?.type === 'Call' || entry?.type === 'OneWayCall') {
+  if (
+    entry?.type === 'Call' ||
+    entry?.type === 'OneWayCall' ||
+    entry?.type === 'AttachInvocation'
+  ) {
     return {
       service: (entry as { serviceName?: string }).serviceName,
       key: (entry as { serviceKey?: string }).serviceKey,
