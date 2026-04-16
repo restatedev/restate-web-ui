@@ -218,6 +218,8 @@
 - 2026-03-06 | self | Suspected infinite loop/hang during latest timeline-zoom tweak; rolled back `mode.ts`/`ticks.ts` delta-based coordinate-window/interval-step changes immediately and kept behavior at previous stable state for safety.
 
 - 2026-03-06 | self | When iterative visual tuning diverges, user prefers stepping back: revert code experiments first, then lock a detailed behavior spec before re-implementing.
+- 2026-04-16 | self | Tried resolving `@stoplight/elements/package.json` directly in app tooling. The patched package does not export that subpath, so `require.resolve()` throws `ERR_PACKAGE_PATH_NOT_EXPORTED`. Resolve `@stoplight/elements` itself and derive the package dir from the main entry path instead.
+- 2026-04-16 | self | Once `@stoplight/elements` is patched to export the web-component assets, `apps/web-ui` does not need duplicated copies in `public/`. Import `elements-web-components.min.js?url` and `elements-web-components.min.scoped.css?url` directly in `app/root.tsx` and let Vite emit them.
 
 - 2026-04-16 | user | For protobuf display in Monaco, preferred the editor's built-in protobuf language over a custom tokenizer. Check the installed Monaco package first and use its first-party language contribution when available.
 
