@@ -170,7 +170,7 @@ export function useServiceColumns({
         );
         return (
           <OverviewColumnMeta
-            className="pr-3"
+            className="-translate-y-1.5 pr-3"
             secondary={
               <div className="w-full">
                 <ServiceStatusBar
@@ -329,7 +329,7 @@ function OverviewColumnMeta({
       <div className="flex min-h-10.5 items-center">{primary}</div>
       <div className="flex min-w-0 items-center">
         {secondary ?? (
-          <div className="px-1.5 py-0.5 text-0.5xs leading-5 text-transparent">
+          <div className="min-h-5 px-1.5 py-0.5 text-0.5xs leading-5 text-transparent">
             <br />
           </div>
         )}
