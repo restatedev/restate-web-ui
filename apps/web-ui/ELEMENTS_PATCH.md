@@ -69,21 +69,11 @@ pnpm nx build web-ui
 
 ## License Handling
 
-`rollup-plugin-license` only sees modules that are part of the app bundle.
-The Elements web-component files are imported via `?url`, but the sidecar
-license texts are still not part of the normal bundle graph.
-
-To cover that, [vite.config.ts](/Users/nik/Developer/restate-web-ui-3/apps/web-ui/vite.config.ts:1)
-registers a client-build plugin that reads these files from the installed
-patched package:
-
-- `elements-web-components.min.js.LICENSE.txt`
-- `LICENSE`
-- `NOTICE`
-
-and appends them to:
+[vite.config.ts](/Users/nik/Developer/restate-web-ui-3/apps/web-ui/vite.config.ts:1)
+uses `rollup-plugin-license` to generate:
 
 - `dist/apps/web-ui/vendor.LICENSE.txt`
 
-The build still writes a consolidated `vendor.LICENSE.txt` for the patched
-Elements package.
+Because `@stoplight/elements` is installed as a patched package dependency, its
+package license metadata and patched `NOTICE` are picked up through the normal
+bundle license flow.
