@@ -30,7 +30,8 @@ const styles = tv({
     },
     variant: {
       secondary: '-m-1 gap-0.5 p-1',
-      primary: '-mx-1 my-0 min-h-[2.625rem] gap-2 rounded-lg px-1 py-0.5 text-base',
+      primary:
+        '-mx-1 my-0 min-h-[2.625rem] gap-2 rounded-lg px-1 py-0.5 text-base',
     },
   },
   defaultVariants: {
