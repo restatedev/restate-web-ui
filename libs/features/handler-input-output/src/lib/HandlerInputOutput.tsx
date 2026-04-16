@@ -11,6 +11,7 @@ import { JsonSchemaViewer } from '@restate/ui/api';
 import { Badge } from '@restate/ui/badge';
 import { Button } from '@restate/ui/button';
 import { DropdownSection } from '@restate/ui/dropdown';
+import { Editor } from '@restate/ui/editor';
 import { ErrorBanner } from '@restate/ui/error';
 import { Spinner } from '@restate/ui/loading';
 import {
@@ -21,7 +22,8 @@ import {
 } from '@restate/ui/popover';
 import { base64ToUint8Array } from '@restate/util/binary';
 import { tv } from '@restate/util/styles';
-import type { ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
+import type { editor } from 'monaco-editor';
 import type {
   HandlerInputOutputProtobufView,
   HandlerInputOutputView,
@@ -34,6 +36,67 @@ type HandlerInputOutputJsonSchemaPopoverView = Extract<
   HandlerInputOutputView,
   { kind: 'json-schema-popover' }
 >;
+
+const protobufEditorOptions = {
+  codeLens: false,
+  contextmenu: false,
+  copyWithSyntaxHighlighting: false,
+  folding: false,
+  glyphMargin: false,
+  guides: {
+    bracketPairs: false,
+    bracketPairsHorizontal: false,
+    highlightActiveBracketPair: false,
+    highlightActiveIndentation: false,
+    indentation: false,
+  },
+  hover: {
+    enabled: false,
+  },
+  lineDecorationsWidth: 0,
+  lineNumbers: 'off',
+  lineNumbersMinChars: 0,
+  links: false,
+  matchBrackets: 'never',
+  minimap: {
+    enabled: false,
+  },
+  occurrencesHighlight: 'off',
+  overviewRulerBorder: false,
+  overviewRulerLanes: 0,
+  padding: {
+    top: 12,
+    bottom: 12,
+  },
+  parameterHints: {
+    enabled: false,
+  },
+  quickSuggestions: false,
+  readOnlyMessage: {
+    value: '',
+  },
+  renderLineHighlight: 'none',
+  renderValidationDecorations: 'off',
+  scrollbar: {
+    alwaysConsumeMouseWheel: false,
+    handleMouseWheel: false,
+    horizontal: 'hidden',
+    horizontalScrollbarSize: 0,
+    useShadows: false,
+    vertical: 'hidden',
+    verticalScrollbarSize: 0,
+  },
+  selectionHighlight: false,
+  stickyScroll: {
+    enabled: false,
+  },
+  suggest: {
+    showInlineDetails: false,
+    snippetsPreventQuickSuggestions: false,
+  },
+  suggestOnTriggerCharacters: false,
+  wordWrap: 'off',
+} satisfies editor.IStandaloneEditorConstructionOptions;
 
 const inputOutputStyles = tv({
   base: 'contents items-center gap-1 rounded-md py-0 pl-0.5 text-2xs text-zinc-700',
@@ -212,14 +275,12 @@ function HandlerInputOutputProtobufPopoverContent({
 }: {
   protobufView: HandlerInputOutputProtobufView;
 }) {
+  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const protoFileContent = useProtobufSchemaContent(protobufView);
 
   if (protoFileContent.isPending) {
     return (
-      <div className="space-y-3 py-2">
-        <div className="flex items-center gap-2 font-mono text-0.5xs text-zinc-500">
-          Content-Type:<Badge size="sm">{protobufView.contentType}</Badge>
-        </div>
+      <div className="py-2">
         <div className="flex items-center gap-1.5 py-2 text-0.5xs text-zinc-500">
           <Spinner className="h-4 w-4" />
           Loading schema…
@@ -230,10 +291,7 @@ function HandlerInputOutputProtobufPopoverContent({
 
   if (protoFileContent.isError) {
     return (
-      <div className="space-y-3 py-2">
-        <div className="flex items-center gap-2 font-mono text-0.5xs text-zinc-500">
-          Content-Type:<Badge size="sm">{protobufView.contentType}</Badge>
-        </div>
+      <div className="py-2">
         <ErrorBanner
           error={
             protoFileContent.error instanceof Error
@@ -246,17 +304,19 @@ function HandlerInputOutputProtobufPopoverContent({
   }
 
   return (
-    <div className="space-y-3 py-2">
-      <div className="flex items-center gap-2 font-mono text-0.5xs text-zinc-500">
-        Content-Type:<Badge size="sm">{protobufView.contentType}</Badge>
-      </div>
-      <div className="max-h-[min(70vh,32rem)] overflow-auto rounded-xl border bg-zinc-50">
-        <pre
-          className="overflow-visible px-4 py-3 font-mono text-0.5xs leading-5 whitespace-pre text-zinc-700"
-          onContextMenu={(event) => event.preventDefault()}
-        >
-          {protoFileContent.data}
-        </pre>
+    <div className="py-2">
+      <div className="max-h-[min(70vh,32rem)] overflow-auto">
+        <Editor
+          className="min-w-fit [&_.monaco-editor_.margin]:bg-transparent! [&_.monaco-editor-background]:bg-transparent! [&_.overflow-guard]:bg-transparent!"
+          editorRef={editorRef}
+          fitContentHeight
+          fitContentWidth
+          formatOnMount={false}
+          language="proto"
+          options={protobufEditorOptions}
+          readonly
+          value={protoFileContent.data}
+        />
       </div>
     </div>
   );
