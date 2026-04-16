@@ -96,7 +96,7 @@ export function ServicesGridList() {
                       serviceName={service.name}
                       handlers={visibleHandlers}
                       serviceType={service.ty}
-                      className="flex flex-col gap-1 px-5 opacity-90 @3xl:grid @3xl:grid-cols-[1.5fr_2.5fr] @3xl:gap-x-8"
+                      className="flex flex-col gap-1 px-5 opacity-90 @3xl:grid @3xl:grid-cols-[1.5fr_2.5fr] @3xl:gap-x-6"
                     />
                   ) : undefined
                 }
