@@ -18,13 +18,6 @@ module.exports = [
     rules: {},
   },
   {
-    ignores: [
-      'build',
-      'public/build',
-      '.react-router',
-      'public/elements-web-components.min.js',
-      'public/elements-web-components.min.css',
-      'public/inter.css',
-    ],
+    ignores: ['build', 'public/build', '.react-router', 'public/inter.css'],
   },
 ];

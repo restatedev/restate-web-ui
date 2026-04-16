@@ -34,7 +34,7 @@ export function TimeRangeToggle({ onChange }: { onChange?: () => void }) {
       <DropdownTrigger>
         <Button
           variant="secondary"
-          className="flex items-center gap-0.5 bg-gray-50 py-0.5 pr-1.5 pl-2 text-sm font-normal text-gray-500"
+          className="flex shrink-0 items-center gap-0.5 bg-gray-50 py-0.5 pr-1.5 pl-2 text-sm font-normal text-gray-500"
         >
           {label}
           <Icon

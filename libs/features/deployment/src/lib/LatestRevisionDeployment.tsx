@@ -55,7 +55,7 @@ export function OlderRevisions({ serviceName }: { serviceName: string }) {
       <DropdownTrigger>
         <Button
           variant="icon"
-          className="relative z-10 h-auto w-auto gap-0.5 self-end rounded-lg px-1.5 py-0.5 text-0.5xs text-zinc-500 hover:bg-black/3 hover:text-zinc-700"
+          className="relative z-10 gap-0.5 self-end rounded-lg px-1.5 py-0.5 text-0.5xs text-zinc-500 hover:bg-black/3 hover:text-zinc-700"
         >
           {older.length} older{' '}
           {formatPlurals(older.length, {

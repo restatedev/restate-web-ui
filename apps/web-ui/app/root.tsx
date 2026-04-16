@@ -9,6 +9,8 @@ import {
   useNavigate,
 } from 'react-router';
 import styles from './tailwind.css?url';
+import elementsCssUrl from '@stoplight/elements/elements-web-components.min.scoped.css?url';
+import elementsJsUrl from '@stoplight/elements/elements-web-components.min.js?url';
 import type { LinksFunction, To } from 'react-router';
 import { LayoutOutlet, LayoutProvider, LayoutZone } from '@restate/ui/layout';
 import { RouterProvider } from 'react-aria-components';
@@ -71,7 +73,7 @@ export const links: LinksFunction = () => [
   // TODO: move to the its own lib
   {
     rel: 'stylesheet',
-    href: '/ui/elements-web-components.min.scoped.css',
+    href: elementsCssUrl,
   },
   {
     rel: 'stylesheet',
@@ -168,7 +170,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <ScrollRestoration />
         <Scripts />
         {/* TODO: move to its own lib */}
-        <script src="/ui/elements-web-components.min.js" async defer></script>
+        <script src={elementsJsUrl} async defer></script>
       </body>
     </html>
   );
