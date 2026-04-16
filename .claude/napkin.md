@@ -80,6 +80,8 @@
 - Don't hide UI elements (like "Now" indicator) wholesale in a mode — they may serve a real purpose in edge cases (e.g., future-scheduled traces). Fix the root cause of flicker instead.
 - For dying ticks cleanup, use inline `setTimeout` with key-guarded `setDyingTicksInfo` instead of a separate `useEffect` — avoids a reactive cleanup pattern for a one-shot timer
 - For live-follow tick interval changes, pre-schedule the switch ~300-700ms before the next expected poll (estimated from `dataUpdatedAt` cadence) and render old ticks as a short `animate-out fade-out` overlay so the poll-time coordinate jump does not coincide with interval churn
+- For admin-api hooks that reshape data, export a shared query-options helper and keep the selector in the shared `queryFn` so `useQuery` and `queryClient` callers get the same normalized data
+- Keep exported query-options helpers focused on reusable config only; hook-specific API-status gating like `useAPIStatus()` should stay in the hook, not become a required helper argument
 
 ## Patterns That Don't Work
 

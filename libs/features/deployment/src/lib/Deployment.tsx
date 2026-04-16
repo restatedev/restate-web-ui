@@ -30,7 +30,8 @@ const styles = tv({
     },
     variant: {
       secondary: '-m-1 gap-0.5 p-1',
-      primary: '-mx-1 my-0 min-h-[2.625rem] gap-2 rounded-lg px-1 py-0.5',
+      primary:
+        '-mx-1 my-0 min-h-[2.625rem] gap-2 rounded-lg px-1 py-0.5 text-base',
     },
   },
   defaultVariants: {
@@ -245,7 +246,7 @@ export function Deployment({
             >
               <Badge
                 size="xs"
-                className="relative z-[2] max-w-fit shrink-0 translate-y-px cursor-default rounded-sm py-0.5 font-mono text-2xs leading-3 font-medium"
+                className="relative z-[2] max-w-fit shrink-0 translate-y-px cursor-default rounded-sm py-0.5 font-mono text-[0.9em] leading-3 text-current"
               >
                 <Icon name={IconName.AtSign} className="mr-0.5 h-3 w-3" />
                 <div className="max-w-[20ch] truncate">
