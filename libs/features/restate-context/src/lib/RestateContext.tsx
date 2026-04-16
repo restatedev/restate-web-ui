@@ -14,10 +14,15 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
 } from 'react';
 import semverGt from 'semver/functions/gte';
-import { base64ToUtf8OrOriginal, utf8ToBase64 } from '@restate/util/binary';
 import { useQueryClient } from '@tanstack/react-query';
+import {
+  composeRestateDecoder,
+  composeRestateEncoder,
+  type RestateBinaryCodec,
+} from './codecs';
 
 export type Status = 'HEALTHY' | 'DEGRADED' | 'PENDING' | (string & {});
 export type {
@@ -25,10 +30,15 @@ export type {
   RestateCodecHandlerMetadata,
   RestateCodecOptions,
 } from '@restate/features/codec';
-export type RestateCodec = (
+export type { RestateBinaryCodec } from './codecs';
+
+type RestateStringCodec = (
   value?: string,
   options?: RestateCodecOptions,
 ) => Promise<string | undefined> | string | undefined;
+
+const EMPTY_CODECS: readonly RestateBinaryCodec[] = [];
+
 type OnboardingComponent = ComponentType<{
   className?: string;
   stage:
@@ -51,8 +61,8 @@ type RestateContext = {
   isVersionGte?: (version: string) => boolean;
   ingressUrl: string;
   baseUrl: string;
-  decoder: RestateCodec;
-  encoder: RestateCodec;
+  decoder: RestateStringCodec;
+  encoder: RestateStringCodec;
   refreshCodec?: VoidFunction;
   EncodingWaterMark?: ComponentType<{
     value?: string;
@@ -77,8 +87,8 @@ const InternalRestateContext = createContext<RestateContext>({
   status: 'PENDING',
   ingressUrl: '',
   baseUrl: '',
-  decoder: base64ToUtf8OrOriginal,
-  encoder: utf8ToBase64,
+  decoder: composeRestateDecoder(EMPTY_CODECS),
+  encoder: composeRestateEncoder(EMPTY_CODECS),
 });
 
 function InternalRestateContextProvider({
@@ -101,8 +111,8 @@ function InternalRestateContextProvider({
   isPending?: boolean;
   ingressUrl?: string;
   baseUrl?: string;
-  decoder: RestateCodec;
-  encoder: RestateCodec;
+  decoder: RestateStringCodec;
+  encoder: RestateStringCodec;
   EncodingWaterMark?: ComponentType<{
     value?: string;
     className?: string;
@@ -204,8 +214,8 @@ export function RestateContextProvider({
   ingressUrl,
   isPending,
   baseUrl,
-  decoder = base64ToUtf8OrOriginal,
-  encoder = utf8ToBase64,
+  decoder = EMPTY_CODECS,
+  encoder = EMPTY_CODECS,
   EncodingWaterMark,
   tunnel,
   GettingStarted,
@@ -220,8 +230,8 @@ export function RestateContextProvider({
   ingressUrl?: string;
   isPending?: boolean;
   baseUrl?: string;
-  decoder?: RestateCodec;
-  encoder?: RestateCodec;
+  decoder?: readonly RestateBinaryCodec[];
+  encoder?: readonly RestateBinaryCodec[];
   EncodingWaterMark?: ComponentType<{
     value?: string;
     className?: string;
@@ -236,14 +246,23 @@ export function RestateContextProvider({
   systemHealthMonitor?: { reset: () => void; cleanup: () => void };
   queryHealthCheckEnabled?: boolean;
 }>) {
+  const resolvedDecoder = useMemo(
+    () => composeRestateDecoder(decoder),
+    [decoder],
+  );
+  const resolvedEncoder = useMemo(
+    () => composeRestateEncoder(encoder),
+    [encoder],
+  );
+
   return (
     <AdminBaseURLProvider baseUrl={adminBaseUrl}>
       <InternalRestateContextProvider
         ingressUrl={ingressUrl}
         isPending={isPending}
         baseUrl={baseUrl}
-        decoder={decoder}
-        encoder={encoder}
+        decoder={resolvedDecoder}
+        encoder={resolvedEncoder}
         EncodingWaterMark={EncodingWaterMark}
         tunnel={tunnel}
         GettingStarted={GettingStarted}

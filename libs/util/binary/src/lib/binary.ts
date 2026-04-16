@@ -20,10 +20,7 @@ export function utf8ToBase64(str?: string) {
   if (!str) {
     return str;
   }
-  const bytes = new TextEncoder().encode(str); // UTF-8 → bytes
-  let binary = '';
-  bytes.forEach((b) => (binary += String.fromCharCode(b))); // bytes → binary string
-  return btoa(binary); // binary string → Base64
+  return bytesToBase64(utf8ToUint8Array(str)!);
 }
 
 export function hexToBase64(hex?: string) {
@@ -83,21 +80,32 @@ export function base64ToUint8Array(base64?: string) {
   return array;
 }
 
+export function utf8ToUint8Array(value?: string) {
+  return value === undefined ? undefined : new TextEncoder().encode(value);
+}
+
 export function binaryToUtf8(bytes: Uint8Array) {
   return new TextDecoder().decode(bytes);
+}
+
+export function uint8ArrayToUtf8OrBase64(
+  value?: Uint8Array<ArrayBufferLike>,
+) {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  const decoder = new TextDecoder('utf-8', { fatal: true });
+  try {
+    return decoder.decode(value);
+  } catch {
+    return bytesToBase64(value);
+  }
 }
 
 export function base64ToUtf8OrOriginal(base64?: string) {
   if (!base64) {
     return base64;
   }
-  const binary = atob(base64);
-  const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
-
-  const decoder = new TextDecoder('utf-8', { fatal: true });
-  try {
-    return decoder.decode(bytes);
-  } catch {
-    return base64;
-  }
+  return uint8ArrayToUtf8OrBase64(base64ToUint8Array(base64));
 }

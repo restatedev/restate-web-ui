@@ -218,6 +218,17 @@
 - 2026-03-06 | self | To avoid empty partial-interval gaps, ensure tick window includes at least the interval containing `now` (not only viewport-buffer ticks). For smoother interval-step changes, add intermediate NICE interval values (3,4,6,8,...).
 
 - 2026-03-06 | self | Suspected infinite loop/hang during latest timeline-zoom tweak; rolled back `mode.ts`/`ticks.ts` delta-based coordinate-window/interval-step changes immediately and kept behavior at previous stable state for safety.
+| 2026-04-16 | self | Reused a search path pattern from another repo and queried `cloud-apps`, which does not exist here | In this repo, scope code searches to `apps` and `libs` unless the filesystem confirms another top-level area exists |
+| 2026-04-16 | self | Assumed a nearby feature library had an existing spec file and tried to open it directly | Use `rg --files` before opening tests in this repo; many feature libs have Vitest configured but no specs yet |
+| 2026-04-16 | self | Initial codec helper overfit the API with single-codec support, string-based codec values, promise detection, and a test the user did not want | When a codec pipeline is meant to be byte-to-byte internally, keep the provider input minimal (`readonly RestateCodec[]`) and let only the composed wrapper handle string/Base64 conversion |
+| 2026-04-16 | user   | Called out unclear codec type names and asked for string/byte helpers to live in the shared binary util | Use explicit names like `RestateBinaryCodec`/`RestateStringCodec`, and keep UTF-8/Base64/Uint8Array conversion helpers in `libs/util/binary` instead of feature-local files |
+| 2026-04-16 | user   | Preferred reducer-style composition over a mutable promise accumulator for codec pipelines | When composing ordered async transforms in this repo, prefer `reduce` when it makes the pipeline read more declaratively |
+
+## Patterns That Work
+
+- 2026-04-16 | self | `libs/features/restate-context` already has Vitest wired up even without test files, so small utility-level specs are a low-friction way to lock down provider behavior changes.
+- 2026-04-16 | self | `pnpm nx test restate-context` produced no output and appeared to stall, but `pnpm exec vitest run --config libs/features/restate-context/vite.config.ts` completed immediately | When Nx test hangs for a small Vite-backed lib, run Vitest directly to validate the change and keep moving |
+- 2026-04-16 | self | Newer TS DOM typings can infer `Uint8Array<ArrayBuffer>` and `Uint8Array<ArrayBufferLike>` differently across helpers like `TextEncoder` and custom binary utils | When chaining byte helpers, give the accumulator an explicit `Promise<Uint8Array<ArrayBufferLike> | undefined>` type so async reducer assignments stay compatible |
 
 - 2026-03-06 | self | When iterative visual tuning diverges, user prefers stepping back: revert code experiments first, then lock a detailed behavior spec before re-implementing.
 - 2026-04-16 | self | Tried resolving `@stoplight/elements/package.json` directly in app tooling. The patched package does not export that subpath, so `require.resolve()` throws `ERR_PACKAGE_PATH_NOT_EXPORTED`. Resolve `@stoplight/elements` itself and derive the package dir from the main entry path instead.
