@@ -18,11 +18,6 @@ module.exports = [
     rules: {},
   },
   {
-    ignores: [
-      'build',
-      'public/build',
-      '.react-router',
-      'public/inter.css',
-    ],
+    ignores: ['build', 'public/build', '.react-router', 'public/inter.css'],
   },
 ];

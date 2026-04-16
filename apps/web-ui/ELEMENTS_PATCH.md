@@ -33,7 +33,7 @@ pnpm patch @stoplight/elements@9.0.19 --edit-dir /tmp/stoplight-elements-patch
 ```
 
 3. Replace the relevant files in `/tmp/stoplight-elements-patch` with the new
-versions:
+   versions:
 
 - `web-components.min.js`
 - `web-components.min.js.LICENSE.txt`
