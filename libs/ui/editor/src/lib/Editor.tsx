@@ -19,12 +19,22 @@ export function Editor({
   className,
   editorRef,
   readonly,
+  language,
+  options,
+  fitContentHeight,
+  fitContentWidth,
+  formatOnMount,
   onInput,
 }: {
   value?: string;
   className?: string;
   editorRef: RefObject<editor.IStandaloneCodeEditor | null>;
   readonly?: boolean;
+  language?: string;
+  options?: editor.IStandaloneEditorConstructionOptions;
+  fitContentHeight?: boolean;
+  fitContentWidth?: boolean;
+  formatOnMount?: boolean;
   onInput?: (value: string) => void;
 }) {
   if (typeof value === 'undefined') {
@@ -46,6 +56,11 @@ export function Editor({
             value={value}
             editorRef={editorRef}
             readonly={readonly}
+            language={language}
+            options={options}
+            fitContentHeight={fitContentHeight}
+            fitContentWidth={fitContentWidth}
+            formatOnMount={formatOnMount}
             onInput={onInput}
           />
         </Suspense>
@@ -65,17 +80,17 @@ class ErrorBoundary extends Component<
     this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError(_: Error): {
+  static getDerivedStateFromError(): {
     hasError: boolean;
   } {
     return { hasError: true };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  override componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('Error caught by ErrorBoundary: ', error, errorInfo);
   }
 
-  render() {
+  override render() {
     if (this.state.hasError) {
       return (
         <div className="my-1 flex w-full max-w-full min-w-0 flex-wrap items-center gap-2 truncate rounded-lg px-2 py-1 text-0.5xs text-red-500">
