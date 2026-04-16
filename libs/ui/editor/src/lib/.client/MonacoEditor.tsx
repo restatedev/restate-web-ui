@@ -6,21 +6,11 @@ export function MonacoEditor({
   value,
   editorRef,
   readonly,
-  language = 'json',
-  options,
-  fitContentHeight,
-  fitContentWidth,
-  formatOnMount = true,
   onInput,
 }: {
   value?: string;
   editorRef: RefObject<monaco.editor.IStandaloneCodeEditor | null>;
   readonly?: boolean;
-  language?: string;
-  options?: monaco.editor.IStandaloneEditorConstructionOptions;
-  fitContentHeight?: boolean;
-  fitContentWidth?: boolean;
-  formatOnMount?: boolean;
   onInput?: (value: string) => void;
 }) {
   const [el, setEl] = useState<HTMLDivElement | null>(null);
@@ -43,7 +33,7 @@ export function MonacoEditor({
     });
     const editor = monaco.editor.create(el, {
       value,
-      language,
+      language: 'json',
       folding: true,
       theme: 'restate',
       formatOnPaste: true,
@@ -82,7 +72,6 @@ export function MonacoEditor({
       scrollBeyondLastColumn: 0,
       tabSize: 2,
       renderLineHighlight: 'none',
-      ...options,
       ...(readonly && {
         readOnly: true,
         domReadOnly: true,
@@ -94,16 +83,11 @@ export function MonacoEditor({
       const contentWidth = editor.getContentWidth();
       const contentHeight = editor.getContentHeight();
 
-      if (fitContentWidth) {
-        const parentWidth = el.parentElement?.clientWidth ?? 0;
-        el.style.width = `${Math.max(contentWidth, parentWidth, 96)}px`;
-      } else {
-        el.style.width = '';
+      if (contentWidth) {
+        el.style.width = `${Math.max(contentWidth, 300)}ch`;
       }
 
-      if (fitContentHeight) {
-        el.style.height = `${Math.max(contentHeight, 42)}px`;
-      } else {
+      if (contentHeight) {
         el.style.height = `clamp(2.625rem, ${contentHeight}px, 45vh)`;
       }
 
@@ -111,11 +95,6 @@ export function MonacoEditor({
     };
 
     const formatEditor = async () => {
-      if (!formatOnMount) {
-        updateStyles();
-        return;
-      }
-
       editor.updateOptions({
         readOnly: false,
         domReadOnly: false,
@@ -126,7 +105,6 @@ export function MonacoEditor({
       ).catch(() => undefined);
 
       editor.updateOptions({
-        ...options,
         ...(readonly && {
           readOnly: true,
           domReadOnly: true,
@@ -156,35 +134,27 @@ export function MonacoEditor({
     el,
     editorRef,
     readonly,
-    language,
-    options,
-    fitContentHeight,
-    fitContentWidth,
-    formatOnMount,
     onInput,
   ]);
 
   useEffect(() => {
     const editor = editorRef.current;
-    const model = editor?.getModel();
 
-    if (!editor || !model) {
+    if (!editor) {
       return;
     }
 
     editor.updateOptions({
-      ...options,
       ...(readonly && {
         readOnly: true,
         domReadOnly: true,
       }),
     });
-    monaco.editor.setModelLanguage(model, language);
 
     if (typeof value !== 'undefined' && editor.getValue() !== value) {
       editor.setValue(value);
     }
-  }, [editorRef, readonly, language, options, value]);
+  }, [editorRef, readonly, value]);
 
   if (typeof value === 'undefined') {
     return null;

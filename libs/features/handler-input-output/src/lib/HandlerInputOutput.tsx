@@ -1,33 +1,17 @@
-import { fromBinary, fromJson } from '@bufbuild/protobuf';
-import type { JsonValue } from '@bufbuild/protobuf';
-import { useQuery } from '@tanstack/react-query';
-import {
-  FileDescriptorProtoSchema,
-  FileDescriptorSetSchema,
-} from '@bufbuild/protobuf/wkt';
-import { getProtoFileContent } from '@restate/feature/protobuf';
-import type { ProtobufTypeRef } from '@restate/feature/protobuf';
 import { JsonSchemaViewer } from '@restate/ui/api';
 import { Badge } from '@restate/ui/badge';
 import { Button } from '@restate/ui/button';
 import { DropdownSection } from '@restate/ui/dropdown';
-import { Editor } from '@restate/ui/editor';
-import { ErrorBanner } from '@restate/ui/error';
-import { Spinner } from '@restate/ui/loading';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
   usePopover,
 } from '@restate/ui/popover';
-import { base64ToUint8Array } from '@restate/util/binary';
 import { tv } from '@restate/util/styles';
-import { useRef, type ReactNode } from 'react';
-import type { editor } from 'monaco-editor';
+import type { ReactNode } from 'react';
 import type {
-  HandlerInputOutputProtobufView,
   HandlerInputOutputView,
-  HandlerSchemaMetadata,
   HandlerInputOutputLabel,
 } from './schema-metadata';
 import { getHandlerInputOutputView } from './schema-metadata';
@@ -36,67 +20,6 @@ type HandlerInputOutputJsonSchemaPopoverView = Extract<
   HandlerInputOutputView,
   { kind: 'json-schema-popover' }
 >;
-
-const protobufEditorOptions = {
-  codeLens: false,
-  contextmenu: false,
-  copyWithSyntaxHighlighting: false,
-  folding: false,
-  glyphMargin: false,
-  guides: {
-    bracketPairs: false,
-    bracketPairsHorizontal: false,
-    highlightActiveBracketPair: false,
-    highlightActiveIndentation: false,
-    indentation: false,
-  },
-  hover: {
-    enabled: false,
-  },
-  lineDecorationsWidth: 0,
-  lineNumbers: 'off',
-  lineNumbersMinChars: 0,
-  links: false,
-  matchBrackets: 'never',
-  minimap: {
-    enabled: false,
-  },
-  occurrencesHighlight: 'off',
-  overviewRulerBorder: false,
-  overviewRulerLanes: 0,
-  padding: {
-    top: 12,
-    bottom: 12,
-  },
-  parameterHints: {
-    enabled: false,
-  },
-  quickSuggestions: false,
-  readOnlyMessage: {
-    value: '',
-  },
-  renderLineHighlight: 'none',
-  renderValidationDecorations: 'off',
-  scrollbar: {
-    alwaysConsumeMouseWheel: false,
-    handleMouseWheel: false,
-    horizontal: 'hidden',
-    horizontalScrollbarSize: 0,
-    useShadows: false,
-    vertical: 'hidden',
-    verticalScrollbarSize: 0,
-  },
-  selectionHighlight: false,
-  stickyScroll: {
-    enabled: false,
-  },
-  suggest: {
-    showInlineDetails: false,
-    snippetsPreventQuickSuggestions: false,
-  },
-  suggestOnTriggerCharacters: false,
-  wordWrap: 'off',
-} satisfies editor.IStandaloneEditorConstructionOptions;
 
 const inputOutputStyles = tv({
   base: 'contents items-center gap-1 rounded-md py-0 pl-0.5 text-2xs text-zinc-700',
@@ -116,95 +39,6 @@ const inputOutputStyles = tv({
     },
   },
 });
-
-function buildProtobufTypeRef(
-  protobufView: HandlerInputOutputProtobufView,
-): ProtobufTypeRef {
-  if (protobufView.source.kind === 'inline') {
-    if (protobufView.source.format === 'google.protobuf.FileDescriptorProto') {
-      return {
-        schema: {
-          type: 'descriptor',
-          fileDescriptor:
-            protobufView.source.encoding === 'json'
-              ? fromJson(
-                  FileDescriptorProtoSchema,
-                  JSON.parse(protobufView.source.data) as JsonValue,
-                )
-              : fromBinary(
-                  FileDescriptorProtoSchema,
-                  base64ToUint8Array(protobufView.source.data),
-                ),
-        },
-        messageType: protobufView.messageType,
-      };
-    }
-
-    return {
-      schema: {
-        type: 'descriptor-set',
-        fileDescriptorSet:
-          protobufView.source.encoding === 'json'
-            ? fromJson(
-                FileDescriptorSetSchema,
-                JSON.parse(protobufView.source.data) as JsonValue,
-              )
-            : base64ToUint8Array(protobufView.source.data),
-      },
-      messageType: protobufView.messageType,
-    };
-  }
-
-  return {
-    schema: {
-      type: 'url',
-      url: protobufView.source.url,
-      format: protobufView.source.encoding,
-    },
-    messageType: protobufView.messageType,
-  };
-}
-
-function getProtobufSchemaContentQueryKey(
-  protobufView: HandlerInputOutputProtobufView,
-) {
-  if (protobufView.source.kind === 'inline') {
-    return [
-      'handler-input-output',
-      'protobuf-schema-content',
-      'message',
-      protobufView.messageType,
-      protobufView.source.kind,
-      protobufView.source.format,
-      protobufView.source.encoding,
-      protobufView.source.data,
-    ] as const;
-  }
-
-  return [
-    'handler-input-output',
-    'protobuf-schema-content',
-    'message',
-    protobufView.messageType,
-    protobufView.source.kind,
-    protobufView.source.url,
-    protobufView.source.encoding ?? null,
-  ] as const;
-}
-
-function useProtobufSchemaContent(
-  protobufView: HandlerInputOutputProtobufView,
-) {
-  return useQuery({
-    queryKey: getProtobufSchemaContentQueryKey(protobufView),
-    queryFn: async () =>
-      getProtoFileContent(buildProtobufTypeRef(protobufView), {
-        scope: 'message',
-      }),
-    retry: false,
-    staleTime: Infinity,
-  });
-}
 
 function HandlerInputOutputHidden() {
   return null;
@@ -270,58 +104,6 @@ function HandlerInputOutputPopoverShell({
   );
 }
 
-function HandlerInputOutputProtobufPopoverContent({
-  protobufView,
-}: {
-  protobufView: HandlerInputOutputProtobufView;
-}) {
-  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
-  const protoFileContent = useProtobufSchemaContent(protobufView);
-
-  if (protoFileContent.isPending) {
-    return (
-      <div className="py-2">
-        <div className="flex items-center gap-1.5 py-2 text-0.5xs text-zinc-500">
-          <Spinner className="h-4 w-4" />
-          Loading schema…
-        </div>
-      </div>
-    );
-  }
-
-  if (protoFileContent.isError) {
-    return (
-      <div className="py-2">
-        <ErrorBanner
-          error={
-            protoFileContent.error instanceof Error
-              ? protoFileContent.error
-              : new Error('Failed to load protobuf schema.')
-          }
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div className="py-2">
-      <div className="max-h-[min(70vh,32rem)] overflow-auto">
-        <Editor
-          className="min-w-fit [&_.monaco-editor_.margin]:bg-transparent! [&_.monaco-editor-background]:bg-transparent! [&_.overflow-guard]:bg-transparent!"
-          editorRef={editorRef}
-          fitContentHeight
-          fitContentWidth
-          formatOnMount={false}
-          language="proto"
-          options={protobufEditorOptions}
-          readonly
-          value={protoFileContent.data}
-        />
-      </div>
-    </div>
-  );
-}
-
 function HandlerInputOutputJsonSchemaPopoverContent({
   schema,
 }: {
@@ -366,21 +148,18 @@ export function HandlerInputOutput({
   jsonSchema,
   contentType,
   label,
-  metadata,
   renderHeaderAction,
 }: {
   className?: string;
   jsonSchema?: unknown;
   contentType: string;
   label: HandlerInputOutputLabel;
-  metadata?: HandlerSchemaMetadata;
   renderHeaderAction?: (close: () => void) => ReactNode;
 }) {
   const view: HandlerInputOutputView = getHandlerInputOutputView({
     jsonSchema,
     contentType,
     label,
-    metadata,
   });
 
   switch (view.kind) {
@@ -388,19 +167,6 @@ export function HandlerInputOutput({
       return <HandlerInputOutputHidden />;
     case 'text':
       return <HandlerInputOutputText text={view.text} />;
-    case 'protobuf-popover':
-      return (
-        <HandlerInputOutputPopoverShell
-          className={className}
-          triggerLabel={view.triggerLabel}
-          title={view.title}
-          renderHeaderAction={renderHeaderAction}
-        >
-          <HandlerInputOutputProtobufPopoverContent
-            protobufView={view.protobufView}
-          />
-        </HandlerInputOutputPopoverShell>
-      );
     case 'json-schema-popover':
       return (
         <HandlerInputOutputPopoverShell

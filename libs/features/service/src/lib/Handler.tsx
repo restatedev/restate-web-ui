@@ -85,7 +85,6 @@ export function Handler({
                 jsonSchema={handler.input_json_schema}
                 contentType={handler.input_description}
                 label="Request"
-                metadata={handler.metadata}
                 renderHeaderAction={
                   withPlayground
                     ? (close) => (
@@ -108,7 +107,6 @@ export function Handler({
                 jsonSchema={handler.output_json_schema}
                 contentType={handler.output_description}
                 label="Response"
-                metadata={handler.metadata}
                 renderHeaderAction={
                   withPlayground
                     ? (close) => (

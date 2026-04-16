@@ -35,7 +35,6 @@
       "@restate/feature/handler-input-output": [
         "libs/features/handler-input-output/src/index.ts"
       ],
-      "@restate/feature/protobuf": ["libs/features/protobuf/src/index.ts"],
       "@restate/features/batch-operations": [
         "libs/features/batch-operations/src/index.ts"
       ],

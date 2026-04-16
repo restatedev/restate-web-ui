@@ -19,22 +19,12 @@ export function Editor({
   className,
   editorRef,
   readonly,
-  language,
-  options,
-  fitContentHeight,
-  fitContentWidth,
-  formatOnMount,
   onInput,
 }: {
   value?: string;
   className?: string;
   editorRef: RefObject<editor.IStandaloneCodeEditor | null>;
   readonly?: boolean;
-  language?: string;
-  options?: editor.IStandaloneEditorConstructionOptions;
-  fitContentHeight?: boolean;
-  fitContentWidth?: boolean;
-  formatOnMount?: boolean;
   onInput?: (value: string) => void;
 }) {
   if (typeof value === 'undefined') {
@@ -56,11 +46,6 @@ export function Editor({
             value={value}
             editorRef={editorRef}
             readonly={readonly}
-            language={language}
-            options={options}
-            fitContentHeight={fitContentHeight}
-            fitContentWidth={fitContentWidth}
-            formatOnMount={formatOnMount}
             onInput={onInput}
           />
         </Suspense>
