@@ -129,13 +129,7 @@ export function MonacoEditor({
       editor.dispose();
       editorRef.current = null;
     };
-  }, [
-    value,
-    el,
-    editorRef,
-    readonly,
-    onInput,
-  ]);
+  }, [value, el, editorRef, readonly, onInput]);
 
   useEffect(() => {
     const editor = editorRef.current;
