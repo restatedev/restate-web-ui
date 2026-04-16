@@ -5,7 +5,7 @@ import { nxCopyAssetsPlugin } from '@nx/vite/plugins/nx-copy-assets.plugin';
 
 export default defineConfig({
   root: __dirname,
-  cacheDir: '../../../node_modules/.vite/libs/features/protobuf',
+  cacheDir: '../../../node_modules/.vite/libs/features/handler-input-output',
   plugins: [react(), nxViteTsPaths(), nxCopyAssetsPlugin(['*.md'])],
   test: {
     passWithNoTests: true,
@@ -15,7 +15,7 @@ export default defineConfig({
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     reporters: ['default'],
     coverage: {
-      reportsDirectory: '../../../coverage/libs/features/protobuf',
+      reportsDirectory: '../../../coverage/libs/features/handler-input-output',
       provider: 'v8',
     },
   },

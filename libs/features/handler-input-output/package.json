@@ -1,5 +1,5 @@
 {
-  "name": "@restate/feature/protobuf",
+  "name": "@restate/feature/handler-input-output",
   "version": "0.0.1",
   "dependencies": {},
   "private": true

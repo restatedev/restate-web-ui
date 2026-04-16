@@ -149,7 +149,7 @@ export function useServiceColumns({
           className="max-w-fit"
           primary={<LatestRevisionDeployment serviceName={s.name} />}
           secondary={
-            <div className="pl-8">
+            <div className="pl-7">
               <OlderRevisions serviceName={s.name} />
             </div>
           }
