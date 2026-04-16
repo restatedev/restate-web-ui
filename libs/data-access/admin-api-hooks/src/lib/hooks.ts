@@ -45,27 +45,48 @@ export const RESTARTED_FROM_HEADER = 'x-restate-restarted-from';
 
 const SERVICE_TIMESTAMP = new Map<string, Date>();
 
+type ListDeploymentsServiceData = {
+  deployments: Record<Revision, DeploymentId[]>;
+  sortedRevisions: number[];
+  revisionsSet: Set<number>;
+};
+
+export type ListDeploymentsData =
+  | {
+      services: Map<ServiceName, ListDeploymentsServiceData>;
+      deployments: Map<DeploymentId, Deployment>;
+      sortedServiceNames: ServiceName[];
+    }
+  | undefined;
+
+export type ListDeploymentsOptions = Omit<
+  UseQueryOptions<ListDeploymentsData, RestateError | Error>,
+  'queryFn' | 'queryKey'
+>;
+
+type ListDeploymentsQueryOptions = UseQueryOptions<
+  ListDeploymentsData,
+  RestateError | Error
+> & {
+  queryKey: NonNullable<
+    UseQueryOptions<ListDeploymentsData, RestateError | Error>['queryKey']
+  >;
+};
+
 function listDeploymentsSelector(
   data:
     | {
         deployments: components['schemas']['DeploymentResponse'][];
       }
     | undefined,
-) {
+): ListDeploymentsData {
   if (!data) {
     return undefined;
   }
 
   const { deployments: deploymentsFromApi } = data;
 
-  const services = new Map<
-    ServiceName,
-    {
-      deployments: Record<Revision, DeploymentId[]>;
-      sortedRevisions: number[];
-      revisionsSet: Set<number>;
-    }
-  >();
+  const services = new Map<ServiceName, ListDeploymentsServiceData>();
   const deployments = new Map<DeploymentId, Deployment>();
 
   for (const deployment of deploymentsFromApi) {
@@ -121,13 +142,6 @@ function listDeploymentsSelector(
 
   return { services, deployments, sortedServiceNames };
 }
-
-type ListDeploymentsData = ReturnType<typeof listDeploymentsSelector>;
-type ListDeploymentsOptions = Omit<
-  UseQueryOptions<ListDeploymentsData, RestateError | Error>,
-  'queryFn' | 'queryKey'
->;
-
 function listDrainedDeploymentsSelector(
   data:
     | {
@@ -138,10 +152,10 @@ function listDrainedDeploymentsSelector(
   return new Set(data?.deployment_ids ?? []);
 }
 
-export function useListDeployments(options?: ListDeploymentsOptions) {
-  const enabled = useAPIStatus();
-
-  const baseUrl = useAdminBaseUrl();
+export function getListDeploymentsQueryOptions(
+  baseUrl: string,
+  options?: ListDeploymentsOptions,
+): ListDeploymentsQueryOptions {
   const { queryFn, ...queryOptions } = adminApi(
     'query',
     '/deployments',
@@ -151,19 +165,29 @@ export function useListDeployments(options?: ListDeploymentsOptions) {
     },
   );
 
-  const results = useQuery<ListDeploymentsData>({
+  return {
     ...queryOptions,
     ...options,
     meta: { ...queryOptions.meta, ...getOverviewRefreshMeta() },
-    queryFn: (...args) =>
+    queryFn: (...args: Parameters<typeof queryFn>) =>
       Promise.resolve(queryFn(...args)).then(listDeploymentsSelector),
-    enabled: options?.enabled !== false && enabled,
+  };
+}
+
+export function useListDeployments(options?: ListDeploymentsOptions) {
+  const apiEnabled = useAPIStatus();
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = getListDeploymentsQueryOptions(baseUrl, options);
+
+  const results = useQuery<ListDeploymentsData>({
+    ...queryOptions,
+    enabled: queryOptions.enabled !== false && apiEnabled,
   });
 
   return {
     ...results,
     queryKey: queryOptions.queryKey,
-    isPending: results.isPending || !enabled,
+    isPending: results.isPending || !apiEnabled,
   };
 }
 

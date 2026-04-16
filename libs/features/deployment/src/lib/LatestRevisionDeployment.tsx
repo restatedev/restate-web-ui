@@ -82,7 +82,7 @@ export function OlderRevisions({ serviceName }: { serviceName: string }) {
                   revision={revision}
                   highlightSelection={false}
                   showLink={false}
-                  className="[&>*]:text-inherit"
+                  className="[&_.badge]:bg-black/3 [&>*]:text-inherit"
                 />
               </DropdownItem>
             ))}
