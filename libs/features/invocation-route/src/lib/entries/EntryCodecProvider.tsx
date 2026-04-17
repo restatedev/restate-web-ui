@@ -1,28 +1,55 @@
+import type { components, JournalEntryV2 } from '@restate/data-access/admin-api-spec';
 import {
   useGetInvocationJournalWithInvocationV2,
   useServiceDetails,
 } from '@restate/data-access/admin-api-hooks';
-import type { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
 import {
   CodecProvider,
   type RestateCodecOptions,
 } from '@restate/features/codec';
 import type { PropsWithChildren } from 'react';
+import { useJournalEntriesContext } from '../JournalContext';
 
 type Invocation = ReturnType<
   typeof useGetInvocationJournalWithInvocationV2
 >['data'];
 
-function getEntryCodecTarget(entry?: JournalEntryV2, invocation?: Invocation) {
-  if (
-    entry?.type === 'Call' ||
-    entry?.type === 'OneWayCall' ||
-    entry?.type === 'AttachInvocation'
-  ) {
+type ReferencedInvocationEntry = Extract<
+  JournalEntryV2,
+  {
+    category?: 'command';
+    type?: 'Call' | 'OneWayCall' | 'AttachInvocation';
+  }
+>;
+
+function isReferencedInvocationEntry(
+  entry?: JournalEntryV2,
+): entry is ReferencedInvocationEntry {
+  return (
+    entry?.category === 'command' &&
+    (entry.type === 'Call' ||
+      entry.type === 'OneWayCall' ||
+      entry.type === 'AttachInvocation')
+  );
+}
+
+function getEntryCodecTarget(
+  entry?: JournalEntryV2,
+  invocation?: Invocation,
+  referencedInvocations?: Record<
+    string,
+    components['schemas']['InvocationStatusResult'] | undefined
+  >,
+) {
+  if (isReferencedInvocationEntry(entry)) {
     return {
       service: (entry as { serviceName?: string }).serviceName,
       key: (entry as { serviceKey?: string }).serviceKey,
       handlerName: (entry as { handlerName?: string }).handlerName,
+      deploymentId: entry.invocationId
+        ? referencedInvocations?.[entry.invocationId]?.pinnedDeploymentId ??
+          referencedInvocations?.[entry.invocationId]?.lastAttemptDeploymentId
+        : undefined,
     };
   }
 
@@ -82,9 +109,11 @@ export function EntryCodecProvider({
   entry?: JournalEntryV2;
   invocation?: Invocation;
 }>) {
+  const { referencedInvocations } = useJournalEntriesContext();
   const { service, key, handlerName, deploymentId } = getEntryCodecTarget(
     entry,
     invocation,
+    referencedInvocations,
   );
   const { data: serviceDetails } = useServiceDetails(service ?? '', {
     enabled: Boolean(service && handlerName),
