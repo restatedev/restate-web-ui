@@ -519,6 +519,96 @@
         }
       }
     },
+    "/query/invocations/statuses": {
+      "post": {
+        "tags": ["query-invocations"],
+        "summary": "Get invocations statuses",
+        "description": "Get merged status and deployment ids for multiple invocations.",
+        "operationId": "get_invocations_statuses",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetInvocationsStatusRequestBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Invocation statuses",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetInvocationsStatusResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/query/invocations/cancel": {
       "post": {
         "tags": ["batch-cancel-invocations"],
@@ -2728,6 +2818,60 @@
           }
         }
       },
+      "GetInvocationsStatusRequestBody": {
+        "type": "object",
+        "required": ["invocationIds"],
+        "properties": {
+          "invocationIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "InvocationStatus": {
+        "type": "string",
+        "enum": [
+          "succeeded",
+          "failed",
+          "cancelled",
+          "killed",
+          "running",
+          "suspended",
+          "scheduled",
+          "pending",
+          "ready",
+          "paused",
+          "backing-off"
+        ]
+      },
+      "InvocationStatusResult": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/InvocationStatus"
+          },
+          "pinnedDeploymentId": {
+            "type": "string"
+          },
+          "lastAttemptDeploymentId": {
+            "type": "string"
+          }
+        }
+      },
+      "GetInvocationsStatusResponse": {
+        "type": "object",
+        "required": ["invocations"],
+        "properties": {
+          "invocations": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/InvocationStatusResult"
+            }
+          }
+        }
+      },
       "BatchInvocationsRequestBody": {
         "oneOf": [
           {
@@ -4886,20 +5030,7 @@
             "type": "string"
           },
           "status": {
-            "type": "string",
-            "enum": [
-              "succeeded",
-              "failed",
-              "cancelled",
-              "killed",
-              "running",
-              "suspended",
-              "scheduled",
-              "pending",
-              "ready",
-              "paused",
-              "backing-off"
-            ]
+            "$ref": "#/components/schemas/InvocationStatus"
           },
           "target": {
             "type": "string"

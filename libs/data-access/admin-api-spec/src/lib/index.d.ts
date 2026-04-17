@@ -515,6 +515,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/query/invocations/statuses': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Get invocations statuses
+     * @description Get merged status and deployment ids for multiple invocations.
+     */
+    post: operations['get_invocations_statuses'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/query/invocations/cancel': {
     parameters: {
       query?: never;
@@ -2109,6 +2129,32 @@ export interface components {
         order: 'ASC' | 'DESC';
       };
     };
+    GetInvocationsStatusRequestBody: {
+      invocationIds: string[];
+    };
+    /** @enum {string} */
+    InvocationStatus:
+      | 'succeeded'
+      | 'failed'
+      | 'cancelled'
+      | 'killed'
+      | 'running'
+      | 'suspended'
+      | 'scheduled'
+      | 'pending'
+      | 'ready'
+      | 'paused'
+      | 'backing-off';
+    InvocationStatusResult: {
+      status?: components['schemas']['InvocationStatus'];
+      pinnedDeploymentId?: string;
+      lastAttemptDeploymentId?: string;
+    };
+    GetInvocationsStatusResponse: {
+      invocations: {
+        [key: string]: components['schemas']['InvocationStatusResult'];
+      };
+    };
     BatchInvocationsRequestBody:
       | {
           invocationIds: string[];
@@ -3080,19 +3126,7 @@ export interface components {
       /** @enum {string} */
       invoked_by: 'ingress' | 'service' | 'restart_as_new' | 'subscription';
       restarted_from?: string;
-      /** @enum {string} */
-      status:
-        | 'succeeded'
-        | 'failed'
-        | 'cancelled'
-        | 'killed'
-        | 'running'
-        | 'suspended'
-        | 'scheduled'
-        | 'pending'
-        | 'ready'
-        | 'paused'
-        | 'backing-off';
+      status: components['schemas']['InvocationStatus'];
       target: string;
       target_handler_name: string;
       target_service_key?: string;
@@ -4871,6 +4905,78 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['InvocationsSummaryResponse'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  get_invocations_statuses: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['GetInvocationsStatusRequestBody'];
+      };
+    };
+    responses: {
+      /** @description Invocation statuses */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['GetInvocationsStatusResponse'];
         };
       };
       400: {
