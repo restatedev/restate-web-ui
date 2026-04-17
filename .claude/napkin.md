@@ -245,6 +245,10 @@
 - 2026-04-16 | self | Once `@stoplight/elements` is patched to export the web-component assets, `apps/web-ui` does not need duplicated copies in `public/`. Import `elements-web-components.min.js?url` and `elements-web-components.min.scoped.css?url` directly in `app/root.tsx` and let Vite emit them.
 
 - 2026-04-16 | user | For protobuf display in Monaco, preferred the editor's built-in protobuf language over a custom tokenizer. Check the installed Monaco package first and use its first-party language contribution when available.
+- 2026-04-17 | self | I initially modeled "latest cached invocation statuses for a reference invocation" by scanning `QueryCache` for matching batch queries. A stable side-cache key per `referenceInvocationId` is simpler: keep the normal request key for fetching, and also `setQueryData`/`getQueryData` a dedicated "latest" entry for reuse.
+- 2026-04-17 | self | Disabling a query for an empty id list felt tidy, but in TanStack it leaves the hook in an awkward idle/pending state with no data. For a bulk-status hook that can cheaply short-circuit, keep the query enabled and return an empty payload instead.
+- 2026-04-17 | user | Do not redefine `isPending` as `results.isPending || !enabled` in hooks. Let React Query's pending state mean what it already means; disabled/transport-unavailable is a separate concern.
+- 2026-04-17 | user | Avoid naming a local list `pending...` when it really means "not terminal yet". In status code, prefer names like `nonCompleted...` so they do not collide with the actual `pending` status value.
 
 - 2026-04-15 | self | In `Deployment`, `TruncateWithTooltip` copies its `copyText` prop, not necessarily the visible label, so `showEndpoint={false}` can still support an endpoint copy action without changing the displayed text.
 
@@ -432,3 +436,7 @@
 - 2026-04-17 | self | When enriching journal entries with linked invocation metadata from `sys_invocation`, the lookup query still needs `id` in the select list even if the requested payload is mostly status/deployment columns; otherwise there is no reliable way to map rows back to `Call`/`OneWayCall`/`AttachInvocation` entries.
 - 2026-04-17 | user | Prefer a dedicated bulk query endpoint for invocation status/deployment lookups over expanding `getInvocationJournalV2`. Keep journal payloads focused and move cross-invocation lookup concerns into their own `/query/invocations/*` API.
 - 2026-04-17 | user | For bulk invocation lookups keyed by ids already held by the caller, prefer a response map (`Record<id, value>`) over an array that repeats `invocationId` inside each item.
+- 2026-04-17 | self | For the bulk invocation-status hook, only reuse cached entries whose merged status is terminal for that endpoint (`succeeded` or `failed`). Everything else should stay in the next request so status/deployment changes still come through.
+- 2026-04-17 | user | For bulk invocation-status cache reuse, prefer only the most recently updated cached batch over merging every cached batch. It is a simpler heuristic even if it misses some older completed ids.
+- 2026-04-17 | user | `useGetInvocationsStatus` should accept an optional reference invocation id that affects only the query key/cache partition, not the request payload. Cache reuse should stay scoped to that same reference id.
+- 2026-04-17 | user | If a value is meant to partition query cache but not change the request body, prefer adding it as a real optional query parameter in the API contract over inventing a synthetic `resolvedPath`.

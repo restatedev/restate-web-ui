@@ -4959,7 +4959,9 @@ export interface operations {
   };
   get_invocations_statuses: {
     parameters: {
-      query?: never;
+      query?: {
+        referenceInvocationId?: string;
+      };
       header?: never;
       path?: never;
       cookie?: never;

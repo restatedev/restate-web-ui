@@ -525,6 +525,16 @@
         "summary": "Get invocations statuses",
         "description": "Get merged status and deployment ids for multiple invocations.",
         "operationId": "get_invocations_statuses",
+        "parameters": [
+          {
+            "name": "referenceInvocationId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {

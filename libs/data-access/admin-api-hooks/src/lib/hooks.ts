@@ -648,6 +648,116 @@ export function useSummaryInvocations(
   return { ...results, queryKey: queryOptions.queryKey };
 }
 
+function isCompletedInvocationStatus(
+  status?: components['schemas']['InvocationStatus'],
+) {
+  return status === 'succeeded' || status === 'failed';
+}
+
+type GetInvocationsStatusData =
+  operations['get_invocations_statuses']['responses']['200']['content']['application/json'];
+
+export function useGetInvocationsStatus(
+  invocationIds: string[],
+  referenceInvocationId?: string,
+  options?: HookQueryOptions<'/query/invocations/statuses', 'post'>,
+) {
+  const enabled = useAPIStatus();
+  const baseUrl = useAdminBaseUrl();
+  const queryClient = useQueryClient();
+  const queryInvocationIds = [
+    ...new Set(invocationIds.filter((invocationId) => invocationId.length > 0)),
+  ];
+  const latestQueryKey = [
+    '/query/invocations/statuses/latest',
+    {
+      baseUrl,
+      method: 'post' as const,
+      referenceInvocationId,
+    },
+  ] as const;
+  const queryOptions = adminApi(
+    'query',
+    '/query/invocations/statuses',
+    'post',
+    {
+      baseUrl,
+      parameters: {
+        query: {
+          referenceInvocationId,
+        },
+      },
+      body: {
+        invocationIds: queryInvocationIds,
+      },
+    },
+  );
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+    queryFn: async (context) => {
+      const latestData =
+        queryClient.getQueryData<GetInvocationsStatusData>(latestQueryKey) ?? {
+          invocations: {},
+        };
+      const cachedInvocations = latestData.invocations;
+      const completedInvocations = Object.fromEntries(
+        queryInvocationIds.flatMap((invocationId) =>
+          isCompletedInvocationStatus(cachedInvocations[invocationId]?.status)
+            ? [[invocationId, cachedInvocations[invocationId]]]
+            : [],
+        ),
+      );
+      const nonCompletedInvocationIds = queryInvocationIds.filter(
+        (invocationId) =>
+          !isCompletedInvocationStatus(cachedInvocations[invocationId]?.status),
+      );
+
+      if (nonCompletedInvocationIds.length === 0) {
+        return { invocations: completedInvocations };
+      }
+
+      const fetchedData = (await adminApi(
+        'query',
+        '/query/invocations/statuses',
+        'post',
+        {
+          baseUrl,
+          parameters: {
+            query: {
+              referenceInvocationId,
+            },
+          },
+          body: {
+            invocationIds: nonCompletedInvocationIds,
+          },
+        },
+      ).queryFn(context)) ?? { invocations: {} };
+      const data = {
+        invocations: {
+          ...fetchedData.invocations,
+          ...completedInvocations,
+        },
+      };
+      queryClient.setQueryData(latestQueryKey, {
+        invocations: {
+          ...latestData.invocations,
+          ...data.invocations,
+        },
+      });
+      return data;
+    },
+    enabled:
+      options?.enabled !== false && enabled,
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+  };
+}
+
 export function useModifyService(
   service: string,
   options?: HookMutationOptions<'/services/{service}', 'patch'>,
