@@ -32,6 +32,7 @@ import {
   batchResumeInvocations,
   batchRestartAsNewInvocations,
   countInvocations,
+  getInvocationsStatus,
   summaryInvocations,
   getPausedError,
   listDrainedDeployments,
@@ -50,6 +51,7 @@ type BoundHandlers = {
     sampleSize?: number,
     includeDuration?: boolean,
   ) => Promise<Response>;
+  getInvocationsStatus: (invocationIds: string[]) => Promise<Response>;
   getInvocation: (invocationId: string) => Promise<Response>;
   getInvocationJournal: (invocationId: string) => Promise<Response>;
   getJournalEntryV2: (
@@ -102,6 +104,7 @@ function bindHandlers(context: QueryContext): BoundHandlers {
   return {
     countInvocations: countInvocations.bind(context),
     summaryInvocations: summaryInvocations.bind(context),
+    getInvocationsStatus: getInvocationsStatus.bind(context),
     listInvocations: listInvocations.bind(context),
     getInvocation: getInvocation.bind(context),
     getInvocationJournal: getInvocationJournal.bind(context),
@@ -167,6 +170,7 @@ export const routes = createRoutes('/query', {
     list: { method: 'POST', pattern: '/invocations' },
     count: { method: 'POST', pattern: '/invocations/count' },
     summary: { method: 'POST', pattern: '/invocations/summary' },
+    statuses: { method: 'POST', pattern: '/invocations/statuses' },
     get: { method: 'GET', pattern: '/invocations/:invocationId' },
     journalEntry: {
       method: 'GET',
@@ -259,6 +263,14 @@ router.map(routes, {
           sampleSize,
           includeDuration,
         );
+      },
+      async statuses(ctx) {
+        const { getInvocationsStatus } = ctx.storage.get(handlersKey);
+        const {
+          invocationIds = [],
+        }: components['schemas']['GetInvocationsStatusRequestBody'] =
+          await ctx.request.json();
+        return getInvocationsStatus(invocationIds);
       },
       async get(ctx) {
         const { getInvocation } = ctx.storage.get(handlersKey);
