@@ -125,8 +125,7 @@ function getReferencedInvocationIds(
       Object.values(data ?? {}).flatMap(
         (invocation) =>
           invocation?.journal?.entries?.flatMap((entry) =>
-            isReferencedInvocationEntry(entry) &&
-            entry.invocationId
+            isReferencedInvocationEntry(entry) && entry.invocationId
               ? [entry.invocationId]
               : [],
           ) ?? [],
@@ -368,13 +367,13 @@ export function JournalV2({
           invocationIds={invocationIds}
           addInvocationId={addInvocationId}
           removeInvocationId={removeInvocationId}
-                  dataUpdatedAt={dataUpdatedAt}
-                  isPending={isPending}
-                  error={apiError}
-                  referencedInvocations={referencedInvocationsData?.invocations}
-                  areAllInvocationsCompleted={areAllInvocationsCompleted}
-                  isLive={isLive}
-                  isCompact={isCompact}
+          dataUpdatedAt={dataUpdatedAt}
+          isPending={isPending}
+          error={apiError}
+          referencedInvocations={referencedInvocationsData?.invocations}
+          areAllInvocationsCompleted={areAllInvocationsCompleted}
+          isLive={isLive}
+          isCompact={isCompact}
         >
           <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
             <Suspense

@@ -697,10 +697,11 @@ export function useGetInvocationsStatus(
     ...queryOptions,
     ...options,
     queryFn: async (context) => {
-      const latestData =
-        queryClient.getQueryData<GetInvocationsStatusData>(latestQueryKey) ?? {
-          invocations: {},
-        };
+      const latestData = queryClient.getQueryData<GetInvocationsStatusData>(
+        latestQueryKey,
+      ) ?? {
+        invocations: {},
+      };
       const cachedInvocations = latestData.invocations;
       const completedInvocations = Object.fromEntries(
         queryInvocationIds.flatMap((invocationId) =>
@@ -748,8 +749,7 @@ export function useGetInvocationsStatus(
       });
       return data;
     },
-    enabled:
-      options?.enabled !== false && enabled,
+    enabled: options?.enabled !== false && enabled,
   });
 
   return {

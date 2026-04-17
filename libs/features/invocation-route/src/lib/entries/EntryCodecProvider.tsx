@@ -1,4 +1,7 @@
-import type { components, JournalEntryV2 } from '@restate/data-access/admin-api-spec';
+import type {
+  components,
+  JournalEntryV2,
+} from '@restate/data-access/admin-api-spec';
 import {
   useGetInvocationJournalWithInvocationV2,
   useServiceDetails,
@@ -47,8 +50,8 @@ function getEntryCodecTarget(
       key: (entry as { serviceKey?: string }).serviceKey,
       handlerName: (entry as { handlerName?: string }).handlerName,
       deploymentId: entry.invocationId
-        ? referencedInvocations?.[entry.invocationId]?.pinnedDeploymentId ??
-          referencedInvocations?.[entry.invocationId]?.lastAttemptDeploymentId
+        ? (referencedInvocations?.[entry.invocationId]?.pinnedDeploymentId ??
+          referencedInvocations?.[entry.invocationId]?.lastAttemptDeploymentId)
         : undefined,
     };
   }
