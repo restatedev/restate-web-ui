@@ -54,11 +54,31 @@ async function getEncodedPlaygroundBody(
   return base64ToUint8Array(encodedBody);
 }
 
+function isRestateSendResponse(response: Response) {
+  const contentType = response.headers
+    .get('Content-Type')
+    ?.split(';')
+    .at(0)
+    ?.trim()
+    .toLowerCase();
+  const restateId = response.headers.get('X-Restate-Id');
+
+  return (
+    response.url.endsWith('/send') &&
+    contentType === 'application/json' &&
+    restateId?.startsWith('inv_') === true
+  );
+}
+
 async function getDecodedPlaygroundResponse(
   response: Response,
   decoder: RestateStringCodec,
 ) {
-  if ([204, 205, 304].includes(response.status)) {
+  if (
+    !response.ok ||
+    [204, 205, 304].includes(response.status) ||
+    isRestateSendResponse(response)
+  ) {
     return response;
   }
 
