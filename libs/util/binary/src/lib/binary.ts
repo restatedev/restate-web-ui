@@ -88,6 +88,12 @@ export function binaryToUtf8(bytes: Uint8Array) {
   return new TextDecoder().decode(bytes);
 }
 
+export function uint8ArrayToUtf8OrBase64(
+  value: Uint8Array<ArrayBufferLike>,
+): string;
+export function uint8ArrayToUtf8OrBase64(
+  value?: Uint8Array<ArrayBufferLike>,
+): string | undefined;
 export function uint8ArrayToUtf8OrBase64(value?: Uint8Array<ArrayBufferLike>) {
   if (value === undefined) {
     return undefined;

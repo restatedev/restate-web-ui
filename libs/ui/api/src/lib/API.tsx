@@ -1,7 +1,8 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-import { useId, Component, Suspense, lazy } from 'react';
+import { useId, Component, Suspense, lazy, useEffect, useRef } from 'react';
 import type { ErrorInfo, PropsWithChildren } from 'react';
+import { useRestateContext } from '@restate/features/restate-context';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Spinner } from '@restate/ui/loading';
 import { tv } from '@restate/util/styles';
@@ -29,14 +30,30 @@ export const API = ({
   layout?: 'sidebar' | 'responsive' | 'stacked';
 }) => {
   const id = useId();
+  const { playgroundFetcher } = useRestateContext();
+  const apiRef = useRef(null);
+
+  useEffect(() => {
+    const element = apiRef.current;
+    if (!element) {
+      return;
+    }
+    element.tryItFetcher = playgroundFetcher;
+
+    return () => {
+      if (element.tryItFetcher === playgroundFetcher) {
+        element.tryItFetcher = undefined;
+      }
+    };
+  }, [playgroundFetcher]);
 
   return (
     <elements-api
+      ref={apiRef}
       id={id}
       apiDescriptionDocument={apiDescriptionDocument}
       router="hash"
       layout={layout}
-      tryItCredentialsPolicy="include"
       className="spotlight"
     />
   );
