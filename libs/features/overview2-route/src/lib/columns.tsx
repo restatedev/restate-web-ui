@@ -184,26 +184,39 @@ export function useServiceColumns({
               </div>
             }
             primary={
-              serviceTotal > 0 ? (
-                <Link
-                  href={toServiceInvocationsHref(baseUrl, s.name, {
-                    existingParams: linkParams,
-                  })}
-                  variant="secondary"
-                  className="relative z-10 inline-flex w-auto min-w-0 items-center gap-0.5 truncate rounded-lg border-none bg-transparent px-1.5 py-0.5 text-0.5xs text-zinc-500 no-underline shadow-none hover:bg-black/3 hover:text-zinc-700"
-                >
-                  {formatNumber(serviceTotal, true)}{' '}
-                  {formatPlurals(serviceTotal, {
-                    one: 'invocation',
-                    other: 'invocations',
-                  })}
-                  <Icon name={IconName.ChevronRight} className="h-4 w-4" />
-                </Link>
-              ) : (
-                <div className="z-10 inline-flex min-w-0 items-center px-1.5 py-0.5 text-0.5xs text-gray-400">
-                  No invocations
-                </div>
-              )
+              <>
+                {isSummaryError && (
+                  <div>
+                    <br />
+                  </div>
+                )}
+                {isSummaryLoading && (
+                  <div className="min-w-28 animate-pulse rounded-lg bg-gray-200/50">
+                    <br />
+                  </div>
+                )}
+                {serviceTotal > 0 && !isSummaryError && !isSummaryLoading && (
+                  <Link
+                    href={toServiceInvocationsHref(baseUrl, s.name, {
+                      existingParams: linkParams,
+                    })}
+                    variant="secondary"
+                    className="relative z-10 inline-flex w-auto min-w-0 items-center gap-0.5 truncate rounded-lg border-none bg-transparent px-1.5 py-0.5 text-0.5xs text-zinc-500 no-underline shadow-none hover:bg-black/3 hover:text-zinc-700"
+                  >
+                    {formatNumber(serviceTotal, true)}{' '}
+                    {formatPlurals(serviceTotal, {
+                      one: 'invocation',
+                      other: 'invocations',
+                    })}
+                    <Icon name={IconName.ChevronRight} className="h-4 w-4" />
+                  </Link>
+                )}{' '}
+                {serviceTotal === 0 && !isSummaryError && !isSummaryLoading && (
+                  <div className="z-10 inline-flex min-w-0 items-center px-1.5 py-0.5 text-0.5xs text-gray-400">
+                    No invocations
+                  </div>
+                )}
+              </>
             }
           />
         );

@@ -22,6 +22,7 @@ import {
   STATUS_LABELS,
   DEFAULT_STYLE,
 } from './constants';
+import { tv } from '@restate/util/styles';
 
 function getServiceStatuses(
   serviceName: string,
@@ -53,6 +54,15 @@ function getIssuesByStatus(serviceIssues: ServiceIssue[]) {
   return map;
 }
 
+const styles = tv({
+  base: 'flex h-3 gap-1 overflow-hidden rounded-lg border border-gray-200 bg-gray-100 p-0.5 [&:not(:has(*))]:h-2.5',
+  variants: {
+    isLoading: {
+      true: 'animate-pulse',
+      false: '',
+    },
+  },
+});
 export function ServiceStatusBar({
   serviceName,
   byServiceAndStatus,
@@ -77,7 +87,7 @@ export function ServiceStatusBar({
   const total = statuses.reduce((sum, s) => sum + s.count, 0);
   const issuesByStatus = getIssuesByStatus(serviceIssues);
 
-  if (isSummaryError || isSummaryLoading) return null;
+  if (isSummaryError) return <div className="h-3" />;
 
   const tooltipContent = (
     <div className="flex flex-col">
@@ -159,7 +169,7 @@ export function ServiceStatusBar({
 
   return (
     <HoverTooltip content={tooltipContent} size="lg">
-      <div className="flex h-3 gap-1 overflow-hidden rounded-lg border border-gray-200 bg-gray-100 p-0.5 [&:not(:has(*))]:h-2.5">
+      <div className={styles({ isLoading: isSummaryLoading })}>
         {statuses.map((s) => (
           <div
             key={s.name}
