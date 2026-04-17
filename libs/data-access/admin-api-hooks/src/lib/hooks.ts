@@ -1728,7 +1728,11 @@ function resolveCodecDeploymentId(
   deploymentId: string | undefined,
   listDeployments: ListDeploymentsData,
 ) {
-  if (!deploymentId || !service || listDeployments?.deployments.has(deploymentId)) {
+  if (
+    !deploymentId ||
+    !service ||
+    listDeployments?.deployments.has(deploymentId)
+  ) {
     return deploymentId;
   }
 
@@ -1785,10 +1789,8 @@ export function useDecodeState(
   codecOptions?: RestateCodecOptions,
 ) {
   const { decoder } = useRestateContext();
-  const {
-    codecOptions: resolvedCodecOptions,
-    isPending: codecOptionsPending,
-  } = useResolvedCodecDeployment(codecOptions);
+  const { codecOptions: resolvedCodecOptions, isPending: codecOptionsPending } =
+    useResolvedCodecDeployment(codecOptions);
 
   return useQueries({
     queries: state.map(({ name, value }) => ({
@@ -1832,13 +1834,15 @@ export function useDecode(
   codecOptions?: RestateCodecOptions,
 ) {
   const { decoder } = useRestateContext();
-  const {
-    codecOptions: resolvedCodecOptions,
-    isPending: codecOptionsPending,
-  } = useResolvedCodecDeployment(codecOptions);
+  const { codecOptions: resolvedCodecOptions, isPending: codecOptionsPending } =
+    useResolvedCodecDeployment(codecOptions);
 
   return useQuery({
-    queryKey: [value, 'decode', resolvedCodecOptions] as CodecQueryKey<'decode'>,
+    queryKey: [
+      value,
+      'decode',
+      resolvedCodecOptions,
+    ] as CodecQueryKey<'decode'>,
     queryFn: ({ queryKey }: { queryKey: CodecQueryKey<'decode'> }) => {
       const [decodedValue, , decodedCodecOptions] = queryKey;
       return decoder(decodedValue, decodedCodecOptions);
@@ -1857,13 +1861,15 @@ export function useEncode(
   codecOptions?: RestateCodecOptions,
 ) {
   const { encoder } = useRestateContext();
-  const {
-    codecOptions: resolvedCodecOptions,
-    isPending: codecOptionsPending,
-  } = useResolvedCodecDeployment(codecOptions);
+  const { codecOptions: resolvedCodecOptions, isPending: codecOptionsPending } =
+    useResolvedCodecDeployment(codecOptions);
 
   return useQuery({
-    queryKey: [value, 'encode', resolvedCodecOptions] as CodecQueryKey<'encode'>,
+    queryKey: [
+      value,
+      'encode',
+      resolvedCodecOptions,
+    ] as CodecQueryKey<'encode'>,
     queryFn: ({ queryKey }: { queryKey: CodecQueryKey<'encode'> }) => {
       const [encodedValue, , encodedCodecOptions] = queryKey;
       return encoder(encodedValue, encodedCodecOptions);
