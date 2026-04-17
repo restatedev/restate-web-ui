@@ -33,18 +33,10 @@ export function composeRestateDecoder(
 ): RestateStringCodec {
   return (value, options) => {
     return codecs
-      .reduce<Promise<RestateBinaryPayload | undefined>>(
-        (currentValue, codec) =>
-          currentValue.then((resolvedValue) =>
-            Promise.resolve(codec(resolvedValue, options)),
-          ),
-        Promise.resolve(
-          value === undefined ? undefined : base64ToUint8Array(value),
-        ),
-      )
-      .then((resolvedValue) =>
-      uint8ArrayToUtf8OrBase64(resolvedValue),
-      );
+      .reduce<
+        Promise<RestateBinaryPayload | undefined>
+      >((currentValue, codec) => currentValue.then((resolvedValue) => Promise.resolve(codec(resolvedValue, options))), Promise.resolve(value === undefined ? undefined : base64ToUint8Array(value)))
+      .then((resolvedValue) => uint8ArrayToUtf8OrBase64(resolvedValue));
   };
 }
 
@@ -59,15 +51,11 @@ export function composeRestateEncoder(
 ): RestateStringCodec {
   return (value, options) => {
     return codecs
-      .reduce<Promise<RestateBinaryPayload | undefined>>(
-        (currentValue, codec) =>
-          currentValue.then((resolvedValue) =>
-            Promise.resolve(codec(resolvedValue, options)),
-          ),
-        Promise.resolve(utf8ToUint8Array(value)),
-      )
+      .reduce<
+        Promise<RestateBinaryPayload | undefined>
+      >((currentValue, codec) => currentValue.then((resolvedValue) => Promise.resolve(codec(resolvedValue, options))), Promise.resolve(utf8ToUint8Array(value)))
       .then((resolvedValue) =>
-      resolvedValue === undefined ? undefined : bytesToBase64(resolvedValue),
+        resolvedValue === undefined ? undefined : bytesToBase64(resolvedValue),
       );
   };
 }
