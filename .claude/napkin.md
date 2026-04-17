@@ -249,6 +249,7 @@
 - 2026-04-17 | self | Disabling a query for an empty id list felt tidy, but in TanStack it leaves the hook in an awkward idle/pending state with no data. For a bulk-status hook that can cheaply short-circuit, keep the query enabled and return an empty payload instead.
 - 2026-04-17 | user | Do not redefine `isPending` as `results.isPending || !enabled` in hooks. Let React Query's pending state mean what it already means; disabled/transport-unavailable is a separate concern.
 - 2026-04-17 | user | Avoid naming a local list `pending...` when it really means "not terminal yet". In status code, prefer names like `nonCompleted...` so they do not collide with the actual `pending` status value.
+- 2026-04-17 | self | `JournalEntryV2` is a broad union; when reading entry-specific fields like `invocationId`, add a real type guard for the target command variants instead of relying on `type` checks alone and hoping TS narrows enough.
 
 - 2026-04-15 | self | In `Deployment`, `TruncateWithTooltip` copies its `copyText` prop, not necessarily the visible label, so `showEndpoint={false}` can still support an endpoint copy action without changing the displayed text.
 

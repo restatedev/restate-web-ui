@@ -1,4 +1,7 @@
-import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
+import type {
+  components,
+  JournalEntryV2,
+} from '@restate/data-access/admin-api-spec';
 import {
   Dispatch,
   lazy,
@@ -36,6 +39,7 @@ import { tv } from '@restate/util/styles';
 import { Retention } from './Retention';
 import {
   RESTARTED_FROM_HEADER,
+  useGetInvocationsStatus,
   useGetInvocationsJournalWithInvocationsV2,
   useGetJournalEntryPayloads,
   useListSubscriptions,
@@ -94,6 +98,55 @@ const compactStyles = tv({
 
 const LIVE_EDGE_THRESHOLD_MS = 500;
 
+type ReferencedInvocationEntry = Extract<
+  JournalEntryV2,
+  {
+    category?: 'command';
+    type?: 'Call' | 'OneWayCall' | 'AttachInvocation';
+  }
+>;
+
+function isReferencedInvocationEntry(
+  entry?: JournalEntryV2,
+): entry is ReferencedInvocationEntry {
+  return (
+    entry?.category === 'command' &&
+    (entry.type === 'Call' ||
+      entry.type === 'OneWayCall' ||
+      entry.type === 'AttachInvocation')
+  );
+}
+
+function getReferencedInvocationIds(
+  data?: ReturnType<typeof useGetInvocationsJournalWithInvocationsV2>['data'],
+) {
+  return [
+    ...new Set(
+      Object.values(data ?? {}).flatMap(
+        (invocation) =>
+          invocation?.journal?.entries?.flatMap((entry) =>
+            isReferencedInvocationEntry(entry) &&
+            entry.invocationId
+              ? [entry.invocationId]
+              : [],
+          ) ?? [],
+      ),
+    ),
+  ];
+}
+
+function hasNonCompletedReferencedInvocations(
+  invocations?: Record<
+    string,
+    components['schemas']['InvocationStatusResult'] | undefined
+  >,
+) {
+  return Object.values(invocations ?? {}).some(
+    (invocation) =>
+      invocation?.status !== 'succeeded' && invocation?.status !== 'failed',
+  );
+}
+
 export function JournalV2({
   invocationId,
   className,
@@ -142,6 +195,28 @@ export function JournalV2({
     refetchOnWindowFocus: false,
   });
   const { data: subscriptions } = useListSubscriptions();
+  const referencedInvocationIds = getReferencedInvocationIds(data);
+  const { data: referencedInvocationsData } = useGetInvocationsStatus(
+    referencedInvocationIds,
+    invocationId,
+    {
+      refetchOnMount: true,
+      staleTime: 0,
+      refetchInterval(query) {
+        if (
+          isLive &&
+          (query.state.status !== 'success' ||
+            hasNonCompletedReferencedInvocations(query.state.data?.invocations))
+        ) {
+          return 1000;
+        }
+
+        return false;
+      },
+      refetchIntervalInBackground: false,
+      refetchOnWindowFocus: false,
+    },
+  );
 
   const addInvocationId = useCallback(
     (id: string) => {
@@ -293,12 +368,13 @@ export function JournalV2({
           invocationIds={invocationIds}
           addInvocationId={addInvocationId}
           removeInvocationId={removeInvocationId}
-          dataUpdatedAt={dataUpdatedAt}
-          isPending={isPending}
-          error={apiError}
-          areAllInvocationsCompleted={areAllInvocationsCompleted}
-          isLive={isLive}
-          isCompact={isCompact}
+                  dataUpdatedAt={dataUpdatedAt}
+                  isPending={isPending}
+                  error={apiError}
+                  referencedInvocations={referencedInvocationsData?.invocations}
+                  areAllInvocationsCompleted={areAllInvocationsCompleted}
+                  isLive={isLive}
+                  isCompact={isCompact}
         >
           <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
             <Suspense
@@ -611,6 +687,7 @@ function TimelineEngineJournalBridge({
   dataUpdatedAt,
   isPending,
   error,
+  referencedInvocations,
   areAllInvocationsCompleted,
   isLive,
   isCompact,
@@ -622,6 +699,10 @@ function TimelineEngineJournalBridge({
   dataUpdatedAt: number;
   isPending: Record<string, boolean | undefined>;
   error?: Record<string, Error | null | undefined>;
+  referencedInvocations?: Record<
+    string,
+    components['schemas']['InvocationStatusResult'] | undefined
+  >;
   areAllInvocationsCompleted: boolean;
   isLive: boolean;
   isCompact: boolean;
@@ -638,6 +719,7 @@ function TimelineEngineJournalBridge({
       dataUpdatedAt={dataUpdatedAt}
       isPending={isPending}
       error={error}
+      referencedInvocations={referencedInvocations}
       isLive={!areAllInvocationsCompleted && isLive}
       isCompact={isCompact}
     >

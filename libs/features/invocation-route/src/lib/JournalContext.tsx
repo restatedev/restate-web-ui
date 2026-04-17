@@ -1,3 +1,4 @@
+import type { components } from '@restate/data-access/admin-api-spec';
 import {
   createContext,
   PropsWithChildren,
@@ -12,9 +13,14 @@ const JournalEntriesContext = createContext<{
   removeInvocationId?: (id: string) => void;
   isPending?: Record<string, boolean | undefined>;
   error?: Record<string, Error | null | undefined>;
+  referencedInvocations?: Record<
+    string,
+    components['schemas']['InvocationStatusResult'] | undefined
+  >;
   isCompact: boolean;
 }>({
   invocationIds: [],
+  referencedInvocations: {},
   isCompact: true,
 });
 
@@ -43,6 +49,7 @@ export function JournalContextProvider({
   cancelTime,
   isPending,
   error,
+  referencedInvocations,
   containerRef,
   isLive,
   isCompact,
@@ -56,6 +63,10 @@ export function JournalContextProvider({
   dataUpdatedAt: number;
   isPending?: Record<string, boolean | undefined>;
   error?: Record<string, Error | null | undefined>;
+  referencedInvocations?: Record<
+    string,
+    components['schemas']['InvocationStatusResult'] | undefined
+  >;
   containerRef?: RefObject<HTMLDivElement | null>;
   isLive: boolean;
   isCompact: boolean;
@@ -67,6 +78,7 @@ export function JournalContextProvider({
       removeInvocationId,
       isPending,
       error,
+      referencedInvocations,
       isCompact,
     }),
     [
@@ -75,6 +87,7 @@ export function JournalContextProvider({
       removeInvocationId,
       isPending,
       error,
+      referencedInvocations,
       isCompact,
     ],
   );
