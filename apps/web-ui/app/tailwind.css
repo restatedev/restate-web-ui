@@ -134,4 +134,14 @@
   }
 
   --animate-pulseButton: pulseButton 1.5s ease-in-out infinite;
+
+  @keyframes scanlineSweep {
+    0% {
+      background-position: 100% 0;
+    }
+    100% {
+      background-position: 0% 0;
+    }
+  }
+  --animate-scanlineSweep: scanlineSweep 1250ms ease-in-out infinite;
 }

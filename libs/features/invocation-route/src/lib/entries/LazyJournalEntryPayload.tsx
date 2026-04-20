@@ -253,7 +253,7 @@ function PayloadPopover({
                       ))}
                     </Nav>
                   ) : (
-                    <span>{title}</span>
+                    <span className="inline-block pl-2">{title}</span>
                   )}
                   <div className="ml-auto">{waterMark}</div>
                   <Portal className="ml-2" id="expression-value" />
