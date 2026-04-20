@@ -9,3 +9,5 @@ declare module globalThis {
     | undefined
     | Record<string, PromiseWithResolvers<boolean> | null>;
 }
+
+declare module '*.css';

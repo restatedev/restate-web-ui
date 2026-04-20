@@ -4,10 +4,10 @@
     "outDir": "../../../dist/out-tsc",
     "types": [
       "node",
-
+      "../../../@types/global-env.d.ts",
       "@nx/react/typings/cssmodule.d.ts",
-      "@nx/react/typings/image.d.ts"
-    ]
+      "@nx/react/typings/image.d.ts",
+    ],
   },
   "exclude": [
     "**/*.spec.ts",
@@ -17,7 +17,7 @@
     "**/*.spec.js",
     "**/*.test.js",
     "**/*.spec.jsx",
-    "**/*.test.jsx"
+    "**/*.test.jsx",
   ],
-  "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"]
+  "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
 }
