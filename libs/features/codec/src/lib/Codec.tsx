@@ -7,7 +7,9 @@ const CodecContext = createContext<RestateCodecOptions>(EMPTY_CODEC_OPTIONS);
 export function CodecProvider({
   options,
   children,
-}: PropsWithChildren<{ options?: RestateCodecOptions }>) {
+}: PropsWithChildren<{
+  options?: RestateCodecOptions;
+}>) {
   return (
     <CodecContext.Provider value={options ?? EMPTY_CODEC_OPTIONS}>
       {children}

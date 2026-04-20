@@ -67,7 +67,7 @@ function StateKey({
   const { EncodingWaterMark } = useRestateContext();
   const codecOptions = {
     service,
-    deploymentId,
+    deploymentId: { value: deploymentId },
     key: serviceKey,
     command: {
       type: 'GetState' as const,

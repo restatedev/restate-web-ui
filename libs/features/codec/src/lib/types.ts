@@ -20,10 +20,16 @@ export interface RestateCodecCommand {
   name?: string;
 }
 
+export interface AsyncCodecOption<T> {
+  value?: T;
+  isPending?: boolean;
+  error?: Error | null;
+}
+
 export interface RestateCodecOptions {
   service?: string;
-  deploymentId?: string;
+  deploymentId?: AsyncCodecOption<string>;
   key?: string;
-  handler?: RestateCodecHandlerMetadata;
+  handler?: AsyncCodecOption<RestateCodecHandlerMetadata>;
   command?: RestateCodecCommand;
 }

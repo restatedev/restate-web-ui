@@ -39,7 +39,7 @@ import { tv } from '@restate/util/styles';
 import { Retention } from './Retention';
 import {
   RESTARTED_FROM_HEADER,
-  useGetInvocationsStatus,
+  useWarmInvocationStatusDetails,
   useGetInvocationsJournalWithInvocationsV2,
   useGetJournalEntryPayloads,
   useListSubscriptions,
@@ -135,14 +135,19 @@ function getReferencedInvocationIds(
 }
 
 function hasNonCompletedReferencedInvocations(
+  invocationIds: string[],
   invocations?: Record<
     string,
     components['schemas']['InvocationStatusResult'] | undefined
   >,
 ) {
-  return Object.values(invocations ?? {}).some(
-    (invocation) =>
-      invocation?.status !== 'succeeded' && invocation?.status !== 'failed',
+  return invocationIds.some(
+    (invocationId) => {
+      const invocation = invocations?.[invocationId];
+      return (
+        invocation?.status !== 'succeeded' && invocation?.status !== 'failed'
+      );
+    },
   );
 }
 
@@ -195,27 +200,26 @@ export function JournalV2({
   });
   const { data: subscriptions } = useListSubscriptions();
   const referencedInvocationIds = getReferencedInvocationIds(data);
-  const { data: referencedInvocationsData } = useGetInvocationsStatus(
-    referencedInvocationIds,
-    invocationId,
-    {
-      refetchOnMount: true,
-      staleTime: 0,
-      refetchInterval(query) {
-        if (
-          isLive &&
-          (query.state.status !== 'success' ||
-            hasNonCompletedReferencedInvocations(query.state.data?.invocations))
-        ) {
-          return 1000;
-        }
+  useWarmInvocationStatusDetails(referencedInvocationIds, invocationId, {
+    refetchOnMount: true,
+    staleTime: 0,
+    refetchInterval(query) {
+      if (
+        isLive &&
+        (query.state.status !== 'success' ||
+          hasNonCompletedReferencedInvocations(
+            referencedInvocationIds,
+            query.state.data?.invocations,
+          ))
+      ) {
+        return 1000;
+      }
 
-        return false;
-      },
-      refetchIntervalInBackground: false,
-      refetchOnWindowFocus: false,
+      return false;
     },
-  );
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: false,
+  });
 
   const addInvocationId = useCallback(
     (id: string) => {
@@ -370,7 +374,6 @@ export function JournalV2({
           dataUpdatedAt={dataUpdatedAt}
           isPending={isPending}
           error={apiError}
-          referencedInvocations={referencedInvocationsData?.invocations}
           areAllInvocationsCompleted={areAllInvocationsCompleted}
           isLive={isLive}
           isCompact={isCompact}
@@ -686,7 +689,6 @@ function TimelineEngineJournalBridge({
   dataUpdatedAt,
   isPending,
   error,
-  referencedInvocations,
   areAllInvocationsCompleted,
   isLive,
   isCompact,
@@ -698,10 +700,6 @@ function TimelineEngineJournalBridge({
   dataUpdatedAt: number;
   isPending: Record<string, boolean | undefined>;
   error?: Record<string, Error | null | undefined>;
-  referencedInvocations?: Record<
-    string,
-    components['schemas']['InvocationStatusResult'] | undefined
-  >;
   areAllInvocationsCompleted: boolean;
   isLive: boolean;
   isCompact: boolean;
@@ -718,7 +716,6 @@ function TimelineEngineJournalBridge({
       dataUpdatedAt={dataUpdatedAt}
       isPending={isPending}
       error={error}
-      referencedInvocations={referencedInvocations}
       isLive={!areAllInvocationsCompleted && isLive}
       isCompact={isCompact}
     >
