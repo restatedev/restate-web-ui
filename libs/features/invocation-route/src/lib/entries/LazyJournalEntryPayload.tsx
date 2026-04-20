@@ -256,7 +256,7 @@ function PayloadPopover({
                     <span>{title}</span>
                   )}
                   <div className="ml-auto">{waterMark}</div>
-                  <Portal className="-mr-2 ml-2" id="expression-value" />
+                  <Portal className="ml-2" id="expression-value" />
                 </div>
               }
             >
