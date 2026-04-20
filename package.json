@@ -50,6 +50,7 @@
     "tailwind-variants": "^2.1.0",
     "tiny-invariant": "^1.3.3",
     "tslib": "2.6.3",
+    "urlpattern-polyfill": "10.1.0",
     "undici": "^7.13.0"
   },
   "devDependencies": {

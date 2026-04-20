@@ -158,6 +158,9 @@ importers:
       undici:
         specifier: '>=7.24.0'
         version: 7.24.4
+      urlpattern-polyfill:
+        specifier: 10.1.0
+        version: 10.1.0
     devDependencies:
       '@babel/core':
         specifier: 7.24.7
@@ -9629,6 +9632,9 @@ packages:
 
   url-template@2.0.8:
     resolution: {integrity: sha512-XdVKMF4SJ0nP/O7XIPB0JwAEuT9lDIYnNsK8yGVe43y0AWoKeJNdv3ZNWh7ksJ6KqQFjOO6ox/VEitLnaVNufw==}
+
+  urlpattern-polyfill@10.1.0:
+    resolution: {integrity: sha512-IGjKp/o0NL3Bso1PymYURCJxMPNAf/ILOpendP9f5B6e1rTJgdgiOvgfoT8VxCAdY+Wisb9uhGaJJf3yZ2V9nw==}
 
   use-resize-observer@9.1.0:
     resolution: {integrity: sha512-R25VqO9Wb3asSD4eqtcxk8sJalvIOYBqS8MNZlpDSQ4l4xMQxC/J7Id9HoTqPq8FwULIn0PVW+OAqF2dyYbjow==}
@@ -21319,6 +21325,8 @@ snapshots:
       requires-port: 1.0.0
 
   url-template@2.0.8: {}
+
+  urlpattern-polyfill@10.1.0: {}
 
   use-resize-observer@9.1.0(react-dom@19.2.1(react@19.2.1))(react@19.2.1):
     dependencies:
