@@ -10,10 +10,7 @@ export type RestateStringCodec = (
 export type PlaygroundFetcher = typeof globalThis.fetch;
 export type GetPlaygroundCodecOptions = (
   request: Request,
-) =>
-  | RestateCodecOptions
-  | Promise<RestateCodecOptions | undefined>
-  | undefined;
+) => RestateCodecOptions | Promise<RestateCodecOptions | undefined> | undefined;
 
 async function getEncodedPlaygroundBody(
   init: RequestInit | undefined,

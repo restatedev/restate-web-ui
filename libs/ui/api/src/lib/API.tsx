@@ -1,13 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-import {
-  useId,
-  Component,
-  Suspense,
-  lazy,
-  useEffect,
-  useRef,
-} from 'react';
+import { useId, Component, Suspense, lazy, useEffect, useRef } from 'react';
 import type { ErrorInfo, PropsWithChildren } from 'react';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Spinner } from '@restate/ui/loading';
