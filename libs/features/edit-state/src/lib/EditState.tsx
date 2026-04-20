@@ -50,6 +50,15 @@ const styles = tv({
   },
 });
 
+const codeStyles = tv({
+  base: 'mt-2 overflow-auto font-mono',
+  variants: {
+    isPending: {
+      true: '[&_.view-line>span]:animate-scanlineSweep [&_.view-line>span]:[background-image:linear-gradient(90deg,--theme(--color-zinc-700)_0%,--theme(--color-zinc-700)_42%,--theme(--color-zinc-400)_50%,--theme(--color-zinc-700)_58%,--theme(--color-zinc-700)_100%)] [&_.view-line>span]:[background-size:250%_100%] [&_.view-line>span]:bg-clip-text [&_.view-line>span]:[background-position:100%_0] [&_.view-line>span]:bg-no-repeat [&_.view-line>span]:[-webkit-text-fill-color:transparent]',
+    },
+  },
+});
+
 const EditStateContext = createContext<{
   isEditing: boolean;
   key?: string;
@@ -229,7 +238,7 @@ function EditStateInner({
             />
           </>
         )}
-        {query.isPending && !isDeleting && (
+        {query.isPending && !isDeleting && !query.data && (
           <div className="min-h-20 w-full animate-pulse rounded-lg border border-gray-200 bg-slate-200 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]" />
         )}
         {query.data && !isDeleting && (
@@ -240,7 +249,7 @@ function EditStateInner({
             <FormFieldCode
               autoFocus
               name="value"
-              className="mt-2 overflow-auto font-mono"
+              className={codeStyles({ isPending: query.isPending })}
               onInput={mutation.reset}
               readonly={query.isPending}
               {...(typeof key === 'undefined'
