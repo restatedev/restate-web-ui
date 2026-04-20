@@ -25,7 +25,7 @@ const styles = tv({
       ready: {},
       pending: {
         editor:
-          '[&_.view-line>span]:[background-image:linear-gradient(90deg,--theme(--color-zinc-700)_0%,--theme(--color-zinc-700)_42%,--theme(--color-zinc-400)_50%,--theme(--color-zinc-700)_58%,--theme(--color-zinc-700)_100%)] [&_.view-line>span]:bg-no-repeat [&_.view-line>span]:[background-size:250%_100%] [&_.view-line>span]:[background-position:100%_0] [&_.view-line>span]:bg-clip-text [&_.view-line>span]:[-webkit-text-fill-color:transparent] [&_.view-line>span]:animate-scanlineSweep',
+          '[&_.view-line>span]:animate-scanlineSweep [&_.view-line>span]:[background-image:linear-gradient(90deg,--theme(--color-zinc-700)_0%,--theme(--color-zinc-700)_42%,--theme(--color-zinc-400)_50%,--theme(--color-zinc-700)_58%,--theme(--color-zinc-700)_100%)] [&_.view-line>span]:[background-size:250%_100%] [&_.view-line>span]:bg-clip-text [&_.view-line>span]:[background-position:100%_0] [&_.view-line>span]:bg-no-repeat [&_.view-line>span]:[-webkit-text-fill-color:transparent]',
       },
     },
   },
@@ -108,7 +108,7 @@ const decodedValueStyles = tv({
     state: {
       ready: '',
       pending:
-        '[background-image:linear-gradient(90deg,--theme(--color-zinc-700)_0%,--theme(--color-zinc-700)_42%,--theme(--color-zinc-400)_50%,--theme(--color-zinc-700)_58%,--theme(--color-zinc-700)_100%)] bg-no-repeat [background-size:250%_100%] [background-position:100%_0] bg-clip-text [-webkit-text-fill-color:transparent] animate-scanlineSweep',
+        'animate-scanlineSweep [background-image:linear-gradient(90deg,--theme(--color-zinc-700)_0%,--theme(--color-zinc-700)_42%,--theme(--color-zinc-400)_50%,--theme(--color-zinc-700)_58%,--theme(--color-zinc-700)_100%)] [background-size:250%_100%] bg-clip-text [background-position:100%_0] bg-no-repeat [-webkit-text-fill-color:transparent]',
     },
   },
   defaultVariants: {

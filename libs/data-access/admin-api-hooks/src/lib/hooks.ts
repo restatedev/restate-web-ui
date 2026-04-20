@@ -2005,18 +2005,13 @@ export function useDecode(
 
   const query = useQuery({
     queryKey: [value, 'decode', resolvedCodecOptions] as const,
-    queryFn: () => decoder(value, resolvedCodecOptions),
+    queryFn: () => (isBase64 ? decoder(value, resolvedCodecOptions) : value),
     staleTime: Infinity,
     refetchOnMount: false,
-    placeholderData: value,
-    enabled: Boolean(
-      isBase64 &&
-        !(
-          resolvedCodecOptions.deploymentId?.isPending ||
-          resolvedCodecOptions.handler?.isPending
-        ),
+    enabled: !(
+      resolvedCodecOptions.deploymentId?.isPending ||
+      resolvedCodecOptions.handler?.isPending
     ),
-    initialData: isBase64 ? undefined : value,
   });
 
   return {
@@ -2038,18 +2033,13 @@ export function useEncode(
 
   const query = useQuery({
     queryKey: [value, 'encode', resolvedCodecOptions] as const,
-    queryFn: () => encoder(value, resolvedCodecOptions),
+    queryFn: () => (isBase64 ? encoder(value, resolvedCodecOptions) : value),
     staleTime: Infinity,
     refetchOnMount: false,
-    placeholderData: value,
-    enabled: Boolean(
-      isBase64 &&
-        !(
-          resolvedCodecOptions.deploymentId?.isPending ||
-          resolvedCodecOptions.handler?.isPending
-        ),
+    enabled: !(
+      resolvedCodecOptions.deploymentId?.isPending ||
+      resolvedCodecOptions.handler?.isPending
     ),
-    initialData: isBase64 ? undefined : value,
   });
 
   return {
