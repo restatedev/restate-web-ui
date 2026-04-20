@@ -242,6 +242,7 @@ function EditStateInner({
               name="value"
               className="mt-2 overflow-auto font-mono"
               onInput={mutation.reset}
+              readonly={query.isPending}
               {...(typeof key === 'undefined'
                 ? {
                     value: JSON.stringify(query.data?.state, null, 4),

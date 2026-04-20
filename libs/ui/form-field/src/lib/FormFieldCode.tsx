@@ -15,10 +15,12 @@ export function FormFieldCode({
   autoFocus,
   className,
   onInput,
+  readonly,
 }: {
   name: string;
   value?: string;
   autoFocus?: boolean;
+  readonly?: boolean;
   className?: string;
   onInput?: (value: string) => void;
 }) {
@@ -43,6 +45,7 @@ export function FormFieldCode({
         className={inputStyles({ className })}
         editorRef={editorRef}
         onInput={onContentChange}
+        readonly={readonly}
       />
       <input
         type="hidden"
