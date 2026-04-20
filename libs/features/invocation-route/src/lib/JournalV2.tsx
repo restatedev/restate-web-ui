@@ -141,14 +141,12 @@ function hasNonCompletedReferencedInvocations(
     components['schemas']['InvocationStatusResult'] | undefined
   >,
 ) {
-  return invocationIds.some(
-    (invocationId) => {
-      const invocation = invocations?.[invocationId];
-      return (
-        invocation?.status !== 'succeeded' && invocation?.status !== 'failed'
-      );
-    },
-  );
+  return invocationIds.some((invocationId) => {
+    const invocation = invocations?.[invocationId];
+    return (
+      invocation?.status !== 'succeeded' && invocation?.status !== 'failed'
+    );
+  });
 }
 
 export function JournalV2({
