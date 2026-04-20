@@ -1969,18 +1969,23 @@ export function useDecodeState(
         resolvedCodecOptions.deploymentId.error ??
         resolvedCodecOptions.handler?.error ??
         results.find((result) => result.error)?.error;
+      const isPlaceholderData = results.some(
+        (result) => result.isPlaceholderData,
+      );
+      const data = {
+        state: convertStateToObject(
+          results.filter(Boolean).map((result, index) => ({
+            value: safeParse(result.data ?? ''),
+            name: state.at(index)!.name,
+          })),
+        ),
+        version,
+      };
 
       return {
-        data: {
-          state: convertStateToObject(
-            results.filter(Boolean).map((result, index) => ({
-              value: safeParse(result.data ?? ''),
-              name: state.at(index)!.name,
-            })),
-          ),
-          version,
-        },
+        data,
         error,
+        isPlaceholderData,
         isPending:
           resolvedCodecOptions.deploymentId.isPending ||
           resolvedCodecOptions.handler?.isPending ||

@@ -1,5 +1,5 @@
 import { focusRing } from '@restate/ui/focus';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef } from 'react';
 import { tv } from '@restate/util/styles';
 import type { editor } from 'monaco-editor';
 import { Editor } from '@restate/ui/editor';
@@ -24,7 +24,6 @@ export function FormFieldCode({
 }) {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
 
-  const [content] = useState(() => value);
   const textareaRef = useRef<HTMLInputElement | null>(null);
 
   const onContentChange = useCallback(
@@ -40,7 +39,7 @@ export function FormFieldCode({
   return (
     <>
       <Editor
-        value={content}
+        value={value}
         className={inputStyles({ className })}
         editorRef={editorRef}
         onInput={onContentChange}

@@ -237,8 +237,8 @@ export function RestateContextProvider({
   isPending,
   baseUrl,
   fetcher,
-  decoder = EMPTY_CODECS,
-  encoder = EMPTY_CODECS,
+  decoders = EMPTY_CODECS,
+  encoders = EMPTY_CODECS,
   EncodingWaterMark,
   tunnel,
   GettingStarted,
@@ -254,8 +254,8 @@ export function RestateContextProvider({
   isPending?: boolean;
   baseUrl?: string;
   fetcher?: PlaygroundFetcher;
-  decoder?: readonly RestateBinaryCodec[];
-  encoder?: readonly RestateBinaryCodec[];
+  decoders?: readonly RestateBinaryCodec[];
+  encoders?: readonly RestateBinaryCodec[];
   EncodingWaterMark?: ComponentType<{
     value?: string;
     className?: string;
@@ -271,12 +271,12 @@ export function RestateContextProvider({
   queryHealthCheckEnabled?: boolean;
 }>) {
   const resolvedDecoder = useMemo(
-    () => composeRestateDecoder(decoder),
-    [decoder],
+    () => composeRestateDecoder(decoders),
+    decoders,
   );
   const resolvedEncoder = useMemo(
-    () => composeRestateEncoder(encoder),
-    [encoder],
+    () => composeRestateEncoder(encoders),
+    encoders,
   );
 
   return (
