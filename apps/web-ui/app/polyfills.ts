@@ -1,3 +1,5 @@
+import 'urlpattern-polyfill';
+
 if (!Promise.withResolvers) {
   Promise.withResolvers = function withResolvers<T>() {
     let resolve!: (value: T | PromiseLike<T>) => void;

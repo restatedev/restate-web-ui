@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-import { useId, Component, Suspense, lazy } from 'react';
+import { useId, Component, Suspense, lazy, useEffect, useRef } from 'react';
 import type { ErrorInfo, PropsWithChildren } from 'react';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Spinner } from '@restate/ui/loading';
@@ -24,19 +24,36 @@ const JsonSchemaViewerInner = lazy(() => {
 export const API = ({
   apiDescriptionDocument,
   layout = 'responsive',
+  tryItFetcher,
 }: {
   apiDescriptionDocument?: string;
   layout?: 'sidebar' | 'responsive' | 'stacked';
+  tryItFetcher?: typeof globalThis.fetch;
 }) => {
   const id = useId();
+  const apiRef = useRef(null);
+
+  useEffect(() => {
+    const element = apiRef.current;
+    if (!element) {
+      return;
+    }
+    element.tryItFetcher = tryItFetcher;
+
+    return () => {
+      if (element.tryItFetcher === tryItFetcher) {
+        element.tryItFetcher = undefined;
+      }
+    };
+  }, [tryItFetcher]);
 
   return (
     <elements-api
+      ref={apiRef}
       id={id}
       apiDescriptionDocument={apiDescriptionDocument}
       router="hash"
       layout={layout}
-      tryItCredentialsPolicy="include"
       className="spotlight"
     />
   );

@@ -14,6 +14,7 @@ import {
   UseQueryOptions,
   useQueryClient,
   UseQueryResult,
+  QueryKey,
 } from '@tanstack/react-query';
 import {
   adminApi,
@@ -646,6 +647,163 @@ export function useSummaryInvocations(
   });
 
   return { ...results, queryKey: queryOptions.queryKey };
+}
+
+function isCompletedInvocationStatus(
+  status?: components['schemas']['InvocationStatus'],
+) {
+  return status === 'succeeded' || status === 'failed';
+}
+
+type InvocationStatusDetails = components['schemas']['InvocationStatusResult'];
+
+type InvocationStatusDetailsData =
+  operations['get_invocations_statuses']['responses']['200']['content']['application/json'];
+
+function getInvocationStatusDetailsQueryKey(
+  baseUrl: string,
+  referenceInvocationId?: string,
+) {
+  return [
+    '/query/invocations/statuses/latest',
+    {
+      baseUrl,
+      method: 'post' as const,
+      referenceInvocationId,
+    },
+  ] as const;
+}
+
+export function useWarmInvocationStatusDetails(
+  invocationIds: string[],
+  referenceInvocationId?: string,
+  options?: HookQueryOptions<'/query/invocations/statuses', 'post'>,
+) {
+  const enabled = useAPIStatus();
+  const baseUrl = useAdminBaseUrl();
+  const queryInvocationIds = [
+    ...new Set(invocationIds.filter((invocationId) => invocationId.length > 0)),
+  ];
+  const latestQueryKey = getInvocationStatusDetailsQueryKey(
+    baseUrl,
+    referenceInvocationId,
+  );
+  const queryOptions = adminApi(
+    'query',
+    '/query/invocations/statuses',
+    'post',
+    {
+      baseUrl,
+      parameters: {
+        query: {
+          referenceInvocationId,
+        },
+      },
+      body: {
+        invocationIds: queryInvocationIds,
+      },
+    },
+  );
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+    queryKey: latestQueryKey,
+    queryFn: async (context) => {
+      const latestData =
+        context.client.getQueryData<InvocationStatusDetailsData>(
+          latestQueryKey,
+        ) ?? {
+          invocations: {},
+        };
+      const cachedInvocations = latestData.invocations;
+      const completedInvocations = Object.fromEntries(
+        queryInvocationIds.flatMap((invocationId) =>
+          isCompletedInvocationStatus(cachedInvocations[invocationId]?.status)
+            ? [[invocationId, cachedInvocations[invocationId]]]
+            : [],
+        ),
+      );
+      const nonCompletedInvocationIds = queryInvocationIds.filter(
+        (invocationId) =>
+          !isCompletedInvocationStatus(cachedInvocations[invocationId]?.status),
+      );
+      const mergedInvocations = {
+        ...latestData.invocations,
+        ...completedInvocations,
+      };
+
+      if (nonCompletedInvocationIds.length === 0) {
+        return { invocations: mergedInvocations };
+      }
+
+      const fetchedData = (await adminApi(
+        'query',
+        '/query/invocations/statuses',
+        'post',
+        {
+          baseUrl,
+          parameters: {
+            query: {
+              referenceInvocationId,
+            },
+          },
+          body: {
+            invocationIds: nonCompletedInvocationIds,
+          },
+        },
+      ).queryFn(context)) ?? { invocations: {} };
+      return {
+        invocations: {
+          ...mergedInvocations,
+          ...fetchedData.invocations,
+        },
+      };
+    },
+    enabled: options?.enabled !== false && enabled,
+  });
+
+  return {
+    ...results,
+    queryKey: latestQueryKey,
+  };
+}
+
+export function useGetInvocationStatusDetails(
+  invocationId?: string,
+  referenceInvocationId?: string,
+) {
+  const baseUrl = useAdminBaseUrl();
+  const latestQueryKey = getInvocationStatusDetailsQueryKey(
+    baseUrl,
+    referenceInvocationId,
+  );
+  const query = useQuery<InvocationStatusDetailsData, RestateError | Error>({
+    queryKey: latestQueryKey,
+    queryFn: async () => ({ invocations: {} }),
+    enabled: false,
+  });
+  const data = invocationId
+    ? query.data?.invocations?.[invocationId]
+    : undefined;
+  const isCompleted = isCompletedInvocationStatus(data?.status);
+
+  return {
+    ...query,
+    data: data as InvocationStatusDetails | undefined,
+    isPending:
+      invocationId && referenceInvocationId
+        ? isCompleted
+          ? false
+          : query.isPending
+        : false,
+    error:
+      invocationId && referenceInvocationId
+        ? isCompleted
+          ? null
+          : query.error
+        : null,
+  };
 }
 
 export function useModifyService(
@@ -1717,11 +1875,48 @@ export function useEditState(
   };
 }
 
-type CodecQueryKey<Mode extends 'decode' | 'encode'> = readonly [
-  value: string | undefined,
-  mode: Mode,
-  codecOptions: RestateCodecOptions | undefined,
-];
+function resolveCodecDeploymentId(
+  service: string | undefined,
+  deploymentId: string | undefined,
+  listDeployments: ListDeploymentsData,
+) {
+  if (
+    !deploymentId ||
+    !service ||
+    listDeployments?.deployments.has(deploymentId)
+  ) {
+    return deploymentId;
+  }
+
+  const serviceData = listDeployments?.services.get(service);
+  const latestRevision = serviceData?.sortedRevisions[0];
+  return latestRevision
+    ? serviceData?.deployments[latestRevision]?.[0]
+    : deploymentId;
+}
+
+function useResolvedCodecDeployment(codecOptions?: RestateCodecOptions) {
+  const {
+    data: listDeployments,
+    isPending,
+    error,
+  } = useListDeployments({
+    refetchOnMount: false,
+  });
+
+  return {
+    ...(codecOptions ?? {}),
+    deploymentId: {
+      value: resolveCodecDeploymentId(
+        codecOptions?.service,
+        codecOptions?.deploymentId?.value,
+        listDeployments,
+      ),
+      isPending: codecOptions?.deploymentId?.isPending || isPending,
+      error: codecOptions?.deploymentId?.error || error,
+    },
+  };
+}
 
 function safeParse(value: string) {
   try {
@@ -1745,33 +1940,56 @@ export function useDecodeState(
   codecOptions?: RestateCodecOptions,
 ) {
   const { decoder } = useRestateContext();
+  const resolvedCodecOptions = useResolvedCodecDeployment(codecOptions);
 
   return useQueries({
-    queries: state.map(({ name, value }) => ({
-      queryKey: [value, 'decode', codecOptions] as CodecQueryKey<'decode'>,
-      queryFn: async ({ queryKey }: { queryKey: CodecQueryKey<'decode'> }) => {
+    queries: state.map(({ value }) => ({
+      queryKey: [value, 'decode', resolvedCodecOptions] as const,
+      queryFn: async ({ queryKey }: { queryKey: QueryKey }) => {
         const [decodedValue, , decodedCodecOptions] = queryKey;
-        return decoder(decodedValue, decodedCodecOptions);
+        return decoder(
+          decodedValue as string,
+          decodedCodecOptions as RestateCodecOptions,
+        );
       },
       staleTime: Infinity,
       refetchOnMount: false,
       placeholderData: value,
-      enabled: isBase64,
+      enabled: Boolean(
+        isBase64 &&
+          !(
+            resolvedCodecOptions.deploymentId.isPending ||
+            resolvedCodecOptions.handler?.isPending
+          ),
+      ),
       initialData: isBase64 ? undefined : value,
     })),
     combine: (results) => {
+      const error =
+        resolvedCodecOptions.deploymentId.error ??
+        resolvedCodecOptions.handler?.error ??
+        results.find((result) => result.error)?.error;
+      const isPlaceholderData = results.some(
+        (result) => result.isPlaceholderData,
+      );
+      const data = {
+        state: convertStateToObject(
+          results.filter(Boolean).map((result, index) => ({
+            value: safeParse(result.data ?? ''),
+            name: state.at(index)!.name,
+          })),
+        ),
+        version,
+      };
+
       return {
-        data: {
-          state: convertStateToObject(
-            results.filter(Boolean).map((result, index) => ({
-              value: safeParse(result.data ?? ''),
-              name: state.at(index)!.name,
-            })),
-          ),
-          version,
-        },
-        error: results.find((result) => result.error)?.error,
-        isPending: results.some((result) => result.isFetching),
+        data,
+        error,
+        isPlaceholderData,
+        isPending:
+          resolvedCodecOptions.deploymentId.isPending ||
+          resolvedCodecOptions.handler?.isPending ||
+          results.some((result) => result.isFetching),
       };
     },
   });
@@ -1783,19 +2001,26 @@ export function useDecode(
   codecOptions?: RestateCodecOptions,
 ) {
   const { decoder } = useRestateContext();
+  const resolvedCodecOptions = useResolvedCodecDeployment(codecOptions);
 
-  return useQuery({
-    queryKey: [value, 'decode', codecOptions] as CodecQueryKey<'decode'>,
-    queryFn: ({ queryKey }: { queryKey: CodecQueryKey<'decode'> }) => {
-      const [decodedValue, , decodedCodecOptions] = queryKey;
-      return decoder(decodedValue, decodedCodecOptions);
-    },
+  const query = useQuery({
+    queryKey: [value, 'decode', resolvedCodecOptions] as const,
+    queryFn: () => (isBase64 ? decoder(value, resolvedCodecOptions) : value),
     staleTime: Infinity,
     refetchOnMount: false,
-    placeholderData: value,
-    enabled: isBase64,
-    initialData: isBase64 ? undefined : value,
+    enabled: !(
+      resolvedCodecOptions.deploymentId?.isPending ||
+      resolvedCodecOptions.handler?.isPending
+    ),
   });
+
+  return {
+    ...query,
+    error:
+      resolvedCodecOptions.deploymentId?.error ??
+      resolvedCodecOptions.handler?.error ??
+      query.error,
+  };
 }
 
 export function useEncode(
@@ -1804,17 +2029,24 @@ export function useEncode(
   codecOptions?: RestateCodecOptions,
 ) {
   const { encoder } = useRestateContext();
+  const resolvedCodecOptions = useResolvedCodecDeployment(codecOptions);
 
-  return useQuery({
-    queryKey: [value, 'encode', codecOptions] as CodecQueryKey<'encode'>,
-    queryFn: ({ queryKey }: { queryKey: CodecQueryKey<'encode'> }) => {
-      const [encodedValue, , encodedCodecOptions] = queryKey;
-      return encoder(encodedValue, encodedCodecOptions);
-    },
+  const query = useQuery({
+    queryKey: [value, 'encode', resolvedCodecOptions] as const,
+    queryFn: () => (isBase64 ? encoder(value, resolvedCodecOptions) : value),
     staleTime: Infinity,
     refetchOnMount: false,
-    placeholderData: value,
-    enabled: isBase64,
-    initialData: isBase64 ? undefined : value,
+    enabled: !(
+      resolvedCodecOptions.deploymentId?.isPending ||
+      resolvedCodecOptions.handler?.isPending
+    ),
   });
+
+  return {
+    ...query,
+    error:
+      resolvedCodecOptions.deploymentId?.error ??
+      resolvedCodecOptions.handler?.error ??
+      query.error,
+  };
 }

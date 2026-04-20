@@ -1,24 +1,55 @@
+import type {
+  components,
+  JournalEntryV2,
+} from '@restate/data-access/admin-api-spec';
 import {
   useGetInvocationJournalWithInvocationV2,
-  useServiceDetails,
+  useGetInvocationStatusDetails,
 } from '@restate/data-access/admin-api-hooks';
-import type { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
 import {
   CodecProvider,
   type RestateCodecOptions,
 } from '@restate/features/codec';
 import type { PropsWithChildren } from 'react';
+import { useCodecHandler } from './codec';
 
 type Invocation = ReturnType<
   typeof useGetInvocationJournalWithInvocationV2
 >['data'];
 
-function getEntryCodecTarget(entry?: JournalEntryV2, invocation?: Invocation) {
-  if (entry?.type === 'Call' || entry?.type === 'OneWayCall') {
+type TargetInvocationEntry = Extract<
+  JournalEntryV2,
+  {
+    category?: 'command';
+    type?: 'Call' | 'OneWayCall' | 'AttachInvocation';
+  }
+>;
+
+function isTargetInvocationEntry(
+  entry?: JournalEntryV2,
+): entry is TargetInvocationEntry {
+  return (
+    entry?.category === 'command' &&
+    (entry.type === 'Call' ||
+      entry.type === 'OneWayCall' ||
+      entry.type === 'AttachInvocation')
+  );
+}
+
+function getEntryCodecTarget(
+  entry?: JournalEntryV2,
+  invocation?: Invocation,
+  targetInvocation?: components['schemas']['InvocationStatusResult'],
+) {
+  if (isTargetInvocationEntry(entry)) {
     return {
       service: (entry as { serviceName?: string }).serviceName,
       key: (entry as { serviceKey?: string }).serviceKey,
       handlerName: (entry as { handlerName?: string }).handlerName,
+      deploymentId: entry.invocationId
+        ? (targetInvocation?.pinnedDeploymentId ??
+          targetInvocation?.lastAttemptDeploymentId)
+        : undefined,
     };
   }
 
@@ -26,6 +57,9 @@ function getEntryCodecTarget(entry?: JournalEntryV2, invocation?: Invocation) {
     service: invocation?.target_service_name,
     key: invocation?.target_service_key,
     handlerName: invocation?.target_handler_name,
+    deploymentId:
+      invocation?.pinned_deployment_id ??
+      invocation?.last_attempt_deployment_id,
   };
 }
 
@@ -75,30 +109,26 @@ export function EntryCodecProvider({
   entry?: JournalEntryV2;
   invocation?: Invocation;
 }>) {
-  const { service, key, handlerName } = getEntryCodecTarget(entry, invocation);
-  const { data: serviceDetails } = useServiceDetails(service ?? '', {
-    enabled: Boolean(service && handlerName),
-    refetchOnMount: false,
-  });
-  const handler = handlerName
-    ? serviceDetails?.handlers.find(({ name }) => name === handlerName)
-    : undefined;
+  const targetInvocation = useGetInvocationStatusDetails(
+    isTargetInvocationEntry(entry) ? entry.invocationId : undefined,
+    invocation?.id,
+  );
+  const { service, key, handlerName, deploymentId } = getEntryCodecTarget(
+    entry,
+    invocation,
+    targetInvocation.data,
+  );
+  const { handler } = useCodecHandler(service, handlerName);
   const options = entry
     ? ({
         service,
+        deploymentId: {
+          value: deploymentId,
+          isPending: targetInvocation.isPending,
+          error: targetInvocation.error,
+        },
         key,
-        handler: handler
-          ? {
-              name: handler.name,
-              metadata: handler.metadata,
-              input_description: handler.input_description,
-              input_json_schema: handler.input_json_schema,
-              output_description: handler.output_description,
-              output_json_schema: handler.output_json_schema,
-            }
-          : handlerName
-            ? { name: handlerName }
-            : undefined,
+        handler,
         command: getEntryCodecCommand(entry),
       } satisfies RestateCodecOptions)
     : undefined;

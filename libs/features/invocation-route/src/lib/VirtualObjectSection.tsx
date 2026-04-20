@@ -149,6 +149,10 @@ export function VirtualObjectSection({
                     state={stateData?.state}
                     service={invocation?.target_service_name}
                     serviceKey={invocation?.target_service_key}
+                    deploymentId={
+                      invocation?.pinned_deployment_id ??
+                      invocation?.last_attempt_deployment_id
+                    }
                     isLoading={stateDataIsPending}
                   />
                 </DropdownSection>

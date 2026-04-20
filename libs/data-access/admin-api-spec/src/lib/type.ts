@@ -9,17 +9,7 @@ export type Service = components['schemas']['ServiceMetadata'];
 export type Handler = components['schemas']['HandlerMetadata'];
 
 export type InvocationComputedStatus2 =
-  | 'succeeded'
-  | 'failed'
-  | 'cancelled'
-  | 'killed'
-  | 'backing-off'
-  | 'running'
-  | 'suspended'
-  | 'scheduled'
-  | 'pending'
-  | 'paused'
-  | 'ready';
+  components['schemas']['InvocationStatus'];
 
 export type RawInvocation = components['schemas']['RawInvocation'];
 export type JournalEntry = components['schemas']['JournalEntry'];

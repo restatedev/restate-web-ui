@@ -6,7 +6,6 @@ import {
   useQueryHealthCheck,
   useAdminBaseUrl,
 } from '@restate/data-access/admin-api';
-import type { RestateCodecOptions } from '@restate/features/codec';
 import {
   ComponentType,
   createContext,
@@ -14,10 +13,21 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
 } from 'react';
 import semverGt from 'semver/functions/gte';
-import { base64ToUtf8OrOriginal, utf8ToBase64 } from '@restate/util/binary';
 import { useQueryClient } from '@tanstack/react-query';
+import {
+  composeRestateDecoder,
+  composeRestateEncoder,
+  type RestateBinaryCodec,
+} from './codecs';
+import {
+  createPlaygroundFetcher,
+  type GetPlaygroundCodecOptions,
+  type PlaygroundFetcher,
+  type RestateStringCodec,
+} from './playgroundFetcher';
 
 export type Status = 'HEALTHY' | 'DEGRADED' | 'PENDING' | (string & {});
 export type {
@@ -25,10 +35,14 @@ export type {
   RestateCodecHandlerMetadata,
   RestateCodecOptions,
 } from '@restate/features/codec';
-export type RestateCodec = (
-  value?: string,
-  options?: RestateCodecOptions,
-) => Promise<string | undefined> | string | undefined;
+export type { RestateBinaryCodec } from './codecs';
+export type {
+  GetPlaygroundCodecOptions,
+  PlaygroundFetcher,
+} from './playgroundFetcher';
+
+const EMPTY_CODECS: readonly RestateBinaryCodec[] = [];
+
 type OnboardingComponent = ComponentType<{
   className?: string;
   stage:
@@ -49,10 +63,13 @@ type RestateContext = {
   status: Status;
   version?: string;
   isVersionGte?: (version: string) => boolean;
+  createPlaygroundFetcher: (
+    getCodecOptions?: GetPlaygroundCodecOptions,
+  ) => PlaygroundFetcher;
   ingressUrl: string;
   baseUrl: string;
-  decoder: RestateCodec;
-  encoder: RestateCodec;
+  decoder: RestateStringCodec;
+  encoder: RestateStringCodec;
   refreshCodec?: VoidFunction;
   EncodingWaterMark?: ComponentType<{
     value?: string;
@@ -75,10 +92,11 @@ type RestateContext = {
 
 const InternalRestateContext = createContext<RestateContext>({
   status: 'PENDING',
+  createPlaygroundFetcher: () => globalThis.fetch,
   ingressUrl: '',
   baseUrl: '',
-  decoder: base64ToUtf8OrOriginal,
-  encoder: utf8ToBase64,
+  decoder: composeRestateDecoder(EMPTY_CODECS),
+  encoder: composeRestateEncoder(EMPTY_CODECS),
 });
 
 function InternalRestateContextProvider({
@@ -87,6 +105,7 @@ function InternalRestateContextProvider({
   systemHealthMonitor,
   ingressUrl,
   baseUrl = '',
+  fetcher,
   decoder,
   encoder,
   EncodingWaterMark,
@@ -101,8 +120,9 @@ function InternalRestateContextProvider({
   isPending?: boolean;
   ingressUrl?: string;
   baseUrl?: string;
-  decoder: RestateCodec;
-  encoder: RestateCodec;
+  fetcher?: PlaygroundFetcher;
+  decoder: RestateStringCodec;
+  encoder: RestateStringCodec;
   EncodingWaterMark?: ComponentType<{
     value?: string;
     className?: string;
@@ -164,6 +184,17 @@ function InternalRestateContextProvider({
     refetchInterval: 60_000,
   });
 
+  const createResolvedPlaygroundFetcher = useCallback(
+    (getCodecOptions?: GetPlaygroundCodecOptions) =>
+      createPlaygroundFetcher(
+        fetcher ?? globalThis.fetch,
+        encoder,
+        decoder,
+        getCodecOptions,
+      ),
+    [fetcher, encoder, decoder],
+  );
+
   const adminBaseUrl = useAdminBaseUrl();
   useEffect(() => {
     return () => {
@@ -176,6 +207,7 @@ function InternalRestateContextProvider({
       value={{
         version,
         status,
+        createPlaygroundFetcher: createResolvedPlaygroundFetcher,
         ingressUrl: resolvedIngress,
         isVersionGte,
         baseUrl,
@@ -204,8 +236,9 @@ export function RestateContextProvider({
   ingressUrl,
   isPending,
   baseUrl,
-  decoder = base64ToUtf8OrOriginal,
-  encoder = utf8ToBase64,
+  fetcher,
+  decoders = EMPTY_CODECS,
+  encoders = EMPTY_CODECS,
   EncodingWaterMark,
   tunnel,
   GettingStarted,
@@ -220,8 +253,9 @@ export function RestateContextProvider({
   ingressUrl?: string;
   isPending?: boolean;
   baseUrl?: string;
-  decoder?: RestateCodec;
-  encoder?: RestateCodec;
+  fetcher?: PlaygroundFetcher;
+  decoders?: readonly RestateBinaryCodec[];
+  encoders?: readonly RestateBinaryCodec[];
   EncodingWaterMark?: ComponentType<{
     value?: string;
     className?: string;
@@ -236,14 +270,24 @@ export function RestateContextProvider({
   systemHealthMonitor?: { reset: () => void; cleanup: () => void };
   queryHealthCheckEnabled?: boolean;
 }>) {
+  const resolvedDecoder = useMemo(
+    () => composeRestateDecoder(decoders),
+    decoders,
+  );
+  const resolvedEncoder = useMemo(
+    () => composeRestateEncoder(encoders),
+    encoders,
+  );
+
   return (
     <AdminBaseURLProvider baseUrl={adminBaseUrl}>
       <InternalRestateContextProvider
         ingressUrl={ingressUrl}
         isPending={isPending}
         baseUrl={baseUrl}
-        decoder={decoder}
-        encoder={encoder}
+        fetcher={fetcher}
+        decoder={resolvedDecoder}
+        encoder={resolvedEncoder}
         EncodingWaterMark={EncodingWaterMark}
         tunnel={tunnel}
         GettingStarted={GettingStarted}

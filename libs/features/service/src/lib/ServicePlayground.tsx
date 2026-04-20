@@ -1,5 +1,9 @@
 import { useLocation, useSearchParams } from 'react-router';
-import { useServiceOpenApi } from '@restate/data-access/admin-api-hooks';
+import {
+  type ListDeploymentsData,
+  useListDeployments,
+  useServiceOpenApi,
+} from '@restate/data-access/admin-api-hooks';
 import { Button, SubmitButton } from '@restate/ui/button';
 import { QueryDialog, DialogContent, DialogClose } from '@restate/ui/dialog';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -36,6 +40,7 @@ import { useTransition } from 'react';
 import { ErrorBanner } from '@restate/ui/error';
 import { Spinner } from '@restate/ui/loading';
 import { useOnboarding } from '@restate/util/feature-flag';
+import { useQueryClient } from '@tanstack/react-query';
 
 const styles = tv({
   base: 'flex items-center gap-1 rounded-md px-1.5 py-0.5 font-sans text-xs font-normal',
@@ -151,9 +156,14 @@ function useApiSpec(service?: string | null) {
       enabled,
     },
   );
-  const { ingressUrl } = useRestateContext();
+  const { queryKey: listDeploymentsQueryKey } = useListDeployments({
+    enabled,
+    refetchOnMount: false,
+  });
+  const { ingressUrl, createPlaygroundFetcher } = useRestateContext();
+  const queryClient = useQueryClient();
 
-  const { apiSpec, handlers } = useMemo(() => {
+  const { apiSpec, handlers, operations } = useMemo(() => {
     const apiSpec = data
       ? JSON.stringify({
           ...data,
@@ -162,36 +172,84 @@ function useApiSpec(service?: string | null) {
           }),
         })
       : undefined;
-    const handlers = Array.from(
-      Object.values((data as any)?.paths ?? {}),
-    ).reduce(
+    const operations = Array.from(
+      Object.entries((data as any)?.paths ?? {}),
+    ).flatMap(([path, endpoint]: any[]) =>
+      Array.from(Object.entries(endpoint ?? {})).flatMap(
+        ([method, metadata]: any[]) =>
+          metadata?.operationId
+            ? [
+                {
+                  category: metadata?.tags?.at(0) ?? DEFAULT_CATEGORY,
+                  name: metadata?.summary,
+                  id: metadata.operationId,
+                  method: String(method).toUpperCase(),
+                  pattern: new URLPattern({
+                    pathname: String(path).replace(/\{([^}]+)\}/g, ':$1'),
+                  }),
+                },
+              ]
+            : [],
+      ),
+    );
+    const handlers = operations.reduce(
       (
         results: Map<string, { name: string; id: string; method: string }[]>,
-        endpoint: any,
+        operation,
       ) => {
-        const allMethods = Array.from(Object.entries(endpoint)).map(
-          ([method, metadata]: any[]) => ({
-            category: metadata?.tags?.at(0) ?? DEFAULT_CATEGORY,
-            name: metadata?.summary,
-            id: metadata?.operationId,
-            method,
-          }),
-        );
-        allMethods.forEach(({ category, name, id, method }) => {
-          results.set(category, [
-            ...(results.get(category) ?? []),
-            { name, id, method },
-          ]);
-        });
+        results.set(operation.category, [
+          ...(results.get(operation.category) ?? []),
+          { name: operation.name, id: operation.id, method: operation.method },
+        ]);
         return results;
       },
       new Map<string, { name: string; id: string; method: string }[]>(),
     );
 
-    return { apiSpec, handlers };
+    return { apiSpec, handlers, operations };
   }, [data, ingressUrl]);
 
-  return { apiSpec, handlers, error, refetch, isFetching };
+  const tryItFetcher = useMemo(
+    () =>
+      createPlaygroundFetcher((request) => {
+        if (!service) {
+          return undefined;
+        }
+
+        const pathname = new URL(request.url).pathname;
+        const operation = operations.find(
+          ({ method, pattern }) =>
+            method === request.method.toUpperCase() &&
+            pattern.test({ pathname }),
+        );
+        const listDeployments = queryClient.getQueryData<ListDeploymentsData>(
+          listDeploymentsQueryKey,
+        );
+        const serviceData = listDeployments?.services.get(service);
+        const latestRevision = serviceData?.sortedRevisions[0];
+
+        return {
+          service,
+          deploymentId: {
+            value: serviceData?.deployments[latestRevision ?? -1]?.[0],
+          },
+          handler: {
+            value: {
+              name: operation?.id,
+            },
+          },
+        };
+      }),
+    [
+      createPlaygroundFetcher,
+      listDeploymentsQueryKey,
+      operations,
+      queryClient,
+      service,
+    ],
+  );
+
+  return { apiSpec, handlers, error, refetch, isFetching, tryItFetcher };
 }
 
 function ServicePlaygroundComplementaryContent({
@@ -204,7 +262,8 @@ function ServicePlaygroundComplementaryContent({
   onClose?: (service: string) => void;
 }) {
   const service = useParamValue();
-  const { apiSpec, handlers, error, refetch, isFetching } = useApiSpec(service);
+  const { apiSpec, handlers, error, refetch, isFetching, tryItFetcher } =
+    useApiSpec(service);
   const activeSearch = useActiveSidebarParam(SERVICE_PLAYGROUND_QUERY_PARAM);
   const shouldDisplay = isSidebar.get(service) === true;
   const isActive = activeSearch === service;
@@ -215,7 +274,6 @@ function ServicePlaygroundComplementaryContent({
     .at(-1)
     ?.split('#')
     .at(0);
-
   const isSelectedHandlerFromURLValid =
     !handlers.size ||
     Array.from(handlers.values()).some((methods) =>
@@ -378,6 +436,7 @@ function ServicePlaygroundComplementaryContent({
             apiDescriptionDocument={apiSpec}
             layout="sidebar"
             key={selectedHandlerFromURL}
+            tryItFetcher={tryItFetcher}
           />
         ) : (
           <div className="flex-auto" />
@@ -411,7 +470,8 @@ function ServicePlaygroundSheetContent({
   setIsSidebar: Dispatch<React.SetStateAction<Map<string, boolean>>>;
   isSidebar: Map<string, boolean>;
 }) {
-  const { apiSpec, handlers, error, isFetching } = useApiSpec(service);
+  const { apiSpec, handlers, error, isFetching, tryItFetcher } =
+    useApiSpec(service);
   const [searchParams, setSearchParams] = useSearchParams();
 
   return (
@@ -420,7 +480,9 @@ function ServicePlaygroundSheetContent({
         variant={'sheet'}
         className='[&_*:has(>[data-test="mobile-top-nav"])]:w-[calc(100vw-1rem)] [&_*:has(>[data-test="mobile-top-nav"])]:rounded-t-[0.7rem] [&_.sl-inverted_input]:text-gray-700 [&_input]:text-sm'
       >
-        {apiSpec ? <API apiDescriptionDocument={apiSpec} /> : null}
+        {apiSpec ? (
+          <API apiDescriptionDocument={apiSpec} tryItFetcher={tryItFetcher} />
+        ) : null}
         {error && (
           <div className="mx-8 mt-12">
             <ErrorBanner errors={[error]} />

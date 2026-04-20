@@ -29,14 +29,14 @@ export async function getInvocationJournalV2(
       `SELECT after_journal_entry_index, appended_at, event_type, event_json from sys_journal_events WHERE id = '${invocationId}' ORDER BY appended_at`,
     ),
   ]);
-  const shoudlFetchWithRaw =
+  const shouldFetchWithRaw =
     !includeRaw &&
     journalQuery.rows.some(
       (entry) =>
         (!entry.version || entry.version === 1) && entry.entry_type !== 'Input',
     );
 
-  if (shoudlFetchWithRaw) {
+  if (shouldFetchWithRaw) {
     return getInvocationJournalV2.call(
       this,
       invocationId,

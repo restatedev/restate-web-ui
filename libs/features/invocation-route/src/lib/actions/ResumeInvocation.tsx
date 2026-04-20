@@ -29,7 +29,10 @@ function ResumeInvocationContent() {
     enabled: Boolean(invocationId),
   });
 
-  const { data: listDeployments } = useListDeployments();
+  const { data: listDeployments } = useListDeployments({
+    refetchOnMount: true,
+    staleTime: 0,
+  });
   const service = listDeployments?.services.get(
     String(invocation?.target_service_name),
   );

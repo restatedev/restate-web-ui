@@ -61,6 +61,7 @@ import {
 import { queryCacheOnSuccess } from '@restate/data-access/admin-api-hooks';
 import { PortalProvider } from '@restate/ui/portal';
 import { BatchOperationsProvider } from '@restate/features/batch-operations';
+import { MonacoWarmup } from '@restate/ui/editor';
 
 if (import.meta.env.DEV) {
   setInterval(() => {
@@ -317,6 +318,7 @@ export default function App() {
                 <RegisterDeploymentDialog />
                 <UpdateDeploymentDialog />
                 <Support />
+                <MonacoWarmup />
               </EditState>
             </BatchOperationsProvider>
           </RestateContextProvider>
