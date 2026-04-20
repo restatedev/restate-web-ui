@@ -8,16 +8,23 @@ export type RestateStringCodec = (
 ) => Promise<string> | string;
 
 export type PlaygroundFetcher = typeof globalThis.fetch;
+export type GetPlaygroundCodecOptions = (
+  request: Request,
+) =>
+  | RestateCodecOptions
+  | Promise<RestateCodecOptions | undefined>
+  | undefined;
 
 async function getEncodedPlaygroundBody(
   init: RequestInit | undefined,
   encoder: RestateStringCodec,
+  codecOptions?: RestateCodecOptions,
 ) {
   if (init?.body != null && typeof init.body !== 'string') {
     return init.body;
   }
 
-  const encodedBody = await encoder(init?.body ?? '');
+  const encodedBody = await encoder(init?.body ?? '', codecOptions);
   return base64ToUint8Array(encodedBody);
 }
 
@@ -40,6 +47,7 @@ function isRestateSendResponse(response: Response) {
 async function getDecodedPlaygroundResponse(
   response: Response,
   decoder: RestateStringCodec,
+  codecOptions?: RestateCodecOptions,
 ) {
   if (
     !response.ok ||
@@ -52,7 +60,7 @@ async function getDecodedPlaygroundResponse(
   const encodedBody = bytesToBase64(
     new Uint8Array(await response.clone().arrayBuffer()),
   );
-  const decodedBody = await decoder(encodedBody);
+  const decodedBody = await decoder(encodedBody, codecOptions);
 
   return new Response(decodedBody, {
     headers: response.headers,
@@ -65,13 +73,15 @@ export function createPlaygroundFetcher(
   fetcher: PlaygroundFetcher,
   encoder: RestateStringCodec,
   decoder: RestateStringCodec,
+  getCodecOptions?: GetPlaygroundCodecOptions,
 ): PlaygroundFetcher {
   return async (input, init) => {
     const request = new Request(input, init);
+    const codecOptions = await getCodecOptions?.(request);
     const nextRequest = new Request(request, {
       credentials: 'include',
       ...(!['GET', 'HEAD'].includes(request.method.toUpperCase()) && {
-        body: await getEncodedPlaygroundBody(init, encoder),
+        body: await getEncodedPlaygroundBody(init, encoder, codecOptions),
       }),
     });
     const token = getAuthToken();
@@ -79,6 +89,6 @@ export function createPlaygroundFetcher(
       nextRequest.headers.set('Authorization', `Bearer ${token}`);
     }
     const response = await fetcher(nextRequest);
-    return getDecodedPlaygroundResponse(response, decoder);
+    return getDecodedPlaygroundResponse(response, decoder, codecOptions);
   };
 }

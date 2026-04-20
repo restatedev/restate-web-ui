@@ -1,8 +1,14 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-import { useId, Component, Suspense, lazy, useEffect, useRef } from 'react';
+import {
+  useId,
+  Component,
+  Suspense,
+  lazy,
+  useEffect,
+  useRef,
+} from 'react';
 import type { ErrorInfo, PropsWithChildren } from 'react';
-import { useRestateContext } from '@restate/features/restate-context';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Spinner } from '@restate/ui/loading';
 import { tv } from '@restate/util/styles';
@@ -25,12 +31,13 @@ const JsonSchemaViewerInner = lazy(() => {
 export const API = ({
   apiDescriptionDocument,
   layout = 'responsive',
+  tryItFetcher,
 }: {
   apiDescriptionDocument?: string;
   layout?: 'sidebar' | 'responsive' | 'stacked';
+  tryItFetcher?: typeof globalThis.fetch;
 }) => {
   const id = useId();
-  const { playgroundFetcher } = useRestateContext();
   const apiRef = useRef(null);
 
   useEffect(() => {
@@ -38,14 +45,14 @@ export const API = ({
     if (!element) {
       return;
     }
-    element.tryItFetcher = playgroundFetcher;
+    element.tryItFetcher = tryItFetcher;
 
     return () => {
-      if (element.tryItFetcher === playgroundFetcher) {
+      if (element.tryItFetcher === tryItFetcher) {
         element.tryItFetcher = undefined;
       }
     };
-  }, [playgroundFetcher]);
+  }, [tryItFetcher]);
 
   return (
     <elements-api
