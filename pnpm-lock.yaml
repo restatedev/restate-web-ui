@@ -19,7 +19,7 @@ overrides:
 
 patchedDependencies:
   '@stoplight/elements@9.0.19':
-    hash: b2ee23842101d4eace97190db378e6b76d1ef91eca56a83aec4920fa5d4c545d
+    hash: e2ebd50f3505a6bf00afb346a0bb423d0d059fe102cbcd99fef7902376e474ae
     path: patches/@stoplight__elements@9.0.19.patch
 
 importers:
@@ -233,7 +233,7 @@ importers:
         version: 1.34.1(ajv@8.17.1)(encoding@0.1.13)
       '@stoplight/elements':
         specifier: 9.0.19
-        version: 9.0.19(patch_hash=b2ee23842101d4eace97190db378e6b76d1ef91eca56a83aec4920fa5d4c545d)(@babel/core@7.24.7)(@babel/template@7.27.2)(@react-spectrum/provider@3.11.0(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(encoding@0.1.13)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
+        version: 9.0.19(patch_hash=e2ebd50f3505a6bf00afb346a0bb423d0d059fe102cbcd99fef7902376e474ae)(@babel/core@7.24.7)(@babel/template@7.27.2)(@react-spectrum/provider@3.11.0(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(encoding@0.1.13)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
       '@swc-node/register':
         specifier: 1.9.2
         version: 1.9.2(@swc/core@1.5.7(@swc/helpers@0.5.11))(@swc/types@0.1.7)(typescript@6.0.3)
@@ -13715,7 +13715,7 @@ snapshots:
       - wonka
       - xstate
 
-  '@stoplight/elements@9.0.19(patch_hash=b2ee23842101d4eace97190db378e6b76d1ef91eca56a83aec4920fa5d4c545d)(@babel/core@7.24.7)(@babel/template@7.27.2)(@react-spectrum/provider@3.11.0(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(encoding@0.1.13)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)':
+  '@stoplight/elements@9.0.19(patch_hash=e2ebd50f3505a6bf00afb346a0bb423d0d059fe102cbcd99fef7902376e474ae)(@babel/core@7.24.7)(@babel/template@7.27.2)(@react-spectrum/provider@3.11.0(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(encoding@0.1.13)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)':
     dependencies:
       '@stoplight/elements-core': 9.0.19(@babel/core@7.24.7)(@babel/template@7.27.2)(@react-spectrum/provider@3.11.0(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(encoding@0.1.13)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
       '@stoplight/http-spec': 7.1.0(encoding@0.1.13)

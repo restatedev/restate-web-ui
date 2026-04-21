@@ -35,19 +35,22 @@ pnpm patch @stoplight/elements@9.0.19 --edit-dir /tmp/stoplight-elements-patch
 3. Replace the relevant files in `/tmp/stoplight-elements-patch` with the new
    versions:
 
-- `web-components.min.js`
-- `web-components.min.js.LICENSE.txt`
-- `styles.min.css`
 - `elements-web-components.min.js`
 - `elements-web-components.min.js.LICENSE.txt`
 - `elements-web-components.min.scoped.css`
 - `NOTICE`
+
+For this app, that is the default minimal patch set. Do not update
+`web-components.min.js` unless explicitly requested.
 
 4. Make sure `/tmp/stoplight-elements-patch/package.json` still includes:
 
 - `elements-web-components.min.js` in `sideEffects`
 - export for `./elements-web-components.min.js`
 - export for `./elements-web-components.min.scoped.css`
+
+Keep this manifest diff minimal. Do not switch the app to a Vite alias or other
+runtime config workaround when the intent is to refresh the pnpm patch.
 
 5. Commit the patch back into the repo:
 
