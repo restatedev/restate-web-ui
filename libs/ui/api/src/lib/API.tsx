@@ -54,13 +54,12 @@ export const API = ({
       apiDescriptionDocument={apiDescriptionDocument}
       router="hash"
       layout={layout}
-      className="spotlight"
     />
   );
 };
 
 const schemaStyles = tv({
-  base: 'spotlight [&_svg.fa-fw]:ml-1 [&_svg.fa-fw]:text-2xs!',
+  base: 'stoplight [&_svg.fa-fw]:ml-1 [&_svg.fa-fw]:text-2xs!',
 });
 export const JsonSchemaViewer = ({
   schema,
