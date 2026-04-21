@@ -82,7 +82,11 @@ export function createPlaygroundFetcher(
       }),
     });
     const token = getAuthToken();
-    if (token && !nextRequest.headers.has('Authorization')) {
+    if (
+      token &&
+      (!nextRequest.headers.has('Authorization') ||
+        nextRequest.headers.get('Authorization') === 'Bearer 123')
+    ) {
       nextRequest.headers.set('Authorization', `Bearer ${token}`);
     }
     const response = await fetcher(nextRequest);
