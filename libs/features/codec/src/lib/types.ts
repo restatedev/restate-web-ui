@@ -1,6 +1,7 @@
 import type {
   Handler,
   JournalEntryV2,
+  Service,
 } from '@restate/data-access/admin-api-spec';
 
 export type RestateCodecHandlerMetadata = Partial<
@@ -15,6 +16,10 @@ export type RestateCodecHandlerMetadata = Partial<
   >
 >;
 
+export type RestateCodecServiceMetadata = Partial<
+  Pick<Service, 'name' | 'metadata'>
+>;
+
 export interface RestateCodecCommand {
   type?: JournalEntryV2['type'];
   name?: string;
@@ -27,9 +32,16 @@ export interface AsyncCodecOption<T> {
 }
 
 export interface RestateCodecOptions {
-  service?: string;
+  service?: AsyncCodecOption<RestateCodecServiceMetadata>;
   deploymentId?: AsyncCodecOption<string>;
   key?: string;
   handler?: AsyncCodecOption<RestateCodecHandlerMetadata>;
   command?: RestateCodecCommand;
 }
+
+export type RestateBinaryPayload = Uint8Array<ArrayBufferLike>;
+
+export type RestateBinaryCodec = (
+  value: RestateBinaryPayload,
+  options?: RestateCodecOptions,
+) => Promise<RestateBinaryPayload> | RestateBinaryPayload;

@@ -5,10 +5,55 @@ import { query } from '@restate/data-access/query';
 import { getAuthToken, getRestateVersion } from '@restate/util/api-config';
 import type { paths } from '@restate/data-access/admin-api-spec';
 import { UseMutationOptions, UseQueryOptions } from '@tanstack/react-query';
-import type { FetchResponse, Middleware } from 'openapi-fetch';
+import type {
+  BodySerializer,
+  FetchResponse,
+  Middleware,
+  ParseAs,
+} from 'openapi-fetch';
 import createClient from 'openapi-fetch';
 
+function getHeader(
+  headers: Headers | Record<string, unknown> | undefined,
+  name: string,
+) {
+  if (!headers) {
+    return undefined;
+  }
+
+  if (headers instanceof Headers) {
+    return headers.get(name) ?? headers.get(name.toLowerCase()) ?? undefined;
+  }
+
+  const value = headers[name] ?? headers[name.toLowerCase()];
+  return typeof value === 'string' ? value : undefined;
+}
+
+const adminBodySerializer = ((body: unknown, headers?: Headers) => {
+  const contentType = getHeader(headers, 'Content-Type');
+
+  if (contentType === 'application/octet-stream') {
+    if (
+      typeof body === 'string' ||
+      ArrayBuffer.isView(body) ||
+      body instanceof Blob
+    ) {
+      return body;
+    }
+  }
+
+  if (
+    contentType === 'application/json' &&
+    (ArrayBuffer.isView(body) || body instanceof Blob)
+  ) {
+    return body;
+  }
+
+  return JSON.stringify(body);
+}) as BodySerializer<any>;
+
 export const client = createClient<paths>({
+  bodySerializer: adminBodySerializer,
   fetch: (input: Request) => {
     if (new URL(input.url).pathname.startsWith('/query/')) {
       return query(input);
@@ -74,13 +119,6 @@ export type SupportedMethods<Path extends keyof paths> = keyof {
       path?: unknown;
       cookie?: unknown;
     };
-    requestBody?:
-      | {
-          content: {
-            'application/json': unknown;
-          };
-        }
-      | never;
     responses: Record<number, any>;
   }>
     ? PossibleMethod
@@ -104,46 +142,49 @@ export type OperationParameters<
 export type OperationBody<
   Path extends keyof paths,
   Method extends SupportedMethods<Path>,
-> = paths[Path][Method] extends {
-  requestBody: {
-    content: {
-      'application/json': unknown;
-    };
-  };
-}
-  ? paths[Path][Method]['requestBody']['content']['application/json']
+> = paths[Path][Method] extends { requestBody: { content: infer Content } }
+  ? Content[keyof Content]
   : never;
+
+export type DefaultOperationData<
+  Path extends keyof paths,
+  Method extends SupportedMethods<Path>,
+> =
+  paths[Path][Method] extends Record<string | number, any>
+    ? FetchResponse<paths[Path][Method], {}, 'application/json'>['data']
+    : never;
 
 export type QueryOptions<
   Path extends keyof paths,
   Method extends SupportedMethods<Path>,
+  Data = DefaultOperationData<Path, Method>,
 > = paths[Path][Method] extends {
   responses: Record<number, any>;
 }
-  ? UseQueryOptions<
-      FetchResponse<paths[Path][Method], {}, 'application/json'>['data'],
-      RestateError | Error
-    >
+  ? UseQueryOptions<Data, RestateError | Error>
   : never;
 
 type QueryFn<
   Path extends keyof paths,
   Method extends SupportedMethods<Path>,
-> = Extract<QueryOptions<Path, Method>['queryFn'], Function>;
+  Data = DefaultOperationData<Path, Method>,
+> = Extract<QueryOptions<Path, Method, Data>['queryFn'], Function>;
 
 type QueryKey<
   Path extends keyof paths,
   Method extends SupportedMethods<Path>,
-> = QueryOptions<Path, Method>['queryKey'];
+  Data = DefaultOperationData<Path, Method>,
+> = QueryOptions<Path, Method, Data>['queryKey'];
 
 export type MutationOptions<
   Path extends keyof paths,
   Method extends SupportedMethods<Path>,
   Parameters extends OperationParameters<Path, Method>,
   Body extends OperationBody<Path, Method>,
+  Data = DefaultOperationData<Path, Method>,
 > = paths[Path][Method] extends { responses: Record<number, any> }
   ? UseMutationOptions<
-      FetchResponse<paths[Path][Method], {}, 'application/json'>['data'],
+      Data,
       RestateError | Error,
       {
         parameters?: Parameters;
@@ -157,8 +198,9 @@ type MutationFn<
   Method extends SupportedMethods<Path>,
   Parameters extends OperationParameters<Path, Method>,
   Body extends OperationBody<Path, Method>,
+  Data = DefaultOperationData<Path, Method>,
 > = Extract<
-  MutationOptions<Path, Method, Parameters, Body>['mutationFn'],
+  MutationOptions<Path, Method, Parameters, Body, Data>['mutationFn'],
   Function
 >;
 
@@ -167,26 +209,37 @@ type MutationKey<
   Method extends SupportedMethods<Path>,
   Parameters extends OperationParameters<Path, Method>,
   Body extends OperationBody<Path, Method>,
-> = MutationOptions<Path, Method, Parameters, Body>['mutationKey'];
+  Data = DefaultOperationData<Path, Method>,
+> = MutationOptions<Path, Method, Parameters, Body, Data>['mutationKey'];
+
+type AdminApiInit<
+  Path extends keyof paths,
+  Method extends SupportedMethods<Path>,
+  Parameters extends OperationParameters<Path, Method>,
+  Body extends OperationBody<Path, Method>,
+> = {
+  baseUrl: string;
+  parameters?: Parameters;
+  body?: Body;
+  resolvedPath?: string;
+  headers?: Record<string, string>;
+  parseAs?: ParseAs;
+};
 
 export function adminApi<
   Path extends keyof paths,
   Method extends SupportedMethods<Path>,
   Parameters extends OperationParameters<Path, Method>,
   Body extends OperationBody<Path, Method>,
+  Data = DefaultOperationData<Path, Method>,
 >(
   type: 'query',
   path: Path,
   method: Method,
-  init: {
-    baseUrl: string;
-    parameters?: Parameters;
-    body?: Body;
-    resolvedPath?: string;
-  },
+  init: AdminApiInit<Path, Method, Parameters, Body>,
 ): {
-  queryFn: QueryFn<Path, Method>;
-  queryKey: QueryKey<Path, Method>;
+  queryFn: QueryFn<Path, Method, Data>;
+  queryKey: QueryKey<Path, Method, Data>;
   meta: Record<string, unknown>;
   refetchOnMount?: boolean;
   staleTime?: number;
@@ -196,17 +249,15 @@ export function adminApi<
   Method extends SupportedMethods<Path>,
   Parameters extends OperationParameters<Path, Method>,
   Body extends OperationBody<Path, Method>,
+  Data = DefaultOperationData<Path, Method>,
 >(
   type: 'mutate',
   path: Path,
   method: Method,
-  init: {
-    baseUrl: string;
-    resolvedPath?: string;
-  },
+  init: AdminApiInit<Path, Method, Parameters, Body>,
 ): {
-  mutationFn: MutationFn<Path, Method, Parameters, Body>;
-  mutationKey: MutationKey<Path, Method, Parameters, Body>;
+  mutationFn: MutationFn<Path, Method, Parameters, Body, Data>;
+  mutationKey: MutationKey<Path, Method, Parameters, Body, Data>;
   meta: Record<string, unknown>;
 };
 export function adminApi<
@@ -214,30 +265,36 @@ export function adminApi<
   Method extends SupportedMethods<Path>,
   Parameters extends OperationParameters<Path, Method>,
   Body extends OperationBody<Path, Method>,
+  Data = DefaultOperationData<Path, Method>,
 >(
   type: 'query' | 'mutate',
   path: Path,
   method: Method,
-  init: {
-    baseUrl: string;
-    parameters?: Parameters;
-    body?: Body;
-    resolvedPath?: string;
-  },
+  init: AdminApiInit<Path, Method, Parameters, Body>,
 ):
   | {
-      queryFn: QueryFn<Path, Method>;
-      queryKey: QueryKey<Path, Method>;
+      queryFn: QueryFn<Path, Method, Data>;
+      queryKey: QueryKey<Path, Method, Data>;
       meta: Record<string, unknown>;
       refetchOnMount?: boolean;
       staleTime?: number;
     }
   | {
-      mutationFn: MutationFn<Path, Method, Parameters, Body>;
-      mutationKey: MutationKey<Path, Method, Parameters, Body>;
+      mutationFn: MutationFn<Path, Method, Parameters, Body, Data>;
+      mutationKey: MutationKey<Path, Method, Parameters, Body, Data>;
       meta: Record<string, unknown>;
     } {
-  const key = [init.resolvedPath ?? path, { ...init, method }];
+  const key = [
+    init.resolvedPath ?? path,
+    {
+      baseUrl: init.baseUrl,
+      parameters: init.parameters,
+      body: init.body,
+      headers: init.headers,
+      parseAs: init.parseAs,
+      method,
+    },
+  ];
 
   if (type === 'query') {
     return {
@@ -252,10 +309,15 @@ export function adminApi<
             headers: {
               Accept: 'application/json',
               'Content-Type': 'application/json',
+              ...init.headers,
             },
             body: init.body,
             params: init.parameters,
-            ...(path === '/health' && { parseAs: 'stream' }),
+            ...(init.parseAs
+              ? { parseAs: init.parseAs }
+              : path === '/health'
+                ? { parseAs: 'stream' as const }
+                : {}),
           },
         );
         return data;
@@ -274,6 +336,12 @@ export function adminApi<
           path,
           {
             baseUrl: init.baseUrl,
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+              ...init.headers,
+            },
+            ...(init.parseAs && { parseAs: init.parseAs }),
             body: variables.body,
             params: variables.parameters,
           },

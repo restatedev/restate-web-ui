@@ -4,7 +4,7 @@ import type { RestateCodecOptions } from './types';
 const EMPTY_CODEC_OPTIONS: RestateCodecOptions = {};
 const CodecContext = createContext<RestateCodecOptions>(EMPTY_CODEC_OPTIONS);
 
-export function CodecProvider({
+export function CodecOptionsProvider({
   options,
   children,
 }: PropsWithChildren<{

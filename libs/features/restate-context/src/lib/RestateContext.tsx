@@ -13,35 +13,20 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useMemo,
 } from 'react';
 import semverGt from 'semver/functions/gte';
-import { useQueryClient } from '@tanstack/react-query';
-import {
-  composeRestateDecoder,
-  composeRestateEncoder,
-  type RestateBinaryCodec,
-} from './codecs';
-import {
-  createPlaygroundFetcher,
-  type GetPlaygroundCodecOptions,
-  type PlaygroundFetcher,
-  type RestateStringCodec,
-} from './playgroundFetcher';
+import type { RestateBinaryCodec } from '@restate/features/codec';
 
 export type Status = 'HEALTHY' | 'DEGRADED' | 'PENDING' | (string & {});
 export type {
+  RestateBinaryCodec,
   RestateCodecCommand,
   RestateCodecHandlerMetadata,
   RestateCodecOptions,
 } from '@restate/features/codec';
-export type { RestateBinaryCodec } from './codecs';
-export type {
-  GetPlaygroundCodecOptions,
-  PlaygroundFetcher,
-} from './playgroundFetcher';
 
 const EMPTY_CODECS: readonly RestateBinaryCodec[] = [];
+type CodecFetcher = typeof globalThis.fetch;
 
 type OnboardingComponent = ComponentType<{
   className?: string;
@@ -63,14 +48,11 @@ type RestateContext = {
   status: Status;
   version?: string;
   isVersionGte?: (version: string) => boolean;
-  createPlaygroundFetcher: (
-    getCodecOptions?: GetPlaygroundCodecOptions,
-  ) => PlaygroundFetcher;
   ingressUrl: string;
   baseUrl: string;
-  decoder: RestateStringCodec;
-  encoder: RestateStringCodec;
-  refreshCodec?: VoidFunction;
+  fetcher?: CodecFetcher;
+  decoders?: readonly RestateBinaryCodec[];
+  encoders?: readonly RestateBinaryCodec[];
   EncodingWaterMark?: ComponentType<{
     value?: string;
     className?: string;
@@ -92,11 +74,11 @@ type RestateContext = {
 
 const InternalRestateContext = createContext<RestateContext>({
   status: 'PENDING',
-  createPlaygroundFetcher: () => globalThis.fetch,
   ingressUrl: '',
   baseUrl: '',
-  decoder: composeRestateDecoder(EMPTY_CODECS),
-  encoder: composeRestateEncoder(EMPTY_CODECS),
+  fetcher: globalThis.fetch,
+  decoders: EMPTY_CODECS,
+  encoders: EMPTY_CODECS,
 });
 
 function InternalRestateContextProvider({
@@ -106,8 +88,8 @@ function InternalRestateContextProvider({
   ingressUrl,
   baseUrl = '',
   fetcher,
-  decoder,
-  encoder,
+  decoders,
+  encoders,
   EncodingWaterMark,
   tunnel,
   GettingStarted,
@@ -120,9 +102,9 @@ function InternalRestateContextProvider({
   isPending?: boolean;
   ingressUrl?: string;
   baseUrl?: string;
-  fetcher?: PlaygroundFetcher;
-  decoder: RestateStringCodec;
-  encoder: RestateStringCodec;
+  fetcher?: CodecFetcher;
+  decoders?: readonly RestateBinaryCodec[];
+  encoders?: readonly RestateBinaryCodec[];
   EncodingWaterMark?: ComponentType<{
     value?: string;
     className?: string;
@@ -163,37 +145,10 @@ function InternalRestateContextProvider({
     [releasedVersion],
   );
 
-  const queryClient = useQueryClient();
-  const refreshCodec = useCallback(() => {
-    queryClient.removeQueries({
-      predicate(query) {
-        const { queryKey } = query;
-        if (
-          Array.isArray(queryKey) &&
-          ['decode', 'encode'].includes(queryKey.at(1))
-        ) {
-          return true;
-        }
-        return false;
-      },
-    });
-  }, [queryClient]);
-
   useQueryHealthCheck({
     enabled: queryHealthCheckEnabled && status === 'HEALTHY',
     refetchInterval: 60_000,
   });
-
-  const createResolvedPlaygroundFetcher = useCallback(
-    (getCodecOptions?: GetPlaygroundCodecOptions) =>
-      createPlaygroundFetcher(
-        fetcher ?? globalThis.fetch,
-        encoder,
-        decoder,
-        getCodecOptions,
-      ),
-    [fetcher, encoder, decoder],
-  );
 
   const adminBaseUrl = useAdminBaseUrl();
   useEffect(() => {
@@ -207,14 +162,13 @@ function InternalRestateContextProvider({
       value={{
         version,
         status,
-        createPlaygroundFetcher: createResolvedPlaygroundFetcher,
         ingressUrl: resolvedIngress,
         isVersionGte,
         baseUrl,
-        decoder,
-        encoder,
+        fetcher,
+        decoders,
+        encoders,
         EncodingWaterMark,
-        refreshCodec,
         tunnel,
         GettingStarted,
         OnboardingGuide,
@@ -253,7 +207,7 @@ export function RestateContextProvider({
   ingressUrl?: string;
   isPending?: boolean;
   baseUrl?: string;
-  fetcher?: PlaygroundFetcher;
+  fetcher?: CodecFetcher;
   decoders?: readonly RestateBinaryCodec[];
   encoders?: readonly RestateBinaryCodec[];
   EncodingWaterMark?: ComponentType<{
@@ -270,15 +224,6 @@ export function RestateContextProvider({
   systemHealthMonitor?: { reset: () => void; cleanup: () => void };
   queryHealthCheckEnabled?: boolean;
 }>) {
-  const resolvedDecoder = useMemo(
-    () => composeRestateDecoder(decoders),
-    decoders,
-  );
-  const resolvedEncoder = useMemo(
-    () => composeRestateEncoder(encoders),
-    encoders,
-  );
-
   return (
     <AdminBaseURLProvider baseUrl={adminBaseUrl}>
       <InternalRestateContextProvider
@@ -286,8 +231,8 @@ export function RestateContextProvider({
         isPending={isPending}
         baseUrl={baseUrl}
         fetcher={fetcher}
-        decoder={resolvedDecoder}
-        encoder={resolvedEncoder}
+        decoders={decoders}
+        encoders={encoders}
         EncodingWaterMark={EncodingWaterMark}
         tunnel={tunnel}
         GettingStarted={GettingStarted}

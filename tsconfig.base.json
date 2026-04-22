@@ -40,6 +40,9 @@
         "libs/features/batch-operations/src/index.ts"
       ],
       "@restate/features/codec": ["libs/features/codec/src/index.ts"],
+      "@restate/features/codec-options": [
+        "libs/features/codec-options/src/index.ts"
+      ],
       "@restate/features/deployment": ["libs/features/deployment/src/index.ts"],
       "@restate/features/deployment-details": [
         "libs/features/deployment-details/src/index.ts"

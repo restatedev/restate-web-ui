@@ -6,12 +6,9 @@ import {
   useGetInvocationJournalWithInvocationV2,
   useGetInvocationStatusDetails,
 } from '@restate/data-access/admin-api-hooks';
-import {
-  CodecProvider,
-  type RestateCodecOptions,
-} from '@restate/features/codec';
+import type { RestateCodecOptions } from '@restate/features/codec';
+import { CodecProvider } from '@restate/features/codec-options';
 import type { PropsWithChildren } from 'react';
-import { useCodecHandler } from './codec';
 
 type Invocation = ReturnType<
   typeof useGetInvocationJournalWithInvocationV2
@@ -118,17 +115,24 @@ export function EntryCodecProvider({
     invocation,
     targetInvocation.data,
   );
-  const { handler } = useCodecHandler(service, handlerName);
   const options = entry
     ? ({
-        service,
+        service: {
+          value: {
+            name: service,
+          },
+        },
         deploymentId: {
           value: deploymentId,
           isPending: targetInvocation.isPending,
           error: targetInvocation.error,
         },
         key,
-        handler,
+        handler: {
+          value: {
+            name: handlerName,
+          },
+        },
         command: getEntryCodecCommand(entry),
       } satisfies RestateCodecOptions)
     : undefined;

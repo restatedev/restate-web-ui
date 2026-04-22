@@ -75,7 +75,7 @@ import { tv } from '@restate/util/styles';
 import { STATE_QUERY_NAME } from './constants';
 import { Link } from '@restate/ui/link';
 import { useEditStateContext } from '@restate/features/edit-state';
-import { CodecProvider } from '@restate/features/codec';
+import { CodecProvider } from '@restate/features/codec-options';
 import { toStateParam } from './toStateParam';
 import { SplitButton } from '@restate/ui/split-button';
 import { useRestateContext } from '@restate/features/restate-context';
@@ -471,8 +471,12 @@ function Component() {
                         </Cell>
                       );
                     } else {
-                      const codecOptions = {
-                        service: virtualObject,
+                      const stateCodecOptions = {
+                        service: {
+                          value: {
+                            name: virtualObject,
+                          },
+                        },
                         key: row.key!,
                         command: {
                           type: 'GetState' as const,
@@ -502,7 +506,9 @@ function Component() {
                                         />
                                       )}
                                       <span className="block truncate">
-                                        <CodecProvider options={codecOptions}>
+                                        <CodecProvider
+                                          options={stateCodecOptions}
+                                        >
                                           <DecodedValue
                                             value={row.state?.[id]}
                                             isBase64
@@ -545,7 +551,7 @@ function Component() {
                                       </div>
                                     }
                                   >
-                                    <CodecProvider options={codecOptions}>
+                                    <CodecProvider options={stateCodecOptions}>
                                       <Value
                                         value={row.state?.[id]}
                                         className="w-full py-0 font-mono text-xs"

@@ -1,18 +1,30 @@
 import type { RestateCodecOptions } from '@restate/features/codec';
 import { getAuthToken } from '@restate/util/api-config';
 import { base64ToUint8Array, bytesToBase64 } from '@restate/util/binary';
+import type { RestateStringCodec } from './codecs';
 
-export type RestateStringCodec = (
-  value?: string,
-  options?: RestateCodecOptions,
-) => Promise<string> | string;
+export type CodecFetcher = typeof globalThis.fetch;
 
-export type PlaygroundFetcher = typeof globalThis.fetch;
-export type GetPlaygroundCodecOptions = (
+export type GetCodecOptions = (
   request: Request,
 ) => RestateCodecOptions | Promise<RestateCodecOptions | undefined> | undefined;
 
-async function getEncodedPlaygroundBody(
+function withCodecCommandType(
+  codecOptions: RestateCodecOptions | undefined,
+  type: 'Input' | 'Output',
+) {
+  return codecOptions
+    ? {
+        ...codecOptions,
+        command: {
+          ...codecOptions.command,
+          type,
+        },
+      }
+    : undefined;
+}
+
+async function getEncodedRequestBody(
   init: RequestInit | undefined,
   encoder: RestateStringCodec,
   codecOptions?: RestateCodecOptions,
@@ -21,7 +33,10 @@ async function getEncodedPlaygroundBody(
     return init.body;
   }
 
-  const encodedBody = await encoder(init?.body ?? '', codecOptions);
+  const encodedBody = await encoder(
+    init?.body ?? '',
+    withCodecCommandType(codecOptions, 'Input'),
+  );
   return base64ToUint8Array(encodedBody);
 }
 
@@ -41,7 +56,7 @@ function isRestateSendResponse(response: Response) {
   );
 }
 
-async function getDecodedPlaygroundResponse(
+async function getDecodedResponseBody(
   response: Response,
   decoder: RestateStringCodec,
   codecOptions?: RestateCodecOptions,
@@ -57,31 +72,37 @@ async function getDecodedPlaygroundResponse(
   const encodedBody = bytesToBase64(
     new Uint8Array(await response.clone().arrayBuffer()),
   );
-  const decodedBody = await decoder(encodedBody, codecOptions);
+  const decodedBody = await decoder(
+    encodedBody,
+    withCodecCommandType(codecOptions, 'Output'),
+  );
+  const headers = new Headers(response.headers);
+  headers.set('Content-Type', 'application/json');
 
   return new Response(decodedBody, {
-    headers: response.headers,
+    headers,
     status: response.status,
     statusText: response.statusText,
   });
 }
 
-export function createPlaygroundFetcher(
-  fetcher: PlaygroundFetcher,
+export function createFetcherWithCodec(
+  fetcher: CodecFetcher,
   encoder: RestateStringCodec,
   decoder: RestateStringCodec,
-  getCodecOptions?: GetPlaygroundCodecOptions,
-): PlaygroundFetcher {
+  getCodecOptions?: GetCodecOptions,
+): CodecFetcher {
   return async (input, init) => {
     const request = new Request(input, init);
     const codecOptions = await getCodecOptions?.(request);
     const nextRequest = new Request(request, {
       credentials: 'include',
       ...(!['GET', 'HEAD'].includes(request.method.toUpperCase()) && {
-        body: await getEncodedPlaygroundBody(init, encoder, codecOptions),
+        body: await getEncodedRequestBody(init, encoder, codecOptions),
       }),
     });
     const token = getAuthToken();
+
     if (
       token &&
       (!nextRequest.headers.has('Authorization') ||
@@ -89,7 +110,8 @@ export function createPlaygroundFetcher(
     ) {
       nextRequest.headers.set('Authorization', `Bearer ${token}`);
     }
+
     const response = await fetcher(nextRequest);
-    return getDecodedPlaygroundResponse(response, decoder, codecOptions);
+    return getDecodedResponseBody(response, decoder, codecOptions);
   };
 }

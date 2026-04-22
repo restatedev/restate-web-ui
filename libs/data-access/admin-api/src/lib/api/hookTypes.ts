@@ -1,5 +1,6 @@
 import type { paths } from '@restate/data-access/admin-api-spec';
 import type {
+  DefaultOperationData,
   MutationOptions,
   OperationBody,
   OperationParameters,
@@ -10,7 +11,8 @@ import type {
 export type HookQueryOptions<
   Path extends keyof paths,
   Method extends SupportedMethods<Path>,
-> = Omit<QueryOptions<Path, Method>, 'queryFn' | 'queryKey'>;
+  Data = DefaultOperationData<Path, Method>,
+> = Omit<QueryOptions<Path, Method, Data>, 'queryFn' | 'queryKey'>;
 export type HookMutationOptions<
   Path extends keyof paths,
   Method extends SupportedMethods<Path>,
@@ -19,7 +21,8 @@ export type HookMutationOptions<
     Method
   >,
   Body extends OperationBody<Path, Method> = OperationBody<Path, Method>,
+  Data = DefaultOperationData<Path, Method>,
 > = Omit<
-  MutationOptions<Path, Method, Parameters, Body>,
+  MutationOptions<Path, Method, Parameters, Body, Data>,
   'mutationFn' | 'mutationKey'
 >;

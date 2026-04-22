@@ -1,6 +1,6 @@
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Value } from './Value';
-import { CodecProvider } from '@restate/features/codec';
+import { CodecProvider } from '@restate/features/codec-options';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import { useEditStateContext } from '@restate/features/edit-state';
@@ -65,8 +65,12 @@ function StateKey({
   const setEditState = useEditStateContext();
   const { close } = usePopover();
   const { EncodingWaterMark } = useRestateContext();
-  const codecOptions = {
-    service,
+  const stateCodecOptions = {
+    service: {
+      value: {
+        name: service,
+      },
+    },
     deploymentId: { value: deploymentId },
     key: serviceKey,
     command: {
@@ -81,7 +85,7 @@ function StateKey({
         <TruncateWithTooltip copyText={name}>{name}</TruncateWithTooltip>
       </div>
       <div className="relative truncate py-1">
-        <CodecProvider options={codecOptions}>
+        <CodecProvider options={stateCodecOptions}>
           <Value value={value} className="mono max-w-full text-xs" isBase64 />
         </CodecProvider>
         <div className="absolute top-1 right-1 flex items-center gap-2">

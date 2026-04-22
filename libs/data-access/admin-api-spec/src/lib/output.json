@@ -302,6 +302,138 @@
         }
       }
     },
+    "/internal/services/{service}/serdes/decode/{serdeName}": {
+      "post": {
+        "tags": ["service"],
+        "summary": "Decode service wire bytes into JSON",
+        "operationId": "decode_service_serde",
+        "parameters": [
+          {
+            "name": "service",
+            "in": "path",
+            "required": true,
+            "description": "Registered service name.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "serdeName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Arbitrary serde name forwarded to the target deployment."
+          },
+          {
+            "name": "deployment",
+            "in": "query",
+            "required": false,
+            "description": "Optional deployment id; if omitted, resolve the latest deployment for the service.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "JSON returned by the target deployment",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/internal/services/{service}/serdes/encode/{serdeName}": {
+      "post": {
+        "tags": ["service"],
+        "summary": "Encode JSON into service wire bytes",
+        "operationId": "encode_service_serde",
+        "parameters": [
+          {
+            "name": "service",
+            "in": "path",
+            "required": true,
+            "description": "Registered service name.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "serdeName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Arbitrary serde name forwarded to the target deployment."
+          },
+          {
+            "name": "deployment",
+            "in": "query",
+            "required": false,
+            "description": "Optional deployment id; if omitted, resolve the latest deployment for the service.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Wire-format bytes returned by the target deployment",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
     "/invocations/{invocation_id}/cancel": {
       "patch": {
         "tags": ["invocation"],

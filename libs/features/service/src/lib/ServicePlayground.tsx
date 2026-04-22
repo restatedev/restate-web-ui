@@ -2,6 +2,7 @@ import { useLocation, useSearchParams } from 'react-router';
 import {
   type ListDeploymentsData,
   useListDeployments,
+  useServiceDetails,
   useServiceOpenApi,
 } from '@restate/data-access/admin-api-hooks';
 import { Button, SubmitButton } from '@restate/ui/button';
@@ -17,6 +18,7 @@ import {
   useState,
 } from 'react';
 import { useRestateContext } from '@restate/features/restate-context';
+import { useCodecRuntime } from '@restate/features/codec-options';
 import { tv } from '@restate/util/styles';
 import { API } from '@restate/ui/api';
 import {
@@ -156,11 +158,20 @@ function useApiSpec(service?: string | null) {
       enabled,
     },
   );
+  const {
+    data: serviceDetails,
+    isPending: isServiceDetailsPending,
+    error: serviceDetailsError,
+  } = useServiceDetails(String(service), {
+    enabled,
+    refetchOnMount: false,
+  });
   const { queryKey: listDeploymentsQueryKey } = useListDeployments({
     enabled,
     refetchOnMount: false,
   });
-  const { ingressUrl, createPlaygroundFetcher } = useRestateContext();
+  const { ingressUrl } = useRestateContext();
+  const { createFetcherWithCodec } = useCodecRuntime();
   const queryClient = useQueryClient();
 
   const { apiSpec, handlers, operations } = useMemo(() => {
@@ -211,7 +222,7 @@ function useApiSpec(service?: string | null) {
 
   const tryItFetcher = useMemo(
     () =>
-      createPlaygroundFetcher((request) => {
+      createFetcherWithCodec((request) => {
         if (!service) {
           return undefined;
         }
@@ -222,6 +233,9 @@ function useApiSpec(service?: string | null) {
             method === request.method.toUpperCase() &&
             pattern.test({ pathname }),
         );
+        const handler = operation?.id
+          ? serviceDetails?.handlers.find(({ name }) => name === operation.id)
+          : undefined;
         const listDeployments = queryClient.getQueryData<ListDeploymentsData>(
           listDeploymentsQueryKey,
         );
@@ -229,23 +243,40 @@ function useApiSpec(service?: string | null) {
         const latestRevision = serviceData?.sortedRevisions[0];
 
         return {
-          service,
+          service: {
+            value: {
+              name: serviceDetails?.name ?? service,
+              metadata: serviceDetails?.metadata,
+            },
+            isPending: isServiceDetailsPending,
+            error: serviceDetailsError,
+          },
           deploymentId: {
             value: serviceData?.deployments[latestRevision ?? -1]?.[0],
           },
           handler: {
             value: {
-              name: operation?.id,
+              name: handler?.name ?? operation?.id,
+              metadata: handler?.metadata,
+              input_description: handler?.input_description,
+              input_json_schema: handler?.input_json_schema,
+              output_description: handler?.output_description,
+              output_json_schema: handler?.output_json_schema,
             },
+            isPending: isServiceDetailsPending,
+            error: serviceDetailsError,
           },
         };
       }),
     [
-      createPlaygroundFetcher,
+      createFetcherWithCodec,
       listDeploymentsQueryKey,
       operations,
       queryClient,
       service,
+      serviceDetailsError,
+      serviceDetails,
+      isServiceDetailsPending,
     ],
   );
 

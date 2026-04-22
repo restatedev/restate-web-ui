@@ -14,12 +14,13 @@ import {
   UseQueryOptions,
   useQueryClient,
   UseQueryResult,
-  QueryKey,
 } from '@tanstack/react-query';
 import {
   adminApi,
   OperationParameters,
   getOverviewRefreshMeta,
+  getDecodeServiceSerdeQueryOptions,
+  getEncodeServiceSerdeQueryOptions,
 } from '@restate/data-access/admin-api';
 import { useAdminBaseUrl } from '@restate/data-access/admin-api';
 import type {
@@ -39,7 +40,6 @@ import { useCallback, useMemo } from 'react';
 import { RestateError } from '@restate/util/errors';
 import { useAPIStatus } from '@restate/data-access/admin-api';
 import { useRestateContext } from '@restate/features/restate-context';
-import { type RestateCodecOptions } from '@restate/features/codec';
 import { base64ToUint8Array } from '@restate/util/binary';
 
 export const RESTARTED_FROM_HEADER = 'x-restate-restarted-from';
@@ -855,6 +855,82 @@ export function useServiceOpenApi(
   });
 
   return { ...results, queryKey: queryOptions.queryKey };
+}
+
+type ServiceSerdeName =
+  operations['decode_service_serde']['parameters']['path']['serdeName'];
+
+type DecodeServiceSerdeBody = string | Uint8Array;
+
+type DecodeServiceSerdeOptions = HookQueryOptions<
+  '/internal/services/{service}/serdes/decode/{serdeName}',
+  'post'
+> & {
+  parameters?: Pick<operations['decode_service_serde']['parameters'], 'query'>;
+};
+
+type EncodeServiceSerdeOptions = HookQueryOptions<
+  '/internal/services/{service}/serdes/encode/{serdeName}',
+  'post',
+  Uint8Array
+> & {
+  parameters?: Pick<operations['encode_service_serde']['parameters'], 'query'>;
+};
+
+export function useDecodeServiceSerde(
+  service: string,
+  serdeName: ServiceSerdeName,
+  body?: DecodeServiceSerdeBody,
+  { parameters, ...options }: DecodeServiceSerdeOptions = {},
+) {
+  const enabled = useAPIStatus();
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = getDecodeServiceSerdeQueryOptions(baseUrl, {
+    service,
+    serdeName,
+    body,
+    deployment: parameters?.query?.deployment,
+  });
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+    enabled: body !== undefined && options.enabled !== false && enabled,
+  });
+
+  return { ...results, queryKey: queryOptions.queryKey };
+}
+
+export function useEncodeServiceSerde(
+  service: string,
+  serdeName: ServiceSerdeName,
+  body?: operations['encode_service_serde']['requestBody']['content']['application/json'],
+  { parameters, ...options }: EncodeServiceSerdeOptions = {},
+) {
+  const enabled = useAPIStatus();
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = getEncodeServiceSerdeQueryOptions(baseUrl, {
+    service,
+    serdeName,
+    body,
+    deployment: parameters?.query?.deployment,
+  });
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+    queryFn: (...args: Parameters<typeof queryOptions.queryFn>) =>
+      Promise.resolve(queryOptions.queryFn(...args)).then(
+        (data: ArrayBuffer) => new Uint8Array(data),
+      ),
+    enabled: body !== undefined && options.enabled !== false && enabled,
+  });
+
+  return {
+    ...results,
+    data: results.data ?? new Uint8Array(),
+    queryKey: queryOptions.queryKey,
+  };
 }
 
 export function useListInvocations(
@@ -1682,371 +1758,4 @@ export function convertStateToObject<T>(state: { name: string; value: T }[]) {
     (p, c) => ({ ...p, [c.name]: c.value }),
     {} as Record<string, T>,
   );
-}
-
-function isValidJSON(value: any) {
-  try {
-    return Boolean(JSON.stringify(value));
-  } catch (error) {
-    return false;
-  }
-}
-export function useEditState(
-  service: string,
-  objectKey: string,
-  {
-    enabled,
-    ...options
-  }: UseMutationOptions<
-    StateResponse['state'] | undefined,
-    RestateError | Error,
-    {
-      state: Record<string, string | undefined>;
-      partial?: boolean;
-    }
-  > & { enabled?: boolean } = {},
-) {
-  const baseUrl = useAdminBaseUrl();
-  const queryOptions = adminApi(
-    'query',
-    '/query/services/{name}/keys/{key}/state',
-    'get',
-    {
-      baseUrl,
-      parameters: { path: { key: objectKey, name: service } },
-    },
-  );
-
-  const query = useQuery({
-    ...queryOptions,
-    enabled,
-    staleTime: 0,
-    refetchOnMount: true,
-  });
-  const version = query.data?.version;
-  const decodedQuery = useDecodeState(
-    query.data?.state,
-    query.data?.version,
-    true,
-    {
-      service,
-      key: objectKey,
-      command: { type: 'GetState' },
-    },
-  );
-  const { encoder } = useRestateContext();
-
-  const { mutationFn, mutationKey, meta } = adminApi(
-    'mutate',
-    '/services/{service}/state',
-    'post',
-    {
-      baseUrl,
-      resolvedPath: `/services/${service}/state`,
-    },
-  );
-  const queryClient = useQueryClient();
-
-  const mutate = async (variables: {
-    state: Record<string, string | undefined>;
-    partial?: boolean;
-  }) => {
-    if (!version && variables.partial) {
-      throw new RestateError(
-        'Partial updates to the state are not supported. Please replace the entire state instead.',
-      );
-    }
-    if (
-      !variables.state ||
-      typeof variables.state !== 'object' ||
-      !isValidJSON(variables.state)
-    ) {
-      throw new RestateError('Please enter a valid value');
-    }
-
-    const encodedVariables = convertStateToObject(
-      await Promise.all(
-        Object.entries(variables.state).map(([k, v]) =>
-          Promise.resolve(
-            encoder(v, {
-              service,
-              key: objectKey,
-              command: {
-                type: 'SetState',
-                name: k,
-              },
-            }),
-          ).then((encodedV) => ({
-            name: k,
-            value: Array.from(base64ToUint8Array(encodedV)),
-          })),
-        ),
-      ),
-    );
-
-    return mutationFn(
-      {
-        parameters: { path: { service } },
-        body: {
-          object_key: objectKey,
-          ...(variables.partial && {
-            version,
-          }),
-          new_state: {
-            ...(variables.partial &&
-              query.data && {
-                ...convertStateToObject(
-                  query.data.state.map(({ name, value }) => ({
-                    name,
-                    value: Array.from(base64ToUint8Array(value)),
-                  })),
-                ),
-              }),
-            ...encodedVariables,
-          },
-        },
-      },
-      { client: queryClient, meta },
-    ).then(async (res) => {
-      const { data: newData } = await query.refetch();
-
-      return newData?.state;
-    });
-  };
-
-  const mutation = useMutation({
-    mutationFn: mutate,
-    mutationKey,
-    meta,
-    onSuccess(data, variables, context, meta) {
-      options?.onSuccess?.(data, variables, context, meta);
-      queryClient.setQueriesData(
-        {
-          predicate: (query) => {
-            return (
-              Array.isArray(query.queryKey) &&
-              query.queryKey.at(0) === `/query/services/${service}/state`
-            );
-          },
-        },
-        (oldData: ReturnType<typeof useListVirtualObjectState>['data']) => {
-          if (!oldData || !data) {
-            return oldData;
-          } else {
-            return {
-              ...oldData,
-              objects: oldData.objects.map((oldObject) => {
-                if (oldObject.key === objectKey) {
-                  return {
-                    ...oldObject,
-                    state: data,
-                  };
-                } else {
-                  return oldObject;
-                }
-              }),
-            };
-          }
-        },
-      );
-      queryClient.invalidateQueries({
-        predicate: (query) => {
-          if (Array.isArray(query.queryKey)) {
-            const [resolvedUrl] = query.queryKey;
-            return (
-              resolvedUrl.startsWith(`/query/services/${service}`) &&
-              resolvedUrl.includes('/state')
-            );
-          }
-          return false;
-        },
-      });
-    },
-  });
-
-  return {
-    mutation,
-    decodedQuery: {
-      ...decodedQuery,
-      isPending: query.isPending || decodedQuery.isPending,
-      error: query.error || decodedQuery.error,
-      data: query.data ? decodedQuery.data : undefined,
-    },
-  };
-}
-
-function resolveCodecDeploymentId(
-  service: string | undefined,
-  deploymentId: string | undefined,
-  listDeployments: ListDeploymentsData,
-) {
-  if (
-    !deploymentId ||
-    !service ||
-    listDeployments?.deployments.has(deploymentId)
-  ) {
-    return deploymentId;
-  }
-
-  const serviceData = listDeployments?.services.get(service);
-  const latestRevision = serviceData?.sortedRevisions[0];
-  return latestRevision
-    ? serviceData?.deployments[latestRevision]?.[0]
-    : deploymentId;
-}
-
-function useResolvedCodecDeployment(codecOptions?: RestateCodecOptions) {
-  const {
-    data: listDeployments,
-    isPending,
-    error,
-  } = useListDeployments({
-    refetchOnMount: false,
-  });
-
-  return {
-    ...(codecOptions ?? {}),
-    deploymentId: {
-      value: resolveCodecDeploymentId(
-        codecOptions?.service,
-        codecOptions?.deploymentId?.value,
-        listDeployments,
-      ),
-      isPending: codecOptions?.deploymentId?.isPending || isPending,
-      error: codecOptions?.deploymentId?.error || error,
-    },
-  };
-}
-
-function safeParse(value: string) {
-  try {
-    return JSON.parse(value);
-  } catch (error) {
-    if (value === '') {
-      return undefined;
-    } else {
-      return value;
-    }
-  }
-}
-
-export function useDecodeState(
-  state: {
-    name: string;
-    value: string;
-  }[] = [],
-  version?: string,
-  isBase64?: boolean,
-  codecOptions?: RestateCodecOptions,
-) {
-  const { decoder } = useRestateContext();
-  const resolvedCodecOptions = useResolvedCodecDeployment(codecOptions);
-
-  return useQueries({
-    queries: state.map(({ value }) => ({
-      queryKey: [value, 'decode', resolvedCodecOptions] as const,
-      queryFn: async ({ queryKey }: { queryKey: QueryKey }) => {
-        const [decodedValue, , decodedCodecOptions] = queryKey;
-        return decoder(
-          decodedValue as string,
-          decodedCodecOptions as RestateCodecOptions,
-        );
-      },
-      staleTime: Infinity,
-      refetchOnMount: false,
-      placeholderData: value,
-      enabled: Boolean(
-        isBase64 &&
-          !(
-            resolvedCodecOptions.deploymentId.isPending ||
-            resolvedCodecOptions.handler?.isPending
-          ),
-      ),
-      initialData: isBase64 ? undefined : value,
-    })),
-    combine: (results) => {
-      const error =
-        resolvedCodecOptions.deploymentId.error ??
-        resolvedCodecOptions.handler?.error ??
-        results.find((result) => result.error)?.error;
-      const isPlaceholderData = results.some(
-        (result) => result.isPlaceholderData,
-      );
-      const data = {
-        state: convertStateToObject(
-          results.filter(Boolean).map((result, index) => ({
-            value: safeParse(result.data ?? ''),
-            name: state.at(index)!.name,
-          })),
-        ),
-        version,
-      };
-
-      return {
-        data,
-        error,
-        isPlaceholderData,
-        isPending:
-          resolvedCodecOptions.deploymentId.isPending ||
-          resolvedCodecOptions.handler?.isPending ||
-          results.some((result) => result.isFetching),
-      };
-    },
-  });
-}
-
-export function useDecode(
-  value?: string,
-  isBase64?: boolean,
-  codecOptions?: RestateCodecOptions,
-) {
-  const { decoder } = useRestateContext();
-  const resolvedCodecOptions = useResolvedCodecDeployment(codecOptions);
-
-  const query = useQuery({
-    queryKey: [value, 'decode', resolvedCodecOptions] as const,
-    queryFn: () => (isBase64 ? decoder(value, resolvedCodecOptions) : value),
-    staleTime: Infinity,
-    refetchOnMount: false,
-    enabled: !(
-      resolvedCodecOptions.deploymentId?.isPending ||
-      resolvedCodecOptions.handler?.isPending
-    ),
-  });
-
-  return {
-    ...query,
-    error:
-      resolvedCodecOptions.deploymentId?.error ??
-      resolvedCodecOptions.handler?.error ??
-      query.error,
-  };
-}
-
-export function useEncode(
-  value?: string,
-  isBase64?: boolean,
-  codecOptions?: RestateCodecOptions,
-) {
-  const { encoder } = useRestateContext();
-  const resolvedCodecOptions = useResolvedCodecDeployment(codecOptions);
-
-  const query = useQuery({
-    queryKey: [value, 'encode', resolvedCodecOptions] as const,
-    queryFn: () => (isBase64 ? encoder(value, resolvedCodecOptions) : value),
-    staleTime: Infinity,
-    refetchOnMount: false,
-    enabled: !(
-      resolvedCodecOptions.deploymentId?.isPending ||
-      resolvedCodecOptions.handler?.isPending
-    ),
-  });
-
-  return {
-    ...query,
-    error:
-      resolvedCodecOptions.deploymentId?.error ??
-      resolvedCodecOptions.handler?.error ??
-      query.error,
-  };
 }

@@ -12,8 +12,7 @@ import {
   PopoverContent,
   PopoverHoverTrigger,
 } from '@restate/ui/popover';
-import { useDecode } from '@restate/data-access/admin-api-hooks';
-import { useCodec } from '@restate/features/codec';
+import { useDecode } from '@restate/features/codec-options';
 
 const styles = tv({
   slots: {
@@ -48,12 +47,7 @@ export function Value({
   portalId?: string;
 }) {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
-  const codecOptions = useCodec();
-  const { data, error, isPending, isFetching } = useDecode(
-    value,
-    isBase64,
-    codecOptions,
-  );
+  const { data, error, isPending, isFetching } = useDecode(value, isBase64);
   const displayValue = data ?? value;
   const { editor: editorClassName } = styles({
     state: !error && (isPending || isFetching) ? 'pending' : 'ready',
@@ -126,12 +120,7 @@ export function DecodedValue({
   className?: string;
   isBase64?: boolean;
 }) {
-  const codecOptions = useCodec();
-  const { data, error, isPending, isFetching } = useDecode(
-    value,
-    isBase64,
-    codecOptions,
-  );
+  const { data, error, isPending, isFetching } = useDecode(value, isBase64);
   const displayValue = data ?? value;
 
   if (typeof displayValue === 'undefined') {
