@@ -15,11 +15,6 @@ import {
   useEffect,
 } from 'react';
 import semverGt from 'semver/functions/gte';
-import {
-  CodecRuntimeProvider,
-  type CodecFetcher,
-  type RestateBinaryCodec,
-} from '@restate/features/codec';
 
 export type Status = 'HEALTHY' | 'DEGRADED' | 'PENDING' | (string & {});
 
@@ -76,9 +71,6 @@ function InternalRestateContextProvider({
   systemHealthMonitor,
   ingressUrl,
   baseUrl = '',
-  fetcher,
-  decoders,
-  encoders,
   EncodingWaterMark,
   tunnel,
   GettingStarted,
@@ -91,9 +83,6 @@ function InternalRestateContextProvider({
   isPending?: boolean;
   ingressUrl?: string;
   baseUrl?: string;
-  fetcher?: CodecFetcher;
-  decoders?: readonly RestateBinaryCodec[];
-  encoders?: readonly RestateBinaryCodec[];
   EncodingWaterMark?: ComponentType<{
     value?: string;
     className?: string;
@@ -164,13 +153,7 @@ function InternalRestateContextProvider({
       }}
     >
       <APIStatusProvider enabled={status === 'HEALTHY'}>
-        <CodecRuntimeProvider
-          fetcher={fetcher}
-          decoders={decoders}
-          encoders={encoders}
-        >
-          {children}
-        </CodecRuntimeProvider>
+        {children}
       </APIStatusProvider>
     </InternalRestateContext.Provider>
   );
@@ -182,9 +165,6 @@ export function RestateContextProvider({
   ingressUrl,
   isPending,
   baseUrl,
-  fetcher,
-  decoders,
-  encoders,
   EncodingWaterMark,
   tunnel,
   GettingStarted,
@@ -199,9 +179,6 @@ export function RestateContextProvider({
   ingressUrl?: string;
   isPending?: boolean;
   baseUrl?: string;
-  fetcher?: CodecFetcher;
-  decoders?: readonly RestateBinaryCodec[];
-  encoders?: readonly RestateBinaryCodec[];
   EncodingWaterMark?: ComponentType<{
     value?: string;
     className?: string;
@@ -222,9 +199,6 @@ export function RestateContextProvider({
         ingressUrl={ingressUrl}
         isPending={isPending}
         baseUrl={baseUrl}
-        fetcher={fetcher}
-        decoders={decoders}
-        encoders={encoders}
         EncodingWaterMark={EncodingWaterMark}
         tunnel={tunnel}
         GettingStarted={GettingStarted}
