@@ -29,8 +29,8 @@ function isValidJSON(value: unknown) {
 }
 
 export function useEditState(
-  service: string,
-  objectKey: string,
+  service?: string,
+  objectKey?: string,
   {
     enabled,
     ...options
@@ -55,12 +55,12 @@ export function useEditState(
   const { encode, options: resolvedCodecOptions } =
     useCodecRuntime(codecOptions);
   const queryOptions = getServiceKeyStateQueryOptions(baseUrl, {
-    service,
-    key: objectKey,
+    service: String(service),
+    key: String(objectKey),
   });
   const query = useQuery({
     ...queryOptions,
-    enabled,
+    enabled: enabled && Boolean(service),
     staleTime: 0,
     refetchOnMount: true,
   });
@@ -77,7 +77,7 @@ export function useEditState(
   const { mutationFn, mutationKey, meta } = getSetServiceStateMutationOptions(
     baseUrl,
     {
-      service,
+      service: String(service),
     },
   );
   const queryClient = useQueryClient();
@@ -122,9 +122,9 @@ export function useEditState(
 
       return mutationFn(
         {
-          parameters: { path: { service } },
+          parameters: { path: { service: String(service) } },
           body: {
-            object_key: objectKey,
+            object_key: String(objectKey),
             ...(variables.partial && { version }),
             new_state: {
               ...(variables.partial &&

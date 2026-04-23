@@ -86,7 +86,7 @@ export function useResolvedCodecOptions(codecOptions?: RestateCodecOptions) {
   const serviceName = codecOptions?.service?.value?.name;
   const handlerName = codecOptions?.handler?.value?.name;
   const hasService = Boolean(serviceName);
-  const serviceQuery = useServiceDetails(serviceName ?? '', {
+  const serviceQuery = useServiceDetails(String(serviceName), {
     enabled: hasService,
     refetchOnMount: false,
   });

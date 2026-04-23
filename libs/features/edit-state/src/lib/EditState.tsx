@@ -127,8 +127,8 @@ function EditStateInner({
   isDeleting?: boolean;
 }>) {
   const { mutation, decodedQuery: query } = useEditState(
-    String(service),
-    String(objectKey),
+    service,
+    objectKey,
     {
       enabled: Boolean(service && objectKey),
       onSuccess(data, variables) {

@@ -151,7 +151,7 @@ function Attribution() {
 }
 
 function useApiSpec(service?: string | null) {
-  const enabled = typeof service === 'string';
+  const enabled = typeof service === 'string' && Boolean(service);
   const { data, error, refetch, isFetching } = useServiceOpenApi(
     String(service),
     {
