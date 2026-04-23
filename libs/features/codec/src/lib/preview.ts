@@ -11,7 +11,7 @@ import { useMemo } from 'react';
 type SerdePreviewName =
   operations['decode_service_serde']['parameters']['path']['serdeName'];
 
-const PREVIEW_METADATA_PREFIX = 'restate.serde.preview.';
+const PREVIEW_METADATA_PREFIX = 'dev.restate.serde.preview.';
 
 function isPreviewEnabled(
   metadata: Record<string, string> | undefined,
