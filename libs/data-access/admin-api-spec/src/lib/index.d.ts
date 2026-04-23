@@ -2183,6 +2183,9 @@ export interface components {
       status?: components['schemas']['InvocationStatus'];
       pinnedDeploymentId?: string;
       lastAttemptDeploymentId?: string;
+      targetServiceName?: string;
+      targetServiceKey?: string;
+      targetHandlerName?: string;
     };
     GetInvocationsStatusResponse: {
       invocations: {

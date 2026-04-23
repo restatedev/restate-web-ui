@@ -5846,6 +5846,15 @@
           },
           "lastAttemptDeploymentId": {
             "type": "string"
+          },
+          "targetServiceName": {
+            "type": "string"
+          },
+          "targetServiceKey": {
+            "type": "string"
+          },
+          "targetHandlerName": {
+            "type": "string"
           }
         }
       },
