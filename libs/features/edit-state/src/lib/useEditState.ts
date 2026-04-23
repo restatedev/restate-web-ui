@@ -6,10 +6,10 @@ import {
 import { convertStateToObject } from '@restate/data-access/admin-api-hooks';
 import type { StateResponse } from '@restate/data-access/admin-api-spec';
 import {
-  useDecodeState,
   useCodecRuntime,
+  useDecodeState,
+  type RestateCodecOptions,
 } from '@restate/features/codec-options';
-import type { RestateCodecOptions } from '@restate/features/codec';
 import { base64ToUint8Array } from '@restate/util/binary';
 import { RestateError } from '@restate/util/errors';
 import {

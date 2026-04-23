@@ -1,9 +1,10 @@
-import type { RestateCodecOptions } from '@restate/features/codec';
 import { getAuthToken } from '@restate/util/api-config';
 import { base64ToUint8Array, bytesToBase64 } from '@restate/util/binary';
 import type { RestateStringCodec } from './codecs';
+import type { CodecFetcher } from './CodecRuntimeProvider';
+import type { RestateCodecOptions } from './types';
 
-export type CodecFetcher = typeof globalThis.fetch;
+export type { CodecFetcher } from './CodecRuntimeProvider';
 
 export type GetCodecOptions = (
   request: Request,

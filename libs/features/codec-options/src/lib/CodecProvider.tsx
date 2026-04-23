@@ -1,8 +1,6 @@
-import {
-  CodecOptionsProvider,
-  type RestateCodecOptions,
-} from '@restate/features/codec';
 import type { PropsWithChildren } from 'react';
+import { CodecOptionsProvider } from './Codec';
+import type { RestateCodecOptions } from './types';
 import { useResolvedCodecOptions } from './useResolvedCodecOptions';
 
 export function CodecProvider({

@@ -15,17 +15,13 @@ import {
   useEffect,
 } from 'react';
 import semverGt from 'semver/functions/gte';
-import { EMPTY_CODECS, type RestateBinaryCodec } from '@restate/features/codec';
+import {
+  CodecRuntimeProvider,
+  type CodecFetcher,
+  type RestateBinaryCodec,
+} from '@restate/features/codec-options';
 
 export type Status = 'HEALTHY' | 'DEGRADED' | 'PENDING' | (string & {});
-export type {
-  RestateBinaryCodec,
-  RestateCodecCommand,
-  RestateCodecHandlerMetadata,
-  RestateCodecOptions,
-} from '@restate/features/codec';
-
-type CodecFetcher = typeof globalThis.fetch;
 
 type OnboardingComponent = ComponentType<{
   className?: string;
@@ -49,9 +45,6 @@ type RestateContext = {
   isVersionGte?: (version: string) => boolean;
   ingressUrl: string;
   baseUrl: string;
-  fetcher?: CodecFetcher;
-  decoders?: readonly RestateBinaryCodec[];
-  encoders?: readonly RestateBinaryCodec[];
   EncodingWaterMark?: ComponentType<{
     value?: string;
     className?: string;
@@ -75,9 +68,6 @@ const InternalRestateContext = createContext<RestateContext>({
   status: 'PENDING',
   ingressUrl: '',
   baseUrl: '',
-  fetcher: globalThis.fetch,
-  decoders: EMPTY_CODECS,
-  encoders: EMPTY_CODECS,
 });
 
 function InternalRestateContextProvider({
@@ -164,9 +154,6 @@ function InternalRestateContextProvider({
         ingressUrl: resolvedIngress,
         isVersionGte,
         baseUrl,
-        fetcher,
-        decoders,
-        encoders,
         EncodingWaterMark,
         tunnel,
         GettingStarted,
@@ -177,7 +164,13 @@ function InternalRestateContextProvider({
       }}
     >
       <APIStatusProvider enabled={status === 'HEALTHY'}>
-        {children}
+        <CodecRuntimeProvider
+          fetcher={fetcher}
+          decoders={decoders}
+          encoders={encoders}
+        >
+          {children}
+        </CodecRuntimeProvider>
       </APIStatusProvider>
     </InternalRestateContext.Provider>
   );
@@ -190,8 +183,8 @@ export function RestateContextProvider({
   isPending,
   baseUrl,
   fetcher,
-  decoders = EMPTY_CODECS,
-  encoders = EMPTY_CODECS,
+  decoders,
+  encoders,
   EncodingWaterMark,
   tunnel,
   GettingStarted,

@@ -1,18 +1,15 @@
 import { useAdminBaseUrl } from '@restate/data-access/admin-api';
-import {
-  EMPTY_CODECS,
-  useCodec,
-  type RestateCodecOptions,
-} from '@restate/features/codec';
-import { useRestateContext } from '@restate/features/restate-context';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
+import { useCodec } from './Codec';
+import { useCodecRuntimeConfig } from './CodecRuntimeProvider';
 import { composeRestateDecoder, composeRestateEncoder } from './codecs';
 import {
   createFetcherWithCodec,
   type GetCodecOptions,
 } from './fetcherWithCodec';
 import { useSerdePreviewDecoder, useSerdePreviewEncoder } from './preview';
+import type { RestateCodecOptions } from './types';
 import { useResolvedCodecOptions } from './useResolvedCodecOptions';
 
 function getCodecError(codecOptions: RestateCodecOptions | undefined) {
@@ -38,11 +35,7 @@ export function useCodecRuntime(codecOptions?: RestateCodecOptions) {
     : undefined;
   const resolved = useResolvedCodecOptions(merged);
   const options = merged ? resolved : contextOptions;
-  const {
-    fetcher = globalThis.fetch,
-    decoders = EMPTY_CODECS,
-    encoders = EMPTY_CODECS,
-  } = useRestateContext();
+  const { fetcher, decoders, encoders } = useCodecRuntimeConfig();
   const adminBaseUrl = useAdminBaseUrl();
   const queryClient = useQueryClient();
   const previewDecoder = useSerdePreviewDecoder(adminBaseUrl ?? '');

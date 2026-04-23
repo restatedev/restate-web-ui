@@ -3,13 +3,13 @@ import {
   useListDeployments,
   useServiceDetails,
 } from '@restate/data-access/admin-api-hooks';
+import { useMemo } from 'react';
 import type {
   AsyncCodecOption,
   RestateCodecHandlerMetadata,
   RestateCodecOptions,
   RestateCodecServiceMetadata,
-} from '@restate/features/codec';
-import { useMemo } from 'react';
+} from './types';
 
 function resolveCodecDeploymentId(
   service: string | undefined,

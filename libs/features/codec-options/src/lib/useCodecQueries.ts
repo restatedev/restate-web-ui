@@ -1,6 +1,6 @@
 import { useQueries, useQuery, type QueryKey } from '@tanstack/react-query';
-import type { RestateCodecOptions } from '@restate/features/codec';
 import { convertStateToObject } from '@restate/data-access/admin-api-hooks';
+import type { RestateCodecOptions } from './types';
 import { useCodecRuntime } from './useCodecRuntime';
 
 function safeParse(value: string) {

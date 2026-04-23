@@ -6,8 +6,10 @@ import {
   useGetInvocationJournalWithInvocationV2,
   useGetInvocationStatusDetails,
 } from '@restate/data-access/admin-api-hooks';
-import type { RestateCodecOptions } from '@restate/features/codec';
-import { CodecProvider } from '@restate/features/codec-options';
+import {
+  CodecProvider,
+  type RestateCodecOptions,
+} from '@restate/features/codec-options';
 import type { PropsWithChildren } from 'react';
 
 type Invocation = ReturnType<

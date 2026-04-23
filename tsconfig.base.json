@@ -39,7 +39,6 @@
       "@restate/features/batch-operations": [
         "libs/features/batch-operations/src/index.ts"
       ],
-      "@restate/features/codec": ["libs/features/codec/src/index.ts"],
       "@restate/features/codec-options": [
         "libs/features/codec-options/src/index.ts"
       ],

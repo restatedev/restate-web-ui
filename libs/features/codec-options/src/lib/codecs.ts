@@ -2,7 +2,7 @@ import type {
   RestateBinaryCodec,
   RestateBinaryPayload,
   RestateCodecOptions,
-} from '@restate/features/codec';
+} from './types';
 import {
   base64ToUint8Array,
   bytesToBase64,
