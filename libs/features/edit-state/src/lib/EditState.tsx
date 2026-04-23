@@ -126,19 +126,15 @@ function EditStateInner({
   onOpenChange: (isOpen: boolean) => void;
   isDeleting?: boolean;
 }>) {
-  const { mutation, decodedQuery: query } = useEditState(
-    service,
-    objectKey,
-    {
-      enabled: Boolean(service && objectKey),
-      onSuccess(data, variables) {
-        onOpenChange(false);
-        showSuccessNotification(
-          'The state mutation has been successfully accepted for processing.',
-        );
-      },
+  const { mutation, decodedQuery: query } = useEditState(service, objectKey, {
+    enabled: Boolean(service && objectKey),
+    onSuccess(data, variables) {
+      onOpenChange(false);
+      showSuccessNotification(
+        'The state mutation has been successfully accepted for processing.',
+      );
     },
-  );
+  });
   const isPartial = typeof key === 'string';
 
   const {
