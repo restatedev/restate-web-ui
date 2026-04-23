@@ -12,7 +12,7 @@ import {
   PopoverContent,
   PopoverHoverTrigger,
 } from '@restate/ui/popover';
-import { useDecode } from '@restate/features/codec-options';
+import { useDecode } from '@restate/features/codec';
 
 const styles = tv({
   slots: {

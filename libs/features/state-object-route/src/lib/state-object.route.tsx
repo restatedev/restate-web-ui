@@ -78,7 +78,7 @@ import { useEditStateContext } from '@restate/features/edit-state';
 import {
   CodecOptionsProvider,
   useResolvedCodecOptions,
-} from '@restate/features/codec-options';
+} from '@restate/features/codec';
 import { toStateParam } from './toStateParam';
 import { SplitButton } from '@restate/ui/split-button';
 import { useRestateContext } from '@restate/features/restate-context';

@@ -19,7 +19,7 @@ import {
   CodecRuntimeProvider,
   type CodecFetcher,
   type RestateBinaryCodec,
-} from '@restate/features/codec-options';
+} from '@restate/features/codec';
 
 export type Status = 'HEALTHY' | 'DEGRADED' | 'PENDING' | (string & {});
 

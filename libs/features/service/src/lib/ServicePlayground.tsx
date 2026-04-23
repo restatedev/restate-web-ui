@@ -19,7 +19,7 @@ import { useRestateContext } from '@restate/features/restate-context';
 import {
   useCodecRuntime,
   useResolvedCodecOptions,
-} from '@restate/features/codec-options';
+} from '@restate/features/codec';
 import { tv } from '@restate/util/styles';
 import { API } from '@restate/ui/api';
 import {

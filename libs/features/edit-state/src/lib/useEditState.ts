@@ -9,7 +9,7 @@ import {
   useCodecRuntime,
   useDecodeState,
   type RestateCodecOptions,
-} from '@restate/features/codec-options';
+} from '@restate/features/codec';
 import { base64ToUint8Array } from '@restate/util/binary';
 import { RestateError } from '@restate/util/errors';
 import {

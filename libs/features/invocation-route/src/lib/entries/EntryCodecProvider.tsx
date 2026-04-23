@@ -9,7 +9,7 @@ import {
 import {
   CodecProvider,
   type RestateCodecOptions,
-} from '@restate/features/codec-options';
+} from '@restate/features/codec';
 import type { PropsWithChildren } from 'react';
 
 type Invocation = ReturnType<

@@ -2,7 +2,7 @@ import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
 import {
   CodecProvider,
   type RestateCodecOptions,
-} from '@restate/features/codec-options';
+} from '@restate/features/codec';
 import { EntryProps } from './types';
 import { Target } from '../Target';
 import { tv } from '@restate/util/styles';

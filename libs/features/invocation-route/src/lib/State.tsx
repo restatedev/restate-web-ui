@@ -1,6 +1,6 @@
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Value } from './Value';
-import { CodecProvider } from '@restate/features/codec-options';
+import { CodecProvider } from '@restate/features/codec';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import { useEditStateContext } from '@restate/features/edit-state';

@@ -1,9 +1,0 @@
-{
-  "name": "codec-options",
-  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/features/codec-options/src",
-  "projectType": "library",
-  "tags": [],
-  "// targets": "to see all targets run: nx show project codec-options --web",
-  "targets": {}
-}
