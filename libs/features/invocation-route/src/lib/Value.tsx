@@ -79,7 +79,7 @@ export function Value({
               </Button>
             </PopoverHoverTrigger>
             <PopoverContent>
-              <ErrorBanner error={error} className="max-w-md" />
+              <ErrorBanner error={error} className="max-w-2xl" />
             </PopoverContent>
           </Popover>
         )}

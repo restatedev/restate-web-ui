@@ -1,5 +1,6 @@
 import { useQueries, useQuery, type QueryKey } from '@tanstack/react-query';
 import { convertStateToObject } from '@restate/data-access/admin-api-hooks';
+import { combineErrors } from '@restate/util/errors';
 import type { RestateCodecOptions } from './types';
 import { useCodecRuntime } from './useCodecRuntime';
 
@@ -58,8 +59,10 @@ export function useDecodeState(
           ),
           version,
         },
-        error:
-          codecRuntime.error ?? results.find((result) => result.error)?.error,
+        error: combineErrors(
+          results.find((result) => result.error)?.error,
+          codecRuntime.error,
+        ),
         isPlaceholderData,
         isPending:
           codecRuntime.isPending || results.some((result) => result.isFetching),
@@ -86,7 +89,7 @@ export function useDecode(
   return {
     ...query,
     isPending: codecRuntime.isPending || query.isPending,
-    error: codecRuntime.error ?? query.error,
+    error: combineErrors(query.error, codecRuntime.error),
   };
 }
 
@@ -108,6 +111,6 @@ export function useEncode(
   return {
     ...query,
     isPending: codecRuntime.isPending || query.isPending,
-    error: codecRuntime.error ?? query.error,
+    error: combineErrors(query.error, codecRuntime.error),
   };
 }

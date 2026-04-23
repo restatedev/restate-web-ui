@@ -3,6 +3,7 @@ import {
   useListDeployments,
   useServiceDetails,
 } from '@restate/data-access/admin-api-hooks';
+import { RestateError, UI_ERROR_CODES } from '@restate/util/errors';
 import { useMemo } from 'react';
 import type {
   AsyncCodecOption,
@@ -11,25 +12,49 @@ import type {
   RestateCodecServiceMetadata,
 } from './types';
 
-function resolveCodecDeploymentId(
+function resolveCodecDeployment(
   service: string | undefined,
   deploymentId: string | undefined,
   listDeployments: ListDeploymentsData,
-) {
+): { deploymentId: string | undefined; didFallback: boolean } {
   if (
     !deploymentId ||
     !service ||
     listDeployments?.deployments.has(deploymentId)
   ) {
-    return deploymentId;
+    return { deploymentId, didFallback: false };
   }
 
   const serviceData = listDeployments?.services.get(service);
   const latestRevision = serviceData?.sortedRevisions[0];
-
-  return latestRevision
+  const fallback = latestRevision
     ? serviceData?.deployments[latestRevision]?.[0]
-    : deploymentId;
+    : undefined;
+
+  if (!fallback) {
+    return { deploymentId, didFallback: false };
+  }
+
+  return { deploymentId: fallback, didFallback: true };
+}
+
+function getDeploymentFallbackError(
+  serviceName: string | undefined,
+  originalDeploymentId: string | undefined,
+  fallbackDeploymentId: string | undefined,
+) {
+  const parts = [
+    `Deployment "${originalDeploymentId ?? 'unknown'}" is no longer registered`,
+    serviceName ? ` for service "${serviceName}"` : '',
+    `. Using the latest deployment`,
+    fallbackDeploymentId ? ` "${fallbackDeploymentId}"` : '',
+    ` instead. Decoded or encoded values may not match the original format if the serde changed between deployments.`,
+  ];
+
+  return new RestateError(
+    parts.join(''),
+    UI_ERROR_CODES.deploymentFallback,
+  );
 }
 
 function toAsyncCodecOption<T>(
@@ -101,6 +126,13 @@ export function useResolvedCodecOptions(codecOptions?: RestateCodecOptions) {
   const resolvedHandlerMetadata = handlerName
     ? serviceQuery.data?.handlers.find(({ name }) => name === handlerName)
     : undefined;
+  const originalDeploymentId = codecOptions?.deploymentId?.value;
+  const { deploymentId: resolvedDeploymentId, didFallback } =
+    resolveCodecDeployment(
+      serviceName,
+      originalDeploymentId,
+      listDeployments,
+    );
 
   return useMemo(() => {
     if (!codecOptions) {
@@ -126,25 +158,29 @@ export function useResolvedCodecOptions(codecOptions?: RestateCodecOptions) {
           undefined,
       ),
       deploymentId: toAsyncCodecOption(
-        resolveCodecDeploymentId(
-          serviceName,
-          codecOptions.deploymentId?.value,
-          listDeployments,
-        ),
+        resolvedDeploymentId,
         codecOptions.deploymentId?.isPending ||
           (hasService && isDeploymentPending),
         codecOptions.deploymentId?.error ??
           (hasService ? deploymentError : null) ??
-          undefined,
+          (didFallback
+            ? getDeploymentFallbackError(
+                serviceName,
+                originalDeploymentId,
+                resolvedDeploymentId,
+              )
+            : undefined),
       ),
     };
   }, [
     codecOptions,
     deploymentError,
+    didFallback,
     handlerName,
     hasService,
     isDeploymentPending,
-    listDeployments,
+    originalDeploymentId,
+    resolvedDeploymentId,
     resolvedHandlerMetadata,
     serviceName,
     serviceQuery.data,
