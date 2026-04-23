@@ -1,7 +1,6 @@
 import { useLocation, useSearchParams } from 'react-router';
 import {
-  type ListDeploymentsData,
-  useListDeployments,
+  useServiceDetails,
   useServiceOpenApi,
 } from '@restate/data-access/admin-api-hooks';
 import { Button, SubmitButton } from '@restate/ui/button';
@@ -17,6 +16,10 @@ import {
   useState,
 } from 'react';
 import { useRestateContext } from '@restate/features/restate-context';
+import {
+  useCodecRuntime,
+  useResolvedCodecOptions,
+} from '@restate/features/codec';
 import { tv } from '@restate/util/styles';
 import { API } from '@restate/ui/api';
 import {
@@ -40,7 +43,6 @@ import { useTransition } from 'react';
 import { ErrorBanner } from '@restate/ui/error';
 import { Spinner } from '@restate/ui/loading';
 import { useOnboarding } from '@restate/util/feature-flag';
-import { useQueryClient } from '@tanstack/react-query';
 
 const styles = tv({
   base: 'flex items-center gap-1 rounded-md px-1.5 py-0.5 font-sans text-xs font-normal',
@@ -149,19 +151,22 @@ function Attribution() {
 }
 
 function useApiSpec(service?: string | null) {
-  const enabled = typeof service === 'string';
+  const enabled = typeof service === 'string' && Boolean(service);
   const { data, error, refetch, isFetching } = useServiceOpenApi(
     String(service),
     {
       enabled,
     },
   );
-  const { queryKey: listDeploymentsQueryKey } = useListDeployments({
+  const resolvedServiceOptions = useResolvedCodecOptions(
+    service ? { service: { value: { name: service } } } : undefined,
+  );
+  const { data: serviceDetails } = useServiceDetails(String(service), {
     enabled,
     refetchOnMount: false,
   });
-  const { ingressUrl, createPlaygroundFetcher } = useRestateContext();
-  const queryClient = useQueryClient();
+  const { ingressUrl } = useRestateContext();
+  const { createFetcherWithCodec } = useCodecRuntime();
 
   const { apiSpec, handlers, operations } = useMemo(() => {
     const apiSpec = data
@@ -211,8 +216,8 @@ function useApiSpec(service?: string | null) {
 
   const tryItFetcher = useMemo(
     () =>
-      createPlaygroundFetcher((request) => {
-        if (!service) {
+      createFetcherWithCodec((request) => {
+        if (!service || !resolvedServiceOptions) {
           return undefined;
         }
 
@@ -222,30 +227,22 @@ function useApiSpec(service?: string | null) {
             method === request.method.toUpperCase() &&
             pattern.test({ pathname }),
         );
-        const listDeployments = queryClient.getQueryData<ListDeploymentsData>(
-          listDeploymentsQueryKey,
-        );
-        const serviceData = listDeployments?.services.get(service);
-        const latestRevision = serviceData?.sortedRevisions[0];
+        const handler = operation?.id
+          ? serviceDetails?.handlers.find(({ name }) => name === operation.id)
+          : undefined;
+        const { deploymentId: _deploymentId, ...rest } = resolvedServiceOptions;
 
         return {
-          service,
-          deploymentId: {
-            value: serviceData?.deployments[latestRevision ?? -1]?.[0],
-          },
-          handler: {
-            value: {
-              name: operation?.id,
-            },
-          },
+          ...rest,
+          handler: handler ? { value: handler } : undefined,
         };
       }),
     [
-      createPlaygroundFetcher,
-      listDeploymentsQueryKey,
+      createFetcherWithCodec,
       operations,
-      queryClient,
+      resolvedServiceOptions,
       service,
+      serviceDetails,
     ],
   );
 

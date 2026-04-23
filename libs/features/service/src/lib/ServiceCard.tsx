@@ -102,7 +102,9 @@ export function ServiceCard({
   filterText?: string;
 }>) {
   const { data: { services, deployments } = {} } = useListDeployments();
-  const { data: serviceDetails } = useServiceDetails(serviceName);
+  const { data: serviceDetails } = useServiceDetails(serviceName, {
+    enabled: Boolean(serviceName),
+  });
   const service = services?.get(serviceName);
   const serviceDeployments = service?.deployments;
   const revisions = service?.sortedRevisions ?? [];

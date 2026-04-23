@@ -21,7 +21,6 @@ import {
 } from 'react';
 import {
   convertStateToObject,
-  useEditState,
   useGetVirtualObjectQueue,
 } from '@restate/data-access/admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui/notification';
@@ -29,6 +28,7 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from '@restate/util/styles';
 import { useQueryClient } from '@tanstack/react-query';
 import { Spinner } from '@restate/ui/loading';
+import { useEditState } from './useEditState';
 
 const styles = tv({
   base: '',
@@ -126,19 +126,15 @@ function EditStateInner({
   onOpenChange: (isOpen: boolean) => void;
   isDeleting?: boolean;
 }>) {
-  const { mutation, decodedQuery: query } = useEditState(
-    String(service),
-    String(objectKey),
-    {
-      enabled: Boolean(service && objectKey),
-      onSuccess(data, variables) {
-        onOpenChange(false);
-        showSuccessNotification(
-          'The state mutation has been successfully accepted for processing.',
-        );
-      },
+  const { mutation, decodedQuery: query } = useEditState(service, objectKey, {
+    enabled: Boolean(service && objectKey),
+    onSuccess(data, variables) {
+      onOpenChange(false);
+      showSuccessNotification(
+        'The state mutation has been successfully accepted for processing.',
+      );
     },
-  );
+  });
   const isPartial = typeof key === 'string';
 
   const {

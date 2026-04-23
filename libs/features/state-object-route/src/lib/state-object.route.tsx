@@ -75,7 +75,10 @@ import { tv } from '@restate/util/styles';
 import { STATE_QUERY_NAME } from './constants';
 import { Link } from '@restate/ui/link';
 import { useEditStateContext } from '@restate/features/edit-state';
-import { CodecProvider } from '@restate/features/codec';
+import {
+  StaticCodecOptionsProvider,
+  useResolvedCodecOptions,
+} from '@restate/features/codec';
 import { toStateParam } from './toStateParam';
 import { SplitButton } from '@restate/ui/split-button';
 import { useRestateContext } from '@restate/features/restate-context';
@@ -300,6 +303,9 @@ function Component() {
   const dataUpdate = error ? errorUpdatedAt : dataUpdatedAt;
   const setEditState = useEditStateContext();
   const { EncodingWaterMark } = useRestateContext();
+  const resolvedServiceCodecOptions = useResolvedCodecOptions({
+    service: { value: { name: virtualObject } },
+  });
 
   useEffect(() => {
     if ((serviceKeysData?.keys ?? []).length <= STATE_PAGE_SIZE * pageIndex) {
@@ -471,8 +477,8 @@ function Component() {
                         </Cell>
                       );
                     } else {
-                      const codecOptions = {
-                        service: virtualObject,
+                      const stateCodecOptions = {
+                        ...resolvedServiceCodecOptions,
                         key: row.key!,
                         command: {
                           type: 'GetState' as const,
@@ -502,12 +508,14 @@ function Component() {
                                         />
                                       )}
                                       <span className="block truncate">
-                                        <CodecProvider options={codecOptions}>
+                                        <StaticCodecOptionsProvider
+                                          options={stateCodecOptions}
+                                        >
                                           <DecodedValue
                                             value={row.state?.[id]}
                                             isBase64
                                           />
-                                        </CodecProvider>
+                                        </StaticCodecOptionsProvider>
                                       </span>
                                     </span>
                                   </Button>
@@ -545,14 +553,16 @@ function Component() {
                                       </div>
                                     }
                                   >
-                                    <CodecProvider options={codecOptions}>
+                                    <StaticCodecOptionsProvider
+                                      options={stateCodecOptions}
+                                    >
                                       <Value
                                         value={row.state?.[id]}
                                         className="w-full py-0 font-mono text-xs"
                                         showCopyButton
                                         portalId="state-value"
                                       />
-                                    </CodecProvider>
+                                    </StaticCodecOptionsProvider>
                                   </DropdownSection>
                                 </PopoverContent>
                               </Popover>

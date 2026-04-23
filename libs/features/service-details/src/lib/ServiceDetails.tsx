@@ -118,7 +118,9 @@ const handlerNameStyles = tv({
 });
 function ServiceContent({ service }: { service: string }) {
   const { data: listDeploymentsData } = useListDeployments();
-  const { data, isPending } = useServiceDetails(service);
+  const { data, isPending } = useServiceDetails(service, {
+    enabled: Boolean(service),
+  });
   const handlers = data?.handlers ?? [];
   const { deployments, sortedRevisions = [] } =
     listDeploymentsData?.services.get(String(service)) ?? {};

@@ -7,11 +7,10 @@ import {
   useGetInvocationStatusDetails,
 } from '@restate/data-access/admin-api-hooks';
 import {
-  CodecProvider,
+  CodecOptionsProvider,
   type RestateCodecOptions,
 } from '@restate/features/codec';
 import type { PropsWithChildren } from 'react';
-import { useCodecHandler } from './codec';
 
 type Invocation = ReturnType<
   typeof useGetInvocationJournalWithInvocationV2
@@ -43,9 +42,15 @@ function getEntryCodecTarget(
 ) {
   if (isTargetInvocationEntry(entry)) {
     return {
-      service: (entry as { serviceName?: string }).serviceName,
-      key: (entry as { serviceKey?: string }).serviceKey,
-      handlerName: (entry as { handlerName?: string }).handlerName,
+      service:
+        targetInvocation?.targetServiceName ??
+        (entry as { serviceName?: string }).serviceName,
+      key:
+        targetInvocation?.targetServiceKey ??
+        (entry as { serviceKey?: string }).serviceKey,
+      handlerName:
+        targetInvocation?.targetHandlerName ??
+        (entry as { handlerName?: string }).handlerName,
       deploymentId: entry.invocationId
         ? (targetInvocation?.pinnedDeploymentId ??
           targetInvocation?.lastAttemptDeploymentId)
@@ -118,20 +123,29 @@ export function EntryCodecProvider({
     invocation,
     targetInvocation.data,
   );
-  const { handler } = useCodecHandler(service, handlerName);
   const options = entry
     ? ({
-        service,
+        service: {
+          value: {
+            name: service,
+          },
+        },
         deploymentId: {
           value: deploymentId,
           isPending: targetInvocation.isPending,
           error: targetInvocation.error,
         },
         key,
-        handler,
+        handler: {
+          value: {
+            name: handlerName,
+          },
+        },
         command: getEntryCodecCommand(entry),
       } satisfies RestateCodecOptions)
     : undefined;
 
-  return <CodecProvider options={options}>{children}</CodecProvider>;
+  return (
+    <CodecOptionsProvider options={options}>{children}</CodecOptionsProvider>
+  );
 }

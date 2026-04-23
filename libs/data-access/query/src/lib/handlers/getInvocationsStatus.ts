@@ -50,7 +50,7 @@ export async function getInvocationsStatus(
   }
 
   const { rows } = await this.query(
-    `SELECT id, status, completion_result, pinned_deployment_id, last_attempt_deployment_id FROM sys_invocation WHERE id IN (${uniqueInvocationIds.map(quoteSqlString).join(', ')})`,
+    `SELECT id, status, completion_result, pinned_deployment_id, last_attempt_deployment_id, target_service_name, target_service_key, target_handler_name FROM sys_invocation WHERE id IN (${uniqueInvocationIds.map(quoteSqlString).join(', ')})`,
   );
 
   const invocationsById = new Map(
@@ -65,6 +65,9 @@ export async function getInvocationsStatus(
         lastAttemptDeploymentId: row.last_attempt_deployment_id as
           | string
           | undefined,
+        targetServiceName: row.target_service_name as string | undefined,
+        targetServiceKey: row.target_service_key as string | undefined,
+        targetHandlerName: row.target_handler_name as string | undefined,
       },
     ]),
   );

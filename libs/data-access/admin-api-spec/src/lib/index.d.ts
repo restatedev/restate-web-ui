@@ -96,6 +96,40 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/internal/services/{service}/serdes/decode/{serdeName}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Decode service wire bytes into JSON */
+    post: operations['decode_service_serde'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/internal/services/{service}/serdes/encode/{serdeName}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Encode JSON into service wire bytes */
+    post: operations['encode_service_serde'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/invocations/{invocation_id}/cancel': {
     parameters: {
       query?: never;
@@ -2149,6 +2183,9 @@ export interface components {
       status?: components['schemas']['InvocationStatus'];
       pinnedDeploymentId?: string;
       lastAttemptDeploymentId?: string;
+      targetServiceName?: string;
+      targetServiceKey?: string;
+      targetHandlerName?: string;
     };
     GetInvocationsStatusResponse: {
       invocations: {
@@ -3540,6 +3577,76 @@ export interface operations {
         };
         content?: never;
       };
+    };
+  };
+  decode_service_serde: {
+    parameters: {
+      query?: {
+        /** @description Optional deployment id; if omitted, resolve the latest deployment for the service. */
+        deployment?: string;
+      };
+      header?: never;
+      path: {
+        /** @description Registered service name. */
+        service: string;
+        /** @description Arbitrary serde name forwarded to the target deployment. */
+        serdeName: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/octet-stream': string;
+      };
+    };
+    responses: {
+      /** @description JSON returned by the target deployment */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': unknown;
+        };
+      };
+      400: components['responses']['BadRequest'];
+      404: components['responses']['NotFound'];
+      500: components['responses']['InternalServerError'];
+    };
+  };
+  encode_service_serde: {
+    parameters: {
+      query?: {
+        /** @description Optional deployment id; if omitted, resolve the latest deployment for the service. */
+        deployment?: string;
+      };
+      header?: never;
+      path: {
+        /** @description Registered service name. */
+        service: string;
+        /** @description Arbitrary serde name forwarded to the target deployment. */
+        serdeName: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': unknown;
+      };
+    };
+    responses: {
+      /** @description Wire-format bytes returned by the target deployment */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/octet-stream': string;
+        };
+      };
+      400: components['responses']['BadRequest'];
+      404: components['responses']['NotFound'];
+      500: components['responses']['InternalServerError'];
     };
   };
   cancel_invocation: {
