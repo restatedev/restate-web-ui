@@ -10,13 +10,49 @@ import { DropdownSection } from '@restate/ui/dropdown';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
 import { Portal } from '@restate/ui/portal';
 import { tv } from '@restate/util/styles';
-import { ReactNode, useState } from 'react';
+import { ReactNode, useMemo, useState } from 'react';
 import { Value } from '../Value';
 import { Headers } from '../Headers';
 import { Failure } from '../Failure';
 import { useRestateContext } from '@restate/features/restate-context';
+import {
+  StaticCodecOptionsProvider,
+  useCodec,
+  type RestateCodecOptions,
+} from '@restate/features/codec';
 import { ErrorBanner } from '@restate/ui/error';
 import { Nav, NavButtonItem } from '@restate/ui/nav';
+
+const TARGET_INVOCATION_COMMAND_TYPES = [
+  'Call',
+  'OneWayCall',
+  'AttachInvocation',
+] as const;
+
+function withTargetInvocationCommand(
+  options: RestateCodecOptions,
+  type: 'Input' | 'Output',
+): RestateCodecOptions {
+  const currentType = options.command?.type;
+  const isTargetInvocation = TARGET_INVOCATION_COMMAND_TYPES.some(
+    (t) => t === currentType,
+  );
+
+  if (!isTargetInvocation) {
+    return options;
+  }
+
+  return { ...options, command: { ...options.command, type } };
+}
+
+function useTargetInvocationCodecOptions(type: 'Input' | 'Output') {
+  const codecOptions = useCodec();
+
+  return useMemo(
+    () => withTargetInvocationCommand(codecOptions, type),
+    [codecOptions, type],
+  );
+}
 
 const styles = tv({
   base: 'contents items-center gap-1 rounded-md py-0 pl-0.5 text-2xs text-zinc-700',
@@ -308,6 +344,7 @@ function LazyValue({
   hideWhenEntryIsPending = false,
 }: LazyPayloadProps) {
   const { EncodingWaterMark } = useRestateContext();
+  const outputCodecOptions = useTargetInvocationCodecOptions('Output');
   const { data, failure, isPending, error, isLoaded, onOpen } = useLazyPayload(
     invocationId,
     entry,
@@ -349,13 +386,15 @@ function LazyValue({
     >
       <PayloadContent isPending={isPending} error={error}>
         {data ? (
-          <Value
-            value={data}
-            className="font-mono text-xs"
-            isBase64={isBase64}
-            showCopyButton
-            portalId="expression-value"
-          />
+          <StaticCodecOptionsProvider options={outputCodecOptions}>
+            <Value
+              value={data}
+              className="font-mono text-xs"
+              isBase64={isBase64}
+              showCopyButton
+              portalId="expression-value"
+            />
+          </StaticCodecOptionsProvider>
         ) : (
           isVoid && (
             <div className="py-2 text-xs text-zinc-500">
@@ -375,6 +414,7 @@ function LazyInput({
   isBase64,
 }: LazyPayloadProps) {
   const { EncodingWaterMark } = useRestateContext();
+  const inputCodecOptions = useTargetInvocationCodecOptions('Input');
   const [activeTab, setActiveTab] = useState<PayloadTab>('parameters');
 
   const { rawData, isPending, error, isLoaded, onOpen } = useLazyPayload(
@@ -417,13 +457,15 @@ function LazyInput({
       <PayloadContent isPending={isPending} error={error}>
         {activeTab === 'parameters' ? (
           parametersData ? (
-            <Value
-              value={parametersData}
-              className="font-mono text-xs"
-              isBase64={isBase64}
-              showCopyButton
-              portalId="expression-value"
-            />
+            <StaticCodecOptionsProvider options={inputCodecOptions}>
+              <Value
+                value={parametersData}
+                className="font-mono text-xs"
+                isBase64={isBase64}
+                showCopyButton
+                portalId="expression-value"
+              />
+            </StaticCodecOptionsProvider>
           ) : (
             isLoaded && (
               <div className="py-2 text-xs text-zinc-500">No parameters</div>
