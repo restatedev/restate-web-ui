@@ -1,6 +1,6 @@
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Value } from './Value';
-import { CodecProvider } from '@restate/features/codec';
+import { CodecOptionsProvider } from '@restate/features/codec';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import { useEditStateContext } from '@restate/features/edit-state';
@@ -85,9 +85,9 @@ function StateKey({
         <TruncateWithTooltip copyText={name}>{name}</TruncateWithTooltip>
       </div>
       <div className="relative truncate py-1">
-        <CodecProvider options={stateCodecOptions}>
+        <CodecOptionsProvider options={stateCodecOptions}>
           <Value value={value} className="mono max-w-full text-xs" isBase64 />
-        </CodecProvider>
+        </CodecOptionsProvider>
         <div className="absolute top-1 right-1 flex items-center gap-2">
           <Button
             variant="icon"

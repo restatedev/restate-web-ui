@@ -76,7 +76,7 @@ import { STATE_QUERY_NAME } from './constants';
 import { Link } from '@restate/ui/link';
 import { useEditStateContext } from '@restate/features/edit-state';
 import {
-  CodecOptionsProvider,
+  StaticCodecOptionsProvider,
   useResolvedCodecOptions,
 } from '@restate/features/codec';
 import { toStateParam } from './toStateParam';
@@ -508,14 +508,14 @@ function Component() {
                                         />
                                       )}
                                       <span className="block truncate">
-                                        <CodecOptionsProvider
+                                        <StaticCodecOptionsProvider
                                           options={stateCodecOptions}
                                         >
                                           <DecodedValue
                                             value={row.state?.[id]}
                                             isBase64
                                           />
-                                        </CodecOptionsProvider>
+                                        </StaticCodecOptionsProvider>
                                       </span>
                                     </span>
                                   </Button>
@@ -553,7 +553,7 @@ function Component() {
                                       </div>
                                     }
                                   >
-                                    <CodecOptionsProvider
+                                    <StaticCodecOptionsProvider
                                       options={stateCodecOptions}
                                     >
                                       <Value
@@ -562,7 +562,7 @@ function Component() {
                                         showCopyButton
                                         portalId="state-value"
                                       />
-                                    </CodecOptionsProvider>
+                                    </StaticCodecOptionsProvider>
                                   </DropdownSection>
                                 </PopoverContent>
                               </Popover>

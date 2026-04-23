@@ -1,6 +1,6 @@
 import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
 import {
-  CodecProvider,
+  CodecOptionsProvider,
   type RestateCodecOptions,
 } from '@restate/features/codec';
 import { EntryProps } from './types';
@@ -67,14 +67,14 @@ export function Input({
             name={invocation?.target_handler_name}
             operationSymbol={''}
             input={
-              <CodecProvider options={codecOptions}>
+              <CodecOptionsProvider options={codecOptions}>
                 <LazyJournalEntryPayload.Input
                   invocationId={invocation?.id}
                   entry={entry}
                   title="Input"
                   isBase64
                 />
-              </CodecProvider>
+              </CodecOptionsProvider>
             }
           />
           <div data-fill />

@@ -1,14 +1,10 @@
-import { useAdminBaseUrl } from '@restate/data-access/admin-api';
-import { useQueryClient } from '@tanstack/react-query';
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import { useCodec } from './Codec';
 import { useCodecRuntimeConfig } from './CodecRuntimeProvider';
-import { composeRestateDecoder, composeRestateEncoder } from './codecs';
 import {
   createFetcherWithCodec,
   type GetCodecOptions,
 } from './fetcherWithCodec';
-import { useSerdePreviewDecoder, useSerdePreviewEncoder } from './preview';
 import type { RestateCodecOptions } from './types';
 import { useResolvedCodecOptions } from './useResolvedCodecOptions';
 
@@ -35,19 +31,8 @@ export function useCodecRuntime(codecOptions?: RestateCodecOptions) {
     : undefined;
   const resolved = useResolvedCodecOptions(merged);
   const options = merged ? resolved : contextOptions;
-  const { fetcher, decoders, encoders } = useCodecRuntimeConfig();
-  const adminBaseUrl = useAdminBaseUrl();
-  const queryClient = useQueryClient();
-  const previewDecoder = useSerdePreviewDecoder(adminBaseUrl ?? '');
-  const previewEncoder = useSerdePreviewEncoder(adminBaseUrl ?? '');
-  const decoder = useMemo(
-    () => composeRestateDecoder([...decoders, previewDecoder]),
-    [...decoders, previewDecoder],
-  );
-  const encoder = useMemo(
-    () => composeRestateEncoder([...encoders, previewEncoder]),
-    [...encoders, previewEncoder],
-  );
+  const { fetcher, decoder, encoder, refreshCodec } = useCodecRuntimeConfig();
+
   const decode = useCallback(
     (value?: string, optionsOverride?: RestateCodecOptions) =>
       decoder(value, optionsOverride ?? options),
@@ -67,29 +52,6 @@ export function useCodecRuntime(codecOptions?: RestateCodecOptions) {
       }),
     [decoder, encoder, fetcher, options],
   );
-  const refreshCodec = useCallback(() => {
-    queryClient.removeQueries({
-      predicate(query) {
-        const { queryKey } = query;
-
-        if (!Array.isArray(queryKey)) {
-          return false;
-        }
-
-        const [path, options] = queryKey;
-
-        if (['decode', 'encode'].includes(String(options))) {
-          return true;
-        }
-
-        return (
-          typeof path === 'string' &&
-          path.startsWith('/internal/services/') &&
-          path.includes('/serdes/')
-        );
-      },
-    });
-  }, [queryClient]);
 
   return {
     options,

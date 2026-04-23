@@ -7,7 +7,7 @@ import {
   useGetInvocationStatusDetails,
 } from '@restate/data-access/admin-api-hooks';
 import {
-  CodecProvider,
+  CodecOptionsProvider,
   type RestateCodecOptions,
 } from '@restate/features/codec';
 import type { PropsWithChildren } from 'react';
@@ -139,5 +139,5 @@ export function EntryCodecProvider({
       } satisfies RestateCodecOptions)
     : undefined;
 
-  return <CodecProvider options={options}>{children}</CodecProvider>;
+  return <CodecOptionsProvider options={options}>{children}</CodecOptionsProvider>;
 }
