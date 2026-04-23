@@ -42,9 +42,9 @@ function getEntryCodecTarget(
 ) {
   if (isTargetInvocationEntry(entry)) {
     return {
-      service: (entry as { serviceName?: string }).serviceName,
-      key: (entry as { serviceKey?: string }).serviceKey,
-      handlerName: (entry as { handlerName?: string }).handlerName,
+      service: targetInvocation?.targetServiceName ?? (entry as { serviceName?: string }).serviceName,
+      key: targetInvocation?.targetServiceKey ?? (entry as { serviceKey?: string }).serviceKey,
+      handlerName: targetInvocation?.targetHandlerName ?? (entry as { handlerName?: string }).handlerName,
       deploymentId: entry.invocationId
         ? (targetInvocation?.pinnedDeploymentId ??
           targetInvocation?.lastAttemptDeploymentId)
