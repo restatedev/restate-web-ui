@@ -78,7 +78,6 @@ async function getDecodedResponseBody(
     withCodecCommandType(codecOptions, 'Output'),
   );
   const headers = new Headers(response.headers);
-  // TODO
   headers.set('Content-Type', 'application/json');
 
   return new Response(decodedBody, {
