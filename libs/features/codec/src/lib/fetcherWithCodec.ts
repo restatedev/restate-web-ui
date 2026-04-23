@@ -41,18 +41,16 @@ async function getEncodedRequestBody(
   return base64ToUint8Array(encodedBody);
 }
 
+function getMediaType(headers: Headers) {
+  return headers.get('Content-Type')?.split(';').at(0)?.trim().toLowerCase();
+}
+
 function isRestateSendResponse(response: Response) {
-  const contentType = response.headers
-    .get('Content-Type')
-    ?.split(';')
-    .at(0)
-    ?.trim()
-    .toLowerCase();
   const restateId = response.headers.get('X-Restate-Id');
 
   return (
     response.url.endsWith('/send') &&
-    contentType === 'application/json' &&
+    getMediaType(response.headers) === 'application/json' &&
     restateId?.startsWith('inv_') === true
   );
 }
@@ -78,7 +76,10 @@ async function getDecodedResponseBody(
     withCodecCommandType(codecOptions, 'Output'),
   );
   const headers = new Headers(response.headers);
-  headers.set('Content-Type', 'application/json');
+
+  if (getMediaType(headers) !== 'application/json') {
+    headers.set('Content-Type', 'application/json');
+  }
 
   return new Response(decodedBody, {
     headers,
