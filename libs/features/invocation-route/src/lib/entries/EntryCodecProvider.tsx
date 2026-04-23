@@ -139,5 +139,7 @@ export function EntryCodecProvider({
       } satisfies RestateCodecOptions)
     : undefined;
 
-  return <CodecOptionsProvider options={options}>{children}</CodecOptionsProvider>;
+  return (
+    <CodecOptionsProvider options={options}>{children}</CodecOptionsProvider>
+  );
 }

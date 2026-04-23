@@ -79,9 +79,10 @@ export function CodecRuntimeProvider({
     });
   }, [queryClient]);
 
-
   return (
-    <CodecRuntimeContext.Provider value={{ fetcher, decoder, encoder, refreshCodec }}>
+    <CodecRuntimeContext.Provider
+      value={{ fetcher, decoder, encoder, refreshCodec }}
+    >
       {children}
     </CodecRuntimeContext.Provider>
   );
