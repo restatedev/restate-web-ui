@@ -4,7 +4,8 @@ import { adminApi } from './client';
 type ServiceSerdeName =
   operations['decode_service_serde']['parameters']['path']['serdeName'];
 
-type DecodeServiceSerdeBody = string | Uint8Array;
+type DecodeServiceSerdeBody =
+  operations['decode_service_serde']['requestBody']['content']['application/octet-stream'];
 
 export function getDecodeServiceSerdeQueryOptions(
   baseUrl: string,
@@ -16,7 +17,7 @@ export function getDecodeServiceSerdeQueryOptions(
   }: {
     service: string;
     serdeName: ServiceSerdeName;
-    body?: DecodeServiceSerdeBody;
+    body?: string | Uint8Array;
     deployment?: string;
   },
 ) {
@@ -30,7 +31,7 @@ export function getDecodeServiceSerdeQueryOptions(
         path: { service, serdeName },
         query: deployment ? { deployment } : undefined,
       },
-      body: body as operations['decode_service_serde']['requestBody']['content']['application/octet-stream'],
+      body: body as DecodeServiceSerdeBody,
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/octet-stream',
@@ -49,21 +50,19 @@ export function getEncodeServiceSerdeQueryOptions(
   }: {
     service: string;
     serdeName: ServiceSerdeName;
-    body?:
-      | operations['encode_service_serde']['requestBody']['content']['application/json']
-      | Uint8Array;
+    body?: operations['encode_service_serde']['requestBody']['content']['application/json'];
     deployment?: string;
   },
 ) {
-  return adminApi<
+  const queryOptions = adminApi<
     '/internal/services/{service}/serdes/encode/{serdeName}',
     'post',
     operations['encode_service_serde']['parameters'],
     operations['encode_service_serde']['requestBody']['content']['application/json'],
-    ArrayBuffer
+    Uint8Array
   >('query', '/internal/services/{service}/serdes/encode/{serdeName}', 'post', {
     baseUrl,
-    body: body as operations['encode_service_serde']['requestBody']['content']['application/json'],
+    body,
     parameters: {
       path: { service, serdeName },
       query: deployment ? { deployment } : undefined,
@@ -74,6 +73,14 @@ export function getEncodeServiceSerdeQueryOptions(
     },
     parseAs: 'arrayBuffer',
   });
+
+  return {
+    ...queryOptions,
+    queryFn: ((...args) =>
+      Promise.resolve(queryOptions.queryFn(...args)).then((data) =>
+        data instanceof Uint8Array ? data : new Uint8Array(data as ArrayBuffer),
+      )) as typeof queryOptions.queryFn,
+  };
 }
 
 export function getServiceKeyStateQueryOptions(

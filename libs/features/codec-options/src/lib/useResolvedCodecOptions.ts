@@ -9,6 +9,7 @@ import type {
   RestateCodecOptions,
   RestateCodecServiceMetadata,
 } from '@restate/features/codec';
+import { useMemo } from 'react';
 
 function resolveCodecDeploymentId(
   service: string | undefined,
@@ -84,8 +85,9 @@ function getResolvedCodecHandlerValue(
 export function useResolvedCodecOptions(codecOptions?: RestateCodecOptions) {
   const serviceName = codecOptions?.service?.value?.name;
   const handlerName = codecOptions?.handler?.value?.name;
+  const hasService = Boolean(serviceName);
   const serviceQuery = useServiceDetails(serviceName ?? '', {
-    enabled: Boolean(serviceName),
+    enabled: hasService,
     refetchOnMount: false,
   });
   const {
@@ -93,42 +95,60 @@ export function useResolvedCodecOptions(codecOptions?: RestateCodecOptions) {
     isPending: isDeploymentPending,
     error: deploymentError,
   } = useListDeployments({
-    enabled: Boolean(serviceName),
+    enabled: hasService,
     refetchOnMount: false,
   });
   const resolvedHandlerMetadata = handlerName
     ? serviceQuery.data?.handlers.find(({ name }) => name === handlerName)
     : undefined;
 
-  return {
-    ...(codecOptions ?? {}),
-    service: toAsyncCodecOption(
-      getResolvedCodecServiceValue(codecOptions, serviceQuery.data),
-      codecOptions?.service?.isPending ||
-        (Boolean(serviceName) && serviceQuery.isPending),
-      codecOptions?.service?.error ??
-        (serviceName ? serviceQuery.error : null) ??
-        undefined,
-    ),
-    handler: toAsyncCodecOption(
-      getResolvedCodecHandlerValue(codecOptions, resolvedHandlerMetadata),
-      codecOptions?.handler?.isPending ||
-        (Boolean(handlerName) && serviceQuery.isPending),
-      codecOptions?.handler?.error ??
-        (handlerName ? serviceQuery.error : null) ??
-        undefined,
-    ),
-    deploymentId: toAsyncCodecOption(
-      resolveCodecDeploymentId(
-        serviceName,
-        codecOptions?.deploymentId?.value,
-        listDeployments,
+  return useMemo(() => {
+    if (!codecOptions) {
+      return codecOptions;
+    }
+
+    return {
+      ...codecOptions,
+      service: toAsyncCodecOption(
+        getResolvedCodecServiceValue(codecOptions, serviceQuery.data),
+        codecOptions.service?.isPending ||
+          (hasService && serviceQuery.isPending),
+        codecOptions.service?.error ??
+          (hasService ? serviceQuery.error : null) ??
+          undefined,
       ),
-      codecOptions?.deploymentId?.isPending ||
-        (Boolean(serviceName) && isDeploymentPending),
-      codecOptions?.deploymentId?.error ??
-        (serviceName ? deploymentError : null) ??
-        undefined,
-    ),
-  };
+      handler: toAsyncCodecOption(
+        getResolvedCodecHandlerValue(codecOptions, resolvedHandlerMetadata),
+        codecOptions.handler?.isPending ||
+          (Boolean(handlerName) && serviceQuery.isPending),
+        codecOptions.handler?.error ??
+          (handlerName ? serviceQuery.error : null) ??
+          undefined,
+      ),
+      deploymentId: toAsyncCodecOption(
+        resolveCodecDeploymentId(
+          serviceName,
+          codecOptions.deploymentId?.value,
+          listDeployments,
+        ),
+        codecOptions.deploymentId?.isPending ||
+          (hasService && isDeploymentPending),
+        codecOptions.deploymentId?.error ??
+          (hasService ? deploymentError : null) ??
+          undefined,
+      ),
+    };
+  }, [
+    codecOptions,
+    deploymentError,
+    handlerName,
+    hasService,
+    isDeploymentPending,
+    listDeployments,
+    resolvedHandlerMetadata,
+    serviceName,
+    serviceQuery.data,
+    serviceQuery.error,
+    serviceQuery.isPending,
+  ]);
 }

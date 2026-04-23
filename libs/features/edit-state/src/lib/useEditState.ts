@@ -18,6 +18,7 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
+import { useCallback } from 'react';
 
 function isValidJSON(value: unknown) {
   try {
@@ -81,70 +82,83 @@ export function useEditState(
   );
   const queryClient = useQueryClient();
 
-  const mutate = async (variables: {
-    state: Record<string, string | undefined>;
-    partial?: boolean;
-  }) => {
-    if (!version && variables.partial) {
-      throw new RestateError(
-        'Partial updates to the state are not supported. Please replace the entire state instead.',
-      );
-    }
+  const mutate = useCallback(
+    async (variables: {
+      state: Record<string, string | undefined>;
+      partial?: boolean;
+    }) => {
+      if (!version && variables.partial) {
+        throw new RestateError(
+          'Partial updates to the state are not supported. Please replace the entire state instead.',
+        );
+      }
 
-    if (
-      !variables.state ||
-      typeof variables.state !== 'object' ||
-      !isValidJSON(variables.state)
-    ) {
-      throw new RestateError('Please enter a valid value');
-    }
+      if (
+        !variables.state ||
+        typeof variables.state !== 'object' ||
+        !isValidJSON(variables.state)
+      ) {
+        throw new RestateError('Please enter a valid value');
+      }
 
-    const encodedVariables = convertStateToObject(
-      await Promise.all(
-        Object.entries(variables.state).map(([key, value]) =>
-          Promise.resolve(
-            encode(value, {
-              ...resolvedCodecOptions,
-              command: {
-                type: 'SetState',
-                name: key,
-              },
-            }),
-          ).then((encodedValue) => ({
-            name: key,
-            value: Array.from(base64ToUint8Array(encodedValue)),
-          })),
-        ),
-      ),
-    );
-
-    return mutationFn(
-      {
-        parameters: { path: { service } },
-        body: {
-          object_key: objectKey,
-          ...(variables.partial && { version }),
-          new_state: {
-            ...(variables.partial &&
-              query.data && {
-                ...convertStateToObject(
-                  query.data.state.map(({ name, value }) => ({
-                    name,
-                    value: Array.from(base64ToUint8Array(value)),
-                  })),
-                ),
+      const encodedVariables = convertStateToObject(
+        await Promise.all(
+          Object.entries(variables.state).map(([key, value]) =>
+            Promise.resolve(
+              encode(value, {
+                ...resolvedCodecOptions,
+                command: {
+                  type: 'SetState',
+                  name: key,
+                },
               }),
-            ...encodedVariables,
+            ).then((encodedValue) => ({
+              name: key,
+              value: Array.from(base64ToUint8Array(encodedValue)),
+            })),
+          ),
+        ),
+      );
+
+      return mutationFn(
+        {
+          parameters: { path: { service } },
+          body: {
+            object_key: objectKey,
+            ...(variables.partial && { version }),
+            new_state: {
+              ...(variables.partial &&
+                query.data && {
+                  ...convertStateToObject(
+                    query.data.state.map(({ name, value }) => ({
+                      name,
+                      value: Array.from(base64ToUint8Array(value)),
+                    })),
+                  ),
+                }),
+              ...encodedVariables,
+            },
           },
         },
-      },
-      { client: queryClient, meta },
-    ).then(async () => {
-      const { data } = await query.refetch();
+        { client: queryClient, meta },
+      ).then(async () => {
+        const { data } = await query.refetch();
 
-      return data?.state;
-    });
-  };
+        return data?.state;
+      });
+    },
+    [
+      encode,
+      meta,
+      mutationFn,
+      objectKey,
+      query,
+      queryClient,
+      resolvedCodecOptions,
+      service,
+      version,
+    ],
+  );
 
   const mutation = useMutation({
     mutationFn: mutate,

@@ -1,7 +1,7 @@
 import { useAdminBaseUrl } from '@restate/data-access/admin-api';
 import {
+  EMPTY_CODECS,
   useCodec,
-  type RestateBinaryCodec,
   type RestateCodecOptions,
 } from '@restate/features/codec';
 import { useRestateContext } from '@restate/features/restate-context';
@@ -14,8 +14,6 @@ import {
 } from './fetcherWithCodec';
 import { useSerdePreviewDecoder, useSerdePreviewEncoder } from './preview';
 import { useResolvedCodecOptions } from './useResolvedCodecOptions';
-
-const EMPTY_CODECS: readonly RestateBinaryCodec[] = [];
 
 function getCodecError(codecOptions: RestateCodecOptions | undefined) {
   return (
@@ -35,13 +33,11 @@ function isCodecPending(codecOptions: RestateCodecOptions | undefined) {
 
 export function useCodecRuntime(codecOptions?: RestateCodecOptions) {
   const contextOptions = useCodec();
-  const mergedCodecOptions = codecOptions
+  const merged = codecOptions
     ? { ...contextOptions, ...codecOptions }
-    : contextOptions;
-  const resolvedCodecOptions = useResolvedCodecOptions(
-    codecOptions ? mergedCodecOptions : undefined,
-  );
-  const options = codecOptions ? resolvedCodecOptions : contextOptions;
+    : undefined;
+  const resolved = useResolvedCodecOptions(merged);
+  const options = merged ? resolved : contextOptions;
   const {
     fetcher = globalThis.fetch,
     decoders = EMPTY_CODECS,
@@ -83,9 +79,20 @@ export function useCodecRuntime(codecOptions?: RestateCodecOptions) {
       predicate(query) {
         const { queryKey } = query;
 
+        if (!Array.isArray(queryKey)) {
+          return false;
+        }
+
+        const [path, options] = queryKey;
+
+        if (['decode', 'encode'].includes(String(options))) {
+          return true;
+        }
+
         return (
-          Array.isArray(queryKey) &&
-          ['decode', 'encode'].includes(String(queryKey.at(1)))
+          typeof path === 'string' &&
+          path.startsWith('/internal/services/') &&
+          path.includes('/serdes/')
         );
       },
     });

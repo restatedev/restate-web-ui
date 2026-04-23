@@ -15,7 +15,7 @@ import {
   useEffect,
 } from 'react';
 import semverGt from 'semver/functions/gte';
-import type { RestateBinaryCodec } from '@restate/features/codec';
+import { EMPTY_CODECS, type RestateBinaryCodec } from '@restate/features/codec';
 
 export type Status = 'HEALTHY' | 'DEGRADED' | 'PENDING' | (string & {});
 export type {
@@ -25,7 +25,6 @@ export type {
   RestateCodecOptions,
 } from '@restate/features/codec';
 
-const EMPTY_CODECS: readonly RestateBinaryCodec[] = [];
 type CodecFetcher = typeof globalThis.fetch;
 
 type OnboardingComponent = ComponentType<{

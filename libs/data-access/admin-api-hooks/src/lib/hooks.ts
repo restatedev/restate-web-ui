@@ -919,18 +919,10 @@ export function useEncodeServiceSerde(
   const results = useQuery({
     ...queryOptions,
     ...options,
-    queryFn: (...args: Parameters<typeof queryOptions.queryFn>) =>
-      Promise.resolve(queryOptions.queryFn(...args)).then(
-        (data: ArrayBuffer) => new Uint8Array(data),
-      ),
     enabled: body !== undefined && options.enabled !== false && enabled,
   });
 
-  return {
-    ...results,
-    data: results.data ?? new Uint8Array(),
-    queryKey: queryOptions.queryKey,
-  };
+  return { ...results, queryKey: queryOptions.queryKey };
 }
 
 export function useListInvocations(

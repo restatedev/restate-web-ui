@@ -14,38 +14,38 @@ import { useMemo } from 'react';
 type SerdePreviewName =
   operations['decode_service_serde']['parameters']['path']['serdeName'];
 
+const PREVIEW_METADATA_PREFIX = 'restate.serde.preview.';
+
+function isPreviewEnabled(
+  metadata: Record<string, string> | undefined,
+  serdeName: string,
+) {
+  return metadata?.[`${PREVIEW_METADATA_PREFIX}${serdeName}`] === 'true';
+}
+
 function getSerdePreviewRequest(options: RestateCodecOptions | undefined) {
   const service = options?.service?.value?.name;
-  const handler = options?.handler?.value?.name;
-  const handlerMetadata = options?.handler?.value?.metadata;
-  const serviceMetadata = options?.service?.value?.metadata;
-
-  if (!service || (!handlerMetadata && !serviceMetadata)) {
-    return undefined;
-  }
-
   const commandType = options?.command?.type;
 
-  if (!commandType) {
+  if (!service || !commandType) {
     return undefined;
   }
 
   const serdeName = commandType.toLowerCase();
-  const isHandlerSerde = serdeName === 'input' || serdeName === 'output';
+  const handler = options?.handler?.value?.name;
+  const mergedMetadata = {
+    ...options?.handler?.value?.metadata,
+    ...options?.service?.value?.metadata,
+  };
 
-  if (isHandlerSerde && !handler) {
-    return undefined;
+  let resolvedSerdeName: string | undefined;
+  if (handler && isPreviewEnabled(mergedMetadata, `${handler}/${serdeName}`)) {
+    resolvedSerdeName = `${handler}/${serdeName}`;
+  } else if (isPreviewEnabled(mergedMetadata, serdeName)) {
+    resolvedSerdeName = serdeName;
   }
 
-  const resolvedSerdeName =
-    isHandlerSerde && handler ? `${handler}/${serdeName}` : serdeName;
-
-  const previewMetadataKey = `restate.serde.preview.${resolvedSerdeName}`;
-
-  if (
-    handlerMetadata?.[previewMetadataKey] !== 'true' &&
-    serviceMetadata?.[previewMetadataKey] !== 'true'
-  ) {
+  if (!resolvedSerdeName) {
     return undefined;
   }
 
@@ -94,7 +94,7 @@ export function useSerdePreviewEncoder(baseUrl: string) {
         return value;
       }
 
-      const data = await queryClient.ensureQueryData({
+      return queryClient.ensureQueryData({
         ...getEncodeServiceSerdeQueryOptions(baseUrl, {
           service: previewRequest.service,
           serdeName: previewRequest.serdeName,
@@ -103,8 +103,6 @@ export function useSerdePreviewEncoder(baseUrl: string) {
         }),
         staleTime: Infinity,
       });
-
-      return new Uint8Array(data);
     },
     [baseUrl, queryClient],
   );

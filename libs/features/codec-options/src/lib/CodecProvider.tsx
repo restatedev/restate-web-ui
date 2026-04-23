@@ -19,5 +19,3 @@ export function CodecProvider({
     </CodecOptionsProvider>
   );
 }
-
-export const ResolvedCodecProvider = CodecProvider;

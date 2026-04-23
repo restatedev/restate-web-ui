@@ -22,17 +22,25 @@ function getHeader(
   }
 
   if (headers instanceof Headers) {
-    return headers.get(name) ?? headers.get(name.toLowerCase()) ?? undefined;
+    return headers.get(name) ?? undefined;
   }
 
   const value = headers[name] ?? headers[name.toLowerCase()];
   return typeof value === 'string' ? value : undefined;
 }
 
-const adminBodySerializer = ((body: unknown, headers?: Headers) => {
-  const contentType = getHeader(headers, 'Content-Type');
+function getMediaType(headers: Headers | Record<string, unknown> | undefined) {
+  return getHeader(headers, 'Content-Type')
+    ?.split(';')
+    .at(0)
+    ?.trim()
+    .toLowerCase();
+}
 
-  if (contentType === 'application/octet-stream') {
+const adminBodySerializer = ((body: unknown, headers?: Headers) => {
+  const mediaType = getMediaType(headers);
+
+  if (mediaType === 'application/octet-stream') {
     if (
       typeof body === 'string' ||
       ArrayBuffer.isView(body) ||
@@ -43,7 +51,7 @@ const adminBodySerializer = ((body: unknown, headers?: Headers) => {
   }
 
   if (
-    contentType === 'application/json' &&
+    mediaType === 'application/json' &&
     (ArrayBuffer.isView(body) || body instanceof Blob)
   ) {
     return body;

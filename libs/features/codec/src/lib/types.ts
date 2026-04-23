@@ -45,3 +45,5 @@ export type RestateBinaryCodec = (
   value: RestateBinaryPayload,
   options?: RestateCodecOptions,
 ) => Promise<RestateBinaryPayload> | RestateBinaryPayload;
+
+export const EMPTY_CODECS: readonly RestateBinaryCodec[] = [];
