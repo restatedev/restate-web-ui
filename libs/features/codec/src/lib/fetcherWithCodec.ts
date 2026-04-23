@@ -1,5 +1,6 @@
 import { getAuthToken } from '@restate/util/api-config';
 import { base64ToUint8Array, bytesToBase64 } from '@restate/util/binary';
+import { RestateError } from '@restate/util/errors';
 import type { RestateStringCodec } from './codecs';
 import type { CodecFetcher } from './CodecRuntimeProvider';
 import type { RestateCodecOptions } from './types';
@@ -88,6 +89,20 @@ async function getDecodedResponseBody(
   });
 }
 
+function toCodecErrorResponse(error: unknown, source?: Response) {
+  const message = error instanceof Error ? error.message : String(error);
+  const status =
+    source?.status ??
+    (error instanceof RestateError ? error.status : undefined);
+  const statusText = source?.statusText;
+
+  return new Response(message, {
+    ...(status !== undefined && { status }),
+    ...(statusText && { statusText }),
+    headers: { 'Content-Type': 'text/plain' },
+  });
+}
+
 export function createFetcherWithCodec(
   fetcher: CodecFetcher,
   encoder: RestateStringCodec,
@@ -97,11 +112,20 @@ export function createFetcherWithCodec(
   return async (input, init) => {
     const request = new Request(input, init);
     const codecOptions = await getCodecOptions?.(request);
+    const hasBody = !['GET', 'HEAD'].includes(request.method.toUpperCase());
+
+    let encodedBody: BodyInit | undefined;
+    if (hasBody) {
+      try {
+        encodedBody = await getEncodedRequestBody(init, encoder, codecOptions);
+      } catch (error) {
+        return toCodecErrorResponse(error);
+      }
+    }
+
     const nextRequest = new Request(request, {
       credentials: 'include',
-      ...(!['GET', 'HEAD'].includes(request.method.toUpperCase()) && {
-        body: await getEncodedRequestBody(init, encoder, codecOptions),
-      }),
+      ...(hasBody && { body: encodedBody }),
     });
     const token = getAuthToken();
 
@@ -114,6 +138,11 @@ export function createFetcherWithCodec(
     }
 
     const response = await fetcher(nextRequest);
-    return getDecodedResponseBody(response, decoder, codecOptions);
+
+    try {
+      return await getDecodedResponseBody(response, decoder, codecOptions);
+    } catch (error) {
+      return toCodecErrorResponse(error, response);
+    }
   };
 }

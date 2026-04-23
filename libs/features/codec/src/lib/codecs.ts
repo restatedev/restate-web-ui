@@ -9,11 +9,33 @@ import {
   uint8ArrayToUtf8OrBase64,
   utf8ToUint8Array,
 } from '@restate/util/binary';
+import { RestateError, UI_ERROR_CODES } from '@restate/util/errors';
 
 export type RestateStringCodec = (
   value?: string,
   options?: RestateCodecOptions,
 ) => Promise<string> | string;
+
+function wrapCodecError(direction: 'decode' | 'encode', cause: unknown) {
+  const message = cause instanceof Error ? cause.message : String(cause);
+  const stack = cause instanceof Error ? cause.stack : undefined;
+  const fallbackCode =
+    direction === 'decode'
+      ? UI_ERROR_CODES.codecDecode
+      : UI_ERROR_CODES.codecEncode;
+
+  if (cause instanceof RestateError) {
+    return new RestateError(
+      message,
+      cause.restate_code || fallbackCode,
+      cause.isTransient,
+      stack,
+      cause.status,
+    );
+  }
+
+  return new RestateError(message, fallbackCode, undefined, stack);
+}
 
 /**
  * Execution order:
@@ -26,15 +48,19 @@ export function composeRestateDecoder(
   codecs: readonly RestateBinaryCodec[],
 ): RestateStringCodec {
   return async (value, options) => {
-    const resolvedValue = await codecs.reduce<Promise<RestateBinaryPayload>>(
-      (currentValue, codec) =>
-        currentValue.then((resolvedValue) =>
-          Promise.resolve(codec(resolvedValue, options)),
-        ),
-      Promise.resolve(base64ToUint8Array(value)),
-    );
+    try {
+      const resolvedValue = await codecs.reduce<Promise<RestateBinaryPayload>>(
+        (currentValue, codec) =>
+          currentValue.then((resolvedValue) =>
+            Promise.resolve(codec(resolvedValue, options)),
+          ),
+        Promise.resolve(base64ToUint8Array(value)),
+      );
 
-    return uint8ArrayToUtf8OrBase64(resolvedValue);
+      return uint8ArrayToUtf8OrBase64(resolvedValue);
+    } catch (cause) {
+      throw wrapCodecError('decode', cause);
+    }
   };
 }
 
@@ -48,14 +74,18 @@ export function composeRestateEncoder(
   codecs: readonly RestateBinaryCodec[],
 ): RestateStringCodec {
   return async (value, options) => {
-    const resolvedValue = await codecs.reduce<Promise<RestateBinaryPayload>>(
-      (currentValue, codec) =>
-        currentValue.then((resolvedValue) =>
-          Promise.resolve(codec(resolvedValue, options)),
-        ),
-      Promise.resolve(utf8ToUint8Array(value) ?? new Uint8Array()),
-    );
+    try {
+      const resolvedValue = await codecs.reduce<Promise<RestateBinaryPayload>>(
+        (currentValue, codec) =>
+          currentValue.then((resolvedValue) =>
+            Promise.resolve(codec(resolvedValue, options)),
+          ),
+        Promise.resolve(utf8ToUint8Array(value) ?? new Uint8Array()),
+      );
 
-    return bytesToBase64(resolvedValue);
+      return bytesToBase64(resolvedValue);
+    } catch (cause) {
+      throw wrapCodecError('encode', cause);
+    }
   };
 }

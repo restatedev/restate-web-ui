@@ -1,4 +1,16 @@
-export const ERROR_CODES: Record<string, { summary: string; help: string }> = {
+export const UI_ERROR_CODES = {
+  codecDecode: 'UI0001',
+  codecEncode: 'UI0002',
+} as const;
+
+export const ERROR_CODES: Record<string, { summary: string; help?: string }> = {
+  UI0001: {
+    summary:
+      'Could not decode this payload. Showing the original value as-is.',
+  },
+  UI0002: {
+    summary: 'Could not encode this payload.',
+  },
   META0003: {
     summary: 'Cannot reach the service endpoint to execute discovery',
     help: `

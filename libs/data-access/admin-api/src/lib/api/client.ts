@@ -100,10 +100,20 @@ const errorMiddleware: Middleware = {
         ? await response.clone().json()
         : await response.clone().text();
       if (typeof body === 'object' && body) {
-        throw new RestateError(body.message, body.restate_code ?? '');
+        throw new RestateError(
+          body.message,
+          body.restate_code ?? '',
+          undefined,
+          undefined,
+          response.status,
+        );
       }
-      throw new Error(
+      throw new RestateError(
         body || 'An unexpected error occurred. Please try again later.',
+        undefined,
+        undefined,
+        undefined,
+        response.status,
       );
     }
     if (response.ok && request.url.endsWith('health')) {

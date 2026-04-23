@@ -1,10 +1,16 @@
 import { Code, Snippet, SnippetCopy } from '@restate/ui/code';
 import { Icon, IconName } from '@restate/ui/icons';
 import { InlineTooltip } from '@restate/ui/tooltip';
-import { ERROR_CODES, RestateError } from '@restate/util/errors';
+import {
+  ERROR_CODES,
+  RestateError,
+  UI_ERROR_CODES,
+} from '@restate/util/errors';
 import { PropsWithChildren } from 'react';
 import Markdown from 'react-markdown';
 import { tv } from '@restate/util/styles';
+
+const UI_CODES = new Set<string>(Object.values(UI_ERROR_CODES));
 
 const styles = tv({
   base: 'relative flex min-h-0 flex-col gap-2 rounded-xl p-3 text-sm',
@@ -72,6 +78,7 @@ export function RestateServerError({
   const { summary, help } = code
     ? (ERROR_CODES[code] ?? DEFAULT_ERROR)
     : DEFAULT_ERROR;
+  const hasServerDocs = Boolean(code) && !UI_CODES.has(code as string);
 
   return (
     <div className={styles({ className, isTransient })}>
@@ -88,7 +95,7 @@ export function RestateServerError({
               variant="indicator-button"
               className="inline [&_button]:mx-1 [&_button]:translate-y-0.5 [&_button]:self-start [&_p]:inline"
               title={code}
-              {...(code && {
+              {...(hasServerDocs && {
                 learnMoreHref: `https://docs.restate.dev/references/errors#${code?.toLowerCase()}`,
               })}
               description={
