@@ -230,9 +230,10 @@ function useApiSpec(service?: string | null) {
         const handler = operation?.id
           ? serviceDetails?.handlers.find(({ name }) => name === operation.id)
           : undefined;
+        const { deploymentId: _deploymentId, ...rest } = resolvedServiceOptions;
 
         return {
-          ...resolvedServiceOptions,
+          ...rest,
           handler: handler ? { value: handler } : undefined,
         };
       }),
