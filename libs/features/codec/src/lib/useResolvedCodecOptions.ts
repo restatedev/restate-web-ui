@@ -51,10 +51,7 @@ function getDeploymentFallbackError(
     ` instead. Decoded or encoded values may not match the original format if the serde changed between deployments.`,
   ];
 
-  return new RestateError(
-    parts.join(''),
-    UI_ERROR_CODES.deploymentFallback,
-  );
+  return new RestateError(parts.join(''), UI_ERROR_CODES.deploymentFallback);
 }
 
 function toAsyncCodecOption<T>(
@@ -128,11 +125,7 @@ export function useResolvedCodecOptions(codecOptions?: RestateCodecOptions) {
     : undefined;
   const originalDeploymentId = codecOptions?.deploymentId?.value;
   const { deploymentId: resolvedDeploymentId, didFallback } =
-    resolveCodecDeployment(
-      serviceName,
-      originalDeploymentId,
-      listDeployments,
-    );
+    resolveCodecDeployment(serviceName, originalDeploymentId, listDeployments);
 
   return useMemo(() => {
     if (!codecOptions) {

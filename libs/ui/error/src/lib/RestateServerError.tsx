@@ -181,7 +181,7 @@ export function RestateServerError({
       <Code className={codeStyles({ wrap, isTransient })}>
         <Snippet language="bash" className="relative gap-0 px-0!">
           <div className="group error flex max-h-80 flex-auto flex-col gap-1 overflow-auto py-4 pr-2 pl-5 text-[90%] [scrollbar-gutter:stable] open:pb-6">
-            <span className="inline-block whitespace-normal [overflow-wrap:anywhere]">
+            <span className="inline-block [overflow-wrap:anywhere] whitespace-normal">
               {message}
             </span>
             {stack && (

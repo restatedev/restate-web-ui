@@ -6,8 +6,7 @@ export const UI_ERROR_CODES = {
 
 export const ERROR_CODES: Record<string, { summary: string; help?: string }> = {
   UI0001: {
-    summary:
-      'Could not decode this payload. Showing the original value as-is.',
+    summary: 'Could not decode this payload. Showing the original value as-is.',
   },
   UI0002: {
     summary: 'Could not encode this payload.',
