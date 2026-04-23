@@ -233,6 +233,7 @@ function useApiSpec(service?: string | null) {
 
         return {
           ...resolvedServiceOptions,
+          handler: handler ? { value: handler } : undefined,
         };
       }),
     [
