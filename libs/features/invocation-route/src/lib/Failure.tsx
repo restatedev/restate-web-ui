@@ -94,6 +94,7 @@ export function Failure({
   isRetrying,
   title = isRetrying ? 'Transient failure' : 'Failure',
   stacktrace,
+  metadata,
 }: {
   restate_code?: string;
   message: string;
@@ -101,10 +102,20 @@ export function Failure({
   className?: string;
   isRetrying?: boolean;
   title?: string;
+  metadata?: Array<{ key: string; value: string }>;
 }) {
   const error = useMemo(
-    () => new RestateError(message, restate_code, isRetrying, stacktrace),
-    [message, restate_code, isRetrying, stacktrace],
+    () =>
+      new RestateError(
+        message,
+        restate_code,
+        isRetrying,
+        stacktrace,
+        undefined,
+        undefined,
+        metadata,
+      ),
+    [message, restate_code, isRetrying, stacktrace, metadata],
   );
   const hasStack = error?.message.includes('\n') || !!stacktrace;
   const isLargeError = error?.message.length > 200;

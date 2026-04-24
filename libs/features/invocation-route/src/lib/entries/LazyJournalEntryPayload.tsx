@@ -145,13 +145,24 @@ function getInitialData<F extends PayloadField>(
       return {
         value: (entry as { value?: string }).value,
         failure: (
-          entry as { error?: { message?: string; restateCode?: string } }
+          entry as {
+            error?: {
+              message?: string;
+              restateCode?: string;
+              metadata?: Array<{ key: string; value: string }>;
+            };
+          }
         ).error
           ? {
               message: (entry as { error?: { message?: string } }).error
                 ?.message,
               restate_code: (entry as { error?: { restateCode?: string } })
                 .error?.restateCode,
+              metadata: (
+                entry as {
+                  error?: { metadata?: Array<{ key: string; value: string }> };
+                }
+              ).error?.metadata,
             }
           : undefined,
       } as Pick<JournalEntryPayloads, F>;
@@ -360,6 +371,7 @@ function LazyValue({
       <Failure
         message={failure.message}
         restate_code={failure.restate_code}
+        metadata={failure.metadata}
         isRetrying={entry.isRetrying}
         className="text-2xs"
       />
@@ -565,6 +577,7 @@ function LazyFailure({
       ? {
           message: failure.message,
           restateCode: failure.restate_code,
+          metadata: failure.metadata,
         }
       : undefined;
 
@@ -576,6 +589,7 @@ function LazyFailure({
     <Failure
       restate_code={errorData.restateCode}
       message={errorData.message ?? 'Failed'}
+      metadata={errorData.metadata}
       className={className}
       isRetrying={isRetrying}
       title={title}

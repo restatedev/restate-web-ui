@@ -19,6 +19,11 @@ export function parseResults(result?: any): {
       failure: new RestateError(
         result?.Failure?.message,
         result?.Failure?.code,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        result?.Failure?.metadata,
       ),
     };
   }
@@ -54,6 +59,10 @@ export function parseResults2(result?: any) {
         result?.Failure?.message,
         result?.Failure?.code,
         false,
+        undefined,
+        undefined,
+        undefined,
+        result?.Failure?.metadata,
       ),
     } as const;
   }
