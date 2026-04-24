@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Icon, IconName } from '@restate/ui/icons';
 import {
   Dropdown,
@@ -23,13 +24,30 @@ const DEPLOYMENT_SORT_OPTIONS = [
   { value: 'status', label: 'Status' },
 ] as const;
 
-function getSortLabel(column: string | undefined, mode: string) {
-  const options =
-    mode === 'deployments' ? DEPLOYMENT_SORT_OPTIONS : SERVICE_SORT_OPTIONS;
-  return options.find((o) => o.value === column)?.label ?? options[0]?.label;
+type ServiceSortOption = (typeof SERVICE_SORT_OPTIONS)[number];
+
+function getSortLabel(
+  column: string | undefined,
+  mode: string,
+  formatServiceSortLabel?: (option: ServiceSortOption) => ReactNode,
+) {
+  if (mode === 'deployments') {
+    return (
+      DEPLOYMENT_SORT_OPTIONS.find((o) => o.value === column)?.label ??
+      DEPLOYMENT_SORT_OPTIONS[0].label
+    );
+  }
+  const option =
+    SERVICE_SORT_OPTIONS.find((o) => o.value === column) ??
+    SERVICE_SORT_OPTIONS[0];
+  return formatServiceSortLabel?.(option) ?? option.label;
 }
 
-export function SortByDropdown() {
+export function SortByDropdown({
+  formatServiceSortLabel,
+}: {
+  formatServiceSortLabel?: (option: ServiceSortOption) => ReactNode;
+}) {
   const {
     mode,
     resolvedServiceSortDescriptor,
@@ -48,7 +66,11 @@ export function SortByDropdown() {
       : setServiceSortDescriptor;
   const options =
     mode === 'deployments' ? DEPLOYMENT_SORT_OPTIONS : SERVICE_SORT_OPTIONS;
-  const label = getSortLabel(String(sortDescriptor.column), mode);
+  const label = getSortLabel(
+    String(sortDescriptor.column),
+    mode,
+    formatServiceSortLabel,
+  );
   const currentColumn = String(sortDescriptor.column);
   const currentDirection =
     sortDescriptor.direction === 'descending' ? 'descending' : 'ascending';
@@ -86,7 +108,7 @@ export function SortByDropdown() {
             >
               {options.map((option) => (
                 <DropdownItem key={option.value} value={option.value}>
-                  {option.label}
+                  {getSortLabel(option.value, mode, formatServiceSortLabel)}
                 </DropdownItem>
               ))}
             </DropdownMenu>
