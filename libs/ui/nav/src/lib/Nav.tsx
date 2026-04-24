@@ -28,6 +28,8 @@ import { Icon, IconName } from '@restate/ui/icons';
 
 interface NavProps {
   className?: string;
+  containerClassName?: string;
+  indicatorClassName?: string;
   ariaCurrentValue?: AriaAttributes['aria-current'];
   children: ReactElement<
     ComponentProps<typeof NavItem | typeof NavSearchItem>
@@ -66,6 +68,8 @@ const styles = tv({
 export function Nav({
   children,
   className,
+  containerClassName,
+  indicatorClassName,
   ariaCurrentValue,
   layout = 'horizontal',
   responsive = true,
@@ -147,8 +151,14 @@ export function Nav({
 
   return (
     <NavContext.Provider value={{ value: ariaCurrentValue }}>
-      <div className={container()} ref={containerElementRef}>
-        <div className={indicator()} ref={activeIndicatorElement} />
+      <div
+        className={container({ className: containerClassName })}
+        ref={containerElementRef}
+      >
+        <div
+          className={indicator({ className: indicatorClassName })}
+          ref={activeIndicatorElement}
+        />
         <AriaGridList
           aria-label="Navigation"
           className={base({ className })}
