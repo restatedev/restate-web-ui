@@ -149,7 +149,6 @@ export function Failure({
         <DropdownSection title={title}>
           <ErrorBanner
             error={error}
-            wrap={hasStack}
             className={errorBanner()}
             isTransient={isRetrying}
           />

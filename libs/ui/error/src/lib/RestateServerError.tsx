@@ -72,6 +72,16 @@ const terminalStyles = tv({
   },
 });
 
+const terminalMessageStyles = tv({
+  base: '',
+  variants: {
+    preformatted: {
+      true: 'whitespace-pre',
+      false: 'whitespace-normal',
+    },
+  },
+});
+
 const causeStyles = tv({
   base: 'min-w-0 flex-auto text-xs [word-break:break-word]',
   variants: {
@@ -198,12 +208,10 @@ export function RestateServerError({
   error,
   children,
   className,
-  wrap,
   isTransient,
 }: PropsWithChildren<{
   error: RestateError;
   className?: string;
-  wrap?: boolean;
   isTransient?: boolean;
 }>) {
   const { restate_code: code, message, stack, metadata } = error;
@@ -248,14 +256,14 @@ export function RestateServerError({
       <div className="flex items-start gap-3">
         <div className={iconSlotStyles()} />
         <div className={terminalStyles({ isTransient })}>
-          <span className="whitespace-normal [overflow-wrap:anywhere]">
+          <div
+            className={terminalMessageStyles({
+              preformatted: message.includes('\n'),
+            })}
+          >
             {message}
-          </span>
-          {stack && (
-            <div className={wrap ? 'mt-1 whitespace-pre' : 'mt-1 whitespace-pre-wrap'}>
-              {stack}
-            </div>
-          )}
+          </div>
+          {stack && <div className="mt-1 whitespace-pre">{stack}</div>}
         </div>
       </div>
       {metadataEntries.length > 0 && (

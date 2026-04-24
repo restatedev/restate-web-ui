@@ -289,7 +289,6 @@ export function LastError({
         >
           <ErrorBanner
             error={error}
-            wrap={hasStack}
             className={errorBanner()}
             isTransient={isRetrying}
           />
