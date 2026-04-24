@@ -64,10 +64,10 @@ export function OverviewProvider({ children }: { children: ReactNode }) {
     !overviewData.isSummaryLoading &&
     !overviewData.isSummaryError
   ) {
-    initialSortRef.current =
-      overviewData.serviceIssuesMap.size > 0
-        ? { column: 'health', direction: 'descending' }
-        : { column: 'name', direction: 'ascending' };
+    initialSortRef.current = {
+      column: 'created_at',
+      direction: 'descending',
+    };
   }
 
   const [serviceSortDescriptor, setServiceSortDescriptor] =
@@ -93,7 +93,7 @@ export function OverviewProvider({ children }: { children: ReactNode }) {
   }, [rangeFilters, searchParams]);
 
   const resolvedServiceSortDescriptor = serviceSortDescriptor ??
-    initialSortRef.current ?? { column: 'name', direction: 'ascending' };
+    initialSortRef.current ?? { column: 'created_at', direction: 'descending' };
   const resolvedDeploymentSortDescriptor = deploymentSortDescriptor ?? {
     column: 'created_at',
     direction: 'descending',

@@ -12,6 +12,7 @@ import { useOverviewContext } from './OverviewContext';
 
 const SERVICE_SORT_OPTIONS = [
   { value: 'name', label: 'Name' },
+  { value: 'created_at', label: 'Created at' },
   { value: 'invocations', label: 'Invocations' },
   { value: 'health', label: 'Issues' },
 ] as const;

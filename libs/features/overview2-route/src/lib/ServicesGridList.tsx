@@ -41,6 +41,7 @@ export function ServicesGridList() {
     resolvedServiceSortDescriptor,
     invocationCounts,
     serviceIssuesMap,
+    deploymentsMap,
   );
 
   const serviceColumns = useServiceColumns({
