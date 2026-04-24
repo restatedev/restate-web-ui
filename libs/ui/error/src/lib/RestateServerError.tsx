@@ -19,7 +19,7 @@ import {
 const UI_CODES = new Set<string>(Object.values(UI_ERROR_CODES));
 
 const styles = tv({
-  base: 'relative flex min-h-0 w-full flex-auto flex-col gap-2 rounded-xl p-3 text-sm',
+  base: 'relative flex max-h-[28rem] min-h-0 w-full flex-auto flex-col gap-2 overflow-auto rounded-xl p-3 text-sm',
   variants: {
     isTransient: {
       true: 'bg-orange-50',
@@ -127,7 +127,7 @@ const separatorLineStyles = tv({
 });
 
 const metadataListStyles = tv({
-  base: 'flex max-h-80 min-h-0 flex-col overflow-auto pr-1 text-xs [word-break:break-word] [scrollbar-gutter:stable]',
+  base: 'flex min-h-0 flex-col pr-1 text-xs [word-break:break-word]',
   variants: {
     isTransient: {
       true: 'text-orange-700',

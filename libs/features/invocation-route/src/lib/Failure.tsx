@@ -13,7 +13,7 @@ const failureStyle = tv({
       'flex h-5 max-w-[50ch] min-w-6 items-center gap-0 rounded-full border bg-white/70 px-0 py-0 pl-0.5 text-2xs shadow-none',
     errorIcon: 'mr-[0.3rem] ml-[0.15rem] h-3 w-3 shrink-0',
     errorBanner:
-      'max-h-full max-w-[min(80rem,90vw)] flex-auto resize overflow-auto rounded-xl [&_.error]:max-h-120',
+      'max-h-full w-[min(80rem,90vw)] max-w-[min(80rem,90vw)] flex-auto resize overflow-auto rounded-xl',
   },
   variants: {
     isRetrying: {
@@ -64,20 +64,24 @@ const failureStyle = tv({
         errorBanner: '',
       },
     },
+    hasLongMetadata: {
+      true: {
+        trigger: '',
+        errorIcon: '',
+        errorBanner: '',
+      },
+      false: {
+        trigger: '',
+        errorIcon: '',
+        errorBanner: '',
+      },
+    },
   },
   compoundVariants: [
     {
       isLargeError: false,
       hasStack: false,
-      isRetrying: false,
-      className: {
-        errorBanner: 'w-lg',
-      },
-    },
-    {
-      isLargeError: false,
-      hasStack: false,
-      isRetrying: true,
+      hasLongMetadata: false,
       className: {
         errorBanner: 'w-lg',
       },
@@ -119,10 +123,15 @@ export function Failure({
   );
   const hasStack = error?.message.includes('\n') || !!stacktrace;
   const isLargeError = error?.message.length > 200;
+  const hasLongMetadata = (metadata ?? []).some(
+    ({ key, value }) =>
+      key.length > 28 || value.length > 60 || value.includes('\n'),
+  );
   const { trigger, errorIcon, errorBanner } = failureStyle({
     isRetrying,
     hasStack,
     isLargeError,
+    hasLongMetadata,
   });
 
   return (
