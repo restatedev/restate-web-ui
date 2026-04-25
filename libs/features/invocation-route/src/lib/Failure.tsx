@@ -83,7 +83,7 @@ const failureStyle = tv({
       hasStack: false,
       hasLongMetadata: false,
       className: {
-        errorBanner: 'w-lg',
+        errorBanner: 'w-xl',
       },
     },
   ],
