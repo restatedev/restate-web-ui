@@ -51,7 +51,6 @@ import {
   ChartNoAxesColumn,
   BadgePercent,
   Grid2x2Check,
-  Pause,
   CirclePause,
   OctagonPause,
   CircleSlash,

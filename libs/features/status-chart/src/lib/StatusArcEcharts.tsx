@@ -90,51 +90,49 @@ export function StatusArcEcharts({
   usePieInteractions(chartRef, onClickStatus);
 
   return (
-    <>
-      <div className={chartContainerStyles({ isLoading })}>
-        <Chart ref={chartRef} width="100%" height="100%" theme="light">
-          <Tooltip trigger="item" formatValue={(v) => formatNumber(v)} />
-          <Pie
-            radius={['85%', '96%']}
-            center={['50%', '50%']}
-            startAngle={210}
-            endAngle={-30}
-            padAngle={2.5}
-            minAngle={5}
-            showLabel={false}
-            gradient={items.length > 0}
-            silent={items.length === 0}
-          >
-            {items.length > 0 ? (
-              items.map((s) => (
-                <Slice
-                  key={s.name}
-                  name={STATUS_LABELS[s.name] ?? s.name}
-                  value={s.count}
-                  color={s.fillLight}
-                  borderColor={s.stroke}
-                  borderWidth={1.5}
-                  borderType={s.borderType}
-                  borderCap={s.borderCap}
-                  borderRadius={6}
-                  shadowBlur={4}
-                  shadowColor="rgba(0,0,0,0.15)"
-                  shadowOffsetY={1}
-                />
-              ))
-            ) : (
+    <div className={chartContainerStyles({ isLoading })}>
+      <Chart ref={chartRef} width="100%" height="100%" theme="light">
+        <Tooltip trigger="item" formatValue={(v) => formatNumber(v)} />
+        <Pie
+          radius={['85%', '96%']}
+          center={['50%', '50%']}
+          startAngle={210}
+          endAngle={-30}
+          padAngle={2.5}
+          minAngle={5}
+          showLabel={false}
+          gradient={items.length > 0}
+          silent={items.length === 0}
+        >
+          {items.length > 0 ? (
+            items.map((s) => (
               <Slice
-                name="Loading"
-                value={1}
-                color="rgba(215,219,225,0.55)"
-                borderColor="rgba(199,203,209,0.6)"
-                borderWidth={1}
+                key={s.name}
+                name={STATUS_LABELS[s.name] ?? s.name}
+                value={s.count}
+                color={s.fillLight}
+                borderColor={s.stroke}
+                borderWidth={1.5}
+                borderType={s.borderType}
+                borderCap={s.borderCap}
                 borderRadius={6}
+                shadowBlur={4}
+                shadowColor="rgba(0,0,0,0.15)"
+                shadowOffsetY={1}
               />
-            )}
-          </Pie>
-        </Chart>
-      </div>
-    </>
+            ))
+          ) : (
+            <Slice
+              name="Loading"
+              value={1}
+              color="rgba(215,219,225,0.55)"
+              borderColor="rgba(199,203,209,0.6)"
+              borderWidth={1}
+              borderRadius={6}
+            />
+          )}
+        </Pie>
+      </Chart>
+    </div>
   );
 }

@@ -9,6 +9,12 @@ import { InputEntryMessageSchema } from '@buf/restatedev_service-protocol.bufbui
 
 type EntryType = JournalRawEntry['entry_type'];
 
+type FailureJSON = {
+  message?: string;
+  code?: number;
+  metadata?: Array<{ key: string; value: string }>;
+};
+
 type EntryJSON = {
   Command?: {
     Input?: {
@@ -18,7 +24,7 @@ type EntryJSON = {
     Output?: {
       result?: {
         Success?: number[];
-        Failure?: { message?: string; code?: number };
+        Failure?: FailureJSON;
       };
     };
     Call?: {
@@ -37,26 +43,26 @@ type EntryJSON = {
     GetEagerState?: {
       result?: {
         Success?: number[];
-        Failure?: { message?: string; code?: number };
+        Failure?: FailureJSON;
       };
     };
     GetEagerStateKeys?: { state_keys?: string[] };
     CompleteAwakeable?: {
       result?: {
         Success?: number[];
-        Failure?: { message?: string; code?: number };
+        Failure?: FailureJSON;
       };
     };
     CompletePromise?: {
       value?: {
         Success?: number[];
-        Failure?: { message?: string; code?: number };
+        Failure?: FailureJSON;
       };
     };
     SendSignal?: {
       result?: {
         Success?: number[];
-        Failure?: { message?: string; code?: number };
+        Failure?: FailureJSON;
       };
     };
   };
@@ -65,37 +71,37 @@ type EntryJSON = {
       Run?: {
         result?: {
           Success?: number[];
-          Failure?: { message?: string; code?: number };
+          Failure?: FailureJSON;
         };
       };
       Call?: {
         result?: {
           Success?: number[];
-          Failure?: { message?: string; code?: number };
+          Failure?: FailureJSON;
         };
       };
       GetPromise?: {
         result?: {
           Success?: number[];
-          Failure?: { message?: string; code?: number };
+          Failure?: FailureJSON;
         };
       };
       PeekPromise?: {
         result?: {
           Success?: number[];
-          Failure?: { message?: string; code?: number };
+          Failure?: FailureJSON;
         };
       };
       AttachInvocation?: {
         result?: {
           Success?: number[];
-          Failure?: { message?: string; code?: number };
+          Failure?: FailureJSON;
         };
       };
       GetLazyState?: {
         result?: {
           Success?: number[];
-          Failure?: { message?: string; code?: number };
+          Failure?: FailureJSON;
         };
       };
       GetLazyStateKeys?: {
@@ -105,7 +111,7 @@ type EntryJSON = {
     Signal?: {
       result?: {
         Success?: number[];
-        Failure?: { message?: string; code?: number };
+        Failure?: FailureJSON;
       };
     };
   };
@@ -131,7 +137,11 @@ function decodeBinary(value?: number[]): string | undefined {
 
 function parseResult(result?: any): {
   value?: string;
-  failure?: { message?: string; restate_code?: string };
+  failure?: {
+    message?: string;
+    restate_code?: string;
+    metadata?: Array<{ key: string; value: string }>;
+  };
 } {
   if (result?.Success) {
     return { value: decodeBinary(result.Success) };
@@ -141,6 +151,7 @@ function parseResult(result?: any): {
       failure: {
         message: result.Failure.message,
         restate_code: result.Failure.code?.toString(),
+        metadata: result.Failure.metadata,
       },
     };
   }
@@ -149,7 +160,11 @@ function parseResult(result?: any): {
 
 function parseValue(valueObj?: any): {
   value?: string;
-  failure?: { message?: string; restate_code?: string };
+  failure?: {
+    message?: string;
+    restate_code?: string;
+    metadata?: Array<{ key: string; value: string }>;
+  };
 } {
   if (valueObj?.Success) {
     return { value: decodeBinary(valueObj.Success) };
@@ -159,6 +174,7 @@ function parseValue(valueObj?: any): {
       failure: {
         message: valueObj.Failure.message,
         restate_code: valueObj.Failure.code?.toString(),
+        metadata: valueObj.Failure.metadata,
       },
     };
   }

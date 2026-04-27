@@ -8,7 +8,6 @@ export interface ErrorProps {
   errors?: (Error | null)[] | (string | null)[] | (RestateError | null)[];
   error?: Error | string | RestateError | null;
   className?: string;
-  wrap?: boolean;
   isTransient?: boolean;
 }
 
@@ -20,7 +19,6 @@ function SingleError({
   error,
   children,
   className,
-  wrap,
   isTransient,
 }: PropsWithChildren<{
   error?:
@@ -32,7 +30,6 @@ function SingleError({
         restate_code?: string | null;
       };
   className?: string;
-  wrap?: boolean;
   isTransient?: boolean;
 }>) {
   if (!error) {
@@ -44,7 +41,6 @@ function SingleError({
       <RestateServerError
         error={error}
         className={className}
-        wrap={wrap}
         isTransient={isTransient}
       />
     );
@@ -73,7 +69,6 @@ export function ErrorBanner({
   error,
   children,
   className,
-  wrap,
   isTransient,
 }: PropsWithChildren<ErrorProps>) {
   const filteredErrors = errors.filter(Boolean);
@@ -87,7 +82,6 @@ export function ErrorBanner({
         error={singleError}
         children={children}
         className={className}
-        wrap={wrap}
         isTransient={isTransient}
       />
     );
@@ -99,7 +93,6 @@ export function ErrorBanner({
         error={error}
         children={children}
         className={className}
-        wrap={wrap}
         isTransient={isTransient}
       />
     );

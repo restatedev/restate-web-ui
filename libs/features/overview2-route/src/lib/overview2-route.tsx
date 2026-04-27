@@ -1,5 +1,6 @@
 import { useRef, useCallback, useState, useEffect } from 'react';
 import { SearchField, Input as AriaInput, Label } from 'react-aria-components';
+import { useSearchParams } from 'react-router';
 import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from '@restate/util/styles';
 import { SERVICE_PLAYGROUND_QUERY_PARAM } from '@restate/features/service';
@@ -29,6 +30,7 @@ import { SortByDropdown } from './SortByDropdown';
 import { DeploymentActions } from './DeploymentActions';
 import { ServicesGridList } from './ServicesGridList';
 import { DeploymentsGridList } from './DeploymentsGridList';
+import { getOverviewRangeLabel } from './useRangeFilters';
 
 const LINE_COUNT = 7;
 
@@ -150,6 +152,7 @@ const emptyServerStyles = tv({
 });
 
 function OverviewContent() {
+  const [searchParams] = useSearchParams();
   const {
     servicesMap,
     byStatus,
@@ -178,6 +181,7 @@ function OverviewContent() {
   const isAdminFetching = useIsFetching(adminQueryPredicate) > 0;
   const isAdminMutating = useIsMutating(adminQueryPredicate) > 0;
   const queryClient = useQueryClient();
+  const rangeLabel = getOverviewRangeLabel(searchParams);
 
   let overallIssueSeverity: 'high' | 'low' | 'none' = 'none';
   for (const issues of serviceIssuesMap.values()) {
@@ -400,7 +404,13 @@ function OverviewContent() {
         <div className="mb-2 flex flex-col gap-2 px-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap items-center gap-2">
             <OverviewModeToggle />
-            <SortByDropdown />
+            <SortByDropdown
+              formatServiceSortLabel={(option) =>
+                option.value === 'health'
+                  ? `${option.label} ${rangeLabel}`
+                  : option.label
+              }
+            />
             <DeploymentActions />
           </div>
           <SearchField

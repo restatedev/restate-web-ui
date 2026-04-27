@@ -205,7 +205,6 @@ function Component() {
               >
                 <ErrorBanner
                   error={lastError}
-                  wrap={hasStack}
                   className={lastFailureContent({ isFailed })}
                   isTransient={!isFailed}
                 />

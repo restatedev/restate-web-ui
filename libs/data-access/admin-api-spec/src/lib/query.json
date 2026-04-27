@@ -3788,6 +3788,17 @@
               },
               "restateCode": {
                 "type": "string"
+              },
+              "metadata": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "key": { "type": "string" },
+                    "value": { "type": "string" }
+                  },
+                  "required": ["key", "value"]
+                }
               }
             }
           },
@@ -3830,7 +3841,18 @@
         "type": "object",
         "properties": {
           "message": { "type": "string" },
-          "restate_code": { "type": "string" }
+          "restate_code": { "type": "string" },
+          "metadata": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": { "type": "string" },
+                "value": { "type": "string" }
+              },
+              "required": ["key", "value"]
+            }
+          }
         }
       },
       "CancelSignalJournalEntryType": {

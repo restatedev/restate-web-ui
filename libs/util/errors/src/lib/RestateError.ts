@@ -11,6 +11,7 @@ export class RestateError extends Error {
     stacktrace?: string,
     public status?: number,
     cause?: Error,
+    public metadata?: Array<{ key: string; value: string }>,
   ) {
     super(message);
     this.stack = stacktrace || '';
@@ -25,6 +26,7 @@ export class RestateError extends Error {
       isTransient: Boolean(this.isTransient),
       stack: this.stack,
       status: this.status,
+      metadata: this.metadata,
     };
   }
 }

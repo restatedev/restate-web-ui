@@ -2562,6 +2562,10 @@ export interface components {
         message?: string;
         stack?: string;
         restateCode?: string;
+        metadata?: {
+          key: string;
+          value: string;
+        }[];
       };
       /** Format: datetime */
       start?: string;
@@ -2579,6 +2583,10 @@ export interface components {
     FailureEntry: {
       message?: string;
       restate_code?: string;
+      metadata?: {
+        key: string;
+        value: string;
+      }[];
     };
     CancelSignalJournalEntryType: components['schemas']['JournalBaseEntry'] & {
       /** @enum {string} */

@@ -1,4 +1,4 @@
-import type { Service } from '@restate/data-access/admin-api-spec';
+import type { Deployment, Service } from '@restate/data-access/admin-api-spec';
 import type { SortDescriptor } from 'react-aria-components';
 import {
   issuesSortScore,
@@ -10,6 +10,7 @@ export function sortServices(
   descriptor: SortDescriptor,
   invocationCounts?: Map<string, number>,
   serviceIssuesMap?: Map<string, ServiceIssue[]>,
+  deploymentsMap?: Map<string, Deployment>,
 ): Service[] {
   const { column, direction } = descriptor;
   const modifier = direction === 'descending' ? -1 : 1;
@@ -21,6 +22,16 @@ export function sortServices(
         return modifier * a.ty.localeCompare(b.ty);
       case 'revision':
         return modifier * (a.revision - b.revision);
+      case 'created_at':
+        return (
+          modifier *
+          ((new Date(
+            deploymentsMap?.get(a.deployment_id)?.created_at ?? '',
+          ).getTime() || 0) -
+            (new Date(
+              deploymentsMap?.get(b.deployment_id)?.created_at ?? '',
+            ).getTime() || 0))
+        );
       case 'invocations':
         return (
           modifier *

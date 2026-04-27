@@ -16,6 +16,13 @@ const RANGE_DURATIONS: Record<string, number> = {
 const DEFAULT_RANGE = PeriodRange.PT1H;
 const MINUTE = 60 * 1000;
 
+export function getOverviewRangeLabel(searchParams: URLSearchParams) {
+  const range = searchParams.get(OVERVIEW_RANGE_PARAM);
+  if (range === PeriodRange.P1D) return 'in last 24h';
+  if (range === PeriodRange.ALL) return 'overall';
+  return 'in last 1h';
+}
+
 export function useRangeFilters(): FilterItem[] {
   const [searchParams] = useSearchParams();
   const range = searchParams.get(OVERVIEW_RANGE_PARAM) ?? DEFAULT_RANGE;

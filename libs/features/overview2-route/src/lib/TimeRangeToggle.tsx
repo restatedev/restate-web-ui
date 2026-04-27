@@ -9,7 +9,11 @@ import {
   DropdownSection,
 } from '@restate/ui/dropdown';
 import { Button } from '@restate/ui/button';
-import { OVERVIEW_RANGE_PARAM, PeriodRange } from './useRangeFilters';
+import {
+  getOverviewRangeLabel,
+  OVERVIEW_RANGE_PARAM,
+  PeriodRange,
+} from './useRangeFilters';
 
 const RANGES = [
   { value: '', param: undefined, label: 'in last 1h' },
@@ -17,16 +21,9 @@ const RANGES = [
   { value: PeriodRange.ALL, param: PeriodRange.ALL, label: 'overall' },
 ] as const;
 
-function getCurrentLabel(searchParams: URLSearchParams) {
-  const range = searchParams.get(OVERVIEW_RANGE_PARAM);
-  if (range === PeriodRange.P1D) return 'in last 24h';
-  if (range === PeriodRange.ALL) return 'overall';
-  return 'in last 1h';
-}
-
 export function TimeRangeToggle({ onChange }: { onChange?: () => void }) {
   const [searchParams, setSearchParams] = useSearchParams();
-  const label = getCurrentLabel(searchParams);
+  const label = getOverviewRangeLabel(searchParams);
   const currentRange = searchParams.get(OVERVIEW_RANGE_PARAM) ?? '';
 
   return (

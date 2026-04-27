@@ -6799,6 +6799,21 @@
               },
               "restateCode": {
                 "type": "string"
+              },
+              "metadata": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["key", "value"]
+                }
               }
             }
           },
@@ -6845,6 +6860,21 @@
           },
           "restate_code": {
             "type": "string"
+          },
+          "metadata": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": ["key", "value"]
+            }
           }
         }
       },

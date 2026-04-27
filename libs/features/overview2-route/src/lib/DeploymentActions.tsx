@@ -15,7 +15,7 @@ export function DeploymentActions() {
     <SplitButton
       mini={false}
       className="shrink-0 text-0.5xs"
-      splitClassName="w-7 rounded-r-lg px-1.5 py-0.5"
+      splitClassName="w-7 rounded-r-lg px-1 w-6 py-0.5"
       menus={
         <>
           <DropdownItem href={`?${REGISTER_DEPLOYMENT_QUERY}=true`}>
