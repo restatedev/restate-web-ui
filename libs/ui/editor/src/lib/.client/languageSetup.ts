@@ -7,12 +7,18 @@ const monacoEnvironment = globalThis as typeof globalThis & {
     getWorker(_: unknown, label: string): Worker;
   };
 };
+const getWorker = monacoEnvironment.MonacoEnvironment?.getWorker;
 
 monacoEnvironment.MonacoEnvironment = {
-  getWorker(_: unknown, label: string) {
+  getWorker(moduleId: unknown, label: string) {
     if (label === 'json') {
       return new jsonWorker();
     }
+
+    if (getWorker) {
+      return getWorker(moduleId, label);
+    }
+
     return new EditorWorker();
   },
 };

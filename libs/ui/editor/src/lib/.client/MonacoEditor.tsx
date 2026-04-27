@@ -2,16 +2,20 @@ import { RefObject, useEffect, useState } from 'react';
 import * as monaco from 'monaco-editor';
 import './languageSetup';
 
+const MONACO_EDITOR_THEME = 'restate-editor';
+
 export function MonacoEditor({
   value,
   editorRef,
   readonly,
   onInput,
+  applyTheme = true,
 }: {
   value?: string;
   editorRef: RefObject<monaco.editor.IStandaloneCodeEditor | null>;
   readonly?: boolean;
   onInput?: (value: string) => void;
+  applyTheme?: boolean;
 }) {
   const [el, setEl] = useState<HTMLDivElement | null>(null);
 
@@ -20,22 +24,24 @@ export function MonacoEditor({
       return;
     }
 
-    monaco.editor.defineTheme('restate', {
-      base: 'vs',
-      colors: {
-        'editor.background': '#00000000',
-        'editorGutter.background': '#00000000',
-        'editorLineNumber.foreground': '#00000080',
-        'editorLineNumber.activeForeground': '#00000080',
-      },
-      rules: [],
-      inherit: true,
-    });
+    if (applyTheme) {
+      monaco.editor.defineTheme(MONACO_EDITOR_THEME, {
+        base: 'vs',
+        colors: {
+          'editor.background': '#00000000',
+          'editorGutter.background': '#00000000',
+          'editorLineNumber.foreground': '#00000080',
+          'editorLineNumber.activeForeground': '#00000080',
+        },
+        rules: [],
+        inherit: true,
+      });
+    }
     const editor = monaco.editor.create(el, {
       value,
       language: 'json',
       folding: true,
-      theme: 'restate',
+      ...(applyTheme && { theme: MONACO_EDITOR_THEME }),
       formatOnPaste: true,
       formatOnType: true,
       minimap: { enabled: false },
@@ -129,7 +135,7 @@ export function MonacoEditor({
       editor.dispose();
       editorRef.current = null;
     };
-  }, [value, el, editorRef, readonly, onInput]);
+  }, [value, el, editorRef, readonly, onInput, applyTheme]);
 
   useEffect(() => {
     const editor = editorRef.current;
