@@ -3591,6 +3591,10 @@ export interface components {
       last_failure_related_command_type?: string;
       last_attempt_deployment_id?: string;
       last_attempt_server?: string;
+      last_awaiting_on_future_json?: string;
+      suspended_waiting_for_completions?: number[];
+      suspended_waiting_for_signals?: number[];
+      suspended_waiting_future_json?: string;
       last_failure?: string;
       last_failure_error_code?: string;
       isRetrying?: boolean;
@@ -3621,6 +3625,7 @@ export interface components {
       /** Format: date-time */
       next_retry_at?: string;
       id: string;
+      created_using_restate_version?: string;
       /** @enum {string} */
       invoked_by: 'ingress' | 'service' | 'restart_as_new' | 'subscription';
       restarted_from?: string;
@@ -3669,6 +3674,10 @@ export interface components {
       last_failure_related_entry_type?: string;
       last_attempt_deployment_id?: string;
       last_attempt_server?: string;
+      last_awaiting_on_future_json?: string;
+      suspended_waiting_for_completions?: number[];
+      suspended_waiting_for_signals?: number[];
+      suspended_waiting_future_json?: string;
       last_failure?: string;
       last_failure_error_code?: string;
       /** Format: duration */

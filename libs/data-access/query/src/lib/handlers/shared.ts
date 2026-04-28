@@ -45,8 +45,14 @@ export const SYS_INVOCATION_LIST_COLUMNS = [
   'completion_failure',
 ] as const;
 
-export const SYS_INVOCATION_COLUMNS = [
-  ...SYS_INVOCATION_LIST_COLUMNS,
+const SYS_INVOCATION_WAITING_COLUMNS = [
+  'last_awaiting_on_future_json',
+  'suspended_waiting_for_completions',
+  'suspended_waiting_for_signals',
+  'suspended_waiting_future_json',
+] as const;
+
+const SYS_INVOCATION_DETAIL_COLUMNS = [
   'invoked_by_service_name',
   'trace_id',
   'created_using_restate_version',
@@ -58,18 +64,29 @@ export const SYS_INVOCATION_COLUMNS = [
   'last_failure_related_command_type',
 ] as const;
 
-export function sysInvocationListColumns(
-  features: Set<string>,
-): readonly string[] {
-  return features.has('vqueues')
-    ? [...SYS_INVOCATION_LIST_COLUMNS, 'scope']
-    : SYS_INVOCATION_LIST_COLUMNS;
+function supportsWaitingColumns(restateVersion: string): boolean {
+  const released = restateVersion.split('-').at(0);
+  return released ? semverGte(released, '1.6.3') : false;
 }
 
-export function sysInvocationColumns(features: Set<string>): readonly string[] {
-  return features.has('vqueues')
-    ? [...SYS_INVOCATION_COLUMNS, 'scope']
-    : SYS_INVOCATION_COLUMNS;
+export function getSysInvocationListColumns(
+  restateVersion: string,
+  features: Set<string>,
+): readonly string[] {
+  const base = supportsWaitingColumns(restateVersion)
+    ? [...SYS_INVOCATION_LIST_COLUMNS, ...SYS_INVOCATION_WAITING_COLUMNS]
+    : SYS_INVOCATION_LIST_COLUMNS;
+  return features.has('vqueues') ? [...base, 'scope'] : base;
+}
+
+export function getSysInvocationColumns(
+  restateVersion: string,
+  features: Set<string>,
+): readonly string[] {
+  return [
+    ...getSysInvocationListColumns(restateVersion, features),
+    ...SYS_INVOCATION_DETAIL_COLUMNS,
+  ];
 }
 
 export type QueryContext = {

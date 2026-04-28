@@ -1,10 +1,10 @@
 import { ERROR_CODES, UI_ERROR_CODES } from '@restate/util/errors';
 import { convertInvocation } from '../convertInvocation';
-import { type QueryContext, sysInvocationColumns } from './shared';
+import { type QueryContext, getSysInvocationColumns } from './shared';
 
 export async function getInvocation(this: QueryContext, invocationId: string) {
   const invocations = await this.query(
-    `SELECT ${sysInvocationColumns(this.features).join(', ')} FROM sys_invocation WHERE id = '${invocationId}'`,
+    `SELECT ${getSysInvocationColumns(this.restateVersion, this.features).join(', ')} FROM sys_invocation WHERE id = '${invocationId}'`,
   ).then(({ rows }) => rows.map(convertInvocation));
   if (invocations.length > 0) {
     return new Response(JSON.stringify(invocations.at(0)), {

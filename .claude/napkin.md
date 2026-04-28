@@ -239,7 +239,7 @@
 
 ## Domain Notes
 
-- Admin API OpenAPI source lives in `libs/data-access/admin-api-spec/src/lib/{spec,query}.json`; `pnpm nx create admin-api-spec` regenerates `output.json` and `index.d.ts`. The AGENTS note pointing at `libs/data-access/admin-api/src/lib/api/*.json` is stale for this repo state.
+- Admin API OpenAPI source lives in `libs/data-access/admin-api-spec/src/lib/{spec,query}.json`; `pnpm nx create admin-api-spec` regenerates `output.json` and `index.d.ts`. If Nx hangs at startup, run the target commands directly: `./libs/data-access/admin-api-spec/src/merge.mjs`, `./node_modules/.bin/openapi-typescript ./libs/data-access/admin-api-spec/src/lib/output.json -o ./libs/data-access/admin-api-spec/src/lib/index.d.ts`, then Prettier. The AGENTS note pointing at `libs/data-access/admin-api/src/lib/api/*.json` is stale for this repo state.
 - `libs/features/invocation-route/src/lib/JournalV2.tsx` and `libs/features/invocation-route/src/lib/ScrollableTimeline.tsx` drive the journal timeline virtualization and zoom/viewport behavior.
 - Timeline start date/time label is rendered by `StartDateTimeUnit` in `JournalV2` as a targeted sticky overlay positioned from `timelineWidth` (no `onLayout` callback).
 

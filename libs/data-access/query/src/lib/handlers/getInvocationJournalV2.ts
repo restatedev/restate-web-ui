@@ -10,7 +10,7 @@ import {
   JournalRawEntryWithCommandIndex,
   lifeCycles,
 } from '@restate/features/service-protocol';
-import { type QueryContext, sysInvocationColumns } from './shared';
+import { type QueryContext, getSysInvocationColumns } from './shared';
 
 export async function getInvocationJournalV2(
   this: QueryContext,
@@ -21,7 +21,7 @@ export async function getInvocationJournalV2(
   const entryJsonColumn = includePayloads ? 'entry_json' : 'entry_lite_json';
   const [invocationQuery, journalQuery, eventsQuery] = await Promise.all([
     this.query(
-      `SELECT ${sysInvocationColumns(this.features).join(', ')} FROM sys_invocation WHERE id = '${invocationId}'`,
+      `SELECT ${getSysInvocationColumns(this.restateVersion, this.features).join(', ')} FROM sys_invocation WHERE id = '${invocationId}'`,
     ),
     this.query(
       `SELECT id, index, appended_at, entry_type, name, ${entryJsonColumn}, ${includeRaw ? 'raw,' : ''} version, completed, sleep_wakeup_at, invoked_id, invoked_target, promise_name FROM sys_journal WHERE id = '${invocationId}' ORDER BY index`,

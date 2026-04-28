@@ -9456,6 +9456,26 @@
           "last_attempt_server": {
             "type": "string"
           },
+          "last_awaiting_on_future_json": {
+            "type": "string"
+          },
+          "suspended_waiting_for_completions": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "uint32"
+            }
+          },
+          "suspended_waiting_for_signals": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "uint32"
+            }
+          },
+          "suspended_waiting_future_json": {
+            "type": "string"
+          },
           "last_failure": {
             "type": "string"
           },
@@ -9531,6 +9551,9 @@
             "format": "date-time"
           },
           "id": {
+            "type": "string"
+          },
+          "created_using_restate_version": {
             "type": "string"
           },
           "invoked_by": {
@@ -9640,6 +9663,26 @@
             "type": "string"
           },
           "last_attempt_server": {
+            "type": "string"
+          },
+          "last_awaiting_on_future_json": {
+            "type": "string"
+          },
+          "suspended_waiting_for_completions": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "uint32"
+            }
+          },
+          "suspended_waiting_for_signals": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "uint32"
+            }
+          },
+          "suspended_waiting_future_json": {
             "type": "string"
           },
           "last_failure": {
