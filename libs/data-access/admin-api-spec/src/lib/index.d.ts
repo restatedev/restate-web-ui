@@ -3527,6 +3527,43 @@ export interface components {
     } & {
       [key: string]: number;
     };
+    InvocationFuture:
+      | components['schemas']['InvocationFutureSingle']
+      | components['schemas']['InvocationFutureFirstCompleted']
+      | components['schemas']['InvocationFutureAllCompleted']
+      | components['schemas']['InvocationFutureFirstSucceededOrAllFailed']
+      | components['schemas']['InvocationFutureAllSucceededOrFirstFailed']
+      | components['schemas']['InvocationFutureUnknown'];
+    InvocationFutureSingle: {
+      Single:
+        | components['schemas']['InvocationFutureCompletionId']
+        | components['schemas']['InvocationFutureSignalIndex']
+        | components['schemas']['InvocationFutureSignalName'];
+    };
+    InvocationFutureCompletionId: {
+      CompletionId: number;
+    };
+    InvocationFutureSignalIndex: {
+      SignalIndex: number;
+    };
+    InvocationFutureSignalName: {
+      SignalName: string;
+    };
+    InvocationFutureFirstCompleted: {
+      FirstCompleted: components['schemas']['InvocationFuture'][];
+    };
+    InvocationFutureAllCompleted: {
+      AllCompleted: components['schemas']['InvocationFuture'][];
+    };
+    InvocationFutureFirstSucceededOrAllFailed: {
+      FirstSucceededOrAllFailed: components['schemas']['InvocationFuture'][];
+    };
+    InvocationFutureAllSucceededOrFirstFailed: {
+      AllSucceededOrFirstFailed: components['schemas']['InvocationFuture'][];
+    };
+    InvocationFutureUnknown: {
+      Unknown: components['schemas']['InvocationFuture'][];
+    };
     Invocation: {
       /** Format: duration */
       completion_retention?: string;
@@ -3591,10 +3628,10 @@ export interface components {
       last_failure_related_command_type?: string;
       last_attempt_deployment_id?: string;
       last_attempt_server?: string;
-      last_awaiting_on_future_json?: string;
+      last_awaiting_on_future_json?: components['schemas']['InvocationFuture'];
       suspended_waiting_for_completions?: number[];
       suspended_waiting_for_signals?: number[];
-      suspended_waiting_future_json?: string;
+      suspended_waiting_future_json?: components['schemas']['InvocationFuture'];
       last_failure?: string;
       last_failure_error_code?: string;
       isRetrying?: boolean;

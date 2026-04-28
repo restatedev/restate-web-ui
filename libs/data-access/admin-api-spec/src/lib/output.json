@@ -9292,6 +9292,134 @@
           "type": "integer"
         }
       },
+      "InvocationFuture": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/InvocationFutureSingle"
+          },
+          {
+            "$ref": "#/components/schemas/InvocationFutureFirstCompleted"
+          },
+          {
+            "$ref": "#/components/schemas/InvocationFutureAllCompleted"
+          },
+          {
+            "$ref": "#/components/schemas/InvocationFutureFirstSucceededOrAllFailed"
+          },
+          {
+            "$ref": "#/components/schemas/InvocationFutureAllSucceededOrFirstFailed"
+          },
+          {
+            "$ref": "#/components/schemas/InvocationFutureUnknown"
+          }
+        ]
+      },
+      "InvocationFutureSingle": {
+        "type": "object",
+        "required": ["Single"],
+        "properties": {
+          "Single": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/InvocationFutureCompletionId"
+              },
+              {
+                "$ref": "#/components/schemas/InvocationFutureSignalIndex"
+              },
+              {
+                "$ref": "#/components/schemas/InvocationFutureSignalName"
+              }
+            ]
+          }
+        }
+      },
+      "InvocationFutureCompletionId": {
+        "type": "object",
+        "required": ["CompletionId"],
+        "properties": {
+          "CompletionId": {
+            "type": "integer"
+          }
+        }
+      },
+      "InvocationFutureSignalIndex": {
+        "type": "object",
+        "required": ["SignalIndex"],
+        "properties": {
+          "SignalIndex": {
+            "type": "integer"
+          }
+        }
+      },
+      "InvocationFutureSignalName": {
+        "type": "object",
+        "required": ["SignalName"],
+        "properties": {
+          "SignalName": {
+            "type": "string"
+          }
+        }
+      },
+      "InvocationFutureFirstCompleted": {
+        "type": "object",
+        "required": ["FirstCompleted"],
+        "properties": {
+          "FirstCompleted": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvocationFuture"
+            }
+          }
+        }
+      },
+      "InvocationFutureAllCompleted": {
+        "type": "object",
+        "required": ["AllCompleted"],
+        "properties": {
+          "AllCompleted": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvocationFuture"
+            }
+          }
+        }
+      },
+      "InvocationFutureFirstSucceededOrAllFailed": {
+        "type": "object",
+        "required": ["FirstSucceededOrAllFailed"],
+        "properties": {
+          "FirstSucceededOrAllFailed": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvocationFuture"
+            }
+          }
+        }
+      },
+      "InvocationFutureAllSucceededOrFirstFailed": {
+        "type": "object",
+        "required": ["AllSucceededOrFirstFailed"],
+        "properties": {
+          "AllSucceededOrFirstFailed": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvocationFuture"
+            }
+          }
+        }
+      },
+      "InvocationFutureUnknown": {
+        "type": "object",
+        "required": ["Unknown"],
+        "properties": {
+          "Unknown": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvocationFuture"
+            }
+          }
+        }
+      },
       "Invocation": {
         "type": "object",
         "required": [
@@ -9457,7 +9585,7 @@
             "type": "string"
           },
           "last_awaiting_on_future_json": {
-            "type": "string"
+            "$ref": "#/components/schemas/InvocationFuture"
           },
           "suspended_waiting_for_completions": {
             "type": "array",
@@ -9474,7 +9602,7 @@
             }
           },
           "suspended_waiting_future_json": {
-            "type": "string"
+            "$ref": "#/components/schemas/InvocationFuture"
           },
           "last_failure": {
             "type": "string"
