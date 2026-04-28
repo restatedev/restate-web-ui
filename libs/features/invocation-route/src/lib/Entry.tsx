@@ -34,6 +34,7 @@ import {
   CommandEntryType,
   EntryProps,
   EventEntryType,
+  GroupEntryType,
   NotificationEntryType,
 } from './entries/types';
 import { Cancel } from './entries/Cancel';
@@ -118,6 +119,17 @@ export const ENTRY_EVENTS_COMPONENTS: {
   Killed: LifeCycle,
 };
 
+export const ENTRY_GROUP_COMPONENTS: {
+  [K in GroupEntryType]: undefined;
+} = {
+  Attempt: undefined,
+  FirstCompleted: undefined,
+  AllCompleted: undefined,
+  FirstSucceededOrAllFailed: undefined,
+  AllSucceededOrFirstFailed: undefined,
+  Unknown: undefined,
+};
+
 function digitCount(n: number) {
   if (n === 0) return 1;
   return Math.floor(Math.log10(Math.abs(n))) + 1;
@@ -174,7 +186,11 @@ export const Entry = memo(function Entry({
         ? ENTRY_COMMANDS_COMPONENTS[entry.type as CommandEntryType]
         : entry.category === 'notification'
           ? ENTRY_NOTIFICATIONS_COMPONENTS[entry.type as NotificationEntryType]
-          : ENTRY_EVENTS_COMPONENTS[entry.type as EventEntryType]
+          : entry.category === 'event'
+            ? ENTRY_EVENTS_COMPONENTS[entry.type as EventEntryType]
+            : entry.category === 'group'
+              ? ENTRY_GROUP_COMPONENTS[entry.type as GroupEntryType]
+              : undefined
       : undefined
   ) as ComponentType<EntryProps<JournalEntryV2>> | undefined;
 

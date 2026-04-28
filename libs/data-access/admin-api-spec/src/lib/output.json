@@ -7439,6 +7439,9 @@
                 "$ref": "#/components/schemas/KilledLifecycleJournalEntryV2"
               },
               {
+                "$ref": "#/components/schemas/JournalGroupEntryV2"
+              },
+              {
                 "type": "object",
                 "properties": {
                   "type": {
@@ -7715,11 +7718,38 @@
           "commandIndex": {
             "type": "integer"
           },
+          "groupId": {
+            "type": "string"
+          },
           "category": {
             "type": "string",
-            "enum": ["notification", "command", "event"]
+            "enum": ["notification", "command", "event", "group"]
           },
           "type": {
+            "type": "string"
+          }
+        }
+      },
+      "JournalGroupEntryV2": {
+        "type": "object",
+        "required": ["category", "type", "groupId"],
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": ["group"]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "Attempt",
+              "FirstCompleted",
+              "AllCompleted",
+              "FirstSucceededOrAllFailed",
+              "AllSucceededOrFirstFailed",
+              "Unknown"
+            ]
+          },
+          "groupId": {
             "type": "string"
           }
         }

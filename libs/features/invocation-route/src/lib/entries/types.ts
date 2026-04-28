@@ -24,3 +24,6 @@ export type NotificationEntryType = NonNullable<
 export type EventEntryType = NonNullable<
   Extract<JournalEntryV2, { category?: 'event' }>['type']
 >;
+export type GroupEntryType = NonNullable<
+  Extract<JournalEntryV2, { category?: 'group' }>['type']
+>;

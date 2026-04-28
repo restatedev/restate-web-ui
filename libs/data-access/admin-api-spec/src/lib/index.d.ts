@@ -2820,6 +2820,7 @@ export interface components {
         | components['schemas']['PendingLifecycleJournalEntryV2']
         | components['schemas']['CompletionLifecycleJournalEntryV2']
         | components['schemas']['KilledLifecycleJournalEntryV2']
+        | components['schemas']['JournalGroupEntryV2']
         | {
             type?: string;
           }
@@ -2960,9 +2961,23 @@ export interface components {
       completionId?: number;
       completionIndex?: number;
       commandIndex?: number;
+      groupId?: string;
       /** @enum {string} */
-      category?: 'notification' | 'command' | 'event';
+      category?: 'notification' | 'command' | 'event' | 'group';
       type?: string;
+    };
+    JournalGroupEntryV2: {
+      /** @enum {string} */
+      category: 'group';
+      /** @enum {string} */
+      type:
+        | 'Attempt'
+        | 'FirstCompleted'
+        | 'AllCompleted'
+        | 'FirstSucceededOrAllFailed'
+        | 'AllSucceededOrFirstFailed'
+        | 'Unknown';
+      groupId: string;
     };
     FailureEntry: {
       message?: string;
