@@ -87,7 +87,7 @@ export function ServiceStatusBar({
   const total = statuses.reduce((sum, s) => sum + s.count, 0);
   const issuesByStatus = getIssuesByStatus(serviceIssues);
 
-  if (isSummaryError) return <div className="h-3" />;
+  if (isSummaryError || !total) return <div className="h-3" />;
 
   const tooltipContent = (
     <div className="flex flex-col">
