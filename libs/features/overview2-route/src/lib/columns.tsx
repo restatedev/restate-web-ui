@@ -271,25 +271,23 @@ export function useDeploymentColumns({
             )
           }
           secondary={
-            <>
-              {deployment.status === 'active' ? (
-                <Link
-                  href={toDeploymentInvocationsHref(baseUrl, deployment.id, {
-                    existingParams: withoutCreatedAtFilter(linkParams),
-                    inFlightOnly: true,
-                  })}
-                  variant="secondary"
-                  className="relative z-10 flex min-w-0 items-center gap-0.5 truncate rounded-lg border-none bg-transparent px-1.5 py-0.5 text-0.5xs text-zinc-500 no-underline shadow-none hover:bg-black/3 hover:text-zinc-700"
-                >
-                  <div className="min-w-0 truncate">In-flight invocations</div>
-                  <Icon name={IconName.ChevronRight} className="h-4 w-4" />
-                </Link>
-              ) : (
-                <div>
-                  <br />
-                </div>
-              )}
-            </>
+            deployment.status === 'active' ? (
+              <Link
+                href={toDeploymentInvocationsHref(baseUrl, deployment.id, {
+                  existingParams: withoutCreatedAtFilter(linkParams),
+                  inFlightOnly: true,
+                })}
+                variant="secondary"
+                className="relative z-10 flex min-w-0 items-center gap-0.5 truncate rounded-lg border-none bg-transparent px-1.5 py-0.5 text-0.5xs text-zinc-500/80 no-underline shadow-none hover:bg-black/3 hover:text-zinc-700"
+              >
+                <div className="min-w-0 truncate">In-flight invocations</div>
+                <Icon name={IconName.ChevronRight} className="h-4 w-4" />
+              </Link>
+            ) : (
+              <div>
+                <br />
+              </div>
+            )
           }
         />
       ),
@@ -360,7 +358,7 @@ function OverviewDeploymentId({ deploymentId }: { deploymentId: string }) {
     <Badge
       variant="info"
       size="sm"
-      className="group max-w-full border-transparent bg-transparent py-0 font-normal text-gray-500"
+      className="group max-w-full border-transparent bg-transparent py-0 font-normal text-gray-500/80"
     >
       <div className="min-w-0 truncate">
         <TruncateWithTooltip copyText={deploymentId} hideCopy>
