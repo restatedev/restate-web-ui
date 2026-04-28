@@ -9,10 +9,17 @@ import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 import PGSQLWorker from 'monaco-sql-languages/esm/languages/pgsql/pgsql.worker?worker';
 
 /** define MonacoEnvironment.getWorker  */
-(globalThis as any).MonacoEnvironment = {
-  getWorker(_: any, label: string) {
+const monacoEnvironment = globalThis as any;
+const getWorker = monacoEnvironment.MonacoEnvironment?.getWorker;
+
+monacoEnvironment.MonacoEnvironment = {
+  getWorker(moduleId: any, label: string) {
     if (label === LanguageIdEnum.PG) {
       return new PGSQLWorker();
+    }
+
+    if (getWorker) {
+      return getWorker(moduleId, label);
     }
 
     return new EditorWorker();

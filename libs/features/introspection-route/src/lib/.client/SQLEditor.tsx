@@ -36,6 +36,8 @@ import {
 } from './constants';
 import { TokenClassConsts, postfixTokenClass } from 'monaco-sql-languages';
 
+const SQL_EDITOR_THEME = 'restate-sql';
+
 const COLUMNS: ICompletionItem[] = [
   ...Array.from(
     new Set(TABLES.map((table) => table.columns.map((col) => col.name)).flat()),
@@ -177,7 +179,7 @@ export function SQLEditor({
           triggerCharacters: [' ', '.'],
         },
       });
-      monaco.editor.defineTheme('restate', {
+      monaco.editor.defineTheme(SQL_EDITOR_THEME, {
         base: 'vs-dark',
         colors: {
           'editor.background': '#00000000',
@@ -237,7 +239,7 @@ export function SQLEditor({
         lineNumbers: 'off',
         lineDecorationsWidth: 0,
         folding: false,
-        theme: 'restate',
+        theme: SQL_EDITOR_THEME,
         minimap: { enabled: false },
         fontSize: 14,
         fontFamily: 'mono',
