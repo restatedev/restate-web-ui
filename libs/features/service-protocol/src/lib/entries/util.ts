@@ -385,8 +385,8 @@ export type JournalEntryConversionContext = {
   future?: {
     completionGroupIdsById: Map<number, GroupIds>;
     signalIndexGroupIdsByIndex: Map<number, GroupIds>;
-    signalNameGroupIdsByName: Map<string, GroupIds[]>;
   };
+  completionEntryById: Map<number, JournalEntryV2>;
   signalEntryByIndex: Map<number, JournalEntryV2>;
   signalEntriesByName: Map<string, JournalEntryV2[]>;
 };

@@ -54,6 +54,9 @@ export function convertJournalV2(
       context,
     ) ?? (entry as JournalEntryV2);
   if (typeof newEntry?.completionId === 'number') {
+    if (newEntry.category === 'command') {
+      context?.completionEntryById.set(newEntry.completionId, newEntry);
+    }
     assignGroupIds(
       newEntry,
       context?.future?.completionGroupIdsById.get(newEntry.completionId),

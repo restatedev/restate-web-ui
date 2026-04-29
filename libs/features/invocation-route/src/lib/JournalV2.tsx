@@ -155,6 +155,18 @@ function hasNonCompletedReferencedInvocations(
   });
 }
 
+function getJournalEntryKey(entry: JournalEntryV2 | undefined, index: number) {
+  if (
+    entry?.category === 'group' &&
+    'id' in entry &&
+    typeof entry.id === 'string'
+  ) {
+    return entry.id;
+  }
+
+  return entry?.index ?? index;
+}
+
 export function JournalV2({
   invocationId,
   className,
@@ -202,6 +214,7 @@ export function JournalV2({
     refetchIntervalInBackground: false,
     refetchOnWindowFocus: false,
   });
+  console.log(data);
   const { data: subscriptions } = useListSubscriptions();
   const referencedInvocationIds = getReferencedInvocationIds(data);
   useWarmInvocationStatusDetails(referencedInvocationIds, invocationId, {
@@ -305,7 +318,10 @@ export function JournalV2({
     getItemKey: (index) => {
       const entry = entriesWithoutInput[index];
       return entry
-        ? `${entry.invocationId}-${entry.entry?.index ?? index}-${entry.entry?.type}`
+        ? `${entry.invocationId}-${getJournalEntryKey(
+            entry.entry,
+            index,
+          )}-${entry.entry?.type}-${index}`
         : index;
     },
   });
@@ -682,7 +698,10 @@ export function JournalV2({
                         <ErrorBoundary
                           entry={entry}
                           className="h-9"
-                          key={`${entryInvocationId}-${entry?.category}-${entry?.type}-${index}`}
+                          key={`${entryInvocationId}-${entry?.category}-${entry?.type}-${getJournalEntryKey(
+                            entry,
+                            index,
+                          )}-${index}`}
                         >
                           <Entry
                             invocation={invocation}

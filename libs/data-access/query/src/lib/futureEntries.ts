@@ -1,4 +1,5 @@
 import type {
+  components,
   Invocation,
   InvocationFuture,
   JournalEntryV2,
@@ -17,7 +18,8 @@ type CompleteAwakeableNotificationEntry = Extract<
   JournalEntryV2,
   { type?: 'CompleteAwakeable'; category?: 'notification' }
 >;
-type JournalGroupEntry = Extract<JournalEntryV2, { category?: 'group' }>;
+type JournalGroupEntry = components['schemas']['JournalGroupEntryV2'] &
+  Pick<JournalEntryV2, 'groupIds' | 'index' | 'relatedIndexes'>;
 type FutureGroupType = NonNullable<JournalGroupEntry['type']>;
 type FutureGroupKey =
   | 'Attempt'
@@ -26,19 +28,31 @@ type FutureGroupKey =
   | 'FirstSucceededOrAllFailed'
   | 'AllSucceededOrFirstFailed'
   | 'Unknown';
+type FutureSignalNameRef = {
+  signalName: string;
+  groupIds: GroupIds;
+};
+type FutureChildRef =
+  | { kind: 'group'; groupId: string }
+  | { kind: 'completion'; completionId: number }
+  | { kind: 'signalIndex'; signalIndex: number }
+  | { kind: 'signalName'; ref: FutureSignalNameRef };
 type FutureEntriesCollection = {
   groupEntries: JournalGroupEntry[];
+  childRefsByGroupId: Map<string, FutureChildRef[]>;
   completionRefs: [number, GroupIds][];
   signalIndexRefs: [number, GroupIds][];
-  signalNameRefs: [string, GroupIds][];
+  signalNameRefs: FutureSignalNameRef[];
 };
 
 export type FutureEntriesRegistry = {
   groupEntries: JournalGroupEntry[];
+  childRefsByGroupId: Map<string, FutureChildRef[]>;
   completionGroupIdsById: Map<number, GroupIds>;
   signalIndexGroupIdsByIndex: Map<number, GroupIds>;
-  signalNameGroupIdsByName: Map<string, GroupIds[]>;
+  signalNameRefs: FutureSignalNameRef[];
 };
+type AllocateSyntheticIndex = () => number;
 
 function getFutureGroup(
   future: InvocationFuture,
@@ -62,18 +76,13 @@ function getFutureGroup(
   return undefined;
 }
 
-function collectSingleFutureReferences(
+function getSingleFutureReference(
   future: InvocationFuture,
   groupIds: GroupIds,
-): FutureEntriesCollection {
+): FutureChildRef | undefined {
   const single = (future as { Single?: unknown }).Single;
   if (!single || typeof single !== 'object') {
-    return {
-      groupEntries: [],
-      completionRefs: [],
-      signalIndexRefs: [],
-      signalNameRefs: [],
-    };
+    return undefined;
   }
 
   const singleRecord = single as {
@@ -82,46 +91,49 @@ function collectSingleFutureReferences(
     SignalName?: unknown;
   };
 
-  return {
-    groupEntries: [],
-    completionRefs:
-      typeof singleRecord.CompletionId === 'number'
-        ? [[singleRecord.CompletionId, groupIds]]
-        : [],
-    signalIndexRefs:
-      typeof singleRecord.SignalIndex === 'number' &&
-      singleRecord.SignalIndex >= 17
-        ? [[singleRecord.SignalIndex, groupIds]]
-        : [],
-    signalNameRefs:
-      typeof singleRecord.SignalName === 'string' &&
-      singleRecord.SignalName.length > 0
-        ? [[singleRecord.SignalName, groupIds]]
-        : [],
-  };
+  if (typeof singleRecord.CompletionId === 'number') {
+    return { kind: 'completion', completionId: singleRecord.CompletionId };
+  }
+  if (
+    typeof singleRecord.SignalIndex === 'number' &&
+    singleRecord.SignalIndex >= 17
+  ) {
+    return { kind: 'signalIndex', signalIndex: singleRecord.SignalIndex };
+  }
+  if (
+    typeof singleRecord.SignalName === 'string' &&
+    singleRecord.SignalName.length > 0
+  ) {
+    return {
+      kind: 'signalName',
+      ref: { signalName: singleRecord.SignalName, groupIds },
+    };
+  }
+  return undefined;
 }
 
 function collectFutureEntries(
   future: InvocationFuture,
   id: string,
+  collection: FutureEntriesCollection,
 ): FutureEntriesCollection {
   const group = getFutureGroup(future);
   if (!group) {
-    return collectSingleFutureReferences(future, {});
+    const ref = getSingleFutureReference(future, {});
+    if (ref) {
+      addFutureReference(collection, ref, {});
+    }
+    return collection;
   }
 
-  const collection: FutureEntriesCollection = {
-    groupEntries: [
-      {
-        category: 'group',
-        type: group.type,
-        id,
-      } as JournalGroupEntry,
-    ],
-    completionRefs: [],
-    signalIndexRefs: [],
-    signalNameRefs: [],
-  };
+  const groupEntry = {
+    category: 'group',
+    type: group.type,
+    id,
+  } as JournalGroupEntry;
+  collection.groupEntries.push(groupEntry);
+  const childRefs: FutureChildRef[] = [];
+  collection.childRefsByGroupId.set(id, childRefs);
   const groupIds: GroupIds = { [id]: true };
 
   for (const [index, child] of group.children.entries()) {
@@ -130,32 +142,44 @@ function collectFutureEntries(
     }
 
     const childGroup = getFutureGroup(child);
-    const childCollection = childGroup
-      ? collectFutureEntries(child, `${id}-${index}`)
-      : collectSingleFutureReferences(child, groupIds);
+    if (childGroup) {
+      const childGroupId = `${id}-${index}`;
+      childRefs.push({ kind: 'group', groupId: childGroupId });
+      const childGroupIndex = collection.groupEntries.length;
+      collectFutureEntries(child, childGroupId, collection);
+      const childGroupEntry = collection.groupEntries[childGroupIndex];
+      if (childGroupEntry) {
+        childGroupEntry.groupIds = groupIds;
+      }
+      continue;
+    }
 
-    for (const [
-      groupIndex,
-      groupEntry,
-    ] of childCollection.groupEntries.entries()) {
-      collection.groupEntries.push(
-        groupIndex === 0 && childGroup
-          ? ({ ...groupEntry, groupIds } as JournalGroupEntry)
-          : groupEntry,
-      );
-    }
-    for (const completionRef of childCollection.completionRefs) {
-      collection.completionRefs.push(completionRef);
-    }
-    for (const signalIndexRef of childCollection.signalIndexRefs) {
-      collection.signalIndexRefs.push(signalIndexRef);
-    }
-    for (const signalNameRef of childCollection.signalNameRefs) {
-      collection.signalNameRefs.push(signalNameRef);
+    const ref = getSingleFutureReference(child, groupIds);
+    if (ref) {
+      childRefs.push(ref);
+      addFutureReference(collection, ref, groupIds);
     }
   }
 
   return collection;
+}
+
+function addFutureReference(
+  collection: FutureEntriesCollection,
+  ref: FutureChildRef,
+  groupIds: GroupIds,
+) {
+  switch (ref.kind) {
+    case 'completion':
+      collection.completionRefs.push([ref.completionId, groupIds]);
+      break;
+    case 'signalIndex':
+      collection.signalIndexRefs.push([ref.signalIndex, groupIds]);
+      break;
+    case 'signalName':
+      collection.signalNameRefs.push(ref.ref);
+      break;
+  }
 }
 
 function collectGroupIdsByReference<Key>(references: [Key, GroupIds][]) {
@@ -164,17 +188,6 @@ function collectGroupIdsByReference<Key>(references: [Key, GroupIds][]) {
     groupIdsByKey.set(key, { ...groupIdsByKey.get(key), ...groupIds });
   }
   return groupIdsByKey;
-}
-
-function collectSignalNameReferences(references: [string, GroupIds][]) {
-  const groupIdsBySignalName = new Map<string, GroupIds[]>();
-  for (const [signalName, groupIds] of references) {
-    groupIdsBySignalName.set(signalName, [
-      ...(groupIdsBySignalName.get(signalName) ?? []),
-      groupIds,
-    ]);
-  }
-  return groupIdsBySignalName;
 }
 
 export function createFutureEntriesRegistry(
@@ -192,6 +205,13 @@ export function createFutureEntriesRegistry(
     invocation.last_awaiting_on_future_json
       ? 'future-last-awaiting'
       : 'future-suspended-waiting',
+    {
+      groupEntries: [],
+      childRefsByGroupId: new Map<string, FutureChildRef[]>(),
+      completionRefs: [],
+      signalIndexRefs: [],
+      signalNameRefs: [],
+    },
   );
 
   if (
@@ -205,19 +225,19 @@ export function createFutureEntriesRegistry(
 
   return {
     groupEntries: collection.groupEntries,
+    childRefsByGroupId: collection.childRefsByGroupId,
     completionGroupIdsById: collectGroupIdsByReference(
       collection.completionRefs,
     ),
     signalIndexGroupIdsByIndex: collectGroupIdsByReference(
       collection.signalIndexRefs,
     ),
-    signalNameGroupIdsByName: collectSignalNameReferences(
-      collection.signalNameRefs,
-    ),
+    signalNameRefs: collection.signalNameRefs,
   };
 }
 
 function createPendingSignalIndexEntry(
+  index: number,
   signalIndexGroupIds: GroupIds,
 ): CompleteAwakeableNotificationEntry {
   return {
@@ -234,11 +254,13 @@ function createPendingSignalIndexEntry(
     error: undefined,
     value: undefined,
     resultType: undefined,
+    index,
     id: undefined,
   } as CompleteAwakeableNotificationEntry;
 }
 
 function createPendingSignalNameEntry(
+  index: number,
   signalName: string,
   signalNameGroupIds: GroupIds,
 ): SignalNotificationEntry {
@@ -256,6 +278,7 @@ function createPendingSignalNameEntry(
     error: undefined,
     value: undefined,
     resultType: undefined,
+    index,
     signalName,
   } as SignalNotificationEntry;
 }
@@ -263,48 +286,107 @@ function createPendingSignalNameEntry(
 function createPendingSignalEntries(
   registry: FutureEntriesRegistry,
   context: JournalEntryConversionContext,
+  allocateSyntheticIndex: AllocateSyntheticIndex,
 ) {
   const pendingEntries: JournalEntryV2[] = [];
+  const signalIndexEntryByIndex = new Map<number, JournalEntryV2>();
+  const signalNameEntryByRef = new Map<FutureSignalNameRef, JournalEntryV2>();
 
   for (const [signalIndex, groupIds] of registry.signalIndexGroupIdsByIndex) {
-    if (!context.signalEntryByIndex.has(signalIndex)) {
-      pendingEntries.push(createPendingSignalIndexEntry(groupIds));
-    }
-  }
-
-  for (const [
-    signalName,
-    signalGroupIds,
-  ] of registry.signalNameGroupIdsByName) {
-    const signalEntries = context.signalEntriesByName.get(signalName) ?? [];
-
-    for (const [index, entry] of signalEntries.entries()) {
-      const groupIds = signalGroupIds[index];
-      if (entry) {
-        assignGroupIds(entry, groupIds);
-      }
-    }
-
-    for (const groupIds of signalGroupIds.slice(signalEntries.length)) {
-      pendingEntries.push(
-        createPendingSignalNameEntry(signalName, groupIds),
+    const signalEntry = context.signalEntryByIndex.get(signalIndex);
+    if (signalEntry) {
+      signalIndexEntryByIndex.set(signalIndex, signalEntry);
+    } else {
+      const pendingEntry = createPendingSignalIndexEntry(
+        allocateSyntheticIndex(),
+        groupIds,
       );
+      pendingEntries.push(pendingEntry);
+      signalIndexEntryByIndex.set(signalIndex, pendingEntry);
     }
   }
 
-  return pendingEntries;
+  const signalNameRefCount = new Map<string, number>();
+  for (const ref of registry.signalNameRefs) {
+    const index = signalNameRefCount.get(ref.signalName) ?? 0;
+    signalNameRefCount.set(ref.signalName, index + 1);
+
+    const signalEntry = context.signalEntriesByName.get(ref.signalName)?.[
+      index
+    ];
+    if (signalEntry) {
+      assignGroupIds(signalEntry, ref.groupIds);
+      signalNameEntryByRef.set(ref, signalEntry);
+    } else {
+      const pendingEntry = createPendingSignalNameEntry(
+        allocateSyntheticIndex(),
+        ref.signalName,
+        ref.groupIds,
+      );
+      pendingEntries.push(pendingEntry);
+      signalNameEntryByRef.set(ref, pendingEntry);
+    }
+  }
+
+  return { pendingEntries, signalIndexEntryByIndex, signalNameEntryByRef };
 }
 
 export function createFutureEntries(
   registry: FutureEntriesRegistry | undefined,
   context: JournalEntryConversionContext,
+  allocateSyntheticIndex: AllocateSyntheticIndex,
 ): JournalEntryV2[] {
   if (!registry) {
     return [];
   }
 
-  return [
-    ...registry.groupEntries,
-    ...createPendingSignalEntries(registry, context),
-  ];
+  for (const groupEntry of registry.groupEntries) {
+    groupEntry.index = allocateSyntheticIndex();
+  }
+
+  const { pendingEntries, signalIndexEntryByIndex, signalNameEntryByRef } =
+    createPendingSignalEntries(registry, context, allocateSyntheticIndex);
+  const groupEntryById = new Map(
+    registry.groupEntries.map((entry) => [entry.id, entry]),
+  );
+
+  for (const groupEntry of registry.groupEntries) {
+    const relatedIndexes: number[] = [];
+
+    for (const ref of registry.childRefsByGroupId.get(groupEntry.id) ?? []) {
+      const relatedIndex = getFutureReferenceIndex(
+        ref,
+        context,
+        groupEntryById,
+        signalIndexEntryByIndex,
+        signalNameEntryByRef,
+      );
+      if (typeof relatedIndex === 'number') {
+        relatedIndexes.push(relatedIndex);
+      }
+    }
+
+    groupEntry.relatedIndexes = relatedIndexes;
+  }
+
+  return [...registry.groupEntries, ...pendingEntries];
+}
+
+function getFutureReferenceIndex(
+  ref: FutureChildRef,
+  context: JournalEntryConversionContext,
+  groupEntryById: Map<string, JournalGroupEntry>,
+  signalIndexEntryByIndex: Map<number, JournalEntryV2>,
+  signalNameEntryByRef: Map<FutureSignalNameRef, JournalEntryV2>,
+) {
+  switch (ref.kind) {
+    case 'group':
+      return groupEntryById.get(ref.groupId)?.index;
+    case 'completion':
+      return context.completionEntryById.get(ref.completionId)?.index;
+    case 'signalIndex':
+      return signalIndexEntryByIndex.get(ref.signalIndex)?.index;
+    case 'signalName':
+      return signalNameEntryByRef.get(ref.ref)?.index;
+  }
 }

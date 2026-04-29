@@ -19,7 +19,7 @@ type LifeCycleEvent =
 
 export function lifeCycles(
   eventRawEntries: JournalRawEntry[],
-  indexCount: number,
+  allocateSyntheticIndex: () => number,
   invocation?: Invocation,
 ): LifeCycleEvent[] {
   if (!invocation) {
@@ -110,7 +110,7 @@ export function lifeCycles(
           relatedCommandType: pausedErrorEntry?.relatedCommandType,
           relatedRestateErrorCode: pausedErrorEntry?.relatedRestateErrorCode,
           relatedCommandIndex: pausedErrorEntry?.relatedCommandIndex,
-          index: Number(pausedErrorEntry?.index) + index + 1 + indexCount,
+          index: allocateSyntheticIndex(),
         });
       });
   }

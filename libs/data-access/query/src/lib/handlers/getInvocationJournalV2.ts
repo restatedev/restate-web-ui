@@ -63,6 +63,21 @@ function sortJournalEntries(entries: JournalEntryV2[]) {
   return entries;
 }
 
+function createSyntheticIndexAllocator(
+  ...entryGroups: { index?: unknown }[][]
+) {
+  let nextIndex = 0;
+  for (const entries of entryGroups) {
+    for (const entry of entries) {
+      if (typeof entry.index === 'number' && entry.index >= nextIndex) {
+        nextIndex = entry.index + 1;
+      }
+    }
+  }
+
+  return () => nextIndex++;
+}
+
 export async function getInvocationJournalV2(
   this: QueryContext,
   invocationId: string,
@@ -120,6 +135,7 @@ export async function getInvocationJournalV2(
   const futureEntriesRegistry = createFutureEntriesRegistry(invocation);
   const conversionContext: JournalEntryConversionContext = {
     future: futureEntriesRegistry,
+    completionEntryById: new Map<number, JournalEntryV2>(),
     signalEntryByIndex: new Map<number, JournalEntryV2>(),
     signalEntriesByName: new Map<string, JournalEntryV2[]>(),
   };
@@ -133,9 +149,13 @@ export async function getInvocationJournalV2(
         index: journalQuery.rows.length + i,
       }) as JournalRawEntry,
   );
+  const allocateSyntheticIndex = createSyntheticIndexAllocator(
+    journalRows,
+    eventsEntries,
+  );
   const lifeCycleEntries = lifeCycles(
     eventsEntries,
-    journalQuery.rows.length + eventsEntries.length,
+    allocateSyntheticIndex,
     invocation,
   );
 
@@ -178,6 +198,7 @@ export async function getInvocationJournalV2(
   const futureEntries = createFutureEntries(
     futureEntriesRegistry,
     conversionContext,
+    allocateSyntheticIndex,
   );
   const entriesWithLifeCycleEvents = sortJournalEntries([
     ...entries,
@@ -188,7 +209,10 @@ export async function getInvocationJournalV2(
   return new Response(
     JSON.stringify({
       ...invocation,
-      journal: { entries: entriesWithLifeCycleEvents, version },
+      journal: {
+        entries: entriesWithLifeCycleEvents,
+        version,
+      },
     }),
     {
       status: 200,

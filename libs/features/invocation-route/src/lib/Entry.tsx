@@ -2,7 +2,10 @@ import {
   useGetInvocationJournalWithInvocationV2,
   useGetPausedError,
 } from '@restate/data-access/admin-api-hooks';
-import type { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
+import type {
+  components,
+  JournalEntryV2,
+} from '@restate/data-access/admin-api-spec';
 import { ComponentType, memo } from 'react';
 import { AttachInvocation } from './entries/AttachInvocation';
 import { Awakeable } from './entries/Awakeable';
@@ -24,6 +27,7 @@ import { GetState } from './entries/GetState';
 import { GetLazyState } from './entries/GetLazyState';
 import { GetStateKeys } from './entries/GetStateKeys';
 import { GetLazyStateKeys } from './entries/GetLazyStateKeys';
+import { Group } from './entries/Group';
 import { OneWayCall } from './entries/OneWayCall';
 import { Output } from './entries/Output';
 import { PeekPromise } from './entries/PeekPromise';
@@ -43,6 +47,8 @@ import { NoCommandTransientError } from './entries/TransientError';
 import { useJournalEntriesContext } from './JournalContext';
 import { tv } from '@restate/util/styles';
 import { EntryCodecProvider } from './entries/EntryCodecProvider';
+
+type JournalGroupEntry = components['schemas']['JournalGroupEntryV2'];
 
 export const ENTRY_COMMANDS_COMPONENTS: {
   [K in CommandEntryType]:
@@ -120,14 +126,14 @@ export const ENTRY_EVENTS_COMPONENTS: {
 };
 
 export const ENTRY_GROUP_COMPONENTS: {
-  [K in GroupEntryType]: undefined;
+  [K in GroupEntryType]: ComponentType<EntryProps<JournalGroupEntry>>;
 } = {
-  Attempt: undefined,
-  FirstCompleted: undefined,
-  AllCompleted: undefined,
-  FirstSucceededOrAllFailed: undefined,
-  AllSucceededOrFirstFailed: undefined,
-  Unknown: undefined,
+  Attempt: Group,
+  FirstCompleted: Group,
+  AllCompleted: Group,
+  FirstSucceededOrAllFailed: Group,
+  AllSucceededOrFirstFailed: Group,
+  Unknown: Group,
 };
 
 function digitCount(n: number) {
