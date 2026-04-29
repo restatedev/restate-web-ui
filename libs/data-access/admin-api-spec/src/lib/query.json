@@ -4117,8 +4117,12 @@
           "commandIndex": {
             "type": "integer"
           },
-          "groupId": {
-            "type": "string"
+          "groupIds": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean",
+              "enum": [true]
+            }
           },
           "category": {
             "type": "string",
@@ -4151,8 +4155,12 @@
           "id": {
             "type": "string"
           },
-          "groupId": {
-            "type": "string"
+          "groupIds": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean",
+              "enum": [true]
+            }
           }
         }
       },

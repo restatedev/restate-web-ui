@@ -2961,7 +2961,7 @@ export interface components {
       completionId?: number;
       completionIndex?: number;
       commandIndex?: number;
-      groupId?: string;
+      groupIds?: Record<string, true>;
       /** @enum {string} */
       category?: 'notification' | 'command' | 'event' | 'group';
       type?: string;
@@ -2978,7 +2978,7 @@ export interface components {
         | 'AllSucceededOrFirstFailed'
         | 'Unknown';
       id: string;
-      groupId?: string;
+      groupIds?: Record<string, true>;
     };
     FailureEntry: {
       message?: string;
