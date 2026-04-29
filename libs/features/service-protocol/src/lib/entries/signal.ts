@@ -4,7 +4,8 @@ import {
 } from '@restate/data-access/admin-api-spec';
 import {
   getEntryResultV2,
-  JournalRawEntryWithCommandIndex,
+  type JournalEntryConversionContext,
+  type JournalRawEntryWithCommandIndex,
   parseEntryJson,
 } from './util';
 
@@ -12,6 +13,7 @@ export function signal(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
   invocation?: Invocation,
+  context?: JournalEntryConversionContext,
 ):
   | Extract<
       JournalEntryV2,
@@ -72,7 +74,7 @@ export function signal(
       result,
     );
 
-    return {
+    const signalEntry = {
       start: entry.appended_at,
       isPending: false,
       commandIndex: undefined,
@@ -92,6 +94,13 @@ export function signal(
       JournalEntryV2,
       { type?: 'Signal'; category?: 'notification' }
     >;
+
+    context?.signalNameCounts.set(
+      signalName,
+      (context.signalNameCounts.get(signalName) ?? 0) + 1,
+    );
+
+    return signalEntry;
   }
 
   if (id && id >= 17) {
@@ -106,7 +115,7 @@ export function signal(
       result,
     );
 
-    return {
+    const signalEntry = {
       start: entry.appended_at,
       isPending: false,
       commandIndex: undefined,
@@ -126,6 +135,10 @@ export function signal(
       JournalEntryV2,
       { type?: 'CompleteAwakeable'; category?: 'notification' }
     >;
+
+    context?.signalIndexes.add(id);
+
+    return signalEntry;
   }
 
   return entry as JournalEntryV2;

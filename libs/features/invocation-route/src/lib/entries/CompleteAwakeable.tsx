@@ -71,6 +71,7 @@ export function CompleteAwakeableNotification({
           entry={entry}
           title="Result"
           isBase64
+          hideWhenEntryIsPending
         />
       }
     />

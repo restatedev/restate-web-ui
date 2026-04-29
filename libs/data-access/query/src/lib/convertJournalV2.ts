@@ -21,7 +21,7 @@ import {
   output,
   signal,
   attachInvocation,
-  JournalRawEntryWithCommandIndex,
+  type JournalRawEntryWithCommandIndex,
   sendSignal,
   event,
   notificationRun,
@@ -36,18 +36,21 @@ import {
   notificationGetLazyState,
   getLazyStateKeys,
   notificationGetLazyStateKeys,
+  type JournalEntryConversionContext,
 } from '@restate/features/service-protocol';
 
 export function convertJournalV2(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
   invocation?: Invocation,
+  context?: JournalEntryConversionContext,
 ): JournalEntryV2 {
   const newEntry =
     JOURNAL_ENTRY_CONVERT_MAP[entry.entry_type]?.(
       entry,
       nextEntries,
       invocation,
+      context,
     ) ?? (entry as JournalEntryV2);
   return newEntry;
 }
@@ -59,6 +62,7 @@ const JOURNAL_ENTRY_CONVERT_MAP: Partial<
       entry: JournalRawEntryWithCommandIndex,
       nextEntries: JournalEntryV2[],
       invocation?: Invocation,
+      context?: JournalEntryConversionContext,
     ) => JournalEntryV2 | undefined
   >
 > = {

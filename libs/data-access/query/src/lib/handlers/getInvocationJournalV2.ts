@@ -6,11 +6,58 @@ import type {
 import { ERROR_CODES, UI_ERROR_CODES } from '@restate/util/errors';
 import { convertInvocation } from '../convertInvocation';
 import { convertJournalV2 } from '../convertJournalV2';
+import { injectPendingSignalNotifications } from '../injectPendingSignalNotifications';
 import {
-  JournalRawEntryWithCommandIndex,
+  type JournalRawEntryWithCommandIndex,
   lifeCycles,
 } from '@restate/features/service-protocol';
 import { type QueryContext, getSysInvocationColumns } from './shared';
+
+function sortJournalEntries(entries: JournalEntryV2[]) {
+  const timestampCache = new Map<JournalEntryV2, number>();
+  const getTimestamp = (entry: JournalEntryV2): number => {
+    let cached = timestampCache.get(entry);
+    if (cached === undefined) {
+      cached =
+        typeof entry.start === 'string' ? new Date(entry.start).getTime() : 0;
+      timestampCache.set(entry, cached);
+    }
+    return cached;
+  };
+
+  entries.sort((a, b) => {
+    if (
+      typeof a.index === 'number' &&
+      typeof b.index === 'number' &&
+      ((a.category === 'command' && b.category === 'command') ||
+        (a.category === 'event' && b.category === 'event') ||
+        ['Created', 'Pending', 'Scheduled'].includes(a.type as string) ||
+        ['Created', 'Pending', 'Scheduled'].includes(b.type as string))
+    ) {
+      return a.index - b.index;
+    } else if (typeof a.start === 'string' && typeof b.start === 'string') {
+      if (
+        a.start === b.start &&
+        a.type === 'Running' &&
+        b.category === 'command'
+      ) {
+        return -1;
+      }
+      if (
+        a.start === b.start &&
+        b.type === 'Running' &&
+        a.category === 'command'
+      ) {
+        return 1;
+      }
+      return getTimestamp(a) - getTimestamp(b);
+    } else {
+      return 0;
+    }
+  });
+
+  return entries;
+}
 
 export async function getInvocationJournalV2(
   this: QueryContext,
@@ -65,6 +112,11 @@ export async function getInvocationJournalV2(
   }
 
   const version = journalQuery.rows.at(0)?.version;
+  const journalRows = journalQuery.rows as JournalRawEntry[];
+  const conversionContext = {
+    signalIndexes: new Set<number>(),
+    signalNameCounts: new Map<string, number>(),
+  };
 
   let commandCount = 0;
   const eventsEntries = eventsQuery.rows.map(
@@ -75,22 +127,19 @@ export async function getInvocationJournalV2(
         index: journalQuery.rows.length + i,
       }) as JournalRawEntry,
   );
+  const lifeCycleEntries = lifeCycles(
+    eventsEntries,
+    journalQuery.rows.length + eventsEntries.length,
+    invocation,
+  );
 
-  const allRawEntries = [
-    ...(journalQuery.rows as JournalRawEntry[]),
-    ...lifeCycles(
-      eventsEntries,
-      journalQuery.rows.length + eventsEntries.length,
-      invocation,
-    ),
-    ...eventsEntries,
-  ];
+  const journalAndEventEntries = [...journalRows, ...eventsEntries];
 
   const entriesWithCommandIndex: (
     | JournalRawEntryWithCommandIndex
     | JournalEntryV2
   )[] = [];
-  for (const rawEntry of allRawEntries) {
+  for (const rawEntry of journalAndEventEntries) {
     if ('entry_type' in rawEntry) {
       if (rawEntry.entry_type?.startsWith('Command:')) {
         (rawEntry as JournalRawEntryWithCommandIndex).command_index =
@@ -105,7 +154,12 @@ export async function getInvocationJournalV2(
   for (let i = entriesWithCommandIndex.length - 1; i >= 0; i--) {
     const entry = entriesWithCommandIndex[i];
     if (entry && 'entry_type' in entry) {
-      const convertedEntry = convertJournalV2(entry, entries, invocation);
+      const convertedEntry = convertJournalV2(
+        entry,
+        entries,
+        invocation,
+        conversionContext,
+      );
       if (convertedEntry) {
         entries.push(convertedEntry);
       }
@@ -115,52 +169,20 @@ export async function getInvocationJournalV2(
   }
   entries.reverse();
 
-  const timestampCache = new Map<JournalEntryV2, number>();
-  const getTimestamp = (entry: JournalEntryV2): number => {
-    let cached = timestampCache.get(entry);
-    if (cached === undefined) {
-      cached =
-        typeof entry.start === 'string' ? new Date(entry.start).getTime() : 0;
-      timestampCache.set(entry, cached);
-    }
-    return cached;
-  };
-
-  entries.sort((a, b) => {
-    if (
-      typeof a.index === 'number' &&
-      typeof b.index === 'number' &&
-      ((a.category === 'command' && b.category === 'command') ||
-        (a.category === 'event' && b.category === 'event') ||
-        ['Created', 'Pending', 'Scheduled'].includes(a.type as string) ||
-        ['Created', 'Pending', 'Scheduled'].includes(b.type as string))
-    ) {
-      return a.index - b.index;
-    } else if (typeof a.start === 'string' && typeof b.start === 'string') {
-      if (
-        a.start === b.start &&
-        a.type === 'Running' &&
-        b.category === 'command'
-      ) {
-        return -1;
-      }
-      if (
-        a.start === b.start &&
-        b.type === 'Running' &&
-        a.category === 'command'
-      ) {
-        return 1;
-      }
-      return getTimestamp(a) - getTimestamp(b);
-    } else {
-      return 0;
-    }
-  });
+  const entriesWithPendingSignals = injectPendingSignalNotifications(
+    entries,
+    invocation,
+    conversionContext,
+  );
+  const entriesWithLifeCycleEvents = sortJournalEntries([
+    ...entriesWithPendingSignals,
+    ...lifeCycleEntries,
+  ]);
 
   return new Response(
     JSON.stringify({
       ...invocation,
-      journal: { entries, version },
+      journal: { entries: entriesWithLifeCycleEvents, version },
     }),
     {
       status: 200,

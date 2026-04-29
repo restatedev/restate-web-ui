@@ -305,7 +305,7 @@ export function JournalV2({
     getItemKey: (index) => {
       const entry = entriesWithoutInput[index];
       return entry
-        ? `${entry.invocationId}-${entry.entry?.index}-${entry.entry?.type}`
+        ? `${entry.invocationId}-${entry.entry?.index ?? index}-${entry.entry?.type}`
         : index;
     },
   });

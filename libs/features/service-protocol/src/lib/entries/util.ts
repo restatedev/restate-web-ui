@@ -363,3 +363,8 @@ export function getTarget(object: any): {
 export type JournalRawEntryWithCommandIndex = JournalRawEntry & {
   command_index?: number;
 };
+
+export type JournalEntryConversionContext = {
+  signalIndexes: Set<number>;
+  signalNameCounts: Map<string, number>;
+};
