@@ -4131,7 +4131,7 @@
       },
       "JournalGroupEntryV2": {
         "type": "object",
-        "required": ["category", "type", "groupId"],
+        "required": ["category", "type", "id"],
         "properties": {
           "category": {
             "type": "string",
@@ -4147,6 +4147,9 @@
               "AllSucceededOrFirstFailed",
               "Unknown"
             ]
+          },
+          "id": {
+            "type": "string"
           },
           "groupId": {
             "type": "string"
@@ -5320,6 +5323,9 @@
             "$ref": "#/components/schemas/InvocationFutureSingle"
           },
           {
+            "$ref": "#/components/schemas/InvocationFutureAttempt"
+          },
+          {
             "$ref": "#/components/schemas/InvocationFutureFirstCompleted"
           },
           {
@@ -5335,6 +5341,18 @@
             "$ref": "#/components/schemas/InvocationFutureUnknown"
           }
         ]
+      },
+      "InvocationFutureAttempt": {
+        "type": "object",
+        "required": ["Attempt"],
+        "properties": {
+          "Attempt": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvocationFuture"
+            }
+          }
+        }
       },
       "InvocationFutureSingle": {
         "type": "object",

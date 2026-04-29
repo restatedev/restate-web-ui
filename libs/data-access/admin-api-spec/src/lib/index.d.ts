@@ -2977,7 +2977,8 @@ export interface components {
         | 'FirstSucceededOrAllFailed'
         | 'AllSucceededOrFirstFailed'
         | 'Unknown';
-      groupId: string;
+      id: string;
+      groupId?: string;
     };
     FailureEntry: {
       message?: string;
@@ -3544,11 +3545,15 @@ export interface components {
     };
     InvocationFuture:
       | components['schemas']['InvocationFutureSingle']
+      | components['schemas']['InvocationFutureAttempt']
       | components['schemas']['InvocationFutureFirstCompleted']
       | components['schemas']['InvocationFutureAllCompleted']
       | components['schemas']['InvocationFutureFirstSucceededOrAllFailed']
       | components['schemas']['InvocationFutureAllSucceededOrFirstFailed']
       | components['schemas']['InvocationFutureUnknown'];
+    InvocationFutureAttempt: {
+      Attempt: components['schemas']['InvocationFuture'][];
+    };
     InvocationFutureSingle: {
       Single:
         | components['schemas']['InvocationFutureCompletionId']
