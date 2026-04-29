@@ -3,6 +3,7 @@ import {
   JournalEntryV2,
 } from '@restate/data-access/admin-api-spec';
 import {
+  assignGroupIds,
   getEntryResultV2,
   type JournalEntryConversionContext,
   type JournalRawEntryWithCommandIndex,
@@ -95,10 +96,12 @@ export function signal(
       { type?: 'Signal'; category?: 'notification' }
     >;
 
-    context?.signalNameCounts.set(
-      signalName,
-      (context.signalNameCounts.get(signalName) ?? 0) + 1,
-    );
+    const signalEntries = context?.signalEntriesByName.get(signalName);
+    if (signalEntries) {
+      signalEntries.unshift(signalEntry);
+    } else {
+      context?.signalEntriesByName.set(signalName, [signalEntry]);
+    }
 
     return signalEntry;
   }
@@ -136,7 +139,11 @@ export function signal(
       { type?: 'CompleteAwakeable'; category?: 'notification' }
     >;
 
-    context?.signalIndexes.add(id);
+    context?.signalEntryByIndex.set(id, signalEntry);
+    assignGroupIds(
+      signalEntry,
+      context?.future?.signalIndexGroupIdsByIndex.get(id),
+    );
 
     return signalEntry;
   }

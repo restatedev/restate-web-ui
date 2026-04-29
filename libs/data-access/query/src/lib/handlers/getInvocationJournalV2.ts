@@ -6,8 +6,12 @@ import type {
 import { ERROR_CODES, UI_ERROR_CODES } from '@restate/util/errors';
 import { convertInvocation } from '../convertInvocation';
 import { convertJournalV2 } from '../convertJournalV2';
-import { injectPendingSignalNotifications } from '../injectPendingSignalNotifications';
 import {
+  createFutureEntries,
+  createFutureEntriesRegistry,
+} from '../futureEntries';
+import {
+  type JournalEntryConversionContext,
   type JournalRawEntryWithCommandIndex,
   lifeCycles,
 } from '@restate/features/service-protocol';
@@ -113,9 +117,11 @@ export async function getInvocationJournalV2(
 
   const version = journalQuery.rows.at(0)?.version;
   const journalRows = journalQuery.rows as JournalRawEntry[];
-  const conversionContext = {
-    signalIndexes: new Set<number>(),
-    signalNameCounts: new Map<string, number>(),
+  const futureEntriesRegistry = createFutureEntriesRegistry(invocation);
+  const conversionContext: JournalEntryConversionContext = {
+    future: futureEntriesRegistry,
+    signalEntryByIndex: new Map<number, JournalEntryV2>(),
+    signalEntriesByName: new Map<string, JournalEntryV2[]>(),
   };
 
   let commandCount = 0;
@@ -169,13 +175,13 @@ export async function getInvocationJournalV2(
   }
   entries.reverse();
 
-  const entriesWithPendingSignals = injectPendingSignalNotifications(
-    entries,
-    invocation,
+  const futureEntries = createFutureEntries(
+    futureEntriesRegistry,
     conversionContext,
   );
   const entriesWithLifeCycleEvents = sortJournalEntries([
-    ...entriesWithPendingSignals,
+    ...entries,
+    ...futureEntries,
     ...lifeCycleEntries,
   ]);
 

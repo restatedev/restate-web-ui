@@ -26,7 +26,9 @@ export * from './lib/entries/sendSignal';
 export * from './lib/entries/event';
 export * from './lib/entries/lifeCycles';
 export * from './lib/decoder';
+export { assignGroupIds } from './lib/entries/util';
 export type {
+  GroupIds,
   JournalEntryConversionContext,
   JournalRawEntryWithCommandIndex,
 } from './lib/entries/util';

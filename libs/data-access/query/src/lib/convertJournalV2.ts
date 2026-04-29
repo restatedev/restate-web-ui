@@ -36,6 +36,7 @@ import {
   notificationGetLazyState,
   getLazyStateKeys,
   notificationGetLazyStateKeys,
+  assignGroupIds,
   type JournalEntryConversionContext,
 } from '@restate/features/service-protocol';
 
@@ -52,6 +53,12 @@ export function convertJournalV2(
       invocation,
       context,
     ) ?? (entry as JournalEntryV2);
+  if (typeof newEntry?.completionId === 'number') {
+    assignGroupIds(
+      newEntry,
+      context?.future?.completionGroupIdsById.get(newEntry.completionId),
+    );
+  }
   return newEntry;
 }
 
