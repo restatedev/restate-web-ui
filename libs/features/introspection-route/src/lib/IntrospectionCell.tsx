@@ -99,7 +99,8 @@ export function IntrospectionCell({
     );
   }
 
-  const _formattedValue = formattedValue(String(value));
+  const _formattedValue =
+    value !== undefined ? formattedValue(String(value)) : undefined;
   return (
     <Cell className="min-h-6">
       {
