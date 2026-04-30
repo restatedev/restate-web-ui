@@ -62,7 +62,7 @@ export function KeysIdsSection({
         )}
         {idempotencyId && (
           <div className="flex h-9 items-center px-1.5 py-1 not-last:border-b">
-            <span className="flex-auto pl-1 text-0.5xs font-medium text-gray-500">
+            <span className="flex-auto shrink-0 pl-1 text-0.5xs font-medium text-gray-500">
               Idempotency Key
             </span>
             <Badge
