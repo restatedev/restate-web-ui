@@ -44,12 +44,18 @@ export function useCodecRuntime(codecOptions?: RestateCodecOptions) {
     [encoder, options],
   );
   const createFetcher = useCallback(
-    (getCodecOptions?: GetCodecOptions) =>
-      createFetcherWithCodec(fetcher, encoder, decoder, async (request) => {
-        const requestOptions = await getCodecOptions?.(request);
+    (getCodecOptions?: GetCodecOptions, onCall?: (req: Request) => void) =>
+      createFetcherWithCodec(
+        fetcher,
+        encoder,
+        decoder,
+        async (request) => {
+          const requestOptions = await getCodecOptions?.(request);
 
-        return requestOptions ?? options;
-      }),
+          return requestOptions ?? options;
+        },
+        onCall,
+      ),
     [decoder, encoder, fetcher, options],
   );
 

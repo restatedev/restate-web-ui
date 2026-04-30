@@ -43,6 +43,7 @@ import { useTransition } from 'react';
 import { ErrorBanner } from '@restate/ui/error';
 import { Spinner } from '@restate/ui/loading';
 import { useOnboarding } from '@restate/util/feature-flag';
+import { useQueryClient } from '@tanstack/react-query';
 
 const styles = tv({
   base: 'flex items-center gap-1 rounded-md px-1.5 py-0.5 font-sans text-xs font-normal',
@@ -166,6 +167,7 @@ function useApiSpec(service?: string | null) {
     refetchOnMount: false,
   });
   const { ingressUrl } = useRestateContext();
+  const queryClient = useQueryClient();
   const { createFetcherWithCodec } = useCodecRuntime();
 
   const { apiSpec, handlers, operations } = useMemo(() => {
@@ -216,33 +218,51 @@ function useApiSpec(service?: string | null) {
 
   const tryItFetcher = useMemo(
     () =>
-      createFetcherWithCodec((request) => {
-        if (!service || !resolvedServiceOptions) {
-          return undefined;
-        }
+      createFetcherWithCodec(
+        (request) => {
+          if (!service || !resolvedServiceOptions) {
+            return undefined;
+          }
 
-        const pathname = new URL(request.url).pathname;
-        const operation = operations.find(
-          ({ method, pattern }) =>
-            method === request.method.toUpperCase() &&
-            pattern.test({ pathname }),
-        );
-        const handler = operation?.id
-          ? serviceDetails?.handlers.find(({ name }) => name === operation.id)
-          : undefined;
-        const { deploymentId: _deploymentId, ...rest } = resolvedServiceOptions;
+          const pathname = new URL(request.url).pathname;
+          const operation = operations.find(
+            ({ method, pattern }) =>
+              method === request.method.toUpperCase() &&
+              pattern.test({ pathname }),
+          );
+          const handler = operation?.id
+            ? serviceDetails?.handlers.find(({ name }) => name === operation.id)
+            : undefined;
+          const { deploymentId: _deploymentId, ...rest } =
+            resolvedServiceOptions;
 
-        return {
-          ...rest,
-          handler: handler ? { value: handler } : undefined,
-        };
-      }),
+          return {
+            ...rest,
+            handler: handler ? { value: handler } : undefined,
+          };
+        },
+        () => {
+          queryClient.invalidateQueries({
+            refetchType: 'active',
+            predicate: (query) => {
+              const queryKey = query.queryKey;
+              if (Array.isArray(queryKey)) {
+                return String(queryKey.at(0))?.includes(
+                  '/query/invocations/summary',
+                );
+              }
+              return false;
+            },
+          });
+        },
+      ),
     [
       createFetcherWithCodec,
       operations,
       resolvedServiceOptions,
       service,
       serviceDetails,
+      queryClient,
     ],
   );
 

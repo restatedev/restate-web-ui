@@ -108,6 +108,7 @@ export function createFetcherWithCodec(
   encoder: RestateStringCodec,
   decoder: RestateStringCodec,
   getCodecOptions?: GetCodecOptions,
+  onCall?: (req: Request) => void,
 ): CodecFetcher {
   return async (input, init) => {
     const request = new Request(input, init);
@@ -137,6 +138,7 @@ export function createFetcherWithCodec(
       nextRequest.headers.set('Authorization', `Bearer ${token}`);
     }
 
+    onCall?.(nextRequest);
     const response = await fetcher(nextRequest);
 
     try {
