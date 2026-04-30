@@ -1,7 +1,7 @@
 // Minimum number of total invocations (completed + inflight) required
 // before SLA checks are applied. Prevents false positives on low-traffic
 // services where a single paused invocation could trigger a warning.
-export const MIN_TRAFFIC_THRESHOLD = 10;
+export const MIN_TRAFFIC_THRESHOLD = 100;
 
 export interface SlaThreshold {
   // Ratio at which a low-severity warning is raised.

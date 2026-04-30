@@ -89,8 +89,12 @@ export function VirtualObjectSection({
   };
   const position = data?.[invocation.id];
 
-  const shouldShowQueue = typeof size === 'number' && typeof head === 'string';
+  const shouldShowQueue =
+    typeof size === 'number' &&
+    typeof head === 'string' &&
+    !invocation.completed_at;
   const keys = (stateData?.state || stateInterface?.keys) ?? [];
+
   return (
     <Section className={styles({ className })}>
       <div>
