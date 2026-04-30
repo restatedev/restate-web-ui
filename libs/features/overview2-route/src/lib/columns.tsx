@@ -172,19 +172,21 @@ export function useServiceColumns({
           <OverviewColumnMeta
             className="-translate-y-1.5 pr-3"
             secondary={
-              <div className="w-full">
-                <ServiceStatusBar
-                  serviceName={s.name}
-                  byServiceAndStatus={byServiceAndStatus}
-                  serviceIssues={serviceIssuesMap.get(s.name)}
-                  isSummaryError={isSummaryError}
-                  isSummaryLoading={isSummaryLoading}
-                  linkParams={linkParams}
-                />
+              <div className="relative min-h-2 w-full">
+                <div className="absolute top-0 right-0 bottom-0 w-48">
+                  <ServiceStatusBar
+                    serviceName={s.name}
+                    byServiceAndStatus={byServiceAndStatus}
+                    serviceIssues={serviceIssuesMap.get(s.name)}
+                    isSummaryError={isSummaryError}
+                    isSummaryLoading={isSummaryLoading}
+                    linkParams={linkParams}
+                  />
+                </div>
               </div>
             }
             primary={
-              <>
+              <div className="ml-auto">
                 {isSummaryError && (
                   <div>
                     <br />
@@ -216,7 +218,7 @@ export function useServiceColumns({
                     No invocations
                   </div>
                 )}
-              </>
+              </div>
             }
           />
         );

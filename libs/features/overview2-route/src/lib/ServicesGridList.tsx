@@ -62,7 +62,7 @@ export function ServicesGridList() {
       sortDescriptor={resolvedServiceSortDescriptor}
       onSortChange={setServiceSortDescriptor}
       estimatedRowHeight={100}
-      className="[--grid-list-template-columns:1fr] md:[--grid-list-template-columns:1.5fr_1.5fr_1fr]"
+      className="[--grid-list-template-columns:1fr] md:[--grid-list-template-columns:4fr_4fr_18ch]"
       headerClassName="hidden"
     >
       {(service) => (
@@ -97,7 +97,7 @@ export function ServicesGridList() {
                       serviceName={service.name}
                       handlers={visibleHandlers}
                       serviceType={service.ty}
-                      className="flex flex-col gap-1 px-5 opacity-90 @3xl:grid @3xl:grid-cols-[1.5fr_2.5fr] @3xl:gap-x-6"
+                      className="flex flex-col gap-1 px-5 opacity-90 @3xl:grid @3xl:grid-cols-[4fr_4fr_18ch] @3xl:gap-x-6 @3xl:[&>*:nth-child(even)]:col-[2/-1] @3xl:[&>*:nth-child(odd)]:col-start-1"
                     />
                   ) : undefined
                 }
