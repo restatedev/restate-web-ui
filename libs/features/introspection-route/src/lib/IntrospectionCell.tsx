@@ -18,7 +18,7 @@ export function IntrospectionCell({
   row,
 }: {
   col: string;
-  row: Record<string, string>;
+  row: Record<string, string | number | boolean | undefined | null>;
 }) {
   const { data } = useListDeployments({ refetchOnMount: false });
   const services = Array.from(data?.services.keys() ?? []);
@@ -99,7 +99,7 @@ export function IntrospectionCell({
     );
   }
 
-  const _formattedValue = formattedValue(value);
+  const _formattedValue = formattedValue(String(value));
   return (
     <Cell className="min-h-6">
       {
