@@ -1,5 +1,6 @@
 import type { Handler } from '@restate/data-access/admin-api-spec';
 import type { QueryContext } from './shared';
+import { gte } from 'semver';
 
 function getSizeFromSysInbox(
   this: QueryContext,
@@ -12,12 +13,17 @@ function getSizeFromSysInbox(
   ).then(({ rows }) => rows.at(0)?.size);
 }
 
-function getVqueueId(
+async function getVqueueId(
   this: QueryContext,
   key: string,
   service: string,
   invocationId?: string,
 ): Promise<{ id?: string; sequence_number?: string }> {
+  const isVqueuesAvailable = gte(this.restateVersion, '1.7.0');
+  if (!isVqueuesAvailable) {
+    return {};
+  }
+
   return this.query(
     `SELECT id, sequence_number FROM sys_vqueues WHERE entry_id = '${invocationId}'`,
   ).then(({ rows }) => ({
