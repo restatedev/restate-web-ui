@@ -93,7 +93,6 @@ function Component() {
     Boolean(lastError) &&
     !['killed', 'cancelled'].includes(String(journalAndInvocationData?.status));
 
-  const hasStack = lastError?.message.includes('\n') || !!lastError?.stack;
   const isFailed = !!journalAndInvocationData?.completion_failure;
 
   const isVirtualObject =
@@ -184,6 +183,7 @@ function Component() {
             <VirtualObjectSection
               invocation={journalAndInvocationData}
               raised
+              key={journalAndInvocationData?.status}
               className="contents *:h-fit *:rounded-xl *:border *:bg-gray-200/50 [&>*:last-child>h3]:mt-0 [&>*>*:last-child]:rounded-xl [&>*>*:last-child]:border-white/50 [&>*>*:last-child]:bg-linear-to-b [&>*>*:last-child]:from-gray-50 [&>*>*:last-child]:to-gray-50/80 [&>*>*:last-child]:shadow-zinc-800/3"
             />
             <WorkflowKeySection
