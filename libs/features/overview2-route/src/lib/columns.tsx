@@ -442,7 +442,7 @@ function DeploymentCreatedAt({ value }: { value: string }) {
 
   return (
     <Badge className="z-[2] hidden w-full border-none bg-transparent pl-1.5 md:flex">
-      <span className="w-full truncate">
+      <span className="w-full truncate text-right">
         <span className="font-normal text-zinc-500">Created at </span>
         <span className="font-normal text-zinc-500">{!isPast && 'in '}</span>
         <DateTooltip date={createdAt} title="Created at">
