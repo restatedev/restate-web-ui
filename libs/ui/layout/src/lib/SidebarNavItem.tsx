@@ -62,7 +62,7 @@ function useSidebarLocation(): SidebarLocation {
 const navStyles = tv({
   slots: {
     row: 'group/nav-item relative isolate flex flex-col gap-0.5',
-    link: 'flex w-full items-center gap-2 rounded-xl border border-transparent p-1 text-sm no-underline outline-offset-2 outline-blue-600 transition focus-visible:outline-2 @max-[8rem]/sidebar:mx-auto @max-[8rem]/sidebar:w-fit @max-[8rem]/sidebar:justify-center',
+    link: 'flex w-full items-center gap-2 rounded-xl border border-transparent p-0.5 text-sm no-underline outline-offset-2 outline-blue-600 transition focus-visible:outline-2 @max-[8rem]/sidebar:mx-auto @max-[8rem]/sidebar:w-fit @max-[8rem]/sidebar:justify-center @max-[8rem]/sidebar:p-0',
     iconWrap:
       'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-transparent',
     icon: 'h-4.5 w-4.5 shrink-0 text-current',
@@ -79,13 +79,12 @@ const navStyles = tv({
   variants: {
     isActive: {
       true: {
-        link: 'border-black/5 bg-gray-50 text-blue-600 shadow-xs @max-[8rem]/sidebar:border-transparent @max-[8rem]/sidebar:bg-transparent @max-[8rem]/sidebar:shadow-none',
+        link: 'border-black/5 bg-gray-50 text-blue-600 shadow-xs hover:bg-gray-100 pressed:bg-gray-200',
         icon: 'text-blue-600',
-        iconWrap:
-          'bg-transparent @max-[8rem]/sidebar:border-gray-200 @max-[8rem]/sidebar:bg-gray-50 @max-[8rem]/sidebar:shadow-xs',
+        iconWrap: 'bg-transparent',
       },
       false: {
-        link: 'text-gray-600 hover:bg-black/3',
+        link: 'text-gray-600 hover:bg-black/3 pressed:bg-gray-200',
         icon: 'text-zinc-400 group-hover/nav-item:text-zinc-500',
         iconWrap: 'border-transparent bg-transparent shadow-none',
       },
@@ -93,9 +92,12 @@ const navStyles = tv({
     isSubActive: {
       true: {
         subLink:
-          'bg-gray-50 font-medium text-gray-800 shadow-xs ring-1 ring-black/5',
+          'bg-gray-50 font-medium text-gray-800 shadow-xs ring-1 ring-black/5 hover:bg-gray-100 pressed:bg-gray-200',
       },
-      false: { subLink: 'text-gray-500 hover:bg-black/3 hover:text-gray-700' },
+      false: {
+        subLink:
+          'text-gray-500 hover:bg-black/3 hover:text-gray-700 pressed:bg-gray-200',
+      },
     },
     isOverflowActive: {
       true: {
