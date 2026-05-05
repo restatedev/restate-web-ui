@@ -38,12 +38,16 @@ export function LayoutOutlet({
   variant?: 'primary' | 'secondary' | 'hidden';
 }>) {
   if (typeof document !== 'undefined') {
+    const target = document.getElementById(ZONE_IDS[zone]);
+    if (!target) {
+      return null;
+    }
     return createPortal(
       <>
         {children}
         {zone === LayoutZone.AppBar && <div data-variant={variant} />}
       </>,
-      document.getElementById(ZONE_IDS[zone])!,
+      target,
     );
   } else {
     return null;
