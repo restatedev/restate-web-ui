@@ -22,7 +22,16 @@ import {
   SnapshotTimeProvider,
   useDurationSinceLastSnapshot,
 } from '@restate/util/snapshot-time';
-import { PropsWithChildren, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  PropsWithChildren,
+  RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from 'react';
 import { useSubmitShortcut, SubmitShortcutKey } from '@restate/ui/keyboard';
 import { formatDurations, formatNumber } from '@restate/util/intl';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
@@ -52,10 +61,12 @@ import { Badge } from '@restate/ui/badge';
 import { Sort } from './QueryButton';
 import {
   FILTER_QUERY_PREFIX,
+  getFormUrlSignature,
   isSortValid,
   setDefaultSort,
   SORT_QUERY_PREFIX,
-  useInvocationsQueryFilters,
+  useInvocationsForm,
+  useListInvocationsParameters,
 } from './useInvocationsQueryFilters';
 import { Key } from 'react-aria';
 import { FilterShortcuts } from './FilterShortcuts';
@@ -101,18 +112,22 @@ function Component() {
   const [searchParams] = useSearchParams();
   const { selectedColumns, setSelectedColumns, sortedColumnsList } =
     useColumns();
-  const queryCLient = useQueryClient();
   const submitRef = useSubmitShortcut();
-  const {
-    schema,
-    listInvocationsParameters,
-    query,
-    commitQuery,
-    pageIndex,
-    setPageIndex,
-    sortParams,
-    setSortParams,
-  } = useInvocationsQueryFilters(selectedColumns);
+  const { schema, isLoading, listInvocationsParameters } =
+    useListInvocationsParameters();
+
+  const [pageIndex, _setPageIndex] = useState(0);
+  const [, startTransition] = useTransition();
+  const setPageIndex = useCallback(
+    (arg: Parameters<typeof _setPageIndex>[0]) => {
+      startTransition(() => {
+        window.scrollTo({ top: 0, behavior: 'auto' });
+        _setPageIndex(arg);
+      });
+    },
+    [],
+  );
+  const resetPageIndex = useCallback(() => setPageIndex(0), [setPageIndex]);
 
   const {
     dataUpdatedAt,
@@ -530,60 +545,107 @@ function Component() {
         )}
       </div>
       <LayoutOutlet zone={LayoutZone.Toolbar}>
-        <Form
-          action="/query/invocations"
-          method="POST"
-          className="relative flex w-[60rem] flex-col"
-          onSubmit={async (event) => {
-            event.preventDefault();
-            commitQuery();
-            saveQueryForNextVisit(new URLSearchParams(window.location.search));
-            await queryCLient.invalidateQueries({ queryKey });
-          }}
-        >
-          <QueryBuilder
-            query={query}
-            schema={schema}
-            canRemoveItem={canRemoveItem}
-            multiple
-          >
-            <AddQueryTrigger
-              MenuTrigger={FiltersTrigger}
-              placeholder="Filter invocations…"
-              prefix={
-                <Sort setSortParams={setSortParams} sortParams={sortParams} />
-              }
-              title="Filters"
-              className="w-full rounded-xl border-transparent pb-8 has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500 [&_input]:min-w-[25ch] [&_input]:placeholder-zinc-400 [&_input+*]:right-24 [&_input::-webkit-search-cancel-button]:invert"
-            >
-              {ClauseChip}
-            </AddQueryTrigger>
-          </QueryBuilder>
-          <div className="absolute right-0 bottom-0 left-0 flex h-8 w-full overflow-hidden rounded-b-xl mask-[linear-gradient(to_right,transparent_0,black_6px,black_calc(100%-192px),transparent_calc(100%-100px))]">
-            <div className="flex items-center gap-2 overflow-auto pb-0.5 pl-1.5 [scrollbar-width:thin]">
-              <div className="ml-1 flex h-full shrink-0 items-center text-xs text-white/70">
-                Quick Filters:
-              </div>
-              <FilterShortcuts
-                schema={schema}
-                setPageIndex={setPageIndex}
-                setSortParams={setSortParams}
-                query={query}
-                setSelectedColumns={setSelectedColumns}
-              />
-            </div>
-          </div>
-          <SubmitButton
-            ref={submitRef}
-            isPending={isFetching}
-            className="absolute right-1 bottom-1 flex h-7 items-center gap-2 rounded-lg py-0 pr-0.5 pl-4 disabled:bg-gray-400 disabled:text-gray-200"
-          >
-            Query
-            <SubmitShortcutKey />
-          </SubmitButton>
-        </Form>
+        <InvocationsForm
+          key={getFormUrlSignature(searchParams)}
+          schema={schema}
+          isLoading={isLoading}
+          selectedColumns={selectedColumns}
+          setSelectedColumns={setSelectedColumns}
+          setPageIndex={setPageIndex}
+          resetPageIndex={resetPageIndex}
+          isFetching={isFetching}
+          submitRef={submitRef}
+          queryKey={queryKey}
+        />
       </LayoutOutlet>
     </SnapshotTimeProvider>
+  );
+}
+
+interface InvocationsFormProps {
+  schema: ReturnType<typeof useListInvocationsParameters>['schema'];
+  isLoading: boolean;
+  selectedColumns: ReturnType<typeof useColumns>['selectedColumns'];
+  setSelectedColumns: ReturnType<typeof useColumns>['setSelectedColumns'];
+  setPageIndex: (arg: number | ((prev: number) => number)) => void;
+  resetPageIndex: () => void;
+  isFetching: boolean;
+  submitRef: RefObject<HTMLButtonElement | null>;
+  queryKey: readonly unknown[];
+}
+
+function InvocationsForm({
+  schema,
+  isLoading,
+  selectedColumns,
+  setSelectedColumns,
+  setPageIndex,
+  resetPageIndex,
+  isFetching,
+  submitRef,
+  queryKey,
+}: InvocationsFormProps) {
+  const queryCLient = useQueryClient();
+  const { query, sortParams, setSortParams, commitQuery } = useInvocationsForm({
+    schema,
+    isLoading,
+    selectedColumns,
+    resetPageIndex,
+  });
+
+  return (
+    <Form
+      action="/query/invocations"
+      method="POST"
+      className="relative flex w-[60rem] flex-col"
+      onSubmit={async (event) => {
+        event.preventDefault();
+        commitQuery();
+        saveQueryForNextVisit(new URLSearchParams(window.location.search));
+        await queryCLient.invalidateQueries({ queryKey });
+      }}
+    >
+      <QueryBuilder
+        query={query}
+        schema={schema}
+        canRemoveItem={canRemoveItem}
+        multiple
+      >
+        <AddQueryTrigger
+          MenuTrigger={FiltersTrigger}
+          placeholder="Filter invocations…"
+          prefix={
+            <Sort setSortParams={setSortParams} sortParams={sortParams} />
+          }
+          title="Filters"
+          className="w-full rounded-xl border-transparent pb-8 has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500 [&_input]:min-w-[25ch] [&_input]:placeholder-zinc-400 [&_input+*]:right-24 [&_input::-webkit-search-cancel-button]:invert"
+        >
+          {ClauseChip}
+        </AddQueryTrigger>
+      </QueryBuilder>
+      <div className="absolute right-0 bottom-0 left-0 flex h-8 w-full overflow-hidden rounded-b-xl mask-[linear-gradient(to_right,transparent_0,black_6px,black_calc(100%-192px),transparent_calc(100%-100px))]">
+        <div className="flex items-center gap-2 overflow-auto pb-0.5 pl-1.5 [scrollbar-width:thin]">
+          <div className="ml-1 flex h-full shrink-0 items-center text-xs text-white/70">
+            Quick Filters:
+          </div>
+          <FilterShortcuts
+            schema={schema}
+            setPageIndex={setPageIndex}
+            setSortParams={setSortParams}
+            query={query}
+            setSelectedColumns={setSelectedColumns}
+          />
+        </div>
+      </div>
+      <SubmitButton
+        ref={submitRef}
+        isPending={isFetching}
+        className="absolute right-1 bottom-1 flex h-7 items-center gap-2 rounded-lg py-0 pr-0.5 pl-4 disabled:bg-gray-400 disabled:text-gray-200"
+      >
+        Query
+        <SubmitShortcutKey />
+      </SubmitButton>
+    </Form>
   );
 }
 

@@ -9,7 +9,7 @@ import {
   QueryClauseType,
   useQueryBuilder,
 } from '@restate/ui/query-builder';
-import { useCallback, useState, useTransition } from 'react';
+import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useSchema } from './useSchema';
 import { COLUMN_QUERY_PREFIX, ColumnKey } from './columns';
@@ -61,89 +61,111 @@ export function setDefaultSort(searchParams: URLSearchParams) {
   return setSort(searchParams, { field: 'modified_at', order: 'DESC' });
 }
 
-export function useInvocationsQueryFilters(selectedColumns: ColumnKey[]) {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [sortParams, setSortParams] = useState<SortInvocations>(() => {
-    const field = searchParams.get(SORT_QUERY_PREFIX + 'field');
-    const order = searchParams.get(SORT_QUERY_PREFIX + 'order');
+function deriveSortFromUrl(searchParams: URLSearchParams): SortInvocations {
+  const field = searchParams.get(SORT_QUERY_PREFIX + 'field');
+  const order = searchParams.get(SORT_QUERY_PREFIX + 'order');
+  if (isSortValid(searchParams) && field && order) {
+    return { field, order } as SortInvocations;
+  }
+  return { field: 'modified_at', order: 'DESC' };
+}
 
-    if (!field || !order) {
-      return { field: 'modified_at', order: 'DESC' };
-    }
-    return {
-      field,
-      order,
-    } as SortInvocations;
-  });
-  const { schema, isLoading } = useSchema();
-
-  const queryClauses = schema
-    // TODO
+function deriveClausesFromUrl(
+  searchParams: URLSearchParams,
+  schema: QueryClauseSchema<QueryClauseType>[],
+  isLoading: boolean,
+) {
+  const clauses = schema
     .filter((schemaClause) => searchParams.get(getFilterParamKey(schemaClause)))
-    .map((schemaClause) => {
-      return QueryClause.fromJSON(
+    .map((schemaClause) =>
+      QueryClause.fromJSON(
         schemaClause,
         searchParams.get(getFilterParamKey(schemaClause))!,
-      );
-    });
+      ),
+    );
 
-  if (!queryClauses.some(({ id }) => id === 'status') && !isLoading) {
+  if (!clauses.some(({ id }) => id === 'status') && !isLoading) {
     const clauseSchema = schema.find(({ id }) => id === 'status');
-    clauseSchema &&
-      queryClauses.unshift(
-        new QueryClause(clauseSchema, {
-          operation: 'IN',
-          value: [],
-        }),
+    if (clauseSchema) {
+      clauses.unshift(
+        new QueryClause(clauseSchema, { operation: 'IN', value: [] }),
       );
+    }
   }
-
-  if (
-    !queryClauses.some(({ id }) => id === 'target_service_name') &&
-    !isLoading
-  ) {
+  if (!clauses.some(({ id }) => id === 'target_service_name') && !isLoading) {
     const clauseSchema = schema.find(({ id }) => id === 'target_service_name');
-    clauseSchema &&
-      queryClauses.unshift(
-        new QueryClause(clauseSchema, {
-          operation: 'IN',
-          value: [],
-        }),
+    if (clauseSchema) {
+      clauses.unshift(
+        new QueryClause(clauseSchema, { operation: 'IN', value: [] }),
       );
+    }
   }
+  return clauses;
+}
 
-  const [listInvocationsParameters, _setListInvocationsParameters] = useState<
+/**
+ * URL-derived list parameters for the data fetch. Pure: re-runs whenever
+ * the URL or schema change. The data fetch (and its query key) tracks the
+ * URL automatically.
+ */
+export function useListInvocationsParameters() {
+  const [searchParams] = useSearchParams();
+  const { schema, isLoading } = useSchema();
+  const searchString = searchParams.toString();
+
+  const listInvocationsParameters = useMemo<
     components['schemas']['ListInvocationsRequestBody']
   >(() => {
-    return {
-      filters: queryClauses
-        .filter((clause) => clause.isValid)
-        .map((clause) => {
-          return {
+    const searchParams = new URLSearchParams(searchString);
+    const clauses = deriveClausesFromUrl(searchParams, schema, isLoading);
+    const filters = clauses
+      .filter((clause) => clause.isValid)
+      .map(
+        (clause) =>
+          ({
             field: clause.fieldValue,
             operation: clause.value.operation!,
             type: clause.type,
             value: clause.value.value,
-          } as FilterItem;
-        }),
-      // TODO
-      sort: sortParams,
-    };
-  });
+          }) as FilterItem,
+      );
+    const sort = deriveSortFromUrl(searchParams);
+    return { filters, sort };
+  }, [searchString, schema, isLoading]);
 
-  const query = useQueryBuilder(queryClauses, isLoading);
-  const [pageIndex, _setPageIndex] = useState(0);
-  const [, startTransition] = useTransition();
+  return { schema, isLoading, listInvocationsParameters };
+}
 
-  const setPageIndex = useCallback(
-    (arg: Parameters<typeof _setPageIndex>[0]) => {
-      startTransition(() => {
-        window.scrollTo({ top: 0, behavior: 'auto' });
-        _setPageIndex(arg);
-      });
-    },
-    [],
+/**
+ * Form state for the invocations query toolbar. Initial state is derived
+ * from the URL on mount; callers should re-mount this hook (via a `key`
+ * keyed off the URL) so the form snaps to the current URL whenever it
+ * changes externally (e.g. sidebar navigation). Editing inside the form
+ * does not change the URL until `commitQuery` is called.
+ */
+export function useInvocationsForm({
+  schema,
+  isLoading,
+  selectedColumns,
+  resetPageIndex,
+}: {
+  schema: QueryClauseSchema<QueryClauseType>[];
+  isLoading: boolean;
+  selectedColumns: ColumnKey[];
+  resetPageIndex: () => void;
+}) {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const [sortParams, setSortParams] = useState<SortInvocations>(() =>
+    deriveSortFromUrl(searchParams),
   );
+
+  // Captured at mount; re-mount via `key` to refresh from a new URL.
+  const [initialClauses] = useState(() =>
+    deriveClausesFromUrl(searchParams, schema, isLoading),
+  );
+
+  const query = useQueryBuilder(initialClauses, isLoading);
 
   const commitQuery = () => {
     const newSearchParams = new URLSearchParams(searchParams);
@@ -175,10 +197,11 @@ export function useInvocationsQueryFilters(selectedColumns: ColumnKey[]) {
     sortedOldSearchParams.sort();
 
     if (sortedOldSearchParams.toString() !== sortedNewSearchParams.toString()) {
-      setPageIndex(0);
+      resetPageIndex();
     }
     setSearchParams(newSearchParams, { preventScrollReset: true });
-    const filters = query.items
+
+    return query.items
       .filter((clause) => clause.isValid)
       .map(
         (clause) =>
@@ -189,21 +212,24 @@ export function useInvocationsQueryFilters(selectedColumns: ColumnKey[]) {
             value: clause.value.value,
           }) as FilterItem,
       );
-
-    _setListInvocationsParameters({ filters, sort: sortParams });
-
-    return filters;
   };
 
   return {
-    schema,
-    listInvocationsParameters,
-    commitQuery,
     query,
-    pageIndex,
-    setPageIndex,
     sortParams,
     setSortParams,
-    isSchemaLoading: isLoading,
+    commitQuery,
   };
+}
+
+export function getFormUrlSignature(searchParams: URLSearchParams) {
+  return Array.from(searchParams.entries())
+    .filter(
+      ([key]) =>
+        key.startsWith(FILTER_QUERY_PREFIX) ||
+        key.startsWith(SORT_QUERY_PREFIX),
+    )
+    .sort()
+    .map(([key, value]) => `${key}=${value}`)
+    .join('&');
 }
