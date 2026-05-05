@@ -51,7 +51,7 @@ export function OverviewCard({
       <div {...props} className={className}>
         <div className="relative">
           <div
-            className={primaryStyles({ className: 'relative px-1 pt-2 pb-3' })}
+            className={primaryStyles({ className: 'relative px-2 pt-2 pb-3' })}
           >
             {primaryHref ? (
               <>

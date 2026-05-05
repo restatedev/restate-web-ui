@@ -1,0 +1,9 @@
+{
+  "name": "tabs",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/ui/tabs/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project ui-tabs --web",
+  "targets": {}
+}
