@@ -131,6 +131,7 @@
       "@restate/ui/section": ["libs/ui/section/src/index.ts"],
       "@restate/ui/split-button": ["libs/ui/split-button/src/index.ts"],
       "@restate/ui/table": ["libs/ui/table/src/index.ts"],
+      "@restate/ui/tabs": ["libs/ui/tabs/src/index.ts"],
       "@restate/ui/timeline-zoom": ["libs/ui/timeline-zoom/src/index.ts"],
       "@restate/ui/tooltip": ["libs/ui/tooltip/src/index.ts"],
       "@restate/ui/wave-animation": ["libs/ui/wave-animation/src/index.ts"],
