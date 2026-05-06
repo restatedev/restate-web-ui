@@ -3,7 +3,10 @@ import { createPortal } from 'react-dom';
 import { AppBar } from './AppBar';
 import { ZONE_IDS, LayoutZone } from './LayoutZone';
 import { ComplementaryOutlet } from './ComplementaryOutlet';
-import { NotificationRegion } from '@restate/ui/notification';
+import {
+  NOTIFICATION_ZONE_ID,
+  NotificationRegion,
+} from '@restate/ui/notification';
 import { Toolbar } from './Toolbar';
 import { SidebarLayout } from './SidebarLayout';
 
@@ -23,6 +26,10 @@ function AppBarLayout({ children }: PropsWithChildren) {
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-[86rem] flex-col px-3 py-3 sm:px-6 sm:py-6 lg:px-8 3xl:max-w-[min(100rem,calc(100vw-800px-4rem))]">
       <AppBar id={ZONE_IDS[LayoutZone.AppBar]} />
+      <div
+        id={NOTIFICATION_ZONE_ID}
+        className="sticky top-24 z-110 mx-auto h-0 w-full max-w-4xl"
+      />
       <NotificationRegion />
       <div className="flex flex-auto flex-row pt-10 3xl:ml-[calc(-400px-2rem)] 3xl:grid 3xl:w-[calc(100%+800px+4rem)] 3xl:[grid-template-columns:400px_1fr_400px] 3xl:gap-8">
         <main
