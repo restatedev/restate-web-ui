@@ -58,7 +58,7 @@ export function Complementary({
             </div>
             <div
               ref={setFooterEl}
-              className="z-10 flex gap-2 rounded-2xl *:min-w-0 has-[*]:mt-1 has-[*]:py-1 has-[*]:pb-0 3xl:sticky 3xl:bottom-0 3xl:-mx-1.5 3xl:-mb-1.5 3xl:bg-transparent 3xl:p-1.5 3xl:pb-1.5 3xl:backdrop-blur-xl 3xl:backdrop-saturate-200 [&:not(:has(*))]:hidden"
+              className="z-10 flex gap-2 rounded-2xl *:min-w-0 has-[*]:mt-1 has-[*]:py-1 has-[*]:pb-0 3xl:sticky 3xl:bottom-0 3xl:-mx-1.5 3xl:-mb-1.5 3xl:bg-transparent 3xl:p-1.5 3xl:pb-1.5 3xl:backdrop-blur-xl 3xl:backdrop-saturate-200 3xl:before:pointer-events-none 3xl:before:absolute 3xl:before:-top-8 3xl:before:-right-3 3xl:before:-bottom-3 3xl:before:-left-3 3xl:before:-z-10 3xl:before:bg-linear-to-b 3xl:before:from-transparent 3xl:before:via-gray-100/80 3xl:before:to-gray-100/80 3xl:before:content-[''] [&:not(:has(*))]:hidden"
             />
           </FocusScope>
         </div>
