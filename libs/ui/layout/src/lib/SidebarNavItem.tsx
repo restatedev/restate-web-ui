@@ -26,6 +26,7 @@ export interface SidebarSubItem {
   label: ReactNode;
   match?: SidebarMatch;
   preserveSearchParams?: boolean;
+  disabled?: boolean;
 }
 
 export interface SidebarNavOverflowDynamic {
@@ -42,6 +43,7 @@ export interface SidebarNavItemProps {
   subItems?: SidebarSubItem[];
   visibleSubCount?: number;
   overflowDynamic?: SidebarNavOverflowDynamic;
+  disabled?: boolean;
 }
 
 const DEFAULT_VISIBLE_SUB_COUNT = 4;
@@ -106,6 +108,13 @@ const navStyles = tv({
       },
       false: { overflowTrigger: 'text-gray-500 hover:text-gray-700' },
     },
+    isDisabled: {
+      true: {
+        link: 'pointer-events-none opacity-50',
+        subLink: 'pointer-events-none opacity-50',
+      },
+      false: {},
+    },
   },
 });
 
@@ -118,10 +127,11 @@ export function SidebarNavItem({
   subItems,
   visibleSubCount = DEFAULT_VISIBLE_SUB_COUNT,
   overflowDynamic,
+  disabled,
 }: SidebarNavItemProps) {
   const { isCollapsed } = useSidebar();
   const location = useSidebarLocation();
-  const ownActive = (match ?? defaultMatcher(href))(location);
+  const ownActive = !disabled && (match ?? defaultMatcher(href))(location);
 
   const activeChildIdx = (subItems ?? []).findIndex((sub) =>
     (sub.match ?? defaultMatcher(sub.href))(location),
@@ -164,19 +174,20 @@ export function SidebarNavItem({
     return { visible, overflow };
   }, [subItems, visibleSubCount, activeChildIdx]);
 
-  const s = navStyles({ isActive: effectiveActive });
+  const s = navStyles({ isActive: effectiveActive, isDisabled: disabled });
 
   return (
     <li className={s.row()}>
       <HoverTooltip
         content={label}
         placement="right"
-        disabled={!isCollapsed}
+        disabled={!isCollapsed || disabled}
         offset={12}
       >
         <Link
           href={href}
           preserveQueryParams={Boolean(preserveSearchParams)}
+          disabled={disabled}
           className={s.link()}
           aria-current={effectiveActive ? 'page' : undefined}
         >
@@ -189,7 +200,12 @@ export function SidebarNavItem({
       {subItems && subItems.length > 0 && (
         <div className={s.subWrap()}>
           {partition.visible.map((item) => (
-            <SidebarSubLink key={item.href} item={item} location={location} />
+            <SidebarSubLink
+              key={item.href}
+              item={item}
+              location={location}
+              parentDisabled={disabled}
+            />
           ))}
           {(partition.overflow.length > 0 || overflowDynamicActive) && (
             <SidebarOverflow
@@ -208,17 +224,22 @@ export function SidebarNavItem({
 function SidebarSubLink({
   item,
   location,
+  parentDisabled,
 }: {
   item: SidebarSubItem;
   location: SidebarLocation;
+  parentDisabled?: boolean;
 }) {
-  const isActive = (item.match ?? defaultMatcher(item.href))(location);
-  const s = navStyles({ isSubActive: isActive });
+  const disabled = parentDisabled || item.disabled;
+  const isActive =
+    !disabled && (item.match ?? defaultMatcher(item.href))(location);
+  const s = navStyles({ isSubActive: isActive, isDisabled: disabled });
   return (
     <div className={s.subRow()}>
       <Link
         href={item.href}
         preserveQueryParams={Boolean(item.preserveSearchParams)}
+        disabled={disabled}
         className={s.subLink()}
         aria-current={isActive ? 'page' : undefined}
       >
