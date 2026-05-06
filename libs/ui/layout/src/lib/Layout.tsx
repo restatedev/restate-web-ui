@@ -5,11 +5,21 @@ import { ZONE_IDS, LayoutZone } from './LayoutZone';
 import { ComplementaryOutlet } from './ComplementaryOutlet';
 import { NotificationRegion } from '@restate/ui/notification';
 import { Toolbar } from './Toolbar';
+import { SidebarLayout } from './SidebarLayout';
 
-/* eslint-disable-next-line */
-export interface LayoutProps {}
+export type LayoutVariant = 'sidebar' | 'appbar';
 
-export function LayoutProvider({ children }: PropsWithChildren<LayoutProps>) {
+export function LayoutProvider({
+  variant = 'sidebar',
+  children,
+}: PropsWithChildren<{ variant?: LayoutVariant }>) {
+  if (variant === 'appbar') {
+    return <AppBarLayout>{children}</AppBarLayout>;
+  }
+  return <SidebarLayout>{children}</SidebarLayout>;
+}
+
+function AppBarLayout({ children }: PropsWithChildren) {
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-[86rem] flex-col px-3 py-3 sm:px-6 sm:py-6 lg:px-8 3xl:max-w-[min(100rem,calc(100vw-800px-4rem))]">
       <AppBar id={ZONE_IDS[LayoutZone.AppBar]} />

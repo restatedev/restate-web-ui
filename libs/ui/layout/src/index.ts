@@ -7,7 +7,6 @@ export {
   ComplementaryFooter,
   useParamValue,
 } from './lib/Complementary';
-export { SidebarLayoutProvider } from './lib/SidebarLayout';
 export {
   SidebarHeader,
   SidebarNav,

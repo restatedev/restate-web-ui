@@ -12,13 +12,27 @@ import styles from './tailwind.css?url';
 import elementsCssUrl from '@stoplight/elements/elements-web-components.min.scoped.css?url';
 import elementsJsUrl from '@stoplight/elements/elements-web-components.min.js?url';
 import type { LinksFunction, To } from 'react-router';
-import { LayoutOutlet, LayoutProvider, LayoutZone } from '@restate/ui/layout';
+import {
+  LayoutOutlet,
+  LayoutProvider,
+  LayoutZone,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarNav,
+} from '@restate/ui/layout';
+import {
+  OverviewSidebarItem,
+  InvocationsSidebarItem,
+  StateSidebarItem,
+  IntrospectionSidebarItem,
+} from '@restate/util/sidebar-nav';
 import { RouterProvider } from 'react-aria-components';
+import { Link } from '@restate/ui/link';
 import { Button } from '@restate/ui/button';
 import { useCallback } from 'react';
 import { QueryProvider } from '@restate/util/react-query';
 import { Nav, NavItem } from '@restate/ui/nav';
-import { IconName, Restate } from '@restate/ui/icons';
+import { Icon, IconName, Restate } from '@restate/ui/icons';
 import { RestateContextProvider } from '@restate/features/restate-context';
 import { CodecRuntimeProvider } from '@restate/features/codec';
 import { createSystemHealthMonitor } from '@restate/features/system-health';
@@ -63,6 +77,8 @@ import { queryCacheOnSuccess } from '@restate/data-access/admin-api-hooks';
 import { PortalProvider } from '@restate/ui/portal';
 import { BatchOperationsProvider } from '@restate/features/batch-operations';
 import { MonacoWarmup } from '@restate/ui/editor';
+
+const LAYOUT_MODE: 'appbar' | 'sidebar' = 'sidebar';
 
 if (import.meta.env.DEV) {
   setInterval(() => {
@@ -167,7 +183,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           navigate={navigate}
           useHref={useRefWithSupportForAbsolutePath}
         >
-          <LayoutProvider>{children}</LayoutProvider>
+          <LayoutProvider variant={LAYOUT_MODE}>{children}</LayoutProvider>
         </RouterProvider>
         <ScrollRestoration />
         <Scripts />
@@ -208,11 +224,158 @@ function RestateGettingStarted({ className }: { className?: string }) {
   );
 }
 function getCookieValue(name: string) {
+  if (typeof document === 'undefined') return undefined;
   const cookies = document.cookie
     .split(';')
     .map((cookie) => cookie.trim().split('='));
   const cookieValue = cookies.find(([key]) => key === name)?.at(1);
   return cookieValue && decodeURIComponent(cookieValue);
+}
+
+const PRESERVED_PARAMS = [
+  SERVICE_PLAYGROUND_QUERY_PARAM,
+  SERVICE_QUERY_PARAM,
+  DEPLOYMENT_QUERY_PARAM,
+  INVOCATION_QUERY_NAME,
+  STATE_QUERY_NAME,
+  HANDLER_QUERY_PARAM,
+];
+
+const SUPPORT_LINKS: { href: string; label: string; icon: IconName }[] = [
+  {
+    href: 'https://docs.restate.dev/',
+    label: 'Documentation',
+    icon: IconName.Docs,
+  },
+  {
+    href: 'https://discord.gg/skW3AZ6uGd',
+    label: 'Discord',
+    icon: IconName.Discord,
+  },
+  {
+    href: 'https://join.slack.com/t/restatecommunity/shared_invite/zt-2v9gl005c-WBpr167o5XJZI1l7HWKImA',
+    label: 'Slack',
+    icon: IconName.Slack,
+  },
+  {
+    href: 'https://github.com/restatedev/restate/issues/new',
+    label: 'Open Github issue',
+    icon: IconName.Github,
+  },
+];
+
+function SidebarHeaderContent() {
+  return (
+    <>
+      <Restate className="@max-[8rem]/sidebar:w-[1.75em]" />
+      <div className="flex min-w-0 flex-1 flex-col items-start gap-0 @max-[8rem]/sidebar:hidden">
+        <div className="flex h-[1.5em] min-w-0 items-center gap-1.5 self-stretch pl-1">
+          <HealthIndicator mini />
+          <span className="block min-w-0 flex-auto truncate text-sm font-medium text-gray-700">
+            Restate server
+          </span>
+        </div>
+        <div className="-mt-1.5 pl-5">
+          <Version />
+        </div>
+      </div>
+      <HealthCheckNotification />
+    </>
+  );
+}
+
+function SidebarFooterContent() {
+  return (
+    <div className="flex flex-col gap-0.5 @max-[8rem]/sidebar:items-center">
+      {SUPPORT_LINKS.map((item) => (
+        <Link
+          key={item.href}
+          href={item.href}
+          preserveQueryParams={false}
+          target="_blank"
+          rel="noreferrer noopener"
+          className="flex items-center gap-2.5 rounded-xl px-2 py-1.5 text-0.5xs text-gray-500 no-underline outline-offset-2 outline-blue-600 transition hover:bg-black/3 hover:text-gray-700 focus-visible:outline-2 @max-[8rem]/sidebar:justify-center @max-[8rem]/sidebar:px-1.5"
+        >
+          <Icon name={item.icon} className="h-5 w-5 shrink-0 text-gray-400" />
+          <span className="min-w-0 flex-auto truncate @max-[8rem]/sidebar:hidden">
+            {item.label}
+          </span>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+function SidebarPanels() {
+  return (
+    <>
+      <SidebarHeader>
+        <SidebarHeaderContent />
+      </SidebarHeader>
+      <SidebarNav>
+        <OverviewSidebarItem />
+        <InvocationsSidebarItem />
+        <StateSidebarItem />
+        <IntrospectionSidebarItem />
+      </SidebarNav>
+      <SidebarFooter>
+        <SidebarFooterContent />
+      </SidebarFooter>
+    </>
+  );
+}
+
+function TopbarPanels() {
+  return (
+    <>
+      <LayoutOutlet zone={LayoutZone.AppBar}>
+        <div className="flex min-w-0 flex-1 items-stretch gap-1">
+          <div className="border1 bg1-white shadow2-xs flex h-full items-center gap-2 rounded-xl p-3 pr-0">
+            <Restate />
+          </div>
+          <Button
+            variant="secondary"
+            className="my-1 flex min-w-0 items-center gap-2 border-none bg-transparent px-2 shadow-none"
+          >
+            <div className="flex w-full items-center gap-2 truncate">
+              <HealthIndicator mini className="-mt-0.5" />
+              <HealthCheckNotification />
+              <span className="block min-w-0 flex-auto truncate">
+                Restate server
+              </span>
+              <Version />
+            </div>
+          </Button>
+          <LayoutOutlet zone={LayoutZone.Nav}>
+            <Nav ariaCurrentValue="page">
+              <NavItem
+                preserveSearchParams={PRESERVED_PARAMS}
+                href={'/overview'}
+              >
+                Overview
+              </NavItem>
+              <NavItem
+                preserveSearchParams={PRESERVED_PARAMS}
+                href={'/invocations'}
+              >
+                Invocations
+              </NavItem>
+              <NavItem preserveSearchParams={PRESERVED_PARAMS} href={'/state'}>
+                State
+              </NavItem>
+              <NavItem
+                preserveSearchParams={PRESERVED_PARAMS}
+                href={'/introspection'}
+              >
+                Introspection
+              </NavItem>
+            </Nav>
+          </LayoutOutlet>
+        </div>
+      </LayoutOutlet>
+      {LAYOUT_MODE === 'appbar' && <Support />}
+    </>
+  );
 }
 
 export default function App() {
@@ -232,82 +395,8 @@ export default function App() {
                   <LayoutOutlet zone={LayoutZone.Content}>
                     <Outlet />
                   </LayoutOutlet>
-                  <LayoutOutlet zone={LayoutZone.AppBar}>
-                    <div className="flex min-w-0 flex-1 items-stretch gap-1">
-                      <div className="border1 bg1-white shadow2-xs flex h-full items-center gap-2 rounded-xl p-3 pr-0">
-                        <Restate />
-                      </div>
-                      <Button
-                        variant="secondary"
-                        className="my-1 flex min-w-0 items-center gap-2 border-none bg-transparent px-2 shadow-none"
-                      >
-                        <div className="flex w-full items-center gap-2 truncate">
-                          <HealthIndicator mini className="-mt-0.5" />
-                          <HealthCheckNotification />
-                          <span className="block min-w-0 flex-auto truncate">
-                            Restate server
-                          </span>
-                          <Version />
-                        </div>
-                      </Button>
-                      <LayoutOutlet zone={LayoutZone.Nav}>
-                        <Nav ariaCurrentValue="page">
-                          <NavItem
-                            preserveSearchParams={[
-                              SERVICE_PLAYGROUND_QUERY_PARAM,
-                              SERVICE_QUERY_PARAM,
-                              DEPLOYMENT_QUERY_PARAM,
-                              INVOCATION_QUERY_NAME,
-                              STATE_QUERY_NAME,
-                              HANDLER_QUERY_PARAM,
-                            ]}
-                            href={'/overview'}
-                          >
-                            Overview
-                          </NavItem>
-                          <NavItem
-                            preserveSearchParams={[
-                              SERVICE_PLAYGROUND_QUERY_PARAM,
-                              SERVICE_QUERY_PARAM,
-                              DEPLOYMENT_QUERY_PARAM,
-                              INVOCATION_QUERY_NAME,
-                              STATE_QUERY_NAME,
-                              HANDLER_QUERY_PARAM,
-                            ]}
-                            href={'/invocations'}
-                          >
-                            Invocations
-                          </NavItem>
-                          <NavItem
-                            preserveSearchParams={[
-                              SERVICE_PLAYGROUND_QUERY_PARAM,
-                              SERVICE_QUERY_PARAM,
-                              DEPLOYMENT_QUERY_PARAM,
-                              INVOCATION_QUERY_NAME,
-                              STATE_QUERY_NAME,
-                              HANDLER_QUERY_PARAM,
-                            ]}
-                            href={'/state'}
-                          >
-                            State
-                          </NavItem>
-                          <NavItem
-                            preserveSearchParams={[
-                              SERVICE_PLAYGROUND_QUERY_PARAM,
-                              SERVICE_QUERY_PARAM,
-                              DEPLOYMENT_QUERY_PARAM,
-                              INVOCATION_QUERY_NAME,
-                              STATE_QUERY_NAME,
-                              HANDLER_QUERY_PARAM,
-                            ]}
-                            href={'/introspection'}
-                          >
-                            Introspection
-                          </NavItem>
-                        </Nav>
-                      </LayoutOutlet>
-                    </div>
-                  </LayoutOutlet>
+                  <SidebarPanels />
+                  <TopbarPanels />
                   <DeploymentDetails />
                   <ServiceDetails />
                   <DeleteDeployment />
@@ -319,7 +408,6 @@ export default function App() {
                   <PruneDrainedDeploymentsDialog />
                   <RegisterDeploymentDialog />
                   <UpdateDeploymentDialog />
-                  <Support />
                   <MonacoWarmup />
                 </EditState>
               </BatchOperationsProvider>
