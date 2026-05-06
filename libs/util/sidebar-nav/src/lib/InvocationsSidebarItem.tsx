@@ -173,11 +173,13 @@ function allMatcher(path: string): SidebarMatch {
 interface InvocationsSidebarItemProps {
   baseUrl?: string;
   disabled?: boolean;
+  preserveSearchParams?: boolean | string[];
 }
 
 export function InvocationsSidebarItem({
   baseUrl = '',
   disabled,
+  preserveSearchParams = false,
 }: InvocationsSidebarItemProps) {
   const path = `${baseUrl}/invocations`;
   const isAll = allMatcher(path);
@@ -191,13 +193,13 @@ export function InvocationsSidebarItem({
       href: shortcutHref(path, ALL_INVOCATIONS_SHORTCUT),
       label: 'All',
       match: isAll,
-      preserveSearchParams: false,
+      preserveSearchParams,
     },
     ...INVOCATION_SHORTCUTS.map((s, i) => ({
       href: shortcutHref(path, s),
       label: s.label,
       match: shortcutMatchers[i],
-      preserveSearchParams: false,
+      preserveSearchParams,
     })),
   ];
 
@@ -214,7 +216,7 @@ export function InvocationsSidebarItem({
       href={shortcutHref(path, ALL_INVOCATIONS_SHORTCUT)}
       icon={IconName.Invocation}
       label="Invocations"
-      preserveSearchParams={false}
+      preserveSearchParams={preserveSearchParams}
       disabled={disabled}
       subItems={subItems}
       visibleSubCount={4}

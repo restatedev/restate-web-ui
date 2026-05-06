@@ -313,10 +313,10 @@ function SidebarPanels() {
         <SidebarHeaderContent />
       </SidebarHeader>
       <SidebarNav>
-        <OverviewSidebarItem />
-        <InvocationsSidebarItem />
-        <StateSidebarItem />
-        <IntrospectionSidebarItem />
+        <OverviewSidebarItem preserveSearchParams={PRESERVED_PARAMS} />
+        <InvocationsSidebarItem preserveSearchParams={PRESERVED_PARAMS} />
+        <StateSidebarItem preserveSearchParams={PRESERVED_PARAMS} />
+        <IntrospectionSidebarItem preserveSearchParams={PRESERVED_PARAMS} />
       </SidebarNav>
       <SidebarFooter>
         <SidebarFooterContent />
