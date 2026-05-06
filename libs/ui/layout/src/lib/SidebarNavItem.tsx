@@ -25,7 +25,7 @@ export interface SidebarSubItem {
   href: string;
   label: ReactNode;
   match?: SidebarMatch;
-  preserveSearchParams?: boolean;
+  preserveSearchParams?: boolean | string[];
   disabled?: boolean;
 }
 
@@ -39,7 +39,7 @@ export interface SidebarNavItemProps {
   icon: IconName;
   label: ReactNode;
   match?: SidebarMatch;
-  preserveSearchParams?: boolean;
+  preserveSearchParams?: boolean | string[];
   subItems?: SidebarSubItem[];
   visibleSubCount?: number;
   overflowDynamic?: SidebarNavOverflowDynamic;
@@ -186,7 +186,7 @@ export function SidebarNavItem({
       >
         <Link
           href={href}
-          preserveQueryParams={Boolean(preserveSearchParams)}
+          preserveQueryParams={preserveSearchParams}
           disabled={disabled}
           className={s.link()}
           aria-current={effectiveActive ? 'page' : undefined}
@@ -238,7 +238,7 @@ function SidebarSubLink({
     <div className={s.subRow()}>
       <Link
         href={item.href}
-        preserveQueryParams={Boolean(item.preserveSearchParams)}
+        preserveQueryParams={item.preserveSearchParams ?? false}
         disabled={disabled}
         className={s.subLink()}
         aria-current={isActive ? 'page' : undefined}
