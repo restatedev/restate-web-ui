@@ -166,9 +166,7 @@ function allMatcher(path: string): SidebarMatch {
       k.startsWith('filter_'),
     );
     if (filterKeys.length === 0) return true;
-    return filterKeys.every((k) =>
-      isFilterParamEmpty(loc.searchParams.get(k)),
-    );
+    return filterKeys.every((k) => isFilterParamEmpty(loc.searchParams.get(k)));
   };
 }
 
