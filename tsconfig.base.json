@@ -148,6 +148,7 @@
       "@restate/util/playwright": ["libs/util/playwright/src/index.ts"],
       "@restate/util/react-query": ["libs/util/react-query/src/index.ts"],
       "@restate/util/remix": ["libs/util/remix/src/index.ts"],
+      "@restate/util/sidebar-nav": ["libs/util/sidebar-nav/src/index.ts"],
       "@restate/util/snapshot-time": ["libs/util/snapshot-time/src/index.ts"],
       "@restate/util/styles": ["libs/util/styles/src/index.ts"]
     }

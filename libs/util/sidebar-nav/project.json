@@ -1,0 +1,9 @@
+{
+  "name": "sidebar-nav",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/util/sidebar-nav/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project sidebar-nav --web",
+  "targets": {}
+}
