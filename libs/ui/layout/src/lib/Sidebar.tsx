@@ -46,9 +46,7 @@ interface SidebarContextValue {
   userCollapsed: boolean;
   isDrawerOpen: boolean;
   isCollapsed: boolean;
-  toggleCollapsed: () => void;
-  toggleDrawer: () => void;
-  closeDrawer: () => void;
+  toggle: () => void;
   asideRef: Ref<HTMLElement>;
 }
 
@@ -59,9 +57,7 @@ const SidebarContext = createContext<SidebarContextValue>({
   userCollapsed: false,
   isDrawerOpen: false,
   isCollapsed: false,
-  toggleCollapsed: noop,
-  toggleDrawer: noop,
-  closeDrawer: noop,
+  toggle: noop,
   asideRef: null,
 });
 
@@ -80,23 +76,30 @@ export function SidebarProvider({ children }: PropsWithChildren) {
 
   const asideRef = useCallback((node: HTMLElement | null) => {
     if (!node) return;
-    const update = () =>
-      setIsCollapsed(node.clientWidth < COLLAPSED_THRESHOLD_PX);
+    const update = () => {
+      const rect = node.getBoundingClientRect();
+      setIsCollapsed(rect.right < COLLAPSED_THRESHOLD_PX);
+    };
     update();
     const ro = new ResizeObserver(update);
     ro.observe(node);
-    return () => ro.disconnect();
+    node.addEventListener('transitionend', update);
+    return () => {
+      ro.disconnect();
+      node.removeEventListener('transitionend', update);
+    };
   }, []);
 
-  const toggleCollapsed = useCallback(() => {
-    writePersistedCollapsed(!readPersistedCollapsed());
+  const toggle = useCallback(() => {
+    if (
+      typeof window !== 'undefined' &&
+      window.matchMedia('(max-width: 47.99rem)').matches
+    ) {
+      setIsDrawerOpen((open) => !open);
+    } else {
+      writePersistedCollapsed(!readPersistedCollapsed());
+    }
   }, []);
-
-  const toggleDrawer = useCallback(() => {
-    setIsDrawerOpen((open) => !open);
-  }, []);
-
-  const closeDrawer = useCallback(() => setIsDrawerOpen(false), []);
 
   return (
     <SidebarContext.Provider
@@ -104,9 +107,7 @@ export function SidebarProvider({ children }: PropsWithChildren) {
         userCollapsed,
         isDrawerOpen,
         isCollapsed,
-        toggleCollapsed,
-        toggleDrawer,
-        closeDrawer,
+        toggle,
         asideRef,
       }}
     >
@@ -118,7 +119,7 @@ export function SidebarProvider({ children }: PropsWithChildren) {
 const sidebarStyles = tv({
   slots: {
     aside:
-      '@container/sidebar sticky top-0 z-50 -ml-[16rem] flex h-screen w-[16rem] shrink-0 flex-col border-r bg-gray-200/50 shadow-[inset_-1px_0px_0px_0px_rgba(0,0,0,0.03)] backdrop-blur-xl backdrop-saturate-200 transition-[width,margin] duration-300 ease-in-out max-md:data-[drawer-open=true]:ml-0 md:ml-0 md:w-[4.25rem] xl:w-[16rem] xl:data-[user-collapsed=true]:w-[4.25rem]',
+      'peer @container/sidebar sticky top-0 z-50 -ml-[16rem] flex h-screen w-[16rem] shrink-0 flex-col border-r bg-gray-200/50 shadow-[inset_-1px_0px_0px_0px_rgba(0,0,0,0.03)] backdrop-blur-xl backdrop-saturate-200 transition-[width,margin] duration-300 ease-in-out max-md:data-[drawer-open=true]:ml-0 md:ml-0 md:w-[4.25rem] xl:w-[16rem] xl:data-[user-collapsed=true]:w-[4.25rem]',
     asideInner: 'relative flex h-full w-full flex-col gap-2 overflow-hidden',
     headerBar:
       'flex flex-none items-stretch gap-1 px-4.5 pt-3 @max-[8rem]/sidebar:px-2',
@@ -128,25 +129,14 @@ const sidebarStyles = tv({
       'flex min-h-0 flex-1 flex-col gap-2 overflow-x-hidden overflow-y-auto px-3 py-2 [scrollbar-width:thin] @max-[8rem]/sidebar:px-2',
     footerSlot:
       'flex flex-none flex-col px-3 pt-1 pb-3 @max-[8rem]/sidebar:px-2',
-    backdrop:
-      'pointer-events-none fixed inset-0 z-40 bg-zinc-800/30 opacity-0 backdrop-blur-[2px] transition-opacity duration-200 max-md:data-[drawer-open=true]:pointer-events-auto max-md:data-[drawer-open=true]:opacity-100',
-    menuButton:
-      'fixed top-3 right-3 z-50 flex h-10 w-10 items-center justify-center rounded-xl border bg-white/80 p-0 text-gray-700 shadow-lg shadow-zinc-800/5 backdrop-blur-xl backdrop-saturate-200 md:hidden pressed:scale-95',
     toggleButton:
-      'absolute top-4 right-0 z-10 flex h-6 w-6 translate-x-1/2 items-center justify-center rounded-full border bg-white p-0 text-gray-500 shadow-xs hover:bg-gray-50 hover:text-gray-700 max-md:hidden',
+      'fixed top-4 left-3 z-50 flex h-9 w-9 items-center justify-center rounded-full border bg-white p-0 text-gray-500 shadow-xs transition-[left,transform] duration-300 ease-in-out hover:bg-gray-50 hover:text-gray-700 max-md:peer-data-[drawer-open=true]:left-[16rem] max-md:peer-data-[drawer-open=true]:-translate-x-1/2 max-md:peer-data-[drawer-open=true]:rotate-180 md:h-6 md:w-6 md:left-[4.25rem] md:-translate-x-1/2 xl:left-[16rem] xl:rotate-180 xl:peer-data-[user-collapsed=true]:left-[4.25rem] xl:peer-data-[user-collapsed=true]:rotate-0',
   },
 });
 
 export function Sidebar() {
-  const {
-    userCollapsed,
-    isDrawerOpen,
-    isCollapsed,
-    toggleCollapsed,
-    toggleDrawer,
-    closeDrawer,
-    asideRef,
-  } = useSidebar();
+  const { userCollapsed, isDrawerOpen, isCollapsed, toggle, asideRef } =
+    useSidebar();
   const s = sidebarStyles();
 
   return (
@@ -164,31 +154,17 @@ export function Sidebar() {
           <nav id={SIDEBAR_NAV_ID} className={s.navSlot()} />
           <div id={SIDEBAR_FOOTER_ID} className={s.footerSlot()} />
         </div>
-        <Button
-          variant="secondary"
-          onClick={toggleCollapsed}
-          className={s.toggleButton()}
-          aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          <Icon
-            name={isCollapsed ? IconName.ChevronRight : IconName.ChevronLeft}
-            className="h-3.5 w-3.5"
-          />
-        </Button>
       </aside>
-      <div
-        data-drawer-open={String(isDrawerOpen)}
-        className={s.backdrop()}
-        onClick={closeDrawer}
-        aria-hidden
-      />
       <Button
         variant="secondary"
-        onClick={toggleDrawer}
-        className={s.menuButton()}
-        aria-label="Open menu"
+        onClick={toggle}
+        className={s.toggleButton()}
+        aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
       >
-        <Icon name={IconName.Menu} className="h-5 w-5" />
+        <Icon
+          name={IconName.ChevronRight}
+          className="h-5 w-5 md:h-3.5 md:w-3.5"
+        />
       </Button>
     </>
   );
