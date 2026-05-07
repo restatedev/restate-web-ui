@@ -5,6 +5,9 @@
   "scripts": {
     "check-licenses": "node scripts/check-licenses.js"
   },
+  "engines": {
+    "node": ">=24"
+  },
   "private": true,
   "dependencies": {
     "@buf/restatedev_service-protocol.bufbuild_es": "2.2.3-20240606160341-127256df3b4d.1",
