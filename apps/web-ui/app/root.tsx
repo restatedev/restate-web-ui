@@ -78,7 +78,7 @@ import { PortalProvider } from '@restate/ui/portal';
 import { BatchOperationsProvider } from '@restate/features/batch-operations';
 import { MonacoWarmup } from '@restate/ui/editor';
 
-const LAYOUT_MODE: 'appbar' | 'sidebar' = 'sidebar';
+const LAYOUT_MODE: 'appbar' | 'sidebar' = 'appbar';
 
 if (import.meta.env.DEV) {
   setInterval(() => {

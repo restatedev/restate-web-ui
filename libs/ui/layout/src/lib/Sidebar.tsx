@@ -130,7 +130,7 @@ const sidebarStyles = tv({
     footerSlot:
       'flex flex-none flex-col px-3 pt-1 pb-3 @max-[8rem]/sidebar:px-2',
     toggleButton:
-      'fixed top-4 left-3 z-50 flex h-9 w-9 items-center justify-center rounded-full border bg-white p-0 text-gray-500 shadow-xs transition-[left,transform] duration-300 ease-in-out hover:bg-gray-50 hover:text-gray-700 max-md:peer-data-[drawer-open=true]:left-[16rem] max-md:peer-data-[drawer-open=true]:-translate-x-1/2 max-md:peer-data-[drawer-open=true]:rotate-180 md:h-6 md:w-6 md:left-[4.25rem] md:-translate-x-1/2 xl:left-[16rem] xl:rotate-180 xl:peer-data-[user-collapsed=true]:left-[4.25rem] xl:peer-data-[user-collapsed=true]:rotate-0',
+      'fixed top-4 left-3 z-50 flex h-9 w-9 items-center justify-center rounded-full border bg-white p-0 text-gray-500 shadow-xs transition-[left,transform] duration-300 ease-in-out hover:bg-gray-50 hover:text-gray-700 max-md:peer-data-[drawer-open=true]:left-[16rem] max-md:peer-data-[drawer-open=true]:-translate-x-1/2 max-md:peer-data-[drawer-open=true]:rotate-180 md:left-[4.25rem] md:h-6 md:w-6 md:-translate-x-1/2 xl:left-[16rem] xl:rotate-180 xl:peer-data-[user-collapsed=true]:left-[4.25rem] xl:peer-data-[user-collapsed=true]:rotate-0',
   },
 });
 
