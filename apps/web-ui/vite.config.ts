@@ -1,5 +1,6 @@
 import { reactRouter } from '@react-router/dev/vite';
-import { defineConfig, loadEnv, Plugin } from 'vite';
+import { defineConfig } from 'vitest/config';
+import { loadEnv, Plugin } from 'vite';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import license from 'rollup-plugin-license';
 import path from 'path';
