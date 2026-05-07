@@ -41,7 +41,7 @@ export function Complementary({
       <LayoutOutlet zone={LayoutZone.Complementary}>
         <div
           data-top={isOnTop}
-          className="flex max-h-[inherit] min-h-0 w-full min-w-0 flex-col rounded-[1.125rem] border bg-gray-50/80 p-1.5 shadow-lg shadow-zinc-800/5 backdrop-blur-xl backdrop-saturate-200 transition-all duration-250 data-[top=false]:overflow-hidden data-[top=true]:z-1 data-[top=true]:order-1 3xl:shadow-xs [&[data-top=false]:has(~[data-top=false])]:shadow-none"
+          className="flex max-h-[inherit] min-h-0 w-full min-w-0 flex-col rounded-[1.125rem] border bg-gray-50/80 p-1.5 shadow-lg shadow-zinc-800/5 backdrop-blur-xl backdrop-saturate-200 transition-all duration-250 data-[top=false]:overflow-hidden data-[top=true]:z-1 data-[top=true]:order-1 3xl:border-transparent 3xl:bg-transparent 3xl:shadow-none 3xl:backdrop-blur-none 3xl:backdrop-saturate-100 [&[data-top=false]:has(~[data-top=false])]:shadow-none"
         >
           <FocusScope restoreFocus autoFocus>
             <div
@@ -58,7 +58,7 @@ export function Complementary({
             </div>
             <div
               ref={setFooterEl}
-              className="z-10 flex gap-2 rounded-2xl *:min-w-0 has-[*]:mt-1 has-[*]:py-1 has-[*]:pb-0 3xl:sticky 3xl:bottom-0 3xl:-mx-1.5 3xl:-mb-1.5 3xl:bg-gray-50/80 3xl:p-1.5 3xl:pb-1.5 3xl:backdrop-blur-xl 3xl:backdrop-saturate-200 [&:not(:has(*))]:hidden"
+              className="z-10 flex gap-2 rounded-2xl *:min-w-0 has-[*]:mt-1 has-[*]:py-1 has-[*]:pb-0 3xl:sticky 3xl:bottom-0 3xl:-mx-1.5 3xl:-mb-1.5 3xl:bg-transparent 3xl:p-1.5 3xl:pb-1.5 3xl:backdrop-blur-xl 3xl:backdrop-saturate-200 3xl:before:pointer-events-none 3xl:before:absolute 3xl:before:-top-8 3xl:before:-right-3 3xl:before:-bottom-3 3xl:before:-left-3 3xl:before:-z-10 3xl:before:bg-linear-to-b 3xl:before:from-transparent 3xl:before:via-gray-100/80 3xl:before:to-gray-100/80 3xl:before:content-[''] [&:not(:has(*))]:hidden"
             />
           </FocusScope>
         </div>

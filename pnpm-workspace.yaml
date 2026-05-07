@@ -1,0 +1,33 @@
+allowBuilds:
+  '@swc/core': false
+  '@tailwindcss/oxide': false
+  core-js: false
+  esbuild: false
+  msw: false
+  nx: false
+  protobufjs: false
+  unrs-resolver: false
+
+overrides:
+  'form-data@>=4.0.0 <4.0.4': '>=4.0.4'
+  'qs@<6.14.1': '>=6.14.1'
+  'tar@<=7.5.9': '>=7.5.11'
+  'axios@<1.15.2': '>=1.15.2'
+  'rollup@>=4.0.0 <4.59.0': '>=4.59.0'
+  'immutable@<4.3.8': '>=4.3.8'
+  'undici@>=7.0.0 <7.24.0': '>=7.24.0'
+  'path-to-regexp@>=8.0.0 <8.4.0': '>=8.4.0'
+  'express>path-to-regexp': '^0.1.13'
+  'picomatch@>=4.0.0 <4.0.4': '>=4.0.4'
+  'lodash@<=4.17.23': '>=4.18.0'
+
+peerDependencyRules:
+  allowAny:
+    - '@types/react'
+    - '@types/react-dom'
+  allowedVersions:
+    react: 19.2.1
+    react-dom: 19.2.1
+
+patchedDependencies:
+  '@stoplight/elements@9.0.19': patches/@stoplight__elements@9.0.19.patch

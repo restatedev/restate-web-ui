@@ -13,6 +13,7 @@ interface TooltipContentProps {
   wrap?: boolean;
   offset?: number;
   crossOffset?: number;
+  placement?: ComponentProps<typeof AriaTooltip>['placement'];
   triggerRef?: ComponentProps<typeof AriaTooltip>['triggerRef'];
 }
 

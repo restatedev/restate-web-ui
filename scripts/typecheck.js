@@ -2,11 +2,29 @@
 
 const { execSync } = require('child_process');
 
-const projects = execSync('pnpm nx show projects --affected --json');
+function runJson(cmd) {
+  const raw = execSync(cmd).toString();
+  const lines = raw.split('\n');
+  // pnpm prepends warnings ([WARN] …) and trailing status lines around nx's
+  // JSON output. Scan from the bottom up and try to parse from each line that
+  // looks like a JSON start; first parseable substring wins.
+  for (let i = lines.length - 1; i >= 0; i--) {
+    const trimmed = lines[i].trimStart();
+    if (!trimmed.startsWith('[') && !trimmed.startsWith('{')) continue;
+    try {
+      return JSON.parse(lines.slice(i).join('\n'));
+    } catch {
+      // not the JSON line; keep searching
+    }
+  }
+  throw new Error(`No JSON found in output of \`${cmd}\`:\n${raw}`);
+}
+
+const projects = runJson('pnpm nx show projects --affected --json');
 let isFailed = false;
-for (const project of JSON.parse(projects)) {
-  const projectData = execSync(`pnpm nx show project ${project} --json`);
-  const path = JSON.parse(projectData).root;
+for (const project of projects) {
+  const projectData = runJson(`pnpm nx show project ${project} --json`);
+  const path = projectData.root;
   const tsConfigsRaw = execSync(`find ${path} -iname 'tsconfig*.json'`);
   const tsConfigs = tsConfigsRaw.toString().split('\n').filter(Boolean);
 

@@ -87,6 +87,10 @@ import {
   ZoomIn,
   Forward,
   Search,
+  House,
+  Menu,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from '@restate/util/styles';
@@ -221,6 +225,10 @@ export const enum IconName {
   ZoomIn = 'ZoomIn',
   Forward = 'Forward',
   Search = 'Search',
+  House = 'House',
+  Menu = 'Menu',
+  PanelLeftClose = 'PanelLeftClose',
+  PanelLeftOpen = 'PanelLeftOpen',
 }
 export interface IconsProps {
   name: IconName;
@@ -339,6 +347,10 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.ZoomIn]: ZoomIn,
   [IconName.Forward]: Forward,
   [IconName.Search]: Search,
+  [IconName.House]: House,
+  [IconName.Menu]: Menu,
+  [IconName.PanelLeftClose]: PanelLeftClose,
+  [IconName.PanelLeftOpen]: PanelLeftOpen,
 };
 
 const styles = tv({

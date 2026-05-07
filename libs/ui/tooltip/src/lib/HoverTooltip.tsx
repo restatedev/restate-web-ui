@@ -33,6 +33,8 @@ export function HoverTooltip({
   size = 'sm',
   followCursor = false,
   suppressOnScroll = false,
+  placement,
+  disabled = false,
 }: PropsWithChildren<{
   content: ReactNode;
   className?: string;
@@ -41,6 +43,8 @@ export function HoverTooltip({
   size?: 'sm' | 'default' | 'lg';
   followCursor?: boolean;
   suppressOnScroll?: boolean;
+  placement?: 'top' | 'bottom' | 'left' | 'right';
+  disabled?: boolean;
 }>) {
   const triggerRef = useRef<HTMLElement>(null);
   const cursorAnchorRef = useRef<HTMLSpanElement>(null);
@@ -108,11 +112,14 @@ export function HoverTooltip({
   }, [clearReopenTimeout]);
 
   const shouldDisplayTooltip = useCallback(() => {
+    if (disabled) {
+      return false;
+    }
     if (!suppressOnScroll) {
       return true;
     }
     return Date.now() >= scrollSuppressUntil;
-  }, [suppressOnScroll]);
+  }, [disabled, suppressOnScroll]);
 
   const handleWheelStart = useCallback(() => {
     if (!suppressOnScroll) {
@@ -165,7 +172,7 @@ export function HoverTooltip({
   const tooltipTriggerRef = followCursor ? cursorAnchorRef : triggerRef;
 
   return (
-    <Tooltip delay={250}>
+    <Tooltip delay={250} disabled={disabled}>
       <TooltipTriggerStateContext.Provider value={{ isOpen, open, close }}>
         <span
           ref={triggerRef}
@@ -188,6 +195,7 @@ export function HoverTooltip({
           size={size}
           offset={offset}
           crossOffset={crossOffset}
+          placement={placement}
           triggerRef={tooltipTriggerRef}
         >
           <div

@@ -10,7 +10,8 @@ import { useSearchParams } from 'react-router';
 import { tv } from '@restate/util/styles';
 
 interface LinkProps
-  extends Pick<
+  extends
+    Pick<
       AriaLinkProps,
       | 'autoFocus'
       | 'target'
@@ -30,7 +31,7 @@ interface LinkProps
     | 'secondary-button'
     | 'destructive-button'
     | 'icon';
-  preserveQueryParams?: boolean;
+  preserveQueryParams?: boolean | string[];
   onClick?: (event: Omit<PressEvent, 'target'>) => void;
   disabled?: boolean;
 }
@@ -63,13 +64,38 @@ export function useHrefWithQueryParams({
   href,
   mode = 'prepend',
 }: {
-  preserveQueryParams: boolean;
+  preserveQueryParams: boolean | string[];
   href?: string;
   mode?: 'append' | 'prepend';
 }) {
   const [searchParams] = useSearchParams();
 
   const hrefWithQueryParams = useMemo(() => {
+    if (Array.isArray(preserveQueryParams)) {
+      if (!href || preserveQueryParams.length === 0) return href;
+      const allowed = new Set(preserveQueryParams);
+      const preserved = new URLSearchParams();
+      for (const [k, v] of searchParams) {
+        if (allowed.has(k)) preserved.append(k, v);
+      }
+      if (preserved.toString() === '') return href;
+
+      const [pathPart = '', hashPart] = href.split('#');
+      const [pathOnly = '', queryPart = ''] = pathPart.split('?');
+      const hrefParams = new URLSearchParams(queryPart);
+      const combined = new URLSearchParams();
+      preserved.forEach((v, k) => {
+        if (!hrefParams.has(k)) combined.append(k, v);
+      });
+      hrefParams.forEach((v, k) => combined.append(k, v));
+      const queryStr = combined.toString();
+      return (
+        pathOnly +
+        (queryStr ? '?' + queryStr : '') +
+        (hashPart ? '#' + hashPart : '')
+      );
+    }
+
     if (preserveQueryParams && href?.startsWith('?')) {
       const [hrefParams, hash] = href.split('#');
       const newSearchParams = new URLSearchParams(hrefParams);

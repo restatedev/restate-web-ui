@@ -7,7 +7,11 @@ jobs:
     steps:
       - uses: pnpm/action-setup@v4
         with:
-          version: 10.33.0
+          version: 11.0.8
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -36,7 +40,11 @@ jobs:
       - run: echo "has-updated -- ${{ needs.check-version.outputs.has-updated }}"
       - uses: pnpm/action-setup@v4
         with:
-          version: 10.33.0
+          version: 11.0.8
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
       - name: Checkout
         uses: actions/checkout@v4
         with:
