@@ -211,7 +211,7 @@ function Component() {
               </Section>
               {Boolean(
                 journalAndInvocationData?.last_failure_related_command_index ??
-                  pausedErrorData?.relatedCommandIndex,
+                pausedErrorData?.relatedCommandIndex,
               ) && (
                 <div className="-translate-y-2 px-2">
                   <Link

@@ -44,9 +44,9 @@ export function VirtualObjectSection({
     {
       enabled: Boolean(
         typeof invocation?.target_service_key === 'string' &&
-          invocation &&
-          !invocation.completed_at &&
-          invocation.target_service_ty === 'virtual_object',
+        invocation &&
+        !invocation.completed_at &&
+        invocation.target_service_ty === 'virtual_object',
       ),
       staleTime: 0,
     },
@@ -69,8 +69,8 @@ export function VirtualObjectSection({
       {
         enabled: Boolean(
           typeof invocation?.target_service_key === 'string' &&
-            invocation &&
-            invocation.target_service_ty === 'virtual_object',
+          invocation &&
+          invocation.target_service_ty === 'virtual_object',
         ),
         staleTime: 0,
       },

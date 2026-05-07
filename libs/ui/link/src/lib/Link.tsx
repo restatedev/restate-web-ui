@@ -10,7 +10,8 @@ import { useSearchParams } from 'react-router';
 import { tv } from '@restate/util/styles';
 
 interface LinkProps
-  extends Pick<
+  extends
+    Pick<
       AriaLinkProps,
       | 'autoFocus'
       | 'target'

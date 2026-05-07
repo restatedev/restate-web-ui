@@ -19,8 +19,8 @@ function getCodecError(codecOptions: RestateCodecOptions | undefined) {
 function isCodecPending(codecOptions: RestateCodecOptions | undefined) {
   return Boolean(
     codecOptions?.service?.isPending ||
-      codecOptions?.deploymentId?.isPending ||
-      codecOptions?.handler?.isPending,
+    codecOptions?.deploymentId?.isPending ||
+    codecOptions?.handler?.isPending,
   );
 }
 
