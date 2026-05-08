@@ -1,14 +1,7 @@
 import { useSqlQuery } from '@restate/data-access/admin-api-hooks';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
-import {
-  Cell,
-  Column,
-  Row,
-  Table,
-  TableBody,
-  TableHeader,
-} from '@restate/ui/table';
+import { Column, Row, Table, TableBody, TableHeader } from '@restate/ui/table';
 import { formatDurations } from '@restate/util/intl';
 import {
   SnapshotTimeProvider,
@@ -78,13 +71,7 @@ function Component() {
   );
 
   const sortedItems = useMemo(() => {
-    return [...(data?.rows ?? [])].map((row) => ({
-      row,
-      hash: Object.entries(row)
-        .map(([key, value]) => `${key}:${value}`)
-        .join('|')
-        .slice(0, 10000),
-    }));
+    return (data?.rows ?? []).map((row, index) => ({ row, id: index }));
   }, [data?.rows]);
 
   const currentPageItems = useMemo(() => {
@@ -99,11 +86,6 @@ function Component() {
       setPageIndex(0);
     }
   }, [pageIndex, setPageIndex, sortedItems.length]);
-
-  const hash = useMemo(
-    () => 'hash' + currentPageItems.map(({ hash }) => hash).join(''),
-    [currentPageItems],
-  );
 
   const allColumns = useMemo(() => {
     return new Set(data?.rows?.map((row) => Object.keys(row)).flat());
@@ -190,10 +172,10 @@ function Component() {
                 )
               }
             >
-              {({ row, hash }) => {
+              {({ row, id }) => {
                 return (
                   <Row
-                    id={hash}
+                    id={id}
                     columns={selectedColumnsArray}
                     className={`bg-transparent [content-visibility:auto] [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50`}
                   >
