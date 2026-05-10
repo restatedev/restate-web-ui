@@ -31,10 +31,10 @@ const styles = tv({
     headerSlot:
       'mx-2 mt-2 rounded-xl border border-gray-200 bg-linear-to-b from-gray-200/70 to-gray-100/85 backdrop-blur-3xl backdrop-saturate-200 shadow-[inset_0_2px_0_0_--theme(--color-white/95%),0_2px_5px_-1px_--theme(--color-zinc-800/8%),0_4px_10px_-3px_--theme(--color-zinc-800/6%)] [&:empty]:hidden',
     body: 'relative flex min-h-0 flex-1 flex-col',
-    sectionRoot: 'relative',
+    sectionRoot: 'relative flex flex-col',
     sectionFade:
       'pointer-events-none sticky top-[calc(var(--cp-toolbar-top,0px)+var(--cp-toolbar-height,0px)-var(--cp-toolbar-tuck,0px))] z-10 -mb-8 h-8 bg-linear-to-b from-gray-50 to-transparent',
-    sectionContent: 'pt-[var(--cp-section-pt,0px)]',
+    sectionContent: 'flex-1 pt-[var(--cp-section-pt,0px)]',
   },
   variants: {
     flush: {

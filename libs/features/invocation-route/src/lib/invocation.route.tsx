@@ -20,6 +20,7 @@ import { WorkflowKeySection } from './WorkflowKeySection';
 import { tv } from '@restate/util/styles';
 import { Copy } from '@restate/ui/copy';
 import { useEffect, useRef, useState } from 'react';
+import { ContentPanel, ContentPanelBody } from '@restate/ui/content-panel';
 import {
   Invocation,
   JournalEntryV2,
@@ -44,7 +45,7 @@ const metadataContainerStyles = tv({
   },
 });
 const lastFailureContainer = tv({
-  base: 'z-20 -mb-16 min-w-0 origin-bottom-left rounded-xl p-0',
+  base: 'z-20 min-w-0 origin-bottom-left rounded-xl p-0',
 });
 const lastFailureContent = tv({
   base: 'flex-auto rounded-xl rounded-bl-none border bg-linear-to-b shadow-xl shadow-zinc-800/3 lg:mr-12 [&_.error]:max-h-72',
@@ -107,7 +108,7 @@ function Component() {
 
   return (
     <InvocationPageProvider isInInvocationPage>
-      <div className="flex flex-col">
+      <div className="flex min-h-0 flex-1 flex-col">
         <div className="@container flex flex-col gap-1">
           <Link
             className="flex items-center gap-1 self-start text-sm text-gray-500"
@@ -234,46 +235,22 @@ function Component() {
           )}
         </div>
 
-        <div className="sticky top-0 z-10 -mb-12 h-[calc(36*0.25rem-1px)] bg-gray-100" />
-        <div className="sticky top-[calc(36*0.25rem-1px)] z-10 flex">
-          <svg
-            width="15"
-            height="16"
-            viewBox="0 0 15 16"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="shrink-0 fill-gray-100"
-          >
-            <path d="M15 0.03125C6.62929 0.547462 1.36358e-06 7.49931 0 16V0H15V0.03125Z" />
-          </svg>
-          <svg
-            width="15"
-            height="16"
-            viewBox="0 0 15 16"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="ml-auto shrink-0 -scale-x-100 fill-gray-100"
-          >
-            <path d="M15 0.03125C6.62929 0.547462 1.36358e-06 7.49931 0 16V0H15V0.03125Z" />
-          </svg>
-        </div>
-
-        <div className="flex flex-col">
+        <ContentPanel className="mt-10">
           {OnboardingGuide && (
             <OnboardingGuide
               stage="view-invocation"
               service={journalAndInvocationData?.target_service_name}
             />
           )}
-          <div className="relative rounded-2xl">
+          <ContentPanelBody>
             <JournalV2
               invocationId={String(id)}
               key={String(id)}
               isCompact={isCompact}
               setIsCompact={setIsCompact}
             />
-          </div>
-        </div>
+          </ContentPanelBody>
+        </ContentPanel>
       </div>
     </InvocationPageProvider>
   );
@@ -354,7 +331,7 @@ function Anchor({
   }, [hasLastFailure]);
 
   return (
-    <div className="relative z-[11] w-6 -translate-x-full translate-y-4">
+    <div className="relative z-40 w-6 -translate-x-full translate-y-4">
       <div ref={ref} className={line()}>
         {hasLastFailure && <div className={anchor()} />}
       </div>

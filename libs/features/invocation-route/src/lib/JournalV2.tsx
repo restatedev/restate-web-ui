@@ -59,6 +59,11 @@ import {
   useTimelineEngineContext,
 } from '@restate/ui/timeline-zoom';
 import {
+  ContentPanelHeader,
+  ContentPanelSection,
+  ContentPanelToolbar,
+} from '@restate/ui/content-panel';
+import {
   CombinedJournalEntry,
   useProcessedJournal,
 } from './useProcessedJournal';
@@ -237,6 +242,7 @@ export function JournalV2({
   const { baseUrl } = useRestateContext();
   const listRef = useRef<HTMLDivElement>(null);
   const startDateOverlayRef = useRef<HTMLDivElement>(null);
+  const headerLayoutRef = useRef<HTMLDivElement>(null);
 
   const {
     entriesWithoutInput: allEntriesWithoutInput,
@@ -313,13 +319,14 @@ export function JournalV2({
       return;
     }
 
-    const element = startDateOverlayRef.current;
-    if (!element) {
-      return;
+    if (startDateOverlayRef.current) {
+      startDateOverlayRef.current.style.marginLeft = `${100 - nextTimelinePanelSize}%`;
+      startDateOverlayRef.current.style.width = `${nextTimelinePanelSize}%`;
     }
 
-    element.style.marginLeft = `${100 - nextTimelinePanelSize}%`;
-    element.style.width = `${nextTimelinePanelSize}%`;
+    if (headerLayoutRef.current) {
+      headerLayoutRef.current.style.gridTemplateColumns = `${100 - nextTimelinePanelSize}% ${nextTimelinePanelSize}%`;
+    }
   }, []);
 
   const [containerWidthRef, containerWidthPx] = useContainerWidth();
@@ -350,7 +357,7 @@ export function JournalV2({
 
   const isRestartedFrom = Boolean(
     journalAndInvocationData.invoked_by === 'restart_as_new' ||
-      restartedFromHeader,
+    restartedFromHeader,
   );
   const restartedFromValue =
     journalAndInvocationData?.restarted_from || restartedFromHeader?.value;
@@ -386,12 +393,14 @@ export function JournalV2({
               }
             >
               {withTimeline && (
-                <div className="sticky top-26 z-20 flex h-9 w-full items-center">
-                  <div className="flex flex-col">
+                <ContentPanelToolbar className="relative items-end!">
+                  <div className="relative flex flex-col">
+                    <div
+                      aria-hidden
+                      className="pointer-events-none absolute top-[1.375rem] bottom-0 left-3.5 w-px -translate-x-1/2 border-l border-dashed border-zinc-300"
+                    />
                     <div className="relative flex h-full w-full items-center gap-1.5">
-                      <div className="absolute left-2.5 h-2 w-2 rounded-full bg-zinc-300">
-                        <div className="absolute top-full left-1/2 h-8 w-px -translate-x-1/2 border border-dashed border-zinc-300" />
-                      </div>
+                      <div className="absolute left-2.5 h-2 w-2 rounded-full bg-zinc-300" />
                       <div className="shrink-0 pl-6 text-xs font-semibold text-gray-400 uppercase">
                         {isRestartedFrom ? 'Restarted from' : 'Invoked by'}
                       </div>
@@ -420,7 +429,7 @@ export function JournalV2({
                         </div>
                       ) : null}
                     </div>
-                    <div className="pb-4 pl-6">
+                    <div className="pb-1 pl-6">
                       <Retention
                         invocation={journalAndInvocationData}
                         type="journal"
@@ -430,7 +439,7 @@ export function JournalV2({
                       />
                     </div>
                   </div>
-                  <div className="z-10 ml-auto flex h-full flex-row items-center justify-end gap-1 rounded-lg bg-linear-to-l from-gray-100 via-gray-100 to-gray-100/0 pl-10">
+                  <div className="z-10 ml-auto flex flex-row items-center justify-end gap-1 self-end rounded-lg bg-linear-to-l from-gray-100 via-gray-100 to-gray-100/0 pb-1 pl-10">
                     <Dropdown>
                       <DropdownTrigger>
                         <Button
@@ -499,31 +508,71 @@ export function JournalV2({
                       </Link>
                     </HoverTooltip>
                   </div>
-                </div>
+                </ContentPanelToolbar>
               )}
-              {withTimeline ? (
-                <div className="relative">
-                  <div className="pointer-events-none sticky top-36 z-30 -mb-12 hidden h-12 md:block">
+              {withTimeline && (
+                <ContentPanelHeader className="font-mono text-0.5xs">
+                  <div className="relative h-12 w-full">
+                    <div className="pointer-events-none absolute inset-0 z-30 hidden md:block">
+                      <div
+                        ref={startDateOverlayRef}
+                        className="h-full"
+                        style={{
+                          marginLeft: `${(1 - timelineWidth) * 100}%`,
+                          width: `${timelineWidth * 100}%`,
+                        }}
+                      >
+                        <StartDateTimeUnit start={start} />
+                      </div>
+                    </div>
                     <div
-                      ref={startDateOverlayRef}
-                      className="h-full"
+                      ref={headerLayoutRef}
+                      className="h-full w-full md:grid"
                       style={{
-                        marginLeft: `${(1 - timelineWidth) * 100}%`,
-                        width: `${timelineWidth * 100}%`,
+                        gridTemplateColumns: `${(1 - timelineWidth) * 100}% ${timelineWidth * 100}%`,
                       }}
                     >
-                      <StartDateTimeUnit start={start} />
+                      <div className="flex h-full min-w-0 items-center">
+                        <Input
+                          entry={typedInputEntry}
+                          invocation={data?.[invocationId]}
+                        />
+                      </div>
+                      <div
+                        ref={containerWidthRef}
+                        className="relative hidden min-w-0 md:block"
+                      >
+                        <div className="relative h-full overflow-hidden rounded-tr-2xl">
+                          <LifeCycleProgress
+                            className="h-12 px-2"
+                            invocation={journalAndInvocationData}
+                            createdEvent={
+                              lifecycleDataByInvocation.get(invocationId)
+                                ?.createdEvent
+                            }
+                            lifeCycleEntries={
+                              lifecycleDataByInvocation.get(invocationId)
+                                ?.lifeCycleEntries ?? []
+                            }
+                          />
+                          <ViewportSelectorPortalTarget className="absolute right-0 bottom-1/2 left-0 z-10 h-6 translate-y-1/2" />
+                        </div>
+                      </div>
                     </div>
                   </div>
+                </ContentPanelHeader>
+              )}
+              {withTimeline ? (
+                <div className="relative flex min-h-0 flex-1">
                   <div
                     ref={listRef}
-                    className="relative isolate rounded-b-2xl bg-gray-100 font-mono text-0.5xs [clip-path:inset(-2.5rem_0_0_0_round_0_0_1rem_1rem)]"
+                    className="relative isolate flex min-h-0 flex-1 flex-col font-mono text-0.5xs"
                   >
                     <LazyPanelGroup
                       direction="horizontal"
                       onLayout={handlePanelLayout}
                       style={{ overflow: 'visible' }}
-                      className="rounded-2xl border shadow-xs"
+                      className="min-h-full flex-1"
                     >
                       {/* Left panel */}
                       <LazyPanel
@@ -532,32 +581,23 @@ export function JournalV2({
                         className="z-[2] grid min-w-0"
                         style={{
                           overflow: 'visible',
-                          minHeight: totalSize + 48,
+                          minHeight: totalSize,
                           gridTemplateColumns: '1fr',
                           gridTemplateRows: '1fr',
                         }}
                       >
-                        {/* Sticky background - prevents repaint lag */}
-                        <div className="sticky top-0 z-[-1] col-start-1 row-start-1 h-full max-h-[calc(100vh+2rem)] rounded-2xl border-0 border-r-0 border-white/50 bg-linear-to-b from-gray-50 to-white shadow-xs md:rounded-r-none" />
                         {/* Content */}
-                        <div
-                          className="z-[2] col-start-1 row-start-1 min-w-0"
-                          style={{ minHeight: totalSize + 48 }}
+                        <ContentPanelSection
+                          className="z-[2] col-start-1 row-start-1 min-w-0 border-r"
+                          style={{ minHeight: totalSize }}
                         >
-                          <div className="sticky top-36 z-20 box-border flex h-12 items-center rounded-tl-2xl rounded-r-2xl rounded-bl-2xl border-b border-transparent bg-gray-100 shadow-xs ring-1 ring-gray-300 last:border-none md:rounded-r-none">
-                            <Input
-                              entry={typedInputEntry}
-                              invocation={data?.[invocationId]}
-                              className="w-full rounded-r-2xl! [--rounded-radius-right:15px] md:rounded-r-none! md:[--rounded-radius-right:0px] [&&&>*:last-child>*]:rounded-r-2xl! md:[&&&>*:last-child>*]:rounded-r-none!"
-                            />
-                          </div>
                           <VirtualizedEntries
                             virtualItems={virtualItems}
                             totalSize={totalSize}
                             entriesWithoutInput={entriesWithoutInput}
                             data={data}
                           />
-                        </div>
+                        </ContentPanelSection>
                       </LazyPanel>
                       <LazyPanelResizeHandle className="group relative z-10 mx-[-5px] hidden w-2.5 cursor-col-resize items-center justify-center md:flex">
                         <div className="absolute top-0 bottom-0 left-1/2 w-px -translate-x-1/2 cursor-col-resize bg-transparent group-hover:w-[2px] group-hover:bg-blue-500" />
@@ -565,74 +605,53 @@ export function JournalV2({
                       {/* Right panel - grid container for overlapping Units */}
                       <LazyPanel
                         defaultSize={timelineWidth * 100}
-                        className="relative hidden overflow-x-clip md:grid"
+                        className="relative hidden overflow-x-clip bg-black/3 md:grid"
                         minSize={20}
                         style={{
                           overflow: 'visible',
-                          minHeight: totalSize + 48,
+                          minHeight: totalSize,
                           gridTemplateColumns: '1fr',
                           gridTemplateRows: '1fr',
                         }}
                       >
-                        {/* Sticky background - prevents repaint lag */}
-                        <div
-                          ref={containerWidthRef}
-                          className="sticky top-0 z-[-1] col-start-1 row-start-1 h-full max-h-[calc(100vh+2rem)] rounded-br-2xl bg-gray-100"
-                        />
                         {/* Sticky Units - limited to viewport height */}
-                        <UnitsPortalTarget className="pointer-events-none sticky top-[calc(9rem+2px)] z-10 col-start-1 row-start-1 max-h-[calc(100vh-9rem)] overflow-hidden" />
-                        {/* Sticky header with HeaderUnits and LifeCycleProgress */}
-                        <div className="sticky top-36 z-[11] col-start-1 row-start-1 h-12">
-                          <div className="relative -my-px h-[calc(100%+2px)] rounded-r-2xl border border-gray-300 border-l-transparent shadow-xs">
-                            <LifeCycleProgress
-                              className="h-12 px-2"
-                              invocation={journalAndInvocationData}
-                              createdEvent={
-                                lifecycleDataByInvocation.get(invocationId)
-                                  ?.createdEvent
-                              }
-                              lifeCycleEntries={
-                                lifecycleDataByInvocation.get(invocationId)
-                                  ?.lifeCycleEntries ?? []
-                              }
-                            />
-                            <ViewportSelectorPortalTarget className="absolute right-0 bottom-1 left-0 z-10 h-6" />
-                          </div>
-                        </div>
-                        <div className="sticky top-36 right-0 z-[1] col-start-1 row-start-1 h-12 rounded-r-2xl border border-t-2 border-white bg-gray-100 shadow-xs" />
+                        <UnitsPortalTarget className="pointer-events-none sticky top-[var(--cp-content-top,0px)] z-10 col-start-1 row-start-1 mt-[var(--cp-section-pt,0px)] h-[calc(100%-var(--cp-section-pt,0px))] max-h-[calc(100vh-var(--cp-content-top,0px))] overflow-hidden [--timeline-units-header-offset:0rem]" />
 
                         {/* Scrollable timeline content with Units overlay */}
-                        <ScrollableTimeline
-                          className="col-start-1 row-start-1 pt-[calc(3rem+2px)]"
-                          style={{ minHeight: totalSize + 48 }}
-                          cancelEvent={
-                            lifecycleDataByInvocation.get(invocationId)
-                              ?.cancelEvent
-                          }
+                        <ContentPanelSection
+                          className="relative z-[2] col-start-1 row-start-1 h-full"
+                          style={{ minHeight: totalSize }}
+                          fadeClassName="from-gray-100"
                         >
-                          <VirtualizedTimeline
-                            virtualItems={virtualItems}
-                            totalSize={totalSize}
-                            entriesWithoutInput={entriesWithoutInput}
-                            data={data}
-                            relatedEntriesByInvocation={
-                              relatedEntriesByInvocation
+                          <ScrollableTimeline
+                            cancelEvent={
+                              lifecycleDataByInvocation.get(invocationId)
+                                ?.cancelEvent
                             }
-                          />
-                        </ScrollableTimeline>
+                          >
+                            <VirtualizedTimeline
+                              virtualItems={virtualItems}
+                              totalSize={totalSize}
+                              entriesWithoutInput={entriesWithoutInput}
+                              data={data}
+                              relatedEntriesByInvocation={
+                                relatedEntriesByInvocation
+                              }
+                            />
+                          </ScrollableTimeline>
+                        </ContentPanelSection>
                       </LazyPanel>
                     </LazyPanelGroup>
                   </div>
                 </div>
               ) : (
                 <div className={className}>
-                  <div className="z-10 box-border flex h-12 items-center rounded-tl-2xl rounded-bl-2xl border-b border-transparent bg-gray-100 shadow-xs ring-1 ring-gray-300 last:border-none">
+                  <ContentPanelHeader className="rounded-tl-2xl rounded-bl-2xl">
                     <Input
                       entry={typedInputEntry}
                       invocation={data?.[invocationId]}
-                      className="w-full"
                     />
-                  </div>
+                  </ContentPanelHeader>
                   {entriesWithoutInput.map(
                     (
                       {
@@ -795,7 +814,7 @@ function VirtualizedEntries({
 }) {
   return (
     <div
-      className="overflow-clip rounded-b-2xl md:rounded-br-none"
+      className="overflow-clip"
       style={{
         height: totalSize,
         position: 'relative',
@@ -824,7 +843,10 @@ function VirtualizedEntries({
               transform: `translateY(${virtualItem.start}px)`,
             }}
           >
-            <ErrorBoundary entry={entry} className="sticky top-36 h-9">
+            <ErrorBoundary
+              entry={entry}
+              className="sticky top-[var(--cp-content-top,0px)] h-9"
+            >
               <Entry
                 invocation={invocation}
                 entry={entry}
