@@ -6,14 +6,12 @@ import {
   useQueryVirtualObjectState,
 } from '@restate/data-access/admin-api-hooks';
 import { Button, SubmitButton } from '@restate/ui/button';
+import { Cell, PanelTable, PanelTableColumn, Row } from '@restate/ui/table';
 import {
-  Cell,
-  Column,
-  Row,
-  Table,
-  TableBody,
-  TableHeader,
-} from '@restate/ui/table';
+  ContentPanel,
+  ContentPanelBody,
+  ContentPanelSection,
+} from '@restate/ui/content-panel';
 import { SortDescriptor } from 'react-stately';
 import {
   Dropdown,
@@ -314,287 +312,285 @@ function Component() {
   }, [pageIndex, serviceKeysData?.keys, setPageIndex]);
   const hash = 'hash' + flattenedData.map(({ key }) => key).join('');
 
+  const panelColumns = useMemo<PanelTableColumn[]>(
+    () =>
+      selectedColumnsArray.map((col) => {
+        if (col.id === '__actions__') {
+          return {
+            id: '__actions__',
+            name: (
+              <Dropdown>
+                <DropdownTrigger>
+                  {keys.length > 0 && (
+                    <Button
+                      variant="icon"
+                      className="self-end rounded-lg p-0.5"
+                    >
+                      <Icon
+                        name={IconName.TableProperties}
+                        className="aspect-square h-4 w-4 text-gray-500"
+                      />
+                    </Button>
+                  )}
+                </DropdownTrigger>
+                <DropdownPopover>
+                  <DropdownSection title="Columns">
+                    <DropdownMenu
+                      multiple
+                      selectable
+                      selectedItems={selectedColumns}
+                      onSelect={setSelectedColumns}
+                    >
+                      <DropdownItem key="service_key" value="service_key">
+                        {virtualObject} (Key)
+                      </DropdownItem>
+                      {keys
+                        .filter((k) => k !== 'service_key')
+                        .map((k) => (
+                          <DropdownItem key={k} value={k}>
+                            {k}
+                          </DropdownItem>
+                        ))}
+                    </DropdownMenu>
+                  </DropdownSection>
+                </DropdownPopover>
+              </Dropdown>
+            ),
+            width: 40,
+            allowsSorting: false,
+          };
+        }
+        return {
+          id: col.id,
+          name: col.name,
+          isRowHeader: col.isRowHeader,
+          allowsSorting: false,
+        };
+      }),
+    [selectedColumnsArray, keys, selectedColumns, virtualObject],
+  );
+
+  const panelItems = useMemo(
+    () => flattenedData.map((row) => ({ ...row, id: (row.key ?? '') + '_' })),
+    [flattenedData],
+  );
+
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdate}>
-      <div className="relative flex flex-auto flex-col gap-2">
-        <Table
+      <ContentPanel>
+        <ContentPanelBody className="pb-32">
+          <ContentPanelSection flush>
+            <PanelTable
           aria-label="State"
           sortDescriptor={sortDescriptor}
           onSortChange={setSortDescriptor}
-          key={hash}
-        >
-          <TableHeader
-            columns={selectedColumnsArray}
-            dependencies={[selectedColumnsArray, selectedColumns, keys]}
-          >
-            {(col) => {
-              if (col.id === '__actions__') {
-                return (
-                  <Column id={col.id} width={40} allowsSorting={false}>
-                    <Dropdown>
-                      <DropdownTrigger>
-                        {keys.length > 0 && (
-                          <Button
-                            variant="icon"
-                            className="self-end rounded-lg p-0.5"
-                          >
-                            <Icon
-                              name={IconName.TableProperties}
-                              className="aspect-square h-4 w-4 text-gray-500"
-                            />
-                          </Button>
-                        )}
-                      </DropdownTrigger>
-                      <DropdownPopover>
-                        <DropdownSection title="Columns">
-                          <DropdownMenu
-                            multiple
-                            selectable
-                            selectedItems={selectedColumns}
-                            onSelect={setSelectedColumns}
-                          >
-                            <DropdownItem
-                              key={'service_key'}
-                              value={'service_key'}
-                            >
-                              {virtualObject} (Key)
-                            </DropdownItem>
-                            {keys
-                              .filter((key) => key !== 'service_key')
-                              .map((key) => (
-                                <DropdownItem key={key} value={key}>
-                                  {key}
-                                </DropdownItem>
-                              ))}
-                          </DropdownMenu>
-                        </DropdownSection>
-                      </DropdownPopover>
-                    </Dropdown>
-                  </Column>
-                );
-              }
-              return (
-                <Column
-                  id={col.id}
-                  isRowHeader={col.isRowHeader}
-                  key={col.id}
-                  allowsSorting={false}
-                >
-                  {col.name}
-                </Column>
-              );
-            }}
-          </TableHeader>
-          <TableBody
-            numOfRows={currentPageItems.length || 5}
-            items={flattenedData}
-            dependencies={[selectedColumnsArray, pageIndex]}
-            error={error || listObjects.error}
-            isLoading={
-              isFetching ||
-              isValidating ||
-              (listObjects.isFetching && currentPageItems.length !== 0)
-            }
-            numOfColumns={selectedColumnsArray.length}
-            emptyPlaceholder={
-              <div className="flex flex-col items-center gap-4 py-14">
-                <div className="h-12 w-12 shrink-0 rounded-xl bg-gray-200/50 p-1">
-                  <Icon
-                    name={IconName.Database}
-                    className="h-full w-full p-1 text-zinc-400"
-                  />
-                </div>
-                <h3 className="text-sm font-semibold text-zinc-400">
-                  No objects found
-                </h3>
+          bodyKey={hash}
+          columns={panelColumns}
+          items={panelItems}
+          numOfRows={currentPageItems.length || 5}
+          bodyDependencies={[selectedColumnsArray, pageIndex]}
+          error={error || listObjects.error}
+          isLoading={
+            isFetching ||
+            isValidating ||
+            (listObjects.isFetching && currentPageItems.length !== 0)
+          }
+          emptyPlaceholder={
+            <div className="flex flex-col items-center gap-4 py-14">
+              <div className="h-12 w-12 shrink-0 rounded-xl bg-gray-200/50 p-1">
+                <Icon
+                  name={IconName.Database}
+                  className="h-full w-full p-1 text-zinc-400"
+                />
               </div>
-            }
-          >
-            {(row) => {
-              return (
-                <Row
-                  id={row.key + '_'}
-                  columns={selectedColumnsArray}
-                  className="bg-transparent [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"
-                >
-                  {({ id }) => {
-                    if (id === 'service_key') {
-                      return (
-                        <Cell key={id}>
-                          <KeyCell
-                            serviceKey={String(row.key)}
-                            virtualObject={virtualObject}
-                          />
-                        </Cell>
-                      );
-                    } else if (id === '__actions__') {
-                      return (
-                        <Cell className="align-top [&&&]:overflow-visible">
-                          <SplitButton
-                            menus={
-                              <>
-                                <DropdownItem value="edit">Edit…</DropdownItem>
-                                <DropdownItem destructive value="delete">
-                                  Delete…
-                                </DropdownItem>
-                              </>
-                            }
-                            mini
-                            onSelect={(key) => {
-                              if (key === 'edit') {
-                                setEditState({
-                                  isEditing: true,
-                                  isDeleting: false,
-                                  objectKey: row.key!,
-                                  service: virtualObject,
-                                });
-                              }
-                              if (key === 'delete') {
-                                setEditState({
-                                  isEditing: true,
-                                  isDeleting: true,
-                                  objectKey: row.key!,
-                                  service: virtualObject,
-                                });
-                              }
-                            }}
-                          >
-                            <EditStateTrigger
-                              className={actionButtonStyles()}
-                              variant="secondary"
-                              onClick={() =>
-                                setEditState({
-                                  isEditing: true,
-                                  isDeleting: false,
-                                  objectKey: row.key!,
-                                  service: virtualObject,
-                                })
-                              }
-                            >
-                              Edit
-                            </EditStateTrigger>
-                          </SplitButton>
-                        </Cell>
-                      );
-                    } else {
-                      const stateCodecOptions = {
-                        ...resolvedServiceCodecOptions,
-                        key: row.key!,
-                        command: {
-                          type: 'GetState' as const,
-                          name: id,
-                        },
-                      };
-
-                      return (
-                        <Cell
-                          key={id}
-                          className="group [&:has(*:focus)_*]:visible [&:has(*:hover)_*]:visible"
+              <h3 className="text-sm font-semibold text-zinc-400">
+                No objects found
+              </h3>
+            </div>
+          }
+          renderRow={(row) => (
+            <Row
+              id={row.id}
+              columns={panelColumns}
+              dependencies={[panelColumns]}
+              className="bg-transparent [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"
+            >
+              {({ id }) => {
+                if (id === 'service_key') {
+                  return (
+                    <Cell key={id}>
+                      <KeyCell
+                        serviceKey={String(row.key)}
+                        virtualObject={virtualObject}
+                      />
+                    </Cell>
+                  );
+                } else if (id === '__actions__') {
+                  return (
+                    <Cell className="align-top [&&&]:overflow-visible">
+                      <SplitButton
+                        menus={
+                          <>
+                            <DropdownItem value="edit">Edit…</DropdownItem>
+                            <DropdownItem destructive value="delete">
+                              Delete…
+                            </DropdownItem>
+                          </>
+                        }
+                        mini
+                        onSelect={(key) => {
+                          if (key === 'edit') {
+                            setEditState({
+                              isEditing: true,
+                              isDeleting: false,
+                              objectKey: row.key!,
+                              service: virtualObject,
+                            });
+                          }
+                          if (key === 'delete') {
+                            setEditState({
+                              isEditing: true,
+                              isDeleting: true,
+                              objectKey: row.key!,
+                              service: virtualObject,
+                            });
+                          }
+                        }}
+                      >
+                        <EditStateTrigger
+                          className={actionButtonStyles()}
+                          variant="secondary"
+                          onClick={() =>
+                            setEditState({
+                              isEditing: true,
+                              isDeleting: false,
+                              objectKey: row.key!,
+                              service: virtualObject,
+                            })
+                          }
                         >
-                          <div className="item-center flex h-full min-h-5 w-full justify-start gap-1">
-                            {row.state?.[id] && (
-                              <Popover>
-                                <PopoverTrigger>
-                                  <Button
-                                    className="truncate rounded-xl px-3 py-0.5 font-mono [font-size:inherit] text-inherit shadow-none"
-                                    variant="secondary"
-                                  >
-                                    <span className="flex min-w-0 items-center truncate pr-0.5">
-                                      {EncodingWaterMark && (
-                                        <EncodingWaterMark
-                                          value={row.state?.[id]}
-                                          mini
-                                          className="mr-1"
-                                        />
-                                      )}
-                                      <span className="block truncate">
-                                        <StaticCodecOptionsProvider
-                                          options={stateCodecOptions}
-                                        >
-                                          <DecodedValue
-                                            value={row.state?.[id]}
-                                            isBase64
-                                          />
-                                        </StaticCodecOptionsProvider>
-                                      </span>
-                                    </span>
-                                  </Button>
-                                </PopoverTrigger>
+                          Edit
+                        </EditStateTrigger>
+                      </SplitButton>
+                    </Cell>
+                  );
+                } else {
+                  const stateCodecOptions = {
+                    ...resolvedServiceCodecOptions,
+                    key: row.key!,
+                    command: {
+                      type: 'GetState' as const,
+                      name: id,
+                    },
+                  };
 
-                                <PopoverContent>
-                                  <DropdownSection
-                                    className="mb-1 w-[90vw] max-w-[min(90vw,50rem)] overflow-auto py-0 pr-0 pl-4"
-                                    title={
-                                      <div className="flex items-center text-0.5xs">
-                                        {id}
-                                        <Portal
-                                          id="state-value"
-                                          className="mr-1 ml-auto"
-                                        />
-                                        <EditStateTrigger
-                                          onClick={() =>
-                                            setEditState({
-                                              isEditing: true,
-                                              isDeleting: false,
-                                              key: id,
-                                              objectKey: row.key!,
-                                              service: virtualObject,
-                                            })
-                                          }
-                                          variant="secondary"
-                                          className="flex shrink-0 items-center gap-1 rounded-lg px-1.5 py-0.5 text-xs font-normal"
-                                        >
-                                          Edit
-                                          <Icon
-                                            name={IconName.ExternalLink}
-                                            className="h-3 w-3"
-                                          />
-                                        </EditStateTrigger>
-                                      </div>
-                                    }
-                                  >
+                  return (
+                    <Cell
+                      key={id}
+                      className="group [&:has(*:focus)_*]:visible [&:has(*:hover)_*]:visible"
+                    >
+                      <div className="item-center flex h-full min-h-5 w-full justify-start gap-1">
+                        {row.state?.[id] && (
+                          <Popover>
+                            <PopoverTrigger>
+                              <Button
+                                className="truncate rounded-xl px-3 py-0.5 font-mono [font-size:inherit] text-inherit shadow-none"
+                                variant="secondary"
+                              >
+                                <span className="flex min-w-0 items-center truncate pr-0.5">
+                                  {EncodingWaterMark && (
+                                    <EncodingWaterMark
+                                      value={row.state?.[id]}
+                                      mini
+                                      className="mr-1"
+                                    />
+                                  )}
+                                  <span className="block truncate">
                                     <StaticCodecOptionsProvider
                                       options={stateCodecOptions}
                                     >
-                                      <Value
+                                      <DecodedValue
                                         value={row.state?.[id]}
-                                        className="w-full py-0 font-mono text-xs"
-                                        showCopyButton
-                                        portalId="state-value"
+                                        isBase64
                                       />
                                     </StaticCodecOptionsProvider>
-                                  </DropdownSection>
-                                </PopoverContent>
-                              </Popover>
-                            )}
-                            <EditStateTrigger
-                              onClick={() =>
-                                setEditState({
-                                  isEditing: true,
-                                  isDeleting: false,
-                                  key: id,
-                                  objectKey: row.key!,
-                                  service: virtualObject,
-                                })
-                              }
-                              variant="icon"
-                              className="invisible shrink-0 group-hover:visible"
-                            >
-                              <Icon
-                                name={IconName.Pencil}
-                                className="h-3 w-3 fill-current opacity-70"
-                              />
-                            </EditStateTrigger>
-                          </div>
-                        </Cell>
-                      );
-                    }
-                  }}
-                </Row>
-              );
-            }}
-          </TableBody>
-        </Table>
+                                  </span>
+                                </span>
+                              </Button>
+                            </PopoverTrigger>
+
+                            <PopoverContent>
+                              <DropdownSection
+                                className="mb-1 w-[90vw] max-w-[min(90vw,50rem)] overflow-auto py-0 pr-0 pl-4"
+                                title={
+                                  <div className="flex items-center text-0.5xs">
+                                    {id}
+                                    <Portal
+                                      id="state-value"
+                                      className="mr-1 ml-auto"
+                                    />
+                                    <EditStateTrigger
+                                      onClick={() =>
+                                        setEditState({
+                                          isEditing: true,
+                                          isDeleting: false,
+                                          key: id,
+                                          objectKey: row.key!,
+                                          service: virtualObject,
+                                        })
+                                      }
+                                      variant="secondary"
+                                      className="flex shrink-0 items-center gap-1 rounded-lg px-1.5 py-0.5 text-xs font-normal"
+                                    >
+                                      Edit
+                                      <Icon
+                                        name={IconName.ExternalLink}
+                                        className="h-3 w-3"
+                                      />
+                                    </EditStateTrigger>
+                                  </div>
+                                }
+                              >
+                                <StaticCodecOptionsProvider
+                                  options={stateCodecOptions}
+                                >
+                                  <Value
+                                    value={row.state?.[id]}
+                                    className="w-full py-0 font-mono text-xs"
+                                    showCopyButton
+                                    portalId="state-value"
+                                  />
+                                </StaticCodecOptionsProvider>
+                              </DropdownSection>
+                            </PopoverContent>
+                          </Popover>
+                        )}
+                        <EditStateTrigger
+                          onClick={() =>
+                            setEditState({
+                              isEditing: true,
+                              isDeleting: false,
+                              key: id,
+                              objectKey: row.key!,
+                              service: virtualObject,
+                            })
+                          }
+                          variant="icon"
+                          className="invisible shrink-0 group-hover:visible"
+                        >
+                          <Icon
+                            name={IconName.Pencil}
+                            className="h-3 w-3 fill-current opacity-70"
+                          />
+                        </EditStateTrigger>
+                      </div>
+                    </Cell>
+                  );
+                }
+              }}
+            </Row>
+          )}
+        />
         <Footnote
           data={serviceKeysData}
           isFetching={isFetching || listObjects.isFetching}
@@ -639,7 +635,9 @@ function Component() {
             </div>
           )}
         </Footnote>
-      </div>
+          </ContentPanelSection>
+        </ContentPanelBody>
+      </ContentPanel>
       <LayoutOutlet zone={LayoutZone.Toolbar}>
         <Form
           action={`/query/services/${virtualObject}/state`}

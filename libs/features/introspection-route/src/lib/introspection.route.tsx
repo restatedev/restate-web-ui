@@ -1,14 +1,7 @@
 import { useSqlQuery } from '@restate/data-access/admin-api-hooks';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
-import {
-  Cell,
-  Column,
-  Row,
-  Table,
-  TableBody,
-  TableHeader,
-} from '@restate/ui/table';
+import { PanelTable, PanelTableColumn, Row } from '@restate/ui/table';
 import { formatDurations } from '@restate/util/intl';
 import {
   SnapshotTimeProvider,
@@ -27,6 +20,11 @@ import { useSearchParams } from 'react-router';
 import { IntrospectionCell } from './IntrospectionCell';
 import { Link } from '@restate/ui/link';
 import { HoverTooltip } from '@restate/ui/tooltip';
+import {
+  ContentPanel,
+  ContentPanelBody,
+  ContentPanelSection,
+} from '@restate/ui/content-panel';
 import { useQueryClient } from '@tanstack/react-query';
 import { Toolbar } from './Toolbar';
 
@@ -126,85 +124,90 @@ function Component() {
   }, [allColumns]);
 
   const totalSize = Math.ceil((data?.rows ?? []).length / PAGE_SIZE);
+
+  const panelColumns = useMemo<PanelTableColumn[]>(
+    () =>
+      selectedColumnsArray.map((col) => ({
+        id: col.id,
+        name: col.name,
+        isRowHeader: col.isRowHeader,
+        allowsSorting: false,
+        minWidth: 100,
+      })),
+    [selectedColumnsArray],
+  );
+
+  const panelItems = useMemo(
+    () => currentPageItems.map(({ row, hash }) => ({ id: hash, row })),
+    [currentPageItems],
+  );
+
   return (
     <div>
       <SnapshotTimeProvider lastSnapshot={dataUpdate}>
-        <div className="relative flex flex-auto flex-col gap-2">
-          <Table aria-label="Introspection SQL">
-            <TableHeader>
-              {selectedColumnsArray.map((col) => (
-                <Column
-                  id={col.id}
-                  isRowHeader={col.isRowHeader}
-                  allowsSorting={false}
-                  key={col.id}
-                  minWidth={100}
-                >
-                  {col.name}
-                </Column>
-              ))}
-            </TableHeader>
-            <TableBody
-              items={currentPageItems}
-              dependencies={[allColumns, pageIndex]}
-              error={error}
-              isLoading={isPending && !!query}
-              numOfColumns={selectedColumnsArray.length}
-              emptyPlaceholder={
-                query ? (
-                  <div className="flex flex-col items-center gap-4 py-14">
-                    <div className="mr-1.5 h-12 w-12 shrink-0 rounded-xl bg-gray-200/50 p-1">
-                      <Icon
-                        name={IconName.ScanSearch}
-                        className="h-full w-full p-1 text-zinc-400"
-                      />
-                    </div>
-                    <h3 className="text-sm font-semibold text-zinc-400">
-                      No results found
-                    </h3>
-                  </div>
-                ) : (
-                  <div className="relative my-12 flex w-full flex-col items-center gap-2 text-center">
+        <ContentPanel>
+          <ContentPanelBody className="pb-32">
+            <ContentPanelSection flush>
+              <PanelTable
+            aria-label="Introspection SQL"
+            columns={panelColumns}
+            items={panelItems}
+            bodyKey={hash}
+            bodyDependencies={[allColumns, pageIndex]}
+            isLoading={isPending && !!query}
+            error={error}
+            emptyPlaceholder={
+              query ? (
+                <div className="flex flex-col items-center gap-4 py-14">
+                  <div className="mr-1.5 h-12 w-12 shrink-0 rounded-xl bg-gray-200/50 p-1">
                     <Icon
                       name={IconName.ScanSearch}
-                      className="h-8 w-8 text-gray-500"
+                      className="h-full w-full p-1 text-zinc-400"
                     />
-                    <h3 className="text-sm font-semibold text-gray-600">
-                      Introspection SQL
-                    </h3>
-                    <p className="max-w-lg px-4 text-sm text-gray-500">
-                      Restate exposes information on invocations and application
-                      state via Introspection SQL. You can use this to gain
-                      insight into the status of invocations and the service
-                      state that is stored.{' '}
-                      <Link
-                        href="https://docs.restate.dev/references/sql-introspection"
-                        variant="secondary"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Learn more
-                      </Link>
-                    </p>
                   </div>
-                )
-              }
-            >
-              {({ row, hash }) => {
-                return (
-                  <Row
-                    id={hash}
-                    columns={selectedColumnsArray}
-                    className={`bg-transparent [content-visibility:auto] [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50`}
-                  >
-                    {({ id }) => {
-                      return <IntrospectionCell col={id} row={row} key={id} />;
-                    }}
-                  </Row>
-                );
-              }}
-            </TableBody>
-          </Table>
+                  <h3 className="text-sm font-semibold text-zinc-400">
+                    No results found
+                  </h3>
+                </div>
+              ) : (
+                <div className="relative my-12 flex w-full flex-col items-center gap-2 text-center">
+                  <Icon
+                    name={IconName.ScanSearch}
+                    className="h-8 w-8 text-gray-500"
+                  />
+                  <h3 className="text-sm font-semibold text-gray-600">
+                    Introspection SQL
+                  </h3>
+                  <p className="max-w-lg px-4 text-sm text-gray-500">
+                    Restate exposes information on invocations and application
+                    state via Introspection SQL. You can use this to gain
+                    insight into the status of invocations and the service
+                    state that is stored.{' '}
+                    <Link
+                      href="https://docs.restate.dev/references/sql-introspection"
+                      variant="secondary"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Learn more
+                    </Link>
+                  </p>
+                </div>
+              )
+            }
+            renderRow={(item) => (
+              <Row
+                id={item.id}
+                columns={panelColumns}
+                dependencies={[panelColumns]}
+                className="bg-transparent [content-visibility:auto] [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"
+              >
+                {({ id }) => (
+                  <IntrospectionCell col={id} row={item.row} key={id} />
+                )}
+              </Row>
+            )}
+          />
           <Footnote
             data={data}
             isFetching={isFetching}
@@ -250,7 +253,9 @@ function Component() {
               </div>
             )}
           </Footnote>
-        </div>
+            </ContentPanelSection>
+          </ContentPanelBody>
+        </ContentPanel>
       </SnapshotTimeProvider>
       <Toolbar
         setQuery={setQuery}

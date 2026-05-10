@@ -4,9 +4,22 @@ import {
 } from '@restate/data-access/admin-api-hooks';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Link } from '@restate/ui/link';
-import { Column, Table, TableBody, TableHeader } from '@restate/ui/table';
+import { PanelTable, PanelTableColumn } from '@restate/ui/table';
+import {
+  ContentPanel,
+  ContentPanelBody,
+  ContentPanelSection,
+} from '@restate/ui/content-panel';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
+
+const LOADING_COLUMNS: PanelTableColumn[] = [
+  { id: 'c0', name: '', isRowHeader: true },
+  { id: 'c1', name: '' },
+  { id: 'c2', name: '' },
+  { id: 'c3', name: '' },
+  { id: 'c4', name: '' },
+];
 
 function getDefaultVirtualObjectOrWorkflow(services: string[]) {
   if (typeof window !== 'undefined') {
@@ -46,18 +59,19 @@ function Component() {
 
   if (isPending) {
     return (
-      <div className="relative flex flex-auto flex-col gap-2">
-        <Table aria-label="State">
-          <TableHeader>
-            <Column isRowHeader></Column>
-            <Column></Column>
-            <Column></Column>
-            <Column></Column>
-            <Column></Column>
-          </TableHeader>
-          <TableBody isLoading numOfColumns={5}></TableBody>
-        </Table>
-      </div>
+      <ContentPanel>
+        <ContentPanelBody>
+          <ContentPanelSection flush>
+            <PanelTable
+              aria-label="State"
+              columns={LOADING_COLUMNS}
+              items={[]}
+              isLoading
+              renderRow={() => null}
+            />
+          </ContentPanelSection>
+        </ContentPanelBody>
+      </ContentPanel>
     );
   }
 
