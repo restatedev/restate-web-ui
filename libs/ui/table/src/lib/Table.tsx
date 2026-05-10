@@ -22,27 +22,23 @@ import { PropsWithChildren, ReactNode } from 'react';
 import { TableError, LoadingRows } from './Placeholder';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 
-interface TableProps
-  extends Pick<
-    AriaTableProps,
-    | 'selectionMode'
-    | 'aria-label'
-    | 'sortDescriptor'
-    | 'onSortChange'
-    | 'onSelectionChange'
-    | 'selectedKeys'
-    | 'onRowAction'
-  > {
+interface TableProps extends Pick<
+  AriaTableProps,
+  | 'selectionMode'
+  | 'aria-label'
+  | 'sortDescriptor'
+  | 'onSortChange'
+  | 'onSelectionChange'
+  | 'selectedKeys'
+  | 'onRowAction'
+> {
   className?: string;
 }
 
 const tableStyles = tv({
   base: 'overflow-hidden rounded-xl border bg-linear-to-b from-gray-100 to-gray-50 shadow-xs shadow-zinc-800/5 [&:has([data-table-empty=true])]:bg-gray-50/50 [&:has([data-table-empty=true])]:shadow-none',
 });
-export function Table({
-  className,
-  ...props
-}: PropsWithChildren<TableProps>) {
+export function Table({ className, ...props }: PropsWithChildren<TableProps>) {
   return (
     <div className={tableStyles({ className })}>
       <div className="relative h-full overflow-auto [scrollbar-width:thin]">
@@ -71,17 +67,16 @@ const columnStyles = tv({
   base: 'cursor-default py-2 pl-2 text-start text-sm font-semibold text-gray-700 last:pr-2 focus-within:z-20 [&:hover]:z-20 [&:not(:last-child)_.resizer]:translate-x-[10px]',
 });
 
-interface ColumnProps
-  extends Pick<
-    AriaColumnProps,
-    | 'id'
-    | 'allowsSorting'
-    | 'isRowHeader'
-    | 'width'
-    | 'maxWidth'
-    | 'minWidth'
-    | 'defaultWidth'
-  > {
+interface ColumnProps extends Pick<
+  AriaColumnProps,
+  | 'id'
+  | 'allowsSorting'
+  | 'isRowHeader'
+  | 'width'
+  | 'maxWidth'
+  | 'minWidth'
+  | 'defaultWidth'
+> {
   className?: string;
 }
 
@@ -128,11 +123,10 @@ const tableHeaderStyles = tv({
   base: 'sticky top-0 z-10 bg-gray-100/80 drop-shadow-[0px_1px_0px_rgba(0,0,0,0.1)] backdrop-blur-xl backdrop-saturate-200 [box-shadow2:0_1px_0px_0px_rgba(0,0,0,0.1)] supports-[-moz-appearance:none]:bg-gray-100',
 });
 
-interface TableHeaderProps<T extends object>
-  extends Pick<
-    AriaTableHeaderProps<T>,
-    'columns' | 'children' | 'dependencies'
-  > {
+interface TableHeaderProps<T extends object> extends Pick<
+  AriaTableHeaderProps<T>,
+  'columns' | 'children' | 'dependencies'
+> {
   className?: string;
   selectionColumnWidth?: number;
 }
@@ -146,10 +140,7 @@ export function TableHeader<T extends object>({
     useTableOptions();
 
   return (
-    <AriaTableHeader
-      {...props}
-      className={tableHeaderStyles({ className })}
-    >
+    <AriaTableHeader {...props} className={tableHeaderStyles({ className })}>
       {/* Add extra columns for drag and drop and selection. */}
       {allowsDragging && <Column />}
       {selectionBehavior === 'toggle' && (
@@ -166,8 +157,10 @@ export function TableHeader<T extends object>({
   );
 }
 
-interface TableBodyProps<T extends object>
-  extends Pick<AriaTableBodyProps<T>, 'items' | 'children' | 'dependencies'> {
+interface TableBodyProps<T extends object> extends Pick<
+  AriaTableBodyProps<T>,
+  'items' | 'children' | 'dependencies'
+> {
   className?: string;
   isLoading?: boolean;
   error?: Error | null;

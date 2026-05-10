@@ -23,11 +23,7 @@ type InputProps = Partial<
   EntryProps<Extract<JournalEntryV2, { type?: 'Input'; category?: 'command' }>>
 >;
 
-export function Input({
-  entry,
-  invocation,
-  className,
-}: InputProps) {
+export function Input({ entry, invocation, className }: InputProps) {
   const handlerName = invocation?.target_handler_name;
   const codecOptions = entry
     ? ({

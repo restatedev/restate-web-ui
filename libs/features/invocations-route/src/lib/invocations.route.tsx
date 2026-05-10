@@ -1,9 +1,5 @@
 import { Button, SubmitButton } from '@restate/ui/button';
-import {
-  PanelTable,
-  PanelTableColumn,
-  Row,
-} from '@restate/ui/table';
+import { PanelTable, PanelTableColumn, Row } from '@restate/ui/table';
 import {
   Dropdown,
   DropdownItem,

@@ -23,13 +23,13 @@ const styles = tv({
     bodyCell:
       'col-start-1 row-start-1 mt-[calc(var(--cp-toolbar-height,0px)-var(--cp-toolbar-tuck,0px))] flex min-h-0 flex-col border-x border-gray-200 bg-gray-50',
     stickyArea:
-      'col-start-1 row-start-1 z-30 flex flex-col self-start sticky top-[calc(var(--cp-toolbar-top,0px)-var(--cp-toolbar-tuck,0px))]',
+      'sticky top-[calc(var(--cp-toolbar-top,0px)-var(--cp-toolbar-tuck,0px))] z-30 col-start-1 row-start-1 flex flex-col self-start',
     toolbarSlot:
       'w-full bg-gray-100 [padding-top:var(--cp-toolbar-tuck,0px)] [&:empty]:hidden',
     cardFrame:
       'relative min-h-4 rounded-t-2xl border-x border-t border-gray-200',
     headerSlot:
-      'mx-2 mt-2 rounded-xl border border-gray-200 bg-linear-to-b from-gray-200/70 to-gray-100/85 backdrop-blur-3xl backdrop-saturate-200 shadow-[inset_0_2px_0_0_--theme(--color-white/95%),0_2px_5px_-1px_--theme(--color-zinc-800/8%),0_4px_10px_-3px_--theme(--color-zinc-800/6%)] [&:empty]:hidden',
+      'mx-2 mt-2 rounded-xl border border-gray-200 bg-linear-to-b from-gray-200/70 to-gray-100/85 shadow-[inset_0_2px_0_0_--theme(--color-white/95%),0_2px_5px_-1px_--theme(--color-zinc-800/8%),0_4px_10px_-3px_--theme(--color-zinc-800/6%)] backdrop-blur-3xl backdrop-saturate-200 [&:empty]:hidden',
     body: 'relative flex min-h-0 flex-1 flex-col',
     sectionRoot: 'relative flex flex-col',
     sectionFade:

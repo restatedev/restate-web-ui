@@ -24,7 +24,7 @@ export function LayoutProvider({
 
 function AppBarLayout({ children }: PropsWithChildren) {
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-[86rem] flex-col px-3 py-3 sm:px-6 sm:py-6 lg:px-8 3xl:max-w-[min(100rem,calc(100vw-800px-4rem))] [--cp-toolbar-top:5rem] [--cp-toolbar-tuck:0.625rem] [&:has(#layout-content_[data-content-panel-fill-viewport])]:pb-0 sm:[&:has(#layout-content_[data-content-panel-fill-viewport])]:pb-0">
+    <div className="mx-auto flex min-h-screen w-full max-w-[86rem] flex-col px-3 py-3 [--cp-toolbar-top:5rem] [--cp-toolbar-tuck:0.625rem] sm:px-6 sm:py-6 lg:px-8 3xl:max-w-[min(100rem,calc(100vw-800px-4rem))] [&:has(#layout-content_[data-content-panel-fill-viewport])]:pb-0 sm:[&:has(#layout-content_[data-content-panel-fill-viewport])]:pb-0">
       <AppBar id={ZONE_IDS[LayoutZone.AppBar]} />
       <div
         id={NOTIFICATION_ZONE_ID}

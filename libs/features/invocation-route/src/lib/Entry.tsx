@@ -222,25 +222,25 @@ export const Entry = memo(function Entry({
           hasError:
             Boolean(
               invocation.last_failure_related_command_index &&
-                invocation?.last_failure_related_command_index ===
-                  entry.commandIndex,
+              invocation?.last_failure_related_command_index ===
+                entry.commandIndex,
             ) ||
             Boolean(
               isPaused &&
-                typeof pausedRelatedCommandIndex === 'number' &&
-                pausedRelatedCommandIndex === entry.commandIndex,
+              typeof pausedRelatedCommandIndex === 'number' &&
+              pausedRelatedCommandIndex === entry.commandIndex,
             ) ||
             Boolean(
               isPaused &&
-                typeof pausedRelatedCommandIndex !== 'number' &&
-                isEntriesEqual(
-                  entry,
-                  invocation.journal?.entries?.findLast(
-                    (entry) =>
-                      !isCompact ||
-                      !['Event: TransientError'].includes(String(entry?.type)),
-                  ),
+              typeof pausedRelatedCommandIndex !== 'number' &&
+              isEntriesEqual(
+                entry,
+                invocation.journal?.entries?.findLast(
+                  (entry) =>
+                    !isCompact ||
+                    !['Event: TransientError'].includes(String(entry?.type)),
                 ),
+              ),
             ),
         })}
         {...(entry.category === 'command' && {
