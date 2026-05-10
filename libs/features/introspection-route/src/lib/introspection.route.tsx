@@ -143,126 +143,124 @@ function Component() {
   );
 
   return (
-    <div>
-      <SnapshotTimeProvider lastSnapshot={dataUpdate}>
-        <ContentPanel>
-          <ContentPanelBody className="pb-32">
-            <ContentPanelSection flush>
-              <PanelTable
-                aria-label="Introspection SQL"
-                columns={panelColumns}
-                items={panelItems}
-                bodyKey={hash}
-                bodyDependencies={[allColumns, pageIndex]}
-                isLoading={isPending && !!query}
-                error={error}
-                emptyPlaceholder={
-                  query ? (
-                    <div className="flex flex-col items-center gap-4 py-14">
-                      <div className="mr-1.5 h-12 w-12 shrink-0 rounded-xl bg-gray-200/50 p-1">
-                        <Icon
-                          name={IconName.ScanSearch}
-                          className="h-full w-full p-1 text-zinc-400"
-                        />
-                      </div>
-                      <h3 className="text-sm font-semibold text-zinc-400">
-                        No results found
-                      </h3>
-                    </div>
-                  ) : (
-                    <div className="relative my-12 flex w-full flex-col items-center gap-2 text-center">
+    <SnapshotTimeProvider lastSnapshot={dataUpdate}>
+      <ContentPanel>
+        <ContentPanelBody className="pb-32">
+          <ContentPanelSection flush>
+            <PanelTable
+              aria-label="Introspection SQL"
+              columns={panelColumns}
+              items={panelItems}
+              bodyKey={hash}
+              bodyDependencies={[allColumns, pageIndex]}
+              isLoading={isPending && !!query}
+              error={error}
+              emptyPlaceholder={
+                query ? (
+                  <div className="flex flex-col items-center gap-4 py-14">
+                    <div className="mr-1.5 h-12 w-12 shrink-0 rounded-xl bg-gray-200/50 p-1">
                       <Icon
                         name={IconName.ScanSearch}
-                        className="h-8 w-8 text-gray-500"
+                        className="h-full w-full p-1 text-zinc-400"
                       />
-                      <h3 className="text-sm font-semibold text-gray-600">
-                        Introspection SQL
-                      </h3>
-                      <p className="max-w-lg px-4 text-sm text-gray-500">
-                        Restate exposes information on invocations and
-                        application state via Introspection SQL. You can use
-                        this to gain insight into the status of invocations and
-                        the service state that is stored.{' '}
-                        <Link
-                          href="https://docs.restate.dev/references/sql-introspection"
-                          variant="secondary"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          Learn more
-                        </Link>
-                      </p>
                     </div>
-                  )
-                }
-                renderRow={(item) => (
-                  <Row
-                    id={item.id}
-                    columns={panelColumns}
-                    dependencies={[panelColumns]}
-                    className="bg-transparent [content-visibility:auto] [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"
-                  >
-                    {({ id }) => (
-                      <IntrospectionCell col={id} row={item.row} key={id} />
-                    )}
-                  </Row>
-                )}
-              />
-              <Footnote
-                data={data}
-                isFetching={isFetching}
-                key={dataUpdate}
-                query={query}
-              >
-                {!isPending && !error && totalSize > 1 && (
-                  <div className="flex items-center rounded-lg border bg-zinc-50 py-0.5 shadow-xs">
-                    <Button
-                      variant="icon"
-                      disabled={pageIndex === 0}
-                      onClick={() => setPageIndex(0)}
-                    >
-                      <Icon name={IconName.ChevronFirst} className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="icon"
-                      disabled={pageIndex === 0}
-                      onClick={() => setPageIndex((s) => s - 1)}
-                      className=""
-                    >
-                      <Icon name={IconName.ChevronLeft} className="h-4 w-4" />
-                    </Button>
-                    <div className="mx-2 flex items-center gap-0.5 text-0.5xs">
-                      {pageIndex + 1} / {totalSize}
-                    </div>
-
-                    <Button
-                      variant="icon"
-                      disabled={pageIndex + 1 === totalSize}
-                      onClick={() => setPageIndex((s) => s + 1)}
-                      className=""
-                    >
-                      <Icon name={IconName.ChevronRight} className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="icon"
-                      disabled={pageIndex + 1 === totalSize}
-                      onClick={() => setPageIndex(totalSize - 1)}
-                    >
-                      <Icon name={IconName.ChevronLast} className="h-4 w-4" />
-                    </Button>
+                    <h3 className="text-sm font-semibold text-zinc-400">
+                      No results found
+                    </h3>
                   </div>
-                )}
-              </Footnote>
-            </ContentPanelSection>
-          </ContentPanelBody>
-        </ContentPanel>
-      </SnapshotTimeProvider>
+                ) : (
+                  <div className="relative my-12 flex w-full flex-col items-center gap-2 text-center">
+                    <Icon
+                      name={IconName.ScanSearch}
+                      className="h-8 w-8 text-gray-500"
+                    />
+                    <h3 className="text-sm font-semibold text-gray-600">
+                      Introspection SQL
+                    </h3>
+                    <p className="max-w-lg px-4 text-sm text-gray-500">
+                      Restate exposes information on invocations and
+                      application state via Introspection SQL. You can use this
+                      to gain insight into the status of invocations and the
+                      service state that is stored.{' '}
+                      <Link
+                        href="https://docs.restate.dev/references/sql-introspection"
+                        variant="secondary"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Learn more
+                      </Link>
+                    </p>
+                  </div>
+                )
+              }
+              renderRow={(item) => (
+                <Row
+                  id={item.id}
+                  columns={panelColumns}
+                  dependencies={[panelColumns]}
+                  className="bg-transparent [content-visibility:auto] [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"
+                >
+                  {({ id }) => (
+                    <IntrospectionCell col={id} row={item.row} key={id} />
+                  )}
+                </Row>
+              )}
+            />
+            <Footnote
+              data={data}
+              isFetching={isFetching}
+              key={dataUpdate}
+              query={query}
+            >
+              {!isPending && !error && totalSize > 1 && (
+                <div className="flex items-center rounded-lg border bg-zinc-50 py-0.5 shadow-xs">
+                  <Button
+                    variant="icon"
+                    disabled={pageIndex === 0}
+                    onClick={() => setPageIndex(0)}
+                  >
+                    <Icon name={IconName.ChevronFirst} className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="icon"
+                    disabled={pageIndex === 0}
+                    onClick={() => setPageIndex((s) => s - 1)}
+                    className=""
+                  >
+                    <Icon name={IconName.ChevronLeft} className="h-4 w-4" />
+                  </Button>
+                  <div className="mx-2 flex items-center gap-0.5 text-0.5xs">
+                    {pageIndex + 1} / {totalSize}
+                  </div>
+
+                  <Button
+                    variant="icon"
+                    disabled={pageIndex + 1 === totalSize}
+                    onClick={() => setPageIndex((s) => s + 1)}
+                    className=""
+                  >
+                    <Icon name={IconName.ChevronRight} className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="icon"
+                    disabled={pageIndex + 1 === totalSize}
+                    onClick={() => setPageIndex(totalSize - 1)}
+                  >
+                    <Icon name={IconName.ChevronLast} className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </Footnote>
+          </ContentPanelSection>
+        </ContentPanelBody>
+      </ContentPanel>
       <Toolbar
         setQuery={setQuery}
         isPending={isFetching}
         initialQuery={searchParams.get(QUERY_PARAM) ?? ''}
       />
-    </div>
+    </SnapshotTimeProvider>
   );
 }
 
