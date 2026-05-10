@@ -24,8 +24,7 @@ const styles = tv({
       'col-start-1 row-start-1 mt-[calc(var(--cp-toolbar-height,0px)-var(--cp-toolbar-tuck,0px))] flex min-h-0 flex-col border-x border-gray-200 bg-gray-50',
     stickyArea:
       'sticky top-[calc(var(--cp-toolbar-top,0px)-var(--cp-toolbar-tuck,0px))] z-30 col-start-1 row-start-1 flex flex-col self-start',
-    toolbarSlot:
-      'w-full bg-gray-100 [padding-top:var(--cp-toolbar-tuck,0px)]',
+    toolbarSlot: 'w-full bg-gray-100 [padding-top:var(--cp-toolbar-tuck,0px)]',
     cardFrame:
       'relative min-h-4 rounded-t-2xl border-x border-t border-gray-200',
     headerSlot:

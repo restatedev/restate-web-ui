@@ -381,260 +381,260 @@ function Component() {
         <ContentPanelBody className="pb-32">
           <ContentPanelSection flush>
             <PanelTable
-          aria-label="State"
-          sortDescriptor={sortDescriptor}
-          onSortChange={setSortDescriptor}
-          bodyKey={hash}
-          columns={panelColumns}
-          items={panelItems}
-          numOfRows={currentPageItems.length || 5}
-          bodyDependencies={[selectedColumnsArray, pageIndex]}
-          error={error || listObjects.error}
-          isLoading={
-            isFetching ||
-            isValidating ||
-            (listObjects.isFetching && currentPageItems.length !== 0)
-          }
-          emptyPlaceholder={
-            <div className="flex flex-col items-center gap-4 py-14">
-              <div className="h-12 w-12 shrink-0 rounded-xl bg-gray-200/50 p-1">
-                <Icon
-                  name={IconName.Database}
-                  className="h-full w-full p-1 text-zinc-400"
-                />
-              </div>
-              <h3 className="text-sm font-semibold text-zinc-400">
-                No objects found
-              </h3>
-            </div>
-          }
-          renderRow={(row) => (
-            <Row
-              id={row.id}
+              aria-label="State"
+              sortDescriptor={sortDescriptor}
+              onSortChange={setSortDescriptor}
+              bodyKey={hash}
               columns={panelColumns}
-              dependencies={[panelColumns]}
-              className="bg-transparent [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"
-            >
-              {({ id }) => {
-                if (id === 'service_key') {
-                  return (
-                    <Cell key={id}>
-                      <KeyCell
-                        serviceKey={String(row.key)}
-                        virtualObject={virtualObject}
-                      />
-                    </Cell>
-                  );
-                } else if (id === '__actions__') {
-                  return (
-                    <Cell className="align-top [&&&]:overflow-visible">
-                      <SplitButton
-                        menus={
-                          <>
-                            <DropdownItem value="edit">Edit…</DropdownItem>
-                            <DropdownItem destructive value="delete">
-                              Delete…
-                            </DropdownItem>
-                          </>
-                        }
-                        mini
-                        onSelect={(key) => {
-                          if (key === 'edit') {
-                            setEditState({
-                              isEditing: true,
-                              isDeleting: false,
-                              objectKey: row.key!,
-                              service: virtualObject,
-                            });
-                          }
-                          if (key === 'delete') {
-                            setEditState({
-                              isEditing: true,
-                              isDeleting: true,
-                              objectKey: row.key!,
-                              service: virtualObject,
-                            });
-                          }
-                        }}
-                      >
-                        <EditStateTrigger
-                          className={actionButtonStyles()}
-                          variant="secondary"
-                          onClick={() =>
-                            setEditState({
-                              isEditing: true,
-                              isDeleting: false,
-                              objectKey: row.key!,
-                              service: virtualObject,
-                            })
-                          }
-                        >
-                          Edit
-                        </EditStateTrigger>
-                      </SplitButton>
-                    </Cell>
-                  );
-                } else {
-                  const stateCodecOptions = {
-                    ...resolvedServiceCodecOptions,
-                    key: row.key!,
-                    command: {
-                      type: 'GetState' as const,
-                      name: id,
-                    },
-                  };
+              items={panelItems}
+              numOfRows={currentPageItems.length || 5}
+              bodyDependencies={[selectedColumnsArray, pageIndex]}
+              error={error || listObjects.error}
+              isLoading={
+                isFetching ||
+                isValidating ||
+                (listObjects.isFetching && currentPageItems.length !== 0)
+              }
+              emptyPlaceholder={
+                <div className="flex flex-col items-center gap-4 py-14">
+                  <div className="h-12 w-12 shrink-0 rounded-xl bg-gray-200/50 p-1">
+                    <Icon
+                      name={IconName.Database}
+                      className="h-full w-full p-1 text-zinc-400"
+                    />
+                  </div>
+                  <h3 className="text-sm font-semibold text-zinc-400">
+                    No objects found
+                  </h3>
+                </div>
+              }
+              renderRow={(row) => (
+                <Row
+                  id={row.id}
+                  columns={panelColumns}
+                  dependencies={[panelColumns]}
+                  className="bg-transparent [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"
+                >
+                  {({ id }) => {
+                    if (id === 'service_key') {
+                      return (
+                        <Cell key={id}>
+                          <KeyCell
+                            serviceKey={String(row.key)}
+                            virtualObject={virtualObject}
+                          />
+                        </Cell>
+                      );
+                    } else if (id === '__actions__') {
+                      return (
+                        <Cell className="align-top [&&&]:overflow-visible">
+                          <SplitButton
+                            menus={
+                              <>
+                                <DropdownItem value="edit">Edit…</DropdownItem>
+                                <DropdownItem destructive value="delete">
+                                  Delete…
+                                </DropdownItem>
+                              </>
+                            }
+                            mini
+                            onSelect={(key) => {
+                              if (key === 'edit') {
+                                setEditState({
+                                  isEditing: true,
+                                  isDeleting: false,
+                                  objectKey: row.key!,
+                                  service: virtualObject,
+                                });
+                              }
+                              if (key === 'delete') {
+                                setEditState({
+                                  isEditing: true,
+                                  isDeleting: true,
+                                  objectKey: row.key!,
+                                  service: virtualObject,
+                                });
+                              }
+                            }}
+                          >
+                            <EditStateTrigger
+                              className={actionButtonStyles()}
+                              variant="secondary"
+                              onClick={() =>
+                                setEditState({
+                                  isEditing: true,
+                                  isDeleting: false,
+                                  objectKey: row.key!,
+                                  service: virtualObject,
+                                })
+                              }
+                            >
+                              Edit
+                            </EditStateTrigger>
+                          </SplitButton>
+                        </Cell>
+                      );
+                    } else {
+                      const stateCodecOptions = {
+                        ...resolvedServiceCodecOptions,
+                        key: row.key!,
+                        command: {
+                          type: 'GetState' as const,
+                          name: id,
+                        },
+                      };
 
-                  return (
-                    <Cell
-                      key={id}
-                      className="group [&:has(*:focus)_*]:visible [&:has(*:hover)_*]:visible"
-                    >
-                      <div className="item-center flex h-full min-h-5 w-full justify-start gap-1">
-                        {row.state?.[id] && (
-                          <Popover>
-                            <PopoverTrigger>
-                              <Button
-                                className="truncate rounded-xl px-3 py-0.5 font-mono [font-size:inherit] text-inherit shadow-none"
-                                variant="secondary"
-                              >
-                                <span className="flex min-w-0 items-center truncate pr-0.5">
-                                  {EncodingWaterMark && (
-                                    <EncodingWaterMark
-                                      value={row.state?.[id]}
-                                      mini
-                                      className="mr-1"
-                                    />
-                                  )}
-                                  <span className="block truncate">
+                      return (
+                        <Cell
+                          key={id}
+                          className="group [&:has(*:focus)_*]:visible [&:has(*:hover)_*]:visible"
+                        >
+                          <div className="item-center flex h-full min-h-5 w-full justify-start gap-1">
+                            {row.state?.[id] && (
+                              <Popover>
+                                <PopoverTrigger>
+                                  <Button
+                                    className="truncate rounded-xl px-3 py-0.5 font-mono [font-size:inherit] text-inherit shadow-none"
+                                    variant="secondary"
+                                  >
+                                    <span className="flex min-w-0 items-center truncate pr-0.5">
+                                      {EncodingWaterMark && (
+                                        <EncodingWaterMark
+                                          value={row.state?.[id]}
+                                          mini
+                                          className="mr-1"
+                                        />
+                                      )}
+                                      <span className="block truncate">
+                                        <StaticCodecOptionsProvider
+                                          options={stateCodecOptions}
+                                        >
+                                          <DecodedValue
+                                            value={row.state?.[id]}
+                                            isBase64
+                                          />
+                                        </StaticCodecOptionsProvider>
+                                      </span>
+                                    </span>
+                                  </Button>
+                                </PopoverTrigger>
+
+                                <PopoverContent>
+                                  <DropdownSection
+                                    className="mb-1 w-[90vw] max-w-[min(90vw,50rem)] overflow-auto py-0 pr-0 pl-4"
+                                    title={
+                                      <div className="flex items-center text-0.5xs">
+                                        {id}
+                                        <Portal
+                                          id="state-value"
+                                          className="mr-1 ml-auto"
+                                        />
+                                        <EditStateTrigger
+                                          onClick={() =>
+                                            setEditState({
+                                              isEditing: true,
+                                              isDeleting: false,
+                                              key: id,
+                                              objectKey: row.key!,
+                                              service: virtualObject,
+                                            })
+                                          }
+                                          variant="secondary"
+                                          className="flex shrink-0 items-center gap-1 rounded-lg px-1.5 py-0.5 text-xs font-normal"
+                                        >
+                                          Edit
+                                          <Icon
+                                            name={IconName.ExternalLink}
+                                            className="h-3 w-3"
+                                          />
+                                        </EditStateTrigger>
+                                      </div>
+                                    }
+                                  >
                                     <StaticCodecOptionsProvider
                                       options={stateCodecOptions}
                                     >
-                                      <DecodedValue
+                                      <Value
                                         value={row.state?.[id]}
-                                        isBase64
+                                        className="w-full py-0 font-mono text-xs"
+                                        showCopyButton
+                                        portalId="state-value"
                                       />
                                     </StaticCodecOptionsProvider>
-                                  </span>
-                                </span>
-                              </Button>
-                            </PopoverTrigger>
+                                  </DropdownSection>
+                                </PopoverContent>
+                              </Popover>
+                            )}
+                            <EditStateTrigger
+                              onClick={() =>
+                                setEditState({
+                                  isEditing: true,
+                                  isDeleting: false,
+                                  key: id,
+                                  objectKey: row.key!,
+                                  service: virtualObject,
+                                })
+                              }
+                              variant="icon"
+                              className="invisible shrink-0 group-hover:visible"
+                            >
+                              <Icon
+                                name={IconName.Pencil}
+                                className="h-3 w-3 fill-current opacity-70"
+                              />
+                            </EditStateTrigger>
+                          </div>
+                        </Cell>
+                      );
+                    }
+                  }}
+                </Row>
+              )}
+            />
+            <Footnote
+              data={serviceKeysData}
+              isFetching={isFetching || listObjects.isFetching}
+              key={dataUpdate}
+            >
+              {!isFetching && !error && totalSize > 1 && (
+                <div className="flex items-center rounded-lg border bg-zinc-50 py-0.5 shadow-xs">
+                  <Button
+                    variant="icon"
+                    disabled={pageIndex === 0}
+                    onClick={() => setPageIndex(0)}
+                  >
+                    <Icon name={IconName.ChevronFirst} className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="icon"
+                    disabled={pageIndex === 0}
+                    onClick={() => setPageIndex(pageIndex - 1)}
+                    className=""
+                  >
+                    <Icon name={IconName.ChevronLeft} className="h-4 w-4" />
+                  </Button>
+                  <div className="mx-2 flex items-center gap-0.5 text-0.5xs">
+                    {pageIndex + 1} / {totalSize}
+                  </div>
 
-                            <PopoverContent>
-                              <DropdownSection
-                                className="mb-1 w-[90vw] max-w-[min(90vw,50rem)] overflow-auto py-0 pr-0 pl-4"
-                                title={
-                                  <div className="flex items-center text-0.5xs">
-                                    {id}
-                                    <Portal
-                                      id="state-value"
-                                      className="mr-1 ml-auto"
-                                    />
-                                    <EditStateTrigger
-                                      onClick={() =>
-                                        setEditState({
-                                          isEditing: true,
-                                          isDeleting: false,
-                                          key: id,
-                                          objectKey: row.key!,
-                                          service: virtualObject,
-                                        })
-                                      }
-                                      variant="secondary"
-                                      className="flex shrink-0 items-center gap-1 rounded-lg px-1.5 py-0.5 text-xs font-normal"
-                                    >
-                                      Edit
-                                      <Icon
-                                        name={IconName.ExternalLink}
-                                        className="h-3 w-3"
-                                      />
-                                    </EditStateTrigger>
-                                  </div>
-                                }
-                              >
-                                <StaticCodecOptionsProvider
-                                  options={stateCodecOptions}
-                                >
-                                  <Value
-                                    value={row.state?.[id]}
-                                    className="w-full py-0 font-mono text-xs"
-                                    showCopyButton
-                                    portalId="state-value"
-                                  />
-                                </StaticCodecOptionsProvider>
-                              </DropdownSection>
-                            </PopoverContent>
-                          </Popover>
-                        )}
-                        <EditStateTrigger
-                          onClick={() =>
-                            setEditState({
-                              isEditing: true,
-                              isDeleting: false,
-                              key: id,
-                              objectKey: row.key!,
-                              service: virtualObject,
-                            })
-                          }
-                          variant="icon"
-                          className="invisible shrink-0 group-hover:visible"
-                        >
-                          <Icon
-                            name={IconName.Pencil}
-                            className="h-3 w-3 fill-current opacity-70"
-                          />
-                        </EditStateTrigger>
-                      </div>
-                    </Cell>
-                  );
-                }
-              }}
-            </Row>
-          )}
-        />
-        <Footnote
-          data={serviceKeysData}
-          isFetching={isFetching || listObjects.isFetching}
-          key={dataUpdate}
-        >
-          {!isFetching && !error && totalSize > 1 && (
-            <div className="flex items-center rounded-lg border bg-zinc-50 py-0.5 shadow-xs">
-              <Button
-                variant="icon"
-                disabled={pageIndex === 0}
-                onClick={() => setPageIndex(0)}
-              >
-                <Icon name={IconName.ChevronFirst} className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="icon"
-                disabled={pageIndex === 0}
-                onClick={() => setPageIndex(pageIndex - 1)}
-                className=""
-              >
-                <Icon name={IconName.ChevronLeft} className="h-4 w-4" />
-              </Button>
-              <div className="mx-2 flex items-center gap-0.5 text-0.5xs">
-                {pageIndex + 1} / {totalSize}
-              </div>
-
-              <Button
-                variant="icon"
-                disabled={pageIndex + 1 === totalSize}
-                onClick={() => setPageIndex(pageIndex + 1)}
-                className=""
-              >
-                <Icon name={IconName.ChevronRight} className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="icon"
-                disabled={pageIndex + 1 === totalSize}
-                onClick={() => setPageIndex(totalSize - 1)}
-              >
-                <Icon name={IconName.ChevronLast} className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
-        </Footnote>
+                  <Button
+                    variant="icon"
+                    disabled={pageIndex + 1 === totalSize}
+                    onClick={() => setPageIndex(pageIndex + 1)}
+                    className=""
+                  >
+                    <Icon name={IconName.ChevronRight} className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="icon"
+                    disabled={pageIndex + 1 === totalSize}
+                    onClick={() => setPageIndex(totalSize - 1)}
+                  >
+                    <Icon name={IconName.ChevronLast} className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </Footnote>
           </ContentPanelSection>
         </ContentPanelBody>
       </ContentPanel>
