@@ -796,7 +796,7 @@ function Footnote({
   const duration = formatDurations(parts);
 
   return (
-    <div className="flex w-full flex-row-reverse flex-wrap items-center text-center text-xs text-gray-500/80">
+    <div className="flex w-full flex-row-reverse flex-wrap items-center gap-2 pt-3 pr-4 pb-2 pl-2 text-center text-xs text-gray-500/80">
       {data && (
         <div className="ml-auto">
           {data.keys && data.keys.length > 0 ? (
