@@ -66,7 +66,7 @@ const styles = tv({
       'static z-auto bg-transparent drop-shadow-none backdrop-blur-none backdrop-saturate-100 supports-[-moz-appearance:none]:bg-transparent [&_.checkbox]:border-gray-200! [&_.checkbox]:shadow-[inset_0_0.5px_0.5px_0px_rgba(0,0,0,0.08)]!',
     stickyHeaderTrailingResizerHidden:
       '[&_th:nth-last-child(2)_[data-resizable-direction]]:invisible',
-    dataTableScroll: 'relative h-full overflow-auto [scrollbar-width:thin]',
+    dataTableScroll: 'relative overflow-auto [scrollbar-width:thin]',
     dataTableInner:
       'w-full border-separate border-spacing-0 [&_tbody_td:first-child]:pl-4',
     dataTableSpacerHeader:
