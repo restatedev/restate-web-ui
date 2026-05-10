@@ -39,10 +39,13 @@ interface TableProps
 const tableStyles = tv({
   base: 'overflow-hidden rounded-xl border bg-linear-to-b from-gray-100 to-gray-50 shadow-xs shadow-zinc-800/5 [&:has([data-table-empty=true])]:bg-gray-50/50 [&:has([data-table-empty=true])]:shadow-none',
 });
-export function Table({ className, ...props }: PropsWithChildren<TableProps>) {
+export function Table({
+  className,
+  ...props
+}: PropsWithChildren<TableProps>) {
   return (
-    <div className={`${tableStyles({ className })}`}>
-      <div className="relative h-full overflow-auto [scrollbar-gutter:stable] [scrollbar-width:thin]">
+    <div className={tableStyles({ className })}>
+      <div className="relative h-full overflow-auto [scrollbar-width:thin]">
         <ResizableTableContainer>
           <AriaTable
             {...props}
@@ -131,23 +134,28 @@ interface TableHeaderProps<T extends object>
     'columns' | 'children' | 'dependencies'
   > {
   className?: string;
+  selectionColumnWidth?: number;
 }
 
 export function TableHeader<T extends object>({
   className,
+  selectionColumnWidth = 36,
   ...props
 }: TableHeaderProps<T>) {
   const { selectionBehavior, selectionMode, allowsDragging } =
     useTableOptions();
 
   return (
-    <AriaTableHeader {...props} className={tableHeaderStyles({ className })}>
+    <AriaTableHeader
+      {...props}
+      className={tableHeaderStyles({ className })}
+    >
       {/* Add extra columns for drag and drop and selection. */}
       {allowsDragging && <Column />}
       {selectionBehavior === 'toggle' && (
         <AriaColumn
-          width={36}
-          minWidth={36}
+          width={selectionColumnWidth}
+          minWidth={selectionColumnWidth}
           className="cursor-default p-2 text-start text-sm font-semibold"
         >
           {selectionMode === 'multiple' && <Checkbox slot="selection" />}
