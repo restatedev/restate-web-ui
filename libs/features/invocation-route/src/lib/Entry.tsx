@@ -287,7 +287,7 @@ export const Entry = memo(function Entry({
           ) : null}
         </div>
         <div className="relative min-w-20 flex-auto">
-          <div className="absolute right-0 left-0 translate-y-[0.5px] border-b border-dashed border-gray-300/50" />
+          <div className="absolute top-1/2 right-0 left-0 -translate-y-px border-b border-dashed border-gray-300/70" />
         </div>
       </div>
     </EntryCodecProvider>

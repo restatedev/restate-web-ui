@@ -11,19 +11,23 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { LazyJournalEntryPayload } from './LazyJournalEntryPayload';
 
 const inputStyles = tv({
-  base: 'target h-12 self-start border-t border-b border-white [font-size:inherit] shadow-none ring-0 [--rounded-radius-right:0px] [--rounded-radius:calc(1rem-1px)] **:data-target:font-sans **:data-target:font-medium [&]:rounded-r-none [&_[data-target]>*]:h-12 [&&&>*:last-child>*]:rounded-r-none',
+  base: '',
+  slots: {
+    root: 'ml-2 flex max-w-full flex-none items-center self-center [font-size:inherit] **:data-target:font-sans **:data-target:font-medium',
+    target: 'flex-none',
+    expression: 'flex min-w-0 translate-y-px items-center pl-2',
+  },
 });
+
+type InputProps = Partial<
+  EntryProps<Extract<JournalEntryV2, { type?: 'Input'; category?: 'command' }>>
+>;
 
 export function Input({
   entry,
-  failed,
   invocation,
-  isRetrying,
-  wasRetrying,
   className,
-}: Partial<
-  EntryProps<Extract<JournalEntryV2, { type?: 'Input'; category?: 'command' }>>
->) {
+}: InputProps) {
   const handlerName = invocation?.target_handler_name;
   const codecOptions = entry
     ? ({
@@ -46,17 +50,17 @@ export function Input({
         command: { type: entry.type },
       } satisfies RestateCodecOptions)
     : undefined;
+  const { root, target, expression } = inputStyles();
 
   return (
-    <Target
-      target={invocation?.target}
-      showHandler={!entry}
-      className={inputStyles({
-        className,
-      })}
-    >
+    <div className={root({ className })}>
+      <Target
+        target={invocation?.target}
+        showHandler={!entry}
+        className={target()}
+      />
       {entry ? (
-        <div className="flex translate-y-px items-center">
+        <div className={expression()}>
           <Icon
             name={IconName.Function}
             className="-mr-0.5 h-5 w-5 shrink-0 text-zinc-400"
@@ -80,6 +84,6 @@ export function Input({
           <div data-fill />
         </div>
       ) : null}
-    </Target>
+    </div>
   );
 }
