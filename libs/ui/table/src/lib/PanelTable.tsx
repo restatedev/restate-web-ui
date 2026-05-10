@@ -267,9 +267,14 @@ export function PanelTable<
                 >
                   {renderColumns('stickyHeader')}
                 </TableHeader>
-                <AriaTableBody items={items}>
+                <AriaTableBody items={items} dependencies={[columns]}>
                   {(row) => (
-                    <Row id={row.id} columns={columns} className="hidden">
+                    <Row
+                      id={row.id}
+                      columns={columns}
+                      dependencies={[columns]}
+                      className="hidden"
+                    >
                       {(col) => <Cell key={col.id} />}
                     </Row>
                   )}
@@ -298,7 +303,7 @@ export function PanelTable<
             </TableHeader>
             <TableBody
               items={items}
-              dependencies={bodyDependencies}
+              dependencies={[...(bodyDependencies ?? []), columns]}
               error={error}
               isLoading={isLoading}
               numOfColumns={columns.length}
