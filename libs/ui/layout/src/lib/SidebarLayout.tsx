@@ -11,7 +11,7 @@ import { Sidebar, SidebarProvider } from './Sidebar';
 export function SidebarLayout({ children }: PropsWithChildren) {
   return (
     <SidebarProvider>
-      <div className="ml-[calc((100%-100vw)/2)] flex min-h-screen w-[calc(100%+(100vw-100%)/2)] overflow-x-clip [--cp-toolbar-top:0px]">
+      <div className="ml-[calc((100%-100vw)/2)] flex min-h-screen w-[calc(100%+(100vw-100%)/2)] overflow-x-clip [--cp-toolbar-top:0.75rem] [--cp-toolbar-tuck:0.75rem] sm:[--cp-toolbar-top:1.5rem] sm:[--cp-toolbar-tuck:1.5rem]">
         <Sidebar />
         <div className="mx-auto flex min-h-screen min-w-0 flex-col border-r border-l border-white/80 px-3 py-3 max-md:w-screen max-md:shrink-0 sm:px-6 sm:py-6 md:w-full md:flex-1 lg:px-8 [&:has(#layout-content_[data-content-panel-fill-viewport])]:pb-0 sm:[&:has(#layout-content_[data-content-panel-fill-viewport])]:pb-0">
           <div
