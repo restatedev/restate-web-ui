@@ -19,7 +19,7 @@ const ContentPanelContext = createContext<{
 
 const styles = tv({
   slots: {
-    root: 'relative isolate grid min-h-0 w-full flex-1 grid-cols-1 grid-rows-1 [--cp-content-top:calc(var(--cp-toolbar-top,0px)+var(--cp-sticky-area-height,0px)-var(--cp-toolbar-tuck,0px))] [--cp-section-pt:calc(var(--cp-sticky-area-height,0px)-var(--cp-toolbar-height,0px))] [&:not(:has([data-cp-slot=toolbar]:not(:empty)))]:[--cp-toolbar-tuck:0px]',
+    root: 'relative isolate grid min-h-0 w-full flex-1 grid-cols-1 grid-rows-1 [--cp-content-top:calc(var(--cp-toolbar-top,0px)+var(--cp-sticky-area-height,0px)-var(--cp-toolbar-tuck,0px))] [--cp-section-pt:calc(var(--cp-sticky-area-height,0px)-var(--cp-toolbar-height,0px)+var(--cp-toolbar-tuck,0px))] [&:not(:has([data-cp-slot=toolbar]:not(:empty)))]:[--cp-toolbar-tuck:0px]',
     bodyCell:
       'col-start-1 row-start-1 mt-[calc(var(--cp-toolbar-height,0px)-var(--cp-toolbar-tuck,0px))] flex min-h-0 flex-col border-x border-gray-200 bg-gray-50',
     stickyArea:
