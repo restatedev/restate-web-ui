@@ -178,10 +178,10 @@ function Component() {
                       Introspection SQL
                     </h3>
                     <p className="max-w-lg px-4 text-sm text-gray-500">
-                      Restate exposes information on invocations and
-                      application state via Introspection SQL. You can use this
-                      to gain insight into the status of invocations and the
-                      service state that is stored.{' '}
+                      Restate exposes information on invocations and application
+                      state via Introspection SQL. You can use this to gain
+                      insight into the status of invocations and the service
+                      state that is stored.{' '}
                       <Link
                         href="https://docs.restate.dev/references/sql-introspection"
                         variant="secondary"
