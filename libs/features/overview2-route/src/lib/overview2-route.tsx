@@ -21,6 +21,13 @@ import { ErrorBanner } from '@restate/ui/error';
 import { Button } from '@restate/ui/button';
 import { StatusArcEcharts, StatusLegend } from '@restate/features/status-chart';
 import { useWaveAnimation } from '@restate/ui/wave-animation';
+import {
+  ContentPanel,
+  ContentPanelBody,
+  ContentPanelHeader,
+  ContentPanelSection,
+  ContentPanelToolbar,
+} from '@restate/ui/content-panel';
 import { OverviewProvider, useOverviewContext } from './OverviewContext';
 import { useRestateServerStatus } from './useRestateServerStatus';
 import { NoDeploymentPlaceholder } from './NoDeploymentPlaceholder';
@@ -274,7 +281,7 @@ function OverviewContent() {
   return (
     <div
       ref={containerRef}
-      className="relative mx-auto flex h-full w-full flex-col items-center gap-8 px-6 pt-8 pb-6"
+      className="relative mx-auto flex min-h-0 w-full flex-1 flex-col items-center gap-8 px-6 pt-8"
     >
       <PerspectiveLines svgRef={linesSvgRef} paths={paths} viewBox={viewBox} />
       <div className="relative flex w-full items-center justify-center">
@@ -400,47 +407,59 @@ function OverviewContent() {
         <IssuesBannerStack className="-mt-4" />
       </div>
 
-      <div className="mt-8 flex min-h-0 w-full flex-1 flex-col">
-        <div className="mb-2 flex flex-col gap-2 px-5 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex flex-wrap items-center gap-2">
-            <OverviewModeToggle />
-            <SortByDropdown
-              formatServiceSortLabel={(option) =>
-                option.value === 'health'
-                  ? `${option.label} ${rangeLabel}`
-                  : option.label
-              }
-            />
-            <DeploymentActions />
-          </div>
-          <SearchField
-            aria-label="Filter"
-            value={filter}
-            onChange={setFilter}
-            className="min-w-0 flex-auto outline-none lg:grow-0 lg:basis-[38ch]"
-          >
-            <Label className="sr-only">{filterPlaceholder}</Label>
-            <div className="relative min-h-7">
-              <AriaInput
-                ref={filterRef}
-                placeholder={filterPlaceholder}
-                className="mt-0 w-full min-w-0 rounded-xl border border-gray-200 bg-white px-2 py-1 pr-8 pl-8 text-sm text-gray-900 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] placeholder:text-gray-500/70 focus:border-gray-200 focus:shadow-none focus:[box-shadow:inset_0_1px_0px_0px_rgba(0,0,0,0.03)] focus:outline-2 focus:outline-blue-600"
+      <ContentPanel className="mt-8 w-full">
+        <ContentPanelToolbar className="px-5">
+          <OverviewModeToggle />
+        </ContentPanelToolbar>
+        <ContentPanelHeader className="px-5 py-1.5">
+          <div className="flex w-full flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-wrap items-center gap-2">
+              <SortByDropdown
+                formatServiceSortLabel={(option) =>
+                  option.value === 'health'
+                    ? `${option.label} ${rangeLabel}`
+                    : option.label
+                }
               />
-              <Icon
-                name={IconName.Search}
-                className="pointer-events-none absolute top-0 bottom-0 left-2 aspect-square h-full p-1 text-gray-400"
-              />
-              <FocusShortcutKey
-                variant="light"
-                className="pointer-events-none absolute top-1/2 right-2 -translate-y-1/2"
-              />
+              <DeploymentActions />
             </div>
-          </SearchField>
-        </div>
-        <div ref={gridRef}>
-          {mode === 'services' ? <ServicesGridList /> : <DeploymentsGridList />}
-        </div>
-      </div>
+            <SearchField
+              aria-label="Filter"
+              value={filter}
+              onChange={setFilter}
+              className="min-w-0 flex-auto outline-none lg:grow-0 lg:basis-[38ch]"
+            >
+              <Label className="sr-only">{filterPlaceholder}</Label>
+              <div className="relative min-h-7">
+                <AriaInput
+                  ref={filterRef}
+                  placeholder={filterPlaceholder}
+                  className="mt-0 w-full min-w-0 rounded-xl border border-gray-200 bg-white px-2 py-1 pr-8 pl-8 text-sm text-gray-900 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] placeholder:text-gray-500/70 focus:border-gray-200 focus:shadow-none focus:[box-shadow:inset_0_1px_0px_0px_rgba(0,0,0,0.03)] focus:outline-2 focus:outline-blue-600"
+                />
+                <Icon
+                  name={IconName.Search}
+                  className="pointer-events-none absolute top-0 bottom-0 left-2 aspect-square h-full p-1 text-gray-400"
+                />
+                <FocusShortcutKey
+                  variant="light"
+                  className="pointer-events-none absolute top-1/2 right-2 -translate-y-1/2"
+                />
+              </div>
+            </SearchField>
+          </div>
+        </ContentPanelHeader>
+        <ContentPanelBody>
+          <ContentPanelSection>
+            <div ref={gridRef} className="pt-2">
+              {mode === 'services' ? (
+                <ServicesGridList />
+              ) : (
+                <DeploymentsGridList />
+              )}
+            </div>
+          </ContentPanelSection>
+        </ContentPanelBody>
+      </ContentPanel>
     </div>
   );
 }
