@@ -76,13 +76,7 @@ function Component() {
   );
 
   const sortedItems = useMemo(() => {
-    return [...(data?.rows ?? [])].map((row) => ({
-      row,
-      hash: Object.entries(row)
-        .map(([key, value]) => `${key}:${value}`)
-        .join('|')
-        .slice(0, 10000),
-    }));
+    return (data?.rows ?? []).map((row, index) => ({ row, id: index }));
   }, [data?.rows]);
 
   const currentPageItems = useMemo(() => {
@@ -97,11 +91,6 @@ function Component() {
       setPageIndex(0);
     }
   }, [pageIndex, setPageIndex, sortedItems.length]);
-
-  const hash = useMemo(
-    () => 'hash' + currentPageItems.map(({ hash }) => hash).join(''),
-    [currentPageItems],
-  );
 
   const allColumns = useMemo(() => {
     return new Set(data?.rows?.map((row) => Object.keys(row)).flat());
@@ -138,7 +127,7 @@ function Component() {
   );
 
   const panelItems = useMemo(
-    () => currentPageItems.map(({ row, hash }) => ({ id: hash, row })),
+    () => currentPageItems.map(({ row, id }) => ({ id: String(id), row })),
     [currentPageItems],
   );
 
@@ -151,7 +140,6 @@ function Component() {
               aria-label="Introspection SQL"
               columns={panelColumns}
               items={panelItems}
-              bodyKey={hash}
               bodyDependencies={[allColumns, pageIndex]}
               isLoading={isPending && !!query}
               error={error}
