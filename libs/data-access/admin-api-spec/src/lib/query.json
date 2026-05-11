@@ -2769,6 +2769,156 @@
           }
         }
       }
+    },
+    "/internal/services/{service}/serdes/decode/{serdeName}": {
+      "post": {
+        "tags": ["service"],
+        "summary": "Decode service wire bytes into JSON",
+        "operationId": "decode_service_serde",
+        "parameters": [
+          {
+            "name": "service",
+            "in": "path",
+            "required": true,
+            "description": "Registered service name.",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "serdeName",
+            "in": "path",
+            "required": true,
+            "description": "Arbitrary serde name forwarded to the target deployment.",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "deployment",
+            "in": "query",
+            "required": false,
+            "description": "Optional deployment id; if omitted, resolve the latest deployment for the service.",
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/octet-stream": {
+              "schema": { "type": "string", "format": "binary" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "JSON returned by the target deployment",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/services/{service}/serdes/encode/{serdeName}": {
+      "post": {
+        "tags": ["service"],
+        "summary": "Encode JSON into service wire bytes",
+        "operationId": "encode_service_serde",
+        "parameters": [
+          {
+            "name": "service",
+            "in": "path",
+            "required": true,
+            "description": "Registered service name.",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "serdeName",
+            "in": "path",
+            "required": true,
+            "description": "Arbitrary serde name forwarded to the target deployment.",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "deployment",
+            "in": "query",
+            "required": false,
+            "description": "Optional deployment id; if omitted, resolve the latest deployment for the service.",
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": {} }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Wire-format bytes returned by the target deployment",
+            "content": {
+              "application/octet-stream": {
+                "schema": { "type": "string", "format": "binary" }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
