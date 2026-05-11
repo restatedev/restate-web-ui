@@ -43,15 +43,14 @@ export function WorkflowKeySection({
       {
         enabled: Boolean(
           typeof invocation?.target_service_key === 'string' &&
-            invocation &&
-            invocation.target_service_ty === 'workflow',
+          invocation &&
+          invocation.target_service_ty === 'workflow',
         ),
         staleTime: 0,
       },
     );
 
   if (invocation?.target_service_ty === 'workflow') {
-    const state = stateData?.state ?? [];
     const keys = (stateData?.state || stateInterface?.keys) ?? [];
 
     return (
