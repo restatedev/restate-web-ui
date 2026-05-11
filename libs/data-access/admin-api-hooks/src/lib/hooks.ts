@@ -1282,19 +1282,26 @@ export function useGetVirtualObjectQueue(
 export function useGetVirtualObjectState(
   serviceName: string,
   key: string,
+  scope?: string,
   options?: HookQueryOptions<'/query/services/{name}/keys/{key}/state', 'get'>,
 ) {
   const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
-  const queryOptions = adminApi(
-    'query',
-    '/query/services/{name}/keys/{key}/state',
-    'get',
-    {
-      baseUrl,
-      parameters: { path: { key, name: serviceName } },
-    },
-  );
+  const queryOptions =
+    scope !== undefined
+      ? adminApi(
+          'query',
+          '/query/services/{name}/scopes/{scope}/keys/{key}/state',
+          'get',
+          {
+            baseUrl,
+            parameters: { path: { name: serviceName, scope, key } },
+          },
+        )
+      : adminApi('query', '/query/services/{name}/keys/{key}/state', 'get', {
+          baseUrl,
+          parameters: { path: { key, name: serviceName } },
+        });
 
   const results = useQuery({
     ...queryOptions,
@@ -1311,6 +1318,7 @@ export function useGetVirtualObjectState(
 export function useGetVirtualObjectStateInterface(
   serviceName: string,
   serviceKey: string[],
+  scope?: string,
   options?: HookQueryOptions<'/query/services/{name}/state/keys', 'get'>,
 ) {
   const enabled = useAPIStatus();
@@ -1323,7 +1331,7 @@ export function useGetVirtualObjectStateInterface(
       baseUrl,
       parameters: {
         path: { name: serviceName },
-        query: { serviceKey },
+        query: { serviceKey, ...(scope !== undefined ? { scope } : {}) },
       },
     },
   );
@@ -1354,9 +1362,7 @@ export function useQueryVirtualObjectState(
     {
       baseUrl,
       parameters: { path: { name: serviceName } },
-      body: {
-        filters,
-      },
+      body: { filters },
       resolvedPath: `/query/services/${serviceName}/state/query`,
     },
   );
@@ -1375,7 +1381,7 @@ export function useQueryVirtualObjectState(
 
 export function useListVirtualObjectState(
   serviceName: string,
-  keys: string[],
+  args: { keys: string[] } | { items: { key: string; scope?: string }[] },
   options?: HookQueryOptions<'/query/services/{name}/state', 'post'>,
 ) {
   const enabled = useAPIStatus();
@@ -1387,17 +1393,17 @@ export function useListVirtualObjectState(
     {
       baseUrl,
       parameters: { path: { name: serviceName } },
-      body: {
-        keys,
-      },
+      body: args,
       resolvedPath: `/query/services/${serviceName}/state`,
     },
   );
 
+  const length = 'keys' in args ? args.keys.length : args.items.length;
+
   const results = useQuery({
     ...queryOptions,
     ...options,
-    enabled: keys.length > 0 && options?.enabled !== false && enabled,
+    enabled: length > 0 && options?.enabled !== false && enabled,
   });
 
   return {

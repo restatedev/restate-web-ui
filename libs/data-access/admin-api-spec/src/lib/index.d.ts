@@ -1000,6 +1000,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/query/services/{name}/scopes/{scope}/keys/{key}/state': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get scoped state
+     * @description Get state for a (service, scope, key) triple.
+     */
+    get: operations['get_scoped_state'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/query/deployments/drained': {
     parameters: {
       query?: never;
@@ -6633,6 +6653,8 @@ export interface operations {
       query?: {
         /** @description service key */
         serviceKey?: string[];
+        /** @description workflow scope filter */
+        scope?: string;
       };
       header?: never;
       path: {
@@ -6713,9 +6735,16 @@ export interface operations {
     };
     requestBody: {
       content: {
-        'application/json': {
-          keys: string[];
-        };
+        'application/json':
+          | {
+              items: {
+                key: string;
+                scope?: string;
+              }[];
+            }
+          | {
+              keys: string[];
+            };
       };
     };
     responses: {
@@ -6727,6 +6756,7 @@ export interface operations {
           'application/json': {
             objects: (components['schemas']['StateResponse'] & {
               key: string;
+              scope?: string;
             })[];
           };
         };
@@ -6879,9 +6909,16 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': {
-            keys: string[];
-          };
+          'application/json':
+            | {
+                keys: string[];
+              }
+            | {
+                items: {
+                  key: string;
+                  scope?: string;
+                }[];
+              };
         };
       };
       400: {
@@ -6925,6 +6962,61 @@ export interface operations {
         };
       };
       503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  get_scoped_state: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description service name */
+        name: string;
+        /** @description workflow scope */
+        scope: string;
+        /** @description key */
+        key: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': WithRequired<
+            components['schemas']['StateResponse'],
+            'state'
+          > & {
+            version?: string;
+          };
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
         headers: {
           [name: string]: unknown;
         };

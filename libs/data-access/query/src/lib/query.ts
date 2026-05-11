@@ -36,6 +36,8 @@ import {
   summaryInvocations,
   getPausedError,
   listDrainedDeployments,
+  type ListStateArgs,
+  type ListStateItem,
 } from './handlers';
 import { getVersion } from './getVersion';
 import { getFeatures } from './getFeatures';
@@ -78,7 +80,12 @@ type BoundHandlers = {
     serviceKey?: string[],
   ) => Promise<Response>;
   queryState: (service: string, filters: FilterItem[]) => Promise<Response>;
-  listState: (service: string, keys: string[]) => Promise<Response>;
+  listState: (service: string, args: ListStateArgs) => Promise<Response>;
+  getScopedState: (
+    service: string,
+    scope: string,
+    key: string,
+  ) => Promise<Response>;
   batchCancelInvocations: (
     request: BatchInvocationsRequestBody,
   ) => Promise<Response>;
@@ -117,6 +124,8 @@ function bindHandlers(context: QueryContext): BoundHandlers {
     getStateInterface: getStateInterface.bind(context),
     queryState: queryState.bind(context),
     listState: listState.bind(context),
+    getScopedState: (service, scope, key) =>
+      getState.call(context, service, key, scope),
     batchCancelInvocations: batchCancelInvocations.bind(context),
     batchPurgeInvocations: batchPurgeInvocations.bind(context),
     batchKillInvocations: batchKillInvocations.bind(context),
@@ -216,6 +225,12 @@ export const routes = createRoutes('/query', {
       keys: { method: 'GET', pattern: '/services/:name/state/keys' },
       query: { method: 'POST', pattern: '/services/:name/state/query' },
       list: { method: 'POST', pattern: '/services/:name/state' },
+    },
+    scopedState: {
+      get: {
+        method: 'GET',
+        pattern: '/services/:name/scopes/:scope/keys/:key/state',
+      },
     },
   },
   deployments: {
@@ -363,6 +378,7 @@ router.map(routes, {
           return getStateInterface(
             ctx.params.name,
             ctx.url.searchParams.getAll('serviceKey'),
+            ctx.url.searchParams.get('scope') ?? undefined,
           );
         },
         async query(ctx) {
@@ -373,8 +389,24 @@ router.map(routes, {
         },
         async list(ctx) {
           const { listState } = ctx.storage.get(handlersKey);
-          const { keys = [] }: { keys: string[] } = await ctx.request.json();
-          return listState(ctx.params.name, keys);
+          const body = (await ctx.request.json()) as {
+            items?: ListStateItem[];
+            keys?: string[];
+          };
+          const args: ListStateArgs = body.items
+            ? { items: body.items }
+            : { keys: body.keys ?? [] };
+          return listState(ctx.params.name, args);
+        },
+      },
+      scopedState: {
+        async get(ctx) {
+          const { getScopedState } = ctx.storage.get(handlersKey);
+          return getScopedState(
+            ctx.params.name,
+            ctx.params.scope,
+            ctx.params.key,
+          );
         },
       },
     },

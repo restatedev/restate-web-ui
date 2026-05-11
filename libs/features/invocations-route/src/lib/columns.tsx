@@ -126,7 +126,9 @@ export function useColumns() {
   );
   const features = getFeatures();
 
-  const availableColumnNames = useMemo<Partial<Record<ColumnKey, string>>>(() => {
+  const availableColumnNames = useMemo<
+    Partial<Record<ColumnKey, string>>
+  >(() => {
     return Object.fromEntries(
       (Object.entries(COLUMN_NAMES) as [ColumnKey, string][]).filter(([key]) =>
         isColumnAvailable(key, features),

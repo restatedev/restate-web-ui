@@ -6,9 +6,11 @@ export async function getState(
   this: QueryContext,
   service: string,
   key: string,
+  scope?: string,
 ) {
+  const scopeClause = scope !== undefined ? ` AND scope = '${scope}'` : '';
   const state: { name: string; value: string }[] = await this.query(
-    `SELECT key, value FROM state WHERE service_name = '${service}' AND service_key = '${key}'`,
+    `SELECT key, value FROM state WHERE service_name = '${service}' AND service_key = '${key}'${scopeClause}`,
   ).then(({ rows }) =>
     rows.map((row) => ({
       name: row.key,

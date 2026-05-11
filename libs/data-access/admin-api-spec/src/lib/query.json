@@ -1907,6 +1907,12 @@
                 "type": "string"
               }
             }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "description": "workflow scope filter",
+            "schema": { "type": "string" }
           }
         ],
         "responses": {
@@ -2004,16 +2010,35 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "required": ["keys"],
-                "properties": {
-                  "keys": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "required": ["items"],
+                    "properties": {
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "required": ["key"],
+                          "properties": {
+                            "key": { "type": "string" },
+                            "scope": { "type": "string" }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": ["keys"],
+                    "properties": {
+                      "keys": {
+                        "type": "array",
+                        "items": { "type": "string" }
+                      }
                     }
                   }
-                }
+                ]
               }
             }
           },
@@ -2040,9 +2065,8 @@
                             "type": "object",
                             "required": ["key"],
                             "properties": {
-                              "key": {
-                                "type": "string"
-                              }
+                              "key": { "type": "string" },
+                              "scope": { "type": "string" }
                             }
                           }
                         ]
@@ -2263,16 +2287,35 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "required": ["keys"],
-                  "properties": {
-                    "keys": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "required": ["keys"],
+                      "properties": {
+                        "keys": {
+                          "type": "array",
+                          "items": { "type": "string" }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "required": ["items"],
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "required": ["key"],
+                            "properties": {
+                              "key": { "type": "string" },
+                              "scope": { "type": "string" }
+                            }
+                          }
+                        }
                       }
                     }
-                  }
+                  ]
                 }
               }
             }
@@ -2328,6 +2371,91 @@
             }
           },
           "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query/services/{name}/scopes/{scope}/keys/{key}/state": {
+      "get": {
+        "tags": ["get-state"],
+        "summary": "Get scoped state",
+        "description": "Get state for a (service, scope, key) triple.",
+        "operationId": "get_scoped_state",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "description": "service name",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "scope",
+            "in": "path",
+            "description": "workflow scope",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "key",
+            "in": "path",
+            "description": "key",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["state"],
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/StateResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "version": { "type": "string" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
             "description": "",
             "content": {
               "application/json": {

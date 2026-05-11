@@ -102,6 +102,7 @@ function InvocationPanelContent() {
   const { queryKey: stateQuery } = useGetVirtualObjectState(
     String(data?.target_service_name),
     String(data?.target_service_key),
+    data?.scope,
     {
       enabled: false,
     },

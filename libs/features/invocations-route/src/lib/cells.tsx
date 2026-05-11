@@ -442,7 +442,10 @@ const CELLS: Record<ColumnKey, ComponentType<CellProps>> = {
   ),
   restarted_from: withCell(RestartedFromCell, 'restarted_from'),
   duration: withCell(DurationCell, 'duration'),
-  scope: withCell(withField({ field: 'scope', className: 'font-mono' }), 'scope'),
+  scope: withCell(
+    withField({ field: 'scope', className: 'font-mono' }),
+    'scope',
+  ),
 };
 
 export function InvocationCell({

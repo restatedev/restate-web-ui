@@ -192,22 +192,31 @@ function Component() {
     enabled: isValid,
   });
 
+  const allItems = useMemo<{ key: string; scope?: string }[]>(() => {
+    if (!serviceKeysData) return [];
+    if ('items' in serviceKeysData) return serviceKeysData.items;
+    return serviceKeysData.keys.map((key) => ({ key }));
+  }, [serviceKeysData]);
   const [pageIndex, _setPageIndex] = useState(0);
   const currentPageItems = useMemo(() => {
-    return (serviceKeysData?.keys ?? [])
-      .sort()
+    return allItems
+      .slice()
+      .sort((a, b) => a.key.localeCompare(b.key))
       .slice(pageIndex * STATE_PAGE_SIZE, (pageIndex + 1) * STATE_PAGE_SIZE);
-  }, [pageIndex, serviceKeysData?.keys]);
-  const listObjects = useListVirtualObjectState(
-    virtualObject,
-    currentPageItems,
-    {
-      refetchOnMount: true,
-      refetchOnReconnect: false,
-      staleTime: 0,
-      refetchOnWindowFocus: false,
-    },
+  }, [pageIndex, allItems]);
+  const listStateArgs = useMemo(
+    () =>
+      currentPageItems.some((item) => item.scope !== undefined)
+        ? { items: currentPageItems }
+        : { keys: currentPageItems.map((item) => item.key) },
+    [currentPageItems],
   );
+  const listObjects = useListVirtualObjectState(virtualObject, listStateArgs, {
+    refetchOnMount: true,
+    refetchOnReconnect: false,
+    staleTime: 0,
+    refetchOnWindowFocus: false,
+  });
 
   const flattenedData = useMemo(() => {
     return (
@@ -295,9 +304,7 @@ function Component() {
     return cols;
   }, [selectedColumns, virtualObject]);
 
-  const totalSize = Math.ceil(
-    (serviceKeysData?.keys.length ?? 0) / STATE_PAGE_SIZE,
-  );
+  const totalSize = Math.ceil(allItems.length / STATE_PAGE_SIZE);
   const dataUpdate = error ? errorUpdatedAt : dataUpdatedAt;
   const setEditState = useEditStateContext();
   const { EncodingWaterMark } = useRestateContext();
@@ -306,10 +313,10 @@ function Component() {
   });
 
   useEffect(() => {
-    if ((serviceKeysData?.keys ?? []).length <= STATE_PAGE_SIZE * pageIndex) {
+    if (allItems.length <= STATE_PAGE_SIZE * pageIndex) {
       setPageIndex(0);
     }
-  }, [pageIndex, serviceKeysData?.keys, setPageIndex]);
+  }, [pageIndex, allItems, setPageIndex]);
   const hash = 'hash' + flattenedData.map(({ key }) => key).join('');
 
   const panelColumns = useMemo<PanelTableColumn[]>(
@@ -787,16 +794,19 @@ function Footnote({
 
   const { isPast, ...parts } = durationSinceLastSnapshot(now);
   const duration = formatDurations(parts);
+  const count = data
+    ? 'items' in data
+      ? data.items.length
+      : (data.keys?.length ?? 0)
+    : 0;
 
   return (
     <div className="flex w-full flex-row-reverse flex-wrap items-center gap-2 pt-3 pr-4 pb-2 pl-2 text-center text-xs text-gray-500/80">
       {data && (
         <div className="ml-auto">
-          {data.keys && data.keys.length > 0 ? (
+          {count > 0 ? (
             <>
-              <span className="font-medium text-gray-500">
-                {data.keys.length}
-              </span>{' '}
+              <span className="font-medium text-gray-500">{count}</span>{' '}
               objects
             </>
           ) : (
