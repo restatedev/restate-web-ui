@@ -116,8 +116,12 @@ function saveQueryForNextVisit(savedSearchParams: URLSearchParams) {
 const PAGE_SIZE = 30;
 function Component() {
   const [searchParams] = useSearchParams();
-  const { selectedColumns, setSelectedColumns, sortedColumnsList } =
-    useColumns();
+  const {
+    selectedColumns,
+    setSelectedColumns,
+    sortedColumnsList,
+    availableColumnNames,
+  } = useColumns();
   const submitRef = useSubmitShortcut();
   const { schema, isLoading, listInvocationsParameters } =
     useListInvocationsParameters();
@@ -265,7 +269,7 @@ function Component() {
                     selectedItems={selectedColumns}
                     onSelect={setSelectedColumns}
                   >
-                    {Object.entries(COLUMN_NAMES)
+                    {Object.entries(availableColumnNames)
                       .filter(([key]) => key !== 'actions')
                       .map(([key, name]) => (
                         <DropdownItem key={key} value={key}>
