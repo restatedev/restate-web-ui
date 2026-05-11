@@ -268,9 +268,14 @@
           {
             "name": "mode",
             "in": "query",
-            "description": "If cancel, it will gracefully terminate the invocation. If kill, it will terminate the invocation with a hard stop. If purge, it will only cleanup the response for completed invocations, \n            and leave unaffected an in-flight invocation.",
+            "description": "If cancel, it will gracefully terminate the invocation.\nIf kill, it will terminate the invocation with a hard stop.\nIf purge, it will only cleanup the response for completed invocations,\nand leave unaffected an in-flight invocation.",
             "required": false,
-            "schema": { "$ref": "#/components/schemas/DeletionMode" }
+            "schema": {
+              "oneOf": [
+                { "type": "null" },
+                { "type": "string", "enum": ["Cancel", "Kill", "Purge"] }
+              ]
+            }
           }
         ],
         "responses": {
@@ -1880,11 +1885,6 @@
           },
           "pattern": { "type": "string" }
         }
-      },
-      "DeletionMode": {
-        "type": "string",
-        "enum": ["cancel", "kill", "purge"],
-        "description": "Deletion mode for an invocation. `cancel` gracefully terminates the invocation, `kill` performs a hard stop, and `purge` only cleans up the response of an already-completed invocation."
       },
       "DeploymentId": { "type": "string" },
       "DeploymentResponse": {

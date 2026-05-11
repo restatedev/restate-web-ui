@@ -1274,11 +1274,6 @@ export interface components {
       expected_version?: number | null;
       pattern: string;
     };
-    /**
-     * @description Deletion mode for an invocation. `cancel` gracefully terminates the invocation, `kill` performs a hard stop, and `purge` only cleans up the response of an already-completed invocation.
-     * @enum {string}
-     */
-    DeletionMode: 'cancel' | 'kill' | 'purge';
     DeploymentId: string;
     DeploymentResponse:
       | {
@@ -3968,10 +3963,12 @@ export interface operations {
     parameters: {
       query?: {
         /**
-         * @description If cancel, it will gracefully terminate the invocation. If kill, it will terminate the invocation with a hard stop. If purge, it will only cleanup the response for completed invocations,
-         *                 and leave unaffected an in-flight invocation.
+         * @description If cancel, it will gracefully terminate the invocation.
+         *     If kill, it will terminate the invocation with a hard stop.
+         *     If purge, it will only cleanup the response for completed invocations,
+         *     and leave unaffected an in-flight invocation.
          */
-        mode?: components['schemas']['DeletionMode'];
+        mode?: null | ('Cancel' | 'Kill' | 'Purge');
       };
       header?: never;
       path: {
