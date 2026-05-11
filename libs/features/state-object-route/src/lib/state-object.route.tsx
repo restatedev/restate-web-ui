@@ -6,14 +6,12 @@ import {
   useQueryVirtualObjectState,
 } from '@restate/data-access/admin-api-hooks';
 import { Button, SubmitButton } from '@restate/ui/button';
+import { Cell, PanelTable, PanelTableColumn, Row } from '@restate/ui/table';
 import {
-  Cell,
-  Column,
-  Row,
-  Table,
-  TableBody,
-  TableHeader,
-} from '@restate/ui/table';
+  ContentPanel,
+  ContentPanelBody,
+  ContentPanelSection,
+} from '@restate/ui/content-panel';
 import { SortDescriptor } from 'react-stately';
 import {
   Dropdown,
@@ -314,107 +312,107 @@ function Component() {
   }, [pageIndex, serviceKeysData?.keys, setPageIndex]);
   const hash = 'hash' + flattenedData.map(({ key }) => key).join('');
 
+  const panelColumns = useMemo<PanelTableColumn[]>(
+    () =>
+      selectedColumnsArray.map((col) => {
+        if (col.id === '__actions__') {
+          return {
+            id: '__actions__',
+            name: (
+              <Dropdown>
+                <DropdownTrigger>
+                  {keys.length > 0 && (
+                    <Button
+                      variant="icon"
+                      className="self-end rounded-lg p-0.5"
+                    >
+                      <Icon
+                        name={IconName.TableProperties}
+                        className="aspect-square h-4 w-4 text-gray-500"
+                      />
+                    </Button>
+                  )}
+                </DropdownTrigger>
+                <DropdownPopover>
+                  <DropdownSection title="Columns">
+                    <DropdownMenu
+                      multiple
+                      selectable
+                      selectedItems={selectedColumns}
+                      onSelect={setSelectedColumns}
+                    >
+                      <DropdownItem key="service_key" value="service_key">
+                        {virtualObject} (Key)
+                      </DropdownItem>
+                      {keys
+                        .filter((k) => k !== 'service_key')
+                        .map((k) => (
+                          <DropdownItem key={k} value={k}>
+                            {k}
+                          </DropdownItem>
+                        ))}
+                    </DropdownMenu>
+                  </DropdownSection>
+                </DropdownPopover>
+              </Dropdown>
+            ),
+            width: 40,
+            allowsSorting: false,
+          };
+        }
+        return {
+          id: col.id,
+          name: col.name,
+          isRowHeader: col.isRowHeader,
+          allowsSorting: false,
+        };
+      }),
+    [selectedColumnsArray, keys, selectedColumns, virtualObject],
+  );
+
+  const panelItems = useMemo(
+    () => flattenedData.map((row) => ({ ...row, id: (row.key ?? '') + '_' })),
+    [flattenedData],
+  );
+
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdate}>
-      <div className="relative flex flex-auto flex-col gap-2">
-        <Table
-          aria-label="State"
-          sortDescriptor={sortDescriptor}
-          onSortChange={setSortDescriptor}
-          key={hash}
-        >
-          <TableHeader
-            columns={selectedColumnsArray}
-            dependencies={[selectedColumnsArray, selectedColumns, keys]}
-          >
-            {(col) => {
-              if (col.id === '__actions__') {
-                return (
-                  <Column id={col.id} width={40} allowsSorting={false}>
-                    <Dropdown>
-                      <DropdownTrigger>
-                        {keys.length > 0 && (
-                          <Button
-                            variant="icon"
-                            className="self-end rounded-lg p-0.5"
-                          >
-                            <Icon
-                              name={IconName.TableProperties}
-                              className="aspect-square h-4 w-4 text-gray-500"
-                            />
-                          </Button>
-                        )}
-                      </DropdownTrigger>
-                      <DropdownPopover>
-                        <DropdownSection title="Columns">
-                          <DropdownMenu
-                            multiple
-                            selectable
-                            selectedItems={selectedColumns}
-                            onSelect={setSelectedColumns}
-                          >
-                            <DropdownItem
-                              key={'service_key'}
-                              value={'service_key'}
-                            >
-                              {virtualObject} (Key)
-                            </DropdownItem>
-                            {keys
-                              .filter((key) => key !== 'service_key')
-                              .map((key) => (
-                                <DropdownItem key={key} value={key}>
-                                  {key}
-                                </DropdownItem>
-                              ))}
-                          </DropdownMenu>
-                        </DropdownSection>
-                      </DropdownPopover>
-                    </Dropdown>
-                  </Column>
-                );
+      <ContentPanel>
+        <ContentPanelBody className="pb-32">
+          <ContentPanelSection flush>
+            <PanelTable
+              aria-label="State"
+              sortDescriptor={sortDescriptor}
+              onSortChange={setSortDescriptor}
+              bodyKey={hash}
+              columns={panelColumns}
+              items={panelItems}
+              numOfRows={currentPageItems.length || 5}
+              bodyDependencies={[selectedColumnsArray, pageIndex]}
+              error={error || listObjects.error}
+              isLoading={
+                isFetching ||
+                isValidating ||
+                (listObjects.isFetching && currentPageItems.length !== 0)
               }
-              return (
-                <Column
-                  id={col.id}
-                  isRowHeader={col.isRowHeader}
-                  key={col.id}
-                  allowsSorting={false}
-                >
-                  {col.name}
-                </Column>
-              );
-            }}
-          </TableHeader>
-          <TableBody
-            numOfRows={currentPageItems.length || 5}
-            items={flattenedData}
-            dependencies={[selectedColumnsArray, pageIndex]}
-            error={error || listObjects.error}
-            isLoading={
-              isFetching ||
-              isValidating ||
-              (listObjects.isFetching && currentPageItems.length !== 0)
-            }
-            numOfColumns={selectedColumnsArray.length}
-            emptyPlaceholder={
-              <div className="flex flex-col items-center gap-4 py-14">
-                <div className="h-12 w-12 shrink-0 rounded-xl bg-gray-200/50 p-1">
-                  <Icon
-                    name={IconName.Database}
-                    className="h-full w-full p-1 text-zinc-400"
-                  />
+              emptyPlaceholder={
+                <div className="flex flex-col items-center gap-4 py-14">
+                  <div className="h-12 w-12 shrink-0 rounded-xl bg-gray-200/50 p-1">
+                    <Icon
+                      name={IconName.Database}
+                      className="h-full w-full p-1 text-zinc-400"
+                    />
+                  </div>
+                  <h3 className="text-sm font-semibold text-zinc-400">
+                    No objects found
+                  </h3>
                 </div>
-                <h3 className="text-sm font-semibold text-zinc-400">
-                  No objects found
-                </h3>
-              </div>
-            }
-          >
-            {(row) => {
-              return (
+              }
+              renderRow={(row) => (
                 <Row
-                  id={row.key + '_'}
-                  columns={selectedColumnsArray}
+                  id={row.id}
+                  columns={panelColumns}
+                  dependencies={[panelColumns]}
                   className="bg-transparent [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"
                 >
                   {({ id }) => {
@@ -591,55 +589,55 @@ function Component() {
                     }
                   }}
                 </Row>
-              );
-            }}
-          </TableBody>
-        </Table>
-        <Footnote
-          data={serviceKeysData}
-          isFetching={isFetching || listObjects.isFetching}
-          key={dataUpdate}
-        >
-          {!isFetching && !error && totalSize > 1 && (
-            <div className="flex items-center rounded-lg border bg-zinc-50 py-0.5 shadow-xs">
-              <Button
-                variant="icon"
-                disabled={pageIndex === 0}
-                onClick={() => setPageIndex(0)}
-              >
-                <Icon name={IconName.ChevronFirst} className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="icon"
-                disabled={pageIndex === 0}
-                onClick={() => setPageIndex(pageIndex - 1)}
-                className=""
-              >
-                <Icon name={IconName.ChevronLeft} className="h-4 w-4" />
-              </Button>
-              <div className="mx-2 flex items-center gap-0.5 text-0.5xs">
-                {pageIndex + 1} / {totalSize}
-              </div>
+              )}
+            />
+            <Footnote
+              data={serviceKeysData}
+              isFetching={isFetching || listObjects.isFetching}
+              key={dataUpdate}
+            >
+              {!isFetching && !error && totalSize > 1 && (
+                <div className="flex items-center rounded-lg border bg-zinc-50 py-0.5 shadow-xs">
+                  <Button
+                    variant="icon"
+                    disabled={pageIndex === 0}
+                    onClick={() => setPageIndex(0)}
+                  >
+                    <Icon name={IconName.ChevronFirst} className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="icon"
+                    disabled={pageIndex === 0}
+                    onClick={() => setPageIndex(pageIndex - 1)}
+                    className=""
+                  >
+                    <Icon name={IconName.ChevronLeft} className="h-4 w-4" />
+                  </Button>
+                  <div className="mx-2 flex items-center gap-0.5 text-0.5xs">
+                    {pageIndex + 1} / {totalSize}
+                  </div>
 
-              <Button
-                variant="icon"
-                disabled={pageIndex + 1 === totalSize}
-                onClick={() => setPageIndex(pageIndex + 1)}
-                className=""
-              >
-                <Icon name={IconName.ChevronRight} className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="icon"
-                disabled={pageIndex + 1 === totalSize}
-                onClick={() => setPageIndex(totalSize - 1)}
-              >
-                <Icon name={IconName.ChevronLast} className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
-        </Footnote>
-      </div>
+                  <Button
+                    variant="icon"
+                    disabled={pageIndex + 1 === totalSize}
+                    onClick={() => setPageIndex(pageIndex + 1)}
+                    className=""
+                  >
+                    <Icon name={IconName.ChevronRight} className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="icon"
+                    disabled={pageIndex + 1 === totalSize}
+                    onClick={() => setPageIndex(totalSize - 1)}
+                  >
+                    <Icon name={IconName.ChevronLast} className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </Footnote>
+          </ContentPanelSection>
+        </ContentPanelBody>
+      </ContentPanel>
       <LayoutOutlet zone={LayoutZone.Toolbar}>
         <Form
           action={`/query/services/${virtualObject}/state`}
@@ -798,7 +796,7 @@ function Footnote({
   const duration = formatDurations(parts);
 
   return (
-    <div className="flex w-full flex-row-reverse flex-wrap items-center text-center text-xs text-gray-500/80">
+    <div className="flex w-full flex-row-reverse flex-wrap items-center gap-2 pt-3 pr-4 pb-2 pl-2 text-center text-xs text-gray-500/80">
       {data && (
         <div className="ml-auto">
           {data.keys && data.keys.length > 0 ? (

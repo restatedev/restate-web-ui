@@ -1,7 +1,7 @@
 import { useSqlQuery } from '@restate/data-access/admin-api-hooks';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
-import { Column, Row, Table, TableBody, TableHeader } from '@restate/ui/table';
+import { PanelTable, PanelTableColumn, Row } from '@restate/ui/table';
 import { formatDurations } from '@restate/util/intl';
 import {
   SnapshotTimeProvider,
@@ -20,6 +20,11 @@ import { useSearchParams } from 'react-router';
 import { IntrospectionCell } from './IntrospectionCell';
 import { Link } from '@restate/ui/link';
 import { HoverTooltip } from '@restate/ui/tooltip';
+import {
+  ContentPanel,
+  ContentPanelBody,
+  ContentPanelSection,
+} from '@restate/ui/content-panel';
 import { useQueryClient } from '@tanstack/react-query';
 import { Toolbar } from './Toolbar';
 
@@ -108,30 +113,36 @@ function Component() {
   }, [allColumns]);
 
   const totalSize = Math.ceil((data?.rows ?? []).length / PAGE_SIZE);
+
+  const panelColumns = useMemo<PanelTableColumn[]>(
+    () =>
+      selectedColumnsArray.map((col) => ({
+        id: col.id,
+        name: col.name,
+        isRowHeader: col.isRowHeader,
+        allowsSorting: false,
+        minWidth: 100,
+      })),
+    [selectedColumnsArray],
+  );
+
+  const panelItems = useMemo(
+    () => currentPageItems.map(({ row, id }) => ({ id: String(id), row })),
+    [currentPageItems],
+  );
+
   return (
-    <div>
-      <SnapshotTimeProvider lastSnapshot={dataUpdate}>
-        <div className="relative flex flex-auto flex-col gap-2">
-          <Table aria-label="Introspection SQL">
-            <TableHeader>
-              {selectedColumnsArray.map((col) => (
-                <Column
-                  id={col.id}
-                  isRowHeader={col.isRowHeader}
-                  allowsSorting={false}
-                  key={col.id}
-                  minWidth={100}
-                >
-                  {col.name}
-                </Column>
-              ))}
-            </TableHeader>
-            <TableBody
-              items={currentPageItems}
-              dependencies={[allColumns, pageIndex]}
-              error={error}
+    <SnapshotTimeProvider lastSnapshot={dataUpdate}>
+      <ContentPanel>
+        <ContentPanelBody className="pb-32">
+          <ContentPanelSection flush>
+            <PanelTable
+              aria-label="Introspection SQL"
+              columns={panelColumns}
+              items={panelItems}
+              bodyDependencies={[allColumns, pageIndex]}
               isLoading={isPending && !!query}
-              numOfColumns={selectedColumnsArray.length}
+              error={error}
               emptyPlaceholder={
                 query ? (
                   <div className="flex flex-col items-center gap-4 py-14">
@@ -171,75 +182,73 @@ function Component() {
                   </div>
                 )
               }
+              renderRow={(item) => (
+                <Row
+                  id={item.id}
+                  columns={panelColumns}
+                  dependencies={[panelColumns]}
+                  className="bg-transparent [content-visibility:auto] [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"
+                >
+                  {({ id }) => (
+                    <IntrospectionCell col={id} row={item.row} key={id} />
+                  )}
+                </Row>
+              )}
+            />
+            <Footnote
+              data={data}
+              isFetching={isFetching}
+              key={dataUpdate}
+              query={query}
             >
-              {({ row, id }) => {
-                return (
-                  <Row
-                    id={id}
-                    columns={selectedColumnsArray}
-                    className={`bg-transparent [content-visibility:auto] [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50`}
+              {!isPending && !error && totalSize > 1 && (
+                <div className="flex items-center rounded-lg border bg-zinc-50 py-0.5 shadow-xs">
+                  <Button
+                    variant="icon"
+                    disabled={pageIndex === 0}
+                    onClick={() => setPageIndex(0)}
                   >
-                    {({ id }) => {
-                      return <IntrospectionCell col={id} row={row} key={id} />;
-                    }}
-                  </Row>
-                );
-              }}
-            </TableBody>
-          </Table>
-          <Footnote
-            data={data}
-            isFetching={isFetching}
-            key={dataUpdate}
-            query={query}
-          >
-            {!isPending && !error && totalSize > 1 && (
-              <div className="flex items-center rounded-lg border bg-zinc-50 py-0.5 shadow-xs">
-                <Button
-                  variant="icon"
-                  disabled={pageIndex === 0}
-                  onClick={() => setPageIndex(0)}
-                >
-                  <Icon name={IconName.ChevronFirst} className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="icon"
-                  disabled={pageIndex === 0}
-                  onClick={() => setPageIndex((s) => s - 1)}
-                  className=""
-                >
-                  <Icon name={IconName.ChevronLeft} className="h-4 w-4" />
-                </Button>
-                <div className="mx-2 flex items-center gap-0.5 text-0.5xs">
-                  {pageIndex + 1} / {totalSize}
-                </div>
+                    <Icon name={IconName.ChevronFirst} className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="icon"
+                    disabled={pageIndex === 0}
+                    onClick={() => setPageIndex((s) => s - 1)}
+                    className=""
+                  >
+                    <Icon name={IconName.ChevronLeft} className="h-4 w-4" />
+                  </Button>
+                  <div className="mx-2 flex items-center gap-0.5 text-0.5xs">
+                    {pageIndex + 1} / {totalSize}
+                  </div>
 
-                <Button
-                  variant="icon"
-                  disabled={pageIndex + 1 === totalSize}
-                  onClick={() => setPageIndex((s) => s + 1)}
-                  className=""
-                >
-                  <Icon name={IconName.ChevronRight} className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="icon"
-                  disabled={pageIndex + 1 === totalSize}
-                  onClick={() => setPageIndex(totalSize - 1)}
-                >
-                  <Icon name={IconName.ChevronLast} className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
-          </Footnote>
-        </div>
-      </SnapshotTimeProvider>
+                  <Button
+                    variant="icon"
+                    disabled={pageIndex + 1 === totalSize}
+                    onClick={() => setPageIndex((s) => s + 1)}
+                    className=""
+                  >
+                    <Icon name={IconName.ChevronRight} className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="icon"
+                    disabled={pageIndex + 1 === totalSize}
+                    onClick={() => setPageIndex(totalSize - 1)}
+                  >
+                    <Icon name={IconName.ChevronLast} className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </Footnote>
+          </ContentPanelSection>
+        </ContentPanelBody>
+      </ContentPanel>
       <Toolbar
         setQuery={setQuery}
         isPending={isFetching}
         initialQuery={searchParams.get(QUERY_PARAM) ?? ''}
       />
-    </div>
+    </SnapshotTimeProvider>
   );
 }
 
@@ -275,7 +284,7 @@ function Footnote({
   const duration = formatDurations(parts);
 
   return (
-    <div className="flex w-full flex-row-reverse flex-wrap items-center text-center text-xs text-gray-500/80">
+    <div className="flex w-full flex-row-reverse flex-wrap items-center gap-2 pt-3 pr-4 pb-2 pl-2 text-center text-xs text-gray-500/80">
       {data && (
         <div className="ml-auto">
           {data.rows && data.rows.length > 0 ? (

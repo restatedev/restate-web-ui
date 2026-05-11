@@ -7,13 +7,13 @@ export function OverviewModeToggle() {
     <Nav
       ariaCurrentValue="true"
       responsive={false}
-      containerClassName="shrink-0 rounded-lg border-zinc-800/5 bg-black/3 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]"
-      indicatorClassName="rounded-lg"
-      className="gap-0 text-0.5xs"
+      containerClassName="shrink-0 rounded-none border-0 bg-transparent shadow-none [&:has(:focus)]:border-0 [&:has(:focus)]:bg-transparent [&:has(:focus)]:shadow-none [&:has(:hover)]:border-0 [&:has(:hover)]:bg-transparent [&:has(:hover)]:shadow-none"
+      indicatorClassName="hidden"
+      className="h-9 gap-3 text-sm"
     >
       <NavSearchItem
         param={OVERVIEW_MODE_PARAM}
-        className="flex items-center gap-1 rounded-lg px-3 py-0.75 text-0.5xs data-[active=true]:text-gray-800"
+        className="flex h-9 items-center gap-1 rounded-none border-b-2 border-transparent px-1.5 py-0 text-sm font-medium text-gray-500 hover:!bg-transparent data-[active=true]:border-blue-600 data-[active=true]:text-gray-900 pressed:!bg-transparent"
       >
         <Icon
           name={IconName.Box}
@@ -24,7 +24,7 @@ export function OverviewModeToggle() {
       <NavSearchItem
         param={OVERVIEW_MODE_PARAM}
         value="deployments"
-        className="flex items-center gap-1 rounded-lg px-3 py-0.75 text-0.5xs data-[active=true]:text-gray-800"
+        className="flex h-9 items-center gap-1 rounded-none border-b-2 border-transparent px-1.5 py-0 text-sm font-medium text-gray-500 hover:!bg-transparent data-[active=true]:border-blue-600 data-[active=true]:text-gray-900 pressed:!bg-transparent"
       >
         <Icon
           name={IconName.Http}

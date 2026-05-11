@@ -68,7 +68,7 @@ const styles = tv({
     isVoid: {
       true: {
         trigger:
-          'pointer-events-none mx-0 w-fit border-transparent font-mono text-0.5xs leading-5 font-normal text-zinc-400',
+          'pointer-events-none mx-0 w-fit border-transparent bg-transparent font-mono text-0.5xs leading-5 font-normal text-zinc-400',
         triggerLabel: 'mx-1.5',
       },
       false: {

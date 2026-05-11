@@ -222,25 +222,25 @@ export const Entry = memo(function Entry({
           hasError:
             Boolean(
               invocation.last_failure_related_command_index &&
-                invocation?.last_failure_related_command_index ===
-                  entry.commandIndex,
+              invocation?.last_failure_related_command_index ===
+                entry.commandIndex,
             ) ||
             Boolean(
               isPaused &&
-                typeof pausedRelatedCommandIndex === 'number' &&
-                pausedRelatedCommandIndex === entry.commandIndex,
+              typeof pausedRelatedCommandIndex === 'number' &&
+              pausedRelatedCommandIndex === entry.commandIndex,
             ) ||
             Boolean(
               isPaused &&
-                typeof pausedRelatedCommandIndex !== 'number' &&
-                isEntriesEqual(
-                  entry,
-                  invocation.journal?.entries?.findLast(
-                    (entry) =>
-                      !isCompact ||
-                      !['Event: TransientError'].includes(String(entry?.type)),
-                  ),
+              typeof pausedRelatedCommandIndex !== 'number' &&
+              isEntriesEqual(
+                entry,
+                invocation.journal?.entries?.findLast(
+                  (entry) =>
+                    !isCompact ||
+                    !['Event: TransientError'].includes(String(entry?.type)),
                 ),
+              ),
             ),
         })}
         {...(entry.category === 'command' && {
@@ -287,7 +287,7 @@ export const Entry = memo(function Entry({
           ) : null}
         </div>
         <div className="relative min-w-20 flex-auto">
-          <div className="absolute right-0 left-0 translate-y-[0.5px] border-b border-dashed border-gray-300/50" />
+          <div className="absolute top-1/2 right-0 left-0 -translate-y-px border-b border-dashed border-gray-300/70" />
         </div>
       </div>
     </EntryCodecProvider>

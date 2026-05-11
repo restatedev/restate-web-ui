@@ -105,6 +105,7 @@
       "@restate/ui/button": ["libs/ui/button/src/index.ts"],
       "@restate/ui/charts": ["libs/ui/charts/src/index.ts"],
       "@restate/ui/code": ["libs/ui/code/src/index.ts"],
+      "@restate/ui/content-panel": ["libs/ui/content-panel/src/index.ts"],
       "@restate/ui/copy": ["libs/ui/copy/src/index.ts"],
       "@restate/ui/details": ["libs/ui/details/src/index.ts"],
       "@restate/ui/dialog": ["libs/ui/dialog/src/index.ts"],

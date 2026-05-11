@@ -22,7 +22,7 @@ export function LifeCycleProgress({
 }) {
   return (
     <div className={styles({ className })}>
-      <div className="relative mt-4 h-6 w-full">
+      <div className="relative mt-2 h-6 w-full">
         {createdEvent && (
           <EntryProgressContainer
             className="absolute top-1"

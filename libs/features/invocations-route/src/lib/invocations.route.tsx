@@ -1,5 +1,5 @@
 import { Button, SubmitButton } from '@restate/ui/button';
-import { Column, Row, Table, TableBody, TableHeader } from '@restate/ui/table';
+import { PanelTable, PanelTableColumn, Row } from '@restate/ui/table';
 import {
   Dropdown,
   DropdownItem,
@@ -35,6 +35,12 @@ import {
 import { useSubmitShortcut, SubmitShortcutKey } from '@restate/ui/keyboard';
 import { formatDurations, formatNumber } from '@restate/util/intl';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
+import {
+  ContentPanel,
+  ContentPanelBody,
+  ContentPanelSection,
+  ContentPanelToolbar,
+} from '@restate/ui/content-panel';
 import { AddQueryTrigger, QueryBuilder } from '@restate/ui/query-builder';
 import { ClauseChip, FiltersTrigger } from './Filters';
 import {
@@ -167,6 +173,29 @@ function Component() {
   const totalSize = Math.ceil((data?.rows ?? []).length / PAGE_SIZE);
   const hash = 'hash' + currentPageItems.map(({ id }) => id).join('');
 
+  const panelColumns = useMemo<PanelTableColumn<ColumnKey>[]>(
+    () =>
+      sortedColumnsList.map((col) =>
+        col.id === 'actions'
+          ? {
+              id: 'actions' as ColumnKey,
+              name: 'Actions',
+              width: 40,
+              hideLabel: true,
+            }
+          : {
+              id: col.id,
+              name: col.name,
+              isRowHeader: col.isRowHeader,
+              allowsSorting: true,
+              defaultWidth: COLUMN_WIDTH[col.id],
+              minWidth: MIN_COLUMN_WIDTH[col.id] ?? 80,
+              maxWidth: MAX_COLUMN_WIDTH[col.id],
+            },
+      ),
+    [sortedColumnsList],
+  );
+
   const { OnboardingGuide } = useRestateContext();
   const {
     batchPurge,
@@ -212,331 +241,307 @@ function Component() {
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdate}>
-      <div className="relative flex flex-auto flex-col gap-2">
-        <div className="ml-auto flex items-center gap-1.5 pr-1.5">
-          <Dropdown>
-            <DropdownTrigger>
-              <Button
-                variant="secondary"
-                className="flex items-center gap-1.5 self-end rounded-lg p-0.5 px-2 text-0.5xs"
-              >
-                <Icon
-                  name={IconName.TableProperties}
-                  className="aspect-square h-3.5 w-3.5 opacity-70"
-                />
-                Columns
-              </Button>
-            </DropdownTrigger>
-            <DropdownPopover>
-              <DropdownSection title="Columns">
-                <DropdownMenu
-                  multiple
-                  selectable
-                  selectedItems={selectedColumns}
-                  onSelect={setSelectedColumns}
+      <div className="relative flex min-h-0 flex-1 flex-col">
+        <ContentPanel>
+          <ContentPanelToolbar className="justify-end gap-1.5 px-2 pb-2">
+            <Dropdown>
+              <DropdownTrigger>
+                <Button
+                  variant="secondary"
+                  className="flex items-center gap-1.5 self-end rounded-lg p-0.5 px-2 text-0.5xs"
                 >
-                  {Object.entries(COLUMN_NAMES)
-                    .filter(([key]) => key !== 'actions')
-                    .map(([key, name]) => (
-                      <DropdownItem key={key} value={key}>
-                        {name}
-                      </DropdownItem>
-                    ))}
-                </DropdownMenu>
-              </DropdownSection>
-            </DropdownPopover>
-          </Dropdown>
-          <Dropdown>
-            <DropdownTrigger>
-              <Button
-                variant={
-                  selectedInvocationIds.size > 0 ? 'primary' : 'secondary'
-                }
-                className="flex items-center gap-1.5 self-end rounded-lg p-0.5 px-2 text-0.5xs"
-              >
-                Actions
-                {Boolean(selectedInvocationIds.size || data?.total_count) && (
-                  <Badge
-                    size="xs"
-                    variant={
-                      selectedInvocationIds.size > 0 ? 'default' : 'info'
-                    }
+                  <Icon
+                    name={IconName.TableProperties}
+                    className="aspect-square h-3.5 w-3.5 opacity-70"
+                  />
+                  Columns
+                </Button>
+              </DropdownTrigger>
+              <DropdownPopover>
+                <DropdownSection title="Columns">
+                  <DropdownMenu
+                    multiple
+                    selectable
+                    selectedItems={selectedColumns}
+                    onSelect={setSelectedColumns}
                   >
-                    {selectedInvocationIds.size
-                      ? `${selectedInvocationIds.size}`
-                      : data?.total_count
-                        ? `${formatNumber(data?.total_count, data?.total_count_lower_bound)}${data?.total_count_lower_bound ? '+' : ''}`
-                        : ''}
-                  </Badge>
-                )}
-                <Icon
-                  name={IconName.ChevronsUpDown}
-                  className="aspect-square h-3.5 w-3.5 opacity-80"
-                />
-              </Button>
-            </DropdownTrigger>
-            <DropdownPopover>
-              <DropdownSection
-                title={
-                  <div>
-                    {selectedInvocationIds.size ? (
-                      <span>
-                        Actions{' '}
-                        <span className="font-normal opacity-90">
-                          on {selectedInvocationIds.size} selected items
-                        </span>
-                      </span>
-                    ) : data?.total_count ? (
-                      <span>
-                        Actions{' '}
-                        <span className="font-normal opacity-90">
-                          on all{' '}
-                          {formatNumber(
-                            data?.total_count,
-                            data?.total_count_lower_bound,
-                          )}
-                          {data?.total_count_lower_bound ? '+' : ''} results
-                        </span>
-                      </span>
-                    ) : (
-                      'Actions'
-                    )}
-                  </div>
-                }
-              >
-                <DropdownMenu
-                  selectable
-                  selectedItems={selectedColumns}
-                  onSelect={(key) => {
-                    const args =
-                      selectedInvocationIds.size > 0
-                        ? {
-                            invocationIds: Array.from(
-                              selectedInvocationIds.values(),
-                            ),
-                          }
-                        : // TODO
-                          { filters: listInvocationsParameters.filters || [] };
-                    switch (key) {
-                      case 'cancel': {
-                        return batchCancel(args, schema);
-                      }
-                      case 'kill': {
-                        return batchKill(args, schema);
-                      }
-                      case 'pause': {
-                        return batchPause(args, schema);
-                      }
-                      case 'resume': {
-                        return batchResume(args, schema);
-                      }
-                      case 'purge': {
-                        return batchPurge(args, schema);
-                      }
-                      case 'restart-as-new': {
-                        return batchRestartAsNew(args, schema);
-                      }
-
-                      default:
-                        break;
-                    }
-                  }}
+                    {Object.entries(COLUMN_NAMES)
+                      .filter(([key]) => key !== 'actions')
+                      .map(([key, name]) => (
+                        <DropdownItem key={key} value={key}>
+                          {name}
+                        </DropdownItem>
+                      ))}
+                  </DropdownMenu>
+                </DropdownSection>
+              </DropdownPopover>
+            </Dropdown>
+            <Dropdown>
+              <DropdownTrigger>
+                <Button
+                  variant={
+                    selectedInvocationIds.size > 0 ? 'primary' : 'secondary'
+                  }
+                  className="flex items-center gap-1.5 self-end rounded-lg p-0.5 px-2 text-0.5xs"
                 >
-                  <DropdownItem value="cancel" destructive>
-                    <Icon
-                      name={IconName.Cancel}
-                      className="h-3.5 w-3.5 shrink-0 opacity-80"
-                    />
-                    Cancel…
-                  </DropdownItem>
-                  <RestateMinimumVersion minVersion="1.6.0">
-                    <DropdownItem value="pause" destructive>
+                  Actions
+                  {Boolean(selectedInvocationIds.size || data?.total_count) && (
+                    <Badge
+                      size="xs"
+                      variant={
+                        selectedInvocationIds.size > 0 ? 'default' : 'info'
+                      }
+                    >
+                      {selectedInvocationIds.size
+                        ? `${selectedInvocationIds.size}`
+                        : data?.total_count
+                          ? `${formatNumber(data?.total_count, data?.total_count_lower_bound)}${data?.total_count_lower_bound ? '+' : ''}`
+                          : ''}
+                    </Badge>
+                  )}
+                  <Icon
+                    name={IconName.ChevronsUpDown}
+                    className="aspect-square h-3.5 w-3.5 opacity-80"
+                  />
+                </Button>
+              </DropdownTrigger>
+              <DropdownPopover>
+                <DropdownSection
+                  title={
+                    <div>
+                      {selectedInvocationIds.size ? (
+                        <span>
+                          Actions{' '}
+                          <span className="font-normal opacity-90">
+                            on {selectedInvocationIds.size} selected items
+                          </span>
+                        </span>
+                      ) : data?.total_count ? (
+                        <span>
+                          Actions{' '}
+                          <span className="font-normal opacity-90">
+                            on all{' '}
+                            {formatNumber(
+                              data?.total_count,
+                              data?.total_count_lower_bound,
+                            )}
+                            {data?.total_count_lower_bound ? '+' : ''} results
+                          </span>
+                        </span>
+                      ) : (
+                        'Actions'
+                      )}
+                    </div>
+                  }
+                >
+                  <DropdownMenu
+                    selectable
+                    selectedItems={selectedColumns}
+                    onSelect={(key) => {
+                      const args =
+                        selectedInvocationIds.size > 0
+                          ? {
+                              invocationIds: Array.from(
+                                selectedInvocationIds.values(),
+                              ),
+                            }
+                          : // TODO
+                            {
+                              filters: listInvocationsParameters.filters || [],
+                            };
+                      switch (key) {
+                        case 'cancel': {
+                          return batchCancel(args, schema);
+                        }
+                        case 'kill': {
+                          return batchKill(args, schema);
+                        }
+                        case 'pause': {
+                          return batchPause(args, schema);
+                        }
+                        case 'resume': {
+                          return batchResume(args, schema);
+                        }
+                        case 'purge': {
+                          return batchPurge(args, schema);
+                        }
+                        case 'restart-as-new': {
+                          return batchRestartAsNew(args, schema);
+                        }
+
+                        default:
+                          break;
+                      }
+                    }}
+                  >
+                    <DropdownItem value="cancel" destructive>
                       <Icon
-                        name={IconName.Pause}
+                        name={IconName.Cancel}
                         className="h-3.5 w-3.5 shrink-0 opacity-80"
                       />
-                      Pause…
+                      Cancel…
                     </DropdownItem>
-                  </RestateMinimumVersion>
-                  <DropdownItem value="resume">
-                    <Icon
-                      name={IconName.Play}
-                      className="h-3.5 w-3.5 shrink-0 opacity-80"
-                    />
-                    Resume…
-                  </DropdownItem>
-                  <DropdownItem value="restart-as-new">
-                    <Icon
-                      name={IconName.Restart}
-                      className="h-3.5 w-3.5 shrink-0 opacity-80"
-                    />
-                    Restart as new…
-                  </DropdownItem>
-                  <DropdownItem value="kill" destructive>
-                    <Icon
-                      name={IconName.Kill}
-                      className="h-3.5 w-3.5 shrink-0 opacity-80"
-                    />
-                    Kill…
-                  </DropdownItem>
-                  <DropdownItem value="purge" destructive>
-                    <Icon
-                      name={IconName.Trash}
-                      className="h-3.5 w-3.5 shrink-0 opacity-80"
-                    />
-                    Purge…
-                  </DropdownItem>
-                </DropdownMenu>
-              </DropdownSection>
-            </DropdownPopover>
-          </Dropdown>
-        </div>
-        <Table
-          aria-label="Invocations"
-          key={hash}
-          selectionMode="multiple"
-          selectedKeys={selectedInvocationIds}
-          onSelectionChange={(keys) => {
-            if (keys === 'all') {
-              setSelectedInvocationIds(
-                new Set(currentPageItems.map((inv) => inv.id)),
-              );
-            } else {
-              setSelectedInvocationIds(keys as Set<string>);
-            }
-          }}
-          onRowAction={(key) => {
-            const preservedParams = new URLSearchParams();
-            const paramsToPreserve = [
-              SERVICE_PLAYGROUND_QUERY_PARAM,
-              SERVICE_QUERY_PARAM,
-              DEPLOYMENT_QUERY_PARAM,
-              INVOCATION_QUERY_NAME,
-              'state', //TODO use const
-              HANDLER_QUERY_PARAM,
-            ];
-            paramsToPreserve.forEach((param) => {
-              searchParams.getAll(param).forEach((value) => {
-                preservedParams.append(param, value);
-              });
-            });
-            const pathname = `${baseUrl}/invocations/${key}`;
-            const search = preservedParams.toString();
-            if (isModifierPressed.current) {
-              const fullPath = `${basePath}${pathname}`.replace('//', '/');
-              window.open(`${fullPath}${search ? `?${search}` : ''}`, '_blank');
-            } else {
-              navigate({ pathname, search });
-            }
-          }}
-        >
-          <TableHeader className="[&_th:nth-last-child(2)_[data-resizable-direction]]:invisible">
-            {sortedColumnsList.map((col) =>
-              col.id !== 'actions' ? (
-                <Column
-                  id={col.id}
-                  isRowHeader={col.isRowHeader}
-                  allowsSorting
-                  defaultWidth={COLUMN_WIDTH[col.id]}
-                  minWidth={MIN_COLUMN_WIDTH[col.id] ?? 80}
-                  maxWidth={MAX_COLUMN_WIDTH[col.id]}
-                  key={col.id}
-                >
-                  {col.name}
-                </Column>
-              ) : (
-                <Column
-                  id="actions"
-                  width={40}
-                  key={col.id}
-                  className="opacity-0"
-                >
-                  <span className="sr-only">Actions</span>
-                </Column>
-              ),
-            )}
-          </TableHeader>
-          <TableBody
-            items={currentPageItems}
-            dependencies={[selectedColumns, pageIndex]}
-            error={error}
-            isLoading={isFetching}
-            numOfColumns={sortedColumnsList.length}
-            numOfRows={currentPageItems.length || 5}
-            emptyPlaceholder={
-              <div className="flex flex-col items-center gap-4 py-14">
-                <div className="mr-1.5 h-12 w-12 shrink-0 rounded-xl bg-gray-200/50 p-1">
-                  <Icon
-                    name={IconName.Invocation}
-                    className="h-full w-full p-1 text-zinc-400"
-                  />
-                </div>
-                <h3 className="text-sm font-semibold text-zinc-400">
-                  No invocations found
-                </h3>
-              </div>
-            }
-          >
-            {(row) => (
-              <Row
-                id={row.id}
-                columns={sortedColumnsList}
-                className="bg-transparent [content-visibility:auto] [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"
-              >
-                {({ id }) => {
-                  return (
-                    <InvocationCell
-                      key={id}
-                      column={id}
-                      invocation={row}
-                      isVisible
-                    />
-                  );
+                    <RestateMinimumVersion minVersion="1.6.0">
+                      <DropdownItem value="pause" destructive>
+                        <Icon
+                          name={IconName.Pause}
+                          className="h-3.5 w-3.5 shrink-0 opacity-80"
+                        />
+                        Pause…
+                      </DropdownItem>
+                    </RestateMinimumVersion>
+                    <DropdownItem value="resume">
+                      <Icon
+                        name={IconName.Play}
+                        className="h-3.5 w-3.5 shrink-0 opacity-80"
+                      />
+                      Resume…
+                    </DropdownItem>
+                    <DropdownItem value="restart-as-new">
+                      <Icon
+                        name={IconName.Restart}
+                        className="h-3.5 w-3.5 shrink-0 opacity-80"
+                      />
+                      Restart as new…
+                    </DropdownItem>
+                    <DropdownItem value="kill" destructive>
+                      <Icon
+                        name={IconName.Kill}
+                        className="h-3.5 w-3.5 shrink-0 opacity-80"
+                      />
+                      Kill…
+                    </DropdownItem>
+                    <DropdownItem value="purge" destructive>
+                      <Icon
+                        name={IconName.Trash}
+                        className="h-3.5 w-3.5 shrink-0 opacity-80"
+                      />
+                      Purge…
+                    </DropdownItem>
+                  </DropdownMenu>
+                </DropdownSection>
+              </DropdownPopover>
+            </Dropdown>
+          </ContentPanelToolbar>
+          <ContentPanelBody className="pb-32">
+            <ContentPanelSection flush>
+              <PanelTable
+                aria-label="Invocations"
+                columns={panelColumns}
+                items={currentPageItems}
+                selectionMode="multiple"
+                selectedKeys={selectedInvocationIds}
+                onSelectionChange={(keys) =>
+                  setSelectedInvocationIds(keys as Set<string>)
+                }
+                onRowAction={(key) => {
+                  const preservedParams = new URLSearchParams();
+                  const paramsToPreserve = [
+                    SERVICE_PLAYGROUND_QUERY_PARAM,
+                    SERVICE_QUERY_PARAM,
+                    DEPLOYMENT_QUERY_PARAM,
+                    INVOCATION_QUERY_NAME,
+                    'state', //TODO use const
+                    HANDLER_QUERY_PARAM,
+                  ];
+                  paramsToPreserve.forEach((param) => {
+                    searchParams.getAll(param).forEach((value) => {
+                      preservedParams.append(param, value);
+                    });
+                  });
+                  const pathname = `${baseUrl}/invocations/${key}`;
+                  const search = preservedParams.toString();
+                  if (isModifierPressed.current) {
+                    const fullPath = `${basePath}${pathname}`.replace(
+                      '//',
+                      '/',
+                    );
+                    window.open(
+                      `${fullPath}${search ? `?${search}` : ''}`,
+                      '_blank',
+                    );
+                  } else {
+                    navigate({ pathname, search });
+                  }
                 }}
-              </Row>
-            )}
-          </TableBody>
-        </Table>
-        <Footnote data={data} isFetching={isFetching} key={dataUpdate}>
-          {!isPending && !error && totalSize > 1 && (
-            <div className="flex items-center rounded-lg border bg-zinc-50 py-0.5 shadow-xs">
-              <Button
-                variant="icon"
-                disabled={pageIndex === 0}
-                onClick={() => setPageIndex(0)}
-              >
-                <Icon name={IconName.ChevronFirst} className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="icon"
-                disabled={pageIndex === 0}
-                onClick={() => setPageIndex((s) => s - 1)}
-                className=""
-              >
-                <Icon name={IconName.ChevronLeft} className="h-4 w-4" />
-              </Button>
-              <div className="mx-2 flex items-center gap-0.5 text-0.5xs">
-                {pageIndex + 1} / {totalSize}
-              </div>
+                bodyKey={hash}
+                bodyDependencies={[selectedColumns, pageIndex]}
+                isLoading={isFetching}
+                error={error}
+                numOfRows={currentPageItems.length || 5}
+                emptyPlaceholder={
+                  <div className="flex flex-col items-center gap-4 py-14">
+                    <div className="mr-1.5 h-12 w-12 shrink-0 rounded-xl bg-gray-200/50 p-1">
+                      <Icon
+                        name={IconName.Invocation}
+                        className="h-full w-full p-1 text-zinc-400"
+                      />
+                    </div>
+                    <h3 className="text-sm font-semibold text-zinc-400">
+                      No invocations found
+                    </h3>
+                  </div>
+                }
+                renderRow={(row) => (
+                  <Row
+                    id={row.id}
+                    columns={panelColumns}
+                    className="bg-transparent [content-visibility:auto] [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"
+                  >
+                    {({ id }) => (
+                      <InvocationCell
+                        key={id}
+                        column={id}
+                        invocation={row}
+                        isVisible
+                      />
+                    )}
+                  </Row>
+                )}
+              />
+              <Footnote data={data} isFetching={isFetching} key={dataUpdate}>
+                {!isPending && !error && totalSize > 1 && (
+                  <div className="flex items-center rounded-lg border bg-zinc-50 py-0.5 shadow-xs">
+                    <Button
+                      variant="icon"
+                      disabled={pageIndex === 0}
+                      onClick={() => setPageIndex(0)}
+                    >
+                      <Icon name={IconName.ChevronFirst} className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="icon"
+                      disabled={pageIndex === 0}
+                      onClick={() => setPageIndex((s) => s - 1)}
+                      className=""
+                    >
+                      <Icon name={IconName.ChevronLeft} className="h-4 w-4" />
+                    </Button>
+                    <div className="mx-2 flex items-center gap-0.5 text-0.5xs">
+                      {pageIndex + 1} / {totalSize}
+                    </div>
 
-              <Button
-                variant="icon"
-                disabled={pageIndex + 1 === totalSize}
-                onClick={() => setPageIndex((s) => s + 1)}
-                className=""
-              >
-                <Icon name={IconName.ChevronRight} className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="icon"
-                disabled={pageIndex + 1 === totalSize}
-                onClick={() => setPageIndex(totalSize - 1)}
-              >
-                <Icon name={IconName.ChevronLast} className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
-        </Footnote>
+                    <Button
+                      variant="icon"
+                      disabled={pageIndex + 1 === totalSize}
+                      onClick={() => setPageIndex((s) => s + 1)}
+                      className=""
+                    >
+                      <Icon name={IconName.ChevronRight} className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="icon"
+                      disabled={pageIndex + 1 === totalSize}
+                      onClick={() => setPageIndex(totalSize - 1)}
+                    >
+                      <Icon name={IconName.ChevronLast} className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </Footnote>
+            </ContentPanelSection>
+          </ContentPanelBody>
+        </ContentPanel>
         {OnboardingGuide && (
           <OnboardingGuide
             stage="view-invocations"
@@ -686,7 +691,7 @@ function Footnote({
   const duration = formatDurations(parts);
 
   return (
-    <div className="flex w-full flex-row-reverse flex-wrap items-center text-center text-xs text-gray-500/80">
+    <div className="flex w-full flex-row-reverse flex-wrap items-center gap-2 pt-3 pr-4 pb-2 pl-2 text-center text-xs text-gray-500/80">
       {data && (
         <div className="ml-auto">
           {data.total_count ? (

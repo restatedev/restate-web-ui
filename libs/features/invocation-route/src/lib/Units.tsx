@@ -18,7 +18,7 @@ const intervalLabelStyles = tv({
 });
 
 const tickContainerStyles = tv({
-  base: 'pointer-events-none relative mt-[calc(3rem+2px)] h-[calc(100%-3rem-2px)] w-full overflow-hidden rounded-r-2xl',
+  base: 'pointer-events-none relative mt-[calc(var(--timeline-units-header-offset,3rem)+2px)] h-[calc(100%-var(--timeline-units-header-offset,3rem)-2px)] w-full overflow-hidden',
 });
 
 const intervalRowStyles = tv({
@@ -70,7 +70,7 @@ const nowLabelStyles = tv({
 });
 
 const nowMarkerStyles = tv({
-  base: 'pointer-events-none absolute top-[calc(3rem+2px)] bottom-0 z-20 w-0 border-l-2 border-white/80 font-sans text-2xs text-gray-500',
+  base: 'pointer-events-none absolute top-[calc(var(--timeline-units-header-offset,3rem)+2px)] bottom-0 z-20 w-0 border-l-2 border-white/80 font-sans text-2xs text-gray-500',
   variants: {
     animateLeft: {
       true: 'linear transition-[left] duration-300',
@@ -243,7 +243,7 @@ export function StartDateTimeUnit({
   return (
     <div className={startDateTimeStyles({ className })}>
       <div className="absolute -top-8 bottom-0 left-2 border-l border-dashed border-gray-500/40 font-sans text-2xs text-gray-500">
-        <div className="pointer-events-auto ml-1 flex w-28 -translate-y-1 flex-col justify-start text-left">
+        <div className="pointer-events-auto ml-1 flex w-28 -translate-y-3 flex-col justify-start text-left">
           <DateTooltip date={new Date(start)} title="">
             {new Date(start).toLocaleDateString('en', {
               year: 'numeric',

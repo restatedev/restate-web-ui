@@ -18,11 +18,11 @@ import {
 import { HoverTooltip } from '@restate/ui/tooltip';
 
 const scrollableTimelineStyles = tv({
-  base: 'overflow-hidden',
+  base: 'h-full overflow-x-clip',
 });
 
 const zoomContainerStyles = tv({
-  base: 'relative',
+  base: 'relative h-full',
   variants: {
     animate: {
       true: 'transition-[transform,width,min-width] ease-linear',
@@ -65,34 +65,36 @@ function TimelineShading({
   const transitionDurationMs = LIVE_TRANSITION_DURATION_MS;
 
   return (
-    <div className="pointer-events-none absolute top-[calc(-3rem-2px)] right-0 bottom-0 left-0 z-0">
-      {cancelEvent && (
-        <div className="pointer-events-none absolute inset-x-0 top-0 bottom-0 overflow-hidden px-2 transition-all duration-300">
+    <div className="pointer-events-none absolute inset-0 z-0">
+      <div className="pointer-events-none sticky top-[var(--cp-content-top,0px)] h-full max-h-[calc(100vh-var(--cp-content-top,0px))] w-full">
+        {cancelEvent && (
+          <div className="pointer-events-none absolute inset-x-0 top-0 bottom-0 overflow-hidden px-2 transition-all duration-300">
+            <div
+              className="pointer-events-none h-full w-full border-l-2 border-black/8 mix-blend-multiply transition-all duration-300 [background:repeating-linear-gradient(-45deg,--theme(--color-black/0.05),--theme(--color-black/0.05)_2px,--theme(--color-white/0)_2px,--theme(--color-white/0)_4px)]"
+              style={{
+                marginLeft: `calc(${
+                  ((new Date(String(cancelEvent.start)).getTime() - start) /
+                    duration) *
+                  100
+                }% - 1px)`,
+              }}
+            />
+          </div>
+        )}
+        {renderNowOverlay && nowPercent < 100 && (
           <div
-            className="pointer-events-none h-full w-full rounded-br-2xl border-l-2 border-black/8 mix-blend-multiply transition-all duration-300 [background:repeating-linear-gradient(-45deg,--theme(--color-black/0.05),--theme(--color-black/0.05)_2px,--theme(--color-white/0)_2px,--theme(--color-white/0)_4px)_fixed]"
+            className="linear pointer-events-none absolute inset-y-0 right-0 overflow-hidden transition-[left] duration-300"
             style={{
-              marginLeft: `calc(${
-                ((new Date(String(cancelEvent.start)).getTime() - start) /
-                  duration) *
-                100
-              }% - 1px)`,
+              left: `calc(${nowPercent}% - 0.5rem)`,
+              transitionDuration: animate
+                ? `${transitionDurationMs}ms`
+                : undefined,
             }}
-          />
-        </div>
-      )}
-      {renderNowOverlay && nowPercent < 100 && (
-        <div
-          className="linear pointer-events-none absolute inset-y-0 right-0 overflow-hidden rounded-r-2xl transition-[left] duration-300"
-          style={{
-            left: `calc(${nowPercent}% - 0.5rem)`,
-            transitionDuration: animate
-              ? `${transitionDurationMs}ms`
-              : undefined,
-          }}
-        >
-          <div className="pointer-events-none absolute inset-0 rounded-r-2xl mix-blend-screen [background:repeating-linear-gradient(-45deg,--theme(--color-white/.6),--theme(--color-white/.6)_2px,--theme(--color-white/0)_2px,--theme(--color-white/0)_4px)]" />
-        </div>
-      )}
+          >
+            <div className="pointer-events-none absolute inset-0 mix-blend-screen [background:repeating-linear-gradient(-45deg,--theme(--color-white/.6),--theme(--color-white/.6)_2px,--theme(--color-white/0)_2px,--theme(--color-white/0)_4px)]" />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -186,7 +188,7 @@ export function ScrollableTimeline({
           />
         </div>
         {shouldPinNowMarker && (
-          <div className="pointer-events-none absolute top-[calc(3rem+2px)] right-0 bottom-0 z-20 w-0 border-l-2 border-white/80 font-sans text-2xs text-gray-500">
+          <div className="pointer-events-none absolute top-[calc(var(--timeline-units-header-offset,3rem)+2px)] right-0 bottom-0 z-20 w-0 border-l-2 border-white/80 font-sans text-2xs text-gray-500">
             <div className="pointer-events-none absolute left-px z-4 mt-0.5 -translate-x-full rounded-sm border border-white bg-zinc-500 px-1 text-2xs text-white">
               Now
             </div>
