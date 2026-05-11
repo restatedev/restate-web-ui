@@ -1,5 +1,10 @@
 import ky from 'ky';
-import { gte } from 'semver';
+import { coerce, gte } from 'semver';
+
+function gteMajorMinorPatch(version: string, target: string): boolean {
+  const coerced = coerce(version);
+  return coerced ? gte(coerced, target) : false;
+}
 
 export const DURATION_CALC =
   "CASE WHEN status = 'scheduled' THEN NULL ELSE COALESCE(completed_at, now()) - COALESCE(scheduled_start_at, created_at) END";
@@ -58,13 +63,13 @@ export const SYS_INVOCATION_COLUMNS = [
 ] as const;
 
 export function sysInvocationListColumns(version: string): readonly string[] {
-  return gte(version, '1.7.0')
+  return gteMajorMinorPatch(version, '1.7.0')
     ? [...SYS_INVOCATION_LIST_COLUMNS, 'scope']
     : SYS_INVOCATION_LIST_COLUMNS;
 }
 
 export function sysInvocationColumns(version: string): readonly string[] {
-  return gte(version, '1.7.0')
+  return gteMajorMinorPatch(version, '1.7.0')
     ? [...SYS_INVOCATION_COLUMNS, 'scope']
     : SYS_INVOCATION_COLUMNS;
 }
