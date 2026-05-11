@@ -64,6 +64,7 @@ export type QueryContext = {
   ) => Promise<T>;
   baseUrl: string;
   restateVersion: string;
+  features: Set<string>;
 };
 
 function queryFetcher(
@@ -123,6 +124,7 @@ export function createQueryContext(
   baseUrl: string,
   headers: Headers,
   restateVersion: string,
+  features: Set<string>,
   signal?: AbortSignal,
 ): QueryContext {
   return {
@@ -140,5 +142,6 @@ export function createQueryContext(
       }),
     baseUrl,
     restateVersion,
+    features,
   };
 }

@@ -38,6 +38,7 @@ import {
   listDrainedDeployments,
 } from './handlers';
 import { getVersion } from './getVersion';
+import { getFeatures } from './getFeatures';
 
 type BoundHandlers = {
   listInvocations: (
@@ -142,10 +143,12 @@ const decodeParamsMiddleware: Middleware = (ctx, next) => {
 const handlersMiddleware: Middleware = (ctx, next) => {
   const baseUrl = `${ctx.url.protocol}//${ctx.url.host}`;
   const restateVersion = getVersion(ctx.headers);
+  const features = getFeatures(ctx.headers);
   const queryContext = createQueryContext(
     baseUrl,
     ctx.headers,
     restateVersion,
+    features,
     ctx.request.signal,
   );
   const handlers = bindHandlers(queryContext);
