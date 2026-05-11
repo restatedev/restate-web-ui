@@ -14,6 +14,7 @@ import { Checkbox } from '@restate/ui/form-field';
 import {
   PropsWithChildren,
   ReactElement,
+  ReactNode,
   Ref,
   useContext,
   useDeferredValue,
@@ -34,6 +35,7 @@ interface RowProps<T extends object>
   > {
   className?: string;
   ref?: Ref<HTMLTableRowElement>;
+  leadingCell?: ReactNode;
 }
 
 function SelectionCheckbox({ rowKey }: { rowKey?: Key }) {
@@ -63,6 +65,7 @@ export function Row<T extends { id?: string }>({
   children,
   className,
   ref,
+  leadingCell,
   ...otherProps
 }: RowProps<T>) {
   const { selectionBehavior, allowsDragging } = useTableOptions();
@@ -74,6 +77,7 @@ export function Row<T extends { id?: string }>({
       {...otherProps}
       className={rowStyles({ className })}
     >
+      {leadingCell}
       {allowsDragging && (
         <Cell>
           <Button slot="drag">≡</Button>

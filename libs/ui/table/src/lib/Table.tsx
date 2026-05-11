@@ -129,11 +129,13 @@ interface TableHeaderProps<T extends object> extends Pick<
 > {
   className?: string;
   selectionColumnWidth?: number;
+  leadingColumn?: ReactNode;
 }
 
 export function TableHeader<T extends object>({
   className,
   selectionColumnWidth = 36,
+  leadingColumn,
   ...props
 }: TableHeaderProps<T>) {
   const { selectionBehavior, selectionMode, allowsDragging } =
@@ -141,6 +143,7 @@ export function TableHeader<T extends object>({
 
   return (
     <AriaTableHeader {...props} className={tableHeaderStyles({ className })}>
+      {leadingColumn}
       {/* Add extra columns for drag and drop and selection. */}
       {allowsDragging && <Column />}
       {selectionBehavior === 'toggle' && (
@@ -167,6 +170,7 @@ interface TableBodyProps<T extends object> extends Pick<
   numOfColumns: number;
   numOfRows?: number;
   emptyPlaceholder?: ReactNode;
+  loadingLeadingCell?: ReactNode;
 }
 
 export function TableBody<T extends object>({
@@ -177,6 +181,7 @@ export function TableBody<T extends object>({
   numOfColumns,
   emptyPlaceholder,
   numOfRows,
+  loadingLeadingCell,
   ...props
 }: TableBodyProps<T>) {
   return (
@@ -192,7 +197,11 @@ export function TableBody<T extends object>({
       }}
     >
       {isLoading ? (
-        <LoadingRows numOfColumns={numOfColumns} numOfRows={numOfRows} />
+        <LoadingRows
+          numOfColumns={numOfColumns}
+          numOfRows={numOfRows}
+          leadingCell={loadingLeadingCell}
+        />
       ) : (
         children
       )}

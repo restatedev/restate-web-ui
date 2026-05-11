@@ -1,5 +1,5 @@
 import { Button, SubmitButton } from '@restate/ui/button';
-import { PanelTable, PanelTableColumn, Row } from '@restate/ui/table';
+import { PanelTable, PanelTableColumn } from '@restate/ui/table';
 import {
   Dropdown,
   DropdownItem,
@@ -482,21 +482,14 @@ function Component() {
                     </h3>
                   </div>
                 }
-                renderRow={(row) => (
-                  <Row
-                    id={row.id}
-                    columns={panelColumns}
-                    className="bg-transparent [content-visibility:auto] [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"
-                  >
-                    {({ id }) => (
-                      <InvocationCell
-                        key={id}
-                        column={id}
-                        invocation={row}
-                        isVisible
-                      />
-                    )}
-                  </Row>
+                rowClassName="bg-transparent [content-visibility:auto] [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"
+                renderCell={(row, { id }) => (
+                  <InvocationCell
+                    key={id}
+                    column={id}
+                    invocation={row}
+                    isVisible
+                  />
                 )}
               />
               <Footnote data={data} isFetching={isFetching} key={dataUpdate}>

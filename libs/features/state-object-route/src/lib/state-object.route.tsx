@@ -6,7 +6,7 @@ import {
   useQueryVirtualObjectState,
 } from '@restate/data-access/admin-api-hooks';
 import { Button, SubmitButton } from '@restate/ui/button';
-import { Cell, PanelTable, PanelTableColumn, Row } from '@restate/ui/table';
+import { Cell, PanelTable, PanelTableColumn } from '@restate/ui/table';
 import {
   ContentPanel,
   ContentPanelBody,
@@ -408,15 +408,10 @@ function Component() {
                   </h3>
                 </div>
               }
-              renderRow={(row) => (
-                <Row
-                  id={row.id}
-                  columns={panelColumns}
-                  dependencies={[panelColumns]}
-                  className="bg-transparent [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"
-                >
-                  {({ id }) => {
-                    if (id === 'service_key') {
+              rowClassName="bg-transparent [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"
+              rowDependencies={[panelColumns]}
+              renderCell={(row, { id }) => {
+                if (id === 'service_key') {
                       return (
                         <Cell key={id}>
                           <KeyCell
@@ -587,9 +582,7 @@ function Component() {
                         </Cell>
                       );
                     }
-                  }}
-                </Row>
-              )}
+              }}
             />
             <Footnote
               data={serviceKeysData}

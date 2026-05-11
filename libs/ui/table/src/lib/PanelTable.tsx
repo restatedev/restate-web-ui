@@ -1,9 +1,17 @@
-import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  ReactElement,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import {
   Table as AriaTable,
   TableBody as AriaTableBody,
   TableProps as AriaTableProps,
   ColumnProps as AriaColumnProps,
+  Column as AriaColumn,
   ResizableTableContainer,
 } from 'react-aria-components';
 import type { Key } from 'react-aria-components';
@@ -44,13 +52,15 @@ export interface PanelTableProps<
   bodyDependencies?: unknown[];
   bodyKey?: string | number;
   onSelectionChange?: (keys: Set<Key>) => void;
-  renderRow: (row: T) => ReactNode;
+  renderCell: (row: T, col: PanelTableColumn<TColId>) => ReactElement;
+  rowClassName?: string;
+  rowDependencies?: unknown[];
 }
 
-const DATA_TABLE_INSET = 8;
-const STICKY_HEADER_SELECTION_WIDTH = 36;
-const DATA_TABLE_SELECTION_WIDTH =
-  STICKY_HEADER_SELECTION_WIDTH + DATA_TABLE_INSET;
+const SELECTION_WIDTH = 36;
+const SPACER_WIDTH = 8;
+const LEFT_SPACER_ID = '__panel_table_spacer_left__';
+const RIGHT_SPACER_ID = '__panel_table_spacer_right__';
 
 const styles = tv({
   slots: {
@@ -67,8 +77,7 @@ const styles = tv({
     stickyHeaderTrailingResizerHidden:
       '[&_th:nth-last-child(2)_[data-resizable-direction]]:invisible',
     dataTableScroll: 'relative overflow-auto [scrollbar-width:thin]',
-    dataTableInner:
-      'w-full border-separate border-spacing-0 [&_tbody_td:first-child]:pl-4',
+    dataTableInner: 'w-full border-separate border-spacing-0',
     dataTableSpacerHeader:
       'invisible static z-auto bg-transparent drop-shadow-none backdrop-blur-none backdrop-saturate-100 supports-[-moz-appearance:none]:bg-transparent [&_th]:h-9 [&_th]:overflow-hidden [&_th]:border-0 [&_th]:p-0',
   },
@@ -80,7 +89,9 @@ export function PanelTable<
 >({
   columns,
   items,
-  renderRow,
+  renderCell,
+  rowClassName,
+  rowDependencies,
   selectionMode,
   selectedKeys,
   onSelectionChange,
@@ -192,24 +203,62 @@ export function PanelTable<
     return items.every((item) => set.has(item.id)) ? 'all' : selectedKeys;
   }, [selectedKeys, items]);
 
-  const lastIndex = columns.length - 1;
-  const lastIsFixed = columns[lastIndex]?.width !== undefined;
+  const lastIsFixed = columns[columns.length - 1]?.width !== undefined;
 
-  const renderColumns = (variant: 'stickyHeader' | 'dataTable') =>
-    columns.map((col, i) => {
+  const dataTableColumns = useMemo<PanelTableColumn[]>(
+    () => [
+      ...columns,
+      {
+        id: RIGHT_SPACER_ID,
+        name: '',
+        width: SPACER_WIDTH,
+        hideLabel: true,
+      },
+    ],
+    [columns],
+  );
+
+  const leadingColumn = (
+    <AriaColumn
+      id={LEFT_SPACER_ID}
+      width={SPACER_WIDTH}
+      minWidth={SPACER_WIDTH}
+      className="p-0"
+    />
+  );
+
+  const renderBodyRow = useCallback(
+    (item: T) => (
+      <Row
+        id={item.id}
+        columns={dataTableColumns}
+        dependencies={[...(rowDependencies ?? []), dataTableColumns]}
+        className={rowClassName}
+        leadingCell={<Cell />}
+      >
+        {(col) => {
+          if (col.id === RIGHT_SPACER_ID) {
+            return <Cell key={col.id} />;
+          }
+          return renderCell(item, col as PanelTableColumn<TColId>);
+        }}
+      </Row>
+    ),
+    [renderCell, rowClassName, rowDependencies, dataTableColumns],
+  );
+
+  const renderColumns = (
+    variant: 'stickyHeader' | 'dataTable',
+    cols: PanelTableColumn[],
+  ) =>
+    cols.map((col) => {
       const synced = columnWidths.get(col.id);
       const isFixed = typeof col.width === 'number';
-      const isTrailingFixed = isFixed && i === lastIndex;
       const widthProps: Pick<
         AriaColumnProps,
         'width' | 'defaultWidth' | 'minWidth' | 'maxWidth'
       > = isFixed
-        ? {
-            width:
-              variant === 'dataTable' && isTrailingFixed
-                ? (col.width as number) + DATA_TABLE_INSET
-                : col.width,
-          }
+        ? { width: col.width }
         : variant === 'dataTable' && typeof synced === 'number'
           ? { width: synced, minWidth: col.minWidth, maxWidth: col.maxWidth }
           : {
@@ -237,9 +286,7 @@ export function PanelTable<
     });
 
   const dataTableSelectionWidth =
-    selectionMode && selectionMode !== 'none'
-      ? DATA_TABLE_SELECTION_WIDTH
-      : undefined;
+    selectionMode && selectionMode !== 'none' ? SELECTION_WIDTH : undefined;
 
   return (
     <>
@@ -265,7 +312,7 @@ export function PanelTable<
                     .filter(Boolean)
                     .join(' ')}
                 >
-                  {renderColumns('stickyHeader')}
+                  {renderColumns('stickyHeader', columns)}
                 </TableHeader>
                 <AriaTableBody items={items} dependencies={[columns]}>
                   {(row) => (
@@ -298,19 +345,21 @@ export function PanelTable<
             <TableHeader
               className={dataTableSpacerHeader()}
               selectionColumnWidth={dataTableSelectionWidth}
+              leadingColumn={leadingColumn}
             >
-              {renderColumns('dataTable')}
+              {renderColumns('dataTable', dataTableColumns)}
             </TableHeader>
             <TableBody
               items={items}
-              dependencies={[...(bodyDependencies ?? []), columns]}
+              dependencies={[...(bodyDependencies ?? []), dataTableColumns]}
               error={error}
               isLoading={isLoading}
-              numOfColumns={columns.length}
+              numOfColumns={dataTableColumns.length}
               numOfRows={numOfRows}
               emptyPlaceholder={emptyPlaceholder}
+              loadingLeadingCell={<Cell />}
             >
-              {renderRow}
+              {renderBodyRow}
             </TableBody>
           </AriaTable>
         </ResizableTableContainer>

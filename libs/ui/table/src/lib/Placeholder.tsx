@@ -1,17 +1,20 @@
 import { ErrorBanner } from '@restate/ui/error';
+import { ReactNode } from 'react';
 import { Cell, Row } from './Row';
 
 export function LoadingRows({
   numOfColumns,
   numOfRows = 5,
+  leadingCell,
 }: {
   numOfColumns: number;
   numOfRows?: number;
+  leadingCell?: ReactNode;
 }) {
   return Array(numOfRows)
     .fill(null)
     .map((_, index) => (
-      <Row key={index}>
+      <Row key={index} leadingCell={leadingCell}>
         {Array(numOfColumns)
           .fill(null)
           .map((_, i) => (
