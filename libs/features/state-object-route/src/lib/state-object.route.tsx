@@ -412,176 +412,176 @@ function Component() {
               rowDependencies={[panelColumns]}
               renderCell={(row, { id }) => {
                 if (id === 'service_key') {
-                      return (
-                        <Cell key={id}>
-                          <KeyCell
-                            serviceKey={String(row.key)}
-                            virtualObject={virtualObject}
-                          />
-                        </Cell>
-                      );
-                    } else if (id === '__actions__') {
-                      return (
-                        <Cell className="align-top [&&&]:overflow-visible">
-                          <SplitButton
-                            menus={
-                              <>
-                                <DropdownItem value="edit">Edit…</DropdownItem>
-                                <DropdownItem destructive value="delete">
-                                  Delete…
-                                </DropdownItem>
-                              </>
-                            }
-                            mini
-                            onSelect={(key) => {
-                              if (key === 'edit') {
-                                setEditState({
-                                  isEditing: true,
-                                  isDeleting: false,
-                                  objectKey: row.key!,
-                                  service: virtualObject,
-                                });
-                              }
-                              if (key === 'delete') {
-                                setEditState({
-                                  isEditing: true,
-                                  isDeleting: true,
-                                  objectKey: row.key!,
-                                  service: virtualObject,
-                                });
-                              }
-                            }}
-                          >
-                            <EditStateTrigger
-                              className={actionButtonStyles()}
-                              variant="secondary"
-                              onClick={() =>
-                                setEditState({
-                                  isEditing: true,
-                                  isDeleting: false,
-                                  objectKey: row.key!,
-                                  service: virtualObject,
-                                })
-                              }
-                            >
-                              Edit
-                            </EditStateTrigger>
-                          </SplitButton>
-                        </Cell>
-                      );
-                    } else {
-                      const stateCodecOptions = {
-                        ...resolvedServiceCodecOptions,
-                        key: row.key!,
-                        command: {
-                          type: 'GetState' as const,
-                          name: id,
-                        },
-                      };
-
-                      return (
-                        <Cell
-                          key={id}
-                          className="group [&:has(*:focus)_*]:visible [&:has(*:hover)_*]:visible"
+                  return (
+                    <Cell key={id}>
+                      <KeyCell
+                        serviceKey={String(row.key)}
+                        virtualObject={virtualObject}
+                      />
+                    </Cell>
+                  );
+                } else if (id === '__actions__') {
+                  return (
+                    <Cell className="align-top [&&&]:overflow-visible">
+                      <SplitButton
+                        menus={
+                          <>
+                            <DropdownItem value="edit">Edit…</DropdownItem>
+                            <DropdownItem destructive value="delete">
+                              Delete…
+                            </DropdownItem>
+                          </>
+                        }
+                        mini
+                        onSelect={(key) => {
+                          if (key === 'edit') {
+                            setEditState({
+                              isEditing: true,
+                              isDeleting: false,
+                              objectKey: row.key!,
+                              service: virtualObject,
+                            });
+                          }
+                          if (key === 'delete') {
+                            setEditState({
+                              isEditing: true,
+                              isDeleting: true,
+                              objectKey: row.key!,
+                              service: virtualObject,
+                            });
+                          }
+                        }}
+                      >
+                        <EditStateTrigger
+                          className={actionButtonStyles()}
+                          variant="secondary"
+                          onClick={() =>
+                            setEditState({
+                              isEditing: true,
+                              isDeleting: false,
+                              objectKey: row.key!,
+                              service: virtualObject,
+                            })
+                          }
                         >
-                          <div className="item-center flex h-full min-h-5 w-full justify-start gap-1">
-                            {row.state?.[id] && (
-                              <Popover>
-                                <PopoverTrigger>
-                                  <Button
-                                    className="truncate rounded-xl px-3 py-0.5 font-mono [font-size:inherit] text-inherit shadow-none"
-                                    variant="secondary"
-                                  >
-                                    <span className="flex min-w-0 items-center truncate pr-0.5">
-                                      {EncodingWaterMark && (
-                                        <EncodingWaterMark
-                                          value={row.state?.[id]}
-                                          mini
-                                          className="mr-1"
-                                        />
-                                      )}
-                                      <span className="block truncate">
-                                        <StaticCodecOptionsProvider
-                                          options={stateCodecOptions}
-                                        >
-                                          <DecodedValue
-                                            value={row.state?.[id]}
-                                            isBase64
-                                          />
-                                        </StaticCodecOptionsProvider>
-                                      </span>
-                                    </span>
-                                  </Button>
-                                </PopoverTrigger>
+                          Edit
+                        </EditStateTrigger>
+                      </SplitButton>
+                    </Cell>
+                  );
+                } else {
+                  const stateCodecOptions = {
+                    ...resolvedServiceCodecOptions,
+                    key: row.key!,
+                    command: {
+                      type: 'GetState' as const,
+                      name: id,
+                    },
+                  };
 
-                                <PopoverContent>
-                                  <DropdownSection
-                                    className="mb-1 w-[90vw] max-w-[min(90vw,50rem)] overflow-auto py-0 pr-0 pl-4"
-                                    title={
-                                      <div className="flex items-center text-0.5xs">
-                                        {id}
-                                        <Portal
-                                          id="state-value"
-                                          className="mr-1 ml-auto"
-                                        />
-                                        <EditStateTrigger
-                                          onClick={() =>
-                                            setEditState({
-                                              isEditing: true,
-                                              isDeleting: false,
-                                              key: id,
-                                              objectKey: row.key!,
-                                              service: virtualObject,
-                                            })
-                                          }
-                                          variant="secondary"
-                                          className="flex shrink-0 items-center gap-1 rounded-lg px-1.5 py-0.5 text-xs font-normal"
-                                        >
-                                          Edit
-                                          <Icon
-                                            name={IconName.ExternalLink}
-                                            className="h-3 w-3"
-                                          />
-                                        </EditStateTrigger>
-                                      </div>
-                                    }
-                                  >
+                  return (
+                    <Cell
+                      key={id}
+                      className="group [&:has(*:focus)_*]:visible [&:has(*:hover)_*]:visible"
+                    >
+                      <div className="item-center flex h-full min-h-5 w-full justify-start gap-1">
+                        {row.state?.[id] && (
+                          <Popover>
+                            <PopoverTrigger>
+                              <Button
+                                className="truncate rounded-xl px-3 py-0.5 font-mono [font-size:inherit] text-inherit shadow-none"
+                                variant="secondary"
+                              >
+                                <span className="flex min-w-0 items-center truncate pr-0.5">
+                                  {EncodingWaterMark && (
+                                    <EncodingWaterMark
+                                      value={row.state?.[id]}
+                                      mini
+                                      className="mr-1"
+                                    />
+                                  )}
+                                  <span className="block truncate">
                                     <StaticCodecOptionsProvider
                                       options={stateCodecOptions}
                                     >
-                                      <Value
+                                      <DecodedValue
                                         value={row.state?.[id]}
-                                        className="w-full py-0 font-mono text-xs"
-                                        showCopyButton
-                                        portalId="state-value"
+                                        isBase64
                                       />
                                     </StaticCodecOptionsProvider>
-                                  </DropdownSection>
-                                </PopoverContent>
-                              </Popover>
-                            )}
-                            <EditStateTrigger
-                              onClick={() =>
-                                setEditState({
-                                  isEditing: true,
-                                  isDeleting: false,
-                                  key: id,
-                                  objectKey: row.key!,
-                                  service: virtualObject,
-                                })
-                              }
-                              variant="icon"
-                              className="invisible shrink-0 group-hover:visible"
-                            >
-                              <Icon
-                                name={IconName.Pencil}
-                                className="h-3 w-3 fill-current opacity-70"
-                              />
-                            </EditStateTrigger>
-                          </div>
-                        </Cell>
-                      );
-                    }
+                                  </span>
+                                </span>
+                              </Button>
+                            </PopoverTrigger>
+
+                            <PopoverContent>
+                              <DropdownSection
+                                className="mb-1 w-[90vw] max-w-[min(90vw,50rem)] overflow-auto py-0 pr-0 pl-4"
+                                title={
+                                  <div className="flex items-center text-0.5xs">
+                                    {id}
+                                    <Portal
+                                      id="state-value"
+                                      className="mr-1 ml-auto"
+                                    />
+                                    <EditStateTrigger
+                                      onClick={() =>
+                                        setEditState({
+                                          isEditing: true,
+                                          isDeleting: false,
+                                          key: id,
+                                          objectKey: row.key!,
+                                          service: virtualObject,
+                                        })
+                                      }
+                                      variant="secondary"
+                                      className="flex shrink-0 items-center gap-1 rounded-lg px-1.5 py-0.5 text-xs font-normal"
+                                    >
+                                      Edit
+                                      <Icon
+                                        name={IconName.ExternalLink}
+                                        className="h-3 w-3"
+                                      />
+                                    </EditStateTrigger>
+                                  </div>
+                                }
+                              >
+                                <StaticCodecOptionsProvider
+                                  options={stateCodecOptions}
+                                >
+                                  <Value
+                                    value={row.state?.[id]}
+                                    className="w-full py-0 font-mono text-xs"
+                                    showCopyButton
+                                    portalId="state-value"
+                                  />
+                                </StaticCodecOptionsProvider>
+                              </DropdownSection>
+                            </PopoverContent>
+                          </Popover>
+                        )}
+                        <EditStateTrigger
+                          onClick={() =>
+                            setEditState({
+                              isEditing: true,
+                              isDeleting: false,
+                              key: id,
+                              objectKey: row.key!,
+                              service: virtualObject,
+                            })
+                          }
+                          variant="icon"
+                          className="invisible shrink-0 group-hover:visible"
+                        >
+                          <Icon
+                            name={IconName.Pencil}
+                            className="h-3 w-3 fill-current opacity-70"
+                          />
+                        </EditStateTrigger>
+                      </div>
+                    </Cell>
+                  );
+                }
               }}
             />
             <Footnote
