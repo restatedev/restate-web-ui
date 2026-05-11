@@ -1,6 +1,5 @@
 import type { Handler } from '@restate/data-access/admin-api-spec';
 import type { QueryContext } from './shared';
-import { gte } from 'semver';
 
 function getSizeFromSysInbox(
   this: QueryContext,
@@ -19,11 +18,6 @@ async function getVqueueId(
   service: string,
   invocationId?: string,
 ): Promise<{ id?: string; sequence_number?: string }> {
-  const isVqueuesAvailable = gte(this.restateVersion, '1.7.0');
-  if (!isVqueuesAvailable) {
-    return {};
-  }
-
   return this.query(
     `SELECT id, sequence_number FROM sys_vqueues WHERE entry_id = '${invocationId}'`,
   ).then(({ rows }) => ({
@@ -91,37 +85,26 @@ async function getPositionFromSysVqueues(
   ).then(({ rows }) => rows.at(0)?.position - 1);
 }
 
-async function getSize(
+function getSize(
   this: QueryContext,
   key: string,
   service: string,
   invocationId?: string,
 ) {
-  const [inbox, vqueue] = await Promise.allSettled([
-    getSizeFromSysInbox.call(this, key, service, invocationId),
-    getSizeFromSysVqueues.call(this, key, service, invocationId),
-  ]);
-  const inboxValue = inbox.status === 'fulfilled' ? inbox.value : undefined;
-  const vqueueValue = vqueue.status === 'fulfilled' ? vqueue.value : undefined;
-  console.log(inboxValue, vqueueValue);
-
-  return vqueueValue ?? inboxValue;
+  return this.features.has('vqueues')
+    ? getSizeFromSysVqueues.call(this, key, service, invocationId)
+    : getSizeFromSysInbox.call(this, key, service, invocationId);
 }
 
-async function getPosition(
+function getPosition(
   this: QueryContext,
   key: string,
   service: string,
   invocationId?: string,
 ) {
-  const [inbox, vqueue] = await Promise.allSettled([
-    getPositionFromSysInbox.call(this, key, service, invocationId),
-    getPositionFromSysVqueues.call(this, key, service, invocationId),
-  ]);
-  const inboxValue = inbox.status === 'fulfilled' ? inbox.value : undefined;
-  const vqueueValue = vqueue.status === 'fulfilled' ? vqueue.value : undefined;
-  console.log(inboxValue, vqueueValue);
-  return vqueueValue ?? inboxValue;
+  return this.features.has('vqueues')
+    ? getPositionFromSysVqueues.call(this, key, service, invocationId)
+    : getPositionFromSysInbox.call(this, key, service, invocationId);
 }
 
 export async function getInbox(
