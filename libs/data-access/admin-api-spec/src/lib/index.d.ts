@@ -3541,6 +3541,7 @@ export interface components {
       target_service_name: string;
       /** @enum {string} */
       target_service_ty: 'service' | 'virtual_object' | 'workflow';
+      scope?: string;
       /** @enum {string} */
       completion_result?: 'success' | 'failure';
       completion_failure?: string;
@@ -3618,6 +3619,7 @@ export interface components {
       target_service_name: string;
       /** @enum {string} */
       target_service_ty: 'service' | 'virtual_object' | 'workflow';
+      scope?: string;
       /** @enum {string} */
       completion_result?: 'success' | 'failure';
       completion_failure?: string;

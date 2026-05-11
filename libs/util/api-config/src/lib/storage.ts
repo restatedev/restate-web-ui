@@ -1,9 +1,5 @@
 import { createCookie, type CookieOptions } from 'react-router';
-import {
-  markMetaReady,
-  setFeatures,
-  setRestateVersion,
-} from './api-config';
+import { markMetaReady, setFeatures, setRestateVersion } from './api-config';
 
 export interface RestateMeta {
   version?: string;

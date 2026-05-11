@@ -35,8 +35,7 @@ export function awaitMeta(signal?: AbortSignal): Promise<void> {
     return Promise.reject(new DOMException('Aborted', 'AbortError'));
   }
   return new Promise<void>((resolve, reject) => {
-    const onAbort = () =>
-      reject(new DOMException('Aborted', 'AbortError'));
+    const onAbort = () => reject(new DOMException('Aborted', 'AbortError'));
     signal.addEventListener('abort', onAbort, { once: true });
     metaReady.then(() => {
       signal.removeEventListener('abort', onAbort);

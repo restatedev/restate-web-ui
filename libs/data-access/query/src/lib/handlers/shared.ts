@@ -1,4 +1,5 @@
 import ky from 'ky';
+import { gte } from 'semver';
 
 export const DURATION_CALC =
   "CASE WHEN status = 'scheduled' THEN NULL ELSE COALESCE(completed_at, now()) - COALESCE(scheduled_start_at, created_at) END";
@@ -55,6 +56,18 @@ export const SYS_INVOCATION_COLUMNS = [
   'last_failure_related_command_name',
   'last_failure_related_command_type',
 ] as const;
+
+export function sysInvocationListColumns(version: string): readonly string[] {
+  return gte(version, '1.7.0')
+    ? [...SYS_INVOCATION_LIST_COLUMNS, 'scope']
+    : SYS_INVOCATION_LIST_COLUMNS;
+}
+
+export function sysInvocationColumns(version: string): readonly string[] {
+  return gte(version, '1.7.0')
+    ? [...SYS_INVOCATION_COLUMNS, 'scope']
+    : SYS_INVOCATION_COLUMNS;
+}
 
 export type QueryContext = {
   query: (sql: string) => Promise<{ rows: any[] }>;

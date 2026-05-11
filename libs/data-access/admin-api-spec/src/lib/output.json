@@ -9221,6 +9221,9 @@
             "type": "string",
             "enum": ["service", "virtual_object", "workflow"]
           },
+          "scope": {
+            "type": "string"
+          },
           "completion_result": {
             "type": "string",
             "enum": ["success", "failure"]
@@ -9403,6 +9406,9 @@
           "target_service_ty": {
             "type": "string",
             "enum": ["service", "virtual_object", "workflow"]
+          },
+          "scope": {
+            "type": "string"
           },
           "completion_result": {
             "type": "string",
