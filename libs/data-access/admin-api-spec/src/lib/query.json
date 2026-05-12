@@ -3465,11 +3465,14 @@
       "ListVirtualObjectStateRequestBody": {
         "type": "object",
         "properties": {
-          "filters": {
+          "systemFilters": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FilterItem"
             }
+          },
+          "stateFilter": {
+            "$ref": "#/components/schemas/FilterItem"
           }
         }
       },

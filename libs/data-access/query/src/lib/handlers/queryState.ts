@@ -5,13 +5,10 @@ import type { QueryContext } from './shared';
 export async function queryState(
   this: QueryContext,
   service: string,
-  filters: FilterItem[],
+  args: { systemFilters?: FilterItem[]; stateFilter?: FilterItem },
 ) {
-  if (filters.length > 1) {
-    throw new Error('Only one filter is supported');
-  }
+  const { systemFilters = [], stateFilter } = args;
 
-  const [filter] = filters;
   const filtersWithService: FilterItem[] = [
     {
       field: 'service_name',
@@ -19,21 +16,21 @@ export async function queryState(
       value: service,
       type: 'STRING',
     },
-    ...(filter && filter.field !== 'service_key'
+    ...systemFilters,
+    ...(stateFilter
       ? ([
           {
             field: 'key',
             operation: 'EQUALS',
-            value: filter.field,
+            value: stateFilter.field,
             type: 'STRING',
           },
           {
-            ...filter,
+            ...stateFilter,
             field: 'value',
           },
         ] as FilterItem[])
       : []),
-    ...(filter && filter.field === 'service_key' ? [filter] : []),
   ];
 
   const hasVqueues = this.features.has('vqueues');

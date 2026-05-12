@@ -2674,7 +2674,8 @@ export interface components {
       new_invocation_id: string;
     };
     ListVirtualObjectStateRequestBody: {
-      filters?: components['schemas']['FilterItem'][];
+      systemFilters?: components['schemas']['FilterItem'][];
+      stateFilter?: components['schemas']['FilterItem'];
     };
     FilterItem: components['schemas']['FilterBaseItem'] &
       (

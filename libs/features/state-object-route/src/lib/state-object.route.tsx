@@ -96,6 +96,29 @@ function getQuery(
     });
 }
 
+function clausesToFilterArgs(clauses: QueryClause<QueryClauseType>[]): {
+  systemFilters: FilterItem[];
+  stateFilter?: FilterItem;
+} {
+  const systemFilters: FilterItem[] = [];
+  let stateFilter: FilterItem | undefined;
+  for (const clause of clauses) {
+    if (!clause.isValid) continue;
+    const filter = {
+      field: clause.fieldValue,
+      operation: clause.value.operation!,
+      type: clause.type === 'CUSTOM_STRING' ? 'STRING' : clause.type,
+      value: clause.value.value,
+    } as FilterItem;
+    if (clause.schema.isSystem) {
+      systemFilters.push(filter);
+    } else {
+      stateFilter = filter;
+    }
+  }
+  return { systemFilters, stateFilter };
+}
+
 const STATE_PAGE_SIZE = 30;
 const CUSTOM_KEY_ID = `__rs-state-key__`;
 
@@ -136,6 +159,7 @@ function Component() {
   );
   const keys = Array.from(keysSet.values());
 
+  const hasVqueues = getFeatures()?.has('vqueues') ?? false;
   const schema = useMemo(() => {
     const clauses = Array.from(keysSet.values()).map(
       (key) =>
@@ -150,8 +174,23 @@ function Component() {
             { value: 'NOT_CONTAINS', label: 'does not contain' },
           ],
           type: 'STRING',
+          isSystem: key === 'service_key',
         }) as QueryClauseSchema<QueryClauseType>,
     ) satisfies QueryClauseSchema<QueryClauseType>[];
+    if (hasVqueues && isWorkflow) {
+      clauses.push({
+        id: 'scope',
+        label: 'Scope',
+        operations: [
+          { value: 'EQUALS', label: 'is' },
+          { value: 'NOT_EQUALS', label: 'is not' },
+          { value: 'CONTAINS', label: 'contains' },
+          { value: 'NOT_CONTAINS', label: 'does not contain' },
+        ],
+        type: 'STRING',
+        isSystem: true,
+      } as QueryClauseSchema<QueryClauseType>);
+    }
     clauses.push({
       id: CUSTOM_KEY_ID,
       operations: [
@@ -164,20 +203,12 @@ function Component() {
       type: 'CUSTOM_STRING',
     } as QueryClauseSchema<QueryClauseType>);
     return clauses;
-  }, [keysSet, serviceName]);
+  }, [keysSet, serviceName, hasVqueues, isWorkflow]);
 
-  const [queryFilters, setQueryFilters] = useState<FilterItem[]>(() =>
-    getQuery(searchParams, schema)
-      .filter((clause) => clause.isValid)
-      .map((clause) => {
-        return {
-          field: clause.fieldValue,
-          operation: clause.value.operation!,
-          type: clause.type,
-          value: clause.value.value,
-        } as FilterItem;
-      }),
-  );
+  const [queryFilters, setQueryFilters] = useState<{
+    systemFilters: FilterItem[];
+    stateFilter?: FilterItem;
+  }>(() => clausesToFilterArgs(getQuery(searchParams, schema)));
   const {
     dataUpdatedAt,
     errorUpdatedAt,
@@ -291,7 +322,6 @@ function Component() {
     queryRef.current = query;
   });
 
-  const hasVqueues = (getFeatures() ?? new Set<string>()).has('vqueues');
   const showScopeColumn = hasVqueues && isWorkflow;
 
   const selectedColumnsArray = useMemo(() => {
@@ -446,7 +476,7 @@ function Component() {
                     />
                   </div>
                   <h3 className="text-sm font-semibold text-zinc-400">
-                    No objects found
+                    No instances found
                   </h3>
                 </div>
               }
@@ -706,22 +736,7 @@ function Component() {
             sortedOldSearchParams.sort();
 
             setSearchParams(newSearchParams, { preventScrollReset: true });
-            setQueryFilters(
-              query.items
-                .filter((clause) => clause.isValid)
-                .map(
-                  (clause) =>
-                    ({
-                      field: clause.fieldValue,
-                      operation: clause.value.operation!,
-                      type:
-                        clause.type === 'CUSTOM_STRING'
-                          ? 'STRING'
-                          : clause.type,
-                      value: clause.value.value,
-                    }) as FilterItem,
-                ),
-            );
+            setQueryFilters(clausesToFilterArgs(query.items));
             await queryCLient.invalidateQueries({ queryKey });
             await queryCLient.invalidateQueries({
               predicate: (query) =>
@@ -732,7 +747,7 @@ function Component() {
           <QueryBuilder
             query={query}
             schema={schema}
-            multiple={false}
+            multiple
             key={
               schema
                 .map((s) => s.id)
@@ -836,7 +851,7 @@ function Footnote({
               <span className="font-medium text-gray-500">{count}</span> objects
             </>
           ) : (
-            'No objects found'
+            'No instances found'
           )}{' '}
           as of{' '}
           <span className="font-medium text-gray-500">{duration} ago</span>

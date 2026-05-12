@@ -1354,7 +1354,7 @@ export function useGetVirtualObjectStateInterface(
 
 export function useQueryVirtualObjectState(
   serviceName: string,
-  filters?: FilterItem[],
+  args: { systemFilters?: FilterItem[]; stateFilter?: FilterItem },
   options?: HookQueryOptions<'/query/services/{name}/state/query', 'post'>,
 ) {
   const enabled = useAPIStatus();
@@ -1366,7 +1366,7 @@ export function useQueryVirtualObjectState(
     {
       baseUrl,
       parameters: { path: { name: serviceName } },
-      body: { filters },
+      body: args,
       resolvedPath: `/query/services/${serviceName}/state/query`,
     },
   );

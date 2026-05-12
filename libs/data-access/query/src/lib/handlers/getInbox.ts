@@ -5,11 +5,7 @@ function scopeClause(scope?: string) {
   return scope !== undefined ? ` AND scope = '${scope}'` : ` AND scope IS NULL`;
 }
 
-function getSizeFromSysInbox(
-  this: QueryContext,
-  key: string,
-  service: string,
-) {
+function getSizeFromSysInbox(this: QueryContext, key: string, service: string) {
   return this.query(
     `SELECT COUNT(*) AS size FROM sys_inbox WHERE service_key = '${key}' AND service_name = '${service}'`,
   ).then(({ rows }) => rows.at(0)?.size);

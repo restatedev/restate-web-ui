@@ -81,7 +81,10 @@ type BoundHandlers = {
     serviceKey?: string[],
     scope?: string,
   ) => Promise<Response>;
-  queryState: (service: string, filters: FilterItem[]) => Promise<Response>;
+  queryState: (
+    service: string,
+    args: { systemFilters?: FilterItem[]; stateFilter?: FilterItem },
+  ) => Promise<Response>;
   listState: (service: string, args: ListStateArgs) => Promise<Response>;
   getScopedState: (
     service: string,
@@ -386,9 +389,11 @@ router.map(routes, {
         },
         async query(ctx) {
           const { queryState } = ctx.storage.get(handlersKey);
-          const { filters = [] }: { filters: FilterItem[] } =
-            await ctx.request.json();
-          return queryState(ctx.params.name, filters);
+          const args = (await ctx.request.json()) as {
+            systemFilters?: FilterItem[];
+            stateFilter?: FilterItem;
+          };
+          return queryState(ctx.params.name, args);
         },
         async list(ctx) {
           const { listState } = ctx.storage.get(handlersKey);
