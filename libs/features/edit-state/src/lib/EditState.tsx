@@ -28,6 +28,8 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from '@restate/util/styles';
 import { useQueryClient } from '@tanstack/react-query';
 import { Spinner } from '@restate/ui/loading';
+import { TruncateWithTooltip } from '@restate/ui/tooltip';
+import { Badge } from '@restate/ui/badge';
 import { useEditState } from './useEditState';
 
 const styles = tv({
@@ -203,22 +205,66 @@ function EditStateInner({
         title={
           isPartial ? (
             <>
-              Update "
-              <code className="rounded-sm bg-gray-100 px-[0.5ch]">{key}</code>"{' '}
-              value in <code>{service}</code> state for{' '}
-              <code className="rounded-sm bg-gray-100 px-[0.5ch]">
-                {objectKey}
-              </code>
+              Update{' '}
+              <Badge
+                size="sm"
+                className="align-middle font-mono text-base font-medium"
+              >
+                {key}
+              </Badge>
             </>
+          ) : isDeleting ? (
+            'Delete state'
           ) : (
-            <>
-              {isDeleting ? 'Delete' : 'Replace'} <code>{service}</code> state
-              for{' '}
-              <code className="rounded-sm bg-gray-100 px-[0.5ch]">
-                {objectKey}
-              </code>
-            </>
+            'Replace state'
           )
+        }
+        subtitle={
+          <>
+            <span className="flex min-w-0 items-center gap-1.5">
+              <span className="text-gray-500">in</span>
+              <Badge
+                size="sm"
+                className="max-w-[20ch] min-w-0 align-middle font-mono"
+              >
+                <TruncateWithTooltip copyText={service}>
+                  {service}
+                </TruncateWithTooltip>
+              </Badge>
+            </span>
+            <span aria-hidden className="text-gray-400">
+              ·
+            </span>
+            <span className="flex min-w-0 items-center gap-1.5">
+              <span className="text-gray-500">key</span>
+              <Badge
+                size="sm"
+                className="max-w-[20ch] min-w-0 align-middle font-mono"
+              >
+                <TruncateWithTooltip copyText={objectKey}>
+                  {objectKey}
+                </TruncateWithTooltip>
+              </Badge>
+            </span>
+            {scope !== undefined && (
+              <>
+                <span aria-hidden className="text-gray-400">
+                  ·
+                </span>
+                <span className="flex min-w-0 items-center gap-1.5">
+                  <span className="text-gray-500">scope</span>
+                  <Badge
+                    size="sm"
+                    className="max-w-[20ch] min-w-0 align-middle font-mono"
+                  >
+                    <TruncateWithTooltip copyText={scope}>
+                      {scope}
+                    </TruncateWithTooltip>
+                  </Badge>
+                </span>
+              </>
+            )}
+          </>
         }
       >
         {isDeleting && (
@@ -291,6 +337,7 @@ function StateDialogContent({
   isDeleting,
   isFetching,
   title,
+  subtitle,
   onSubmit,
   error,
   isSubmitting,
@@ -304,6 +351,7 @@ function StateDialogContent({
   isSubmitting?: boolean;
   isFetchingState?: boolean;
   title?: ReactNode;
+  subtitle?: ReactNode;
   onSubmit: FormEventHandler<HTMLFormElement>;
   error?: Error | null;
 }>) {
@@ -317,7 +365,16 @@ function StateDialogContent({
   return (
     <DialogContent className="max-w-2xl">
       <div className="flex flex-col gap-2">
-        <h3 className="text-lg leading-6 font-medium text-gray-900">{title}</h3>
+        <div className="flex flex-col gap-1">
+          <h3 className="text-lg leading-6 font-medium text-gray-900">
+            {title}
+          </h3>
+          {subtitle && (
+            <div className="flex flex-wrap items-center gap-1.5 text-0.5xs text-gray-600">
+              {subtitle}
+            </div>
+          )}
+        </div>
         <div className={banner()}>
           {isFetching ? (
             <div className="h-5 w-5 shrink-0 px-0.5">

@@ -78,6 +78,7 @@ type BoundHandlers = {
   getStateInterface: (
     service: string,
     serviceKey?: string[],
+    scope?: string,
   ) => Promise<Response>;
   queryState: (service: string, filters: FilterItem[]) => Promise<Response>;
   listState: (service: string, args: ListStateArgs) => Promise<Response>;

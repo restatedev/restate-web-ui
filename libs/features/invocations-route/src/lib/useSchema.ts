@@ -223,14 +223,14 @@ export function useSchema() {
         type: 'STRING',
       },
       ...(hasVqueues
-        ? ([
+        ? [
             {
               id: 'scope',
               label: 'Scope',
-              operations: [{ value: 'EQUALS', label: 'is' }],
-              type: 'STRING',
+              operations: [{ value: 'EQUALS' as const, label: 'is' }],
+              type: 'STRING' as const,
             },
-          ] as const)
+          ]
         : []),
     ] satisfies QueryClauseSchema<QueryClauseType>[];
   }, [
