@@ -487,6 +487,7 @@ function Component() {
                               isDeleting: false,
                               objectKey: row.key!,
                               service: serviceName,
+                              scope: row.scope,
                             });
                           }
                           if (key === 'delete') {
@@ -495,6 +496,7 @@ function Component() {
                               isDeleting: true,
                               objectKey: row.key!,
                               service: serviceName,
+                              scope: row.scope,
                             });
                           }
                         }}
@@ -508,6 +510,7 @@ function Component() {
                               isDeleting: false,
                               objectKey: row.key!,
                               service: serviceName,
+                              scope: row.scope,
                             })
                           }
                         >
@@ -579,6 +582,7 @@ function Component() {
                                           key: id,
                                           objectKey: row.key!,
                                           service: serviceName,
+                                          scope: row.scope,
                                         })
                                       }
                                       variant="secondary"
@@ -615,6 +619,7 @@ function Component() {
                               key: id,
                               objectKey: row.key!,
                               service: serviceName,
+                              scope: row.scope,
                             })
                           }
                           variant="icon"

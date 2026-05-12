@@ -11,12 +11,14 @@ export function State({
   state = [],
   service,
   serviceKey,
+  scope,
   deploymentId,
   isLoading,
 }: {
   state?: { name: string; value: string }[];
   service: string;
   serviceKey: string;
+  scope?: string;
   deploymentId?: string;
   isLoading?: boolean;
 }) {
@@ -35,6 +37,7 @@ export function State({
               key={name}
               service={service}
               serviceKey={serviceKey}
+              scope={scope}
               deploymentId={deploymentId}
             />
           ))}
@@ -54,12 +57,14 @@ function StateKey({
   value,
   service,
   serviceKey,
+  scope,
   deploymentId,
 }: {
   name: string;
   value: string;
   service: string;
   serviceKey: string;
+  scope?: string;
   deploymentId?: string;
 }) {
   const setEditState = useEditStateContext();
@@ -100,6 +105,7 @@ function StateKey({
                 service,
                 objectKey: serviceKey,
                 key: name,
+                scope,
               });
             }}
           >

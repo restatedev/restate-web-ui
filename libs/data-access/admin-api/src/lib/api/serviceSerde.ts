@@ -85,8 +85,23 @@ export function getEncodeServiceSerdeQueryOptions(
 
 export function getServiceKeyStateQueryOptions(
   baseUrl: string,
-  { service, key }: { service: string; key: string },
+  {
+    service,
+    key,
+    scope,
+  }: { service: string; key: string; scope?: string },
 ) {
+  if (scope !== undefined) {
+    return adminApi(
+      'query',
+      '/query/services/{name}/scopes/{scope}/keys/{key}/state',
+      'get',
+      {
+        baseUrl,
+        parameters: { path: { key, name: service, scope } },
+      },
+    );
+  }
   return adminApi('query', '/query/services/{name}/keys/{key}/state', 'get', {
     baseUrl,
     parameters: { path: { key, name: service } },

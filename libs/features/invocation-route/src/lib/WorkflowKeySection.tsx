@@ -122,6 +122,7 @@ export function WorkflowKeySection({
                       state={stateData?.state}
                       service={invocation?.target_service_name}
                       serviceKey={invocation?.target_service_key}
+                      scope={invocation?.scope}
                       deploymentId={
                         invocation?.pinned_deployment_id ??
                         invocation?.last_attempt_deployment_id

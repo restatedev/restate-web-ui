@@ -64,6 +64,7 @@ const EditStateContext = createContext<{
   key?: string;
   objectKey?: string;
   service?: string;
+  scope?: string;
   setEditState: Dispatch<
     React.SetStateAction<{
       isEditing: boolean;
@@ -71,6 +72,7 @@ const EditStateContext = createContext<{
       key?: string;
       service?: string;
       objectKey?: string;
+      scope?: string;
     }>
   >;
 }>({
@@ -90,6 +92,7 @@ export function EditState({ children }: PropsWithChildren) {
     key?: string;
     objectKey?: string;
     service?: string;
+    scope?: string;
   }>({
     isEditing: false,
     isDeleting: false,
@@ -103,6 +106,7 @@ export function EditState({ children }: PropsWithChildren) {
         service={editState.service}
         objectKey={editState.objectKey}
         stateKey={editState.key}
+        scope={editState.scope}
         isDeleting={editState.isDeleting}
         onOpenChange={(isEditing) => setEditState((s) => ({ ...s, isEditing }))}
       />
@@ -115,6 +119,7 @@ function EditStateInner({
   service,
   objectKey,
   stateKey: key,
+  scope,
   isOpen,
   onOpenChange,
   isDeleting,
@@ -122,19 +127,25 @@ function EditStateInner({
   service?: string;
   stateKey?: string;
   objectKey?: string;
+  scope?: string;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   isDeleting?: boolean;
 }>) {
-  const { mutation, decodedQuery: query } = useEditState(service, objectKey, {
-    enabled: Boolean(service && objectKey),
-    onSuccess(data, variables) {
-      onOpenChange(false);
-      showSuccessNotification(
-        'The state mutation has been successfully accepted for processing.',
-      );
+  const { mutation, decodedQuery: query } = useEditState(
+    service,
+    objectKey,
+    scope,
+    {
+      enabled: Boolean(service && objectKey),
+      onSuccess(data, variables) {
+        onOpenChange(false);
+        showSuccessNotification(
+          'The state mutation has been successfully accepted for processing.',
+        );
+      },
     },
-  });
+  );
   const isPartial = typeof key === 'string';
 
   const {

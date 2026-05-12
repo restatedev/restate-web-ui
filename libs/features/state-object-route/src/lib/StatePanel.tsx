@@ -272,6 +272,7 @@ function StatePanelContent() {
             state={data?.state}
             service={virtualObject}
             serviceKey={key}
+            scope={scope}
             isLoading={isFetching}
           />
         </SectionContent>
