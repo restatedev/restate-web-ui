@@ -1250,6 +1250,7 @@ export function useGetVirtualObjectQueue(
   serviceName: string,
   key: string,
   invocationId?: string,
+  scope?: string,
   options?: HookQueryOptions<
     '/query/virtualObjects/{name}/keys/{key}/queue',
     'get'
@@ -1263,7 +1264,10 @@ export function useGetVirtualObjectQueue(
     'get',
     {
       baseUrl,
-      parameters: { path: { key, name: serviceName }, query: { invocationId } },
+      parameters: {
+        path: { key, name: serviceName },
+        query: { invocationId, scope },
+      },
     },
   );
 

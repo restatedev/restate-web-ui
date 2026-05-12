@@ -833,8 +833,7 @@ function Footnote({
         <div className="ml-auto">
           {count > 0 ? (
             <>
-              <span className="font-medium text-gray-500">{count}</span>{' '}
-              objects
+              <span className="font-medium text-gray-500">{count}</span> objects
             </>
           ) : (
             'No objects found'

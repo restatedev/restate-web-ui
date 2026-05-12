@@ -154,11 +154,17 @@ function EditStateInner({
     data: queue,
     queryKey,
     isFetching,
-  } = useGetVirtualObjectQueue(String(service), String(objectKey), undefined, {
-    enabled: Boolean(objectKey && service && isOpen),
-    staleTime: 0,
-    refetchOnMount: true,
-  });
+  } = useGetVirtualObjectQueue(
+    String(service),
+    String(objectKey),
+    undefined,
+    scope,
+    {
+      enabled: Boolean(objectKey && service && isOpen),
+      staleTime: 0,
+      refetchOnMount: true,
+    },
+  );
   const queryClient = useQueryClient();
   const hasActiveInvocations = (queue?.size ?? 0) > 0;
 

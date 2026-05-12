@@ -102,6 +102,7 @@ function StatePanelContent() {
     String(virtualObject),
     String(key),
     undefined,
+    scope,
     {
       enabled: Boolean(virtualObject && key),
     },

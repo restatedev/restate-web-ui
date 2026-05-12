@@ -3900,6 +3900,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "description": "Workflow scope",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {

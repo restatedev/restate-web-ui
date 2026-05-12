@@ -85,11 +85,7 @@ export function getEncodeServiceSerdeQueryOptions(
 
 export function getServiceKeyStateQueryOptions(
   baseUrl: string,
-  {
-    service,
-    key,
-    scope,
-  }: { service: string; key: string; scope?: string },
+  { service, key, scope }: { service: string; key: string; scope?: string },
 ) {
   if (scope !== undefined) {
     return adminApi(

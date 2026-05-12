@@ -41,6 +41,7 @@ export function VirtualObjectSection({
     String(invocation?.target_service_name),
     String(invocation?.target_service_key),
     String(invocation?.id),
+    invocation?.scope,
     {
       enabled: Boolean(
         typeof invocation?.target_service_key === 'string' &&

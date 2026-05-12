@@ -6578,6 +6578,8 @@ export interface operations {
       query?: {
         /** @description Invocation id */
         invocationId?: string;
+        /** @description Workflow scope */
+        scope?: string;
       };
       header?: never;
       path: {

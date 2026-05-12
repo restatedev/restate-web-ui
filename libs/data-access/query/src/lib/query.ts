@@ -73,6 +73,7 @@ type BoundHandlers = {
     service: string,
     key: string,
     invocationId: string | undefined,
+    scope?: string,
   ) => Promise<Response>;
   getState: (service: string, key: string) => Promise<Response>;
   getStateInterface: (
@@ -365,6 +366,7 @@ router.map(routes, {
           ctx.url.searchParams.has('invocationId')
             ? String(ctx.url.searchParams.get('invocationId'))
             : undefined,
+          ctx.url.searchParams.get('scope') ?? undefined,
         );
       },
     },
