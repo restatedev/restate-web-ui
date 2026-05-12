@@ -327,10 +327,7 @@ function Component() {
 
   const queryCLient = useQueryClient();
 
-  const query = useQueryBuilder(
-    getQuery(searchParams, schema),
-    !versionReady,
-  );
+  const query = useQueryBuilder(getQuery(searchParams, schema), !versionReady);
   const queryRef = useRef(query);
   useEffect(() => {
     queryRef.current = query;
