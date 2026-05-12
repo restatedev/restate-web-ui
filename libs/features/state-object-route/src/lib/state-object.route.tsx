@@ -110,7 +110,7 @@ function clausesToFilterArgs(clauses: QueryClause<QueryClauseType>[]): {
       type: clause.type === 'CUSTOM_STRING' ? 'STRING' : clause.type,
       value: clause.value.value,
     } as FilterItem;
-    if (clause.schema.isSystem) {
+    if (clause.schema.metadata?.isSystem) {
       systemFilters.push(filter);
     } else {
       stateFilter = filter;
@@ -174,7 +174,7 @@ function Component() {
             { value: 'NOT_CONTAINS', label: 'does not contain' },
           ],
           type: 'STRING',
-          isSystem: key === 'service_key',
+          metadata: { isSystem: key === 'service_key' },
         }) as QueryClauseSchema<QueryClauseType>,
     ) satisfies QueryClauseSchema<QueryClauseType>[];
     if (hasVqueues && isWorkflow) {
@@ -188,7 +188,7 @@ function Component() {
           { value: 'NOT_CONTAINS', label: 'does not contain' },
         ],
         type: 'STRING',
-        isSystem: true,
+        metadata: { isSystem: true },
       } as QueryClauseSchema<QueryClauseType>);
     }
     clauses.push({

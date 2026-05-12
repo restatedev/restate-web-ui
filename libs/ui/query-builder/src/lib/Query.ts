@@ -33,7 +33,7 @@ export interface QueryClauseSchema<T extends QueryClauseType> {
   type: T;
   loadOptions?: () => Promise<QueryClauseOption[]>;
   options?: QueryClauseOption[];
-  isSystem?: boolean;
+  metadata?: Record<string, unknown>;
 }
 export type QueryClauseValue<T extends QueryClauseType> = T extends 'STRING'
   ? string
