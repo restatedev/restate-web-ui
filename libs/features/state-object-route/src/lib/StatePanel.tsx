@@ -69,7 +69,11 @@ export function StatePanel() {
   );
 }
 
-function useStateParam(): { virtualObject?: string; key?: string } {
+function useStateParam(): {
+  virtualObject?: string;
+  key?: string;
+  scope?: string;
+} {
   const stateParam = useParamValue();
 
   try {
@@ -80,7 +84,7 @@ function useStateParam(): { virtualObject?: string; key?: string } {
 }
 
 function StatePanelContent() {
-  const { virtualObject, key } = useStateParam();
+  const { virtualObject, key, scope } = useStateParam();
   const {
     data,
     isFetching,
@@ -88,7 +92,7 @@ function StatePanelContent() {
     dataUpdatedAt,
     errorUpdatedAt,
     refetch: refetchState,
-  } = useGetVirtualObjectState(String(virtualObject), String(key), {
+  } = useGetVirtualObjectState(String(virtualObject), String(key), scope, {
     enabled: Boolean(virtualObject && key),
     refetchOnMount: true,
     staleTime: 0,
@@ -187,6 +191,23 @@ function StatePanelContent() {
               />
             </Badge>
           </div>
+          {scope !== undefined && (
+            <div className="flex items-center px-1.5 py-1 not-last:border-b">
+              <span className="flex-auto pl-1 text-0.5xs font-medium text-gray-500">
+                Scope
+              </span>
+              <Badge
+                size="sm"
+                className="ml-[30%] min-w-0 py-0 pr-0 align-middle font-mono"
+              >
+                <div className="truncate">{scope}</div>
+                <Copy
+                  copyText={scope}
+                  className="ml-1 shrink-0 p-1 [&_svg]:h-2.5 [&_svg]:w-2.5"
+                />
+              </Badge>
+            </div>
+          )}
         </SectionContent>
         {queueData?.head && (
           <>

@@ -61,7 +61,7 @@ export function WorkflowKeySection({
         <SectionContent className="p-0" raised={raised}>
           <div className="flex h-9 items-center px-1.5 py-1 not-last:border-b">
             <span className="flex-auto pl-1 text-0.5xs font-medium text-gray-500">
-              Workflow Id
+              Key
             </span>
             <Badge
               size="sm"

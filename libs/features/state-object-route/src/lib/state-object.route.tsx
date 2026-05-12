@@ -71,7 +71,6 @@ import { DecodedValue, Value } from '@restate/features/invocation-route';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { tv } from '@restate/util/styles';
 import { STATE_QUERY_NAME } from './constants';
-import { Link } from '@restate/ui/link';
 import { useEditStateContext } from '@restate/features/edit-state';
 import {
   StaticCodecOptionsProvider,
@@ -81,6 +80,7 @@ import { toStateParam } from './toStateParam';
 import { SplitButton } from '@restate/ui/split-button';
 import { useRestateContext } from '@restate/features/restate-context';
 import { Portal } from '@restate/ui/portal';
+import { getFeatures } from '@restate/util/api-config';
 
 function getQuery(
   searchParams: URLSearchParams,
@@ -290,19 +290,29 @@ function Component() {
     queryRef.current = query;
   });
 
+  const hasVqueues = (getFeatures() ?? new Set<string>()).has('vqueues');
+
   const selectedColumnsArray = useMemo(() => {
     const cols = Array.from(selectedColumns).map((id, index) => ({
       name: id === 'service_key' ? `${virtualObject} (Key)` : id,
       id: String(id),
       isRowHeader: index === 0,
     }));
+    if (hasVqueues) {
+      const keyIndex = cols.findIndex((c) => c.id === 'service_key');
+      cols.splice(keyIndex + 1, 0, {
+        id: 'scope',
+        name: 'Scope',
+        isRowHeader: false,
+      });
+    }
     cols.push({
       id: '__actions__',
       name: 'Actions',
       isRowHeader: false,
     });
     return cols;
-  }, [selectedColumns, virtualObject]);
+  }, [selectedColumns, virtualObject, hasVqueues]);
 
   const totalSize = Math.ceil(allItems.length / STATE_PAGE_SIZE);
   const dataUpdate = error ? errorUpdatedAt : dataUpdatedAt;
@@ -317,7 +327,9 @@ function Component() {
       setPageIndex(0);
     }
   }, [pageIndex, allItems, setPageIndex]);
-  const hash = 'hash' + flattenedData.map(({ key }) => key).join('');
+  const hash =
+    'hash' +
+    flattenedData.map(({ key, scope }) => `${key}\x00${scope ?? ''}`).join('');
 
   const panelColumns = useMemo<PanelTableColumn[]>(
     () =>
@@ -378,7 +390,11 @@ function Component() {
   );
 
   const panelItems = useMemo(
-    () => flattenedData.map((row) => ({ ...row, id: (row.key ?? '') + '_' })),
+    () =>
+      flattenedData.map((row) => ({
+        ...row,
+        id: `${row.key ?? ''}\x00${row.scope ?? ''}`,
+      })),
     [flattenedData],
   );
 
@@ -394,6 +410,23 @@ function Component() {
               bodyKey={hash}
               columns={panelColumns}
               items={panelItems}
+              onRowAction={(rowId) => {
+                const [rowKey, rowScope] = String(rowId).split('\x00');
+                setSearchParams(
+                  (old) => {
+                    old.set(
+                      STATE_QUERY_NAME,
+                      toStateParam({
+                        key: rowKey ?? '',
+                        virtualObject,
+                        scope: rowScope || undefined,
+                      }),
+                    );
+                    return old;
+                  },
+                  { preventScrollReset: true },
+                );
+              }}
               numOfRows={currentPageItems.length || 5}
               bodyDependencies={[selectedColumnsArray, pageIndex]}
               error={error || listObjects.error}
@@ -421,10 +454,15 @@ function Component() {
                 if (id === 'service_key') {
                   return (
                     <Cell key={id}>
-                      <KeyCell
-                        serviceKey={String(row.key)}
-                        virtualObject={virtualObject}
-                      />
+                      <KeyCell serviceKey={String(row.key)} />
+                    </Cell>
+                  );
+                } else if (id === 'scope') {
+                  return (
+                    <Cell key={id}>
+                      {row.scope !== undefined ? (
+                        <KeyCell serviceKey={row.scope} />
+                      ) : null}
                     </Cell>
                   );
                 } else if (id === '__actions__') {
@@ -724,41 +762,23 @@ const stylesKey = tv({
   slots: {
     text: '',
     container: 'inline-flex w-full items-center pl-1 align-middle',
-    link: "m-0.5 ml-0 rounded-full text-zinc-500 outline-offset-0 before:absolute before:inset-0 before:rounded-lg before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5",
-    linkIcon: 'h-4 w-4 shrink-0 text-current',
   },
 });
 
 function KeyCell({
   serviceKey,
-  virtualObject,
   className,
 }: {
   serviceKey: string;
-  virtualObject: string;
   className?: string;
 }) {
-  const linkRef = useRef<HTMLAnchorElement>(null);
-  const { base, text, link, container, linkIcon } = stylesKey();
-
+  const { base, text, container } = stylesKey();
   return (
     <div className={base({ className })}>
       <div className={container({})}>
-        <TruncateWithTooltip copyText={serviceKey} triggerRef={linkRef}>
+        <TruncateWithTooltip copyText={serviceKey}>
           <span className={text()}>{serviceKey}</span>
         </TruncateWithTooltip>
-        <Link
-          ref={linkRef}
-          href={`?${STATE_QUERY_NAME}=${toStateParam({
-            key: serviceKey,
-            virtualObject,
-          })}`}
-          aria-label={serviceKey}
-          variant="secondary"
-          className={link()}
-        >
-          <Icon name={IconName.ChevronRight} className={linkIcon()} />
-        </Link>
       </div>
     </div>
   );
