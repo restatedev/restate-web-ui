@@ -120,9 +120,10 @@ function Component() {
   const [searchParams, setSearchParams] = useSearchParams();
   const submitRef = useSubmitShortcut();
 
-  const { virtualObject } = useParams<{ virtualObject: string }>();
-  invariant(virtualObject, 'Missing virtualObject param');
-  const { isValid, isValidating } = useValidateVirtualObject();
+  const { virtualObject: serviceName } = useParams<{ virtualObject: string }>();
+  invariant(serviceName, 'Missing virtualObject param');
+  const { isValid, isValidating, workflows } = useValidateVirtualObject();
+  const isWorkflow = workflows.includes(serviceName);
 
   const [keysSet, setKeysSet] = useState(
     () =>
@@ -140,7 +141,7 @@ function Component() {
       (key) =>
         ({
           id: key,
-          label: key === 'service_key' ? `${virtualObject} (Key)` : key,
+          label: key === 'service_key' ? `${serviceName} (Key)` : key,
           operations: [
             // TODO: add is null/ is not null
             { value: 'EQUALS', label: 'is' },
@@ -163,7 +164,7 @@ function Component() {
       type: 'CUSTOM_STRING',
     } as QueryClauseSchema<QueryClauseType>);
     return clauses;
-  }, [keysSet, virtualObject]);
+  }, [keysSet, serviceName]);
 
   const [queryFilters, setQueryFilters] = useState<FilterItem[]>(() =>
     getQuery(searchParams, schema)
@@ -184,7 +185,7 @@ function Component() {
     data: serviceKeysData,
     isFetching,
     queryKey,
-  } = useQueryVirtualObjectState(virtualObject, queryFilters, {
+  } = useQueryVirtualObjectState(serviceName, queryFilters, {
     refetchOnMount: true,
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
@@ -211,7 +212,7 @@ function Component() {
         : { keys: currentPageItems.map((item) => item.key) },
     [currentPageItems],
   );
-  const listObjects = useListVirtualObjectState(virtualObject, listStateArgs, {
+  const listObjects = useListVirtualObjectState(serviceName, listStateArgs, {
     refetchOnMount: true,
     refetchOnReconnect: false,
     staleTime: 0,
@@ -268,7 +269,7 @@ function Component() {
 
   useEffect(() => {
     setSelectedColumns(new Set(['service_key']));
-  }, [virtualObject]);
+  }, [serviceName]);
 
   useEffect(() => {
     setSelectedColumns((old) => {
@@ -291,14 +292,15 @@ function Component() {
   });
 
   const hasVqueues = (getFeatures() ?? new Set<string>()).has('vqueues');
+  const showScopeColumn = hasVqueues && isWorkflow;
 
   const selectedColumnsArray = useMemo(() => {
     const cols = Array.from(selectedColumns).map((id, index) => ({
-      name: id === 'service_key' ? `${virtualObject} (Key)` : id,
+      name: id === 'service_key' ? `${serviceName} (Key)` : id,
       id: String(id),
       isRowHeader: index === 0,
     }));
-    if (hasVqueues) {
+    if (showScopeColumn) {
       const keyIndex = cols.findIndex((c) => c.id === 'service_key');
       cols.splice(keyIndex + 1, 0, {
         id: 'scope',
@@ -312,14 +314,14 @@ function Component() {
       isRowHeader: false,
     });
     return cols;
-  }, [selectedColumns, virtualObject, hasVqueues]);
+  }, [selectedColumns, serviceName, showScopeColumn]);
 
   const totalSize = Math.ceil(allItems.length / STATE_PAGE_SIZE);
   const dataUpdate = error ? errorUpdatedAt : dataUpdatedAt;
   const setEditState = useEditStateContext();
   const { EncodingWaterMark } = useRestateContext();
   const resolvedServiceCodecOptions = useResolvedCodecOptions({
-    service: { value: { name: virtualObject } },
+    service: { value: { name: serviceName } },
   });
 
   useEffect(() => {
@@ -361,7 +363,7 @@ function Component() {
                       onSelect={setSelectedColumns}
                     >
                       <DropdownItem key="service_key" value="service_key">
-                        {virtualObject} (Key)
+                        {serviceName} (Key)
                       </DropdownItem>
                       {keys
                         .filter((k) => k !== 'service_key')
@@ -386,7 +388,7 @@ function Component() {
           allowsSorting: false,
         };
       }),
-    [selectedColumnsArray, keys, selectedColumns, virtualObject],
+    [selectedColumnsArray, keys, selectedColumns, serviceName],
   );
 
   const panelItems = useMemo(
@@ -418,7 +420,7 @@ function Component() {
                       STATE_QUERY_NAME,
                       toStateParam({
                         key: rowKey ?? '',
-                        virtualObject,
+                        virtualObject: serviceName,
                         scope: rowScope || undefined,
                       }),
                     );
@@ -484,7 +486,7 @@ function Component() {
                               isEditing: true,
                               isDeleting: false,
                               objectKey: row.key!,
-                              service: virtualObject,
+                              service: serviceName,
                             });
                           }
                           if (key === 'delete') {
@@ -492,7 +494,7 @@ function Component() {
                               isEditing: true,
                               isDeleting: true,
                               objectKey: row.key!,
-                              service: virtualObject,
+                              service: serviceName,
                             });
                           }
                         }}
@@ -505,7 +507,7 @@ function Component() {
                               isEditing: true,
                               isDeleting: false,
                               objectKey: row.key!,
-                              service: virtualObject,
+                              service: serviceName,
                             })
                           }
                         >
@@ -576,7 +578,7 @@ function Component() {
                                           isDeleting: false,
                                           key: id,
                                           objectKey: row.key!,
-                                          service: virtualObject,
+                                          service: serviceName,
                                         })
                                       }
                                       variant="secondary"
@@ -612,7 +614,7 @@ function Component() {
                               isDeleting: false,
                               key: id,
                               objectKey: row.key!,
-                              service: virtualObject,
+                              service: serviceName,
                             })
                           }
                           variant="icon"
@@ -678,7 +680,7 @@ function Component() {
       </ContentPanel>
       <LayoutOutlet zone={LayoutZone.Toolbar}>
         <Form
-          action={`/query/services/${virtualObject}/state`}
+          action={`/query/services/${serviceName}/state`}
           method="POST"
           className="relative flex items-center"
           onSubmit={async (event) => {
@@ -718,7 +720,7 @@ function Component() {
             await queryCLient.invalidateQueries({ queryKey });
             await queryCLient.invalidateQueries({
               predicate: (query) =>
-                query.queryKey[0] === `/query/services/${virtualObject}/state`,
+                query.queryKey[0] === `/query/services/${serviceName}/state`,
             });
           }}
         >
@@ -730,7 +732,7 @@ function Component() {
               schema
                 .map((s) => s.id)
                 .sort()
-                .join('') + virtualObject
+                .join('') + serviceName
             }
           >
             <AddQueryTrigger
