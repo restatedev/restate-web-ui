@@ -35,7 +35,6 @@ const QueryBuilderContext = createContext<{
   multiple: false,
 });
 
-// TODO: update state if schema changes
 export function useQueryBuilder(
   initialClauses: QueryClause<QueryClauseType>[] = [],
   isLoading?: boolean,
@@ -56,6 +55,10 @@ export function useQueryBuilder(
     };
   });
 
+  const initialClausesSignature = initialClauses
+    .map((c) => `${c.id}:${String(c)}`)
+    .join('|');
+
   useEffect(() => {
     if (!isLoading) {
       ref.current.selectedClauses.remove(
@@ -65,7 +68,7 @@ export function useQueryBuilder(
         ref.current.selectedClauses.insert(index, item);
       });
     }
-  }, [isLoading]);
+  }, [isLoading, initialClausesSignature]);
 
   return selectedClauses;
 }

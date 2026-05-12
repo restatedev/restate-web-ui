@@ -15,6 +15,8 @@ export type QueryClauseOperationId =
   | 'AFTER'
   | 'LESS_THAN'
   | 'GREATER_THAN'
+  | 'CONTAINS'
+  | 'NOT_CONTAINS'
   | 'IS NULL'
   | 'IS NOT NULL';
 

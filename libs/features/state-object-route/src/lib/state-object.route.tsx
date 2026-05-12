@@ -1,4 +1,5 @@
 import type { FilterItem } from '@restate/data-access/admin-api-spec';
+import { useVersion } from '@restate/data-access/admin-api';
 import {
   useListDeployments,
   useListServices,
@@ -82,16 +83,29 @@ import { useRestateContext } from '@restate/features/restate-context';
 import { Portal } from '@restate/ui/portal';
 import { getFeatures } from '@restate/util/api-config';
 
+function urlKeyFor(schemaClause: QueryClauseSchema<QueryClauseType>) {
+  if (schemaClause.metadata?.isSystem) {
+    const column =
+      (schemaClause.metadata?.column as string | undefined) ?? schemaClause.id;
+    return `sysFilter_${column}`;
+  }
+  return `filter_${schemaClause.id}`;
+}
+
+function urlKeyForClause(clause: QueryClause<QueryClauseType>) {
+  return urlKeyFor(clause.schema);
+}
+
 function getQuery(
   searchParams: URLSearchParams,
   schema: QueryClauseSchema<QueryClauseType>[],
 ) {
   return schema
-    .filter((schemaClause) => searchParams.get(`filter_${schemaClause.id}`))
+    .filter((schemaClause) => searchParams.get(urlKeyFor(schemaClause)))
     .map((schemaClause) => {
       return QueryClause.fromJSON(
         schemaClause,
-        searchParams.get(`filter_${schemaClause.id}`) ?? '',
+        searchParams.get(urlKeyFor(schemaClause)) ?? '',
       );
     });
 }
@@ -104,8 +118,9 @@ function clausesToFilterArgs(clauses: QueryClause<QueryClauseType>[]): {
   let stateFilter: FilterItem | undefined;
   for (const clause of clauses) {
     if (!clause.isValid) continue;
+    const column = clause.schema.metadata?.column as string | undefined;
     const filter = {
-      field: clause.fieldValue,
+      field: column ?? clause.fieldValue,
       operation: clause.value.operation!,
       type: clause.type === 'CUSTOM_STRING' ? 'STRING' : clause.type,
       value: clause.value.value,
@@ -150,65 +165,62 @@ function Component() {
 
   const [keysSet, setKeysSet] = useState(
     () =>
-      new Set([
-        'service_key',
-        ...Array.from(new URLSearchParams(window.location.search).keys())
+      new Set(
+        Array.from(new URLSearchParams(window.location.search).keys())
           .filter((key) => key.startsWith('filter_'))
-          .map((key) => key.replace('filter_', '')),
-      ]),
+          .map((key) => key.replace(/^filter_/, '')),
+      ),
   );
   const keys = Array.from(keysSet.values());
 
+  const { isSuccess: versionReady } = useVersion();
   const hasVqueues = getFeatures()?.has('vqueues') ?? false;
+  const hasScopeInUrl = searchParams.has('sysFilter_scope');
   const schema = useMemo(() => {
-    const clauses = Array.from(keysSet.values()).map(
-      (key) =>
-        ({
-          id: key,
-          label: key === 'service_key' ? `${serviceName} (Key)` : key,
-          operations: [
-            // TODO: add is null/ is not null
-            { value: 'EQUALS', label: 'is' },
-            { value: 'NOT_EQUALS', label: 'is not' },
-            { value: 'CONTAINS', label: 'contains' },
-            { value: 'NOT_CONTAINS', label: 'does not contain' },
-          ],
-          type: 'STRING',
-          metadata: { isSystem: key === 'service_key' },
-        }) as QueryClauseSchema<QueryClauseType>,
-    ) satisfies QueryClauseSchema<QueryClauseType>[];
-    if (hasVqueues && isWorkflow) {
+    const stringOps = [
+      // TODO: add is null/ is not null
+      { value: 'EQUALS' as const, label: 'is' },
+      { value: 'NOT_EQUALS' as const, label: 'is not' },
+      { value: 'CONTAINS' as const, label: 'contains' },
+      { value: 'NOT_CONTAINS' as const, label: 'does not contain' },
+    ];
+    const clauses: QueryClauseSchema<QueryClauseType>[] = [];
+    clauses.push({
+      id: '__sys_service_key',
+      label: `${serviceName} (Key)`,
+      operations: stringOps,
+      type: 'STRING',
+      metadata: { isSystem: true, column: 'service_key' },
+    });
+    if ((hasVqueues && isWorkflow) || hasScopeInUrl) {
       clauses.push({
-        id: 'scope',
+        id: '__sys_service_scope',
         label: 'Scope',
-        operations: [
-          { value: 'EQUALS', label: 'is' },
-          { value: 'NOT_EQUALS', label: 'is not' },
-          { value: 'CONTAINS', label: 'contains' },
-          { value: 'NOT_CONTAINS', label: 'does not contain' },
-        ],
+        operations: stringOps,
         type: 'STRING',
-        metadata: { isSystem: true },
-      } as QueryClauseSchema<QueryClauseType>);
+        metadata: { isSystem: true, column: 'scope' },
+      });
     }
+    Array.from(keysSet.values()).forEach((key) => {
+      clauses.push({
+        id: key,
+        label: key,
+        operations: stringOps,
+        type: 'STRING',
+      });
+    });
     clauses.push({
       id: CUSTOM_KEY_ID,
-      operations: [
-        // TODO: add is null/ is not null
-        { value: 'EQUALS', label: 'is' },
-        { value: 'NOT_EQUALS', label: 'is not' },
-        { value: 'CONTAINS', label: 'contains' },
-        { value: 'NOT_CONTAINS', label: 'does not contain' },
-      ],
+      operations: stringOps,
       type: 'CUSTOM_STRING',
     } as QueryClauseSchema<QueryClauseType>);
     return clauses;
-  }, [keysSet, serviceName, hasVqueues, isWorkflow]);
+  }, [keysSet, serviceName, hasVqueues, isWorkflow, hasScopeInUrl]);
 
-  const [queryFilters, setQueryFilters] = useState<{
-    systemFilters: FilterItem[];
-    stateFilter?: FilterItem;
-  }>(() => clausesToFilterArgs(getQuery(searchParams, schema)));
+  const queryFilters = useMemo(
+    () => clausesToFilterArgs(getQuery(searchParams, schema)),
+    [searchParams, schema],
+  );
   const {
     dataUpdatedAt,
     errorUpdatedAt,
@@ -270,13 +282,12 @@ function Component() {
           .flat() ?? [];
       setKeysSet(
         (s) =>
-          new Set([
-            'service_key',
-            ...[
+          new Set(
+            [
               ...Array.from(s.values()).filter((v) => keys.includes(v)),
               ...keys,
             ].sort(),
-          ]),
+          ),
       );
     }
   }, [listObjects.data, isFetching]);
@@ -316,7 +327,10 @@ function Component() {
 
   const queryCLient = useQueryClient();
 
-  const query = useQueryBuilder(getQuery(searchParams, schema));
+  const query = useQueryBuilder(
+    getQuery(searchParams, schema),
+    !versionReady,
+  );
   const queryRef = useRef(query);
   useEffect(() => {
     queryRef.current = query;
@@ -723,12 +737,15 @@ function Component() {
 
             const newSearchParams = new URLSearchParams(searchParams);
             Array.from(newSearchParams.keys())
-              .filter((key) => key.startsWith('filter_'))
+              .filter(
+                (key) =>
+                  key.startsWith('filter_') || key.startsWith('sysFilter_'),
+              )
               .forEach((key) => newSearchParams.delete(key));
             query.items
               .filter((clause) => clause.isValid)
               .forEach((item) => {
-                newSearchParams.set(`filter_${item.fieldValue}`, String(item));
+                newSearchParams.set(urlKeyForClause(item), String(item));
               });
             const sortedNewSearchParams = new URLSearchParams(newSearchParams);
             sortedNewSearchParams.sort();
@@ -736,7 +753,6 @@ function Component() {
             sortedOldSearchParams.sort();
 
             setSearchParams(newSearchParams, { preventScrollReset: true });
-            setQueryFilters(clausesToFilterArgs(query.items));
             await queryCLient.invalidateQueries({ queryKey });
             await queryCLient.invalidateQueries({
               predicate: (query) =>
@@ -993,7 +1009,9 @@ function DropDownVirtualObject({ service }: { service: string }) {
   const search = useMemo(() => {
     const newSearchParams = new URLSearchParams(searchParams);
     Array.from(newSearchParams.keys())
-      .filter((key) => key.startsWith('filter_'))
+      .filter(
+        (key) => key.startsWith('filter_') || key.startsWith('sysFilter_'),
+      )
       .forEach((key) => newSearchParams.delete(key));
 
     return newSearchParams.toString();
