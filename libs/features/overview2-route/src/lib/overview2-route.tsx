@@ -12,7 +12,6 @@ import {
   useIsMutating,
   useQueryClient,
 } from '@tanstack/react-query';
-import { isOverviewRefreshQuery } from '@restate/data-access/admin-api';
 import { useFocusShortcut, FocusShortcutKey } from '@restate/ui/keyboard';
 import { formatNumber } from '@restate/util/intl';
 import { IssuesBannerStack } from '@restate/ui/issue-banner';
@@ -205,6 +204,7 @@ function OverviewContent() {
     mode,
     filter,
     setFilter,
+    triggerManualRefresh,
   } = useOverviewContext();
 
   const { GettingStarted, status } = useRestateContext();
@@ -280,15 +280,7 @@ function OverviewContent() {
       ],
       { duration: 400, easing: 'ease-in-out' },
     );
-    queryClient.refetchQueries(
-      {
-        type: 'active',
-        predicate: isOverviewRefreshQuery,
-      },
-      {
-        cancelRefetch: true,
-      },
-    );
+    triggerManualRefresh();
   };
 
   if (isInitialLoading) {

@@ -638,6 +638,12 @@ export function useSummaryInvocations(
   const results = useQuery({
     staleTime: 0,
     placeholderData: keepPreviousData,
+    refetchInterval: (query) => {
+      const total = query.state.data?.totalCount ?? 0;
+      if (total < 50) return 1000;
+      if (total < 10000) return 20000;
+      return 60000;
+    },
     ...queryOptions,
     ...options,
     meta: { ...queryOptions.meta, ...getOverviewRefreshMeta() },

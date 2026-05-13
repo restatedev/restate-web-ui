@@ -4,12 +4,16 @@ import {
   type ReactNode,
   type SetStateAction,
   use,
+  useCallback,
   useMemo,
   useRef,
   useState,
+  useTransition,
 } from 'react';
 import type { SortDescriptor } from 'react-aria-components';
 import { useSearchParams } from 'react-router';
+import { useQueryClient } from '@tanstack/react-query';
+import { isOverviewRefreshQuery } from '@restate/data-access/admin-api';
 import { useRestateContext } from '@restate/features/restate-context';
 import {
   HANDLER_QUERY_PARAM,
@@ -47,6 +51,7 @@ type OverviewContextValue = ReturnType<typeof useOverviewData> & {
   setServiceSortDescriptor: Dispatch<SetStateAction<SortDescriptor | null>>;
   setDeploymentSortDescriptor: Dispatch<SetStateAction<SortDescriptor | null>>;
   mode: OverviewMode;
+  triggerManualRefresh: () => void;
 };
 
 const OverviewContext = createContext<OverviewContextValue>(null as never);
@@ -57,6 +62,21 @@ export function OverviewProvider({ children }: { children: ReactNode }) {
   const mode = getOverviewMode(searchParams.get(OVERVIEW_MODE_PARAM));
   const overviewData = useOverviewData(rangeFilters);
   const { baseUrl } = useRestateContext();
+  const queryClient = useQueryClient();
+  const [isManualRefreshing, startTransition] = useTransition();
+  const triggerManualRefresh = useCallback(() => {
+    startTransition(async () => {
+      await queryClient.refetchQueries(
+        {
+          type: 'active',
+          predicate: isOverviewRefreshQuery,
+        },
+        { cancelRefetch: true },
+      );
+    });
+  }, [queryClient]);
+  const isSummaryLoading =
+    overviewData.isSummaryLoading || isManualRefreshing;
 
   const initialSortRef = useRef<SortDescriptor | null>(null);
   if (
@@ -102,6 +122,7 @@ export function OverviewProvider({ children }: { children: ReactNode }) {
   const value = useMemo(
     () => ({
       ...overviewData,
+      isSummaryLoading,
       baseUrl,
       filter,
       setFilter,
@@ -111,15 +132,18 @@ export function OverviewProvider({ children }: { children: ReactNode }) {
       setServiceSortDescriptor,
       setDeploymentSortDescriptor,
       mode,
+      triggerManualRefresh,
     }),
     [
       overviewData,
+      isSummaryLoading,
       baseUrl,
       filter,
       linkParams,
       resolvedServiceSortDescriptor,
       resolvedDeploymentSortDescriptor,
       mode,
+      triggerManualRefresh,
     ],
   );
 
