@@ -1,10 +1,4 @@
 import ky from 'ky';
-import { coerce, gte } from 'semver';
-
-function gteMajorMinorPatch(version: string, target: string): boolean {
-  const coerced = coerce(version);
-  return coerced ? gte(coerced, target) : false;
-}
 
 export const DURATION_CALC =
   "CASE WHEN status = 'scheduled' THEN NULL ELSE COALESCE(completed_at, now()) - COALESCE(scheduled_start_at, created_at) END";
@@ -62,14 +56,18 @@ export const SYS_INVOCATION_COLUMNS = [
   'last_failure_related_command_type',
 ] as const;
 
-export function sysInvocationListColumns(version: string): readonly string[] {
-  return gteMajorMinorPatch(version, '1.7.0')
+export function sysInvocationListColumns(
+  features: Set<string>,
+): readonly string[] {
+  return features.has('vqueues')
     ? [...SYS_INVOCATION_LIST_COLUMNS, 'scope']
     : SYS_INVOCATION_LIST_COLUMNS;
 }
 
-export function sysInvocationColumns(version: string): readonly string[] {
-  return gteMajorMinorPatch(version, '1.7.0')
+export function sysInvocationColumns(
+  features: Set<string>,
+): readonly string[] {
+  return features.has('vqueues')
     ? [...SYS_INVOCATION_COLUMNS, 'scope']
     : SYS_INVOCATION_COLUMNS;
 }

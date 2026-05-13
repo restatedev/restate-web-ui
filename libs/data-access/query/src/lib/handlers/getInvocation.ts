@@ -3,7 +3,7 @@ import { type QueryContext, sysInvocationColumns } from './shared';
 
 export async function getInvocation(this: QueryContext, invocationId: string) {
   const invocations = await this.query(
-    `SELECT ${sysInvocationColumns(this.restateVersion).join(', ')} FROM sys_invocation WHERE id = '${invocationId}'`,
+    `SELECT ${sysInvocationColumns(this.features).join(', ')} FROM sys_invocation WHERE id = '${invocationId}'`,
   ).then(({ rows }) => rows.map(convertInvocation));
   if (invocations.length > 0) {
     return new Response(JSON.stringify(invocations.at(0)), {

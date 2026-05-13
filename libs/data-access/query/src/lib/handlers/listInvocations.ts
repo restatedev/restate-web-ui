@@ -52,7 +52,7 @@ export async function listInvocations(
       const receivedLessThanLimit = idRows.length < INVOCATIONS_LIMIT;
 
       if (idRows.length > 0) {
-        const detailColumns = `${sysInvocationListColumns(this.restateVersion).join(', ')}, ${DURATION_EXPRESSION}`;
+        const detailColumns = `${sysInvocationListColumns(this.features).join(', ')}, ${DURATION_EXPRESSION}`;
         const { rows: invRows } = await this.query(
           `SELECT ${detailColumns} from sys_invocation ${convertInvocationsFilters(
             [
