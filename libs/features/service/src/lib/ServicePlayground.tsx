@@ -242,18 +242,31 @@ function useApiSpec(service?: string | null) {
           };
         },
         () => {
-          queryClient.invalidateQueries({
-            refetchType: 'active',
-            predicate: (query) => {
-              const queryKey = query.queryKey;
-              if (Array.isArray(queryKey)) {
-                return String(queryKey.at(0))?.includes(
-                  '/query/invocations/summary',
-                );
-              }
-              return false;
-            },
-          });
+          const predicate = (query: { queryKey: readonly unknown[] }) => {
+            const queryKey = query.queryKey;
+            if (Array.isArray(queryKey)) {
+              return String(queryKey.at(0))?.includes(
+                '/query/invocations/summary',
+              );
+            }
+            return false;
+          };
+          const invalidate = () => {
+            if (
+              typeof document !== 'undefined' &&
+              document.visibilityState !== 'visible'
+            ) {
+              return;
+            }
+            queryClient.invalidateQueries({
+              refetchType: 'active',
+              predicate,
+            });
+          };
+          invalidate();
+          for (const delay of [2_000, 4_000, 8_000, 16_000, 32_000]) {
+            setTimeout(invalidate, delay);
+          }
         },
       ),
     [
