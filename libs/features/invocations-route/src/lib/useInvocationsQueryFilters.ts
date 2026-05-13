@@ -160,9 +160,13 @@ export function useInvocationsForm({
     deriveSortFromUrl(searchParams),
   );
 
-  // Captured at mount; re-mount via `key` to refresh from a new URL.
-  const [initialClauses] = useState(() =>
-    deriveClausesFromUrl(searchParams, schema, isLoading),
+  // Re-derived when isLoading flips so default status / target_service_name
+  // chips get seeded once the schema is ready. URL changes are handled via
+  // the parent re-mount (`key`).
+  const initialClauses = useMemo(
+    () => deriveClausesFromUrl(searchParams, schema, isLoading),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isLoading, schema],
   );
 
   const query = useQueryBuilder(initialClauses, isLoading);

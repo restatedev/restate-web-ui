@@ -1,5 +1,6 @@
 import {
   useCallback,
+  useEffect,
   useState,
   KeyboardEvent,
   useId,
@@ -78,6 +79,7 @@ export interface MultiSelectProps<T extends object>
     item: T;
     onRemove?: VoidFunction;
     onUpdate?: (newValue: T) => void;
+    formRef?: RefObject<HTMLFormElement | null>;
   }) => ReactNode;
   MenuTrigger?: ComponentType<unknown>;
   label: string;
@@ -129,6 +131,10 @@ export function FormFieldMultiCombobox<
   const [menuTrigger, setMenuTrigger] =
     useState<ComponentProps<typeof ComboBox>['menuTrigger']>('focus');
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const formRef = useRef<HTMLFormElement | null>(null);
+  useEffect(() => {
+    formRef.current = inputRef.current?.closest('form') ?? null;
+  }, []);
   const listBoxRef = useRef<HTMLDivElement | null>(null);
   const inputRefObject = useObjectRef(mergeRefs(inputRef, ref));
 
@@ -295,6 +301,7 @@ export function FormFieldMultiCombobox<
                 item,
                 onRemove: onRemove.bind(null, item.id),
                 onUpdate,
+                formRef,
               })}
             </RemoveTagWithKeyboard>
           ))}

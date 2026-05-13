@@ -3,6 +3,7 @@ import {
   createContext,
   PropsWithChildren,
   ReactNode,
+  RefObject,
   use,
   useCallback,
   useEffect,
@@ -112,6 +113,7 @@ export function AddQueryTrigger({
     item: QueryClause<QueryClauseType>;
     onRemove?: VoidFunction;
     onUpdate?: (item: QueryClause<QueryClauseType>) => void;
+    formRef?: RefObject<HTMLFormElement | null>;
   }) => ReactNode;
   className?: string;
   prefix?: ReactNode;

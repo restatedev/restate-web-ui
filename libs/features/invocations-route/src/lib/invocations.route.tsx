@@ -10,7 +10,6 @@ import {
 } from '@restate/ui/dropdown';
 import { Icon, IconName } from '@restate/ui/icons';
 import {
-  COLUMN_NAMES,
   COLUMN_QUERY_PREFIX,
   ColumnKey,
   isColumnValid,
