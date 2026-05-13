@@ -96,14 +96,12 @@ const sidebarStyles = tv({
     aside:
       'peer group/sidebar @container/sidebar sticky top-0 z-50 flex h-screen w-[16rem] -ml-[16rem] shrink-0 flex-col border-r bg-gray-200/50 shadow-[inset_-1px_0px_0px_0px_rgba(0,0,0,0.03)] backdrop-blur-xl backdrop-saturate-200 transition-[width,margin] duration-300 ease-in-out md:ml-0 md:w-[4.25rem] xl:w-[16rem] max-md:data-[collapsed=false]:ml-0 md:data-[collapsed=false]:w-[16rem] xl:data-[collapsed=true]:w-[4.25rem]',
     asideInner: 'relative flex h-full w-full flex-col gap-2 overflow-hidden',
-    headerBar:
-      'flex flex-none items-stretch gap-1 px-4.5 pt-3 max-xl:px-2 group-data-[collapsed=true]/sidebar:px-2 group-data-[collapsed=false]/sidebar:px-4.5',
+    headerBar: 'flex flex-none items-stretch gap-1 px-4.5 pt-3',
     headerCard:
-      'flex min-w-0 flex-1 items-start gap-2 py-1 max-xl:items-center max-xl:justify-center group-data-[collapsed=true]/sidebar:items-center group-data-[collapsed=true]/sidebar:justify-center group-data-[collapsed=false]/sidebar:items-start group-data-[collapsed=false]/sidebar:justify-start',
+      'flex min-w-0 flex-1 items-start gap-2 py-1',
     navSlot:
-      'flex min-h-0 flex-1 flex-col gap-2 overflow-x-hidden overflow-y-auto px-3 py-2 [scrollbar-width:thin] max-xl:px-2 group-data-[collapsed=true]/sidebar:px-2 group-data-[collapsed=false]/sidebar:px-3',
-    footerSlot:
-      'flex flex-none flex-col px-3 pt-1 pb-3 max-xl:px-2 group-data-[collapsed=true]/sidebar:px-2 group-data-[collapsed=false]/sidebar:px-3',
+      'flex min-h-0 flex-1 flex-col gap-2 overflow-x-hidden overflow-y-auto px-3 py-2 [scrollbar-width:thin]',
+    footerSlot: 'flex flex-none flex-col px-3 pt-1 pb-3',
     toggleButton:
       'fixed top-4 left-3 z-50 flex h-9 w-9 items-center justify-center rounded-full border bg-white p-0 text-gray-500 shadow-xs transition-[left,transform] duration-300 ease-in-out hover:bg-gray-50 hover:text-gray-700 md:left-[4.25rem] md:h-6 md:w-6 md:-translate-x-1/2 xl:left-[16rem] xl:rotate-180 peer-data-[collapsed=false]:left-[16rem] peer-data-[collapsed=false]:-translate-x-1/2 peer-data-[collapsed=false]:rotate-180 xl:peer-data-[collapsed=true]:left-[4.25rem] xl:peer-data-[collapsed=true]:rotate-0',
   },

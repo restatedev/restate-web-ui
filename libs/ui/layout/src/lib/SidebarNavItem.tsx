@@ -64,14 +64,14 @@ function useSidebarLocation(): SidebarLocation {
 const navStyles = tv({
   slots: {
     row: 'group/nav-item relative isolate flex flex-col gap-0.5',
-    link: 'flex w-full items-center gap-2 rounded-xl border border-transparent p-0.5 text-sm no-underline outline-offset-2 outline-blue-600 transition focus-visible:outline-2 max-xl:mx-auto max-xl:w-fit max-xl:justify-center max-xl:p-0 group-data-[collapsed=true]/sidebar:mx-auto group-data-[collapsed=true]/sidebar:w-fit group-data-[collapsed=true]/sidebar:justify-center group-data-[collapsed=true]/sidebar:p-0 group-data-[collapsed=false]/sidebar:mx-0 group-data-[collapsed=false]/sidebar:w-full group-data-[collapsed=false]/sidebar:justify-start group-data-[collapsed=false]/sidebar:p-0.5',
+    link: 'flex w-full items-center gap-2 rounded-xl border border-transparent p-0.5 text-sm no-underline outline-offset-2 outline-blue-600 transition-all duration-300 focus-visible:outline-2 max-xl:w-fit max-xl:gap-0 max-xl:translate-x-[5px] group-data-[collapsed=true]/sidebar:w-fit group-data-[collapsed=true]/sidebar:gap-0 group-data-[collapsed=true]/sidebar:translate-x-[5px] group-data-[collapsed=false]/sidebar:w-full group-data-[collapsed=false]/sidebar:gap-2 group-data-[collapsed=false]/sidebar:translate-x-0',
     iconWrap:
       'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-transparent',
     icon: 'h-4.5 w-4.5 shrink-0 text-current',
     label:
-      'min-w-0 flex-auto truncate pr-1 text-left max-xl:hidden group-data-[collapsed=true]/sidebar:hidden group-data-[collapsed=false]/sidebar:block',
+      'min-w-0 flex-auto truncate pr-1 text-left overflow-hidden transition-[max-width,opacity,padding] duration-300 max-w-full opacity-100 max-xl:max-w-0 max-xl:opacity-0 max-xl:pr-0 group-data-[collapsed=true]/sidebar:max-w-0 group-data-[collapsed=true]/sidebar:opacity-0 group-data-[collapsed=true]/sidebar:pr-0 group-data-[collapsed=false]/sidebar:max-w-full group-data-[collapsed=false]/sidebar:opacity-100 group-data-[collapsed=false]/sidebar:pr-1',
     subWrap:
-      'relative ml-[1.0625rem] flex flex-col gap-0 border-l border-zinc-800/10 pl-2 max-xl:hidden group-data-[collapsed=true]/sidebar:hidden group-data-[collapsed=false]/sidebar:flex',
+      'relative ml-[1.0625rem] flex flex-col gap-0 border-l border-zinc-800/10 pl-2 overflow-hidden transition-[max-height,opacity] duration-300 max-h-96 opacity-100 max-xl:max-h-0 max-xl:opacity-0 group-data-[collapsed=true]/sidebar:max-h-0 group-data-[collapsed=true]/sidebar:opacity-0 group-data-[collapsed=false]/sidebar:max-h-96 group-data-[collapsed=false]/sidebar:opacity-100',
     subRow: 'flex items-center',
     subLink:
       'flex min-w-0 flex-auto items-center rounded-lg px-2.5 py-1 text-0.5xs no-underline outline-offset-2 outline-blue-600 transition focus-visible:outline-2',
