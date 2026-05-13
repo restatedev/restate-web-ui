@@ -411,7 +411,7 @@ function OverviewContent() {
         <ContentPanelToolbar className="px-5">
           <OverviewModeToggle />
         </ContentPanelToolbar>
-        <ContentPanelHeader className="px-5 py-1.5">
+        <ContentPanelHeader className="px-2 py-1.5">
           <div className="flex w-full flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-wrap items-center gap-2">
               <SortByDropdown
@@ -448,7 +448,7 @@ function OverviewContent() {
             </SearchField>
           </div>
         </ContentPanelHeader>
-        <ContentPanelBody>
+        <ContentPanelBody className='pb-20'>
           <ContentPanelSection>
             <div ref={gridRef} className="pt-2">
               {mode === 'services' ? (
