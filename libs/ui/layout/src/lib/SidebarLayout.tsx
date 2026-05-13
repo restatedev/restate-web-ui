@@ -13,7 +13,7 @@ export function SidebarLayout({ children }: PropsWithChildren) {
     <SidebarProvider>
       <div className="flex min-h-screen w-full overflow-x-clip [--cp-toolbar-top:0.75rem] [--cp-toolbar-tuck:0.75rem] sm:[--cp-toolbar-top:1.5rem] sm:[--cp-toolbar-tuck:1.5rem]">
         <Sidebar />
-        <div className="mx-auto flex min-h-screen min-w-0 flex-col border-l border-white/80 py-3 max-md:w-screen max-md:shrink-0 sm:py-6 md:w-full md:flex-1 [&:has(#layout-content_[data-content-panel-fill-viewport])]:pb-0 sm:[&:has(#layout-content_[data-content-panel-fill-viewport])]:pb-0">
+        <div className="mx-auto flex min-h-screen min-w-0 flex-col border-x border-white/80 py-3 max-md:w-screen max-md:shrink-0 sm:py-6 md:w-full md:flex-1 [&:has(#layout-content_[data-content-panel-fill-viewport])]:pb-0 sm:[&:has(#layout-content_[data-content-panel-fill-viewport])]:pb-0">
           <div
             id={NOTIFICATION_ZONE_ID}
             className="sticky top-3 z-110 mx-auto h-0 w-full max-w-4xl"
