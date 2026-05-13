@@ -7,7 +7,7 @@ export { getInbox } from './getInbox';
 export { getState } from './getState';
 export { getStateInterface } from './getStateInterface';
 export { queryState } from './queryState';
-export { listState } from './listState';
+export { listState, type ListStateArgs, type ListStateItem } from './listState';
 export { batchCancelInvocations } from './batchCancelInvocations';
 export { batchPurgeInvocations } from './batchPurgeInvocations';
 export { batchKillInvocations } from './batchKillInvocations';

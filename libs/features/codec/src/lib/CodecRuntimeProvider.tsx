@@ -47,7 +47,7 @@ export function CodecRuntimeProvider({
   const adminBaseUrl = useAdminBaseUrl();
   const queryClient = useQueryClient();
   const { isVersionGte } = useRestateContext();
-  const serdePreviewSupported = Boolean(isVersionGte?.('1.6.3'));
+  const serdePreviewSupported = Boolean(isVersionGte?.('1.7.0'));
   const previewDecoder = useSerdePreviewDecoder(adminBaseUrl ?? '');
   const previewEncoder = useSerdePreviewEncoder(adminBaseUrl ?? '');
   const decoder = useMemo(

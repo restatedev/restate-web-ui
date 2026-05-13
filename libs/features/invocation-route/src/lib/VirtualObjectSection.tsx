@@ -41,6 +41,7 @@ export function VirtualObjectSection({
     String(invocation?.target_service_name),
     String(invocation?.target_service_key),
     String(invocation?.id),
+    invocation?.scope,
     {
       enabled: Boolean(
         typeof invocation?.target_service_key === 'string' &&
@@ -56,6 +57,7 @@ export function VirtualObjectSection({
     useGetVirtualObjectState(
       String(invocation?.target_service_name),
       String(invocation?.target_service_key),
+      invocation?.scope,
       {
         enabled: shouldFetchState,
         staleTime: 0,
@@ -66,6 +68,7 @@ export function VirtualObjectSection({
     useGetVirtualObjectStateInterface(
       String(invocation?.target_service_name),
       invocation?.target_service_key ? [invocation?.target_service_key] : [],
+      invocation?.scope,
       {
         enabled: Boolean(
           typeof invocation?.target_service_key === 'string' &&
@@ -153,6 +156,7 @@ export function VirtualObjectSection({
                     state={stateData?.state}
                     service={invocation?.target_service_name}
                     serviceKey={invocation?.target_service_key}
+                    scope={invocation?.scope}
                     deploymentId={
                       invocation?.pinned_deployment_id ??
                       invocation?.last_attempt_deployment_id

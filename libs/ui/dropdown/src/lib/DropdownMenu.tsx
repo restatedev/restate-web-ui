@@ -27,6 +27,7 @@ export interface DropdownMenuProps {
   onSelect?: (key: string) => void;
   className?: string;
   autoFocus?: boolean;
+  shouldCloseOnSelect?: boolean;
 }
 
 export type SelectableDropdownMenuProps = Omit<
@@ -40,6 +41,7 @@ export type SelectableDropdownMenuProps = Omit<
         multiple?: false;
         onSelect?: (key: string) => void;
         selectedItems: Iterable<Key>;
+        shouldCloseOnSelect?: boolean;
       }
     | {
         selectable: true;
@@ -47,6 +49,7 @@ export type SelectableDropdownMenuProps = Omit<
         multiple: true;
         onSelect?: (keys: DropdownMenuSelection) => void;
         selectedItems?: 'all' | Iterable<Key> | undefined;
+        shouldCloseOnSelect?: boolean;
       }
   );
 

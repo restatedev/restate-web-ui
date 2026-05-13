@@ -30,6 +30,7 @@ export function WorkflowKeySection({
   const { data: stateData } = useGetVirtualObjectState(
     String(invocation?.target_service_name),
     String(invocation?.target_service_key),
+    invocation?.scope,
     {
       enabled: shouldFetchState,
       staleTime: 0,
@@ -40,18 +41,18 @@ export function WorkflowKeySection({
     useGetVirtualObjectStateInterface(
       String(invocation?.target_service_name),
       invocation?.target_service_key ? [invocation?.target_service_key] : [],
+      invocation?.scope,
       {
         enabled: Boolean(
           typeof invocation?.target_service_key === 'string' &&
-            invocation &&
-            invocation.target_service_ty === 'workflow',
+          invocation &&
+          invocation.target_service_ty === 'workflow',
         ),
         staleTime: 0,
       },
     );
 
   if (invocation?.target_service_ty === 'workflow') {
-    const state = stateData?.state ?? [];
     const keys = (stateData?.state || stateInterface?.keys) ?? [];
 
     return (
@@ -73,6 +74,23 @@ export function WorkflowKeySection({
               />
             </Badge>
           </div>
+          {invocation?.scope && (
+            <div className="flex h-9 items-center px-1.5 py-1 not-last:border-b">
+              <span className="flex-auto pl-1 text-0.5xs font-medium text-gray-500">
+                Scope
+              </span>
+              <Badge
+                size="sm"
+                className="ml-1 min-w-0 py-0 pr-0 align-middle font-mono"
+              >
+                <div className="truncate">{invocation.scope}</div>
+                <Copy
+                  copyText={invocation.scope}
+                  className="ml-1 shrink-0 p-1 [&_svg]:h-2.5 [&_svg]:w-2.5"
+                />
+              </Badge>
+            </div>
+          )}
           {invocation?.target_service_key !== undefined && (
             <div className="flex h-9 items-center gap-1 px-1.5 py-1">
               <span className="pl-1 text-0.5xs font-medium text-gray-500">
@@ -104,6 +122,7 @@ export function WorkflowKeySection({
                       state={stateData?.state}
                       service={invocation?.target_service_name}
                       serviceKey={invocation?.target_service_key}
+                      scope={invocation?.scope}
                       deploymentId={
                         invocation?.pinned_deployment_id ??
                         invocation?.last_attempt_deployment_id

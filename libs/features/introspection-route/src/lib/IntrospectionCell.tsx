@@ -122,11 +122,18 @@ export function IntrospectionCell({
 function formattedValue(value?: string) {
   if (value !== null && value !== undefined) {
     try {
-      return value.length < 10000
-        ? JSON.stringify(JSON.parse(value), null, 2)
-        : value.slice(0, 10000) +
-            ` … ${formatNumber(value.length - 10000, true)} more characters`;
-    } catch (_) {
+      if (value.length < 10000) {
+        const parsed = JSON.parse(value);
+        if (parsed === Infinity) {
+          throw new Error('cannot parse');
+        }
+        return JSON.stringify(parsed, null, 2);
+      }
+      return (
+        value.slice(0, 10000) +
+        ` … ${formatNumber(value.length - 10000, true)} more characters`
+      );
+    } catch (e) {
       return value;
     }
   }

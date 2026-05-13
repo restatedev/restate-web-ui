@@ -6,7 +6,7 @@ import { convertInvocation } from '../convertInvocation';
 import { convertInvocationsFilters } from '../convertFilters';
 import {
   type QueryContext,
-  SYS_INVOCATION_LIST_COLUMNS,
+  sysInvocationListColumns,
   DURATION_EXPRESSION,
 } from './shared';
 
@@ -52,7 +52,7 @@ export async function listInvocations(
       const receivedLessThanLimit = idRows.length < INVOCATIONS_LIMIT;
 
       if (idRows.length > 0) {
-        const detailColumns = `${SYS_INVOCATION_LIST_COLUMNS.join(', ')}, ${DURATION_EXPRESSION}`;
+        const detailColumns = `${sysInvocationListColumns(this.features).join(', ')}, ${DURATION_EXPRESSION}`;
         const { rows: invRows } = await this.query(
           `SELECT ${detailColumns} from sys_invocation ${convertInvocationsFilters(
             [

@@ -96,7 +96,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/internal/services/{service}/serdes/decode/{serdeName}': {
+  '/invocations/{invocation_id}': {
     parameters: {
       query?: never;
       header?: never;
@@ -105,26 +105,13 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Decode service wire bytes into JSON */
-    post: operations['decode_service_serde'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/internal/services/{service}/serdes/encode/{serdeName}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Encode JSON into service wire bytes */
-    post: operations['encode_service_serde'];
-    delete?: never;
+    post?: never;
+    /**
+     * Delete an invocation
+     * @deprecated
+     * @description Use kill_invocation/cancel_invocation/purge_invocation instead.
+     */
+    delete: operations['delete_invocation'];
     options?: never;
     head?: never;
     patch?: never;
@@ -273,6 +260,110 @@ export interface paths {
      *     Optionally, you can change the deployment ID that will be used when the invocation resumes. For more information see [resume documentation](https://docs.restate.dev/services/invocation/managing-invocations#resume)
      */
     patch: operations['resume_invocation'];
+    trace?: never;
+  };
+  '/kafka-clusters': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List Kafka clusters
+     * @description Returns a list of all registered Kafka clusters.
+     */
+    get: operations['list_kafka_clusters'];
+    put?: never;
+    /**
+     * Create Kafka cluster
+     * @description Registers a new Kafka cluster configuration that can be referenced by subscriptions.
+     *     The cluster configuration is validated to ensure required broker properties are present.
+     */
+    post: operations['create_kafka_cluster'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/kafka-clusters/{cluster_name}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get Kafka cluster
+     * @description Returns the details of a specific Kafka cluster, including its configuration properties.
+     *     Sensitive properties (passwords, secrets, etc.) are automatically redacted in the response.
+     */
+    get: operations['get_kafka_cluster'];
+    put?: never;
+    post?: never;
+    /**
+     * Delete Kafka cluster
+     * @description Deletes a Kafka cluster. By default, deletion is prevented if subscriptions reference the cluster.
+     *     Use the force parameter to allow deletion with orphaned subscriptions.
+     */
+    delete: operations['delete_kafka_cluster'];
+    options?: never;
+    head?: never;
+    /**
+     * Update Kafka cluster
+     * @description Updates the configuration properties of an existing Kafka cluster.
+     *     Sensitive properties (passwords, secrets, etc.) are automatically redacted in the response.
+     */
+    patch: operations['update_kafka_cluster'];
+    trace?: never;
+  };
+  '/limits/rules': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * Upsert a batch of rules.
+     * @description Each entry carries an optional [`Precondition`]. Setting it to
+     *     `DoesNotExist` makes the entry a strict insert; `Matches(v)` rejects
+     *     the batch unless the rule's current version is `v`; omitting it
+     *     (`None`) is unconditional. The whole batch is atomic: any failed
+     *     precondition or cap-exceeded condition rolls back the rest.
+     */
+    put: operations['upsert_rules'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/limits/rules/bulk-delete': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Delete a batch of rules by pattern.
+     * @description Each entry may carry an `expected_version`; if present the rule
+     *     must exist at that exact version, otherwise the batch fails.
+     *     Without `expected_version` the delete is unconditional and
+     *     idempotent: a pattern that's already absent is silently skipped.
+     *     Returns the patterns that this batch actually removed.
+     */
+    post: operations['bulk_delete_rules'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
     trace?: never;
   };
   '/query': {
@@ -909,6 +1000,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/query/services/{name}/scopes/{scope}/keys/{key}/state': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get scoped state
+     * @description Get state for a (service, scope, key) triple.
+     */
+    get: operations['get_scoped_state'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/query/deployments/drained': {
     parameters: {
       query?: never;
@@ -1069,6 +1180,40 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/internal/services/{service}/serdes/decode/{serdeName}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Decode service wire bytes into JSON */
+    post: operations['decode_service_serde'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/internal/services/{service}/serdes/encode/{serdeName}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Encode JSON into service wire bytes */
+    post: operations['encode_service_serde'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1088,6 +1233,26 @@ export interface components {
       metadata_cluster_health?:
         | null
         | components['schemas']['EmbeddedMetadataClusterHealth'];
+    };
+    /** @description Create Kafka cluster request */
+    CreateKafkaClusterRequest: {
+      /**
+       * @description # Cluster Name
+       *
+       *     Name for the Kafka cluster, used to identify this Kafka cluster configuration in subscriptions. Must be a valid hostname format.
+       */
+      name: components['schemas']['KafkaClusterName'];
+      /**
+       * @description # Properties
+       *
+       *     Kafka cluster configuration properties. Must contain either
+       *     'bootstrap.servers' or 'metadata.broker.list'.
+       *
+       *     For a full list of configuration properties, check the [librdkafka documentation](https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md).
+       */
+      properties: {
+        [key: string]: string;
+      };
     };
     CreateSubscriptionRequest: {
       /**
@@ -1117,6 +1282,18 @@ export interface components {
        */
       source: string;
     };
+    /** @description One entry in the body of `POST /limits/rules/bulk-delete`. */
+    DeleteRuleRequest: {
+      /**
+       * Format: int32
+       * @description Optimistic-concurrency match. Absent → unconditional delete
+       *     (idempotent: deleting an already-absent rule succeeds as a
+       *     no-op). Present → reject unless the rule's current version is
+       *     the supplied value.
+       */
+      expected_version?: number | null;
+      pattern: string;
+    };
     DeploymentId: string;
     DeploymentResponse:
       | {
@@ -1140,7 +1317,7 @@ export interface components {
            *
            *     List of configuration/deprecation information related to this deployment.
            */
-          info?: components['schemas']['Info'][];
+          info?: components['schemas']['SchemaInfo'][];
           /**
            * Format: int32
            * @description # Maximum Service Protocol version
@@ -1219,7 +1396,7 @@ export interface components {
            *
            *     List of configuration/deprecation information related to this deployment.
            */
-          info?: components['schemas']['Info'][];
+          info?: components['schemas']['SchemaInfo'][];
           /**
            * Format: int32
            * @description # Maximum Service Protocol version
@@ -1278,7 +1455,7 @@ export interface components {
            *
            *     List of configuration/deprecation information related to this deployment.
            */
-          info?: components['schemas']['Info'][];
+          info?: components['schemas']['SchemaInfo'][];
           /**
            * Format: int32
            * @description # Maximum Service Protocol version
@@ -1357,7 +1534,7 @@ export interface components {
            *
            *     List of configuration/deprecation information related to this deployment.
            */
-          info?: components['schemas']['Info'][];
+          info?: components['schemas']['SchemaInfo'][];
           /**
            * Format: int32
            * @description # Maximum Service Protocol version
@@ -1477,7 +1654,7 @@ export interface components {
        *
        *     List of configuration/deprecation information related to this handler.
        */
-      info?: components['schemas']['Info'][];
+      info?: components['schemas']['SchemaInfo'][];
       /**
        * @description # Human readable input description
        *
@@ -1579,15 +1756,58 @@ export interface components {
       max_interval?: string | null;
       on_max_attempts?: null | components['schemas']['OnMaxAttempts'];
     };
-    Info: {
-      code?: string | null;
-      message: string;
+    /**
+     * Format: hostname
+     * @description # Kafka cluster name
+     *
+     *     Valid name to use as a kafka cluster identifier. MUST conform a valid hostname format.
+     */
+    KafkaClusterName: string;
+    /** @description Kafka cluster details with subscriptions. */
+    KafkaClusterResponse: {
+      /**
+       * @description # Created at
+       *
+       *     When the Kafka cluster configuration was created.
+       */
+      created_at: string;
+      /**
+       * @description # Info
+       *
+       *     List of configuration/deprecation information related to this deployment.
+       */
+      info?: components['schemas']['SchemaInfo'][];
+      /**
+       * @description # Cluster Name
+       *
+       *     Name for the Kafka cluster, used to identify this Kafka cluster configuration in subscriptions. Must be a valid hostname format.
+       */
+      name: components['schemas']['KafkaClusterName'];
+      /**
+       * @description # Properties
+       *
+       *     Properties for connecting to the kafka cluster.
+       *
+       *     For a full list of configuration properties, check the [librdkafka documentation](https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md).
+       */
+      properties: {
+        [key: string]: string;
+      };
+      /**
+       * @description # Subscriptions
+       *
+       *     Subscriptions to this Kafka cluster, returned only when `include_subscriptions` is enabled.
+       */
+      subscriptions: components['schemas']['SubscriptionResponse'][];
     };
-    /** Format: arn */
     LambdaARN: string;
     /** @description List of all registered deployments */
     ListDeploymentsResponse: {
       deployments: components['schemas']['DeploymentResponse'][];
+    };
+    /** @description List of all Kafka clusters. */
+    ListKafkaClustersResponse: {
+      clusters: components['schemas']['SimpleKafkaClusterResponse'][];
     };
     /** @description List of all the handlers of a service */
     ListServiceHandlersResponse: {
@@ -1684,6 +1904,13 @@ export interface components {
        */
       object_key: string;
       /**
+       * @description # Scope
+       *
+       *     Optional scope for the virtual object instance. When set, targets the scoped
+       *     instance instead of the unscoped one. Since v1.7.0.
+       */
+      scope?: string | null;
+      /**
        * @description # Version
        *
        *     If set, the latest version of the state is compared with this value and the operation will fail
@@ -1695,8 +1922,36 @@ export interface components {
     OnMaxAttempts: 'Pause' | 'Kill';
     /** Format: int32 */
     PlainNodeId: number;
+    /**
+     * @description Optimistic-concurrency guard for a [`RuleChange`].
+     *
+     *     - [`Precondition::None`] applies the change unconditionally.
+     *     - [`Precondition::Matches`] requires the rule to be present at the
+     *       given version; otherwise the change is rejected with
+     *       [`RuleBookError::PreconditionFailed`].
+     *     - [`Precondition::DoesNotExist`] requires the rule to be absent.
+     *       Combined with `Upsert` this is a pure insert.
+     */
+    Precondition:
+      | {
+          /** @enum {string} */
+          type: 'none';
+        }
+      | {
+          /** @enum {string} */
+          type: 'matches';
+          version: components['schemas']['Version'];
+        }
+      | {
+          /** @enum {string} */
+          type: 'does_not_exist';
+        };
     /** @enum {string} */
     ProtocolType: 'RequestResponse' | 'BidiStream';
+    /** @description Error response for query endpoint. */
+    QueryErrorBody: {
+      message: string;
+    };
     QueryRequest: {
       /** @description SQL query to run against the storage */
       query: string;
@@ -1710,7 +1965,7 @@ export interface components {
            * @description # Breaking
            *
            *     If `true`, it allows registering new service revisions with
-           *     schemas incompatible with previous service revisions, such as changing service type, removing a handler, etc.
+           *     schemas incompatible with previous service revisions, such as changing the service type.
            *
            *     See the [versioning documentation](https://docs.restate.dev/operate/versioning) for more information.
            */
@@ -1780,7 +2035,7 @@ export interface components {
            * @description # Breaking
            *
            *     If `true`, it allows registering new service revisions with
-           *     schemas incompatible with previous service revisions, such as changing service type, removing a handler, etc.
+           *     schemas incompatible with previous service revisions, such as changing the service type.
            *
            *     See the [versioning documentation](https://docs.restate.dev/operate/versioning) for more information.
            */
@@ -1821,7 +2076,7 @@ export interface components {
        *
        *     List of configuration/deprecation information related to this deployment.
        */
-      info?: components['schemas']['Info'][];
+      info?: components['schemas']['SchemaInfo'][];
       /**
        * Format: int32
        * @description # Maximum Service Protocol version
@@ -1848,6 +2103,26 @@ export interface components {
     RestartAsNewInvocationResponse: {
       /** @description The invocation id of the new invocation. */
       new_invocation_id: components['schemas']['String'];
+    };
+    RuleResponse: {
+      description?: string | null;
+      disabled: boolean;
+      /**
+       * Format: int64
+       * @description Millis since UNIX epoch.
+       */
+      last_modified_millis_since_epoch: number;
+      limits: components['schemas']['UserLimits'];
+      pattern: string;
+      /**
+       * Format: int32
+       * @description Per-rule version: bumped on runtime-relevant changes.
+       */
+      version: number;
+    };
+    SchemaInfo: {
+      code?: string | null;
+      message: string;
     };
     /**
      * @description Proxy type to implement HashMap<HeaderName, HeaderValue> ser/de
@@ -1929,7 +2204,7 @@ export interface components {
        *
        *     List of configuration/deprecation information related to this service.
        */
-      info?: components['schemas']['Info'][];
+      info?: components['schemas']['SchemaInfo'][];
       /**
        * @description # Journal retention
        *
@@ -2035,6 +2310,37 @@ export interface components {
     };
     /** @enum {string} */
     ServiceType: 'Service' | 'VirtualObject' | 'Workflow';
+    /** @description Kafka cluster simple response. */
+    SimpleKafkaClusterResponse: {
+      /**
+       * @description # Created at
+       *
+       *     When the Kafka cluster configuration was created.
+       */
+      created_at: string;
+      /**
+       * @description # Info
+       *
+       *     List of configuration/deprecation information related to this deployment.
+       */
+      info?: components['schemas']['SchemaInfo'][];
+      /**
+       * @description # Cluster Name
+       *
+       *     Name for the Kafka cluster, used to identify this Kafka cluster configuration in subscriptions. Must be a valid hostname format.
+       */
+      name: components['schemas']['KafkaClusterName'];
+      /**
+       * @description # Properties
+       *
+       *     Properties for connecting to the kafka cluster.
+       *
+       *     For a full list of configuration properties, check the [librdkafka documentation](https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md).
+       */
+      properties: {
+        [key: string]: string;
+      };
+    };
     String: string;
     SubscriptionId: string;
     /** @description Subscription details. */
@@ -2111,8 +2417,85 @@ export interface components {
            */
           overwrite?: boolean;
         };
+    /** @description Update Kafka cluster request */
+    UpdateKafkaClusterRequest: {
+      /**
+       * @description # Properties
+       *
+       *     Updated Kafka cluster configuration properties. Must contain either
+       *     'bootstrap.servers' or 'metadata.broker.list'.
+       *
+       *     For a full list of configuration properties, check the [librdkafka documentation](https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md).
+       */
+      properties: {
+        [key: string]: string;
+      };
+    };
+    /**
+     * @description One entry in the body of `PUT /limits/rules`.
+     *
+     *     Each entry carries a fully-specified rule body plus an optional
+     *     [`Precondition`]. Omitting the `precondition` field defaults to
+     *     `Precondition::None` (unconditional upsert).
+     */
+    UpsertRuleRequest: {
+      /**
+       * @description Free-form description shown in the rule book; not consulted at
+       *     runtime.
+       */
+      description?: string | null;
+      /**
+       * @description Soft-tombstone toggle. `true` parks the rule (the runtime treats
+       *     it as absent) without removing it.
+       */
+      disabled?: boolean;
+      limits?: components['schemas']['UserLimits'];
+      /**
+       * @description The pattern that selects which scope/limit-key combinations the
+       *     rule applies to. Examples: `"*"`, `"scope1/*"`, `"scope1/foo/bar"`.
+       */
+      pattern: string;
+      /**
+       * @description Optimistic-concurrency guard. `{ "type": "matches", "version": v }`
+       *     requires the rule's current version to be `v`;
+       *     `{ "type": "does_not_exist" }` requires the rule to be absent
+       *     (strict insert); `{ "type": "none" }` (or omitted) is
+       *     unconditional.
+       */
+      precondition?: components['schemas']['Precondition'];
+    };
+    /**
+     * @description Per-rule effective limits.
+     *
+     *     `None` on a field means "unlimited" (no rule constrains this dimension).
+     *     Under the `bilrost` feature this type is also the wire shape persisted
+     *     inside [`crate::PersistedRule`]; under `serde` it's the JSON wire shape
+     *     for the admin REST model — adding a new limit kind here means allocating
+     *     a fresh `bilrost(tag(...))` next to the new field.
+     */
+    UserLimits: {
+      /**
+       * Format: int32
+       * @description Maximum concurrent invocations. `None` means unlimited.
+       */
+      action_concurrency?: number | null;
+    };
+    /**
+     * Format: int32
+     * @description A type used for versioned metadata.
+     */
+    Version: number;
     /** @description Admin API version information */
     VersionInformation: {
+      /**
+       * @description # Restate experimental features
+       *
+       *     List experimental features with their
+       *     enabled state.
+       */
+      features: {
+        [key: string]: boolean;
+      };
       ingress_endpoint?:
         | null
         | components['schemas']['AdvertisedAddress-http-ingress-server_HttpIngressPort'];
@@ -2291,7 +2674,8 @@ export interface components {
       new_invocation_id: string;
     };
     ListVirtualObjectStateRequestBody: {
-      filters?: components['schemas']['FilterItem'][];
+      systemFilters?: components['schemas']['FilterItem'][];
+      stateFilter?: components['schemas']['FilterItem'];
     };
     FilterItem: components['schemas']['FilterBaseItem'] &
       (
@@ -3178,6 +3562,7 @@ export interface components {
       target_service_name: string;
       /** @enum {string} */
       target_service_ty: 'service' | 'virtual_object' | 'workflow';
+      scope?: string;
       /** @enum {string} */
       completion_result?: 'success' | 'failure';
       completion_failure?: string;
@@ -3255,6 +3640,7 @@ export interface components {
       target_service_name: string;
       /** @enum {string} */
       target_service_ty: 'service' | 'virtual_object' | 'workflow';
+      scope?: string;
       /** @enum {string} */
       completion_result?: 'success' | 'failure';
       completion_failure?: string;
@@ -3356,6 +3742,15 @@ export interface components {
     };
     /** @description Not found */
     NotFound: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['ErrorDescriptionResponse'];
+      };
+    };
+    /** @description Unprocessable entity */
+    UnprocessableEntity: {
       headers: {
         [name: string]: unknown;
       };
@@ -3587,73 +3982,37 @@ export interface operations {
       };
     };
   };
-  decode_service_serde: {
+  delete_invocation: {
     parameters: {
       query?: {
-        /** @description Optional deployment id; if omitted, resolve the latest deployment for the service. */
-        deployment?: string;
+        /**
+         * @description If cancel, it will gracefully terminate the invocation.
+         *     If kill, it will terminate the invocation with a hard stop.
+         *     If purge, it will only cleanup the response for completed invocations,
+         *     and leave unaffected an in-flight invocation.
+         */
+        mode?: null | ('Cancel' | 'Kill' | 'Purge');
       };
       header?: never;
       path: {
-        /** @description Registered service name. */
-        service: string;
-        /** @description Arbitrary serde name forwarded to the target deployment. */
-        serdeName: string;
+        /** @description Invocation identifier. */
+        invocation_id: string;
       };
       cookie?: never;
     };
-    requestBody: {
-      content: {
-        'application/octet-stream': string;
-      };
-    };
+    requestBody?: never;
     responses: {
-      /** @description JSON returned by the target deployment */
-      200: {
+      /** @description Accepted */
+      202: {
         headers: {
           [name: string]: unknown;
         };
-        content: {
-          'application/json': unknown;
-        };
+        content?: never;
       };
       400: components['responses']['BadRequest'];
       404: components['responses']['NotFound'];
-      500: components['responses']['InternalServerError'];
-    };
-  };
-  encode_service_serde: {
-    parameters: {
-      query?: {
-        /** @description Optional deployment id; if omitted, resolve the latest deployment for the service. */
-        deployment?: string;
-      };
-      header?: never;
-      path: {
-        /** @description Registered service name. */
-        service: string;
-        /** @description Arbitrary serde name forwarded to the target deployment. */
-        serdeName: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': unknown;
-      };
-    };
-    responses: {
-      /** @description Wire-format bytes returned by the target deployment */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/octet-stream': string;
-        };
-      };
-      400: components['responses']['BadRequest'];
-      404: components['responses']['NotFound'];
+      405: components['responses']['MethodNotAllowed'];
+      409: components['responses']['Conflict'];
       500: components['responses']['InternalServerError'];
     };
   };
@@ -4128,6 +4487,7 @@ export interface operations {
               | 'Keep'
               | 'Latest'
               | {
+                  /** @description Use a specific deployment ID */
                   Id: string;
                 }
             );
@@ -4285,6 +4645,7 @@ export interface operations {
               | 'Keep'
               | 'Latest'
               | {
+                  /** @description Use a specific deployment ID */
                   Id: string;
                 }
             );
@@ -4389,6 +4750,203 @@ export interface operations {
           };
         };
       };
+    };
+  };
+  list_kafka_clusters: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description List of all Kafka clusters */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ListKafkaClustersResponse'];
+        };
+      };
+    };
+  };
+  create_kafka_cluster: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateKafkaClusterRequest'];
+      };
+    };
+    responses: {
+      /** @description Kafka cluster created successfully */
+      201: {
+        headers: {
+          /** @description URI of the created Kafka cluster */
+          Location?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['SimpleKafkaClusterResponse'];
+        };
+      };
+      400: components['responses']['BadRequest'];
+      404: components['responses']['NotFound'];
+      405: components['responses']['MethodNotAllowed'];
+      409: components['responses']['Conflict'];
+      500: components['responses']['InternalServerError'];
+    };
+  };
+  get_kafka_cluster: {
+    parameters: {
+      query?: {
+        /** @description If true, includes the list of subscriptions using this cluster. */
+        include_subscriptions?: boolean;
+      };
+      header?: never;
+      path: {
+        /** @description Kafka cluster name */
+        cluster_name: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Kafka cluster details */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['KafkaClusterResponse'];
+        };
+      };
+      400: components['responses']['BadRequest'];
+      404: components['responses']['NotFound'];
+      405: components['responses']['MethodNotAllowed'];
+      409: components['responses']['Conflict'];
+      500: components['responses']['InternalServerError'];
+    };
+  };
+  delete_kafka_cluster: {
+    parameters: {
+      query?: {
+        /** @description If true, allows deletion of the cluster even if it would orphan subscriptions. */
+        force?: boolean | null;
+      };
+      header?: never;
+      path: {
+        /** @description Kafka cluster name */
+        cluster_name: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Kafka cluster deletion accepted and will be processed asynchronously */
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      400: components['responses']['BadRequest'];
+      404: components['responses']['NotFound'];
+      405: components['responses']['MethodNotAllowed'];
+      409: components['responses']['Conflict'];
+      500: components['responses']['InternalServerError'];
+    };
+  };
+  update_kafka_cluster: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Kafka cluster name */
+        cluster_name: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdateKafkaClusterRequest'];
+      };
+    };
+    responses: {
+      /** @description Kafka cluster updated successfully */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['SimpleKafkaClusterResponse'];
+        };
+      };
+      400: components['responses']['BadRequest'];
+      404: components['responses']['NotFound'];
+      405: components['responses']['MethodNotAllowed'];
+      409: components['responses']['Conflict'];
+      500: components['responses']['InternalServerError'];
+    };
+  };
+  upsert_rules: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpsertRuleRequest'][];
+      };
+    };
+    responses: {
+      /** @description Rules upserted */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['RuleResponse'][];
+        };
+      };
+      409: components['responses']['Conflict'];
+      422: components['responses']['UnprocessableEntity'];
+      500: components['responses']['InternalServerError'];
+    };
+  };
+  bulk_delete_rules: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['DeleteRuleRequest'][];
+      };
+    };
+    responses: {
+      /** @description Patterns that were actually removed */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': string[];
+        };
+      };
+      409: components['responses']['Conflict'];
+      422: components['responses']['UnprocessableEntity'];
+      500: components['responses']['InternalServerError'];
     };
   };
   query: {
@@ -6021,6 +6579,8 @@ export interface operations {
       query?: {
         /** @description Invocation id */
         invocationId?: string;
+        /** @description Workflow scope */
+        scope?: string;
       };
       header?: never;
       path: {
@@ -6096,6 +6656,8 @@ export interface operations {
       query?: {
         /** @description service key */
         serviceKey?: string[];
+        /** @description workflow scope filter */
+        scope?: string;
       };
       header?: never;
       path: {
@@ -6176,9 +6738,16 @@ export interface operations {
     };
     requestBody: {
       content: {
-        'application/json': {
-          keys: string[];
-        };
+        'application/json':
+          | {
+              items: {
+                key: string;
+                scope?: string;
+              }[];
+            }
+          | {
+              keys: string[];
+            };
       };
     };
     responses: {
@@ -6190,6 +6759,7 @@ export interface operations {
           'application/json': {
             objects: (components['schemas']['StateResponse'] & {
               key: string;
+              scope?: string;
             })[];
           };
         };
@@ -6342,9 +6912,16 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': {
-            keys: string[];
-          };
+          'application/json':
+            | {
+                keys: string[];
+              }
+            | {
+                items: {
+                  key: string;
+                  scope?: string;
+                }[];
+              };
         };
       };
       400: {
@@ -6388,6 +6965,61 @@ export interface operations {
         };
       };
       503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  get_scoped_state: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description service name */
+        name: string;
+        /** @description workflow scope */
+        scope: string;
+        /** @description key */
+        key: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': WithRequired<
+            components['schemas']['StateResponse'],
+            'state'
+          > & {
+            version?: string;
+          };
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
         headers: {
           [name: string]: unknown;
         };
@@ -6727,6 +7359,118 @@ export interface operations {
         };
       };
       400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  decode_service_serde: {
+    parameters: {
+      query?: {
+        /** @description Optional deployment id; if omitted, resolve the latest deployment for the service. */
+        deployment?: string;
+      };
+      header?: never;
+      path: {
+        /** @description Registered service name. */
+        service: string;
+        /** @description Arbitrary serde name forwarded to the target deployment. */
+        serdeName: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/octet-stream': string;
+      };
+    };
+    responses: {
+      /** @description JSON returned by the target deployment */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': unknown;
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  encode_service_serde: {
+    parameters: {
+      query?: {
+        /** @description Optional deployment id; if omitted, resolve the latest deployment for the service. */
+        deployment?: string;
+      };
+      header?: never;
+      path: {
+        /** @description Registered service name. */
+        service: string;
+        /** @description Arbitrary serde name forwarded to the target deployment. */
+        serdeName: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': unknown;
+      };
+    };
+    responses: {
+      /** @description Wire-format bytes returned by the target deployment */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/octet-stream': string;
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
         headers: {
           [name: string]: unknown;
         };

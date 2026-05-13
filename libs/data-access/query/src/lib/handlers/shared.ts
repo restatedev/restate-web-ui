@@ -56,6 +56,20 @@ export const SYS_INVOCATION_COLUMNS = [
   'last_failure_related_command_type',
 ] as const;
 
+export function sysInvocationListColumns(
+  features: Set<string>,
+): readonly string[] {
+  return features.has('vqueues')
+    ? [...SYS_INVOCATION_LIST_COLUMNS, 'scope']
+    : SYS_INVOCATION_LIST_COLUMNS;
+}
+
+export function sysInvocationColumns(features: Set<string>): readonly string[] {
+  return features.has('vqueues')
+    ? [...SYS_INVOCATION_COLUMNS, 'scope']
+    : SYS_INVOCATION_COLUMNS;
+}
+
 export type QueryContext = {
   query: (sql: string) => Promise<{ rows: any[] }>;
   adminApi: <T>(
@@ -64,6 +78,7 @@ export type QueryContext = {
   ) => Promise<T>;
   baseUrl: string;
   restateVersion: string;
+  features: Set<string>;
 };
 
 function queryFetcher(
@@ -123,6 +138,7 @@ export function createQueryContext(
   baseUrl: string,
   headers: Headers,
   restateVersion: string,
+  features: Set<string>,
   signal?: AbortSignal,
 ): QueryContext {
   return {
@@ -140,5 +156,6 @@ export function createQueryContext(
       }),
     baseUrl,
     restateVersion,
+    features,
   };
 }

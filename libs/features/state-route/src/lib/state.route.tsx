@@ -4,7 +4,7 @@ import {
 } from '@restate/data-access/admin-api-hooks';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Link } from '@restate/ui/link';
-import { PanelTable, PanelTableColumn } from '@restate/ui/table';
+import { Cell, PanelTable, PanelTableColumn } from '@restate/ui/table';
 import {
   ContentPanel,
   ContentPanelBody,
@@ -67,7 +67,7 @@ function Component() {
               columns={LOADING_COLUMNS}
               items={[]}
               isLoading
-              renderRow={() => null}
+              renderCell={() => <Cell />}
             />
           </ContentPanelSection>
         </ContentPanelBody>

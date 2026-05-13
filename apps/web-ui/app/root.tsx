@@ -73,7 +73,11 @@ import {
   RegisterDeploymentDialog,
   UpdateDeploymentDialog,
 } from '@restate/features/register-deployment';
-import { queryCacheOnSuccess } from '@restate/data-access/admin-api-hooks';
+import {
+  isVersionQuery,
+  queryCacheOnSuccess,
+} from '@restate/data-access/admin-api-hooks';
+import { createLocalStorageMetaStorage } from '@restate/util/api-config';
 import { PortalProvider } from '@restate/ui/portal';
 import { BatchOperationsProvider } from '@restate/features/batch-operations';
 import { MonacoWarmup } from '@restate/ui/editor';
@@ -136,6 +140,9 @@ function useRefWithSupportForAbsolutePath(path: To) {
   return url;
 }
 
+const metaStorage = createLocalStorageMetaStorage();
+void metaStorage.hydrate();
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -148,7 +155,15 @@ const queryClient = new QueryClient({
     },
   },
   queryCache: new QueryCache({
-    onSuccess: (data, query) => queryCacheOnSuccess(queryClient, data, query),
+    onSuccess: (data, query) => {
+      if (isVersionQuery(data, query)) {
+        metaStorage.persist({
+          version: data.version,
+          features: data.features,
+        });
+      }
+      queryCacheOnSuccess(queryClient, data, query);
+    },
   }),
 });
 

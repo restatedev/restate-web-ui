@@ -1,4 +1,5 @@
 import type { FilterItem } from '@restate/data-access/admin-api-spec';
+import { useVersion } from '@restate/data-access/admin-api';
 import {
   useListDeployments,
   useListServices,
@@ -6,7 +7,7 @@ import {
   useQueryVirtualObjectState,
 } from '@restate/data-access/admin-api-hooks';
 import { Button, SubmitButton } from '@restate/ui/button';
-import { Cell, PanelTable, PanelTableColumn, Row } from '@restate/ui/table';
+import { Cell, PanelTable, PanelTableColumn } from '@restate/ui/table';
 import {
   ContentPanel,
   ContentPanelBody,
@@ -71,7 +72,6 @@ import { DecodedValue, Value } from '@restate/features/invocation-route';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { tv } from '@restate/util/styles';
 import { STATE_QUERY_NAME } from './constants';
-import { Link } from '@restate/ui/link';
 import { useEditStateContext } from '@restate/features/edit-state';
 import {
   StaticCodecOptionsProvider,
@@ -81,19 +81,57 @@ import { toStateParam } from './toStateParam';
 import { SplitButton } from '@restate/ui/split-button';
 import { useRestateContext } from '@restate/features/restate-context';
 import { Portal } from '@restate/ui/portal';
+import { getFeatures } from '@restate/util/api-config';
+
+function urlKeyFor(schemaClause: QueryClauseSchema<QueryClauseType>) {
+  if (schemaClause.metadata?.isSystem) {
+    const column =
+      (schemaClause.metadata?.column as string | undefined) ?? schemaClause.id;
+    return `sysFilter_${column}`;
+  }
+  return `filter_${schemaClause.id}`;
+}
+
+function urlKeyForClause(clause: QueryClause<QueryClauseType>) {
+  return urlKeyFor(clause.schema);
+}
 
 function getQuery(
   searchParams: URLSearchParams,
   schema: QueryClauseSchema<QueryClauseType>[],
 ) {
   return schema
-    .filter((schemaClause) => searchParams.get(`filter_${schemaClause.id}`))
+    .filter((schemaClause) => searchParams.get(urlKeyFor(schemaClause)))
     .map((schemaClause) => {
       return QueryClause.fromJSON(
         schemaClause,
-        searchParams.get(`filter_${schemaClause.id}`) ?? '',
+        searchParams.get(urlKeyFor(schemaClause)) ?? '',
       );
     });
+}
+
+function clausesToFilterArgs(clauses: QueryClause<QueryClauseType>[]): {
+  systemFilters: FilterItem[];
+  stateFilter?: FilterItem;
+} {
+  const systemFilters: FilterItem[] = [];
+  let stateFilter: FilterItem | undefined;
+  for (const clause of clauses) {
+    if (!clause.isValid) continue;
+    const column = clause.schema.metadata?.column as string | undefined;
+    const filter = {
+      field: column ?? clause.fieldValue,
+      operation: clause.value.operation!,
+      type: clause.type === 'CUSTOM_STRING' ? 'STRING' : clause.type,
+      value: clause.value.value,
+    } as FilterItem;
+    if (clause.schema.metadata?.isSystem) {
+      systemFilters.push(filter);
+    } else {
+      stateFilter = filter;
+    }
+  }
+  return { systemFilters, stateFilter };
 }
 
 const STATE_PAGE_SIZE = 30;
@@ -120,62 +158,68 @@ function Component() {
   const [searchParams, setSearchParams] = useSearchParams();
   const submitRef = useSubmitShortcut();
 
-  const { virtualObject } = useParams<{ virtualObject: string }>();
-  invariant(virtualObject, 'Missing virtualObject param');
-  const { isValid, isValidating } = useValidateVirtualObject();
+  const { virtualObject: serviceName } = useParams<{ virtualObject: string }>();
+  invariant(serviceName, 'Missing virtualObject param');
+  const { isValid, isValidating, workflows } = useValidateVirtualObject();
+  const isWorkflow = workflows.includes(serviceName);
 
   const [keysSet, setKeysSet] = useState(
     () =>
-      new Set([
-        'service_key',
-        ...Array.from(new URLSearchParams(window.location.search).keys())
+      new Set(
+        Array.from(new URLSearchParams(window.location.search).keys())
           .filter((key) => key.startsWith('filter_'))
-          .map((key) => key.replace('filter_', '')),
-      ]),
+          .map((key) => key.replace(/^filter_/, '')),
+      ),
   );
   const keys = Array.from(keysSet.values());
 
+  const { isSuccess: versionReady } = useVersion();
+  const hasVqueues = getFeatures()?.has('vqueues') ?? false;
+  const hasScopeInUrl = searchParams.has('sysFilter_scope');
   const schema = useMemo(() => {
-    const clauses = Array.from(keysSet.values()).map(
-      (key) =>
-        ({
-          id: key,
-          label: key === 'service_key' ? `${virtualObject} (Key)` : key,
-          operations: [
-            // TODO: add is null/ is not null
-            { value: 'EQUALS', label: 'is' },
-            { value: 'NOT_EQUALS', label: 'is not' },
-            { value: 'CONTAINS', label: 'contains' },
-            { value: 'NOT_CONTAINS', label: 'does not contain' },
-          ],
-          type: 'STRING',
-        }) as QueryClauseSchema<QueryClauseType>,
-    ) satisfies QueryClauseSchema<QueryClauseType>[];
+    const stringOps = [
+      // TODO: add is null/ is not null
+      { value: 'EQUALS' as const, label: 'is' },
+      { value: 'NOT_EQUALS' as const, label: 'is not' },
+      { value: 'CONTAINS' as const, label: 'contains' },
+      { value: 'NOT_CONTAINS' as const, label: 'does not contain' },
+    ];
+    const clauses: QueryClauseSchema<QueryClauseType>[] = [];
+    clauses.push({
+      id: '__sys_service_key',
+      label: `${serviceName} (Key)`,
+      operations: stringOps,
+      type: 'STRING',
+      metadata: { isSystem: true, column: 'service_key' },
+    });
+    if ((hasVqueues && isWorkflow) || hasScopeInUrl) {
+      clauses.push({
+        id: '__sys_service_scope',
+        label: 'Scope',
+        operations: stringOps,
+        type: 'STRING',
+        metadata: { isSystem: true, column: 'scope' },
+      });
+    }
+    Array.from(keysSet.values()).forEach((key) => {
+      clauses.push({
+        id: key,
+        label: key,
+        operations: stringOps,
+        type: 'STRING',
+      });
+    });
     clauses.push({
       id: CUSTOM_KEY_ID,
-      operations: [
-        // TODO: add is null/ is not null
-        { value: 'EQUALS', label: 'is' },
-        { value: 'NOT_EQUALS', label: 'is not' },
-        { value: 'CONTAINS', label: 'contains' },
-        { value: 'NOT_CONTAINS', label: 'does not contain' },
-      ],
+      operations: stringOps,
       type: 'CUSTOM_STRING',
     } as QueryClauseSchema<QueryClauseType>);
     return clauses;
-  }, [keysSet, virtualObject]);
+  }, [keysSet, serviceName, hasVqueues, isWorkflow, hasScopeInUrl]);
 
-  const [queryFilters, setQueryFilters] = useState<FilterItem[]>(() =>
-    getQuery(searchParams, schema)
-      .filter((clause) => clause.isValid)
-      .map((clause) => {
-        return {
-          field: clause.fieldValue,
-          operation: clause.value.operation!,
-          type: clause.type,
-          value: clause.value.value,
-        } as FilterItem;
-      }),
+  const queryFilters = useMemo(
+    () => clausesToFilterArgs(getQuery(searchParams, schema)),
+    [searchParams, schema],
   );
   const {
     dataUpdatedAt,
@@ -184,7 +228,7 @@ function Component() {
     data: serviceKeysData,
     isFetching,
     queryKey,
-  } = useQueryVirtualObjectState(virtualObject, queryFilters, {
+  } = useQueryVirtualObjectState(serviceName, queryFilters, {
     refetchOnMount: true,
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
@@ -192,24 +236,35 @@ function Component() {
     enabled: isValid,
   });
 
+  const allItems = useMemo<{ key: string; scope?: string }[]>(() => {
+    if (error) return [];
+    if (!serviceKeysData) return [];
+    if ('items' in serviceKeysData) return serviceKeysData.items;
+    return serviceKeysData.keys.map((key) => ({ key }));
+  }, [serviceKeysData, error]);
   const [pageIndex, _setPageIndex] = useState(0);
   const currentPageItems = useMemo(() => {
-    return (serviceKeysData?.keys ?? [])
-      .sort()
+    return allItems
+      .slice()
+      .sort((a, b) => a.key.localeCompare(b.key))
       .slice(pageIndex * STATE_PAGE_SIZE, (pageIndex + 1) * STATE_PAGE_SIZE);
-  }, [pageIndex, serviceKeysData?.keys]);
-  const listObjects = useListVirtualObjectState(
-    virtualObject,
-    currentPageItems,
-    {
-      refetchOnMount: true,
-      refetchOnReconnect: false,
-      staleTime: 0,
-      refetchOnWindowFocus: false,
-    },
+  }, [pageIndex, allItems]);
+  const listStateArgs = useMemo(
+    () =>
+      currentPageItems.some((item) => item.scope !== undefined)
+        ? { items: currentPageItems }
+        : { keys: currentPageItems.map((item) => item.key) },
+    [currentPageItems],
   );
+  const listObjects = useListVirtualObjectState(serviceName, listStateArgs, {
+    refetchOnMount: true,
+    refetchOnReconnect: false,
+    staleTime: 0,
+    refetchOnWindowFocus: false,
+  });
 
   const flattenedData = useMemo(() => {
+    if (listObjects.error) return [];
     return (
       listObjects.data?.objects.map((obj) => ({
         ...obj,
@@ -219,24 +274,25 @@ function Component() {
         ),
       })) ?? []
     );
-  }, [listObjects.data]);
+  }, [listObjects.data, listObjects.error]);
 
   useEffect(() => {
-    if (!isFetching) {
-      const keys =
-        listObjects.data?.objects
-          .map((obj) => obj.state.map(({ name }) => name))
-          .flat() ?? [];
-      setKeysSet(
-        (s) =>
-          new Set([
-            'service_key',
-            ...[
-              ...Array.from(s.values()).filter((v) => keys.includes(v)),
-              ...keys,
-            ].sort(),
-          ]),
-      );
+    if (!isFetching && listObjects.data !== undefined) {
+      const keys = listObjects.data.objects
+        .map((obj) => obj.state.map(({ name }) => name))
+        .flat();
+      setKeysSet((s) => {
+        const next = new Set(
+          [
+            ...Array.from(s.values()).filter((v) => keys.includes(v)),
+            ...keys,
+          ].sort(),
+        );
+        if (next.size === s.size && [...next].every((v) => s.has(v))) {
+          return s;
+        }
+        return next;
+      });
     }
   }, [listObjects.data, isFetching]);
 
@@ -259,7 +315,7 @@ function Component() {
 
   useEffect(() => {
     setSelectedColumns(new Set(['service_key']));
-  }, [virtualObject]);
+  }, [serviceName]);
 
   useEffect(() => {
     setSelectedColumns((old) => {
@@ -275,42 +331,52 @@ function Component() {
 
   const queryCLient = useQueryClient();
 
-  const query = useQueryBuilder(getQuery(searchParams, schema));
+  const query = useQueryBuilder(getQuery(searchParams, schema), !versionReady);
   const queryRef = useRef(query);
   useEffect(() => {
     queryRef.current = query;
   });
 
+  const showScopeColumn = hasVqueues && isWorkflow;
+
   const selectedColumnsArray = useMemo(() => {
     const cols = Array.from(selectedColumns).map((id, index) => ({
-      name: id === 'service_key' ? `${virtualObject} (Key)` : id,
+      name: id === 'service_key' ? `${serviceName} (Key)` : id,
       id: String(id),
       isRowHeader: index === 0,
     }));
+    if (showScopeColumn) {
+      const keyIndex = cols.findIndex((c) => c.id === 'service_key');
+      cols.splice(keyIndex + 1, 0, {
+        id: 'scope',
+        name: 'Scope',
+        isRowHeader: false,
+      });
+    }
     cols.push({
       id: '__actions__',
       name: 'Actions',
       isRowHeader: false,
     });
     return cols;
-  }, [selectedColumns, virtualObject]);
+  }, [selectedColumns, serviceName, showScopeColumn]);
 
-  const totalSize = Math.ceil(
-    (serviceKeysData?.keys.length ?? 0) / STATE_PAGE_SIZE,
-  );
+  const totalSize = Math.ceil(allItems.length / STATE_PAGE_SIZE);
   const dataUpdate = error ? errorUpdatedAt : dataUpdatedAt;
   const setEditState = useEditStateContext();
   const { EncodingWaterMark } = useRestateContext();
   const resolvedServiceCodecOptions = useResolvedCodecOptions({
-    service: { value: { name: virtualObject } },
+    service: { value: { name: serviceName } },
   });
 
   useEffect(() => {
-    if ((serviceKeysData?.keys ?? []).length <= STATE_PAGE_SIZE * pageIndex) {
+    if (allItems.length <= STATE_PAGE_SIZE * pageIndex) {
       setPageIndex(0);
     }
-  }, [pageIndex, serviceKeysData?.keys, setPageIndex]);
-  const hash = 'hash' + flattenedData.map(({ key }) => key).join('');
+  }, [pageIndex, allItems, setPageIndex]);
+  const hash =
+    'hash' +
+    flattenedData.map(({ key, scope }) => `${key}\x00${scope ?? ''}`).join('');
 
   const panelColumns = useMemo<PanelTableColumn[]>(
     () =>
@@ -342,7 +408,7 @@ function Component() {
                       onSelect={setSelectedColumns}
                     >
                       <DropdownItem key="service_key" value="service_key">
-                        {virtualObject} (Key)
+                        {serviceName} (Key)
                       </DropdownItem>
                       {keys
                         .filter((k) => k !== 'service_key')
@@ -367,11 +433,15 @@ function Component() {
           allowsSorting: false,
         };
       }),
-    [selectedColumnsArray, keys, selectedColumns, virtualObject],
+    [selectedColumnsArray, keys, selectedColumns, serviceName],
   );
 
   const panelItems = useMemo(
-    () => flattenedData.map((row) => ({ ...row, id: (row.key ?? '') + '_' })),
+    () =>
+      flattenedData.map((row) => ({
+        ...row,
+        id: `${row.key ?? ''}\x00${row.scope ?? ''}`,
+      })),
     [flattenedData],
   );
 
@@ -387,6 +457,23 @@ function Component() {
               bodyKey={hash}
               columns={panelColumns}
               items={panelItems}
+              onRowAction={(rowId) => {
+                const [rowKey, rowScope] = String(rowId).split('\x00');
+                setSearchParams(
+                  (old) => {
+                    old.set(
+                      STATE_QUERY_NAME,
+                      toStateParam({
+                        key: rowKey ?? '',
+                        virtualObject: serviceName,
+                        scope: rowScope || undefined,
+                      }),
+                    );
+                    return old;
+                  },
+                  { preventScrollReset: true },
+                );
+              }}
               numOfRows={currentPageItems.length || 5}
               bodyDependencies={[selectedColumnsArray, pageIndex]}
               error={error || listObjects.error}
@@ -404,192 +491,195 @@ function Component() {
                     />
                   </div>
                   <h3 className="text-sm font-semibold text-zinc-400">
-                    No objects found
+                    No instances found
                   </h3>
                 </div>
               }
-              renderRow={(row) => (
-                <Row
-                  id={row.id}
-                  columns={panelColumns}
-                  dependencies={[panelColumns]}
-                  className="bg-transparent [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"
-                >
-                  {({ id }) => {
-                    if (id === 'service_key') {
-                      return (
-                        <Cell key={id}>
-                          <KeyCell
-                            serviceKey={String(row.key)}
-                            virtualObject={virtualObject}
-                          />
-                        </Cell>
-                      );
-                    } else if (id === '__actions__') {
-                      return (
-                        <Cell className="align-top [&&&]:overflow-visible">
-                          <SplitButton
-                            menus={
-                              <>
-                                <DropdownItem value="edit">Edit…</DropdownItem>
-                                <DropdownItem destructive value="delete">
-                                  Delete…
-                                </DropdownItem>
-                              </>
-                            }
-                            mini
-                            onSelect={(key) => {
-                              if (key === 'edit') {
-                                setEditState({
-                                  isEditing: true,
-                                  isDeleting: false,
-                                  objectKey: row.key!,
-                                  service: virtualObject,
-                                });
-                              }
-                              if (key === 'delete') {
-                                setEditState({
-                                  isEditing: true,
-                                  isDeleting: true,
-                                  objectKey: row.key!,
-                                  service: virtualObject,
-                                });
-                              }
-                            }}
-                          >
-                            <EditStateTrigger
-                              className={actionButtonStyles()}
-                              variant="secondary"
-                              onClick={() =>
-                                setEditState({
-                                  isEditing: true,
-                                  isDeleting: false,
-                                  objectKey: row.key!,
-                                  service: virtualObject,
-                                })
-                              }
-                            >
-                              Edit
-                            </EditStateTrigger>
-                          </SplitButton>
-                        </Cell>
-                      );
-                    } else {
-                      const stateCodecOptions = {
-                        ...resolvedServiceCodecOptions,
-                        key: row.key!,
-                        command: {
-                          type: 'GetState' as const,
-                          name: id,
-                        },
-                      };
-
-                      return (
-                        <Cell
-                          key={id}
-                          className="group [&:has(*:focus)_*]:visible [&:has(*:hover)_*]:visible"
+              rowClassName="bg-transparent [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"
+              rowDependencies={[panelColumns]}
+              renderCell={(row, { id }) => {
+                if (id === 'service_key') {
+                  return (
+                    <Cell key={id}>
+                      <KeyCell serviceKey={String(row.key)} />
+                    </Cell>
+                  );
+                } else if (id === 'scope') {
+                  return (
+                    <Cell key={id}>
+                      {row.scope !== undefined ? (
+                        <KeyCell serviceKey={row.scope} />
+                      ) : null}
+                    </Cell>
+                  );
+                } else if (id === '__actions__') {
+                  return (
+                    <Cell className="align-top [&&&]:overflow-visible">
+                      <SplitButton
+                        menus={
+                          <>
+                            <DropdownItem value="edit">Edit…</DropdownItem>
+                            <DropdownItem destructive value="delete">
+                              Delete…
+                            </DropdownItem>
+                          </>
+                        }
+                        mini
+                        onSelect={(key) => {
+                          if (key === 'edit') {
+                            setEditState({
+                              isEditing: true,
+                              isDeleting: false,
+                              objectKey: row.key!,
+                              service: serviceName,
+                              scope: row.scope,
+                            });
+                          }
+                          if (key === 'delete') {
+                            setEditState({
+                              isEditing: true,
+                              isDeleting: true,
+                              objectKey: row.key!,
+                              service: serviceName,
+                              scope: row.scope,
+                            });
+                          }
+                        }}
+                      >
+                        <EditStateTrigger
+                          className={actionButtonStyles()}
+                          variant="secondary"
+                          onClick={() =>
+                            setEditState({
+                              isEditing: true,
+                              isDeleting: false,
+                              objectKey: row.key!,
+                              service: serviceName,
+                              scope: row.scope,
+                            })
+                          }
                         >
-                          <div className="item-center flex h-full min-h-5 w-full justify-start gap-1">
-                            {row.state?.[id] && (
-                              <Popover>
-                                <PopoverTrigger>
-                                  <Button
-                                    className="truncate rounded-xl px-3 py-0.5 font-mono [font-size:inherit] text-inherit shadow-none"
-                                    variant="secondary"
-                                  >
-                                    <span className="flex min-w-0 items-center truncate pr-0.5">
-                                      {EncodingWaterMark && (
-                                        <EncodingWaterMark
-                                          value={row.state?.[id]}
-                                          mini
-                                          className="mr-1"
-                                        />
-                                      )}
-                                      <span className="block truncate">
-                                        <StaticCodecOptionsProvider
-                                          options={stateCodecOptions}
-                                        >
-                                          <DecodedValue
-                                            value={row.state?.[id]}
-                                            isBase64
-                                          />
-                                        </StaticCodecOptionsProvider>
-                                      </span>
-                                    </span>
-                                  </Button>
-                                </PopoverTrigger>
+                          Edit
+                        </EditStateTrigger>
+                      </SplitButton>
+                    </Cell>
+                  );
+                } else {
+                  const stateCodecOptions = {
+                    ...resolvedServiceCodecOptions,
+                    key: row.key!,
+                    command: {
+                      type: 'GetState' as const,
+                      name: id,
+                    },
+                  };
 
-                                <PopoverContent>
-                                  <DropdownSection
-                                    className="mb-1 w-[90vw] max-w-[min(90vw,50rem)] overflow-auto py-0 pr-0 pl-4"
-                                    title={
-                                      <div className="flex items-center text-0.5xs">
-                                        {id}
-                                        <Portal
-                                          id="state-value"
-                                          className="mr-1 ml-auto"
-                                        />
-                                        <EditStateTrigger
-                                          onClick={() =>
-                                            setEditState({
-                                              isEditing: true,
-                                              isDeleting: false,
-                                              key: id,
-                                              objectKey: row.key!,
-                                              service: virtualObject,
-                                            })
-                                          }
-                                          variant="secondary"
-                                          className="flex shrink-0 items-center gap-1 rounded-lg px-1.5 py-0.5 text-xs font-normal"
-                                        >
-                                          Edit
-                                          <Icon
-                                            name={IconName.ExternalLink}
-                                            className="h-3 w-3"
-                                          />
-                                        </EditStateTrigger>
-                                      </div>
-                                    }
-                                  >
+                  return (
+                    <Cell
+                      key={id}
+                      className="group [&:has(*:focus)_*]:visible [&:has(*:hover)_*]:visible"
+                    >
+                      <div className="item-center flex h-full min-h-5 w-full justify-start gap-1">
+                        {row.state?.[id] && (
+                          <Popover>
+                            <PopoverTrigger>
+                              <Button
+                                className="truncate rounded-xl px-3 py-0.5 font-mono [font-size:inherit] text-inherit shadow-none"
+                                variant="secondary"
+                              >
+                                <span className="flex min-w-0 items-center truncate pr-0.5">
+                                  {EncodingWaterMark && (
+                                    <EncodingWaterMark
+                                      value={row.state?.[id]}
+                                      mini
+                                      className="mr-1"
+                                    />
+                                  )}
+                                  <span className="block truncate">
                                     <StaticCodecOptionsProvider
                                       options={stateCodecOptions}
                                     >
-                                      <Value
+                                      <DecodedValue
                                         value={row.state?.[id]}
-                                        className="w-full py-0 font-mono text-xs"
-                                        showCopyButton
-                                        portalId="state-value"
+                                        isBase64
                                       />
                                     </StaticCodecOptionsProvider>
-                                  </DropdownSection>
-                                </PopoverContent>
-                              </Popover>
-                            )}
-                            <EditStateTrigger
-                              onClick={() =>
-                                setEditState({
-                                  isEditing: true,
-                                  isDeleting: false,
-                                  key: id,
-                                  objectKey: row.key!,
-                                  service: virtualObject,
-                                })
-                              }
-                              variant="icon"
-                              className="invisible shrink-0 group-hover:visible"
-                            >
-                              <Icon
-                                name={IconName.Pencil}
-                                className="h-3 w-3 fill-current opacity-70"
-                              />
-                            </EditStateTrigger>
-                          </div>
-                        </Cell>
-                      );
-                    }
-                  }}
-                </Row>
-              )}
+                                  </span>
+                                </span>
+                              </Button>
+                            </PopoverTrigger>
+
+                            <PopoverContent>
+                              <DropdownSection
+                                className="mb-1 w-[90vw] max-w-[min(90vw,50rem)] overflow-auto py-0 pr-0 pl-4"
+                                title={
+                                  <div className="flex items-center text-0.5xs">
+                                    {id}
+                                    <Portal
+                                      id="state-value"
+                                      className="mr-1 ml-auto"
+                                    />
+                                    <EditStateTrigger
+                                      onClick={() =>
+                                        setEditState({
+                                          isEditing: true,
+                                          isDeleting: false,
+                                          key: id,
+                                          objectKey: row.key!,
+                                          service: serviceName,
+                                          scope: row.scope,
+                                        })
+                                      }
+                                      variant="secondary"
+                                      className="flex shrink-0 items-center gap-1 rounded-lg px-1.5 py-0.5 text-xs font-normal"
+                                    >
+                                      Edit
+                                      <Icon
+                                        name={IconName.ExternalLink}
+                                        className="h-3 w-3"
+                                      />
+                                    </EditStateTrigger>
+                                  </div>
+                                }
+                              >
+                                <StaticCodecOptionsProvider
+                                  options={stateCodecOptions}
+                                >
+                                  <Value
+                                    value={row.state?.[id]}
+                                    className="w-full py-0 font-mono text-xs"
+                                    showCopyButton
+                                    portalId="state-value"
+                                  />
+                                </StaticCodecOptionsProvider>
+                              </DropdownSection>
+                            </PopoverContent>
+                          </Popover>
+                        )}
+                        <EditStateTrigger
+                          onClick={() =>
+                            setEditState({
+                              isEditing: true,
+                              isDeleting: false,
+                              key: id,
+                              objectKey: row.key!,
+                              service: serviceName,
+                              scope: row.scope,
+                            })
+                          }
+                          variant="icon"
+                          className="invisible shrink-0 group-hover:visible"
+                        >
+                          <Icon
+                            name={IconName.Pencil}
+                            className="h-3 w-3 fill-current opacity-70"
+                          />
+                        </EditStateTrigger>
+                      </div>
+                    </Cell>
+                  );
+                }
+              }}
             />
             <Footnote
               data={serviceKeysData}
@@ -640,7 +730,7 @@ function Component() {
       </ContentPanel>
       <LayoutOutlet zone={LayoutZone.Toolbar}>
         <Form
-          action={`/query/services/${virtualObject}/state`}
+          action={`/query/services/${serviceName}/state`}
           method="POST"
           className="relative flex items-center"
           onSubmit={async (event) => {
@@ -648,12 +738,15 @@ function Component() {
 
             const newSearchParams = new URLSearchParams(searchParams);
             Array.from(newSearchParams.keys())
-              .filter((key) => key.startsWith('filter_'))
+              .filter(
+                (key) =>
+                  key.startsWith('filter_') || key.startsWith('sysFilter_'),
+              )
               .forEach((key) => newSearchParams.delete(key));
             query.items
               .filter((clause) => clause.isValid)
               .forEach((item) => {
-                newSearchParams.set(`filter_${item.fieldValue}`, String(item));
+                newSearchParams.set(urlKeyForClause(item), String(item));
               });
             const sortedNewSearchParams = new URLSearchParams(newSearchParams);
             sortedNewSearchParams.sort();
@@ -661,38 +754,22 @@ function Component() {
             sortedOldSearchParams.sort();
 
             setSearchParams(newSearchParams, { preventScrollReset: true });
-            setQueryFilters(
-              query.items
-                .filter((clause) => clause.isValid)
-                .map(
-                  (clause) =>
-                    ({
-                      field: clause.fieldValue,
-                      operation: clause.value.operation!,
-                      type:
-                        clause.type === 'CUSTOM_STRING'
-                          ? 'STRING'
-                          : clause.type,
-                      value: clause.value.value,
-                    }) as FilterItem,
-                ),
-            );
             await queryCLient.invalidateQueries({ queryKey });
             await queryCLient.invalidateQueries({
               predicate: (query) =>
-                query.queryKey[0] === `/query/services/${virtualObject}/state`,
+                query.queryKey[0] === `/query/services/${serviceName}/state`,
             });
           }}
         >
           <QueryBuilder
             query={query}
             schema={schema}
-            multiple={false}
+            multiple
             key={
               schema
                 .map((s) => s.id)
                 .sort()
-                .join('') + virtualObject
+                .join('') + serviceName
             }
           >
             <AddQueryTrigger
@@ -724,41 +801,23 @@ const stylesKey = tv({
   slots: {
     text: '',
     container: 'inline-flex w-full items-center pl-1 align-middle',
-    link: "m-0.5 ml-0 rounded-full text-zinc-500 outline-offset-0 before:absolute before:inset-0 before:rounded-lg before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5",
-    linkIcon: 'h-4 w-4 shrink-0 text-current',
   },
 });
 
 function KeyCell({
   serviceKey,
-  virtualObject,
   className,
 }: {
   serviceKey: string;
-  virtualObject: string;
   className?: string;
 }) {
-  const linkRef = useRef<HTMLAnchorElement>(null);
-  const { base, text, link, container, linkIcon } = stylesKey();
-
+  const { base, text, container } = stylesKey();
   return (
     <div className={base({ className })}>
       <div className={container({})}>
-        <TruncateWithTooltip copyText={serviceKey} triggerRef={linkRef}>
+        <TruncateWithTooltip copyText={serviceKey}>
           <span className={text()}>{serviceKey}</span>
         </TruncateWithTooltip>
-        <Link
-          ref={linkRef}
-          href={`?${STATE_QUERY_NAME}=${toStateParam({
-            key: serviceKey,
-            virtualObject,
-          })}`}
-          aria-label={serviceKey}
-          variant="secondary"
-          className={link()}
-        >
-          <Icon name={IconName.ChevronRight} className={linkIcon()} />
-        </Link>
       </div>
     </div>
   );
@@ -794,20 +853,22 @@ function Footnote({
 
   const { isPast, ...parts } = durationSinceLastSnapshot(now);
   const duration = formatDurations(parts);
+  const count = data
+    ? 'items' in data
+      ? data.items.length
+      : (data.keys?.length ?? 0)
+    : 0;
 
   return (
     <div className="flex w-full flex-row-reverse flex-wrap items-center gap-2 pt-3 pr-4 pb-2 pl-2 text-center text-xs text-gray-500/80">
       {data && (
         <div className="ml-auto">
-          {data.keys && data.keys.length > 0 ? (
+          {count > 0 ? (
             <>
-              <span className="font-medium text-gray-500">
-                {data.keys.length}
-              </span>{' '}
-              objects
+              <span className="font-medium text-gray-500">{count}</span> objects
             </>
           ) : (
-            'No objects found'
+            'No instances found'
           )}{' '}
           as of{' '}
           <span className="font-medium text-gray-500">{duration} ago</span>
@@ -949,7 +1010,9 @@ function DropDownVirtualObject({ service }: { service: string }) {
   const search = useMemo(() => {
     const newSearchParams = new URLSearchParams(searchParams);
     Array.from(newSearchParams.keys())
-      .filter((key) => key.startsWith('filter_'))
+      .filter(
+        (key) => key.startsWith('filter_') || key.startsWith('sysFilter_'),
+      )
       .forEach((key) => newSearchParams.delete(key));
 
     return newSearchParams.toString();

@@ -15,6 +15,8 @@ export type QueryClauseOperationId =
   | 'AFTER'
   | 'LESS_THAN'
   | 'GREATER_THAN'
+  | 'CONTAINS'
+  | 'NOT_CONTAINS'
   | 'IS NULL'
   | 'IS NOT NULL';
 
@@ -33,6 +35,7 @@ export interface QueryClauseSchema<T extends QueryClauseType> {
   type: T;
   loadOptions?: () => Promise<QueryClauseOption[]>;
   options?: QueryClauseOption[];
+  metadata?: Record<string, unknown>;
 }
 export type QueryClauseValue<T extends QueryClauseType> = T extends 'STRING'
   ? string
@@ -125,12 +128,11 @@ export class QueryClause<T extends QueryClauseType> {
     if (this.type === 'STRING_LIST') {
       return Boolean(
         this.options &&
-          this.options.length > 1 &&
-          this.options?.every(
-            ({ value }) =>
-              Array.isArray(this.value.value) &&
-              this.value.value.includes(value),
-          ),
+        this.options.length > 1 &&
+        this.options?.every(
+          ({ value }) =>
+            Array.isArray(this.value.value) && this.value.value.includes(value),
+        ),
       );
     }
     return false;
@@ -140,8 +142,8 @@ export class QueryClause<T extends QueryClauseType> {
     if (this.type === 'STRING_LIST') {
       return Boolean(
         this.options &&
-          Array.isArray(this.value.value) &&
-          this.value.value.length === 0,
+        Array.isArray(this.value.value) &&
+        this.value.value.length === 0,
       );
     }
     return false;
@@ -166,8 +168,8 @@ export class QueryClause<T extends QueryClauseType> {
     this._options = schema.options;
     this._disabled = Boolean(
       schema.type === 'STRING_LIST' &&
-        schema.options &&
-        schema.options.length === 0,
+      schema.options &&
+      schema.options.length === 0,
     );
     this.schema
       .loadOptions?.()

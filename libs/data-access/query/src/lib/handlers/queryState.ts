@@ -5,13 +5,10 @@ import type { QueryContext } from './shared';
 export async function queryState(
   this: QueryContext,
   service: string,
-  filters: FilterItem[],
+  args: { systemFilters?: FilterItem[]; stateFilter?: FilterItem },
 ) {
-  if (filters.length > 1) {
-    throw new Error('Only one filter is supported');
-  }
+  const { systemFilters = [], stateFilter } = args;
 
-  const [filter] = filters;
   const filtersWithService: FilterItem[] = [
     {
       field: 'service_name',
@@ -19,36 +16,42 @@ export async function queryState(
       value: service,
       type: 'STRING',
     },
-    ...(filter && filter.field !== 'service_key'
+    ...systemFilters,
+    ...(stateFilter
       ? ([
           {
             field: 'key',
             operation: 'EQUALS',
-            value: filter.field,
+            value: stateFilter.field,
             type: 'STRING',
           },
           {
-            ...filter,
+            ...stateFilter,
             field: 'value',
           },
         ] as FilterItem[])
       : []),
-    ...(filter && filter.field === 'service_key' ? [filter] : []),
   ];
 
-  const query = `SELECT DISTINCT service_key
+  const hasVqueues = this.features.has('vqueues');
+  const projection = hasVqueues ? 'service_key, scope' : 'service_key';
+
+  const query = `SELECT DISTINCT ${projection}
     FROM state ${convertFilters(filtersWithService)}
     LIMIT 4500`;
 
-  const resultsPromise: Promise<{
-    keys: string[];
-  }> = this.query(query).then(async ({ rows }) => ({
-    keys: rows.map(({ service_key }) => service_key),
-  }));
+  const { rows } = await this.query(query);
 
-  const [{ keys }] = await Promise.all([resultsPromise]);
+  const body = hasVqueues
+    ? {
+        items: rows.map((row) => ({
+          key: row.service_key,
+          ...(row.scope != null ? { scope: row.scope } : {}),
+        })),
+      }
+    : { keys: rows.map((row) => row.service_key) };
 
-  return new Response(JSON.stringify({ keys }), {
+  return new Response(JSON.stringify(body), {
     status: 200,
     headers: { 'Content-Type': 'application/json' },
   });

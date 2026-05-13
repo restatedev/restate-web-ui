@@ -2,7 +2,12 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
 import { UnauthorizedError, RestateError } from '@restate/util/errors';
 import { query } from '@restate/data-access/query';
-import { getAuthToken, getRestateVersion } from '@restate/util/api-config';
+import {
+  awaitMeta,
+  getAuthToken,
+  getFeatures,
+  getRestateVersion,
+} from '@restate/util/api-config';
 import type { paths } from '@restate/data-access/admin-api-spec';
 import { UseMutationOptions, UseQueryOptions } from '@tanstack/react-query';
 import type {
@@ -76,9 +81,21 @@ const authMiddleware: Middleware = {
     if (token) {
       request.headers.set('Authorization', `Bearer ${token}`);
     }
+
+    // Only `/query/*` consumes the meta headers (see query.ts handlers).
+    // Hold those requests until meta is available; everything else proceeds
+    // immediately so the rest of the UI isn't slowed down on cold load.
+    if (new URL(request.url).pathname.includes('/query/')) {
+      await awaitMeta(request.signal);
+    }
+
     const version = getRestateVersion();
     if (version) {
       request.headers.set('x-restate-version', version);
+    }
+    const features = getFeatures();
+    if (features && features.size > 0) {
+      request.headers.set('x-restate-features', [...features].join(','));
     }
     return request;
   },

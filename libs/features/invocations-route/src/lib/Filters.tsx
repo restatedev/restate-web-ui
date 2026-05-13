@@ -20,17 +20,25 @@ import {
   QueryClauseType,
   useNewQueryId,
 } from '@restate/ui/query-builder';
-import { PropsWithChildren, useEffect, useMemo, useState } from 'react';
+import {
+  PropsWithChildren,
+  RefObject,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { Form } from 'react-router';
 
 export function ClauseChip({
   item,
   onRemove,
   onUpdate,
+  formRef,
 }: {
   item: QueryClause<QueryClauseType>;
   onRemove?: VoidFunction;
   onUpdate?: (item: QueryClause<QueryClauseType>) => void;
+  formRef?: RefObject<HTMLFormElement | null>;
 }) {
   const isNew = useNewQueryId() === item.id;
   return (
@@ -38,6 +46,7 @@ export function ClauseChip({
       clause={item}
       onRemove={onRemove}
       onUpdate={onUpdate}
+      onClose={() => setTimeout(() => formRef?.current?.requestSubmit(), 0)}
       isNew={isNew}
     >
       <Button
@@ -81,11 +90,13 @@ function EditQueryTrigger({
   onUpdate,
   clause,
   isNew,
+  onClose,
 }: PropsWithChildren<{
   clause: QueryClause<QueryClauseType>;
   onRemove?: VoidFunction;
   onUpdate?: (item: QueryClause<QueryClauseType>) => void;
   isNew?: boolean;
+  onClose?: VoidFunction;
 }>) {
   const selectedOperations = useMemo(
     () => (clause.value.operation ? [clause.value.operation] : []),
@@ -112,13 +123,33 @@ function EditQueryTrigger({
   );
 
   return (
-    <Dropdown isOpen={isOpen} onOpenChange={setIsOpen}>
+    <Dropdown
+      isOpen={isOpen}
+      onOpenChange={(open) => {
+        if (!open && isOpen) {
+          const isEmptyAnySelection =
+            clause.type === 'STRING_LIST' &&
+            (clause.value.operation === 'IN' ||
+              clause.value.operation === 'NOT_IN');
+          if (!clause.isValid && !isEmptyAnySelection) {
+            onRemove?.();
+          }
+          onClose?.();
+        }
+        setIsOpen(open);
+      }}
+    >
       <DropdownTrigger>{children}</DropdownTrigger>
       <DropdownPopover placement="top" className="min-w-xs!">
         <Form
           onSubmit={(e) => {
             e.preventDefault();
             setIsOpen(false);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Backspace') {
+              e.stopPropagation();
+            }
           }}
         >
           <DropdownSection title={title}>
@@ -189,29 +220,35 @@ function EditQueryTrigger({
           <DropdownSection>
             <ValueSelector clause={clause} onUpdate={onUpdate} />
           </DropdownSection>
-          <DropdownMenu
-            onSelect={() => {
-              if (
-                clause.id === 'status' ||
-                clause.id === 'target_service_name'
-              ) {
-                const newClause = new QueryClause(
-                  { ...clause.schema, options: clause.options },
-                  {
-                    ...clause.value,
-                    operation: 'IN',
-                    value: [],
-                  },
-                );
-                onUpdate?.(newClause);
-              } else {
-                onRemove?.();
-              }
-            }}
-            autoFocus={false}
-          >
-            <DropdownItem destructive>Remove</DropdownItem>
-          </DropdownMenu>
+          <div className="mt-1 flex items-center justify-between gap-2 px-2 pb-2">
+            <Button
+              variant="destructive"
+              className="border-transparent bg-transparent bg-none px-4 py-1 text-red-700 shadow-none drop-shadow-none hover:bg-linear-to-b hover:text-white hover:drop-shadow-xs pressed:bg-linear-to-b pressed:text-white pressed:drop-shadow-xs"
+              onClick={() => {
+                if (
+                  clause.id === 'status' ||
+                  clause.id === 'target_service_name'
+                ) {
+                  const newClause = new QueryClause(
+                    { ...clause.schema, options: clause.options },
+                    {
+                      ...clause.value,
+                      operation: 'IN',
+                      value: [],
+                    },
+                  );
+                  onUpdate?.(newClause);
+                } else {
+                  onRemove?.();
+                }
+              }}
+            >
+              Remove
+            </Button>
+            <Button type="submit" variant="primary" className="px-4 py-1">
+              Done
+            </Button>
+          </div>
         </Form>
       </DropdownPopover>
     </Dropdown>
@@ -265,6 +302,7 @@ function ValueSelector({
         <DropdownMenu
           autoFocus
           selectable
+          shouldCloseOnSelect={false}
           selectedItems={
             typeof clause.value.value === 'string' ? [clause.value.value] : []
           }
@@ -346,6 +384,7 @@ function ValueSelector({
         />
         <DropdownMenu
           autoFocus
+          shouldCloseOnSelect={false}
           onSelect={(value) => {
             const multiplier: Record<string, number> = {
               '1m': 1,

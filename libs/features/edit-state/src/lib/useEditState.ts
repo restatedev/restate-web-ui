@@ -31,6 +31,7 @@ function isValidJSON(value: unknown) {
 export function useEditState(
   service?: string,
   objectKey?: string,
+  scope?: string,
   {
     enabled,
     ...options
@@ -57,6 +58,7 @@ export function useEditState(
   const queryOptions = getServiceKeyStateQueryOptions(baseUrl, {
     service: String(service),
     key: String(objectKey),
+    scope,
   });
   const query = useQuery({
     ...queryOptions,
@@ -125,6 +127,7 @@ export function useEditState(
           parameters: { path: { service: String(service) } },
           body: {
             object_key: String(objectKey),
+            ...(scope !== undefined && { scope }),
             ...(variables.partial && { version }),
             new_state: {
               ...(variables.partial &&
@@ -155,6 +158,7 @@ export function useEditState(
       query,
       queryClient,
       resolvedCodecOptions,
+      scope,
       service,
       version,
     ],

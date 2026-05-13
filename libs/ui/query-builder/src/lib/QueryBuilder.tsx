@@ -3,6 +3,7 @@ import {
   createContext,
   PropsWithChildren,
   ReactNode,
+  RefObject,
   use,
   useCallback,
   useEffect,
@@ -35,7 +36,6 @@ const QueryBuilderContext = createContext<{
   multiple: false,
 });
 
-// TODO: update state if schema changes
 export function useQueryBuilder(
   initialClauses: QueryClause<QueryClauseType>[] = [],
   isLoading?: boolean,
@@ -56,6 +56,10 @@ export function useQueryBuilder(
     };
   });
 
+  const initialClausesSignature = initialClauses
+    .map((c) => `${c.id}:${String(c)}`)
+    .join('|');
+
   useEffect(() => {
     if (!isLoading) {
       ref.current.selectedClauses.remove(
@@ -65,7 +69,7 @@ export function useQueryBuilder(
         ref.current.selectedClauses.insert(index, item);
       });
     }
-  }, [isLoading]);
+  }, [isLoading, initialClausesSignature]);
 
   return selectedClauses;
 }
@@ -109,6 +113,7 @@ export function AddQueryTrigger({
     item: QueryClause<QueryClauseType>;
     onRemove?: VoidFunction;
     onUpdate?: (item: QueryClause<QueryClauseType>) => void;
+    formRef?: RefObject<HTMLFormElement | null>;
   }) => ReactNode;
   className?: string;
   prefix?: ReactNode;

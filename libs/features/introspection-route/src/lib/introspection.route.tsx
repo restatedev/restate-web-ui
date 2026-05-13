@@ -1,7 +1,7 @@
 import { useSqlQuery } from '@restate/data-access/admin-api-hooks';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
-import { PanelTable, PanelTableColumn, Row } from '@restate/ui/table';
+import { PanelTable, PanelTableColumn } from '@restate/ui/table';
 import { formatDurations } from '@restate/util/intl';
 import {
   SnapshotTimeProvider,
@@ -182,17 +182,10 @@ function Component() {
                   </div>
                 )
               }
-              renderRow={(item) => (
-                <Row
-                  id={item.id}
-                  columns={panelColumns}
-                  dependencies={[panelColumns]}
-                  className="bg-transparent [content-visibility:auto] [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"
-                >
-                  {({ id }) => (
-                    <IntrospectionCell col={id} row={item.row} key={id} />
-                  )}
-                </Row>
+              rowClassName="bg-transparent [content-visibility:auto] [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"
+              rowDependencies={[panelColumns]}
+              renderCell={(item, { id }) => (
+                <IntrospectionCell col={id} row={item.row} key={id} />
               )}
             />
             <Footnote

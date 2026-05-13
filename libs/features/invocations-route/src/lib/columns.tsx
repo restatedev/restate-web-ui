@@ -2,6 +2,7 @@ import { DropdownMenuSelection } from '@restate/ui/dropdown';
 import { useMemo, useCallback, useState } from 'react';
 import type { Key } from 'react-aria';
 import { useSearchParams } from 'react-router';
+import { getFeatures } from '@restate/util/api-config';
 
 export const COLUMN_QUERY_PREFIX = 'column';
 
@@ -31,6 +32,7 @@ const COLUMNS_KEYS = [
   'journal_retention',
   'actions',
   'restarted_from',
+  'scope',
 ] as const;
 export type ColumnKey = (typeof COLUMNS_KEYS)[number];
 
@@ -60,7 +62,20 @@ export const COLUMN_NAMES: Record<ColumnKey, string> = {
   completion_retention: 'Completion retention',
   journal_retention: 'Journal retention',
   restarted_from: 'Restarted from',
+  scope: 'Scope',
 };
+
+const FEATURE_GATED_COLUMNS: Partial<Record<ColumnKey, string>> = {
+  scope: 'vqueues',
+};
+
+function isColumnAvailable(
+  col: ColumnKey,
+  features: Set<string> | undefined,
+): boolean {
+  const required = FEATURE_GATED_COLUMNS[col];
+  return !required || (features?.has(required) ?? false);
+}
 
 const SORT_ORDER: Record<ColumnKey, number> = Object.entries(
   COLUMNS_KEYS,
@@ -109,16 +124,30 @@ export function useColumns() {
   const [selectedColumns, _setSelectedColumns] = useState<ColumnKey[]>(
     () => searchParams.getAll(COLUMN_QUERY_PREFIX) as ColumnKey[],
   );
+  const features = getFeatures();
+
+  const availableColumnNames = useMemo<
+    Partial<Record<ColumnKey, string>>
+  >(() => {
+    return Object.fromEntries(
+      (Object.entries(COLUMN_NAMES) as [ColumnKey, string][]).filter(([key]) =>
+        isColumnAvailable(key, features),
+      ),
+    ) as Partial<Record<ColumnKey, string>>;
+  }, [features]);
 
   const sortedColumnsList = useMemo(() => {
-    return [...Array.from(selectedColumns).sort(sortColumns), 'actions'].map(
+    const visible = selectedColumns.filter((col) =>
+      isColumnAvailable(col, features),
+    );
+    return [...Array.from(visible).sort(sortColumns), 'actions'].map(
       (id, index) => ({
         name: COLUMN_NAMES[id as ColumnKey],
         id,
         isRowHeader: index === 0,
       }),
     ) as { id: ColumnKey; name: string; isRowHeader: boolean }[];
-  }, [selectedColumns]);
+  }, [selectedColumns, features]);
 
   const setSelectedColumns = useCallback(
     (keys: DropdownMenuSelection, updateUrl = true) => {
@@ -138,5 +167,10 @@ export function useColumns() {
     [setSearchParams],
   );
 
-  return { selectedColumns, setSelectedColumns, sortedColumnsList };
+  return {
+    selectedColumns,
+    setSelectedColumns,
+    sortedColumnsList,
+    availableColumnNames,
+  };
 }

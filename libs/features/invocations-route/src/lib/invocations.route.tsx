@@ -1,5 +1,5 @@
 import { Button, SubmitButton } from '@restate/ui/button';
-import { PanelTable, PanelTableColumn, Row } from '@restate/ui/table';
+import { PanelTable, PanelTableColumn } from '@restate/ui/table';
 import {
   Dropdown,
   DropdownItem,
@@ -10,7 +10,6 @@ import {
 } from '@restate/ui/dropdown';
 import { Icon, IconName } from '@restate/ui/icons';
 import {
-  COLUMN_NAMES,
   COLUMN_QUERY_PREFIX,
   ColumnKey,
   isColumnValid,
@@ -116,8 +115,12 @@ function saveQueryForNextVisit(savedSearchParams: URLSearchParams) {
 const PAGE_SIZE = 30;
 function Component() {
   const [searchParams] = useSearchParams();
-  const { selectedColumns, setSelectedColumns, sortedColumnsList } =
-    useColumns();
+  const {
+    selectedColumns,
+    setSelectedColumns,
+    sortedColumnsList,
+    availableColumnNames,
+  } = useColumns();
   const submitRef = useSubmitShortcut();
   const { schema, isLoading, listInvocationsParameters } =
     useListInvocationsParameters();
@@ -265,7 +268,7 @@ function Component() {
                     selectedItems={selectedColumns}
                     onSelect={setSelectedColumns}
                   >
-                    {Object.entries(COLUMN_NAMES)
+                    {Object.entries(availableColumnNames)
                       .filter(([key]) => key !== 'actions')
                       .map(([key, name]) => (
                         <DropdownItem key={key} value={key}>
@@ -482,21 +485,14 @@ function Component() {
                     </h3>
                   </div>
                 }
-                renderRow={(row) => (
-                  <Row
-                    id={row.id}
-                    columns={panelColumns}
-                    className="bg-transparent [content-visibility:auto] [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"
-                  >
-                    {({ id }) => (
-                      <InvocationCell
-                        key={id}
-                        column={id}
-                        invocation={row}
-                        isVisible
-                      />
-                    )}
-                  </Row>
+                rowClassName="bg-transparent [content-visibility:auto] [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"
+                renderCell={(row, { id }) => (
+                  <InvocationCell
+                    key={id}
+                    column={id}
+                    invocation={row}
+                    isVisible
+                  />
                 )}
               />
               <Footnote data={data} isFetching={isFetching} key={dataUpdate}>
@@ -629,7 +625,7 @@ function InvocationsForm({
         </AddQueryTrigger>
       </QueryBuilder>
       <div className="absolute right-0 bottom-0 left-0 flex h-8 w-full overflow-hidden rounded-b-xl mask-[linear-gradient(to_right,transparent_0,black_6px,black_calc(100%-192px),transparent_calc(100%-100px))]">
-        <div className="flex items-center gap-2 overflow-auto pb-0.5 pl-1.5 [scrollbar-width:thin]">
+        <div className="flex [scrollbar-width:thin] items-center gap-2 overflow-auto pb-0.5 pl-1.5">
           <div className="ml-1 flex h-full shrink-0 items-center text-xs text-white/70">
             Quick Filters:
           </div>
