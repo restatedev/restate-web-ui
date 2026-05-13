@@ -64,9 +64,7 @@ export function sysInvocationListColumns(
     : SYS_INVOCATION_LIST_COLUMNS;
 }
 
-export function sysInvocationColumns(
-  features: Set<string>,
-): readonly string[] {
+export function sysInvocationColumns(features: Set<string>): readonly string[] {
   return features.has('vqueues')
     ? [...SYS_INVOCATION_COLUMNS, 'scope']
     : SYS_INVOCATION_COLUMNS;

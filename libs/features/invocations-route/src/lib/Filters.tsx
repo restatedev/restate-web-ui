@@ -223,7 +223,7 @@ function EditQueryTrigger({
           <div className="mt-1 flex items-center justify-between gap-2 px-2 pb-2">
             <Button
               variant="destructive"
-              className="border-transparent bg-none bg-transparent px-4 py-1 text-red-700 shadow-none drop-shadow-none hover:bg-linear-to-b hover:text-white hover:drop-shadow-xs pressed:bg-linear-to-b pressed:text-white pressed:drop-shadow-xs"
+              className="border-transparent bg-transparent bg-none px-4 py-1 text-red-700 shadow-none drop-shadow-none hover:bg-linear-to-b hover:text-white hover:drop-shadow-xs pressed:bg-linear-to-b pressed:text-white pressed:drop-shadow-xs"
               onClick={() => {
                 if (
                   clause.id === 'status' ||

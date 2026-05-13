@@ -54,20 +54,19 @@ function DefaultMenuTrigger() {
   return null;
 }
 
-export interface MultiSelectProps<T extends object>
-  extends Omit<
-    RACComboBoxProps<T>,
-    | 'children'
-    | 'validate'
-    | 'allowsEmptyCollection'
-    | 'inputValue'
-    | 'selectedKey'
-    | 'inputValue'
-    | 'className'
-    | 'value'
-    | 'onSelectionChange'
-    | 'onInputChange'
-  > {
+export interface MultiSelectProps<T extends object> extends Omit<
+  RACComboBoxProps<T>,
+  | 'children'
+  | 'validate'
+  | 'allowsEmptyCollection'
+  | 'inputValue'
+  | 'selectedKey'
+  | 'inputValue'
+  | 'className'
+  | 'value'
+  | 'onSelectionChange'
+  | 'onInputChange'
+> {
   items: Array<T>;
   selectedList: ListData<T>;
   className?: string;

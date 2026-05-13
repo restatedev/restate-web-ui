@@ -70,13 +70,13 @@ const styles = tv({
       'pointer-events-none absolute inset-0 rounded-xl border border-gray-200 bg-linear-to-b from-gray-200/70 to-gray-100/85 shadow-[inset_0_2px_0_0_--theme(--color-white/95%),0_2px_5px_-1px_--theme(--color-zinc-800/8%),0_4px_10px_-3px_--theme(--color-zinc-800/6%)] backdrop-blur-3xl backdrop-saturate-200',
     stickyHeaderContent: 'relative h-full w-full overflow-hidden',
     stickyHeaderScroll:
-      'relative h-full overflow-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+      'relative h-full [scrollbar-width:none] overflow-auto [&::-webkit-scrollbar]:hidden',
     stickyHeaderTable: 'w-full border-separate border-spacing-0',
     stickyHeaderInner:
       'static z-auto bg-transparent drop-shadow-none backdrop-blur-none backdrop-saturate-100 supports-[-moz-appearance:none]:bg-transparent [&_.checkbox]:border-gray-200! [&_.checkbox]:shadow-[inset_0_0.5px_0.5px_0px_rgba(0,0,0,0.08)]!',
     stickyHeaderTrailingResizerHidden:
       '[&_th:nth-last-child(2)_[data-resizable-direction]]:invisible',
-    dataTableScroll: 'relative overflow-auto [scrollbar-width:thin]',
+    dataTableScroll: 'relative [scrollbar-width:thin] overflow-auto',
     dataTableInner: 'w-full border-separate border-spacing-0',
     dataTableSpacerHeader:
       'invisible static z-auto bg-transparent drop-shadow-none backdrop-blur-none backdrop-saturate-100 supports-[-moz-appearance:none]:bg-transparent [&_th]:h-9 [&_th]:overflow-hidden [&_th]:border-0 [&_th]:p-0',

@@ -625,7 +625,7 @@ function InvocationsForm({
         </AddQueryTrigger>
       </QueryBuilder>
       <div className="absolute right-0 bottom-0 left-0 flex h-8 w-full overflow-hidden rounded-b-xl mask-[linear-gradient(to_right,transparent_0,black_6px,black_calc(100%-192px),transparent_calc(100%-100px))]">
-        <div className="flex items-center gap-2 overflow-auto pb-0.5 pl-1.5 [scrollbar-width:thin]">
+        <div className="flex [scrollbar-width:thin] items-center gap-2 overflow-auto pb-0.5 pl-1.5">
           <div className="ml-1 flex h-full shrink-0 items-center text-xs text-white/70">
             Quick Filters:
           </div>
