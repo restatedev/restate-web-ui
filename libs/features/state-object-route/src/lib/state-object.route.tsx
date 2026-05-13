@@ -237,10 +237,11 @@ function Component() {
   });
 
   const allItems = useMemo<{ key: string; scope?: string }[]>(() => {
+    if (error) return [];
     if (!serviceKeysData) return [];
     if ('items' in serviceKeysData) return serviceKeysData.items;
     return serviceKeysData.keys.map((key) => ({ key }));
-  }, [serviceKeysData]);
+  }, [serviceKeysData, error]);
   const [pageIndex, _setPageIndex] = useState(0);
   const currentPageItems = useMemo(() => {
     return allItems
@@ -263,6 +264,7 @@ function Component() {
   });
 
   const flattenedData = useMemo(() => {
+    if (listObjects.error) return [];
     return (
       listObjects.data?.objects.map((obj) => ({
         ...obj,
@@ -272,23 +274,25 @@ function Component() {
         ),
       })) ?? []
     );
-  }, [listObjects.data]);
+  }, [listObjects.data, listObjects.error]);
 
   useEffect(() => {
-    if (!isFetching) {
-      const keys =
-        listObjects.data?.objects
-          .map((obj) => obj.state.map(({ name }) => name))
-          .flat() ?? [];
-      setKeysSet(
-        (s) =>
-          new Set(
-            [
-              ...Array.from(s.values()).filter((v) => keys.includes(v)),
-              ...keys,
-            ].sort(),
-          ),
-      );
+    if (!isFetching && listObjects.data !== undefined) {
+      const keys = listObjects.data.objects
+        .map((obj) => obj.state.map(({ name }) => name))
+        .flat();
+      setKeysSet((s) => {
+        const next = new Set(
+          [
+            ...Array.from(s.values()).filter((v) => keys.includes(v)),
+            ...keys,
+          ].sort(),
+        );
+        if (next.size === s.size && [...next].every((v) => s.has(v))) {
+          return s;
+        }
+        return next;
+      });
     }
   }, [listObjects.data, isFetching]);
 
