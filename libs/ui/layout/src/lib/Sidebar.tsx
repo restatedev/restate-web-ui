@@ -2,10 +2,9 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useState,
-  useSyncExternalStore,
   type PropsWithChildren,
-  type Ref,
 } from 'react';
 import { createPortal } from 'react-dom';
 import { Button } from '@restate/ui/button';
@@ -17,48 +16,32 @@ const SIDEBAR_NAV_ID = 'restate-sidebar-nav';
 const SIDEBAR_FOOTER_ID = 'restate-sidebar-footer';
 
 const STORAGE_KEY = 'restate.sidebar.collapsed';
-const PERSIST_EVENT = 'restate:sidebar-collapsed-change';
-const COLLAPSED_THRESHOLD_PX = 128;
+const FORCE_COLLAPSED_QUERY = '(max-width: 79.99rem)';
 
 function readPersistedCollapsed(): boolean {
   return window.localStorage.getItem(STORAGE_KEY) === 'true';
 }
 
-function getServerCollapsed(): boolean {
-  return false;
-}
-
-function subscribePersistedCollapsed(cb: () => void) {
-  window.addEventListener(PERSIST_EVENT, cb);
-  window.addEventListener('storage', cb);
-  return () => {
-    window.removeEventListener(PERSIST_EVENT, cb);
-    window.removeEventListener('storage', cb);
-  };
-}
-
 function writePersistedCollapsed(collapsed: boolean) {
   window.localStorage.setItem(STORAGE_KEY, String(collapsed));
-  window.dispatchEvent(new Event(PERSIST_EVENT));
+}
+
+function computeCollapsed(): boolean {
+  if (window.matchMedia(FORCE_COLLAPSED_QUERY).matches) return true;
+  return readPersistedCollapsed();
 }
 
 interface SidebarContextValue {
-  userCollapsed: boolean;
-  isDrawerOpen: boolean;
-  isCollapsed: boolean;
+  isCollapsed: boolean | undefined;
   toggle: () => void;
-  asideRef: Ref<HTMLElement>;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 const noop = () => {};
 
 const SidebarContext = createContext<SidebarContextValue>({
-  userCollapsed: false,
-  isDrawerOpen: false,
-  isCollapsed: false,
+  isCollapsed: undefined,
   toggle: noop,
-  asideRef: null,
 });
 
 export function useSidebar(): SidebarContextValue {
@@ -66,51 +49,43 @@ export function useSidebar(): SidebarContextValue {
 }
 
 export function SidebarProvider({ children }: PropsWithChildren) {
-  const userCollapsed = useSyncExternalStore(
-    subscribePersistedCollapsed,
-    readPersistedCollapsed,
-    getServerCollapsed,
+  const [isCollapsed, setIsCollapsed] = useState<boolean | undefined>(
+    undefined,
   );
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
 
-  const asideRef = useCallback((node: HTMLElement | null) => {
-    if (!node) return;
-    const update = () => {
-      const rect = node.getBoundingClientRect();
-      setIsCollapsed(rect.right < COLLAPSED_THRESHOLD_PX);
+  useEffect(() => {
+    setIsCollapsed(computeCollapsed());
+
+    const mql = window.matchMedia(FORCE_COLLAPSED_QUERY);
+    const onResize = () => {
+      if (mql.matches) {
+        setIsCollapsed(true);
+        writePersistedCollapsed(true);
+      }
     };
-    update();
-    const ro = new ResizeObserver(update);
-    ro.observe(node);
-    node.addEventListener('transitionend', update);
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY && !mql.matches) {
+        setIsCollapsed(readPersistedCollapsed());
+      }
+    };
+    mql.addEventListener('change', onResize);
+    window.addEventListener('storage', onStorage);
     return () => {
-      ro.disconnect();
-      node.removeEventListener('transitionend', update);
+      mql.removeEventListener('change', onResize);
+      window.removeEventListener('storage', onStorage);
     };
   }, []);
 
   const toggle = useCallback(() => {
-    if (
-      typeof window !== 'undefined' &&
-      window.matchMedia('(max-width: 47.99rem)').matches
-    ) {
-      setIsDrawerOpen((open) => !open);
-    } else {
-      writePersistedCollapsed(!readPersistedCollapsed());
-    }
+    setIsCollapsed((c) => {
+      const next = !c;
+      writePersistedCollapsed(next);
+      return next;
+    });
   }, []);
 
   return (
-    <SidebarContext.Provider
-      value={{
-        userCollapsed,
-        isDrawerOpen,
-        isCollapsed,
-        toggle,
-        asideRef,
-      }}
-    >
+    <SidebarContext.Provider value={{ isCollapsed, toggle }}>
       {children}
     </SidebarContext.Provider>
   );
@@ -119,32 +94,29 @@ export function SidebarProvider({ children }: PropsWithChildren) {
 const sidebarStyles = tv({
   slots: {
     aside:
-      'peer @container/sidebar sticky top-0 z-50 -ml-[16rem] flex h-screen w-[16rem] shrink-0 flex-col border-r bg-gray-200/50 shadow-[inset_-1px_0px_0px_0px_rgba(0,0,0,0.03)] backdrop-blur-xl backdrop-saturate-200 transition-[width,margin] duration-300 ease-in-out max-md:data-[drawer-open=true]:ml-0 md:ml-0 md:w-[4.25rem] xl:w-[16rem] xl:data-[user-collapsed=true]:w-[4.25rem]',
+      'peer group/sidebar @container/sidebar sticky top-0 z-50 flex h-screen w-[16rem] -ml-[16rem] shrink-0 flex-col border-r bg-gray-200/50 shadow-[inset_-1px_0px_0px_0px_rgba(0,0,0,0.03)] backdrop-blur-xl backdrop-saturate-200 transition-[width,margin] duration-300 ease-in-out md:ml-0 md:w-[4.25rem] xl:w-[16rem] max-md:data-[collapsed=false]:ml-0 md:data-[collapsed=false]:w-[16rem] xl:data-[collapsed=true]:w-[4.25rem]',
     asideInner: 'relative flex h-full w-full flex-col gap-2 overflow-hidden',
     headerBar:
-      'flex flex-none items-stretch gap-1 px-4.5 pt-3 @max-[8rem]/sidebar:px-2',
+      'flex flex-none items-stretch gap-1 px-4.5 pt-3 max-xl:px-2 group-data-[collapsed=true]/sidebar:px-2 group-data-[collapsed=false]/sidebar:px-4.5',
     headerCard:
-      'flex min-w-0 flex-1 items-start gap-2 py-1 @max-[8rem]/sidebar:items-center @max-[8rem]/sidebar:justify-center',
+      'flex min-w-0 flex-1 items-start gap-2 py-1 max-xl:items-center max-xl:justify-center group-data-[collapsed=true]/sidebar:items-center group-data-[collapsed=true]/sidebar:justify-center group-data-[collapsed=false]/sidebar:items-start group-data-[collapsed=false]/sidebar:justify-start',
     navSlot:
-      'flex min-h-0 flex-1 flex-col gap-2 overflow-x-hidden overflow-y-auto px-3 py-2 [scrollbar-width:thin] @max-[8rem]/sidebar:px-2',
+      'flex min-h-0 flex-1 flex-col gap-2 overflow-x-hidden overflow-y-auto px-3 py-2 [scrollbar-width:thin] max-xl:px-2 group-data-[collapsed=true]/sidebar:px-2 group-data-[collapsed=false]/sidebar:px-3',
     footerSlot:
-      'flex flex-none flex-col px-3 pt-1 pb-3 @max-[8rem]/sidebar:px-2',
+      'flex flex-none flex-col px-3 pt-1 pb-3 max-xl:px-2 group-data-[collapsed=true]/sidebar:px-2 group-data-[collapsed=false]/sidebar:px-3',
     toggleButton:
-      'fixed top-4 left-3 z-50 flex h-9 w-9 items-center justify-center rounded-full border bg-white p-0 text-gray-500 shadow-xs transition-[left,transform] duration-300 ease-in-out hover:bg-gray-50 hover:text-gray-700 max-md:peer-data-[drawer-open=true]:left-[16rem] max-md:peer-data-[drawer-open=true]:-translate-x-1/2 max-md:peer-data-[drawer-open=true]:rotate-180 md:left-[4.25rem] md:h-6 md:w-6 md:-translate-x-1/2 xl:left-[16rem] xl:rotate-180 xl:peer-data-[user-collapsed=true]:left-[4.25rem] xl:peer-data-[user-collapsed=true]:rotate-0',
+      'fixed top-4 left-3 z-50 flex h-9 w-9 items-center justify-center rounded-full border bg-white p-0 text-gray-500 shadow-xs transition-[left,transform] duration-300 ease-in-out hover:bg-gray-50 hover:text-gray-700 md:left-[4.25rem] md:h-6 md:w-6 md:-translate-x-1/2 xl:left-[16rem] xl:rotate-180 peer-data-[collapsed=false]:left-[16rem] peer-data-[collapsed=false]:-translate-x-1/2 peer-data-[collapsed=false]:rotate-180 xl:peer-data-[collapsed=true]:left-[4.25rem] xl:peer-data-[collapsed=true]:rotate-0',
   },
 });
 
 export function Sidebar() {
-  const { userCollapsed, isDrawerOpen, isCollapsed, toggle, asideRef } =
-    useSidebar();
+  const { isCollapsed, toggle } = useSidebar();
   const s = sidebarStyles();
 
   return (
     <>
       <aside
-        ref={asideRef}
-        data-user-collapsed={String(userCollapsed)}
-        data-drawer-open={String(isDrawerOpen)}
+        data-collapsed={isCollapsed === undefined ? undefined : String(isCollapsed)}
         className={s.aside()}
       >
         <div className={s.asideInner()}>

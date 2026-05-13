@@ -64,14 +64,14 @@ function useSidebarLocation(): SidebarLocation {
 const navStyles = tv({
   slots: {
     row: 'group/nav-item relative isolate flex flex-col gap-0.5',
-    link: 'flex w-full items-center gap-2 rounded-xl border border-transparent p-0.5 text-sm no-underline outline-offset-2 outline-blue-600 transition focus-visible:outline-2 @max-[8rem]/sidebar:mx-auto @max-[8rem]/sidebar:w-fit @max-[8rem]/sidebar:justify-center @max-[8rem]/sidebar:p-0',
+    link: 'flex w-full items-center gap-2 rounded-xl border border-transparent p-0.5 text-sm no-underline outline-offset-2 outline-blue-600 transition focus-visible:outline-2 max-xl:mx-auto max-xl:w-fit max-xl:justify-center max-xl:p-0 group-data-[collapsed=true]/sidebar:mx-auto group-data-[collapsed=true]/sidebar:w-fit group-data-[collapsed=true]/sidebar:justify-center group-data-[collapsed=true]/sidebar:p-0 group-data-[collapsed=false]/sidebar:mx-0 group-data-[collapsed=false]/sidebar:w-full group-data-[collapsed=false]/sidebar:justify-start group-data-[collapsed=false]/sidebar:p-0.5',
     iconWrap:
       'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-transparent',
     icon: 'h-4.5 w-4.5 shrink-0 text-current',
     label:
-      'min-w-0 flex-auto truncate pr-1 text-left @max-[8rem]/sidebar:hidden',
+      'min-w-0 flex-auto truncate pr-1 text-left max-xl:hidden group-data-[collapsed=true]/sidebar:hidden group-data-[collapsed=false]/sidebar:block',
     subWrap:
-      'relative ml-[1.0625rem] flex flex-col gap-0 border-l border-zinc-800/10 pl-2 @max-[8rem]/sidebar:hidden',
+      'relative ml-[1.0625rem] flex flex-col gap-0 border-l border-zinc-800/10 pl-2 max-xl:hidden group-data-[collapsed=true]/sidebar:hidden group-data-[collapsed=false]/sidebar:flex',
     subRow: 'flex items-center',
     subLink:
       'flex min-w-0 flex-auto items-center rounded-lg px-2.5 py-1 text-0.5xs no-underline outline-offset-2 outline-blue-600 transition focus-visible:outline-2',
