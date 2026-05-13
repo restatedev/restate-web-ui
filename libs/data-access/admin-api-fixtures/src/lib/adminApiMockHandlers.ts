@@ -188,6 +188,7 @@ const versionHandler = http.get<
     max_admin_api_version: 1,
     min_admin_api_version: 1,
     ingress_endpoint: 'http://localhost:8080',
+    features: {},
   });
 });
 
