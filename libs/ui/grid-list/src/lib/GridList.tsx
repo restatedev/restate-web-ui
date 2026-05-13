@@ -39,7 +39,7 @@ const sortIconStyles = tv({
 });
 
 const listStyles = tv({
-  base: 'gap-2 px-2 pt-1 pb-2 outline-none [scrollbar-gutter:stable] [scrollbar-width:thin]',
+  base: 'gap-2 px-2 pt-1 pb-2 outline-none ',
   variants: {
     virtualized: {
       true: 'block',
