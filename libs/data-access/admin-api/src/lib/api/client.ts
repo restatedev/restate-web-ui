@@ -102,10 +102,9 @@ const authMiddleware: Middleware = {
 };
 
 const errorMiddleware: Middleware = {
-  async onResponse({ response, request }) {
+  async onResponse({ response }) {
     if (!response.ok) {
       if (response.status === 401) {
-        // TODO: change import
         throw new UnauthorizedError();
       }
       const body:
@@ -132,12 +131,6 @@ const errorMiddleware: Middleware = {
         undefined,
         response.status,
       );
-    }
-    if (response.ok && request.url.endsWith('health')) {
-      return new Response(JSON.stringify({}), {
-        ...response,
-        headers: { ...response.headers, 'content-type': 'application/json' },
-      });
     }
     return response;
   },
@@ -348,14 +341,10 @@ export function adminApi<
             },
             body: init.body,
             params: init.parameters,
-            ...(init.parseAs
-              ? { parseAs: init.parseAs }
-              : path === '/health'
-                ? { parseAs: 'stream' as const }
-                : {}),
+            ...(init.parseAs && { parseAs: init.parseAs }),
           },
         );
-        return data;
+        return data ?? null;
       }) as any,
       refetchOnMount: true,
     };
