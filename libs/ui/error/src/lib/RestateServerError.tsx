@@ -63,7 +63,7 @@ const outputStyles = tv({
 });
 
 const terminalStyles = tv({
-  base: 'relative max-h-80 min-w-0 flex-auto overflow-auto rounded-xl border bg-gray-200/50 p-3 font-mono text-xs [overflow-wrap:anywhere] mix-blend-multiply shadow-[inset_0_0.5px_0.5px_0px_rgba(0,0,0,0.08)] [scrollbar-gutter:stable]',
+  base: 'relative max-h-80 min-w-0 flex-auto [scrollbar-gutter:stable] overflow-auto rounded-xl border bg-gray-200/50 p-3 font-mono text-xs [overflow-wrap:anywhere] mix-blend-multiply shadow-[inset_0_0.5px_0.5px_0px_rgba(0,0,0,0.08)]',
   variants: {
     isTransient: {
       true: 'text-orange-700',
@@ -258,7 +258,7 @@ export function RestateServerError({
         <div className={terminalStyles({ isTransient })}>
           <div
             className={terminalMessageStyles({
-              preformatted: message.includes('\n'),
+              preformatted: message.includes(' '),
             })}
           >
             {message}
