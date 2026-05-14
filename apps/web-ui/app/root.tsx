@@ -184,7 +184,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
-      className="h-full [scrollbar-gutter:stable] bg-gray-100 dark:bg-gray-900"
+      className="h-full scrollbar-gutter-stable overflow-y-scroll bg-gray-100 dark:bg-gray-900"
     >
       <head>
         <meta charSet="utf-8" />
