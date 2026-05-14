@@ -28,12 +28,23 @@ const overlayStyles = tv({
   base: '',
   variants: {
     appearance: {
-      ghost:
-        'opacity-0 transition-opacity duration-300 group-hover/server:opacity-100',
+      ghost: '',
       solid: '',
     },
+    alwaysVisible: {
+      true: '',
+      false: '',
+    },
   },
-  defaultVariants: { appearance: 'ghost' },
+  compoundVariants: [
+    {
+      appearance: 'ghost',
+      alwaysVisible: false,
+      class:
+        'opacity-0 transition-opacity duration-300 group-hover/server:opacity-100',
+    },
+  ],
+  defaultVariants: { appearance: 'ghost', alwaysVisible: false },
 });
 
 const serverIconStyles = tv({
@@ -80,6 +91,7 @@ export function RestateServer({
   isEmpty = false,
   onPress,
   aura,
+  auraAlwaysVisible = false,
   appearance = 'ghost',
 }: PropsWithChildren<{
   className?: string;
@@ -87,6 +99,7 @@ export function RestateServer({
   isEmpty?: boolean;
   onPress?: () => void;
   aura?: AuraIntensity;
+  auraAlwaysVisible?: boolean;
   appearance?: ServerAppearance;
 }>) {
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -118,6 +131,7 @@ export function RestateServer({
           ref={auraRef}
           className={overlayStyles({
             appearance,
+            alwaysVisible: auraAlwaysVisible,
             class: 'pointer-events-none absolute inset-0 overflow-visible',
           })}
         >

@@ -14,6 +14,7 @@ export function DeploymentActions() {
   return (
     <SplitButton
       mini={false}
+      variant="primary"
       className="shrink-0 text-0.5xs"
       splitClassName="w-7 rounded-r-lg px-1 w-6 py-0.5"
       menus={
@@ -33,7 +34,10 @@ export function DeploymentActions() {
         </>
       }
     >
-      <TriggerRegisterDeploymentDialog className="-mr-px shrink-0 justify-center rounded-l-lg rounded-r-none py-0.5 pr-2 pl-1.5 [&_svg]:h-3.5 [&_svg]:w-3.5">
+      <TriggerRegisterDeploymentDialog
+        variant="button"
+        className="-mr-px shrink-0 justify-center rounded-l-lg rounded-r-none py-0.5 pr-2 pl-1.5 [&_svg]:h-3.5 [&_svg]:w-3.5"
+      >
         Deployment
       </TriggerRegisterDeploymentDialog>
     </SplitButton>

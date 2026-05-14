@@ -6,11 +6,36 @@ import {
   useRef,
   useState,
 } from 'react';
-import type { ComponentPropsWithoutRef, PropsWithChildren } from 'react';
+import type {
+  ComponentPropsWithoutRef,
+  PropsWithChildren,
+  ReactNode,
+} from 'react';
 import { createPortal } from 'react-dom';
+import {
+  Tab as AriaTab,
+  TabList as AriaTabList,
+  Tabs as AriaTabs,
+  composeRenderProps,
+} from 'react-aria-components';
+import { useSearchParams } from 'react-router';
+import { focusRing } from '@restate/ui/focus';
 import { tv } from '@restate/util/styles';
 
 type ContentPanelSlotName = 'toolbar' | 'header';
+
+export interface ContentPanelTab {
+  id: string;
+  label: ReactNode;
+  disabled?: boolean;
+}
+
+export interface ContentPanelTabs {
+  items: ContentPanelTab[];
+  defaultId?: string;
+  onChange?: (id: string) => void;
+  queryParam: string;
+}
 
 const ContentPanelContext = createContext<{
   getSlot: (slot: ContentPanelSlotName) => HTMLElement | null | undefined;
@@ -24,16 +49,21 @@ const styles = tv({
       'col-start-1 row-start-1 mt-[calc(var(--cp-toolbar-height,0px)-var(--cp-toolbar-tuck,0px))] flex min-h-0 flex-col border-x border-gray-200 bg-gray-50',
     stickyArea:
       'sticky top-[calc(var(--cp-toolbar-top,0px)-var(--cp-toolbar-tuck,0px))] z-30 col-start-1 row-start-1 flex flex-col self-start',
-    toolbarSlot: 'w-full bg-gray-100 [padding-top:var(--cp-toolbar-tuck,0px)]',
+    toolbarSlot:
+      'w-full bg-gray-100 [padding-top:var(--cp-toolbar-tuck,0px)] [&:empty]:hidden',
     cardFrame:
-      'relative min-h-4 rounded-t-2xl border-x border-t border-gray-200',
+      'relative min-h-4 rounded-t-2xl border-x border-t border-gray-200 [&:not(:has([data-cp-slot="header"]>*))]:hidden',
     headerSlot:
       'mx-2 mt-2 rounded-xl border border-gray-200 bg-linear-to-b from-gray-200/70 to-gray-100/85 shadow-[inset_0_2px_0_0_--theme(--color-white/95%),0_2px_5px_-1px_--theme(--color-zinc-800/8%),0_4px_10px_-3px_--theme(--color-zinc-800/6%)] backdrop-blur-3xl backdrop-saturate-200 [&:empty]:hidden',
     body: 'relative flex min-h-0 flex-1 flex-col',
     sectionRoot: 'relative flex flex-col',
     sectionFade:
-      'pointer-events-none sticky top-[calc(var(--cp-toolbar-top,0px)+var(--cp-toolbar-height,0px)-var(--cp-toolbar-tuck,0px))] z-10 -mb-8 h-8 bg-linear-to-b from-gray-50 to-transparent',
+      'pointer-events-none sticky top-[calc(var(--cp-toolbar-top,0px)+var(--cp-toolbar-height,0px)-var(--cp-toolbar-tuck,0px))] z-10 -mb-8 h-8 bg-linear-to-b from-gray-50 to-transparent backdrop-blur-lg backdrop-saturate-150',
     sectionContent: 'flex-1 pt-[var(--cp-section-pt,0px)]',
+    tabsWrapper:
+      'relative flex w-full items-end gap-3 bg-gray-100 px-3 [padding-top:calc(var(--cp-toolbar-tuck,0px)+0.5rem)]',
+    tabList: 'relative flex max-w-full items-end gap-1',
+    tabsToolbarSlot: 'flex flex-1 items-center justify-end self-stretch pb-0',
   },
   variants: {
     flush: {
@@ -42,23 +72,48 @@ const styles = tv({
   },
 });
 
+const tabStyles = tv({
+  extend: focusRing,
+  base: 'group relative isolate -mb-px flex min-h-0 cursor-default items-center gap-1.5 rounded-t-xl border border-b-0 border-transparent px-3.5 pt-2 pb-1.5 text-sm whitespace-nowrap text-zinc-500 transition forced-color-adjust-none [-webkit-tap-highlight-color:transparent] hover:bg-gray-200/30 hover:text-zinc-700 disabled:text-zinc-400 selected:z-10 selected:border-gray-200 selected:bg-linear-to-b selected:from-white selected:to-gray-50 selected:text-zinc-950 selected:shadow-[inset_0_1px_0_0_--theme(--color-white/95%),0_-1px_3px_-1px_--theme(--color-zinc-800/4%),0_-3px_8px_-3px_--theme(--color-zinc-800/3%)] [&_svg]:fill-zinc-100 [&_svg]:transition hover:[&_svg]:fill-zinc-200 selected:[&_svg]:fill-zinc-100',
+  variants: {
+    isDisabled: {
+      true: 'text-zinc-400',
+    },
+  },
+});
+
 const toolbarContentStyles = tv({
-  base: 'flex min-h-9 w-full items-center',
+  base: 'flex min-h-9 w-full items-center justify-end',
 });
 
 const headerContentStyles = tv({
-  base: 'relative flex min-h-12 w-full items-center',
+  base: 'relative flex w-full items-center',
 });
+
+interface ContentPanelProps extends ComponentPropsWithoutRef<'div'> {
+  tabs?: ContentPanelTabs;
+}
 
 export function ContentPanel({
   children,
   className,
+  tabs,
   ...props
-}: PropsWithChildren<ComponentPropsWithoutRef<'div'>>) {
-  const { root, bodyCell, stickyArea, toolbarSlot, cardFrame, headerSlot } =
-    styles();
+}: PropsWithChildren<ContentPanelProps>) {
+  const {
+    root,
+    bodyCell,
+    stickyArea,
+    toolbarSlot,
+    cardFrame,
+    headerSlot,
+    tabsWrapper,
+    tabList,
+    tabsToolbarSlot,
+  } = styles();
   const rootRef = useRef<HTMLDivElement>(null);
   const stickyAreaRef = useRef<HTMLDivElement>(null);
+  const tabsWrapperRef = useRef<HTMLDivElement>(null);
   const [slots, setSlots] = useState<
     Record<ContentPanelSlotName, HTMLElement | null | undefined>
   >({ toolbar: undefined, header: undefined });
@@ -80,10 +135,12 @@ export function ContentPanel({
     [],
   );
 
+  const hasTabs = !!tabs && tabs.items.length > 0;
+
   useEffect(() => {
     const stickyAreaElement = stickyAreaRef.current;
     const rootElement = rootRef.current;
-    const toolbarElement = slots.toolbar;
+    const toolbarElement = hasTabs ? tabsWrapperRef.current : slots.toolbar;
     if (!rootElement) {
       return;
     }
@@ -104,7 +161,7 @@ export function ContentPanel({
     if (stickyAreaElement) observer.observe(stickyAreaElement);
     if (toolbarElement) observer.observe(toolbarElement);
     return () => observer.disconnect();
-  }, [slots.toolbar]);
+  }, [slots.toolbar, hasTabs]);
 
   return (
     <ContentPanelContext.Provider value={{ getSlot, setSlot }}>
@@ -116,7 +173,25 @@ export function ContentPanel({
       >
         <div className={bodyCell()}>{children}</div>
         <div ref={stickyAreaRef} className={stickyArea()}>
-          <ContentPanelSlotElement slot="toolbar" className={toolbarSlot()} />
+          {hasTabs ? (
+            <Tabs
+              ref={tabsWrapperRef}
+              tabs={tabs.items}
+              defaultTab={tabs.defaultId}
+              queryParam={tabs.queryParam}
+              onTabChange={tabs.onChange}
+              wrapperClassName={tabsWrapper()}
+              tabListClassName={tabList()}
+              trailing={
+                <ContentPanelSlotElement
+                  slot="toolbar"
+                  className={tabsToolbarSlot()}
+                />
+              }
+            />
+          ) : (
+            <ContentPanelSlotElement slot="toolbar" className={toolbarSlot()} />
+          )}
           <div className={cardFrame()}>
             <ContentPanelCornerMasks />
             <ContentPanelSlotElement slot="header" className={headerSlot()} />
@@ -124,6 +199,78 @@ export function ContentPanel({
         </div>
       </div>
     </ContentPanelContext.Provider>
+  );
+}
+
+interface TabsProps {
+  ref?: React.Ref<HTMLDivElement>;
+  tabs: ContentPanelTab[];
+  defaultTab?: string;
+  queryParam: string;
+  onTabChange?: (tab: string) => void;
+  wrapperClassName: string;
+  tabListClassName: string;
+  trailing?: ReactNode;
+}
+
+function Tabs({
+  ref,
+  tabs,
+  defaultTab,
+  queryParam,
+  onTabChange,
+  wrapperClassName,
+  tabListClassName,
+  trailing,
+}: TabsProps) {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const disabledTabs = tabs.filter((tab) => tab.disabled).map((tab) => tab.id);
+  const requestedTab = searchParams.get(queryParam);
+  const fallbackTab =
+    tabs.find((tab) => tab.id === defaultTab && !tab.disabled)?.id ??
+    tabs.find((tab) => !tab.disabled)?.id;
+  const selectableTab = tabs.some(
+    (tab) => tab.id === requestedTab && !tab.disabled,
+  );
+  const selectedTab =
+    requestedTab && selectableTab ? requestedTab : fallbackTab;
+
+  return (
+    <div ref={ref} className={wrapperClassName}>
+      <AriaTabs
+        selectedKey={selectedTab}
+        disabledKeys={disabledTabs}
+        onSelectionChange={(tab) => {
+          const next = String(tab);
+          setSearchParams((old) => {
+            const params = new URLSearchParams(old);
+            if (next === fallbackTab) {
+              params.delete(queryParam);
+            } else {
+              params.set(queryParam, next);
+            }
+            return params;
+          });
+          onTabChange?.(next);
+        }}
+      >
+        <AriaTabList className={tabListClassName} aria-label="Tabs">
+          {tabs.map((tab) => (
+            <AriaTab
+              key={tab.id}
+              id={tab.id}
+              isDisabled={tab.disabled}
+              className={composeRenderProps('', (className, renderProps) =>
+                tabStyles({ ...renderProps, className }),
+              )}
+            >
+              {tab.label}
+            </AriaTab>
+          ))}
+        </AriaTabList>
+      </AriaTabs>
+      {trailing}
+    </div>
   );
 }
 

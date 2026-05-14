@@ -75,6 +75,7 @@ export function useServiceColumns({
   serviceIssuesMap,
   isSummaryError,
   isSummaryLoading,
+  isDeploymentsFetching,
   linkParams,
 }: {
   byServiceAndStatus: { service: string; status: string; count: number }[];
@@ -82,6 +83,7 @@ export function useServiceColumns({
   serviceIssuesMap: Map<string, ServiceIssue[]>;
   isSummaryError: boolean;
   isSummaryLoading: boolean;
+  isDeploymentsFetching: boolean;
   linkParams?: URLSearchParams;
 }): GridListColumn<Service>[] {
   return [
@@ -100,9 +102,13 @@ export function useServiceColumns({
                   className="h-full w-full fill-blue-50 p-1 text-blue-400 drop-shadow-md"
                 />
               </div>
-              <span className="min-w-0 truncate text-base font-medium text-zinc-700">
-                {s.name}
-              </span>
+              {isDeploymentsFetching ? (
+                <div className="h-6 w-32 min-w-0 animate-pulse rounded-lg bg-gray-200/50" />
+              ) : (
+                <span className="min-w-0 truncate text-base font-medium text-zinc-700">
+                  {s.name}
+                </span>
+              )}
 
               <HoverTooltip content="Playground">
                 <Link
@@ -229,10 +235,12 @@ export function useServiceColumns({
 
 export function useDeploymentColumns({
   isDeploymentStatusLoading,
+  isDeploymentsFetching,
   baseUrl,
   linkParams,
 }: {
   isDeploymentStatusLoading: boolean;
+  isDeploymentsFetching: boolean;
   baseUrl: string;
   linkParams?: URLSearchParams;
 }): GridListColumn<OverviewDeployment>[] {
@@ -245,13 +253,17 @@ export function useDeploymentColumns({
         <div className="max-w-fit min-w-0 truncate">
           <OverviewFirstColumn
             primary={
-              <Deployment
-                deploymentId={deployment.id}
-                highlightSelection={false}
-                variant="primary"
-                className="[&:not(:hover)_a]:invisible"
-                showEndpointCopyButton
-              />
+              isDeploymentsFetching ? (
+                <div className="h-6 w-64 max-w-full animate-pulse rounded-lg bg-gray-200/50" />
+              ) : (
+                <Deployment
+                  deploymentId={deployment.id}
+                  highlightSelection={false}
+                  variant="primary"
+                  className="[&:not(:hover)_a]:invisible"
+                  showEndpointCopyButton
+                />
+              )
             }
             secondary={<OverviewDeploymentId deploymentId={deployment.id} />}
           />
@@ -296,7 +308,7 @@ export function useDeploymentColumns({
     },
     {
       id: 'created_at',
-      title: 'Created at',
+      title: 'Registered at',
       allowsSorting: true,
       render: (deployment) => (
         <OverviewColumnMeta
@@ -443,9 +455,9 @@ function DeploymentCreatedAt({ value }: { value: string }) {
   return (
     <Badge className="z-[2] hidden w-full border-none bg-transparent pl-1.5 md:flex">
       <span className="w-full truncate text-right">
-        <span className="font-normal text-zinc-500">Created at </span>
+        <span className="font-normal text-zinc-500">Registered </span>
         <span className="font-normal text-zinc-500">{!isPast && 'in '}</span>
-        <DateTooltip date={createdAt} title="Created at">
+        <DateTooltip date={createdAt} title="Registered at">
           {duration}
         </DateTooltip>
         <span className="font-normal text-zinc-500">{isPast && ' ago'}</span>

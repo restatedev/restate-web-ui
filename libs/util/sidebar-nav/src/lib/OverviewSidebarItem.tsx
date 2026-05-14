@@ -1,5 +1,6 @@
 import { SidebarNavItem, type SidebarMatch } from '@restate/ui/layout';
 import { IconName } from '@restate/ui/icons';
+import { useSearchParams } from 'react-router';
 
 interface OverviewSidebarItemProps {
   baseUrl?: string;
@@ -13,6 +14,15 @@ export function OverviewSidebarItem({
   preserveSearchParams = true,
 }: OverviewSidebarItemProps) {
   const path = `${baseUrl}/overview`;
+  const [searchParams] = useSearchParams();
+  const carryParams = new URLSearchParams(searchParams);
+  carryParams.delete('view');
+  const carryQuery = carryParams.toString();
+  const servicesHref = carryQuery ? `${path}?${carryQuery}` : path;
+  const deploymentsHref = carryQuery
+    ? `${path}?view=deployments&${carryQuery}`
+    : `${path}?view=deployments`;
+
   const servicesMatch: SidebarMatch = (loc) => {
     if (!loc.pathname.startsWith(path)) return false;
     const view = loc.searchParams.get('view');
@@ -31,13 +41,13 @@ export function OverviewSidebarItem({
       disabled={disabled}
       subItems={[
         {
-          href: path,
+          href: servicesHref,
           label: 'Services',
           match: servicesMatch,
           preserveSearchParams,
         },
         {
-          href: `${path}?view=deployments`,
+          href: deploymentsHref,
           label: 'Deployments',
           match: deploymentsMatch,
           preserveSearchParams,

@@ -16,6 +16,7 @@ export function useOverviewData(filters: FilterItem[] = []) {
   const {
     data: { sortedServiceNames, deployments: deploymentsMap } = {},
     isFetched,
+    isFetching,
     isError,
     error,
   } = useListDeployments();
@@ -76,8 +77,16 @@ export function useOverviewData(filters: FilterItem[] = []) {
     return map;
   }, [servicesMap, deploymentsMap, serviceStatusCounts, isVersionGte]);
 
+  const hasData = isNew || deploymentsMap !== undefined;
+  const isInitialLoading = !isFetched && !isNew;
+  // "bare" = fetched (or attempted) but never got data — typically after an
+  // initial-load error. No empty-state placeholder yet because we don't know
+  // whether there are deployments.
+  const isBare = !isInitialLoading && !hasData;
   const isEmpty =
-    (isFetched || isNew) && (!deploymentsMap || deploymentsMap.size === 0);
+    !isInitialLoading &&
+    hasData &&
+    (!deploymentsMap || deploymentsMap.size === 0);
 
   return {
     servicesMap,
@@ -93,8 +102,11 @@ export function useOverviewData(filters: FilterItem[] = []) {
     isSummaryError,
     summaryError,
     summaryQueryKey,
+    isInitialLoading,
+    isBare,
     isEmpty,
     isError,
     error,
+    isDeploymentsFetching: isFetching,
   };
 }

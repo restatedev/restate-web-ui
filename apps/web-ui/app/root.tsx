@@ -82,7 +82,7 @@ import { PortalProvider } from '@restate/ui/portal';
 import { BatchOperationsProvider } from '@restate/features/batch-operations';
 import { MonacoWarmup } from '@restate/ui/editor';
 
-const LAYOUT_MODE: 'appbar' | 'sidebar' = 'appbar';
+const LAYOUT_MODE: 'appbar' | 'sidebar' = 'sidebar';
 
 if (import.meta.env.DEV) {
   setInterval(() => {
@@ -182,7 +182,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <html lang="en" className="h-full bg-gray-100 dark:bg-gray-900">
+    <html
+      lang="en"
+      className="h-full scrollbar-gutter-stable overflow-y-scroll bg-gray-100 dark:bg-gray-900"
+    >
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -263,12 +266,22 @@ const SUPPORT_LINKS: { href: string; label: string; icon: IconName }[] = [
     icon: IconName.Docs,
   },
   {
+    href: 'https://github.com/restatedev/examples',
+    label: 'Examples',
+    icon: IconName.Example,
+  },
+  {
+    href: 'https://github.com/restatedev/ai-examples',
+    label: 'AI Examples',
+    icon: IconName.AiExample,
+  },
+  {
     href: 'https://discord.gg/skW3AZ6uGd',
     label: 'Discord',
     icon: IconName.Discord,
   },
   {
-    href: 'https://join.slack.com/t/restatecommunity/shared_invite/zt-2v9gl005c-WBpr167o5XJZI1l7HWKImA',
+    href: 'https://slack.restate.dev/',
     label: 'Slack',
     icon: IconName.Slack,
   },
@@ -437,7 +450,7 @@ export default function App() {
 // TODO: implement proper loader
 export function HydrateFallback() {
   return (
-    <p className="flex items-center gap-2">
+    <p className="flex items-center gap-2 px-8">
       <Spinner />
       Loading...
     </p>

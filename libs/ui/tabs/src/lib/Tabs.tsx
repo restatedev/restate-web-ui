@@ -71,12 +71,12 @@ const tabsStyles = tv({
 });
 
 const tabListStyles = tv({
-  base: '-m-1 flex max-w-full gap-4 overflow-x-auto overflow-y-clip border-b border-zinc-200 p-1 outline-none [scrollbar-width:none]',
+  base: 'relative flex max-w-full gap-0 rounded-xl border-[0.5px] border-transparent outline-none [&:has(:focus)]:border-zinc-800/5 [&:has(:focus)]:bg-black/3 [&:has(:focus)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] [&:has(:hover)]:border-zinc-800/5 [&:has(:hover)]:bg-black/3 [&:has(:hover)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]',
 });
 
 const tabStyles = tv({
   extend: focusRing,
-  base: 'group relative mb-1 flex min-h-0 cursor-default items-center justify-center gap-1.5 rounded-xl px-1 py-0.5 text-sm font-medium whitespace-nowrap text-zinc-500 transition forced-color-adjust-none [-webkit-tap-highlight-color:transparent] hover:text-zinc-900 disabled:text-zinc-400 pressed:text-zinc-900 selected:text-zinc-950',
+  base: 'group relative isolate flex min-h-0 cursor-default items-center justify-center gap-1.5 rounded-xl px-3 py-1 text-sm whitespace-nowrap text-zinc-600 transition forced-color-adjust-none [-webkit-tap-highlight-color:transparent] hover:text-zinc-900 disabled:text-zinc-400 pressed:text-zinc-900 selected:text-zinc-950',
   variants: {
     isDisabled: {
       true: 'text-zinc-400',
@@ -85,7 +85,7 @@ const tabStyles = tv({
 });
 
 const selectionIndicatorStyles = tv({
-  base: 'absolute -bottom-2 left-0 h-0.5 w-full rounded-full bg-blue-600 motion-safe:transition-[translate,width,height]',
+  base: 'absolute inset-0 -z-10 rounded-xl border border-black/10 bg-white shadow-xs motion-safe:transition-[translate,width,height] motion-safe:duration-300 motion-safe:ease-out',
 });
 
 const tabPanelsStyles = tv({

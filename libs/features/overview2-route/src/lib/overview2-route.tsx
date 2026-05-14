@@ -21,6 +21,7 @@ import { ErrorBanner } from '@restate/ui/error';
 import { Button } from '@restate/ui/button';
 import { StatusArcEcharts, StatusLegend } from '@restate/features/status-chart';
 import { useWaveAnimation } from '@restate/ui/wave-animation';
+import { Spinner } from '@restate/ui/loading';
 import {
   ContentPanel,
   ContentPanelBody,
@@ -32,7 +33,7 @@ import { OverviewProvider, useOverviewContext } from './OverviewContext';
 import { useRestateServerStatus } from './useRestateServerStatus';
 import { NoDeploymentPlaceholder } from './NoDeploymentPlaceholder';
 import { TimeRangeToggle } from './TimeRangeToggle';
-import { OverviewModeToggle } from './OverviewModeToggle';
+import { OVERVIEW_MODE_PARAM } from './overviewMode';
 import { SortByDropdown } from './SortByDropdown';
 import { DeploymentActions } from './DeploymentActions';
 import { ServicesGridList } from './ServicesGridList';
@@ -44,23 +45,26 @@ const LINE_COUNT = 7;
 function usePerspectiveLines(
   containerRef: React.RefObject<HTMLDivElement | null>,
   serverRef: React.RefObject<HTMLDivElement | null>,
-  gridRef: React.RefObject<HTMLDivElement | null>,
+  panel: HTMLElement | null,
+  enabled: boolean,
 ) {
   const [lineData, setLineData] = useState({
     paths: [] as string[],
     viewBox: '0 0 1 1',
+    fadeStart: 0,
+    fadeEnd: 0,
   });
 
   useEffect(() => {
+    if (!enabled) return;
     const container = containerRef.current;
     const server = serverRef.current;
-    const grid = gridRef.current;
-    if (!container || !server || !grid) return;
+    if (!container || !server || !panel) return;
 
     const update = () => {
       const cRect = container.getBoundingClientRect();
       const sRect = server.getBoundingClientRect();
-      const gRect = grid.getBoundingClientRect();
+      const pRect = panel.getBoundingClientRect();
 
       const w = cRect.width;
       const h = cRect.height;
@@ -69,31 +73,36 @@ function usePerspectiveLines(
       const serverCenterX = sRect.left + sRect.width / 2 - cRect.left;
       const startY = sRect.bottom - cRect.top;
       const startSpread = sRect.width / 4;
-      const endY = gRect.top - cRect.top;
-      const gridCenter = gRect.left + gRect.width / 2 - cRect.left;
-      const endSpread = gRect.width * 0.35;
+      const endY = pRect.top - cRect.top;
+      const panelCenter = pRect.left + pRect.width / 2 - cRect.left;
+      const endSpread = pRect.width * 0.35;
 
       const paths: string[] = [];
       for (let i = 0; i < LINE_COUNT; i++) {
         const t = (i - (LINE_COUNT - 1) / 2) / ((LINE_COUNT - 1) / 2);
         const topX = serverCenterX + t * startSpread;
-        const bottomX = gridCenter + t * endSpread;
-        const verticalEnd = startY + (endY - startY) * 0.15;
-        const cpY1 = verticalEnd + (endY - verticalEnd) * 0.55;
-        const cpY2 = verticalEnd + (endY - verticalEnd) * 0.85;
+        const bottomX = panelCenter + t * endSpread;
+        const verticalEnd = startY + (endY - startY) * 0.1;
+        const cpY1 = verticalEnd + (endY - verticalEnd) * 0.35;
+        const cpY2 = verticalEnd + (endY - verticalEnd) * 0.75;
         paths.push(
           `M${topX},${startY} L${topX},${verticalEnd} C${topX},${cpY1} ${bottomX},${cpY2} ${bottomX},${endY} L${bottomX},${h}`,
         );
       }
-      setLineData({ paths, viewBox: `0 0 ${w} ${h}` });
+      setLineData({
+        paths,
+        viewBox: `0 0 ${w} ${h}`,
+        fadeStart: endY,
+        fadeEnd: endY + 24,
+      });
     };
 
     update();
     const observer = new ResizeObserver(update);
     observer.observe(container);
-    observer.observe(grid);
+    observer.observe(panel);
     return () => observer.disconnect();
-  }, [containerRef, serverRef, gridRef]);
+  }, [containerRef, serverRef, panel, enabled]);
 
   return lineData;
 }
@@ -107,7 +116,7 @@ function usePerspectiveRay(svgRef: React.RefObject<SVGSVGElement | null>) {
       path.style.strokeDasharray = '';
       path.style.strokeDashoffset = '';
       path.animate(
-        [{ opacity: 0 }, { opacity: 0.15, offset: 0.15 }, { opacity: 0 }],
+        [{ opacity: 0 }, { opacity: 0.2, offset: 0.15 }, { opacity: 0 }],
         {
           duration: 800,
           delay: Math.abs(i - (LINE_COUNT - 1) / 2) * 50,
@@ -123,24 +132,41 @@ function PerspectiveLines({
   svgRef,
   paths,
   viewBox,
+  fadeStart,
+  fadeEnd,
 }: {
   svgRef: React.RefObject<SVGSVGElement | null>;
   paths: string[];
   viewBox: string;
+  fadeStart: number;
+  fadeEnd: number;
 }) {
   return (
     <svg
       ref={svgRef}
-      className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-full w-full text-indigo-400"
+      className="pointer-events-none absolute inset-x-0 top-0 z-5 h-full w-full text-slate-400"
       viewBox={viewBox}
       fill="none"
     >
+      <defs>
+        <linearGradient
+          id="perspective-fade"
+          gradientUnits="userSpaceOnUse"
+          x1={0}
+          y1={fadeStart}
+          x2={0}
+          y2={fadeEnd}
+        >
+          <stop offset="0" stopColor="currentColor" stopOpacity="1" />
+          <stop offset="1" stopColor="currentColor" stopOpacity="0.05" />
+        </linearGradient>
+      </defs>
       {paths.map((d, i) => (
         <path
           key={i}
           d={d}
-          stroke="currentColor"
-          strokeWidth="0.8"
+          stroke="url(#perspective-fade)"
+          strokeWidth="1.5"
           opacity="0"
         />
       ))}
@@ -149,7 +175,7 @@ function PerspectiveLines({
 }
 
 const emptyServerStyles = tv({
-  base: 'flex w-full flex-auto flex-col items-center justify-center overflow-hidden rounded-xl border bg-gray-200/50 pt-24 pb-8 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] @tall:pt-10 @tall:pb-40',
+  base: 'flex w-full flex-auto flex-col items-center justify-center overflow-hidden rounded-xl border bg-gray-200/50 pt-24 pb-8 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] ring-1 ring-white/80 @tall:pt-10 @tall:pb-40',
   variants: {
     isError: {
       true: '[&>svg:first-child>path]:fill-red-100',
@@ -169,9 +195,12 @@ function OverviewContent() {
     isSummaryError,
     summaryError,
     summaryQueryKey,
+    isInitialLoading,
+    isBare,
     isEmpty,
     isError,
     error,
+    isDeploymentsFetching,
     linkParams,
     mode,
     filter,
@@ -214,11 +243,12 @@ function OverviewContent() {
   const issuesRef = useRef<HTMLDivElement>(null);
   const linesSvgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const gridRef = useRef<HTMLDivElement>(null);
-  const { paths, viewBox } = usePerspectiveLines(
+  const [panelEl, setPanelEl] = useState<HTMLDivElement | null>(null);
+  const { paths, viewBox, fadeStart, fadeEnd } = usePerspectiveLines(
     containerRef,
     serverRef,
-    gridRef,
+    panelEl,
+    !isInitialLoading && !isBare && !isEmpty,
   );
   const triggerRay = usePerspectiveRay(linesSvgRef);
   const noInvocations =
@@ -261,17 +291,45 @@ function OverviewContent() {
     );
   };
 
+  if (isInitialLoading) {
+    return (
+      <div className="flex min-h-full translate-y-10 flex-col justify-end px-8 py-6">
+        <p className="flex items-center gap-2">
+          <Spinner />
+          Loading...
+        </p>
+      </div>
+    );
+  }
+
+  if (isBare) {
+    return (
+      <div className="flex min-h-full flex-col items-center justify-center p-6">
+        <RestateServer status={ferrofluidStatus} isEmpty onPress={onRefresh}>
+          {isError && !isDeploymentsFetching && (
+            <div className="relative mt-6 flex w-full flex-col items-center gap-2">
+              <ErrorBanner error={error} />
+            </div>
+          )}
+        </RestateServer>
+      </div>
+    );
+  }
+
   if (isEmpty) {
     return (
       <div className="flex min-h-full flex-col items-center justify-center p-6">
         <RestateServer
-          className={emptyServerStyles({ isError })}
+          className={emptyServerStyles({ isError: false })}
           status={ferrofluidStatus}
           appearance="solid"
           isEmpty
           onPress={onRefresh}
         >
-          <NoDeploymentPlaceholder error={error} />
+          <NoDeploymentPlaceholder
+            error={isError ? error : null}
+            isRefreshing={isDeploymentsFetching}
+          />
           {GettingStarted && <GettingStarted className="hidden @tall:block" />}
         </RestateServer>
       </div>
@@ -281,9 +339,15 @@ function OverviewContent() {
   return (
     <div
       ref={containerRef}
-      className="relative mx-auto flex min-h-0 w-full flex-1 flex-col items-center gap-8 px-6 pt-8"
+      className="relative mx-auto flex min-h-0 w-full flex-1 flex-col items-center gap-0 pt-8"
     >
-      <PerspectiveLines svgRef={linesSvgRef} paths={paths} viewBox={viewBox} />
+      <PerspectiveLines
+        svgRef={linesSvgRef}
+        paths={paths}
+        viewBox={viewBox}
+        fadeStart={fadeStart}
+        fadeEnd={fadeEnd}
+      />
       <div className="relative flex w-full items-center justify-center">
         <div className="hidden min-w-0 flex-1 justify-end pr-6 md:flex">
           {showLegend && (
@@ -321,13 +385,13 @@ function OverviewContent() {
               </div>
             </div>
           </div>
-          <div className="relative z-10 -mt-4 flex min-h-7 w-[18rem] items-baseline justify-center gap-1.5">
+          <div className="relative z-10 -mt-2 flex min-h-7 w-[18rem] items-baseline justify-center gap-1.5">
             {summaryError ? (
               <Popover>
                 <PopoverTrigger>
                   <Button
                     variant="secondary"
-                    className="flex shrink-0 translate-y-0.5 items-center gap-1.5 rounded-xl border-orange-200/80 bg-orange-50/80 px-3 py-1.5 text-xs text-orange-600 shadow-none hover:bg-orange-100/80"
+                    className="flex shrink-0 translate-y-0.5 items-center gap-1.5 rounded-xl border-orange-200/80 bg-orange-50/80 px-3 py-1 text-xs text-orange-600 shadow-none hover:bg-orange-100/80"
                   >
                     <Icon
                       name={IconName.TriangleAlert}
@@ -403,16 +467,49 @@ function OverviewContent() {
           />
         </div>
       )}
-      <div ref={issuesRef} className="min-h-6.5">
-        <IssuesBannerStack className="-mt-4" />
+      <div
+        ref={issuesRef}
+        className="relative z-20 -mb-8 flex min-h-20 flex-col items-center"
+      >
+        <IssuesBannerStack className="mt-2" />
+        <div className="h-5" />
       </div>
 
-      <ContentPanel className="mt-8 w-full">
-        <ContentPanelToolbar className="px-5">
-          <OverviewModeToggle />
+      <ContentPanel
+        className="w-full"
+        tabs={{
+          queryParam: OVERVIEW_MODE_PARAM,
+          defaultId: 'services',
+          items: [
+            {
+              id: 'services',
+              label: (
+                <>
+                  <Icon name={IconName.Box} className="h-3.5 w-3.5" />
+                  Services
+                </>
+              ),
+            },
+            {
+              id: 'deployments',
+              label: (
+                <>
+                  <Icon name={IconName.Http} className="h-3.5 w-3.5" />
+                  Deployments
+                </>
+              ),
+            },
+          ],
+        }}
+      >
+        <ContentPanelToolbar className="">
+          <DeploymentActions />
         </ContentPanelToolbar>
-        <ContentPanelHeader className="px-5 py-1.5">
-          <div className="flex w-full flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+        <ContentPanelHeader className="px-2 py-1.5">
+          <div
+            ref={setPanelEl}
+            className="flex w-full flex-col gap-2 lg:flex-row lg:items-center lg:justify-between"
+          >
             <div className="flex flex-wrap items-center gap-2">
               <SortByDropdown
                 formatServiceSortLabel={(option) =>
@@ -421,7 +518,6 @@ function OverviewContent() {
                     : option.label
                 }
               />
-              <DeploymentActions />
             </div>
             <SearchField
               aria-label="Filter"
@@ -434,7 +530,7 @@ function OverviewContent() {
                 <AriaInput
                   ref={filterRef}
                   placeholder={filterPlaceholder}
-                  className="mt-0 w-full min-w-0 rounded-xl border border-gray-200 bg-white px-2 py-1 pr-8 pl-8 text-sm text-gray-900 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] placeholder:text-gray-500/70 focus:border-gray-200 focus:shadow-none focus:[box-shadow:inset_0_1px_0px_0px_rgba(0,0,0,0.03)] focus:outline-2 focus:outline-blue-600"
+                  className="mt-0 w-full min-w-0 rounded-xl border border-black/10 bg-white px-2 py-1 pr-8 pl-8 text-sm text-gray-800 shadow-xs outline-offset-2 placeholder:text-gray-500/70 focus:ring-0 focus:outline-2 focus:outline-blue-600"
                 />
                 <Icon
                   name={IconName.Search}
@@ -448,9 +544,12 @@ function OverviewContent() {
             </SearchField>
           </div>
         </ContentPanelHeader>
-        <ContentPanelBody>
+        <ContentPanelBody className="pb-20">
           <ContentPanelSection>
-            <div ref={gridRef} className="pt-2">
+            <div className="pt-2">
+              {isError && !isDeploymentsFetching && error && (
+                <ErrorBanner error={error} className="mx-2 mb-3 rounded-xl" />
+              )}
               {mode === 'services' ? (
                 <ServicesGridList />
               ) : (
