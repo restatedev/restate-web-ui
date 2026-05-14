@@ -529,7 +529,7 @@ function OverviewContent() {
                 <AriaInput
                   ref={filterRef}
                   placeholder={filterPlaceholder}
-                  className="mt-0 w-full min-w-0 rounded-xl border border-gray-200 bg-white px-2 py-1 pr-8 pl-8 text-sm text-gray-900 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] placeholder:text-gray-500/70 focus:border-gray-200 focus:shadow-none focus:[box-shadow:inset_0_1px_0px_0px_rgba(0,0,0,0.03)] focus:outline-2 focus:outline-blue-600"
+                  className="mt-0 w-full min-w-0 rounded-xl border border-black/10 bg-white px-2 py-1 pr-8 pl-8 text-sm text-gray-800 shadow-xs outline-offset-2 placeholder:text-gray-500/70 focus:ring-0 focus:outline-2 focus:outline-blue-600"
                 />
                 <Icon
                   name={IconName.Search}
