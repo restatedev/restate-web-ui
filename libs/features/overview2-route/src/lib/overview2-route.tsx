@@ -469,9 +469,10 @@ function OverviewContent() {
       )}
       <div
         ref={issuesRef}
-        className="relative z-20 flex min-h-6.5 flex-col items-center pb-5"
+        className="relative z-20 -mb-8 flex min-h-20 flex-col items-center"
       >
         <IssuesBannerStack className="mt-2" />
+        <div className="h-5" />
       </div>
 
       <ContentPanel
