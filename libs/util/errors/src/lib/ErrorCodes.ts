@@ -2,6 +2,7 @@ export const UI_ERROR_CODES = {
   codecDecode: 'UI0001',
   codecEncode: 'UI0002',
   deploymentFallback: 'UI0003',
+  invocationNotFound: 'UI0004',
 } as const;
 
 export const ERROR_CODES: Record<string, { summary: string; help?: string }> = {
@@ -14,6 +15,10 @@ export const ERROR_CODES: Record<string, { summary: string; help?: string }> = {
   UI0003: {
     summary:
       'Using the latest deployment — decoded or encoded values may not match the original format.',
+  },
+  UI0004: {
+    summary: 'Invocation not found or no longer available.',
+    help: 'The requested invocation either does not exist or has already completed and has been removed after its retention period expired. Completed invocations are only retained if a journal retention period is explicitly set, if they are part of a workflow, or if they were invoked with an idempotency key. In all cases, they are retained only for the duration of the specified retention period.',
   },
   META0003: {
     summary: 'Cannot reach the service endpoint to execute discovery',

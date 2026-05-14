@@ -76,7 +76,7 @@ const terminalMessageStyles = tv({
   base: '',
   variants: {
     preformatted: {
-      true: 'whitespace-pre',
+      true: 'whitespace-pre-wrap',
       false: 'whitespace-normal',
     },
   },
@@ -258,7 +258,7 @@ export function RestateServerError({
         <div className={terminalStyles({ isTransient })}>
           <div
             className={terminalMessageStyles({
-              preformatted: message.includes(' '),
+              preformatted: message.includes('\n'),
             })}
           >
             {message}

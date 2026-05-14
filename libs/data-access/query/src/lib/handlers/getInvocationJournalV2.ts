@@ -3,6 +3,7 @@ import type {
   JournalEntryV2,
   JournalRawEntry,
 } from '@restate/data-access/admin-api-spec';
+import { ERROR_CODES, UI_ERROR_CODES } from '@restate/util/errors';
 import { convertInvocation } from '../convertInvocation';
 import { convertJournalV2 } from '../convertJournalV2';
 import {
@@ -52,8 +53,8 @@ export async function getInvocationJournalV2(
   if (!invocation) {
     return new Response(
       JSON.stringify({
-        message:
-          'Invocation not found or no longer available.\n\nThe requested invocation either does not exist or has already completed and has been removed after its retention period expired. Completed invocations are only retained if a journal retention period is explicitly set, if they are part of a workflow, or if they were invoked with an idempotency key. In all cases, they are retained only for the duration of the specified retention period.',
+        message: ERROR_CODES[UI_ERROR_CODES.invocationNotFound]?.help,
+        restate_code: UI_ERROR_CODES.invocationNotFound,
       }),
       {
         status: 404,
