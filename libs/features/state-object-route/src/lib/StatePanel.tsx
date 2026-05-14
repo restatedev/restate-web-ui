@@ -235,7 +235,9 @@ function StatePanelContent() {
                       <Tooltip>
                         <TooltipTrigger>
                           <Link
-                            href={panelHref({ invocation: String(queueData?.head ?? '') })}
+                            href={panelHref({
+                              invocation: String(queueData?.head ?? ''),
+                            })}
                             aria-label={queueData?.head}
                             variant="secondary"
                             className="block h-6 w-6 rounded-lg border bg-white shadow-xs"

@@ -212,11 +212,7 @@ function InvocationPanelContent() {
           </div>
           {!isPending && (
             <div className="ml-auto flex shrink-0 items-center self-start">
-              <Actions
-                invocation={data}
-                mini={false}
-                className="text-0.5xs"
-              />
+              <Actions invocation={data} mini={false} className="text-0.5xs" />
             </div>
           )}
         </h2>

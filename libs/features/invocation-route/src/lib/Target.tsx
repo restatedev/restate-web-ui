@@ -98,7 +98,10 @@ export function Target({
               <div className="my-px mr-1 flex shrink-0 items-center rounded-r-[calc(var(--rounded-radius)-1px)] pr-0.5 pl-[2px]">
                 <Link
                   ref={linkRef}
-                  href={panelHref({ service: service ?? '', ...(handler ? { handler } : {}) })}
+                  href={panelHref({
+                    service: service ?? '',
+                    ...(handler ? { handler } : {}),
+                  })}
                   aria-label={target}
                   variant="secondary"
                   className="my-1 flex items-center rounded-full outline-offset-0 before:absolute before:inset-0 before:z-2 before:rounded-(--rounded-radius) before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5"
@@ -125,7 +128,10 @@ export function Target({
                 <div className="my-px mr-px ml-[-4px] flex truncate rounded-r-[calc(var(--rounded-radius)-1px)] bg-zinc-50 pr-0.5 pl-[2px] [&&]:shrink-0">
                   <Link
                     ref={linkRef}
-                    href={panelHref({ service: service ?? '', ...(handler ? { handler } : {}) })}
+                    href={panelHref({
+                      service: service ?? '',
+                      ...(handler ? { handler } : {}),
+                    })}
                     aria-label={target}
                     variant="secondary"
                     className="my-1 flex items-center rounded-full outline-offset-0 before:absolute before:inset-0 before:z-2 before:rounded-(--rounded-radius) before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5"
@@ -153,7 +159,10 @@ export function Target({
               <div className="my-px mr-px ml-auto flex h-full shrink-0 justify-end rounded-r-[calc(var(--rounded-radius-right)-1px)] bg-zinc-100 pr-0.5 pl-[2px] [&&]:grow-0">
                 <Link
                   ref={linkRef}
-                  href={panelHref({ service: service ?? '', ...(handler ? { handler } : {}) })}
+                  href={panelHref({
+                    service: service ?? '',
+                    ...(handler ? { handler } : {}),
+                  })}
                   aria-label={target}
                   variant="secondary"
                   className="my-1 flex items-center rounded-full outline-offset-0 before:absolute before:inset-0 before:z-2 before:rounded-(--rounded-radius) before:rounded-r-(--rounded-radius-right) before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5"

@@ -29,11 +29,7 @@ import {
   useActiveSidebarParam,
   useParamValue,
 } from '@restate/ui/layout';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@restate/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@restate/ui/tooltip';
 import { Link } from '@restate/ui/link';
 import {
   Dropdown,

@@ -68,7 +68,10 @@ export function Handler({
                   <Link
                     className="relative z-[2] mx-1 text-inherit no-underline"
                     variant="secondary"
-                    href={panelHref({ playground: service, handler: handler.name })}
+                    href={panelHref({
+                      playground: service,
+                      handler: handler.name,
+                    })}
                   >
                     {handler.name}
                   </Link>
