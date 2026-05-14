@@ -13,14 +13,14 @@ import { useOverviewContext } from './OverviewContext';
 
 const SERVICE_SORT_OPTIONS = [
   { value: 'name', label: 'Name' },
-  { value: 'created_at', label: 'Created at' },
+  { value: 'created_at', label: 'Last deployed' },
   { value: 'invocations', label: 'Invocations' },
   { value: 'health', label: 'Issues' },
 ] as const;
 
 const DEPLOYMENT_SORT_OPTIONS = [
   { value: 'deployment', label: 'Endpoint' },
-  { value: 'created_at', label: 'Created at' },
+  { value: 'created_at', label: 'Registered at' },
   { value: 'status', label: 'Status' },
 ] as const;
 
