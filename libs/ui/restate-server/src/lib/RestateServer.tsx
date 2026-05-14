@@ -80,6 +80,7 @@ export function RestateServer({
   isEmpty = false,
   onPress,
   aura,
+  auraAlwaysVisible = false,
   appearance = 'ghost',
 }: PropsWithChildren<{
   className?: string;
@@ -87,6 +88,7 @@ export function RestateServer({
   isEmpty?: boolean;
   onPress?: () => void;
   aura?: AuraIntensity;
+  auraAlwaysVisible?: boolean;
   appearance?: ServerAppearance;
 }>) {
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -116,10 +118,14 @@ export function RestateServer({
       {aura && (
         <div
           ref={auraRef}
-          className={overlayStyles({
-            appearance,
-            class: 'pointer-events-none absolute inset-0 overflow-visible',
-          })}
+          className={
+            auraAlwaysVisible
+              ? 'pointer-events-none absolute inset-0 overflow-visible'
+              : overlayStyles({
+                  appearance,
+                  class: 'pointer-events-none absolute inset-0 overflow-visible',
+                })
+          }
         >
           <ServerRings status={status} intensity={aura} />
         </div>

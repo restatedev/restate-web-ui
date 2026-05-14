@@ -74,7 +74,7 @@ const styles = tv({
 
 const tabStyles = tv({
   extend: focusRing,
-  base: 'group relative isolate -mb-px flex min-h-0 cursor-default items-center gap-1.5 rounded-t-xl border border-b-0 border-transparent px-3.5 pt-2 pb-2.5 text-sm whitespace-nowrap text-zinc-500 transition forced-color-adjust-none [-webkit-tap-highlight-color:transparent] [&_svg]:fill-zinc-100 [&_svg]:transition hover:bg-gray-200/30 hover:text-zinc-700 hover:[&_svg]:fill-zinc-200 disabled:text-zinc-400 selected:z-10 selected:border-gray-200 selected:bg-linear-to-b selected:from-white selected:to-gray-50 selected:text-zinc-950 selected:shadow-[inset_0_1px_0_0_--theme(--color-white/95%),0_-1px_3px_-1px_--theme(--color-zinc-800/4%),0_-3px_8px_-3px_--theme(--color-zinc-800/3%)] selected:[&_svg]:fill-zinc-100',
+  base: 'group relative isolate -mb-px flex min-h-0 cursor-default items-center gap-1.5 rounded-t-xl border border-b-0 border-transparent px-3.5 pt-2 pb-1.5 text-sm whitespace-nowrap text-zinc-500 transition forced-color-adjust-none [-webkit-tap-highlight-color:transparent] [&_svg]:fill-zinc-100 [&_svg]:transition hover:bg-gray-200/30 hover:text-zinc-700 hover:[&_svg]:fill-zinc-200 disabled:text-zinc-400 selected:z-10 selected:border-gray-200 selected:bg-linear-to-b selected:from-white selected:to-gray-50 selected:text-zinc-950 selected:shadow-[inset_0_1px_0_0_--theme(--color-white/95%),0_-1px_3px_-1px_--theme(--color-zinc-800/4%),0_-3px_8px_-3px_--theme(--color-zinc-800/3%)] selected:[&_svg]:fill-zinc-100',
   variants: {
     isDisabled: {
       true: 'text-zinc-400',

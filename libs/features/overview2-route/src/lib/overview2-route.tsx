@@ -265,14 +265,16 @@ function OverviewContent() {
     return (
       <div className="flex min-h-full flex-col items-center justify-center p-6">
         <RestateServer
-          className={emptyServerStyles({ isError })}
+          className={isError ? undefined : emptyServerStyles({ isError })}
           status={ferrofluidStatus}
-          appearance="solid"
+          appearance={isError ? 'ghost' : 'solid'}
           isEmpty
           onPress={onRefresh}
         >
           <NoDeploymentPlaceholder error={error} />
-          {GettingStarted && <GettingStarted className="hidden @tall:block" />}
+          {!isError && GettingStarted && (
+            <GettingStarted className="hidden @tall:block" />
+          )}
         </RestateServer>
       </div>
     );

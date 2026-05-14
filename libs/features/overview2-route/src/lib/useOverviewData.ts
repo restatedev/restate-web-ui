@@ -76,6 +76,7 @@ export function useOverviewData(filters: FilterItem[] = []) {
     return map;
   }, [servicesMap, deploymentsMap, serviceStatusCounts, isVersionGte]);
 
+  const isInitialLoading = !isFetched && !isNew && !isError;
   const isEmpty =
     (isFetched || isNew) && (!deploymentsMap || deploymentsMap.size === 0);
 
@@ -93,6 +94,7 @@ export function useOverviewData(filters: FilterItem[] = []) {
     isSummaryError,
     summaryError,
     summaryQueryKey,
+    isInitialLoading,
     isEmpty,
     isError,
     error,

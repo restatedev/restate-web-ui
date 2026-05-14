@@ -21,7 +21,7 @@ export function SidebarLayout({ children }: PropsWithChildren) {
           <NotificationRegion />
           <main
             id={ZONE_IDS[LayoutZone.Content]}
-            className="relative flex max-w-full min-w-0 flex-auto flex-col pt-4 pb-32 [&:has([data-content-panel-fill-viewport])]:min-h-0 [&:has([data-content-panel-fill-viewport])]:flex-1 [&:has([data-content-panel-fill-viewport])]:pb-0 [&:has([data-content-panel-fill-viewport])>*]:flex-1"
+            className="relative flex max-w-full min-w-0 flex-auto flex-col py-4  [&:has([data-content-panel-fill-viewport])]:min-h-0 [&:has([data-content-panel-fill-viewport])]:flex-1 [&:has([data-content-panel-fill-viewport])]:pb-0 [&:has([data-content-panel-fill-viewport])>*]:flex-1"
           />
           {children}
           <Toolbar id={ZONE_IDS[LayoutZone.Toolbar]} />

@@ -60,7 +60,7 @@ export function useServerAura(
 
     particles.forEach(({ s, x, y }, i) => {
       const dot = document.createElement('div');
-      dot.style.cssText = `position:absolute;width:${s}px;height:${s}px;border-radius:50%;background:${color};top:50%;left:50%;margin-top:${-s / 2}px;margin-left:${-s / 2}px;pointer-events:none;z-index:10;`;
+      dot.style.cssText = `position:absolute;width:${s}px;height:${s}px;border-radius:50%;background:${color};top:50%;left:50%;margin-top:${-s / 2}px;margin-left:${-s / 2}px;pointer-events:none;`;
       el.appendChild(dot);
       dots.push(dot);
 
