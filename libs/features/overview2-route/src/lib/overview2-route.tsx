@@ -32,7 +32,7 @@ import { OverviewProvider, useOverviewContext } from './OverviewContext';
 import { useRestateServerStatus } from './useRestateServerStatus';
 import { NoDeploymentPlaceholder } from './NoDeploymentPlaceholder';
 import { TimeRangeToggle } from './TimeRangeToggle';
-import { OverviewModeToggle } from './OverviewModeToggle';
+import { OVERVIEW_MODE_PARAM } from './overviewMode';
 import { SortByDropdown } from './SortByDropdown';
 import { DeploymentActions } from './DeploymentActions';
 import { ServicesGridList } from './ServicesGridList';
@@ -281,7 +281,7 @@ function OverviewContent() {
   return (
     <div
       ref={containerRef}
-      className="relative mx-auto flex min-h-0 w-full flex-1 flex-col items-center gap-8 pt-8"
+      className="relative mx-auto flex min-h-0 w-full flex-1 flex-col items-center gap-0 pt-8"
     >
       <PerspectiveLines svgRef={linesSvgRef} paths={paths} viewBox={viewBox} />
       <div className="relative flex w-full items-center justify-center">
@@ -403,13 +403,39 @@ function OverviewContent() {
           />
         </div>
       )}
-      <div ref={issuesRef} className="min-h-6.5">
+      <div ref={issuesRef} className="min-h-6.5 mt-8">
         <IssuesBannerStack className="-mt-4" />
       </div>
 
-      <ContentPanel className="mt-8 w-full">
-        <ContentPanelToolbar className="px-5">
-          <OverviewModeToggle />
+      <ContentPanel
+        className="mt-2 w-full"
+        tabs={{
+          queryParam: OVERVIEW_MODE_PARAM,
+          defaultId: 'services',
+          items: [
+            {
+              id: 'services',
+              label: (
+                <>
+                  <Icon name={IconName.Box} className="h-3.5 w-3.5" />
+                  Services
+                </>
+              ),
+            },
+            {
+              id: 'deployments',
+              label: (
+                <>
+                  <Icon name={IconName.Http} className="h-3.5 w-3.5" />
+                  Deployments
+                </>
+              ),
+            },
+          ],
+        }}
+      >
+        <ContentPanelToolbar className="px-3">
+          <DeploymentActions />
         </ContentPanelToolbar>
         <ContentPanelHeader className="px-2 py-1.5">
           <div className="flex w-full flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
@@ -421,7 +447,6 @@ function OverviewContent() {
                     : option.label
                 }
               />
-              <DeploymentActions />
             </div>
             <SearchField
               aria-label="Filter"
