@@ -3,7 +3,7 @@ import { SearchField, Input as AriaInput, Label } from 'react-aria-components';
 import { useSearchParams } from 'react-router';
 import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from '@restate/util/styles';
-import { SERVICE_PLAYGROUND_QUERY_PARAM } from '@restate/features/service';
+import { panelHref } from '@restate/util/panel';
 import { Link } from '@restate/ui/link';
 import { RestateServer } from '@restate/ui/restate-server';
 import { useRestateContext } from '@restate/features/restate-context';
@@ -408,7 +408,7 @@ function OverviewContent() {
               <p className="text-sm text-gray-400">
                 <Link
                   {...(firstServiceName && {
-                    href: `?${SERVICE_PLAYGROUND_QUERY_PARAM}=${firstServiceName}`,
+                    href: panelHref({ playground: firstServiceName }),
                   })}
                   variant="icon"
                   className="-mr-1 flex items-center gap-1.5 rounded-xl text-gray-500"

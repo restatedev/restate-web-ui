@@ -21,10 +21,8 @@ import { formatDurations, formatNumber } from '@restate/util/intl';
 import { useQueryClient } from '@tanstack/react-query';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@restate/ui/tooltip';
-import {
-  INVOCATION_QUERY_NAME,
-  State,
-} from '@restate/features/invocation-route';
+import { State } from '@restate/features/invocation-route';
+import { panelHref } from '@restate/util/panel';
 import { Link } from '@restate/ui/link';
 import { Badge } from '@restate/ui/badge';
 import { Copy } from '@restate/ui/copy';
@@ -225,7 +223,7 @@ function StatePanelContent() {
                       <Tooltip>
                         <TooltipTrigger>
                           <Link
-                            href={`?${INVOCATION_QUERY_NAME}=${queueData?.head}`}
+                            href={panelHref({ invocation: String(queueData?.head ?? '') })}
                             aria-label={queueData?.head}
                             variant="secondary"
                             className="block h-6 w-6 rounded-lg border bg-white shadow-xs"

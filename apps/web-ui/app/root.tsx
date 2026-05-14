@@ -81,6 +81,7 @@ import { createLocalStorageMetaStorage } from '@restate/util/api-config';
 import { PortalProvider } from '@restate/ui/portal';
 import { BatchOperationsProvider } from '@restate/features/batch-operations';
 import { MonacoWarmup } from '@restate/ui/editor';
+import { PANEL_QUERY_PARAM } from '@restate/util/panel';
 
 const LAYOUT_MODE: 'appbar' | 'sidebar' = 'sidebar';
 
@@ -257,6 +258,7 @@ const PRESERVED_PARAMS = [
   INVOCATION_QUERY_NAME,
   STATE_QUERY_NAME,
   HANDLER_QUERY_PARAM,
+  PANEL_QUERY_PARAM,
 ];
 
 const SUPPORT_LINKS: { href: string; label: string; icon: IconName }[] = [
@@ -295,8 +297,8 @@ const SUPPORT_LINKS: { href: string; label: string; icon: IconName }[] = [
 function SidebarHeaderContent() {
   return (
     <>
-      <Restate className="@max-[8rem]/sidebar:w-[1.75em]" />
-      <div className="flex min-w-0 flex-1 flex-col items-start gap-0 @max-[8rem]/sidebar:hidden">
+      <Restate className="shrink-0 transition-[width,height,transform] duration-300 group-data-[collapsed=false]/sidebar:h-[1.5em] group-data-[collapsed=false]/sidebar:w-[1.5em] group-data-[collapsed=false]/sidebar:translate-x-0 group-data-[collapsed=true]/sidebar:h-[1.75em] group-data-[collapsed=true]/sidebar:w-[1.75em] group-data-[collapsed=true]/sidebar:translate-x-[2px] max-xl:h-[1.75em] max-xl:w-[1.75em] max-xl:translate-x-[2px]" />
+      <div className="flex max-h-20 max-w-full min-w-0 flex-1 flex-col items-start gap-0 overflow-hidden opacity-100 transition-[max-width,max-height,opacity] duration-300 group-data-[collapsed=false]/sidebar:max-h-20 group-data-[collapsed=false]/sidebar:max-w-full group-data-[collapsed=false]/sidebar:opacity-100 group-data-[collapsed=true]/sidebar:max-h-0 group-data-[collapsed=true]/sidebar:max-w-0 group-data-[collapsed=true]/sidebar:opacity-0 max-xl:max-h-0 max-xl:max-w-0 max-xl:opacity-0">
         <div className="flex h-[1.5em] min-w-0 items-center gap-1.5 self-stretch pl-1">
           <HealthIndicator mini />
           <span className="block min-w-0 flex-auto truncate text-sm font-medium text-gray-700">
@@ -314,7 +316,7 @@ function SidebarHeaderContent() {
 
 function SidebarFooterContent() {
   return (
-    <div className="flex flex-col gap-0.5 @max-[8rem]/sidebar:items-center">
+    <div className="flex flex-col gap-0.5">
       {SUPPORT_LINKS.map((item) => (
         <Link
           key={item.href}
@@ -322,10 +324,10 @@ function SidebarFooterContent() {
           preserveQueryParams={false}
           target="_blank"
           rel="noreferrer noopener"
-          className="flex items-center gap-2.5 rounded-xl px-2 py-1.5 text-0.5xs text-gray-500 no-underline outline-offset-2 outline-blue-600 transition hover:bg-black/3 hover:text-gray-700 focus-visible:outline-2 @max-[8rem]/sidebar:justify-center @max-[8rem]/sidebar:px-1.5"
+          className="flex items-center gap-2.5 rounded-xl px-2 py-1.5 text-0.5xs text-gray-500 no-underline outline-offset-2 outline-blue-600 transition hover:bg-black/3 hover:text-gray-700 focus-visible:outline-2"
         >
           <Icon name={item.icon} className="h-5 w-5 shrink-0 text-gray-400" />
-          <span className="min-w-0 flex-auto truncate @max-[8rem]/sidebar:hidden">
+          <span className="max-w-full min-w-0 flex-auto truncate overflow-hidden opacity-100 transition-[max-width,opacity] duration-300 group-data-[collapsed=false]/sidebar:max-w-full group-data-[collapsed=false]/sidebar:opacity-100 group-data-[collapsed=true]/sidebar:max-w-0 group-data-[collapsed=true]/sidebar:opacity-0 max-xl:max-w-0 max-xl:opacity-0">
             {item.label}
           </span>
         </Link>

@@ -4,7 +4,6 @@ import {
   use,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
   type PropsWithChildren,
@@ -15,11 +14,11 @@ import { useSearchParams } from 'react-router';
 import { Pressable, PressResponder } from '@react-aria/interactions';
 import { FocusScope } from 'react-aria';
 import { createPortal } from 'react-dom';
+import { PANEL_QUERY_PARAM } from '@restate/util/panel';
 
 interface ComplementaryProps {
   setFooterEl: (el: HTMLElement | null) => void;
   onClose?: VoidFunction;
-  isOnTop?: boolean;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -29,7 +28,6 @@ const ComplementaryContext = createContext({ onClose: noop });
 export function Complementary({
   children,
   onClose = noop,
-  isOnTop = false,
   setFooterEl,
 }: PropsWithChildren<ComplementaryProps>) {
   if (!children) {
@@ -39,10 +37,7 @@ export function Complementary({
   return (
     <ComplementaryContext.Provider value={{ onClose }}>
       <LayoutOutlet zone={LayoutZone.Complementary}>
-        <div
-          data-top={isOnTop}
-          className="flex max-h-[inherit] min-h-0 w-full min-w-0 flex-col rounded-[1.125rem] border bg-gray-50/80 p-1.5 shadow-lg shadow-zinc-800/5 backdrop-blur-xl backdrop-saturate-200 transition-all duration-250 data-[top=false]:overflow-hidden data-[top=true]:z-1 data-[top=true]:order-1 3xl:border-transparent 3xl:bg-transparent 3xl:shadow-none 3xl:backdrop-blur-none 3xl:backdrop-saturate-100 [&[data-top=false]:has(~[data-top=false])]:shadow-none"
-        >
+        <div className="flex max-h-[inherit] min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden rounded-[1.125rem] border bg-gray-50/80 p-1.5 shadow-lg shadow-zinc-800/5 backdrop-blur-xl backdrop-saturate-200 transition-all duration-250 3xl:border-transparent 3xl:bg-transparent 3xl:shadow-none 3xl:backdrop-blur-none 3xl:backdrop-saturate-100">
           <FocusScope restoreFocus autoFocus>
             <div
               data-complementary-content
@@ -93,20 +88,20 @@ export function ComplementaryWithSearchParam({
   onCloseQueryParam?: (prev: URLSearchParams) => URLSearchParams;
 }>) {
   const [searchParams] = useSearchParams();
-  const paramValues = searchParams.getAll(paramName);
+  const isActive = searchParams.get(PANEL_QUERY_PARAM) === paramName;
+  const paramValue = searchParams.get(paramName);
+
+  if (!isActive || !paramValue) {
+    return null;
+  }
 
   return (
-    <>
-      {paramValues.map((paramValue) => (
-        <ComplementaryWithSearchParamValue
-          children={children}
-          key={paramValue}
-          paramName={paramName}
-          paramValue={paramValue}
-          onCloseQueryParam={onCloseQueryParam}
-        />
-      ))}
-    </>
+    <ComplementaryWithSearchParamValue
+      children={children}
+      paramName={paramName}
+      paramValue={paramValue}
+      onCloseQueryParam={onCloseQueryParam}
+    />
   );
 }
 
@@ -119,30 +114,8 @@ const ComplementaryWithSearchContext = createContext<{
 });
 const noOp = (prev: URLSearchParams) => prev;
 
-function getIsTop(
-  searchParams: URLSearchParams,
-  paramName: string,
-  paramValue: string,
-) {
-  const firstQuery = searchParams
-    .toString()
-    .split('&')
-    .filter((query) => {
-      return !document.querySelector(
-        `[data-${query.toLowerCase().split('=').at(0)}-dialog=true]`,
-      );
-    })
-    .at(0);
-
-  const isOnTop =
-    firstQuery?.startsWith(`${paramName}=${paramValue}`) ||
-    firstQuery?.startsWith(`${paramName}=${encodeURIComponent(paramValue)}`);
-  return isOnTop;
-}
-
 function ComplementaryWithSearchParamValue({
   children,
-  paramName,
   paramValue,
   onCloseQueryParam = noOp,
 }: PropsWithChildren<{
@@ -150,10 +123,7 @@ function ComplementaryWithSearchParamValue({
   paramValue: string;
   onCloseQueryParam?: (prev: URLSearchParams) => URLSearchParams;
 }>) {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [isOnTop, setIsTop] = useState(() =>
-    getIsTop(searchParams, paramName, paramValue),
-  );
+  const [, setSearchParams] = useSearchParams();
   const renderedChildren = useMemo(() => {
     if (!paramValue) {
       return null;
@@ -165,38 +135,13 @@ function ComplementaryWithSearchParamValue({
   const onClose = useCallback(() => {
     setSearchParams(
       (prev) => {
-        return onCloseQueryParam(
-          new URLSearchParams(
-            prev
-              .toString()
-              .replace(`${paramName}=${paramValue}`, '')
-              .replace(`${paramName}=${encodeURIComponent(paramValue)}`, ''),
-          ),
-        );
+        const next = new URLSearchParams(prev);
+        next.delete(PANEL_QUERY_PARAM);
+        return onCloseQueryParam(next);
       },
       { preventScrollReset: true },
     );
-  }, [paramName, paramValue, setSearchParams, onCloseQueryParam]);
-
-  useEffect(() => {
-    const observer = new MutationObserver((mutations) => {
-      for (const mutation of mutations) {
-        if (mutation.type === 'attributes') {
-          setIsTop(getIsTop(searchParams, paramName, paramValue));
-        }
-      }
-    });
-
-    observer.observe(document.body, {
-      subtree: true,
-      attributeFilter: ['data-query-dialog'],
-    });
-    setIsTop(getIsTop(searchParams, paramName, paramValue));
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [paramName, paramValue, searchParams]);
+  }, [setSearchParams, onCloseQueryParam]);
 
   return (
     <ComplementaryWithSearchContext.Provider
@@ -205,7 +150,6 @@ function ComplementaryWithSearchParamValue({
       <Complementary
         children={renderedChildren}
         onClose={onClose}
-        isOnTop={isOnTop}
         setFooterEl={setFooterEl}
       />
     </ComplementaryWithSearchContext.Provider>
@@ -230,9 +174,8 @@ export function useParamValue() {
 export function useActiveSidebarParam(paramName: string) {
   const [searchParams] = useSearchParams();
 
-  if (searchParams.toString().startsWith(`${paramName}=`)) {
-    return searchParams.get(paramName) as string;
-  } else {
+  if (searchParams.get(PANEL_QUERY_PARAM) !== paramName) {
     return undefined;
   }
+  return searchParams.get(paramName) ?? undefined;
 }

@@ -9,6 +9,7 @@ import {
 } from '@restate/data-access/admin-api-spec';
 import { Revision } from './Revision';
 import { DEPLOYMENT_QUERY_PARAM } from './constants';
+import { panelHref } from '@restate/util/panel';
 import { Link } from '@restate/ui/link';
 import { useRef } from 'react';
 import { useActiveSidebarParam } from '@restate/ui/layout';
@@ -135,9 +136,8 @@ export function Deployment({
 
   const isDeprecated = Boolean(
     deployment &&
-      deployment.max_protocol_version <
-        MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION &&
-      isVersionGte?.('1.6.0'),
+    deployment.max_protocol_version < MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION &&
+    isVersionGte?.('1.6.0'),
   );
 
   if (!deployment) {
@@ -160,7 +160,7 @@ export function Deployment({
               ref={linkRef}
               aria-label={deploymentId}
               variant="secondary"
-              href={`?${DEPLOYMENT_QUERY_PARAM}=${deploymentId}`}
+              href={panelHref({ deployment: deploymentId })}
               className="m-1 ml-0 rounded-full outline-offset-0 before:absolute before:inset-0 before:rounded-lg before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5"
             >
               <Icon
@@ -177,8 +177,8 @@ export function Deployment({
 
   const isTunnel = Boolean(
     tunnel?.isEnabled &&
-      isHttpDeployment(deployment) &&
-      tunnel.fromHttp(deployment.uri),
+    isHttpDeployment(deployment) &&
+    tunnel.fromHttp(deployment.uri),
   );
   const endpoint = getEndpoint(deployment);
   const tunnelEndpoint = isTunnel ? tunnel?.fromHttp(endpoint) : undefined;
@@ -289,7 +289,7 @@ export function Deployment({
           ref={linkRef}
           aria-label={deploymentEndpoint}
           variant="secondary"
-          href={`?${DEPLOYMENT_QUERY_PARAM}=${deployment.id}`}
+          href={panelHref({ deployment: deployment.id })}
           className="m-1 ml-0 rounded-full outline-offset-0 before:absolute before:inset-0 before:rounded-lg before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5"
         >
           <Icon

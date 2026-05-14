@@ -1,1 +1,1 @@
-export const INVOCATION_QUERY_NAME = 'invocation';
+export { INVOCATION_QUERY_NAME } from '@restate/util/panel';

@@ -146,6 +146,7 @@
         "libs/util/invocation-links/src/index.ts"
       ],
       "@restate/util/mock-api": ["libs/util/mock-api/src/index.ts"],
+      "@restate/util/panel": ["libs/util/panel/src/index.ts"],
       "@restate/util/playwright": ["libs/util/playwright/src/index.ts"],
       "@restate/util/react-query": ["libs/util/react-query/src/index.ts"],
       "@restate/util/remix": ["libs/util/remix/src/index.ts"],

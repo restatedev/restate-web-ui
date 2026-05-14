@@ -469,6 +469,7 @@ function Component() {
                         scope: rowScope || undefined,
                       }),
                     );
+                    old.set('panel', STATE_QUERY_NAME);
                     return old;
                   },
                   { preventScrollReset: true },

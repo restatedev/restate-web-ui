@@ -10,11 +10,7 @@ import { ServicePlaygroundTrigger } from './ServicePlayground';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Badge } from '@restate/ui/badge';
 import { Link } from '@restate/ui/link';
-import {
-  HANDLER_QUERY_PARAM,
-  SERVICE_PLAYGROUND_QUERY_PARAM,
-  SERVICE_QUERY_PARAM,
-} from './constants';
+import { panelHref } from '@restate/util/panel';
 
 const styles = tv({
   base: 'relative flex flex-row flex-wrap items-center pr-2',
@@ -72,7 +68,7 @@ export function Handler({
                   <Link
                     className="relative z-[2] mx-1 text-inherit no-underline"
                     variant="secondary"
-                    href={`?${SERVICE_PLAYGROUND_QUERY_PARAM}=${service}#/operations/${handler.name}`}
+                    href={panelHref({ playground: service, handler: handler.name })}
                   >
                     {handler.name}
                   </Link>
@@ -124,7 +120,7 @@ export function Handler({
               {showLink && (
                 <Link
                   variant="icon"
-                  href={`?${SERVICE_QUERY_PARAM}=${service}&${HANDLER_QUERY_PARAM}=${handler.name}`}
+                  href={panelHref({ service, handler: handler.name })}
                   className="my-0.5 ml-auto shrink-0 rounded-full before:absolute before:-top-0.5 before:-right-1 before:-bottom-0.5 before:-left-1 before:z-[0] before:rounded-lg before:content-[''] hover:before:bg-black/3"
                 >
                   <Icon

@@ -2,7 +2,7 @@ import {
   getEndpoint,
   type Deployment,
 } from '@restate/data-access/admin-api-spec';
-import { DEPLOYMENT_QUERY_PARAM } from '@restate/features/deployment';
+import { panelHref } from '@restate/util/panel';
 import { Button } from '@restate/ui/button';
 import {
   Dropdown,
@@ -104,7 +104,7 @@ export function DeploymentsGridList() {
                 <OverviewCard
                   {...waveAnimationProps('overview-card')}
                   cells={cells}
-                  primaryHref={`?${DEPLOYMENT_QUERY_PARAM}=${deployment.id}`}
+                  primaryHref={panelHref({ deployment: deployment.id })}
                   className={cellsContainerStyles({
                     isFocusVisible,
                   })}

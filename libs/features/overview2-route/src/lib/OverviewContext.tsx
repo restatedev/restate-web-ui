@@ -24,6 +24,7 @@ import { INVOCATION_QUERY_NAME } from '@restate/features/invocation-route';
 import { STATE_QUERY_NAME } from '@restate/features/state-object-route';
 import { DEPLOYMENT_QUERY_PARAM } from '@restate/features/deployment';
 import { toCreatedAfterParam } from '@restate/util/invocation-links';
+import { PANEL_QUERY_PARAM } from '@restate/util/panel';
 import { useOverviewData } from './useOverviewData';
 import { useRangeFilters } from './useRangeFilters';
 import {
@@ -39,6 +40,7 @@ const PRESERVE_PARAMS = [
   INVOCATION_QUERY_NAME,
   STATE_QUERY_NAME,
   HANDLER_QUERY_PARAM,
+  PANEL_QUERY_PARAM,
 ] as const;
 
 type OverviewContextValue = ReturnType<typeof useOverviewData> & {
@@ -75,8 +77,7 @@ export function OverviewProvider({ children }: { children: ReactNode }) {
       );
     });
   }, [queryClient]);
-  const isSummaryLoading =
-    overviewData.isSummaryLoading || isManualRefreshing;
+  const isSummaryLoading = overviewData.isSummaryLoading || isManualRefreshing;
 
   const initialSortRef = useRef<SortDescriptor | null>(null);
   if (

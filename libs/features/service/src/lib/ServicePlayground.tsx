@@ -44,6 +44,7 @@ import { ErrorBanner } from '@restate/ui/error';
 import { Spinner } from '@restate/ui/loading';
 import { useOnboarding } from '@restate/util/feature-flag';
 import { useQueryClient } from '@tanstack/react-query';
+import { PANEL_QUERY_PARAM, panelHref } from '@restate/util/panel';
 
 const styles = tv({
   base: 'flex items-center gap-1 rounded-md px-1.5 py-0.5 font-sans text-xs font-normal',
@@ -74,9 +75,7 @@ export function ServicePlaygroundTrigger({
   return (
     <Link
       variant={variant}
-      href={`?${SERVICE_PLAYGROUND_QUERY_PARAM}=${service}${
-        handler ? `#/operations/${handler}` : ''
-      }`}
+      href={panelHref({ playground: service, ...(handler ? { handler } : {}) })}
       className={styles({ className, isOnboarding })}
       autoFocus={isOnboarding}
     >
@@ -298,6 +297,7 @@ function ServicePlaygroundComplementaryContent({
   const shouldDisplay = isSidebar.get(service) === true;
   const isActive = activeSearch === service;
   const location = useLocation();
+  const [, setSearchParams] = useSearchParams();
 
   const selectedHandlerFromURL = window.location.hash
     .split('#/operations/')
@@ -482,6 +482,14 @@ function ServicePlaygroundComplementaryContent({
               }
               return new Map(old);
             });
+            setSearchParams(
+              (prev) => {
+                const next = new URLSearchParams(prev);
+                next.delete(PANEL_QUERY_PARAM);
+                return next;
+              },
+              { preventScrollReset: true },
+            );
           }}
         >
           <Icon name={IconName.Maximize} className="h-4 w-4 text-gray-500" />
@@ -547,6 +555,14 @@ function ServicePlaygroundSheetContent({
                   }
                   return new Map(old);
                 });
+                setSearchParams(
+                  (prev) => {
+                    const next = new URLSearchParams(prev);
+                    next.set(PANEL_QUERY_PARAM, SERVICE_PLAYGROUND_QUERY_PARAM);
+                    return next;
+                  },
+                  { preventScrollReset: true },
+                );
               }}
             >
               <Icon name={IconName.Minimize} className="h-5 w-5" />

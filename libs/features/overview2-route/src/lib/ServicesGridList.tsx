@@ -5,11 +5,8 @@ import {
 } from '@restate/data-access/admin-api-spec';
 import { GridList, GridListItem } from '@restate/ui/grid-list';
 import { waveAnimationProps } from '@restate/ui/wave-animation';
-import {
-  HANDLER_QUERY_PARAM,
-  HandlerList,
-  SERVICE_QUERY_PARAM,
-} from '@restate/features/service';
+import { HandlerList } from '@restate/features/service';
+import { panelHref } from '@restate/util/panel';
 import { useOverviewContext } from './OverviewContext';
 import { OverviewCard, cellsContainerStyles } from './OverviewCard';
 import { useServiceColumns } from './columns';
@@ -85,7 +82,7 @@ export function ServicesGridList() {
               <OverviewCard
                 {...waveAnimationProps('overview-card')}
                 cells={cells}
-                primaryHref={`?${SERVICE_QUERY_PARAM}=${service.name}&${HANDLER_QUERY_PARAM}`}
+                primaryHref={panelHref({ service: service.name })}
                 className={cellsContainerStyles({
                   isFocusVisible,
                   issueSeverity,
