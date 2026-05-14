@@ -1,6 +1,6 @@
-import { overview } from '@restate/features/overview-route';
+import { overview2 } from '@restate/features/overview2-route';
 
 export function meta() {
   return [{ title: 'Restate - Overview' }];
 }
-export default overview.Component;
+export default overview2.Component;
