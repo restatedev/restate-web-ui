@@ -21,7 +21,7 @@ import { ErrorBanner } from '@restate/ui/error';
 import { Button } from '@restate/ui/button';
 import { StatusArcEcharts, StatusLegend } from '@restate/features/status-chart';
 import { useWaveAnimation } from '@restate/ui/wave-animation';
-import { Ellipsis } from '@restate/ui/loading';
+import { Spinner } from '@restate/ui/loading';
 import {
   ContentPanel,
   ContentPanelBody,
@@ -41,16 +41,6 @@ import { DeploymentsGridList } from './DeploymentsGridList';
 import { getOverviewRangeLabel } from './useRangeFilters';
 
 const LINE_COUNT = 7;
-
-function LoadingChildren() {
-  return (
-    <div className="relative mt-6 flex flex-col items-center opacity-100 transition-opacity delay-150 duration-200 ease-out starting:opacity-0">
-      <Ellipsis>
-        <span className="text-sm text-gray-500">Loading</span>
-      </Ellipsis>
-    </div>
-  );
-}
 
 function usePerspectiveLines(
   containerRef: React.RefObject<HTMLDivElement | null>,
@@ -160,7 +150,7 @@ function PerspectiveLines({
 }
 
 const emptyServerStyles = tv({
-  base: 'flex w-full flex-auto flex-col items-center justify-center overflow-hidden rounded-xl border bg-gray-200/50 pt-24 pb-8 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] @tall:pt-10 @tall:pb-40',
+  base: 'flex w-full flex-auto flex-col items-center ring-1 ring-white/80 justify-center overflow-hidden rounded-xl border bg-gray-200/50 pt-24 pb-8 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] @tall:pt-10 @tall:pb-40',
   variants: {
     isError: {
       true: '[&>svg:first-child>path]:fill-red-100',
@@ -181,9 +171,11 @@ function OverviewContent() {
     summaryError,
     summaryQueryKey,
     isInitialLoading,
+    isBare,
     isEmpty,
     isError,
     error,
+    isDeploymentsFetching,
     linkParams,
     mode,
     filter,
@@ -273,28 +265,51 @@ function OverviewContent() {
     );
   };
 
-  if (isInitialLoading || isEmpty) {
-    const useSolidEmpty = !isInitialLoading && !isError;
+  if (isInitialLoading) {
+    return (
+      <div className="flex min-h-full flex-col justify-end px-8 py-6 translate-y-10">
+        <p className="flex items-center gap-2">
+          <Spinner />
+          Loading...
+        </p>
+      </div>
+    );
+  }
+
+  if (isBare) {
     return (
       <div className="flex min-h-full flex-col items-center justify-center p-6">
         <RestateServer
-          className={useSolidEmpty ? emptyServerStyles({ isError }) : undefined}
           status={ferrofluidStatus}
-          appearance={useSolidEmpty ? 'solid' : 'ghost'}
           isEmpty
-          aura={isInitialLoading ? 'prominent' : undefined}
-          auraAlwaysVisible={isInitialLoading}
           onPress={onRefresh}
         >
-          {isInitialLoading ? (
-            <LoadingChildren />
-          ) : (
-            <>
-              <NoDeploymentPlaceholder error={error} />
-              {!isError && GettingStarted && (
-                <GettingStarted className="hidden @tall:block" />
-              )}
-            </>
+          {isError && !isDeploymentsFetching && (
+            <div className="relative mt-6 flex w-full flex-col items-center gap-2">
+              <ErrorBanner error={error} />
+            </div>
+          )}
+        </RestateServer>
+      </div>
+    );
+  }
+
+  if (isEmpty) {
+    return (
+      <div className="flex min-h-full flex-col items-center justify-center p-6">
+        <RestateServer
+          className={emptyServerStyles({ isError: false })}
+          status={ferrofluidStatus}
+          appearance="solid"
+          isEmpty
+          onPress={onRefresh}
+        >
+          <NoDeploymentPlaceholder
+            error={isError ? error : null}
+            isRefreshing={isDeploymentsFetching}
+          />
+          {GettingStarted && (
+            <GettingStarted className="hidden @tall:block" />
           )}
         </RestateServer>
       </div>
@@ -344,13 +359,13 @@ function OverviewContent() {
               </div>
             </div>
           </div>
-          <div className="relative z-10 -mt-4 flex min-h-7 w-[18rem] items-baseline justify-center gap-1.5">
+          <div className="relative z-10 -mt-2 flex min-h-7 w-[18rem] items-baseline justify-center gap-1.5">
             {summaryError ? (
               <Popover>
                 <PopoverTrigger>
                   <Button
                     variant="secondary"
-                    className="flex shrink-0 translate-y-0.5 items-center gap-1.5 rounded-xl border-orange-200/80 bg-orange-50/80 px-3 py-1.5 text-xs text-orange-600 shadow-none hover:bg-orange-100/80"
+                    className="flex shrink-0 translate-y-0.5 items-center gap-1.5 rounded-xl border-orange-200/80 bg-orange-50/80 px-3 py-1 text-xs text-orange-600 shadow-none hover:bg-orange-100/80"
                   >
                     <Icon
                       name={IconName.TriangleAlert}
@@ -426,12 +441,12 @@ function OverviewContent() {
           />
         </div>
       )}
-      <div ref={issuesRef} className="min-h-6.5 mt-8">
-        <IssuesBannerStack className="-mt-4" />
+      <div ref={issuesRef} className="min-h-6.5  flex flex-col items-center pb-5">
+        <IssuesBannerStack className="mt-2" />
       </div>
 
       <ContentPanel
-        className="mt-2 w-full"
+        className="w-full"
         tabs={{
           queryParam: OVERVIEW_MODE_PARAM,
           defaultId: 'services',
@@ -499,6 +514,9 @@ function OverviewContent() {
         <ContentPanelBody className='pb-20'>
           <ContentPanelSection>
             <div ref={gridRef} className="pt-2">
+              {isError && !isDeploymentsFetching && error && (
+                <ErrorBanner error={error} className="mx-2 mb-3 rounded-xl" />
+              )}
               {mode === 'services' ? (
                 <ServicesGridList />
               ) : (

@@ -25,6 +25,7 @@ export function ServicesGridList() {
     serviceIssuesMap,
     isSummaryError,
     isSummaryLoading,
+    isDeploymentsFetching,
     baseUrl,
     linkParams,
     resolvedServiceSortDescriptor,
@@ -50,6 +51,7 @@ export function ServicesGridList() {
     serviceIssuesMap,
     isSummaryError,
     isSummaryLoading,
+    isDeploymentsFetching,
     linkParams,
   });
 

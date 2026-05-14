@@ -77,9 +77,16 @@ export function useOverviewData(filters: FilterItem[] = []) {
     return map;
   }, [servicesMap, deploymentsMap, serviceStatusCounts, isVersionGte]);
 
-  const isInitialLoading = !isNew && !deploymentsMap && isFetching;
+  const hasData = isNew || deploymentsMap !== undefined;
+  const isInitialLoading = !isFetched && !isNew;
+  // "bare" = fetched (or attempted) but never got data — typically after an
+  // initial-load error. No empty-state placeholder yet because we don't know
+  // whether there are deployments.
+  const isBare = !isInitialLoading && !hasData;
   const isEmpty =
-    (isFetched || isNew) && (!deploymentsMap || deploymentsMap.size === 0);
+    !isInitialLoading &&
+    hasData &&
+    (!deploymentsMap || deploymentsMap.size === 0);
 
   return {
     servicesMap,
@@ -96,8 +103,10 @@ export function useOverviewData(filters: FilterItem[] = []) {
     summaryError,
     summaryQueryKey,
     isInitialLoading,
+    isBare,
     isEmpty,
     isError,
     error,
+    isDeploymentsFetching: isFetching,
   };
 }

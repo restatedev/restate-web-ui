@@ -44,6 +44,7 @@ export function DeploymentsGridList() {
     deploymentsMap,
     drainedDeploymentIds,
     isDeploymentStatusLoading,
+    isDeploymentsFetching,
     baseUrl,
     linkParams,
     resolvedDeploymentSortDescriptor,
@@ -70,6 +71,7 @@ export function DeploymentsGridList() {
 
   const deploymentColumns = useDeploymentColumns({
     isDeploymentStatusLoading,
+    isDeploymentsFetching,
     baseUrl,
     linkParams,
   });
