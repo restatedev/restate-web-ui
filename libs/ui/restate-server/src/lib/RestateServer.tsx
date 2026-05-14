@@ -28,12 +28,23 @@ const overlayStyles = tv({
   base: '',
   variants: {
     appearance: {
-      ghost:
-        'opacity-0 transition-opacity duration-300 group-hover/server:opacity-100',
+      ghost: '',
       solid: '',
     },
+    alwaysVisible: {
+      true: '',
+      false: '',
+    },
   },
-  defaultVariants: { appearance: 'ghost' },
+  compoundVariants: [
+    {
+      appearance: 'ghost',
+      alwaysVisible: false,
+      class:
+        'opacity-0 transition-opacity duration-300 group-hover/server:opacity-100',
+    },
+  ],
+  defaultVariants: { appearance: 'ghost', alwaysVisible: false },
 });
 
 const serverIconStyles = tv({
@@ -118,14 +129,11 @@ export function RestateServer({
       {aura && (
         <div
           ref={auraRef}
-          className={
-            auraAlwaysVisible
-              ? 'pointer-events-none absolute inset-0 overflow-visible'
-              : overlayStyles({
-                  appearance,
-                  class: 'pointer-events-none absolute inset-0 overflow-visible',
-                })
-          }
+          className={overlayStyles({
+            appearance,
+            alwaysVisible: auraAlwaysVisible,
+            class: 'pointer-events-none absolute inset-0 overflow-visible',
+          })}
         >
           <ServerRings status={status} intensity={aura} />
         </div>
