@@ -95,7 +95,13 @@ export function ServicePlayground() {
 
   return (
     <>
-      <ComplementaryWithSearchParam paramName={SERVICE_PLAYGROUND_QUERY_PARAM}>
+      <ComplementaryWithSearchParam
+        paramName={SERVICE_PLAYGROUND_QUERY_PARAM}
+        onCloseQueryParam={(params) => {
+          params.delete(SERVICE_PLAYGROUND_QUERY_PARAM);
+          return params;
+        }}
+      >
         <ServicePlaygroundComplementaryContent
           setIsSidebar={setIsSidebar}
           isSidebar={isSidebar}
