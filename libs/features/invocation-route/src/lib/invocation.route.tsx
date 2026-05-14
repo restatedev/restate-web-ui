@@ -233,6 +233,9 @@ function Component() {
               )}
             </>
           )}
+          {error && journalAndInvocationData && (
+            <ErrorBanner error={error} className="rounded-xl" />
+          )}
         </div>
 
         <ContentPanel className="mt-10">

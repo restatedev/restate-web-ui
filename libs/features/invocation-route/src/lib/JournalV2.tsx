@@ -331,16 +331,27 @@ export function JournalV2({
 
   const [containerWidthRef, containerWidthPx] = useContainerWidth();
 
-  if (invocationApiError && showApiError) {
-    return <ErrorBanner error={invocationApiError} className="rounded-2xl" />;
+  if (invocationApiError && showApiError && !journalAndInvocationData) {
+    return (
+      <ContentPanelSection>
+        <div className="px-2">
+          <ErrorBanner
+            error={invocationApiError}
+            className="flex-none rounded-xl"
+          />
+        </div>
+      </ContentPanelSection>
+    );
   }
 
   if (isPending[invocationId]) {
     return (
-      <div className="flex items-center gap-1.5 px-4 py-2 text-sm text-zinc-500">
-        <Spinner className="h-4 w-4" />
-        Loading…
-      </div>
+      <ContentPanelSection>
+        <div className="flex items-center gap-1.5 px-4 py-2 text-sm text-zinc-500">
+          <Spinner className="h-4 w-4" />
+          Loading…
+        </div>
+      </ContentPanelSection>
     );
   }
 
@@ -386,10 +397,12 @@ export function JournalV2({
           <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
             <Suspense
               fallback={
-                <div className="mt-4 flex items-center gap-1.5 p-4 text-sm text-zinc-500">
-                  <Spinner className="h-4 w-4" />
-                  Loading…
-                </div>
+                <ContentPanelSection>
+                  <div className="flex items-center gap-1.5 p-4 text-sm text-zinc-500">
+                    <Spinner className="h-4 w-4" />
+                    Loading…
+                  </div>
+                </ContentPanelSection>
               }
             >
               {withTimeline && (
