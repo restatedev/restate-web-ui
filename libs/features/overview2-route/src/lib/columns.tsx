@@ -296,7 +296,7 @@ export function useDeploymentColumns({
     },
     {
       id: 'created_at',
-      title: 'Created at',
+      title: 'Registered at',
       allowsSorting: true,
       render: (deployment) => (
         <OverviewColumnMeta
@@ -443,9 +443,9 @@ function DeploymentCreatedAt({ value }: { value: string }) {
   return (
     <Badge className="z-[2] hidden w-full border-none bg-transparent pl-1.5 md:flex">
       <span className="w-full truncate text-right">
-        <span className="font-normal text-zinc-500">Created at </span>
+        <span className="font-normal text-zinc-500">Registered </span>
         <span className="font-normal text-zinc-500">{!isPast && 'in '}</span>
-        <DateTooltip date={createdAt} title="Created at">
+        <DateTooltip date={createdAt} title="Registered at">
           {duration}
         </DateTooltip>
         <span className="font-normal text-zinc-500">{isPast && ' ago'}</span>

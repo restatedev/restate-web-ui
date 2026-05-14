@@ -266,12 +266,22 @@ const SUPPORT_LINKS: { href: string; label: string; icon: IconName }[] = [
     icon: IconName.Docs,
   },
   {
+    href: 'https://github.com/restatedev/examples',
+    label: 'Examples',
+    icon: IconName.Example,
+  },
+  {
+    href: 'https://github.com/restatedev/ai-examples',
+    label: 'AI Examples',
+    icon: IconName.AiExample,
+  },
+  {
     href: 'https://discord.gg/skW3AZ6uGd',
     label: 'Discord',
     icon: IconName.Discord,
   },
   {
-    href: 'https://join.slack.com/t/restatecommunity/shared_invite/zt-2v9gl005c-WBpr167o5XJZI1l7HWKImA',
+    href: 'https://slack.restate.dev/',
     label: 'Slack',
     icon: IconName.Slack,
   },
