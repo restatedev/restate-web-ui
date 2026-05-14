@@ -2,8 +2,8 @@ import { Button } from '@restate/ui/button';
 import {
   ComplementaryWithSearchParam,
   ComplementaryClose,
+  ComplementaryHeader,
   useParamValue,
-  ComplementaryFooter,
 } from '@restate/ui/layout';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import {
@@ -11,7 +11,12 @@ import {
   useServiceDetails,
 } from '@restate/data-access/admin-api-hooks';
 import { Icon, IconName } from '@restate/ui/icons';
-import { TruncateWithTooltip } from '@restate/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  TruncateWithTooltip,
+} from '@restate/ui/tooltip';
 import { ErrorBanner } from '@restate/ui/error';
 import { Deployment } from '@restate/features/deployment';
 import {
@@ -70,30 +75,36 @@ function ServiceDetailsContent() {
 
   return (
     <>
-      <ComplementaryFooter>
-        <div className="flex flex-auto flex-col gap-2">
-          {error && <ErrorBanner errors={[error]} />}
-          <div className="flex gap-2">
+      <ComplementaryHeader>
+        <Tooltip>
+          <TooltipTrigger>
+            <Button
+              variant="secondary"
+              onClick={() => refetch()}
+              disabled={isPending}
+              className="flex h-7 w-7 items-center justify-center rounded-full p-0"
+            >
+              <Icon name={IconName.Retry} className="h-3.5 w-3.5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent size="sm">Refresh</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger>
             <ComplementaryClose>
               <Button
-                className="w-1/2 flex-auto grow-0"
                 variant="secondary"
-                disabled={isPending}
+                className="flex h-7 w-7 items-center justify-center rounded-full p-0"
               >
-                Close
+                <Icon name={IconName.X} className="h-3.5 w-3.5" />
               </Button>
             </ComplementaryClose>
-            <Button
-              className="w-1/2 flex-auto grow-0"
-              onClick={() => refetch()}
-            >
-              Refresh
-            </Button>
-          </div>
-        </div>
-      </ComplementaryFooter>
+          </TooltipTrigger>
+          <TooltipContent size="sm">Close</TooltipContent>
+        </Tooltip>
+      </ComplementaryHeader>
 
-      <ServiceContent service={service} />
+      <ServiceContent service={service} error={error} />
     </>
   );
 }
@@ -116,7 +127,13 @@ const handlerNameStyles = tv({
     },
   },
 });
-function ServiceContent({ service }: { service: string }) {
+function ServiceContent({
+  service,
+  error,
+}: {
+  service: string;
+  error?: Error | null;
+}) {
   const { data: listDeploymentsData } = useListDeployments();
   const { data, isPending } = useServiceDetails(service, {
     enabled: Boolean(service),
@@ -280,6 +297,12 @@ function ServiceContent({ service }: { service: string }) {
       </h2>
       {OnboardingGuide && (
         <OnboardingGuide stage="open-playground" service={service} />
+      )}
+
+      {error && (
+        <div className="mb-1">
+          <ErrorBanner errors={[error]} />
+        </div>
       )}
 
       <div className="flex flex-col gap-2">

@@ -2,7 +2,7 @@ import { Button } from '@restate/ui/button';
 import {
   ComplementaryWithSearchParam,
   ComplementaryClose,
-  ComplementaryFooter,
+  ComplementaryHeader,
   useParamValue,
 } from '@restate/ui/layout';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
@@ -17,6 +17,9 @@ import {
   DateTooltip,
   HoverTooltip,
   InlineTooltip,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
   TruncateWithTooltip,
 } from '@restate/ui/tooltip';
 import {
@@ -52,9 +55,12 @@ export function DeploymentDetails() {
 
 function DeploymentDetailsContents() {
   const deployment = useParamValue();
-  const { error } = useDeploymentDetails(String(deployment), {
-    ...(!deployment && { enabled: false }),
-  });
+  const { error, isPending, refetch } = useDeploymentDetails(
+    String(deployment),
+    {
+      ...(!deployment && { enabled: false }),
+    },
+  );
   const { isVersionGte } = useRestateContext();
   const isDeploymentUpdateSupported = isVersionGte?.('1.6.0');
 
@@ -64,63 +70,52 @@ function DeploymentDetailsContents() {
 
   return (
     <>
-      <ComplementaryFooter>
-        <div className="flex flex-auto flex-col gap-2">
-          {error && <ErrorBanner errors={[error]} />}
-          <div className="flex gap-2">
+      <ComplementaryHeader>
+        <Tooltip>
+          <TooltipTrigger>
+            <Button
+              variant="secondary"
+              onClick={() => refetch()}
+              disabled={isPending}
+              className="flex h-7 w-7 items-center justify-center rounded-full p-0"
+            >
+              <Icon name={IconName.Retry} className="h-3.5 w-3.5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent size="sm">Refresh</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger>
             <ComplementaryClose>
-              <Button className="w-1/2 flex-auto grow-0" variant="secondary">
-                Close
+              <Button
+                variant="secondary"
+                className="flex h-7 w-7 items-center justify-center rounded-full p-0"
+              >
+                <Icon name={IconName.X} className="h-3.5 w-3.5" />
               </Button>
             </ComplementaryClose>
-            {isDeploymentUpdateSupported ? (
-              <SplitButton
-                className="text-md w-1/2 flex-auto grow-0"
-                variant="primary"
-                splitClassName="rounded-r-xl w-8"
-                mini={false}
-                menus={
-                  <>
-                    <DropdownItem
-                      href={`?${UPDATE_DEPLOYMENT_QUERY}=${deployment}`}
-                    >
-                      Update
-                    </DropdownItem>
-                    <DropdownItem
-                      href={`?${DELETE_DEPLOYMENT_QUERY_PARAM}=${deployment}`}
-                      destructive
-                    >
-                      Delete
-                    </DropdownItem>
-                  </>
-                }
-              >
-                <Link
-                  href={`?${UPDATE_DEPLOYMENT_QUERY}=${deployment}`}
-                  variant="button"
-                  className="flex-auto rounded-r-none"
-                >
-                  <div className="pl-3">Update</div>
-                </Link>
-              </SplitButton>
-            ) : (
-              <Link
-                href={`?${DELETE_DEPLOYMENT_QUERY_PARAM}=${deployment}`}
-                variant="destructive-button"
-                className="flex-auto"
-              >
-                Delete
-              </Link>
-            )}
-          </div>
-        </div>
-      </ComplementaryFooter>
-      <DeploymentContent deployment={deployment} />
+          </TooltipTrigger>
+          <TooltipContent size="sm">Close</TooltipContent>
+        </Tooltip>
+      </ComplementaryHeader>
+      <DeploymentContent
+        deployment={deployment}
+        error={error}
+        isDeploymentUpdateSupported={isDeploymentUpdateSupported}
+      />
     </>
   );
 }
 
-function DeploymentContent({ deployment }: { deployment: string }) {
+function DeploymentContent({
+  deployment,
+  error,
+  isDeploymentUpdateSupported,
+}: {
+  deployment: string;
+  error?: Error | null;
+  isDeploymentUpdateSupported?: boolean;
+}) {
   const { data, isPending } = useDeploymentDetails(deployment);
   const { tunnel, isVersionGte } = useRestateContext();
 
@@ -129,9 +124,9 @@ function DeploymentContent({ deployment }: { deployment: string }) {
 
   const isTunnel = Boolean(
     tunnel?.isEnabled &&
-      data &&
-      isHttpDeployment(data) &&
-      tunnel.fromHttp(data.uri),
+    data &&
+    isHttpDeployment(data) &&
+    tunnel.fromHttp(data.uri),
   );
   const endpoint = getEndpoint(data);
   const tunnelEndpoint = isTunnel ? tunnel?.fromHttp(endpoint) : undefined;
@@ -140,8 +135,8 @@ function DeploymentContent({ deployment }: { deployment: string }) {
 
   const isDeprecated = Boolean(
     data &&
-      data.max_protocol_version < MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION &&
-      isVersionGte?.('1.6.0'),
+    data.max_protocol_version < MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION &&
+    isVersionGte?.('1.6.0'),
   );
   return (
     <>
@@ -188,7 +183,7 @@ function DeploymentContent({ deployment }: { deployment: string }) {
                   >
                     <Badge
                       size="sm"
-                      className="relative z-[2] max-w-full flex-auto shrink-0 translate-y-px cursor-default rounded-sm py-0.5 font-mono"
+                      className="relative z-2 max-w-full flex-auto shrink-0 translate-y-px cursor-default rounded-sm py-0.5 font-mono"
                     >
                       <Icon
                         name={IconName.AtSign}
@@ -206,6 +201,47 @@ function DeploymentContent({ deployment }: { deployment: string }) {
             </>
           )}
         </div>
+        <div className="ml-auto flex shrink-0 items-center self-start">
+          {isDeploymentUpdateSupported ? (
+            <SplitButton
+              className="px-3 py-0 text-0.5xs"
+              variant="primary"
+              splitClassName="rounded-r-lg w-7"
+              mini={false}
+              menus={
+                <>
+                  <DropdownItem
+                    href={`?${UPDATE_DEPLOYMENT_QUERY}=${deployment}`}
+                  >
+                    Update
+                  </DropdownItem>
+                  <DropdownItem
+                    href={`?${DELETE_DEPLOYMENT_QUERY_PARAM}=${deployment}`}
+                    destructive
+                  >
+                    Delete
+                  </DropdownItem>
+                </>
+              }
+            >
+              <Link
+                href={`?${UPDATE_DEPLOYMENT_QUERY}=${deployment}`}
+                variant="button"
+                className="rounded-l-lg rounded-r-none px-3 py-0 text-0.5xs leading-6 font-normal"
+              >
+                Update
+              </Link>
+            </SplitButton>
+          ) : (
+            <Link
+              href={`?${DELETE_DEPLOYMENT_QUERY_PARAM}=${deployment}`}
+              variant="destructive-button"
+              className="rounded-lg px-3 py-0 text-0.5xs leading-6 font-normal"
+            >
+              Delete
+            </Link>
+          )}
+        </div>
       </h2>
       {isDeprecated && (
         <p className="mt-2 flex gap-2 rounded-xl border border-orange-200 bg-orange-50 p-3 text-0.5xs text-orange-600">
@@ -220,6 +256,11 @@ function DeploymentContent({ deployment }: { deployment: string }) {
             upgrade…
           </span>
         </p>
+      )}
+      {error && (
+        <div className="mt-2">
+          <ErrorBanner errors={[error]} />
+        </div>
       )}
       {data && (
         <Section className="mt-4">
