@@ -45,23 +45,26 @@ const LINE_COUNT = 7;
 function usePerspectiveLines(
   containerRef: React.RefObject<HTMLDivElement | null>,
   serverRef: React.RefObject<HTMLDivElement | null>,
-  gridRef: React.RefObject<HTMLDivElement | null>,
+  panel: HTMLElement | null,
+  enabled: boolean,
 ) {
   const [lineData, setLineData] = useState({
     paths: [] as string[],
     viewBox: '0 0 1 1',
+    fadeStart: 0,
+    fadeEnd: 0,
   });
 
   useEffect(() => {
+    if (!enabled) return;
     const container = containerRef.current;
     const server = serverRef.current;
-    const grid = gridRef.current;
-    if (!container || !server || !grid) return;
+    if (!container || !server || !panel) return;
 
     const update = () => {
       const cRect = container.getBoundingClientRect();
       const sRect = server.getBoundingClientRect();
-      const gRect = grid.getBoundingClientRect();
+      const pRect = panel.getBoundingClientRect();
 
       const w = cRect.width;
       const h = cRect.height;
@@ -70,31 +73,36 @@ function usePerspectiveLines(
       const serverCenterX = sRect.left + sRect.width / 2 - cRect.left;
       const startY = sRect.bottom - cRect.top;
       const startSpread = sRect.width / 4;
-      const endY = gRect.top - cRect.top;
-      const gridCenter = gRect.left + gRect.width / 2 - cRect.left;
-      const endSpread = gRect.width * 0.35;
+      const endY = pRect.top - cRect.top;
+      const panelCenter = pRect.left + pRect.width / 2 - cRect.left;
+      const endSpread = pRect.width * 0.35;
 
       const paths: string[] = [];
       for (let i = 0; i < LINE_COUNT; i++) {
         const t = (i - (LINE_COUNT - 1) / 2) / ((LINE_COUNT - 1) / 2);
         const topX = serverCenterX + t * startSpread;
-        const bottomX = gridCenter + t * endSpread;
-        const verticalEnd = startY + (endY - startY) * 0.15;
-        const cpY1 = verticalEnd + (endY - verticalEnd) * 0.55;
-        const cpY2 = verticalEnd + (endY - verticalEnd) * 0.85;
+        const bottomX = panelCenter + t * endSpread;
+        const verticalEnd = startY + (endY - startY) * 0.1;
+        const cpY1 = verticalEnd + (endY - verticalEnd) * 0.35;
+        const cpY2 = verticalEnd + (endY - verticalEnd) * 0.75;
         paths.push(
           `M${topX},${startY} L${topX},${verticalEnd} C${topX},${cpY1} ${bottomX},${cpY2} ${bottomX},${endY} L${bottomX},${h}`,
         );
       }
-      setLineData({ paths, viewBox: `0 0 ${w} ${h}` });
+      setLineData({
+        paths,
+        viewBox: `0 0 ${w} ${h}`,
+        fadeStart: endY,
+        fadeEnd: endY + 24,
+      });
     };
 
     update();
     const observer = new ResizeObserver(update);
     observer.observe(container);
-    observer.observe(grid);
+    observer.observe(panel);
     return () => observer.disconnect();
-  }, [containerRef, serverRef, gridRef]);
+  }, [containerRef, serverRef, panel, enabled]);
 
   return lineData;
 }
@@ -108,7 +116,7 @@ function usePerspectiveRay(svgRef: React.RefObject<SVGSVGElement | null>) {
       path.style.strokeDasharray = '';
       path.style.strokeDashoffset = '';
       path.animate(
-        [{ opacity: 0 }, { opacity: 0.15, offset: 0.15 }, { opacity: 0 }],
+        [{ opacity: 0 }, { opacity: 0.2, offset: 0.15 }, { opacity: 0 }],
         {
           duration: 800,
           delay: Math.abs(i - (LINE_COUNT - 1) / 2) * 50,
@@ -124,24 +132,41 @@ function PerspectiveLines({
   svgRef,
   paths,
   viewBox,
+  fadeStart,
+  fadeEnd,
 }: {
   svgRef: React.RefObject<SVGSVGElement | null>;
   paths: string[];
   viewBox: string;
+  fadeStart: number;
+  fadeEnd: number;
 }) {
   return (
     <svg
       ref={svgRef}
-      className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-full w-full text-indigo-400"
+      className="pointer-events-none absolute inset-x-0 top-0 z-5 h-full w-full text-slate-400"
       viewBox={viewBox}
       fill="none"
     >
+      <defs>
+        <linearGradient
+          id="perspective-fade"
+          gradientUnits="userSpaceOnUse"
+          x1={0}
+          y1={fadeStart}
+          x2={0}
+          y2={fadeEnd}
+        >
+          <stop offset="0" stopColor="currentColor" stopOpacity="1" />
+          <stop offset="1" stopColor="currentColor" stopOpacity="0.05" />
+        </linearGradient>
+      </defs>
       {paths.map((d, i) => (
         <path
           key={i}
           d={d}
-          stroke="currentColor"
-          strokeWidth="0.8"
+          stroke="url(#perspective-fade)"
+          strokeWidth="1.5"
           opacity="0"
         />
       ))}
@@ -218,11 +243,12 @@ function OverviewContent() {
   const issuesRef = useRef<HTMLDivElement>(null);
   const linesSvgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const gridRef = useRef<HTMLDivElement>(null);
-  const { paths, viewBox } = usePerspectiveLines(
+  const [panelEl, setPanelEl] = useState<HTMLDivElement | null>(null);
+  const { paths, viewBox, fadeStart, fadeEnd } = usePerspectiveLines(
     containerRef,
     serverRef,
-    gridRef,
+    panelEl,
+    !isInitialLoading && !isBare && !isEmpty,
   );
   const triggerRay = usePerspectiveRay(linesSvgRef);
   const noInvocations =
@@ -321,7 +347,13 @@ function OverviewContent() {
       ref={containerRef}
       className="relative mx-auto flex min-h-0 w-full flex-1 flex-col items-center gap-0 pt-8"
     >
-      <PerspectiveLines svgRef={linesSvgRef} paths={paths} viewBox={viewBox} />
+      <PerspectiveLines
+        svgRef={linesSvgRef}
+        paths={paths}
+        viewBox={viewBox}
+        fadeStart={fadeStart}
+        fadeEnd={fadeEnd}
+      />
       <div className="relative flex w-full items-center justify-center">
         <div className="hidden min-w-0 flex-1 justify-end pr-6 md:flex">
           {showLegend && (
@@ -441,12 +473,15 @@ function OverviewContent() {
           />
         </div>
       )}
-      <div ref={issuesRef} className="min-h-6.5  flex flex-col items-center pb-5">
+      <div
+        ref={issuesRef}
+        className="relative z-20 flex min-h-6.5 flex-col items-center pb-5"
+      >
         <IssuesBannerStack className="mt-2" />
       </div>
 
-      <ContentPanel
-        className="w-full"
+        <ContentPanel
+          className="w-full"
         tabs={{
           queryParam: OVERVIEW_MODE_PARAM,
           defaultId: 'services',
@@ -476,7 +511,10 @@ function OverviewContent() {
           <DeploymentActions />
         </ContentPanelToolbar>
         <ContentPanelHeader className="px-2 py-1.5">
-          <div className="flex w-full flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+          <div
+            ref={setPanelEl}
+            className="flex w-full flex-col gap-2 lg:flex-row lg:items-center lg:justify-between"
+          >
             <div className="flex flex-wrap items-center gap-2">
               <SortByDropdown
                 formatServiceSortLabel={(option) =>
@@ -513,7 +551,7 @@ function OverviewContent() {
         </ContentPanelHeader>
         <ContentPanelBody className='pb-20'>
           <ContentPanelSection>
-            <div ref={gridRef} className="pt-2">
+            <div className="pt-2">
               {isError && !isDeploymentsFetching && error && (
                 <ErrorBanner error={error} className="mx-2 mb-3 rounded-xl" />
               )}
@@ -525,7 +563,7 @@ function OverviewContent() {
             </div>
           </ContentPanelSection>
         </ContentPanelBody>
-      </ContentPanel>
+        </ContentPanel>
     </div>
   );
 }
