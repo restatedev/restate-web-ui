@@ -51,16 +51,11 @@ export function IssueBannerPill({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="max-w-md">
-        <div className="-m-px rounded-2xl border border-zinc-900/80 bg-zinc-800/90 p-3 shadow-[inset_0_1px_0_0_var(--color-gray-500)] drop-shadow-xl backdrop-blur-xl">
-          {details instanceof Error ? (
-            <ErrorBanner
-              error={details}
-              className="w-full rounded-md bg-white/5 [&_*]:text-orange-300! [&_code]:border-transparent [&_code]:bg-zinc-800/30 [&_code]:mix-blend-normal [&_svg]:h-3.5 [&_svg]:w-3.5"
-            />
-          ) : (
-            <div className="text-xs text-zinc-300">{details}</div>
-          )}
-        </div>
+        {details instanceof Error ? (
+          <ErrorBanner error={details} className="rounded-2xl" />
+        ) : (
+          <div className="p-3 text-xs text-zinc-700">{details}</div>
+        )}
       </PopoverContent>
     </Popover>
   );

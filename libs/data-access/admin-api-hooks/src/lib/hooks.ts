@@ -8,7 +8,6 @@ import {
   MutationOptions,
   Query,
   useMutation,
-  UseMutationOptions,
   useQueries,
   useQuery,
   UseQueryOptions,
@@ -30,7 +29,6 @@ import type {
   Deployment,
   FilterItem,
   Service,
-  StateResponse,
 } from '@restate/data-access/admin-api-spec';
 import type {
   HookQueryOptions,
