@@ -434,7 +434,7 @@ function OverviewContent() {
           ],
         }}
       >
-        <ContentPanelToolbar className="px-3">
+        <ContentPanelToolbar className="">
           <DeploymentActions />
         </ContentPanelToolbar>
         <ContentPanelHeader className="px-2 py-1.5">
