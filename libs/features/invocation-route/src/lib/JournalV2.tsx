@@ -393,11 +393,11 @@ export function JournalV2({
               }
             >
               {withTimeline && (
-                <ContentPanelToolbar className="relative items-end!">
+                <ContentPanelToolbar className="relative items-end! pr-5 pl-3">
                   <div className="relative flex flex-col">
                     <div
                       aria-hidden
-                      className="pointer-events-none absolute top-[1.375rem] bottom-0 left-3.5 w-px -translate-x-1/2 border-l border-dashed border-zinc-300"
+                      className="pointer-events-none absolute top-5.5 bottom-0 left-3.5 w-px -translate-x-1/2 border-l border-dashed border-zinc-300"
                     />
                     <div className="relative flex h-full w-full items-center gap-1.5">
                       <div className="absolute left-2.5 h-2 w-2 rounded-full bg-zinc-300" />

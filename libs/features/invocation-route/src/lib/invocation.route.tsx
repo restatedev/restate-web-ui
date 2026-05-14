@@ -48,7 +48,7 @@ const lastFailureContainer = tv({
   base: 'z-20 min-w-0 origin-bottom-left rounded-xl p-0',
 });
 const lastFailureContent = tv({
-  base: 'flex-auto rounded-xl rounded-bl-none border bg-linear-to-b shadow-xl shadow-zinc-800/3 lg:mr-12 [&_.error]:max-h-72',
+  base: '-ml-4 flex-auto rounded-xl rounded-bl-none border bg-linear-to-b shadow-xl shadow-zinc-800/3 lg:mr-12 [&_.error]:max-h-72',
   variants: {
     isFailed: {
       true: 'border-red-400/50 from-red-50 to-red-50',
@@ -109,7 +109,7 @@ function Component() {
   return (
     <InvocationPageProvider isInInvocationPage>
       <div className="flex min-h-0 flex-1 flex-col">
-        <div className="@container flex flex-col gap-1">
+        <div className="@container flex flex-col gap-1 px-5">
           <Link
             className="flex items-center gap-1 self-start text-sm text-gray-500"
             variant="secondary"
@@ -156,7 +156,7 @@ function Component() {
             </div>
           </div>
         </div>
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 px-5">
           <div
             className={metadataContainerStyles({
               isVirtualObject,
@@ -260,7 +260,7 @@ export const invocation = { Component };
 const anchorStyles = tv({
   base: '',
   slots: {
-    line: 'invisible absolute top-0 right-0 left-0 z-10 min-h-9 translate-x-full rounded-t-xl border-l',
+    line: 'invisible absolute top-3 right-0 left-0 z-10 min-h-9 border-l',
     anchor:
       'absolute bottom-0 left-0 z-10 h-2 w-2 -translate-x-1/2 rounded-full border-2 border-white/60',
   },
@@ -299,7 +299,7 @@ function Anchor({
         Number(bottomRect?.height);
       if (element) {
         element.style.visibility = 'visible';
-        element.style.height = gap > 14 ? `${gap - 14}px` : '0px';
+        element.style.height = gap > 26 ? `${gap - 26}px` : '0px';
       }
     };
     const handleVisibilityChange = () => {
@@ -331,7 +331,7 @@ function Anchor({
   }, [hasLastFailure]);
 
   return (
-    <div className="relative z-40 w-6 -translate-x-full translate-y-4">
+    <div className="relative z-40 w-4 -translate-x-full translate-y-4">
       <div ref={ref} className={line()}>
         {hasLastFailure && <div className={anchor()} />}
       </div>
