@@ -175,7 +175,7 @@ function PerspectiveLines({
 }
 
 const emptyServerStyles = tv({
-  base: 'flex w-full flex-auto flex-col items-center ring-1 ring-white/80 justify-center overflow-hidden rounded-xl border bg-gray-200/50 pt-24 pb-8 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] @tall:pt-10 @tall:pb-40',
+  base: 'flex w-full flex-auto flex-col items-center justify-center overflow-hidden rounded-xl border bg-gray-200/50 pt-24 pb-8 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] ring-1 ring-white/80 @tall:pt-10 @tall:pb-40',
   variants: {
     isError: {
       true: '[&>svg:first-child>path]:fill-red-100',
@@ -293,7 +293,7 @@ function OverviewContent() {
 
   if (isInitialLoading) {
     return (
-      <div className="flex min-h-full flex-col justify-end px-8 py-6 translate-y-10">
+      <div className="flex min-h-full translate-y-10 flex-col justify-end px-8 py-6">
         <p className="flex items-center gap-2">
           <Spinner />
           Loading...
@@ -305,11 +305,7 @@ function OverviewContent() {
   if (isBare) {
     return (
       <div className="flex min-h-full flex-col items-center justify-center p-6">
-        <RestateServer
-          status={ferrofluidStatus}
-          isEmpty
-          onPress={onRefresh}
-        >
+        <RestateServer status={ferrofluidStatus} isEmpty onPress={onRefresh}>
           {isError && !isDeploymentsFetching && (
             <div className="relative mt-6 flex w-full flex-col items-center gap-2">
               <ErrorBanner error={error} />
@@ -334,9 +330,7 @@ function OverviewContent() {
             error={isError ? error : null}
             isRefreshing={isDeploymentsFetching}
           />
-          {GettingStarted && (
-            <GettingStarted className="hidden @tall:block" />
-          )}
+          {GettingStarted && <GettingStarted className="hidden @tall:block" />}
         </RestateServer>
       </div>
     );
@@ -480,8 +474,8 @@ function OverviewContent() {
         <IssuesBannerStack className="mt-2" />
       </div>
 
-        <ContentPanel
-          className="w-full"
+      <ContentPanel
+        className="w-full"
         tabs={{
           queryParam: OVERVIEW_MODE_PARAM,
           defaultId: 'services',
@@ -549,7 +543,7 @@ function OverviewContent() {
             </SearchField>
           </div>
         </ContentPanelHeader>
-        <ContentPanelBody className='pb-20'>
+        <ContentPanelBody className="pb-20">
           <ContentPanelSection>
             <div className="pt-2">
               {isError && !isDeploymentsFetching && error && (
@@ -563,7 +557,7 @@ function OverviewContent() {
             </div>
           </ContentPanelSection>
         </ContentPanelBody>
-        </ContentPanel>
+      </ContentPanel>
     </div>
   );
 }

@@ -57,13 +57,12 @@ const styles = tv({
     body: 'relative flex min-h-0 flex-1 flex-col',
     sectionRoot: 'relative flex flex-col',
     sectionFade:
-      'pointer-events-none sticky top-[calc(var(--cp-toolbar-top,0px)+var(--cp-toolbar-height,0px)-var(--cp-toolbar-tuck,0px))] z-10 -mb-8 h-8 bg-linear-to-b backdrop-blur-lg backdrop-saturate-150 from-gray-50 to-transparent',
+      'pointer-events-none sticky top-[calc(var(--cp-toolbar-top,0px)+var(--cp-toolbar-height,0px)-var(--cp-toolbar-tuck,0px))] z-10 -mb-8 h-8 bg-linear-to-b from-gray-50 to-transparent backdrop-blur-lg backdrop-saturate-150',
     sectionContent: 'flex-1 pt-[var(--cp-section-pt,0px)]',
     tabsWrapper:
       'relative flex w-full items-end gap-3 bg-gray-100 px-3 [padding-top:calc(var(--cp-toolbar-tuck,0px)+0.5rem)]',
     tabList: 'relative flex max-w-full items-end gap-1',
-    tabsToolbarSlot:
-      'flex flex-1 items-center justify-end self-stretch pb-0',
+    tabsToolbarSlot: 'flex flex-1 items-center justify-end self-stretch pb-0',
   },
   variants: {
     flush: {
@@ -74,7 +73,7 @@ const styles = tv({
 
 const tabStyles = tv({
   extend: focusRing,
-  base: 'group relative isolate -mb-px flex min-h-0 cursor-default items-center gap-1.5 rounded-t-xl border border-b-0 border-transparent px-3.5 pt-2 pb-1.5 text-sm whitespace-nowrap text-zinc-500 transition forced-color-adjust-none [-webkit-tap-highlight-color:transparent] [&_svg]:fill-zinc-100 [&_svg]:transition hover:bg-gray-200/30 hover:text-zinc-700 hover:[&_svg]:fill-zinc-200 disabled:text-zinc-400 selected:z-10 selected:border-gray-200 selected:bg-linear-to-b selected:from-white selected:to-gray-50 selected:text-zinc-950 selected:shadow-[inset_0_1px_0_0_--theme(--color-white/95%),0_-1px_3px_-1px_--theme(--color-zinc-800/4%),0_-3px_8px_-3px_--theme(--color-zinc-800/3%)] selected:[&_svg]:fill-zinc-100',
+  base: 'group relative isolate -mb-px flex min-h-0 cursor-default items-center gap-1.5 rounded-t-xl border border-b-0 border-transparent px-3.5 pt-2 pb-1.5 text-sm whitespace-nowrap text-zinc-500 transition forced-color-adjust-none [-webkit-tap-highlight-color:transparent] hover:bg-gray-200/30 hover:text-zinc-700 disabled:text-zinc-400 selected:z-10 selected:border-gray-200 selected:bg-linear-to-b selected:from-white selected:to-gray-50 selected:text-zinc-950 selected:shadow-[inset_0_1px_0_0_--theme(--color-white/95%),0_-1px_3px_-1px_--theme(--color-zinc-800/4%),0_-3px_8px_-3px_--theme(--color-zinc-800/3%)] [&_svg]:fill-zinc-100 [&_svg]:transition hover:[&_svg]:fill-zinc-200 selected:[&_svg]:fill-zinc-100',
   variants: {
     isDisabled: {
       true: 'text-zinc-400',
