@@ -16,6 +16,7 @@ export function useOverviewData(filters: FilterItem[] = []) {
   const {
     data: { sortedServiceNames, deployments: deploymentsMap } = {},
     isFetched,
+    isFetching,
     isError,
     error,
   } = useListDeployments();
@@ -76,7 +77,7 @@ export function useOverviewData(filters: FilterItem[] = []) {
     return map;
   }, [servicesMap, deploymentsMap, serviceStatusCounts, isVersionGte]);
 
-  const isInitialLoading = !isFetched && !isNew && !isError;
+  const isInitialLoading = !isNew && !deploymentsMap && isFetching;
   const isEmpty =
     (isFetched || isNew) && (!deploymentsMap || deploymentsMap.size === 0);
 

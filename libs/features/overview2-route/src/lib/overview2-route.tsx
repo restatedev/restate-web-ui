@@ -21,6 +21,7 @@ import { ErrorBanner } from '@restate/ui/error';
 import { Button } from '@restate/ui/button';
 import { StatusArcEcharts, StatusLegend } from '@restate/features/status-chart';
 import { useWaveAnimation } from '@restate/ui/wave-animation';
+import { Ellipsis } from '@restate/ui/loading';
 import {
   ContentPanel,
   ContentPanelBody,
@@ -40,6 +41,16 @@ import { DeploymentsGridList } from './DeploymentsGridList';
 import { getOverviewRangeLabel } from './useRangeFilters';
 
 const LINE_COUNT = 7;
+
+function LoadingChildren() {
+  return (
+    <div className="relative mt-6 flex flex-col items-center opacity-100 transition-opacity delay-150 duration-200 ease-out starting:opacity-0">
+      <Ellipsis>
+        <span className="text-sm text-gray-500">Loading</span>
+      </Ellipsis>
+    </div>
+  );
+}
 
 function usePerspectiveLines(
   containerRef: React.RefObject<HTMLDivElement | null>,
@@ -169,6 +180,7 @@ function OverviewContent() {
     isSummaryError,
     summaryError,
     summaryQueryKey,
+    isInitialLoading,
     isEmpty,
     isError,
     error,
@@ -261,19 +273,28 @@ function OverviewContent() {
     );
   };
 
-  if (isEmpty) {
+  if (isInitialLoading || isEmpty) {
+    const useSolidEmpty = !isInitialLoading && !isError;
     return (
       <div className="flex min-h-full flex-col items-center justify-center p-6">
         <RestateServer
-          className={isError ? undefined : emptyServerStyles({ isError })}
+          className={useSolidEmpty ? emptyServerStyles({ isError }) : undefined}
           status={ferrofluidStatus}
-          appearance={isError ? 'ghost' : 'solid'}
+          appearance={useSolidEmpty ? 'solid' : 'ghost'}
           isEmpty
+          aura={isInitialLoading ? 'prominent' : undefined}
+          auraAlwaysVisible={isInitialLoading}
           onPress={onRefresh}
         >
-          <NoDeploymentPlaceholder error={error} />
-          {!isError && GettingStarted && (
-            <GettingStarted className="hidden @tall:block" />
+          {isInitialLoading ? (
+            <LoadingChildren />
+          ) : (
+            <>
+              <NoDeploymentPlaceholder error={error} />
+              {!isError && GettingStarted && (
+                <GettingStarted className="hidden @tall:block" />
+              )}
+            </>
           )}
         </RestateServer>
       </div>
