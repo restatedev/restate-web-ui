@@ -1,8 +1,4 @@
-import {
-  FormFieldCheckbox,
-  FormFieldInput,
-  FormFieldLabel,
-} from '@restate/ui/form-field';
+import { FormFieldInput, FormFieldLabel } from '@restate/ui/form-field';
 import { Icon, IconName } from '@restate/ui/icons';
 import {
   ComponentProps,

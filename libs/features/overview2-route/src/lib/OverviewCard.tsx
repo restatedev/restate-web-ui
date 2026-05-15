@@ -19,7 +19,7 @@ export const cellsContainerStyles = tv({
 });
 
 const primaryStyles = tv({
-  base: 'm-[2px] overflow-hidden rounded-[calc(1rem-2px)] border border-white bg-linear-to-b from-white/90 to-gray-50/80 shadow-xs transition hover:to-white/80 hover:shadow-md hover:shadow-zinc-800/3',
+  base: 'm-1.5 overflow-hidden rounded-[calc(1rem-2px)] border border-white bg-linear-to-b from-white/90 to-gray-50/80 shadow-xs transition hover:to-white/80 hover:shadow-md hover:shadow-zinc-800/3',
   variants: {
     isInteractive: {
       true: '',
