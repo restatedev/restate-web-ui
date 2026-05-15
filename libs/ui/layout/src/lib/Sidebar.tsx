@@ -96,7 +96,7 @@ const sidebarStyles = tv({
     aside:
       'peer group/sidebar @container/sidebar sticky top-0 z-50 -ml-[16rem] flex h-screen w-[16rem] shrink-0 flex-col border-r bg-gray-200/50 shadow-[inset_-1px_0px_0px_0px_rgba(0,0,0,0.03)] backdrop-blur-xl backdrop-saturate-200 transition-[width,margin] duration-300 ease-in-out max-md:data-[collapsed=false]:ml-0 md:ml-0 md:w-[4.25rem] md:data-[collapsed=false]:w-[16rem] xl:w-[16rem] xl:data-[collapsed=true]:w-[4.25rem]',
     asideInner: 'relative flex h-full w-full flex-col gap-2 overflow-hidden',
-    headerBar: 'flex flex-none items-stretch gap-1 px-4.5 pt-3',
+    headerBar: 'flex min-h-16 flex-none items-stretch gap-1 px-4.5 pt-3',
     headerCard: 'flex min-w-0 flex-1 items-start gap-2 py-1',
     navSlot:
       'flex min-h-0 flex-1 [scrollbar-width:thin] flex-col gap-2 overflow-x-hidden overflow-y-auto px-3 py-2',
