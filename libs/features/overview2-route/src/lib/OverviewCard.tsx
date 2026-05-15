@@ -86,7 +86,7 @@ function OverviewCardDetails({
   children: ReactNode;
 }) {
   return (
-    <div className="relative z-[2] mt-1.5 flex flex-col gap-0 rounded-md rounded-t-sm px-3 pt-0 pb-3">
+    <div className="relative z-2 mt-1.5 flex flex-col gap-0 rounded-md rounded-t-sm px-5.5 pt-0 pb-3">
       <div className="flex items-center gap-2 py-0.5 pl-8.5 text-xs leading-6 font-semibold text-gray-500/70 uppercase">
         {title}
       </div>
