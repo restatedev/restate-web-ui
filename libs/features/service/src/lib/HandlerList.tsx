@@ -8,8 +8,12 @@ import {
   DropdownSection,
 } from '@restate/ui/dropdown';
 import { formatPlurals } from '@restate/util/intl';
+import { useRestateContext } from '@restate/features/restate-context';
+import { toServiceAndHandlerInvocationsHref } from '@restate/util/invocation-links';
+import { useSearchParams } from 'react-router';
 import { Handler } from './Handler';
 import { HandlerGridList } from './HandlerGridList';
+import { InvocationCountLink } from './InvocationCountLink';
 
 export function HandlerList({
   serviceName,
@@ -17,13 +21,22 @@ export function HandlerList({
   serviceType,
   maxVisible = 6,
   className,
+  handlerCounts,
+  isHandlerCountsLoading,
+  isHandlerCountsError,
 }: {
   serviceName: string;
   handlers: Service['handlers'];
   serviceType: Service['ty'];
   maxVisible?: number;
   className?: string;
+  handlerCounts?: Map<string, number>;
+  isHandlerCountsLoading?: boolean;
+  isHandlerCountsError?: boolean;
 }) {
+  const { baseUrl } = useRestateContext();
+  const [searchParams] = useSearchParams();
+
   if (handlers.length === 0) return null;
 
   const visible = handlers.slice(0, maxVisible);
@@ -32,16 +45,31 @@ export function HandlerList({
   return (
     <div className={className}>
       {visible.map((handler) => (
-        <Handler
-          key={handler.name}
-          handler={handler}
-          className="ml-1.5 max-w-fit min-w-0 pr-0 pl-0 [&_[data-icon]]:-mr-2.5 [&_[data-icon]]:border-transparent [&_[data-icon]]:bg-transparent [&_[data-icon]]:shadow-none [&_[data-icon]>svg]:text-zinc-500/80"
-          service={serviceName}
-          withPlayground
-          serviceType={serviceType}
-          showLink
-          showType={false}
-        />
+        <div key={handler.name} className="flex items-center gap-2">
+          <Handler
+            handler={handler}
+            className="ml-1.5 max-w-fit min-w-0 pr-0 pl-0 [&_[data-icon]]:-mr-2.5 [&_[data-icon]]:border-transparent [&_[data-icon]]:bg-transparent [&_[data-icon]]:shadow-none [&_[data-icon]>svg]:text-zinc-500/80"
+            service={serviceName}
+            withPlayground
+            serviceType={serviceType}
+            showLink
+            showType={false}
+          />
+          <div className="ml-auto flex shrink-0 items-center">
+            <InvocationCountLink
+              href={toServiceAndHandlerInvocationsHref(
+                baseUrl,
+                serviceName,
+                handler.name,
+                { existingParams: searchParams },
+              )}
+              count={handlerCounts?.get(handler.name) ?? 0}
+              isLoading={isHandlerCountsLoading}
+              isError={isHandlerCountsError}
+              size="sm"
+            />
+          </div>
+        </div>
       ))}
       {overflowCount > 0 && (
         <div className="ml-8 w-fit">

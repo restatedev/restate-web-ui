@@ -1627,7 +1627,7 @@ export function useRestartWorkflowAsNew(
     unknown
   >,
 ) {
-  const { ingressUrl } = useRestateContext();
+  const { ingressUrl, isVersionGte } = useRestateContext();
   const baseUrl = useAdminBaseUrl();
   const queryClient = useQueryClient();
 
@@ -1671,27 +1671,31 @@ export function useRestartWorkflowAsNew(
       const body = payloadData.parameters;
       const headers = payloadData.headers;
 
-      return fetch(
-        `${ingressUrl}/${data?.target_service_name}/${workflowId}/${data?.target_handler_name}/send`,
-        {
-          credentials: 'include',
-          method: 'POST',
-          body: body ? base64ToUint8Array(body) : undefined,
-          headers: {
-            ...headers
-              ?.filter(
-                ({ key }) =>
-                  !['x-forwarded-for', 'x-forwarded-host'].includes(key) &&
-                  !key.startsWith('x-restate-'),
-              )
-              .reduce(
-                (acc, { key, value }) => ({ ...acc, [key]: value }),
-                {} as Record<string, string>,
-              ),
-            [RESTARTED_FROM_HEADER]: invocationId,
-          },
+      const scope = data?.scope;
+      const sendUrl = isVersionGte?.('1.7.0')
+        ? scope
+          ? `${ingressUrl}/restate/scope/${scope}/send/workflow/${workflowId}/${data?.target_handler_name}`
+          : `${ingressUrl}/restate/send/workflow/${workflowId}/${data?.target_handler_name}`
+        : `${ingressUrl}/${data?.target_service_name}/${workflowId}/${data?.target_handler_name}/send`;
+
+      return fetch(sendUrl, {
+        credentials: 'include',
+        method: 'POST',
+        body: body ? base64ToUint8Array(body) : undefined,
+        headers: {
+          ...headers
+            ?.filter(
+              ({ key }) =>
+                !['x-forwarded-for', 'x-forwarded-host'].includes(key) &&
+                !key.startsWith('x-restate-'),
+            )
+            .reduce(
+              (acc, { key, value }) => ({ ...acc, [key]: value }),
+              {} as Record<string, string>,
+            ),
+          [RESTARTED_FROM_HEADER]: invocationId,
         },
-      ).then(async (res) => {
+      }).then(async (res) => {
         if (res.ok) {
           return (await res.json()) as {
             invocationId: string;

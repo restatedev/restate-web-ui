@@ -1,12 +1,13 @@
 import { DropdownMenuSelection } from '@restate/ui/dropdown';
-import { useMemo, useCallback, useState } from 'react';
+import { useEffect, useMemo, useCallback, useState } from 'react';
 import type { Key } from 'react-aria';
-import { useSearchParams } from 'react-router';
+import { useLocation, useSearchParams } from 'react-router';
 import { getFeatures } from '@restate/util/api-config';
+import { addUserCol, removeUserCol } from './userPreferences';
 
 export const COLUMN_QUERY_PREFIX = 'column';
 
-const COLUMNS_KEYS = [
+export const COLUMNS_KEYS = [
   'id',
   'created_at',
   'modified_at',
@@ -121,9 +122,20 @@ export function isColumnValid(searchParams: URLSearchParams) {
 
 export function useColumns() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
   const [selectedColumns, _setSelectedColumns] = useState<ColumnKey[]>(
     () => searchParams.getAll(COLUMN_QUERY_PREFIX) as ColumnKey[],
   );
+  useEffect(() => {
+    const fromUrl = new URLSearchParams(location.search).getAll(
+      COLUMN_QUERY_PREFIX,
+    ) as ColumnKey[];
+    _setSelectedColumns((prev) =>
+      prev.length === fromUrl.length && prev.every((c, i) => c === fromUrl[i])
+        ? prev
+        : fromUrl,
+    );
+  }, [location.key, location.search]);
   const features = getFeatures();
 
   const availableColumnNames = useMemo<
@@ -152,6 +164,18 @@ export function useColumns() {
   const setSelectedColumns = useCallback(
     (keys: DropdownMenuSelection, updateUrl = true) => {
       if (keys instanceof Set) {
+        if (updateUrl) {
+          const next = new Set(
+            Array.from(keys).map((k) => String(k) as ColumnKey),
+          );
+          const prev = new Set(selectedColumns);
+          next.forEach((col) => {
+            if (!prev.has(col)) addUserCol(col);
+          });
+          prev.forEach((col) => {
+            if (!next.has(col)) removeUserCol(col);
+          });
+        }
         _setSelectedColumns(Array.from(keys) as ColumnKey[]);
         if (updateUrl) {
           setSearchParams((old) => {
@@ -164,7 +188,7 @@ export function useColumns() {
         }
       }
     },
-    [setSearchParams],
+    [setSearchParams, selectedColumns],
   );
 
   return {

@@ -3,8 +3,8 @@ import {
   GridList as AriaGridList,
   GridListItem as AriaGridListItem,
 } from 'react-aria-components';
-import { useSearchParams } from 'react-router';
 import { usePopover } from '@restate/ui/popover';
+import { usePanel } from '@restate/util/panel';
 import { Handler } from './Handler';
 import { HANDLER_QUERY_PARAM, SERVICE_QUERY_PARAM } from './constants';
 
@@ -17,8 +17,8 @@ export function HandlerGridList({
   handlers: Service['handlers'];
   serviceType: Service['ty'];
 }) {
-  const [searchParams, setSearchParams] = useSearchParams();
   const { close } = usePopover();
+  const { open } = usePanel();
 
   return (
     <AriaGridList
@@ -36,10 +36,9 @@ export function HandlerGridList({
           }}
           onAction={() => {
             close?.();
-            const params = new URLSearchParams(searchParams);
-            params.set(SERVICE_QUERY_PARAM, serviceName);
-            params.set(HANDLER_QUERY_PARAM, handler.name);
-            setSearchParams(params);
+            open(SERVICE_QUERY_PARAM, serviceName, {
+              [HANDLER_QUERY_PARAM]: handler.name,
+            });
           }}
           className="cursor-default rounded-md px-3 py-2 text-sm outline-none select-none data-[focused]:bg-blue-600 data-[focused]:text-white [&[data-focused]_*:not(svg)]:!text-inherit"
         >

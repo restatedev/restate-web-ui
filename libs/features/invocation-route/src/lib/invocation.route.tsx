@@ -19,13 +19,17 @@ import { InvocationPageProvider } from './InvocationPageContext';
 import { WorkflowKeySection } from './WorkflowKeySection';
 import { tv } from '@restate/util/styles';
 import { Copy } from '@restate/ui/copy';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ContentPanel, ContentPanelBody } from '@restate/ui/content-panel';
 import {
   Invocation,
   JournalEntryV2,
 } from '@restate/data-access/admin-api-spec';
 import { RestateError } from '@restate/util/errors';
+import {
+  getInvocationsLastQuery,
+  setInvocationsRecent,
+} from '@restate/util/sidebar-nav';
 
 const metadataContainerStyles = tv({
   base: 'mt-6 hidden grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2 gap-y-4 rounded-xl [&:has(*)]:grid',
@@ -48,7 +52,7 @@ const lastFailureContainer = tv({
   base: 'z-20 min-w-0 origin-bottom-left rounded-xl p-0',
 });
 const lastFailureContent = tv({
-  base: '-ml-4 flex-auto rounded-xl rounded-bl-none border bg-linear-to-b shadow-xl shadow-zinc-800/3 lg:mr-12 [&_.error]:max-h-72',
+  base: '-ml-4 max-w-fit flex-auto rounded-xl rounded-bl-none border bg-linear-to-b shadow-xl shadow-zinc-800/3 lg:mr-12 [&_.error]:max-h-72',
   variants: {
     isFailed: {
       true: 'border-red-400/50 from-red-50 to-red-50',
@@ -60,6 +64,13 @@ const lastFailureContent = tv({
 function Component() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
+
+  // Review do we still use session storage for this. I thought it's memory. if so can be in a module var
+  useEffect(() => {
+    if (id) {
+      setInvocationsRecent({ type: 'invocation', value: id });
+    }
+  }, [id]);
 
   const {
     data: journalAndInvocationData,
@@ -103,8 +114,13 @@ function Component() {
   const [isCompact, setIsCompact] = useState(true);
 
   const { OnboardingGuide } = useRestateContext();
-
-  const invocationsSearchParams = new URLSearchParams(searchParams);
+  const invocationsBackHref = useMemo(() => {
+    const saved = getInvocationsLastQuery();
+    const merged = new URLSearchParams(saved ?? '');
+    searchParams.forEach((value, key) => merged.set(key, value));
+    const queryString = merged.toString();
+    return `${baseUrl}/invocations${queryString ? `?${queryString}` : ''}`;
+  }, [baseUrl, searchParams]);
 
   return (
     <InvocationPageProvider isInInvocationPage>
@@ -113,7 +129,7 @@ function Component() {
           <Link
             className="flex items-center gap-1 self-start text-sm text-gray-500"
             variant="secondary"
-            href={`${baseUrl}/invocations?${invocationsSearchParams.toString()}`}
+            href={invocationsBackHref}
           >
             <Icon name={IconName.ArrowLeft} className="mt-0.5 h-4 w-4" />{' '}
             Invocations

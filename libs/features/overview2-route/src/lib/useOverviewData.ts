@@ -34,7 +34,6 @@ export function useOverviewData(filters: FilterItem[] = []) {
     isPending: isDeploymentStatusLoading,
   } = useListDrainedDeployments();
   const summaryData = isSummaryError ? undefined : rawSummaryData;
-
   const { isNew, isVersionGte } = useRestateContext();
 
   const byStatus = summaryData?.byStatus ?? [];
@@ -58,6 +57,22 @@ export function useOverviewData(filters: FilterItem[] = []) {
     }
     return { invocationCounts: counts, serviceStatusCounts: statusCounts };
   }, [byServiceAndStatus]);
+
+  const handlerInvocationCounts = useMemo(() => {
+    const map = new Map<string, Map<string, number>>();
+    for (const entry of summaryData?.byServiceAndHandler ?? []) {
+      let perService = map.get(entry.service);
+      if (!perService) {
+        perService = new Map();
+        map.set(entry.service, perService);
+      }
+      perService.set(
+        entry.handler,
+        (perService.get(entry.handler) ?? 0) + entry.count,
+      );
+    }
+    return map;
+  }, [summaryData?.byServiceAndHandler]);
 
   const serviceIssuesMap = useMemo(() => {
     const map = new Map<string, ServiceIssue[]>();
@@ -95,6 +110,7 @@ export function useOverviewData(filters: FilterItem[] = []) {
     byServiceAndStatus,
     totalCount,
     invocationCounts,
+    handlerInvocationCounts,
     serviceIssuesMap,
     drainedDeploymentIds,
     isDeploymentStatusLoading,

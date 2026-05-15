@@ -1,12 +1,3 @@
-export const DEFAULT_INVOCATION_COLUMNS = [
-  'id',
-  'created_at',
-  'modified_at',
-  'duration',
-  'target',
-  'status',
-];
-
 const FAILED_SUBSTATES = ['failed', 'cancelled', 'killed'];
 const NON_IN_FLIGHT_STATUSES = ['succeeded', 'failed', 'cancelled', 'killed'];
 
@@ -15,16 +6,28 @@ function resolveStatuses(statusName: string, expandFailed = true): string[] {
   return [statusName];
 }
 
+// /invocations owns filter_*, sort_*, column. Any of those arriving via
+// existingParams have leaked from elsewhere — strip them. The single
+// exception is filter_created_at, which is the documented way for callers
+// to add a time-range filter via toCreatedAfterParam.
 function buildParams(existingParams?: URLSearchParams) {
-  const params = new URLSearchParams(existingParams);
-  if (!params.has('sort_field')) params.set('sort_field', 'modified_at');
-  if (!params.has('sort_order')) params.set('sort_order', 'DESC');
-  if (!params.has('column')) {
-    for (const col of DEFAULT_INVOCATION_COLUMNS) {
-      params.append('column', col);
+  const out = new URLSearchParams();
+  if (!existingParams) return out;
+  for (const [key, value] of existingParams) {
+    if (key === 'filter_created_at') {
+      out.append(key, value);
+      continue;
     }
+    if (
+      key.startsWith('filter_') ||
+      key.startsWith('sort_') ||
+      key === 'column'
+    ) {
+      continue;
+    }
+    out.append(key, value);
   }
-  return params;
+  return out;
 }
 
 export function toCreatedAfterParam(isoDate: string): URLSearchParams {
@@ -64,6 +67,24 @@ export function toServiceInvocationsHref(
   params.set(
     'filter_target_service_name',
     JSON.stringify({ operation: 'IN', value: [serviceName] }),
+  );
+  return `${baseUrl}/invocations?${params.toString()}`;
+}
+
+export function toServiceAndHandlerInvocationsHref(
+  baseUrl: string,
+  serviceName: string,
+  handlerName: string,
+  { existingParams }: { existingParams?: URLSearchParams } = {},
+) {
+  const params = buildParams(existingParams);
+  params.set(
+    'filter_target_service_name',
+    JSON.stringify({ operation: 'IN', value: [serviceName] }),
+  );
+  params.set(
+    'filter_target_handler_name',
+    JSON.stringify({ operation: 'IN', value: [handlerName] }),
   );
   return `${baseUrl}/invocations?${params.toString()}`;
 }

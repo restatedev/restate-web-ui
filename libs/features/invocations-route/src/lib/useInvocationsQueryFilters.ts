@@ -9,10 +9,11 @@ import {
   QueryClauseType,
   useQueryBuilder,
 } from '@restate/ui/query-builder';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useSchema } from './useSchema';
 import { COLUMN_QUERY_PREFIX, ColumnKey } from './columns';
+import { setUserLastSort } from './userPreferences';
 
 export const FILTER_QUERY_PREFIX = 'filter_';
 export const SORT_QUERY_PREFIX = 'sort_';
@@ -156,9 +157,14 @@ export function useInvocationsForm({
 }) {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [sortParams, setSortParams] = useState<SortInvocations>(() =>
+  const [sortParams, _setSortParams] = useState<SortInvocations>(() =>
     deriveSortFromUrl(searchParams),
   );
+  const sortManuallyChangedRef = useRef(false);
+  const setSortParams = useCallback<typeof _setSortParams>((value) => {
+    sortManuallyChangedRef.current = true;
+    _setSortParams(value);
+  }, []);
 
   // Re-derived when isLoading flips so default status / target_service_name
   // chips get seeded once the schema is ready. URL changes are handled via
@@ -187,14 +193,14 @@ export function useInvocationsForm({
       newSearchParams.append(COLUMN_QUERY_PREFIX, String(col));
     });
 
-    newSearchParams.set(
-      SORT_QUERY_PREFIX + 'field',
-      sortParams?.field || 'modified_at',
-    );
-    newSearchParams.set(
-      SORT_QUERY_PREFIX + 'order',
-      sortParams?.order || 'DESC',
-    );
+    const field = sortParams?.field || 'modified_at';
+    const order = sortParams?.order || 'DESC';
+    newSearchParams.set(SORT_QUERY_PREFIX + 'field', field);
+    newSearchParams.set(SORT_QUERY_PREFIX + 'order', order);
+    if (sortManuallyChangedRef.current) {
+      setUserLastSort({ field, order });
+      sortManuallyChangedRef.current = false;
+    }
     const sortedNewSearchParams = new URLSearchParams(newSearchParams);
     sortedNewSearchParams.sort();
     const sortedOldSearchParams = new URLSearchParams(searchParams);

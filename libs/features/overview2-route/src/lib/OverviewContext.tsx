@@ -23,8 +23,8 @@ import {
 import { INVOCATION_QUERY_NAME } from '@restate/features/invocation-route';
 import { STATE_QUERY_NAME } from '@restate/features/state-object-route';
 import { DEPLOYMENT_QUERY_PARAM } from '@restate/features/deployment';
-import { toCreatedAfterParam } from '@restate/util/invocation-links';
 import { PANEL_QUERY_PARAM } from '@restate/util/panel';
+import { toCreatedAfterParam } from '@restate/util/invocation-links';
 import { useOverviewData } from './useOverviewData';
 import { useRangeFilters } from './useRangeFilters';
 import {
