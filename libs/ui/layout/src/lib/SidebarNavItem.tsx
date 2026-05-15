@@ -139,6 +139,9 @@ export function SidebarNavItem({
     ? ownActive
     : ownActive && !anyChildActive && !anyExtraActive;
 
+  // First `visibleSubCount` items stay fixed in the rail; the rest live in
+  // the More overflow. Active overflow items are surfaced via the More
+  // dropdown's active styling and indicator dot, not by promotion.
   const partition = useMemo(() => {
     if (!subItems || subItems.length === 0) {
       return {
@@ -149,23 +152,11 @@ export function SidebarNavItem({
     if (subItems.length <= visibleSubCount) {
       return { visible: subItems, overflow: [] as SidebarSubItem[] };
     }
-    const visible = subItems.slice(0, visibleSubCount);
-    const overflow = subItems.slice(visibleSubCount);
-    if (activeChildIdx >= visibleSubCount) {
-      const activeItem = subItems[activeChildIdx];
-      const replaceIdx = visible.length - 1;
-      const displaced = visible[replaceIdx];
-      const overflowIdx = activeChildIdx - visibleSubCount;
-      if (activeItem && displaced) {
-        const newVisible = visible.slice();
-        newVisible[replaceIdx] = activeItem;
-        const newOverflow = overflow.slice();
-        newOverflow[overflowIdx] = displaced;
-        return { visible: newVisible, overflow: newOverflow };
-      }
-    }
-    return { visible, overflow };
-  }, [subItems, visibleSubCount, activeChildIdx]);
+    return {
+      visible: subItems.slice(0, visibleSubCount),
+      overflow: subItems.slice(visibleSubCount),
+    };
+  }, [subItems, visibleSubCount]);
 
   const s = navStyles({ isActive: effectiveActive, isDisabled: disabled });
 
@@ -210,10 +201,7 @@ export function SidebarNavItem({
             />
           ))}
           {partition.overflow.length > 0 && (
-            <SidebarOverflow
-              items={partition.overflow}
-              location={location}
-            />
+            <SidebarOverflow items={partition.overflow} />
           )}
         </div>
       )}
@@ -249,17 +237,8 @@ function SidebarSubLink({
   );
 }
 
-function SidebarOverflow({
-  items,
-  location,
-}: {
-  items: SidebarSubItem[];
-  location: SidebarLocation;
-}) {
+function SidebarOverflow({ items }: { items: SidebarSubItem[] }) {
   const s = navStyles({ isOverflowActive: false });
-  const hasActive = items.some((item) =>
-    (item.match ?? defaultMatcher(item.href))(location),
-  );
   return (
     <Dropdown>
       <DropdownTrigger>
@@ -270,9 +249,6 @@ function SidebarOverflow({
             aria-hidden
           />
           <span className="min-w-0 flex-auto truncate">More</span>
-          {hasActive && (
-            <span className="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500" />
-          )}
         </Button>
       </DropdownTrigger>
       <DropdownPopover>

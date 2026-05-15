@@ -1678,27 +1678,24 @@ export function useRestartWorkflowAsNew(
           : `${ingressUrl}/restate/send/workflow/${workflowId}/${data?.target_handler_name}`
         : `${ingressUrl}/${data?.target_service_name}/${workflowId}/${data?.target_handler_name}/send`;
 
-      return fetch(
-        sendUrl,
-        {
-          credentials: 'include',
-          method: 'POST',
-          body: body ? base64ToUint8Array(body) : undefined,
-          headers: {
-            ...headers
-              ?.filter(
-                ({ key }) =>
-                  !['x-forwarded-for', 'x-forwarded-host'].includes(key) &&
-                  !key.startsWith('x-restate-'),
-              )
-              .reduce(
-                (acc, { key, value }) => ({ ...acc, [key]: value }),
-                {} as Record<string, string>,
-              ),
-            [RESTARTED_FROM_HEADER]: invocationId,
-          },
+      return fetch(sendUrl, {
+        credentials: 'include',
+        method: 'POST',
+        body: body ? base64ToUint8Array(body) : undefined,
+        headers: {
+          ...headers
+            ?.filter(
+              ({ key }) =>
+                !['x-forwarded-for', 'x-forwarded-host'].includes(key) &&
+                !key.startsWith('x-restate-'),
+            )
+            .reduce(
+              (acc, { key, value }) => ({ ...acc, [key]: value }),
+              {} as Record<string, string>,
+            ),
+          [RESTARTED_FROM_HEADER]: invocationId,
         },
-      ).then(async (res) => {
+      }).then(async (res) => {
         if (res.ok) {
           return (await res.json()) as {
             invocationId: string;

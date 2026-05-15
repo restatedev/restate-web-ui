@@ -314,26 +314,19 @@ export function InvocationsSidebarItem({
     })),
   ];
 
-  // The extra sub-item shows at most one thing. Current URL beats memory:
-  // - on a detail page → show that invocation id
-  // - on a custom-filter /invocations URL → show "Custom query" pointing at it
-  // - otherwise fall back to the last remembered detail/custom (if any)
-  let extraKind: 'invocation' | 'custom' | null = null;
-  let extraValue: string | null = null;
-  if (current?.kind === 'detail') {
-    extraKind = 'invocation';
-    extraValue = current.id;
-  } else if (current?.kind === 'custom') {
-    extraKind = 'custom';
-    extraValue = location.search.replace(/^\?/, '');
-  } else if (recent) {
-    extraKind = recent.type;
-    extraValue = recent.value;
-  }
+  // The 5th slot (rendered between the fixed rail and the More dropdown)
+  // shows at most one item. Current URL beats memory:
+  // - on a detail page → that invocation id (active)
+  // - on a custom-filter /invocations URL → "Custom query" (active)
+  // - on an overflow preset (Idempotent, Most retried, …) → preset label (active)
+  // - otherwise fall back to the last remembered detail/custom (not active)
+  // Fixed rail presets (All, In-flight, Stuck) don't appear here — they
+  // already have their own row in the rail.
+  const FIXED_PRESET_IDS = new Set(['inflight', 'stuck']);
 
   const extraSubItems: SidebarSubItem[] = [];
-  if (extraKind === 'invocation' && extraValue) {
-    const id = extraValue;
+  if (current?.kind === 'detail') {
+    const id = current.id;
     extraSubItems.push({
       href: `${path}/${id}`,
       label: (
@@ -344,9 +337,43 @@ export function InvocationsSidebarItem({
       match: (loc) => loc.pathname === `${path}/${id}`,
       preserveSearchParams: false,
     });
-  } else if (extraKind === 'custom' && extraValue) {
+  } else if (current?.kind === 'custom') {
+    const value = location.search.replace(/^\?/, '');
     extraSubItems.push({
-      href: `${path}?${extraValue}`,
+      href: `${path}?${value}`,
+      label: 'Custom query',
+      match: (loc) => classify(loc)?.kind === 'custom',
+      preserveSearchParams: false,
+    });
+  } else if (current?.kind === 'preset' && !FIXED_PRESET_IDS.has(current.id)) {
+    const preset = INVOCATION_SHORTCUTS.find((s) => s.id === current.id);
+    if (preset) {
+      const presetId = preset.id;
+      extraSubItems.push({
+        href: shortcutHref(path, preset),
+        label: preset.label,
+        match: (loc) => {
+          const k = classify(loc);
+          return k?.kind === 'preset' && k.id === presetId;
+        },
+        preserveSearchParams,
+      });
+    }
+  } else if (recent?.type === 'invocation') {
+    const id = recent.value;
+    extraSubItems.push({
+      href: `${path}/${id}`,
+      label: (
+        <span className="min-w-0 flex-auto truncate font-mono">
+          {truncateId(id)}
+        </span>
+      ),
+      match: (loc) => loc.pathname === `${path}/${id}`,
+      preserveSearchParams: false,
+    });
+  } else if (recent?.type === 'custom') {
+    extraSubItems.push({
+      href: `${path}?${recent.value}`,
       label: 'Custom query',
       match: (loc) => classify(loc)?.kind === 'custom',
       preserveSearchParams: false,
