@@ -25,7 +25,6 @@ import { STATE_QUERY_NAME } from '@restate/features/state-object-route';
 import { DEPLOYMENT_QUERY_PARAM } from '@restate/features/deployment';
 import { toFilterParams } from '@restate/util/invocation-links';
 import { PANEL_QUERY_PARAM } from '@restate/util/panel';
-import { toCreatedAfterParam } from '@restate/util/invocation-links';
 import { useOverviewData } from './useOverviewData';
 import {
   getOverviewMode,
