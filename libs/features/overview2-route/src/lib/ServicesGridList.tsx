@@ -83,9 +83,9 @@ export function ServicesGridList() {
                 {...waveAnimationProps('overview-card')}
                 cells={cells}
                 primaryHref={panelHref({ service: service.name })}
+                issueSeverity={issueSeverity}
                 className={cellsContainerStyles({
                   isFocusVisible,
-                  issueSeverity,
                 })}
                 detailsTitle={
                   visibleHandlers.length > 0 ? 'Handlers' : undefined
