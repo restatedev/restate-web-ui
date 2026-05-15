@@ -108,7 +108,7 @@ function Component() {
 
   return (
     <InvocationPageProvider isInInvocationPage>
-      <div className="flex min-h-0 flex-1 flex-col">
+      <div className="flex min-h-0 flex-1 flex-col pt-4">
         <div className="@container flex flex-col gap-1 px-5">
           <Link
             className="flex items-center gap-1 self-start text-sm text-gray-500"
