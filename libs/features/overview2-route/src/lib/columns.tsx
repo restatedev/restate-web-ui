@@ -7,16 +7,12 @@ import type { GridListColumn } from '@restate/ui/grid-list';
 import type { ServiceIssue } from '@restate/features/system-health';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Link } from '@restate/ui/link';
-import {
-  formatDurations,
-  formatNumber,
-  formatPlurals,
-} from '@restate/util/intl';
+import { formatDurations } from '@restate/util/intl';
 import {
   toDeploymentInvocationsHref,
   toServiceInvocationsHref,
 } from '@restate/util/invocation-links';
-import { ServiceType } from '@restate/features/service';
+import { InvocationCountLink, ServiceType } from '@restate/features/service';
 import { panelHref } from '@restate/util/panel';
 import {
   Deployment,
@@ -191,37 +187,14 @@ export function useServiceColumns({
             }
             primary={
               <div className="ml-auto">
-                {isSummaryError && (
-                  <div>
-                    <br />
-                  </div>
-                )}
-                {isSummaryLoading && (
-                  <div className="min-w-28 animate-pulse rounded-lg bg-gray-200/50">
-                    <br />
-                  </div>
-                )}
-                {serviceTotal > 0 && !isSummaryError && !isSummaryLoading && (
-                  <Link
-                    href={toServiceInvocationsHref(baseUrl, s.name, {
-                      existingParams: linkParams,
-                    })}
-                    variant="secondary"
-                    className="relative z-10 inline-flex w-auto min-w-0 items-center gap-0.5 truncate rounded-lg border-none bg-transparent px-1.5 py-0.5 text-0.5xs text-zinc-500 no-underline shadow-none hover:bg-black/3 hover:text-zinc-700"
-                  >
-                    {formatNumber(serviceTotal, true)}{' '}
-                    {formatPlurals(serviceTotal, {
-                      one: 'invocation',
-                      other: 'invocations',
-                    })}
-                    <Icon name={IconName.ChevronRight} className="h-4 w-4" />
-                  </Link>
-                )}{' '}
-                {serviceTotal === 0 && !isSummaryError && !isSummaryLoading && (
-                  <div className="z-10 inline-flex min-w-0 items-center px-1.5 py-0.5 text-0.5xs text-gray-400">
-                    No invocations
-                  </div>
-                )}
+                <InvocationCountLink
+                  href={toServiceInvocationsHref(baseUrl, s.name, {
+                    existingParams: linkParams,
+                  })}
+                  count={serviceTotal}
+                  isLoading={isSummaryLoading}
+                  isError={isSummaryError}
+                />
               </div>
             }
           />

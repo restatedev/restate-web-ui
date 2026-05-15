@@ -68,6 +68,24 @@ export function toServiceInvocationsHref(
   return `${baseUrl}/invocations?${params.toString()}`;
 }
 
+export function toServiceAndHandlerInvocationsHref(
+  baseUrl: string,
+  serviceName: string,
+  handlerName: string,
+  { existingParams }: { existingParams?: URLSearchParams } = {},
+) {
+  const params = buildParams(existingParams);
+  params.set(
+    'filter_target_service_name',
+    JSON.stringify({ operation: 'IN', value: [serviceName] }),
+  );
+  params.set(
+    'filter_target_handler_name',
+    JSON.stringify({ operation: 'IN', value: [handlerName] }),
+  );
+  return `${baseUrl}/invocations?${params.toString()}`;
+}
+
 export function toDeploymentInvocationsHref(
   baseUrl: string,
   deploymentId: string,

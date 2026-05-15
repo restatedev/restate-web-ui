@@ -58,6 +58,22 @@ export function useOverviewData(filters: FilterItem[] = []) {
     return { invocationCounts: counts, serviceStatusCounts: statusCounts };
   }, [byServiceAndStatus]);
 
+  const handlerInvocationCounts = useMemo(() => {
+    const map = new Map<string, Map<string, number>>();
+    for (const entry of summaryData?.byServiceAndHandler ?? []) {
+      let perService = map.get(entry.service);
+      if (!perService) {
+        perService = new Map();
+        map.set(entry.service, perService);
+      }
+      perService.set(
+        entry.handler,
+        (perService.get(entry.handler) ?? 0) + entry.count,
+      );
+    }
+    return map;
+  }, [summaryData?.byServiceAndHandler]);
+
   const serviceIssuesMap = useMemo(() => {
     const map = new Map<string, ServiceIssue[]>();
     for (const service of servicesMap?.values() ?? []) {
@@ -94,6 +110,7 @@ export function useOverviewData(filters: FilterItem[] = []) {
     byServiceAndStatus,
     totalCount,
     invocationCounts,
+    handlerInvocationCounts,
     serviceIssuesMap,
     drainedDeploymentIds,
     isDeploymentStatusLoading,
