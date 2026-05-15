@@ -3714,6 +3714,8 @@ export interface components {
         /** Format: duration */
         p99: string;
       };
+      range?: string;
+      appliedFilters?: components['schemas']['FilterItem'][];
     };
   };
   responses: {
@@ -5580,6 +5582,7 @@ export interface operations {
           sampleSize?: number;
           /** @default false */
           includeDuration?: boolean;
+          range?: string;
         };
       };
     };

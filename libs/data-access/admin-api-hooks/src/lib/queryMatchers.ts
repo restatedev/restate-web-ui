@@ -15,9 +15,9 @@ export function isDeploymentsQuery(event: QueryCacheNotifyEvent): boolean {
 }
 
 export function isSummaryInvocationsQuery(
-  event: QueryCacheNotifyEvent,
+  query: Query | QueryCacheNotifyEvent['query'],
 ): boolean {
-  return isQueryForPath(event.query, '/query/invocations/summary', 'post');
+  return isQueryForPath(query, '/query/invocations/summary', 'post');
 }
 
 export function isQueryHealthCheckQuery(event: QueryCacheNotifyEvent): boolean {

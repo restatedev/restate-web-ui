@@ -7,6 +7,7 @@ import {
   keepPreviousData,
   MutationOptions,
   Query,
+  useIsFetching,
   useMutation,
   useQueries,
   useQuery,
@@ -39,6 +40,7 @@ import { RestateError } from '@restate/util/errors';
 import { useAPIStatus } from '@restate/data-access/admin-api';
 import { useRestateContext } from '@restate/features/restate-context';
 import { base64ToUint8Array } from '@restate/util/binary';
+import { isSummaryInvocationsQuery } from './queryMatchers';
 
 export const RESTARTED_FROM_HEADER = 'x-restate-restarted-from';
 
@@ -616,11 +618,13 @@ export function useSummaryInvocations(
     sampled,
     sampleSize,
     includeDuration,
+    range,
     ...options
   }: HookQueryOptions<'/query/invocations/summary', 'post'> & {
     sampled?: boolean;
     sampleSize?: number;
     includeDuration?: boolean;
+    range?: string;
   } = {},
 ) {
   const enabled = useAPIStatus();
@@ -632,6 +636,7 @@ export function useSummaryInvocations(
       sampled,
       sampleSize,
       includeDuration,
+      range,
     },
   });
 
@@ -646,6 +651,34 @@ export function useSummaryInvocations(
   });
 
   return { ...results, queryKey: queryOptions.queryKey };
+}
+
+export function useActiveSummaryInvocations() {
+  const queryClient = useQueryClient();
+
+  useIsFetching({ predicate: isSummaryInvocationsQuery });
+  const [first] = queryClient.getQueriesData<
+    components['schemas']['InvocationsSummaryResponse']
+  >({ type: 'active', predicate: isSummaryInvocationsQuery });
+
+  const data = first?.[1];
+
+  const refetch = useCallback(
+    () =>
+      queryClient.refetchQueries({
+        type: 'active',
+        predicate: isSummaryInvocationsQuery,
+      }),
+    [queryClient],
+  );
+
+  return {
+    data,
+    isPending: data === undefined,
+    refetch,
+    range: data?.range,
+    appliedFilters: data?.appliedFilters ?? [],
+  };
 }
 
 function isCompletedInvocationStatus(
