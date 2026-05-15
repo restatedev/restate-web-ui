@@ -18,9 +18,10 @@ import {
   useColumns,
 } from './columns';
 import { getUserAddedCols, getUserLastSort } from './userPreferences';
-import { getLastQuery, saveLastQuery } from './sessionState';
 import {
+  getInvocationsLastQuery,
   matchesAnyInvocationPreset,
+  saveInvocationsLastQuery,
   setInvocationsRecent,
 } from '@restate/util/sidebar-nav';
 import { InvocationCell } from './cells';
@@ -234,7 +235,7 @@ function Component() {
   }, []);
 
   useEffect(() => {
-    saveLastQuery(searchParams);
+    saveInvocationsLastQuery(searchParams);
     if (!matchesAnyInvocationPreset(searchParams)) {
       setInvocationsRecent({ type: 'custom', value: searchParams.toString() });
     }
@@ -715,7 +716,7 @@ export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
     k.startsWith(FILTER_QUERY_PREFIX),
   );
   if (!hasFilters) {
-    const lastQuery = getLastQuery();
+    const lastQuery = getInvocationsLastQuery();
     if (lastQuery) {
       Array.from(lastQuery.keys())
         .filter((k) => k.startsWith(FILTER_QUERY_PREFIX))
@@ -763,9 +764,7 @@ export function shouldRevalidate(arg: ShouldRevalidateFunctionArgs) {
   if (!arg.nextUrl.pathname.endsWith('/invocations')) {
     return false;
   }
-
-  // Review: shouldn't we return arg.defaultShouldRevalidate
-  return true;
+  return arg.defaultShouldRevalidate;
 }
 
 export const invocations = { Component, clientLoader, shouldRevalidate };
