@@ -6,7 +6,6 @@ import { HandlerInputOutput } from '@restate/feature/handler-input-output';
 import { HandlerTypeExplainer } from '@restate/features/explainers';
 import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from '@restate/util/styles';
-import { ServicePlaygroundTrigger } from './ServicePlayground';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Badge } from '@restate/ui/badge';
 import { Link } from '@restate/ui/link';
@@ -20,7 +19,6 @@ export function Handler({
   handler,
   className,
   service,
-  withPlayground,
   serviceType,
   showLink,
   showType = true,
@@ -28,7 +26,6 @@ export function Handler({
   handler: HandlerType;
   className?: string;
   service: string;
-  withPlayground?: boolean;
   serviceType?: ServiceType;
   showLink?: boolean;
   showType?: boolean;
@@ -64,38 +61,13 @@ export function Handler({
           <div className="min-w-0 flex-auto text-0.5xs leading-[1.75rem] font-medium text-zinc-600 italic">
             <span className="flex items-center">
               <TruncateWithTooltip copyText={handler.name}>
-                {withPlayground ? (
-                  <Link
-                    className="relative z-[2] mx-1 text-inherit no-underline"
-                    variant="secondary"
-                    href={panelHref({
-                      playground: service,
-                      handler: handler.name,
-                    })}
-                  >
-                    {handler.name}
-                  </Link>
-                ) : (
-                  handler.name
-                )}
+                {handler.name}
               </TruncateWithTooltip>
               <span className="shrink-0 text-zinc-400">{'('}</span>
               <HandlerInputOutput
                 jsonSchema={handler.input_json_schema}
                 contentType={handler.input_description}
                 label="Request"
-                renderHeaderAction={
-                  withPlayground
-                    ? (close) => (
-                        <ServicePlaygroundTrigger
-                          service={service}
-                          handler={handler.name}
-                          variant="icon"
-                          onClick={close}
-                        />
-                      )
-                    : undefined
-                }
                 className="[&_a]:z-[2] [&_button]:text-zinc-500/80"
               />
               <span className="shrink-0 text-zinc-400">
@@ -106,25 +78,13 @@ export function Handler({
                 jsonSchema={handler.output_json_schema}
                 contentType={handler.output_description}
                 label="Response"
-                renderHeaderAction={
-                  withPlayground
-                    ? (close) => (
-                        <ServicePlaygroundTrigger
-                          service={service}
-                          handler={handler.name}
-                          variant="icon"
-                          onClick={close}
-                        />
-                      )
-                    : undefined
-                }
                 className="[&_a]:z-[2] [&_button]:text-zinc-500/80"
               />
               {showLink && (
                 <Link
                   variant="icon"
                   href={panelHref({ service, handler: handler.name })}
-                  className="my-0.5 ml-auto shrink-0 rounded-full before:absolute before:-top-0.5 before:-right-1 before:-bottom-0.5 before:-left-1 before:z-[0] before:rounded-lg before:content-[''] hover:before:bg-black/3"
+                  className="my-0.5 ml-auto shrink-0 rounded-full before:absolute before:-top-0.5 before:-right-1 before:-bottom-0.5 before:-left-1 before:z-[0] before:rounded-lg before:content-[''] hover:bg-transparent hover:before:bg-black/3"
                 >
                   <Icon
                     name={IconName.ChevronRight}

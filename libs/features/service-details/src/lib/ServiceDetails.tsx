@@ -410,7 +410,6 @@ function ServiceContent({
                       key={handler.name}
                       className="pr-0 pl-0"
                       service={service}
-                      withPlayground
                       serviceType={data?.ty}
                       showLink={!hasHandler}
                       showType={hasHandler}
