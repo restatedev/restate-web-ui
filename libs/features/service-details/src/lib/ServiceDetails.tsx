@@ -17,6 +17,7 @@ import { ServiceStatusBar } from '@restate/features/status-chart';
 import { getRangeLabel, useRange } from '@restate/features/restate-context';
 import { InvocationCountLink } from '@restate/features/service';
 import {
+  toFilterParams,
   toServiceAndHandlerInvocationsHref,
   toServiceInvocationsHref,
 } from '@restate/util/invocation-links';
@@ -40,7 +41,7 @@ import { IngressAccessSection } from './IngressAccessSection';
 import { RetryPolicySection } from './RetryPolicy';
 import { useRestateContext } from '@restate/features/restate-context';
 import { AdvancedSection } from './Advanced';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Metadata } from '@restate/features/options';
 import { ServiceHeader } from './ServiceHeader';
 import {
@@ -188,6 +189,14 @@ function ServiceContent({
     ? handlerInvocationCount
     : serviceInvocationCount;
   const isInvocationsEmpty = !isSummaryLoading && invocationCount === 0;
+  const appliedFilters = summaryData?.appliedFilters;
+  const linkParams = useMemo(() => {
+    const next = new URLSearchParams(searchParams);
+    for (const [key, value] of toFilterParams(appliedFilters ?? [])) {
+      next.set(key, value);
+    }
+    return next;
+  }, [searchParams, appliedFilters]);
 
   const resolvedData = {
     ...data,
@@ -363,10 +372,10 @@ function ServiceContent({
                           baseUrl,
                           service,
                           selectedHandler,
-                          { existingParams: searchParams },
+                          { existingParams: linkParams },
                         )
                       : toServiceInvocationsHref(baseUrl, service, {
-                          existingParams: searchParams,
+                          existingParams: linkParams,
                         })
                   }
                   count={invocationCount}
@@ -380,7 +389,7 @@ function ServiceContent({
                   }
                   data={summaryData}
                   isLoading={isSummaryLoading}
-                  linkParams={searchParams}
+                  linkParams={linkParams}
                 />
               </div>
             )}
