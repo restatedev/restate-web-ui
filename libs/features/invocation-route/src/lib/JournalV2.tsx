@@ -102,6 +102,7 @@ const compactStyles = tv({
 });
 
 const LIVE_EDGE_THRESHOLD_MS = 500;
+const JOURNAL_BOTTOM_PADDING_PX = 50;
 
 type ReferencedInvocationEntry = Extract<
   JournalEntryV2,
@@ -594,6 +595,7 @@ export function JournalV2({
                         className="z-[2] grid min-w-0"
                         style={{
                           overflow: 'visible',
+                          marginBottom: JOURNAL_BOTTOM_PADDING_PX,
                           minHeight: totalSize,
                           gridTemplateColumns: '1fr',
                           gridTemplateRows: '1fr',
@@ -613,7 +615,7 @@ export function JournalV2({
                         </ContentPanelSection>
                       </LazyPanel>
                       <LazyPanelResizeHandle className="group relative z-10 mx-[-5px] hidden w-2.5 cursor-col-resize items-center justify-center md:flex">
-                        <div className="absolute top-0 bottom-0 left-1/2 w-px -translate-x-1/2 cursor-col-resize bg-transparent group-hover:w-[2px] group-hover:bg-blue-500" />
+                        <div className="absolute top-0 bottom-0 left-1/2 w-px -translate-x-1/2 cursor-col-resize bg-transparent group-hover:w-0.5 group-hover:bg-blue-500" />
                       </LazyPanelResizeHandle>
                       {/* Right panel - grid container for overlapping Units */}
                       <LazyPanel
