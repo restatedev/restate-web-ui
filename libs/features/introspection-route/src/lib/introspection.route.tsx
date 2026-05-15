@@ -46,8 +46,10 @@ function Component() {
   const setQuery = useCallback(
     (query: string) => {
       queryCLient.removeQueries({
-        predicate: (query) =>
-          Array.isArray(query.queryKey) && query.queryKey[0] === '/query',
+        predicate: (q) =>
+          Array.isArray(q.queryKey) &&
+          q.queryKey[0] === '/query' &&
+          q.meta?.['query-health-check'] !== true,
       });
       setSearchParams((old) => {
         const searchParams = new URLSearchParams(old);
