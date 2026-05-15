@@ -331,7 +331,7 @@ function OverviewContent() {
   return (
     <div
       ref={containerRef}
-      className="relative mx-auto flex min-h-0 w-full flex-1 flex-col items-center gap-0 pt-8"
+      className="relative mx-auto flex min-h-0 w-full flex-1 flex-col items-center gap-0 pt-20"
     >
       <PerspectiveLines
         svgRef={linesSvgRef}

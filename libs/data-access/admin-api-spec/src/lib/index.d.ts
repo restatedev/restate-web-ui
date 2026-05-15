@@ -3693,6 +3693,19 @@ export interface components {
         count: number;
         isIncluded: boolean;
       }[];
+      byServiceAndHandler: {
+        service: string;
+        handler: string;
+        count: number;
+        isIncluded: boolean;
+      }[];
+      byServiceAndHandlerAndStatus: {
+        service: string;
+        handler: string;
+        status: string;
+        count: number;
+        isIncluded: boolean;
+      }[];
       duration?: {
         /** Format: duration */
         p50: string;

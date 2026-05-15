@@ -5,7 +5,15 @@ import { convertInvocationsFilters } from '../convertFilters';
 import { type QueryContext, DURATION_CALC } from './shared';
 
 const DEFAULT_SAMPLE_SIZE = 50000;
-const HIGHLIGHT_FIELDS = new Set(['status', 'target_service_name']);
+// Filter fields applied client-side instead of in the SQL WHERE clause, so each
+// facet keyed on one of these fields can report `total` (all rows, ignoring the
+// filter) alongside `included` (rows matching the filter). This lets the UI show
+// siblings of a selected value rather than collapsing them out of the response.
+const HIGHLIGHT_FIELDS = new Set([
+  'status',
+  'target_service_name',
+  'target_handler_name',
+]);
 const FAILED_SUBSTATES = ['failed', 'cancelled', 'killed'];
 const SPLIT_TABLE_MIN_VERSION = '1.7.0';
 const SPLIT_TABLE_SHARED_FIELDS = new Set([
@@ -30,6 +38,29 @@ function computedStatus(status: string, completionResult?: string): string {
 }
 
 type Predicate = (value: string) => boolean;
+type Counts = { total: number; included: number };
+type Buckets = {
+  status: Record<string, Counts>;
+  service: Record<string, Counts>;
+  serviceStatus: Record<string, Record<string, Counts>>;
+  serviceHandler: Record<string, Record<string, Counts>>;
+  serviceHandlerStatus: Record<string, Record<string, Record<string, Counts>>>;
+};
+type Matchers = {
+  status: Predicate | null;
+  service: Predicate | null;
+  handler: Predicate | null;
+};
+
+function createBuckets(): Buckets {
+  return {
+    status: {},
+    service: {},
+    serviceStatus: {},
+    serviceHandler: {},
+    serviceHandlerStatus: {},
+  };
+}
 
 function buildPredicate(filters: FilterItem[]): Predicate | null {
   if (filters.length === 0) return null;
@@ -53,14 +84,14 @@ function buildPredicate(filters: FilterItem[]): Predicate | null {
   return (value) => predicates.every((p) => p(value));
 }
 
-function buildInclusionMatcher(filters: FilterItem[]): {
-  matchStatus: Predicate | null;
-  matchService: Predicate | null;
-} {
+function buildInclusionMatcher(filters: FilterItem[]): Matchers {
   return {
-    matchStatus: buildPredicate(filters.filter((f) => f.field === 'status')),
-    matchService: buildPredicate(
+    status: buildPredicate(filters.filter((f) => f.field === 'status')),
+    service: buildPredicate(
       filters.filter((f) => f.field === 'target_service_name'),
+    ),
+    handler: buildPredicate(
+      filters.filter((f) => f.field === 'target_handler_name'),
     ),
   };
 }
@@ -68,64 +99,77 @@ function buildInclusionMatcher(filters: FilterItem[]): {
 function accumulate(
   status: string,
   service: string,
+  handler: string,
   count: number,
-  matchStatus: Predicate | null,
-  matchService: Predicate | null,
-  statusCounts: Record<string, { total: number; included: number }>,
-  serviceCounts: Record<string, { total: number; included: number }>,
-  serviceStatusCounts: Record<
-    string,
-    Record<string, { total: number; included: number }>
-  >,
+  matchers: Matchers,
+  buckets: Buckets,
 ): number {
-  const statusMatch = !matchStatus || expandStatus(status).some(matchStatus);
-  const serviceMatch = !matchService || matchService(service);
-  const included = statusMatch && serviceMatch;
+  const statusMatch =
+    !matchers.status || expandStatus(status).some(matchers.status);
+  const serviceMatch = !matchers.service || matchers.service(service);
+  const handlerMatch = !matchers.handler || matchers.handler(handler);
+  const included = statusMatch && serviceMatch && handlerMatch;
 
-  if (!statusCounts[status]) statusCounts[status] = { total: 0, included: 0 };
-  statusCounts[status].total += count;
-  if (statusMatch) statusCounts[status].included += count;
+  if (!buckets.status[status])
+    buckets.status[status] = { total: 0, included: 0 };
+  buckets.status[status].total += count;
+  if (statusMatch) buckets.status[status].included += count;
 
-  if (!serviceCounts[service])
-    serviceCounts[service] = { total: 0, included: 0 };
-  serviceCounts[service].total += count;
-  if (serviceMatch) serviceCounts[service].included += count;
+  if (!buckets.service[service])
+    buckets.service[service] = { total: 0, included: 0 };
+  buckets.service[service].total += count;
+  if (serviceMatch) buckets.service[service].included += count;
 
-  if (!serviceStatusCounts[service]) serviceStatusCounts[service] = {};
-  if (!serviceStatusCounts[service][status])
-    serviceStatusCounts[service][status] = { total: 0, included: 0 };
-  serviceStatusCounts[service][status].total += count;
-  if (included) serviceStatusCounts[service][status].included += count;
+  if (!buckets.serviceStatus[service]) buckets.serviceStatus[service] = {};
+  if (!buckets.serviceStatus[service][status])
+    buckets.serviceStatus[service][status] = { total: 0, included: 0 };
+  buckets.serviceStatus[service][status].total += count;
+  if (included) buckets.serviceStatus[service][status].included += count;
+
+  if (!buckets.serviceHandler[service]) buckets.serviceHandler[service] = {};
+  if (!buckets.serviceHandler[service][handler])
+    buckets.serviceHandler[service][handler] = { total: 0, included: 0 };
+  buckets.serviceHandler[service][handler].total += count;
+  if (serviceMatch && handlerMatch)
+    buckets.serviceHandler[service][handler].included += count;
+
+  if (!buckets.serviceHandlerStatus[service])
+    buckets.serviceHandlerStatus[service] = {};
+  if (!buckets.serviceHandlerStatus[service][handler])
+    buckets.serviceHandlerStatus[service][handler] = {};
+  if (!buckets.serviceHandlerStatus[service][handler][status])
+    buckets.serviceHandlerStatus[service][handler][status] = {
+      total: 0,
+      included: 0,
+    };
+  buckets.serviceHandlerStatus[service][handler][status].total += count;
+  if (included)
+    buckets.serviceHandlerStatus[service][handler][status].included += count;
 
   return included ? count : 0;
 }
 
 function buildResponse(
-  statusCounts: Record<string, { total: number; included: number }>,
-  serviceCounts: Record<string, { total: number; included: number }>,
-  serviceStatusCounts: Record<
-    string,
-    Record<string, { total: number; included: number }>
-  >,
+  buckets: Buckets,
   totalCount: number,
   sampled: boolean,
   extra?: Record<string, unknown>,
 ) {
-  const byStatus = Object.entries(statusCounts).map(
+  const byStatus = Object.entries(buckets.status).map(
     ([name, { total, included }]) => ({
       name,
       count: total,
       isIncluded: included > 0,
     }),
   );
-  const byService = Object.entries(serviceCounts)
+  const byService = Object.entries(buckets.service)
     .map(([name, { total, included }]) => ({
       name,
       count: total,
       isIncluded: included > 0,
     }))
     .sort((a, b) => b.count - a.count);
-  const byServiceAndStatus = Object.entries(serviceStatusCounts).flatMap(
+  const byServiceAndStatus = Object.entries(buckets.serviceStatus).flatMap(
     ([service, statuses]) =>
       Object.entries(statuses).map(([status, { total, included }]) => ({
         service,
@@ -134,6 +178,28 @@ function buildResponse(
         isIncluded: included > 0,
       })),
   );
+  const byServiceAndHandler = Object.entries(buckets.serviceHandler).flatMap(
+    ([service, handlers]) =>
+      Object.entries(handlers).map(([handler, { total, included }]) => ({
+        service,
+        handler,
+        count: total,
+        isIncluded: included > 0,
+      })),
+  );
+  const byServiceAndHandlerAndStatus = Object.entries(
+    buckets.serviceHandlerStatus,
+  ).flatMap(([service, handlers]) =>
+    Object.entries(handlers).flatMap(([handler, statuses]) =>
+      Object.entries(statuses).map(([status, { total, included }]) => ({
+        service,
+        handler,
+        status,
+        count: total,
+        isIncluded: included > 0,
+      })),
+    ),
+  );
 
   return Response.json({
     totalCount,
@@ -141,6 +207,8 @@ function buildResponse(
     byStatus,
     byService,
     byServiceAndStatus,
+    byServiceAndHandler,
+    byServiceAndHandlerAndStatus,
     ...extra,
   });
 }
@@ -202,7 +270,7 @@ async function summaryInvocationsLegacy(
     : 'sys_invocation';
 
   const countsPromise = this.query(
-    `SELECT status, completion_result, target_service_name, COUNT(1) as count FROM ${subquery} ${where} GROUP BY status, completion_result, target_service_name`,
+    `SELECT status, completion_result, target_service_name, target_handler_name, COUNT(1) as count FROM ${subquery} ${where} GROUP BY status, completion_result, target_service_name, target_handler_name`,
   );
 
   const durationPromise = includeDuration
@@ -216,30 +284,23 @@ async function summaryInvocationsLegacy(
     durationPromise,
   ]);
 
-  const { matchStatus, matchService } = buildInclusionMatcher(filters);
-
-  const statusCounts: Record<string, { total: number; included: number }> = {};
-  const serviceCounts: Record<string, { total: number; included: number }> = {};
-  const serviceStatusCounts: Record<
-    string,
-    Record<string, { total: number; included: number }>
-  > = {};
+  const matchers = buildInclusionMatcher(filters);
+  const buckets = createBuckets();
   let totalCount = 0;
 
   for (const row of rows) {
     const status = computedStatus(row.status, row.completion_result);
     const service = row.target_service_name as string;
+    const handler = row.target_handler_name as string;
     const count = Number(row.count);
 
     totalCount += accumulate(
       status,
       service,
+      handler,
       count,
-      matchStatus,
-      matchService,
-      statusCounts,
-      serviceCounts,
-      serviceStatusCounts,
+      matchers,
+      buckets,
     );
   }
 
@@ -257,14 +318,7 @@ async function summaryInvocationsLegacy(
     }
   }
 
-  return buildResponse(
-    statusCounts,
-    serviceCounts,
-    serviceStatusCounts,
-    totalCount,
-    sampled,
-    extra,
-  );
+  return buildResponse(buckets, totalCount, sampled, extra);
 }
 
 async function summaryInvocationsSplit(
@@ -278,16 +332,16 @@ async function summaryInvocationsSplit(
   const where = convertInvocationsFilters(baseFilters);
 
   const statusSource = sampled
-    ? `(SELECT status, completion_result, target_service_name FROM sys_invocation_status ${where} LIMIT ${sampleSize})`
+    ? `(SELECT status, completion_result, target_service_name, target_handler_name FROM sys_invocation_status ${where} LIMIT ${sampleSize})`
     : `sys_invocation_status`;
   const statusWhere = sampled ? '' : where;
 
   const countsPromise = this.query(
-    `SELECT status, completion_result, target_service_name, COUNT(1) as count FROM ${statusSource} ${statusWhere} GROUP BY status, completion_result, target_service_name`,
+    `SELECT status, completion_result, target_service_name, target_handler_name, COUNT(1) as count FROM ${statusSource} ${statusWhere} GROUP BY status, completion_result, target_service_name, target_handler_name`,
   );
 
   const statePromise = this.query(
-    `SELECT target_service_name, CASE WHEN in_flight THEN 'running' WHEN retry_count > 0 THEN 'backing-off' END as derived_status, COUNT(1) as count FROM sys_invocation_state GROUP BY target_service_name, derived_status`,
+    `SELECT target_service_name, target_handler_name, CASE WHEN in_flight THEN 'running' WHEN retry_count > 0 THEN 'backing-off' END as derived_status, COUNT(1) as count FROM sys_invocation_state GROUP BY target_service_name, target_handler_name, derived_status`,
   );
 
   const servicesPromise = this.query(`SELECT name FROM sys_service`);
@@ -309,40 +363,40 @@ async function summaryInvocationsSplit(
       durationPromise,
     ]);
 
-  const statePerService = new Map<
+  const statePerServiceHandler = new Map<
     string,
-    { running: number; 'backing-off': number }
+    Map<string, { running: number; 'backing-off': number }>
   >();
   for (const row of stateRows) {
     const service = row.target_service_name as string;
+    const handler = row.target_handler_name as string;
     const count = Number(row.count);
-    const entry = statePerService.get(service) ?? {
+    const handlers =
+      statePerServiceHandler.get(service) ??
+      new Map<string, { running: number; 'backing-off': number }>();
+    const entry = handlers.get(handler) ?? {
       running: 0,
       'backing-off': 0,
     };
     if (row.derived_status === 'running') entry.running += count;
     else if (row.derived_status === 'backing-off')
       entry['backing-off'] += count;
-    statePerService.set(service, entry);
+    handlers.set(handler, entry);
+    statePerServiceHandler.set(service, handlers);
   }
 
-  const { matchStatus, matchService } = buildInclusionMatcher(filters);
-
-  const statusCounts: Record<string, { total: number; included: number }> = {};
-  const serviceCounts: Record<string, { total: number; included: number }> = {};
-  const serviceStatusCounts: Record<
-    string,
-    Record<string, { total: number; included: number }>
-  > = {};
+  const matchers = buildInclusionMatcher(filters);
+  const buckets = createBuckets();
   let totalCount = 0;
 
   for (const row of rows) {
     const rawStatus = row.status as string;
     const service = row.target_service_name as string;
+    const handler = row.target_handler_name as string;
     const count = Number(row.count);
 
     if (rawStatus === 'invoked') {
-      const state = statePerService.get(service);
+      const state = statePerServiceHandler.get(service)?.get(handler);
       const running = state?.running ?? 0;
       const backingOff = state?.['backing-off'] ?? 0;
       const ready = Math.max(0, count - running - backingOff);
@@ -351,36 +405,30 @@ async function summaryInvocationsSplit(
         totalCount += accumulate(
           'running',
           service,
+          handler,
           running,
-          matchStatus,
-          matchService,
-          statusCounts,
-          serviceCounts,
-          serviceStatusCounts,
+          matchers,
+          buckets,
         );
       }
       if (backingOff > 0) {
         totalCount += accumulate(
           'backing-off',
           service,
+          handler,
           backingOff,
-          matchStatus,
-          matchService,
-          statusCounts,
-          serviceCounts,
-          serviceStatusCounts,
+          matchers,
+          buckets,
         );
       }
       if (ready > 0) {
         totalCount += accumulate(
           'ready',
           service,
+          handler,
           ready,
-          matchStatus,
-          matchService,
-          statusCounts,
-          serviceCounts,
-          serviceStatusCounts,
+          matchers,
+          buckets,
         );
       }
     } else if (rawStatus === 'completed') {
@@ -389,42 +437,36 @@ async function summaryInvocationsSplit(
       totalCount += accumulate(
         status,
         service,
+        handler,
         count,
-        matchStatus,
-        matchService,
-        statusCounts,
-        serviceCounts,
-        serviceStatusCounts,
+        matchers,
+        buckets,
       );
     } else if (rawStatus === 'inboxed') {
       totalCount += accumulate(
         'pending',
         service,
+        handler,
         count,
-        matchStatus,
-        matchService,
-        statusCounts,
-        serviceCounts,
-        serviceStatusCounts,
+        matchers,
+        buckets,
       );
     } else {
       totalCount += accumulate(
         rawStatus,
         service,
+        handler,
         count,
-        matchStatus,
-        matchService,
-        statusCounts,
-        serviceCounts,
-        serviceStatusCounts,
+        matchers,
+        buckets,
       );
     }
   }
 
   for (const row of serviceRows) {
     const name = row.name as string;
-    if (!serviceCounts[name]) {
-      serviceCounts[name] = { total: 0, included: 0 };
+    if (!buckets.service[name]) {
+      buckets.service[name] = { total: 0, included: 0 };
     }
   }
 
@@ -442,12 +484,5 @@ async function summaryInvocationsSplit(
     }
   }
 
-  return buildResponse(
-    statusCounts,
-    serviceCounts,
-    serviceStatusCounts,
-    totalCount,
-    sampled,
-    extra,
-  );
+  return buildResponse(buckets, totalCount, sampled, extra);
 }

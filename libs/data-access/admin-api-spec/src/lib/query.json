@@ -5655,6 +5655,8 @@
           "byStatus",
           "byService",
           "byServiceAndStatus",
+          "byServiceAndHandler",
+          "byServiceAndHandlerAndStatus",
           "totalCount",
           "isEstimate"
         ],
@@ -5708,6 +5710,57 @@
               "required": ["service", "status", "count", "isIncluded"],
               "properties": {
                 "service": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "count": {
+                  "type": "integer"
+                },
+                "isIncluded": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "byServiceAndHandler": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["service", "handler", "count", "isIncluded"],
+              "properties": {
+                "service": {
+                  "type": "string"
+                },
+                "handler": {
+                  "type": "string"
+                },
+                "count": {
+                  "type": "integer"
+                },
+                "isIncluded": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "byServiceAndHandlerAndStatus": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "service",
+                "handler",
+                "status",
+                "count",
+                "isIncluded"
+              ],
+              "properties": {
+                "service": {
+                  "type": "string"
+                },
+                "handler": {
                   "type": "string"
                 },
                 "status": {
