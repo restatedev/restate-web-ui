@@ -176,10 +176,7 @@ export function useServiceColumns({
                 <div className="absolute top-0 right-0 bottom-0 w-48">
                   <ServiceStatusBar
                     serviceName={s.name}
-                    byServiceAndStatus={byServiceAndStatus}
                     serviceIssues={serviceIssuesMap.get(s.name)}
-                    isSummaryError={isSummaryError}
-                    isSummaryLoading={isSummaryLoading}
                     linkParams={linkParams}
                   />
                 </div>

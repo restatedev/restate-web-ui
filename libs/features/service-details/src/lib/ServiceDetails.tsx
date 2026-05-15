@@ -7,9 +7,16 @@ import {
 } from '@restate/ui/layout';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import {
+  useActiveSummaryInvocations,
   useListDeployments,
   useServiceDetails,
 } from '@restate/data-access/admin-api-hooks';
+import { ServiceStatusBar } from '@restate/features/status-chart';
+import { InvocationCountLink } from '@restate/features/service';
+import {
+  toServiceAndHandlerInvocationsHref,
+  toServiceInvocationsHref,
+} from '@restate/util/invocation-links';
 import { Icon, IconName } from '@restate/ui/icons';
 import {
   Tooltip,
@@ -152,6 +159,18 @@ function ServiceContent({
   const handlerData = handlers.find(
     (handler) => handler.name === selectedHandler,
   );
+
+  const { data: summaryData, isPending: isSummaryLoading } =
+    useActiveSummaryInvocations();
+  const byServiceAndStatus = summaryData?.byServiceAndStatus ?? [];
+  const byServiceAndHandlerAndStatus =
+    summaryData?.byServiceAndHandlerAndStatus ?? [];
+  const serviceInvocationCount = byServiceAndStatus
+    .filter((s) => s.service === service)
+    .reduce((sum, s) => sum + s.count, 0);
+  const handlerInvocationCount = byServiceAndHandlerAndStatus
+    .filter((s) => s.service === service && s.handler === selectedHandler)
+    .reduce((sum, s) => sum + s.count, 0);
 
   const resolvedData = {
     ...data,
@@ -307,6 +326,40 @@ function ServiceContent({
 
       <div className="flex flex-col gap-2">
         <Section className="mt-4">
+          <SectionTitle>Invocations</SectionTitle>
+          <SectionContent className="px-2 pt-2" raised={false}>
+            <div className="flex flex-col gap-1.5">
+              <InvocationCountLink
+                href={
+                  hasHandler && selectedHandler
+                    ? toServiceAndHandlerInvocationsHref(
+                        baseUrl,
+                        service,
+                        selectedHandler,
+                        { existingParams: searchParams },
+                      )
+                    : toServiceInvocationsHref(baseUrl, service, {
+                        existingParams: searchParams,
+                      })
+                }
+                count={
+                  hasHandler ? handlerInvocationCount : serviceInvocationCount
+                }
+                isLoading={isSummaryLoading}
+                size="sm"
+              />
+              <ServiceStatusBar
+                serviceName={service}
+                handlerName={
+                  hasHandler && selectedHandler ? selectedHandler : undefined
+                }
+                linkParams={searchParams}
+              />
+
+            </div>
+          </SectionContent>
+        </Section>
+        <Section>
           <SectionTitle>{hasHandler ? 'Definition' : 'Handlers'}</SectionTitle>
           <SectionContent className="px-2 pt-2" raised={false}>
             {isPending ? (

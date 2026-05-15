@@ -58,7 +58,10 @@ type OverviewContextValue = ReturnType<typeof useOverviewData> & {
 };
 
 const OverviewContext = createContext<OverviewContextValue>(null as never);
-const DEFAUTL_SORT = { column: 'created_at', direction: 'descending' };
+const DEFAUTL_SORT = {
+  column: 'created_at',
+  direction: 'descending',
+} as const;
 export function OverviewProvider({ children }: { children: ReactNode }) {
   const [searchParams] = useSearchParams();
   const mode = getOverviewMode(searchParams.get(OVERVIEW_MODE_PARAM));
