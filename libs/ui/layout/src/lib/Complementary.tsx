@@ -145,7 +145,11 @@ function ComplementaryWithSearchParamValue({
     setSearchParams(
       (prev) => {
         const next = new URLSearchParams(prev);
+        const activePanel = next.get(PANEL_QUERY_PARAM);
         next.delete(PANEL_QUERY_PARAM);
+        if (activePanel) {
+          next.delete(activePanel);
+        }
         return onCloseQueryParam(next);
       },
       { preventScrollReset: true },
