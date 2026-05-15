@@ -23,10 +23,11 @@ import {
 import { INVOCATION_QUERY_NAME } from '@restate/features/invocation-route';
 import { STATE_QUERY_NAME } from '@restate/features/state-object-route';
 import { DEPLOYMENT_QUERY_PARAM } from '@restate/features/deployment';
+import { toFilterParams } from '@restate/util/invocation-links';
 import { PANEL_QUERY_PARAM } from '@restate/util/panel';
 import { toCreatedAfterParam } from '@restate/util/invocation-links';
 import { useOverviewData } from './useOverviewData';
-import { useRangeFilters } from './useRangeFilters';
+import { OVERVIEW_RANGE_PARAM } from './useRangeFilters';
 import {
   getOverviewMode,
   OVERVIEW_MODE_PARAM,
@@ -57,12 +58,12 @@ type OverviewContextValue = ReturnType<typeof useOverviewData> & {
 };
 
 const OverviewContext = createContext<OverviewContextValue>(null as never);
-
+const DEFAUTL_SORT = { column: 'created_at', direction: 'descending' };
 export function OverviewProvider({ children }: { children: ReactNode }) {
-  const rangeFilters = useRangeFilters();
   const [searchParams] = useSearchParams();
   const mode = getOverviewMode(searchParams.get(OVERVIEW_MODE_PARAM));
-  const overviewData = useOverviewData(rangeFilters);
+  const range = searchParams.get(OVERVIEW_RANGE_PARAM) ?? undefined;
+  const overviewData = useOverviewData(range);
   const { baseUrl } = useRestateContext();
   const queryClient = useQueryClient();
   const [isManualRefreshing, startTransition] = useTransition();
@@ -97,28 +98,23 @@ export function OverviewProvider({ children }: { children: ReactNode }) {
     useState<SortDescriptor | null>(null);
   const [filter, setFilter] = useState('');
 
+  const appliedFilters = overviewData.appliedFilters;
   const linkParams = useMemo(() => {
     const next = new URLSearchParams();
     for (const key of PRESERVE_PARAMS) {
       const value = searchParams.get(key);
       if (value != null) next.set(key, value);
     }
-    const rangeFilter = rangeFilters[0];
-    if (rangeFilter?.type === 'DATE') {
-      const afterParams = toCreatedAfterParam(rangeFilter.value);
-      for (const [key, value] of afterParams) {
-        next.set(key, value);
-      }
+    for (const [key, value] of toFilterParams(appliedFilters)) {
+      next.set(key, value);
     }
     return next;
-  }, [rangeFilters, searchParams]);
+  }, [appliedFilters, searchParams]);
 
-  const resolvedServiceSortDescriptor = serviceSortDescriptor ??
-    initialSortRef.current ?? { column: 'created_at', direction: 'descending' };
-  const resolvedDeploymentSortDescriptor = deploymentSortDescriptor ?? {
-    column: 'created_at',
-    direction: 'descending',
-  };
+  const resolvedServiceSortDescriptor =
+    serviceSortDescriptor ?? initialSortRef.current ?? DEFAUTL_SORT;
+  const resolvedDeploymentSortDescriptor =
+    deploymentSortDescriptor ?? DEFAUTL_SORT;
 
   const value = useMemo(
     () => ({
