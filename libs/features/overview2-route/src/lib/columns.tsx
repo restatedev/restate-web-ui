@@ -1,8 +1,5 @@
 import type { ReactNode } from 'react';
-import type {
-  components,
-  Service,
-} from '@restate/data-access/admin-api-spec';
+import type { components, Service } from '@restate/data-access/admin-api-spec';
 import { Badge } from '@restate/ui/badge';
 import { Copy } from '@restate/ui/copy';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';

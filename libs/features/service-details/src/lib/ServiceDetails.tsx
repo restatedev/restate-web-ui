@@ -345,7 +345,7 @@ function ServiceContent({
         <Section className="mt-4">
           <SectionTitle>
             <span>Invocations</span>
-            <span className="ml-1 normal-case text-gray-400">
+            <span className="ml-1 text-gray-400 normal-case">
               · {getRangeLabel(range)}
             </span>
           </SectionTitle>

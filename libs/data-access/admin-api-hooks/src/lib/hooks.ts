@@ -37,10 +37,7 @@ import type {
 import { useCallback, useMemo } from 'react';
 import { RestateError } from '@restate/util/errors';
 import { useAPIStatus } from '@restate/data-access/admin-api';
-import {
-  useRange,
-  useRestateContext,
-} from '@restate/features/restate-context';
+import { useRange, useRestateContext } from '@restate/features/restate-context';
 import { base64ToUint8Array } from '@restate/util/binary';
 
 export const RESTARTED_FROM_HEADER = 'x-restate-restarted-from';
