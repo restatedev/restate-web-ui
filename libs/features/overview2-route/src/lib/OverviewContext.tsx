@@ -14,7 +14,7 @@ import type { SortDescriptor } from 'react-aria-components';
 import { useSearchParams } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { isOverviewRefreshQuery } from '@restate/data-access/admin-api';
-import { useRestateContext } from '@restate/features/restate-context';
+import { useRange, useRestateContext } from '@restate/features/restate-context';
 import {
   HANDLER_QUERY_PARAM,
   SERVICE_PLAYGROUND_QUERY_PARAM,
@@ -27,7 +27,6 @@ import { toFilterParams } from '@restate/util/invocation-links';
 import { PANEL_QUERY_PARAM } from '@restate/util/panel';
 import { toCreatedAfterParam } from '@restate/util/invocation-links';
 import { useOverviewData } from './useOverviewData';
-import { OVERVIEW_RANGE_PARAM } from './useRangeFilters';
 import {
   getOverviewMode,
   OVERVIEW_MODE_PARAM,
@@ -65,7 +64,7 @@ const DEFAUTL_SORT = {
 export function OverviewProvider({ children }: { children: ReactNode }) {
   const [searchParams] = useSearchParams();
   const mode = getOverviewMode(searchParams.get(OVERVIEW_MODE_PARAM));
-  const range = searchParams.get(OVERVIEW_RANGE_PARAM) ?? undefined;
+  const range = useRange();
   const overviewData = useOverviewData(range);
   const { baseUrl } = useRestateContext();
   const queryClient = useQueryClient();

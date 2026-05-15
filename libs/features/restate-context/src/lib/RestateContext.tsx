@@ -15,6 +15,7 @@ import {
   useEffect,
 } from 'react';
 import semverGt from 'semver/functions/gte';
+import { RangeProvider } from './Range';
 
 export type Status = 'HEALTHY' | 'DEGRADED' | 'PENDING' | (string & {});
 
@@ -153,7 +154,7 @@ function InternalRestateContextProvider({
       }}
     >
       <APIStatusProvider enabled={status === 'HEALTHY'}>
-        {children}
+        <RangeProvider>{children}</RangeProvider>
       </APIStatusProvider>
     </InternalRestateContext.Provider>
   );

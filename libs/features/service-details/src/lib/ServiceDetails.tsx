@@ -7,11 +7,12 @@ import {
 } from '@restate/ui/layout';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import {
-  useActiveSummaryInvocations,
   useListDeployments,
   useServiceDetails,
+  useSummaryInvocations,
 } from '@restate/data-access/admin-api-hooks';
 import { ServiceStatusBar } from '@restate/features/status-chart';
+import { getRangeLabel, useRange } from '@restate/features/restate-context';
 import { InvocationCountLink } from '@restate/features/service';
 import {
   toServiceAndHandlerInvocationsHref,
@@ -160,8 +161,9 @@ function ServiceContent({
     (handler) => handler.name === selectedHandler,
   );
 
+  const range = useRange();
   const { data: summaryData, isPending: isSummaryLoading } =
-    useActiveSummaryInvocations();
+    useSummaryInvocations([], { sampled: false, range });
   const byServiceAndStatus = summaryData?.byServiceAndStatus ?? [];
   const byServiceAndHandlerAndStatus =
     summaryData?.byServiceAndHandlerAndStatus ?? [];
@@ -171,6 +173,10 @@ function ServiceContent({
   const handlerInvocationCount = byServiceAndHandlerAndStatus
     .filter((s) => s.service === service && s.handler === selectedHandler)
     .reduce((sum, s) => sum + s.count, 0);
+  const invocationCount = hasHandler
+    ? handlerInvocationCount
+    : serviceInvocationCount;
+  const isInvocationsEmpty = !isSummaryLoading && invocationCount === 0;
 
   const resolvedData = {
     ...data,
@@ -326,37 +332,47 @@ function ServiceContent({
 
       <div className="flex flex-col gap-2">
         <Section className="mt-4">
-          <SectionTitle>Invocations</SectionTitle>
+          <SectionTitle>
+            <span>Invocations</span>
+            <span className="ml-1 normal-case text-gray-400">
+              · {getRangeLabel(range)}
+            </span>
+          </SectionTitle>
           <SectionContent className="px-2 pt-2" raised={false}>
-            <div className="flex flex-col gap-1.5">
-              <InvocationCountLink
-                href={
-                  hasHandler && selectedHandler
-                    ? toServiceAndHandlerInvocationsHref(
-                        baseUrl,
-                        service,
-                        selectedHandler,
-                        { existingParams: searchParams },
-                      )
-                    : toServiceInvocationsHref(baseUrl, service, {
-                        existingParams: searchParams,
-                      })
-                }
-                count={
-                  hasHandler ? handlerInvocationCount : serviceInvocationCount
-                }
-                isLoading={isSummaryLoading}
-                size="sm"
-              />
-              <ServiceStatusBar
-                serviceName={service}
-                handlerName={
-                  hasHandler && selectedHandler ? selectedHandler : undefined
-                }
-                linkParams={searchParams}
-              />
-
-            </div>
+            {isInvocationsEmpty ? (
+              <div className="px-2 py-1.5 text-0.5xs text-gray-400">
+                No invocations
+              </div>
+            ) : (
+              <div className="flex flex-col gap-1.5">
+                <InvocationCountLink
+                  href={
+                    hasHandler && selectedHandler
+                      ? toServiceAndHandlerInvocationsHref(
+                          baseUrl,
+                          service,
+                          selectedHandler,
+                          { existingParams: searchParams },
+                        )
+                      : toServiceInvocationsHref(baseUrl, service, {
+                          existingParams: searchParams,
+                        })
+                  }
+                  count={invocationCount}
+                  isLoading={isSummaryLoading}
+                  size="sm"
+                />
+                <ServiceStatusBar
+                  serviceName={service}
+                  handlerName={
+                    hasHandler && selectedHandler ? selectedHandler : undefined
+                  }
+                  data={summaryData}
+                  isLoading={isSummaryLoading}
+                  linkParams={searchParams}
+                />
+              </div>
+            )}
           </SectionContent>
         </Section>
         <Section>

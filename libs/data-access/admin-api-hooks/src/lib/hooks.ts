@@ -7,7 +7,6 @@ import {
   keepPreviousData,
   MutationOptions,
   Query,
-  useIsFetching,
   useMutation,
   useQueries,
   useQuery,
@@ -38,9 +37,11 @@ import type {
 import { useCallback, useMemo } from 'react';
 import { RestateError } from '@restate/util/errors';
 import { useAPIStatus } from '@restate/data-access/admin-api';
-import { useRestateContext } from '@restate/features/restate-context';
+import {
+  useRange,
+  useRestateContext,
+} from '@restate/features/restate-context';
 import { base64ToUint8Array } from '@restate/util/binary';
-import { isSummaryInvocationsQuery } from './queryMatchers';
 
 export const RESTARTED_FROM_HEADER = 'x-restate-restarted-from';
 
@@ -619,6 +620,7 @@ export function useSummaryInvocations(
     sampleSize,
     includeDuration,
     range,
+    meta: callerMeta,
     ...options
   }: HookQueryOptions<'/query/invocations/summary', 'post'> & {
     sampled?: boolean;
@@ -629,6 +631,9 @@ export function useSummaryInvocations(
 ) {
   const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
+  const currentRange = useRange();
+  const isMonitorQuery = filters.length === 0 && range === currentRange;
+
   const queryOptions = adminApi('query', '/query/invocations/summary', 'post', {
     baseUrl,
     body: {
@@ -646,39 +651,16 @@ export function useSummaryInvocations(
     refetchInterval: 60_000,
     ...queryOptions,
     ...options,
-    meta: { ...queryOptions.meta, ...getOverviewRefreshMeta() },
+    meta: {
+      ...queryOptions.meta,
+      ...getOverviewRefreshMeta(),
+      ...callerMeta,
+      ...(isMonitorQuery && { monitor: true }),
+    },
     enabled: options?.enabled !== false && enabled,
   });
 
   return { ...results, queryKey: queryOptions.queryKey };
-}
-
-export function useActiveSummaryInvocations() {
-  const queryClient = useQueryClient();
-
-  useIsFetching({ predicate: isSummaryInvocationsQuery });
-  const [first] = queryClient.getQueriesData<
-    components['schemas']['InvocationsSummaryResponse']
-  >({ type: 'active', predicate: isSummaryInvocationsQuery });
-
-  const data = first?.[1];
-
-  const refetch = useCallback(
-    () =>
-      queryClient.refetchQueries({
-        type: 'active',
-        predicate: isSummaryInvocationsQuery,
-      }),
-    [queryClient],
-  );
-
-  return {
-    data,
-    isPending: data === undefined,
-    refetch,
-    range: data?.range,
-    appliedFilters: data?.appliedFilters ?? [],
-  };
 }
 
 function isCompletedInvocationStatus(

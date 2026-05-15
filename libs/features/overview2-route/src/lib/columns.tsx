@@ -1,5 +1,8 @@
 import type { ReactNode } from 'react';
-import { type Service } from '@restate/data-access/admin-api-spec';
+import type {
+  components,
+  Service,
+} from '@restate/data-access/admin-api-spec';
 import { Badge } from '@restate/ui/badge';
 import { Copy } from '@restate/ui/copy';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
@@ -64,6 +67,7 @@ const overviewFirstColumnSecondaryStyles = tv({
 });
 
 export function useServiceColumns({
+  summaryData,
   byServiceAndStatus,
   baseUrl,
   serviceIssuesMap,
@@ -72,6 +76,7 @@ export function useServiceColumns({
   isDeploymentsFetching,
   linkParams,
 }: {
+  summaryData?: components['schemas']['InvocationsSummaryResponse'];
   byServiceAndStatus: { service: string; status: string; count: number }[];
   baseUrl: string;
   serviceIssuesMap: Map<string, ServiceIssue[]>;
@@ -176,7 +181,9 @@ export function useServiceColumns({
                 <div className="absolute top-0 right-0 bottom-0 w-48">
                   <ServiceStatusBar
                     serviceName={s.name}
+                    data={summaryData}
                     serviceIssues={serviceIssuesMap.get(s.name)}
+                    isLoading={isSummaryLoading}
                     linkParams={linkParams}
                   />
                 </div>

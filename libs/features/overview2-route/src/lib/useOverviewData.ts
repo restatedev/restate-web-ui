@@ -106,6 +106,7 @@ export function useOverviewData(range?: string) {
   return {
     servicesMap,
     deploymentsMap,
+    summaryData,
     byStatus,
     byServiceAndStatus,
     totalCount,

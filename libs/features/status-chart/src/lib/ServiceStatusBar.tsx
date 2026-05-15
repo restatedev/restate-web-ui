@@ -10,8 +10,11 @@ import {
   toServiceAndHandlerInvocationsHref,
   toServiceAndHandlerStatusInvocationsHref,
 } from '@restate/util/invocation-links';
-import { useRestateContext } from '@restate/features/restate-context';
-import { useActiveSummaryInvocations } from '@restate/data-access/admin-api-hooks';
+import {
+  getRangeLabel,
+  useRestateContext,
+} from '@restate/features/restate-context';
+import type { components } from '@restate/data-access/admin-api-spec';
 import { HoverTooltip } from '@restate/ui/tooltip';
 import { Link } from '@restate/ui/link';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -61,12 +64,6 @@ function getIssuesByStatus(serviceIssues: ServiceIssue[]) {
     }
   }
   return map;
-}
-
-function rangeLabel(range: string | undefined): string {
-  if (range === 'P1D') return 'in last 24h';
-  if (range === 'PT1H') return 'in last 1h';
-  return 'overall';
 }
 
 const styles = tv({
@@ -189,16 +186,20 @@ function StatusBar({
 export function ServiceStatusBar({
   serviceName,
   handlerName,
+  data,
   serviceIssues = [],
   linkParams,
+  isLoading,
 }: {
   serviceName: string;
   handlerName?: string;
+  data?: components['schemas']['InvocationsSummaryResponse'];
   serviceIssues?: ServiceIssue[];
   linkParams?: URLSearchParams;
+  isLoading?: boolean;
 }) {
   const { baseUrl } = useRestateContext();
-  const { data, isPending, range } = useActiveSummaryInvocations();
+  const range = data?.range;
 
   const rows = handlerName
     ? (data?.byServiceAndHandlerAndStatus ?? []).filter(
@@ -230,7 +231,7 @@ export function ServiceStatusBar({
         )}
       </div>
       <div className="text-0.5xs! font-normal text-gray-400!">
-        {rangeLabel(range)}
+        {getRangeLabel(range)}
       </div>
     </>
   );
@@ -264,7 +265,7 @@ export function ServiceStatusBar({
       statuses={statuses}
       getStatusLink={getStatusLink}
       issuesByStatus={issuesByStatus}
-      isLoading={isPending}
+      isLoading={isLoading}
     />
   );
 }

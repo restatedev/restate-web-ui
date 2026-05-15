@@ -17,6 +17,7 @@ export function ServicesGridList() {
     filter,
     servicesMap,
     deploymentsMap,
+    summaryData,
     byServiceAndStatus,
     invocationCounts,
     handlerInvocationCounts,
@@ -44,6 +45,7 @@ export function ServicesGridList() {
   );
 
   const serviceColumns = useServiceColumns({
+    summaryData,
     byServiceAndStatus,
     baseUrl,
     serviceIssuesMap,
