@@ -29,11 +29,6 @@ export interface SidebarSubItem {
   disabled?: boolean;
 }
 
-export interface SidebarNavOverflowDynamic {
-  match: SidebarMatch;
-  label: (loc: SidebarLocation) => ReactNode;
-}
-
 export interface SidebarNavItemProps {
   href: string;
   icon: IconName;
@@ -41,8 +36,8 @@ export interface SidebarNavItemProps {
   match?: SidebarMatch;
   preserveSearchParams?: boolean | string[];
   subItems?: SidebarSubItem[];
+  extraSubItems?: SidebarSubItem[];
   visibleSubCount?: number;
-  overflowDynamic?: SidebarNavOverflowDynamic;
   disabled?: boolean;
 }
 
@@ -125,8 +120,8 @@ export function SidebarNavItem({
   match,
   preserveSearchParams = true,
   subItems,
+  extraSubItems,
   visibleSubCount = DEFAULT_VISIBLE_SUB_COUNT,
-  overflowDynamic,
   disabled,
 }: SidebarNavItemProps) {
   const { isCollapsed } = useSidebar();
@@ -137,14 +132,12 @@ export function SidebarNavItem({
     (sub.match ?? defaultMatcher(sub.href))(location),
   );
   const anyChildActive = activeChildIdx >= 0;
-  const overflowDynamicActive = overflowDynamic?.match(location) ?? false;
-  const overflowDynamicLabel =
-    overflowDynamicActive && overflowDynamic
-      ? overflowDynamic.label(location)
-      : null;
+  const anyExtraActive = (extraSubItems ?? []).some((sub) =>
+    (sub.match ?? defaultMatcher(sub.href))(location),
+  );
   const effectiveActive = isCollapsed
     ? ownActive
-    : ownActive && !anyChildActive && !overflowDynamicActive;
+    : ownActive && !anyChildActive && !anyExtraActive;
 
   const partition = useMemo(() => {
     if (!subItems || subItems.length === 0) {
@@ -197,7 +190,8 @@ export function SidebarNavItem({
           <span className={s.label()}>{label}</span>
         </Link>
       </HoverTooltip>
-      {subItems && subItems.length > 0 && (
+      {((subItems && subItems.length > 0) ||
+        (extraSubItems && extraSubItems.length > 0)) && (
         <div className={s.subWrap()}>
           {partition.visible.map((item) => (
             <SidebarSubLink
@@ -207,12 +201,18 @@ export function SidebarNavItem({
               parentDisabled={disabled}
             />
           ))}
-          {(partition.overflow.length > 0 || overflowDynamicActive) && (
+          {extraSubItems?.map((item) => (
+            <SidebarSubLink
+              key={item.href}
+              item={item}
+              location={location}
+              parentDisabled={disabled}
+            />
+          ))}
+          {partition.overflow.length > 0 && (
             <SidebarOverflow
               items={partition.overflow}
               location={location}
-              dynamicLabel={overflowDynamicLabel}
-              isDynamicActive={overflowDynamicActive}
             />
           )}
         </div>
@@ -252,18 +252,14 @@ function SidebarSubLink({
 function SidebarOverflow({
   items,
   location,
-  dynamicLabel,
-  isDynamicActive,
 }: {
   items: SidebarSubItem[];
   location: SidebarLocation;
-  dynamicLabel?: ReactNode;
-  isDynamicActive?: boolean;
 }) {
-  const s = navStyles({ isOverflowActive: isDynamicActive });
-  const hasActive =
-    !isDynamicActive &&
-    items.some((item) => (item.match ?? defaultMatcher(item.href))(location));
+  const s = navStyles({ isOverflowActive: false });
+  const hasActive = items.some((item) =>
+    (item.match ?? defaultMatcher(item.href))(location),
+  );
   return (
     <Dropdown>
       <DropdownTrigger>
@@ -273,9 +269,7 @@ function SidebarOverflow({
             className="h-4 w-4 shrink-0 text-gray-400"
             aria-hidden
           />
-          <span className="min-w-0 flex-auto truncate">
-            {isDynamicActive && dynamicLabel ? dynamicLabel : 'More'}
-          </span>
+          <span className="min-w-0 flex-auto truncate">More</span>
           {hasActive && (
             <span className="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500" />
           )}

@@ -13,9 +13,16 @@ import {
   COLUMN_QUERY_PREFIX,
   ColumnKey,
   isColumnValid,
+  setColumns,
   setDefaultColumns,
   useColumns,
 } from './columns';
+import { getUserAddedCols, getUserLastSort } from './userPreferences';
+import { getLastQuery, saveLastQuery } from './sessionState';
+import {
+  matchesAnyInvocationPreset,
+  setInvocationsRecent,
+} from '@restate/util/sidebar-nav';
 import { InvocationCell } from './cells';
 import {
   SnapshotTimeProvider,
@@ -70,7 +77,7 @@ import {
   getFormUrlSignature,
   isSortValid,
   setDefaultSort,
-  SORT_QUERY_PREFIX,
+  setSort,
   useInvocationsForm,
   useListInvocationsParameters,
 } from './useInvocationsQueryFilters';
@@ -99,19 +106,6 @@ const MIN_COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
 const MAX_COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   invoked_by: 180,
 };
-
-function saveQueryForNextVisit(savedSearchParams: URLSearchParams) {
-  Array.from(savedSearchParams.keys()).forEach((key) => {
-    if (
-      !key.startsWith(FILTER_QUERY_PREFIX) &&
-      !key.startsWith(SORT_QUERY_PREFIX) &&
-      !key.startsWith(COLUMN_QUERY_PREFIX)
-    ) {
-      savedSearchParams.delete(key);
-    }
-  });
-  sessionStorage.setItem('query', savedSearchParams.toString());
-}
 
 const PAGE_SIZE = 30;
 function Component() {
@@ -240,7 +234,10 @@ function Component() {
   }, []);
 
   useEffect(() => {
-    saveQueryForNextVisit(new URLSearchParams(window.location.search));
+    saveLastQuery(searchParams);
+    if (!matchesAnyInvocationPreset(searchParams)) {
+      setInvocationsRecent({ type: 'custom', value: searchParams.toString() });
+    }
   }, [searchParams]);
 
   return (
@@ -604,7 +601,6 @@ function InvocationsForm({
       onSubmit={async (event) => {
         event.preventDefault();
         commitQuery();
-        saveQueryForNextVisit(new URLSearchParams(window.location.search));
         await queryCLient.invalidateQueries({ queryKey });
       }}
     >
@@ -631,13 +627,7 @@ function InvocationsForm({
           <div className="ml-1 flex h-full shrink-0 items-center text-xs text-white/70">
             Quick Filters:
           </div>
-          <FilterShortcuts
-            schema={schema}
-            setPageIndex={setPageIndex}
-            setSortParams={setSortParams}
-            query={query}
-            setSelectedColumns={setSelectedColumns}
-          />
+          <FilterShortcuts schema={schema} setPageIndex={setPageIndex} />
         </div>
       </div>
       <SubmitButton
@@ -717,63 +707,65 @@ function Footnote({
 
 export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
   const url = new URL(request.url);
-  let reqSearchParams = new URLSearchParams(url.searchParams);
-  reqSearchParams.sort();
-  const originalSearch = reqSearchParams.toString();
-  const previousSearchParams = new URLSearchParams(
-    sessionStorage.getItem('query') || '',
-  );
-  sessionStorage.removeItem('query');
+  let params = new URLSearchParams(url.searchParams);
+  params.sort();
+  const originalSearch = params.toString();
 
-  const hasExplicitParams = Array.from(reqSearchParams.keys()).some(
-    (key) =>
-      key.startsWith(FILTER_QUERY_PREFIX) ||
-      key.startsWith(SORT_QUERY_PREFIX) ||
-      key.startsWith(COLUMN_QUERY_PREFIX),
+  const hasFilters = Array.from(params.keys()).some((k) =>
+    k.startsWith(FILTER_QUERY_PREFIX),
   );
-
-  if (!hasExplicitParams) {
-    Array.from(previousSearchParams.keys()).forEach((key) => {
-      reqSearchParams.delete(key);
-    });
-    previousSearchParams.forEach((value, name) => {
-      if (reqSearchParams.has(name)) {
-        reqSearchParams.append(name, value);
-      } else {
-        reqSearchParams.set(name, value);
-      }
-    });
+  if (!hasFilters) {
+    const lastQuery = getLastQuery();
+    if (lastQuery) {
+      Array.from(lastQuery.keys())
+        .filter((k) => k.startsWith(FILTER_QUERY_PREFIX))
+        .forEach((k) => {
+          lastQuery.getAll(k).forEach((v) => params.append(k, v));
+        });
+    }
   }
 
-  if (
-    isSortValid(reqSearchParams) &&
-    isColumnValid(reqSearchParams) &&
-    reqSearchParams.toString() === originalSearch
-  ) {
+  if (!isSortValid(params)) {
+    const userSort = getUserLastSort();
+    if (userSort) {
+      params = setSort(params, {
+        field: userSort.field as ColumnKey,
+        order: userSort.order,
+      });
+    } else {
+      params = setDefaultSort(params);
+    }
+  }
+
+  if (!isColumnValid(params)) {
+    params = setDefaultColumns(params);
+  }
+  const userCols = getUserAddedCols();
+  if (userCols.length > 0) {
+    const currentCols = params.getAll(COLUMN_QUERY_PREFIX) as ColumnKey[];
+    const merged = [...currentCols];
+    userCols.forEach((c) => {
+      if (!merged.includes(c)) merged.push(c);
+    });
+    if (merged.length !== currentCols.length) {
+      params = setColumns(params, merged);
+    }
+  }
+
+  params.sort();
+  if (params.toString() === originalSearch) {
     return;
   }
-  if (!isSortValid(reqSearchParams)) {
-    reqSearchParams = setDefaultSort(reqSearchParams);
-  }
-  if (!isColumnValid(reqSearchParams)) {
-    reqSearchParams = setDefaultColumns(reqSearchParams);
-  }
-
-  return redirect(`?${reqSearchParams.toString()}`);
+  return redirect(`?${params.toString()}`);
 };
 
 export function shouldRevalidate(arg: ShouldRevalidateFunctionArgs) {
   if (!arg.nextUrl.pathname.endsWith('/invocations')) {
     return false;
   }
-  if (
-    !isSortValid(arg.nextUrl.searchParams) ||
-    !isColumnValid(arg.nextUrl.searchParams)
-  ) {
-    return true;
-  }
-  saveQueryForNextVisit(new URLSearchParams(arg.nextUrl.searchParams));
-  return false;
+
+  // Review: shouldn't we return arg.defaultShouldRevalidate
+  return true;
 }
 
 export const invocations = { Component, clientLoader, shouldRevalidate };

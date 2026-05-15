@@ -48,7 +48,7 @@ const lastFailureContainer = tv({
   base: 'z-20 min-w-0 origin-bottom-left rounded-xl p-0',
 });
 const lastFailureContent = tv({
-  base: '-ml-4 flex-auto rounded-xl rounded-bl-none border bg-linear-to-b shadow-xl shadow-zinc-800/3 lg:mr-12 [&_.error]:max-h-72',
+  base: '-ml-4 max-w-fit flex-auto rounded-xl rounded-bl-none border bg-linear-to-b shadow-xl shadow-zinc-800/3 lg:mr-12 [&_.error]:max-h-72',
   variants: {
     isFailed: {
       true: 'border-red-400/50 from-red-50 to-red-50',

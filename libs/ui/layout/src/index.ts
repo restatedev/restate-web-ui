@@ -14,5 +14,4 @@ export type {
   SidebarLocation,
   SidebarMatch,
   SidebarSubItem,
-  SidebarNavOverflowDynamic,
 } from './lib/SidebarNavItem';

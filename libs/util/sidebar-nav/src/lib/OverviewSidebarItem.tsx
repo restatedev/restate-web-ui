@@ -17,6 +17,15 @@ export function OverviewSidebarItem({
   const [searchParams] = useSearchParams();
   const carryParams = new URLSearchParams(searchParams);
   carryParams.delete('view');
+  Array.from(carryParams.keys()).forEach((key) => {
+    if (
+      key.startsWith('filter_') ||
+      key.startsWith('sort_') ||
+      key === 'column'
+    ) {
+      carryParams.delete(key);
+    }
+  });
   const carryQuery = carryParams.toString();
   const servicesHref = carryQuery ? `${path}?${carryQuery}` : path;
   const deploymentsHref = carryQuery

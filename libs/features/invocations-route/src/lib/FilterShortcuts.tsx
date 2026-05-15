@@ -1,5 +1,5 @@
-import { ColumnKey } from './columns';
-import { Dispatch, SetStateAction, useRef, useState } from 'react';
+import { COLUMN_QUERY_PREFIX, ColumnKey } from './columns';
+import { Dispatch, SetStateAction, useState } from 'react';
 import {
   QueryClause,
   QueryClauseOperationId,
@@ -11,20 +11,24 @@ import {
   Dropdown,
   DropdownItem,
   DropdownMenu,
-  DropdownMenuSelection,
   DropdownPopover,
   DropdownSection,
   DropdownTrigger,
 } from '@restate/ui/dropdown';
-import { Button, SubmitButton } from '@restate/ui/button';
+import { Button } from '@restate/ui/button';
 import { SortInvocations } from '@restate/data-access/admin-api-spec';
-import { ListData } from 'react-stately';
 import { tv } from '@restate/util/styles';
 import { Icon, IconName } from '@restate/ui/icons';
+import { useSearchParams } from 'react-router';
+import {
+  FILTER_QUERY_PREFIX,
+  SORT_QUERY_PREFIX,
+  getFilterParamKey,
+} from './useInvocationsQueryFilters';
 
 interface FilterShortcut {
   columns: ColumnKey[];
-  sort: SortInvocations;
+  sort?: SortInvocations;
   filters: QueryClause<QueryClauseType>[];
   label: string;
   id: string;
@@ -57,10 +61,6 @@ const makeShortcuts: (
       'target',
       'status',
     ],
-    sort: {
-      field: 'modified_at',
-      order: 'DESC',
-    },
     filters: [
       toClause(schema, 'target_service_name', {
         operation: 'IN',
@@ -83,10 +83,6 @@ const makeShortcuts: (
       'target',
       'status',
     ],
-    sort: {
-      field: 'modified_at',
-      order: 'DESC',
-    },
     filters: [
       toClause(schema, 'target_service_name', {
         operation: 'IN',
@@ -139,10 +135,6 @@ const makeShortcuts: (
       'target',
       'status',
     ],
-    sort: {
-      field: 'modified_at',
-      order: 'DESC',
-    },
     filters: [
       toClause(schema, 'target_service_name', {
         operation: 'IN',
@@ -173,10 +165,6 @@ const makeShortcuts: (
       'target',
       'status',
     ],
-    sort: {
-      field: 'modified_at',
-      order: 'DESC',
-    },
     filters: [
       toClause(schema, 'target_service_name', {
         operation: 'IN',
@@ -205,10 +193,6 @@ const makeShortcuts: (
       'status',
       'idempotency_key',
     ],
-    sort: {
-      field: 'modified_at',
-      order: 'DESC',
-    },
     filters: [
       toClause(schema, 'target_service_name', {
         operation: 'IN',
@@ -266,10 +250,6 @@ const makeShortcuts: (
       'status',
       'restarted_from',
     ],
-    sort: {
-      field: 'modified_at',
-      order: 'DESC',
-    },
     filters: [
       toClause(schema, 'target_service_name', {
         operation: 'IN',
@@ -318,36 +298,43 @@ const itemStyles = tv({
   base: 'max-h-5 shrink-0 rounded-full border border-white/20 bg-transparent px-3 py-0.5 text-xs text-white/80 hover:bg-white/15 pressed:bg-white/20',
 });
 export function FilterShortcuts({
-  query,
   setPageIndex,
-  setSortParams,
   schema,
-  setSelectedColumns,
 }: {
-  query: ListData<QueryClause<QueryClauseType>>;
-  setSortParams: Dispatch<SetStateAction<SortInvocations>>;
   setPageIndex: Dispatch<SetStateAction<number>>;
   schema: QueryClauseSchema<QueryClauseType>[];
-  setSelectedColumns: (
-    keys: DropdownMenuSelection,
-    updateUrl?: boolean,
-  ) => void;
 }) {
   const [shortcuts] = useState(() => makeShortcuts(schema));
   const [first, second, third, ...rest] = shortcuts;
-  const submitButton = useRef<HTMLButtonElement | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const setFilter = (item: FilterShortcut) => {
     setPageIndex(0);
-    setSelectedColumns(new Set(item.columns), false);
-    setSortParams(item.sort);
-    query.items.forEach((item) => {
-      query.remove(item.id);
+
+    const newSearchParams = new URLSearchParams(searchParams);
+    Array.from(newSearchParams.keys())
+      .filter((key) => key.startsWith(FILTER_QUERY_PREFIX))
+      .forEach((key) => newSearchParams.delete(key));
+    item.filters
+      .filter((clause) => clause.isValid)
+      .forEach((clause) => {
+        newSearchParams.set(getFilterParamKey(clause), String(clause));
+      });
+
+    newSearchParams.delete(COLUMN_QUERY_PREFIX);
+    item.columns.forEach((col) => {
+      newSearchParams.append(COLUMN_QUERY_PREFIX, col);
     });
-    query.insert(0, ...item.filters);
-    setTimeout(() => {
-      submitButton.current?.click();
-    }, 0);
+
+    if (item.sort) {
+      newSearchParams.set(SORT_QUERY_PREFIX + 'field', item.sort.field);
+      newSearchParams.set(SORT_QUERY_PREFIX + 'order', item.sort.order);
+    } else {
+      newSearchParams.delete(SORT_QUERY_PREFIX + 'field');
+      newSearchParams.delete(SORT_QUERY_PREFIX + 'order');
+    }
+
+    setSearchParams(newSearchParams);
   };
 
   return (
@@ -408,7 +395,6 @@ export function FilterShortcuts({
           </DropdownSection>
         </DropdownPopover>
       </Dropdown>
-      <SubmitButton className="hidden" ref={submitButton} />
     </>
   );
 }
