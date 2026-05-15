@@ -638,6 +638,7 @@ export function useSummaryInvocations(
   const results = useQuery({
     staleTime: 0,
     placeholderData: keepPreviousData,
+    refetchInterval: 60_000,
     ...queryOptions,
     ...options,
     meta: { ...queryOptions.meta, ...getOverviewRefreshMeta() },

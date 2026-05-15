@@ -41,7 +41,7 @@ export function JournalSection({
             timelineWidth={0}
             showApiError={false}
             withTimeline={false}
-            className="*:overflow-hidden *:rounded-[calc(0.75rem-0.125rem)] *:text-xs [&_.target]:rounded-r-[calc(0.75rem-0.125rem)] [&_.target]:[--rounded-radius:calc(0.75rem-0.125rem)] [&_.target]:[--rounded-right-radius:calc(0.75rem-0.125rem)] [&&&_.target>*:last-child>*]:rounded-r-[calc(0.75rem-0.125rem)] [&&&_.target>*:last-child>*]:[--rounded-radius-radius:calc(0.75rem-0.125rem)] [&>*:first-child]:mb-2 [&>*:first-child]:h-9 [&>*:first-child_[data-target]>*]:h-9 [&>*:first-child>*:last-child]:h-9"
+            className="bg-white *:overflow-hidden *:text-xs [&>*:first-child]:mb-2 [&>*:first-child]:h-9 [&>*:first-child>*:last-child]:h-9"
           />
         </div>
       </SectionContent>

@@ -3,7 +3,7 @@ import { SearchField, Input as AriaInput, Label } from 'react-aria-components';
 import { useSearchParams } from 'react-router';
 import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from '@restate/util/styles';
-import { SERVICE_PLAYGROUND_QUERY_PARAM } from '@restate/features/service';
+import { panelHref } from '@restate/util/panel';
 import { Link } from '@restate/ui/link';
 import { RestateServer } from '@restate/ui/restate-server';
 import { useRestateContext } from '@restate/features/restate-context';
@@ -12,7 +12,6 @@ import {
   useIsMutating,
   useQueryClient,
 } from '@tanstack/react-query';
-import { isOverviewRefreshQuery } from '@restate/data-access/admin-api';
 import { useFocusShortcut, FocusShortcutKey } from '@restate/ui/keyboard';
 import { formatNumber } from '@restate/util/intl';
 import { IssuesBannerStack } from '@restate/ui/issue-banner';
@@ -157,7 +156,7 @@ function PerspectiveLines({
           x2={0}
           y2={fadeEnd}
         >
-          <stop offset="0" stopColor="currentColor" stopOpacity="1" />
+          <stop offset="0" stopColor="currentColor" stopOpacity="0.5" />
           <stop offset="1" stopColor="currentColor" stopOpacity="0.05" />
         </linearGradient>
       </defs>
@@ -205,6 +204,7 @@ function OverviewContent() {
     mode,
     filter,
     setFilter,
+    triggerManualRefresh,
   } = useOverviewContext();
 
   const { GettingStarted, status } = useRestateContext();
@@ -280,15 +280,7 @@ function OverviewContent() {
       ],
       { duration: 400, easing: 'ease-in-out' },
     );
-    queryClient.refetchQueries(
-      {
-        type: 'active',
-        predicate: isOverviewRefreshQuery,
-      },
-      {
-        cancelRefetch: true,
-      },
-    );
+    triggerManualRefresh();
   };
 
   if (isInitialLoading) {
@@ -416,7 +408,7 @@ function OverviewContent() {
               <p className="text-sm text-gray-400">
                 <Link
                   {...(firstServiceName && {
-                    href: `?${SERVICE_PLAYGROUND_QUERY_PARAM}=${firstServiceName}`,
+                    href: panelHref({ playground: firstServiceName }),
                   })}
                   variant="icon"
                   className="-mr-1 flex items-center gap-1.5 rounded-xl text-gray-500"

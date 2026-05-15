@@ -16,10 +16,8 @@ import {
   toDeploymentInvocationsHref,
   toServiceInvocationsHref,
 } from '@restate/util/invocation-links';
-import {
-  ServiceType,
-  SERVICE_PLAYGROUND_QUERY_PARAM,
-} from '@restate/features/service';
+import { ServiceType } from '@restate/features/service';
+import { panelHref } from '@restate/util/panel';
 import {
   Deployment,
   LatestRevisionDeployment,
@@ -112,7 +110,7 @@ export function useServiceColumns({
 
               <HoverTooltip content="Playground">
                 <Link
-                  href={`?${SERVICE_PLAYGROUND_QUERY_PARAM}=${s.name}`}
+                  href={panelHref({ playground: s.name })}
                   variant="secondary-button"
                   className="pointer-events-auto z-[2] mt-1.5 mr-0.5 ml-0 shrink-0 px-1 py-1"
                 >

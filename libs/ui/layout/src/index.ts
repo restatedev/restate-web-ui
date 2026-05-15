@@ -5,6 +5,7 @@ export {
   ComplementaryClose,
   useActiveSidebarParam,
   ComplementaryFooter,
+  ComplementaryHeader,
   useParamValue,
 } from './lib/Complementary';
 export { SidebarHeader, SidebarNav, SidebarFooter } from './lib/Sidebar';

@@ -1,7 +1,5 @@
-import {
-  Deployment,
-  DEPLOYMENT_QUERY_PARAM,
-} from '@restate/features/deployment';
+import { Deployment } from '@restate/features/deployment';
+import { panelHref } from '@restate/util/panel';
 import { Button } from '@restate/ui/button';
 import {
   DropdownItem,
@@ -108,7 +106,7 @@ export function PruneDeploymentsProgressBar({
                       <DropdownItem
                         key={deploymentId}
                         className=""
-                        href={`?${DEPLOYMENT_QUERY_PARAM}=${deploymentId}`}
+                        href={panelHref({ deployment: deploymentId })}
                       >
                         <div className="flex flex-col gap-0 text-0.5xs">
                           <Deployment

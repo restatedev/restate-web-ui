@@ -5,6 +5,7 @@ import { Link } from '@restate/ui/link';
 import { Invocation } from '@restate/data-access/admin-api-spec';
 import { tv } from '@restate/util/styles';
 import { INVOCATION_QUERY_NAME } from './constants';
+import { panelHref } from '@restate/util/panel';
 import { useActiveSidebarParam } from '@restate/ui/layout';
 import { useLocation } from 'react-router';
 import { useRestateContext } from '@restate/features/restate-context';
@@ -144,7 +145,7 @@ export function InvocationId({
     <Link
       ref={linkRef}
       {...(openInSidebar && {
-        href: `?${INVOCATION_QUERY_NAME}=${id}`,
+        href: panelHref({ invocation: id }),
       })}
       {...(!openInSidebar && {
         href: `${baseUrl}/invocations/${id}${getSearchParams(location.search, undefined, isLive)}`,

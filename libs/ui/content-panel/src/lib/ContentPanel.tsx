@@ -50,9 +50,10 @@ const styles = tv({
     stickyArea:
       'sticky top-[calc(var(--cp-toolbar-top,0px)-var(--cp-toolbar-tuck,0px))] z-30 col-start-1 row-start-1 flex flex-col self-start',
     toolbarSlot:
-      'w-full bg-gray-100 [padding-top:var(--cp-toolbar-tuck,0px)] [&:empty]:hidden',
+      'flex min-h-16 w-full items-end bg-gray-100 [padding-top:var(--cp-toolbar-tuck,0px)]',
+
     cardFrame:
-      'relative min-h-4 rounded-t-2xl border-x border-t border-gray-200 [&:not(:has([data-cp-slot="header"]>*))]:hidden',
+      'relative min-h-4 rounded-t-2xl border-x border-t border-gray-200',
     headerSlot:
       'mx-2 mt-2 rounded-xl border border-gray-200 bg-linear-to-b from-gray-200/70 to-gray-100/85 shadow-[inset_0_2px_0_0_--theme(--color-white/95%),0_2px_5px_-1px_--theme(--color-zinc-800/8%),0_4px_10px_-3px_--theme(--color-zinc-800/6%)] backdrop-blur-3xl backdrop-saturate-200 [&:empty]:hidden',
     body: 'relative flex min-h-0 flex-1 flex-col',
@@ -61,7 +62,7 @@ const styles = tv({
       'pointer-events-none sticky top-[calc(var(--cp-toolbar-top,0px)+var(--cp-toolbar-height,0px)-var(--cp-toolbar-tuck,0px))] z-10 -mb-8 h-8 bg-linear-to-b from-gray-50 to-transparent backdrop-blur-lg backdrop-saturate-150',
     sectionContent: 'flex-1 pt-[var(--cp-section-pt,0px)]',
     tabsWrapper:
-      'relative flex w-full items-end gap-3 bg-gray-100 px-3 [padding-top:calc(var(--cp-toolbar-tuck,0px)+0.5rem)]',
+      'relative flex min-h-16 w-full items-end gap-3 bg-gray-100 px-3 [padding-top:calc(var(--cp-toolbar-tuck,0px)+0.5rem)]',
     tabList: 'relative flex max-w-full items-end gap-1',
     tabsToolbarSlot: 'flex flex-1 items-center justify-end self-stretch pb-0',
   },

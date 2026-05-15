@@ -1,10 +1,11 @@
-import { Button, SubmitButton } from '@restate/ui/button';
+import { Button } from '@restate/ui/button';
 import {
   ComplementaryWithSearchParam,
   ComplementaryClose,
-  ComplementaryFooter,
+  ComplementaryHeader,
   useParamValue,
 } from '@restate/ui/layout';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@restate/ui/tooltip';
 import { INVOCATION_QUERY_NAME } from './constants';
 import {
   useGetInvocationJournalWithInvocationV2,
@@ -121,19 +122,28 @@ function InvocationPanelContent() {
     <SnapshotTimeProvider
       lastSnapshot={getInvocationError ? errorUpdatedAt : dataUpdatedAt}
     >
-      <ComplementaryFooter>
-        <div className="flex flex-auto flex-col gap-2">
-          {getInvocationError && <ErrorBanner error={getInvocationError} />}
-
-          <div className="flex gap-2">
-            <ComplementaryClose>
-              <Button className="w-full flex-auto grow-0" variant="secondary">
-                Close
-              </Button>
-            </ComplementaryClose>
-            <SubmitButton
-              className="w-full flex-auto grow-0"
-              variant="primary"
+      <ComplementaryHeader>
+        <Tooltip>
+          <TooltipTrigger>
+            <Link
+              href={`${baseUrl}/invocations/${invocationId}${getSearchParams(
+                location.search,
+                invocationId,
+              )}`}
+              className="flex h-7 w-7 items-center justify-center rounded-full border bg-white text-center text-gray-800 no-underline shadow-xs hover:bg-gray-100 pressed:bg-gray-200"
+            >
+              <Icon
+                name={IconName.Maximize}
+                className="h-3.5 w-3.5 text-gray-500"
+              />
+            </Link>
+          </TooltipTrigger>
+          <TooltipContent size="sm">Open in full view</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger>
+            <Button
+              variant="secondary"
               onClick={() => {
                 refetchGetInvocation();
                 queryClient.refetchQueries({
@@ -151,23 +161,28 @@ function InvocationPanelContent() {
                   });
                 }
               }}
-              isPending={isPending}
+              disabled={isPending}
+              className="flex h-7 w-7 items-center justify-center rounded-full p-0"
             >
-              Refresh
-            </SubmitButton>
-          </div>
-        </div>
-      </ComplementaryFooter>
-      <Link
-        variant="icon"
-        className="absolute top-1 right-1 rounded-lg"
-        href={`${baseUrl}/invocations/${invocationId}${getSearchParams(
-          location.search,
-          invocationId,
-        )}`}
-      >
-        <Icon name={IconName.Maximize} className="h-4 w-4 text-gray-500" />
-      </Link>
+              <Icon name={IconName.Retry} className="h-3.5 w-3.5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent size="sm">Refresh</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger>
+            <ComplementaryClose>
+              <Button
+                variant="secondary"
+                className="flex h-7 w-7 items-center justify-center rounded-full p-0"
+              >
+                <Icon name={IconName.X} className="h-3.5 w-3.5" />
+              </Button>
+            </ComplementaryClose>
+          </TooltipTrigger>
+          <TooltipContent size="sm">Close</TooltipContent>
+        </Tooltip>
+      </ComplementaryHeader>
       <div className="flex flex-col items-start">
         <h2 className="mb-3 flex w-full items-center gap-2 text-lg leading-6 font-medium text-gray-900">
           <div className="h-10 w-10 shrink-0 text-blue-400">
@@ -191,19 +206,22 @@ function InvocationPanelContent() {
                       getInvocationError ? errorUpdatedAt : dataUpdatedAt
                     }
                   />
-                  <div className="ml-auto">
-                    <Actions
-                      invocation={data}
-                      mini={false}
-                      className="text-sm"
-                    />
-                  </div>
                 </div>
               </>
             )}
           </div>
+          {!isPending && (
+            <div className="ml-auto flex shrink-0 items-center self-start">
+              <Actions invocation={data} mini={false} className="text-0.5xs" />
+            </div>
+          )}
         </h2>
       </div>
+      {getInvocationError && (
+        <div className="mb-1">
+          <ErrorBanner error={getInvocationError} />
+        </div>
+      )}
 
       <KeysIdsSection className="mt-5" invocation={data} />
       <LifecycleSection className="mt-2" invocation={data} />

@@ -1,1 +1,1 @@
-export const STATE_QUERY_NAME = 'state';
+export { STATE_QUERY_NAME } from '@restate/util/panel';

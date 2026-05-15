@@ -3,7 +3,7 @@ import {
   useServiceDetails,
   useServiceOpenApi,
 } from '@restate/data-access/admin-api-hooks';
-import { Button, SubmitButton } from '@restate/ui/button';
+import { Button } from '@restate/ui/button';
 import { QueryDialog, DialogContent, DialogClose } from '@restate/ui/dialog';
 import { Icon, IconName } from '@restate/ui/icons';
 import { SERVICE_PLAYGROUND_QUERY_PARAM } from './constants';
@@ -24,11 +24,12 @@ import { tv } from '@restate/util/styles';
 import { API } from '@restate/ui/api';
 import {
   ComplementaryClose,
-  ComplementaryFooter,
+  ComplementaryHeader,
   ComplementaryWithSearchParam,
   useActiveSidebarParam,
   useParamValue,
 } from '@restate/ui/layout';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@restate/ui/tooltip';
 import { Link } from '@restate/ui/link';
 import {
   Dropdown,
@@ -44,6 +45,7 @@ import { ErrorBanner } from '@restate/ui/error';
 import { Spinner } from '@restate/ui/loading';
 import { useOnboarding } from '@restate/util/feature-flag';
 import { useQueryClient } from '@tanstack/react-query';
+import { PANEL_QUERY_PARAM, panelHref } from '@restate/util/panel';
 
 const styles = tv({
   base: 'flex items-center gap-1 rounded-md px-1.5 py-0.5 font-sans text-xs font-normal',
@@ -74,9 +76,7 @@ export function ServicePlaygroundTrigger({
   return (
     <Link
       variant={variant}
-      href={`?${SERVICE_PLAYGROUND_QUERY_PARAM}=${service}${
-        handler ? `#/operations/${handler}` : ''
-      }`}
+      href={panelHref({ playground: service, ...(handler ? { handler } : {}) })}
       className={styles({ className, isOnboarding })}
       autoFocus={isOnboarding}
     >
@@ -96,7 +96,13 @@ export function ServicePlayground() {
 
   return (
     <>
-      <ComplementaryWithSearchParam paramName={SERVICE_PLAYGROUND_QUERY_PARAM}>
+      <ComplementaryWithSearchParam
+        paramName={SERVICE_PLAYGROUND_QUERY_PARAM}
+        onCloseQueryParam={(params) => {
+          params.delete(SERVICE_PLAYGROUND_QUERY_PARAM);
+          return params;
+        }}
+      >
         <ServicePlaygroundComplementaryContent
           setIsSidebar={setIsSidebar}
           isSidebar={isSidebar}
@@ -242,18 +248,31 @@ function useApiSpec(service?: string | null) {
           };
         },
         () => {
-          queryClient.invalidateQueries({
-            refetchType: 'active',
-            predicate: (query) => {
-              const queryKey = query.queryKey;
-              if (Array.isArray(queryKey)) {
-                return String(queryKey.at(0))?.includes(
-                  '/query/invocations/summary',
-                );
-              }
-              return false;
-            },
-          });
+          const predicate = (query: { queryKey: readonly unknown[] }) => {
+            const queryKey = query.queryKey;
+            if (Array.isArray(queryKey)) {
+              return String(queryKey.at(0))?.includes(
+                '/query/invocations/summary',
+              );
+            }
+            return false;
+          };
+          const invalidate = () => {
+            if (
+              typeof document !== 'undefined' &&
+              document.visibilityState !== 'visible'
+            ) {
+              return;
+            }
+            queryClient.invalidateQueries({
+              refetchType: 'active',
+              predicate,
+            });
+          };
+          invalidate();
+          for (const delay of [2_000, 4_000, 8_000, 16_000, 32_000]) {
+            setTimeout(invalidate, delay);
+          }
         },
       ),
     [
@@ -285,6 +304,7 @@ function ServicePlaygroundComplementaryContent({
   const shouldDisplay = isSidebar.get(service) === true;
   const isActive = activeSearch === service;
   const location = useLocation();
+  const [, setSearchParams] = useSearchParams();
 
   const selectedHandlerFromURL = window.location.hash
     .split('#/operations/')
@@ -354,32 +374,68 @@ function ServicePlaygroundComplementaryContent({
 
   return (
     <>
-      <ComplementaryFooter>
-        <div className="flex flex-auto flex-col gap-2">
-          {error && <ErrorBanner errors={[error]} />}
-          <div className="flex w-full gap-2">
+      <ComplementaryHeader>
+        <Tooltip>
+          <TooltipTrigger>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setIsSidebar((old) => {
+                  if (service) {
+                    old.set(service, false);
+                  }
+                  return new Map(old);
+                });
+                setSearchParams(
+                  (prev) => {
+                    const next = new URLSearchParams(prev);
+                    next.delete(PANEL_QUERY_PARAM);
+                    return next;
+                  },
+                  { preventScrollReset: true },
+                );
+              }}
+              className="flex h-7 w-7 items-center justify-center rounded-full p-0"
+            >
+              <Icon
+                name={IconName.Maximize}
+                className="h-3.5 w-3.5 text-gray-500"
+              />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent size="sm">Open as sheet</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger>
+            <Button
+              variant="secondary"
+              onClick={() => refetch()}
+              disabled={isFetching}
+              className="flex h-7 w-7 items-center justify-center rounded-full p-0"
+            >
+              <Icon name={IconName.Retry} className="h-3.5 w-3.5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent size="sm">Refresh</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger>
             <ComplementaryClose>
               <Button
-                className="flex-auto grow-0 basis-1/2"
                 variant="secondary"
                 onClick={() => {
                   _setSelectedHandler(undefined);
                   onClose?.(service);
                 }}
+                className="flex h-7 w-7 items-center justify-center rounded-full p-0"
               >
-                Close
+                <Icon name={IconName.X} className="h-3.5 w-3.5" />
               </Button>
             </ComplementaryClose>
-            <SubmitButton
-              className="flex-auto grow-0 basis-1/2"
-              onClick={() => refetch()}
-              isPending={isFetching}
-            >
-              Refresh
-            </SubmitButton>
-          </div>
-        </div>
-      </ComplementaryFooter>
+          </TooltipTrigger>
+          <TooltipContent size="sm">Close</TooltipContent>
+        </Tooltip>
+      </ComplementaryHeader>
       <div className="flex min-h-full flex-col [&_.sl-elements-api>*:first-child]:hidden! [&_.sl-elements-api>*:nth-child(2)]:px-2! [&_.sl-elements-api>*:nth-child(2)>*]:pt-2! [&_.sl-elements-api>*:nth-child(2)>*>*>*:last-child]:flex-col-reverse! [&_.sl-elements-api>*:nth-child(2)>*>*>*>*]:mx-0! [&_.sl-elements-api>*:nth-child(2)>*>*>*>*]:w-full! [&_.sl-inverted_input]:text-gray-700! [&_.sl-pt-8]:pt-2! [&_.sl-rounded-lg]:rounded-xl! [&_.sl-stack--5]:gap-2! [&_.sl-stack--8]:gap-6! [&_.sl-text-lg]:text-0.5xs! [&_[dir=ltr]>[dir=ltr]]:hidden! [&_elements-api_h2]:text-xl! [&_h1]:mb-2! [&_h1]:hidden! [&_h1]:text-2xl! [&_h3]:text-lg! [&_input]:text-sm! [&_p]:text-sm!">
         <h2 className="mb-0.5 flex items-center gap-2 text-lg leading-6 font-medium text-gray-900">
           <div className="h-10 w-10 shrink-0 text-blue-400">
@@ -448,6 +504,11 @@ function ServicePlaygroundComplementaryContent({
             </div>
           </div>
         </h2>
+        {error && (
+          <div className="mb-1">
+            <ErrorBanner errors={[error]} />
+          </div>
+        )}
         {isActive ? (
           <API
             apiDescriptionDocument={apiSpec}
@@ -459,20 +520,6 @@ function ServicePlaygroundComplementaryContent({
           <div className="flex-auto" />
         )}
         <Attribution />
-        <Button
-          variant="icon"
-          className="absolute top-1 right-1"
-          onClick={() => {
-            setIsSidebar((old) => {
-              if (service) {
-                old.set(service, false);
-              }
-              return new Map(old);
-            });
-          }}
-        >
-          <Icon name={IconName.Maximize} className="h-4 w-4 text-gray-500" />
-        </Button>
       </div>
     </>
   );
@@ -534,6 +581,14 @@ function ServicePlaygroundSheetContent({
                   }
                   return new Map(old);
                 });
+                setSearchParams(
+                  (prev) => {
+                    const next = new URLSearchParams(prev);
+                    next.set(PANEL_QUERY_PARAM, SERVICE_PLAYGROUND_QUERY_PARAM);
+                    return next;
+                  },
+                  { preventScrollReset: true },
+                );
               }}
             >
               <Icon name={IconName.Minimize} className="h-5 w-5" />

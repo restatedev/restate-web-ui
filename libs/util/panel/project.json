@@ -1,0 +1,9 @@
+{
+  "name": "panel",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/util/panel/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project panel --web",
+  "targets": {}
+}

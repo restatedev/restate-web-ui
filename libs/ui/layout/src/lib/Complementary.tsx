@@ -4,7 +4,6 @@ import {
   use,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
   type PropsWithChildren,
@@ -15,11 +14,12 @@ import { useSearchParams } from 'react-router';
 import { Pressable, PressResponder } from '@react-aria/interactions';
 import { FocusScope } from 'react-aria';
 import { createPortal } from 'react-dom';
+import { PANEL_QUERY_PARAM } from '@restate/util/panel';
 
 interface ComplementaryProps {
   setFooterEl: (el: HTMLElement | null) => void;
+  setHeaderEl: (el: HTMLElement | null) => void;
   onClose?: VoidFunction;
-  isOnTop?: boolean;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -29,8 +29,8 @@ const ComplementaryContext = createContext({ onClose: noop });
 export function Complementary({
   children,
   onClose = noop,
-  isOnTop = false,
   setFooterEl,
+  setHeaderEl,
 }: PropsWithChildren<ComplementaryProps>) {
   if (!children) {
     return null;
@@ -39,14 +39,15 @@ export function Complementary({
   return (
     <ComplementaryContext.Provider value={{ onClose }}>
       <LayoutOutlet zone={LayoutZone.Complementary}>
-        <div
-          data-top={isOnTop}
-          className="flex max-h-[inherit] min-h-0 w-full min-w-0 flex-col rounded-[1.125rem] border bg-gray-50/80 p-1.5 shadow-lg shadow-zinc-800/5 backdrop-blur-xl backdrop-saturate-200 transition-all duration-250 data-[top=false]:overflow-hidden data-[top=true]:z-1 data-[top=true]:order-1 3xl:border-transparent 3xl:bg-transparent 3xl:shadow-none 3xl:backdrop-blur-none 3xl:backdrop-saturate-100 [&[data-top=false]:has(~[data-top=false])]:shadow-none"
-        >
-          <FocusScope restoreFocus autoFocus>
+        <FocusScope restoreFocus autoFocus>
+          <div
+            ref={setHeaderEl}
+            className="z-10 flex items-center justify-end gap-0.5 px-1 pb-1 3xl:px-2 3xl:pb-1.5 [&:not(:has(*))]:hidden"
+          />
+          <div className="flex max-h-[inherit] min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden rounded-[1.125rem] border bg-gray-50/80 p-1.5 shadow-lg shadow-zinc-800/5 backdrop-blur-xl backdrop-saturate-200 transition-all duration-250 3xl:overflow-visible 3xl:border-transparent 3xl:bg-transparent 3xl:p-0 3xl:shadow-none 3xl:backdrop-blur-none 3xl:backdrop-saturate-100">
             <div
               data-complementary-content
-              className="relative flex max-h-[inherit] min-h-[50vh] flex-auto flex-col overflow-x-hidden overflow-y-auto rounded-xl border bg-white p-3 pt-7"
+              className="relative flex max-h-[inherit] min-h-[50vh] flex-auto flex-col overflow-x-hidden overflow-y-auto rounded-xl border bg-white p-3 pt-7 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.8)] 3xl:rounded-t-2xl 3xl:rounded-b-none 3xl:border-b-0 3xl:border-gray-200 3xl:bg-gray-50"
               onKeyDown={(e) => {
                 if (e.key === 'Escape') {
                   onClose?.();
@@ -58,10 +59,10 @@ export function Complementary({
             </div>
             <div
               ref={setFooterEl}
-              className="z-10 flex gap-2 rounded-2xl *:min-w-0 has-[*]:mt-1 has-[*]:py-1 has-[*]:pb-0 3xl:sticky 3xl:bottom-0 3xl:-mx-1.5 3xl:-mb-1.5 3xl:bg-transparent 3xl:p-1.5 3xl:pb-1.5 3xl:backdrop-blur-xl 3xl:backdrop-saturate-200 3xl:before:pointer-events-none 3xl:before:absolute 3xl:before:-top-8 3xl:before:-right-3 3xl:before:-bottom-3 3xl:before:-left-3 3xl:before:-z-10 3xl:before:bg-linear-to-b 3xl:before:from-transparent 3xl:before:via-gray-100/80 3xl:before:to-gray-100/80 3xl:before:content-[''] [&:not(:has(*))]:hidden"
+              className="z-10 flex gap-2 rounded-2xl *:min-w-0 has-[*]:mt-1 has-[*]:py-1 has-[*]:pb-0 3xl:p-3 [&:not(:has(*))]:hidden"
             />
-          </FocusScope>
-        </div>
+          </div>
+        </FocusScope>
       </LayoutOutlet>
     </ComplementaryContext.Provider>
   );
@@ -93,20 +94,20 @@ export function ComplementaryWithSearchParam({
   onCloseQueryParam?: (prev: URLSearchParams) => URLSearchParams;
 }>) {
   const [searchParams] = useSearchParams();
-  const paramValues = searchParams.getAll(paramName);
+  const isActive = searchParams.get(PANEL_QUERY_PARAM) === paramName;
+  const paramValue = searchParams.get(paramName);
+
+  if (!isActive || !paramValue) {
+    return null;
+  }
 
   return (
-    <>
-      {paramValues.map((paramValue) => (
-        <ComplementaryWithSearchParamValue
-          children={children}
-          key={paramValue}
-          paramName={paramName}
-          paramValue={paramValue}
-          onCloseQueryParam={onCloseQueryParam}
-        />
-      ))}
-    </>
+    <ComplementaryWithSearchParamValue
+      children={children}
+      paramName={paramName}
+      paramValue={paramValue}
+      onCloseQueryParam={onCloseQueryParam}
+    />
   );
 }
 
@@ -114,35 +115,15 @@ const ComplementaryWithSearchContext = createContext<{
   paramValue: string;
   footerElement?: HTMLElement | null;
   setFooterEl?: (el: HTMLElement | null) => void;
+  headerElement?: HTMLElement | null;
+  setHeaderEl?: (el: HTMLElement | null) => void;
 }>({
   paramValue: '',
 });
 const noOp = (prev: URLSearchParams) => prev;
 
-function getIsTop(
-  searchParams: URLSearchParams,
-  paramName: string,
-  paramValue: string,
-) {
-  const firstQuery = searchParams
-    .toString()
-    .split('&')
-    .filter((query) => {
-      return !document.querySelector(
-        `[data-${query.toLowerCase().split('=').at(0)}-dialog=true]`,
-      );
-    })
-    .at(0);
-
-  const isOnTop =
-    firstQuery?.startsWith(`${paramName}=${paramValue}`) ||
-    firstQuery?.startsWith(`${paramName}=${encodeURIComponent(paramValue)}`);
-  return isOnTop;
-}
-
 function ComplementaryWithSearchParamValue({
   children,
-  paramName,
   paramValue,
   onCloseQueryParam = noOp,
 }: PropsWithChildren<{
@@ -150,10 +131,7 @@ function ComplementaryWithSearchParamValue({
   paramValue: string;
   onCloseQueryParam?: (prev: URLSearchParams) => URLSearchParams;
 }>) {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [isOnTop, setIsTop] = useState(() =>
-    getIsTop(searchParams, paramName, paramValue),
-  );
+  const [, setSearchParams] = useSearchParams();
   const renderedChildren = useMemo(() => {
     if (!paramValue) {
       return null;
@@ -161,52 +139,32 @@ function ComplementaryWithSearchParamValue({
     return children;
   }, [children, paramValue]);
   const [footerEl, setFooterEl] = useState<HTMLElement | null>(null);
+  const [headerEl, setHeaderEl] = useState<HTMLElement | null>(null);
 
   const onClose = useCallback(() => {
     setSearchParams(
       (prev) => {
-        return onCloseQueryParam(
-          new URLSearchParams(
-            prev
-              .toString()
-              .replace(`${paramName}=${paramValue}`, '')
-              .replace(`${paramName}=${encodeURIComponent(paramValue)}`, ''),
-          ),
-        );
+        const next = new URLSearchParams(prev);
+        next.delete(PANEL_QUERY_PARAM);
+        return onCloseQueryParam(next);
       },
       { preventScrollReset: true },
     );
-  }, [paramName, paramValue, setSearchParams, onCloseQueryParam]);
-
-  useEffect(() => {
-    const observer = new MutationObserver((mutations) => {
-      for (const mutation of mutations) {
-        if (mutation.type === 'attributes') {
-          setIsTop(getIsTop(searchParams, paramName, paramValue));
-        }
-      }
-    });
-
-    observer.observe(document.body, {
-      subtree: true,
-      attributeFilter: ['data-query-dialog'],
-    });
-    setIsTop(getIsTop(searchParams, paramName, paramValue));
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [paramName, paramValue, searchParams]);
+  }, [setSearchParams, onCloseQueryParam]);
 
   return (
     <ComplementaryWithSearchContext.Provider
-      value={{ paramValue, footerElement: footerEl }}
+      value={{
+        paramValue,
+        footerElement: footerEl,
+        headerElement: headerEl,
+      }}
     >
       <Complementary
         children={renderedChildren}
         onClose={onClose}
-        isOnTop={isOnTop}
         setFooterEl={setFooterEl}
+        setHeaderEl={setHeaderEl}
       />
     </ComplementaryWithSearchContext.Provider>
   );
@@ -221,6 +179,15 @@ export function ComplementaryFooter({ children }: PropsWithChildren) {
   return null;
 }
 
+export function ComplementaryHeader({ children }: PropsWithChildren) {
+  const { headerElement } = use(ComplementaryWithSearchContext);
+
+  if (headerElement) {
+    return createPortal(children, headerElement);
+  }
+  return null;
+}
+
 export function useParamValue() {
   const { paramValue } = use(ComplementaryWithSearchContext);
 
@@ -230,9 +197,8 @@ export function useParamValue() {
 export function useActiveSidebarParam(paramName: string) {
   const [searchParams] = useSearchParams();
 
-  if (searchParams.toString().startsWith(`${paramName}=`)) {
-    return searchParams.get(paramName) as string;
-  } else {
+  if (searchParams.get(PANEL_QUERY_PARAM) !== paramName) {
     return undefined;
   }
+  return searchParams.get(paramName) ?? undefined;
 }

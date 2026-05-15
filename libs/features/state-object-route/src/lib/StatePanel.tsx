@@ -1,8 +1,8 @@
-import { Button, SubmitButton } from '@restate/ui/button';
+import { Button } from '@restate/ui/button';
 import {
   ComplementaryWithSearchParam,
   ComplementaryClose,
-  ComplementaryFooter,
+  ComplementaryHeader,
   useParamValue,
 } from '@restate/ui/layout';
 import { STATE_QUERY_NAME } from './constants';
@@ -21,10 +21,8 @@ import { formatDurations, formatNumber } from '@restate/util/intl';
 import { useQueryClient } from '@tanstack/react-query';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@restate/ui/tooltip';
-import {
-  INVOCATION_QUERY_NAME,
-  State,
-} from '@restate/features/invocation-route';
+import { State } from '@restate/features/invocation-route';
+import { panelHref } from '@restate/util/panel';
 import { Link } from '@restate/ui/link';
 import { Badge } from '@restate/ui/badge';
 import { Copy } from '@restate/ui/copy';
@@ -118,19 +116,11 @@ function StatePanelContent() {
     <SnapshotTimeProvider
       lastSnapshot={getStateError ? errorUpdatedAt : dataUpdatedAt}
     >
-      <ComplementaryFooter>
-        <div className="flex flex-auto flex-col gap-2">
-          {getStateError && <ErrorBanner error={getStateError} />}
-
-          <div className="flex gap-2">
-            <ComplementaryClose>
-              <Button className="w-full flex-auto grow-0" variant="secondary">
-                Close
-              </Button>
-            </ComplementaryClose>
-            <SubmitButton
-              className="w-full flex-auto grow-0"
-              variant="primary"
+      <ComplementaryHeader>
+        <Tooltip>
+          <TooltipTrigger>
+            <Button
+              variant="secondary"
               onClick={() => {
                 refetchState();
                 queryClient.refetchQueries({
@@ -138,13 +128,28 @@ function StatePanelContent() {
                   exact: true,
                 });
               }}
-              isPending={isFetching}
+              disabled={isFetching}
+              className="flex h-7 w-7 items-center justify-center rounded-full p-0"
             >
-              Refresh
-            </SubmitButton>
-          </div>
-        </div>
-      </ComplementaryFooter>
+              <Icon name={IconName.Retry} className="h-3.5 w-3.5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent size="sm">Refresh</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger>
+            <ComplementaryClose>
+              <Button
+                variant="secondary"
+                className="flex h-7 w-7 items-center justify-center rounded-full p-0"
+              >
+                <Icon name={IconName.X} className="h-3.5 w-3.5" />
+              </Button>
+            </ComplementaryClose>
+          </TooltipTrigger>
+          <TooltipContent size="sm">Close</TooltipContent>
+        </Tooltip>
+      </ComplementaryHeader>
       <div className="flex flex-col items-start">
         <h2 className="mb-3 flex w-full items-center gap-2 text-lg leading-6 font-medium text-gray-900">
           <div className="h-10 w-10 shrink-0 text-blue-400">
@@ -174,6 +179,11 @@ function StatePanelContent() {
           </div>
         </h2>
       </div>
+      {getStateError && (
+        <div className="mb-1">
+          <ErrorBanner error={getStateError} />
+        </div>
+      )}
       <Section className="mt-5">
         <SectionTitle>{virtualObject}</SectionTitle>
         <SectionContent className="p-0">
@@ -225,7 +235,9 @@ function StatePanelContent() {
                       <Tooltip>
                         <TooltipTrigger>
                           <Link
-                            href={`?${INVOCATION_QUERY_NAME}=${queueData?.head}`}
+                            href={panelHref({
+                              invocation: String(queueData?.head ?? ''),
+                            })}
                             aria-label={queueData?.head}
                             variant="secondary"
                             className="block h-6 w-6 rounded-lg border bg-white shadow-xs"

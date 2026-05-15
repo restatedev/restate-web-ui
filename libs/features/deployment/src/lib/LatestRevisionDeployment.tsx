@@ -11,7 +11,7 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { formatPlurals } from '@restate/util/intl';
 import { useListDeployments } from '@restate/data-access/admin-api-hooks';
 import { Deployment } from './Deployment';
-import { DEPLOYMENT_QUERY_PARAM } from './constants';
+import { panelHref } from '@restate/util/panel';
 
 function useDeploymentPairs(serviceName: string) {
   const { data } = useListDeployments({ refetchOnMount: false });
@@ -74,7 +74,7 @@ export function OlderRevisions({ serviceName }: { serviceName: string }) {
             {older.map(({ id, revision }) => (
               <DropdownItem
                 key={id}
-                href={`?${DEPLOYMENT_QUERY_PARAM}=${id}`}
+                href={panelHref({ deployment: id })}
                 value={id}
               >
                 <Deployment

@@ -24,7 +24,7 @@ export function useOverviewData(filters: FilterItem[] = []) {
   const { data: servicesMap } = useListServices(sortedServiceNames);
   const {
     data: rawSummaryData,
-    isFetching: isSummaryLoading,
+    isPending: isSummaryLoading,
     isError: isSummaryError,
     error: summaryError,
     queryKey: summaryQueryKey,

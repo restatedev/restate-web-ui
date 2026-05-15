@@ -8,7 +8,7 @@ import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { tv } from '@restate/util/styles';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Link } from '@restate/ui/link';
-import { INVOCATION_QUERY_NAME } from './constants';
+import { panelHref } from '@restate/util/panel';
 import { Copy } from '@restate/ui/copy';
 import { Badge } from '@restate/ui/badge';
 import {
@@ -183,7 +183,7 @@ export function VirtualObjectSection({
                       <Tooltip>
                         <TooltipTrigger>
                           <Link
-                            href={`?${INVOCATION_QUERY_NAME}=${head}`}
+                            href={panelHref({ invocation: head })}
                             aria-label={head}
                             variant="secondary"
                             className="block h-6 w-6 rounded-lg border bg-white shadow-xs"

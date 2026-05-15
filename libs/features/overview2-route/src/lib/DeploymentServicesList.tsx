@@ -3,7 +3,7 @@ import { Link } from '@restate/ui/link';
 import { Icon, IconName } from '@restate/ui/icons';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Revision } from '@restate/features/deployment';
-import { SERVICE_QUERY_PARAM } from '@restate/features/service';
+import { panelHref } from '@restate/util/panel';
 import type { OverviewDeploymentService } from './sortDeployments';
 
 export function DeploymentServicesList({
@@ -49,7 +49,7 @@ function DeploymentServiceItem({
         ref={linkRef}
         aria-label={service.name}
         variant="secondary"
-        href={`?${SERVICE_QUERY_PARAM}=${service.name}`}
+        href={panelHref({ service: service.name })}
         className="my-0.5 shrink-0 rounded-full before:absolute before:-top-0.5 before:-right-1 before:-bottom-0.5 before:-left-1 before:rounded-lg before:content-[''] hover:before:bg-black/3"
       >
         <Icon name={IconName.ChevronRight} className="h-4 w-4 text-gray-400" />
