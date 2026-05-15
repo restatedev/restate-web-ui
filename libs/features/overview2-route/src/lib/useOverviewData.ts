@@ -34,7 +34,6 @@ export function useOverviewData(filters: FilterItem[] = []) {
     isPending: isDeploymentStatusLoading,
   } = useListDrainedDeployments();
   const summaryData = isSummaryError ? undefined : rawSummaryData;
-
   const { isNew, isVersionGte } = useRestateContext();
 
   const byStatus = summaryData?.byStatus ?? [];

@@ -1627,7 +1627,7 @@ export function useRestartWorkflowAsNew(
     unknown
   >,
 ) {
-  const { ingressUrl } = useRestateContext();
+  const { ingressUrl, isVersionGte } = useRestateContext();
   const baseUrl = useAdminBaseUrl();
   const queryClient = useQueryClient();
 
@@ -1671,8 +1671,15 @@ export function useRestartWorkflowAsNew(
       const body = payloadData.parameters;
       const headers = payloadData.headers;
 
+      const scope = data?.scope;
+      const sendUrl = isVersionGte?.('1.7.0')
+        ? scope
+          ? `${ingressUrl}/restate/scope/${scope}/send/workflow/${workflowId}/${data?.target_handler_name}`
+          : `${ingressUrl}/restate/send/workflow/${workflowId}/${data?.target_handler_name}`
+        : `${ingressUrl}/${data?.target_service_name}/${workflowId}/${data?.target_handler_name}/send`;
+
       return fetch(
-        `${ingressUrl}/${data?.target_service_name}/${workflowId}/${data?.target_handler_name}/send`,
+        sendUrl,
         {
           credentials: 'include',
           method: 'POST',
