@@ -7,10 +7,12 @@ import {
 } from '@restate/ui/layout';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import {
+  isSummaryInvocationsQuery,
   useListDeployments,
   useServiceDetails,
   useSummaryInvocations,
 } from '@restate/data-access/admin-api-hooks';
+import { useQueryClient } from '@tanstack/react-query';
 import { ServiceStatusBar } from '@restate/features/status-chart';
 import { getRangeLabel, useRange } from '@restate/features/restate-context';
 import { InvocationCountLink } from '@restate/features/service';
@@ -76,10 +78,19 @@ function ServiceDetailsContent() {
       ...(!service && { enabled: false }),
     },
   );
+  const queryClient = useQueryClient();
 
   if (!service) {
     return null;
   }
+
+  const handleRefresh = () => {
+    refetch();
+    queryClient.refetchQueries({
+      type: 'active',
+      predicate: isSummaryInvocationsQuery,
+    });
+  };
 
   return (
     <>
@@ -88,7 +99,7 @@ function ServiceDetailsContent() {
           <TooltipTrigger>
             <Button
               variant="secondary"
-              onClick={() => refetch()}
+              onClick={handleRefresh}
               disabled={isPending}
               className="flex h-7 w-7 items-center justify-center rounded-full p-0"
             >
