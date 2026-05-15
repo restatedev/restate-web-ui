@@ -1,3 +1,14 @@
+import type { FilterItem } from '@restate/data-access/admin-api-spec';
+
+export const DEFAULT_INVOCATION_COLUMNS = [
+  'id',
+  'created_at',
+  'modified_at',
+  'duration',
+  'target',
+  'status',
+];
+
 const FAILED_SUBSTATES = ['failed', 'cancelled', 'killed'];
 const NON_IN_FLIGHT_STATUSES = ['succeeded', 'failed', 'cancelled', 'killed'];
 
@@ -30,12 +41,15 @@ function buildParams(existingParams?: URLSearchParams) {
   return out;
 }
 
-export function toCreatedAfterParam(isoDate: string): URLSearchParams {
+export function toFilterParams(filters: FilterItem[]): URLSearchParams {
   const params = new URLSearchParams();
-  params.set(
-    'filter_created_at',
-    JSON.stringify({ operation: 'AFTER', value: isoDate }),
-  );
+  for (const f of filters) {
+    const body =
+      'value' in f
+        ? { operation: f.operation, value: f.value }
+        : { operation: f.operation };
+    params.set(`filter_${f.field}`, JSON.stringify(body));
+  }
   return params;
 }
 
@@ -127,6 +141,35 @@ export function toServiceStatusInvocationsHref(
   params.set(
     'filter_target_service_name',
     JSON.stringify({ operation: 'IN', value: [serviceName] }),
+  );
+  params.set(
+    'filter_status',
+    JSON.stringify({
+      operation: 'IN',
+      value: resolveStatuses(statusName, expandFailed),
+    }),
+  );
+  return `${baseUrl}/invocations?${params.toString()}`;
+}
+
+export function toServiceAndHandlerStatusInvocationsHref(
+  baseUrl: string,
+  serviceName: string,
+  handlerName: string,
+  statusName: string,
+  {
+    expandFailed = true,
+    existingParams,
+  }: { expandFailed?: boolean; existingParams?: URLSearchParams } = {},
+) {
+  const params = buildParams(existingParams);
+  params.set(
+    'filter_target_service_name',
+    JSON.stringify({ operation: 'IN', value: [serviceName] }),
+  );
+  params.set(
+    'filter_target_handler_name',
+    JSON.stringify({ operation: 'IN', value: [handlerName] }),
   );
   params.set(
     'filter_status',
