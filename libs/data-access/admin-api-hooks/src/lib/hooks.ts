@@ -37,7 +37,7 @@ import type {
 import { useCallback, useMemo } from 'react';
 import { RestateError } from '@restate/util/errors';
 import { useAPIStatus } from '@restate/data-access/admin-api';
-import { useRestateContext } from '@restate/features/restate-context';
+import { useRange, useRestateContext } from '@restate/features/restate-context';
 import { base64ToUint8Array } from '@restate/util/binary';
 
 export const RESTARTED_FROM_HEADER = 'x-restate-restarted-from';
@@ -616,15 +616,21 @@ export function useSummaryInvocations(
     sampled,
     sampleSize,
     includeDuration,
+    range,
+    meta: callerMeta,
     ...options
   }: HookQueryOptions<'/query/invocations/summary', 'post'> & {
     sampled?: boolean;
     sampleSize?: number;
     includeDuration?: boolean;
+    range?: string;
   } = {},
 ) {
   const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
+  const currentRange = useRange();
+  const isMonitorQuery = filters.length === 0 && range === currentRange;
+
   const queryOptions = adminApi('query', '/query/invocations/summary', 'post', {
     baseUrl,
     body: {
@@ -632,6 +638,7 @@ export function useSummaryInvocations(
       sampled,
       sampleSize,
       includeDuration,
+      range,
     },
   });
 
@@ -641,7 +648,12 @@ export function useSummaryInvocations(
     refetchInterval: 60_000,
     ...queryOptions,
     ...options,
-    meta: { ...queryOptions.meta, ...getOverviewRefreshMeta() },
+    meta: {
+      ...queryOptions.meta,
+      ...getOverviewRefreshMeta(),
+      ...callerMeta,
+      ...(isMonitorQuery && { monitor: true }),
+    },
     enabled: options?.enabled !== false && enabled,
   });
 

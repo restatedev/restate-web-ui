@@ -7,9 +7,20 @@ import {
 } from '@restate/ui/layout';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import {
+  isSummaryInvocationsQuery,
   useListDeployments,
   useServiceDetails,
+  useSummaryInvocations,
 } from '@restate/data-access/admin-api-hooks';
+import { useQueryClient } from '@tanstack/react-query';
+import { ServiceStatusBar } from '@restate/features/status-chart';
+import { getRangeLabel, useRange } from '@restate/features/restate-context';
+import { InvocationCountLink } from '@restate/features/service';
+import {
+  toFilterParams,
+  toServiceAndHandlerInvocationsHref,
+  toServiceInvocationsHref,
+} from '@restate/util/invocation-links';
 import { Icon, IconName } from '@restate/ui/icons';
 import {
   Tooltip,
@@ -30,7 +41,7 @@ import { IngressAccessSection } from './IngressAccessSection';
 import { RetryPolicySection } from './RetryPolicy';
 import { useRestateContext } from '@restate/features/restate-context';
 import { AdvancedSection } from './Advanced';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Metadata } from '@restate/features/options';
 import { ServiceHeader } from './ServiceHeader';
 import {
@@ -68,10 +79,19 @@ function ServiceDetailsContent() {
       ...(!service && { enabled: false }),
     },
   );
+  const queryClient = useQueryClient();
 
   if (!service) {
     return null;
   }
+
+  const handleRefresh = () => {
+    refetch();
+    queryClient.refetchQueries({
+      type: 'active',
+      predicate: isSummaryInvocationsQuery,
+    });
+  };
 
   return (
     <>
@@ -80,7 +100,7 @@ function ServiceDetailsContent() {
           <TooltipTrigger>
             <Button
               variant="secondary"
-              onClick={() => refetch()}
+              onClick={handleRefresh}
               disabled={isPending}
               className="flex h-7 w-7 items-center justify-center rounded-full p-0"
             >
@@ -152,6 +172,31 @@ function ServiceContent({
   const handlerData = handlers.find(
     (handler) => handler.name === selectedHandler,
   );
+
+  const range = useRange();
+  const { data: summaryData, isPending: isSummaryLoading } =
+    useSummaryInvocations([], { sampled: false, range });
+  const byServiceAndStatus = summaryData?.byServiceAndStatus ?? [];
+  const byServiceAndHandlerAndStatus =
+    summaryData?.byServiceAndHandlerAndStatus ?? [];
+  const serviceInvocationCount = byServiceAndStatus
+    .filter((s) => s.service === service)
+    .reduce((sum, s) => sum + s.count, 0);
+  const handlerInvocationCount = byServiceAndHandlerAndStatus
+    .filter((s) => s.service === service && s.handler === selectedHandler)
+    .reduce((sum, s) => sum + s.count, 0);
+  const invocationCount = hasHandler
+    ? handlerInvocationCount
+    : serviceInvocationCount;
+  const isInvocationsEmpty = !isSummaryLoading && invocationCount === 0;
+  const appliedFilters = summaryData?.appliedFilters;
+  const linkParams = useMemo(() => {
+    const next = new URLSearchParams(searchParams);
+    for (const [key, value] of toFilterParams(appliedFilters ?? [])) {
+      next.set(key, value);
+    }
+    return next;
+  }, [searchParams, appliedFilters]);
 
   const resolvedData = {
     ...data,
@@ -307,6 +352,50 @@ function ServiceContent({
 
       <div className="flex flex-col gap-2">
         <Section className="mt-4">
+          <SectionTitle>
+            <span>Invocations</span>
+            <span className="ml-1 text-gray-400 normal-case">
+              · {getRangeLabel(range)}
+            </span>
+          </SectionTitle>
+          <SectionContent className="px-2 pt-2" raised={false}>
+            {isInvocationsEmpty ? (
+              <div className="px-2 py-1.5 text-0.5xs text-gray-400">
+                No invocations
+              </div>
+            ) : (
+              <div className="flex flex-col gap-1.5">
+                <InvocationCountLink
+                  href={
+                    hasHandler && selectedHandler
+                      ? toServiceAndHandlerInvocationsHref(
+                          baseUrl,
+                          service,
+                          selectedHandler,
+                          { existingParams: linkParams },
+                        )
+                      : toServiceInvocationsHref(baseUrl, service, {
+                          existingParams: linkParams,
+                        })
+                  }
+                  count={invocationCount}
+                  isLoading={isSummaryLoading}
+                  size="sm"
+                />
+                <ServiceStatusBar
+                  serviceName={service}
+                  handlerName={
+                    hasHandler && selectedHandler ? selectedHandler : undefined
+                  }
+                  data={summaryData}
+                  isLoading={isSummaryLoading}
+                  linkParams={linkParams}
+                />
+              </div>
+            )}
+          </SectionContent>
+        </Section>
+        <Section>
           <SectionTitle>{hasHandler ? 'Definition' : 'Handlers'}</SectionTitle>
           <SectionContent className="px-2 pt-2" raised={false}>
             {isPending ? (

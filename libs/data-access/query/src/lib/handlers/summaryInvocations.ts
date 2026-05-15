@@ -15,6 +15,24 @@ const HIGHLIGHT_FIELDS = new Set([
   'target_handler_name',
 ]);
 const FAILED_SUBSTATES = ['failed', 'cancelled', 'killed'];
+const RANGE_DURATIONS_MS: Record<string, number> = {
+  PT1H: 60 * 60 * 1000,
+  P1D: 24 * 60 * 60 * 1000,
+};
+
+function rangeToCreatedAtFilter(
+  range: string | undefined,
+): FilterItem | undefined {
+  if (!range) return undefined;
+  const ms = RANGE_DURATIONS_MS[range];
+  if (!ms) return undefined;
+  return {
+    type: 'DATE',
+    field: 'created_at',
+    operation: 'AFTER',
+    value: new Date(Date.now() - ms).toISOString(),
+  };
+}
 const SPLIT_TABLE_MIN_VERSION = '1.7.0';
 const SPLIT_TABLE_SHARED_FIELDS = new Set([
   'id',
@@ -153,6 +171,8 @@ function buildResponse(
   buckets: Buckets,
   totalCount: number,
   sampled: boolean,
+  range: string | undefined,
+  appliedFilters: FilterItem[],
   extra?: Record<string, unknown>,
 ) {
   const byStatus = Object.entries(buckets.status).map(
@@ -209,6 +229,8 @@ function buildResponse(
     byServiceAndStatus,
     byServiceAndHandler,
     byServiceAndHandlerAndStatus,
+    ...(range !== undefined && { range }),
+    appliedFilters,
     ...extra,
   });
 }
@@ -231,6 +253,7 @@ export async function summaryInvocations(
   sampled = true,
   sampleSize = DEFAULT_SAMPLE_SIZE,
   includeDuration = false,
+  range?: string,
 ) {
   // TODO: re-enable split table path once compatible
   // if (
@@ -245,6 +268,7 @@ export async function summaryInvocations(
   //     sampled,
   //     sampleSize,
   //     includeDuration,
+  //     range,
   //   );
   // }
   return summaryInvocationsLegacy.call(
@@ -253,6 +277,7 @@ export async function summaryInvocations(
     sampled,
     sampleSize,
     includeDuration,
+    range,
   );
 }
 
@@ -262,8 +287,11 @@ async function summaryInvocationsLegacy(
   sampled: boolean,
   sampleSize: number,
   includeDuration: boolean,
+  range: string | undefined,
 ) {
-  const baseFilters = filters.filter((f) => !HIGHLIGHT_FIELDS.has(f.field));
+  const rangeFilter = rangeToCreatedAtFilter(range);
+  const allFilters = rangeFilter ? [rangeFilter, ...filters] : filters;
+  const baseFilters = allFilters.filter((f) => !HIGHLIGHT_FIELDS.has(f.field));
   const where = convertInvocationsFilters(baseFilters);
   const subquery = sampled
     ? `(SELECT * FROM sys_invocation LIMIT ${sampleSize})`
@@ -318,7 +346,7 @@ async function summaryInvocationsLegacy(
     }
   }
 
-  return buildResponse(buckets, totalCount, sampled, extra);
+  return buildResponse(buckets, totalCount, sampled, range, baseFilters, extra);
 }
 
 async function summaryInvocationsSplit(
@@ -327,6 +355,7 @@ async function summaryInvocationsSplit(
   sampled: boolean,
   sampleSize: number,
   includeDuration: boolean,
+  range: string | undefined,
 ) {
   const baseFilters = filters.filter((f) => !HIGHLIGHT_FIELDS.has(f.field));
   const where = convertInvocationsFilters(baseFilters);
@@ -484,5 +513,5 @@ async function summaryInvocationsSplit(
     }
   }
 
-  return buildResponse(buckets, totalCount, sampled, extra);
+  return buildResponse(buckets, totalCount, sampled, range, baseFilters, extra);
 }

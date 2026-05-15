@@ -2533,6 +2533,9 @@
                   "includeDuration": {
                     "type": "boolean",
                     "default": false
+                  },
+                  "range": {
+                    "type": "string"
                   }
                 }
               }
@@ -9799,6 +9802,15 @@
                 "type": "string",
                 "format": "duration"
               }
+            }
+          },
+          "range": {
+            "type": "string"
+          },
+          "appliedFilters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FilterItem"
             }
           }
         }

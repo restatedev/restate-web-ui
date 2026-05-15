@@ -1,6 +1,5 @@
 import { useRef, useCallback, useState, useEffect } from 'react';
 import { SearchField, Input as AriaInput, Label } from 'react-aria-components';
-import { useSearchParams } from 'react-router';
 import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from '@restate/util/styles';
 import { panelHref } from '@restate/util/panel';
@@ -37,7 +36,7 @@ import { SortByDropdown } from './SortByDropdown';
 import { DeploymentActions } from './DeploymentActions';
 import { ServicesGridList } from './ServicesGridList';
 import { DeploymentsGridList } from './DeploymentsGridList';
-import { getOverviewRangeLabel } from './useRangeFilters';
+import { getRangeLabel, useRange } from '@restate/features/restate-context';
 
 const LINE_COUNT = 7;
 
@@ -184,7 +183,6 @@ const emptyServerStyles = tv({
 });
 
 function OverviewContent() {
-  const [searchParams] = useSearchParams();
   const {
     servicesMap,
     byStatus,
@@ -217,7 +215,8 @@ function OverviewContent() {
   const isAdminFetching = useIsFetching(adminQueryPredicate) > 0;
   const isAdminMutating = useIsMutating(adminQueryPredicate) > 0;
   const queryClient = useQueryClient();
-  const rangeLabel = getOverviewRangeLabel(searchParams);
+  const range = useRange();
+  const rangeLabel = getRangeLabel(range);
 
   let overallIssueSeverity: 'high' | 'low' | 'none' = 'none';
   for (const issues of serviceIssuesMap.values()) {

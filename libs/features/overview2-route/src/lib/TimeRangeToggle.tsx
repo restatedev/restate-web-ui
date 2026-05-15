@@ -1,4 +1,3 @@
-import { useSearchParams } from 'react-router';
 import { Icon, IconName } from '@restate/ui/icons';
 import {
   Dropdown,
@@ -10,21 +9,23 @@ import {
 } from '@restate/ui/dropdown';
 import { Button } from '@restate/ui/button';
 import {
-  getOverviewRangeLabel,
-  OVERVIEW_RANGE_PARAM,
+  DEFAULT_RANGE,
+  getRangeLabel,
   PeriodRange,
-} from './useRangeFilters';
+  useRange,
+  useSetRange,
+} from '@restate/features/restate-context';
 
 const RANGES = [
-  { value: '', param: undefined, label: 'in last 1h' },
-  { value: PeriodRange.P1D, param: PeriodRange.P1D, label: 'in last 24h' },
-  { value: PeriodRange.ALL, param: PeriodRange.ALL, label: 'overall' },
+  { value: PeriodRange.PT1H, label: 'in last 1h' },
+  { value: PeriodRange.P1D, label: 'in last 24h' },
+  { value: PeriodRange.ALL, label: 'overall' },
 ] as const;
 
 export function TimeRangeToggle({ onChange }: { onChange?: () => void }) {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const label = getOverviewRangeLabel(searchParams);
-  const currentRange = searchParams.get(OVERVIEW_RANGE_PARAM) ?? '';
+  const currentRange = useRange();
+  const setRange = useSetRange();
+  const label = getRangeLabel(currentRange);
 
   return (
     <Dropdown>
@@ -47,11 +48,7 @@ export function TimeRangeToggle({ onChange }: { onChange?: () => void }) {
             selectedItems={[currentRange]}
             onSelect={(key) => {
               onChange?.();
-              setSearchParams((prev) => {
-                prev.delete(OVERVIEW_RANGE_PARAM);
-                if (key) prev.set(OVERVIEW_RANGE_PARAM, key);
-                return prev;
-              });
+              setRange(key || DEFAULT_RANGE);
             }}
             aria-label="Time range"
           >

@@ -10,9 +10,8 @@ import {
   getServiceIssues,
   type ServiceIssue,
 } from '@restate/features/system-health';
-import type { FilterItem } from '@restate/data-access/admin-api-spec';
 
-export function useOverviewData(filters: FilterItem[] = []) {
+export function useOverviewData(range?: string) {
   const {
     data: { sortedServiceNames, deployments: deploymentsMap } = {},
     isFetched,
@@ -28,7 +27,7 @@ export function useOverviewData(filters: FilterItem[] = []) {
     isError: isSummaryError,
     error: summaryError,
     queryKey: summaryQueryKey,
-  } = useSummaryInvocations(filters, { sampled: false });
+  } = useSummaryInvocations([], { sampled: false, range });
   const {
     data: drainedDeploymentIds = new Set(),
     isPending: isDeploymentStatusLoading,
@@ -39,6 +38,7 @@ export function useOverviewData(filters: FilterItem[] = []) {
   const byStatus = summaryData?.byStatus ?? [];
   const byServiceAndStatus = summaryData?.byServiceAndStatus ?? [];
   const totalCount = summaryData?.totalCount ?? 0;
+  const appliedFilters = summaryData?.appliedFilters ?? [];
 
   const { invocationCounts, serviceStatusCounts } = useMemo(() => {
     const counts = new Map<string, number>();
@@ -106,9 +106,11 @@ export function useOverviewData(filters: FilterItem[] = []) {
   return {
     servicesMap,
     deploymentsMap,
+    summaryData,
     byStatus,
     byServiceAndStatus,
     totalCount,
+    appliedFilters,
     invocationCounts,
     handlerInvocationCounts,
     serviceIssuesMap,

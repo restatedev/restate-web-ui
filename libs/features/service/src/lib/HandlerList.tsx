@@ -10,7 +10,6 @@ import {
 import { formatPlurals } from '@restate/util/intl';
 import { useRestateContext } from '@restate/features/restate-context';
 import { toServiceAndHandlerInvocationsHref } from '@restate/util/invocation-links';
-import { useSearchParams } from 'react-router';
 import { Handler } from './Handler';
 import { HandlerGridList } from './HandlerGridList';
 import { InvocationCountLink } from './InvocationCountLink';
@@ -24,6 +23,7 @@ export function HandlerList({
   handlerCounts,
   isHandlerCountsLoading,
   isHandlerCountsError,
+  linkParams,
 }: {
   serviceName: string;
   handlers: Service['handlers'];
@@ -33,9 +33,9 @@ export function HandlerList({
   handlerCounts?: Map<string, number>;
   isHandlerCountsLoading?: boolean;
   isHandlerCountsError?: boolean;
+  linkParams?: URLSearchParams;
 }) {
   const { baseUrl } = useRestateContext();
-  const [searchParams] = useSearchParams();
 
   if (handlers.length === 0) return null;
 
@@ -61,7 +61,7 @@ export function HandlerList({
                 baseUrl,
                 serviceName,
                 handler.name,
-                { existingParams: searchParams },
+                { existingParams: linkParams },
               )}
               count={handlerCounts?.get(handler.name) ?? 0}
               isLoading={isHandlerCountsLoading}

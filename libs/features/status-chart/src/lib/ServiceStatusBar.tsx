@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import {
   formatNumber,
   formatPlurals,
@@ -6,8 +7,14 @@ import {
 import {
   toServiceInvocationsHref,
   toServiceStatusInvocationsHref,
+  toServiceAndHandlerInvocationsHref,
+  toServiceAndHandlerStatusInvocationsHref,
 } from '@restate/util/invocation-links';
-import { useRestateContext } from '@restate/features/restate-context';
+import {
+  getRangeLabel,
+  useRestateContext,
+} from '@restate/features/restate-context';
+import type { components } from '@restate/data-access/admin-api-spec';
 import { HoverTooltip } from '@restate/ui/tooltip';
 import { Link } from '@restate/ui/link';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -24,14 +31,19 @@ import {
 } from './constants';
 import { tv } from '@restate/util/styles';
 
-function getServiceStatuses(
-  serviceName: string,
-  byServiceAndStatus: { service: string; status: string; count: number }[],
-) {
-  const relevant = byServiceAndStatus.filter(
-    (s) => s.service === serviceName && s.count > 0,
-  );
-  const map = new Map(relevant.map((s) => [s.status, s.count]));
+type StatusBarEntry = {
+  name: string;
+  count: number;
+} & (typeof STATUS_STYLE)[string];
+
+function buildStatusEntries(
+  rows: { status: string; count: number }[],
+): StatusBarEntry[] {
+  const map = new Map<string, number>();
+  for (const row of rows) {
+    if (row.count <= 0) continue;
+    map.set(row.status, (map.get(row.status) ?? 0) + row.count);
+  }
   return STATUS_ORDER.filter((name) => (map.get(name) ?? 0) > 0).map(
     (name) => ({
       name,
@@ -63,42 +75,32 @@ const styles = tv({
     },
   },
 });
-export function ServiceStatusBar({
-  serviceName,
-  byServiceAndStatus,
-  serviceIssues = [],
-  isSummaryError,
-  isSummaryLoading,
-  linkParams,
-}: {
-  serviceName: string;
-  byServiceAndStatus: {
-    service: string;
-    status: string;
-    count: number;
-  }[];
-  serviceIssues?: ServiceIssue[];
-  isSummaryError?: boolean;
-  isSummaryLoading?: boolean;
-  linkParams?: URLSearchParams;
-}) {
-  const { baseUrl } = useRestateContext();
-  const statuses = getServiceStatuses(serviceName, byServiceAndStatus);
-  const total = statuses.reduce((sum, s) => sum + s.count, 0);
-  const issuesByStatus = getIssuesByStatus(serviceIssues);
 
-  if (isSummaryError || !total) return <div className="h-3" />;
+function StatusBar({
+  title,
+  total,
+  totalLink,
+  statuses,
+  getStatusLink,
+  issuesByStatus,
+  isLoading,
+}: {
+  title: ReactNode;
+  total: number;
+  totalLink: string;
+  statuses: StatusBarEntry[];
+  getStatusLink: (statusName: string) => string;
+  issuesByStatus?: Map<string, IssueSeverity>;
+  isLoading?: boolean;
+}) {
+  if (!total) return <div className="h-3" />;
 
   const tooltipContent = (
     <div className="flex flex-col">
-      <div className="mb-4">
-        <div className="!text-base leading-7 font-medium !text-gray-300">
-          {serviceName}
-        </div>
+      <div className="mb-2">
+        <div className="">{title}</div>
         <Link
-          href={toServiceInvocationsHref(baseUrl, serviceName, {
-            existingParams: linkParams,
-          })}
+          href={totalLink}
           variant="secondary"
           className="-mx-2 flex items-baseline gap-1 rounded-lg border-none bg-transparent px-2 py-1 !text-inherit no-underline shadow-none hover:bg-white/10"
         >
@@ -115,19 +117,13 @@ export function ServiceStatusBar({
         </Link>
       </div>
       <div className="-mx-3 border-t border-white/10" />
-      <div className="mt-4 flex flex-col">
+      <div className="mt-2 flex flex-col">
         {statuses.map((s) => {
-          const severity = issuesByStatus.get(s.name);
-          const href = toServiceStatusInvocationsHref(
-            baseUrl,
-            serviceName,
-            s.name,
-            { existingParams: linkParams },
-          );
+          const severity = issuesByStatus?.get(s.name);
           return (
             <Link
               key={s.name}
-              href={href}
+              href={getStatusLink(s.name)}
               variant="secondary"
               className="-mx-2 flex items-center gap-2.5 rounded-lg border-none bg-transparent px-2 py-1.5 !text-inherit no-underline shadow-none hover:bg-white/10"
             >
@@ -169,7 +165,7 @@ export function ServiceStatusBar({
 
   return (
     <HoverTooltip content={tooltipContent} size="lg">
-      <div className={styles({ isLoading: isSummaryLoading })}>
+      <div className={styles({ isLoading })}>
         {statuses.map((s) => (
           <div
             key={s.name}
@@ -184,5 +180,92 @@ export function ServiceStatusBar({
         ))}
       </div>
     </HoverTooltip>
+  );
+}
+
+export function ServiceStatusBar({
+  serviceName,
+  handlerName,
+  data,
+  serviceIssues = [],
+  linkParams,
+  isLoading,
+}: {
+  serviceName: string;
+  handlerName?: string;
+  data?: components['schemas']['InvocationsSummaryResponse'];
+  serviceIssues?: ServiceIssue[];
+  linkParams?: URLSearchParams;
+  isLoading?: boolean;
+}) {
+  const { baseUrl } = useRestateContext();
+  const range = data?.range;
+
+  const rows = handlerName
+    ? (data?.byServiceAndHandlerAndStatus ?? []).filter(
+        (s) => s.service === serviceName && s.handler === handlerName,
+      )
+    : (data?.byServiceAndStatus ?? []).filter((s) => s.service === serviceName);
+  const statuses = buildStatusEntries(rows);
+  const total = statuses.reduce((sum, s) => sum + s.count, 0);
+  const issuesByStatus = handlerName
+    ? undefined
+    : getIssuesByStatus(serviceIssues);
+
+  const title = (
+    <>
+      <div className="text-base! leading-7 font-medium text-gray-300!">
+        <span className="text-base! leading-7 font-medium text-gray-300!">
+          {serviceName}
+        </span>
+        {handlerName && (
+          <>
+            <span className="text-base! leading-7 font-medium text-gray-300! opacity-60">
+              {' '}
+              /{' '}
+            </span>
+            <span className="text-base! leading-7 font-medium text-gray-300! italic">
+              {handlerName}()
+            </span>
+          </>
+        )}
+      </div>
+      <div className="text-0.5xs! font-normal text-gray-400!">
+        {getRangeLabel(range)}
+      </div>
+    </>
+  );
+
+  const totalLink = handlerName
+    ? toServiceAndHandlerInvocationsHref(baseUrl, serviceName, handlerName, {
+        existingParams: linkParams,
+      })
+    : toServiceInvocationsHref(baseUrl, serviceName, {
+        existingParams: linkParams,
+      });
+
+  const getStatusLink = (statusName: string) =>
+    handlerName
+      ? toServiceAndHandlerStatusInvocationsHref(
+          baseUrl,
+          serviceName,
+          handlerName,
+          statusName,
+          { existingParams: linkParams },
+        )
+      : toServiceStatusInvocationsHref(baseUrl, serviceName, statusName, {
+          existingParams: linkParams,
+        });
+
+  return (
+    <StatusBar
+      title={title}
+      total={total}
+      totalLink={totalLink}
+      statuses={statuses}
+      getStatusLink={getStatusLink}
+      issuesByStatus={issuesByStatus}
+      isLoading={isLoading}
+    />
   );
 }

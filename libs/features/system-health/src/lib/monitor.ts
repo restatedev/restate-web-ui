@@ -69,7 +69,10 @@ export function createSystemHealthMonitor(
   const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
     if (!event || event.type !== 'updated') return;
 
-    if (isSummaryInvocationsQuery(event)) {
+    if (
+      isSummaryInvocationsQuery(event.query) &&
+      event.query.meta?.['monitor']
+    ) {
       const data = event.query.state.data as SummaryData | undefined;
       if (!data) return;
       closeKeys(tracked.sla);
