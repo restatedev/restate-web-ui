@@ -10,6 +10,9 @@ import {
 import { formatPlurals } from '@restate/util/intl';
 import { useRestateContext } from '@restate/features/restate-context';
 import { toServiceAndHandlerInvocationsHref } from '@restate/util/invocation-links';
+import { Link } from '@restate/ui/link';
+import { HoverTooltip } from '@restate/ui/tooltip';
+import { panelHref } from '@restate/util/panel';
 import { Handler } from './Handler';
 import { HandlerGridList } from './HandlerGridList';
 import { InvocationCountLink } from './InvocationCountLink';
@@ -54,7 +57,23 @@ export function HandlerList({
             showLink
             showType={false}
           />
-          <div className="ml-auto flex shrink-0 items-center">
+          <div className="ml-auto flex shrink-0 items-center gap-1">
+            <HoverTooltip content="Playground">
+              <Link
+                href={panelHref({
+                  playground: serviceName,
+                  handler: handler.name,
+                })}
+                variant="icon"
+                className="h-6 w-6 rounded-full p-0 text-gray-500 hover:bg-blue-500/10 hover:text-blue-600"
+                aria-label={`Open ${handler.name} in playground`}
+              >
+                <Icon
+                  name={IconName.Play}
+                  className="ml-px h-2.5 w-2.5 fill-current"
+                />
+              </Link>
+            </HoverTooltip>
             <InvocationCountLink
               href={toServiceAndHandlerInvocationsHref(
                 baseUrl,
