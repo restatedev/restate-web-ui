@@ -48,16 +48,16 @@ export function HandlerList({
   return (
     <div className={className}>
       {visible.map((handler) => (
-        <div key={handler.name} className="flex items-center gap-2">
+        <div key={handler.name} className="flex items-center">
           <Handler
             handler={handler}
-            className="ml-1.5 max-w-fit min-w-0 pr-0 pl-0 [&_[data-icon]]:-mr-2.5 [&_[data-icon]]:border-transparent [&_[data-icon]]:bg-transparent [&_[data-icon]]:shadow-none [&_[data-icon]>svg]:text-zinc-500/80"
+            className="ml-1.5 max-w-fit min-w-0 pr-0 pl-0 [&_[data-icon]]:-mr-2.5 [&_[data-icon]]:border-transparent [&_[data-icon]]:bg-transparent [&_[data-icon]]:shadow-none [&_[data-icon]>svg]:text-zinc-500/80 [&_a>svg]:hidden"
             service={serviceName}
             serviceType={serviceType}
             showLink
             showType={false}
           />
-          <div className="ml-auto flex shrink-0 items-center gap-1">
+          <div className="flex shrink-0 gap-1">
             <HoverTooltip content="Playground">
               <Link
                 href={panelHref({
@@ -65,7 +65,7 @@ export function HandlerList({
                   handler: handler.name,
                 })}
                 variant="icon"
-                className="h-6 w-6 rounded-full p-0 text-gray-500 hover:bg-blue-500/10 hover:text-blue-600"
+                className="h-6 w-6 shrink-0 rounded-full p-0 text-gray-500 hover:bg-blue-500/10 hover:text-blue-600"
                 aria-label={`Open ${handler.name} in playground`}
               >
                 <Icon
@@ -85,6 +85,7 @@ export function HandlerList({
               isLoading={isHandlerCountsLoading}
               isError={isHandlerCountsError}
               size="sm"
+              variant="minimal"
             />
           </div>
         </div>

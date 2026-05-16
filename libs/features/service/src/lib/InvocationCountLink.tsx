@@ -4,14 +4,22 @@ import { formatNumber, formatPlurals } from '@restate/util/intl';
 import { tv } from '@restate/util/styles';
 
 const skeletonStyles = tv({
-  base: 'animate-pulse rounded-lg bg-gray-200/50',
+  base: 'animate-pulse bg-gray-200/50',
   variants: {
     size: {
       sm: 'min-w-16',
       md: 'min-w-28',
     },
+    variant: {
+      default: 'rounded-lg',
+      minimal: 'h-6 rounded-full',
+    },
   },
-  defaultVariants: { size: 'md' },
+  compoundVariants: [
+    { variant: 'minimal', size: 'sm', class: 'w-12 min-w-0' },
+    { variant: 'minimal', size: 'md', class: 'w-16 min-w-0' },
+  ],
+  defaultVariants: { size: 'md', variant: 'default' },
 });
 
 export function InvocationCountLink({
@@ -20,13 +28,38 @@ export function InvocationCountLink({
   isLoading,
   isError,
   size,
+  variant = 'default',
 }: {
   href: string;
   count: number;
   isLoading?: boolean;
   isError?: boolean;
   size?: 'sm' | 'md';
+  variant?: 'default' | 'minimal';
 }) {
+  if (variant === 'minimal') {
+    if (isError || (!isLoading && count === 0)) {
+      return null;
+    }
+    if (isLoading) {
+      return <div className={skeletonStyles({ size, variant })} />;
+    }
+    return (
+      <Link
+        href={href}
+        variant="icon"
+        className="group inline-flex items-center gap-1 rounded-md bg-black/3 px-1.5 py-0.5 text-xs font-medium text-zinc-500 tabular-nums hover:bg-white hover:text-zinc-700"
+      >
+        {formatNumber(count, true)}
+        <span className="hidden group-hover:inline">invocations</span>
+        <Icon
+          name={IconName.ChevronRight}
+          className="hidden h-4 w-4 group-hover:inline-block"
+        />
+      </Link>
+    );
+  }
+
   if (isError) {
     return (
       <div>
@@ -36,7 +69,7 @@ export function InvocationCountLink({
   }
   if (isLoading) {
     return (
-      <div className={skeletonStyles({ size })}>
+      <div className={skeletonStyles({ size, variant })}>
         <br />
       </div>
     );
