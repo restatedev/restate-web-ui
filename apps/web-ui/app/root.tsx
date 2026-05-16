@@ -333,7 +333,7 @@ function SidebarFooterContent() {
             preserveQueryParams={false}
             target="_blank"
             rel="noreferrer noopener"
-            className="flex w-full items-center gap-2 rounded-xl border border-transparent p-0.5 text-0.5xs text-gray-500 no-underline outline-offset-2 outline-blue-600 transition-all duration-300 hover:bg-black/3 hover:text-gray-700 focus-visible:outline-2 group-data-[collapsed=false]/sidebar:w-full group-data-[collapsed=false]/sidebar:translate-x-0 group-data-[collapsed=false]/sidebar:gap-2 group-data-[collapsed=true]/sidebar:w-fit group-data-[collapsed=true]/sidebar:translate-x-[5px] group-data-[collapsed=true]/sidebar:gap-0 max-xl:w-fit max-xl:translate-x-[5px] max-xl:gap-0"
+            className="flex w-full items-center gap-2 rounded-xl border border-transparent p-0.5 text-0.5xs text-gray-500 no-underline outline-offset-2 outline-blue-600 transition-all duration-300 group-data-[collapsed=false]/sidebar:w-full group-data-[collapsed=false]/sidebar:translate-x-0 group-data-[collapsed=false]/sidebar:gap-2 group-data-[collapsed=true]/sidebar:w-fit group-data-[collapsed=true]/sidebar:translate-x-[5px] group-data-[collapsed=true]/sidebar:gap-0 hover:bg-black/3 hover:text-gray-700 focus-visible:outline-2 max-xl:w-fit max-xl:translate-x-[5px] max-xl:gap-0"
           >
             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg">
               <Icon
