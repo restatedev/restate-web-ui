@@ -19,7 +19,9 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarNav,
+  useSidebar,
 } from '@restate/ui/layout';
+import { HoverTooltip } from '@restate/ui/tooltip';
 import {
   OverviewSidebarItem,
   InvocationsSidebarItem,
@@ -315,22 +317,35 @@ function SidebarHeaderContent() {
 }
 
 function SidebarFooterContent() {
+  const { isCollapsed } = useSidebar();
   return (
     <div className="flex flex-col gap-0.5">
       {SUPPORT_LINKS.map((item) => (
-        <Link
+        <HoverTooltip
           key={item.href}
-          href={item.href}
-          preserveQueryParams={false}
-          target="_blank"
-          rel="noreferrer noopener"
-          className="flex items-center gap-2.5 rounded-xl px-2 py-1.5 text-0.5xs text-gray-500 no-underline outline-offset-2 outline-blue-600 transition hover:bg-black/3 hover:text-gray-700 focus-visible:outline-2"
+          content={item.label}
+          placement="right"
+          disabled={!isCollapsed}
+          offset={12}
         >
-          <Icon name={item.icon} className="h-5 w-5 shrink-0 text-gray-400" />
-          <span className="max-w-full min-w-0 flex-auto truncate overflow-hidden opacity-100 transition-[max-width,opacity] duration-300 group-data-[collapsed=false]/sidebar:max-w-full group-data-[collapsed=false]/sidebar:opacity-100 group-data-[collapsed=true]/sidebar:max-w-0 group-data-[collapsed=true]/sidebar:opacity-0 max-xl:max-w-0 max-xl:opacity-0">
-            {item.label}
-          </span>
-        </Link>
+          <Link
+            href={item.href}
+            preserveQueryParams={false}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="flex w-full items-center gap-2 rounded-xl border border-transparent p-0.5 text-0.5xs text-gray-500 no-underline outline-offset-2 outline-blue-600 transition-all duration-300 hover:bg-black/3 hover:text-gray-700 focus-visible:outline-2 group-data-[collapsed=false]/sidebar:w-full group-data-[collapsed=false]/sidebar:translate-x-0 group-data-[collapsed=false]/sidebar:gap-2 group-data-[collapsed=true]/sidebar:w-fit group-data-[collapsed=true]/sidebar:translate-x-[5px] group-data-[collapsed=true]/sidebar:gap-0 max-xl:w-fit max-xl:translate-x-[5px] max-xl:gap-0"
+          >
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg">
+              <Icon
+                name={item.icon}
+                className="h-4.5 w-4.5 shrink-0 text-zinc-400"
+              />
+            </span>
+            <span className="max-w-full min-w-0 flex-auto truncate overflow-hidden pr-1 text-left opacity-100 transition-[max-width,opacity,padding] duration-300 group-data-[collapsed=false]/sidebar:max-w-full group-data-[collapsed=false]/sidebar:pr-1 group-data-[collapsed=false]/sidebar:opacity-100 group-data-[collapsed=true]/sidebar:max-w-0 group-data-[collapsed=true]/sidebar:pr-0 group-data-[collapsed=true]/sidebar:opacity-0 max-xl:max-w-0 max-xl:pr-0 max-xl:opacity-0">
+              {item.label}
+            </span>
+          </Link>
+        </HoverTooltip>
       ))}
     </div>
   );

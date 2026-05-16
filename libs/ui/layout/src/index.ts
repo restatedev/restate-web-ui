@@ -8,7 +8,12 @@ export {
   ComplementaryHeader,
   useParamValue,
 } from './lib/Complementary';
-export { SidebarHeader, SidebarNav, SidebarFooter } from './lib/Sidebar';
+export {
+  SidebarHeader,
+  SidebarNav,
+  SidebarFooter,
+  useSidebar,
+} from './lib/Sidebar';
 export { SidebarNavItem } from './lib/SidebarNavItem';
 export type {
   SidebarLocation,
