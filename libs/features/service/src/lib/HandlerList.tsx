@@ -1,8 +1,5 @@
 import { useMemo } from 'react';
-import type {
-  Service,
-  components,
-} from '@restate/data-access/admin-api-spec';
+import type { Service, components } from '@restate/data-access/admin-api-spec';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import {

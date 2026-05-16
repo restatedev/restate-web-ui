@@ -8,7 +8,12 @@ import { Link } from '@restate/ui/link';
 import { Icon, IconName } from '@restate/ui/icons';
 import type { IssueSeverity } from '@restate/features/system-health';
 import { issueAlertIconStyles } from '@restate/ui/issue-banner';
-import { STATUS_ORDER, STATUS_STYLE, STATUS_LABELS, DEFAULT_STYLE } from './constants';
+import {
+  STATUS_ORDER,
+  STATUS_STYLE,
+  STATUS_LABELS,
+  DEFAULT_STYLE,
+} from './constants';
 
 export type StatusBarEntry = {
   name: string;
