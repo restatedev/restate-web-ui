@@ -229,6 +229,7 @@ export function Actions({
             className={mainButtonStyles({
               mini,
               destructive: primaryAction.destructive,
+              className,
             })}
           >
             <Icon

@@ -15,7 +15,12 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import { ServiceStatusBar } from '@restate/features/status-chart';
 import { getRangeLabel, useRange } from '@restate/features/restate-context';
-import { InvocationCountLink } from '@restate/features/service';
+import {
+  HandlerBreakdownTooltip,
+  InvocationCountLink,
+  ServiceBreakdownTooltip,
+} from '@restate/features/service';
+import { buildStatusEntries } from '@restate/features/status-chart';
 import {
   toFilterParams,
   toServiceAndHandlerInvocationsHref,
@@ -179,15 +184,19 @@ function ServiceContent({
   const byServiceAndStatus = summaryData?.byServiceAndStatus ?? [];
   const byServiceAndHandlerAndStatus =
     summaryData?.byServiceAndHandlerAndStatus ?? [];
-  const serviceInvocationCount = byServiceAndStatus
-    .filter((s) => s.service === service)
-    .reduce((sum, s) => sum + s.count, 0);
-  const handlerInvocationCount = byServiceAndHandlerAndStatus
-    .filter((s) => s.service === service && s.handler === selectedHandler)
-    .reduce((sum, s) => sum + s.count, 0);
-  const invocationCount = hasHandler
-    ? handlerInvocationCount
-    : serviceInvocationCount;
+  const serviceStatusRows = byServiceAndStatus.filter(
+    (s) => s.service === service,
+  );
+  const handlerStatusRows = byServiceAndHandlerAndStatus.filter(
+    (s) => s.service === service && s.handler === selectedHandler,
+  );
+  const breakdownRows =
+    hasHandler && selectedHandler ? handlerStatusRows : serviceStatusRows;
+  const breakdownStatuses = buildStatusEntries(breakdownRows);
+  const invocationCount = breakdownStatuses.reduce(
+    (sum, s) => sum + s.count,
+    0,
+  );
   const isInvocationsEmpty = !isSummaryLoading && invocationCount === 0;
   const appliedFilters = summaryData?.appliedFilters;
   const linkParams = useMemo(() => {
@@ -381,6 +390,28 @@ function ServiceContent({
                   count={invocationCount}
                   isLoading={isSummaryLoading}
                   size="sm"
+                  breakdownTooltip={
+                    invocationCount > 0 ? (
+                      hasHandler && selectedHandler ? (
+                        <HandlerBreakdownTooltip
+                          serviceName={service}
+                          handlerName={selectedHandler}
+                          statuses={breakdownStatuses}
+                          total={invocationCount}
+                          rangeLabel={getRangeLabel(range)}
+                          linkParams={linkParams}
+                        />
+                      ) : (
+                        <ServiceBreakdownTooltip
+                          serviceName={service}
+                          statuses={breakdownStatuses}
+                          total={invocationCount}
+                          rangeLabel={getRangeLabel(range)}
+                          linkParams={linkParams}
+                        />
+                      )
+                    ) : undefined
+                  }
                 />
                 <ServiceStatusBar
                   serviceName={service}
@@ -410,7 +441,6 @@ function ServiceContent({
                       key={handler.name}
                       className="pr-0 pl-0"
                       service={service}
-                      withPlayground
                       serviceType={data?.ty}
                       showLink={!hasHandler}
                       showType={hasHandler}

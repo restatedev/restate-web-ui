@@ -46,7 +46,11 @@ export function usePanel() {
     setSearchParams(
       (prev) => {
         const next = new URLSearchParams(prev);
+        const activePanel = next.get(PANEL_QUERY_PARAM);
         next.delete(PANEL_QUERY_PARAM);
+        if (activePanel) {
+          next.delete(activePanel);
+        }
         return next;
       },
       { preventScrollReset: true },
@@ -68,7 +72,7 @@ export function panelHref(opts: PanelHrefOpts): string {
     const handler =
       opts.handler !== undefined
         ? `&${HANDLER_QUERY_PARAM}=${opts.handler}`
-        : '';
+        : `&${HANDLER_QUERY_PARAM}=`;
     return `?${SERVICE_QUERY_PARAM}=${opts.service}&${PANEL_QUERY_PARAM}=${SERVICE_QUERY_PARAM}${handler}`;
   }
   if ('invocation' in opts) {

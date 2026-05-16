@@ -198,7 +198,6 @@ export function ServiceCard({
                       key={handler.name}
                       className="pr-0 pl-0"
                       service={serviceName}
-                      withPlayground
                       serviceType={serviceDetails.ty}
                       showLink
                       showType={false}

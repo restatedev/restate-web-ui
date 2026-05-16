@@ -204,9 +204,9 @@ function DeploymentContent({
         <div className="ml-auto flex shrink-0 items-center self-start">
           {isDeploymentUpdateSupported ? (
             <SplitButton
-              className="px-3 py-0 text-0.5xs"
-              variant="primary"
-              splitClassName="rounded-r-lg w-7"
+              className="py-0 text-0.5xs"
+              variant="secondary"
+              splitClassName="rounded-r-md w-6"
               mini={false}
               menus={
                 <>
@@ -226,8 +226,8 @@ function DeploymentContent({
             >
               <Link
                 href={`?${UPDATE_DEPLOYMENT_QUERY}=${deployment}`}
-                variant="button"
-                className="rounded-l-lg rounded-r-none px-3 py-0 text-0.5xs leading-6 font-normal"
+                variant="secondary-button"
+                className="rounded-l-md rounded-r-none px-3 py-0 text-0.5xs leading-6 text-blue-700"
               >
                 Update
               </Link>
