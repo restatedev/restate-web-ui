@@ -12,14 +12,22 @@ import {
   toDeploymentInvocationsHref,
   toServiceInvocationsHref,
 } from '@restate/util/invocation-links';
-import { InvocationCountLink, ServiceType } from '@restate/features/service';
+import {
+  InvocationCountLink,
+  ServiceBreakdownTooltip,
+  ServiceType,
+} from '@restate/features/service';
 import { panelHref } from '@restate/util/panel';
 import {
   Deployment,
   LatestRevisionDeployment,
   OlderRevisions,
 } from '@restate/features/deployment';
-import { ServiceStatusBar } from '@restate/features/status-chart';
+import {
+  buildStatusEntries,
+  ServiceStatusBar,
+} from '@restate/features/status-chart';
+import { getRangeLabel } from '@restate/features/restate-context';
 import { IssueBadge } from '@restate/ui/issue-banner';
 import {
   DateTooltip,
@@ -170,6 +178,11 @@ export function useServiceColumns({
           (sum, st) => sum + st.count,
           0,
         );
+        const breakdownStatuses = buildStatusEntries(serviceStatuses);
+        const breakdownTotal = breakdownStatuses.reduce(
+          (sum, st) => sum + st.count,
+          0,
+        );
         return (
           <OverviewColumnMeta
             className="-translate-y-1.5 pr-3"
@@ -195,6 +208,18 @@ export function useServiceColumns({
                   count={serviceTotal}
                   isLoading={isSummaryLoading}
                   isError={isSummaryError}
+                  breakdownTooltip={
+                    breakdownTotal > 0 ? (
+                      <ServiceBreakdownTooltip
+                        serviceName={s.name}
+                        statuses={breakdownStatuses}
+                        total={breakdownTotal}
+                        rangeLabel={getRangeLabel(summaryData?.range)}
+                        linkParams={linkParams}
+                        serviceIssues={serviceIssuesMap.get(s.name)}
+                      />
+                    ) : undefined
+                  }
                 />
               </div>
             }

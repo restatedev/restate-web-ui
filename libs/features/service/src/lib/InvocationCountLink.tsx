@@ -1,5 +1,7 @@
+import type { ReactNode } from 'react';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Link } from '@restate/ui/link';
+import { HoverTooltip } from '@restate/ui/tooltip';
 import { formatNumber, formatPlurals } from '@restate/util/intl';
 import { tv } from '@restate/util/styles';
 
@@ -29,6 +31,7 @@ export function InvocationCountLink({
   isError,
   size,
   variant = 'default',
+  breakdownTooltip,
 }: {
   href: string;
   count: number;
@@ -36,6 +39,7 @@ export function InvocationCountLink({
   isError?: boolean;
   size?: 'sm' | 'md';
   variant?: 'default' | 'minimal';
+  breakdownTooltip?: ReactNode;
 }) {
   if (variant === 'minimal') {
     if (isError || (!isLoading && count === 0)) {
@@ -44,7 +48,7 @@ export function InvocationCountLink({
     if (isLoading) {
       return <div className={skeletonStyles({ size, variant })} />;
     }
-    return (
+    const link = (
       <Link
         href={href}
         variant="icon"
@@ -58,6 +62,14 @@ export function InvocationCountLink({
         />
       </Link>
     );
+    if (breakdownTooltip) {
+      return (
+        <HoverTooltip content={breakdownTooltip} size="lg">
+          {link}
+        </HoverTooltip>
+      );
+    }
+    return link;
   }
 
   if (isError) {
@@ -75,7 +87,7 @@ export function InvocationCountLink({
     );
   }
   if (count > 0) {
-    return (
+    const link = (
       <Link
         href={href}
         variant="secondary"
@@ -86,6 +98,14 @@ export function InvocationCountLink({
         <Icon name={IconName.ChevronRight} className="h-4 w-4" />
       </Link>
     );
+    if (breakdownTooltip) {
+      return (
+        <HoverTooltip content={breakdownTooltip} size="lg">
+          {link}
+        </HoverTooltip>
+      );
+    }
+    return link;
   }
   return (
     <div className="z-10 inline-flex min-w-0 items-center px-1.5 py-0.5 text-0.5xs text-gray-400">

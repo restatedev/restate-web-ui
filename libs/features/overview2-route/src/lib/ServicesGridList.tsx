@@ -103,6 +103,7 @@ export function ServicesGridList() {
                       isHandlerCountsLoading={isSummaryLoading}
                       isHandlerCountsError={isSummaryError}
                       linkParams={linkParams}
+                      summaryData={summaryData}
                       className="flex flex-col gap-1 px-5 opacity-90 @3xl:grid @3xl:grid-cols-[4fr_4fr_18ch] @3xl:gap-x-6 @3xl:[&>*:nth-child(even)]:col-[2/-1] @3xl:[&>*:nth-child(odd)]:col-start-1"
                     />
                   ) : undefined

@@ -1,4 +1,8 @@
-import type { Service } from '@restate/data-access/admin-api-spec';
+import { useMemo } from 'react';
+import type {
+  Service,
+  components,
+} from '@restate/data-access/admin-api-spec';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import {
@@ -8,13 +12,18 @@ import {
   DropdownSection,
 } from '@restate/ui/dropdown';
 import { formatPlurals } from '@restate/util/intl';
-import { useRestateContext } from '@restate/features/restate-context';
+import {
+  getRangeLabel,
+  useRestateContext,
+} from '@restate/features/restate-context';
 import { toServiceAndHandlerInvocationsHref } from '@restate/util/invocation-links';
 import { Link } from '@restate/ui/link';
 import { HoverTooltip } from '@restate/ui/tooltip';
 import { panelHref } from '@restate/util/panel';
+import { buildStatusEntries } from '@restate/features/status-chart';
 import { Handler } from './Handler';
 import { HandlerGridList } from './HandlerGridList';
+import { HandlerBreakdownTooltip } from './HandlerBreakdownTooltip';
 import { InvocationCountLink } from './InvocationCountLink';
 
 export function HandlerList({
@@ -27,6 +36,7 @@ export function HandlerList({
   isHandlerCountsLoading,
   isHandlerCountsError,
   linkParams,
+  summaryData,
 }: {
   serviceName: string;
   handlers: Service['handlers'];
@@ -37,8 +47,22 @@ export function HandlerList({
   isHandlerCountsLoading?: boolean;
   isHandlerCountsError?: boolean;
   linkParams?: URLSearchParams;
+  summaryData?: components['schemas']['InvocationsSummaryResponse'];
 }) {
   const { baseUrl } = useRestateContext();
+
+  const handlerStatusRows = useMemo(() => {
+    const map = new Map<string, { status: string; count: number }[]>();
+    for (const row of summaryData?.byServiceAndHandlerAndStatus ?? []) {
+      if (row.service !== serviceName) continue;
+      const list = map.get(row.handler) ?? [];
+      list.push({ status: row.status, count: row.count });
+      map.set(row.handler, list);
+    }
+    return map;
+  }, [summaryData?.byServiceAndHandlerAndStatus, serviceName]);
+
+  const rangeLabel = getRangeLabel(summaryData?.range);
 
   if (handlers.length === 0) return null;
 
@@ -47,49 +71,67 @@ export function HandlerList({
 
   return (
     <div className={className}>
-      {visible.map((handler) => (
-        <div key={handler.name} className="flex items-center">
-          <Handler
-            handler={handler}
-            className="ml-1.5 max-w-fit min-w-0 pr-0 pl-0 [&_[data-icon]]:-mr-2.5 [&_[data-icon]]:border-transparent [&_[data-icon]]:bg-transparent [&_[data-icon]]:shadow-none [&_[data-icon]>svg]:text-zinc-500/80 [&_a>svg]:hidden"
-            service={serviceName}
-            serviceType={serviceType}
-            showLink
-            showType={false}
-          />
-          <div className="flex shrink-0 gap-1">
-            <HoverTooltip content="Playground">
-              <Link
-                href={panelHref({
-                  playground: serviceName,
-                  handler: handler.name,
-                })}
-                variant="icon"
-                className="h-6 w-6 shrink-0 rounded-full p-0 text-gray-500 hover:bg-blue-500/10 hover:text-blue-600"
-                aria-label={`Open ${handler.name} in playground`}
-              >
-                <Icon
-                  name={IconName.Play}
-                  className="ml-px h-2.5 w-2.5 fill-current"
-                />
-              </Link>
-            </HoverTooltip>
-            <InvocationCountLink
-              href={toServiceAndHandlerInvocationsHref(
-                baseUrl,
-                serviceName,
-                handler.name,
-                { existingParams: linkParams },
-              )}
-              count={handlerCounts?.get(handler.name) ?? 0}
-              isLoading={isHandlerCountsLoading}
-              isError={isHandlerCountsError}
-              size="sm"
-              variant="minimal"
+      {visible.map((handler) => {
+        const statuses = buildStatusEntries(
+          handlerStatusRows.get(handler.name) ?? [],
+        );
+        const total = statuses.reduce((sum, s) => sum + s.count, 0);
+        return (
+          <div key={handler.name} className="flex items-center">
+            <Handler
+              handler={handler}
+              className="ml-1.5 max-w-fit min-w-0 pr-0 pl-0 [&_[data-icon]]:-mr-2.5 [&_[data-icon]]:border-transparent [&_[data-icon]]:bg-transparent [&_[data-icon]]:shadow-none [&_[data-icon]>svg]:text-zinc-500/80 [&_a>svg]:hidden"
+              service={serviceName}
+              serviceType={serviceType}
+              showLink
+              showType={false}
             />
+            <div className="flex shrink-0 gap-1">
+              <HoverTooltip content="Playground">
+                <Link
+                  href={panelHref({
+                    playground: serviceName,
+                    handler: handler.name,
+                  })}
+                  variant="icon"
+                  className="h-6 w-6 shrink-0 rounded-full p-0 text-gray-500 hover:bg-blue-500/10 hover:text-blue-600"
+                  aria-label={`Open ${handler.name} in playground`}
+                >
+                  <Icon
+                    name={IconName.Play}
+                    className="ml-px h-2.5 w-2.5 fill-current"
+                  />
+                </Link>
+              </HoverTooltip>
+              <InvocationCountLink
+                href={toServiceAndHandlerInvocationsHref(
+                  baseUrl,
+                  serviceName,
+                  handler.name,
+                  { existingParams: linkParams },
+                )}
+                count={handlerCounts?.get(handler.name) ?? 0}
+                isLoading={isHandlerCountsLoading}
+                isError={isHandlerCountsError}
+                size="sm"
+                variant="minimal"
+                breakdownTooltip={
+                  total > 0 ? (
+                    <HandlerBreakdownTooltip
+                      serviceName={serviceName}
+                      handlerName={handler.name}
+                      statuses={statuses}
+                      total={total}
+                      rangeLabel={rangeLabel}
+                      linkParams={linkParams}
+                    />
+                  ) : undefined
+                }
+              />
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
       {overflowCount > 0 && (
         <div className="ml-8 w-fit">
           <Dropdown>
