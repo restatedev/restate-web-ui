@@ -18,8 +18,16 @@ const containerStyles = tv({
   base: 'relative flex h-9 w-full items-stretch gap-[2.5px] py-1',
 });
 
+// Match the app's standard skeleton (see ui/table Placeholder.tsx) so the bar
+// blends with other loading rows: animate-pulse + slate-200, no white shimmer.
 const skeletonStyles = tv({
-  base: 'relative h-9 w-full overflow-hidden rounded-md bg-gray-100/70 ring-1 ring-gray-200/70 ring-inset',
+  base: 'h-9 w-full animate-pulse rounded-md bg-slate-200',
+});
+
+// Empty placeholder — same dimensions as a populated bar, just a subtle slate
+// fill so the area reads as "no data here" without pulling attention.
+const emptyBarStyles = tv({
+  base: 'h-9 w-full rounded-md bg-slate-200/60',
 });
 
 // Animate flex-grow so segment widths ease between refetches; min-width keeps
@@ -121,21 +129,11 @@ export function StatusSummaryBar({
   const total = items.reduce((sum, s) => sum + s.count, 0);
 
   if (isLoading) {
-    return (
-      <div className={skeletonStyles({ class: className })}>
-        <div className="absolute inset-0 animate-pulse bg-gray-200/40" />
-        <div
-          aria-hidden
-          className="animate-shimmerSweep absolute inset-y-0 left-0 w-1/3 bg-linear-to-r from-transparent via-white/70 to-transparent"
-        />
-      </div>
-    );
+    return <div className={skeletonStyles({ class: className })} aria-hidden />;
   }
 
   if (total === 0) {
-    return (
-      <div className={containerStyles({ class: className })} aria-hidden />
-    );
+    return <div className={emptyBarStyles({ class: className })} aria-hidden />;
   }
 
   return (
