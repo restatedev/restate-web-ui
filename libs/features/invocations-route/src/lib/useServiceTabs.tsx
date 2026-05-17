@@ -7,7 +7,7 @@ import {
 } from '@restate/data-access/admin-api-hooks';
 import { getServiceIssues } from '@restate/features/system-health';
 import type { Service } from '@restate/data-access/admin-api-spec';
-import { issueAlertIconStyles } from '@restate/ui/issue-banner';
+import { issueAlertIconStyles, issuePingStyles } from '@restate/ui/issue-banner';
 import { HoverTooltip } from '@restate/ui/tooltip';
 import { Icon, IconName } from '@restate/ui/icons';
 import { formatNumber } from '@restate/util/intl';
@@ -265,10 +265,16 @@ function buildServiceTabItems(
               {formatNumber(s.count, true)}
             </span>
             {topSeverity && (
-              <Icon
-                name={IconName.TriangleAlert}
-                className={issueAlertIconStyles({ severity: topSeverity })}
-              />
+              <span className="relative flex h-3 w-3 shrink-0">
+                <Icon
+                  name={IconName.TriangleAlert}
+                  className={issuePingStyles({ severity: topSeverity })}
+                />
+                <Icon
+                  name={IconName.TriangleAlert}
+                  className={issueAlertIconStyles({ severity: topSeverity })}
+                />
+              </span>
             )}
           </span>
         </HoverTooltip>

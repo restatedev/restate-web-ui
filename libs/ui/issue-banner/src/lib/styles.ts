@@ -4,8 +4,10 @@ export const issuePingStyles = tv({
   base: 'absolute inline-flex h-full w-full animate-ping opacity-50',
   variants: {
     severity: {
-      high: 'fill-red-300 text-red-300',
-      low: 'fill-orange-300 text-orange-300',
+      // `!` so descendant fill overrides (e.g. tabStyles' [&_svg]:fill-zinc-100)
+      // don't clobber the alert color when nested inside one.
+      high: 'fill-red-300! text-red-300',
+      low: 'fill-orange-300! text-orange-300',
     },
   },
 });
@@ -70,8 +72,10 @@ export const issueAlertIconStyles = tv({
   base: 'h-3 w-3 shrink-0',
   variants: {
     severity: {
-      high: 'fill-red-400 stroke-red-400',
-      low: 'fill-orange-400 stroke-orange-400',
+      // `!` (important) so descendant fill overrides on containers like the
+      // tabs (`[&_svg]:fill-zinc-100`) can't clobber the alert color.
+      high: 'fill-red-300! stroke-red-300',
+      low: 'fill-orange-300! stroke-orange-300',
     },
   },
 });
