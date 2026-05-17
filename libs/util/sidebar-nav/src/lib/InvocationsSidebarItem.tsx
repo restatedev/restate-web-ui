@@ -116,10 +116,7 @@ const INVOCATION_SHORTCUTS: InvocationShortcut[] = [
 const ALL_INVOCATIONS_SHORTCUT: InvocationShortcut = {
   id: 'all',
   label: 'All',
-  filters: [
-    { id: 'target_service_name', operation: 'IN', value: [] },
-    { id: 'status', operation: 'IN', value: [] },
-  ],
+  filters: [],
 };
 
 function shortcutHref(path: string, s: InvocationShortcut): string {

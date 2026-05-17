@@ -14,6 +14,7 @@ import { useSearchParams } from 'react-router';
 import { useSchema } from './useSchema';
 import { COLUMN_QUERY_PREFIX, ColumnKey } from './columns';
 import { setUserLastSort } from './userPreferences';
+import { saveInvocationsLastQuery } from '@restate/util/sidebar-nav';
 
 export const FILTER_QUERY_PREFIX = 'filter_';
 export const SORT_QUERY_PREFIX = 'sort_';
@@ -74,9 +75,8 @@ function deriveSortFromUrl(searchParams: URLSearchParams): SortInvocations {
 function deriveClausesFromUrl(
   searchParams: URLSearchParams,
   schema: QueryClauseSchema<QueryClauseType>[],
-  isLoading: boolean,
 ) {
-  const clauses = schema
+  return schema
     .filter((schemaClause) => searchParams.get(getFilterParamKey(schemaClause)))
     .map((schemaClause) =>
       QueryClause.fromJSON(
@@ -84,24 +84,6 @@ function deriveClausesFromUrl(
         searchParams.get(getFilterParamKey(schemaClause))!,
       ),
     );
-
-  if (!clauses.some(({ id }) => id === 'status') && !isLoading) {
-    const clauseSchema = schema.find(({ id }) => id === 'status');
-    if (clauseSchema) {
-      clauses.unshift(
-        new QueryClause(clauseSchema, { operation: 'IN', value: [] }),
-      );
-    }
-  }
-  if (!clauses.some(({ id }) => id === 'target_service_name') && !isLoading) {
-    const clauseSchema = schema.find(({ id }) => id === 'target_service_name');
-    if (clauseSchema) {
-      clauses.unshift(
-        new QueryClause(clauseSchema, { operation: 'IN', value: [] }),
-      );
-    }
-  }
-  return clauses;
 }
 
 /**
@@ -118,7 +100,7 @@ export function useListInvocationsParameters() {
     components['schemas']['ListInvocationsRequestBody']
   >(() => {
     const searchParams = new URLSearchParams(searchString);
-    const clauses = deriveClausesFromUrl(searchParams, schema, isLoading);
+    const clauses = deriveClausesFromUrl(searchParams, schema);
     const filters = clauses
       .filter((clause) => clause.isValid)
       .map(
@@ -166,11 +148,11 @@ export function useInvocationsForm({
     _setSortParams(value);
   }, []);
 
-  // Re-derived when isLoading flips so default status / target_service_name
-  // chips get seeded once the schema is ready. URL changes are handled via
-  // the parent re-mount (`key`).
+  // Re-derived when isLoading flips so the form picks up the URL state once
+  // the schema is ready (chips depend on schema options). URL changes after
+  // mount are handled by the parent re-mounting via `key`.
   const initialClauses = useMemo(
-    () => deriveClausesFromUrl(searchParams, schema, isLoading),
+    () => deriveClausesFromUrl(searchParams, schema),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [isLoading, schema],
   );
@@ -209,6 +191,11 @@ export function useInvocationsForm({
     if (sortedOldSearchParams.toString() !== sortedNewSearchParams.toString()) {
       resetPageIndex();
     }
+    // Keep lastQuery in sync with the committed state so the next "Back to
+    // invocations" navigation (?restore=1) restores what the user actually
+    // just submitted. Saving here is a hot-path optimization — the route's
+    // useEffect saves on URL change as well.
+    saveInvocationsLastQuery(newSearchParams);
     setSearchParams(newSearchParams, { preventScrollReset: true });
 
     return query.items

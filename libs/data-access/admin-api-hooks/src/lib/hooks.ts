@@ -613,7 +613,9 @@ export function useCountInvocations(
 export function useSummaryInvocations(
   filters: FilterItem[],
   {
-    sampled,
+    // Default to non-sampled (exact counts). Server defaults to true otherwise
+    // — sampling is a per-call opt-in, not the implicit behavior.
+    sampled = false,
     sampleSize,
     includeDuration,
     range,

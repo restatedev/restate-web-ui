@@ -26,10 +26,7 @@ import {
   JournalEntryV2,
 } from '@restate/data-access/admin-api-spec';
 import { RestateError } from '@restate/util/errors';
-import {
-  getInvocationsLastQuery,
-  setInvocationsRecent,
-} from '@restate/util/sidebar-nav';
+import { setInvocationsRecent } from '@restate/util/sidebar-nav';
 
 const metadataContainerStyles = tv({
   base: 'mt-6 hidden grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2 gap-y-4 rounded-xl [&:has(*)]:grid',
@@ -114,12 +111,26 @@ function Component() {
   const [isCompact, setIsCompact] = useState(true);
 
   const { OnboardingGuide } = useRestateContext();
+  // `?restore=1` is the invocations route's opt-in marker for restoring the
+  // last filter/sort/column state from lastQuery — done via URL flag rather
+  // than reading lastQuery here so navigation always uses the freshest
+  // saved state. We keep any non-persistent detail-page params (panel,
+  // etc.) so the back-nav preserves them; filter_*/sort_*/column come
+  // from lastQuery and would conflict if forwarded.
   const invocationsBackHref = useMemo(() => {
-    const saved = getInvocationsLastQuery();
-    const merged = new URLSearchParams(saved ?? '');
-    searchParams.forEach((value, key) => merged.set(key, value));
-    const queryString = merged.toString();
-    return `${baseUrl}/invocations${queryString ? `?${queryString}` : ''}`;
+    const out = new URLSearchParams();
+    searchParams.forEach((value, key) => {
+      if (
+        key.startsWith('filter_') ||
+        key.startsWith('sort_') ||
+        key === 'column'
+      ) {
+        return;
+      }
+      out.append(key, value);
+    });
+    out.set('restore', '1');
+    return `${baseUrl}/invocations?${out.toString()}`;
   }, [baseUrl, searchParams]);
 
   return (

@@ -1,12 +1,12 @@
 @import 'tailwindcss';
-@plugin "tailwindcss-react-aria-components";
-@plugin "tailwindcss-animate";
-@plugin "@tailwindcss/forms";
+@plugin 'tailwindcss-react-aria-components';
+@plugin 'tailwindcss-animate';
+@plugin '@tailwindcss/forms';
 
 @custom-variant dark (&:where(.dark, .dark *));
 @custom-variant @tall (@media (min-height: 47rem));
 
-@source "../../../libs";
+@source '../../../libs';
 
 @layer base {
   html {
@@ -144,4 +144,14 @@
     }
   }
   --animate-scanlineSweep: scanlineSweep 1250ms ease-in-out infinite;
+
+  @keyframes shimmerSweep {
+    0% {
+      transform: translateX(-30%);
+    }
+    100% {
+      transform: translateX(330%);
+    }
+  }
+  --animate-shimmerSweep: shimmerSweep 1.6s ease-in-out infinite;
 }

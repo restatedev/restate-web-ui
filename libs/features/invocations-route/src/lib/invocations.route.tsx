@@ -40,7 +40,11 @@ import {
   useTransition,
 } from 'react';
 import { useSubmitShortcut, SubmitShortcutKey } from '@restate/ui/keyboard';
-import { formatDurations, formatNumber } from '@restate/util/intl';
+import {
+  formatDurations,
+  formatNumber,
+  formatPlurals,
+} from '@restate/util/intl';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import {
   ContentPanel,
@@ -60,8 +64,14 @@ import {
   useSearchParams,
 } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { useListInvocations } from '@restate/data-access/admin-api-hooks';
+import {
+  isSummaryInvocationsQuery,
+  useListDeployments,
+  useListInvocations,
+  useSummaryInvocations,
+} from '@restate/data-access/admin-api-hooks';
 import { useRestateContext } from '@restate/features/restate-context';
+import { StatusLegend, StatusSummaryBar } from '@restate/features/status-chart';
 import { useBatchOperations } from '@restate/features/batch-operations';
 import {
   SERVICE_PLAYGROUND_QUERY_PARAM,
@@ -82,9 +92,11 @@ import {
   useInvocationsForm,
   useListInvocationsParameters,
 } from './useInvocationsQueryFilters';
-import { Key } from 'react-aria';
 import { FilterShortcuts } from './FilterShortcuts';
 import { RestateMinimumVersion } from '@restate/util/feature-flag';
+import { useStatusBarProps } from './useStatusBarProps';
+import { useServiceTabs } from './useServiceTabs';
+import { hasStatusFilter } from './statusFilter';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: 170,
@@ -110,7 +122,8 @@ const MAX_COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
 
 const PAGE_SIZE = 30;
 function Component() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { OnboardingGuide, baseUrl } = useRestateContext();
   const {
     selectedColumns,
     setSelectedColumns,
@@ -135,6 +148,35 @@ function Component() {
   const resetPageIndex = useCallback(() => setPageIndex(0), [setPageIndex]);
 
   const {
+    data: summaryData,
+    isPending: isSummaryLoading,
+    isFetching: isSummaryFetching,
+  } = useSummaryInvocations(listInvocationsParameters.filters ?? []);
+  const { data: deploymentsData } = useListDeployments();
+
+  const statusFilter = useMemo(() => {
+    const f = listInvocationsParameters.filters?.find(
+      (item) => item.field === 'status',
+    );
+    return f?.type === 'STRING_LIST' ? f : undefined;
+  }, [listInvocationsParameters.filters]);
+  const { isDimmed: statusDim, getHref: statusHref } =
+    useStatusBarProps(statusFilter);
+  const { tabs: serviceTabs, byStatus } = useServiceTabs(
+    summaryData,
+    deploymentsData,
+    statusFilter,
+  );
+  // Href that clears filter_status — drives the legend's leading "All"
+  // reset entry. Simply deletes the key; the loader doesn't auto-restore
+  // unless ?restore=1 is present.
+  const clearStatusFilterHref = useMemo(() => {
+    const out = new URLSearchParams(searchParams);
+    out.delete('filter_status');
+    return `${baseUrl}/invocations?${out.toString()}`;
+  }, [searchParams, baseUrl]);
+
+  const {
     dataUpdatedAt,
     errorUpdatedAt,
     error,
@@ -150,6 +192,12 @@ function Component() {
   });
 
   const dataUpdate = error ? errorUpdatedAt : dataUpdatedAt;
+
+  // Visible row count (capped at the list endpoint's limit) and the true
+  // filter-matched total from the summary endpoint. Used by the Actions
+  // badge / dropdown / footnote.
+  const visibleCount = data?.rows?.length ?? 0;
+  const totalCount = summaryData?.totalCount ?? 0;
 
   const [selectedInvocationIds, setSelectedInvocationIds] = useState<
     Set<string>
@@ -195,7 +243,6 @@ function Component() {
     [sortedColumnsList],
   );
 
-  const { OnboardingGuide } = useRestateContext();
   const {
     batchPurge,
     batchResume,
@@ -210,7 +257,6 @@ function Component() {
   }, [isFetching, pageIndex]);
 
   const navigate = useNavigate();
-  const { baseUrl } = useRestateContext();
   const basePath = useHref('/');
   const isModifierPressed = useRef(false);
 
@@ -243,9 +289,29 @@ function Component() {
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdate}>
-      <div className="relative flex min-h-0 flex-1 flex-col">
-        <ContentPanel>
-          <ContentPanelToolbar className="justify-end gap-1.5 px-2 pb-2">
+      <div className="relative flex min-h-0 flex-1 flex-col gap-4 pt-20">
+        <div className="mx-auto flex w-full max-w-3xl flex-col items-stretch gap-2 px-4">
+          <StatusSummaryBar
+            byStatus={byStatus}
+            isLoading={isSummaryLoading}
+            isFetching={isSummaryFetching}
+            isDimmed={statusDim}
+            getHref={statusHref}
+          />
+          <StatusLegend
+            byStatus={byStatus}
+            isLoading={isSummaryLoading}
+            linkParams={searchParams}
+            isDimmed={statusDim}
+            allItem={{
+              count: byStatus.reduce((sum, s) => sum + s.count, 0),
+              href: clearStatusFilterHref,
+              dimmed: hasStatusFilter(statusFilter),
+            }}
+          />
+        </div>
+        <ContentPanel tabs={serviceTabs}>
+          <ContentPanelToolbar className="justify-end gap-1.5 pr-1 pl-2">
             <Dropdown>
               <DropdownTrigger>
                 <Button
@@ -287,18 +353,16 @@ function Component() {
                   className="flex items-center gap-1.5 self-end rounded-lg p-0.5 px-2 text-0.5xs"
                 >
                   Actions
-                  {Boolean(selectedInvocationIds.size || data?.total_count) && (
+                  {Boolean(selectedInvocationIds.size || totalCount) && (
                     <Badge
                       size="xs"
                       variant={
                         selectedInvocationIds.size > 0 ? 'default' : 'info'
                       }
                     >
-                      {selectedInvocationIds.size
+                      {selectedInvocationIds.size > 0
                         ? `${selectedInvocationIds.size}`
-                        : data?.total_count
-                          ? `${formatNumber(data?.total_count, data?.total_count_lower_bound)}${data?.total_count_lower_bound ? '+' : ''}`
-                          : ''}
+                        : formatNumber(totalCount, true)}
                     </Badge>
                   )}
                   <Icon
@@ -318,16 +382,15 @@ function Component() {
                             on {selectedInvocationIds.size} selected items
                           </span>
                         </span>
-                      ) : data?.total_count ? (
+                      ) : totalCount > 0 ? (
                         <span>
                           Actions{' '}
                           <span className="font-normal opacity-90">
-                            on all{' '}
-                            {formatNumber(
-                              data?.total_count,
-                              data?.total_count_lower_bound,
-                            )}
-                            {data?.total_count_lower_bound ? '+' : ''} results
+                            on all {formatNumber(totalCount, true)}{' '}
+                            {formatPlurals(totalCount, {
+                              one: 'result',
+                              other: 'results',
+                            })}
                           </span>
                         </span>
                       ) : (
@@ -495,7 +558,12 @@ function Component() {
                   />
                 )}
               />
-              <Footnote data={data} isFetching={isFetching} key={dataUpdate}>
+              <Footnote
+                data={data}
+                totalCount={totalCount}
+                isFetching={isFetching}
+                key={dataUpdate}
+              >
                 {!isPending && !error && totalSize > 1 && (
                   <div className="flex items-center rounded-lg border bg-zinc-50 py-0.5 shadow-xs">
                     <Button
@@ -602,15 +670,15 @@ function InvocationsForm({
       onSubmit={async (event) => {
         event.preventDefault();
         commitQuery();
-        await queryCLient.invalidateQueries({ queryKey });
+        await Promise.all([
+          queryCLient.invalidateQueries({ queryKey }),
+          queryCLient.invalidateQueries({
+            predicate: (q) => isSummaryInvocationsQuery(q),
+          }),
+        ]);
       }}
     >
-      <QueryBuilder
-        query={query}
-        schema={schema}
-        canRemoveItem={canRemoveItem}
-        multiple
-      >
+      <QueryBuilder query={query} schema={schema} multiple>
         <AddQueryTrigger
           MenuTrigger={FiltersTrigger}
           placeholder="Filter invocations…"
@@ -643,20 +711,15 @@ function InvocationsForm({
   );
 }
 
-function canRemoveItem(key: Key) {
-  if (key === 'status' || key === 'target_service_name') {
-    return false;
-  }
-  return true;
-}
-
 function Footnote({
   data,
+  totalCount,
   isFetching,
   children,
 }: PropsWithChildren<{
   isFetching: boolean;
   data?: ReturnType<typeof useListInvocations>['data'];
+  totalCount: number;
 }>) {
   const [now, setNow] = useState(() => Date.now());
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
@@ -679,20 +742,32 @@ function Footnote({
   const { isPast, ...parts } = durationSinceLastSnapshot(now);
   const duration = formatDurations(parts);
 
+  const visibleCount = data?.rows?.length ?? 0;
+  // When the visible batch is smaller than the filtered total (list endpoint
+  // capped us), show "X of Y". Otherwise just "Y".
+  const isTruncated = visibleCount > 0 && visibleCount < totalCount;
+
   return (
     <div className="flex w-full flex-row-reverse flex-wrap items-center gap-2 pt-3 pr-4 pb-2 pl-2 text-center text-xs text-gray-500/80">
       {data && (
         <div className="ml-auto">
-          {data.total_count ? (
+          {totalCount > 0 ? (
             <>
-              <span>{data.rows.length}</span>
-              {' of '}
+              {isTruncated && (
+                <>
+                  <span className="font-medium text-gray-500">
+                    {formatNumber(visibleCount)}
+                  </span>
+                  {' of '}
+                </>
+              )}
               <span className="font-medium text-gray-500">
-                {data.total_count
-                  ? `${formatNumber(data.total_count, data.total_count_lower_bound)}${data.total_count_lower_bound ? '+' : ''}`
-                  : ''}
+                {formatNumber(totalCount, true)}
               </span>{' '}
-              recently modified invocations
+              {formatPlurals(totalCount, {
+                one: 'invocation',
+                other: 'invocations',
+              })}
             </>
           ) : (
             'No invocations found'
@@ -712,16 +787,24 @@ export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
   params.sort();
   const originalSearch = params.toString();
 
-  const hasFilters = Array.from(params.keys()).some((k) =>
-    k.startsWith(FILTER_QUERY_PREFIX),
-  );
-  if (!hasFilters) {
+  // Explicit opt-in to last-filter restoration. The "Back to invocations"
+  // link on the detail page navigates here with ?restore=1; no other entry
+  // path triggers it. Default navigation (sidebar All, fresh URL, shortcuts)
+  // shows the unfiltered view. The flag is consumed and stripped, then we
+  // fall through to the redirect at the bottom so the user lands on a clean
+  // URL with the restored filter_* keys.
+  if (params.get('restore') === '1') {
+    params.delete('restore');
     const lastQuery = getInvocationsLastQuery();
     if (lastQuery) {
       Array.from(lastQuery.keys())
         .filter((k) => k.startsWith(FILTER_QUERY_PREFIX))
         .forEach((k) => {
-          lastQuery.getAll(k).forEach((v) => params.append(k, v));
+          // Only restore keys the caller hasn't already set — explicit
+          // filter_* on the URL always wins over the saved state.
+          if (!params.has(k)) {
+            lastQuery.getAll(k).forEach((v) => params.append(k, v));
+          }
         });
     }
   }
