@@ -11,22 +11,6 @@ import {
 } from './shared';
 
 const INVOCATIONS_LIMIT = 250;
-const COUNT_LIMIT = 50000;
-
-function countEstimate(
-  receivedLessThanLimit: boolean,
-  rows: number,
-  minimumCountEstimate: number,
-): { total_count: number; total_count_lower_bound: boolean } {
-  if (receivedLessThanLimit) {
-    return { total_count: rows, total_count_lower_bound: false };
-  } else {
-    return {
-      total_count: Math.max(rows, minimumCountEstimate),
-      total_count_lower_bound: true,
-    };
-  }
-}
 
 export async function listInvocations(
   this: QueryContext,
@@ -36,61 +20,39 @@ export async function listInvocations(
     order: 'DESC',
   },
 ) {
-  const minimumCountEstimatePromise = this.query(
-    `SELECT COUNT(1) as total_count FROM (SELECT * FROM sys_invocation LIMIT ${COUNT_LIMIT}) ${convertInvocationsFilters(filters)}`,
-  ).then(({ rows }) => rows?.at(0)?.total_count);
-
   const isSortByDuration = sort.field === 'duration';
   const idSelectColumns = isSortByDuration
     ? `id, ${DURATION_EXPRESSION}`
     : 'id';
 
-  const invocationsPromise = this.query(
+  const { rows: idRows } = await this.query(
     `SELECT ${idSelectColumns} from sys_invocation ${convertInvocationsFilters(filters)} ORDER BY ${sort.field} ${sort.order} LIMIT ${INVOCATIONS_LIMIT}`,
-  )
-    .then(async ({ rows: idRows }) => {
-      const receivedLessThanLimit = idRows.length < INVOCATIONS_LIMIT;
-
-      if (idRows.length > 0) {
-        const detailColumns = `${sysInvocationListColumns(this.features).join(', ')}, ${DURATION_EXPRESSION}`;
-        const { rows: invRows } = await this.query(
-          `SELECT ${detailColumns} from sys_invocation ${convertInvocationsFilters(
-            [
-              {
-                field: 'id',
-                type: 'STRING_LIST',
-                operation: 'IN',
-                value: idRows.map(({ id }) => id),
-              },
-              ...filters,
-            ],
-          )} ORDER BY ${sort.field} ${sort.order}`,
-        );
-
-        return { rows: invRows, receivedLessThanLimit };
-      } else {
-        return { rows: [], receivedLessThanLimit };
-      }
-    })
-    .then(({ rows, receivedLessThanLimit }) => ({
-      rows: rows.map(convertInvocation),
-      receivedLessThanLimit,
-    }));
-
-  const [minimumCountEstimate, { rows: invocations, receivedLessThanLimit }] =
-    await Promise.all([minimumCountEstimatePromise, invocationsPromise]);
-
-  const { total_count, total_count_lower_bound } = countEstimate(
-    receivedLessThanLimit,
-    invocations.length,
-    minimumCountEstimate,
   );
 
+  let invocations: ReturnType<typeof convertInvocation>[] = [];
+  if (idRows.length > 0) {
+    const detailColumns = `${sysInvocationListColumns(this.features).join(', ')}, ${DURATION_EXPRESSION}`;
+    const { rows: invRows } = await this.query(
+      `SELECT ${detailColumns} from sys_invocation ${convertInvocationsFilters([
+        {
+          field: 'id',
+          type: 'STRING_LIST',
+          operation: 'IN',
+          value: idRows.map(({ id }) => id),
+        },
+        ...filters,
+      ])} ORDER BY ${sort.field} ${sort.order}`,
+    );
+    invocations = invRows.map(convertInvocation);
+  }
+
+  // No total_count is sent — the UI derives the visible count from
+  // rows.length and the "hit the cap" state from rows.length >= limit. The
+  // overall total for status/service breakdowns comes from the summary
+  // endpoint, not this list endpoint.
   return new Response(
     JSON.stringify({
       limit: INVOCATIONS_LIMIT,
-      total_count,
-      total_count_lower_bound,
       rows: invocations,
     }),
     {

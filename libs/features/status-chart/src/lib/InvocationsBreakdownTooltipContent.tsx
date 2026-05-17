@@ -61,8 +61,7 @@ export function InvocationsBreakdownTooltipContent({
   // the bar's dimming so the tooltip stays in sync.
   isStatusDimmed?: (statusName: string) => boolean;
 }) {
-  const showFiltered =
-    filteredTotal !== undefined && filteredTotal !== total;
+  const showFiltered = filteredTotal !== undefined && filteredTotal !== total;
   return (
     <div className="flex flex-col">
       <div className="mb-2">

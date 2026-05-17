@@ -69,8 +69,7 @@ const bulletStyles = tv({
       solid: 'border-solid',
     },
     state: {
-      success:
-        'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.35)]',
+      success: 'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.35)]',
       loading: 'opacity-40',
       error: '',
     },
@@ -162,8 +161,7 @@ export function StatusLegend({
         const count = countByStatus.get(s.name) ?? 0;
         const dimmed = isDimmed?.(s.name) ?? false;
         const borderType = s.borderType ? 'dashed' : 'solid';
-        const appearance =
-          count === 0 ? 'faded' : dimmed ? 'dimmed' : 'normal';
+        const appearance = count === 0 ? 'faded' : dimmed ? 'dimmed' : 'normal';
         if (state === 'loading') {
           return (
             <AriaGridListItem
@@ -202,7 +200,7 @@ export function StatusLegend({
             id={s.name}
             textValue={
               isError
-                ? STATUS_LABELS[s.name] ?? s.name
+                ? (STATUS_LABELS[s.name] ?? s.name)
                 : `${STATUS_LABELS[s.name] ?? s.name} ${count}`
             }
             href={

@@ -1,12 +1,12 @@
 @import 'tailwindcss';
-@plugin "tailwindcss-react-aria-components";
-@plugin "tailwindcss-animate";
-@plugin "@tailwindcss/forms";
+@plugin 'tailwindcss-react-aria-components';
+@plugin 'tailwindcss-animate';
+@plugin '@tailwindcss/forms';
 
 @custom-variant dark (&:where(.dark, .dark *));
 @custom-variant @tall (@media (min-height: 47rem));
 
-@source "../../../libs";
+@source '../../../libs';
 
 @layer base {
   html {

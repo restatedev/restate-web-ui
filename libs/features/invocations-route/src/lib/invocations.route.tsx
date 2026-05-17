@@ -40,7 +40,7 @@ import {
   useTransition,
 } from 'react';
 import { useSubmitShortcut, SubmitShortcutKey } from '@restate/ui/keyboard';
-import { formatDurations, formatNumber } from '@restate/util/intl';
+import { formatDurations, formatNumber, formatPlurals } from '@restate/util/intl';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import {
   ContentPanel,
@@ -185,6 +185,12 @@ function Component() {
   });
 
   const dataUpdate = error ? errorUpdatedAt : dataUpdatedAt;
+
+  // Visible row count (capped at the list endpoint's limit) and the true
+  // filter-matched total from the summary endpoint. Used by the Actions
+  // badge / dropdown / footnote.
+  const visibleCount = data?.rows?.length ?? 0;
+  const totalCount = summaryData?.totalCount ?? 0;
 
   const [selectedInvocationIds, setSelectedInvocationIds] = useState<
     Set<string>
@@ -339,18 +345,16 @@ function Component() {
                   className="flex items-center gap-1.5 self-end rounded-lg p-0.5 px-2 text-0.5xs"
                 >
                   Actions
-                  {Boolean(selectedInvocationIds.size || data?.total_count) && (
+                  {Boolean(selectedInvocationIds.size || totalCount) && (
                     <Badge
                       size="xs"
                       variant={
                         selectedInvocationIds.size > 0 ? 'default' : 'info'
                       }
                     >
-                      {selectedInvocationIds.size
+                      {selectedInvocationIds.size > 0
                         ? `${selectedInvocationIds.size}`
-                        : data?.total_count
-                          ? `${formatNumber(data?.total_count, data?.total_count_lower_bound)}${data?.total_count_lower_bound ? '+' : ''}`
-                          : ''}
+                        : formatNumber(totalCount, true)}
                     </Badge>
                   )}
                   <Icon
@@ -370,16 +374,15 @@ function Component() {
                             on {selectedInvocationIds.size} selected items
                           </span>
                         </span>
-                      ) : data?.total_count ? (
+                      ) : totalCount > 0 ? (
                         <span>
                           Actions{' '}
                           <span className="font-normal opacity-90">
-                            on all{' '}
-                            {formatNumber(
-                              data?.total_count,
-                              data?.total_count_lower_bound,
-                            )}
-                            {data?.total_count_lower_bound ? '+' : ''} results
+                            on all {formatNumber(totalCount, true)}{' '}
+                            {formatPlurals(totalCount, {
+                              one: 'result',
+                              other: 'results',
+                            })}
                           </span>
                         </span>
                       ) : (
@@ -547,7 +550,12 @@ function Component() {
                   />
                 )}
               />
-              <Footnote data={data} isFetching={isFetching} key={dataUpdate}>
+              <Footnote
+                data={data}
+                totalCount={totalCount}
+                isFetching={isFetching}
+                key={dataUpdate}
+              >
                 {!isPending && !error && totalSize > 1 && (
                   <div className="flex items-center rounded-lg border bg-zinc-50 py-0.5 shadow-xs">
                     <Button
@@ -697,11 +705,13 @@ function InvocationsForm({
 
 function Footnote({
   data,
+  totalCount,
   isFetching,
   children,
 }: PropsWithChildren<{
   isFetching: boolean;
   data?: ReturnType<typeof useListInvocations>['data'];
+  totalCount: number;
 }>) {
   const [now, setNow] = useState(() => Date.now());
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
@@ -724,20 +734,32 @@ function Footnote({
   const { isPast, ...parts } = durationSinceLastSnapshot(now);
   const duration = formatDurations(parts);
 
+  const visibleCount = data?.rows?.length ?? 0;
+  // When the visible batch is smaller than the filtered total (list endpoint
+  // capped us), show "X of Y". Otherwise just "Y".
+  const isTruncated = visibleCount > 0 && visibleCount < totalCount;
+
   return (
     <div className="flex w-full flex-row-reverse flex-wrap items-center gap-2 pt-3 pr-4 pb-2 pl-2 text-center text-xs text-gray-500/80">
       {data && (
         <div className="ml-auto">
-          {data.total_count ? (
+          {totalCount > 0 ? (
             <>
-              <span>{data.rows.length}</span>
-              {' of '}
+              {isTruncated && (
+                <>
+                  <span className="font-medium text-gray-500">
+                    {formatNumber(visibleCount)}
+                  </span>
+                  {' of '}
+                </>
+              )}
               <span className="font-medium text-gray-500">
-                {data.total_count
-                  ? `${formatNumber(data.total_count, data.total_count_lower_bound)}${data.total_count_lower_bound ? '+' : ''}`
-                  : ''}
+                {formatNumber(totalCount, true)}
               </span>{' '}
-              recently modified invocations
+              {formatPlurals(totalCount, {
+                one: 'invocation',
+                other: 'invocations',
+              })}
             </>
           ) : (
             'No invocations found'
