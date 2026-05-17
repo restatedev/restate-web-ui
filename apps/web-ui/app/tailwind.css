@@ -144,4 +144,14 @@
     }
   }
   --animate-scanlineSweep: scanlineSweep 1250ms ease-in-out infinite;
+
+  @keyframes shimmerSweep {
+    0% {
+      transform: translateX(-30%);
+    }
+    100% {
+      transform: translateX(330%);
+    }
+  }
+  --animate-shimmerSweep: shimmerSweep 1.6s ease-in-out infinite;
 }
