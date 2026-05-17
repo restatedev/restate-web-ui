@@ -146,12 +146,20 @@ function Component() {
   const { data: summaryData, isPending: isSummaryLoading } =
     useSummaryInvocations(listInvocationsParameters.filters ?? []);
   const { data: deploymentsData } = useListDeployments();
-  const byStatus = summaryData?.byStatus ?? [];
 
-  const { isDimmed: statusDim, getHref: statusHref } = useStatusBarProps(
-    listInvocationsParameters.filters,
+  const statusFilter = useMemo(() => {
+    const f = listInvocationsParameters.filters?.find(
+      (item) => item.field === 'status',
+    );
+    return f?.type === 'STRING_LIST' ? f : undefined;
+  }, [listInvocationsParameters.filters]);
+  const { isDimmed: statusDim, getHref: statusHref } =
+    useStatusBarProps(statusFilter);
+  const { tabs: serviceTabs, byStatus } = useServiceTabs(
+    summaryData,
+    deploymentsData,
+    statusFilter,
   );
-  const serviceTabs = useServiceTabs(summaryData, deploymentsData);
 
   const {
     dataUpdatedAt,

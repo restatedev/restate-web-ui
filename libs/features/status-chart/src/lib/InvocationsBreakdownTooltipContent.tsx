@@ -40,18 +40,29 @@ export function buildStatusEntries(
 export function InvocationsBreakdownTooltipContent({
   title,
   total,
+  filteredTotal,
   totalLink,
   statuses,
   getStatusLink,
   issuesByStatus,
+  isStatusDimmed,
 }: {
   title: ReactNode;
+  // Total in the current scope (denominator for percentages). When a status
+  // filter is also active, pass `filteredTotal` to show it alongside as
+  // `filtered/total`.
   total: number;
+  filteredTotal?: number;
   totalLink: string;
   statuses: StatusBarEntry[];
   getStatusLink: (statusName: string) => string;
   issuesByStatus?: Map<string, IssueSeverity>;
+  // Fade rows whose status doesn't pass the current status filter — mirrors
+  // the bar's dimming so the tooltip stays in sync.
+  isStatusDimmed?: (statusName: string) => boolean;
 }) {
+  const showFiltered =
+    filteredTotal !== undefined && filteredTotal !== total;
   return (
     <div className="flex flex-col">
       <div className="mb-2">
@@ -62,10 +73,18 @@ export function InvocationsBreakdownTooltipContent({
           className="-mx-2 flex items-baseline gap-1 rounded-lg border-none bg-transparent px-2 py-1 !text-inherit no-underline shadow-none hover:bg-white/10"
         >
           <span className="!text-xl !text-gray-50">
-            {formatNumber(total, true)}
+            {formatNumber(showFiltered ? filteredTotal : total, true)}
           </span>
+          {showFiltered && (
+            <span className="!text-sm !text-gray-500">
+              /{formatNumber(total, true)}
+            </span>
+          )}
           <span className="!text-sm !text-gray-400">
-            {formatPlurals(total, { one: 'invocation', other: 'invocations' })}
+            {formatPlurals(showFiltered ? filteredTotal : total, {
+              one: 'invocation',
+              other: 'invocations',
+            })}
           </span>
           <Icon
             name={IconName.ChevronRight}
@@ -77,12 +96,13 @@ export function InvocationsBreakdownTooltipContent({
       <div className="mt-2 flex flex-col">
         {statuses.map((s) => {
           const severity = issuesByStatus?.get(s.name);
+          const dimmed = isStatusDimmed?.(s.name) ?? false;
           return (
             <Link
               key={s.name}
               href={getStatusLink(s.name)}
               variant="secondary"
-              className="-mx-2 flex items-center gap-2.5 rounded-lg border-none bg-transparent px-2 py-1.5 !text-inherit no-underline shadow-none hover:bg-white/10"
+              className={`-mx-2 flex items-center gap-2.5 rounded-lg border-none bg-transparent px-2 py-1.5 !text-inherit no-underline shadow-none transition hover:bg-white/10 ${dimmed ? 'opacity-40 saturate-50' : ''}`}
             >
               <div
                 className="h-3.5 w-3.5 shrink-0 rounded-full"

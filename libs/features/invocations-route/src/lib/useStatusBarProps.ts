@@ -1,11 +1,11 @@
 import { useSearchParams } from 'react-router';
 import { useRestateContext } from '@restate/features/restate-context';
-import type { FilterItem } from '@restate/data-access/admin-api-spec';
 import {
   FAILED_SUBSTATES,
   hasStatusFilter,
   isSingleStatusSelection,
   isStatusInFilter,
+  type StatusFilter,
 } from './statusFilter';
 
 /**
@@ -21,12 +21,9 @@ import {
  *     NOT_IN filter is active narrows to that single status instead of
  *     trying to round-trip the negation.
  */
-export function useStatusBarProps(filters: FilterItem[] | undefined) {
+export function useStatusBarProps(statusFilter: StatusFilter) {
   const [searchParams] = useSearchParams();
   const { baseUrl } = useRestateContext();
-
-  const f = filters?.find((item) => item.field === 'status');
-  const statusFilter = f?.type === 'STRING_LIST' ? f : undefined;
 
   const isDimmed = (statusName: string) =>
     hasStatusFilter(statusFilter) &&

@@ -19,8 +19,14 @@ import {
 import {
   buildStatusEntries,
   InvocationsBreakdownTooltipContent,
+  type StatusEntry,
 } from '@restate/features/status-chart';
 import type { ContentPanelTabs } from '@restate/ui/content-panel';
+import {
+  hasStatusFilter,
+  isStatusInFilter,
+  type StatusFilter,
+} from './statusFilter';
 
 const ALL_TAB_ID = '__all__';
 // Synthetic tab shown when the filter is multi-IN or NOT_IN and can't be
@@ -38,14 +44,35 @@ type DeploymentsData = NonNullable<
 type ServiceRow = {
   id: string;
   name: string;
+  // Service total — ignores status filter (sums all statuses).
   count: number;
+  // Count matching the current status filter. Equals `count` when no status
+  // filter is active. Drives the "filtered/total" tab badges.
+  filteredCount: number;
   statusCounts: Map<string, number>;
   issues: ReturnType<typeof getServiceIssues>;
 };
 
+function sumFilteredStatus(
+  statusCounts: Map<string, number>,
+  statusFilter: StatusFilter,
+): number {
+  if (!hasStatusFilter(statusFilter)) {
+    let total = 0;
+    for (const c of statusCounts.values()) total += c;
+    return total;
+  }
+  let total = 0;
+  for (const [status, c] of statusCounts) {
+    if (isStatusInFilter(statusFilter, status)) total += c;
+  }
+  return total;
+}
+
 function aggregateServices(
   summaryData: SummaryData | undefined,
   deploymentsData: DeploymentsData | undefined,
+  statusFilter: StatusFilter,
 ): ServiceRow[] {
   const byService = summaryData?.byService ?? [];
   const byServiceAndStatus = summaryData?.byServiceAndStatus ?? [];
@@ -67,6 +94,7 @@ function aggregateServices(
       id: name,
       name,
       count,
+      filteredCount: sumFilteredStatus(statusCounts, statusFilter),
       statusCounts,
       issues: getServiceIssues({
         service: { name } as Service,
@@ -82,8 +110,13 @@ function aggregateServices(
   for (const name of deploymentsData?.sortedServiceNames ?? []) {
     if (!seen.has(name)) services.push(build(name, 0));
   }
+  // Sort by filteredCount first so the most-relevant services float up when
+  // a status filter is active. Falls back to total + name for stable order.
   return services.sort(
-    (a, b) => b.count - a.count || a.name.localeCompare(b.name),
+    (a, b) =>
+      b.filteredCount - a.filteredCount ||
+      b.count - a.count ||
+      a.name.localeCompare(b.name),
   );
 }
 
@@ -158,6 +191,29 @@ function aggregateBreakdown(services: ServiceRow[]) {
   };
 }
 
+// Renders a tab count badge. Shows "filtered/total" when a status filter is
+// active and shrinks the visible count; "total" otherwise. When total is 0,
+// always shows just "0" (per UX: no "0/0").
+function TabCountBadge({
+  total,
+  filtered,
+}: {
+  total: number;
+  filtered: number;
+}) {
+  const showFiltered = filtered !== total && total > 0;
+  return (
+    <span className="rounded bg-zinc-100 px-1 py-px text-2xs font-medium text-zinc-500 tabular-nums">
+      {formatNumber(showFiltered ? filtered : total, true)}
+      {showFiltered && (
+        <span className="text-zinc-400">
+          /{formatNumber(total, true)}
+        </span>
+      )}
+    </span>
+  );
+}
+
 function buildSummaryTab(
   id: string,
   label: string,
@@ -165,8 +221,10 @@ function buildSummaryTab(
   baseUrl: string,
   existingParams: URLSearchParams,
   totalLink: string,
+  isStatusDimmed: (statusName: string) => boolean,
 ): { id: string; label: ReactNode } {
-  const count = subset.reduce((sum, s) => sum + s.count, 0);
+  const total = subset.reduce((sum, s) => sum + s.count, 0);
+  const filtered = subset.reduce((sum, s) => sum + s.filteredCount, 0);
   const { statusEntries, issuesByStatus } = aggregateBreakdown(subset);
   return {
     id,
@@ -179,24 +237,22 @@ function buildSummaryTab(
                 {label}
               </div>
             }
-            total={count}
+            total={total}
+            filteredTotal={filtered}
             totalLink={totalLink}
             statuses={statusEntries}
             getStatusLink={(statusName) =>
               toInvocationsHref(baseUrl, statusName, { existingParams })
             }
             issuesByStatus={issuesByStatus}
+            isStatusDimmed={isStatusDimmed}
           />
         }
         size="lg"
       >
         <span className="flex items-center gap-1.5">
           <span className="max-w-[12ch] truncate">{label}</span>
-          {count > 0 && (
-            <span className="rounded bg-zinc-100 px-1 py-px text-2xs font-medium text-zinc-500 tabular-nums">
-              {formatNumber(count, true)}
-            </span>
-          )}
+          <TabCountBadge total={total} filtered={filtered} />
         </span>
       </HoverTooltip>
     ),
@@ -208,6 +264,7 @@ function buildServiceTabItems(
   multiTab: { label: string; services: ServiceRow[] } | undefined,
   baseUrl: string,
   existingParams: URLSearchParams,
+  isStatusDimmed: (statusName: string) => boolean,
 ): { id: string; label: ReactNode }[] {
   // "All" totalLink points at the unfiltered view (target_service_name cleared
   // to an empty value — same shape we write when the user clicks the tab; the
@@ -224,6 +281,7 @@ function buildServiceTabItems(
     baseUrl,
     existingParams,
     `${baseUrl}/invocations?${allParams.toString()}`,
+    isStatusDimmed,
   );
 
   // Multi tab keeps the current filter shape — totalLink is just the current
@@ -236,6 +294,7 @@ function buildServiceTabItems(
         baseUrl,
         existingParams,
         `${baseUrl}/invocations?${existingParams.toString()}`,
+        isStatusDimmed,
       )
     : undefined;
   const items = services.map((s) => {
@@ -272,6 +331,7 @@ function buildServiceTabItems(
                 </div>
               }
               total={s.count}
+              filteredTotal={s.filteredCount}
               totalLink={toServiceInvocationsHref(baseUrl, s.id, {
                 existingParams,
               })}
@@ -282,6 +342,7 @@ function buildServiceTabItems(
                 })
               }
               issuesByStatus={issuesByStatus}
+              isStatusDimmed={isStatusDimmed}
             />
           }
           size="lg"
@@ -290,9 +351,7 @@ function buildServiceTabItems(
             <span className="max-w-[12ch] truncate" title={s.name}>
               {s.name}
             </span>
-            <span className="rounded bg-zinc-100 px-1 py-px text-2xs font-medium text-zinc-500 tabular-nums">
-              {formatNumber(s.count, true)}
-            </span>
+            <TabCountBadge total={s.count} filtered={s.filteredCount} />
             {topSeverity && (
               <span className="relative flex h-3 w-3 shrink-0">
                 <Icon
@@ -316,17 +375,24 @@ function buildServiceTabItems(
 }
 
 /**
- * Returns the full ContentPanelTabs config for the invocations service tabs:
- *   * Aggregates services from summary + deployments (zero-count services
- *     included so they're still selectable).
- *   * Derives the active tab + label from `filter_target_service_name`.
- *   * Wires selection back to that URL param (empty value clears, keeping
- *     the key — see invocationsLastQuery.ts for the clientLoader race).
+ * Returns the service tabs config AND a status breakdown scoped to the
+ * currently active tab (for the StatusSummaryBar/legend at the top of the
+ * page). Single source of truth for "which services are in scope right now".
+ *
+ *   * `tabs`: ContentPanelTabs (All + optional multi-tab + per-service tabs).
+ *     Includes zero-count services so they're still selectable.
+ *   * `byStatus`: status counts aggregated across only the in-scope services,
+ *     so the bar matches the table when a service is selected.
+ *
+ * Selection writes back to `filter_target_service_name` (empty value clears,
+ * keeping the key so the clientLoader doesn't restore a stale lastQuery; see
+ * invocationsLastQuery.ts).
  */
 export function useServiceTabs(
   summaryData: SummaryData | undefined,
   deploymentsData: DeploymentsData | undefined,
-): ContentPanelTabs {
+  statusFilter: StatusFilter,
+): { tabs: ContentPanelTabs; byStatus: StatusEntry[] } {
   const [searchParams, setSearchParams] = useSearchParams();
   const { baseUrl } = useRestateContext();
   const filterTargetServiceName = searchParams.get(
@@ -334,40 +400,77 @@ export function useServiceTabs(
   );
 
   const services = useMemo(
-    () => aggregateServices(summaryData, deploymentsData),
-    [summaryData, deploymentsData],
+    () => aggregateServices(summaryData, deploymentsData, statusFilter),
+    [summaryData, deploymentsData, statusFilter],
   );
   const { activeTabId, multiTab } = deriveTabsState(
     filterTargetServiceName,
     services,
   );
+  // Mirror StatusSummaryBar's dimming: with a status filter active, rows
+  // for statuses outside the filter fade in the breakdown tooltip.
+  const isStatusDimmed = (statusName: string) =>
+    hasStatusFilter(statusFilter) &&
+    !isStatusInFilter(statusFilter, statusName);
   const items = useMemo(
-    () => buildServiceTabItems(services, multiTab, baseUrl, searchParams),
-    [services, multiTab, baseUrl, searchParams],
+    () =>
+      buildServiceTabItems(
+        services,
+        multiTab,
+        baseUrl,
+        searchParams,
+        isStatusDimmed,
+      ),
+    // isStatusDimmed depends only on statusFilter; including the function ref
+    // itself would invalidate every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [services, multiTab, baseUrl, searchParams, statusFilter],
   );
 
+  // Services represented by the active tab. The bar's status breakdown is
+  // aggregated from this subset so the bar matches the table.
+  const scopedServices =
+    activeTabId === ALL_TAB_ID
+      ? services
+      : activeTabId === MULTI_TAB_ID
+        ? (multiTab?.services ?? services)
+        : services.filter((s) => s.id === activeTabId);
+
+  const byStatus = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const s of scopedServices) {
+      for (const [status, count] of s.statusCounts) {
+        map.set(status, (map.get(status) ?? 0) + count);
+      }
+    }
+    return Array.from(map, ([name, count]) => ({ name, count }));
+  }, [scopedServices]);
+
   return {
-    items,
-    maxVisible: MAX_VISIBLE_SERVICE_TABS,
-    selectedId: activeTabId,
-    onSelect: (id) => {
-      // The synthetic multi tab represents the existing filter — clicking it
-      // shouldn't rewrite the URL (no-op). Any other id maps to a target
-      // service IN filter, with [] used as the "clear" form (key preserved
-      // so the clientLoader doesn't restore a stale lastQuery).
-      if (id === MULTI_TAB_ID) return;
-      setSearchParams(
-        (p) => {
-          const next = new URLSearchParams(p);
-          const value = id === ALL_TAB_ID ? [] : [id];
-          next.set(
-            'filter_target_service_name',
-            JSON.stringify({ operation: 'IN', value }),
-          );
-          return next;
-        },
-        { preventScrollReset: true },
-      );
+    byStatus,
+    tabs: {
+      items,
+      maxVisible: MAX_VISIBLE_SERVICE_TABS,
+      selectedId: activeTabId,
+      onSelect: (id) => {
+        // The synthetic multi tab represents the existing filter — clicking
+        // it shouldn't rewrite the URL (no-op). Any other id maps to a target
+        // service IN filter, with [] used as the "clear" form (key preserved
+        // so the clientLoader doesn't restore a stale lastQuery).
+        if (id === MULTI_TAB_ID) return;
+        setSearchParams(
+          (p) => {
+            const next = new URLSearchParams(p);
+            const value = id === ALL_TAB_ID ? [] : [id];
+            next.set(
+              'filter_target_service_name',
+              JSON.stringify({ operation: 'IN', value }),
+            );
+            return next;
+          },
+          { preventScrollReset: true },
+        );
+      },
     },
   };
 }
