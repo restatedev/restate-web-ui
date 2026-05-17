@@ -23,6 +23,11 @@ import {
 import type { ContentPanelTabs } from '@restate/ui/content-panel';
 
 const ALL_TAB_ID = '__all__';
+// Synthetic tab shown when the filter is multi-IN or NOT_IN and can't be
+// represented by a single service tab. Clicking it is a no-op — it just
+// reflects the current selection. "All" remains a separate tab that always
+// represents the full unfiltered set.
+const MULTI_TAB_ID = '__multi__';
 const MAX_VISIBLE_SERVICE_TABS = 5;
 
 type SummaryData = NonNullable<ReturnType<typeof useSummaryInvocations>['data']>;
@@ -82,61 +87,50 @@ function aggregateServices(
   );
 }
 
-function deriveFirstTab(
+function deriveTabsState(
   filterTargetServiceName: string | null,
   services: ServiceRow[],
 ): {
   activeTabId: string;
-  firstTabLabel: string;
-  // Services the first tab represents. Drives both the count badge and the
-  // hover tooltip's aggregated status breakdown.
-  firstTabServices: ServiceRow[];
+  // Synthetic 2nd tab present only when the filter is multi-IN or NOT_IN —
+  // shapes that can't be represented by an individual service tab. Carries
+  // its own services subset for the count badge and breakdown tooltip.
+  multiTab?: { label: string; services: ServiceRow[] };
 } {
-  const fallback = {
-    activeTabId: ALL_TAB_ID,
-    firstTabLabel: 'All',
-    firstTabServices: services,
-  };
-  if (!filterTargetServiceName) return fallback;
+  if (!filterTargetServiceName) return { activeTabId: ALL_TAB_ID };
   try {
     const parsed = JSON.parse(filterTargetServiceName);
     if (parsed.operation === 'IN' && Array.isArray(parsed.value)) {
       const value = parsed.value as string[];
-      if (value.length === 0) return fallback;
+      if (value.length === 0) return { activeTabId: ALL_TAB_ID };
       if (value.length === 1 && typeof value[0] === 'string') {
-        // Single service IN: that service id is the active tab; "All" still
-        // labels the first tab and represents the unfiltered set — clicking
-        // it clears the filter. ContentPanel promotes the selected service
-        // into the visible set when past maxVisible, so this id is always
-        // reachable.
-        return {
-          activeTabId: value[0],
-          firstTabLabel: 'All',
-          firstTabServices: services,
-        };
+        // Single service IN: the service id is the active tab. ContentPanel
+        // promotes it into the visible set when past maxVisible.
+        return { activeTabId: value[0] };
       }
-      // Multi-IN: first tab summarizes the current selection — count and
-      // breakdown reflect the selected services, not the unfiltered set.
       const set = new Set(value);
       return {
-        activeTabId: ALL_TAB_ID,
-        firstTabLabel: `${value.length} services`,
-        firstTabServices: services.filter((s) => set.has(s.name)),
+        activeTabId: MULTI_TAB_ID,
+        multiTab: {
+          label: `${value.length} services`,
+          services: services.filter((s) => set.has(s.name)),
+        },
       };
     }
     if (parsed.operation === 'NOT_IN' && Array.isArray(parsed.value)) {
-      // NOT_IN: shown invocations are everything except the excluded set.
       const excluded = new Set(parsed.value as string[]);
       return {
-        activeTabId: ALL_TAB_ID,
-        firstTabLabel: `All except ${parsed.value.length}`,
-        firstTabServices: services.filter((s) => !excluded.has(s.name)),
+        activeTabId: MULTI_TAB_ID,
+        multiTab: {
+          label: `All except ${parsed.value.length}`,
+          services: services.filter((s) => !excluded.has(s.name)),
+        },
       };
     }
   } catch {
     /* fall through */
   }
-  return fallback;
+  return { activeTabId: ALL_TAB_ID };
 }
 
 // Aggregate per-service status counts + sla issue severities across an
@@ -164,51 +158,86 @@ function aggregateBreakdown(services: ServiceRow[]) {
   };
 }
 
-function buildServiceTabItems(
-  services: ServiceRow[],
-  firstTab: {
-    label: string;
-    count: number;
-    statusEntries: ReturnType<typeof buildStatusEntries>;
-    issuesByStatus: Map<string, 'low' | 'high'>;
-  },
+function buildSummaryTab(
+  id: string,
+  label: string,
+  subset: ServiceRow[],
   baseUrl: string,
   existingParams: URLSearchParams,
-): { id: string; label: ReactNode }[] {
-  const allTabHref = `${baseUrl}/invocations?${existingParams.toString()}`;
-  const allTab = {
-    id: ALL_TAB_ID,
+  totalLink: string,
+): { id: string; label: ReactNode } {
+  const count = subset.reduce((sum, s) => sum + s.count, 0);
+  const { statusEntries, issuesByStatus } = aggregateBreakdown(subset);
+  return {
+    id,
     label: (
       <HoverTooltip
         content={
           <InvocationsBreakdownTooltipContent
             title={
               <div className="text-base! leading-7 font-medium text-gray-300!">
-                {firstTab.label}
+                {label}
               </div>
             }
-            total={firstTab.count}
-            totalLink={allTabHref}
-            statuses={firstTab.statusEntries}
+            total={count}
+            totalLink={totalLink}
+            statuses={statusEntries}
             getStatusLink={(statusName) =>
               toInvocationsHref(baseUrl, statusName, { existingParams })
             }
-            issuesByStatus={firstTab.issuesByStatus}
+            issuesByStatus={issuesByStatus}
           />
         }
         size="lg"
       >
         <span className="flex items-center gap-1.5">
-          <span className="max-w-[12ch] truncate">{firstTab.label}</span>
-          {firstTab.count > 0 && (
+          <span className="max-w-[12ch] truncate">{label}</span>
+          {count > 0 && (
             <span className="rounded bg-zinc-100 px-1 py-px text-2xs font-medium text-zinc-500 tabular-nums">
-              {formatNumber(firstTab.count, true)}
+              {formatNumber(count, true)}
             </span>
           )}
         </span>
       </HoverTooltip>
     ),
   };
+}
+
+function buildServiceTabItems(
+  services: ServiceRow[],
+  multiTab: { label: string; services: ServiceRow[] } | undefined,
+  baseUrl: string,
+  existingParams: URLSearchParams,
+): { id: string; label: ReactNode }[] {
+  // "All" totalLink points at the unfiltered view (target_service_name cleared
+  // to an empty value — same shape we write when the user clicks the tab; the
+  // empty key prevents the clientLoader from restoring a stale lastQuery).
+  const allParams = new URLSearchParams(existingParams);
+  allParams.set(
+    'filter_target_service_name',
+    JSON.stringify({ operation: 'IN', value: [] }),
+  );
+  const allTab = buildSummaryTab(
+    ALL_TAB_ID,
+    'All',
+    services,
+    baseUrl,
+    existingParams,
+    `${baseUrl}/invocations?${allParams.toString()}`,
+  );
+
+  // Multi tab keeps the current filter shape — totalLink is just the current
+  // URL so its breakdown stays consistent with the route's actual filter.
+  const multiTabItem = multiTab
+    ? buildSummaryTab(
+        MULTI_TAB_ID,
+        multiTab.label,
+        multiTab.services,
+        baseUrl,
+        existingParams,
+        `${baseUrl}/invocations?${existingParams.toString()}`,
+      )
+    : undefined;
   const items = services.map((s) => {
     const statusEntries = buildStatusEntries(
       Array.from(s.statusCounts.entries()).map(([status, count]) => ({
@@ -281,7 +310,9 @@ function buildServiceTabItems(
       ),
     };
   });
-  return [allTab, ...items];
+  return multiTabItem
+    ? [allTab, multiTabItem, ...items]
+    : [allTab, ...items];
 }
 
 /**
@@ -306,41 +337,25 @@ export function useServiceTabs(
     () => aggregateServices(summaryData, deploymentsData),
     [summaryData, deploymentsData],
   );
-  const { activeTabId, firstTabLabel, firstTabServices } = deriveFirstTab(
+  const { activeTabId, multiTab } = deriveTabsState(
     filterTargetServiceName,
     services,
   );
-  // Sum the relevant services' counts (each is `byService[s].total` —
-  // ignores the HIGHLIGHT_FIELDS filter on target_service_name) so the
-  // first-tab count matches what its label describes.
-  const firstTabCount = firstTabServices.reduce((sum, s) => sum + s.count, 0);
-  const items = useMemo(() => {
-    const breakdown = aggregateBreakdown(firstTabServices);
-    return buildServiceTabItems(
-      services,
-      {
-        label: firstTabLabel,
-        count: firstTabCount,
-        statusEntries: breakdown.statusEntries,
-        issuesByStatus: breakdown.issuesByStatus,
-      },
-      baseUrl,
-      searchParams,
-    );
-  }, [
-    services,
-    firstTabLabel,
-    firstTabCount,
-    firstTabServices,
-    baseUrl,
-    searchParams,
-  ]);
+  const items = useMemo(
+    () => buildServiceTabItems(services, multiTab, baseUrl, searchParams),
+    [services, multiTab, baseUrl, searchParams],
+  );
 
   return {
     items,
     maxVisible: MAX_VISIBLE_SERVICE_TABS,
     selectedId: activeTabId,
     onSelect: (id) => {
+      // The synthetic multi tab represents the existing filter — clicking it
+      // shouldn't rewrite the URL (no-op). Any other id maps to a target
+      // service IN filter, with [] used as the "clear" form (key preserved
+      // so the clientLoader doesn't restore a stale lastQuery).
+      if (id === MULTI_TAB_ID) return;
       setSearchParams(
         (p) => {
           const next = new URLSearchParams(p);
