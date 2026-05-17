@@ -93,6 +93,7 @@ import { FilterShortcuts } from './FilterShortcuts';
 import { RestateMinimumVersion } from '@restate/util/feature-flag';
 import { useStatusBarProps } from './useStatusBarProps';
 import { useServiceTabs } from './useServiceTabs';
+import { hasStatusFilter } from './statusFilter';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: 170,
@@ -160,6 +161,14 @@ function Component() {
     deploymentsData,
     statusFilter,
   );
+  // Href that clears filter_status (empty value, key preserved so the route's
+  // clientLoader doesn't restore a stale lastQuery; see invocationsLastQuery.ts).
+  // Drives the legend's leading "All" reset entry.
+  const clearStatusFilterHref = useMemo(() => {
+    const out = new URLSearchParams(searchParams);
+    out.set('filter_status', JSON.stringify({ operation: 'IN', value: [] }));
+    return `${baseUrl}/invocations?${out.toString()}`;
+  }, [searchParams, baseUrl]);
 
   const {
     dataUpdatedAt,
@@ -281,6 +290,11 @@ function Component() {
             isLoading={isSummaryLoading}
             linkParams={searchParams}
             isDimmed={statusDim}
+            allItem={{
+              count: byStatus.reduce((sum, s) => sum + s.count, 0),
+              href: clearStatusFilterHref,
+              dimmed: hasStatusFilter(statusFilter),
+            }}
           />
         </div>
         <ContentPanel tabs={serviceTabs}>

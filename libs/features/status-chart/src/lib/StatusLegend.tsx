@@ -79,6 +79,7 @@ export function StatusLegend({
   half,
   className,
   isDimmed,
+  allItem,
 }: {
   byStatus: StatusEntry[];
   isLoading?: boolean;
@@ -92,6 +93,11 @@ export function StatusLegend({
   // filter_status dimming. Component is agnostic to where the signal comes
   // from.
   isDimmed?: (statusName: string) => boolean;
+  // Leading "All" reset entry — mirrors the All tab in the service tab strip.
+  // When provided, prepended to the legend; clicking it should clear the
+  // status filter (caller builds the href). Dimmed alongside non-matching
+  // status rows whenever any status filter is active.
+  allItem?: { count: number; href: string; dimmed: boolean };
 }) {
   const items = getOrderedStatuses(byStatus);
   const { baseUrl } = useRestateContext();
@@ -105,6 +111,9 @@ export function StatusLegend({
       : half === 'second'
         ? fullItems.slice(mid)
         : fullItems;
+  // Only show All on the first half (or when not splitting) so it doesn't
+  // duplicate when the legend is rendered in two halves elsewhere.
+  const showAllItem = allItem && half !== 'second' && state === 'success';
 
   return (
     <AriaGridList
@@ -112,6 +121,27 @@ export function StatusLegend({
       className={legendStyles({ isLoading, orientation, class: className })}
       layout="grid"
     >
+      {showAllItem && (
+        <AriaGridListItem
+          key="__all__"
+          id="__all__"
+          textValue={`All ${allItem.count}`}
+          href={allItem.href}
+          className={legendItemStyles({
+            state: 'success',
+            dimmed: allItem.dimmed,
+          })}
+        >
+          <span className="text-xs text-gray-600">All</span>
+          <span className="inline-block rounded-xs bg-gray-50/60 px-1 py-px text-xs font-medium text-gray-500 tabular-nums">
+            {formatNumber(allItem.count, true)}
+          </span>
+          <Icon
+            name={IconName.ChevronRight}
+            className="h-3.5 w-3.5 shrink-0 text-gray-400"
+          />
+        </AriaGridListItem>
+      )}
       {displayItems.map((s) => {
         const count = 'count' in s ? (s as { count: number }).count : 0;
         const dimmed = isDimmed?.(s.name) ?? false;
