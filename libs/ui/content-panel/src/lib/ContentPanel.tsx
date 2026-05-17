@@ -384,19 +384,26 @@ function Tabs({
         onSelect={selectTab}
       />
       <AriaTabs
-        className="relative hidden min-w-0 flex-1 self-stretch sm:flex"
+        // `min-w-0` lets the flex item shrink below its content width when
+        // siblings need space — that's what enables the internal horizontal
+        // scroll. Intentionally no `flex-1`: when tabs fit naturally we want
+        // AriaTabs to size to its content so the More button sits right next
+        // to the last tab (no dead space).
+        className="relative hidden min-w-0 self-stretch sm:flex"
         selectedKey={selectedTab}
         disabledKeys={disabledTabs}
         onSelectionChange={(tab) => selectTab(String(tab))}
       >
-        {/* Scroll wrapper sits 1px below the parent (-bottom-px) and absorbs
-            the tabs' -mb-px in its own pb-px so tabs still extend into the
-            cardFrame border for the merge effect. Don't simplify by putting
-            overflow-x directly on the tablist — it clips the -mb-px and
-            exposes the cardFrame's top border under the selected tab. */}
+        {/* Scroll wrapper is a normal flex child so AriaTabs can size to its
+            content (no dead space before the More button when tabs fit).
+            `-mb-px` extends it 1px past AriaTabs' content edge and `pb-px`
+            absorbs the tabs' own `-mb-px` so they still extend into the
+            cardFrame border for the merge effect. Don't put overflow-x
+            directly on the tablist — it clips the -mb-px and exposes
+            cardFrame's top border under the selected tab. */}
         <div
           ref={scrollRef}
-          className="absolute inset-0 -bottom-px overflow-x-auto pb-px [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="-mb-px min-w-0 flex-1 overflow-x-auto pb-px [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           <AriaTabList
             className={`${tabListClassName} h-full`}
