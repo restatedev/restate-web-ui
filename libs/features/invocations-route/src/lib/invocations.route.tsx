@@ -40,7 +40,11 @@ import {
   useTransition,
 } from 'react';
 import { useSubmitShortcut, SubmitShortcutKey } from '@restate/ui/keyboard';
-import { formatDurations, formatNumber, formatPlurals } from '@restate/util/intl';
+import {
+  formatDurations,
+  formatNumber,
+  formatPlurals,
+} from '@restate/util/intl';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import {
   ContentPanel,
