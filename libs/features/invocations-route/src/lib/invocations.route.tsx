@@ -147,8 +147,11 @@ function Component() {
   );
   const resetPageIndex = useCallback(() => setPageIndex(0), [setPageIndex]);
 
-  const { data: summaryData, isPending: isSummaryLoading } =
-    useSummaryInvocations(listInvocationsParameters.filters ?? []);
+  const {
+    data: summaryData,
+    isPending: isSummaryLoading,
+    isFetching: isSummaryFetching,
+  } = useSummaryInvocations(listInvocationsParameters.filters ?? []);
   const { data: deploymentsData } = useListDeployments();
 
   const statusFilter = useMemo(() => {
@@ -291,6 +294,7 @@ function Component() {
           <StatusSummaryBar
             byStatus={byStatus}
             isLoading={isSummaryLoading}
+            isFetching={isSummaryFetching}
             isDimmed={statusDim}
             getHref={statusHref}
           />

@@ -16,6 +16,12 @@ type Entry = {
 
 const containerStyles = tv({
   base: 'relative flex h-9 w-full items-stretch gap-[2.5px] py-1',
+  variants: {
+    pulse: {
+      true: 'animate-pulse',
+      false: '',
+    },
+  },
 });
 
 // Match the app's standard skeleton (see ui/table Placeholder.tsx) so the bar
@@ -28,6 +34,12 @@ const skeletonStyles = tv({
 // fill so the area reads as "no data here" without pulling attention.
 const emptyBarStyles = tv({
   base: 'h-9 w-full rounded-md bg-slate-200/60',
+  variants: {
+    pulse: {
+      true: 'animate-pulse',
+      false: '',
+    },
+  },
 });
 
 // Animate flex-grow so segment widths ease between refetches; min-width keeps
@@ -110,12 +122,17 @@ function Segment({
 export function StatusSummaryBar({
   byStatus,
   isLoading,
+  isFetching,
   className,
   isDimmed,
   getHref,
 }: {
   byStatus: StatusEntry[];
+  // No data yet — render the full skeleton. Used for the first load.
   isLoading?: boolean;
+  // Have data but a refetch is in flight — render normally but pulse so the
+  // user sees something is happening. Ignored when isLoading is true.
+  isFetching?: boolean;
   className?: string;
   // Per-status dimming signal — caller-driven so the bar stays presentation
   // only. Truthy = fade. Used by the invocations route to sync the bar with
@@ -132,12 +149,19 @@ export function StatusSummaryBar({
     return <div className={skeletonStyles({ class: className })} aria-hidden />;
   }
 
+  const pulse = Boolean(isFetching);
+
   if (total === 0) {
-    return <div className={emptyBarStyles({ class: className })} aria-hidden />;
+    return (
+      <div
+        className={emptyBarStyles({ pulse, class: className })}
+        aria-hidden
+      />
+    );
   }
 
   return (
-    <div className={containerStyles({ class: className })}>
+    <div className={containerStyles({ pulse, class: className })}>
       {items.map((s) => (
         <Segment
           key={s.name}
