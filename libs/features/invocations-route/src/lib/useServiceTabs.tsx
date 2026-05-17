@@ -12,7 +12,6 @@ import { HoverTooltip } from '@restate/ui/tooltip';
 import { Icon, IconName } from '@restate/ui/icons';
 import { formatNumber } from '@restate/util/intl';
 import {
-  toInvocationsHref,
   toServiceInvocationsHref,
   toServiceStatusInvocationsHref,
 } from '@restate/util/invocation-links';
@@ -23,6 +22,7 @@ import {
 } from '@restate/features/status-chart';
 import type { ContentPanelTabs } from '@restate/ui/content-panel';
 import {
+  FAILED_SUBSTATES,
   hasStatusFilter,
   isStatusInFilter,
   type StatusFilter,
@@ -206,9 +206,7 @@ function TabCountBadge({
     <span className="rounded bg-zinc-100 px-1 py-px text-2xs font-medium text-zinc-500 tabular-nums">
       {formatNumber(showFiltered ? filtered : total, true)}
       {showFiltered && (
-        <span className="text-zinc-400">
-          /{formatNumber(total, true)}
-        </span>
+        <span className="text-zinc-400"> / {formatNumber(total, true)}</span>
       )}
     </span>
   );
@@ -219,13 +217,24 @@ function buildSummaryTab(
   label: string,
   subset: ServiceRow[],
   baseUrl: string,
-  existingParams: URLSearchParams,
-  totalLink: string,
+  // Params encoding this tab's scope (target_service_name shape, sorts, etc).
+  // totalLink uses these as-is; getStatusLink layers a filter_status on top.
+  // We don't use toInvocationsHref/toServiceStatusInvocationsHref here because
+  // they strip all `filter_*` keys before setting their own — which would
+  // drop the multi-IN / NOT_IN service filter we want to preserve.
+  scopeParams: URLSearchParams,
   isStatusDimmed: (statusName: string) => boolean,
 ): { id: string; label: ReactNode } {
   const total = subset.reduce((sum, s) => sum + s.count, 0);
   const filtered = subset.reduce((sum, s) => sum + s.filteredCount, 0);
   const { statusEntries, issuesByStatus } = aggregateBreakdown(subset);
+  const totalLink = `${baseUrl}/invocations?${scopeParams.toString()}`;
+  const getStatusLink = (statusName: string) => {
+    const out = new URLSearchParams(scopeParams);
+    const value = statusName === 'failed' ? FAILED_SUBSTATES : [statusName];
+    out.set('filter_status', JSON.stringify({ operation: 'IN', value }));
+    return `${baseUrl}/invocations?${out.toString()}`;
+  };
   return {
     id,
     label: (
@@ -241,9 +250,7 @@ function buildSummaryTab(
             filteredTotal={filtered}
             totalLink={totalLink}
             statuses={statusEntries}
-            getStatusLink={(statusName) =>
-              toInvocationsHref(baseUrl, statusName, { existingParams })
-            }
+            getStatusLink={getStatusLink}
             issuesByStatus={issuesByStatus}
             isStatusDimmed={isStatusDimmed}
           />
@@ -266,9 +273,11 @@ function buildServiceTabItems(
   existingParams: URLSearchParams,
   isStatusDimmed: (statusName: string) => boolean,
 ): { id: string; label: ReactNode }[] {
-  // "All" totalLink points at the unfiltered view (target_service_name cleared
-  // to an empty value — same shape we write when the user clicks the tab; the
-  // empty key prevents the clientLoader from restoring a stale lastQuery).
+  // "All" scope clears target_service_name (empty value, key preserved so the
+  // clientLoader doesn't restore a stale lastQuery — see invocationsLastQuery.ts).
+  // Both totalLink and per-status links inherit this, so clicking either
+  // navigates to the unfiltered view (with the chosen status if a row was
+  // clicked).
   const allParams = new URLSearchParams(existingParams);
   allParams.set(
     'filter_target_service_name',
@@ -279,13 +288,13 @@ function buildServiceTabItems(
     'All',
     services,
     baseUrl,
-    existingParams,
-    `${baseUrl}/invocations?${allParams.toString()}`,
+    allParams,
     isStatusDimmed,
   );
 
-  // Multi tab keeps the current filter shape — totalLink is just the current
-  // URL so its breakdown stays consistent with the route's actual filter.
+  // Multi tab inherits the current filter shape (multi-IN or NOT_IN service
+  // filter stays put). Status-row clicks layer on a filter_status without
+  // touching the service filter.
   const multiTabItem = multiTab
     ? buildSummaryTab(
         MULTI_TAB_ID,
@@ -293,7 +302,6 @@ function buildServiceTabItems(
         multiTab.services,
         baseUrl,
         existingParams,
-        `${baseUrl}/invocations?${existingParams.toString()}`,
         isStatusDimmed,
       )
     : undefined;
