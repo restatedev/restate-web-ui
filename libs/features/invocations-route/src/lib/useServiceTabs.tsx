@@ -356,7 +356,15 @@ function buildServiceTabItems(
           size="lg"
         >
           <span className="flex items-center gap-1.5">
-            <span className="max-w-[12ch] truncate" title={s.name}>
+            {/* Same JSX is reused as the More dropdown item label, so cap the
+                width only when this span is rendered inside a tab. In the
+                dropdown there's no ancestor [role=tab] and the name flows
+                at its natural width (still wrapped in `truncate` for the
+                pathological 50-char case). */}
+            <span
+              className="truncate [[role=tab]_&]:max-w-[12ch]"
+              title={s.name}
+            >
               {s.name}
             </span>
             <TabCountBadge total={s.count} filtered={s.filteredCount} />
