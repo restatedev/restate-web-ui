@@ -12,6 +12,7 @@ import { HoverTooltip } from '@restate/ui/tooltip';
 import { Icon, IconName } from '@restate/ui/icons';
 import { formatNumber } from '@restate/util/intl';
 import {
+  toInvocationsHref,
   toServiceInvocationsHref,
   toServiceStatusInvocationsHref,
 } from '@restate/util/invocation-links';
@@ -84,53 +85,52 @@ function aggregateServices(
 function deriveFirstTab(
   filterTargetServiceName: string | null,
   services: ServiceRow[],
-  totalCount: number,
-): { activeTabId: string; firstTabLabel: string; firstTabCount: number } {
+): {
+  activeTabId: string;
+  firstTabLabel: string;
+  // Services the first tab represents. Drives both the count badge and the
+  // hover tooltip's aggregated status breakdown.
+  firstTabServices: ServiceRow[];
+} {
   const fallback = {
     activeTabId: ALL_TAB_ID,
     firstTabLabel: 'All',
-    firstTabCount: totalCount,
+    firstTabServices: services,
   };
   if (!filterTargetServiceName) return fallback;
-  const sumFor = (names: string[]) => {
-    const set = new Set(names);
-    return services.reduce(
-      (acc, s) => (set.has(s.name) ? acc + s.count : acc),
-      0,
-    );
-  };
   try {
     const parsed = JSON.parse(filterTargetServiceName);
     if (parsed.operation === 'IN' && Array.isArray(parsed.value)) {
       const value = parsed.value as string[];
       if (value.length === 0) return fallback;
       if (value.length === 1 && typeof value[0] === 'string') {
-        // Single service IN: that service id is the active tab. "All" still
-        // labels the first tab and shows the unfiltered total — clicking it
-        // clears the filter, so this count is the "destination" count.
-        // ContentPanel promotes the selected service into the visible set
-        // when past maxVisible, so this id is always reachable.
+        // Single service IN: that service id is the active tab; "All" still
+        // labels the first tab and represents the unfiltered set — clicking
+        // it clears the filter. ContentPanel promotes the selected service
+        // into the visible set when past maxVisible, so this id is always
+        // reachable.
         return {
           activeTabId: value[0],
           firstTabLabel: 'All',
-          firstTabCount: totalCount,
+          firstTabServices: services,
         };
       }
-      // Multi-IN: first tab summarizes the current selection. Count is the
-      // sum of the selected services, not the unfiltered total.
+      // Multi-IN: first tab summarizes the current selection — count and
+      // breakdown reflect the selected services, not the unfiltered set.
+      const set = new Set(value);
       return {
         activeTabId: ALL_TAB_ID,
         firstTabLabel: `${value.length} services`,
-        firstTabCount: sumFor(value),
+        firstTabServices: services.filter((s) => set.has(s.name)),
       };
     }
     if (parsed.operation === 'NOT_IN' && Array.isArray(parsed.value)) {
-      // NOT_IN: shown invocations are everything except the excluded set,
-      // so the count is totalCount minus that set.
+      // NOT_IN: shown invocations are everything except the excluded set.
+      const excluded = new Set(parsed.value as string[]);
       return {
         activeTabId: ALL_TAB_ID,
         firstTabLabel: `All except ${parsed.value.length}`,
-        firstTabCount: totalCount - sumFor(parsed.value as string[]),
+        firstTabServices: services.filter((s) => !excluded.has(s.name)),
       };
     }
   } catch {
@@ -139,24 +139,74 @@ function deriveFirstTab(
   return fallback;
 }
 
+// Aggregate per-service status counts + sla issue severities across an
+// arbitrary subset, for the All tab's breakdown tooltip.
+function aggregateBreakdown(services: ServiceRow[]) {
+  const statusMap = new Map<string, number>();
+  const issuesByStatus = new Map<string, 'low' | 'high'>();
+  for (const s of services) {
+    for (const [status, count] of s.statusCounts) {
+      statusMap.set(status, (statusMap.get(status) ?? 0) + count);
+    }
+    for (const issue of s.issues) {
+      if (issue.kind === 'sla' && issue.status) {
+        const prev = issuesByStatus.get(issue.status);
+        if (!prev || issue.severity === 'high')
+          issuesByStatus.set(issue.status, issue.severity);
+      }
+    }
+  }
+  return {
+    statusEntries: buildStatusEntries(
+      Array.from(statusMap, ([status, count]) => ({ status, count })),
+    ),
+    issuesByStatus,
+  };
+}
+
 function buildServiceTabItems(
   services: ServiceRow[],
-  firstTabLabel: string,
-  firstTabCount: number,
+  firstTab: {
+    label: string;
+    count: number;
+    statusEntries: ReturnType<typeof buildStatusEntries>;
+    issuesByStatus: Map<string, 'low' | 'high'>;
+  },
   baseUrl: string,
   existingParams: URLSearchParams,
 ): { id: string; label: ReactNode }[] {
+  const allTabHref = `${baseUrl}/invocations?${existingParams.toString()}`;
   const allTab = {
     id: ALL_TAB_ID,
     label: (
-      <span className="flex items-center gap-1.5">
-        <span className="max-w-[12ch] truncate">{firstTabLabel}</span>
-        {firstTabCount > 0 && (
-          <span className="rounded bg-zinc-100 px-1 py-px text-2xs font-medium text-zinc-500 tabular-nums">
-            {formatNumber(firstTabCount, true)}
-          </span>
-        )}
-      </span>
+      <HoverTooltip
+        content={
+          <InvocationsBreakdownTooltipContent
+            title={
+              <div className="text-base! leading-7 font-medium text-gray-300!">
+                {firstTab.label}
+              </div>
+            }
+            total={firstTab.count}
+            totalLink={allTabHref}
+            statuses={firstTab.statusEntries}
+            getStatusLink={(statusName) =>
+              toInvocationsHref(baseUrl, statusName, { existingParams })
+            }
+            issuesByStatus={firstTab.issuesByStatus}
+          />
+        }
+        size="lg"
+      >
+        <span className="flex items-center gap-1.5">
+          <span className="max-w-[12ch] truncate">{firstTab.label}</span>
+          {firstTab.count > 0 && (
+            <span className="rounded bg-zinc-100 px-1 py-px text-2xs font-medium text-zinc-500 tabular-nums">
+              {formatNumber(firstTab.count, true)}
+            </span>
+          )}
+        </span>
+      </HoverTooltip>
     ),
   };
   const items = services.map((s) => {
@@ -250,28 +300,35 @@ export function useServiceTabs(
     () => aggregateServices(summaryData, deploymentsData),
     [summaryData, deploymentsData],
   );
-  // Sum the per-service counts (each is `byService[s].total` — ignores the
-  // HIGHLIGHT_FIELDS filter on target_service_name) so the unfiltered total
-  // stays stable when a specific service is selected. `summaryData.totalCount`
-  // shrinks to the active selection's count and would be confusing as a
-  // baseline here.
-  const totalCount = services.reduce((sum, s) => sum + s.count, 0);
-  const { activeTabId, firstTabLabel, firstTabCount } = deriveFirstTab(
+  const { activeTabId, firstTabLabel, firstTabServices } = deriveFirstTab(
     filterTargetServiceName,
     services,
-    totalCount,
   );
-  const items = useMemo(
-    () =>
-      buildServiceTabItems(
-        services,
-        firstTabLabel,
-        firstTabCount,
-        baseUrl,
-        searchParams,
-      ),
-    [services, firstTabLabel, firstTabCount, baseUrl, searchParams],
-  );
+  // Sum the relevant services' counts (each is `byService[s].total` —
+  // ignores the HIGHLIGHT_FIELDS filter on target_service_name) so the
+  // first-tab count matches what its label describes.
+  const firstTabCount = firstTabServices.reduce((sum, s) => sum + s.count, 0);
+  const items = useMemo(() => {
+    const breakdown = aggregateBreakdown(firstTabServices);
+    return buildServiceTabItems(
+      services,
+      {
+        label: firstTabLabel,
+        count: firstTabCount,
+        statusEntries: breakdown.statusEntries,
+        issuesByStatus: breakdown.issuesByStatus,
+      },
+      baseUrl,
+      searchParams,
+    );
+  }, [
+    services,
+    firstTabLabel,
+    firstTabCount,
+    firstTabServices,
+    baseUrl,
+    searchParams,
+  ]);
 
   return {
     items,
