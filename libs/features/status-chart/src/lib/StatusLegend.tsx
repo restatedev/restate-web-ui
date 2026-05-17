@@ -34,13 +34,41 @@ export const legendStyles = tv({
 });
 
 const legendItemStyles = tv({
-  base: 'flex cursor-pointer items-center gap-1.5 rounded-md px-1.5 py-0.5 text-gray-700 no-underline outline-offset-2 outline-blue-600 hover:bg-black/5 focus-visible:outline-2',
+  base: 'flex items-center gap-1.5 px-1.5 py-0.5 outline-offset-2 outline-blue-600 transition',
+  variants: {
+    state: {
+      success:
+        'cursor-pointer rounded-md text-gray-700 no-underline hover:bg-black/5 focus-visible:outline-2',
+      loading: 'cursor-default outline-none',
+      error: 'cursor-default opacity-50 outline-none',
+    },
+    dimmed: {
+      true: 'opacity-40 saturate-50',
+      false: '',
+    },
+  },
 });
 
 const ALL_STATUSES = STATUS_ORDER.map((name) => ({
   name,
   ...(STATUS_STYLE[name] ?? DEFAULT_STYLE),
 }));
+
+const bulletStyles = tv({
+  base: 'h-3 w-3 shrink-0 rounded-full border-[1.5px]',
+  variants: {
+    borderType: {
+      dashed: 'border-dashed',
+      solid: 'border-solid',
+    },
+    state: {
+      success:
+        'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.35)]',
+      loading: 'opacity-40',
+      error: '',
+    },
+  },
+});
 
 export function StatusLegend({
   byStatus,
@@ -50,6 +78,7 @@ export function StatusLegend({
   orientation = 'horizontal',
   half,
   className,
+  isDimmed,
 }: {
   byStatus: StatusEntry[];
   isLoading?: boolean;
@@ -58,6 +87,11 @@ export function StatusLegend({
   orientation?: 'horizontal' | 'vertical';
   half?: 'first' | 'second';
   className?: string;
+  // Caller-driven dimming. When truthy for a given status name, that row is
+  // faded — used by the invocations route to mirror the bar chart's
+  // filter_status dimming. Component is agnostic to where the signal comes
+  // from.
+  isDimmed?: (statusName: string) => boolean;
 }) {
   const items = getOrderedStatuses(byStatus);
   const { baseUrl } = useRestateContext();
@@ -80,6 +114,8 @@ export function StatusLegend({
     >
       {displayItems.map((s) => {
         const count = 'count' in s ? (s as { count: number }).count : 0;
+        const dimmed = isDimmed?.(s.name) ?? false;
+        const borderType = s.borderType ? 'dashed' : 'solid';
         if (state === 'success' && hasData) {
           return (
             <AriaGridListItem
@@ -89,14 +125,13 @@ export function StatusLegend({
               href={toInvocationsHref(baseUrl, s.name, {
                 existingParams: linkParams,
               })}
-              className={legendItemStyles()}
+              className={legendItemStyles({ state: 'success', dimmed })}
             >
               <div
-                className="h-3 w-3 shrink-0 rounded-full"
+                className={bulletStyles({ state: 'success', borderType })}
                 style={{
                   backgroundColor: s.fillLight,
-                  border: `1.5px ${s.borderType ? 'dashed' : 'solid'} ${s.stroke}`,
-                  boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.35)',
+                  borderColor: s.stroke,
                 }}
               />
               <span className="text-xs text-gray-600">
@@ -118,13 +153,13 @@ export function StatusLegend({
               key={s.name}
               id={s.name}
               textValue={STATUS_LABELS[s.name] ?? s.name}
-              className="flex cursor-default items-center gap-1.5 px-1.5 py-0.5 outline-none"
+              className={legendItemStyles({ state: 'loading', dimmed })}
             >
               <div
-                className="h-3 w-3 shrink-0 rounded-full opacity-40"
+                className={bulletStyles({ state: 'loading', borderType })}
                 style={{
                   backgroundColor: s.fillLight,
-                  border: `1.5px ${s.borderType ? 'dashed' : 'solid'} ${s.stroke}`,
+                  borderColor: s.stroke,
                 }}
               />
               <span className="text-xs text-gray-400">
@@ -145,13 +180,13 @@ export function StatusLegend({
             key={s.name}
             id={s.name}
             textValue={STATUS_LABELS[s.name] ?? s.name}
-            className="flex cursor-default items-center gap-1.5 px-1.5 py-0.5 opacity-50 outline-none"
+            className={legendItemStyles({ state: 'error', dimmed })}
           >
             <div
-              className="h-3 w-3 shrink-0 rounded-full"
+              className={bulletStyles({ state: 'error', borderType })}
               style={{
                 backgroundColor: s.fillLight,
-                border: `1.5px ${s.borderType ? 'dashed' : 'solid'} ${s.stroke}`,
+                borderColor: s.stroke,
               }}
             />
             <span className="text-xs text-gray-400">

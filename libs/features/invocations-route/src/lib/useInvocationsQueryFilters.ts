@@ -14,6 +14,7 @@ import { useSearchParams } from 'react-router';
 import { useSchema } from './useSchema';
 import { COLUMN_QUERY_PREFIX, ColumnKey } from './columns';
 import { setUserLastSort } from './userPreferences';
+import { saveInvocationsLastQuery } from '@restate/util/sidebar-nav';
 
 export const FILTER_QUERY_PREFIX = 'filter_';
 export const SORT_QUERY_PREFIX = 'sort_';
@@ -209,6 +210,12 @@ export function useInvocationsForm({
     if (sortedOldSearchParams.toString() !== sortedNewSearchParams.toString()) {
       resetPageIndex();
     }
+    // Save lastQuery BEFORE navigation: clientLoader reads lastQuery
+    // synchronously during the navigation triggered by setSearchParams,
+    // before the route's useEffect can save the new state. Without this
+    // call, clearing all filter_* keys causes the loader to restore the
+    // previous query. See libs/util/sidebar-nav/.../invocationsLastQuery.ts.
+    saveInvocationsLastQuery(newSearchParams);
     setSearchParams(newSearchParams, { preventScrollReset: true });
 
     return query.items

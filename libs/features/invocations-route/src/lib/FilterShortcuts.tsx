@@ -25,6 +25,7 @@ import {
   SORT_QUERY_PREFIX,
   getFilterParamKey,
 } from './useInvocationsQueryFilters';
+import { saveInvocationsLastQuery } from '@restate/util/sidebar-nav';
 
 interface FilterShortcut {
   columns: ColumnKey[];
@@ -334,6 +335,11 @@ export function FilterShortcuts({
       newSearchParams.delete(SORT_QUERY_PREFIX + 'order');
     }
 
+    // Save lastQuery before setSearchParams — clientLoader restores from
+    // lastQuery during navigation when the new URL has no filter_* keys
+    // (e.g. the "All" shortcut produces empty status + service clauses,
+    // both invalid, so neither lands in the URL). See invocationsLastQuery.ts.
+    saveInvocationsLastQuery(newSearchParams);
     setSearchParams(newSearchParams);
   };
 
