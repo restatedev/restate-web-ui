@@ -81,31 +81,56 @@ function aggregateServices(
   );
 }
 
-function parseTargetServiceFilter(filterTargetServiceName: string | null): {
-  activeTabId: string;
-  firstTabLabel: string;
-} {
-  const fallback = { activeTabId: ALL_TAB_ID, firstTabLabel: 'All' };
+function deriveFirstTab(
+  filterTargetServiceName: string | null,
+  services: ServiceRow[],
+  totalCount: number,
+): { activeTabId: string; firstTabLabel: string; firstTabCount: number } {
+  const fallback = {
+    activeTabId: ALL_TAB_ID,
+    firstTabLabel: 'All',
+    firstTabCount: totalCount,
+  };
   if (!filterTargetServiceName) return fallback;
+  const sumFor = (names: string[]) => {
+    const set = new Set(names);
+    return services.reduce(
+      (acc, s) => (set.has(s.name) ? acc + s.count : acc),
+      0,
+    );
+  };
   try {
     const parsed = JSON.parse(filterTargetServiceName);
     if (parsed.operation === 'IN' && Array.isArray(parsed.value)) {
       const value = parsed.value as string[];
       if (value.length === 0) return fallback;
       if (value.length === 1 && typeof value[0] === 'string') {
+        // Single service IN: that service id is the active tab. "All" still
+        // labels the first tab and shows the unfiltered total — clicking it
+        // clears the filter, so this count is the "destination" count.
         // ContentPanel promotes the selected service into the visible set
         // when past maxVisible, so this id is always reachable.
-        return { activeTabId: value[0], firstTabLabel: 'All' };
+        return {
+          activeTabId: value[0],
+          firstTabLabel: 'All',
+          firstTabCount: totalCount,
+        };
       }
+      // Multi-IN: first tab summarizes the current selection. Count is the
+      // sum of the selected services, not the unfiltered total.
       return {
         activeTabId: ALL_TAB_ID,
         firstTabLabel: `${value.length} services`,
+        firstTabCount: sumFor(value),
       };
     }
     if (parsed.operation === 'NOT_IN' && Array.isArray(parsed.value)) {
+      // NOT_IN: shown invocations are everything except the excluded set,
+      // so the count is totalCount minus that set.
       return {
         activeTabId: ALL_TAB_ID,
         firstTabLabel: `All except ${parsed.value.length}`,
+        firstTabCount: totalCount - sumFor(parsed.value as string[]),
       };
     }
   } catch {
@@ -117,7 +142,7 @@ function parseTargetServiceFilter(filterTargetServiceName: string | null): {
 function buildServiceTabItems(
   services: ServiceRow[],
   firstTabLabel: string,
-  totalCount: number,
+  firstTabCount: number,
   baseUrl: string,
   existingParams: URLSearchParams,
 ): { id: string; label: ReactNode }[] {
@@ -126,9 +151,9 @@ function buildServiceTabItems(
     label: (
       <span className="flex items-center gap-1.5">
         <span className="max-w-[12ch] truncate">{firstTabLabel}</span>
-        {totalCount > 0 && (
+        {firstTabCount > 0 && (
           <span className="rounded bg-zinc-100 px-1 py-px text-2xs font-medium text-zinc-500 tabular-nums">
-            {formatNumber(totalCount, true)}
+            {formatNumber(firstTabCount, true)}
           </span>
         )}
       </span>
@@ -220,25 +245,32 @@ export function useServiceTabs(
   const filterTargetServiceName = searchParams.get(
     'filter_target_service_name',
   );
-  const totalCount = summaryData?.totalCount ?? 0;
 
   const services = useMemo(
     () => aggregateServices(summaryData, deploymentsData),
     [summaryData, deploymentsData],
   );
-  const { activeTabId, firstTabLabel } = parseTargetServiceFilter(
+  // Sum the per-service counts (each is `byService[s].total` — ignores the
+  // HIGHLIGHT_FIELDS filter on target_service_name) so the unfiltered total
+  // stays stable when a specific service is selected. `summaryData.totalCount`
+  // shrinks to the active selection's count and would be confusing as a
+  // baseline here.
+  const totalCount = services.reduce((sum, s) => sum + s.count, 0);
+  const { activeTabId, firstTabLabel, firstTabCount } = deriveFirstTab(
     filterTargetServiceName,
+    services,
+    totalCount,
   );
   const items = useMemo(
     () =>
       buildServiceTabItems(
         services,
         firstTabLabel,
-        totalCount,
+        firstTabCount,
         baseUrl,
         searchParams,
       ),
-    [services, firstTabLabel, totalCount, baseUrl, searchParams],
+    [services, firstTabLabel, firstTabCount, baseUrl, searchParams],
   );
 
   return {
