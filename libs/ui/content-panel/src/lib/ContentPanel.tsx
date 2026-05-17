@@ -303,9 +303,15 @@ function Tabs({
   const updateScroll = useCallback(() => {
     const el = scrollRef.current;
     if (!el) return;
+    // Tolerance for subpixel discrepancies between scrollLeft, clientWidth
+    // and scrollWidth. Without it the right chevron can stick around after
+    // a full scroll-to-end (predicate sees scrollWidth as e.g. .5 px wider
+    // than scrollLeft+clientWidth) and clicking it then does nothing.
+    const SCROLL_END_PX = 2;
     const next = {
-      left: el.scrollLeft > 1,
-      right: Math.ceil(el.scrollLeft + el.clientWidth) < el.scrollWidth,
+      left: el.scrollLeft > SCROLL_END_PX,
+      right:
+        el.scrollWidth - el.scrollLeft - el.clientWidth > SCROLL_END_PX,
     };
     // Bail when nothing changed — otherwise the ResizeObserver fires after
     // every render and re-emits the same state, causing an infinite loop.
@@ -336,6 +342,10 @@ function Tabs({
   // the scroll container's scrollLeft — scrollIntoView would propagate to
   // ancestor scroll containers and move the page. Wrapped in rAF so the
   // measurement happens after layout settles.
+  //
+  // CHEVRON_AREA reserves space at each edge so the active tab doesn't end up
+  // tucked under the chevron's fade gradient overlay. We trigger a scroll even
+  // when the tab is technically visible but inside that area.
   useEffect(() => {
     const raf = requestAnimationFrame(() => {
       const wrap = scrollRef.current;
@@ -346,12 +356,14 @@ function Tabs({
       if (!tabEl) return;
       const wrapRect = wrap.getBoundingClientRect();
       const tabRect = tabEl.getBoundingClientRect();
-      const BUFFER = 56;
+      const CHEVRON_AREA = 48;
+      const safeLeft = wrapRect.left + CHEVRON_AREA;
+      const safeRight = wrapRect.right - CHEVRON_AREA;
       let delta = 0;
-      if (tabRect.left < wrapRect.left) {
-        delta = tabRect.left - wrapRect.left - BUFFER;
-      } else if (tabRect.right > wrapRect.right) {
-        delta = tabRect.right - wrapRect.right + BUFFER;
+      if (tabRect.left < safeLeft) {
+        delta = tabRect.left - safeLeft;
+      } else if (tabRect.right > safeRight) {
+        delta = tabRect.right - safeRight;
       }
       if (delta !== 0) {
         wrap.scrollBy({
