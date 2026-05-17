@@ -60,8 +60,14 @@ import {
   useSearchParams,
 } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { useListInvocations } from '@restate/data-access/admin-api-hooks';
+import {
+  isSummaryInvocationsQuery,
+  useListDeployments,
+  useListInvocations,
+  useSummaryInvocations,
+} from '@restate/data-access/admin-api-hooks';
 import { useRestateContext } from '@restate/features/restate-context';
+import { StatusLegend, StatusSummaryBar } from '@restate/features/status-chart';
 import { useBatchOperations } from '@restate/features/batch-operations';
 import {
   SERVICE_PLAYGROUND_QUERY_PARAM,
@@ -85,6 +91,8 @@ import {
 import { Key } from 'react-aria';
 import { FilterShortcuts } from './FilterShortcuts';
 import { RestateMinimumVersion } from '@restate/util/feature-flag';
+import { useStatusBarProps } from './useStatusBarProps';
+import { useServiceTabs } from './useServiceTabs';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: 170,
@@ -110,7 +118,8 @@ const MAX_COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
 
 const PAGE_SIZE = 30;
 function Component() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { OnboardingGuide, baseUrl } = useRestateContext();
   const {
     selectedColumns,
     setSelectedColumns,
@@ -133,6 +142,16 @@ function Component() {
     [],
   );
   const resetPageIndex = useCallback(() => setPageIndex(0), [setPageIndex]);
+
+  const { data: summaryData, isPending: isSummaryLoading } =
+    useSummaryInvocations(listInvocationsParameters.filters ?? []);
+  const { data: deploymentsData } = useListDeployments();
+  const byStatus = summaryData?.byStatus ?? [];
+
+  const { isDimmed: statusDim, getHref: statusHref } = useStatusBarProps(
+    listInvocationsParameters.filters,
+  );
+  const serviceTabs = useServiceTabs(summaryData, deploymentsData);
 
   const {
     dataUpdatedAt,
@@ -195,7 +214,6 @@ function Component() {
     [sortedColumnsList],
   );
 
-  const { OnboardingGuide } = useRestateContext();
   const {
     batchPurge,
     batchResume,
@@ -210,7 +228,6 @@ function Component() {
   }, [isFetching, pageIndex]);
 
   const navigate = useNavigate();
-  const { baseUrl } = useRestateContext();
   const basePath = useHref('/');
   const isModifierPressed = useRef(false);
 
@@ -243,9 +260,23 @@ function Component() {
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdate}>
-      <div className="relative flex min-h-0 flex-1 flex-col">
-        <ContentPanel>
-          <ContentPanelToolbar className="justify-end gap-1.5 px-2 pb-2">
+      <div className="relative flex min-h-0 flex-1 flex-col gap-4 pt-20">
+        <div className="mx-auto flex w-full max-w-3xl flex-col items-stretch gap-2 px-4">
+          <StatusSummaryBar
+            byStatus={byStatus}
+            isLoading={isSummaryLoading}
+            isDimmed={statusDim}
+            getHref={statusHref}
+          />
+          <StatusLegend
+            byStatus={byStatus}
+            isLoading={isSummaryLoading}
+            linkParams={searchParams}
+            isDimmed={statusDim}
+          />
+        </div>
+        <ContentPanel tabs={serviceTabs}>
+          <ContentPanelToolbar className="justify-end gap-1.5 pr-1 pl-2">
             <Dropdown>
               <DropdownTrigger>
                 <Button
@@ -602,7 +633,12 @@ function InvocationsForm({
       onSubmit={async (event) => {
         event.preventDefault();
         commitQuery();
-        await queryCLient.invalidateQueries({ queryKey });
+        await Promise.all([
+          queryCLient.invalidateQueries({ queryKey }),
+          queryCLient.invalidateQueries({
+            predicate: (q) => isSummaryInvocationsQuery(q),
+          }),
+        ]);
       }}
     >
       <QueryBuilder
@@ -712,6 +748,14 @@ export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
   params.sort();
   const originalSearch = params.toString();
 
+  // Restore last filter state when navigating to /invocations with no
+  // filter_* keys (e.g. fresh sidebar click). This intentionally also runs
+  // for in-app navigations that delete all filter_* keys — but those code
+  // paths must call saveInvocationsLastQuery(newParams) BEFORE setSearchParams
+  // so this loader sees the cleared state, not the stale previous one.
+  // See libs/util/sidebar-nav/src/lib/invocationsLastQuery.ts for the full
+  // race-condition note. Any new code path that mutates filter_* via
+  // setSearchParams must follow one of the two safe patterns documented there.
   const hasFilters = Array.from(params.keys()).some((k) =>
     k.startsWith(FILTER_QUERY_PREFIX),
   );
