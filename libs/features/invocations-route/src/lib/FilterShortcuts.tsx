@@ -47,48 +47,29 @@ function toClause(
   return new QueryClause(schema.find((clause) => clause.id === id)!, value);
 }
 
-// TODO: remove empty service, status filters
+const DEFAULT_PRESET_COLUMNS: ColumnKey[] = [
+  'id',
+  'created_at',
+  'modified_at',
+  'duration',
+  'target',
+  'status',
+];
+
 const makeShortcuts: (
   schema: QueryClauseSchema<QueryClauseType>[],
 ) => FilterShortcut[] = (schema) => [
   {
     id: 'all',
     label: 'All',
-    columns: [
-      'id',
-      'created_at',
-      'modified_at',
-      'duration',
-      'target',
-      'status',
-    ],
-    filters: [
-      toClause(schema, 'target_service_name', {
-        operation: 'IN',
-        value: [],
-      }),
-      toClause(schema, 'status', {
-        operation: 'IN',
-        value: [],
-      }),
-    ],
+    columns: DEFAULT_PRESET_COLUMNS,
+    filters: [],
   },
   {
     id: 'inflight',
     label: 'In-flight invocations',
-    columns: [
-      'id',
-      'created_at',
-      'modified_at',
-      'duration',
-      'target',
-      'status',
-    ],
+    columns: DEFAULT_PRESET_COLUMNS,
     filters: [
-      toClause(schema, 'target_service_name', {
-        operation: 'IN',
-        value: [],
-      }),
       toClause(schema, 'status', {
         operation: 'NOT_IN',
         value: ['succeeded', 'failed', 'cancelled', 'killed'],
@@ -98,23 +79,12 @@ const makeShortcuts: (
   {
     id: 'stuck',
     label: 'Stuck invocations',
-    columns: [
-      'id',
-      'created_at',
-      'modified_at',
-      'duration',
-      'target',
-      'status',
-    ],
+    columns: DEFAULT_PRESET_COLUMNS,
     sort: {
       field: 'modified_at',
       order: 'ASC',
     },
     filters: [
-      toClause(schema, 'target_service_name', {
-        operation: 'IN',
-        value: [],
-      }),
       toClause(schema, 'status', {
         operation: 'IN',
         value: ['pending', 'backing-off', 'suspended', 'paused', 'ready'],
@@ -128,23 +98,8 @@ const makeShortcuts: (
   {
     id: 'workflow',
     label: 'Workflow runs',
-    columns: [
-      'id',
-      'created_at',
-      'modified_at',
-      'duration',
-      'target',
-      'status',
-    ],
+    columns: DEFAULT_PRESET_COLUMNS,
     filters: [
-      toClause(schema, 'target_service_name', {
-        operation: 'IN',
-        value: [],
-      }),
-      toClause(schema, 'status', {
-        operation: 'IN',
-        value: [],
-      }),
       toClause(schema, 'target_service_ty', {
         operation: 'IN',
         value: ['workflow'],
@@ -158,24 +113,12 @@ const makeShortcuts: (
   {
     id: 'vo',
     label: 'Active Virtual Objects',
-    columns: [
-      'id',
-      'created_at',
-      'modified_at',
-      'duration',
-      'target',
-      'status',
-    ],
+    columns: DEFAULT_PRESET_COLUMNS,
     filters: [
-      toClause(schema, 'target_service_name', {
-        operation: 'IN',
-        value: [],
-      }),
       toClause(schema, 'status', {
         operation: 'IN',
         value: ['running', 'backing-off', 'suspended', 'paused'],
       }),
-
       toClause(schema, 'target_service_ty', {
         operation: 'IN',
         value: ['virtual_object'],
@@ -185,24 +128,8 @@ const makeShortcuts: (
   {
     id: 'idempotent',
     label: 'Idempotent invocations',
-    columns: [
-      'id',
-      'created_at',
-      'modified_at',
-      'duration',
-      'target',
-      'status',
-      'idempotency_key',
-    ],
+    columns: [...DEFAULT_PRESET_COLUMNS, 'idempotency_key'],
     filters: [
-      toClause(schema, 'target_service_name', {
-        operation: 'IN',
-        value: [],
-      }),
-      toClause(schema, 'status', {
-        operation: 'IN',
-        value: [],
-      }),
       toClause(schema, 'idempotency_key', {
         operation: 'IS NOT NULL',
       }),
@@ -211,28 +138,12 @@ const makeShortcuts: (
   {
     id: 'retried',
     label: 'Most retried invocations',
-    columns: [
-      'id',
-      'created_at',
-      'modified_at',
-      'duration',
-      'target',
-      'status',
-      'retry_count',
-    ],
+    columns: [...DEFAULT_PRESET_COLUMNS, 'retry_count'],
     sort: {
       field: 'retry_count',
       order: 'DESC',
     },
     filters: [
-      toClause(schema, 'target_service_name', {
-        operation: 'IN',
-        value: [],
-      }),
-      toClause(schema, 'status', {
-        operation: 'IN',
-        value: [],
-      }),
       toClause(schema, 'retry_count', {
         operation: 'GREATER_THAN',
         value: 1,
@@ -242,24 +153,8 @@ const makeShortcuts: (
   {
     id: 'restarted',
     label: 'Restarted invocations',
-    columns: [
-      'id',
-      'created_at',
-      'modified_at',
-      'duration',
-      'target',
-      'status',
-      'restarted_from',
-    ],
+    columns: [...DEFAULT_PRESET_COLUMNS, 'restarted_from'],
     filters: [
-      toClause(schema, 'target_service_name', {
-        operation: 'IN',
-        value: [],
-      }),
-      toClause(schema, 'status', {
-        operation: 'IN',
-        value: [],
-      }),
       toClause(schema, 'invoked_by', {
         operation: 'EQUALS',
         value: 'restart_as_new',
@@ -269,24 +164,12 @@ const makeShortcuts: (
   {
     id: 'scheduled',
     label: 'Scheduled invocations',
-    columns: [
-      'id',
-      'created_at',
-      'modified_at',
-      'duration',
-      'scheduled_start_at',
-      'target',
-      'status',
-    ],
+    columns: [...DEFAULT_PRESET_COLUMNS, 'scheduled_start_at'],
     sort: {
       field: 'scheduled_start_at',
       order: 'ASC',
     },
     filters: [
-      toClause(schema, 'target_service_name', {
-        operation: 'IN',
-        value: [],
-      }),
       toClause(schema, 'status', {
         operation: 'IN',
         value: ['scheduled'],
@@ -335,10 +218,8 @@ export function FilterShortcuts({
       newSearchParams.delete(SORT_QUERY_PREFIX + 'order');
     }
 
-    // Save lastQuery before setSearchParams — clientLoader restores from
-    // lastQuery during navigation when the new URL has no filter_* keys
-    // (e.g. the "All" shortcut produces empty status + service clauses,
-    // both invalid, so neither lands in the URL). See invocationsLastQuery.ts.
+    // Keep lastQuery in sync with the committed state so the next ?restore=1
+    // navigation restores what the user just selected.
     saveInvocationsLastQuery(newSearchParams);
     setSearchParams(newSearchParams);
   };

@@ -273,16 +273,11 @@ function buildServiceTabItems(
   existingParams: URLSearchParams,
   isStatusDimmed: (statusName: string) => boolean,
 ): { id: string; label: ReactNode }[] {
-  // "All" scope clears target_service_name (empty value, key preserved so the
-  // clientLoader doesn't restore a stale lastQuery — see invocationsLastQuery.ts).
-  // Both totalLink and per-status links inherit this, so clicking either
-  // navigates to the unfiltered view (with the chosen status if a row was
-  // clicked).
+  // "All" scope drops target_service_name. Both totalLink and per-status
+  // links inherit this, so clicking either navigates to the unfiltered view
+  // (with the chosen status if a row was clicked).
   const allParams = new URLSearchParams(existingParams);
-  allParams.set(
-    'filter_target_service_name',
-    JSON.stringify({ operation: 'IN', value: [] }),
-  );
+  allParams.delete('filter_target_service_name');
   const allTab = buildSummaryTab(
     ALL_TAB_ID,
     'All',
@@ -400,9 +395,8 @@ function buildServiceTabItems(
  *   * `byStatus`: status counts aggregated across only the in-scope services,
  *     so the bar matches the table when a service is selected.
  *
- * Selection writes back to `filter_target_service_name` (empty value clears,
- * keeping the key so the clientLoader doesn't restore a stale lastQuery; see
- * invocationsLastQuery.ts).
+ * Selection writes back to `filter_target_service_name` — the All tab
+ * deletes the key entirely, service tabs set IN [service].
  */
 export function useServiceTabs(
   summaryData: SummaryData | undefined,
@@ -470,18 +464,20 @@ export function useServiceTabs(
       selectedId: activeTabId,
       onSelect: (id) => {
         // The synthetic multi tab represents the existing filter — clicking
-        // it shouldn't rewrite the URL (no-op). Any other id maps to a target
-        // service IN filter, with [] used as the "clear" form (key preserved
-        // so the clientLoader doesn't restore a stale lastQuery).
+        // it shouldn't rewrite the URL. Any other id maps to a target_service
+        // filter; ALL_TAB_ID drops the key entirely.
         if (id === MULTI_TAB_ID) return;
         setSearchParams(
           (p) => {
             const next = new URLSearchParams(p);
-            const value = id === ALL_TAB_ID ? [] : [id];
-            next.set(
-              'filter_target_service_name',
-              JSON.stringify({ operation: 'IN', value }),
-            );
+            if (id === ALL_TAB_ID) {
+              next.delete('filter_target_service_name');
+            } else {
+              next.set(
+                'filter_target_service_name',
+                JSON.stringify({ operation: 'IN', value: [id] }),
+              );
+            }
             return next;
           },
           { preventScrollReset: true },

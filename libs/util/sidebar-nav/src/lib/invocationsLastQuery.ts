@@ -1,20 +1,12 @@
 // In-memory store of the last filter/sort/column state of the invocations
 // page. The invocations route's clientLoader restores filter_* params from
-// this store when navigating to /invocations with no filter_* keys (e.g.
-// sidebar nav back to the page).
+// this store ONLY when the URL has `?restore=1` — the explicit opt-in is set
+// by the "Back to invocations" link on detail pages. Default navigation
+// (sidebar All, fresh URL, preset shortcuts) shows the unfiltered view.
 //
-// Race-condition note for anyone editing code that calls setSearchParams on
-// the invocations page: clientLoader runs DURING navigation, BEFORE the
-// useEffect that saves lastQuery on URL change. If you set search params
-// that delete all filter_* keys and rely only on the useEffect, the loader
-// will read STALE lastQuery and restore the previous filters, reverting
-// your change. To clear filters safely, either:
-//   1. Keep at least one filter_* key in the URL with an empty value array
-//      (the deriveClausesFromUrl logic treats empty value as no filter,
-//      so the API isn't affected — see StatusSummaryBar, setServiceFilter)
-//   2. Call saveInvocationsLastQuery(newSearchParams) BEFORE setSearchParams
-//      so the loader sees the cleared state synchronously
-//      (see commitQuery, FilterShortcuts.setFilter)
+// Anyone clearing filters can safely just `params.delete('filter_*')` — the
+// loader won't auto-restore. To explicitly restore (rare), navigate to
+// `/invocations?restore=1`.
 let lastQuery: URLSearchParams | null = null;
 
 function isPersistedKey(key: string): boolean {

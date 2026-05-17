@@ -224,24 +224,7 @@ function EditQueryTrigger({
             <Button
               variant="destructive"
               className="border-transparent bg-transparent bg-none px-4 py-1 text-red-700 shadow-none drop-shadow-none hover:bg-linear-to-b hover:text-white hover:drop-shadow-xs pressed:bg-linear-to-b pressed:text-white pressed:drop-shadow-xs"
-              onClick={() => {
-                if (
-                  clause.id === 'status' ||
-                  clause.id === 'target_service_name'
-                ) {
-                  const newClause = new QueryClause(
-                    { ...clause.schema, options: clause.options },
-                    {
-                      ...clause.value,
-                      operation: 'IN',
-                      value: [],
-                    },
-                  );
-                  onUpdate?.(newClause);
-                } else {
-                  onRemove?.();
-                }
-              }}
+              onClick={() => onRemove?.()}
             >
               Remove
             </Button>

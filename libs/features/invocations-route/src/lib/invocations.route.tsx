@@ -88,7 +88,6 @@ import {
   useInvocationsForm,
   useListInvocationsParameters,
 } from './useInvocationsQueryFilters';
-import { Key } from 'react-aria';
 import { FilterShortcuts } from './FilterShortcuts';
 import { RestateMinimumVersion } from '@restate/util/feature-flag';
 import { useStatusBarProps } from './useStatusBarProps';
@@ -161,12 +160,12 @@ function Component() {
     deploymentsData,
     statusFilter,
   );
-  // Href that clears filter_status (empty value, key preserved so the route's
-  // clientLoader doesn't restore a stale lastQuery; see invocationsLastQuery.ts).
-  // Drives the legend's leading "All" reset entry.
+  // Href that clears filter_status — drives the legend's leading "All"
+  // reset entry. Simply deletes the key; the loader doesn't auto-restore
+  // unless ?restore=1 is present.
   const clearStatusFilterHref = useMemo(() => {
     const out = new URLSearchParams(searchParams);
-    out.set('filter_status', JSON.stringify({ operation: 'IN', value: [] }));
+    out.delete('filter_status');
     return `${baseUrl}/invocations?${out.toString()}`;
   }, [searchParams, baseUrl]);
 
@@ -663,12 +662,7 @@ function InvocationsForm({
         ]);
       }}
     >
-      <QueryBuilder
-        query={query}
-        schema={schema}
-        canRemoveItem={canRemoveItem}
-        multiple
-      >
+      <QueryBuilder query={query} schema={schema} multiple>
         <AddQueryTrigger
           MenuTrigger={FiltersTrigger}
           placeholder="Filter invocations…"
@@ -699,13 +693,6 @@ function InvocationsForm({
       </SubmitButton>
     </Form>
   );
-}
-
-function canRemoveItem(key: Key) {
-  if (key === 'status' || key === 'target_service_name') {
-    return false;
-  }
-  return true;
 }
 
 function Footnote({
@@ -770,24 +757,24 @@ export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
   params.sort();
   const originalSearch = params.toString();
 
-  // Restore last filter state when navigating to /invocations with no
-  // filter_* keys (e.g. fresh sidebar click). This intentionally also runs
-  // for in-app navigations that delete all filter_* keys — but those code
-  // paths must call saveInvocationsLastQuery(newParams) BEFORE setSearchParams
-  // so this loader sees the cleared state, not the stale previous one.
-  // See libs/util/sidebar-nav/src/lib/invocationsLastQuery.ts for the full
-  // race-condition note. Any new code path that mutates filter_* via
-  // setSearchParams must follow one of the two safe patterns documented there.
-  const hasFilters = Array.from(params.keys()).some((k) =>
-    k.startsWith(FILTER_QUERY_PREFIX),
-  );
-  if (!hasFilters) {
+  // Explicit opt-in to last-filter restoration. The "Back to invocations"
+  // link on the detail page navigates here with ?restore=1; no other entry
+  // path triggers it. Default navigation (sidebar All, fresh URL, shortcuts)
+  // shows the unfiltered view. The flag is consumed and stripped, then we
+  // fall through to the redirect at the bottom so the user lands on a clean
+  // URL with the restored filter_* keys.
+  if (params.get('restore') === '1') {
+    params.delete('restore');
     const lastQuery = getInvocationsLastQuery();
     if (lastQuery) {
       Array.from(lastQuery.keys())
         .filter((k) => k.startsWith(FILTER_QUERY_PREFIX))
         .forEach((k) => {
-          lastQuery.getAll(k).forEach((v) => params.append(k, v));
+          // Only restore keys the caller hasn't already set — explicit
+          // filter_* on the URL always wins over the saved state.
+          if (!params.has(k)) {
+            lastQuery.getAll(k).forEach((v) => params.append(k, v));
+          }
         });
     }
   }

@@ -31,9 +31,9 @@ export function isStatusInFilter(filter: StatusFilter, statusName: string) {
 }
 
 // True when the status filter has at least one user-selected value (either
-// IN or NOT_IN). Empty value array is treated as no filter — that's the
-// shape the route writes when toggling off (the param is kept so the
-// clientLoader doesn't restore a stale lastQuery; see invocationsLastQuery.ts).
+// IN or NOT_IN). Empty value array is still treated as no filter — that
+// shape can appear via the QueryBuilder while the user is editing a clause
+// before settling on a value.
 export function hasStatusFilter(filter: StatusFilter) {
   return Boolean(filter && filter.value.length > 0);
 }
