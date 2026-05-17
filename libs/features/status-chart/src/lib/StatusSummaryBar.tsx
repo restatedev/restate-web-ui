@@ -39,7 +39,7 @@ const segmentWrapStyles = tv({
 // Top-to-bottom gradient and inset white highlight give the segment a "raised"
 // volume; identical recipe to BatchProgressBar.
 const segmentStyles = tv({
-  base: 'relative h-full w-full rounded-md border-[1.5px] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.4),0_1px_4px_0_rgba(0,0,0,0.15)] transition hover:brightness-105 hover:saturate-150',
+  base: 'relative h-full w-full rounded-md border-[1.5px] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.4),0_1px_4px_0_rgba(0,0,0,0.15)] transition hover:brightness-[1.03]',
   variants: {
     borderType: {
       dashed: 'border-dashed',
