@@ -9,11 +9,10 @@ const DEFAULT_SAMPLE_SIZE = 50000;
 // facet keyed on one of these fields can report `total` (all rows, ignoring the
 // filter) alongside `included` (rows matching the filter). This lets the UI show
 // siblings of a selected value rather than collapsing them out of the response.
-const HIGHLIGHT_FIELDS = new Set([
-  'status',
-  'target_service_name',
-  'target_handler_name',
-]);
+// `target_handler_name` is intentionally NOT here: no current UI shows a
+// per-handler facet at this level, so leaving it in HIGHLIGHT made the bar
+// and tab counts ignore the handler filter and disagree with the table.
+const HIGHLIGHT_FIELDS = new Set(['status', 'target_service_name']);
 const FAILED_SUBSTATES = ['failed', 'cancelled', 'killed'];
 const RANGE_DURATIONS_MS: Record<string, number> = {
   PT1H: 60 * 60 * 1000,
