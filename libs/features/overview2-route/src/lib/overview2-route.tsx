@@ -36,6 +36,7 @@ import { SortByDropdown } from './SortByDropdown';
 import { DeploymentActions } from './DeploymentActions';
 import { ServicesGridList } from './ServicesGridList';
 import { DeploymentsGridList } from './DeploymentsGridList';
+import { HandlersGridList } from './HandlersGridList';
 import { getRangeLabel, useRange } from '@restate/features/restate-context';
 
 const LINE_COUNT = 7;
@@ -258,7 +259,9 @@ function OverviewContent() {
   const filterPlaceholder =
     mode === 'services'
       ? 'Filter services, handlers, or deployments…'
-      : 'Filter deployments or services…';
+      : mode === 'deployments'
+        ? 'Filter deployments or services…'
+        : 'Filter handlers, services, or types…';
 
   const onRefresh = () => {
     pieRef.current?.animate(
@@ -490,6 +493,15 @@ function OverviewContent() {
                 </>
               ),
             },
+            {
+              id: 'handlers',
+              label: (
+                <>
+                  <Icon name={IconName.Function} className="h-4 w-4" />
+                  Handlers
+                </>
+              ),
+            },
           ],
         }}
       >
@@ -543,8 +555,10 @@ function OverviewContent() {
               )}
               {mode === 'services' ? (
                 <ServicesGridList />
-              ) : (
+              ) : mode === 'deployments' ? (
                 <DeploymentsGridList />
+              ) : (
+                <HandlersGridList />
               )}
             </div>
           </ContentPanelSection>
