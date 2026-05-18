@@ -27,6 +27,7 @@ import {
 import { toDeploymentInvocationsHref } from '@restate/util/invocation-links';
 import { useRestateContext } from '@restate/features/restate-context';
 import { waveAnimationProps } from '@restate/ui/wave-animation';
+import { MiniService } from '@restate/features/service';
 import type { OverviewDeployment } from './sortDeployments';
 import { sortDeploymentServices } from './sortDeployments';
 import {
@@ -327,18 +328,11 @@ function ServicesDropdown({ deployment }: { deployment: OverviewDeployment }) {
                 href={panelHref({ service: service.name })}
                 value={service.name}
               >
-                <div className="flex max-w-full min-w-0 items-center gap-2">
-                  <Icon
-                    name={IconName.Box}
-                    className="h-4 w-4 shrink-0 text-zinc-500/80"
-                  />
-                  <div className="min-w-0 flex-1 truncate text-0.5xs font-medium text-zinc-700">
-                    {service.name}
-                  </div>
-                  <span className="shrink-0 truncate rounded-md bg-transparent px-1 font-mono leading-4 font-normal text-zinc-500/80 uppercase">
-                    rev. {service.revision}
-                  </span>
-                </div>
+                <MiniService
+                  service={service}
+                  showLink={false}
+                  className="w-full [&_*:not(svg)]:text-inherit [&_.badge]:bg-black/3"
+                />
               </DropdownItem>
             ))}
           </DropdownMenu>

@@ -14,9 +14,11 @@ const styles = tv({
 export function MiniService({
   className,
   service,
+  showLink = true,
 }: {
   className?: string;
-  service: Service;
+  service: Pick<Service, 'name' | 'revision'>;
+  showLink?: boolean;
 }) {
   const linkRef = useRef<HTMLAnchorElement>(null);
 
@@ -32,15 +34,17 @@ export function MiniService({
         </TruncateWithTooltip>
         <Revision revision={service.revision} className="z-2 ml-auto" />
       </div>
-      <Link
-        ref={linkRef}
-        aria-label={service.name}
-        variant="secondary"
-        href={panelHref({ service: service.name })}
-        className="m-1 ml-0 rounded-full outline-offset-0 before:absolute before:inset-0 before:rounded-lg before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5"
-      >
-        <Icon name={IconName.ChevronRight} className="h-4 w-4 text-gray-400" />
-      </Link>
+      {showLink && (
+        <Link
+          ref={linkRef}
+          aria-label={service.name}
+          variant="secondary"
+          href={panelHref({ service: service.name })}
+          className="m-1 ml-0 rounded-full outline-offset-0 before:absolute before:inset-0 before:rounded-lg before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5"
+        >
+          <Icon name={IconName.ChevronRight} className="h-4 w-4 text-gray-400" />
+        </Link>
+      )}
     </div>
   );
 }
