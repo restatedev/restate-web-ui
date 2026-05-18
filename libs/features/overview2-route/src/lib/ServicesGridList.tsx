@@ -53,6 +53,7 @@ export function ServicesGridList() {
       onSortChange={setServiceSortDescriptor}
       onAction={(key) => navigate(panelHref({ service: String(key) }))}
       estimatedRowHeight={120}
+      virtualized
       className="[--grid-list-template-columns:1fr]"
       headerClassName="hidden"
     >

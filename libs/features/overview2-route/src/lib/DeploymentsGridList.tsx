@@ -77,6 +77,7 @@ export function DeploymentsGridList() {
         onSortChange={setDeploymentSortDescriptor}
         onAction={(key) => navigate(panelHref({ deployment: String(key) }))}
         estimatedRowHeight={100}
+        virtualized
         className="[--grid-list-template-columns:1fr]"
         headerClassName="hidden"
       >

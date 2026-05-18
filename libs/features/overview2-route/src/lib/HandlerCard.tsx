@@ -97,7 +97,9 @@ export function HandlerCard({
         className={cardContainerStyles({ isFocusVisible })}
         {...waveAnimationProps('overview-card')}
       >
-        <div className={cardInnerStyles({ issueSeverity, isHovered, isPressed })}>
+        <div
+          className={cardInnerStyles({ issueSeverity, isHovered, isPressed })}
+        >
           <div className={layoutStyles()}>
             <div className={iconCellStyles()}>
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border bg-white shadow-xs">
