@@ -25,11 +25,13 @@ export function useOverviewData(range?: string) {
   const { data: servicesMap } = useListServices(sortedServiceNames);
   const {
     data: rawSummaryData,
-    isPending: isSummaryLoading,
+    isPending: isSummaryPending,
+    isPlaceholderData: isSummaryPlaceholder,
     isError: isSummaryError,
     error: summaryError,
     queryKey: summaryQueryKey,
   } = useSummaryInvocations([], { sampled: false, range });
+  const isSummaryLoading = isSummaryPending || isSummaryPlaceholder;
   const {
     data: drainedDeploymentIds = new Set(),
     isPending: isDeploymentStatusLoading,
