@@ -24,6 +24,10 @@ const skeletonStyles = tv({
   defaultVariants: { size: 'md', variant: 'default' },
 });
 
+const styles = tv({
+  base: 'group inline-flex items-center gap-1 rounded-md bg-black/3 px-1.5 py-0.5 text-xs font-medium text-zinc-500 tabular-nums hover:bg-white hover:text-zinc-700',
+});
+
 export function InvocationCountLink({
   href,
   count,
@@ -32,8 +36,10 @@ export function InvocationCountLink({
   size,
   variant = 'default',
   breakdownTooltip,
+  className,
 }: {
   href: string;
+  className?: string;
   count: number;
   isLoading?: boolean;
   isError?: boolean;
@@ -42,18 +48,14 @@ export function InvocationCountLink({
   breakdownTooltip?: ReactNode;
 }) {
   if (variant === 'minimal') {
-    if (isError || (!isLoading && count === 0)) {
+    if (isError || count === 0) {
       return null;
     }
     if (isLoading) {
       return <div className={skeletonStyles({ size, variant })} />;
     }
     const link = (
-      <Link
-        href={href}
-        variant="icon"
-        className="group inline-flex items-center gap-1 rounded-md bg-black/3 px-1.5 py-0.5 text-xs font-medium text-zinc-500 tabular-nums hover:bg-white hover:text-zinc-700"
-      >
+      <Link href={href} variant="icon" className={styles({ className })}>
         {formatNumber(count, true)}
         <span className="hidden group-hover:inline">invocations</span>
         <Icon

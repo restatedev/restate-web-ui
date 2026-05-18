@@ -45,7 +45,7 @@ function createSweep(card: HTMLElement, delay: number) {
   sweep.style.right = '-20%';
   sweep.style.height = '120%';
   sweep.style.background =
-    'linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.05) 20%, rgba(255,255,255,0.15) 45%, rgba(255,255,255,0.25) 50%, rgba(255,255,255,0.15) 55%, rgba(255,255,255,0.05) 80%, transparent 100%)';
+    'linear-gradient(180deg, transparent 0%, rgba(59,130,246,0.008) 20%, rgba(59,130,246,0.02) 45%, rgba(59,130,246,0.03) 50%, rgba(59,130,246,0.02) 55%, rgba(59,130,246,0.008) 80%, transparent 100%)';
   overlay.appendChild(sweep);
 
   sweep.animate(

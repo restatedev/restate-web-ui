@@ -8,9 +8,9 @@ import {
 } from '@restate/ui/dropdown';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
-import { formatPlurals } from '@restate/util/intl';
 import { useListDeployments } from '@restate/data-access/admin-api-hooks';
 import { Deployment } from './Deployment';
+import { Revision } from './Revision';
 import { panelHref } from '@restate/util/panel';
 
 function useDeploymentPairs(serviceName: string) {
@@ -36,42 +36,36 @@ export function LatestRevisionDeployment({
   return (
     <Deployment
       deploymentId={latest.id}
-      revision={latest.revision}
       highlightSelection={false}
-      className="min-w-0 text-sm"
       showEndpointCopyButton
+      className="mr-[calc(-0.5rem+2px)] [&_a]:mr-0 [&_a>svg]:hidden [&_div:has(+a)]:mr-0 @max-[85rem]:[&_div:has(>svg)]:mr-3.5"
     />
   );
 }
 
-export function OlderRevisions({ serviceName }: { serviceName: string }) {
+export function AllRevisions({ serviceName }: { serviceName: string }) {
   const pairs = useDeploymentPairs(serviceName);
-  const older = pairs.slice(1);
-
-  if (older.length === 0) return <div className="h-5" />;
+  const latest = pairs[0];
+  if (!latest) return null;
 
   return (
     <Dropdown>
       <DropdownTrigger>
         <Button
           variant="icon"
-          className="relative z-10 gap-0.5 self-end rounded-lg px-1.5 py-0.5 text-0.5xs text-zinc-500 hover:bg-black/3 hover:text-zinc-700"
+          className="relative inline-flex items-center gap-1 rounded-xl px-1 py-0.5 text-0.5xs hover:bg-black/3"
         >
-          {older.length} older{' '}
-          {formatPlurals(older.length, {
-            one: 'revision',
-            other: 'revisions',
-          })}
+          <Revision revision={latest.revision} />
           <Icon
             name={IconName.ChevronsUpDown}
-            className="h-4 w-4 text-gray-400"
+            className="h-3.5 w-3.5 text-gray-400"
           />
         </Button>
       </DropdownTrigger>
       <DropdownPopover>
-        <DropdownSection title="Older revisions">
-          <DropdownMenu aria-label={`Older deployments for ${serviceName}`}>
-            {older.map(({ id, revision }) => (
+        <DropdownSection title="Revisions">
+          <DropdownMenu aria-label={`Deployments for ${serviceName}`}>
+            {pairs.map(({ id, revision }) => (
               <DropdownItem
                 key={id}
                 href={panelHref({ deployment: id })}

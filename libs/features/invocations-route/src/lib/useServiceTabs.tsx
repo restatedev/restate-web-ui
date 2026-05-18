@@ -202,10 +202,17 @@ function aggregateBreakdown(services: ServiceRow[]) {
 function TabCountBadge({
   total,
   filtered,
+  isLoading,
 }: {
   total: number;
   filtered: number;
+  isLoading?: boolean;
 }) {
+  if (isLoading) {
+    return (
+      <span className="inline-block h-3 w-5 animate-pulse rounded bg-zinc-200" />
+    );
+  }
   const showFiltered = filtered !== total && total > 0;
   return (
     <span className="rounded bg-zinc-100 px-1 py-px text-2xs font-medium text-zinc-500 tabular-nums">
@@ -229,6 +236,7 @@ function buildSummaryTab(
   // drop the multi-IN / NOT_IN service filter we want to preserve.
   scopeParams: URLSearchParams,
   isStatusDimmed: (statusName: string) => boolean,
+  isLoading: boolean,
 ): { id: string; label: ReactNode } {
   const total = subset.reduce((sum, s) => sum + s.count, 0);
   const filtered = subset.reduce((sum, s) => sum + s.filteredCount, 0);
@@ -264,7 +272,11 @@ function buildSummaryTab(
       >
         <span className="flex items-center gap-1.5">
           <span className="max-w-[12ch] truncate">{label}</span>
-          <TabCountBadge total={total} filtered={filtered} />
+          <TabCountBadge
+            total={total}
+            filtered={filtered}
+            isLoading={isLoading}
+          />
         </span>
       </HoverTooltip>
     ),
@@ -277,6 +289,7 @@ function buildServiceTabItems(
   baseUrl: string,
   existingParams: URLSearchParams,
   isStatusDimmed: (statusName: string) => boolean,
+  isLoading: boolean,
 ): { id: string; label: ReactNode }[] {
   // "All" scope drops target_service_name. Both totalLink and per-status
   // links inherit this, so clicking either navigates to the unfiltered view
@@ -290,6 +303,7 @@ function buildServiceTabItems(
     baseUrl,
     allParams,
     isStatusDimmed,
+    isLoading,
   );
 
   // Multi tab inherits the current filter shape (multi-IN or NOT_IN service
@@ -303,6 +317,7 @@ function buildServiceTabItems(
         baseUrl,
         existingParams,
         isStatusDimmed,
+        isLoading,
       )
     : undefined;
   const items = services.map((s) => {
@@ -367,7 +382,11 @@ function buildServiceTabItems(
             >
               {s.name}
             </span>
-            <TabCountBadge total={s.count} filtered={s.filteredCount} />
+            <TabCountBadge
+              total={s.count}
+              filtered={s.filteredCount}
+              isLoading={isLoading}
+            />
             {topSeverity && (
               <span className="relative flex h-3 w-3 shrink-0">
                 <Icon
@@ -405,6 +424,7 @@ export function useServiceTabs(
   summaryData: SummaryData | undefined,
   deploymentsData: DeploymentsData | undefined,
   statusFilter: StatusFilter,
+  isLoading = false,
 ): { tabs: ContentPanelTabs; byStatus: StatusEntry[] } {
   const [searchParams, setSearchParams] = useSearchParams();
   const { baseUrl } = useRestateContext();
@@ -433,11 +453,12 @@ export function useServiceTabs(
         baseUrl,
         searchParams,
         isStatusDimmed,
+        isLoading,
       ),
     // isStatusDimmed depends only on statusFilter; including the function ref
     // itself would invalidate every render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [services, multiTab, baseUrl, searchParams, statusFilter],
+    [services, multiTab, baseUrl, searchParams, statusFilter, isLoading],
   );
 
   // Services represented by the active tab. The bar's status breakdown is

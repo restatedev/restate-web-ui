@@ -78,7 +78,7 @@ const styles = tv({
     sectionContent: 'flex-1 pt-[var(--cp-section-pt,0px)]',
     tabsWrapper:
       'relative flex min-h-16 w-full items-end gap-3 bg-gray-100 px-3 [padding-top:calc(var(--cp-toolbar-tuck,0px)+0.5rem)]',
-    tabList: 'relative flex max-w-full items-end gap-1',
+    tabList: 'relative flex max-w-full items-end gap-1 px-1',
     tabsToolbarSlot: 'flex flex-1 items-center justify-end self-stretch pb-0',
   },
   variants: {

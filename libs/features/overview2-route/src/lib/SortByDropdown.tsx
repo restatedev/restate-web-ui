@@ -24,6 +24,13 @@ const DEPLOYMENT_SORT_OPTIONS = [
   { value: 'status', label: 'Status' },
 ] as const;
 
+const HANDLER_SORT_OPTIONS = [
+  { value: 'service', label: 'Service' },
+  { value: 'name', label: 'Name' },
+  { value: 'invocations', label: 'Invocations' },
+  { value: 'health', label: 'Issues' },
+] as const;
+
 type ServiceSortOption = (typeof SERVICE_SORT_OPTIONS)[number];
 
 function getSortLabel(
@@ -36,6 +43,18 @@ function getSortLabel(
       DEPLOYMENT_SORT_OPTIONS.find((o) => o.value === column)?.label ??
       DEPLOYMENT_SORT_OPTIONS[0].label
     );
+  }
+  if (mode === 'handlers') {
+    const option =
+      HANDLER_SORT_OPTIONS.find((o) => o.value === column) ??
+      HANDLER_SORT_OPTIONS[0];
+    if (option.value === 'health' || option.value === 'invocations') {
+      return (
+        formatServiceSortLabel?.(option as unknown as ServiceSortOption) ??
+        option.label
+      );
+    }
+    return option.label;
   }
   const option =
     SERVICE_SORT_OPTIONS.find((o) => o.value === column) ??
@@ -52,20 +71,30 @@ export function SortByDropdown({
     mode,
     resolvedServiceSortDescriptor,
     resolvedDeploymentSortDescriptor,
+    resolvedHandlerSortDescriptor,
     setServiceSortDescriptor,
     setDeploymentSortDescriptor,
+    setHandlerSortDescriptor,
   } = useOverviewContext();
 
   const sortDescriptor =
     mode === 'deployments'
       ? resolvedDeploymentSortDescriptor
-      : resolvedServiceSortDescriptor;
+      : mode === 'handlers'
+        ? resolvedHandlerSortDescriptor
+        : resolvedServiceSortDescriptor;
   const setSortDescriptor =
     mode === 'deployments'
       ? setDeploymentSortDescriptor
-      : setServiceSortDescriptor;
+      : mode === 'handlers'
+        ? setHandlerSortDescriptor
+        : setServiceSortDescriptor;
   const options =
-    mode === 'deployments' ? DEPLOYMENT_SORT_OPTIONS : SERVICE_SORT_OPTIONS;
+    mode === 'deployments'
+      ? DEPLOYMENT_SORT_OPTIONS
+      : mode === 'handlers'
+        ? HANDLER_SORT_OPTIONS
+        : SERVICE_SORT_OPTIONS;
   const label = getSortLabel(
     String(sortDescriptor.column),
     mode,

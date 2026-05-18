@@ -24,7 +24,9 @@ const NON_COMPLETED_STATUSES = [
   'paused',
 ];
 
-function checkSlaThresholds(statusCounts: Map<string, number>): ServiceIssue[] {
+export function checkSlaThresholds(
+  statusCounts: Map<string, number>,
+): ServiceIssue[] {
   const issues: ServiceIssue[] = [];
 
   let completed = 0;

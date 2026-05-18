@@ -23,6 +23,8 @@ export interface GridListProps<T extends object> {
   dependencies?: readonly unknown[];
   virtualized?: boolean;
   estimatedRowHeight?: number;
+  gap?: number;
+  padding?: number;
   className?: string;
   headerClassName?: string;
 }

@@ -7,9 +7,11 @@ import {
 } from '@restate/data-access/admin-api-hooks';
 import { useRestateContext } from '@restate/features/restate-context';
 import {
+  checkSlaThresholds,
   getServiceIssues,
   type ServiceIssue,
 } from '@restate/features/system-health';
+import { handlerIssuesKey } from './sortHandlers';
 
 export function useOverviewData(range?: string) {
   const {
@@ -23,11 +25,13 @@ export function useOverviewData(range?: string) {
   const { data: servicesMap } = useListServices(sortedServiceNames);
   const {
     data: rawSummaryData,
-    isPending: isSummaryLoading,
+    isPending: isSummaryPending,
+    isPlaceholderData: isSummaryPlaceholder,
     isError: isSummaryError,
     error: summaryError,
     queryKey: summaryQueryKey,
   } = useSummaryInvocations([], { sampled: false, range });
+  const isSummaryLoading = isSummaryPending || isSummaryPlaceholder;
   const {
     data: drainedDeploymentIds = new Set(),
     isPending: isDeploymentStatusLoading,
@@ -92,6 +96,27 @@ export function useOverviewData(range?: string) {
     return map;
   }, [servicesMap, deploymentsMap, serviceStatusCounts, isVersionGte]);
 
+  const handlerIssuesMap = useMemo(() => {
+    const handlerStatusCounts = new Map<string, Map<string, number>>();
+    for (const entry of summaryData?.byServiceAndHandlerAndStatus ?? []) {
+      const key = handlerIssuesKey(entry.service, entry.handler);
+      let counts = handlerStatusCounts.get(key);
+      if (!counts) {
+        counts = new Map();
+        handlerStatusCounts.set(key, counts);
+      }
+      counts.set(entry.status, (counts.get(entry.status) ?? 0) + entry.count);
+    }
+    const map = new Map<string, ServiceIssue[]>();
+    for (const [key, statusCounts] of handlerStatusCounts) {
+      const issues = checkSlaThresholds(statusCounts);
+      if (issues.length > 0) {
+        map.set(key, issues);
+      }
+    }
+    return map;
+  }, [summaryData?.byServiceAndHandlerAndStatus]);
+
   const hasData = isNew || deploymentsMap !== undefined;
   const isInitialLoading = !isFetched && !isNew;
   // "bare" = fetched (or attempted) but never got data — typically after an
@@ -114,6 +139,7 @@ export function useOverviewData(range?: string) {
     invocationCounts,
     handlerInvocationCounts,
     serviceIssuesMap,
+    handlerIssuesMap,
     drainedDeploymentIds,
     isDeploymentStatusLoading,
     isSummaryLoading,
