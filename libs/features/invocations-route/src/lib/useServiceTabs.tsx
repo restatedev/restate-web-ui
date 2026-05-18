@@ -424,7 +424,7 @@ export function useServiceTabs(
   summaryData: SummaryData | undefined,
   deploymentsData: DeploymentsData | undefined,
   statusFilter: StatusFilter,
-  isLoading: boolean = false,
+  isLoading = false,
 ): { tabs: ContentPanelTabs; byStatus: StatusEntry[] } {
   const [searchParams, setSearchParams] = useSearchParams();
   const { baseUrl } = useRestateContext();
