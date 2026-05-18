@@ -21,7 +21,7 @@ import {
 } from '@restate/features/service';
 import {
   LatestRevisionDeployment,
-  OlderRevisions,
+  AllRevisions,
 } from '@restate/features/deployment';
 import {
   buildStatusEntries,
@@ -147,20 +147,11 @@ export function ServiceCard({
 
             <div className={deploymentCellStyles()}>
               <LatestRevisionDeployment serviceName={service.name} />
-              <OlderRevisions serviceName={service.name} />
+              <AllRevisions serviceName={service.name} />
             </div>
 
             <div className={chartCellStyles()}>
-              <div className="min-w-0 flex-1">
-                <ServiceStatusBar
-                  serviceName={service.name}
-                  data={summaryData}
-                  serviceIssues={serviceIssues}
-                  isLoading={isSummaryLoading}
-                  linkParams={linkParams}
-                />
-              </div>
-              <div className="min-w-[6ch]">
+              <div className="min-w-[6ch] text-right">
                 <InvocationCountLink
                   href={toServiceInvocationsHref(baseUrl, service.name, {
                     existingParams: linkParams,
@@ -182,6 +173,15 @@ export function ServiceCard({
                       />
                     ) : undefined
                   }
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <ServiceStatusBar
+                  serviceName={service.name}
+                  data={summaryData}
+                  serviceIssues={serviceIssues}
+                  isLoading={isSummaryLoading}
+                  linkParams={linkParams}
                 />
               </div>
             </div>

@@ -10,6 +10,7 @@ import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import { useListDeployments } from '@restate/data-access/admin-api-hooks';
 import { Deployment } from './Deployment';
+import { Revision } from './Revision';
 import { panelHref } from '@restate/util/panel';
 
 function useDeploymentPairs(serviceName: string) {
@@ -35,27 +36,26 @@ export function LatestRevisionDeployment({
   return (
     <Deployment
       deploymentId={latest.id}
-      revision={latest.revision}
       highlightSelection={false}
       showEndpointCopyButton
+      className="-mr-2 [&_a]:-mr-2 [&_a>svg]:hidden"
     />
   );
 }
 
-export function OlderRevisions({ serviceName }: { serviceName: string }) {
+export function AllRevisions({ serviceName }: { serviceName: string }) {
   const pairs = useDeploymentPairs(serviceName);
-  const older = pairs.slice(1);
-
-  if (older.length === 0) return <div className="h-5" />;
+  const latest = pairs[0];
+  if (!latest) return null;
 
   return (
     <Dropdown>
       <DropdownTrigger>
         <Button
           variant="icon"
-          className="relative inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs whitespace-nowrap tabular-nums"
+          className="relative inline-flex items-center gap-1 rounded-md px-1 py-0.5 text-0.5xs hover:bg-black/3"
         >
-          +{older.length} older
+          <Revision revision={latest.revision} />
           <Icon
             name={IconName.ChevronsUpDown}
             className="h-3.5 w-3.5 text-gray-400"
@@ -63,9 +63,9 @@ export function OlderRevisions({ serviceName }: { serviceName: string }) {
         </Button>
       </DropdownTrigger>
       <DropdownPopover>
-        <DropdownSection title="Older revisions">
-          <DropdownMenu aria-label={`Older deployments for ${serviceName}`}>
-            {older.map(({ id, revision }) => (
+        <DropdownSection title="Revisions">
+          <DropdownMenu aria-label={`Deployments for ${serviceName}`}>
+            {pairs.map(({ id, revision }) => (
               <DropdownItem
                 key={id}
                 href={panelHref({ deployment: id })}
