@@ -1,7 +1,10 @@
 import type { Service } from '@restate/data-access/admin-api-spec';
 import { GridList, GridListItem } from '@restate/ui/grid-list';
-import { panelHref } from '@restate/util/panel';
-import { useNavigate } from 'react-router';
+import {
+  HANDLER_QUERY_PARAM,
+  SERVICE_QUERY_PARAM,
+  usePanel,
+} from '@restate/util/panel';
 import { useOverviewContext } from './OverviewContext';
 import { HandlerCard } from './HandlerCard';
 import {
@@ -37,7 +40,7 @@ export function HandlersGridList() {
     handlerIssuesMap,
   );
 
-  const navigate = useNavigate();
+  const { open } = usePanel();
   const itemsById = handlers.map((h) => ({
     id: `${h.service.name}.${h.handler.name}`,
     ...h,
@@ -54,12 +57,9 @@ export function HandlersGridList() {
       onAction={(key) => {
         const item = itemsById.find((h) => h.id === key);
         if (!item) return;
-        navigate(
-          panelHref({
-            service: item.service.name,
-            handler: item.handler.name,
-          }),
-        );
+        open(SERVICE_QUERY_PARAM, item.service.name, {
+          [HANDLER_QUERY_PARAM]: item.handler.name,
+        });
       }}
       estimatedRowHeight={50}
       virtualized

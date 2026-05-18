@@ -4,8 +4,7 @@ import {
   type Service,
 } from '@restate/data-access/admin-api-spec';
 import { GridList, GridListItem } from '@restate/ui/grid-list';
-import { panelHref } from '@restate/util/panel';
-import { useNavigate } from 'react-router';
+import { SERVICE_QUERY_PARAM, usePanel } from '@restate/util/panel';
 import { useOverviewContext } from './OverviewContext';
 import { ServiceCard } from './ServiceCard';
 import { sortServices } from './sortServices';
@@ -41,7 +40,7 @@ export function ServicesGridList() {
     deploymentsMap,
   );
 
-  const navigate = useNavigate();
+  const { open } = usePanel();
 
   return (
     <GridList
@@ -51,7 +50,7 @@ export function ServicesGridList() {
       dependencies={[serviceIssuesMap, summaryData, isSummaryLoading]}
       sortDescriptor={resolvedServiceSortDescriptor}
       onSortChange={setServiceSortDescriptor}
-      onAction={(key) => navigate(panelHref({ service: String(key) }))}
+      onAction={(key) => open(SERVICE_QUERY_PARAM, String(key))}
       estimatedRowHeight={50}
       virtualized
       className="[--grid-list-template-columns:1fr]"

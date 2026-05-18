@@ -2,9 +2,8 @@ import {
   getEndpoint,
   type Deployment,
 } from '@restate/data-access/admin-api-spec';
-import { panelHref } from '@restate/util/panel';
+import { DEPLOYMENT_QUERY_PARAM, usePanel } from '@restate/util/panel';
 import { GridList, GridListItem } from '@restate/ui/grid-list';
-import { useNavigate } from 'react-router';
 import { useOverviewContext } from './OverviewContext';
 import { DeploymentCard } from './DeploymentCard';
 import {
@@ -35,7 +34,7 @@ export function DeploymentsGridList() {
     filteredDeployments,
     resolvedDeploymentSortDescriptor,
   );
-  const navigate = useNavigate();
+  const { open } = usePanel();
 
   return (
     <GridList
@@ -45,7 +44,7 @@ export function DeploymentsGridList() {
       dependencies={[isDeploymentStatusLoading]}
       sortDescriptor={resolvedDeploymentSortDescriptor}
       onSortChange={setDeploymentSortDescriptor}
-      onAction={(key) => navigate(panelHref({ deployment: String(key) }))}
+      onAction={(key) => open(DEPLOYMENT_QUERY_PARAM, String(key))}
       estimatedRowHeight={50}
       virtualized
       className="[--grid-list-template-columns:1fr]"
