@@ -183,9 +183,29 @@ const emptyServerStyles = tv({
   },
 });
 
+function TabCount({
+  count,
+  isLoading,
+}: {
+  count: number;
+  isLoading?: boolean;
+}) {
+  if (isLoading) {
+    return (
+      <span className="ml-1 inline-block h-3 w-5 animate-pulse rounded bg-zinc-200" />
+    );
+  }
+  return (
+    <span className="ml-1 rounded bg-zinc-100 px-1 py-px text-2xs font-medium text-zinc-500 tabular-nums">
+      {formatNumber(count, true)}
+    </span>
+  );
+}
+
 function OverviewContent() {
   const {
     servicesMap,
+    deploymentsMap,
     byStatus,
     totalCount,
     serviceIssuesMap,
@@ -205,6 +225,12 @@ function OverviewContent() {
     setFilter,
     triggerManualRefresh,
   } = useOverviewContext();
+  const servicesCount = servicesMap?.size ?? 0;
+  const deploymentsCount = deploymentsMap?.size ?? 0;
+  const handlersCount = Array.from(servicesMap?.values() ?? []).reduce(
+    (sum, s) => sum + s.handlers.length,
+    0,
+  );
 
   const { GettingStarted, status } = useRestateContext();
 
@@ -481,6 +507,10 @@ function OverviewContent() {
                 <>
                   <Icon name={IconName.Box} className="h-3.5 w-3.5" />
                   Services
+                  <TabCount
+                    count={servicesCount}
+                    isLoading={isDeploymentsFetching}
+                  />
                 </>
               ),
             },
@@ -490,6 +520,10 @@ function OverviewContent() {
                 <>
                   <Icon name={IconName.Http} className="h-3.5 w-3.5" />
                   Deployments
+                  <TabCount
+                    count={deploymentsCount}
+                    isLoading={isDeploymentsFetching}
+                  />
                 </>
               ),
             },
@@ -502,6 +536,10 @@ function OverviewContent() {
                     className="-mx-1.5 h-5.5 w-5.5"
                   />
                   Handlers
+                  <TabCount
+                    count={handlersCount}
+                    isLoading={isDeploymentsFetching}
+                  />
                 </>
               ),
             },
