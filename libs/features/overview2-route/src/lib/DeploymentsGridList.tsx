@@ -86,7 +86,7 @@ export function DeploymentsGridList() {
             item={deployment}
             textValue={getEndpoint(deployment) ?? deployment.id}
           >
-            {({ isFocusVisible }) => (
+            {({ isFocusVisible, isHovered, isPressed }) => (
               <DeploymentCard
                 deployment={deployment}
                 isDeploymentStatusLoading={isDeploymentStatusLoading}
@@ -94,6 +94,8 @@ export function DeploymentsGridList() {
                 baseUrl={baseUrl}
                 linkParams={linkParams}
                 isFocusVisible={isFocusVisible}
+                isHovered={isHovered}
+                isPressed={isPressed}
               />
             )}
           </GridListItem>

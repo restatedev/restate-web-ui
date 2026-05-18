@@ -81,7 +81,7 @@ export function HandlersGridList() {
 
         return (
           <GridListItem id={id} item={item} textValue={id}>
-            {({ isFocusVisible }) => (
+            {({ isFocusVisible, isHovered, isPressed }) => (
               <HandlerCard
                 service={service}
                 handler={handler}
@@ -93,6 +93,8 @@ export function HandlersGridList() {
                 handlerCount={handlerCount}
                 linkParams={linkParams}
                 isFocusVisible={isFocusVisible}
+                isHovered={isHovered}
+                isPressed={isPressed}
                 issueSeverity={issueSeverity}
               />
             )}

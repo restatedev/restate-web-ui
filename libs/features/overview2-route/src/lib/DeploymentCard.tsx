@@ -103,6 +103,8 @@ export function DeploymentCard({
   baseUrl,
   linkParams,
   isFocusVisible,
+  isHovered,
+  isPressed,
   issueSeverity,
 }: {
   deployment: OverviewDeployment;
@@ -111,6 +113,8 @@ export function DeploymentCard({
   baseUrl: string;
   linkParams?: URLSearchParams;
   isFocusVisible?: boolean;
+  isHovered?: boolean;
+  isPressed?: boolean;
   issueSeverity?: IssueSeverity;
 }) {
   const { tunnel } = useRestateContext();
@@ -135,7 +139,7 @@ export function DeploymentCard({
         className={cardContainerStyles({ isFocusVisible })}
         {...waveAnimationProps('overview-card')}
       >
-        <div className={cardInnerStyles({ issueSeverity })}>
+        <div className={cardInnerStyles({ issueSeverity, isHovered, isPressed })}>
           <div className={layoutStyles()}>
             <div className={iconCellStyles()}>
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border bg-white shadow-xs">

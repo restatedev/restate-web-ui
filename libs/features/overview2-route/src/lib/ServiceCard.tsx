@@ -76,6 +76,8 @@ export function ServiceCard({
   isDeploymentsFetching,
   linkParams,
   isFocusVisible,
+  isHovered,
+  isPressed,
   issueSeverity,
 }: {
   service: Service;
@@ -88,6 +90,8 @@ export function ServiceCard({
   isDeploymentsFetching: boolean;
   linkParams?: URLSearchParams;
   isFocusVisible?: boolean;
+  isHovered?: boolean;
+  isPressed?: boolean;
   issueSeverity?: IssueSeverity;
 }) {
   const serviceStatuses = byServiceAndStatus.filter(
@@ -106,7 +110,7 @@ export function ServiceCard({
         className={cardContainerStyles({ isFocusVisible })}
         {...waveAnimationProps('overview-card')}
       >
-        <div className={cardInnerStyles({ issueSeverity })}>
+        <div className={cardInnerStyles({ issueSeverity, isHovered, isPressed })}>
           <div className={layoutStyles()}>
             <div className={iconCellStyles()}>
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border bg-white shadow-xs">

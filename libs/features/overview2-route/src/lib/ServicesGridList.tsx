@@ -58,7 +58,7 @@ export function ServicesGridList() {
     >
       {(service) => (
         <GridListItem id={service.name} item={service} textValue={service.name}>
-          {({ isFocusVisible }) => {
+          {({ isFocusVisible, isHovered, isPressed }) => {
             const issues = serviceIssuesMap.get(service.name) ?? [];
             const issueSeverity = issues.some(
               (issue) => issue.severity === 'high',
@@ -80,6 +80,8 @@ export function ServicesGridList() {
                 isDeploymentsFetching={isDeploymentsFetching}
                 linkParams={linkParams}
                 isFocusVisible={isFocusVisible}
+                isHovered={isHovered}
+                isPressed={isPressed}
                 issueSeverity={issueSeverity}
               />
             );

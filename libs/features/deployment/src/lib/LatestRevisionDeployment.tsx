@@ -53,7 +53,7 @@ export function AllRevisions({ serviceName }: { serviceName: string }) {
       <DropdownTrigger>
         <Button
           variant="icon"
-          className="relative inline-flex items-center gap-1 rounded-md px-1 py-0.5 text-0.5xs hover:bg-black/3"
+          className="relative inline-flex items-center gap-1 rounded-xl px-1 py-0.5 text-0.5xs hover:bg-black/3"
         >
           <Revision revision={latest.revision} />
           <Icon
