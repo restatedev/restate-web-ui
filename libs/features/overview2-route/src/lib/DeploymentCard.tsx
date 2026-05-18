@@ -331,7 +331,7 @@ function ServicesDropdown({ deployment }: { deployment: OverviewDeployment }) {
                 <MiniService
                   service={service}
                   showLink={false}
-                  className="w-full [&_*:not(svg)]:text-inherit [&_.badge]:bg-black/3"
+                  className="flex-auto [&_*:not(svg)]:text-inherit [&_.badge]:bg-black/3"
                 />
               </DropdownItem>
             ))}
