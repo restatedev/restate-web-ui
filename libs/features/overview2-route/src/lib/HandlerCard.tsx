@@ -32,8 +32,8 @@ import {
 const layoutStyles = tv({
   base: cx(
     'grid grid-cols-[auto_minmax(0,1fr)_13rem] items-center gap-x-3 gap-y-3',
-    "[grid-template-areas:'icon_primary_primary'_'._service_chart']",
-    '@6xl:grid-cols-[auto_minmax(0,2fr)_minmax(0,1fr)_13rem]',
+    "[grid-template-areas:'icon_primary_primary'_'service_service_chart']",
+    '@6xl:grid-cols-[auto_minmax(0,1.5fr)_minmax(0,1fr)_13rem]',
     "@6xl:[grid-template-areas:'icon_primary_service_chart']",
     '@min-[100rem]:grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)_13rem]',
     "@min-[100rem]:[grid-template-areas:'icon_primary_service_chart']",
@@ -157,8 +157,11 @@ export function HandlerCard({
               )}
             </div>
 
-            <div className={serviceCellStyles()}>
-              <MiniService service={service} />
+            <div className={serviceCellStyles({ className: 'pl-px' })}>
+              <MiniService
+                service={service}
+                className="gap-4 @6xl:gap-2 [&_*]:font-normal"
+              />
             </div>
 
             <div className={chartCellStyles()}>

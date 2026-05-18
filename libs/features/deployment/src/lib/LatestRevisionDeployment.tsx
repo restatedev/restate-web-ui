@@ -38,7 +38,7 @@ export function LatestRevisionDeployment({
       deploymentId={latest.id}
       highlightSelection={false}
       showEndpointCopyButton
-      className="-mr-2 [&_a]:-mr-2 [&_a>svg]:hidden"
+      className="mr-[calc(-0.5rem+2px)] [&_a>svg]:hidden @max-[85rem]:[&_div:has(>svg)]:mr-3.5"
     />
   );
 }

@@ -39,7 +39,7 @@ import {
 const layoutStyles = tv({
   base: cx(
     'grid grid-cols-[auto_minmax(0,1fr)_13rem] items-center gap-x-3 gap-y-3',
-    "[grid-template-areas:'icon_primary_dropdown'_'._deployment_chart']",
+    "[grid-template-areas:'icon_primary_dropdown'_'deployment_deployment_chart']",
     '@min-[85rem]:grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)_13rem_9rem]',
     "@min-[85rem]:[grid-template-areas:'icon_primary_deployment_chart_dropdown']",
   ),
