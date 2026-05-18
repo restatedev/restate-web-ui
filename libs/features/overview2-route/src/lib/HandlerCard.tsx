@@ -160,7 +160,7 @@ export function HandlerCard({
             <div className={serviceCellStyles({ className: 'pl-px' })}>
               <MiniService
                 service={service}
-                className="gap-4 @6xl:gap-2 [&_*]:font-normal"
+                className="gap-4 @6xl:gap-2 [&_*]:font-normal [&_a]:-ml-4 @6xl:[&_a]:-ml-2"
               />
             </div>
 
