@@ -101,7 +101,7 @@ export function ServiceCard({
   );
 
   return (
-    <div className="mb-1.5 px-2 pt-0.5">
+    <div className="px-2">
       <div
         className={cardContainerStyles({ isFocusVisible })}
         {...waveAnimationProps('overview-card')}

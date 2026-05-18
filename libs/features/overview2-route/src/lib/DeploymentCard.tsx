@@ -129,7 +129,7 @@ export function DeploymentCard({
       : IconName.Lambda;
 
   return (
-    <div className="mb-1.5 px-2 pt-0.5">
+    <div className="px-2">
       <div
         className={cardContainerStyles({ isFocusVisible })}
         {...waveAnimationProps('overview-card')}
@@ -148,7 +148,7 @@ export function DeploymentCard({
               {isDeploymentsFetching ? (
                 <div className="h-6 w-64 max-w-full animate-pulse rounded-lg bg-gray-200/50" />
               ) : (
-                <div className="group/endpoint flex min-w-0 items-center gap-3">
+                <div className="group/endpoint flex min-w-0 items-center gap-1">
                   <div className="relative flex min-w-0 items-center gap-1">
                     {isTunnel && (
                       <HoverTooltip
@@ -183,7 +183,7 @@ export function DeploymentCard({
                     {displayEndpoint && (
                       <Copy
                         copyText={displayEndpoint}
-                        className="absolute top-1/2 right-0 m-0 hidden h-5 w-5 shrink-0 -translate-y-1/2 rounded-sm bg-white p-1 text-gray-400 group-hover/endpoint:flex hover:bg-gray-50 hover:text-gray-500 pressed:bg-gray-100 [&_svg]:h-3 [&_svg]:w-3"
+                        className="invisible m-0 flex h-5 w-5 shrink-0 rounded-sm p-1 text-gray-400 group-hover/endpoint:visible hover:bg-gray-50 hover:text-gray-500 pressed:bg-gray-100 [&_svg]:h-3 [&_svg]:w-3"
                       />
                     )}
                   </div>
@@ -214,7 +214,7 @@ export function DeploymentCard({
                         },
                       )}
                       variant="secondary"
-                      className="relative z-10 flex shrink-0 items-center gap-0.5 truncate rounded-md border-none bg-transparent px-1.5 py-0.5 text-xs text-zinc-500/80 no-underline shadow-none hover:bg-black/3 hover:text-zinc-700"
+                      className="relative flex shrink-0 items-center gap-0.5 truncate rounded-md border-none bg-transparent px-1.5 py-0.5 text-xs text-zinc-500/80 no-underline shadow-none hover:bg-black/3 hover:text-zinc-700"
                     >
                       <div className="min-w-0 truncate">In-flight</div>
                       <Icon name={IconName.ChevronRight} className="h-4 w-4" />
@@ -302,14 +302,16 @@ function ServicesDropdown({ deployment }: { deployment: OverviewDeployment }) {
       <DropdownTrigger>
         <Button
           variant="secondary"
-          className="relative z-10 inline-flex items-center gap-1 rounded-md py-1 pr-1 pl-2 text-xs font-medium tabular-nums"
+          className="relative inline-flex items-center gap-1 rounded-lg py-1 pr-1 pl-2 text-xs font-medium tabular-nums"
         >
           <Icon name={IconName.Box} className="h-3.5 w-3.5 text-zinc-500/80" />
           {services.length}{' '}
-          {formatPlurals(services.length, {
-            one: 'service',
-            other: 'services',
-          })}
+          <span className="opacity-80">
+            {formatPlurals(services.length, {
+              one: 'service',
+              other: 'services',
+            })}
+          </span>
           <Icon
             name={IconName.ChevronsUpDown}
             className="h-3.5 w-3.5 text-gray-400"

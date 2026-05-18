@@ -88,7 +88,7 @@ export function HandlerCard({
   const total = statuses.reduce((sum, s) => sum + s.count, 0);
 
   return (
-    <div className="mb-1.5 px-2 pt-0.5">
+    <div className="px-2">
       <div
         className={cardContainerStyles({ isFocusVisible })}
         {...waveAnimationProps('overview-card')}
