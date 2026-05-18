@@ -48,7 +48,7 @@ export function HandlerGridList({
             serviceType={serviceType}
             showLink={false}
             showType={false}
-            className="w-fit pr-0 pl-0 [&_[data-icon]]:h-7 [&_[data-icon]]:w-7"
+            className="w-fit pr-0 pl-0 [&_[data-icon]]:h-6 [&_[data-icon]]:w-6"
           />
         </AriaGridListItem>
       ))}
