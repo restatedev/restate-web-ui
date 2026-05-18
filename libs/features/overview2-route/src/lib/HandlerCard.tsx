@@ -110,7 +110,7 @@ export function HandlerCard({
               </div>
             </div>
             <div className={primaryCellStyles()}>
-              <div className="flex min-w-0 items-center text-base leading-7 font-medium text-zinc-700 italic">
+              <div className="flex min-w-0 items-center text-[0.92675rem] leading-7 font-medium text-zinc-700 italic">
                 <TruncateWithTooltip copyText={handler.name}>
                   {handler.name}
                 </TruncateWithTooltip>

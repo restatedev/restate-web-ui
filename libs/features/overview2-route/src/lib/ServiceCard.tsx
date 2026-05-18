@@ -110,7 +110,9 @@ export function ServiceCard({
         className={cardContainerStyles({ isFocusVisible })}
         {...waveAnimationProps('overview-card')}
       >
-        <div className={cardInnerStyles({ issueSeverity, isHovered, isPressed })}>
+        <div
+          className={cardInnerStyles({ issueSeverity, isHovered, isPressed })}
+        >
           <div className={layoutStyles()}>
             <div className={iconCellStyles()}>
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border bg-white shadow-xs">
@@ -124,7 +126,7 @@ export function ServiceCard({
               {isDeploymentsFetching ? (
                 <div className="h-6 w-32 min-w-0 animate-pulse rounded-lg bg-gray-200/50" />
               ) : (
-                <span className="min-w-0 truncate text-base leading-7 font-medium text-zinc-700">
+                <span className="min-w-0 truncate text-[0.92675rem] leading-7 font-medium text-zinc-700">
                   {service.name}
                 </span>
               )}
