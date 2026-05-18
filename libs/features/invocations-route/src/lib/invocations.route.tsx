@@ -149,9 +149,11 @@ function Component() {
 
   const {
     data: summaryData,
-    isPending: isSummaryLoading,
+    isPending: isSummaryPending,
+    isPlaceholderData: isSummaryPlaceholder,
     isFetching: isSummaryFetching,
   } = useSummaryInvocations(listInvocationsParameters.filters ?? []);
+  const isSummaryLoading = isSummaryPending || isSummaryPlaceholder;
   const { data: deploymentsData } = useListDeployments();
 
   const statusFilter = useMemo(() => {
@@ -166,6 +168,7 @@ function Component() {
     summaryData,
     deploymentsData,
     statusFilter,
+    isSummaryLoading,
   );
   // Href that clears filter_status — drives the legend's leading "All"
   // reset entry. Simply deletes the key; the loader doesn't auto-restore
