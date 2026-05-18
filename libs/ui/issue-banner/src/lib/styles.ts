@@ -56,7 +56,7 @@ export const issueBannerStyles = tv({
 });
 
 export const issueButtonStyles = tv({
-  base: 'relative z-10 flex items-center gap-1 self-start rounded-md border px-1.5 py-0.5 text-xs font-medium',
+  base: 'relative z-10 flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-xs font-medium',
   variants: {
     severity: {
       high: 'border-red-200 bg-red-50 text-red-600',
