@@ -156,7 +156,7 @@ function PerspectiveLines({
           x2={0}
           y2={fadeEnd}
         >
-          <stop offset="0" stopColor="currentColor" stopOpacity="0.5" />
+          <stop offset="0" stopColor="currentColor" stopOpacity="0.7" />
           <stop offset="1" stopColor="currentColor" stopOpacity="0.05" />
         </linearGradient>
       </defs>
