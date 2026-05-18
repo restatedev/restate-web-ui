@@ -1,4 +1,4 @@
-import { HTTPError } from 'ky';
+import { HTTPError, TimeoutError } from 'ky';
 import type {
   FilterItem,
   BatchInvocationsRequestBody,
@@ -448,6 +448,14 @@ export async function query(req: Request) {
       );
     } else if (error instanceof DOMException && error.name === 'AbortError') {
       throw error;
+    } else if (error instanceof TimeoutError) {
+      return new Response(
+        JSON.stringify(new RestateError('Request timed out after 60s')),
+        {
+          status: 504,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
     } else {
       console.log('/query call failed!', error);
       return new Response(
