@@ -140,11 +140,11 @@ export function HandlerCard({
                     handler: handler.name,
                   })}
                   variant="secondary-button"
-                  className="relative shrink-0 px-1 py-1 align-middle"
+                  className="relative shrink-0 border-none bg-gray-50 px-1 py-1 align-middle shadow-none"
                 >
                   <Icon
                     name={IconName.Play}
-                    className="ml-px h-3 w-3 text-blue-700"
+                    className="ml-px h-3 w-3 fill-blue-300 text-blue-700/0"
                   />
                 </Link>
               </HoverTooltip>
